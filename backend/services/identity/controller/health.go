@@ -1,11 +1,12 @@
 package controller
 
 import (
-	"encoding/json"
 	"net/http"
+
+	httpresponse "grovehub/libs/core/http/response"
 )
 
-type healthResponse struct {
+type healthData struct {
 	Service string `json:"service"`
 	Status  string `json:"status"`
 }
@@ -17,10 +18,7 @@ func NewHealthController() *HealthController {
 }
 
 func (controller *HealthController) ServeHTTP(writer http.ResponseWriter, _ *http.Request) {
-	writer.Header().Set("Content-Type", "application/json; charset=utf-8")
-	writer.WriteHeader(http.StatusOK)
-
-	_ = json.NewEncoder(writer).Encode(healthResponse{
+	_ = httpresponse.WriteSuccess(writer, http.StatusOK, healthData{
 		Service: "identity",
 		Status:  "ok",
 	})

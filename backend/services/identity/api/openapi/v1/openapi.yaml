@@ -16,20 +16,38 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: false
-                required:
-                  - service
-                  - status
-                properties:
-                  service:
-                    type: string
-                    const: identity
-                  status:
-                    type: string
-                    const: ok
+                $ref: "#/components/schemas/IdentityHealthSuccessResponse"
               examples:
                 healthy:
                   value:
-                    service: identity
-                    status: ok
+                    success: true
+                    data:
+                      service: identity
+                      status: ok
+components:
+  schemas:
+    IdentityHealthSuccessResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          $ref: "#/components/schemas/IdentityHealthData"
+    IdentityHealthData:
+      type: object
+      additionalProperties: false
+      required:
+        - service
+        - status
+      properties:
+        service:
+          type: string
+          const: identity
+        status:
+          type: string
+          const: ok
