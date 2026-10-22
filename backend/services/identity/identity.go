@@ -4,8 +4,8 @@ import (
 	"log/slog"
 	"net/http"
 
-	identityhealth "grovehub/services/identity/launcher/health"
-	identityroutes "grovehub/services/identity/launcher/routes"
+	"grovehub/services/identity/controller"
+	"grovehub/services/identity/routes"
 )
 
 type Module interface {
@@ -13,18 +13,18 @@ type Module interface {
 }
 
 type module struct {
-	logger        *slog.Logger
-	healthHandler http.Handler
+	logger           *slog.Logger
+	healthController http.Handler
 }
 
 func New(logger *slog.Logger) Module {
 	return &module{
-		logger:        logger,
-		healthHandler: identityhealth.NewHandler(),
+		logger:           logger,
+		healthController: controller.NewHealthController(),
 	}
 }
 
 func (service *module) RegisterHTTP(mux *http.ServeMux) {
-	identityroutes.RegisterHTTP(mux, service.healthHandler)
+	routes.RegisterHTTP(mux, service.healthController)
 	service.logger.Info("identity service registered", "service", "identity")
 }
