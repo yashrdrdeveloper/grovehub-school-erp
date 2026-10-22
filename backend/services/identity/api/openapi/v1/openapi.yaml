@@ -1,0 +1,35 @@
+openapi: 3.1.0
+info:
+  title: GroveHub Identity API
+  version: 0.1.1
+  description: Minimal Identity service contract for Phase 0.1.1.
+paths:
+  /identity/health:
+    get:
+      operationId: getIdentityHealth
+      summary: Check Identity service health
+      tags:
+        - Identity
+      responses:
+        "200":
+          description: Identity service is healthy.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - service
+                  - status
+                properties:
+                  service:
+                    type: string
+                    const: identity
+                  status:
+                    type: string
+                    const: ok
+              examples:
+                healthy:
+                  value:
+                    service: identity
+                    status: ok
