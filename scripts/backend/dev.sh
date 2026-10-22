@@ -8,11 +8,15 @@ SCRIPT_DIR="$(
 
 source "${SCRIPT_DIR}/../lib/paths.sh"
 source "${SCRIPT_DIR}/../lib/common.sh"
+source "${SCRIPT_DIR}/../lib/toolchain.sh"
 source "${SCRIPT_DIR}/../config/services.sh"
 
-require_command go
+ensure_runtime_dirs
+ensure_air
 
-log_info "Running GroveHub backend in foreground"
+log_info "Running GroveHub backend with Air hot reload"
 log_info "Backend URL: ${BACKEND_BASE_URL}"
+log_info "Air version: ${AIR_VERSION}"
+
 cd -- "${BACKEND_DIR}"
-exec go run ./cmd/platform
+exec "${AIR_BIN}" -c .air.toml

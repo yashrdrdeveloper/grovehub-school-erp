@@ -6,5 +6,5 @@ SCRIPT_DIR="$(
   pwd
 )"
 
-"${SCRIPT_DIR}/../swagger/stop.sh"
-"${SCRIPT_DIR}/../backend/stop.sh"
+bash "${SCRIPT_DIR}/../swagger/stop.sh"
+bash "${SCRIPT_DIR}/../backend/stop.sh"

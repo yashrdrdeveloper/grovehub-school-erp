@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/backend/launcher"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/backend/launcher/bootstrap"
+	"grovehub/launcher"
+	"grovehub/launcher/bootstrap"
 )
 
 func main() {

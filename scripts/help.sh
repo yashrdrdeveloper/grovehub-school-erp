@@ -5,11 +5,12 @@ cat <<'EOF'
 GroveHub developer commands
 
 Backend
+  make backend-setup    Install/pin local backend development tools
   make backend-build    Build the platform binary into .runtime/bin
   make backend-start    Start the backend in the background
   make backend-stop     Stop the managed backend process
   make backend-status   Show backend process and health status
-  make backend-dev      Run the backend in the foreground
+  make backend-dev      Run backend with Air hot reload
 
 Swagger
   make swagger-start    Start Swagger UI on http://localhost:8081

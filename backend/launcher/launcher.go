@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/backend/services/identity"
+	"grovehub/services/identity"
 )
 
 const httpAddress = ":8080"

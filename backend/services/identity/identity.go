@@ -4,8 +4,8 @@ import (
 	"log/slog"
 	"net/http"
 
-	identityhealth "github.com/yashrdrdeveloper/grovehub-school-erp/backend/services/identity/launcher/health"
-	identityroutes "github.com/yashrdrdeveloper/grovehub-school-erp/backend/services/identity/launcher/routes"
+	identityhealth "grovehub/services/identity/launcher/health"
+	identityroutes "grovehub/services/identity/launcher/routes"
 )
 
 type Module interface {

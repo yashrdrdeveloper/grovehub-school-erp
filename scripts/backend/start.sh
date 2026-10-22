@@ -31,7 +31,7 @@ for health_path in "${BACKEND_HEALTH_ENDPOINTS[@]}"; do
   fi
 done
 
-"${SCRIPT_DIR}/build.sh"
+bash "${SCRIPT_DIR}/build.sh"
 
 log_info "Starting GroveHub backend"
 nohup "${BINARY}" >>"${LOG_FILE}" 2>&1 &

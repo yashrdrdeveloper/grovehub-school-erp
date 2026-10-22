@@ -1,0 +1,18 @@
+root = "."
+tmp_dir = "../.runtime/air"
+
+[build]
+cmd = "go build -o ../.runtime/bin/groovehub-dev ./cmd/platform"
+bin = "../.runtime/bin/groovehub-dev"
+delay = 500
+exclude_dir = ["vendor"]
+include_ext = ["go"]
+kill_delay = "500ms"
+send_interrupt = true
+stop_on_error = true
+
+[log]
+time = true
+
+[misc]
+clean_on_exit = true

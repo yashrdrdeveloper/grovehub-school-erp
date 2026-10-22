@@ -1,4 +1,6 @@
-module github.com/yashrdrdeveloper/grovehub-school-erp/backend
+module grovehub
+
+// Source repository: https://github.com/yashrdrdeveloper/grovehub-school-erp/backend
 
 go 1.27.0
 
