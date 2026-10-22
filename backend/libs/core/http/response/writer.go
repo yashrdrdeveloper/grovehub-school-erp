@@ -12,8 +12,16 @@ func WriteSuccess[T any](writer http.ResponseWriter, statusCode int, data T) err
 	return writeJSON(writer, statusCode, responsedto.NewSuccess(data))
 }
 
-func WriteError[M any](writer http.ResponseWriter, statusCode int, code coreerrors.Code, message string, metadata M) error {
-	return writeJSON(writer, statusCode, responsedto.NewError(code, message, statusCode, metadata))
+func WriteError(writer http.ResponseWriter, statusCode int, definition coreerrors.Definition) error {
+	return WriteErrorWithMetadata(writer, statusCode, definition, struct{}{})
+}
+
+func WriteErrorWithMetadata[M any](writer http.ResponseWriter, statusCode int, definition coreerrors.Definition, metadata M) error {
+	return writeJSON(
+		writer,
+		statusCode,
+		responsedto.NewError(definition.Code(), definition.Message(), statusCode, metadata),
+	)
 }
 
 func writeJSON[T any](writer http.ResponseWriter, statusCode int, payload T) error {

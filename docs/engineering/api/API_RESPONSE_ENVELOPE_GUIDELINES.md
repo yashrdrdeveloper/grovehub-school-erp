@@ -1,7 +1,7 @@
 # API Response Envelope Guidelines
 
-> **Status:** Mandatory engineering standard
-> **Applies to:** GroveHub REST/JSON APIs across all backend services.
+> **Status:** Mandatory engineering standard  
+> **Applies to:** GroveHub REST/JSON APIs across all backend services.  
 > **Relationship:** Additive to `API_CONTRACT_GUIDELINES.md` and `BACKEND_CODE_GUIDELINES.md`.
 
 ## 1. Organization-wide response contract
@@ -27,7 +27,7 @@ Error JSON responses use:
 }
 ```
 
-The outer envelope is shared infrastructure. The `data` payload remains owned by the service contract.
+The outer envelope is shared infrastructure. The `data` payload and semantic error definitions remain owned by the service contract.
 
 ## 2. Shared backend placement
 
@@ -43,7 +43,7 @@ Shared HTTP response writing lives under:
 backend/libs/core/http/response/
 ```
 
-Shared error-code typing lives under:
+Shared error primitives live under:
 
 ```text
 backend/libs/core/errors/
@@ -57,9 +57,9 @@ A future shared request DTO package may live under:
 backend/libs/core/dto/request/
 ```
 
-but it must be created only when a real organization-wide request primitive exists. Services must not be forced into a generic request envelope without a concrete requirement.
+only when a real organization-wide request primitive exists.
 
-## 3. Generics
+## 3. Generic response DTOs
 
 The shared response DTOs use Go generics:
 
@@ -80,25 +80,70 @@ type Error[M any] struct {
 
 This keeps payload and error metadata strongly typed without duplicating envelopes per service.
 
-## 4. Service-owned error codes
+## 4. Semantic error definitions
 
-Error-code values belong to the service that owns the failure semantics.
+A semantic error definition contains only stable service-owned semantics:
+
+```go
+type Definition struct {
+    // private fields
+}
+```
+
+It exposes:
+
+```text
+Code()
+Message()
+```
+
+The definition does not own an HTTP status code and does not own request-specific metadata.
+
+Reason:
+
+```text
+semantic failure
+    !=
+transport mapping
+```
+
+The same semantic error may eventually be represented through HTTP, gRPC, events, or an in-process client.
+
+## 5. Service-owned error definitions
+
+Error definitions belong to the service that owns the failure semantics.
+
+Group them by responsibility instead of one giant file.
 
 Example:
 
 ```text
 backend/services/identity/constants/errorcode/
+├── health_code.go
+├── authentication_code.go
+└── session_code.go
 ```
+
+For health errors:
 
 ```go
-const ServiceDown coreerrors.Code = "IDENTITY_SERVICE_DOWN"
+package errorcode
+
+import coreerrors "grovehub/libs/core/errors"
+
+var (
+    ServiceDown = coreerrors.NewDefinition(
+        "IDENTITY_SERVICE_DOWN",
+        "Identity service is unavailable",
+    )
+)
 ```
 
-Do not place service-specific error codes in `libs/core`.
+Go does not allow a struct value to be declared with `const`, so semantic definitions are package variables created from immutable-style core definitions. Their fields are private and consumers can only read `Code()` and `Message()`.
 
-Use uppercase stable identifiers with the owning service/domain prefix.
+Do not place service-specific error definitions in `libs/core`.
 
-Examples:
+Use stable uppercase identifiers with the owning service/domain prefix:
 
 ```text
 IDENTITY_SERVICE_DOWN
@@ -107,56 +152,115 @@ COMMUNICATION_PROVIDER_UNAVAILABLE
 ADMISSIONS_APPLICATION_NOT_FOUND
 ```
 
-Do not rename an externally published error code casually; treat it as part of the API contract.
+Published error codes are API contract values and must not be renamed casually.
 
-## 5. Error fields
+## 6. HTTP status ownership
 
-`success`
-: Always `false` for the error envelope.
+HTTP status belongs to the controller/transport boundary, not the service error definition.
 
-`errorCode`
-: Stable machine-readable service-owned code.
-
-`errorMessage`
-: Safe human-readable message. Never expose SQL, stack traces, secrets, tokens, provider internals, or sensitive configuration.
-
-`httpErrorCode`
-: Must equal the actual HTTP response status code.
-
-`errorMetaData`
-: Typed per call through generics. It may contain structured diagnostic or validation context that is safe for the caller. It must not contain secrets.
-
-## 6. Controller rule
-
-Controllers should use the shared HTTP writer rather than manually rebuilding the envelope.
+Correct:
 
 ```go
-httpresponse.WriteSuccess(writer, http.StatusOK, data)
-
 httpresponse.WriteError(
     writer,
     http.StatusServiceUnavailable,
     errorcode.ServiceDown,
-    "Identity service is unavailable",
-    metadata,
 )
 ```
 
-Controllers still own transport mapping; business services should not depend on `net/http`.
+This produces:
 
-## 7. Contract rule
+```json
+{
+  "success": false,
+  "errorCode": "IDENTITY_SERVICE_DOWN",
+  "errorMessage": "Identity service is unavailable",
+  "httpErrorCode": 503,
+  "errorMetaData": {}
+}
+```
+
+`httpErrorCode` is populated from the actual HTTP status passed to the shared writer. Do not duplicate the status inside service constants.
+
+## 7. Error metadata
+
+Most errors do not need metadata.
+
+Use:
+
+```go
+httpresponse.WriteError(
+    writer,
+    http.StatusServiceUnavailable,
+    errorcode.ServiceDown,
+)
+```
+
+When safe structured context is useful, use:
+
+```go
+httpresponse.WriteErrorWithMetadata(
+    writer,
+    http.StatusBadRequest,
+    errorcode.SomeValidationError,
+    validationMetadata,
+)
+```
+
+Metadata must be typed, caller-safe, and secret-free. Never return SQL details, stack traces, tokens, passwords, provider secrets, or sensitive configuration.
+
+## 8. Success payload ownership
+
+The controller must not invent public response DTO structs inline when the payload is part of the API contract.
+
+Service response DTOs live under the owning service boundary, for example:
+
+```text
+backend/services/identity/dto/v1/response/health.go
+```
+
+Controller usage:
+
+```go
+httpresponse.WriteSuccess(
+    writer,
+    http.StatusOK,
+    identityresponse.HealthData{
+        Service: "identity",
+        Status:  "ok",
+    },
+)
+```
+
+Controllers coordinate transport. They should not become DTO definition packages.
+
+## 9. Controller rule
+
+Controllers:
+
+- select the HTTP status code
+- map service results into versioned response DTOs
+- select the appropriate service-owned semantic error definition
+- append safe metadata only when required
+- use the shared response writer
+
+Controllers must not duplicate `json.NewEncoder`, envelope fields, error messages, or semantic error codes per endpoint.
+
+Business services must not depend on `net/http`.
+
+## 10. Contract rule
 
 OpenAPI remains the source of truth for externally visible HTTP payloads.
 
-Whenever an endpoint changes to or adds one of these envelopes, update its OpenAPI schema and examples in the same change.
+Whenever an endpoint changes its response envelope, DTO, fields, or error contract, update the OpenAPI schema and examples in the same change.
 
-## 8. Exceptions
+## 11. Exceptions
 
-Do not wrap responses where the transport semantics require a different body shape, for example:
+Do not wrap responses where transport semantics require another shape, including:
 
 - file/download streaming
 - SSE/WebSocket streams
-- protocol-specific callbacks where an external provider mandates a payload
+- provider callbacks with mandated payloads
 - `204 No Content`
 
 Any exception must be explicit in the endpoint contract.
