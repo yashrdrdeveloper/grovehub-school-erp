@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"grovehub/launcher/routing"
 	"grovehub/services/identity"
 )
 
@@ -17,6 +18,7 @@ func Run(logger *slog.Logger) error {
 
 	identityModule := identity.New(logger)
 	identityModule.RegisterHTTP(mux)
+	routing.RegisterFallback(mux)
 
 	server := &http.Server{
 		Addr:              httpAddress,
