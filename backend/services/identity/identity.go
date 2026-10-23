@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	coretelemetry "grovehub/libs/core/telemetry"
+	foundationclient "grovehub/services/foundation/client"
 	"grovehub/services/identity/controller"
 	"grovehub/services/identity/routes"
 )
@@ -16,12 +17,14 @@ type Module interface {
 type module struct {
 	logger           *slog.Logger
 	healthController http.Handler
+	foundationClient foundationclient.Client
 }
 
-func New(logger *slog.Logger) Module {
+func New(logger *slog.Logger, foundationClient foundationclient.Client) Module {
 	return &module{
 		logger:           logger,
 		healthController: controller.NewHealthController(),
+		foundationClient: foundationClient,
 	}
 }
 

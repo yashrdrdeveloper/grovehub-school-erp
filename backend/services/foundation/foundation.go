@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	coretelemetry "grovehub/libs/core/telemetry"
+	foundationclient "grovehub/services/foundation/client"
 	"grovehub/services/foundation/controller"
 	controllerimpl "grovehub/services/foundation/controller/impl"
 	repositoryimpl "grovehub/services/foundation/repository/impl"
@@ -16,11 +17,13 @@ import (
 
 type Module interface {
 	RegisterHTTP(mux *http.ServeMux)
+	Client() foundationclient.Client
 }
 
 type module struct {
 	logger           *slog.Logger
 	personController controller.PersonController
+	client           foundationclient.Client
 }
 
 func New(logger *slog.Logger, pool *pgxpool.Pool) Module {
@@ -30,6 +33,7 @@ func New(logger *slog.Logger, pool *pgxpool.Pool) Module {
 	return &module{
 		logger:           logger,
 		personController: controllerimpl.NewPersonController(personService),
+		client:           foundationclient.New(personService),
 	}
 }
 
@@ -40,4 +44,8 @@ func (service *module) RegisterHTTP(mux *http.ServeMux) {
 		"service", coretelemetry.ServiceFoundation.Name,
 		"serviceKey", coretelemetry.ServiceFoundation.Key,
 	)
+}
+
+func (service *module) Client() foundationclient.Client {
+	return service.client
 }

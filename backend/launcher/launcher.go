@@ -37,7 +37,7 @@ func Run(logger *slog.Logger) error {
 	foundationModule := foundation.New(logger, pool)
 	foundationModule.RegisterHTTP(mux)
 
-	identityModule := identity.New(logger)
+	identityModule := identity.New(logger, foundationModule.Client())
 	identityModule.RegisterHTTP(mux)
 
 	routing.RegisterFallback(mux)
