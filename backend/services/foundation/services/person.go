@@ -33,13 +33,13 @@ func (service *PersonService) Create(ctx context.Context) (foundationresponse.Pe
 
 	gid := entity.GID(gidValue)
 	now := time.Now().UTC()
-	person := mappers.NewPersonBuilder().
-		WithGID(gid).
-		WithStatus(entity.PersonStatusActive).
-		WithVersion(1).
-		WithCreatedAt(now).
-		WithUpdatedAt(now).
-		Build()
+	person := entity.Person{
+		GID:       gid,
+		Status:    entity.PersonStatusActive,
+		Version:   1,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
 
 	if err := service.repository.Create(ctx, person); err != nil {
 		return foundationresponse.Person{}, coreerrors.WrapWithMetadata(
@@ -79,11 +79,9 @@ func (service *PersonService) Deactivate(
 		return mappers.ToPersonResponse(person), nil
 	}
 
-	person = mappers.NewPersonBuilderFrom(person).
-		WithStatus(entity.PersonStatusDeactivated).
-		WithVersion(person.Version + 1).
-		WithUpdatedAt(time.Now().UTC()).
-		Build()
+	person.Status = entity.PersonStatusDeactivated
+	person.Version++
+	person.UpdatedAt = time.Now().UTC()
 
 	if err := service.repository.Update(ctx, person); err != nil {
 		if errors.Is(err, foundationrepository.ErrPersonNotFound) {
