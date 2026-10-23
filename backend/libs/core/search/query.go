@@ -136,7 +136,7 @@ func BuildCursorCondition(
 	sort SortField,
 	direction searchcontract.Direction,
 	value string,
-	cursorID string,
+	cursorId string,
 	cursorExpression string,
 ) string {
 	comparison := map[searchcontract.Direction]string{
@@ -144,7 +144,7 @@ func BuildCursorCondition(
 		searchcontract.DirectionDescending: "<",
 	}[direction]
 	valuePlaceholder := builder.Add(value)
-	cursorPlaceholder := builder.Add(cursorID)
+	cursorPlaceholder := builder.Add(cursorId)
 
 	if sort.Expression == cursorExpression {
 		return fmt.Sprintf("%s %s %s%s", cursorExpression, comparison, valuePlaceholder, sort.Cast)
