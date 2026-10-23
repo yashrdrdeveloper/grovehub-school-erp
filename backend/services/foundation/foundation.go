@@ -8,6 +8,7 @@ import (
 
 	coretelemetry "grovehub/libs/core/telemetry"
 	foundationclient "grovehub/services/foundation/client"
+	clientimpl "grovehub/services/foundation/client/impl"
 	"grovehub/services/foundation/controller"
 	controllerimpl "grovehub/services/foundation/controller/impl"
 	repositoryimpl "grovehub/services/foundation/repository/impl"
@@ -33,7 +34,7 @@ func New(logger *slog.Logger, pool *pgxpool.Pool) Module {
 	return &module{
 		logger:           logger,
 		personController: controllerimpl.NewPersonController(personService),
-		client:           foundationclient.New(personService),
+		client:           clientimpl.NewPersonClient(personService),
 	}
 }
 

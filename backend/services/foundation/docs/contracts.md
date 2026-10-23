@@ -67,11 +67,39 @@ PATCH  /foundation/persons/{gid}/deactivate
 
 ### In-process client
 
-Other services inside the GroveHub process must use:
+Other services inside the GroveHub process must depend on the public client contract:
 
 ```text
-backend/services/foundation/client
+backend/services/foundation/client/
+├── person.go
+└── impl/
+    └── person.go
 ```
+
+Ownership:
+
+```text
+client/person.go
+    -> public Client interface only
+
+client/impl/person.go
+    -> concrete in-process implementation
+    -> delegates to Foundation Person service
+```
+
+Consumers such as Identity import only:
+
+```text
+grovehub/services/foundation/client
+```
+
+They must never import:
+
+```text
+grovehub/services/foundation/client/impl
+```
+
+Only Foundation composition code may construct the concrete implementation.
 
 Do not import Foundation repositories, services, controllers, or database implementation packages from another service.
 
@@ -85,7 +113,7 @@ SearchPersons(...)
 DeactivatePerson(...)
 ```
 
-The client delegates to the same Foundation service used by the HTTP controller. It does **not** call Foundation over HTTP.
+The client implementation delegates to the same Foundation service used by the HTTP controller. It does **not** call Foundation over HTTP.
 
 ## 4. Request lifecycle rule
 
@@ -109,7 +137,9 @@ incoming request
     ↓
 Identity controller/service
     ↓ same context.Context
-Foundation client
+Foundation client interface
+    ↓
+Foundation client implementation
     ↓ same context.Context
 Foundation service
     ↓
@@ -297,12 +327,15 @@ A consuming service such as Identity must:
 
 ```text
 DO import foundation/client
+DO depend on client.Client
 DO use Foundation request/response contracts
 DO forward the current context.Context
 DO store/reference the Person GID when identity linkage is required
 
+DO NOT import foundation/client/impl
 DO NOT import foundation/repository
 DO NOT import foundation/repository/impl
+DO NOT import foundation/services directly
 DO NOT call Foundation tables directly
 DO NOT copy Person DTOs into Identity merely to avoid the client
 DO NOT make an internal HTTP request when the in-process client is available
@@ -311,20 +344,23 @@ DO NOT change Foundation contact data as a side effect of Identity login changes
 
 ## 12. Composition
 
-The launcher owns dependency wiring.
+The service root owns Foundation concrete construction, while the launcher passes only the public client contract to consumers.
 
 ```text
+Foundation module
+├── Person repository interface
+│   └── repository/impl
+├── Person service
+├── controller interface
+│   └── controller/impl
+└── client interface
+    └── client/impl
+
 launcher
-├── Foundation module
-│   ├── Person repository
-│   ├── Person service
-│   ├── HTTP controller
-│   └── Foundation client
-│
-└── Identity module
-    └── receives Foundation client
+├── constructs Foundation module
+└── passes foundationModule.Client() to Identity
 ```
 
 Foundation does not depend on Identity.
 
-Identity may depend on the Foundation public client.
+Identity may depend on the Foundation public client contract.

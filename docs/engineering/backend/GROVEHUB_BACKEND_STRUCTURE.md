@@ -45,6 +45,9 @@ backend/services/<service>/
 │       └── <resource>.go
 ├── routes/
 ├── client/
+│   ├── <resource>.go
+│   └── impl/
+│       └── <resource>.go
 ├── migrations/
 └── tests/
     └── unit-test/
@@ -79,7 +82,7 @@ Routes depend on `controller.PersonController`, never on `controller/impl.Person
 ```text
 repository/person.go
     -> PersonRepository interface
-    -> persistence query/result types
+    -> persistence query/result types when genuinely repository-specific
     -> repository sentinel errors
 
 repository/impl/person.go
@@ -88,9 +91,24 @@ repository/impl/person.go
 
 Do not encode the database technology into the public repository package path. `impl/` is the concrete adapter boundary.
 
+### Client
+
+```text
+client/person.go
+    -> public client interface only
+
+client/impl/person.go
+    -> concrete in-process client implementation
+    -> service delegation
+```
+
+Consuming services depend on `client.Client` and import only the public `client` package.
+
+A consuming service must never import another service's `client/impl` package. Concrete client construction belongs to the owning service composition root.
+
 ### Construction
 
-Only the service root composition file imports concrete `impl` packages:
+Only the service root composition file imports its concrete `impl` packages:
 
 ```text
 foundation.go
@@ -101,9 +119,15 @@ foundation.go
     controller/impl
        ↓
     controller interface
+
+    services
        ↓
-    routes
+    client/impl
+       ↓
+    client interface
 ```
+
+The launcher may receive the owning module's public client interface and inject it into another module. It must not construct or expose another service's client implementation directly.
 
 ---
 
@@ -125,6 +149,20 @@ Repository interface
 Repository implementation
   ↓
 PostgreSQL
+```
+
+For in-process service-to-service calls:
+
+```text
+Consuming service
+  ↓
+Provider client interface
+  ↓
+Provider client implementation
+  ↓
+Provider service
+  ↓
+Provider repository
 ```
 
 ### Entity
@@ -195,6 +233,22 @@ validated search query execution
 ```
 
 Generic SQL operator behavior must not be copied into every repository. Reusable search SQL mechanics belong in `backend/libs/core/search`.
+
+### Client implementation
+
+`client/impl/<resource>.go` owns only the concrete adapter from the public client contract to the provider service.
+
+It must:
+
+```text
+forward context.Context unchanged
+reuse provider request/response contracts
+call provider service methods
+avoid duplicate business logic
+avoid internal HTTP when both modules are in-process
+```
+
+It must not import repository implementations or bypass the provider service layer.
 
 ---
 
@@ -273,6 +327,13 @@ backend/services/foundation/
 │   │   └── person.go
 │   └── helpers/
 │       └── person.go
+├── client/
+│   ├── person.go
+│   └── impl/
+│       └── person.go
+├── docs/
+│   ├── contracts.md
+│   └── search.md
 ├── routes/http.go
 └── migrations/
 ```
@@ -328,9 +389,12 @@ NO service-local launcher/
 NO repository/postgres package for current GroveHub repository implementations; use repository/impl
 NO concrete controller dependency in routes
 NO controller implementation mixed into controller contract file
+NO client implementation mixed into client contract file
+NO consuming service importing another service's client/impl package
+NO client implementation bypassing the provider service layer
 NO resource-specific helper dumped into generic common/misc files
 NO separate Person search implementation file when it is the same Person responsibility
-NO business logic in controller/repository/entity/mapper
+NO business logic in controller/repository/entity/mapper/client adapter
 NO duplicated generic search SQL operator switches in services
 NO duplicated generic search SQL operator switches in repositories
 NO arbitrary client field names becoming SQL expressions
