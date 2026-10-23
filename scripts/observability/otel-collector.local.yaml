@@ -16,13 +16,21 @@ receivers:
         expr: 'not (body matches "^{.*}$")'
       - type: json_parser
         parse_to: attributes
-        severity:
-          parse_from: attributes.level
         trace:
           trace_id:
             parse_from: attributes.traceId
           span_id:
             parse_from: attributes.spanId
+      - type: severity_parser
+        parse_from: attributes.level
+        overwrite_text: true
+        mapping:
+          debug: DEBUG
+          info: INFO
+          warn:
+            - WARN
+            - WARNING
+          error: ERROR
 
 extensions:
   basicauth/grafana:

@@ -143,6 +143,8 @@ A successful Air reload should show the module-sync, build, and restart sequence
 
 Shell messages such as `[INFO] Starting GroveHub backend` and Air watcher/build lines are developer tooling output and are not controlled by the application log-level setting. The local OpenTelemetry filelog receiver drops non-JSON developer-tooling lines before exporting to Grafana, so the Grafana application-log stream contains only structured GroveHub records.
 
+The collector must translate the structured GroveHub `level` field into the OpenTelemetry log record severity (`SeverityNumber`/`SeverityText`) explicitly. Grafana/Loki level detection must not be left to inference from the JSON body. For example, a GroveHub request record with `level=ERROR` for HTTP 404 must arrive in Grafana as OpenTelemetry `ERROR` severity.
+
 ---
 
 ## 6. Application Log Levels
@@ -194,5 +196,6 @@ When changing local developer startup:
 11. Do not silently fall back when an explicitly configured log level is invalid.
 12. Do not export unrelated `.env` secrets into the backend process.
 13. Keep local collector filelog export limited to structured GroveHub application records; do not ship Air/watch/build chatter as application logs.
-14. Never add broad process termination.
-15. Report the actual start/stop/hot-reload validation performed.
+14. Map GroveHub structured `level` to OpenTelemetry severity explicitly before export; do not rely on Grafana/Loki inferred level detection for application severity.
+15. Never add broad process termination.
+16. Report the actual start/stop/hot-reload validation performed.
