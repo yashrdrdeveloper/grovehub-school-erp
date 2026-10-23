@@ -14,6 +14,10 @@ var (
 		Key:  "launcher-edge",
 		Name: "LAUNCHER (EDGE)",
 	}
+	ServiceFoundation = Service{
+		Key:  "foundation",
+		Name: "FOUNDATION",
+	}
 	ServiceIdentity = Service{
 		Key:  "identity",
 		Name: "IDENTITY",
@@ -26,6 +30,8 @@ func ResolveService(value string) Service {
 	switch normalized {
 	case "", "edge", "launcher", "launcher-edge", "launcher (edge)", "launcher(edge)":
 		return ServiceLauncherEdge
+	case "foundation":
+		return ServiceFoundation
 	case "identity":
 		return ServiceIdentity
 	default:
