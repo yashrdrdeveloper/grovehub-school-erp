@@ -12,7 +12,9 @@ source "${SCRIPT_DIR}/../lib/toolchain.sh"
 source "${SCRIPT_DIR}/../lib/go.sh"
 
 ensure_air
+ensure_goose
 sync_backend_go_modules
 
 log_info "Backend development tools are ready"
 log_info "Air: ${AIR_VERSION} (${AIR_BIN})"
+log_info "Goose: ${GOOSE_VERSION} (${GOOSE_BIN})"

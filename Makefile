@@ -28,6 +28,16 @@ backend-status:
 backend-dev:
 	@bash ./scripts/backend/dev.sh
 
+.PHONY: db-migrate-status db-migrate-up db-migrate-down
+db-migrate-status:
+	@bash ./scripts/database/migrate.sh status
+
+db-migrate-up:
+	@bash ./scripts/database/migrate.sh up
+
+db-migrate-down:
+	@bash ./scripts/database/migrate.sh down
+
 .PHONY: swagger-start swagger-stop swagger-status
 swagger-start:
 	@bash ./scripts/swagger/start.sh

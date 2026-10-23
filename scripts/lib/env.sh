@@ -12,6 +12,7 @@ load_backend_runtime_env() {
 
   local name
   for name in \
+    DATABASE_URL \
     GROVEHUB_LOG_LEVELS \
     GROVEHUB_TRACE_SAMPLE_RATIO \
     GROVEHUB_METRIC_EXPORT_INTERVAL \

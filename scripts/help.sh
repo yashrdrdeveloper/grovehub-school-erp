@@ -12,6 +12,11 @@ Backend
   make backend-status   Show backend process, hot-reload mode, and health status
   make backend-dev      Run backend with Air hot reload in the foreground
 
+Database
+  make db-migrate-status  Show Foundation migration status using DATABASE_URL
+  make db-migrate-up      Apply pending Foundation migrations
+  make db-migrate-down    Roll back the latest Foundation migration
+
 Swagger
   make swagger-start    Start Swagger UI on http://localhost:8081
   make swagger-stop     Stop the managed Swagger UI container
