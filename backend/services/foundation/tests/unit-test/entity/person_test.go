@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"grovehub/services/foundation/src/entity"
+	"grovehub/services/foundation/entity"
 )
 
 var _ = Describe("Person", func() {
