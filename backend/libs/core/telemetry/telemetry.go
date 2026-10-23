@@ -34,15 +34,15 @@ const (
 type Shutdown func(context.Context) error
 
 type serviceRuntime struct {
-	service                Service
-	tracerProvider         *sdktrace.TracerProvider
-	meterProvider          *sdkmetric.MeterProvider
-	operationDuration      metric.Float64Histogram
-	operationRequests      metric.Int64Counter
-	operationErrors        metric.Int64Counter
-	httpRequestDuration    metric.Float64Histogram
-	httpRequestErrors      metric.Int64Counter
-	httpActiveRequests     metric.Int64UpDownCounter
+	service             Service
+	tracerProvider      *sdktrace.TracerProvider
+	meterProvider       *sdkmetric.MeterProvider
+	operationDuration   metric.Float64Histogram
+	operationRequests   metric.Int64Counter
+	operationErrors     metric.Int64Counter
+	httpRequestDuration metric.Float64Histogram
+	httpRequestErrors   metric.Int64Counter
+	httpActiveRequests  metric.Int64UpDownCounter
 }
 
 type Runtime struct {
@@ -63,6 +63,7 @@ func Initialize(ctx context.Context, logger *slog.Logger) Shutdown {
 
 	services := []Service{
 		ServiceLauncherEdge,
+		ServiceFoundation,
 		ServiceIdentity,
 	}
 
