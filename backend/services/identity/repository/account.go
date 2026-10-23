@@ -18,6 +18,7 @@ var (
 )
 
 type AccountRepository interface {
+	HasAccounts(ctx context.Context) (bool, error)
 	CreateFirst(
 		ctx context.Context,
 		account entity.Account,

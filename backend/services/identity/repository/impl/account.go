@@ -28,6 +28,15 @@ func NewAccountRepository(pool *pgxpool.Pool) identityrepository.AccountReposito
 	return &AccountRepository{pool: pool}
 }
 
+func (repository *AccountRepository) HasAccounts(ctx context.Context) (bool, error) {
+	var exists bool
+	err := repository.pool.QueryRow(
+		ctx,
+		`SELECT EXISTS (SELECT 1 FROM identity.accounts)`,
+	).Scan(&exists)
+	return exists, err
+}
+
 func (repository *AccountRepository) CreateFirst(
 	ctx context.Context,
 	account entity.Account,
