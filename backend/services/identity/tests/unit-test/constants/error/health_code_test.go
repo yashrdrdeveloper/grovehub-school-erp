@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"grovehub/services/identity/constants/errorcode"
+	"grovehub/services/identity/constants/error"
 )
 
 var _ = Describe("Identity error definitions", func() {
