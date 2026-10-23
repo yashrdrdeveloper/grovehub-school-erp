@@ -27,7 +27,7 @@ Cross-cutting guidelines only when boundary is affected
 
 `docs/AGENT.md` defines the full context-loading workflow for AI agents.
 
-For GroveHub backend work, the newer GroveHub-specific structure/mapping/testing/tracing/observability/local-development standards listed below take precedence over conflicting generic examples in older standards.
+For GroveHub backend work, the newer GroveHub-specific structure/mapping/search/testing/tracing/observability/local-development standards listed below take precedence over conflicting generic examples in older standards.
 
 ---
 
@@ -43,7 +43,8 @@ docs/
     ├── backend/
     │   ├── BACKEND_CODE_GUIDELINES.md
     │   ├── GROVEHUB_BACKEND_STRUCTURE.md
-    │   └── MAPPER_AND_DTO_GUIDELINES.md
+    │   ├── MAPPER_AND_DTO_GUIDELINES.md
+    │   └── SEARCH_API_GUIDELINES.md
     │
     ├── frontend/
     │   └── FRONTEND_CODE_GUIDELINES.md
@@ -101,6 +102,7 @@ docs/
 | `BACKEND_CODE_GUIDELINES.md` | Generic Go service architecture, layering, clients, ports, repositories, errors, messaging, provider consumption |
 | `GROVEHUB_BACKEND_STRUCTURE.md` | **Current GroveHub backend placement**: flat service structure, layer responsibilities, repository/service/controller boundaries |
 | `MAPPER_AND_DTO_GUIDELINES.md` | **Current GroveHub object transformation contract**: flat `dto/request` + `dto/response`, `mappers/`, builder usage, entity-to-response mapping, request-to-value mapping, error metadata mapping |
+| `SEARCH_API_GUIDELINES.md` | **Current GroveHub search contract**: shared `libs/core/contracts/search`, operators, service-owned field/operator allowlists, cursor pagination, search projections, exact lookup vs free-text search, SQL safety, indexing |
 | `FRONTEND_CODE_GUIDELINES.md` | React/TypeScript package architecture, `base/business/components/domain/shell`, public boundaries, services/readers, hooks, Storybook, mocks |
 | `TESTING_GUIDELINES.md` | Broad test strategy across unit/sanity/regression and supporting validation responsibilities |
 | `BACKEND_UNIT_TEST_STRUCTURE.md` | **Current GroveHub Go unit-test placement**: owner-local `tests/unit-test`, mirrored paths, mandatory `suite_test.go`, Ginkgo v2 + Gomega |
@@ -131,6 +133,7 @@ docs/
 ```text
 GROVEHUB_BACKEND_STRUCTURE
 + MAPPER_AND_DTO_GUIDELINES whenever DTOs, mappers, builders, service input/output, or error metadata are involved
++ SEARCH_API_GUIDELINES whenever searchText, filters, sorting, cursor pagination, or searchable projections are involved
 + BACKEND_CODE_GUIDELINES for generic layering/domain rules
 + BACKEND_UNIT_TEST_STRUCTURE
 + TESTING_GUIDELINES
@@ -145,6 +148,7 @@ GROVEHUB_BACKEND_STRUCTURE
 ```text
 FRONTEND_CODE_GUIDELINES
 + API_CONTRACT_GUIDELINES if backend contract consumption changes
++ SEARCH_API_GUIDELINES when consuming GroveHub search/filter/cursor contracts
 + SECURITY_GUIDELINES for auth/permission/sensitive rendering
 + TESTING_GUIDELINES
 + REGRESSION_TESTING for critical user journey
@@ -169,6 +173,7 @@ PROVIDER_SDK_GUIDELINES
 ```text
 DATABASE_GUIDELINES
 + GROVEHUB_BACKEND_STRUCTURE
++ SEARCH_API_GUIDELINES when query/filter/cursor/search projection behavior changes
 + MAPPER_AND_DTO_GUIDELINES when database entities are converted to service/API DTOs
 + BACKEND_CODE_GUIDELINES
 + BACKEND_UNIT_TEST_STRUCTURE
@@ -182,8 +187,19 @@ DATABASE_GUIDELINES
 ```text
 GROVEHUB_BACKEND_STRUCTURE
 + MAPPER_AND_DTO_GUIDELINES
++ SEARCH_API_GUIDELINES when search is involved
 + API_CONTRACT_GUIDELINES
 + BACKEND_CODE_GUIDELINES
+```
+
+### Search API
+
+```text
+SEARCH_API_GUIDELINES
++ GROVEHUB_BACKEND_STRUCTURE
++ API_CONTRACT_GUIDELINES
++ DATABASE_GUIDELINES
++ MAPPER_AND_DTO_GUIDELINES when service DTO conversion is involved
 ```
 
 ### Browser regression
@@ -415,7 +431,7 @@ One authoritative source owns each rule.
 
 This index routes; it does not duplicate detailed standards.
 
-For current GroveHub backend placement/mapping/testing/tracing/observability/local-development, GroveHub-specific standards are authoritative over conflicting historical generic examples.
+For current GroveHub backend placement/mapping/search/testing/tracing/observability/local-development, GroveHub-specific standards are authoritative over conflicting historical generic examples.
 
 ---
 

@@ -1,7 +1,7 @@
 # GroveHub Mapper and DTO Guidelines
 
-> **Status:** Mandatory GroveHub backend standard
-> **Applies to:** all backend services/modules
+> **Status:** Mandatory GroveHub backend standard  
+> **Applies to:** all backend services/modules  
 > **Precedence:** when older examples conflict with this document, this document wins together with `GROVEHUB_BACKEND_STRUCTURE.md`.
 
 ---
@@ -43,6 +43,14 @@ backend/services/<service>/
 
 Use only folders/files required by the current service.
 
+Shared cross-service contract shapes may live under:
+
+```text
+backend/libs/core/contracts/<contract>/
+```
+
+For example, GroveHub search requests/results use `backend/libs/core/contracts/search` instead of duplicating the generic search envelope in each service.
+
 ---
 
 ## 3. DTO Rules
@@ -66,6 +74,17 @@ Entities are never serialized directly as public API responses.
 
 Repositories never return response DTOs.
 
+Nested public value shapes are still DTOs. A nested value does not require an independent resource or independent identifier.
+
+Example:
+
+```text
+Person response
+└── Contacts
+    ├── Emails[]
+    └── Phones[]
+```
+
 ---
 
 ## 4. Mapper Rules
@@ -75,8 +94,9 @@ Repositories never return response DTOs.
 A mapper may:
 
 ```text
-convert request DTO values into entity/value types
+convert request DTO values into entity/value types when no business decision is required
 convert entity getter values into response DTOs
+reshape entity collections into nested response structures
 construct error metadata from known service context
 map a real persistence model into an entity
 ```
@@ -91,6 +111,7 @@ generate IDs
 read the current clock
 perform authorization
 validate business policy
+normalize values when normalization is a business/application rule
 choose lifecycle/status transitions
 decide version increments
 choose HTTP status codes
@@ -105,36 +126,42 @@ Those decisions remain in the owning service or transport layer.
 
 When an entity encapsulates its fields, mappers must read it through entity getters.
 
-Correct:
+Example:
 
 ```go
 func ToPersonResponse(person entity.Person) response.Person {
     return response.Person{
-        GID:       string(person.GetGID()),
-        Status:    string(person.GetStatus()),
-        Version:   person.GetVersion(),
-        CreatedAt: person.GetCreatedAt(),
-        UpdatedAt: person.GetUpdatedAt(),
+        GID:        string(person.GetGID()),
+        FirstName:  person.GetFirstName(),
+        MiddleName: person.GetMiddleName(),
+        LastName:   person.GetLastName(),
+        Status:     string(person.GetStatus()),
+        Version:    person.GetVersion(),
+        CreatedAt:  person.GetCreatedAt(),
+        UpdatedAt:  person.GetUpdatedAt(),
     }
 }
 ```
 
-Incorrect:
+The actual Foundation mapper also reads `person.GetContacts()` and groups those entity values into response `emails[]` and `phones[]` arrays. That is a representation change and therefore belongs in the mapper.
+
+Incorrect outside the entity implementation:
 
 ```go
 person.Status = ...
 person.Version++
+person.Contacts = append(...)
 ```
 
-outside the entity implementation.
-
 Entity setters use value receivers and return a new entity copy. They do not mutate through pointer receivers.
+
+Collection getters/setters must preserve encapsulation. A collection getter returns a copy instead of exposing the entity's internal slice.
 
 Example:
 
 ```go
 updatedPerson := person.
-    SetStatus(entity.PersonStatusDeactivated).
+    SetContacts(contacts).
     SetVersion(person.GetVersion() + 1).
     SetUpdatedAt(now)
 ```
@@ -154,6 +181,10 @@ For simple entities, prefer a pure entity constructor that only assigns caller-s
 ```go
 person := entity.NewPerson(
     gid,
+    firstName,
+    middleName,
+    lastName,
+    contacts,
     entity.PersonStatusActive,
     1,
     now,
@@ -161,7 +192,7 @@ person := entity.NewPerson(
 )
 ```
 
-The constructor must not decide defaults, generate IDs, read the clock, validate business policy, or perform lifecycle transitions.
+The constructor must not decide defaults, normalize contacts, generate IDs, read the clock, validate business policy, or perform lifecycle transitions.
 
 Introduce a builder only when there is real construction complexity, such as many optional fields or repeated complex assembly across multiple callers.
 
@@ -169,7 +200,7 @@ Introduce a builder only when there is real construction complexity, such as man
 
 ## 7. Service Usage
 
-Current GroveHub application services may accept request DTOs and return response DTOs at their application boundary.
+Current GroveHub application services may accept request DTOs/shared contracts and return response DTOs/shared result contracts at their application boundary.
 
 Typical read flow:
 
@@ -188,7 +219,7 @@ response DTO
 Typical create flow:
 
 ```text
-service decides ID/defaults/time
+service validates/normalizes input and decides ID/defaults/time
    ↓
 entity pure constructor
    ↓
@@ -202,7 +233,7 @@ Typical update flow:
 ```text
 repository returns entity
    ↓
-service decides new business values
+service validates/normalizes and decides new business values
    ↓
 entity copy-setter methods return updated copy
    ↓
@@ -259,20 +290,28 @@ For the current Person implementation:
 
 ```text
 entity/person.go
-    private fields
+    private Person fields
     NewPerson(...)
     getters
     copy-setters for mutable fields
 
+entity/contact.go
+    private Contact value fields
+    NewContact(...)
+    getters
+
 mappers/person.go
     ToPersonGID(...)
     ToPersonResponse(...)
+        -> groups Contacts into emails[] / phones[]
 
 mappers/error.go
     ToPersonErrorMetadata(...)
 ```
 
-There is no `PersonBuilder`.
+There is no `PersonBuilder` and no `ContactBuilder`.
+
+Contact normalization, duplicate detection, primary validation, verification preservation, and search validation remain service responsibilities rather than mapper responsibilities.
 
 ---
 
@@ -283,10 +322,12 @@ NO direct entity -> API response serialization
 NO repository -> response DTO
 NO direct entity field reads outside entity package when getters exist
 NO direct entity field mutation outside entity package
+NO leaking mutable entity collection slices
 NO pointer-receiver setters for copy-style entities
 NO business decisions in entity setters
 NO business decisions in mappers
 NO ID/time generation in mappers
+NO contact/search normalization in mappers
 NO builder for simple field assignment
 NO pattern abstraction without real complexity
 NO ad-hoc error metadata maps outside mappers

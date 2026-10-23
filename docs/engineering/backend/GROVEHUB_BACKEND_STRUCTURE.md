@@ -4,10 +4,11 @@
 > **Applies to:** the current Go modular monolith and all new backend services/modules  
 > **Precedence:** this file is authoritative for current GroveHub service folder structure and layer responsibilities. When older examples conflict with this file, this file wins.
 
-For DTO/mapping work, also read:
+Also read when relevant:
 
 ```text
 docs/engineering/backend/MAPPER_AND_DTO_GUIDELINES.md
+docs/engineering/backend/SEARCH_API_GUIDELINES.md
 ```
 
 ---
@@ -65,7 +66,7 @@ Route
   ↓
 Controller
   ↓
-Request DTO
+Request DTO / shared contract
   ↓
 Service
   ↓
@@ -81,7 +82,7 @@ Service
   ↓
 Mapper
   ↓
-Response DTO
+Response DTO / shared result contract
   ↓
 Controller
 ```
@@ -92,48 +93,11 @@ Controller
 
 For stateful entities, prefer private fields with explicit getter methods.
 
-Example:
-
-```go
-type Person struct {
-    gid       GID
-    status    PersonStatus
-    version   int64
-    createdAt time.Time
-    updatedAt time.Time
-}
-```
-
-A pure constructor may assign values supplied by the caller:
-
-```go
-entity.NewPerson(gid, status, version, createdAt, updatedAt)
-```
-
-A pure constructor must not:
-
-```text
-generate IDs
-read the current clock
-choose business defaults
-perform validation workflows
-query repositories
-perform lifecycle/business decisions
-```
-
-Reads happen through getters when the entity exposes them:
-
-```text
-GetGID()
-GetStatus()
-GetVersion()
-GetCreatedAt()
-GetUpdatedAt()
-```
+A pure constructor may assign values supplied by the caller, but it must not generate IDs, read the current clock, choose business defaults, query repositories, perform validation workflows, or make lifecycle/business decisions.
 
 Mutable entity state must not be changed by external direct field assignment.
 
-For copy-style entities, setters use **value receivers** and return a new copied entity:
+For copy-style entities, setters use value receivers and return a new copied entity:
 
 ```go
 func (person Person) SetStatus(status PersonStatus) Person {
@@ -142,33 +106,45 @@ func (person Person) SetStatus(status PersonStatus) Person {
 }
 ```
 
-The setter only assigns a caller-supplied value. It must not decide whether the transition is allowed or what value should be used.
+The setter only assigns the caller-supplied value. Business decisions remain in `services/`.
 
-Business decisions remain in `services/`.
+Collection getters and setters must preserve encapsulation. A getter such as `GetContacts()` returns a copy rather than exposing the entity's internal slice for mutation.
 
 For immutable identity/history fields such as GID and creation time, do not expose setters unless a real business requirement exists.
 
 Entities must not contain repository/database access, HTTP/gRPC behavior, ID generation, clock reads, authorization, or workflow orchestration.
 
-### 3.2 DTO
+### 3.2 DTO and Shared Contract
 
-Current DTO structure:
+Current service DTO structure:
 
 ```text
 dto/request/
 dto/response/
 ```
 
-DTOs contain data only.
+DTOs contain transport/application data only.
 
-Request DTOs represent application/transport input. Response DTOs represent intentional application/public output and error metadata shapes.
+Cross-service generic contracts may live under:
+
+```text
+backend/libs/core/contracts/<contract>/
+```
+
+Example:
+
+```text
+backend/libs/core/contracts/search/
+```
+
+Shared contracts define reusable boundary shapes only. They do not own service-specific field names, SQL, tables, business validation, or repository behavior.
 
 Rules:
 
 ```text
-NO business logic in DTOs
-NO repository/database access in DTOs
-NO UUID/time generation in DTOs
+NO business logic in DTOs/contracts
+NO repository/database access in DTOs/contracts
+NO UUID/time generation in DTOs/contracts
 NO entity serialized directly as a public response
 NO repository returning response DTOs
 ```
@@ -196,7 +172,7 @@ Builders are not the default pattern. Do not create builders for simple field as
 
 ### 3.4 Repository Contract
 
-`repository/` defines persistence operations only.
+`repository/` defines persistence operations and persistence query contracts only.
 
 Prefer names such as:
 
@@ -204,6 +180,8 @@ Prefer names such as:
 Create
 FindByID
 FindByGID
+FindGIDsByContacts
+Search
 Update
 Delete
 Exists
@@ -214,9 +192,11 @@ Avoid business workflow names such as `Approve`, `Deactivate`, `Promote`, `Conve
 
 Repository-level sentinel errors may represent technical persistence outcomes. Services translate them into stable service errors.
 
+A repository may define a service-specific validated search query type. It must not accept arbitrary database field names from the public request and concatenate them into SQL.
+
 ### 3.5 PostgreSQL Repository
 
-`repository/postgres/` owns SQL, query parameters, row scanning, PostgreSQL errors, and technical row-count handling.
+`repository/postgres/` owns SQL, query parameters, row scanning, PostgreSQL errors, technical row-count handling, transactions required to persist one aggregate consistently, and service-owned query/index behavior.
 
 If entity fields are private, scan database columns into local variables and construct the entity through its pure constructor.
 
@@ -228,11 +208,11 @@ SQL row
 entity.NewPerson(...)
 ```
 
-Do not mutate private entity state from the repository.
-
 When writing an entity, use getters.
 
-Do not create generic `repository/postgres/entity.go` by default. Add a resource-specific persistence model only when the stored shape genuinely differs from the domain entity.
+Dynamic search/filter/sort SQL must use a server-owned allowlist and parameterized values. Raw client field strings must never become SQL identifiers or expressions.
+
+Do not create generic `repository/postgres/entity.go` by default. Add a persistence model only when the stored shape genuinely differs from the domain entity.
 
 ### 3.6 Services
 
@@ -242,6 +222,7 @@ Do not create generic `repository/postgres/entity.go` by default. Add a resource
 validation rules
 business defaults
 ID generation
+normalization
 status/lifecycle decisions
 version changes
 timestamp decisions
@@ -250,22 +231,15 @@ transaction/use-case orchestration
 repository coordination
 cross-service client orchestration
 translation of repository errors into stable service errors
+search field/operator validation
+cursor validation/encoding semantics
 ```
 
-The service chooses the values of a state transition, then uses entity copy-setters to produce a new entity value.
-
-Example:
-
-```go
-updatedPerson := person.
-    SetStatus(entity.PersonStatusDeactivated).
-    SetVersion(person.GetVersion() + 1).
-    SetUpdatedAt(now)
-```
-
-The original `person` value remains unchanged.
+The service chooses values for a state transition, then uses entity copy-setters to produce a new entity value.
 
 The service depends on repository contracts, not concrete PostgreSQL implementations.
+
+For search, the service converts the shared contract into a validated service-specific repository query before persistence code sees it.
 
 ### 3.7 Controller
 
@@ -273,34 +247,15 @@ The service depends on repository contracts, not concrete PostgreSQL implementat
 
 ```text
 read route/body/query/header input
-bind request DTO
+bind request DTO/shared contract
 call service
 select HTTP status
-write response DTO or normalized service error
+write response DTO/shared result or normalized service error
 ```
 
 Controllers must not access repositories/databases directly, own business rules, mutate entities, or build response DTO fields manually when a mapper exists.
 
-Resource-specific transport helpers belong in the same controller file as private/unexported methods when they are used only by that controller.
-
-Example:
-
-```go
-func (controller *PersonController) writeError(...) { ... }
-func (controller *PersonController) errorHTTPStatus(...) int { ... }
-```
-
-Do **not** create files such as:
-
-```text
-controller/error.go
-controller/helpers.go
-controller/common.go
-```
-
-for logic that belongs only to one resource controller.
-
-Extract a shared controller helper only after multiple controllers have a real common transport concern. Shared extraction must reduce actual duplication; it must not be created speculatively.
+Resource-specific controller helpers stay private in the resource controller file. Do not create `controller/error.go`, `controller/helpers.go`, or `controller/common.go` for behavior used by only one resource. Extract shared controller infrastructure only after multiple real controllers share the concern.
 
 ### 3.8 Routes
 
@@ -326,6 +281,14 @@ entity + mappers + repository contracts
           repository/postgres
 ```
 
+Shared technical/application contracts may be imported by service layers without reversing ownership:
+
+```text
+libs/core/contracts/search
+        ↓
+controller + services + repository query types as needed
+```
+
 Forbidden:
 
 ```text
@@ -333,25 +296,59 @@ entity -> repository/services/controller
 mapper -> repository/database/network
 repository -> services/controller
 controller -> repository/database
+shared contract -> service-specific SQL/business rules
 ```
 
 ---
 
-## 5. Foundation Example
+## 5. Foundation Person Aggregate
+
+Foundation exposes Person as one aggregate.
+
+```text
+Person
+├── GID
+├── FirstName
+├── MiddleName
+├── LastName
+├── Contacts
+│   ├── Emails[]
+│   └── Phones[]
+├── Status
+├── Version
+├── CreatedAt
+└── UpdatedAt
+```
+
+Contacts are nested values, not separately addressable API resources.
+
+Public rules:
+
+```text
+NO public contactId
+NO /foundation/persons/{gid}/contacts endpoint
+GET Person returns names + all contacts
+PATCH Person updates names and/or replaces the complete contact set when contacts is supplied
+Deactivate preserves the aggregate and contact history
+isVerified is Foundation-controlled, not client-controlled
+```
+
+Persistence may normalize contacts into `foundation.person_contacts` for indexing, uniqueness, and query performance. The storage table does not create a separate public Contact resource.
+
+Current Foundation layout includes:
 
 ```text
 backend/services/foundation/
-├── constants/
-│   └── error/
-│       └── person.go
+├── api/openapi/v1/openapi.yaml
+├── constants/error/person.go
 ├── dto/
-│   ├── request/
-│   │   └── person.go
+│   ├── request/person.go
 │   └── response/
 │       ├── person.go
 │       └── error.go
 ├── entity/
 │   ├── gid.go
+│   ├── contact.go
 │   └── person.go
 ├── mappers/
 │   ├── person.go
@@ -359,36 +356,97 @@ backend/services/foundation/
 ├── repository/
 │   ├── person.go
 │   └── postgres/
-│       └── person.go
+│       ├── person.go
+│       └── person_search.go
 ├── services/
-│   └── person.go
+│   ├── person.go
+│   └── person_search.go
 ├── controller/
-│   └── person.go                 # handler methods + private person transport/error helpers
-├── routes/
-│   └── http.go
+│   └── person.go
+├── routes/http.go
 ├── migrations/
 └── tests/
 ```
 
-Current Foundation `Person` rules:
+Current Foundation Person rules:
 
 ```text
 fields are private
 reads use getters
-NewPerson only assigns supplied values
-SetStatus/SetVersion/SetUpdatedAt return copies
-GID/CreatedAt have no setters
-repository reads/writes through constructor/getters
-service chooses all business transition values
+collection getters return copies
+NewPerson/NewContact only assign supplied values
+copy setters mutate Person state without deciding business policy
+repository reads/writes through constructors/getters
+service chooses business transitions, normalization, verification defaults, and version changes
 mappers convert representations only
-person-specific HTTP/error mapping stays private in controller/person.go
 ```
 
 Foundation tests are added together after the Foundation flow is complete for the current implementation phase.
 
 ---
 
-## 6. Error Contract
+## 6. Foundation Contact Uniqueness
+
+Foundation owns canonical contact values for the human.
+
+Exact normalized email/phone values are structured persistence invariants:
+
+```text
+(type, normalized_value) is globally unique inside Foundation
+```
+
+Create behavior:
+
+```text
+normalize submitted email/phone
+        ↓
+exact indexed lookup
+        ↓
+one existing GID -> return existing Person, do not create a new GID
+multiple GIDs -> stable conflict error
+no GID -> create new Person
+```
+
+The database unique index remains the final race-safety guard.
+
+Do not use `search_details` or generic `/search` for duplicate prevention.
+
+---
+
+## 7. Search API
+
+All GroveHub search work must follow:
+
+```text
+docs/engineering/backend/SEARCH_API_GUIDELINES.md
+```
+
+Shared contract:
+
+```text
+backend/libs/core/contracts/search/
+```
+
+Foundation exposes:
+
+```text
+POST /foundation/persons/search
+```
+
+Foundation uses:
+
+```text
+structured exact contact indexes -> uniqueness / duplicate lookup
+persons.search_details + indexed partial matching -> human-friendly searchText
+service-owned filter/sort allowlists -> safe structured search
+opaque keyset cursor -> pagination
+```
+
+`search_details` is derived data and must be refreshed transactionally whenever names or contacts change.
+
+---
+
+## 8. Error Contract
 
 Service semantic error definitions live under:
 
@@ -398,22 +456,26 @@ constants/error/<resource>.go
 
 Business services return typed `coreerrors.Error` values. Raw PostgreSQL/driver errors must not become API contracts.
 
-Error metadata is converted by `mappers/error.go` and attached to the typed application error.
+Error metadata is converted by `mappers/error.go` and attached to typed application errors when needed.
 
 HTTP status remains a controller decision.
-
-Resource-specific HTTP error mapping belongs as private methods in that resource controller file. Do not create a separate controller error file for one resource.
 
 Do not duplicate the shared HTTP error response envelope inside each service.
 
 ---
 
-## 7. Shared Technical Libraries
+## 9. Shared Technical Libraries
 
 Cross-service technical capabilities belong under:
 
 ```text
 backend/libs/core/<capability>/
+```
+
+Reusable boundary contracts belong under:
+
+```text
+backend/libs/core/contracts/<contract>/
 ```
 
 Small stateless helpers use focused packages:
@@ -429,32 +491,37 @@ libs/core/errors
 libs/core/dto
 libs/core/http
 libs/core/database/postgres
+libs/core/contracts/search
 libs/core/helpers/id
 libs/core/telemetry
 ```
 
 ---
 
-## 8. Agent Hard Rules
+## 10. Agent Hard Rules
 
 ```text
 NO src/ wrapper in GroveHub services
 NO service-local launcher/
 NO exported mutable entity fields for stateful entities when encapsulation is established
 NO direct entity field mutation outside the entity package
+NO leaking mutable entity collection slices
 NO pointer-receiver setters for copy-style entities
 NO business decisions inside entity setters/constructors
 NO repository/database access in entities
-NO business logic in DTOs
+NO business logic in DTOs/shared contracts
 NO business logic in mappers
 NO business logic in repositories
 NO repository/database access from controllers
 NO direct entity serialization as public API response
 NO repository returning response DTOs
 NO builder for simple field assignment
-NO separate controller error/helper/common file for one resource-only concern
 NO raw PostgreSQL/driver errors as API response contracts
 NO duplicate per-service HTTP error response schema
+NO raw client field/sort strings concatenated into SQL
+NO offset/page-number pagination in the shared search contract
+NO search projection as source of truth for uniqueness
+NO separate public Contact resource for current Foundation Person aggregate
 ```
 
-If an older generic document conflicts with these rules, this GroveHub standard and `MAPPER_AND_DTO_GUIDELINES.md` win.
+If an older generic document conflicts with these rules, this GroveHub standard, `MAPPER_AND_DTO_GUIDELINES.md`, and `SEARCH_API_GUIDELINES.md` win.
