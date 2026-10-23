@@ -2,10 +2,13 @@ package postgres
 
 import (
 	"context"
+	"errors"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"grovehub/services/foundation/entity"
+	foundationrepository "grovehub/services/foundation/repository"
 )
 
 type PersonRepository struct {
@@ -49,6 +52,9 @@ func (repository *PersonRepository) FindByGID(ctx context.Context, gid entity.GI
 		&person.CreatedAt,
 		&person.UpdatedAt,
 	)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return entity.Person{}, foundationrepository.ErrPersonNotFound
+	}
 	if err != nil {
 		return entity.Person{}, err
 	}
@@ -60,7 +66,7 @@ func (repository *PersonRepository) FindByGID(ctx context.Context, gid entity.GI
 }
 
 func (repository *PersonRepository) Update(ctx context.Context, person entity.Person) error {
-	_, err := repository.pool.Exec(
+	result, err := repository.pool.Exec(
 		ctx,
 		`UPDATE foundation.persons
 		 SET status = $2,
@@ -72,17 +78,29 @@ func (repository *PersonRepository) Update(ctx context.Context, person entity.Pe
 		person.Version,
 		person.UpdatedAt,
 	)
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected() == 0 {
+		return foundationrepository.ErrPersonNotFound
+	}
 
-	return err
+	return nil
 }
 
 func (repository *PersonRepository) Delete(ctx context.Context, gid entity.GID) error {
-	_, err := repository.pool.Exec(
+	result, err := repository.pool.Exec(
 		ctx,
 		`DELETE FROM foundation.persons
 		 WHERE gid = $1`,
 		string(gid),
 	)
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected() == 0 {
+		return foundationrepository.ErrPersonNotFound
+	}
 
-	return err
+	return nil
 }

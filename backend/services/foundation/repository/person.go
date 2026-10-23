@@ -2,9 +2,12 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"grovehub/services/foundation/entity"
 )
+
+var ErrPersonNotFound = errors.New("person not found")
 
 type PersonRepository interface {
 	Create(ctx context.Context, person entity.Person) error
