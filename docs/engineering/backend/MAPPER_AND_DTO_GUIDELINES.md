@@ -8,19 +8,22 @@
 
 ## 1. Purpose
 
-All object-to-object transformation belongs in the owning service `mappers/` package.
+Use `mappers/` only for real representation changes.
 
 Examples:
 
 ```text
 request DTO -> entity/value
 entity -> response DTO
-existing entity -> updated entity construction
 error context -> error metadata DTO
 persistence model -> entity, only when a separate persistence model actually exists
 ```
 
-Do not spread field-by-field mapping across controllers, services, repositories, or routes.
+Do not add mapping abstractions when no representation change exists.
+
+Creating a new entity from values already decided by the service is not automatically a mapper responsibility.
+
+Changing business state on an existing entity is business logic and belongs in `services/`.
 
 ---
 
@@ -69,14 +72,13 @@ Repositories never return response DTOs.
 
 ## 4. Mapper Rules
 
-`mappers/` owns pure transformation/construction code.
+`mappers/` owns pure representation transformation code.
 
 A mapper may:
 
 ```text
 convert request DTO values into entity/value types
 convert entity values into response DTOs
-copy one entity into a builder for an updated entity
 construct error metadata from known service context
 map a real persistence model into an entity
 ```
@@ -100,44 +102,44 @@ Those decisions remain in the owning service or transport layer.
 
 ---
 
-## 5. Builder Pattern
+## 5. Builder Rule
 
-When an entity/DTO has multiple fields or is constructed in more than one use case, prefer a focused builder in the mapper package.
+Builders are **not** the default GroveHub mapping pattern.
 
-Example:
+Do not create a builder for a simple entity merely because it has several fields.
+
+For simple business-owned entity construction, construct the entity directly in the service where the values are decided:
 
 ```go
-person := mappers.NewPersonBuilder().
-    WithGID(gid).
-    WithStatus(entity.PersonStatusActive).
-    WithVersion(1).
-    WithCreatedAt(now).
-    WithUpdatedAt(now).
-    Build()
+person := entity.Person{
+    GID:       gid,
+    Status:    entity.PersonStatusActive,
+    Version:   1,
+    CreatedAt: now,
+    UpdatedAt: now,
+}
 ```
 
-The builder only assigns values supplied by the caller.
+For a business state transition, update the entity directly in the service:
 
-The builder must not silently choose defaults such as:
+```go
+person.Status = entity.PersonStatusDeactivated
+person.Version++
+person.UpdatedAt = now
+```
+
+Introduce a builder only when there is a real complexity that justifies it, such as:
 
 ```text
-ACTIVE
-version = 1
-current time
-new UUID
+many optional fields
+repeated complex construction across multiple callers
+ordered/conditional assembly that remains non-business transformation logic
+construction that is otherwise difficult to read or maintain
 ```
 
-The service owns those business/default decisions and passes the values into the builder.
+A builder must never be added only to satisfy a pattern.
 
-For updates, prefer copying an existing entity and changing only values chosen by the service:
-
-```go
-updated := mappers.NewPersonBuilderFrom(person).
-    WithStatus(entity.PersonStatusDeactivated).
-    WithVersion(person.Version + 1).
-    WithUpdatedAt(now).
-    Build()
-```
+If a builder is introduced later, it still must not own business defaults, ID generation, clocks, validation policy, or lifecycle decisions.
 
 ---
 
@@ -145,11 +147,11 @@ updated := mappers.NewPersonBuilderFrom(person).
 
 Current GroveHub application services may accept request DTOs and return response DTOs at their application boundary.
 
-Inside the service:
+Typical read flow:
 
 ```text
 request DTO
-   ↓ mapper
+   ↓ mapper when conversion is needed
 entity/value
    ↓ business logic
 repository
@@ -157,6 +159,18 @@ repository
 mapper
    ↓
 response DTO
+```
+
+Typical create flow when there is no client-controlled entity payload:
+
+```text
+service decides ID/defaults/time
+   ↓
+service constructs entity directly
+   ↓
+repository
+   ↓
+mapper.To<Resource>Response
 ```
 
 Business decisions must remain visible in the service.
@@ -167,7 +181,8 @@ Correct:
 service chooses ACTIVE
 service chooses version 1
 service chooses now
-mapper builds Person with those supplied values
+service constructs/updates Person
+mapper converts Person -> response DTO
 ```
 
 Incorrect:
@@ -177,6 +192,7 @@ mapper decides ACTIVE
 mapper decides version 1
 mapper calls time.Now()
 mapper generates UUID
+builder added only to wrap field assignment
 ```
 
 ---
@@ -243,6 +259,15 @@ backend/services/foundation/
     └── person.go
 ```
 
+For the current Person implementation, `mappers/person.go` only needs real conversions such as:
+
+```go
+ToPersonGID(...)
+ToPersonResponse(...)
+```
+
+It does not need a `PersonBuilder`.
+
 Foundation tests are added together after the Foundation flow is complete for the current implementation phase.
 
 ---
@@ -252,10 +277,11 @@ Foundation tests are added together after the Foundation flow is complete for th
 ```text
 NO direct entity -> API response serialization
 NO repository -> response DTO
-NO field-by-field object conversion in controllers
-NO field-by-field object conversion in services when a mapper exists
+NO field-by-field representation conversion in controllers
 NO business decisions in mappers
-NO ID/time generation in builders
+NO ID/time generation in mappers
+NO builder for simple field assignment
+NO pattern abstraction without real complexity
 NO ad-hoc error metadata maps outside mappers
 NO generic mapper dumping files; group mapping by resource/responsibility
 ```
