@@ -208,7 +208,7 @@ service.CreatePerson
       ↓
 validate business input
       ↓
-generate UUIDv7 through libs/core/id
+generate UUIDv7 through libs/core/helpers/id
       ↓
 construct entity.Person data
       ↓
@@ -350,13 +350,21 @@ The launcher is the current edge/API-gateway boundary and starts the top-level H
 
 ---
 
-## 8. Shared Technical Libraries
+## 8. Shared Technical Libraries and Helpers
 
-Cross-service technical primitives belong under:
+Cross-service technical capabilities belong under:
 
 ```text
 backend/libs/core/<capability>/
 ```
+
+Small stateless reusable helpers belong under a named helper package:
+
+```text
+backend/libs/core/helpers/<helper>/
+```
+
+`helpers/` must never become a dumping ground. Every helper gets a focused subpackage named for one technical responsibility.
 
 Examples:
 
@@ -364,24 +372,26 @@ Examples:
 libs/core/errors
 libs/core/dto
 libs/core/http
-libs/core/id
+libs/core/helpers/id
 libs/core/telemetry
 ```
 
 Shared business/domain concepts do not belong in `libs/core` merely because more than one service might eventually use them.
 
-UUID generation is a technical capability and belongs in:
+UUID generation is a stateless technical helper and belongs in:
 
 ```text
-backend/libs/core/id/
+backend/libs/core/helpers/id/
 ```
 
-Business services may use that capability to generate IDs before persistence.
+The GroveHub helper should expose a small stable wrapper API and delegate UUID algorithm details to the selected UUID library. Application code must not reimplement UUID bit layout, timestamp encoding, randomness layout, or text formatting.
 
-Owner-local core tests live under:
+Business services may use the ID helper to generate IDs before persistence.
+
+Owner-local core tests mirror the production path:
 
 ```text
-backend/libs/core/tests/unit-test/<mirrored-path>/
+backend/libs/core/tests/unit-test/helpers/id/
 ```
 
 ---
@@ -435,6 +445,7 @@ services/            -> tests/unit-test/services/
 controller/          -> tests/unit-test/controller/
 repository/          -> tests/unit-test/repository/
 repository/postgres/ -> tests/unit-test/repository/postgres/
+helpers/id/          -> tests/unit-test/helpers/id/
 ```
 
 Pure data-only entities do not require meaningless tests merely to test struct fields.
@@ -459,7 +470,8 @@ business rule/use case             -> services/
 HTTP/gRPC transport                -> controller/
 route registration                 -> routes/
 service-owned schema               -> migrations/
-shared technical primitive         -> libs/core/<capability>/
+shared technical capability        -> libs/core/<capability>/
+small stateless technical helper   -> libs/core/helpers/<helper>/
 root platform composition          -> backend/launcher/
 owner-local unit tests             -> tests/unit-test/<mirrored path>/
 ```
@@ -473,6 +485,7 @@ NO business logic in repository/
 NO repository/database access from controller/
 NO business logic in routes/
 NO service-local launcher/
+NO generic files directly inside libs/core/helpers/; use a focused helper subpackage
 ```
 
 If an older generic document shows a conflicting structure or places business behavior in entities/repositories, this GroveHub standard wins.
