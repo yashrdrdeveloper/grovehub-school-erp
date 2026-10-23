@@ -14,11 +14,34 @@ var (
 	ErrInvalidPersonSearchQuery   = errors.New("invalid person search query")
 )
 
-type PersonSearchFilter struct { Field string; Operator searchcontract.Operator; Values []string }
-type PersonSearchSort struct { Field string; Direction searchcontract.Direction }
-type PersonSearchCursor struct { Value string; GID entity.GID }
-type PersonSearchQuery struct { SearchTerms []string; Filters []PersonSearchFilter; Sort PersonSearchSort; Cursor *PersonSearchCursor; Limit int }
-type PersonSearchResult struct { Persons []entity.Person; HasNext bool }
+type PersonSearchFilter struct {
+	Field    string
+	Operator searchcontract.Operator
+	Values   []string
+}
+
+type PersonSearchSort struct {
+	Field     string
+	Direction searchcontract.Direction
+}
+
+type PersonSearchCursor struct {
+	Value string
+	GID   entity.GID
+}
+
+type PersonSearchQuery struct {
+	SearchTerms []string
+	Filters     []PersonSearchFilter
+	Sort        PersonSearchSort
+	Cursor      *PersonSearchCursor
+	Limit       int
+}
+
+type PersonSearchResult struct {
+	Persons []entity.Person
+	HasNext bool
+}
 
 type PersonRepository interface {
 	Create(ctx context.Context, person entity.Person) error

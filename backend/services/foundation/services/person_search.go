@@ -19,20 +19,418 @@ import (
 	foundationrepository "grovehub/services/foundation/repository"
 )
 
-const(maxSearchTextLength=256;maxSearchTerms=10;maxSearchFilters=20;maxFilterValues=50)
-type personSearchCursorPayload struct{SortField string `json:"field"`;Direction searchcontract.Direction `json:"direction"`;Value string `json:"value"`;GID string `json:"gid"`}
-var personSearchOperators=map[string]map[searchcontract.Operator]struct{}{"gid":operatorSet(searchcontract.OperatorEquals,searchcontract.OperatorNotEquals,searchcontract.OperatorIn,searchcontract.OperatorNotIn),"firstName":operatorSet(searchcontract.OperatorEquals,searchcontract.OperatorNotEquals,searchcontract.OperatorIn,searchcontract.OperatorNotIn,searchcontract.OperatorExists,searchcontract.OperatorNotExists,searchcontract.OperatorContains,searchcontract.OperatorStartsWith),"middleName":operatorSet(searchcontract.OperatorEquals,searchcontract.OperatorNotEquals,searchcontract.OperatorIn,searchcontract.OperatorNotIn,searchcontract.OperatorExists,searchcontract.OperatorNotExists,searchcontract.OperatorContains,searchcontract.OperatorStartsWith),"lastName":operatorSet(searchcontract.OperatorEquals,searchcontract.OperatorNotEquals,searchcontract.OperatorIn,searchcontract.OperatorNotIn,searchcontract.OperatorExists,searchcontract.OperatorNotExists,searchcontract.OperatorContains,searchcontract.OperatorStartsWith),"status":operatorSet(searchcontract.OperatorEquals,searchcontract.OperatorNotEquals,searchcontract.OperatorIn,searchcontract.OperatorNotIn),"createdAt":operatorSet(searchcontract.OperatorEquals,searchcontract.OperatorGreaterThan,searchcontract.OperatorGTE,searchcontract.OperatorLessThan,searchcontract.OperatorLTE),"updatedAt":operatorSet(searchcontract.OperatorEquals,searchcontract.OperatorGreaterThan,searchcontract.OperatorGTE,searchcontract.OperatorLessThan,searchcontract.OperatorLTE),"contacts.email":contactOperatorSet(),"contacts.phone":contactOperatorSet(),"contacts.primaryEmail":contactOperatorSet(),"contacts.primaryPhone":contactOperatorSet(),"contacts.verifiedEmail":contactOperatorSet(),"contacts.verifiedPhone":contactOperatorSet()}
-var personSearchSortFields=map[string]struct{}{"gid":{},"firstName":{},"lastName":{},"createdAt":{},"updatedAt":{}}
-func (service *PersonService) Search(ctx context.Context,request searchcontract.Request)(searchcontract.Result[foundationresponse.Person],error){query,cursorPayload,err:=normalizePersonSearchRequest(request);if err!=nil{return searchcontract.Result[foundationresponse.Person]{},err};result,err:=service.repository.Search(ctx,query);if err!=nil{if errors.Is(err,foundationrepository.ErrInvalidPersonSearchQuery){return searchcontract.Result[foundationresponse.Person]{},coreerrors.NewError(personerror.InvalidPersonSearch)};return searchcontract.Result[foundationresponse.Person]{},coreerrors.Wrap(personerror.PersonSearchFailed,err)};items:=make([]foundationresponse.Person,0,len(result.Persons));for _,person:=range result.Persons{items=append(items,mappers.ToPersonResponse(person))};nextCursor:="";if result.HasNext&&len(result.Persons)>0{last:=result.Persons[len(result.Persons)-1];cursorPayload.Value=personCursorValue(last,query.Sort.Field);cursorPayload.GID=string(last.GetGID());nextCursor,err=encodePersonSearchCursor(cursorPayload);if err!=nil{return searchcontract.Result[foundationresponse.Person]{},coreerrors.Wrap(personerror.PersonSearchFailed,err)}};return searchcontract.Result[foundationresponse.Person]{Items:items,PageInfo:searchcontract.PageResponse{Rows:query.Limit,NextCursor:nextCursor,HasNext:result.HasNext}},nil}
-func normalizePersonSearchRequest(request searchcontract.Request)(foundationrepository.PersonSearchQuery,personSearchCursorPayload,error){searchText:=strings.TrimSpace(request.SearchText);if len(searchText)>maxSearchTextLength{return foundationrepository.PersonSearchQuery{},personSearchCursorPayload{},invalidPersonSearch()};terms:=strings.Fields(strings.ToLower(searchText));if len(terms)>maxSearchTerms||len(request.Filters)>maxSearchFilters{return foundationrepository.PersonSearchQuery{},personSearchCursorPayload{},invalidPersonSearch()};rows:=request.PageInfo.Rows;if rows==0{rows=searchcontract.DefaultRows};if rows<1||rows>searchcontract.MaxRows{return foundationrepository.PersonSearchQuery{},personSearchCursorPayload{},invalidPersonSearch()};sort:=foundationrepository.PersonSearchSort{Field:"createdAt",Direction:searchcontract.DirectionDescending};if len(request.Sort)>1{return foundationrepository.PersonSearchQuery{},personSearchCursorPayload{},invalidPersonSearch()};if len(request.Sort)==1{sort.Field=strings.TrimSpace(request.Sort[0].Field);sort.Direction=request.Sort[0].Direction;if sort.Direction==""{sort.Direction=searchcontract.DirectionDescending}};if _,ok:=personSearchSortFields[sort.Field];!ok{return foundationrepository.PersonSearchQuery{},personSearchCursorPayload{},invalidPersonSearch()};if sort.Direction!=searchcontract.DirectionAscending&&sort.Direction!=searchcontract.DirectionDescending{return foundationrepository.PersonSearchQuery{},personSearchCursorPayload{},invalidPersonSearch()};filters:=make([]foundationrepository.PersonSearchFilter,0,len(request.Filters));for _,filter:=range request.Filters{nf,err:=normalizePersonSearchFilter(filter);if err!=nil{return foundationrepository.PersonSearchQuery{},personSearchCursorPayload{},err};filters=append(filters,nf)};payload:=personSearchCursorPayload{SortField:sort.Field,Direction:sort.Direction};var cursor *foundationrepository.PersonSearchCursor;if strings.TrimSpace(request.PageInfo.Cursor)!=""{decoded,err:=decodePersonSearchCursor(request.PageInfo.Cursor);if err!=nil||decoded.SortField!=sort.Field||decoded.Direction!=sort.Direction{return foundationrepository.PersonSearchQuery{},personSearchCursorPayload{},coreerrors.NewError(personerror.InvalidPersonSearchCursor)};if err:=validatePersonSearchCursorValue(decoded);err!=nil{return foundationrepository.PersonSearchQuery{},personSearchCursorPayload{},err};payload=decoded;cursor=&foundationrepository.PersonSearchCursor{Value:decoded.Value,GID:entity.GID(decoded.GID)}};return foundationrepository.PersonSearchQuery{SearchTerms:terms,Filters:filters,Sort:sort,Cursor:cursor,Limit:rows},payload,nil}
-func normalizePersonSearchFilter(filter searchcontract.Filter)(foundationrepository.PersonSearchFilter,error){field:=strings.TrimSpace(filter.Field);allowed,ok:=personSearchOperators[field];if !ok{return foundationrepository.PersonSearchFilter{},invalidPersonSearch()};if _,ok:=allowed[filter.Operator];!ok{return foundationrepository.PersonSearchFilter{},invalidPersonSearch()};if len(filter.Values)>maxFilterValues||!validSearchValueCount(filter.Operator,len(filter.Values)){return foundationrepository.PersonSearchFilter{},invalidPersonSearch()};values:=make([]string,0,len(filter.Values));for _,value:=range filter.Values{normalized,err:=normalizePersonSearchFilterValue(field,filter.Operator,value);if err!=nil{return foundationrepository.PersonSearchFilter{},err};values=append(values,normalized)};return foundationrepository.PersonSearchFilter{Field:field,Operator:filter.Operator,Values:values},nil}
-func normalizePersonSearchFilterValue(field string,operator searchcontract.Operator,value string)(string,error){trimmed:=strings.TrimSpace(value);if trimmed==""{return"",invalidPersonSearch()};switch field{case"gid":parsed,err:=uuid.Parse(trimmed);if err!=nil||parsed==uuid.Nil||parsed.Version()!=uuid.Version(7){return"",invalidPersonSearch()};return parsed.String(),nil;case"firstName","middleName","lastName":return strings.ToLower(trimmed),nil;case"status":status:=strings.ToUpper(trimmed);if status!=string(entity.PersonStatusActive)&&status!=string(entity.PersonStatusDeactivated){return"",invalidPersonSearch()};return status,nil;case"createdAt","updatedAt":parsed,err:=time.Parse(time.RFC3339,trimmed);if err!=nil{return"",invalidPersonSearch()};return parsed.UTC().Format(time.RFC3339Nano),nil;case"contacts.email","contacts.primaryEmail","contacts.verifiedEmail":if operator==searchcontract.OperatorContains||operator==searchcontract.OperatorStartsWith{return strings.ToLower(trimmed),nil};return normalizeEmail(trimmed);case"contacts.phone","contacts.primaryPhone","contacts.verifiedPhone":if operator==searchcontract.OperatorContains||operator==searchcontract.OperatorStartsWith{return normalizePhoneSearchValue(trimmed)};return normalizePhone(trimmed);default:return"",invalidPersonSearch()}}
-func validatePersonSearchCursorValue(cursor personSearchCursorPayload)error{parsedGID,err:=uuid.Parse(cursor.GID);if err!=nil||parsedGID==uuid.Nil||parsedGID.Version()!=uuid.Version(7){return coreerrors.NewError(personerror.InvalidPersonSearchCursor)};switch cursor.SortField{case"gid":parsed,err:=uuid.Parse(cursor.Value);if err!=nil||parsed==uuid.Nil||parsed.Version()!=uuid.Version(7){return coreerrors.NewError(personerror.InvalidPersonSearchCursor)};case"createdAt","updatedAt":if _,err:=time.Parse(time.RFC3339Nano,cursor.Value);err!=nil{return coreerrors.NewError(personerror.InvalidPersonSearchCursor)};case"firstName","lastName":if strings.TrimSpace(cursor.Value)==""{return coreerrors.NewError(personerror.InvalidPersonSearchCursor)};default:return coreerrors.NewError(personerror.InvalidPersonSearchCursor)};return nil}
-func personCursorValue(person entity.Person,field string)string{switch field{case"gid":return string(person.GetGID());case"firstName":return strings.ToLower(person.GetFirstName());case"lastName":return strings.ToLower(person.GetLastName());case"updatedAt":return person.GetUpdatedAt().UTC().Format(time.RFC3339Nano);default:return person.GetCreatedAt().UTC().Format(time.RFC3339Nano)}}
-func encodePersonSearchCursor(cursor personSearchCursorPayload)(string,error){payload,err:=json.Marshal(cursor);if err!=nil{return"",err};return base64.RawURLEncoding.EncodeToString(payload),nil}
-func decodePersonSearchCursor(value string)(personSearchCursorPayload,error){payload,err:=base64.RawURLEncoding.DecodeString(value);if err!=nil{return personSearchCursorPayload{},err};var cursor personSearchCursorPayload;if err:=json.Unmarshal(payload,&cursor);err!=nil{return personSearchCursorPayload{},err};return cursor,nil}
-func validSearchValueCount(operator searchcontract.Operator,count int)bool{switch operator{case searchcontract.OperatorExists,searchcontract.OperatorNotExists:return count==0;case searchcontract.OperatorIn,searchcontract.OperatorNotIn:return count>0;default:return count==1}}
-func normalizePhoneSearchValue(value string)(string,error){b:=strings.Builder{};for index,ch:=range value{switch{case ch=='+'&&index==0:b.WriteRune(ch);case ch>='0'&&ch<='9':b.WriteRune(ch);case ch==' '||ch=='-'||ch=='('||ch==')':continue;default:return"",invalidPersonSearch()}};if b.Len()==0{return"",invalidPersonSearch()};return b.String(),nil}
-func invalidPersonSearch()error{return coreerrors.NewError(personerror.InvalidPersonSearch)}
-func operatorSet(operators ...searchcontract.Operator)map[searchcontract.Operator]struct{}{set:=make(map[searchcontract.Operator]struct{},len(operators));for _,operator:=range operators{set[operator]=struct{}{}};return set}
-func contactOperatorSet()map[searchcontract.Operator]struct{}{return operatorSet(searchcontract.OperatorEquals,searchcontract.OperatorNotEquals,searchcontract.OperatorIn,searchcontract.OperatorNotIn,searchcontract.OperatorExists,searchcontract.OperatorNotExists,searchcontract.OperatorContains,searchcontract.OperatorStartsWith)}
+const (
+	maxSearchTextLength = 256
+	maxSearchTerms      = 10
+	maxSearchFilters    = 20
+	maxFilterValues     = 50
+)
+
+type personSearchCursorPayload struct {
+	SortField string                   `json:"field"`
+	Direction searchcontract.Direction `json:"direction"`
+	Value     string                   `json:"value"`
+	GID       string                   `json:"gid"`
+}
+
+var personSearchOperators = map[string]map[searchcontract.Operator]struct{}{
+	"gid": operatorSet(
+		searchcontract.OperatorEquals,
+		searchcontract.OperatorNotEquals,
+		searchcontract.OperatorIn,
+		searchcontract.OperatorNotIn,
+	),
+	"firstName": operatorSet(
+		searchcontract.OperatorEquals,
+		searchcontract.OperatorNotEquals,
+		searchcontract.OperatorIn,
+		searchcontract.OperatorNotIn,
+		searchcontract.OperatorExists,
+		searchcontract.OperatorNotExists,
+		searchcontract.OperatorContains,
+		searchcontract.OperatorStartsWith,
+	),
+	"middleName": operatorSet(
+		searchcontract.OperatorEquals,
+		searchcontract.OperatorNotEquals,
+		searchcontract.OperatorIn,
+		searchcontract.OperatorNotIn,
+		searchcontract.OperatorExists,
+		searchcontract.OperatorNotExists,
+		searchcontract.OperatorContains,
+		searchcontract.OperatorStartsWith,
+	),
+	"lastName": operatorSet(
+		searchcontract.OperatorEquals,
+		searchcontract.OperatorNotEquals,
+		searchcontract.OperatorIn,
+		searchcontract.OperatorNotIn,
+		searchcontract.OperatorExists,
+		searchcontract.OperatorNotExists,
+		searchcontract.OperatorContains,
+		searchcontract.OperatorStartsWith,
+	),
+	"status": operatorSet(
+		searchcontract.OperatorEquals,
+		searchcontract.OperatorNotEquals,
+		searchcontract.OperatorIn,
+		searchcontract.OperatorNotIn,
+	),
+	"createdAt": operatorSet(
+		searchcontract.OperatorEquals,
+		searchcontract.OperatorGreaterThan,
+		searchcontract.OperatorGTE,
+		searchcontract.OperatorLessThan,
+		searchcontract.OperatorLTE,
+	),
+	"updatedAt": operatorSet(
+		searchcontract.OperatorEquals,
+		searchcontract.OperatorGreaterThan,
+		searchcontract.OperatorGTE,
+		searchcontract.OperatorLessThan,
+		searchcontract.OperatorLTE,
+	),
+	"contacts.email":         contactOperatorSet(),
+	"contacts.phone":         contactOperatorSet(),
+	"contacts.primaryEmail":  contactOperatorSet(),
+	"contacts.primaryPhone":  contactOperatorSet(),
+	"contacts.verifiedEmail": contactOperatorSet(),
+	"contacts.verifiedPhone": contactOperatorSet(),
+}
+
+var personSearchSortFields = map[string]struct{}{
+	"gid":       {},
+	"firstName": {},
+	"lastName":  {},
+	"createdAt": {},
+	"updatedAt": {},
+}
+
+func (service *PersonService) Search(
+	ctx context.Context,
+	request searchcontract.Request,
+) (searchcontract.Result[foundationresponse.Person], error) {
+	query, cursorPayload, err := normalizePersonSearchRequest(request)
+	if err != nil {
+		return searchcontract.Result[foundationresponse.Person]{}, err
+	}
+
+	result, err := service.repository.Search(ctx, query)
+	if err != nil {
+		if errors.Is(err, foundationrepository.ErrInvalidPersonSearchQuery) {
+			return searchcontract.Result[foundationresponse.Person]{}, coreerrors.NewError(
+				personerror.InvalidPersonSearch,
+			)
+		}
+		return searchcontract.Result[foundationresponse.Person]{}, coreerrors.Wrap(
+			personerror.PersonSearchFailed,
+			err,
+		)
+	}
+
+	items := make([]foundationresponse.Person, 0, len(result.Persons))
+	for _, person := range result.Persons {
+		items = append(items, mappers.ToPersonResponse(person))
+	}
+
+	nextCursor := ""
+	if result.HasNext && len(result.Persons) > 0 {
+		lastPerson := result.Persons[len(result.Persons)-1]
+		cursorPayload.Value = personCursorValue(lastPerson, query.Sort.Field)
+		cursorPayload.GID = string(lastPerson.GetGID())
+		nextCursor, err = encodePersonSearchCursor(cursorPayload)
+		if err != nil {
+			return searchcontract.Result[foundationresponse.Person]{}, coreerrors.Wrap(
+				personerror.PersonSearchFailed,
+				err,
+			)
+		}
+	}
+
+	return searchcontract.Result[foundationresponse.Person]{
+		Items: items,
+		PageInfo: searchcontract.PageResponse{
+			Rows:       query.Limit,
+			NextCursor: nextCursor,
+			HasNext:    result.HasNext,
+		},
+	}, nil
+}
+
+func normalizePersonSearchRequest(
+	request searchcontract.Request,
+) (foundationrepository.PersonSearchQuery, personSearchCursorPayload, error) {
+	searchText := strings.TrimSpace(request.SearchText)
+	if len(searchText) > maxSearchTextLength {
+		return foundationrepository.PersonSearchQuery{}, personSearchCursorPayload{}, invalidPersonSearch()
+	}
+
+	searchTerms := strings.Fields(strings.ToLower(searchText))
+	if len(searchTerms) > maxSearchTerms || len(request.Filters) > maxSearchFilters {
+		return foundationrepository.PersonSearchQuery{}, personSearchCursorPayload{}, invalidPersonSearch()
+	}
+
+	rows := request.PageInfo.Rows
+	if rows == 0 {
+		rows = searchcontract.DefaultRows
+	}
+	if rows < 1 || rows > searchcontract.MaxRows {
+		return foundationrepository.PersonSearchQuery{}, personSearchCursorPayload{}, invalidPersonSearch()
+	}
+
+	sort := foundationrepository.PersonSearchSort{
+		Field:     "createdAt",
+		Direction: searchcontract.DirectionDescending,
+	}
+	if len(request.Sort) > 1 {
+		return foundationrepository.PersonSearchQuery{}, personSearchCursorPayload{}, invalidPersonSearch()
+	}
+	if len(request.Sort) == 1 {
+		sort.Field = strings.TrimSpace(request.Sort[0].Field)
+		sort.Direction = request.Sort[0].Direction
+		if sort.Direction == "" {
+			sort.Direction = searchcontract.DirectionDescending
+		}
+	}
+	if _, ok := personSearchSortFields[sort.Field]; !ok {
+		return foundationrepository.PersonSearchQuery{}, personSearchCursorPayload{}, invalidPersonSearch()
+	}
+	if sort.Direction != searchcontract.DirectionAscending && sort.Direction != searchcontract.DirectionDescending {
+		return foundationrepository.PersonSearchQuery{}, personSearchCursorPayload{}, invalidPersonSearch()
+	}
+
+	filters := make([]foundationrepository.PersonSearchFilter, 0, len(request.Filters))
+	for _, filter := range request.Filters {
+		normalizedFilter, err := normalizePersonSearchFilter(filter)
+		if err != nil {
+			return foundationrepository.PersonSearchQuery{}, personSearchCursorPayload{}, err
+		}
+		filters = append(filters, normalizedFilter)
+	}
+
+	cursorPayload := personSearchCursorPayload{
+		SortField: sort.Field,
+		Direction: sort.Direction,
+	}
+	var cursor *foundationrepository.PersonSearchCursor
+	if strings.TrimSpace(request.PageInfo.Cursor) != "" {
+		decoded, err := decodePersonSearchCursor(request.PageInfo.Cursor)
+		if err != nil || decoded.SortField != sort.Field || decoded.Direction != sort.Direction {
+			return foundationrepository.PersonSearchQuery{}, personSearchCursorPayload{}, coreerrors.NewError(
+				personerror.InvalidPersonSearchCursor,
+			)
+		}
+		if err := validatePersonSearchCursorValue(decoded); err != nil {
+			return foundationrepository.PersonSearchQuery{}, personSearchCursorPayload{}, err
+		}
+
+		cursorPayload = decoded
+		cursor = &foundationrepository.PersonSearchCursor{
+			Value: decoded.Value,
+			GID:   entity.GID(decoded.GID),
+		}
+	}
+
+	return foundationrepository.PersonSearchQuery{
+		SearchTerms: searchTerms,
+		Filters:     filters,
+		Sort:        sort,
+		Cursor:      cursor,
+		Limit:       rows,
+	}, cursorPayload, nil
+}
+
+func normalizePersonSearchFilter(
+	filter searchcontract.Filter,
+) (foundationrepository.PersonSearchFilter, error) {
+	field := strings.TrimSpace(filter.Field)
+	allowedOperators, ok := personSearchOperators[field]
+	if !ok {
+		return foundationrepository.PersonSearchFilter{}, invalidPersonSearch()
+	}
+	if _, ok := allowedOperators[filter.Operator]; !ok {
+		return foundationrepository.PersonSearchFilter{}, invalidPersonSearch()
+	}
+	if len(filter.Values) > maxFilterValues || !validSearchValueCount(filter.Operator, len(filter.Values)) {
+		return foundationrepository.PersonSearchFilter{}, invalidPersonSearch()
+	}
+
+	values := make([]string, 0, len(filter.Values))
+	for _, value := range filter.Values {
+		normalized, err := normalizePersonSearchFilterValue(field, filter.Operator, value)
+		if err != nil {
+			return foundationrepository.PersonSearchFilter{}, err
+		}
+		values = append(values, normalized)
+	}
+
+	return foundationrepository.PersonSearchFilter{
+		Field:    field,
+		Operator: filter.Operator,
+		Values:   values,
+	}, nil
+}
+
+func normalizePersonSearchFilterValue(
+	field string,
+	operator searchcontract.Operator,
+	value string,
+) (string, error) {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return "", invalidPersonSearch()
+	}
+
+	switch field {
+	case "gid":
+		parsed, err := uuid.Parse(trimmed)
+		if err != nil || parsed == uuid.Nil || parsed.Version() != uuid.Version(7) {
+			return "", invalidPersonSearch()
+		}
+		return parsed.String(), nil
+	case "firstName", "middleName", "lastName":
+		return strings.ToLower(trimmed), nil
+	case "status":
+		status := strings.ToUpper(trimmed)
+		if status != string(entity.PersonStatusActive) && status != string(entity.PersonStatusDeactivated) {
+			return "", invalidPersonSearch()
+		}
+		return status, nil
+	case "createdAt", "updatedAt":
+		parsed, err := time.Parse(time.RFC3339, trimmed)
+		if err != nil {
+			return "", invalidPersonSearch()
+		}
+		return parsed.UTC().Format(time.RFC3339Nano), nil
+	case "contacts.email", "contacts.primaryEmail", "contacts.verifiedEmail":
+		if operator == searchcontract.OperatorContains || operator == searchcontract.OperatorStartsWith {
+			return strings.ToLower(trimmed), nil
+		}
+		return normalizeEmail(trimmed)
+	case "contacts.phone", "contacts.primaryPhone", "contacts.verifiedPhone":
+		if operator == searchcontract.OperatorContains || operator == searchcontract.OperatorStartsWith {
+			return normalizePhoneSearchValue(trimmed)
+		}
+		return normalizePhone(trimmed)
+	default:
+		return "", invalidPersonSearch()
+	}
+}
+
+func validatePersonSearchCursorValue(cursor personSearchCursorPayload) error {
+	parsedGID, err := uuid.Parse(cursor.GID)
+	if err != nil || parsedGID == uuid.Nil || parsedGID.Version() != uuid.Version(7) {
+		return coreerrors.NewError(personerror.InvalidPersonSearchCursor)
+	}
+
+	switch cursor.SortField {
+	case "gid":
+		parsed, err := uuid.Parse(cursor.Value)
+		if err != nil || parsed == uuid.Nil || parsed.Version() != uuid.Version(7) {
+			return coreerrors.NewError(personerror.InvalidPersonSearchCursor)
+		}
+	case "createdAt", "updatedAt":
+		if _, err := time.Parse(time.RFC3339Nano, cursor.Value); err != nil {
+			return coreerrors.NewError(personerror.InvalidPersonSearchCursor)
+		}
+	case "firstName", "lastName":
+		if strings.TrimSpace(cursor.Value) == "" {
+			return coreerrors.NewError(personerror.InvalidPersonSearchCursor)
+		}
+	default:
+		return coreerrors.NewError(personerror.InvalidPersonSearchCursor)
+	}
+	return nil
+}
+
+func personCursorValue(person entity.Person, field string) string {
+	switch field {
+	case "gid":
+		return string(person.GetGID())
+	case "firstName":
+		return strings.ToLower(person.GetFirstName())
+	case "lastName":
+		return strings.ToLower(person.GetLastName())
+	case "updatedAt":
+		return person.GetUpdatedAt().UTC().Format(time.RFC3339Nano)
+	default:
+		return person.GetCreatedAt().UTC().Format(time.RFC3339Nano)
+	}
+}
+
+func encodePersonSearchCursor(cursor personSearchCursorPayload) (string, error) {
+	payload, err := json.Marshal(cursor)
+	if err != nil {
+		return "", err
+	}
+	return base64.RawURLEncoding.EncodeToString(payload), nil
+}
+
+func decodePersonSearchCursor(value string) (personSearchCursorPayload, error) {
+	payload, err := base64.RawURLEncoding.DecodeString(value)
+	if err != nil {
+		return personSearchCursorPayload{}, err
+	}
+
+	var cursor personSearchCursorPayload
+	if err := json.Unmarshal(payload, &cursor); err != nil {
+		return personSearchCursorPayload{}, err
+	}
+	return cursor, nil
+}
+
+func validSearchValueCount(operator searchcontract.Operator, count int) bool {
+	switch operator {
+	case searchcontract.OperatorExists, searchcontract.OperatorNotExists:
+		return count == 0
+	case searchcontract.OperatorIn, searchcontract.OperatorNotIn:
+		return count > 0
+	default:
+		return count == 1
+	}
+}
+
+func normalizePhoneSearchValue(value string) (string, error) {
+	builder := strings.Builder{}
+	for index, character := range value {
+		switch {
+		case character == '+' && index == 0:
+			builder.WriteRune(character)
+		case character >= '0' && character <= '9':
+			builder.WriteRune(character)
+		case character == ' ' || character == '-' || character == '(' || character == ')':
+			continue
+		default:
+			return "", invalidPersonSearch()
+		}
+	}
+	if builder.Len() == 0 {
+		return "", invalidPersonSearch()
+	}
+	return builder.String(), nil
+}
+
+func invalidPersonSearch() error {
+	return coreerrors.NewError(personerror.InvalidPersonSearch)
+}
+
+func operatorSet(operators ...searchcontract.Operator) map[searchcontract.Operator]struct{} {
+	set := make(map[searchcontract.Operator]struct{}, len(operators))
+	for _, operator := range operators {
+		set[operator] = struct{}{}
+	}
+	return set
+}
+
+func contactOperatorSet() map[searchcontract.Operator]struct{} {
+	return operatorSet(
+		searchcontract.OperatorEquals,
+		searchcontract.OperatorNotEquals,
+		searchcontract.OperatorIn,
+		searchcontract.OperatorNotIn,
+		searchcontract.OperatorExists,
+		searchcontract.OperatorNotExists,
+		searchcontract.OperatorContains,
+		searchcontract.OperatorStartsWith,
+	)
+}
