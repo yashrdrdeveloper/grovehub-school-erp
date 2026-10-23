@@ -9,14 +9,10 @@ SCRIPT_DIR="$(
 source "${SCRIPT_DIR}/../lib/paths.sh"
 source "${SCRIPT_DIR}/../lib/common.sh"
 source "${SCRIPT_DIR}/../lib/toolchain.sh"
+source "${SCRIPT_DIR}/../lib/go.sh"
 
 ensure_air
-
-log_info "Resolving GroveHub backend Go modules"
-(
-  cd -- "${BACKEND_DIR}"
-  go mod download
-)
+sync_backend_go_modules
 
 log_info "Backend development tools are ready"
 log_info "Air: ${AIR_VERSION} (${AIR_BIN})"

@@ -61,16 +61,32 @@ Air does not perform `git pull` itself. It reacts to filesystem changes produced
 
 ## 3. Dependency Refresh
 
-The Air build command must resolve the modules declared in `go.mod` before compiling so a pulled dependency change does not leave the running development process stale.
+The backend must synchronize the Go module graph before compiling when dependencies may have changed.
 
-Canonical behavior:
+Canonical module synchronization is:
+
+```bash
+go mod tidy
+```
+
+This is intentionally different from `go mod download`.
+
+`go mod download` may populate the module cache without producing every checksum entry required by a package build. A fresh clone or a branch that added new imports can therefore still fail with:
 
 ```text
-go.mod / go.sum changes
+missing go.sum entry for module providing package ...
+```
+
+Canonical Air behavior is:
+
+```text
+.go / go.mod / go.sum changes
         ↓
 Air detects change
         ↓
-go mod download
+scripts/backend/air-build.sh
+        ↓
+go mod tidy
         ↓
 go build
         ↓
@@ -79,7 +95,11 @@ old backend process stopped
 new backend process started
 ```
 
-Do not use `go get` as an automatic development bootstrap because it may change dependency versions.
+The same shared module synchronization helper is used by ordinary backend build/setup paths.
+
+Do not use `go get` as automatic development bootstrap because it can intentionally change selected dependency versions.
+
+`backend/go.sum` is repository state and should be committed whenever dependency resolution changes it. Do not gitignore `go.sum`.
 
 ---
 
@@ -119,7 +139,7 @@ To watch rebuilds locally:
 tail -f .runtime/logs/backend.log
 ```
 
-A successful Air reload should show the build/restart sequence in this log.
+A successful Air reload should show the module-sync, build, and restart sequence in this log.
 
 ---
 
@@ -130,9 +150,11 @@ When changing local developer startup:
 1. Preserve the command semantics in this document.
 2. Keep the root Makefile thin.
 3. Put orchestration in `scripts/`.
-4. Reuse shared process/toolchain helpers.
+4. Reuse shared process/toolchain/module helpers.
 5. Keep `backend-start` production-like and non-reloading.
 6. Keep `dev-start` and `dev-start-with-logs` Air-backed.
 7. Ensure pulled `.go`, `go.mod`, and `go.sum` changes trigger a rebuild.
-8. Never add broad process termination.
-9. Report the actual start/stop/hot-reload validation performed.
+8. Use `go mod tidy` to synchronize the module graph before builds that must self-heal after dependency changes.
+9. Treat `backend/go.sum` as committed repository state.
+10. Never add broad process termination.
+11. Report the actual start/stop/hot-reload validation performed.

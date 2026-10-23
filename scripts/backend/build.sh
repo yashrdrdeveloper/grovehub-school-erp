@@ -8,17 +8,14 @@ SCRIPT_DIR="$(
 
 source "${SCRIPT_DIR}/../lib/paths.sh"
 source "${SCRIPT_DIR}/../lib/common.sh"
+source "${SCRIPT_DIR}/../lib/go.sh"
 
 require_command go
 ensure_runtime_dirs
 
 OUTPUT="${RUNTIME_BIN_DIR}/groovehub-platform"
 
-log_info "Resolving GroveHub backend Go modules"
-(
-  cd -- "${BACKEND_DIR}"
-  go mod download
-)
+sync_backend_go_modules
 
 log_info "Building GroveHub backend"
 (

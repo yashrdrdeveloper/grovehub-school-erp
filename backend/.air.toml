@@ -2,7 +2,7 @@ root = "."
 tmp_dir = "../.runtime/air"
 
 [build]
-cmd = "go mod download && go build -o ../.runtime/bin/groovehub-dev ./cmd/platform"
+cmd = "bash ../scripts/backend/air-build.sh"
 bin = "../.runtime/bin/groovehub-dev"
 delay = 500
 exclude_dir = ["vendor"]
