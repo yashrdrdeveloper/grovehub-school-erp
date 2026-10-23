@@ -7,6 +7,93 @@
 
 ---
 
+## 0. GroveHub Current Mandatory Overrides
+
+These GroveHub-specific rules are newer than older generic examples in this document and the long-form engineering standards. **When there is a conflict, these rules and the dedicated GroveHub standards below win.**
+
+Mandatory current standards:
+
+```text
+docs/engineering/backend/GROVEHUB_BACKEND_STRUCTURE.md
+docs/engineering/testing/BACKEND_UNIT_TEST_STRUCTURE.md
+docs/engineering/observability/TRACE_CONTEXT_GUIDELINES.md
+```
+
+### Backend structure
+
+The root `backend/launcher/` is the platform edge/composition boundary.
+
+Backend services do **not** have service-local `launcher/` folders. Current service structure uses the service root plus explicit `controller/`, `routes/`, `constants/`, `dto/`, `api/`, and other responsibility folders only when needed.
+
+```text
+backend/services/<service>/
+├── <service>.go
+├── controller/
+├── routes/
+├── constants/
+├── dto/
+├── api/
+└── tests/
+```
+
+Do not recreate `backend/services/<service>/launcher/` from an older blueprint.
+
+### Backend unit tests
+
+The old centralized path `backend/testing/unit-test/` is superseded and must not be recreated.
+
+Unit tests live with their owner:
+
+```text
+backend/launcher/tests/unit-test/...
+backend/services/<service>/tests/unit-test/...
+backend/libs/core/tests/unit-test/...
+backend/providers/<provider>/tests/unit-test/...
+```
+
+Inside `tests/unit-test/`, mirror the production responsibility.
+
+Every backend unit-test package folder must contain `suite_test.go` and use Ginkgo v2 + Gomega:
+
+```go
+import (
+    . "github.com/onsi/ginkgo/v2"
+    . "github.com/onsi/gomega"
+)
+```
+
+`suite_test.go` owns suite registration plus shared constants, fixtures, builders, fakes/stubs, setup/cleanup, and reusable helper functions for that test package. Other `_test.go` files should stay focused on behavior specs and use the suite support.
+
+Repository-wide `testing/sanity/` and `testing/regression/` remain repository-wide and are not moved into one backend owner.
+
+### Trace context and API-to-API propagation
+
+OpenTelemetry trace context is mandatory across the GroveHub backend ecosystem.
+
+The launcher/edge starts or continues the inbound trace. Every nested service/business/dependency operation must receive the existing `context.Context` and create child spans rather than a disconnected trace.
+
+GroveHub HTTP responses expose the active trace identifier in:
+
+```text
+X-Trace-ID
+```
+
+Outbound HTTP calls also forward `X-Trace-ID` for support/debug correlation. W3C `traceparent` remains the authoritative OpenTelemetry propagation header because parent/child relationships require both trace and span context. `X-Trace-ID` is never added to the JSON response envelope.
+
+Request/execution logs inside a trace include:
+
+```text
+traceId
+spanId
+traceFlags
+```
+
+On failures, spans/logs capture safe request/response metadata such as method, route/path, status, request size, response size, duration, service/component, traceId, and spanId. Generic middleware must not dump raw request/response bodies, Authorization headers, cookies, passwords, tokens, credentials, or arbitrary sensitive query data.
+
+Before adding an HTTP client, service call, worker, messaging boundary, provider call, or middleware, verify that trace context crosses that boundary.
+
+---
+
 ## 1. Purpose
 
 This is the **first repository document an AI agent reads**.
@@ -40,11 +127,13 @@ docs/
 └── engineering/
     ├── README.md
     ├── backend/
-    │   └── BACKEND_CODE_GUIDELINES.md
+    │   ├── BACKEND_CODE_GUIDELINES.md
+    │   └── GROVEHUB_BACKEND_STRUCTURE.md
     ├── frontend/
     │   └── FRONTEND_CODE_GUIDELINES.md
     ├── testing/
     │   ├── TESTING_GUIDELINES.md
+    │   ├── BACKEND_UNIT_TEST_STRUCTURE.md
     │   └── REGRESSION_TESTING.md
     ├── scripts/
     │   └── SCRIPT_AND_MAKEFILE_GUIDELINES.md
@@ -57,7 +146,8 @@ docs/
     ├── security/
     │   └── SECURITY_GUIDELINES.md
     ├── observability/
-    │   └── OBSERVABILITY_GUIDELINES.md
+    │   ├── OBSERVABILITY_GUIDELINES.md
+    │   └── TRACE_CONTEXT_GUIDELINES.md
     ├── ci/
     │   └── CI_CD_GUIDELINES.md
     ├── deployment/
@@ -141,7 +231,9 @@ Always:
 ```text
 docs/AGENT.md
 docs/engineering/backend/BACKEND_CODE_GUIDELINES.md
+docs/engineering/backend/GROVEHUB_BACKEND_STRUCTURE.md
 docs/engineering/testing/TESTING_GUIDELINES.md
+docs/engineering/testing/BACKEND_UNIT_TEST_STRUCTURE.md
 ```
 
 Add:
@@ -151,7 +243,7 @@ API change       -> API_CONTRACT_GUIDELINES
 DB change        -> DATABASE_GUIDELINES
 Provider change  -> PROVIDER_SDK_GUIDELINES
 Security change  -> SECURITY_GUIDELINES
-Telemetry change -> OBSERVABILITY_GUIDELINES
+Telemetry change -> OBSERVABILITY_GUIDELINES + TRACE_CONTEXT_GUIDELINES
 ```
 
 ---
@@ -184,7 +276,9 @@ Read:
 ```text
 docs/engineering/api/API_CONTRACT_GUIDELINES.md
 docs/engineering/backend/BACKEND_CODE_GUIDELINES.md
+docs/engineering/backend/GROVEHUB_BACKEND_STRUCTURE.md
 docs/engineering/testing/TESTING_GUIDELINES.md
+docs/engineering/testing/BACKEND_UNIT_TEST_STRUCTURE.md
 ```
 
 Inspect:
@@ -209,7 +303,9 @@ Read:
 ```text
 docs/engineering/database/DATABASE_GUIDELINES.md
 docs/engineering/backend/BACKEND_CODE_GUIDELINES.md
+docs/engineering/backend/GROVEHUB_BACKEND_STRUCTURE.md
 docs/engineering/testing/TESTING_GUIDELINES.md
+docs/engineering/testing/BACKEND_UNIT_TEST_STRUCTURE.md
 ```
 
 Inspect:
@@ -235,9 +331,12 @@ Read:
 ```text
 docs/engineering/providers/PROVIDER_SDK_GUIDELINES.md
 docs/engineering/backend/BACKEND_CODE_GUIDELINES.md
+docs/engineering/backend/GROVEHUB_BACKEND_STRUCTURE.md
 docs/engineering/testing/TESTING_GUIDELINES.md
+docs/engineering/testing/BACKEND_UNIT_TEST_STRUCTURE.md
 docs/engineering/security/SECURITY_GUIDELINES.md
 docs/engineering/observability/OBSERVABILITY_GUIDELINES.md
+docs/engineering/observability/TRACE_CONTEXT_GUIDELINES.md
 ```
 
 Inspect:
@@ -260,6 +359,7 @@ Read:
 
 ```text
 docs/engineering/testing/TESTING_GUIDELINES.md
+docs/engineering/testing/BACKEND_UNIT_TEST_STRUCTURE.md when backend Go is involved
 ```
 
 Then the implementation-area guideline.
@@ -337,6 +437,7 @@ Read:
 
 ```text
 docs/engineering/observability/OBSERVABILITY_GUIDELINES.md
+docs/engineering/observability/TRACE_CONTEXT_GUIDELINES.md
 ```
 
 Inspect shared telemetry/logger primitives before creating new signal conventions.
@@ -462,6 +563,8 @@ Examples:
 
 ```text
 backend/services/<service>/
+backend/launcher/
+backend/libs/core/
 frontend/packages/domain/<domain>/
 frontend/packages/shell/
 providers/<provider>/
@@ -804,6 +907,8 @@ Infrastructure Adapter
 
 Do not bypass layers because code is in one process.
 
+Use `GROVEHUB_BACKEND_STRUCTURE.md` for current service folder placement.
+
 ---
 
 ## 19. Backend Cross-Service
@@ -827,6 +932,8 @@ A queries B database
 
 If the public client lacks an operation, extend B's public contract first.
 
+Trace context must continue through the public client using `context.Context`; remote HTTP transport must use the core traced transport so `traceparent` and `X-Trace-ID` are propagated.
+
 ---
 
 ## 20. Backend Placement
@@ -841,12 +948,16 @@ Domain entity         -> src/entity
 Persistence contract  -> src/repository
 Outbound port         -> src/ports
 Persistence adapter   -> src/infrastructure/persistence
-Controller            -> src/controller
+Controller            -> controller/ or service-owned controller path
+Routes                -> routes/
 Mapper                -> src/mapper
 Structural validator  -> src/validator
 Messaging             -> src/messaging
-Construction          -> service root / launcher
+Construction          -> service root New(...)
+Unit tests            -> owner/tests/unit-test/<mirrored path>
 ```
+
+The root platform composition remains in `backend/launcher/`. Service-local `launcher/` folders are not used in current GroveHub services.
 
 Do not invent a random folder when responsibility is unclear.
 
@@ -936,17 +1047,20 @@ Do not solve test failures by weakening authorization or secret handling.
 
 ## 25. Observability Context Rule
 
-Before adding logs/metrics/traces inspect shared telemetry abstractions and naming.
+Before adding logs/metrics/traces inspect shared telemetry abstractions and naming plus `TRACE_CONTEXT_GUIDELINES.md`.
 
 Do not invent:
 
 ```text
 new request-id spelling
+new trace-id spelling
 new metric unit
 new provider telemetry format
 ```
 
 without extending the shared standard.
+
+Every request-scoped backend boundary must preserve `context.Context` and the active trace.
 
 ---
 
@@ -956,11 +1070,14 @@ Ask:
 
 ```text
 What is the lowest effective layer?
+Who owns the production behavior?
 Does real infrastructure semantics matter?
 Is there already a fixture/builder?
 Is this a public-contract test?
 Does this need browser regression?
 ```
+
+Backend unit-test routing is owner-local as defined in `BACKEND_UNIT_TEST_STRUCTURE.md`; do not use `backend/testing/unit-test`.
 
 Do not duplicate every scenario in E2E.
 
@@ -1319,7 +1436,7 @@ As applicable:
 ```text
 target Playwright test
 domain suite
-smoke/critical
+sanity/critical-risk coverage as defined by current testing standards
 test independence
 trace artifacts
 no arbitrary sleeps
@@ -1416,6 +1533,14 @@ An agent must not:
 - import frontend domain internals from shell/another domain
 - import another backend service's `src`
 - query another service's database
+- recreate service-local `launcher/` folders in GroveHub services
+- recreate `backend/testing/unit-test/`
+- add a backend unit-test package without `suite_test.go`
+- add backend Go unit tests outside the Ginkgo v2 + Gomega standard
+- drop trace context across a request-scoped service/API/dependency boundary
+- use `X-Trace-ID` as a substitute for W3C `traceparent` propagation
+- put trace IDs inside API JSON response envelopes
+- log raw secrets, authorization headers, cookies, credentials, or arbitrary request/response bodies from generic tracing middleware
 - add frontend API services inside components or shell
 - create generic dumping-ground `common` / `misc`
 - hand-edit generated code
@@ -1442,12 +1567,14 @@ An agent must not:
 ```text
 [ ] Task owner identified
 [ ] Applicable guideline(s) read
+[ ] GroveHub current override docs checked when backend/testing/telemetry is involved
 [ ] Target implementation inspected
 [ ] Nearest public boundary inspected
 [ ] Existing equivalent searched
 [ ] Authoritative types/contracts identified
 [ ] Tests/stories/mocks/runbook inspected
 [ ] Consumers inspected if public behavior changes
+[ ] Trace-context boundary checked for request-scoped backend changes
 [ ] Security/data/provider impact understood
 [ ] Minimal requested scope understood
 [ ] Validation commands identified
@@ -1463,7 +1590,9 @@ An agent must not:
 [ ] Public boundaries respected
 [ ] No duplicate abstraction introduced
 [ ] Compatibility considered
-[ ] Required tests added/updated
+[ ] Required tests added/updated in the correct owner-local location
+[ ] Every backend unit-test package has suite_test.go and uses Ginkgo/Gomega
+[ ] Trace context preserved across relevant backend boundaries
 [ ] Stories/mocks/runbooks/docs updated where relevant
 [ ] Security/observability included where relevant
 [ ] Relevant commands actually run
@@ -1501,4 +1630,4 @@ Minimal Correct Change
 
 ## 54. Final Principle
 
-> **Understand ownership before placement. Understand contracts before modification. Search before creating. Preserve boundaries before optimizing. Validate before reporting completion.**
+> **Understand ownership before placement. Understand contracts before modification. Search before creating. Preserve boundaries and trace context before optimizing. Validate before reporting completion.**

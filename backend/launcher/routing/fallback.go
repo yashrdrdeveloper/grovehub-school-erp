@@ -8,8 +8,9 @@ import (
 )
 
 func RegisterFallback(mux *http.ServeMux) {
-	mux.HandleFunc("/", func(writer http.ResponseWriter, _ *http.Request) {
-		_ = httpresponse.WriteError(
+	mux.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
+		_ = httpresponse.WriteErrorContext(
+			request.Context(),
 			writer,
 			http.StatusNotFound,
 			errorcode.RouteNotFound,

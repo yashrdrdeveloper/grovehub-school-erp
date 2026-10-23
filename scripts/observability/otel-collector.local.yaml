@@ -16,6 +16,11 @@ receivers:
         parse_to: attributes
         severity:
           parse_from: attributes.level
+        trace:
+          trace_id:
+            parse_from: attributes.traceId
+          span_id:
+            parse_from: attributes.spanId
 
 extensions:
   basicauth/grafana:

@@ -7,7 +7,11 @@ import (
 	"net/http"
 	"time"
 
-	httplogging "grovehub/libs/core/http/logging"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
+
+	"grovehub/launcher/middleware"
 	"grovehub/launcher/routing"
 	"grovehub/services/identity"
 )
@@ -21,9 +25,17 @@ func Run(logger *slog.Logger) error {
 	identityModule.RegisterHTTP(mux)
 	routing.RegisterFallback(mux)
 
+	edgeHandler := otelhttp.NewHandler(
+		middleware.RequestObservability(logger, mux),
+		"grovehub.edge",
+		otelhttp.WithSpanOptions(
+			trace.WithAttributes(attribute.String("grovehub.component", "edge")),
+		),
+	)
+
 	server := &http.Server{
 		Addr:              httpAddress,
-		Handler:           requestLoggingMiddleware(logger, mux),
+		Handler:           edgeHandler,
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
@@ -34,34 +46,4 @@ func Run(logger *slog.Logger) error {
 	}
 
 	return nil
-}
-
-type statusRecorder struct {
-	http.ResponseWriter
-	status int
-}
-
-func (recorder *statusRecorder) WriteHeader(status int) {
-	recorder.status = status
-	recorder.ResponseWriter.WriteHeader(status)
-}
-
-func requestLoggingMiddleware(logger *slog.Logger, next http.Handler) http.Handler {
-	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		startedAt := time.Now()
-		recorder := &statusRecorder{ResponseWriter: writer, status: http.StatusOK}
-
-		next.ServeHTTP(recorder, request)
-
-		logger.Log(
-			request.Context(),
-			httplogging.LevelForStatus(recorder.status),
-			"request completed",
-			"service", "platform",
-			"method", request.Method,
-			"path", request.URL.Path,
-			"status", recorder.status,
-			"durationMs", time.Since(startedAt).Milliseconds(),
-		)
-	})
 }

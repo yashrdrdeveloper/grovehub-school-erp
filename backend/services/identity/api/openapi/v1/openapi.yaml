@@ -13,6 +13,9 @@ paths:
       responses:
         "200":
           description: Identity service is healthy.
+          headers:
+            X-Trace-ID:
+              $ref: "#/components/headers/TraceID"
           content:
             application/json:
               schema:
@@ -25,6 +28,12 @@ paths:
                       service: identity
                       status: ok
 components:
+  headers:
+    TraceID:
+      description: GroveHub trace identifier for support and log/trace correlation. Trace propagation between services uses the W3C traceparent header.
+      schema:
+        type: string
+        pattern: "^[0-9a-f]{32}$"
   schemas:
     IdentityHealthSuccessResponse:
       type: object

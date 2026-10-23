@@ -27,6 +27,8 @@ Cross-cutting guidelines only when boundary is affected
 
 `docs/AGENT.md` defines the full context-loading workflow for AI agents.
 
+For GroveHub backend work, the newer GroveHub-specific structure/testing/tracing standards listed below take precedence over conflicting generic examples in older standards.
+
 ---
 
 ## 2. Canonical Structure
@@ -39,13 +41,15 @@ docs/
     ├── README.md
     │
     ├── backend/
-    │   └── BACKEND_CODE_GUIDELINES.md
+    │   ├── BACKEND_CODE_GUIDELINES.md
+    │   └── GROVEHUB_BACKEND_STRUCTURE.md
     │
     ├── frontend/
     │   └── FRONTEND_CODE_GUIDELINES.md
     │
     ├── testing/
     │   ├── TESTING_GUIDELINES.md
+    │   ├── BACKEND_UNIT_TEST_STRUCTURE.md
     │   └── REGRESSION_TESTING.md
     │
     ├── scripts/
@@ -64,7 +68,8 @@ docs/
     │   └── SECURITY_GUIDELINES.md
     │
     ├── observability/
-    │   └── OBSERVABILITY_GUIDELINES.md
+    │   ├── OBSERVABILITY_GUIDELINES.md
+    │   └── TRACE_CONTEXT_GUIDELINES.md
     │
     ├── ci/
     │   └── CI_CD_GUIDELINES.md
@@ -90,16 +95,19 @@ docs/
 
 | Guideline | Owns |
 | --- | --- |
-| `BACKEND_CODE_GUIDELINES.md` | Go service architecture, layering, package placement, clients, ports, repositories, errors, messaging, provider consumption |
+| `BACKEND_CODE_GUIDELINES.md` | Generic Go service architecture, layering, clients, ports, repositories, errors, messaging, provider consumption |
+| `GROVEHUB_BACKEND_STRUCTURE.md` | **Current GroveHub backend placement**: root launcher/edge, service root + `controller/` + `routes/`, no service-local launcher, owner-local tests |
 | `FRONTEND_CODE_GUIDELINES.md` | React/TypeScript package architecture, `base/business/components/domain/shell`, public boundaries, services/readers, hooks, Storybook, mocks |
-| `TESTING_GUIDELINES.md` | Complete test strategy across unit/component/integration/contract/provider/performance/security layers |
+| `TESTING_GUIDELINES.md` | Broad test strategy across unit/sanity/regression and supporting validation responsibilities |
+| `BACKEND_UNIT_TEST_STRUCTURE.md` | **Current GroveHub Go unit-test placement**: owner-local `tests/unit-test`, mirrored paths, mandatory `suite_test.go`, Ginkgo v2 + Gomega |
 | `REGRESSION_TESTING.md` | Playwright browser regression/E2E, page objects, fixtures, isolation, traces, release regression |
 | `SCRIPT_AND_MAKEFILE_GUIDELINES.md` | `Makefile`, bootstrap, toolchain downloads, Docker/Colima detection, scripts, local start/stop/test commands |
 | `API_CONTRACT_GUIDELINES.md` | REST/OpenAPI, gRPC/Protobuf, DTOs, public clients, errors, pagination, idempotency, events, compatibility |
 | `DATABASE_GUIDELINES.md` | PostgreSQL ownership, schema, migrations, constraints, transactions, indexes, JSONB, backup/restore |
 | `PROVIDER_SDK_GUIDELINES.md` | Capabilities, registry, resolver, bindings, provider lifecycle, configuration, conformance, marketplace providers |
 | `SECURITY_GUIDELINES.md` | Authn/authz, secrets, input/output safety, tenant isolation, supply chain, audit, secure development |
-| `OBSERVABILITY_GUIDELINES.md` | OTel, logs, metrics, traces, correlation, health/readiness, dashboards, redaction |
+| `OBSERVABILITY_GUIDELINES.md` | General OTel, logs, metrics, traces, correlation, health/readiness, dashboards, redaction |
+| `TRACE_CONTEXT_GUIDELINES.md` | **Current GroveHub distributed tracing contract**: `context.Context`, `X-Trace-ID`, W3C `traceparent`, edge/service/outbound spans, log correlation, safe failure diagnostics |
 | `CI_CD_GUIDELINES.md` | Woodpecker/reference CI, pipeline gates, caching, artifacts, secrets, promotion, release evidence |
 | `DEPLOYMENT_GUIDELINES.md` | Deployment profiles, config/state, migrations, upgrades, backup/restore, Compose/Kubernetes selection |
 | `DOCKER_GUIDELINES.md` | Dockerfiles, images, Compose behavior, non-root runtime, scans, multi-arch |
@@ -112,15 +120,17 @@ docs/
 
 ## 4. Task-to-Guideline Routing
 
-### Backend feature
+### GroveHub backend feature
 
 ```text
-BACKEND_CODE_GUIDELINES
+GROVEHUB_BACKEND_STRUCTURE
++ BACKEND_CODE_GUIDELINES for generic layering/domain rules
++ BACKEND_UNIT_TEST_STRUCTURE
++ TESTING_GUIDELINES
 + API_CONTRACT_GUIDELINES if API/event/client changes
 + DATABASE_GUIDELINES if persistence changes
 + SECURITY_GUIDELINES if authorization/secret/trust boundary changes
-+ OBSERVABILITY_GUIDELINES if new operational boundary
-+ TESTING_GUIDELINES
++ OBSERVABILITY_GUIDELINES + TRACE_CONTEXT_GUIDELINES for request/dependency boundaries
 ```
 
 ### Frontend feature
@@ -137,9 +147,12 @@ FRONTEND_CODE_GUIDELINES
 
 ```text
 PROVIDER_SDK_GUIDELINES
++ GROVEHUB_BACKEND_STRUCTURE
 + BACKEND_CODE_GUIDELINES
 + SECURITY_GUIDELINES
 + OBSERVABILITY_GUIDELINES
++ TRACE_CONTEXT_GUIDELINES when provider calls are request/execution scoped
++ BACKEND_UNIT_TEST_STRUCTURE
 + TESTING_GUIDELINES
 ```
 
@@ -147,7 +160,9 @@ PROVIDER_SDK_GUIDELINES
 
 ```text
 DATABASE_GUIDELINES
++ GROVEHUB_BACKEND_STRUCTURE
 + BACKEND_CODE_GUIDELINES
++ BACKEND_UNIT_TEST_STRUCTURE
 + TESTING_GUIDELINES
 + RELEASE_GUIDELINES when migration ships
 ```
@@ -188,6 +203,7 @@ DEPLOYMENT_GUIDELINES
 + DATABASE_GUIDELINES for migrations/state
 + SECURITY_GUIDELINES
 + OBSERVABILITY_GUIDELINES
++ TRACE_CONTEXT_GUIDELINES when telemetry transport changes
 + RELEASE_GUIDELINES
 ```
 
@@ -313,16 +329,36 @@ Vendor branching does not belong in business modules.
 ```text
 lowest effective layer
         +
+owner-local backend unit tests
+        +
 real infrastructure when semantics matter
         +
-small high-value E2E suite
+small high-value regression suite
 ```
 
 Do not use browser regression as the only correctness layer.
 
+Backend unit-test ownership follows `BACKEND_UNIT_TEST_STRUCTURE.md`.
+
 ---
 
-## 10. Automation Principle
+## 10. Trace Context Principle
+
+```text
+edge/server span
+      ↓ same traceId
+service/business spans
+      ↓ same traceId
+outbound dependency/client span
+```
+
+`X-Trace-ID` is the support/debug header. W3C `traceparent` is the authoritative distributed parent/child propagation contract.
+
+Do not drop `context.Context` across request-scoped backend boundaries.
+
+---
+
+## 11. Automation Principle
 
 ```text
 make <intent>
@@ -338,15 +374,17 @@ Users remember commands, not setup procedures.
 
 ---
 
-## 11. Documentation Principle
+## 12. Documentation Principle
 
 One authoritative source owns each rule.
 
 This index routes; it does not duplicate detailed standards.
 
+For current GroveHub backend placement/testing/tracing, the GroveHub-specific standards are authoritative over conflicting historical generic examples.
+
 ---
 
-## 12. Updating Standards
+## 13. Updating Standards
 
 A standard change should be reviewed as architecture.
 
@@ -362,6 +400,6 @@ Do not update one dependency rule while leaving the context router stale.
 
 ---
 
-## 13. Final Rule
+## 14. Final Rule
 
 > **If ownership is unclear, do not invent a new folder or abstraction. Determine the responsibility and public boundary first.**
