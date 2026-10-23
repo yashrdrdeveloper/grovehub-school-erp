@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -24,20 +25,22 @@ func (repository *PersonRepository) Create(ctx context.Context, person entity.Pe
 		ctx,
 		`INSERT INTO foundation.persons (gid, status, version, created_at, updated_at)
 		 VALUES ($1, $2, $3, $4, $5)`,
-		string(person.GID),
-		string(person.Status),
-		person.Version,
-		person.CreatedAt,
-		person.UpdatedAt,
+		string(person.GetGID()),
+		string(person.GetStatus()),
+		person.GetVersion(),
+		person.GetCreatedAt(),
+		person.GetUpdatedAt(),
 	)
 
 	return err
 }
 
 func (repository *PersonRepository) FindByGID(ctx context.Context, gid entity.GID) (entity.Person, error) {
-	var person entity.Person
 	var gidValue string
 	var status string
+	var version int64
+	var createdAt time.Time
+	var updatedAt time.Time
 
 	err := repository.pool.QueryRow(
 		ctx,
@@ -48,9 +51,9 @@ func (repository *PersonRepository) FindByGID(ctx context.Context, gid entity.GI
 	).Scan(
 		&gidValue,
 		&status,
-		&person.Version,
-		&person.CreatedAt,
-		&person.UpdatedAt,
+		&version,
+		&createdAt,
+		&updatedAt,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return entity.Person{}, foundationrepository.ErrPersonNotFound
@@ -59,10 +62,13 @@ func (repository *PersonRepository) FindByGID(ctx context.Context, gid entity.GI
 		return entity.Person{}, err
 	}
 
-	person.GID = entity.GID(gidValue)
-	person.Status = entity.PersonStatus(status)
-
-	return person, nil
+	return entity.NewPerson(
+		entity.GID(gidValue),
+		entity.PersonStatus(status),
+		version,
+		createdAt,
+		updatedAt,
+	), nil
 }
 
 func (repository *PersonRepository) Update(ctx context.Context, person entity.Person) error {
@@ -73,10 +79,10 @@ func (repository *PersonRepository) Update(ctx context.Context, person entity.Pe
 		     version = $3,
 		     updated_at = $4
 		 WHERE gid = $1`,
-		string(person.GID),
-		string(person.Status),
-		person.Version,
-		person.UpdatedAt,
+		string(person.GetGID()),
+		string(person.GetStatus()),
+		person.GetVersion(),
+		person.GetUpdatedAt(),
 	)
 	if err != nil {
 		return err

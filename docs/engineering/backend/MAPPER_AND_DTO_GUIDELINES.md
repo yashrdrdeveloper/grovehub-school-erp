@@ -21,9 +21,7 @@ persistence model -> entity, only when a separate persistence model actually exi
 
 Do not add mapping abstractions when no representation change exists.
 
-Creating a new entity from values already decided by the service is not automatically a mapper responsibility.
-
-Changing business state on an existing entity is business logic and belongs in `services/`.
+Entity construction and entity state transitions are not automatically mapper responsibilities.
 
 ---
 
@@ -78,7 +76,7 @@ A mapper may:
 
 ```text
 convert request DTO values into entity/value types
-convert entity values into response DTOs
+convert entity getter values into response DTOs
 construct error metadata from known service context
 map a real persistence model into an entity
 ```
@@ -96,54 +94,80 @@ validate business policy
 choose lifecycle/status transitions
 decide version increments
 choose HTTP status codes
+mutate entity state
 ```
 
 Those decisions remain in the owning service or transport layer.
 
 ---
 
-## 5. Builder Rule
+## 5. Entity Access and Copy Semantics
 
-Builders are **not** the default GroveHub mapping pattern.
+When an entity encapsulates its fields, mappers must read it through entity getters.
 
-Do not create a builder for a simple entity merely because it has several fields.
-
-For simple business-owned entity construction, construct the entity directly in the service where the values are decided:
+Correct:
 
 ```go
-person := entity.Person{
-    GID:       gid,
-    Status:    entity.PersonStatusActive,
-    Version:   1,
-    CreatedAt: now,
-    UpdatedAt: now,
+func ToPersonResponse(person entity.Person) response.Person {
+    return response.Person{
+        GID:       string(person.GetGID()),
+        Status:    string(person.GetStatus()),
+        Version:   person.GetVersion(),
+        CreatedAt: person.GetCreatedAt(),
+        UpdatedAt: person.GetUpdatedAt(),
+    }
 }
 ```
 
-For a business state transition, update the entity directly in the service:
+Incorrect:
 
 ```go
-person.Status = entity.PersonStatusDeactivated
+person.Status = ...
 person.Version++
-person.UpdatedAt = now
 ```
 
-Introduce a builder only when there is a real complexity that justifies it, such as:
+outside the entity implementation.
 
-```text
-many optional fields
-repeated complex construction across multiple callers
-ordered/conditional assembly that remains non-business transformation logic
-construction that is otherwise difficult to read or maintain
+Entity setters use value receivers and return a new entity copy. They do not mutate through pointer receivers.
+
+Example:
+
+```go
+updatedPerson := person.
+    SetStatus(entity.PersonStatusDeactivated).
+    SetVersion(person.GetVersion() + 1).
+    SetUpdatedAt(now)
 ```
 
-A builder must never be added only to satisfy a pattern.
-
-If a builder is introduced later, it still must not own business defaults, ID generation, clocks, validation policy, or lifecycle decisions.
+The service chooses the new values. The entity setter only copies the entity, assigns the supplied value, and returns the copy.
 
 ---
 
-## 6. Service Usage
+## 6. Builder Rule
+
+Builders are **not** the default GroveHub mapping pattern.
+
+Do not create a builder for simple field assignment.
+
+For simple entities, prefer a pure entity constructor that only assigns caller-supplied values:
+
+```go
+person := entity.NewPerson(
+    gid,
+    entity.PersonStatusActive,
+    1,
+    now,
+    now,
+)
+```
+
+The constructor must not decide defaults, generate IDs, read the clock, validate business policy, or perform lifecycle transitions.
+
+Introduce a builder only when there is real construction complexity, such as many optional fields or repeated complex assembly across multiple callers.
+
+---
+
+## 7. Service Usage
 
 Current GroveHub application services may accept request DTOs and return response DTOs at their application boundary.
 
@@ -161,43 +185,37 @@ mapper
 response DTO
 ```
 
-Typical create flow when there is no client-controlled entity payload:
+Typical create flow:
 
 ```text
 service decides ID/defaults/time
    ↓
-service constructs entity directly
+entity pure constructor
    ↓
 repository
    ↓
 mapper.To<Resource>Response
 ```
 
+Typical update flow:
+
+```text
+repository returns entity
+   ↓
+service decides new business values
+   ↓
+entity copy-setter methods return updated copy
+   ↓
+repository.Update(updated copy)
+   ↓
+mapper.To<Resource>Response
+```
+
 Business decisions must remain visible in the service.
-
-Correct:
-
-```text
-service chooses ACTIVE
-service chooses version 1
-service chooses now
-service constructs/updates Person
-mapper converts Person -> response DTO
-```
-
-Incorrect:
-
-```text
-mapper decides ACTIVE
-mapper decides version 1
-mapper calls time.Now()
-mapper generates UUID
-builder added only to wrap field assignment
-```
 
 ---
 
-## 7. Error Metadata Mapping
+## 8. Error Metadata Mapping
 
 Error definitions remain under:
 
@@ -235,53 +253,42 @@ Do not assemble `errorMetaData` maps ad hoc in controllers or services.
 
 ---
 
-## 8. Foundation Example
+## 9. Foundation Example
+
+For the current Person implementation:
 
 ```text
-backend/services/foundation/
-├── dto/
-│   ├── request/
-│   │   └── person.go
-│   └── response/
-│       ├── person.go
-│       └── error.go
-├── entity/
-│   ├── gid.go
-│   └── person.go
-├── mappers/
-│   ├── person.go
-│   └── error.go
-├── repository/
-│   ├── person.go
-│   └── postgres/
-│       └── person.go
-└── services/
-    └── person.go
+entity/person.go
+    private fields
+    NewPerson(...)
+    getters
+    copy-setters for mutable fields
+
+mappers/person.go
+    ToPersonGID(...)
+    ToPersonResponse(...)
+
+mappers/error.go
+    ToPersonErrorMetadata(...)
 ```
 
-For the current Person implementation, `mappers/person.go` only needs real conversions such as:
-
-```go
-ToPersonGID(...)
-ToPersonResponse(...)
-```
-
-It does not need a `PersonBuilder`.
-
-Foundation tests are added together after the Foundation flow is complete for the current implementation phase.
+There is no `PersonBuilder`.
 
 ---
 
-## 9. Hard Rules
+## 10. Hard Rules
 
 ```text
 NO direct entity -> API response serialization
 NO repository -> response DTO
-NO field-by-field representation conversion in controllers
+NO direct entity field reads outside entity package when getters exist
+NO direct entity field mutation outside entity package
+NO pointer-receiver setters for copy-style entities
+NO business decisions in entity setters
 NO business decisions in mappers
 NO ID/time generation in mappers
 NO builder for simple field assignment
 NO pattern abstraction without real complexity
 NO ad-hoc error metadata maps outside mappers
-NO generic mapper dumping files; group mapping by resource/responsibility
+NO generic mapper dumping files
 ```

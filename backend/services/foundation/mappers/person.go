@@ -12,10 +12,10 @@ func ToPersonGID(request foundationrequest.PersonByGID) entity.GID {
 
 func ToPersonResponse(person entity.Person) foundationresponse.Person {
 	return foundationresponse.Person{
-		GID:       string(person.GID),
-		Status:    string(person.Status),
-		Version:   person.Version,
-		CreatedAt: person.CreatedAt,
-		UpdatedAt: person.UpdatedAt,
+		GID:       string(person.GetGID()),
+		Status:    string(person.GetStatus()),
+		Version:   person.GetVersion(),
+		CreatedAt: person.GetCreatedAt(),
+		UpdatedAt: person.GetUpdatedAt(),
 	}
 }

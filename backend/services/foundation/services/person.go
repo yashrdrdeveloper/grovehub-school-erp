@@ -33,13 +33,13 @@ func (service *PersonService) Create(ctx context.Context) (foundationresponse.Pe
 
 	gid := entity.GID(gidValue)
 	now := time.Now().UTC()
-	person := entity.Person{
-		GID:       gid,
-		Status:    entity.PersonStatusActive,
-		Version:   1,
-		CreatedAt: now,
-		UpdatedAt: now,
-	}
+	person := entity.NewPerson(
+		gid,
+		entity.PersonStatusActive,
+		1,
+		now,
+		now,
+	)
 
 	if err := service.repository.Create(ctx, person); err != nil {
 		return foundationresponse.Person{}, coreerrors.WrapWithMetadata(
@@ -75,15 +75,16 @@ func (service *PersonService) Deactivate(
 		return foundationresponse.Person{}, err
 	}
 
-	if person.Status == entity.PersonStatusDeactivated {
+	if person.GetStatus() == entity.PersonStatusDeactivated {
 		return mappers.ToPersonResponse(person), nil
 	}
 
-	person.Status = entity.PersonStatusDeactivated
-	person.Version++
-	person.UpdatedAt = time.Now().UTC()
+	updatedPerson := person.
+		SetStatus(entity.PersonStatusDeactivated).
+		SetVersion(person.GetVersion() + 1).
+		SetUpdatedAt(time.Now().UTC())
 
-	if err := service.repository.Update(ctx, person); err != nil {
+	if err := service.repository.Update(ctx, updatedPerson); err != nil {
 		if errors.Is(err, foundationrepository.ErrPersonNotFound) {
 			return foundationresponse.Person{}, coreerrors.NewErrorWithMetadata(
 				personerror.PersonNotFound,
@@ -98,7 +99,7 @@ func (service *PersonService) Deactivate(
 		)
 	}
 
-	return mappers.ToPersonResponse(person), nil
+	return mappers.ToPersonResponse(updatedPerson), nil
 }
 
 func (service *PersonService) getPersonByGID(ctx context.Context, gid entity.GID) (entity.Person, error) {
