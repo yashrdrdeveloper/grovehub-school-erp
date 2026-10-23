@@ -9,12 +9,15 @@ SCRIPT_DIR="$(
 source "${SCRIPT_DIR}/../lib/paths.sh"
 source "${SCRIPT_DIR}/../lib/common.sh"
 source "${SCRIPT_DIR}/../lib/process.sh"
+source "${SCRIPT_DIR}/../lib/toolchain.sh"
 source "${SCRIPT_DIR}/../config/services.sh"
 
 PID_FILE="${RUNTIME_PID_DIR}/backend.pid"
 BINARY="${RUNTIME_BIN_DIR}/groovehub-platform"
 
-if owned_pid_is_running "${PID_FILE}" "${BINARY}"; then
+if owned_pid_is_running "${PID_FILE}" "${AIR_BIN}"; then
+  log_info "Backend process: UP with Air hot reload (PID $(cat "${PID_FILE}"))"
+elif owned_pid_is_running "${PID_FILE}" "${BINARY}"; then
   log_info "Backend process: UP (PID $(cat "${PID_FILE}"))"
 else
   log_warn "Backend process: DOWN"

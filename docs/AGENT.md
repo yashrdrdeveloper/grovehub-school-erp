@@ -17,6 +17,7 @@ Mandatory current standards:
 docs/engineering/backend/GROVEHUB_BACKEND_STRUCTURE.md
 docs/engineering/testing/BACKEND_UNIT_TEST_STRUCTURE.md
 docs/engineering/observability/TRACE_CONTEXT_GUIDELINES.md
+docs/engineering/scripts/GROVEHUB_LOCAL_DEVELOPMENT.md
 ```
 
 ### Backend structure
@@ -92,6 +93,32 @@ On failures, spans/logs capture safe request/response metadata such as method, r
 
 Before adding an HTTP client, service call, worker, messaging boundary, provider call, or middleware, verify that trace context crosses that boundary.
 
+### Local developer hot reload
+
+GroveHub development commands have fixed semantics:
+
+```text
+make backend-start
+    -> one-time backend binary
+    -> no hot reload
+
+make backend-dev
+    -> Air in foreground
+    -> hot reload
+
+make dev-start
+    -> Air-backed backend in background + Swagger
+    -> hot reload
+
+make dev-start-with-logs
+    -> Air-backed backend in background + Swagger + local OTel collector
+    -> hot reload
+```
+
+Do not route `dev-start` or `dev-start-with-logs` through the one-time binary path.
+
+Air watches backend `.go`, `go.mod`, and `go.sum` changes. After a developer runs `git pull`, watched file changes must trigger dependency refresh, rebuild, and backend restart automatically. Air does not perform `git pull` itself.
+
 ---
 
 ## 1. Purpose
@@ -136,7 +163,8 @@ docs/
     │   ├── BACKEND_UNIT_TEST_STRUCTURE.md
     │   └── REGRESSION_TESTING.md
     ├── scripts/
-    │   └── SCRIPT_AND_MAKEFILE_GUIDELINES.md
+    │   ├── SCRIPT_AND_MAKEFILE_GUIDELINES.md
+    │   └── GROVEHUB_LOCAL_DEVELOPMENT.md
     ├── api/
     │   └── API_CONTRACT_GUIDELINES.md
     ├── database/
@@ -385,6 +413,7 @@ Read:
 
 ```text
 docs/engineering/scripts/SCRIPT_AND_MAKEFILE_GUIDELINES.md
+docs/engineering/scripts/GROVEHUB_LOCAL_DEVELOPMENT.md when local start/stop/dev behavior is involved
 ```
 
 Inspect:
@@ -1118,6 +1147,8 @@ toolchain / Compose / application command
 
 Makefile remains thin.
 
+For GroveHub local development startup, also follow `docs/engineering/scripts/GROVEHUB_LOCAL_DEVELOPMENT.md`.
+
 No duplicated bootstrap logic.
 
 No broad `pkill` / `killall`.
@@ -1461,6 +1492,8 @@ idempotent rerun
 non-interactive CI behavior
 ```
 
+For hot-reload changes also validate that a watched backend file change triggers an Air rebuild and restart without rerunning Make.
+
 ---
 
 ## 47. Validation — API / DB / Provider
@@ -1541,6 +1574,7 @@ An agent must not:
 - use `X-Trace-ID` as a substitute for W3C `traceparent` propagation
 - put trace IDs inside API JSON response envelopes
 - log raw secrets, authorization headers, cookies, credentials, or arbitrary request/response bodies from generic tracing middleware
+- route `make dev-start` or `make dev-start-with-logs` through a one-time backend binary instead of Air
 - add frontend API services inside components or shell
 - create generic dumping-ground `common` / `misc`
 - hand-edit generated code
@@ -1567,7 +1601,7 @@ An agent must not:
 ```text
 [ ] Task owner identified
 [ ] Applicable guideline(s) read
-[ ] GroveHub current override docs checked when backend/testing/telemetry is involved
+[ ] GroveHub current override docs checked when backend/testing/telemetry/local-dev is involved
 [ ] Target implementation inspected
 [ ] Nearest public boundary inspected
 [ ] Existing equivalent searched
@@ -1575,6 +1609,7 @@ An agent must not:
 [ ] Tests/stories/mocks/runbook inspected
 [ ] Consumers inspected if public behavior changes
 [ ] Trace-context boundary checked for request-scoped backend changes
+[ ] Local dev command semantics preserved when start/stop scripts change
 [ ] Security/data/provider impact understood
 [ ] Minimal requested scope understood
 [ ] Validation commands identified
@@ -1593,6 +1628,7 @@ An agent must not:
 [ ] Required tests added/updated in the correct owner-local location
 [ ] Every backend unit-test package has suite_test.go and uses Ginkgo/Gomega
 [ ] Trace context preserved across relevant backend boundaries
+[ ] Dev-start commands remain Air-backed when local development startup is changed
 [ ] Stories/mocks/runbooks/docs updated where relevant
 [ ] Security/observability included where relevant
 [ ] Relevant commands actually run

@@ -27,7 +27,7 @@ Cross-cutting guidelines only when boundary is affected
 
 `docs/AGENT.md` defines the full context-loading workflow for AI agents.
 
-For GroveHub backend work, the newer GroveHub-specific structure/testing/tracing standards listed below take precedence over conflicting generic examples in older standards.
+For GroveHub backend work, the newer GroveHub-specific structure/testing/tracing/local-development standards listed below take precedence over conflicting generic examples in older standards.
 
 ---
 
@@ -53,7 +53,8 @@ docs/
     │   └── REGRESSION_TESTING.md
     │
     ├── scripts/
-    │   └── SCRIPT_AND_MAKEFILE_GUIDELINES.md
+    │   ├── SCRIPT_AND_MAKEFILE_GUIDELINES.md
+    │   └── GROVEHUB_LOCAL_DEVELOPMENT.md
     │
     ├── api/
     │   └── API_CONTRACT_GUIDELINES.md
@@ -101,7 +102,8 @@ docs/
 | `TESTING_GUIDELINES.md` | Broad test strategy across unit/sanity/regression and supporting validation responsibilities |
 | `BACKEND_UNIT_TEST_STRUCTURE.md` | **Current GroveHub Go unit-test placement**: owner-local `tests/unit-test`, mirrored paths, mandatory `suite_test.go`, Ginkgo v2 + Gomega |
 | `REGRESSION_TESTING.md` | Playwright browser regression/E2E, page objects, fixtures, isolation, traces, release regression |
-| `SCRIPT_AND_MAKEFILE_GUIDELINES.md` | `Makefile`, bootstrap, toolchain downloads, Docker/Colima detection, scripts, local start/stop/test commands |
+| `SCRIPT_AND_MAKEFILE_GUIDELINES.md` | Generic `Makefile`, bootstrap, toolchain downloads, Docker/Colima detection, scripts, local start/stop/test commands |
+| `GROVEHUB_LOCAL_DEVELOPMENT.md` | **Current GroveHub local command semantics**: Air-backed `dev-start`/`dev-start-with-logs`, foreground `backend-dev`, non-reloading `backend-start`, Git-pull/file-change reload behavior |
 | `API_CONTRACT_GUIDELINES.md` | REST/OpenAPI, gRPC/Protobuf, DTOs, public clients, errors, pagination, idempotency, events, compatibility |
 | `DATABASE_GUIDELINES.md` | PostgreSQL ownership, schema, migrations, constraints, transactions, indexes, JSONB, backup/restore |
 | `PROVIDER_SDK_GUIDELINES.md` | Capabilities, registry, resolver, bindings, provider lifecycle, configuration, conformance, marketplace providers |
@@ -179,7 +181,8 @@ REGRESSION_TESTING
 ### Local tooling
 
 ```text
-SCRIPT_AND_MAKEFILE_GUIDELINES
+GROVEHUB_LOCAL_DEVELOPMENT for GroveHub start/stop/hot-reload behavior
++ SCRIPT_AND_MAKEFILE_GUIDELINES for generic script architecture
 + DOCKER_GUIDELINES when container/Compose changes
 + CI_CD_GUIDELINES when same command is used by CI
 ```
@@ -358,7 +361,24 @@ Do not drop `context.Context` across request-scoped backend boundaries.
 
 ---
 
-## 11. Automation Principle
+## 11. Local Development Principle
+
+```text
+backend-start
+    -> one-time binary
+
+dev-start
+    -> Air hot reload + Swagger
+
+dev-start-with-logs
+    -> Air hot reload + Swagger + OTel collector
+```
+
+After a developer runs `git pull`, Air reacts to watched `.go`, `go.mod`, and `go.sum` filesystem changes and rebuilds/restarts automatically. Air does not pull Git changes itself.
+
+---
+
+## 12. Automation Principle
 
 ```text
 make <intent>
@@ -374,17 +394,17 @@ Users remember commands, not setup procedures.
 
 ---
 
-## 12. Documentation Principle
+## 13. Documentation Principle
 
 One authoritative source owns each rule.
 
 This index routes; it does not duplicate detailed standards.
 
-For current GroveHub backend placement/testing/tracing, the GroveHub-specific standards are authoritative over conflicting historical generic examples.
+For current GroveHub backend placement/testing/tracing/local-development, the GroveHub-specific standards are authoritative over conflicting historical generic examples.
 
 ---
 
-## 13. Updating Standards
+## 14. Updating Standards
 
 A standard change should be reviewed as architecture.
 
@@ -400,6 +420,6 @@ Do not update one dependency rule while leaving the context router stale.
 
 ---
 
-## 14. Final Rule
+## 15. Final Rule
 
 > **If ownership is unclear, do not invent a new folder or abstraction. Determine the responsibility and public boundary first.**

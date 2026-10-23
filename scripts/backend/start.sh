@@ -9,6 +9,7 @@ SCRIPT_DIR="$(
 source "${SCRIPT_DIR}/../lib/paths.sh"
 source "${SCRIPT_DIR}/../lib/common.sh"
 source "${SCRIPT_DIR}/../lib/process.sh"
+source "${SCRIPT_DIR}/../lib/toolchain.sh"
 source "${SCRIPT_DIR}/../config/services.sh"
 
 ensure_runtime_dirs
@@ -17,10 +18,21 @@ require_command curl
 PID_FILE="${RUNTIME_PID_DIR}/backend.pid"
 LOG_FILE="${RUNTIME_LOG_DIR}/backend.log"
 BINARY="${RUNTIME_BIN_DIR}/groovehub-platform"
+HOT_RELOAD="${BACKEND_HOT_RELOAD:-0}"
+
+if owned_pid_is_running "${PID_FILE}" "${AIR_BIN}"; then
+  log_info "Backend is already running with Air hot reload (PID $(cat "${PID_FILE}"))"
+  exit 0
+fi
 
 if owned_pid_is_running "${PID_FILE}" "${BINARY}"; then
-  log_info "Backend is already running (PID $(cat "${PID_FILE}"))"
-  exit 0
+  if [[ "${HOT_RELOAD}" == "1" ]]; then
+    log_info "Switching GroveHub backend from one-time binary to Air hot reload"
+    stop_owned_process "${PID_FILE}" "${BINARY}" "GroveHub backend"
+  else
+    log_info "Backend is already running (PID $(cat "${PID_FILE}"))"
+    exit 0
+  fi
 fi
 
 rm -f -- "${PID_FILE}"
@@ -31,12 +43,24 @@ for health_path in "${BACKEND_HEALTH_ENDPOINTS[@]}"; do
   fi
 done
 
-bash "${SCRIPT_DIR}/build.sh"
+if [[ "${HOT_RELOAD}" == "1" ]]; then
+  bash "${SCRIPT_DIR}/setup.sh"
 
-log_info "Starting GroveHub backend"
-nohup "${BINARY}" >>"${LOG_FILE}" 2>&1 &
-backend_pid=$!
-printf '%s\n' "${backend_pid}" >"${PID_FILE}"
+  log_info "Starting GroveHub backend with Air hot reload"
+  (
+    cd -- "${BACKEND_DIR}"
+    nohup "${AIR_BIN}" -c .air.toml >>"${LOG_FILE}" 2>&1 &
+    printf '%s\n' "$!" >"${PID_FILE}"
+  )
+else
+  bash "${SCRIPT_DIR}/build.sh"
+
+  log_info "Starting GroveHub backend"
+  nohup "${BINARY}" >>"${LOG_FILE}" 2>&1 &
+  printf '%s\n' "$!" >"${PID_FILE}"
+fi
+
+backend_pid="$(cat "${PID_FILE}")"
 
 for health_path in "${BACKEND_HEALTH_ENDPOINTS[@]}"; do
   if ! wait_for_http "${BACKEND_BASE_URL}${health_path}" "Backend health" 30; then
@@ -50,6 +74,10 @@ for health_path in "${BACKEND_HEALTH_ENDPOINTS[@]}"; do
   fi
 done
 
-log_info "Backend started (PID ${backend_pid})"
+if [[ "${HOT_RELOAD}" == "1" ]]; then
+  log_info "Backend started with Air hot reload (PID ${backend_pid})"
+else
+  log_info "Backend started (PID ${backend_pid})"
+fi
 log_info "Backend URL: ${BACKEND_BASE_URL}"
 log_info "Backend log: ${LOG_FILE}"

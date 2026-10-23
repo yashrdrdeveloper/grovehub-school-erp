@@ -6,5 +6,5 @@ SCRIPT_DIR="$(
   pwd
 )"
 
-bash "${SCRIPT_DIR}/../backend/start.sh"
+BACKEND_HOT_RELOAD=1 bash "${SCRIPT_DIR}/../backend/start.sh"
 bash "${SCRIPT_DIR}/../swagger/start.sh"
