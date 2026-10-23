@@ -10,16 +10,48 @@ import (
 	searchcontract "grovehub/libs/core/contracts/search"
 )
 
-var ErrUnsupportedOperator = errors.New("unsupported search operator")
+var (
+	ErrInvalidQuery        = errors.New("invalid search query")
+	ErrUnsupportedOperator = errors.New("unsupported search operator")
+)
 
-type Cursor struct {
-	Field      string                   `json:"field"`
-	Direction  searchcontract.Direction `json:"direction"`
-	Value      string                   `json:"value"`
-	TieBreaker string                   `json:"tieBreaker"`
+type Filter struct {
+	Field    string
+	Operator searchcontract.Operator
+	Values   []string
 }
 
-func EncodeCursor(cursor Cursor) (string, error) {
+type Sort struct {
+	Field     string
+	Direction searchcontract.Direction
+}
+
+type Cursor[TId any] struct {
+	Value    string
+	CursorId TId
+}
+
+type Query[TId any] struct {
+	SearchTerms []string
+	Filters     []Filter
+	Sort        Sort
+	Cursor      *Cursor[TId]
+	Limit       int
+}
+
+type Result[T any] struct {
+	Items   []T
+	HasNext bool
+}
+
+type CursorPayload struct {
+	Field     string                   `json:"field"`
+	Direction searchcontract.Direction `json:"direction"`
+	Value     string                   `json:"value"`
+	CursorId  string                   `json:"cursorId"`
+}
+
+func EncodeCursor(cursor CursorPayload) (string, error) {
 	payload, err := json.Marshal(cursor)
 	if err != nil {
 		return "", err
@@ -27,14 +59,14 @@ func EncodeCursor(cursor Cursor) (string, error) {
 	return base64.RawURLEncoding.EncodeToString(payload), nil
 }
 
-func DecodeCursor(value string) (Cursor, error) {
+func DecodeCursor(value string) (CursorPayload, error) {
 	payload, err := base64.RawURLEncoding.DecodeString(value)
 	if err != nil {
-		return Cursor{}, err
+		return CursorPayload{}, err
 	}
-	var cursor Cursor
+	var cursor CursorPayload
 	if err := json.Unmarshal(payload, &cursor); err != nil {
-		return Cursor{}, err
+		return CursorPayload{}, err
 	}
 	return cursor, nil
 }

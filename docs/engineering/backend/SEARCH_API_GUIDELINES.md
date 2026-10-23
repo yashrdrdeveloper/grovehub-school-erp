@@ -7,7 +7,7 @@
 
 ## 1. Shared Boundary
 
-Every GroveHub search endpoint uses:
+Every GroveHub search endpoint uses the external HTTP contract from:
 
 ```text
 backend/libs/core/contracts/search/
@@ -33,9 +33,59 @@ Canonical request:
 
 Cursor pagination is mandatory. Do not mix page-number/offset semantics into this contract.
 
+The raw `contracts/search.Request` must not be passed directly to a repository.
+
 ---
 
-## 2. Shared Technical Search Engine
+## 2. Shared Validated Search Model
+
+After service validation and normalization, every service uses the generic internal search model from:
+
+```text
+backend/libs/core/search/
+```
+
+Canonical internal types:
+
+```go
+search.Filter
+search.Sort
+search.Cursor[TId]
+search.Query[TId]
+search.Result[T]
+```
+
+Example for Foundation Person:
+
+```go
+search.Query[entity.GID]
+search.Result[entity.Person]
+```
+
+Example for another resource:
+
+```go
+search.Query[entity.LeadId]
+search.Result[entity.Lead]
+```
+
+Do not create resource-specific wrappers such as:
+
+```text
+PersonSearchFilter
+PersonSearchSort
+PersonSearchCursor
+PersonSearchQuery
+PersonSearchResult
+```
+
+when they only duplicate the shared search model.
+
+Resource-specific types are justified only when they contain genuinely resource-specific state or behavior that cannot be represented by the generic search model.
+
+---
+
+## 3. Shared Technical Search Engine
 
 Reusable search mechanics live in:
 
@@ -46,6 +96,7 @@ backend/libs/core/search/
 The shared engine owns generic mechanics only:
 
 ```text
+validated Filter / Sort / Cursor / Query / Result models
 query arguments/placeholders
 EQUALS / NOT_EQUALS
 IN / NIN
@@ -56,14 +107,15 @@ LIKE escaping
 scalar field predicates
 relation/EXISTS predicates
 keyset cursor predicates
-opaque cursor encoding/decoding
+opaque cursor payload encoding/decoding
+generic invalid-query errors
 ```
 
 Operator behavior is registered through factories. Services/repositories must not recreate large operator switch blocks.
 
 ---
 
-## 3. Service-Owned Search Policy
+## 4. Service-Owned Search Policy
 
 Each service owns a registry of supported public fields and operators.
 
@@ -83,15 +135,25 @@ contacts.email
     normalizer: normalized email
 ```
 
-The service translates `search.Request` into a validated repository query.
+The service translates:
+
+```text
+contracts/search.Request
+        ↓
+service validation + normalization
+        ↓
+search.Query[TId]
+```
 
 Unknown fields/operators are rejected before repository execution.
 
+The service also validates its concrete cursor identity type. For example, Foundation validates that `search.Cursor[entity.GID].CursorId` is a valid Person UUIDv7.
+
 ---
 
-## 4. Repository-Owned Field Mapping
+## 5. Repository-Owned Field Mapping
 
-Repositories receive only validated service-specific search queries.
+Repositories receive only validated generic `search.Query[TId]` values.
 
 The repository implementation owns a field registry mapping public field names to safe SQL definitions:
 
@@ -105,9 +167,17 @@ Raw client field names must never be concatenated into SQL.
 
 Repository implementations call the shared `libs/core/search` factories for generic operator behavior.
 
+Repository results use:
+
+```go
+search.Result[Entity]
+```
+
+rather than resource-specific search result wrappers.
+
 ---
 
-## 5. No Service-Specific Operator Switch Trees
+## 6. No Service-Specific Operator Switch Trees
 
 Do not implement patterns such as:
 
@@ -134,7 +204,7 @@ A new generic operator should be implemented once in `libs/core/search` and then
 
 ---
 
-## 6. Cursor Rules
+## 7. Cursor Rules
 
 Cursor values are opaque to clients.
 
@@ -150,6 +220,21 @@ Lead            -> leadId
 Communication   -> communicationId
 Admission       -> admissionId
 ```
+
+The validated internal cursor is typed:
+
+```go
+search.Cursor[TId]
+```
+
+and contains:
+
+```text
+Value
+CursorId
+```
+
+The opaque encoded cursor payload contains only transport-safe values and is converted to the typed cursor after service validation.
 
 The generic cursor predicate receives:
 
@@ -190,7 +275,7 @@ Repositories use keyset predicates, never `OFFSET` for the shared search contrac
 
 ---
 
-## 7. Search Projection vs Uniqueness
+## 8. Search Projection vs Uniqueness
 
 `search_details` is derived search projection data for human-friendly free-text matching.
 
@@ -207,25 +292,30 @@ Whenever names/contacts change, refresh `search_details` in the same persistence
 
 ---
 
-## 8. Complexity Rules
+## 9. Complexity Rules
 
 Search code must remain SRP/OCP friendly:
 
 ```text
-shared contract      -> libs/core/contracts/search
-shared SQL mechanics -> libs/core/search
-service policy       -> services/helpers/<resource>.go
-repository mapping   -> repository/impl/<resource>.go
-use-case orchestration -> services/<resource>.go
+external contract       -> libs/core/contracts/search
+validated generic model -> libs/core/search
+shared SQL mechanics    -> libs/core/search
+service policy          -> services/helpers/<resource>.go
+repository mapping      -> repository/impl/<resource>.go
+use-case orchestration  -> services/<resource>.go
 ```
 
 Do not create `<resource>_search.go` by default. Split only when search has become a genuinely independent responsibility rather than a use case of the resource.
 
+Do not duplicate generic search DTOs inside a resource repository contract.
+
 ---
 
-## 9. Hard Rules
+## 10. Hard Rules
 
 ```text
+NO raw contracts/search.Request passed directly to repositories
+NO resource-specific wrappers that merely duplicate search.Filter/Sort/Cursor/Query/Result
 NO raw client field -> SQL identifier mapping
 NO unparameterized filter values
 NO copied operator switch tree per repository

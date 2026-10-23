@@ -136,14 +136,14 @@ func (service *PersonService) Search(
 
 	result, err := service.repository.Search(ctx, query)
 	if err != nil {
-		if errors.Is(err, foundationrepository.ErrInvalidPersonSearchQuery) {
+		if errors.Is(err, coresearch.ErrInvalidQuery) {
 			return searchcontract.Result[foundationresponse.Person]{}, coreerrors.NewError(personerror.InvalidPersonSearch)
 		}
 		return searchcontract.Result[foundationresponse.Person]{}, coreerrors.Wrap(personerror.PersonSearchFailed, err)
 	}
 
-	items := make([]foundationresponse.Person, 0, len(result.Persons))
-	for _, person := range result.Persons {
+	items := make([]foundationresponse.Person, 0, len(result.Items))
+	for _, person := range result.Items {
 		items = append(items, mappers.ToPersonResponse(person))
 	}
 
@@ -333,15 +333,15 @@ func (service *PersonService) mapUpdateError(gid entity.GID, err error) error {
 }
 
 func buildNextCursor(
-	result foundationrepository.PersonSearchResult,
-	query foundationrepository.PersonSearchQuery,
-	cursor coresearch.Cursor,
+	result coresearch.Result[entity.Person],
+	query coresearch.Query[entity.GID],
+	cursor coresearch.CursorPayload,
 ) (string, error) {
-	if !result.HasNext || len(result.Persons) == 0 {
+	if !result.HasNext || len(result.Items) == 0 {
 		return "", nil
 	}
-	lastPerson := result.Persons[len(result.Persons)-1]
+	lastPerson := result.Items[len(result.Items)-1]
 	cursor.Value = servicehelpers.PersonCursorValue(lastPerson, query.Sort.Field)
-	cursor.TieBreaker = string(lastPerson.GetGID())
+	cursor.CursorId = string(lastPerson.GetGID())
 	return servicehelpers.EncodePersonSearchCursor(cursor)
 }

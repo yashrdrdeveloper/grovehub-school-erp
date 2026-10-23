@@ -154,8 +154,8 @@ func (repository *PersonRepository) FindGIDsByContacts(
 
 func (repository *PersonRepository) Search(
 	ctx context.Context,
-	query foundationrepository.PersonSearchQuery,
-) (foundationrepository.PersonSearchResult, error) {
+	query coresearch.Query[entity.GID],
+) (coresearch.Result[entity.Person], error) {
 	builder := &coresearch.QueryBuilder{}
 	statement := strings.Builder{}
 	statement.WriteString(`SELECT
@@ -171,14 +171,14 @@ func (repository *PersonRepository) Search(
 	for _, filter := range query.Filters {
 		condition, err := buildPersonFilter(builder, filter)
 		if err != nil {
-			return foundationrepository.PersonSearchResult{}, err
+			return coresearch.Result[entity.Person]{}, err
 		}
 		statement.WriteString(" AND " + condition)
 	}
 
 	sortField, ok := personSortFields[query.Sort.Field]
 	if !ok {
-		return foundationrepository.PersonSearchResult{}, foundationrepository.ErrInvalidPersonSearchQuery
+		return coresearch.Result[entity.Person]{}, coresearch.ErrInvalidQuery
 	}
 
 	if query.Cursor != nil {
@@ -201,13 +201,13 @@ func (repository *PersonRepository) Search(
 
 	rows, err := repository.pool.Query(ctx, statement.String(), builder.Args()...)
 	if err != nil {
-		return foundationrepository.PersonSearchResult{}, err
+		return coresearch.Result[entity.Person]{}, err
 	}
 	defer rows.Close()
 
 	personRows, err := scanPersonSearchRows(rows, query.Limit)
 	if err != nil {
-		return foundationrepository.PersonSearchResult{}, err
+		return coresearch.Result[entity.Person]{}, err
 	}
 	hasNext := len(personRows) > query.Limit
 	if hasNext {
@@ -220,14 +220,14 @@ func (repository *PersonRepository) Search(
 	}
 	contactsByGID, err := repository.findContactsByGIDs(ctx, gids)
 	if err != nil {
-		return foundationrepository.PersonSearchResult{}, err
+		return coresearch.Result[entity.Person]{}, err
 	}
 
 	persons := make([]entity.Person, 0, len(personRows))
 	for _, row := range personRows {
 		persons = append(persons, row.toPerson(contactsByGID[row.gid]))
 	}
-	return foundationrepository.PersonSearchResult{Persons: persons, HasNext: hasNext}, nil
+	return coresearch.Result[entity.Person]{Items: persons, HasNext: hasNext}, nil
 }
 
 func (repository *PersonRepository) Update(ctx context.Context, person entity.Person) error {
@@ -367,7 +367,7 @@ func (repository *PersonRepository) findContactsByGIDs(
 
 func buildPersonFilter(
 	builder *coresearch.QueryBuilder,
-	filter foundationrepository.PersonSearchFilter,
+	filter coresearch.Filter,
 ) (string, error) {
 	if field, ok := personScalarSearchFields[filter.Field]; ok {
 		condition, err := coresearch.BuildScalarCondition(builder, field, filter.Operator, filter.Values)
@@ -377,12 +377,12 @@ func buildPersonFilter(
 		condition, err := coresearch.BuildRelationCondition(builder, field, filter.Operator, filter.Values)
 		return mapSearchBuildError(condition, err)
 	}
-	return "", foundationrepository.ErrInvalidPersonSearchQuery
+	return "", coresearch.ErrInvalidQuery
 }
 
 func mapSearchBuildError(condition string, err error) (string, error) {
 	if errors.Is(err, coresearch.ErrUnsupportedOperator) {
-		return "", foundationrepository.ErrInvalidPersonSearchQuery
+		return "", coresearch.ErrInvalidQuery
 	}
 	return condition, err
 }

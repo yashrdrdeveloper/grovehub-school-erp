@@ -15,7 +15,6 @@ import (
 	personerror "grovehub/services/foundation/constants/error"
 	foundationrequest "grovehub/services/foundation/dto/request"
 	"grovehub/services/foundation/entity"
-	foundationrepository "grovehub/services/foundation/repository"
 )
 
 const (
@@ -204,14 +203,14 @@ func NormalizePhone(value string) (string, error) {
 
 func NormalizePersonSearchRequest(
 	request searchcontract.Request,
-) (foundationrepository.PersonSearchQuery, coresearch.Cursor, error) {
+) (coresearch.Query[entity.GID], coresearch.CursorPayload, error) {
 	searchText := strings.TrimSpace(request.SearchText)
 	if len(searchText) > maxSearchTextLength {
-		return foundationrepository.PersonSearchQuery{}, coresearch.Cursor{}, invalidPersonSearch()
+		return coresearch.Query[entity.GID]{}, coresearch.CursorPayload{}, invalidPersonSearch()
 	}
 	searchTerms := strings.Fields(strings.ToLower(searchText))
 	if len(searchTerms) > maxSearchTerms || len(request.Filters) > maxSearchFilters {
-		return foundationrepository.PersonSearchQuery{}, coresearch.Cursor{}, invalidPersonSearch()
+		return coresearch.Query[entity.GID]{}, coresearch.CursorPayload{}, invalidPersonSearch()
 	}
 
 	rows := request.PageInfo.Rows
@@ -219,23 +218,23 @@ func NormalizePersonSearchRequest(
 		rows = searchcontract.DefaultRows
 	}
 	if rows < 1 || rows > searchcontract.MaxRows {
-		return foundationrepository.PersonSearchQuery{}, coresearch.Cursor{}, invalidPersonSearch()
+		return coresearch.Query[entity.GID]{}, coresearch.CursorPayload{}, invalidPersonSearch()
 	}
 
 	sort, err := normalizeSort(request.Sort)
 	if err != nil {
-		return foundationrepository.PersonSearchQuery{}, coresearch.Cursor{}, err
+		return coresearch.Query[entity.GID]{}, coresearch.CursorPayload{}, err
 	}
 	filters, err := normalizeFilters(request.Filters)
 	if err != nil {
-		return foundationrepository.PersonSearchQuery{}, coresearch.Cursor{}, err
+		return coresearch.Query[entity.GID]{}, coresearch.CursorPayload{}, err
 	}
 	cursor, payload, err := normalizeCursor(request.PageInfo.Cursor, sort)
 	if err != nil {
-		return foundationrepository.PersonSearchQuery{}, coresearch.Cursor{}, err
+		return coresearch.Query[entity.GID]{}, coresearch.CursorPayload{}, err
 	}
 
-	return foundationrepository.PersonSearchQuery{
+	return coresearch.Query[entity.GID]{
 		SearchTerms: searchTerms,
 		Filters:     filters,
 		Sort:        sort,
@@ -251,7 +250,7 @@ func PersonCursorValue(person entity.Person, field string) string {
 	return ""
 }
 
-func EncodePersonSearchCursor(cursor coresearch.Cursor) (string, error) {
+func EncodePersonSearchCursor(cursor coresearch.CursorPayload) (string, error) {
 	return coresearch.EncodeCursor(cursor)
 }
 
@@ -291,10 +290,10 @@ func buildContactGroup(
 	return contacts, nil
 }
 
-func normalizeSort(sortRequest []searchcontract.Sort) (foundationrepository.PersonSearchSort, error) {
-	sort := foundationrepository.PersonSearchSort{Field: "createdAt", Direction: searchcontract.DirectionDescending}
+func normalizeSort(sortRequest []searchcontract.Sort) (coresearch.Sort, error) {
+	sort := coresearch.Sort{Field: "createdAt", Direction: searchcontract.DirectionDescending}
 	if len(sortRequest) > 1 {
-		return foundationrepository.PersonSearchSort{}, invalidPersonSearch()
+		return coresearch.Sort{}, invalidPersonSearch()
 	}
 	if len(sortRequest) == 1 {
 		sort.Field = strings.TrimSpace(sortRequest[0].Field)
@@ -305,13 +304,13 @@ func normalizeSort(sortRequest []searchcontract.Sort) (foundationrepository.Pers
 	}
 	if _, ok := personSortFields[sort.Field]; !ok ||
 		(sort.Direction != searchcontract.DirectionAscending && sort.Direction != searchcontract.DirectionDescending) {
-		return foundationrepository.PersonSearchSort{}, invalidPersonSearch()
+		return coresearch.Sort{}, invalidPersonSearch()
 	}
 	return sort, nil
 }
 
-func normalizeFilters(filters []searchcontract.Filter) ([]foundationrepository.PersonSearchFilter, error) {
-	normalized := make([]foundationrepository.PersonSearchFilter, 0, len(filters))
+func normalizeFilters(filters []searchcontract.Filter) ([]coresearch.Filter, error) {
+	normalized := make([]coresearch.Filter, 0, len(filters))
 	for _, filter := range filters {
 		field := strings.TrimSpace(filter.Field)
 		spec, ok := personSearchFields[field]
@@ -329,28 +328,28 @@ func normalizeFilters(filters []searchcontract.Filter) ([]foundationrepository.P
 			}
 			values = append(values, value)
 		}
-		normalized = append(normalized, foundationrepository.PersonSearchFilter{Field: field, Operator: filter.Operator, Values: values})
+		normalized = append(normalized, coresearch.Filter{Field: field, Operator: filter.Operator, Values: values})
 	}
 	return normalized, nil
 }
 
 func normalizeCursor(
 	value string,
-	sort foundationrepository.PersonSearchSort,
-) (*foundationrepository.PersonSearchCursor, coresearch.Cursor, error) {
-	payload := coresearch.Cursor{Field: sort.Field, Direction: sort.Direction}
+	sort coresearch.Sort,
+) (*coresearch.Cursor[entity.GID], coresearch.CursorPayload, error) {
+	payload := coresearch.CursorPayload{Field: sort.Field, Direction: sort.Direction}
 	if strings.TrimSpace(value) == "" {
 		return nil, payload, nil
 	}
 	decoded, err := coresearch.DecodeCursor(value)
 	if err != nil || decoded.Field != sort.Field || decoded.Direction != sort.Direction {
-		return nil, coresearch.Cursor{}, invalidPersonSearchCursor()
+		return nil, coresearch.CursorPayload{}, invalidPersonSearchCursor()
 	}
 	spec := personSortFields[sort.Field]
-	if err := spec.validate(decoded.Value); err != nil || validateUUIDv7String(decoded.TieBreaker) != nil {
-		return nil, coresearch.Cursor{}, invalidPersonSearchCursor()
+	if err := spec.validate(decoded.Value); err != nil || validateUUIDv7String(decoded.CursorId) != nil {
+		return nil, coresearch.CursorPayload{}, invalidPersonSearchCursor()
 	}
-	return &foundationrepository.PersonSearchCursor{Value: decoded.Value, CursorId: entity.GID(decoded.TieBreaker)}, decoded, nil
+	return &coresearch.Cursor[entity.GID]{Value: decoded.Value, CursorId: entity.GID(decoded.CursorId)}, decoded, nil
 }
 
 func validSearchValueCount(operator searchcontract.Operator, count int) bool {
