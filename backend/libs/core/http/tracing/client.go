@@ -15,18 +15,28 @@ type traceHeaderTransport struct {
 }
 
 func NewTransport(base http.RoundTripper) http.RoundTripper {
+	return NewServiceTransport(coretelemetry.ServiceLauncherEdge.Key, base)
+}
+
+func NewServiceTransport(service string, base http.RoundTripper) http.RoundTripper {
 	if base == nil {
 		base = http.DefaultTransport
 	}
 
-	return otelhttp.NewTransport(&traceHeaderTransport{
-		next: base,
-	})
+	return otelhttp.NewTransport(
+		&traceHeaderTransport{next: base},
+		otelhttp.WithTracerProvider(coretelemetry.TracerProvider(service)),
+		otelhttp.WithMeterProvider(coretelemetry.MeterProvider(service)),
+	)
 }
 
 func NewClient(timeout time.Duration) *http.Client {
+	return NewServiceClient(coretelemetry.ServiceLauncherEdge.Key, timeout)
+}
+
+func NewServiceClient(service string, timeout time.Duration) *http.Client {
 	return &http.Client{
-		Transport: NewTransport(http.DefaultTransport),
+		Transport: NewServiceTransport(service, http.DefaultTransport),
 		Timeout:   timeout,
 	}
 }

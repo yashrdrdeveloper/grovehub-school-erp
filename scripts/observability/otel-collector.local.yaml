@@ -31,6 +31,14 @@ receivers:
             - WARN
             - WARNING
           error: ERROR
+      - type: move
+        if: 'attributes.service != nil'
+        from: attributes.service
+        to: resource["service.name"]
+      - type: move
+        if: 'attributes.serviceKey != nil'
+        from: attributes.serviceKey
+        to: resource["grovehub.service.key"]
 
 extensions:
   basicauth/grafana:
@@ -50,6 +58,9 @@ processors:
       - key: service.namespace
         action: insert
         value: ${env:OTEL_SERVICE_NAMESPACE}
+      - key: service.version
+        action: insert
+        value: ${env:OTEL_SERVICE_VERSION}
       - key: deployment.environment.name
         action: insert
         value: ${env:OTEL_DEPLOYMENT_ENVIRONMENT}

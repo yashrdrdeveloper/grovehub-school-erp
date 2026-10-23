@@ -38,9 +38,10 @@ require_env OTEL_SERVICE_NAME
 require_env OTEL_SERVICE_NAMESPACE
 require_env OTEL_DEPLOYMENT_ENVIRONMENT
 
+export OTEL_SERVICE_VERSION="${OTEL_SERVICE_VERSION:-dev}"
 export OTEL_EXPORTER_OTLP_ENDPOINT="${OTEL_EXPORTER_OTLP_ENDPOINT:-http://127.0.0.1:4318}"
 export OTEL_EXPORTER_OTLP_PROTOCOL="${OTEL_EXPORTER_OTLP_PROTOCOL:-http/protobuf}"
-export OTEL_RESOURCE_ATTRIBUTES="${OTEL_RESOURCE_ATTRIBUTES:-service.namespace=${OTEL_SERVICE_NAMESPACE},deployment.environment.name=${OTEL_DEPLOYMENT_ENVIRONMENT}}"
+export OTEL_RESOURCE_ATTRIBUTES="${OTEL_RESOURCE_ATTRIBUTES:-service.namespace=${OTEL_SERVICE_NAMESPACE},service.version=${OTEL_SERVICE_VERSION},deployment.environment.name=${OTEL_DEPLOYMENT_ENVIRONMENT}}"
 
 if container_exists "${COLLECTOR_NAME}"; then
   docker rm --force "${COLLECTOR_NAME}" >/dev/null
@@ -61,6 +62,7 @@ docker run --detach \
   --env GRAFANA_CLOUD_API_KEY \
   --env OTEL_SERVICE_NAME \
   --env OTEL_SERVICE_NAMESPACE \
+  --env OTEL_SERVICE_VERSION \
   --env OTEL_DEPLOYMENT_ENVIRONMENT \
   "${COLLECTOR_IMAGE}" \
   --config=/etc/otelcol-contrib/config.yaml >/dev/null
@@ -72,11 +74,15 @@ if ! container_is_running "${COLLECTOR_NAME}"; then
   die "OpenTelemetry collector failed to start"
 fi
 
+unset GRAFANA_CLOUD_API_KEY
+unset GRAFANA_CLOUD_INSTANCE_ID
+unset GRAFANA_CLOUD_OTLP_ENDPOINT
+
 if ! bash "${SCRIPT_DIR}/start.sh"; then
   docker rm --force "${COLLECTOR_NAME}" >/dev/null 2>&1 || true
   exit 1
 fi
 
-log_info "Grafana Cloud log shipping enabled"
+log_info "Grafana Cloud observability export enabled"
 log_info "OTLP endpoint for GroveHub: ${OTEL_EXPORTER_OTLP_ENDPOINT}"
 log_info "Collector container: ${COLLECTOR_NAME}"

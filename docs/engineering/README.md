@@ -27,7 +27,7 @@ Cross-cutting guidelines only when boundary is affected
 
 `docs/AGENT.md` defines the full context-loading workflow for AI agents.
 
-For GroveHub backend work, the newer GroveHub-specific structure/testing/tracing/local-development standards listed below take precedence over conflicting generic examples in older standards.
+For GroveHub backend work, the newer GroveHub-specific structure/testing/tracing/observability/local-development standards listed below take precedence over conflicting generic examples in older standards.
 
 ---
 
@@ -70,7 +70,8 @@ docs/
     │
     ├── observability/
     │   ├── OBSERVABILITY_GUIDELINES.md
-    │   └── TRACE_CONTEXT_GUIDELINES.md
+    │   ├── TRACE_CONTEXT_GUIDELINES.md
+    │   └── GROVEHUB_OBSERVABILITY.md
     │
     ├── ci/
     │   └── CI_CD_GUIDELINES.md
@@ -110,6 +111,7 @@ docs/
 | `SECURITY_GUIDELINES.md` | Authn/authz, secrets, input/output safety, tenant isolation, supply chain, audit, secure development |
 | `OBSERVABILITY_GUIDELINES.md` | General OTel, logs, metrics, traces, correlation, health/readiness, dashboards, redaction |
 | `TRACE_CONTEXT_GUIDELINES.md` | **Current GroveHub distributed tracing contract**: `context.Context`, `X-Trace-ID`, W3C `traceparent`, edge/service/outbound spans, log correlation, safe failure diagnostics |
+| `GROVEHUB_OBSERVABILITY.md` | **Current GroveHub telemetry contract**: logical service identities, logs/traces/metrics correlation, HTTP/service histograms, P50/P95/P99, runtime metrics, Grafana dashboards/alerts, sampling/cardinality/cost controls |
 | `CI_CD_GUIDELINES.md` | Woodpecker/reference CI, pipeline gates, caching, artifacts, secrets, promotion, release evidence |
 | `DEPLOYMENT_GUIDELINES.md` | Deployment profiles, config/state, migrations, upgrades, backup/restore, Compose/Kubernetes selection |
 | `DOCKER_GUIDELINES.md` | Dockerfiles, images, Compose behavior, non-root runtime, scans, multi-arch |
@@ -132,7 +134,7 @@ GROVEHUB_BACKEND_STRUCTURE
 + API_CONTRACT_GUIDELINES if API/event/client changes
 + DATABASE_GUIDELINES if persistence changes
 + SECURITY_GUIDELINES if authorization/secret/trust boundary changes
-+ OBSERVABILITY_GUIDELINES + TRACE_CONTEXT_GUIDELINES for request/dependency boundaries
++ OBSERVABILITY_GUIDELINES + TRACE_CONTEXT_GUIDELINES + GROVEHUB_OBSERVABILITY for request/dependency/telemetry boundaries
 ```
 
 ### Frontend feature
@@ -153,7 +155,8 @@ PROVIDER_SDK_GUIDELINES
 + BACKEND_CODE_GUIDELINES
 + SECURITY_GUIDELINES
 + OBSERVABILITY_GUIDELINES
-+ TRACE_CONTEXT_GUIDELINES when provider calls are request/execution scoped
++ TRACE_CONTEXT_GUIDELINES
++ GROVEHUB_OBSERVABILITY when provider calls are part of GroveHub request/execution telemetry
 + BACKEND_UNIT_TEST_STRUCTURE
 + TESTING_GUIDELINES
 ```
@@ -166,6 +169,7 @@ DATABASE_GUIDELINES
 + BACKEND_CODE_GUIDELINES
 + BACKEND_UNIT_TEST_STRUCTURE
 + TESTING_GUIDELINES
++ GROVEHUB_OBSERVABILITY when DB instrumentation is introduced
 + RELEASE_GUIDELINES when migration ships
 ```
 
@@ -183,8 +187,19 @@ REGRESSION_TESTING
 ```text
 GROVEHUB_LOCAL_DEVELOPMENT for GroveHub start/stop/hot-reload behavior
 + SCRIPT_AND_MAKEFILE_GUIDELINES for generic script architecture
++ GROVEHUB_OBSERVABILITY when local OTel collector/export behavior changes
 + DOCKER_GUIDELINES when container/Compose changes
 + CI_CD_GUIDELINES when same command is used by CI
+```
+
+### Observability
+
+```text
+GROVEHUB_OBSERVABILITY
++ TRACE_CONTEXT_GUIDELINES
++ OBSERVABILITY_GUIDELINES
++ BACKEND_UNIT_TEST_STRUCTURE when backend telemetry code changes
++ GROVEHUB_LOCAL_DEVELOPMENT when local collector/startup changes
 ```
 
 ### CI
@@ -206,7 +221,8 @@ DEPLOYMENT_GUIDELINES
 + DATABASE_GUIDELINES for migrations/state
 + SECURITY_GUIDELINES
 + OBSERVABILITY_GUIDELINES
-+ TRACE_CONTEXT_GUIDELINES when telemetry transport changes
++ TRACE_CONTEXT_GUIDELINES
++ GROVEHUB_OBSERVABILITY when telemetry transport/resources change
 + RELEASE_GUIDELINES
 ```
 
@@ -256,10 +272,6 @@ Final Mandatory Rules
 Guiding Principle
 ```
 
-This consistency is intentional.
-
-Humans and AI agents should be able to predict where a rule is located.
-
 ---
 
 ## 6. General Engineering Principles
@@ -285,8 +297,6 @@ automation over reviewer memory
 
 ## 7. Public Boundary Principle
 
-The repository repeatedly uses:
-
 ```text
 Public Contract
       ↓
@@ -308,8 +318,6 @@ Consumers must not bypass these boundaries because internal files are visible in
 ---
 
 ## 8. Provider Principle
-
-The platform rule is:
 
 ```text
 Business Code
@@ -339,25 +347,23 @@ real infrastructure when semantics matter
 small high-value regression suite
 ```
 
-Do not use browser regression as the only correctness layer.
-
 Backend unit-test ownership follows `BACKEND_UNIT_TEST_STRUCTURE.md`.
 
 ---
 
-## 10. Trace Context Principle
+## 10. Trace and Observability Principle
 
 ```text
-edge/server span
+LAUNCHER (EDGE)
       ↓ same traceId
-service/business spans
+logical service span (for example IDENTITY)
       ↓ same traceId
-outbound dependency/client span
+real dependency/client span when dependency exists
 ```
 
 `X-Trace-ID` is the support/debug header. W3C `traceparent` is the authoritative distributed parent/child propagation contract.
 
-Do not drop `context.Context` across request-scoped backend boundaries.
+Metrics detect unhealthy behavior, traces show the request waterfall, and logs explain correlated events. All signals must agree on the canonical logical service identity from `GROVEHUB_OBSERVABILITY.md`.
 
 ---
 
@@ -400,7 +406,7 @@ One authoritative source owns each rule.
 
 This index routes; it does not duplicate detailed standards.
 
-For current GroveHub backend placement/testing/tracing/local-development, the GroveHub-specific standards are authoritative over conflicting historical generic examples.
+For current GroveHub backend placement/testing/tracing/observability/local-development, the GroveHub-specific standards are authoritative over conflicting historical generic examples.
 
 ---
 

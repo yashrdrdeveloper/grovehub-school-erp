@@ -49,7 +49,10 @@ func (recorder *statusRecorder) Unwrap() http.ResponseWriter {
 func RequestObservability(logger *slog.Logger, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		startedAt := time.Now()
-		ctx := request.Context()
+		edgeService := coretelemetry.ServiceLauncherEdge
+		ctx := coretelemetry.ContextWithService(request.Context(), edgeService)
+		request = request.WithContext(ctx)
+
 		traceID := coretelemetry.TraceID(ctx)
 		if traceID != "" {
 			writer.Header().Set(httpheaders.TraceID, traceID)
@@ -68,9 +71,10 @@ func RequestObservability(logger *slog.Logger, next http.Handler) http.Handler {
 		if route == "" {
 			route = "unmatched"
 		}
-		span.SetName("edge " + request.Method + " " + route)
+		span.SetName(edgeService.Name + " " + request.Method + " " + route)
 		span.SetAttributes(
-			attribute.String("grovehub.component", "edge"),
+			attribute.String("grovehub.service.key", edgeService.Key),
+			attribute.String("grovehub.service.display_name", edgeService.Name),
 			attribute.String("http.request.method", request.Method),
 			attribute.String("url.path", request.URL.Path),
 			attribute.String("http.route", route),
@@ -98,7 +102,6 @@ func RequestObservability(logger *slog.Logger, next http.Handler) http.Handler {
 			ctx,
 			httplogging.LevelForStatus(recorder.status),
 			"request completed",
-			"service", "edge",
 			slog.Group(
 				"request",
 				"method", request.Method,

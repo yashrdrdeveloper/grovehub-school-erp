@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	coretelemetry "grovehub/libs/core/telemetry"
 	"grovehub/services/identity/controller"
 	"grovehub/services/identity/routes"
 )
@@ -26,5 +27,9 @@ func New(logger *slog.Logger) Module {
 
 func (service *module) RegisterHTTP(mux *http.ServeMux) {
 	routes.RegisterHTTP(mux, service.healthController)
-	service.logger.Info("identity service registered", "service", "identity")
+	service.logger.Info(
+		"identity service registered",
+		"service", coretelemetry.ServiceIdentity.Name,
+		"serviceKey", coretelemetry.ServiceIdentity.Key,
+	)
 }

@@ -17,6 +17,7 @@ Mandatory current standards:
 docs/engineering/backend/GROVEHUB_BACKEND_STRUCTURE.md
 docs/engineering/testing/BACKEND_UNIT_TEST_STRUCTURE.md
 docs/engineering/observability/TRACE_CONTEXT_GUIDELINES.md
+docs/engineering/observability/GROVEHUB_OBSERVABILITY.md
 docs/engineering/scripts/GROVEHUB_LOCAL_DEVELOPMENT.md
 ```
 
@@ -93,6 +94,44 @@ On failures, spans/logs capture safe request/response metadata such as method, r
 
 Before adding an HTTP client, service call, worker, messaging boundary, provider call, or middleware, verify that trace context crosses that boundary.
 
+### GroveHub observability identity, metrics, and Grafana
+
+The canonical logical telemetry services are defined centrally. Current identities are:
+
+```text
+service.namespace = grovehub
+
+service.name = LAUNCHER (EDGE)
+grovehub.service.key = launcher-edge
+
+service.name = IDENTITY
+grovehub.service.key = identity
+```
+
+Do not emit ad-hoc variants such as `edge`, `launcher`, `platform`, `identity-service`, or differently cased service names. Future logical services must be registered centrally before service-owned telemetry is emitted.
+
+Metrics, traces, and logs must agree on logical service identity. The same trace ID continues across `LAUNCHER (EDGE) -> IDENTITY -> real dependency` boundaries while each child span has its own span ID.
+
+HTTP latency uses OpenTelemetry histogram metrics so Grafana computes P50/P95/P99. Do not calculate request percentiles inside application code. Metric dimensions must be bounded; use route templates and never use trace IDs, request IDs, user/student IDs, emails, or raw resource URLs as metric labels.
+
+The initial GroveHub observability surface includes:
+
+```text
+RPS / request count
+5xx error rate
+active requests
+P50 / P95 / P99 HTTP latency
+service-operation latency/errors
+service availability
+Go runtime metrics
+WARN/ERROR logs
+trace waterfall/correlation
+Grafana overview dashboard + filters
+bootstrap alert rules
+```
+
+When canonical telemetry names, resources, labels, or dashboard query assumptions change, update the Grafana/dashboard contract and `GROVEHUB_OBSERVABILITY.md` in the same task.
+
 ### Local developer hot reload
 
 GroveHub development commands have fixed semantics:
@@ -115,7 +154,7 @@ make dev-start-with-logs
     -> hot reload
 ```
 
-Do not route `dev-start` or `dev-start-with-logs` through the one-time binary path.
+Do not route `dev-start` or `dev-start-with-logs` through a one-time backend binary.
 
 Air watches backend `.go`, `go.mod`, and `go.sum` changes. After a developer runs `git pull`, watched file changes must trigger dependency refresh, rebuild, and backend restart automatically. Air does not perform `git pull` itself.
 
@@ -175,7 +214,8 @@ docs/
     │   └── SECURITY_GUIDELINES.md
     ├── observability/
     │   ├── OBSERVABILITY_GUIDELINES.md
-    │   └── TRACE_CONTEXT_GUIDELINES.md
+    │   ├── TRACE_CONTEXT_GUIDELINES.md
+    │   └── GROVEHUB_OBSERVABILITY.md
     ├── ci/
     │   └── CI_CD_GUIDELINES.md
     ├── deployment/
@@ -271,7 +311,7 @@ API change       -> API_CONTRACT_GUIDELINES
 DB change        -> DATABASE_GUIDELINES
 Provider change  -> PROVIDER_SDK_GUIDELINES
 Security change  -> SECURITY_GUIDELINES
-Telemetry change -> OBSERVABILITY_GUIDELINES + TRACE_CONTEXT_GUIDELINES
+Telemetry change -> OBSERVABILITY_GUIDELINES + TRACE_CONTEXT_GUIDELINES + GROVEHUB_OBSERVABILITY
 ```
 
 ---
@@ -365,6 +405,7 @@ docs/engineering/testing/BACKEND_UNIT_TEST_STRUCTURE.md
 docs/engineering/security/SECURITY_GUIDELINES.md
 docs/engineering/observability/OBSERVABILITY_GUIDELINES.md
 docs/engineering/observability/TRACE_CONTEXT_GUIDELINES.md
+docs/engineering/observability/GROVEHUB_OBSERVABILITY.md
 ```
 
 Inspect:
@@ -414,6 +455,7 @@ Read:
 ```text
 docs/engineering/scripts/SCRIPT_AND_MAKEFILE_GUIDELINES.md
 docs/engineering/scripts/GROVEHUB_LOCAL_DEVELOPMENT.md when local start/stop/dev behavior is involved
+docs/engineering/observability/GROVEHUB_OBSERVABILITY.md when local telemetry/export behavior is involved
 ```
 
 Inspect:
@@ -467,9 +509,10 @@ Read:
 ```text
 docs/engineering/observability/OBSERVABILITY_GUIDELINES.md
 docs/engineering/observability/TRACE_CONTEXT_GUIDELINES.md
+docs/engineering/observability/GROVEHUB_OBSERVABILITY.md
 ```
 
-Inspect shared telemetry/logger primitives before creating new signal conventions.
+Inspect shared telemetry/logger primitives, service registry, collector configuration, dashboards, and alert query assumptions before creating new signal conventions.
 
 ---
 
@@ -1076,7 +1119,7 @@ Do not solve test failures by weakening authorization or secret handling.
 
 ## 25. Observability Context Rule
 
-Before adding logs/metrics/traces inspect shared telemetry abstractions and naming plus `TRACE_CONTEXT_GUIDELINES.md`.
+Before adding logs/metrics/traces inspect shared telemetry abstractions and naming plus both `TRACE_CONTEXT_GUIDELINES.md` and `GROVEHUB_OBSERVABILITY.md`.
 
 Do not invent:
 
@@ -1085,11 +1128,17 @@ new request-id spelling
 new trace-id spelling
 new metric unit
 new provider telemetry format
+new service.name variant
+new high-cardinality metric label
 ```
 
 without extending the shared standard.
 
 Every request-scoped backend boundary must preserve `context.Context` and the active trace.
+
+Use the canonical telemetry service registry. Current service resources are `LAUNCHER (EDGE)` and `IDENTITY`; machine keys are `launcher-edge` and `identity`.
+
+For latency percentiles, emit histogram measurements and let Grafana/Prometheus calculate P50/P95/P99. Do not store precomputed percentile values as per-request metrics.
 
 ---
 
@@ -1494,6 +1543,8 @@ non-interactive CI behavior
 
 For hot-reload changes also validate that a watched backend file change triggers an Air rebuild and restart without rerunning Make.
 
+For observability changes, validate collector configuration, signal export assumptions, dashboard query syntax, and no-data behavior before claiming Grafana verification.
+
 ---
 
 ## 47. Validation — API / DB / Provider
@@ -1550,6 +1601,7 @@ coverage achieved
 browser verified
 migration verified
 air-gap verified
+Grafana data verified
 ```
 
 without executing the relevant validation.
@@ -1573,6 +1625,9 @@ An agent must not:
 - drop trace context across a request-scoped service/API/dependency boundary
 - use `X-Trace-ID` as a substitute for W3C `traceparent` propagation
 - put trace IDs inside API JSON response envelopes
+- invent an ad-hoc GroveHub telemetry `service.name` instead of using the canonical registry
+- calculate P95/P99 inside individual application requests instead of recording histograms
+- use trace IDs, request IDs, user/student IDs, emails, raw URLs, raw errors, or SQL as metric labels
 - log raw secrets, authorization headers, cookies, credentials, or arbitrary request/response bodies from generic tracing middleware
 - route `make dev-start` or `make dev-start-with-logs` through a one-time backend binary instead of Air
 - add frontend API services inside components or shell
@@ -1609,6 +1664,9 @@ An agent must not:
 [ ] Tests/stories/mocks/runbook inspected
 [ ] Consumers inspected if public behavior changes
 [ ] Trace-context boundary checked for request-scoped backend changes
+[ ] Canonical telemetry service identity checked when observability is involved
+[ ] Metric cardinality/route-template safety checked when metrics are involved
+[ ] Dashboard/alert query impact checked when telemetry names or labels change
 [ ] Local dev command semantics preserved when start/stop scripts change
 [ ] Security/data/provider impact understood
 [ ] Minimal requested scope understood
@@ -1628,6 +1686,9 @@ An agent must not:
 [ ] Required tests added/updated in the correct owner-local location
 [ ] Every backend unit-test package has suite_test.go and uses Ginkgo/Gomega
 [ ] Trace context preserved across relevant backend boundaries
+[ ] Canonical GroveHub telemetry service identity preserved
+[ ] Metrics use bounded labels and percentile-compatible histograms where relevant
+[ ] Grafana/dashboard/alert artifacts updated when telemetry contracts changed
 [ ] Dev-start commands remain Air-backed when local development startup is changed
 [ ] Stories/mocks/runbooks/docs updated where relevant
 [ ] Security/observability included where relevant
@@ -1666,4 +1727,4 @@ Minimal Correct Change
 
 ## 54. Final Principle
 
-> **Understand ownership before placement. Understand contracts before modification. Search before creating. Preserve boundaries and trace context before optimizing. Validate before reporting completion.**
+> **Understand ownership before placement. Understand contracts before modification. Search before creating. Preserve boundaries, canonical telemetry identity, and trace context before optimizing. Validate before reporting completion.**

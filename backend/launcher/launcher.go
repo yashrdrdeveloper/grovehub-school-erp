@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -13,6 +14,7 @@ import (
 
 	"grovehub/launcher/middleware"
 	"grovehub/launcher/routing"
+	coretelemetry "grovehub/libs/core/telemetry"
 	"grovehub/services/identity"
 )
 
@@ -25,11 +27,24 @@ func Run(logger *slog.Logger) error {
 	identityModule.RegisterHTTP(mux)
 	routing.RegisterFallback(mux)
 
+	edgeService := coretelemetry.ServiceLauncherEdge
 	edgeHandler := otelhttp.NewHandler(
 		middleware.RequestObservability(logger, mux),
 		"grovehub.edge",
+		otelhttp.WithTracerProvider(coretelemetry.TracerProvider(edgeService.Key)),
+		otelhttp.WithMeterProvider(coretelemetry.MeterProvider(edgeService.Key)),
+		otelhttp.WithSpanNameFormatter(func(_ string, request *http.Request) string {
+			route := strings.TrimPrefix(request.Pattern, request.Method+" ")
+			if route == "" {
+				route = "unmatched"
+			}
+			return edgeService.Name + " " + request.Method + " " + route
+		}),
 		otelhttp.WithSpanOptions(
-			trace.WithAttributes(attribute.String("grovehub.component", "edge")),
+			trace.WithAttributes(
+				attribute.String("grovehub.service.key", edgeService.Key),
+				attribute.String("grovehub.service.display_name", edgeService.Name),
+			),
 		),
 	)
 
@@ -39,7 +54,12 @@ func Run(logger *slog.Logger) error {
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
-	logger.Info("http server started", "service", "platform", "address", httpAddress)
+	logger.Info(
+		"http server started",
+		"service", edgeService.Name,
+		"serviceKey", edgeService.Key,
+		"address", httpAddress,
+	)
 
 	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return fmt.Errorf("serve http: %w", err)

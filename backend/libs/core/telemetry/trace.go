@@ -4,10 +4,11 @@ import (
 	"context"
 	"log/slog"
 
-	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
+
+type serviceContextKey struct{}
 
 func StartSpan(
 	ctx context.Context,
@@ -15,18 +16,32 @@ func StartSpan(
 	operation string,
 	options ...trace.SpanStartOption,
 ) (context.Context, trace.Span) {
+	service := ResolveService(component)
 	baseOptions := []trace.SpanStartOption{
 		trace.WithAttributes(
-			attribute.String("grovehub.component", component),
+			attribute.String("grovehub.service.key", service.Key),
+			attribute.String("grovehub.service.display_name", service.Name),
 			attribute.String("grovehub.operation", operation),
 		),
 	}
 
-	return otel.Tracer("grovehub/" + component).Start(
+	tracer := TracerProvider(service.Key).Tracer("grovehub/" + service.Key)
+	spanContext, span := tracer.Start(
 		ctx,
-		component+" "+operation,
+		service.Name+" "+operation,
 		append(baseOptions, options...)...,
 	)
+
+	return ContextWithService(spanContext, service), span
+}
+
+func ContextWithService(ctx context.Context, service Service) context.Context {
+	return context.WithValue(ctx, serviceContextKey{}, service)
+}
+
+func ServiceFromContext(ctx context.Context) (Service, bool) {
+	service, ok := ctx.Value(serviceContextKey{}).(Service)
+	return service, ok
 }
 
 func TraceID(ctx context.Context) string {
@@ -48,16 +63,26 @@ func SpanID(ctx context.Context) string {
 }
 
 func LogFields(ctx context.Context) []any {
-	spanContext := trace.SpanContextFromContext(ctx)
-	if !spanContext.IsValid() {
-		return nil
+	fields := make([]any, 0, 10)
+	if service, ok := ServiceFromContext(ctx); ok {
+		fields = append(
+			fields,
+			"service", service.Name,
+			"serviceKey", service.Key,
+		)
 	}
 
-	return []any{
-		"traceId", spanContext.TraceID().String(),
-		"spanId", spanContext.SpanID().String(),
-		"traceFlags", uint8(spanContext.TraceFlags()),
+	spanContext := trace.SpanContextFromContext(ctx)
+	if spanContext.IsValid() {
+		fields = append(
+			fields,
+			"traceId", spanContext.TraceID().String(),
+			"spanId", spanContext.SpanID().String(),
+			"traceFlags", uint8(spanContext.TraceFlags()),
+		)
 	}
+
+	return fields
 }
 
 func Logger(logger *slog.Logger, ctx context.Context) *slog.Logger {

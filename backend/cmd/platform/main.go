@@ -28,14 +28,27 @@ func run() int {
 		defer cancel()
 
 		if err := shutdownTelemetry(ctx); err != nil {
-			logger.Error("OpenTelemetry shutdown failed", "service", "platform", "error", err)
+			logger.Error(
+				"OpenTelemetry shutdown failed",
+				"service", coretelemetry.ServiceLauncherEdge.Name,
+				"error", err,
+			)
 		}
 	}()
 
-	logger.Info("starting GroveHub", "service", "platform", "phase", "0.1.1")
+	logger.Info(
+		"starting GroveHub",
+		"service", coretelemetry.ServiceLauncherEdge.Name,
+		"serviceKey", coretelemetry.ServiceLauncherEdge.Key,
+		"phase", "0.1.1",
+	)
 
 	if err := launcher.Run(logger); err != nil {
-		logger.Error("GroveHub stopped with error", "service", "platform", "error", err)
+		logger.Error(
+			"GroveHub stopped with error",
+			"service", coretelemetry.ServiceLauncherEdge.Name,
+			"error", err,
+		)
 		return 1
 	}
 

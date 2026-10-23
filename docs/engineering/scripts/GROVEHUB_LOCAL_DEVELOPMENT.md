@@ -1,7 +1,7 @@
 # GroveHub Local Development
 
 > **Status:** Mandatory GroveHub local-development standard  
-> **Applies to:** backend developer startup, Air hot reload, Swagger startup, local observability startup, process ownership, Go module refresh, and local backend log configuration  
+> **Applies to:** backend developer startup, Air hot reload, Swagger startup, local observability startup, process ownership, Go module refresh, and local backend telemetry configuration  
 > **Precedence:** This file is authoritative for GroveHub local development command semantics when an older generic example conflicts with it.
 
 ---
@@ -28,6 +28,7 @@ make dev-start-with-logs
     -> run backend through Air in the background
     -> start Swagger
     -> start the local OpenTelemetry collector
+    -> export GroveHub logs, traces, and metrics to Grafana Cloud
     -> hot reload enabled
 ```
 
@@ -145,6 +146,8 @@ Shell messages such as `[INFO] Starting GroveHub backend` and Air watcher/build 
 
 The collector must translate the structured GroveHub `level` field into the OpenTelemetry log record severity (`SeverityNumber`/`SeverityText`) explicitly. Grafana/Loki level detection must not be left to inference from the JSON body. For example, a GroveHub request record with `level=ERROR` for HTTP 404 must arrive in Grafana as OpenTelemetry `ERROR` severity.
 
+The collector also maps structured GroveHub `service` and `serviceKey` fields into resource attributes so logs use the same logical service identity as traces and metrics.
+
 ---
 
 ## 6. Application Log Levels
@@ -173,13 +176,54 @@ Rules:
 5. If `GROVEHUB_LOG_LEVELS` is absent or empty, the compatibility default is `INFO,WARN,ERROR`.
 6. This is exact selection, not minimum-threshold semantics. `ERROR,WARN` emits only WARN and ERROR. `DEBUG,ERROR` emits only DEBUG and ERROR.
 7. Filtering happens at the GroveHub application logger before logs are written to `.runtime/logs/backend.log`; filtered-out application records therefore are not shipped to Grafana by the local collector.
-8. Changing the root `.env` does not itself trigger Air because Air watches the backend source/module tree. Restart the backend/dev stack after changing `GROVEHUB_LOG_LEVELS`.
-
-The backend startup scripts may load the root `.env`, but only application runtime variables explicitly approved for the backend should be exported to the backend process. Grafana Cloud credentials must not be exported to the ordinary backend merely to configure logging.
 
 ---
 
-## 7. Mandatory Agent Rules
+## 7. Trace and Metric Controls
+
+Local tracing and metric export are configured through the root `.env` file:
+
+```env
+GROVEHUB_TRACE_SAMPLE_RATIO=1.0
+GROVEHUB_METRIC_EXPORT_INTERVAL=15s
+OTEL_SERVICE_VERSION=dev
+OTEL_DEPLOYMENT_ENVIRONMENT=local
+```
+
+Rules:
+
+1. `GROVEHUB_TRACE_SAMPLE_RATIO` is `0.0` through `1.0`; local development defaults to `1.0`.
+2. `GROVEHUB_METRIC_EXPORT_INTERVAL` must remain at least 5 seconds; the default is 15 seconds.
+3. `OTEL_SERVICE_VERSION` is attached to telemetry resources.
+4. `OTEL_SERVICE_INSTANCE_ID` is optional; when absent the backend creates a local `<hostname>-<pid>` instance ID.
+5. The application owns logical service identities such as `LAUNCHER (EDGE)` and `IDENTITY`; `OTEL_SERVICE_NAME` in local collector configuration is only a fallback for records that lack a service identity.
+6. Changing root `.env` telemetry values does not trigger Air. Restart the backend/dev stack after changing them.
+
+The backend startup scripts may load the root `.env`, but only application runtime variables explicitly approved for the backend are exported to the ordinary backend process. Grafana Cloud credentials are used by the collector and must not be exported merely to configure application logging/metrics.
+
+---
+
+## 8. Local Observability Flow
+
+```text
+GroveHub backend
+  ├── structured application logs
+  ├── OpenTelemetry traces
+  └── OpenTelemetry metrics
+          ↓
+local OpenTelemetry Collector
+          ↓
+Grafana Cloud
+  ├── Loki
+  ├── Tempo
+  └── Prometheus/Mimir
+```
+
+Use `docs/engineering/observability/GROVEHUB_OBSERVABILITY.md` for canonical service identities, metrics, dashboard filters, sampling, cardinality, and alert rules.
+
+---
+
+## 9. Mandatory Agent Rules
 
 When changing local developer startup:
 
@@ -194,8 +238,10 @@ When changing local developer startup:
 9. Treat `backend/go.sum` as committed repository state.
 10. Preserve `GROVEHUB_LOG_LEVELS` exact-list semantics and supported values.
 11. Do not silently fall back when an explicitly configured log level is invalid.
-12. Do not export unrelated `.env` secrets into the backend process.
+12. Keep telemetry runtime variables explicit; do not export unrelated `.env` secrets into the backend process.
 13. Keep local collector filelog export limited to structured GroveHub application records; do not ship Air/watch/build chatter as application logs.
 14. Map GroveHub structured `level` to OpenTelemetry severity explicitly before export; do not rely on Grafana/Loki inferred level detection for application severity.
-15. Never add broad process termination.
-16. Report the actual start/stop/hot-reload validation performed.
+15. Keep log resource service identity aligned with trace/metric service identity.
+16. Preserve traces + metrics export in `dev-start-with-logs`, not only log shipping.
+17. Never add broad process termination.
+18. Report the actual start/stop/hot-reload/telemetry validation performed.

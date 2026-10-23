@@ -2,6 +2,8 @@ package tracing
 
 import (
 	"net/http"
+	"strings"
+	"time"
 
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -43,6 +45,7 @@ func (writer *statusWriter) Unwrap() http.ResponseWriter {
 
 func ServiceHandler(service string, operation string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		startedAt := time.Now()
 		ctx, span := coretelemetry.StartSpan(
 			request.Context(),
 			service,
@@ -51,14 +54,16 @@ func ServiceHandler(service string, operation string, next http.Handler) http.Ha
 		)
 		defer span.End()
 
+		route := strings.TrimPrefix(request.Pattern, request.Method+" ")
+		if route == "" {
+			route = request.URL.Path
+		}
+
 		span.SetAttributes(
-			attribute.String("grovehub.service", service),
 			attribute.String("http.request.method", request.Method),
 			attribute.String("url.path", request.URL.Path),
+			attribute.String("http.route", route),
 		)
-		if request.Pattern != "" {
-			span.SetAttributes(attribute.String("http.route", request.Pattern))
-		}
 
 		recorder := &statusWriter{
 			ResponseWriter: writer,
@@ -73,6 +78,21 @@ func ServiceHandler(service string, operation string, next http.Handler) http.Ha
 		)
 		if recorder.status >= http.StatusBadRequest {
 			span.SetStatus(codes.Error, http.StatusText(recorder.status))
+			span.AddEvent(
+				"service.operation.failed",
+				trace.WithAttributes(
+					attribute.String("grovehub.operation", operation),
+					attribute.Int("http.response.status_code", recorder.status),
+				),
+			)
 		}
+
+		coretelemetry.RecordOperation(
+			ctx,
+			service,
+			operation,
+			time.Since(startedAt),
+			recorder.status,
+		)
 	})
 }

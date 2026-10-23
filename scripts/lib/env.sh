@@ -10,7 +10,16 @@ load_backend_runtime_env() {
   source "${env_file}"
   set -u
 
-  if [[ -n "${GROVEHUB_LOG_LEVELS+x}" ]]; then
-    export GROVEHUB_LOG_LEVELS
-  fi
+  local name
+  for name in \
+    GROVEHUB_LOG_LEVELS \
+    GROVEHUB_TRACE_SAMPLE_RATIO \
+    GROVEHUB_METRIC_EXPORT_INTERVAL \
+    OTEL_SERVICE_VERSION \
+    OTEL_SERVICE_INSTANCE_ID \
+    OTEL_DEPLOYMENT_ENVIRONMENT; do
+    if [[ -n "${!name+x}" ]]; then
+      export "${name}"
+    fi
+  done
 }
