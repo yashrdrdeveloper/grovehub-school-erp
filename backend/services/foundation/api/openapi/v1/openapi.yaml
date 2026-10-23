@@ -1,0 +1,185 @@
+openapi: 3.1.0
+info:
+  title: GroveHub Foundation API
+  version: 0.1.0
+  description: Foundation person/GID contract.
+paths:
+  /foundation/persons:
+    post:
+      operationId: createFoundationPerson
+      summary: Create a permanent GroveHub person identity
+      tags:
+        - Foundation
+      responses:
+        "201":
+          description: Person created.
+          headers:
+            X-Trace-ID:
+              $ref: "#/components/headers/TraceID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PersonSuccessResponse"
+        "500":
+          $ref: "#/components/responses/InternalError"
+  /foundation/persons/{gid}:
+    parameters:
+      - $ref: "#/components/parameters/GID"
+    get:
+      operationId: getFoundationPersonByGID
+      summary: Get a person by GID
+      tags:
+        - Foundation
+      responses:
+        "200":
+          description: Person found.
+          headers:
+            X-Trace-ID:
+              $ref: "#/components/headers/TraceID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PersonSuccessResponse"
+        "400":
+          $ref: "#/components/responses/InvalidGID"
+        "404":
+          $ref: "#/components/responses/PersonNotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+  /foundation/persons/{gid}/deactivate:
+    parameters:
+      - $ref: "#/components/parameters/GID"
+    patch:
+      operationId: deactivateFoundationPerson
+      summary: Deactivate a person while preserving the permanent GID
+      tags:
+        - Foundation
+      responses:
+        "200":
+          description: Person deactivated or already deactivated.
+          headers:
+            X-Trace-ID:
+              $ref: "#/components/headers/TraceID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PersonSuccessResponse"
+        "400":
+          $ref: "#/components/responses/InvalidGID"
+        "404":
+          $ref: "#/components/responses/PersonNotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+components:
+  headers:
+    TraceID:
+      description: GroveHub trace identifier for support and correlation. W3C traceparent remains the propagation contract.
+      schema:
+        type: string
+        pattern: "^[0-9a-f]{32}$"
+  parameters:
+    GID:
+      name: gid
+      in: path
+      required: true
+      description: Permanent GroveHub UUIDv7 person identifier.
+      schema:
+        type: string
+        format: uuid
+        pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+  schemas:
+    Person:
+      type: object
+      additionalProperties: false
+      required:
+        - gid
+        - status
+        - version
+        - createdAt
+        - updatedAt
+      properties:
+        gid:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - DEACTIVATED
+        version:
+          type: integer
+          format: int64
+          minimum: 1
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    PersonSuccessResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          $ref: "#/components/schemas/Person"
+    PersonErrorMetadata:
+      type: object
+      additionalProperties: false
+      properties:
+        gid:
+          type: string
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - success
+        - errorCode
+        - errorMessage
+        - httpErrorCode
+        - errorMetaData
+      properties:
+        success:
+          type: boolean
+          const: false
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        httpErrorCode:
+          type: integer
+        errorMetaData:
+          $ref: "#/components/schemas/PersonErrorMetadata"
+  responses:
+    InvalidGID:
+      description: The supplied GID is not a valid UUIDv7 person identifier.
+      headers:
+        X-Trace-ID:
+          $ref: "#/components/headers/TraceID"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    PersonNotFound:
+      description: No Foundation person exists for the supplied GID.
+      headers:
+        X-Trace-ID:
+          $ref: "#/components/headers/TraceID"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    InternalError:
+      description: Foundation could not complete the operation.
+      headers:
+        X-Trace-ID:
+          $ref: "#/components/headers/TraceID"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
