@@ -33,6 +33,7 @@ Current logical services are centrally defined in `backend/libs/core/telemetry/s
 ```text
 key             OpenTelemetry service.name
 launcher-edge   LAUNCHER (EDGE)
+foundation      FOUNDATION
 identity        IDENTITY
 ```
 
@@ -42,7 +43,7 @@ All GroveHub logical services use:
 service.namespace = grovehub
 ```
 
-`service.name` is a resource-level identity. Do not create ad-hoc variants such as `edge`, `launcher`, `identity-service`, or `platform` in telemetry.
+`service.name` is a resource-level identity. Do not create ad-hoc variants such as `edge`, `launcher`, `foundation-service`, `identity-service`, or `platform` in telemetry.
 
 Future services must be added to the canonical service registry before emitting service-owned telemetry.
 
@@ -72,9 +73,9 @@ One user/API operation keeps one trace ID across logical services.
 ```text
 LAUNCHER (EDGE) server span
         ↓ same traceId
-IDENTITY internal/service span
+FOUNDATION or IDENTITY service span
         ↓ same traceId
-future DB / HTTP / provider client spans
+real DB / HTTP / provider client span when present
 ```
 
 Each span gets a different span ID and the correct parent span ID.
@@ -297,11 +298,11 @@ X-Trace-ID
 
 ---
 
-## 15. Future Dependencies
+## 15. Dependencies
 
-Add DB, Redis, provider, messaging, or worker telemetry only when the dependency actually exists in the product.
+Foundation currently uses PostgreSQL as a real dependency through the shared PostgreSQL pool capability.
 
-When introduced, instrument:
+When a real DB, Redis, provider, messaging, or worker dependency exists, instrument the dependency at the appropriate technical boundary with:
 
 ```text
 latency
@@ -367,6 +368,8 @@ service
 route
 HTTP method
 ```
+
+The `service` filter must include all canonical logical services exposed by telemetry, including `FOUNDATION` and `IDENTITY`.
 
 Filters must support one, many, and All values using regex-safe variable expansion.
 
@@ -485,7 +488,7 @@ When adding or modifying backend behavior:
 8. Reuse common telemetry and HTTP tracing helpers.
 9. Add telemetry for real dependencies only when they exist.
 10. Update dashboard/query expectations when canonical metric names change.
-11. Add/update owner-local Ginkgo/Gomega tests for critical telemetry behavior.
+11. Add/update owner-local Ginkgo/Gomega tests for critical telemetry behavior according to the active implementation phase.
 12. Report only telemetry validation that was actually performed.
 
 ---
@@ -502,7 +505,7 @@ An observability change is complete when:
 [ ] P95/P99-compatible histogram exists for latency behavior
 [ ] sensitive data is not introduced
 [ ] dashboards/alerts are updated when relevant
-[ ] owner-local tests are updated
+[ ] owner-local tests are updated according to the active implementation phase
 [ ] docs/AGENT routing remains current
 [ ] actual validation is reported
 ```
