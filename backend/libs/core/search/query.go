@@ -136,22 +136,22 @@ func BuildCursorCondition(
 	sort SortField,
 	direction searchcontract.Direction,
 	value string,
-	gid string,
-	gidExpression string,
+	cursorID string,
+	cursorExpression string,
 ) string {
 	comparison := map[searchcontract.Direction]string{
 		searchcontract.DirectionAscending:  ">",
 		searchcontract.DirectionDescending: "<",
 	}[direction]
 	valuePlaceholder := builder.Add(value)
-	gidPlaceholder := builder.Add(gid)
+	cursorPlaceholder := builder.Add(cursorID)
 
-	if sort.Expression == gidExpression {
-		return fmt.Sprintf("%s %s %s%s", gidExpression, comparison, valuePlaceholder, sort.Cast)
+	if sort.Expression == cursorExpression {
+		return fmt.Sprintf("%s %s %s%s", cursorExpression, comparison, valuePlaceholder, sort.Cast)
 	}
 
 	return fmt.Sprintf(
-		"(%s %s %s%s OR (%s = %s%s AND %s %s %s::uuid))",
+		"(%s %s %s%s OR (%s = %s%s AND %s %s %s))",
 		sort.Expression,
 		comparison,
 		valuePlaceholder,
@@ -159,9 +159,9 @@ func BuildCursorCondition(
 		sort.Expression,
 		valuePlaceholder,
 		sort.Cast,
-		gidExpression,
+		cursorExpression,
 		comparison,
-		gidPlaceholder,
+		cursorPlaceholder,
 	)
 }
 

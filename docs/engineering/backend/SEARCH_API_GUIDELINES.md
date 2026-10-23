@@ -138,13 +138,52 @@ A new generic operator should be implemented once in `libs/core/search` and then
 
 Cursor values are opaque to clients.
 
-The shared search package owns serialization/encoding. The owning service validates that the cursor matches:
+The shared search package owns serialization/encoding and generic keyset predicate construction. The owning service/repository supplies the stable cursor identity for its resource.
+
+The shared core must never assume that the stable cursor ID is a GroveHub GID, UUID, or any specific domain identifier.
+
+Examples of valid service-owned cursor IDs include:
+
+```text
+Person          -> GID
+Lead            -> leadId
+Communication   -> communicationId
+Admission       -> admissionId
+```
+
+The generic cursor predicate receives:
+
+```text
+sort expression
+sort direction
+sort value
+cursorId
+cursorExpression
+```
+
+`cursorExpression` is owned by the repository mapping and may point to any stable unique field appropriate for that resource.
+
+Example:
+
+```text
+Foundation Person:
+    cursorId         = person GID value
+    cursorExpression = p.gid
+
+Admissions Lead:
+    cursorId         = leadId value
+    cursorExpression = lead.lead_id
+```
+
+The shared core must not hardcode casts such as `::uuid` for the cursor ID. PostgreSQL type resolution comes from the owning repository's cursor expression. If a resource requires an explicit expression/cast, the repository owns that expression.
+
+The owning service validates that the decoded cursor matches:
 
 ```text
 requested sort field
 requested direction
-field value type
-stable tie-breaker ID
+sort field value type
+service-specific cursorId type
 ```
 
 Repositories use keyset predicates, never `OFFSET` for the shared search contract.
@@ -194,4 +233,6 @@ NO copied cursor codec per service
 NO offset/page-number pagination in the shared contract
 NO search projection as source of truth
 NO generic core package containing Person/Foundation-specific knowledge
+NO GID/UUID-specific cursor logic in libs/core/search
+NO hardcoded cursor-id cast such as ::uuid in generic cursor mechanics
 ```
