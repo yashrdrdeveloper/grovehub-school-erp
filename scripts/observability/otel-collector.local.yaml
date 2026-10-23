@@ -12,6 +12,8 @@ receivers:
     include_file_name: false
     include_file_path: false
     operators:
+      - type: filter
+        expr: 'not (body matches "^{.*}$")'
       - type: json_parser
         parse_to: attributes
         severity:

@@ -10,10 +10,12 @@ source "${SCRIPT_DIR}/../lib/paths.sh"
 source "${SCRIPT_DIR}/../lib/common.sh"
 source "${SCRIPT_DIR}/../lib/toolchain.sh"
 source "${SCRIPT_DIR}/../lib/go.sh"
+source "${SCRIPT_DIR}/../lib/env.sh"
 source "${SCRIPT_DIR}/../config/services.sh"
 
 ensure_runtime_dirs
 ensure_air
+load_backend_runtime_env
 sync_backend_go_modules
 
 log_info "Running GroveHub backend with Air hot reload"

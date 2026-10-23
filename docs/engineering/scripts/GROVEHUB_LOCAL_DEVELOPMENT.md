@@ -1,7 +1,7 @@
 # GroveHub Local Development
 
 > **Status:** Mandatory GroveHub local-development standard  
-> **Applies to:** backend developer startup, Air hot reload, Swagger startup, local observability startup, process ownership, and Go module refresh during development  
+> **Applies to:** backend developer startup, Air hot reload, Swagger startup, local observability startup, process ownership, Go module refresh, and local backend log configuration  
 > **Precedence:** This file is authoritative for GroveHub local development command semantics when an older generic example conflicts with it.
 
 ---
@@ -141,20 +141,58 @@ tail -f .runtime/logs/backend.log
 
 A successful Air reload should show the module-sync, build, and restart sequence in this log.
 
+Shell messages such as `[INFO] Starting GroveHub backend` and Air watcher/build lines are developer tooling output and are not controlled by the application log-level setting. The local OpenTelemetry filelog receiver drops non-JSON developer-tooling lines before exporting to Grafana, so the Grafana application-log stream contains only structured GroveHub records.
+
 ---
 
-## 6. Mandatory Agent Rules
+## 6. Application Log Levels
+
+Local backend application log levels are configured through the root `.env` file using:
+
+```env
+GROVEHUB_LOG_LEVELS=ERROR,WARN
+```
+
+The value is a comma-separated exact-match list. Supported values are:
+
+```text
+DEBUG
+INFO
+WARN
+ERROR
+```
+
+Rules:
+
+1. Matching is case-insensitive.
+2. Whitespace around values is ignored.
+3. Duplicate values are harmless.
+4. Unknown values are configuration errors and the backend must fail startup clearly.
+5. If `GROVEHUB_LOG_LEVELS` is absent or empty, the compatibility default is `INFO,WARN,ERROR`.
+6. This is exact selection, not minimum-threshold semantics. `ERROR,WARN` emits only WARN and ERROR. `DEBUG,ERROR` emits only DEBUG and ERROR.
+7. Filtering happens at the GroveHub application logger before logs are written to `.runtime/logs/backend.log`; filtered-out application records therefore are not shipped to Grafana by the local collector.
+8. Changing the root `.env` does not itself trigger Air because Air watches the backend source/module tree. Restart the backend/dev stack after changing `GROVEHUB_LOG_LEVELS`.
+
+The backend startup scripts may load the root `.env`, but only application runtime variables explicitly approved for the backend should be exported to the backend process. Grafana Cloud credentials must not be exported to the ordinary backend merely to configure logging.
+
+---
+
+## 7. Mandatory Agent Rules
 
 When changing local developer startup:
 
 1. Preserve the command semantics in this document.
 2. Keep the root Makefile thin.
 3. Put orchestration in `scripts/`.
-4. Reuse shared process/toolchain/module helpers.
+4. Reuse shared process/toolchain/module/environment helpers.
 5. Keep `backend-start` production-like and non-reloading.
 6. Keep `dev-start` and `dev-start-with-logs` Air-backed.
 7. Ensure pulled `.go`, `go.mod`, and `go.sum` changes trigger a rebuild.
 8. Use `go mod tidy` to synchronize the module graph before builds that must self-heal after dependency changes.
 9. Treat `backend/go.sum` as committed repository state.
-10. Never add broad process termination.
-11. Report the actual start/stop/hot-reload validation performed.
+10. Preserve `GROVEHUB_LOG_LEVELS` exact-list semantics and supported values.
+11. Do not silently fall back when an explicitly configured log level is invalid.
+12. Do not export unrelated `.env` secrets into the backend process.
+13. Keep local collector filelog export limited to structured GroveHub application records; do not ship Air/watch/build chatter as application logs.
+14. Never add broad process termination.
+15. Report the actual start/stop/hot-reload validation performed.

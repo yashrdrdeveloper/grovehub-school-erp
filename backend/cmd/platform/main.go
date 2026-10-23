@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"time"
 
@@ -15,7 +16,12 @@ func main() {
 }
 
 func run() int {
-	logger := bootstrap.NewLogger(os.Stdout)
+	logger, err := bootstrap.NewLogger(os.Stdout)
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "invalid GROVEHUB_LOG_LEVELS: %v\n", err)
+		return 1
+	}
+
 	shutdownTelemetry := coretelemetry.Initialize(context.Background(), logger)
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

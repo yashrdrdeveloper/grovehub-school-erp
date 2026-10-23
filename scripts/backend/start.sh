@@ -10,10 +10,12 @@ source "${SCRIPT_DIR}/../lib/paths.sh"
 source "${SCRIPT_DIR}/../lib/common.sh"
 source "${SCRIPT_DIR}/../lib/process.sh"
 source "${SCRIPT_DIR}/../lib/toolchain.sh"
+source "${SCRIPT_DIR}/../lib/env.sh"
 source "${SCRIPT_DIR}/../config/services.sh"
 
 ensure_runtime_dirs
 require_command curl
+load_backend_runtime_env
 
 PID_FILE="${RUNTIME_PID_DIR}/backend.pid"
 LOG_FILE="${RUNTIME_LOG_DIR}/backend.log"
