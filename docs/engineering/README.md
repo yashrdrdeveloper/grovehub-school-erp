@@ -27,7 +27,7 @@ Cross-cutting guidelines only when boundary is affected
 
 `docs/AGENT.md` defines the full context-loading workflow for AI agents.
 
-For GroveHub backend work, the newer GroveHub-specific structure/testing/tracing/observability/local-development standards listed below take precedence over conflicting generic examples in older standards.
+For GroveHub backend work, the newer GroveHub-specific structure/mapping/testing/tracing/observability/local-development standards listed below take precedence over conflicting generic examples in older standards.
 
 ---
 
@@ -42,7 +42,8 @@ docs/
     │
     ├── backend/
     │   ├── BACKEND_CODE_GUIDELINES.md
-    │   └── GROVEHUB_BACKEND_STRUCTURE.md
+    │   ├── GROVEHUB_BACKEND_STRUCTURE.md
+    │   └── MAPPER_AND_DTO_GUIDELINES.md
     │
     ├── frontend/
     │   └── FRONTEND_CODE_GUIDELINES.md
@@ -98,7 +99,8 @@ docs/
 | Guideline | Owns |
 | --- | --- |
 | `BACKEND_CODE_GUIDELINES.md` | Generic Go service architecture, layering, clients, ports, repositories, errors, messaging, provider consumption |
-| `GROVEHUB_BACKEND_STRUCTURE.md` | **Current GroveHub backend placement**: root launcher/edge, service root + `controller/` + `routes/`, no service-local launcher, owner-local tests |
+| `GROVEHUB_BACKEND_STRUCTURE.md` | **Current GroveHub backend placement**: flat service structure, layer responsibilities, repository/service/controller boundaries |
+| `MAPPER_AND_DTO_GUIDELINES.md` | **Current GroveHub object transformation contract**: flat `dto/request` + `dto/response`, `mappers/`, builder usage, entity-to-response mapping, request-to-value mapping, error metadata mapping |
 | `FRONTEND_CODE_GUIDELINES.md` | React/TypeScript package architecture, `base/business/components/domain/shell`, public boundaries, services/readers, hooks, Storybook, mocks |
 | `TESTING_GUIDELINES.md` | Broad test strategy across unit/sanity/regression and supporting validation responsibilities |
 | `BACKEND_UNIT_TEST_STRUCTURE.md` | **Current GroveHub Go unit-test placement**: owner-local `tests/unit-test`, mirrored paths, mandatory `suite_test.go`, Ginkgo v2 + Gomega |
@@ -128,6 +130,7 @@ docs/
 
 ```text
 GROVEHUB_BACKEND_STRUCTURE
++ MAPPER_AND_DTO_GUIDELINES whenever DTOs, mappers, builders, service input/output, or error metadata are involved
 + BACKEND_CODE_GUIDELINES for generic layering/domain rules
 + BACKEND_UNIT_TEST_STRUCTURE
 + TESTING_GUIDELINES
@@ -166,11 +169,21 @@ PROVIDER_SDK_GUIDELINES
 ```text
 DATABASE_GUIDELINES
 + GROVEHUB_BACKEND_STRUCTURE
++ MAPPER_AND_DTO_GUIDELINES when database entities are converted to service/API DTOs
 + BACKEND_CODE_GUIDELINES
 + BACKEND_UNIT_TEST_STRUCTURE
 + TESTING_GUIDELINES
 + GROVEHUB_OBSERVABILITY when DB instrumentation is introduced
 + RELEASE_GUIDELINES when migration ships
+```
+
+### API / DTO / Mapper
+
+```text
+GROVEHUB_BACKEND_STRUCTURE
++ MAPPER_AND_DTO_GUIDELINES
++ API_CONTRACT_GUIDELINES
++ BACKEND_CODE_GUIDELINES
 ```
 
 ### Browser regression
@@ -263,8 +276,6 @@ PR Checklist
         ↓
 Definition of Done
         ↓
-Phase 0 Deliverables
-        ↓
 Agent Rules
         ↓
 Final Mandatory Rules
@@ -307,7 +318,7 @@ Examples:
 
 ```text
 Frontend domain       -> root index.ts
-Backend service       -> client/vN + API/DTO contract
+Backend service       -> DTO/API/client contract
 Provider              -> capability interface
 Database              -> repository/port
 Deployment            -> versioned artifact/config
@@ -356,14 +367,14 @@ Backend unit-test ownership follows `BACKEND_UNIT_TEST_STRUCTURE.md`.
 ```text
 LAUNCHER (EDGE)
       ↓ same traceId
-logical service span (for example IDENTITY)
+logical service span
       ↓ same traceId
 real dependency/client span when dependency exists
 ```
 
 `X-Trace-ID` is the support/debug header. W3C `traceparent` is the authoritative distributed parent/child propagation contract.
 
-Metrics detect unhealthy behavior, traces show the request waterfall, and logs explain correlated events. All signals must agree on the canonical logical service identity from `GROVEHUB_OBSERVABILITY.md`.
+Metrics detect unhealthy behavior, traces show the request waterfall, and logs explain correlated events.
 
 ---
 
@@ -379,8 +390,6 @@ dev-start
 dev-start-with-logs
     -> Air hot reload + Swagger + OTel collector
 ```
-
-After a developer runs `git pull`, Air reacts to watched `.go`, `go.mod`, and `go.sum` filesystem changes and rebuilds/restarts automatically. Air does not pull Git changes itself.
 
 ---
 
@@ -406,7 +415,7 @@ One authoritative source owns each rule.
 
 This index routes; it does not duplicate detailed standards.
 
-For current GroveHub backend placement/testing/tracing/observability/local-development, the GroveHub-specific standards are authoritative over conflicting historical generic examples.
+For current GroveHub backend placement/mapping/testing/tracing/observability/local-development, GroveHub-specific standards are authoritative over conflicting historical generic examples.
 
 ---
 
