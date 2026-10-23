@@ -45,7 +45,7 @@ backend/services/<service>/
 │   ├── request/                 # application/transport input DTOs
 │   └── response/                # output DTOs + error metadata DTOs
 ├── entity/                      # data-only domain entities/types
-├── mappers/                     # all object-to-object transformations/builders
+├── mappers/                     # representation conversions only
 ├── repository/                  # persistence contracts
 │   └── postgres/                # PostgreSQL implementation
 ├── services/                    # business use cases and business rules
@@ -83,7 +83,9 @@ Request DTO
   ↓
 Service
   ↓
-Mapper -> Entity/Value
+Mapper when representation conversion is needed
+  ↓
+Entity/Value
   ↓
 Repository interface
   ↓
@@ -158,14 +160,13 @@ NO repository returning response DTOs
 
 ### 3.3 Mappers
 
-All object-to-object transformation belongs in `mappers/`.
+Use `mappers/` for actual representation changes.
 
 Examples:
 
 ```text
 request DTO -> entity/value
 entity -> response DTO
-existing entity -> updated entity construction
 service context -> error metadata DTO
 persistence model -> entity, only when a persistence model is actually required
 ```
@@ -187,31 +188,29 @@ choose version increments
 choose HTTP status codes
 ```
 
-When an entity/DTO has several fields or is built in multiple use cases, use a focused builder in its mapper file.
+Do not introduce a builder merely to assign fields on a simple entity.
 
-Example:
-
-```go
-person := mappers.NewPersonBuilder().
-    WithGID(gid).
-    WithStatus(entity.PersonStatusActive).
-    WithVersion(1).
-    WithCreatedAt(now).
-    WithUpdatedAt(now).
-    Build()
-```
-
-The service decides `ACTIVE`, version `1`, and `now`. The builder only assigns supplied values.
-
-For updates:
+For simple entity creation, the service may construct the entity directly because the service owns the business defaults and values:
 
 ```go
-person = mappers.NewPersonBuilderFrom(person).
-    WithStatus(entity.PersonStatusDeactivated).
-    WithVersion(person.Version + 1).
-    WithUpdatedAt(now).
-    Build()
+person := entity.Person{
+    GID:       gid,
+    Status:    entity.PersonStatusActive,
+    Version:   1,
+    CreatedAt: now,
+    UpdatedAt: now,
+}
 ```
+
+For business state transitions, the service may update the entity directly:
+
+```go
+person.Status = entity.PersonStatusDeactivated
+person.Version++
+person.UpdatedAt = now
+```
+
+A builder is allowed only when real construction complexity justifies it. It is not a default pattern.
 
 ### 3.4 Repository Contract
 
@@ -286,11 +285,11 @@ translation of repository errors into stable service errors
 
 Current GroveHub application services may accept request DTOs and return response DTOs.
 
-Inside a service:
+For representation conversion:
 
 ```text
 request DTO
-   ↓ mapper
+   ↓ mapper when needed
 entity/value
    ↓ business decisions
 repository
@@ -300,7 +299,9 @@ mapper
 response DTO
 ```
 
-Services must use mappers for object conversion instead of assembling DTO/entity fields ad hoc.
+Services use mappers when one representation is being changed into another.
+
+Services may construct or mutate their own domain entity directly when applying business defaults or lifecycle decisions; that is business logic, not representation mapping.
 
 The service depends on repository contracts, not concrete PostgreSQL implementations.
 
@@ -399,6 +400,8 @@ backend/services/foundation/
 ├── migrations/
 └── tests/                       # add Foundation tests after the Foundation flow is complete
 ```
+
+For current Foundation Person mapping, `mappers/person.go` contains only real conversions such as request/value conversion and `ToPersonResponse`. It does not need a `PersonBuilder`.
 
 Do not introduce `src/`.
 
@@ -513,7 +516,7 @@ Before creating backend code, classify it by responsibility:
 data/type/constant                 -> entity/
 request/application input          -> dto/request/
 response/application output        -> dto/response/
-object conversion/builder          -> mappers/<resource>.go
+representation conversion          -> mappers/<resource>.go
 error metadata conversion          -> mappers/error.go
 service semantic error             -> constants/error/<resource>.go
 persistence contract               -> repository/
@@ -534,14 +537,14 @@ NO src/ wrapper in GroveHub services
 NO business logic in entity/
 NO business logic in DTOs
 NO business logic in mappers/
-NO business logic in repository/
 NO repository/database/network calls from mappers/
 NO repository/database access from controller/
 NO direct entity serialization as public API response
 NO repository returning response DTOs
-NO ad-hoc field-by-field entity/DTO conversion outside mappers/
+NO ad-hoc field-by-field representation conversion outside mappers/
+NO builder for simple field assignment
+NO pattern abstraction without real complexity
 NO ad-hoc error metadata maps outside mappers/
-NO ID/time/default generation inside builders
 NO business logic in routes/
 NO service-local launcher/
 NO generic repository/postgres/entity.go unless a real persistence-shape divergence requires a resource-specific model
