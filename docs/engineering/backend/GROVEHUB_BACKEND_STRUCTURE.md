@@ -2,13 +2,19 @@
 
 > **Status:** Mandatory GroveHub architecture standard  
 > **Applies to:** the current Go modular monolith and all new backend services/modules  
-> **Precedence:** This file is authoritative for current GroveHub service folder structure **and layer responsibilities**. When older generic backend/database examples conflict with this file, this file wins.
+> **Precedence:** This file is authoritative for current GroveHub service folder structure and layer responsibilities. When older generic backend/database examples conflict with this file, this file wins.
+
+For DTO/mapping work, also read:
+
+```text
+docs/engineering/backend/MAPPER_AND_DTO_GUIDELINES.md
+```
 
 ---
 
 ## 1. Current Runtime
 
-GroveHub currently runs as one Go platform process with a root launcher acting as the HTTP edge/composition boundary.
+GroveHub runs as one Go platform process with a root launcher acting as the HTTP edge/composition boundary.
 
 ```text
 cmd/platform
@@ -26,29 +32,29 @@ Service-local `launcher/` folders are not part of the current GroveHub service s
 
 ## 2. Canonical Service Structure
 
-GroveHub services use a flat responsibility-based structure. Do **not** add a `src/` wrapper.
+GroveHub services use a flat responsibility-based structure. Do not add a `src/` wrapper.
 
 ```text
 backend/services/<service>/
 ├── <service>.go
 ├── api/                         # public OpenAPI/proto contracts when required
 ├── config/                      # when required
-├── constants/                   # service-wide technical/semantic constants when required
+├── constants/
 │   └── error/                   # stable service error definitions grouped by resource
+├── dto/
+│   ├── request/                 # application/transport input DTOs
+│   └── response/                # output DTOs + error metadata DTOs
 ├── entity/                      # data-only domain entities/types
+├── mappers/                     # all object-to-object transformations/builders
 ├── repository/                  # persistence contracts
 │   └── postgres/                # PostgreSQL implementation
 ├── services/                    # business use cases and business rules
-├── controller/                  # transport/controller adapters
+├── controller/                  # transport binding + service invocation
 ├── routes/                      # route registration
-├── dto/
-│   └── vN/
-│       ├── request/
-│       └── response/
 ├── client/                      # when a public cross-service client exists
 ├── migrations/                  # service-owned database migrations
 └── tests/
-    └── unit-test/               # mirrors production responsibility
+    └── unit-test/               # added according to the current implementation phase
 ```
 
 Use only folders with a current responsibility.
@@ -66,27 +72,41 @@ unless an explicit architecture decision changes this standard first.
 
 ## 3. Mandatory Layer Responsibilities
 
-GroveHub follows this responsibility split:
+GroveHub uses this flow:
 
 ```text
 Route
   ↓
 Controller
   ↓
+Request DTO
+  ↓
 Service
+  ↓
+Mapper -> Entity/Value
   ↓
 Repository interface
   ↓
 PostgreSQL repository
   ↓
 PostgreSQL
-```
 
-`entity/` is a shared data model used by the service and repository layers. It does not call or depend on those layers.
+PostgreSQL repository
+  ↓
+Entity
+  ↓
+Service
+  ↓
+Mapper
+  ↓
+Response DTO
+  ↓
+Controller
+```
 
 ### 3.1 Entity
 
-`entity/` contains **data only**:
+`entity/` contains data only:
 
 ```text
 structs
@@ -109,34 +129,95 @@ HTTP/gRPC behavior
 business branching
 ```
 
+If logic answers a business question, it belongs in `services/`.
+
+### 3.2 DTO
+
+Current GroveHub DTO structure is flat:
+
+```text
+dto/request/
+dto/response/
+```
+
+DTOs contain data only.
+
+Request DTOs represent application/transport input.
+
+Response DTOs represent intentional public/application output and error metadata shapes.
+
+Rules:
+
+```text
+NO business logic in DTOs
+NO repository/database access in DTOs
+NO UUID/time generation in DTOs
+NO entity returned directly as a public response
+NO repository returning response DTOs
+```
+
+### 3.3 Mappers
+
+All object-to-object transformation belongs in `mappers/`.
+
+Examples:
+
+```text
+request DTO -> entity/value
+entity -> response DTO
+existing entity -> updated entity construction
+service context -> error metadata DTO
+persistence model -> entity, only when a persistence model is actually required
+```
+
+Mappers are pure transformation code.
+
+Mappers must not:
+
+```text
+query repositories/databases
+call networks
+read environment variables
+generate IDs
+read current time
+perform authorization
+validate business policy
+choose status/lifecycle transitions
+choose version increments
+choose HTTP status codes
+```
+
+When an entity/DTO has several fields or is built in multiple use cases, use a focused builder in its mapper file.
+
 Example:
 
 ```go
-type GID string
-
-type PersonStatus string
-
-const (
-    PersonStatusActive      PersonStatus = "ACTIVE"
-    PersonStatusDeactivated PersonStatus = "DEACTIVATED"
-)
-
-type Person struct {
-    GID       GID
-    Status    PersonStatus
-    Version   int64
-    CreatedAt time.Time
-    UpdatedAt time.Time
-}
+person := mappers.NewPersonBuilder().
+    WithGID(gid).
+    WithStatus(entity.PersonStatusActive).
+    WithVersion(1).
+    WithCreatedAt(now).
+    WithUpdatedAt(now).
+    Build()
 ```
 
-If logic answers a business question, it belongs in `services/`, not `entity/`.
+The service decides `ACTIVE`, version `1`, and `now`. The builder only assigns supplied values.
 
-### 3.2 Repository Contract
+For updates:
+
+```go
+person = mappers.NewPersonBuilderFrom(person).
+    WithStatus(entity.PersonStatusDeactivated).
+    WithVersion(person.Version + 1).
+    WithUpdatedAt(now).
+    Build()
+```
+
+### 3.4 Repository Contract
 
 `repository/` defines persistence operations only.
 
-Prefer persistence-oriented names such as:
+Prefer persistence-oriented names:
 
 ```text
 Create
@@ -148,7 +229,7 @@ Exists
 List
 ```
 
-Avoid business workflow names such as:
+Avoid business workflow names:
 
 ```text
 Approve
@@ -159,11 +240,9 @@ Validate
 CalculateReadiness
 ```
 
-Repository interfaces must not contain business decisions or workflow orchestration.
+Repository-level sentinel errors may represent technical persistence outcomes such as a missing row. Services translate them into stable service errors.
 
-Repository-level sentinel errors may represent persistence outcomes such as a missing row. Those errors are translated by the service layer into stable service errors.
-
-### 3.3 PostgreSQL Repository
+### 3.5 PostgreSQL Repository
 
 `repository/postgres/` owns PostgreSQL-specific behavior:
 
@@ -173,28 +252,23 @@ row scanning
 query parameters
 PostgreSQL error handling
 technical row-count checks
-mapping into domain entities when shapes match
 ```
 
-Do **not** create a generic `repository/postgres/entity.go` by default.
+When the PostgreSQL row shape matches the domain entity, scan directly into the domain entity/resource fields.
 
-When the PostgreSQL row shape matches the domain entity, keep the persistence code in the resource repository file, for example:
+Do not create a generic `repository/postgres/entity.go` by default.
 
-```text
-repository/postgres/person.go
-```
-
-Only introduce a separate persistence model when the stored shape actually diverges from the domain shape. When needed, name it for the resource, for example:
+Only introduce a separate persistence model when the stored shape actually differs from the domain shape. Name it for the resource, for example:
 
 ```text
 repository/postgres/person_entity.go
 ```
 
-Repositories may contain technical condition handling required by the database driver, for example `ErrNoRows`, constraint mapping, or `RowsAffected() == 0`. They must not contain business-condition branching.
+Repositories may handle technical conditions such as `ErrNoRows`, constraint mapping, or `RowsAffected() == 0`. They must not contain business-condition branching.
 
-### 3.4 Services
+### 3.6 Services
 
-`services/` owns all business behavior and use-case orchestration, including:
+`services/` owns all business behavior and use-case orchestration:
 
 ```text
 validation rules
@@ -210,32 +284,36 @@ cross-service client orchestration
 translation of repository errors into stable service errors
 ```
 
-Example creation flow:
+Current GroveHub application services may accept request DTOs and return response DTOs.
+
+Inside a service:
 
 ```text
-service.CreatePerson
-      ↓
-validate business input
-      ↓
-generate UUIDv7 through libs/core/helpers/id
-      ↓
-construct entity.Person data
-      ↓
-repository.Create
+request DTO
+   ↓ mapper
+entity/value
+   ↓ business decisions
+repository
+   ↓ entity
+mapper
+   ↓
+response DTO
 ```
+
+Services must use mappers for object conversion instead of assembling DTO/entity fields ad hoc.
 
 The service depends on repository contracts, not concrete PostgreSQL implementations.
 
-### 3.5 Controller
+### 3.7 Controller
 
 `controller/` is a thin transport adapter:
 
 ```text
-read request
-map request DTO/input
+read route/body/query/header transport input
+bind into request DTO
 call service
-map service result/error
-write response
+select HTTP status
+write service response DTO or normalized service error
 ```
 
 Controllers must not:
@@ -246,11 +324,13 @@ generate IDs
 apply business validation
 perform lifecycle transitions
 own domain defaults
+convert entities into response DTOs field-by-field
+build error metadata maps manually
 ```
 
-HTTP status selection belongs in the controller/transport layer, not in the service.
+HTTP status selection belongs in the controller/transport layer.
 
-### 3.6 Routes
+### 3.8 Routes
 
 `routes/` only connects routes to controllers/middleware.
 
@@ -269,63 +349,47 @@ controller
   ↓
 services
   ↓
-repository contract
-  ↑
-repository/postgres
+mappers + repository contracts
+  ↓                ↑
+entity          repository/postgres
 ```
 
-The following are forbidden:
+Forbidden:
 
 ```text
 entity -> services
 entity -> repository
 entity -> controller
+mapper -> repository/database/network
 repository -> services
 repository -> controller
 controller -> repository
 controller -> database
 ```
 
-Domain entities remain passive data structures.
+Entities and DTOs remain passive data structures. Mappers remain pure transformations.
 
 ---
 
-## 5. Identity Example
-
-Current Identity shape may remain smaller until more responsibilities exist:
-
-```text
-backend/services/identity/
-├── identity.go
-├── api/
-│   └── openapi/v1/openapi.yaml
-├── constants/
-│   └── errorcode/               # legacy/current Identity path; new service code uses constants/error/
-├── controller/
-├── routes/
-├── dto/
-│   └── v1/
-│       └── response/
-└── tests/
-    └── unit-test/
-```
-
-Do not create empty folders merely to match the full blueprint.
-
----
-
-## 6. Foundation Example
-
-Foundation uses the flat structure:
+## 5. Foundation Example
 
 ```text
 backend/services/foundation/
 ├── constants/
 │   └── error/
 │       └── person.go
+├── dto/
+│   ├── request/
+│   │   └── person.go
+│   └── response/
+│       ├── person.go
+│       └── error.go
 ├── entity/
 │   ├── gid.go
 │   └── person.go
+├── mappers/
+│   ├── person.go
+│   └── error.go
 ├── repository/
 │   ├── person.go
 │   └── postgres/
@@ -336,38 +400,61 @@ backend/services/foundation/
 └── tests/                       # add Foundation tests after the Foundation flow is complete
 ```
 
-As Foundation grows, add responsibilities directly under the service root:
-
-```text
-controller/
-routes/
-dto/
-```
-
 Do not introduce `src/`.
 
 ---
 
-## 7. Root Launcher
+## 6. Error Contract
 
-The root launcher owns platform-wide concerns such as:
+Service-specific semantic error definitions live under:
 
 ```text
-HTTP server lifecycle
-edge routing/fallback
-cross-cutting middleware
-OpenTelemetry server instrumentation
-service module registration
-platform bootstrap
+constants/error/<resource>.go
 ```
 
-It must not absorb service business logic.
+A definition owns stable `Code` + `Message`.
 
-The launcher is the current edge/API-gateway boundary and starts the top-level HTTP trace span.
+Business services return typed `coreerrors.Error` values. Repository/driver errors may be retained as wrapped causes for diagnostics, but raw PostgreSQL errors must not become API contracts.
+
+Optional service error metadata is constructed by a mapper and attached to `coreerrors.Error`.
+
+Example:
+
+```text
+GID/entity/service context
+      ↓
+mappers.ToPersonErrorMetadata(...)
+      ↓
+coreerrors.Error.Metadata()
+      ↓
+controller
+      ↓
+shared HTTP error response envelope
+```
+
+Do not build arbitrary error metadata maps in controllers/services.
+
+HTTP status remains a controller decision.
+
+The canonical shared HTTP error body remains:
+
+```json
+{
+  "success": false,
+  "errorCode": "FOUNDATION_PERSON_NOT_FOUND",
+  "errorMessage": "Person was not found",
+  "httpErrorCode": 404,
+  "errorMetaData": {
+    "gid": "..."
+  }
+}
+```
+
+Do not duplicate the error response envelope inside each service.
 
 ---
 
-## 8. Shared Technical Libraries and Helpers
+## 7. Shared Technical Libraries
 
 Cross-service technical capabilities belong under:
 
@@ -375,13 +462,11 @@ Cross-service technical capabilities belong under:
 backend/libs/core/<capability>/
 ```
 
-Small stateless reusable helpers belong under a named helper package:
+Small stateless reusable helpers use focused helper packages:
 
 ```text
 backend/libs/core/helpers/<helper>/
 ```
-
-`helpers/` must never become a dumping ground. Every helper gets a focused subpackage named for one technical responsibility.
 
 Examples:
 
@@ -394,126 +479,42 @@ libs/core/helpers/id
 libs/core/telemetry
 ```
 
-Shared business/domain concepts do not belong in `libs/core` merely because more than one service might eventually use them.
+`helpers/` must not become a dumping ground.
 
-UUID generation is a stateless technical helper and belongs in:
+UUID generation remains in:
 
 ```text
 backend/libs/core/helpers/id/
 ```
 
-The GroveHub helper should expose a small stable wrapper API and delegate UUID algorithm details to the selected UUID library. Application code must not reimplement UUID bit layout, timestamp encoding, randomness layout, or text formatting.
-
-Business services may use the ID helper to generate IDs before persistence.
-
-Shared PostgreSQL pool construction belongs in:
+Shared PostgreSQL pool construction remains in:
 
 ```text
 backend/libs/core/database/postgres/
 ```
 
-It receives configuration from composition/bootstrap code; it does not read service-specific environment variables or own business logic.
+---
+
+## 8. Unit Tests
+
+Backend unit tests live inside their owner.
+
+For the current Foundation implementation phase, complete the Foundation flow first and add Foundation tests together afterward.
+
+Pure data-only entities/DTOs do not need meaningless tests for fields alone.
 
 ---
 
-## 9. Error Contract
-
-Service-specific semantic error definitions live with the owning service and are grouped by resource, for example:
-
-```text
-backend/services/foundation/constants/error/person.go
-```
-
-A semantic error definition owns stable:
-
-```text
-Code
-Message
-```
-
-Business services return typed `coreerrors.Error` values using those definitions. Repository/driver errors may be retained as wrapped causes for diagnostics, but raw PostgreSQL errors must not become API contracts.
-
-HTTP status remains a transport/controller decision.
-
-Optional metadata is supplied at the request/transport boundary when needed.
-
-The canonical HTTP error body is the existing shared schema:
-
-```json
-{
-  "success": false,
-  "errorCode": "FOUNDATION_PERSON_NOT_FOUND",
-  "errorMessage": "Person was not found",
-  "httpErrorCode": 404,
-  "errorMetaData": {}
-}
-```
-
-Flow:
-
-```text
-PostgreSQL/Repository error
-        ↓
-Service error definition + optional wrapped cause
-        ↓
-Controller chooses HTTP status/metadata
-        ↓
-libs/core/http/response writes canonical error JSON
-```
-
-Do not duplicate this response schema inside each service.
-
----
-
-## 10. Trace Context
-
-The root launcher starts/continues the edge trace.
-
-Service route boundaries add child spans while preserving the same trace ID.
-
-All nested calls must pass `context.Context`.
-
-See:
-
-```text
-docs/engineering/observability/TRACE_CONTEXT_GUIDELINES.md
-```
-
----
-
-## 11. Unit Tests
-
-Backend unit tests live inside their owner, not under `backend/testing`.
-
-Tests mirror the flat production responsibility:
-
-```text
-entity/              -> tests/unit-test/entity/          # only when entity behavior exists
-services/            -> tests/unit-test/services/
-controller/          -> tests/unit-test/controller/
-repository/          -> tests/unit-test/repository/
-repository/postgres/ -> tests/unit-test/repository/postgres/
-helpers/id/          -> tests/unit-test/helpers/id/
-```
-
-Pure data-only entities do not require meaningless tests merely to test struct fields.
-
-For the current Foundation implementation phase, complete the Foundation flow first and add its tests together afterward, as explicitly directed for this phase.
-
-See:
-
-```text
-docs/engineering/testing/BACKEND_UNIT_TEST_STRUCTURE.md
-```
-
----
-
-## 12. Agent Rule
+## 9. Agent Rule
 
 Before creating backend code, classify it by responsibility:
 
 ```text
 data/type/constant                 -> entity/
+request/application input          -> dto/request/
+response/application output        -> dto/response/
+object conversion/builder          -> mappers/<resource>.go
+error metadata conversion          -> mappers/error.go
 service semantic error             -> constants/error/<resource>.go
 persistence contract               -> repository/
 PostgreSQL persistence             -> repository/postgres/<resource>.go
@@ -524,7 +525,6 @@ service-owned schema               -> migrations/
 shared technical capability        -> libs/core/<capability>/
 small stateless technical helper   -> libs/core/helpers/<helper>/
 root platform composition          -> backend/launcher/
-owner-local unit tests             -> tests/unit-test/<mirrored path>/
 ```
 
 Hard rules:
@@ -532,14 +532,22 @@ Hard rules:
 ```text
 NO src/ wrapper in GroveHub services
 NO business logic in entity/
+NO business logic in DTOs
+NO business logic in mappers/
 NO business logic in repository/
+NO repository/database/network calls from mappers/
 NO repository/database access from controller/
+NO direct entity serialization as public API response
+NO repository returning response DTOs
+NO ad-hoc field-by-field entity/DTO conversion outside mappers/
+NO ad-hoc error metadata maps outside mappers/
+NO ID/time/default generation inside builders
 NO business logic in routes/
 NO service-local launcher/
 NO generic repository/postgres/entity.go unless a real persistence-shape divergence requires a resource-specific model
 NO raw PostgreSQL/driver errors as API response contracts
 NO duplicate per-service HTTP error response schema
-NO generic files directly inside libs/core/helpers/; use a focused helper subpackage
+NO generic files directly inside libs/core/helpers/
 ```
 
-If an older generic document shows a conflicting structure or places business behavior in entities/repositories, this GroveHub standard wins.
+If an older generic document shows a conflicting structure, this GroveHub standard and `MAPPER_AND_DTO_GUIDELINES.md` win.
