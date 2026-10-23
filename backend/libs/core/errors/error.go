@@ -3,16 +3,32 @@ package coreerrors
 type Error struct {
 	definition Definition
 	cause      error
+	metadata   any
 }
 
 func NewError(definition Definition) *Error {
 	return &Error{definition: definition}
 }
 
+func NewErrorWithMetadata(definition Definition, metadata any) *Error {
+	return &Error{
+		definition: definition,
+		metadata:   metadata,
+	}
+}
+
 func Wrap(definition Definition, cause error) *Error {
 	return &Error{
 		definition: definition,
 		cause:      cause,
+	}
+}
+
+func WrapWithMetadata(definition Definition, cause error, metadata any) *Error {
+	return &Error{
+		definition: definition,
+		cause:      cause,
+		metadata:   metadata,
 	}
 }
 
@@ -26,4 +42,8 @@ func (err *Error) Unwrap() error {
 
 func (err *Error) Definition() Definition {
 	return err.definition
+}
+
+func (err *Error) Metadata() any {
+	return err.metadata
 }
