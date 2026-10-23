@@ -14,6 +14,12 @@ ensure_runtime_dirs
 
 OUTPUT="${RUNTIME_BIN_DIR}/groovehub-platform"
 
+log_info "Resolving GroveHub backend Go modules"
+(
+  cd -- "${BACKEND_DIR}"
+  go mod download
+)
+
 log_info "Building GroveHub backend"
 (
   cd -- "${BACKEND_DIR}"

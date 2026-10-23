@@ -12,5 +12,11 @@ source "${SCRIPT_DIR}/../lib/toolchain.sh"
 
 ensure_air
 
+log_info "Resolving GroveHub backend Go modules"
+(
+  cd -- "${BACKEND_DIR}"
+  go mod download
+)
+
 log_info "Backend development tools are ready"
 log_info "Air: ${AIR_VERSION} (${AIR_BIN})"

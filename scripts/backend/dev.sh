@@ -14,6 +14,12 @@ source "${SCRIPT_DIR}/../config/services.sh"
 ensure_runtime_dirs
 ensure_air
 
+log_info "Resolving GroveHub backend Go modules"
+(
+  cd -- "${BACKEND_DIR}"
+  go mod download
+)
+
 log_info "Running GroveHub backend with Air hot reload"
 log_info "Backend URL: ${BACKEND_BASE_URL}"
 log_info "Air version: ${AIR_VERSION}"
