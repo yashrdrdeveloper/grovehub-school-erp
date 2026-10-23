@@ -1,6 +1,7 @@
 package launcher
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -12,19 +13,33 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
+	"grovehub/launcher/bootstrap"
 	"grovehub/launcher/middleware"
 	"grovehub/launcher/routing"
 	coretelemetry "grovehub/libs/core/telemetry"
+	"grovehub/services/foundation"
 	"grovehub/services/identity"
 )
 
 const httpAddress = ":8080"
 
 func Run(logger *slog.Logger) error {
+	databaseContext, cancelDatabase := context.WithTimeout(context.Background(), 5*time.Second)
+	pool, err := bootstrap.NewPostgresPool(databaseContext)
+	cancelDatabase()
+	if err != nil {
+		return fmt.Errorf("bootstrap postgres: %w", err)
+	}
+	defer pool.Close()
+
 	mux := http.NewServeMux()
+
+	foundationModule := foundation.New(logger, pool)
+	foundationModule.RegisterHTTP(mux)
 
 	identityModule := identity.New(logger)
 	identityModule.RegisterHTTP(mux)
+
 	routing.RegisterFallback(mux)
 
 	edgeService := coretelemetry.ServiceLauncherEdge
