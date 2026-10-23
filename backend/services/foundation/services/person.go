@@ -10,7 +10,10 @@ import (
 	coreerrors "grovehub/libs/core/errors"
 	coreid "grovehub/libs/core/helpers/id"
 	personerror "grovehub/services/foundation/constants/error"
+	foundationrequest "grovehub/services/foundation/dto/request"
+	foundationresponse "grovehub/services/foundation/dto/response"
 	"grovehub/services/foundation/entity"
+	"grovehub/services/foundation/mappers"
 	foundationrepository "grovehub/services/foundation/repository"
 )
 
@@ -22,64 +25,102 @@ func NewPersonService(repository foundationrepository.PersonRepository) *PersonS
 	return &PersonService{repository: repository}
 }
 
-func (service *PersonService) Create(ctx context.Context) (entity.Person, error) {
-	gid, err := coreid.NewUUIDv7()
+func (service *PersonService) Create(ctx context.Context) (foundationresponse.Person, error) {
+	gidValue, err := coreid.NewUUIDv7()
 	if err != nil {
-		return entity.Person{}, coreerrors.Wrap(personerror.PersonCreateFailed, err)
+		return foundationresponse.Person{}, coreerrors.Wrap(personerror.PersonCreateFailed, err)
 	}
 
+	gid := entity.GID(gidValue)
 	now := time.Now().UTC()
-	person := entity.Person{
-		GID:       entity.GID(gid),
-		Status:    entity.PersonStatusActive,
-		Version:   1,
-		CreatedAt: now,
-		UpdatedAt: now,
-	}
+	person := mappers.NewPersonBuilder().
+		WithGID(gid).
+		WithStatus(entity.PersonStatusActive).
+		WithVersion(1).
+		WithCreatedAt(now).
+		WithUpdatedAt(now).
+		Build()
 
 	if err := service.repository.Create(ctx, person); err != nil {
-		return entity.Person{}, coreerrors.Wrap(personerror.PersonCreateFailed, err)
+		return foundationresponse.Person{}, coreerrors.WrapWithMetadata(
+			personerror.PersonCreateFailed,
+			err,
+			mappers.ToPersonErrorMetadata(gid),
+		)
 	}
 
-	return person, nil
+	return mappers.ToPersonResponse(person), nil
 }
 
-func (service *PersonService) GetByGID(ctx context.Context, gid entity.GID) (entity.Person, error) {
+func (service *PersonService) GetByGID(
+	ctx context.Context,
+	request foundationrequest.PersonByGID,
+) (foundationresponse.Person, error) {
+	gid := mappers.ToPersonGID(request)
+	person, err := service.getPersonByGID(ctx, gid)
+	if err != nil {
+		return foundationresponse.Person{}, err
+	}
+
+	return mappers.ToPersonResponse(person), nil
+}
+
+func (service *PersonService) Deactivate(
+	ctx context.Context,
+	request foundationrequest.PersonByGID,
+) (foundationresponse.Person, error) {
+	gid := mappers.ToPersonGID(request)
+	person, err := service.getPersonByGID(ctx, gid)
+	if err != nil {
+		return foundationresponse.Person{}, err
+	}
+
+	if person.Status == entity.PersonStatusDeactivated {
+		return mappers.ToPersonResponse(person), nil
+	}
+
+	person = mappers.NewPersonBuilderFrom(person).
+		WithStatus(entity.PersonStatusDeactivated).
+		WithVersion(person.Version + 1).
+		WithUpdatedAt(time.Now().UTC()).
+		Build()
+
+	if err := service.repository.Update(ctx, person); err != nil {
+		if errors.Is(err, foundationrepository.ErrPersonNotFound) {
+			return foundationresponse.Person{}, coreerrors.NewErrorWithMetadata(
+				personerror.PersonNotFound,
+				mappers.ToPersonErrorMetadata(gid),
+			)
+		}
+
+		return foundationresponse.Person{}, coreerrors.WrapWithMetadata(
+			personerror.PersonUpdateFailed,
+			err,
+			mappers.ToPersonErrorMetadata(gid),
+		)
+	}
+
+	return mappers.ToPersonResponse(person), nil
+}
+
+func (service *PersonService) getPersonByGID(ctx context.Context, gid entity.GID) (entity.Person, error) {
 	if err := validateGID(gid); err != nil {
 		return entity.Person{}, err
 	}
 
 	person, err := service.repository.FindByGID(ctx, gid)
 	if errors.Is(err, foundationrepository.ErrPersonNotFound) {
-		return entity.Person{}, coreerrors.NewError(personerror.PersonNotFound)
+		return entity.Person{}, coreerrors.NewErrorWithMetadata(
+			personerror.PersonNotFound,
+			mappers.ToPersonErrorMetadata(gid),
+		)
 	}
 	if err != nil {
-		return entity.Person{}, coreerrors.Wrap(personerror.PersonReadFailed, err)
-	}
-
-	return person, nil
-}
-
-func (service *PersonService) Deactivate(ctx context.Context, gid entity.GID) (entity.Person, error) {
-	person, err := service.GetByGID(ctx, gid)
-	if err != nil {
-		return entity.Person{}, err
-	}
-
-	if person.Status == entity.PersonStatusDeactivated {
-		return person, nil
-	}
-
-	person.Status = entity.PersonStatusDeactivated
-	person.Version++
-	person.UpdatedAt = time.Now().UTC()
-
-	if err := service.repository.Update(ctx, person); err != nil {
-		if errors.Is(err, foundationrepository.ErrPersonNotFound) {
-			return entity.Person{}, coreerrors.NewError(personerror.PersonNotFound)
-		}
-
-		return entity.Person{}, coreerrors.Wrap(personerror.PersonUpdateFailed, err)
+		return entity.Person{}, coreerrors.WrapWithMetadata(
+			personerror.PersonReadFailed,
+			err,
+			mappers.ToPersonErrorMetadata(gid),
+		)
 	}
 
 	return person, nil
@@ -88,7 +129,10 @@ func (service *PersonService) Deactivate(ctx context.Context, gid entity.GID) (e
 func validateGID(gid entity.GID) error {
 	value, err := uuid.Parse(string(gid))
 	if err != nil || value == uuid.Nil || value.Version() != uuid.Version(7) {
-		return coreerrors.NewError(personerror.InvalidPersonGID)
+		return coreerrors.NewErrorWithMetadata(
+			personerror.InvalidPersonGID,
+			mappers.ToPersonErrorMetadata(gid),
+		)
 	}
 
 	return nil
