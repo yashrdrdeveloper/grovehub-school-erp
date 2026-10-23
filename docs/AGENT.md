@@ -25,20 +25,83 @@ docs/engineering/scripts/GROVEHUB_LOCAL_DEVELOPMENT.md
 
 The root `backend/launcher/` is the platform edge/composition boundary.
 
-Backend services do **not** have service-local `launcher/` folders. Current service structure uses the service root plus explicit `controller/`, `routes/`, `constants/`, `dto/`, `api/`, and other responsibility folders only when needed.
+Backend services do **not** have service-local `launcher/` folders and do **not** use a `src/` wrapper. Current GroveHub services use flat responsibility folders directly under the service root.
 
 ```text
 backend/services/<service>/
 ├── <service>.go
+├── api/
+├── config/
+├── constants/
+├── entity/
+├── repository/
+│   └── postgres/
+├── services/
 ├── controller/
 ├── routes/
-├── constants/
 ├── dto/
-├── api/
+├── client/
+├── migrations/
 └── tests/
+    └── unit-test/
 ```
 
-Do not recreate `backend/services/<service>/launcher/` from an older blueprint.
+Create only folders with a current responsibility.
+
+Do not recreate either of these older patterns:
+
+```text
+backend/services/<service>/src/
+backend/services/<service>/launcher/
+```
+
+### Backend layer responsibilities
+
+GroveHub uses a strict responsibility split:
+
+```text
+Route
+  ↓
+Controller
+  ↓
+Service
+  ↓
+Repository interface
+  ↓
+PostgreSQL repository
+  ↓
+PostgreSQL
+```
+
+`entity/` is passive data used by the service and repository layers. It is not a business-logic layer.
+
+Mandatory rules:
+
+```text
+entity/              -> data only: structs, types, aliases, entity-owned constants
+repository/          -> persistence contracts only
+repository/postgres/ -> SQL, row scanning, persistence models, DB error handling
+services/            -> ALL business rules/use cases/orchestration
+controller/          -> request/response transport mapping + service invocation only
+routes/              -> route registration only
+migrations/          -> service-owned schema evolution
+```
+
+Entities must not contain business-rule constructors, validation workflows, lifecycle transitions, ID generation, clocks, repository access, persistence mapping, or transport behavior.
+
+Repositories must not contain business decisions, lifecycle transitions, authorization rules, business validation, workflow orchestration, or ID generation. Technical database branching such as `ErrNoRows`/constraint mapping is allowed because it is persistence handling.
+
+Controllers must not query repositories/databases directly and must not contain business rules.
+
+Business logic belongs in the owning `services/` package.
+
+PostgreSQL-specific persistence row models may live under:
+
+```text
+repository/postgres/entity.go
+```
+
+These are persistence models and are distinct from domain data under `entity/`.
 
 ### Backend unit tests
 
@@ -53,9 +116,19 @@ backend/libs/core/tests/unit-test/...
 backend/providers/<provider>/tests/unit-test/...
 ```
 
-Inside `tests/unit-test/`, mirror the production responsibility.
+Inside `tests/unit-test/`, mirror the flat production responsibility.
 
-Every backend unit-test package folder must contain `suite_test.go` and use Ginkgo v2 + Gomega:
+Examples:
+
+```text
+services/      -> tests/unit-test/services/
+controller/    -> tests/unit-test/controller/
+repository/    -> tests/unit-test/repository/
+```
+
+Pure data-only entities do not require meaningless unit tests merely to assert struct fields or type aliases.
+
+Every backend unit-test package folder that exists must contain `suite_test.go` and use Ginkgo v2 + Gomega:
 
 ```go
 import (
@@ -381,12 +454,15 @@ Inspect:
 ```text
 owning service
 entity
-repository
-PostgreSQL adapter
+repository contract
+repository/postgres implementation
+repository/postgres persistence entity/model
 migrations
 queries/indexes
 real DB tests
 ```
+
+For GroveHub, business rules remain in `services/` even when a database operation is involved.
 
 If shipping migration, also read release/deployment guidelines.
 
@@ -686,11 +762,13 @@ Read target file and adjacent:
 ```text
 types
 constants
-helpers
+entities
 services
-interfaces
+repository contracts
+repository adapters
+controllers
+routes
 mappers
-repositories
 tests
 stories
 mocks
@@ -725,6 +803,13 @@ What must remain compatible?
 Which tests prove current behavior?
 Which tests must prove the change?
 What validation commands must run?
+```
+
+For backend work the agent must additionally answer:
+
+```text
+Is this data, persistence, business logic, transport, or route registration?
+Is any business logic accidentally being placed outside services/?
 ```
 
 If a materially important answer is unknown, gather more context.
@@ -963,23 +1048,25 @@ Inspect/update package/domain/shell `RUNBOOK.md` when public usage changes.
 
 ## 18. Backend Context Rules
 
-Dependency direction:
+GroveHub dependency direction is:
 
 ```text
+Routes
+   ↓
 Controller
    ↓
-Business Service / Inbound Port
+Business Service
    ↓
-Domain Entity
-   ↓
-Repository / Outbound Port
+Repository Contract
    ↑
-Infrastructure Adapter
+Repository/PostgreSQL Adapter
 ```
+
+`entity/` is passive data referenced by services/repositories. It does not call another layer and does not own business behavior.
 
 Do not bypass layers because code is in one process.
 
-Use `GROVEHUB_BACKEND_STRUCTURE.md` for current service folder placement.
+Use `GROVEHUB_BACKEND_STRUCTURE.md` for current service folder placement and layer ownership.
 
 ---
 
@@ -998,7 +1085,7 @@ Service B
 Never:
 
 ```text
-A imports B/src
+A imports B internal entity/repository/services/controller implementation
 A queries B database
 ```
 
@@ -1011,23 +1098,24 @@ Trace context must continue through the public client using `context.Context`; r
 ## 20. Backend Placement
 
 ```text
-OpenAPI              -> api/openapi/vN
-Protobuf             -> api/proto/vN
-DTO                   -> dto/vN
-Public client         -> client/vN
-Business use case     -> src/services
-Domain entity         -> src/entity
-Persistence contract  -> src/repository
-Outbound port         -> src/ports
-Persistence adapter   -> src/infrastructure/persistence
-Controller            -> controller/ or service-owned controller path
-Routes                -> routes/
-Mapper                -> src/mapper
-Structural validator  -> src/validator
-Messaging             -> src/messaging
-Construction          -> service root New(...)
-Unit tests            -> owner/tests/unit-test/<mirrored path>
+OpenAPI                -> api/openapi/vN
+Protobuf               -> api/proto/vN
+DTO                     -> dto/vN
+Public client           -> client/vN
+Domain data/entity      -> entity/
+Persistence contract    -> repository/
+PostgreSQL persistence  -> repository/postgres/
+Business use case/rules -> services/
+Controller              -> controller/
+Routes                  -> routes/
+Service config          -> config/
+Service constants       -> constants/
+Schema migrations       -> migrations/
+Construction            -> service root New(...)
+Unit tests              -> owner/tests/unit-test/<mirrored flat path>
 ```
+
+There is no `src/` wrapper in current GroveHub services.
 
 The root platform composition remains in `backend/launcher/`. Service-local `launcher/` folders are not used in current GroveHub services.
 
@@ -1043,8 +1131,7 @@ Before a public contract change inspect:
 machine-readable contract
 DTO
 client/vN
-mapper
-controller
+mapper/controller mapping
 contract tests
 known consumers
 ```
@@ -1067,16 +1154,19 @@ Before persistence changes inspect:
 
 ```text
 owning service/schema
-entity
+entity data model
 repository interface
-adapter
+repository/postgres adapter
+repository/postgres persistence entity/model
 migration history
 constraints/indexes
-transaction boundary
+business-service transaction boundary
 real PostgreSQL tests
 ```
 
 Never infer schema solely from frontend shape.
+
+Never move a business rule into a repository because it is related to persistence. Business decisions stay in `services/`.
 
 ---
 
@@ -1156,6 +1246,8 @@ Does this need browser regression?
 ```
 
 Backend unit-test routing is owner-local as defined in `BACKEND_UNIT_TEST_STRUCTURE.md`; do not use `backend/testing/unit-test`.
+
+Do not create unit tests for passive data-only entity structs without meaningful behavior/contract to protect.
 
 Do not duplicate every scenario in E2E.
 
@@ -1370,15 +1462,18 @@ run freshness/compatibility checks
 
 ```text
 1. identify owner
-2. inspect public contract
-3. inspect neighboring implementation
-4. identify reuse
-5. inspect data/security/telemetry impact
-6. implement in dependency direction
-7. add tests/stories/regression as needed
-8. update docs/runbooks/contracts
-9. validate
+2. classify layer: entity/repository/service/controller/routes
+3. inspect public contract
+4. inspect neighboring implementation
+5. identify reuse
+6. inspect data/security/telemetry impact
+7. implement in dependency direction
+8. add tests/stories/regression as needed
+9. update docs/runbooks/contracts
+10. validate
 ```
+
+For backend features, business decisions are implemented and tested in `services/`, not moved into entities/repositories/controllers for convenience.
 
 ---
 
@@ -1488,6 +1583,8 @@ Buf lint/breaking
 generated freshness
 architecture/forbidden imports
 ```
+
+For GroveHub service work also validate that no `src/` wrapper was introduced and that business logic resides in `services/`.
 
 ---
 
@@ -1616,10 +1713,17 @@ An agent must not:
 - invent a parallel architecture
 - bypass frontend public domain boundaries
 - import frontend domain internals from shell/another domain
-- import another backend service's `src`
+- import another backend service's internal entity/repository/services/controller implementation
 - query another service's database
+- create `backend/services/<service>/src/` in GroveHub
 - recreate service-local `launcher/` folders in GroveHub services
+- put business logic, validation workflows, lifecycle rules, ID generation, or clock decisions in `entity/`
+- put business decisions, workflow orchestration, authorization, lifecycle transitions, or ID generation in repositories
+- call repositories/databases directly from controllers
+- put business logic in routes
+- create business-named repository methods such as `Approve`, `Deactivate`, `Promote`, or `Convert` when the operation is a use case rather than persistence
 - recreate `backend/testing/unit-test/`
+- add meaningless tests for passive data-only entities
 - add a backend unit-test package without `suite_test.go`
 - add backend Go unit tests outside the Ginkgo v2 + Gomega standard
 - drop trace context across a request-scoped service/API/dependency boundary
@@ -1657,6 +1761,12 @@ An agent must not:
 [ ] Task owner identified
 [ ] Applicable guideline(s) read
 [ ] GroveHub current override docs checked when backend/testing/telemetry/local-dev is involved
+[ ] Backend layer classified when backend work is involved
+[ ] No src/ wrapper planned for GroveHub service code
+[ ] Business logic planned under services/
+[ ] Repository limited to persistence responsibility
+[ ] Controller limited to transport + service invocation
+[ ] Entity limited to passive data/types/constants
 [ ] Target implementation inspected
 [ ] Nearest public boundary inspected
 [ ] Existing equivalent searched
@@ -1680,11 +1790,17 @@ An agent must not:
 ```text
 [ ] Requested behavior implemented
 [ ] Correct layer/package owns it
+[ ] GroveHub service remains flat with no src/ wrapper
+[ ] Entity remains data-only
+[ ] Repository remains persistence-only
+[ ] Business rules live in services/
+[ ] Controller remains transport-only and does not access repository/DB directly
 [ ] Public boundaries respected
 [ ] No duplicate abstraction introduced
 [ ] Compatibility considered
 [ ] Required tests added/updated in the correct owner-local location
-[ ] Every backend unit-test package has suite_test.go and uses Ginkgo/Gomega
+[ ] No meaningless tests added for passive data-only entities
+[ ] Every backend unit-test package that exists has suite_test.go and uses Ginkgo/Gomega
 [ ] Trace context preserved across relevant backend boundaries
 [ ] Canonical GroveHub telemetry service identity preserved
 [ ] Metrics use bounded labels and percentile-compatible histograms where relevant
@@ -1727,4 +1843,4 @@ Minimal Correct Change
 
 ## 54. Final Principle
 
-> **Understand ownership before placement. Understand contracts before modification. Search before creating. Preserve boundaries, canonical telemetry identity, and trace context before optimizing. Validate before reporting completion.**
+> **Understand ownership before placement. Understand layer responsibility before writing code. Keep entities passive, repositories persistence-only, services business-focused, and controllers thin. Search before creating. Preserve boundaries, canonical telemetry identity, and trace context before optimizing. Validate before reporting completion.**
