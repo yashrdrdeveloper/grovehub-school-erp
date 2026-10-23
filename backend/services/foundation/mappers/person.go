@@ -16,19 +16,25 @@ func ToPersonResponse(person entity.Person) foundationresponse.Person {
 		Phones: make([]foundationresponse.ContactValue, 0),
 	}
 
+	appendContact := map[entity.ContactType]func(foundationresponse.ContactValue){
+		entity.ContactTypeEmail: func(value foundationresponse.ContactValue) {
+			contacts.Emails = append(contacts.Emails, value)
+		},
+		entity.ContactTypePhone: func(value foundationresponse.ContactValue) {
+			contacts.Phones = append(contacts.Phones, value)
+		},
+	}
+
 	for _, contact := range person.GetContacts() {
-		value := foundationresponse.ContactValue{
+		appendValue, ok := appendContact[contact.GetType()]
+		if !ok {
+			continue
+		}
+		appendValue(foundationresponse.ContactValue{
 			Value:      contact.GetValue(),
 			IsPrimary:  contact.GetIsPrimary(),
 			IsVerified: contact.GetIsVerified(),
-		}
-
-		switch contact.GetType() {
-		case entity.ContactTypeEmail:
-			contacts.Emails = append(contacts.Emails, value)
-		case entity.ContactTypePhone:
-			contacts.Phones = append(contacts.Phones, value)
-		}
+		})
 	}
 
 	return foundationresponse.Person{
@@ -42,4 +48,8 @@ func ToPersonResponse(person entity.Person) foundationresponse.Person {
 		CreatedAt:  person.GetCreatedAt(),
 		UpdatedAt:  person.GetUpdatedAt(),
 	}
+}
+
+func ToPersonErrorMetadata(gid entity.GID) foundationresponse.PersonErrorMetadata {
+	return foundationresponse.PersonErrorMetadata{GID: string(gid)}
 }

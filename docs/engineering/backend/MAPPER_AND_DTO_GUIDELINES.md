@@ -1,335 +1,84 @@
 # GroveHub Mapper and DTO Guidelines
 
-> **Status:** Mandatory GroveHub backend standard  
-> **Applies to:** all backend services/modules  
-> **Precedence:** when older examples conflict with this document, this document wins together with `GROVEHUB_BACKEND_STRUCTURE.md`.
-
----
+> **Status:** Mandatory GroveHub backend standard
 
 ## 1. Purpose
 
-Use `mappers/` only for real representation changes.
-
-Examples:
+DTOs define request/response shapes. Mappers perform real representation changes only.
 
 ```text
-request DTO -> entity/value
-entity -> response DTO
-error context -> error metadata DTO
-persistence model -> entity, only when a separate persistence model actually exists
+dto/request/<resource>.go
+dto/response/<resource>.go
+mappers/<resource>.go
 ```
 
-Do not add mapping abstractions when no representation change exists.
+Do not create extra files solely because a resource has an error metadata shape.
 
-Entity construction and entity state transitions are not automatically mapper responsibilities.
+## 2. Resource Cohesion
 
----
-
-## 2. Canonical Service Shape
-
-```text
-backend/services/<service>/
-├── dto/
-│   ├── request/
-│   └── response/
-├── entity/
-├── mappers/
-├── repository/
-│   └── postgres/
-├── services/
-├── controller/
-└── routes/
-```
-
-Use only folders/files required by the current service.
-
-Shared cross-service contract shapes may live under:
-
-```text
-backend/libs/core/contracts/<contract>/
-```
-
-For example, GroveHub search requests/results use `backend/libs/core/contracts/search` instead of duplicating the generic search envelope in each service.
-
----
-
-## 3. DTO Rules
-
-`dto/request/` contains request/application-input shapes.
-
-`dto/response/` contains response/application-output shapes and error metadata shapes.
-
-DTOs:
-
-```text
-contain data only
-contain JSON/transport tags when required
-contain no business logic
-contain no repository/database access
-contain no UUID generation
-contain no lifecycle/status decisions
-```
-
-Entities are never serialized directly as public API responses.
-
-Repositories never return response DTOs.
-
-Nested public value shapes are still DTOs. A nested value does not require an independent resource or independent identifier.
-
-Example:
-
-```text
-Person response
-└── Contacts
-    ├── Emails[]
-    └── Phones[]
-```
-
----
-
-## 4. Mapper Rules
-
-`mappers/` owns pure representation transformation code.
-
-A mapper may:
-
-```text
-convert request DTO values into entity/value types when no business decision is required
-convert entity getter values into response DTOs
-reshape entity collections into nested response structures
-construct error metadata from known service context
-map a real persistence model into an entity
-```
-
-A mapper must not:
-
-```text
-query repositories/databases
-call network services
-read environment variables
-generate IDs
-read the current clock
-perform authorization
-validate business policy
-normalize values when normalization is a business/application rule
-choose lifecycle/status transitions
-decide version increments
-choose HTTP status codes
-mutate entity state
-```
-
-Those decisions remain in the owning service or transport layer.
-
----
-
-## 5. Entity Access and Copy Semantics
-
-When an entity encapsulates its fields, mappers must read it through entity getters.
-
-Example:
+If an error metadata type belongs only to Person, keep it with the Person response DTO:
 
 ```go
-func ToPersonResponse(person entity.Person) response.Person {
-    return response.Person{
-        GID:        string(person.GetGID()),
-        FirstName:  person.GetFirstName(),
-        MiddleName: person.GetMiddleName(),
-        LastName:   person.GetLastName(),
-        Status:     string(person.GetStatus()),
-        Version:    person.GetVersion(),
-        CreatedAt:  person.GetCreatedAt(),
-        UpdatedAt:  person.GetUpdatedAt(),
-    }
+type PersonErrorMetadata struct {
+    GID string `json:"gid,omitempty"`
 }
 ```
 
-The actual Foundation mapper also reads `person.GetContacts()` and groups those entity values into response `emails[]` and `phones[]` arrays. That is a representation change and therefore belongs in the mapper.
-
-Incorrect outside the entity implementation:
+Likewise, its mapper belongs in `mappers/person.go`:
 
 ```go
-person.Status = ...
-person.Version++
-person.Contacts = append(...)
+func ToPersonErrorMetadata(gid entity.GID) response.PersonErrorMetadata
 ```
 
-Entity setters use value receivers and return a new entity copy. They do not mutate through pointer receivers.
-
-Collection getters/setters must preserve encapsulation. A collection getter returns a copy instead of exposing the entity's internal slice.
-
-Example:
-
-```go
-updatedPerson := person.
-    SetContacts(contacts).
-    SetVersion(person.GetVersion() + 1).
-    SetUpdatedAt(now)
-```
-
-The service chooses the new values. The entity setter only copies the entity, assigns the supplied value, and returns the copy.
-
----
-
-## 6. Builder Rule
-
-Builders are **not** the default GroveHub mapping pattern.
-
-Do not create a builder for simple field assignment.
-
-For simple entities, prefer a pure entity constructor that only assigns caller-supplied values:
-
-```go
-person := entity.NewPerson(
-    gid,
-    firstName,
-    middleName,
-    lastName,
-    contacts,
-    entity.PersonStatusActive,
-    1,
-    now,
-    now,
-)
-```
-
-The constructor must not decide defaults, normalize contacts, generate IDs, read the clock, validate business policy, or perform lifecycle transitions.
-
-Introduce a builder only when there is real construction complexity, such as many optional fields or repeated complex assembly across multiple callers.
-
----
-
-## 7. Service Usage
-
-Current GroveHub application services may accept request DTOs/shared contracts and return response DTOs/shared result contracts at their application boundary.
-
-Typical read flow:
+Do not create:
 
 ```text
-request DTO
-   ↓ mapper when conversion is needed
-entity/value
-   ↓ business logic
-repository
-   ↓ entity
-mapper
-   ↓
-response DTO
-```
-
-Typical create flow:
-
-```text
-service validates/normalizes input and decides ID/defaults/time
-   ↓
-entity pure constructor
-   ↓
-repository
-   ↓
-mapper.To<Resource>Response
-```
-
-Typical update flow:
-
-```text
-repository returns entity
-   ↓
-service validates/normalizes and decides new business values
-   ↓
-entity copy-setter methods return updated copy
-   ↓
-repository.Update(updated copy)
-   ↓
-mapper.To<Resource>Response
-```
-
-Business decisions must remain visible in the service.
-
----
-
-## 8. Error Metadata Mapping
-
-Error definitions remain under:
-
-```text
-constants/error/<resource>.go
-```
-
-Error metadata DTOs live under:
-
-```text
-dto/response/
-```
-
-Conversion of service context into error metadata belongs in:
-
-```text
+dto/response/error.go
 mappers/error.go
 ```
 
-Example flow:
+unless the file contains a genuinely shared multi-resource error representation/transformation.
+
+## 3. Mapper Rules
+
+Mappers may:
 
 ```text
-GID/entity/service context
-      ↓
-mappers.ToPersonErrorMetadata(...)
-      ↓
-coreerrors.Error metadata
-      ↓
-controller
-      ↓
-shared HTTP error response envelope
+request DTO -> entity/value
+entity getters -> response DTO
+resource context -> resource error metadata
 ```
 
-Do not assemble `errorMetaData` maps ad hoc in controllers or services.
-
----
-
-## 9. Foundation Example
-
-For the current Person implementation:
+Mappers must not:
 
 ```text
-entity/person.go
-    private Person fields
-    NewPerson(...)
-    getters
-    copy-setters for mutable fields
-
-entity/contact.go
-    private Contact value fields
-    NewContact(...)
-    getters
-
-mappers/person.go
-    ToPersonGID(...)
-    ToPersonResponse(...)
-        -> groups Contacts into emails[] / phones[]
-
-mappers/error.go
-    ToPersonErrorMetadata(...)
+query repositories
+perform business validation
+generate IDs
+read clocks
+select HTTP status
+own lifecycle decisions
 ```
 
-There is no `PersonBuilder` and no `ContactBuilder`.
+## 4. Entity Encapsulation
 
-Contact normalization, duplicate detection, primary validation, verification preservation, and search validation remain service responsibilities rather than mapper responsibilities.
+Read state through getters. Copy-style entity changes use value-receiver setters selected by the service.
 
----
+Never mutate private entity state through mapper code.
 
-## 10. Hard Rules
+## 5. SRP / OCP
+
+When mapping behavior is selected by a stable resource key (for example contact type), prefer a small registry of mapping functions over a growing switch tree when it improves extensibility.
+
+Do not introduce builders/factories for simple assignments.
+
+## 6. Hard Rules
 
 ```text
-NO direct entity -> API response serialization
-NO repository -> response DTO
-NO direct entity field reads outside entity package when getters exist
-NO direct entity field mutation outside entity package
-NO leaking mutable entity collection slices
-NO pointer-receiver setters for copy-style entities
-NO business decisions in entity setters
-NO business decisions in mappers
-NO ID/time generation in mappers
-NO contact/search normalization in mappers
-NO builder for simple field assignment
-NO pattern abstraction without real complexity
-NO ad-hoc error metadata maps outside mappers
-NO generic mapper dumping files
+NO direct entity serialization
+NO repository returning response DTOs
+NO business logic in DTOs/mappers
+NO separate resource error files without an independent/shared responsibility
+NO builder for simple assignment
+NO generic mapper dumping-ground file
 ```

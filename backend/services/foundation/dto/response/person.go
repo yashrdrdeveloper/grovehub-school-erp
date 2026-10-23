@@ -24,3 +24,7 @@ type Person struct {
 	CreatedAt  time.Time `json:"createdAt"`
 	UpdatedAt  time.Time `json:"updatedAt"`
 }
+
+type PersonErrorMetadata struct {
+	GID string `json:"gid,omitempty"`
+}

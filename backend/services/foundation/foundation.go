@@ -8,7 +8,8 @@ import (
 
 	coretelemetry "grovehub/libs/core/telemetry"
 	"grovehub/services/foundation/controller"
-	foundationpostgres "grovehub/services/foundation/repository/postgres"
+	controllerimpl "grovehub/services/foundation/controller/impl"
+	repositoryimpl "grovehub/services/foundation/repository/impl"
 	"grovehub/services/foundation/routes"
 	"grovehub/services/foundation/services"
 )
@@ -19,16 +20,16 @@ type Module interface {
 
 type module struct {
 	logger           *slog.Logger
-	personController *controller.PersonController
+	personController controller.PersonController
 }
 
 func New(logger *slog.Logger, pool *pgxpool.Pool) Module {
-	personRepository := foundationpostgres.NewPersonRepository(pool)
+	personRepository := repositoryimpl.NewPersonRepository(pool)
 	personService := services.NewPersonService(personRepository)
 
 	return &module{
 		logger:           logger,
-		personController: controller.NewPersonController(personService),
+		personController: controllerimpl.NewPersonController(personService),
 	}
 }
 

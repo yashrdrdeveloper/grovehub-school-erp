@@ -3,30 +3,20 @@ package services
 import (
 	"context"
 	"errors"
-	"net/mail"
-	"regexp"
-	"strings"
 	"time"
-	"unicode/utf8"
 
-	"github.com/google/uuid"
-
+	searchcontract "grovehub/libs/core/contracts/search"
 	coreerrors "grovehub/libs/core/errors"
 	coreid "grovehub/libs/core/helpers/id"
+	coresearch "grovehub/libs/core/search"
 	personerror "grovehub/services/foundation/constants/error"
 	foundationrequest "grovehub/services/foundation/dto/request"
 	foundationresponse "grovehub/services/foundation/dto/response"
 	"grovehub/services/foundation/entity"
 	"grovehub/services/foundation/mappers"
 	foundationrepository "grovehub/services/foundation/repository"
+	servicehelpers "grovehub/services/foundation/services/helpers"
 )
-
-const (
-	maxPersonNameLength = 100
-	maxContactsPerType  = 10
-)
-
-var phonePattern = regexp.MustCompile(`^\+[1-9][0-9]{7,14}$`)
 
 type PersonService struct {
 	repository foundationrepository.PersonRepository
@@ -40,7 +30,7 @@ func (service *PersonService) Create(
 	ctx context.Context,
 	request foundationrequest.CreatePerson,
 ) (foundationresponse.Person, bool, error) {
-	firstName, middleName, lastName, err := normalizePersonNames(
+	firstName, middleName, lastName, err := servicehelpers.NormalizePersonNames(
 		request.FirstName,
 		request.MiddleName,
 		request.LastName,
@@ -49,17 +39,17 @@ func (service *PersonService) Create(
 		return foundationresponse.Person{}, false, err
 	}
 
-	contacts, err := buildContacts(request.Contacts, nil)
+	contacts, err := servicehelpers.BuildContacts(request.Contacts, nil)
 	if err != nil {
 		return foundationresponse.Person{}, false, err
 	}
 
 	existingPerson, found, err := service.findExistingPersonByContacts(ctx, contacts)
-	if err != nil {
+	if err != nil || found {
+		if found {
+			return mappers.ToPersonResponse(existingPerson), false, nil
+		}
 		return foundationresponse.Person{}, false, err
-	}
-	if found {
-		return mappers.ToPersonResponse(existingPerson), false, nil
 	}
 
 	gidValue, err := coreid.NewUUIDv7()
@@ -83,15 +73,8 @@ func (service *PersonService) Create(
 
 	if err := service.repository.Create(ctx, person); err != nil {
 		if errors.Is(err, foundationrepository.ErrPersonContactAlreadyExists) {
-			existingPerson, found, lookupErr := service.findExistingPersonByContacts(ctx, contacts)
-			if lookupErr != nil {
-				return foundationresponse.Person{}, false, lookupErr
-			}
-			if found {
-				return mappers.ToPersonResponse(existingPerson), false, nil
-			}
+			return service.resolveConcurrentCreate(ctx, contacts)
 		}
-
 		return foundationresponse.Person{}, false, coreerrors.WrapWithMetadata(
 			personerror.PersonCreateFailed,
 			err,
@@ -106,12 +89,10 @@ func (service *PersonService) GetByGID(
 	ctx context.Context,
 	request foundationrequest.PersonByGID,
 ) (foundationresponse.Person, error) {
-	gid := mappers.ToPersonGID(request)
-	person, err := service.getPersonByGID(ctx, gid)
+	person, err := service.getPersonByGID(ctx, mappers.ToPersonGID(request))
 	if err != nil {
 		return foundationresponse.Person{}, err
 	}
-
 	return mappers.ToPersonResponse(person), nil
 }
 
@@ -126,56 +107,10 @@ func (service *PersonService) Update(
 		return foundationresponse.Person{}, err
 	}
 
-	updatedPerson := person
-	changed := false
-
-	if request.FirstName != nil {
-		firstName, err := normalizeRequiredName(*request.FirstName)
-		if err != nil {
-			return foundationresponse.Person{}, err
-		}
-		if firstName != person.GetFirstName() {
-			updatedPerson = updatedPerson.SetFirstName(firstName)
-			changed = true
-		}
+	updatedPerson, changed, err := service.applyPersonUpdate(ctx, person, request)
+	if err != nil {
+		return foundationresponse.Person{}, err
 	}
-
-	if request.MiddleName != nil {
-		middleName, err := normalizeOptionalName(*request.MiddleName)
-		if err != nil {
-			return foundationresponse.Person{}, err
-		}
-		if middleName != person.GetMiddleName() {
-			updatedPerson = updatedPerson.SetMiddleName(middleName)
-			changed = true
-		}
-	}
-
-	if request.LastName != nil {
-		lastName, err := normalizeRequiredName(*request.LastName)
-		if err != nil {
-			return foundationresponse.Person{}, err
-		}
-		if lastName != person.GetLastName() {
-			updatedPerson = updatedPerson.SetLastName(lastName)
-			changed = true
-		}
-	}
-
-	if request.Contacts != nil {
-		contacts, err := buildContacts(*request.Contacts, person.GetContacts())
-		if err != nil {
-			return foundationresponse.Person{}, err
-		}
-		if err := service.ensureContactsBelongToPerson(ctx, gid, contacts); err != nil {
-			return foundationresponse.Person{}, err
-		}
-		if !contactsEqual(contacts, person.GetContacts()) {
-			updatedPerson = updatedPerson.SetContacts(contacts)
-			changed = true
-		}
-	}
-
 	if !changed {
 		return mappers.ToPersonResponse(person), nil
 	}
@@ -185,26 +120,46 @@ func (service *PersonService) Update(
 		SetUpdatedAt(time.Now().UTC())
 
 	if err := service.repository.Update(ctx, updatedPerson); err != nil {
-		if errors.Is(err, foundationrepository.ErrPersonNotFound) {
-			return foundationresponse.Person{}, coreerrors.NewErrorWithMetadata(
-				personerror.PersonNotFound,
-				mappers.ToPersonErrorMetadata(gid),
-			)
-		}
-		if errors.Is(err, foundationrepository.ErrPersonContactAlreadyExists) {
-			return foundationresponse.Person{}, coreerrors.NewError(
-				personerror.PersonContactConflict,
-			)
-		}
+		return foundationresponse.Person{}, service.mapUpdateError(gid, err)
+	}
+	return mappers.ToPersonResponse(updatedPerson), nil
+}
 
-		return foundationresponse.Person{}, coreerrors.WrapWithMetadata(
-			personerror.PersonUpdateFailed,
-			err,
-			mappers.ToPersonErrorMetadata(gid),
-		)
+func (service *PersonService) Search(
+	ctx context.Context,
+	request searchcontract.Request,
+) (searchcontract.Result[foundationresponse.Person], error) {
+	query, cursorPayload, err := servicehelpers.NormalizePersonSearchRequest(request)
+	if err != nil {
+		return searchcontract.Result[foundationresponse.Person]{}, err
 	}
 
-	return mappers.ToPersonResponse(updatedPerson), nil
+	result, err := service.repository.Search(ctx, query)
+	if err != nil {
+		if errors.Is(err, foundationrepository.ErrInvalidPersonSearchQuery) {
+			return searchcontract.Result[foundationresponse.Person]{}, coreerrors.NewError(personerror.InvalidPersonSearch)
+		}
+		return searchcontract.Result[foundationresponse.Person]{}, coreerrors.Wrap(personerror.PersonSearchFailed, err)
+	}
+
+	items := make([]foundationresponse.Person, 0, len(result.Persons))
+	for _, person := range result.Persons {
+		items = append(items, mappers.ToPersonResponse(person))
+	}
+
+	nextCursor, err := buildNextCursor(result, query, cursorPayload)
+	if err != nil {
+		return searchcontract.Result[foundationresponse.Person]{}, coreerrors.Wrap(personerror.PersonSearchFailed, err)
+	}
+
+	return searchcontract.Result[foundationresponse.Person]{
+		Items: items,
+		PageInfo: searchcontract.PageResponse{
+			Rows:       query.Limit,
+			NextCursor: nextCursor,
+			HasNext:    result.HasNext,
+		},
+	}, nil
 }
 
 func (service *PersonService) Deactivate(
@@ -216,7 +171,6 @@ func (service *PersonService) Deactivate(
 	if err != nil {
 		return foundationresponse.Person{}, err
 	}
-
 	if person.GetStatus() == entity.PersonStatusDeactivated {
 		return mappers.ToPersonResponse(person), nil
 	}
@@ -227,43 +181,77 @@ func (service *PersonService) Deactivate(
 		SetUpdatedAt(time.Now().UTC())
 
 	if err := service.repository.Update(ctx, updatedPerson); err != nil {
-		if errors.Is(err, foundationrepository.ErrPersonNotFound) {
-			return foundationresponse.Person{}, coreerrors.NewErrorWithMetadata(
-				personerror.PersonNotFound,
-				mappers.ToPersonErrorMetadata(gid),
-			)
-		}
-
-		return foundationresponse.Person{}, coreerrors.WrapWithMetadata(
-			personerror.PersonUpdateFailed,
-			err,
-			mappers.ToPersonErrorMetadata(gid),
-		)
+		return foundationresponse.Person{}, service.mapUpdateError(gid, err)
 	}
-
 	return mappers.ToPersonResponse(updatedPerson), nil
 }
 
+func (service *PersonService) applyPersonUpdate(
+	ctx context.Context,
+	person entity.Person,
+	request foundationrequest.UpdatePerson,
+) (entity.Person, bool, error) {
+	updatedPerson := person
+	changed := false
+
+	nameUpdates := []struct {
+		value     *string
+		current   string
+		normalize func(string) (string, error)
+		apply     func(entity.Person, string) entity.Person
+	}{
+		{request.FirstName, person.GetFirstName(), servicehelpers.NormalizeRequiredName, func(value entity.Person, name string) entity.Person { return value.SetFirstName(name) }},
+		{request.MiddleName, person.GetMiddleName(), servicehelpers.NormalizeOptionalName, func(value entity.Person, name string) entity.Person { return value.SetMiddleName(name) }},
+		{request.LastName, person.GetLastName(), servicehelpers.NormalizeRequiredName, func(value entity.Person, name string) entity.Person { return value.SetLastName(name) }},
+	}
+
+	for _, update := range nameUpdates {
+		if update.value == nil {
+			continue
+		}
+		normalized, err := update.normalize(*update.value)
+		if err != nil {
+			return entity.Person{}, false, err
+		}
+		if normalized != update.current {
+			updatedPerson = update.apply(updatedPerson, normalized)
+			changed = true
+		}
+	}
+
+	if request.Contacts == nil {
+		return updatedPerson, changed, nil
+	}
+
+	contacts, err := servicehelpers.BuildContacts(*request.Contacts, person.GetContacts())
+	if err != nil {
+		return entity.Person{}, false, err
+	}
+	if err := service.ensureContactsBelongToPerson(ctx, person.GetGID(), contacts); err != nil {
+		return entity.Person{}, false, err
+	}
+	if !servicehelpers.ContactsEqual(contacts, person.GetContacts()) {
+		updatedPerson = updatedPerson.SetContacts(contacts)
+		changed = true
+	}
+	return updatedPerson, changed, nil
+}
+
 func (service *PersonService) getPersonByGID(ctx context.Context, gid entity.GID) (entity.Person, error) {
-	if err := validateGID(gid); err != nil {
-		return entity.Person{}, err
+	if err := servicehelpers.ValidateGID(gid); err != nil {
+		return entity.Person{}, coreerrors.NewErrorWithMetadata(
+			personerror.InvalidPersonGID,
+			mappers.ToPersonErrorMetadata(gid),
+		)
 	}
 
 	person, err := service.repository.FindByGID(ctx, gid)
 	if errors.Is(err, foundationrepository.ErrPersonNotFound) {
-		return entity.Person{}, coreerrors.NewErrorWithMetadata(
-			personerror.PersonNotFound,
-			mappers.ToPersonErrorMetadata(gid),
-		)
+		return entity.Person{}, coreerrors.NewErrorWithMetadata(personerror.PersonNotFound, mappers.ToPersonErrorMetadata(gid))
 	}
 	if err != nil {
-		return entity.Person{}, coreerrors.WrapWithMetadata(
-			personerror.PersonReadFailed,
-			err,
-			mappers.ToPersonErrorMetadata(gid),
-		)
+		return entity.Person{}, coreerrors.WrapWithMetadata(personerror.PersonReadFailed, err, mappers.ToPersonErrorMetadata(gid))
 	}
-
 	return person, nil
 }
 
@@ -290,7 +278,6 @@ func (service *PersonService) findExistingPersonByContacts(
 	if err != nil {
 		return entity.Person{}, false, coreerrors.Wrap(personerror.PersonReadFailed, err)
 	}
-
 	return person, true, nil
 }
 
@@ -302,16 +289,10 @@ func (service *PersonService) ensureContactsBelongToPerson(
 	if len(contacts) == 0 {
 		return nil
 	}
-
 	gids, err := service.repository.FindGIDsByContacts(ctx, contacts)
 	if err != nil {
-		return coreerrors.WrapWithMetadata(
-			personerror.PersonReadFailed,
-			err,
-			mappers.ToPersonErrorMetadata(gid),
-		)
+		return coreerrors.WrapWithMetadata(personerror.PersonReadFailed, err, mappers.ToPersonErrorMetadata(gid))
 	}
-
 	for _, matchedGID := range gids {
 		if matchedGID != gid {
 			return coreerrors.NewError(personerror.PersonContactConflict)
@@ -320,169 +301,47 @@ func (service *PersonService) ensureContactsBelongToPerson(
 	return nil
 }
 
-func normalizePersonNames(firstName string, middleName string, lastName string) (string, string, string, error) {
-	normalizedFirstName, err := normalizeRequiredName(firstName)
+func (service *PersonService) resolveConcurrentCreate(
+	ctx context.Context,
+	contacts []entity.Contact,
+) (foundationresponse.Person, bool, error) {
+	existingPerson, found, err := service.findExistingPersonByContacts(ctx, contacts)
 	if err != nil {
-		return "", "", "", err
+		return foundationresponse.Person{}, false, err
 	}
-	normalizedMiddleName, err := normalizeOptionalName(middleName)
-	if err != nil {
-		return "", "", "", err
+	if found {
+		return mappers.ToPersonResponse(existingPerson), false, nil
 	}
-	normalizedLastName, err := normalizeRequiredName(lastName)
-	if err != nil {
-		return "", "", "", err
-	}
-	return normalizedFirstName, normalizedMiddleName, normalizedLastName, nil
+	return foundationresponse.Person{}, false, coreerrors.NewError(personerror.PersonCreateFailed)
 }
 
-func normalizeRequiredName(value string) (string, error) {
-	normalized, err := normalizeOptionalName(value)
-	if err != nil || normalized == "" {
-		return "", coreerrors.NewError(personerror.InvalidPersonRequest)
+func (service *PersonService) mapUpdateError(gid entity.GID, err error) error {
+	mapped := map[error]func() error{
+		foundationrepository.ErrPersonNotFound: func() error {
+			return coreerrors.NewErrorWithMetadata(personerror.PersonNotFound, mappers.ToPersonErrorMetadata(gid))
+		},
+		foundationrepository.ErrPersonContactAlreadyExists: func() error {
+			return coreerrors.NewError(personerror.PersonContactConflict)
+		},
 	}
-	return normalized, nil
-}
-
-func normalizeOptionalName(value string) (string, error) {
-	normalized := strings.TrimSpace(value)
-	if utf8.RuneCountInString(normalized) > maxPersonNameLength {
-		return "", coreerrors.NewError(personerror.InvalidPersonRequest)
-	}
-	return normalized, nil
-}
-
-func buildContacts(
-	request foundationrequest.Contacts,
-	existing []entity.Contact,
-) ([]entity.Contact, error) {
-	if len(request.Emails) > maxContactsPerType || len(request.Phones) > maxContactsPerType {
-		return nil, coreerrors.NewError(personerror.InvalidPersonContact)
-	}
-
-	existingVerification := make(map[string]bool, len(existing))
-	for _, contact := range existing {
-		existingVerification[contactKey(contact.GetType(), contact.GetNormalizedValue())] = contact.GetIsVerified()
-	}
-
-	contacts := make([]entity.Contact, 0, len(request.Emails)+len(request.Phones))
-	seen := make(map[string]struct{}, len(request.Emails)+len(request.Phones))
-
-	appendContacts := func(
-		contactType entity.ContactType,
-		values []foundationrequest.ContactValue,
-		normalize func(string) (string, error),
-	) error {
-		primaryCount := 0
-		for _, contactRequest := range values {
-			normalizedValue, err := normalize(contactRequest.Value)
-			if err != nil {
-				return err
-			}
-
-			key := contactKey(contactType, normalizedValue)
-			if _, exists := seen[key]; exists {
-				return coreerrors.NewError(personerror.InvalidPersonContact)
-			}
-			seen[key] = struct{}{}
-
-			if contactRequest.IsPrimary {
-				primaryCount++
-				if primaryCount > 1 {
-					return coreerrors.NewError(personerror.InvalidPersonContact)
-				}
-			}
-
-			contacts = append(
-				contacts,
-				entity.NewContact(
-					contactType,
-					normalizedValue,
-					normalizedValue,
-					contactRequest.IsPrimary,
-					existingVerification[key],
-				),
-			)
-		}
-		return nil
-	}
-
-	if err := appendContacts(entity.ContactTypeEmail, request.Emails, normalizeEmail); err != nil {
-		return nil, err
-	}
-	if err := appendContacts(entity.ContactTypePhone, request.Phones, normalizePhone); err != nil {
-		return nil, err
-	}
-
-	return contacts, nil
-}
-
-func normalizeEmail(value string) (string, error) {
-	normalized := strings.ToLower(strings.TrimSpace(value))
-	address, err := mail.ParseAddress(normalized)
-	if err != nil || strings.ToLower(address.Address) != normalized {
-		return "", coreerrors.NewError(personerror.InvalidPersonContact)
-	}
-	return normalized, nil
-}
-
-func normalizePhone(value string) (string, error) {
-	trimmed := strings.TrimSpace(value)
-	builder := strings.Builder{}
-	for index, character := range trimmed {
-		switch {
-		case character == '+' && index == 0:
-			builder.WriteRune(character)
-		case character >= '0' && character <= '9':
-			builder.WriteRune(character)
-		case character == ' ' || character == '-' || character == '(' || character == ')':
-			continue
-		default:
-			return "", coreerrors.NewError(personerror.InvalidPersonContact)
+	for repositoryError, factory := range mapped {
+		if errors.Is(err, repositoryError) {
+			return factory()
 		}
 	}
-
-	normalized := builder.String()
-	if !phonePattern.MatchString(normalized) {
-		return "", coreerrors.NewError(personerror.InvalidPersonContact)
-	}
-	return normalized, nil
+	return coreerrors.WrapWithMetadata(personerror.PersonUpdateFailed, err, mappers.ToPersonErrorMetadata(gid))
 }
 
-func contactsEqual(left []entity.Contact, right []entity.Contact) bool {
-	if len(left) != len(right) {
-		return false
+func buildNextCursor(
+	result foundationrepository.PersonSearchResult,
+	query foundationrepository.PersonSearchQuery,
+	cursor coresearch.Cursor,
+) (string, error) {
+	if !result.HasNext || len(result.Persons) == 0 {
+		return "", nil
 	}
-
-	rightByKey := make(map[string]entity.Contact, len(right))
-	for _, contact := range right {
-		rightByKey[contactKey(contact.GetType(), contact.GetNormalizedValue())] = contact
-	}
-
-	for _, contact := range left {
-		other, exists := rightByKey[contactKey(contact.GetType(), contact.GetNormalizedValue())]
-		if !exists ||
-			other.GetValue() != contact.GetValue() ||
-			other.GetIsPrimary() != contact.GetIsPrimary() ||
-			other.GetIsVerified() != contact.GetIsVerified() {
-			return false
-		}
-	}
-	return true
-}
-
-func contactKey(contactType entity.ContactType, normalizedValue string) string {
-	return string(contactType) + "\x00" + normalizedValue
-}
-
-func validateGID(gid entity.GID) error {
-	value, err := uuid.Parse(string(gid))
-	if err != nil || value == uuid.Nil || value.Version() != uuid.Version(7) {
-		return coreerrors.NewErrorWithMetadata(
-			personerror.InvalidPersonGID,
-			mappers.ToPersonErrorMetadata(gid),
-		)
-	}
-
-	return nil
+	lastPerson := result.Persons[len(result.Persons)-1]
+	cursor.Value = servicehelpers.PersonCursorValue(lastPerson, query.Sort.Field)
+	cursor.TieBreaker = string(lastPerson.GetGID())
+	return servicehelpers.EncodePersonSearchCursor(cursor)
 }
