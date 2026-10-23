@@ -1,0 +1,88 @@
+package postgres
+
+import (
+	"context"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+
+	"grovehub/services/foundation/entity"
+)
+
+type PersonRepository struct {
+	pool *pgxpool.Pool
+}
+
+func NewPersonRepository(pool *pgxpool.Pool) *PersonRepository {
+	return &PersonRepository{pool: pool}
+}
+
+func (repository *PersonRepository) Create(ctx context.Context, person entity.Person) error {
+	_, err := repository.pool.Exec(
+		ctx,
+		`INSERT INTO foundation.persons (gid, status, version, created_at, updated_at)
+		 VALUES ($1, $2, $3, $4, $5)`,
+		string(person.GID),
+		string(person.Status),
+		person.Version,
+		person.CreatedAt,
+		person.UpdatedAt,
+	)
+
+	return err
+}
+
+func (repository *PersonRepository) FindByGID(ctx context.Context, gid entity.GID) (entity.Person, error) {
+	var person entity.Person
+	var gidValue string
+	var status string
+
+	err := repository.pool.QueryRow(
+		ctx,
+		`SELECT gid, status, version, created_at, updated_at
+		 FROM foundation.persons
+		 WHERE gid = $1`,
+		string(gid),
+	).Scan(
+		&gidValue,
+		&status,
+		&person.Version,
+		&person.CreatedAt,
+		&person.UpdatedAt,
+	)
+	if err != nil {
+		return entity.Person{}, err
+	}
+
+	person.GID = entity.GID(gidValue)
+	person.Status = entity.PersonStatus(status)
+
+	return person, nil
+}
+
+func (repository *PersonRepository) Update(ctx context.Context, person entity.Person) error {
+	_, err := repository.pool.Exec(
+		ctx,
+		`UPDATE foundation.persons
+		 SET status = $2,
+		     version = $3,
+		     updated_at = $4
+		 WHERE gid = $1`,
+		string(person.GID),
+		string(person.Status),
+		person.Version,
+		person.UpdatedAt,
+	)
+
+	return err
+}
+
+func (repository *PersonRepository) Delete(ctx context.Context, gid entity.GID) error {
+	_, err := repository.pool.Exec(
+		ctx,
+		`DELETE FROM foundation.persons
+		 WHERE gid = $1`,
+		string(gid),
+	)
+
+	return err
+}
