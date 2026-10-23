@@ -34,10 +34,10 @@ backend/services/<service>/
 ├── api/                         # public OpenAPI/proto contracts when required
 ├── config/                      # when required
 ├── constants/                   # service-wide technical/semantic constants when required
-│   └── errorcode/
+│   └── error/                   # stable service error definitions grouped by resource
 ├── entity/                      # data-only domain entities/types
 ├── repository/                  # persistence contracts
-│   └── postgres/                # PostgreSQL implementation + persistence models
+│   └── postgres/                # PostgreSQL implementation
 ├── services/                    # business use cases and business rules
 ├── controller/                  # transport/controller adapters
 ├── routes/                      # route registration
@@ -161,6 +161,8 @@ CalculateReadiness
 
 Repository interfaces must not contain business decisions or workflow orchestration.
 
+Repository-level sentinel errors may represent persistence outcomes such as a missing row. Those errors are translated by the service layer into stable service errors.
+
 ### 3.3 PostgreSQL Repository
 
 `repository/postgres/` owns PostgreSQL-specific behavior:
@@ -170,19 +172,25 @@ SQL
 row scanning
 query parameters
 PostgreSQL error handling
-persistence models
-mapping between persistence rows and domain entities
+technical row-count checks
+mapping into domain entities when shapes match
 ```
 
-A PostgreSQL persistence model may live in:
+Do **not** create a generic `repository/postgres/entity.go` by default.
+
+When the PostgreSQL row shape matches the domain entity, keep the persistence code in the resource repository file, for example:
 
 ```text
-repository/postgres/entity.go
+repository/postgres/person.go
 ```
 
-This persistence entity/model represents stored database shape. It is different from the domain entity under `entity/`.
+Only introduce a separate persistence model when the stored shape actually diverges from the domain shape. When needed, name it for the resource, for example:
 
-Repositories may contain technical condition handling required by the database driver, for example `ErrNoRows` or unique-constraint mapping. They must not contain business-condition branching.
+```text
+repository/postgres/person_entity.go
+```
+
+Repositories may contain technical condition handling required by the database driver, for example `ErrNoRows`, constraint mapping, or `RowsAffected() == 0`. They must not contain business-condition branching.
 
 ### 3.4 Services
 
@@ -199,6 +207,7 @@ authorization decisions belonging to the domain
 transaction/use-case orchestration
 repository coordination
 cross-service client orchestration
+translation of repository errors into stable service errors
 ```
 
 Example creation flow:
@@ -238,6 +247,8 @@ apply business validation
 perform lifecycle transitions
 own domain defaults
 ```
+
+HTTP status selection belongs in the controller/transport layer, not in the service.
 
 ### 3.6 Routes
 
@@ -289,7 +300,7 @@ backend/services/identity/
 ├── api/
 │   └── openapi/v1/openapi.yaml
 ├── constants/
-│   └── errorcode/
+│   └── errorcode/               # legacy/current Identity path; new service code uses constants/error/
 ├── controller/
 ├── routes/
 ├── dto/
@@ -309,19 +320,25 @@ Foundation uses the flat structure:
 
 ```text
 backend/services/foundation/
+├── constants/
+│   └── error/
+│       └── person.go
 ├── entity/
 │   ├── gid.go
 │   └── person.go
+├── repository/
+│   ├── person.go
+│   └── postgres/
+│       └── person.go
+├── services/
+│   └── person.go
 ├── migrations/
-└── tests/                       # only when behavior requiring tests exists
+└── tests/                       # add Foundation tests after the Foundation flow is complete
 ```
 
 As Foundation grows, add responsibilities directly under the service root:
 
 ```text
-repository/
-repository/postgres/
-services/
 controller/
 routes/
 dto/
@@ -372,6 +389,7 @@ Examples:
 libs/core/errors
 libs/core/dto
 libs/core/http
+libs/core/database/postgres
 libs/core/helpers/id
 libs/core/telemetry
 ```
@@ -388,20 +406,22 @@ The GroveHub helper should expose a small stable wrapper API and delegate UUID a
 
 Business services may use the ID helper to generate IDs before persistence.
 
-Owner-local core tests mirror the production path:
+Shared PostgreSQL pool construction belongs in:
 
 ```text
-backend/libs/core/tests/unit-test/helpers/id/
+backend/libs/core/database/postgres/
 ```
+
+It receives configuration from composition/bootstrap code; it does not read service-specific environment variables or own business logic.
 
 ---
 
-## 9. Error Codes
+## 9. Error Contract
 
-Service-specific semantic error definitions live with the owning service, for example:
+Service-specific semantic error definitions live with the owning service and are grouped by resource, for example:
 
 ```text
-backend/services/identity/constants/errorcode/health_code.go
+backend/services/foundation/constants/error/person.go
 ```
 
 A semantic error definition owns stable:
@@ -411,9 +431,37 @@ Code
 Message
 ```
 
+Business services return typed `coreerrors.Error` values using those definitions. Repository/driver errors may be retained as wrapped causes for diagnostics, but raw PostgreSQL errors must not become API contracts.
+
 HTTP status remains a transport/controller decision.
 
-Optional metadata is supplied at the failing request boundary when needed.
+Optional metadata is supplied at the request/transport boundary when needed.
+
+The canonical HTTP error body is the existing shared schema:
+
+```json
+{
+  "success": false,
+  "errorCode": "FOUNDATION_PERSON_NOT_FOUND",
+  "errorMessage": "Person was not found",
+  "httpErrorCode": 404,
+  "errorMetaData": {}
+}
+```
+
+Flow:
+
+```text
+PostgreSQL/Repository error
+        ↓
+Service error definition + optional wrapped cause
+        ↓
+Controller chooses HTTP status/metadata
+        ↓
+libs/core/http/response writes canonical error JSON
+```
+
+Do not duplicate this response schema inside each service.
 
 ---
 
@@ -450,6 +498,8 @@ helpers/id/          -> tests/unit-test/helpers/id/
 
 Pure data-only entities do not require meaningless tests merely to test struct fields.
 
+For the current Foundation implementation phase, complete the Foundation flow first and add its tests together afterward, as explicitly directed for this phase.
+
 See:
 
 ```text
@@ -464,8 +514,9 @@ Before creating backend code, classify it by responsibility:
 
 ```text
 data/type/constant                 -> entity/
+service semantic error             -> constants/error/<resource>.go
 persistence contract               -> repository/
-PostgreSQL persistence             -> repository/postgres/
+PostgreSQL persistence             -> repository/postgres/<resource>.go
 business rule/use case             -> services/
 HTTP/gRPC transport                -> controller/
 route registration                 -> routes/
@@ -485,6 +536,9 @@ NO business logic in repository/
 NO repository/database access from controller/
 NO business logic in routes/
 NO service-local launcher/
+NO generic repository/postgres/entity.go unless a real persistence-shape divergence requires a resource-specific model
+NO raw PostgreSQL/driver errors as API response contracts
+NO duplicate per-service HTTP error response schema
 NO generic files directly inside libs/core/helpers/; use a focused helper subpackage
 ```
 
