@@ -1,0 +1,76 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+  filelog/grovehub:
+    include:
+      - /var/log/grovehub/backend.log
+    start_at: end
+    include_file_name: false
+    include_file_path: false
+
+extensions:
+  basicauth/grafana:
+    client_auth:
+      username: ${env:GRAFANA_CLOUD_INSTANCE_ID}
+      password: ${env:GRAFANA_CLOUD_API_KEY}
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 256
+  resource/grovehub:
+    attributes:
+      - key: service.name
+        action: insert
+        value: ${env:OTEL_SERVICE_NAME}
+      - key: service.namespace
+        action: insert
+        value: ${env:OTEL_SERVICE_NAMESPACE}
+      - key: deployment.environment.name
+        action: insert
+        value: ${env:OTEL_DEPLOYMENT_ENVIRONMENT}
+  batch: {}
+
+exporters:
+  otlphttp/grafana:
+    endpoint: ${env:GRAFANA_CLOUD_OTLP_ENDPOINT}
+    auth:
+      authenticator: basicauth/grafana
+    compression: gzip
+
+service:
+  extensions:
+    - basicauth/grafana
+  pipelines:
+    logs:
+      receivers:
+        - filelog/grovehub
+        - otlp
+      processors:
+        - memory_limiter
+        - resource/grovehub
+        - batch
+      exporters:
+        - otlphttp/grafana
+    metrics:
+      receivers:
+        - otlp
+      processors:
+        - memory_limiter
+        - resource/grovehub
+        - batch
+      exporters:
+        - otlphttp/grafana
+    traces:
+      receivers:
+        - otlp
+      processors:
+        - memory_limiter
+        - resource/grovehub
+        - batch
+      exporters:
+        - otlphttp/grafana

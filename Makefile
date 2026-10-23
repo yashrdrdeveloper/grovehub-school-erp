@@ -38,9 +38,12 @@ swagger-stop:
 swagger-status:
 	@bash ./scripts/swagger/status.sh
 
-.PHONY: dev-start dev-stop dev-status
+.PHONY: dev-start dev-start-with-logs dev-stop dev-status
 dev-start:
 	@bash ./scripts/dev/start.sh
+
+dev-start-with-logs:
+	@bash ./scripts/dev/start-with-logs.sh
 
 dev-stop:
 	@bash ./scripts/dev/stop.sh

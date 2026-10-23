@@ -18,9 +18,10 @@ Swagger
   make swagger-status   Show Swagger UI status
 
 Development
-  make dev-start        Start backend + Swagger UI
-  make dev-stop         Stop Swagger UI + backend
-  make dev-status       Show backend + Swagger UI status
+  make dev-start            Start backend + Swagger UI
+  make dev-start-with-logs  Start backend + Swagger UI + local OTEL log collector
+  make dev-stop             Stop Swagger UI + backend + optional OTEL collector
+  make dev-status           Show backend + Swagger UI status
 
 Overrides
   make swagger-start SWAGGER_PORT=8082
