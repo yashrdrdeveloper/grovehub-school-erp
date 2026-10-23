@@ -350,7 +350,7 @@ func normalizeCursor(
 	if err := spec.validate(decoded.Value); err != nil || validateUUIDv7String(decoded.TieBreaker) != nil {
 		return nil, coresearch.Cursor{}, invalidPersonSearchCursor()
 	}
-	return &foundationrepository.PersonSearchCursor{Value: decoded.Value, GID: entity.GID(decoded.TieBreaker)}, decoded, nil
+	return &foundationrepository.PersonSearchCursor{Value: decoded.Value, CursorId: entity.GID(decoded.TieBreaker)}, decoded, nil
 }
 
 func validSearchValueCount(operator searchcontract.Operator, count int) bool {

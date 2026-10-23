@@ -26,8 +26,8 @@ type PersonSearchSort struct {
 }
 
 type PersonSearchCursor struct {
-	Value string
-	GID   entity.GID
+	Value    string
+	CursorId entity.GID
 }
 
 type PersonSearchQuery struct {

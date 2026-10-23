@@ -187,7 +187,7 @@ func (repository *PersonRepository) Search(
 			sortField,
 			query.Sort.Direction,
 			query.Cursor.Value,
-			string(query.Cursor.GID),
+			string(query.Cursor.CursorId),
 			"p.gid",
 		))
 	}
