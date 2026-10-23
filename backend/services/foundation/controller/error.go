@@ -10,14 +10,19 @@ import (
 	personerror "grovehub/services/foundation/constants/error"
 )
 
-func writePersonError(ctx context.Context, writer http.ResponseWriter, err error) {
+func writePersonError(
+	ctx context.Context,
+	writer http.ResponseWriter,
+	err error,
+	fallback coreerrors.Definition,
+) {
 	var applicationError *coreerrors.Error
 	if !errors.As(err, &applicationError) {
 		_ = httpresponse.WriteErrorContext(
 			ctx,
 			writer,
 			http.StatusInternalServerError,
-			personerror.PersonReadFailed,
+			fallback,
 		)
 		return
 	}
