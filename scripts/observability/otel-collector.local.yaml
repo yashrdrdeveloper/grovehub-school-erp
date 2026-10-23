@@ -11,6 +11,11 @@ receivers:
     start_at: end
     include_file_name: false
     include_file_path: false
+    operators:
+      - type: json_parser
+        parse_to: attributes
+        severity:
+          parse_from: attributes.level
 
 extensions:
   basicauth/grafana:

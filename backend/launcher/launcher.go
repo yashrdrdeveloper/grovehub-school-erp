@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	httplogging "grovehub/libs/core/http/logging"
 	"grovehub/launcher/routing"
 	"grovehub/services/identity"
 )
@@ -52,7 +53,9 @@ func requestLoggingMiddleware(logger *slog.Logger, next http.Handler) http.Handl
 
 		next.ServeHTTP(recorder, request)
 
-		logger.Info(
+		logger.Log(
+			request.Context(),
+			httplogging.LevelForStatus(recorder.status),
 			"request completed",
 			"service", "platform",
 			"method", request.Method,
