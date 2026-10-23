@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	httpresponse "grovehub/libs/core/http/response"
+	personerror "grovehub/services/foundation/constants/error"
 	foundationrequest "grovehub/services/foundation/dto/request"
 	foundationresponse "grovehub/services/foundation/dto/response"
 )
@@ -26,7 +27,12 @@ func NewPersonController(service PersonService) *PersonController {
 func (controller *PersonController) Create(writer http.ResponseWriter, request *http.Request) {
 	person, err := controller.service.Create(request.Context())
 	if err != nil {
-		writePersonError(request.Context(), writer, err)
+		writePersonError(
+			request.Context(),
+			writer,
+			err,
+			personerror.PersonCreateFailed,
+		)
 		return
 	}
 
@@ -40,7 +46,12 @@ func (controller *PersonController) GetByGID(writer http.ResponseWriter, request
 
 	person, err := controller.service.GetByGID(request.Context(), personRequest)
 	if err != nil {
-		writePersonError(request.Context(), writer, err)
+		writePersonError(
+			request.Context(),
+			writer,
+			err,
+			personerror.PersonReadFailed,
+		)
 		return
 	}
 
@@ -54,7 +65,12 @@ func (controller *PersonController) Deactivate(writer http.ResponseWriter, reque
 
 	person, err := controller.service.Deactivate(request.Context(), personRequest)
 	if err != nil {
-		writePersonError(request.Context(), writer, err)
+		writePersonError(
+			request.Context(),
+			writer,
+			err,
+			personerror.PersonUpdateFailed,
+		)
 		return
 	}
 
