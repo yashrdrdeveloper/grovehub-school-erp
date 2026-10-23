@@ -46,11 +46,36 @@ func (writer *statusWriter) Unwrap() http.ResponseWriter {
 func ServiceHandler(service string, operation string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		startedAt := time.Now()
-		ctx, span := coretelemetry.StartSpan(
+		targetService := coretelemetry.ResolveService(service)
+		callerService, ok := coretelemetry.ServiceFromContext(request.Context())
+		if !ok {
+			callerService = coretelemetry.ServiceLauncherEdge
+		}
+
+		clientContext, clientSpan := coretelemetry.StartSpan(
 			request.Context(),
-			service,
+			callerService.Key,
+			"call "+targetService.Key+" "+operation,
+			trace.WithSpanKind(trace.SpanKindClient),
+			trace.WithAttributes(
+				attribute.String("grovehub.boundary", "in-process-service"),
+				attribute.String("grovehub.target.service.key", targetService.Key),
+				attribute.String("grovehub.target.service.name", targetService.Name),
+				attribute.String("peer.service", targetService.Name),
+			),
+		)
+		defer clientSpan.End()
+
+		ctx, span := coretelemetry.StartSpan(
+			clientContext,
+			targetService.Key,
 			operation,
-			trace.WithSpanKind(trace.SpanKindInternal),
+			trace.WithSpanKind(trace.SpanKindServer),
+			trace.WithAttributes(
+				attribute.String("grovehub.boundary", "in-process-service"),
+				attribute.String("grovehub.caller.service.key", callerService.Key),
+				attribute.String("grovehub.caller.service.name", callerService.Name),
+			),
 		)
 		defer span.End()
 
@@ -62,6 +87,10 @@ func ServiceHandler(service string, operation string, next http.Handler) http.Ha
 		span.SetAttributes(
 			attribute.String("http.request.method", request.Method),
 			attribute.String("url.path", request.URL.Path),
+			attribute.String("http.route", route),
+		)
+		clientSpan.SetAttributes(
+			attribute.String("http.request.method", request.Method),
 			attribute.String("http.route", route),
 		)
 
@@ -76,8 +105,12 @@ func ServiceHandler(service string, operation string, next http.Handler) http.Ha
 			attribute.Int("http.response.status_code", recorder.status),
 			attribute.Int64("http.response.body.size", recorder.bytes),
 		)
+		clientSpan.SetAttributes(
+			attribute.Int("http.response.status_code", recorder.status),
+		)
 		if recorder.status >= http.StatusBadRequest {
 			span.SetStatus(codes.Error, http.StatusText(recorder.status))
+			clientSpan.SetStatus(codes.Error, http.StatusText(recorder.status))
 			span.AddEvent(
 				"service.operation.failed",
 				trace.WithAttributes(
@@ -85,11 +118,18 @@ func ServiceHandler(service string, operation string, next http.Handler) http.Ha
 					attribute.Int("http.response.status_code", recorder.status),
 				),
 			)
+			clientSpan.AddEvent(
+				"service.call.failed",
+				trace.WithAttributes(
+					attribute.String("grovehub.target.service.key", targetService.Key),
+					attribute.Int("http.response.status_code", recorder.status),
+				),
+			)
 		}
 
 		coretelemetry.RecordOperation(
 			ctx,
-			service,
+			targetService.Key,
 			operation,
 			time.Since(startedAt),
 			recorder.status,

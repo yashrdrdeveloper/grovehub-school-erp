@@ -13,6 +13,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	sdktracetest "go.opentelemetry.io/otel/sdk/trace/tracetest"
 	oteltrace "go.opentelemetry.io/otel/trace"
 
 	httpheaders "grovehub/libs/core/http/headers"
@@ -34,7 +35,10 @@ func (roundTrip roundTripFunc) RoundTrip(request *http.Request) (*http.Response,
 	return roundTrip(request)
 }
 
-var testTracerProvider *sdktrace.TracerProvider
+var (
+	testTracerProvider *sdktrace.TracerProvider
+	testSpanRecorder   *sdktracetest.SpanRecorder
+)
 
 func TestCoreHTTPTracingUnit(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -42,8 +46,10 @@ func TestCoreHTTPTracingUnit(t *testing.T) {
 }
 
 var _ = BeforeEach(func() {
+	testSpanRecorder = sdktracetest.NewSpanRecorder()
 	testTracerProvider = sdktrace.NewTracerProvider(
 		sdktrace.WithSampler(sdktrace.AlwaysSample()),
+		sdktrace.WithSpanProcessor(testSpanRecorder),
 	)
 	otel.SetTracerProvider(testTracerProvider)
 	otel.SetTextMapPropagator(propagation.TraceContext{})
@@ -56,6 +62,7 @@ var _ = AfterEach(func() {
 
 func newTracedInboundRequest(method string, path string) (*http.Request, context.Context, oteltrace.Span) {
 	parentContext, parentSpan := coretelemetry.StartSpan(context.Background(), "edge", method+" "+path)
+	parentContext = coretelemetry.ContextWithService(parentContext, coretelemetry.ServiceLauncherEdge)
 	request := httptest.NewRequest(method, path, nil).WithContext(parentContext)
 	return request, parentContext, parentSpan
 }
