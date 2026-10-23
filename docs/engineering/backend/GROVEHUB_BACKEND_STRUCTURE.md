@@ -281,6 +281,27 @@ write response DTO or normalized service error
 
 Controllers must not access repositories/databases directly, own business rules, mutate entities, or build response DTO fields manually when a mapper exists.
 
+Resource-specific transport helpers belong in the same controller file as private/unexported methods when they are used only by that controller.
+
+Example:
+
+```go
+func (controller *PersonController) writeError(...) { ... }
+func (controller *PersonController) errorHTTPStatus(...) int { ... }
+```
+
+Do **not** create files such as:
+
+```text
+controller/error.go
+controller/helpers.go
+controller/common.go
+```
+
+for logic that belongs only to one resource controller.
+
+Extract a shared controller helper only after multiple controllers have a real common transport concern. Shared extraction must reduce actual duplication; it must not be created speculatively.
+
 ### 3.8 Routes
 
 `routes/` only connects routes to controllers/middleware.
@@ -341,6 +362,10 @@ backend/services/foundation/
 │       └── person.go
 ├── services/
 │   └── person.go
+├── controller/
+│   └── person.go                 # handler methods + private person transport/error helpers
+├── routes/
+│   └── http.go
 ├── migrations/
 └── tests/
 ```
@@ -356,6 +381,7 @@ GID/CreatedAt have no setters
 repository reads/writes through constructor/getters
 service chooses all business transition values
 mappers convert representations only
+person-specific HTTP/error mapping stays private in controller/person.go
 ```
 
 Foundation tests are added together after the Foundation flow is complete for the current implementation phase.
@@ -375,6 +401,8 @@ Business services return typed `coreerrors.Error` values. Raw PostgreSQL/driver 
 Error metadata is converted by `mappers/error.go` and attached to the typed application error.
 
 HTTP status remains a controller decision.
+
+Resource-specific HTTP error mapping belongs as private methods in that resource controller file. Do not create a separate controller error file for one resource.
 
 Do not duplicate the shared HTTP error response envelope inside each service.
 
@@ -424,6 +452,7 @@ NO repository/database access from controllers
 NO direct entity serialization as public API response
 NO repository returning response DTOs
 NO builder for simple field assignment
+NO separate controller error/helper/common file for one resource-only concern
 NO raw PostgreSQL/driver errors as API response contracts
 NO duplicate per-service HTTP error response schema
 ```
