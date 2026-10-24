@@ -104,35 +104,25 @@ func NormalizeOptionalName(value string) (string, error) {
 	return normalized, nil
 }
 
-func BuildContacts(request foundationrequest.Contacts, existing []entity.Contact) ([]entity.Contact, error) {
+func NormalizeContacts(request foundationrequest.Contacts) (foundationrequest.Contacts, error) {
 	if len(request.Emails) > maxContactsPerType || len(request.Phones) > maxContactsPerType {
-		return nil, coreerrors.NewError(personerror.InvalidPersonContact)
+		return foundationrequest.Contacts{}, coreerrors.NewError(personerror.InvalidPersonContact)
 	}
 
-	existingVerification := make(map[string]bool, len(existing))
-	for _, contact := range existing {
-		existingVerification[contactKey(contact.GetType(), contact.GetNormalizedValue())] = contact.GetIsVerified()
+	seen := make(map[string]struct{}, len(request.Emails)+len(request.Phones))
+	emails, err := normalizeContactGroup(entity.ContactTypeEmail, request.Emails, normalizeEmail, seen)
+	if err != nil {
+		return foundationrequest.Contacts{}, err
+	}
+	phones, err := normalizeContactGroup(entity.ContactTypePhone, request.Phones, normalizePhone, seen)
+	if err != nil {
+		return foundationrequest.Contacts{}, err
 	}
 
-	contacts := make([]entity.Contact, 0, len(request.Emails)+len(request.Phones))
-	seen := make(map[string]struct{}, cap(contacts))
-	groups := []struct {
-		contactType entity.ContactType
-		values      []foundationrequest.ContactValue
-		normalize   func(string) (string, error)
-	}{
-		{entity.ContactTypeEmail, request.Emails, normalizeEmail},
-		{entity.ContactTypePhone, request.Phones, normalizePhone},
-	}
-
-	for _, group := range groups {
-		built, err := buildContactGroup(group.contactType, group.values, group.normalize, existingVerification, seen)
-		if err != nil {
-			return nil, err
-		}
-		contacts = append(contacts, built...)
-	}
-	return contacts, nil
+	return foundationrequest.Contacts{
+		Emails: emails,
+		Phones: phones,
+	}, nil
 }
 
 func ValidateGID(gid entity.GID) error {
@@ -184,40 +174,39 @@ func NormalizePersonSearchRequest(
 	}, payload, nil
 }
 
-func buildContactGroup(
+func normalizeContactGroup(
 	contactType entity.ContactType,
 	values []foundationrequest.ContactValue,
 	normalize func(string) (string, error),
-	existingVerification map[string]bool,
 	seen map[string]struct{},
-) ([]entity.Contact, error) {
-	contacts := make([]entity.Contact, 0, len(values))
+) ([]foundationrequest.ContactValue, error) {
+	normalized := make([]foundationrequest.ContactValue, 0, len(values))
 	primaryCount := 0
-	for _, contactRequest := range values {
-		normalizedValue, err := normalize(contactRequest.Value)
+
+	for _, contact := range values {
+		value, err := normalize(contact.Value)
 		if err != nil {
 			return nil, err
 		}
-		key := contactKey(contactType, normalizedValue)
+		key := contactKey(contactType, value)
 		if _, exists := seen[key]; exists {
 			return nil, coreerrors.NewError(personerror.InvalidPersonContact)
 		}
 		seen[key] = struct{}{}
-		if contactRequest.IsPrimary {
+
+		if contact.IsPrimary {
 			primaryCount++
 			if primaryCount > 1 {
 				return nil, coreerrors.NewError(personerror.InvalidPersonContact)
 			}
 		}
-		contacts = append(contacts, entity.NewContact(
-			contactType,
-			normalizedValue,
-			normalizedValue,
-			contactRequest.IsPrimary,
-			existingVerification[key],
-		))
+
+		normalized = append(normalized, foundationrequest.ContactValue{
+			Value:     value,
+			IsPrimary: contact.IsPrimary,
+		})
 	}
-	return contacts, nil
+	return normalized, nil
 }
 
 func normalizeSort(sortRequest []searchcontract.Sort) (coresearch.Sort, error) {
