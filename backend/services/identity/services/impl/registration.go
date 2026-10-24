@@ -6,6 +6,8 @@ import (
 
 	coreerrors "grovehub/libs/core/errors"
 	foundationclient "grovehub/services/foundation/client"
+	foundationrequest "grovehub/services/foundation/dto/request"
+	foundationresponse "grovehub/services/foundation/dto/response"
 	identityerror "grovehub/services/identity/constants/error"
 	identityrequest "grovehub/services/identity/dto/request"
 	identityresponse "grovehub/services/identity/dto/response"
@@ -48,20 +50,15 @@ func (service *RegistrationService) Register(
 		return identityresponse.Registration{}, err
 	}
 
-	person, _, err := service.foundationClient.CreatePerson(ctx, validated.CreatePerson)
-	if err != nil {
-		return identityresponse.Registration{}, servicehelpers.MapRegistrationDependencyError(err)
-	}
-
-	email, phone, err := servicehelpers.PrimaryRegistrationContacts(person)
+	person, err := service.resolvePerson(ctx, validated)
 	if err != nil {
 		return identityresponse.Registration{}, err
 	}
 
 	account, err := service.accountService.Create(ctx, identityservices.CreateAccountInput{
 		PersonGid: person.GID,
-		Email:     email,
-		Phone:     phone,
+		Email:     validated.Email,
+		Phone:     validated.PhoneNumber,
 	})
 	if err != nil {
 		return identityresponse.Registration{}, servicehelpers.MapRegistrationDependencyError(err)
@@ -80,4 +77,49 @@ func (service *RegistrationService) Register(
 	}
 
 	return service.mapper.ToRegistrationResponse(account), nil
+}
+
+func (service *RegistrationService) resolvePerson(
+	ctx context.Context,
+	request identityrequest.Register,
+) (foundationresponse.Person, error) {
+	if request.Gid != "" {
+		person, err := service.foundationClient.GetPersonByGID(
+			ctx,
+			foundationrequest.PersonByGID{GID: request.Gid},
+		)
+		if err != nil {
+			return foundationresponse.Person{}, servicehelpers.MapRegistrationDependencyError(err)
+		}
+		if !servicehelpers.PersonHasEmail(person, request.Email) {
+			return foundationresponse.Person{}, coreerrors.NewError(identityerror.InvalidRegistration)
+		}
+		return person, nil
+	}
+
+	result, err := service.foundationClient.SearchPersons(
+		ctx,
+		servicehelpers.RegistrationEmailSearch(request.Email),
+	)
+	if err != nil {
+		return foundationresponse.Person{}, servicehelpers.MapRegistrationDependencyError(err)
+	}
+	if len(result.Items) > 1 {
+		return foundationresponse.Person{}, coreerrors.NewError(identityerror.RegistrationFailed)
+	}
+	if len(result.Items) == 1 {
+		return result.Items[0], nil
+	}
+
+	person, _, err := service.foundationClient.CreatePerson(
+		ctx,
+		servicehelpers.BuildRegistrationPersonRequest(request),
+	)
+	if err != nil {
+		return foundationresponse.Person{}, servicehelpers.MapRegistrationDependencyError(err)
+	}
+	if !servicehelpers.PersonHasEmail(person, request.Email) {
+		return foundationresponse.Person{}, coreerrors.NewError(identityerror.RegistrationAlreadyExists)
+	}
+	return person, nil
 }

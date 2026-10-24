@@ -1,33 +1,39 @@
 package helpers
 
 import (
+	"strings"
+
 	coreerrors "grovehub/libs/core/errors"
-	foundationrequest "grovehub/services/foundation/dto/request"
 	identityerror "grovehub/services/identity/constants/error"
 	identityrequest "grovehub/services/identity/dto/request"
 )
 
-func ValidateRegistration(request identityrequest.Register) error {
+func NormalizeRegistration(request identityrequest.Register) (identityrequest.Register, error) {
 	if err := ValidatePassword(request.Password); err != nil {
-		return invalidRegistration()
+		return identityrequest.Register{}, invalidRegistration()
 	}
-	if countPrimaryContacts(request.Contacts.Emails) != 1 {
-		return invalidRegistration()
-	}
-	if countPrimaryContacts(request.Contacts.Phones) > 1 {
-		return invalidRegistration()
-	}
-	return nil
-}
 
-func countPrimaryContacts(values []foundationrequest.ContactValue) int {
-	count := 0
-	for _, value := range values {
-		if value.IsPrimary {
-			count++
-		}
+	email, err := NormalizeEmail(request.Email)
+	if err != nil {
+		return identityrequest.Register{}, invalidRegistration()
 	}
-	return count
+	request.Email = email
+
+	phone, err := NormalizePhone(request.PhoneNumber)
+	if err != nil {
+		return identityrequest.Register{}, invalidRegistration()
+	}
+	request.PhoneNumber = phone
+
+	if strings.TrimSpace(request.Gid) != "" {
+		personGid, err := NormalizePersonGid(request.Gid)
+		if err != nil {
+			return identityrequest.Register{}, invalidRegistration()
+		}
+		request.Gid = string(personGid)
+	}
+
+	return request, nil
 }
 
 func invalidRegistration() error {

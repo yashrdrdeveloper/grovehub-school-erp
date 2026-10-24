@@ -2,7 +2,7 @@
 
 ## Scope
 
-Registration is the first public Identity orchestration flow. It creates or resolves the canonical Foundation Person, creates the internal Identity Account, and creates the optional password credential used by password login.
+Registration is the public Identity orchestration flow that resolves or creates the canonical Foundation Person, creates the internal Identity Account, and creates the password credential used by password login.
 
 Public endpoint:
 
@@ -10,67 +10,108 @@ Public endpoint:
 POST /auth/register
 ```
 
-There is still no public `/identity/accounts` endpoint and no standalone password endpoint.
+There is no public `/identity/accounts` endpoint and no standalone password CRUD endpoint.
 
 ## Request contract
 
-Identity reuses Foundation's `request.CreatePerson` contract directly and adds only the registration-specific password field.
+Registration owns a flat HTTP request contract:
 
 ```go
 type Register struct {
-    foundationrequest.CreatePerson
-    Password string `json:"password"`
+    Gid         string `json:"gid,omitempty"`
+    FirstName   string `json:"firstName"`
+    MiddleName  string `json:"middleName,omitempty"`
+    LastName    string `json:"lastName"`
+    Email       string `json:"email"`
+    PhoneNumber string `json:"phoneNumber,omitempty"`
+    Password    string `json:"password"`
 }
 ```
 
-Because `CreatePerson` is embedded, the HTTP JSON remains flat. Example shape:
+`gid` is optional. It is used when the caller already knows the canonical Foundation Person GID.
+
+Example:
 
 ```json
 {
-  "firstName": "Asha",
-  "lastName": "Sharma",
-  "contacts": {
-    "emails": [
-      {"value": "asha@example.com", "isPrimary": true}
-    ],
-    "phones": [
-      {"value": "+919999999999", "isPrimary": true}
-    ]
-  },
-  "password": "example-password"
+  "firstName": "Yash",
+  "middleName": "",
+  "lastName": "Developer",
+  "email": "yash@example.com",
+  "phoneNumber": "+919876543210",
+  "password": "StrongPassword123!"
 }
 ```
 
-Registration does not duplicate Foundation's name/contact DTOs.
+Existing-person registration may also supply `gid`:
 
-## Registration validator
-
-`RegistrationValidator` owns only registration-specific structural rules:
-
-```text
-new-password policy
-exactly one primary email
-at most one primary phone
+```json
+{
+  "gid": "019a1f4f-4abc-7def-8abc-1234567890ab",
+  "firstName": "Yash",
+  "middleName": "",
+  "lastName": "Developer",
+  "email": "yash@example.com",
+  "phoneNumber": "+919876543210",
+  "password": "StrongPassword123!"
+}
 ```
 
-It does not duplicate Foundation name/email/phone format validation. Foundation validates and normalizes its own `CreatePerson` payload when Registration calls the Foundation client.
+## Registration validation
 
-The primary email is mandatory because every Identity Account requires an email. The primary phone is optional.
-
-## Orchestration
+The Registration validator owns registration-level canonicalization:
 
 ```text
-POST /auth/register
-        ↓
-RegistrationController
-        ↓
-RegistrationService
-        ↓
-RegistrationValidator
-        ↓
-Foundation Client.CreatePerson
-        ↓
-normalized Foundation Person + GID
+email -> normalized canonical email
+phoneNumber -> normalized E.164 phone when present
+gid -> validated/normalized UUIDv7 when present
+password -> new-password policy
+```
+
+Passwords are not trimmed or normalized.
+
+Person name validation remains Foundation-owned. This matters because when an existing Person is resolved by GID or email, Registration does not rewrite that Person's canonical name/contact record.
+
+## Person resolution
+
+Registration resolves the Foundation Person in this order:
+
+```text
+1. gid supplied?
+      YES -> Foundation GetPersonByGID
+             -> email must belong to that Person
+      NO  -> continue
+
+2. Search Foundation by exact contacts.email
+      one match -> reuse that Person and GID
+      no match  -> continue
+      >1 match  -> fail safely (Foundation contact uniqueness should prevent this)
+
+3. Create Foundation Person
+      firstName + middleName + lastName
+      primary email
+      optional primary phone
+      -> Foundation generates the new GID
+```
+
+Email is therefore the canonical automatic resolver when no GID is supplied.
+
+Registration never creates a new Person merely because the request omitted a GID when the email already belongs to an existing Foundation Person.
+
+If a GID is supplied but the submitted email is not one of that Person's email contacts, Registration returns `IDENTITY_REGISTRATION_INVALID` and does not create an Identity Account.
+
+When Person creation races with another request, Foundation remains contact-aware/idempotent. Registration also verifies that any Person returned from the create path owns the submitted email before continuing, preventing accidental linkage through a conflicting phone contact.
+
+## Identity creation
+
+After the Person is resolved:
+
+```text
+Foundation Person.GID
+        +
+normalized registration email
+        +
+optional normalized phoneNumber
         ↓
 AccountService.Create
         ↓
@@ -79,39 +120,39 @@ PasswordCredentialService.Set
 Registration response
 ```
 
-The Account email/phone values come from the normalized Foundation Person response, not directly from the raw HTTP request. Registration uses the primary Foundation email and, when present, the primary Foundation phone.
+The Identity Account email is always the normalized registration email. Phone is optional.
+
+If an Identity Account already exists for the resolved Person GID, email, or phone, Registration returns the registration-level conflict error rather than creating another account.
 
 ## Cross-service boundary
 
 Registration depends on Foundation only through `foundation/client.Client`.
 
-Identity must not import Foundation repositories, service implementations, or database tables. The launcher constructs Foundation first and injects `foundationModule.Client()` into the Identity module.
+It uses:
 
 ```text
-Launcher
-  ├── Foundation Module
-  │      └── public Foundation Client
-  │
-  └── Identity Module
-         └── RegistrationService
-                └── Foundation Client
+GetPersonByGID
+SearchPersons
+CreatePerson
 ```
+
+Identity does not import Foundation repositories, service implementations, or tables.
 
 ## Failure and compensation
 
-Foundation Person and Identity Account are separate service responsibilities, so Registration does not attempt a cross-service database transaction.
+Foundation Person and Identity Account are separate service responsibilities, so Registration does not use a cross-service database transaction.
 
-If Foundation Person creation succeeds but Account creation fails, Registration keeps the Person. Foundation Person creation is contact-aware/idempotent, so a later registration retry can resolve the same Person rather than creating another one.
+If Person resolution/creation succeeds but Account creation fails, the Foundation Person remains unchanged.
 
-If Account creation succeeds but password credential creation fails, Registration compensates by calling `AccountService.PermanentlyDelete` for the newly created Account. The password credential foreign key cascades on Account deletion if a credential row exists.
+If Account creation succeeds but password credential creation fails, Registration compensates by permanently deleting the newly created Identity Account.
 
-Registration never deactivates or hard-deletes the Foundation Person as compensation.
+Registration never deletes or deactivates the Foundation Person as compensation.
 
-If compensation itself fails, Registration returns the generic `IDENTITY_REGISTRATION_FAILED` error with both causes retained internally.
+If compensation also fails, Registration returns `IDENTITY_REGISTRATION_FAILED` with the underlying causes retained internally.
 
 ## Error boundary
 
-Registration translates dependency errors into registration-level public errors:
+Public registration errors remain:
 
 ```text
 IDENTITY_REGISTRATION_INVALID        -> 400
@@ -119,11 +160,11 @@ IDENTITY_REGISTRATION_ALREADY_EXISTS -> 409
 IDENTITY_REGISTRATION_FAILED         -> 500
 ```
 
-Downstream Foundation/Account/Password persistence details are not exposed as the public registration contract.
+Foundation/Account/Password persistence details are not exposed as the public contract.
 
 ## Response
 
-The current response contains Identity identifiers/state only:
+The response remains:
 
 ```text
 accountId
@@ -133,4 +174,4 @@ phone (optional)
 status
 ```
 
-Registration does not create a session or tokens yet. Login/session/token work remains a later authentication phase.
+Registration does not create a session or access/refresh tokens yet.

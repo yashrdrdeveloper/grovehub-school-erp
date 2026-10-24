@@ -15,8 +15,5 @@ func NewRegistrationValidator() identityvalidators.RegistrationValidator {
 func (validator *RegistrationValidator) Validate(
 	request identityrequest.Register,
 ) (identityrequest.Register, error) {
-	if err := validatorhelpers.ValidateRegistration(request); err != nil {
-		return identityrequest.Register{}, err
-	}
-	return request, nil
+	return validatorhelpers.NormalizeRegistration(request)
 }
