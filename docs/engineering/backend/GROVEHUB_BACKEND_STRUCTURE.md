@@ -95,7 +95,7 @@ Consumers depend on `mappers.PersonMapper`, not on the concrete implementation. 
 ```text
 validators/person.go
     -> PersonValidator interface
-    -> validated result contracts
+    -> reuses existing request/service-input/core contracts
 
 validators/impl/person.go
     -> concrete request/service-input validation
@@ -107,6 +107,10 @@ validators/helpers/person.go
 Consumers depend on `validators.PersonValidator`, never directly on `validators/impl.PersonValidator`.
 
 Validator implementations must not query repositories or own business workflow decisions. Their job is payload validation and canonicalization.
+
+Validation does not justify a parallel data model. If validation/canonicalization leaves the shape unchanged, validators return the existing request DTO or service-input contract. If a generic internal contract already exists, such as `coresearch.Query[TId]` or `coresearch.CursorPayload`, validators return that contract directly.
+
+Do not create `ValidatedCreateX`, `ValidatedUpdateX`, or `ValidatedSearchX` wrappers merely to mark data as validated.
 
 ### Service
 
@@ -221,7 +225,7 @@ Service implementation
   │       ↓
   │    Validator implementation
   │       ↓
-  │    validated/normalized values
+  │    normalized existing contract
   ↓
 Repository interface
   ↓
@@ -290,7 +294,7 @@ Do not create a mapper when there is no actual representation boundary yet. Do n
 
 ### Validator
 
-`validators/<resource>.go` defines the validator interface and validated input/result contracts.
+`validators/<resource>.go` defines the validator interface and reuses existing request/service-input/generic core contracts whenever their shape already represents the validated data.
 
 `validators/impl/<resource>.go` owns request/service-input validation orchestration.
 
@@ -299,7 +303,7 @@ Do not create a mapper when there is no actual representation boundary yet. Do n
 ```text
 required/optional field validation
 request normalization
-contact payload construction
+contact payload validation/canonicalization
 search field/operator validation
 search cursor validation
 resource-specific domain error mapping for invalid payloads
@@ -308,6 +312,8 @@ resource-specific domain error mapping for invalid payloads
 Validators may reuse shared technical normalizers from `backend/libs/core/helpers/normalize`.
 
 Validators must not query repositories, call external services, authorize users, generate IDs, read clocks, or choose business workflows.
+
+A validator-specific result type is allowed only when validation produces genuinely new information that cannot be represented safely by an existing DTO, service input, entity value object, or generic core contract. A type whose only meaning is “the same request, but validated” is not allowed.
 
 ### Service
 
@@ -318,6 +324,7 @@ Validators must not query repositories, call external services, authorize users,
 `services/helpers/<resource>.go` may own pure, resource-specific helper behavior actually used by service orchestration, such as:
 
 ```text
+entity/value construction from already validated request data
 entity comparison for update orchestration
 next-page cursor value extraction after repository results return
 service-result construction helpers
@@ -498,6 +505,15 @@ sort field validation
 cursor value validation
 ```
 
+The validator returns the existing generic search contracts directly:
+
+```text
+coresearch.Query[entity.GID]
+coresearch.CursorPayload
+```
+
+Do not introduce `ValidatedPersonSearch` or another wrapper around those generic contracts.
+
 Foundation repository code owns SQL mappings such as:
 
 ```text
@@ -530,6 +546,8 @@ NO validator-only helper left under services/helpers
 NO request-payload normalization duplicated inside service implementations
 NO repository/network access from validators
 NO authorization/business workflow in validators
+NO ValidatedCreateX/ValidatedUpdateX wrappers when an existing request/service-input contract has the same shape
+NO ValidatedSearchX wrapper when existing generic search contracts already represent the result
 NO separate Person search implementation file when it is the same Person responsibility
 NO business logic in controller/repository/entity/mapper/client adapter
 NO duplicated generic search SQL operator switches in services
@@ -540,4 +558,4 @@ NO separate error DTO/mapper files when metadata belongs only to one resource
 NO mapper package for a resource with no real representation change
 ```
 
-> **Guiding principle:** interfaces define boundaries, `impl` packages implement them, validators canonicalize payloads before business orchestration, resource helpers stay with their actual consumer, and truly generic mechanics are promoted to `libs/core` only when domain-specific knowledge remains outside the shared package.
+> **Guiding principle:** interfaces define boundaries, `impl` packages implement them, validators canonicalize payloads without inventing duplicate contracts, resource helpers stay with their actual consumer, and truly generic mechanics are promoted to `libs/core` only when domain-specific knowledge remains outside the shared package.
