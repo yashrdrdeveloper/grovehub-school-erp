@@ -18,4 +18,5 @@ SWAGGER_BASE_URL="http://127.0.0.1:${SWAGGER_PORT}"
 SWAGGER_SPECS=(
   "Foundation API v1|foundation/api/openapi/v1/openapi.yaml"
   "Identity API v1|identity/api/openapi/v1/openapi.yaml"
+  "Mail Provider API v1|mailProvider/api/openapi/v1/openapi.yaml"
 )

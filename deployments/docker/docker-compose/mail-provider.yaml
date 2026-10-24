@@ -1,0 +1,21 @@
+services:
+  haraka:
+    build:
+      context: ../../..
+      dockerfile: deployments/docker/haraka/Dockerfile
+    container_name: grovehub-haraka
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${MAIL_PROVIDER_SMTP_PORT:-2525}:2525"
+    volumes:
+      - grovehub_haraka_queue:/opt/haraka/queue
+    mem_limit: ${HARAKA_MEMORY_LIMIT:-512m}
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 2525"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+
+volumes:
+  grovehub_haraka_queue:

@@ -23,10 +23,10 @@ case "${command_name}" in
 esac
 
 case "${service_name}" in
-  all|foundation|identity)
+  all|foundation|identity|mailProvider)
     ;;
   *)
-    die "Unsupported migration service: ${service_name}. Expected all, foundation, or identity."
+    die "Unsupported migration service: ${service_name}. Expected all, foundation, identity, or mailProvider."
     ;;
 esac
 
@@ -39,6 +39,11 @@ ensure_goose
 run_service_migration() {
   local service="$1"
   local migrations_dir="${BACKEND_DIR}/services/${service}/migrations"
+  local migration_table="${service}_schema_migrations"
+
+  if [[ "${service}" == "mailProvider" ]]; then
+    migration_table="mail_provider_schema_migrations"
+  fi
 
   [[ -d "${migrations_dir}" ]] || die "Migrations directory not found for ${service}: ${migrations_dir}"
 
@@ -47,7 +52,7 @@ run_service_migration() {
   GOOSE_DRIVER="postgres" \
   GOOSE_DBSTRING="${DATABASE_URL}" \
   GOOSE_MIGRATION_DIR="${migrations_dir}" \
-  GOOSE_TABLE="${service}_schema_migrations" \
+  GOOSE_TABLE="${migration_table}" \
     "${GOOSE_BIN}" -env=none "${command_name}"
 }
 
@@ -57,6 +62,7 @@ if [[ "${service_name}" != "all" ]]; then
 fi
 
 if [[ "${command_name}" == "down" ]]; then
+  run_service_migration "mailProvider"
   run_service_migration "identity"
   run_service_migration "foundation"
   exit 0
@@ -64,3 +70,4 @@ fi
 
 run_service_migration "foundation"
 run_service_migration "identity"
+run_service_migration "mailProvider"

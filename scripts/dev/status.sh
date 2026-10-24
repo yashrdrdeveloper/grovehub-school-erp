@@ -7,4 +7,5 @@ SCRIPT_DIR="$(
 )"
 
 bash "${SCRIPT_DIR}/../backend/status.sh"
+bash "${SCRIPT_DIR}/../mailProvider/status.sh"
 bash "${SCRIPT_DIR}/../swagger/status.sh"

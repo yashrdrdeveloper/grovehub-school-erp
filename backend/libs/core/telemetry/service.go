@@ -22,6 +22,10 @@ var (
 		Key:  "identity",
 		Name: "IDENTITY",
 	}
+	ServiceMailProvider = Service{
+		Key:  "mail-provider",
+		Name: "MAIL PROVIDER",
+	}
 )
 
 func ResolveService(value string) Service {
@@ -34,6 +38,8 @@ func ResolveService(value string) Service {
 		return ServiceFoundation
 	case "identity":
 		return ServiceIdentity
+	case "mail-provider", "mailprovider", "mail provider":
+		return ServiceMailProvider
 	default:
 		return Service{
 			Key:  normalized,

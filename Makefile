@@ -28,6 +28,16 @@ backend-status:
 backend-dev:
 	@bash ./scripts/backend/dev.sh
 
+.PHONY: mail-provider-start mail-provider-stop mail-provider-status
+mail-provider-start:
+	@bash ./scripts/mailProvider/start.sh
+
+mail-provider-stop:
+	@bash ./scripts/mailProvider/stop.sh
+
+mail-provider-status:
+	@bash ./scripts/mailProvider/status.sh
+
 .PHONY: db-migrate-status db-migrate-up db-migrate-down
 db-migrate-status:
 	@bash ./scripts/database/migrate.sh status

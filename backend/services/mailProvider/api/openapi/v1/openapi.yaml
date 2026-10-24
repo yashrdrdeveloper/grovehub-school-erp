@@ -1,0 +1,326 @@
+openapi: 3.1.0
+info:
+  title: GroveHub Mail Provider API
+  version: 0.1.0
+  description: GroveHub outbound mail-provider domain, sender, and message submission contract.
+paths:
+  /mail-provider/domains:
+    post:
+      operationId: registerMailProviderDomain
+      summary: Register a sending domain and obtain its DNS TXT ownership challenge
+      tags: [Mail Provider]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterDomainRequest'
+      responses:
+        '201':
+          description: Domain registered in pending-verification state.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainSuccessResponse'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /mail-provider/domains/{domainId}:
+    parameters:
+      - $ref: '#/components/parameters/DomainId'
+    get:
+      operationId: getMailProviderDomain
+      summary: Get a registered sending domain
+      tags: [Mail Provider]
+      responses:
+        '200':
+          description: Domain returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainSuccessResponse'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /mail-provider/domains/{domainId}/verify:
+    parameters:
+      - $ref: '#/components/parameters/DomainId'
+    post:
+      operationId: verifyMailProviderDomain
+      summary: Verify the GroveHub DNS TXT ownership challenge
+      tags: [Mail Provider]
+      responses:
+        '200':
+          description: Domain verified or already verified.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainSuccessResponse'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '502': { $ref: '#/components/responses/DependencyError' }
+  /mail-provider/domains/{domainId}/deactivate:
+    parameters:
+      - $ref: '#/components/parameters/DomainId'
+    post:
+      operationId: deactivateMailProviderDomain
+      summary: Deactivate a sending domain
+      tags: [Mail Provider]
+      responses:
+        '200':
+          description: Domain deactivated or already deactivated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainSuccessResponse'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /mail-provider/senders:
+    post:
+      operationId: registerMailProviderSender
+      summary: Register a sender address under a verified domain
+      tags: [Mail Provider]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterSenderRequest'
+      responses:
+        '201':
+          description: Sender registered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SenderSuccessResponse'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /mail-provider/senders/{senderId}:
+    parameters:
+      - $ref: '#/components/parameters/SenderId'
+    get:
+      operationId: getMailProviderSender
+      summary: Get a registered sender
+      tags: [Mail Provider]
+      responses:
+        '200':
+          description: Sender returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SenderSuccessResponse'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /mail-provider/senders/{senderId}/deactivate:
+    parameters:
+      - $ref: '#/components/parameters/SenderId'
+    post:
+      operationId: deactivateMailProviderSender
+      summary: Deactivate a sender
+      tags: [Mail Provider]
+      responses:
+        '200':
+          description: Sender deactivated or already deactivated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SenderSuccessResponse'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /mail-provider/messages:
+    post:
+      operationId: sendMailProviderMessage
+      summary: Persist and submit a message to the GroveHub Haraka MTA
+      description: A SUBMITTED response means Haraka accepted the message for its outbound path; it does not mean final mailbox delivery.
+      tags: [Mail Provider]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+      responses:
+        '201':
+          description: Message submitted to Haraka.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageSuccessResponse'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '502': { $ref: '#/components/responses/DependencyError' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /mail-provider/messages/{messageId}:
+    parameters:
+      - $ref: '#/components/parameters/MessageId'
+    get:
+      operationId: getMailProviderMessage
+      summary: Get a message submission record
+      tags: [Mail Provider]
+      responses:
+        '200':
+          description: Message returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageSuccessResponse'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
+components:
+  parameters:
+    DomainId:
+      name: domainId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    SenderId:
+      name: senderId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    MessageId:
+      name: messageId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  schemas:
+    RegisterDomainRequest:
+      type: object
+      additionalProperties: false
+      required: [name]
+      properties:
+        name: { type: string, example: school.example }
+    RegisterSenderRequest:
+      type: object
+      additionalProperties: false
+      required: [domainId, email, displayName]
+      properties:
+        domainId: { type: string, format: uuid }
+        email: { type: string, format: email, example: fees@school.example }
+        displayName: { type: string, example: School Fees }
+    SendMessageRequest:
+      type: object
+      additionalProperties: false
+      required: [senderId, to, subject]
+      properties:
+        senderId: { type: string, format: uuid }
+        to:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { type: string, format: email }
+        cc:
+          type: array
+          items: { type: string, format: email }
+        bcc:
+          type: array
+          items: { type: string, format: email }
+        subject: { type: string, minLength: 1 }
+        textBody: { type: string }
+        htmlBody: { type: string }
+    Domain:
+      type: object
+      required: [domainId, name, verificationHost, verificationValue, status, version, createdAt, updatedAt]
+      properties:
+        domainId: { type: string, format: uuid }
+        name: { type: string }
+        verificationHost: { type: string }
+        verificationValue: { type: string }
+        status: { type: string, enum: [PENDING_VERIFICATION, VERIFIED, DEACTIVATED] }
+        version: { type: integer, format: int64 }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    Sender:
+      type: object
+      required: [senderId, domainId, email, displayName, status, version, createdAt, updatedAt]
+      properties:
+        senderId: { type: string, format: uuid }
+        domainId: { type: string, format: uuid }
+        email: { type: string, format: email }
+        displayName: { type: string }
+        status: { type: string, enum: [ACTIVE, DEACTIVATED] }
+        version: { type: integer, format: int64 }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    Message:
+      type: object
+      required: [messageId, senderId, to, subject, status, version, createdAt, updatedAt]
+      properties:
+        messageId: { type: string, format: uuid }
+        senderId: { type: string, format: uuid }
+        to:
+          type: array
+          items: { type: string, format: email }
+        cc:
+          type: array
+          items: { type: string, format: email }
+        bcc:
+          type: array
+          items: { type: string, format: email }
+        subject: { type: string }
+        status: { type: string, enum: [QUEUED, SUBMITTED, FAILED] }
+        failureMessage: { type: string }
+        version: { type: integer, format: int64 }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    DomainSuccessResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, const: true }
+        data: { $ref: '#/components/schemas/Domain' }
+    SenderSuccessResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, const: true }
+        data: { $ref: '#/components/schemas/Sender' }
+    MessageSuccessResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, const: true }
+        data: { $ref: '#/components/schemas/Message' }
+    ErrorResponse:
+      type: object
+      required: [success, errorCode, errorMessage, httpErrorCode, errorMetaData]
+      properties:
+        success: { type: boolean, const: false }
+        errorCode: { type: string }
+        errorMessage: { type: string }
+        httpErrorCode: { type: integer }
+        errorMetaData: { type: object }
+  responses:
+    BadRequest:
+      description: The supplied request is invalid.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    NotFound:
+      description: The requested mail-provider resource was not found.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Conflict:
+      description: The operation conflicts with the current mail-provider state.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    DependencyError:
+      description: DNS verification or SMTP submission dependency failed.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    InternalError:
+      description: Mail Provider could not complete the operation.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
