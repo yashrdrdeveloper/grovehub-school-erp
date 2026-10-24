@@ -33,7 +33,7 @@ func (service *AccountService) Create(
 	ctx context.Context,
 	input identityservices.CreateAccountInput,
 ) (entity.Account, error) {
-	validated, err := service.validator.ValidateCreate(input)
+	validatedInput, err := service.validator.ValidateCreate(input)
 	if err != nil {
 		return entity.Account{}, err
 	}
@@ -46,9 +46,9 @@ func (service *AccountService) Create(
 	now := time.Now().UTC()
 	account := entity.NewAccount(
 		entity.AccountId(accountIdValue),
-		validated.PersonGid,
-		validated.Email,
-		validated.Phone,
+		entity.PersonGid(validatedInput.PersonGid),
+		validatedInput.Email,
+		validatedInput.Phone,
 		entity.AccountStatusActive,
 		1,
 		now,
@@ -104,12 +104,12 @@ func (service *AccountService) Update(
 		return entity.Account{}, err
 	}
 
-	validated, err := service.validator.ValidateUpdate(input)
+	validatedInput, err := service.validator.ValidateUpdate(input)
 	if err != nil {
 		return entity.Account{}, err
 	}
 
-	updatedAccount, changed := applyAccountUpdate(account, validated)
+	updatedAccount, changed := applyAccountUpdate(account, validatedInput)
 	if !changed {
 		return account, nil
 	}
@@ -171,18 +171,18 @@ func (service *AccountService) readAccount(account entity.Account, err error) (e
 
 func applyAccountUpdate(
 	account entity.Account,
-	validated identityvalidators.ValidatedUpdateAccount,
+	input identityservices.UpdateAccountInput,
 ) (entity.Account, bool) {
 	updatedAccount := account
 	changed := false
 
-	if validated.Email != nil && *validated.Email != account.GetEmail() {
-		updatedAccount = updatedAccount.SetEmail(*validated.Email)
+	if input.Email != nil && *input.Email != account.GetEmail() {
+		updatedAccount = updatedAccount.SetEmail(*input.Email)
 		changed = true
 	}
 
-	if validated.Phone != nil && *validated.Phone != account.GetPhone() {
-		updatedAccount = updatedAccount.SetPhone(*validated.Phone)
+	if input.Phone != nil && *input.Phone != account.GetPhone() {
+		updatedAccount = updatedAccount.SetPhone(*input.Phone)
 		changed = true
 	}
 
