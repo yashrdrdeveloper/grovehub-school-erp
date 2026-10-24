@@ -6,14 +6,14 @@ import (
 	validatorhelpers "grovehub/services/identity/validators/helpers"
 )
 
-type RegistrationValidator struct{}
+type AuthValidator struct{}
 
-func NewRegistrationValidator() identityvalidators.RegistrationValidator {
-	return &RegistrationValidator{}
+func NewAuthValidator() identityvalidators.AuthValidator {
+	return &AuthValidator{}
 }
 
-func (validator *RegistrationValidator) Validate(
+func (validator *AuthValidator) ValidateRegister(
 	request identityrequest.Register,
 ) (identityrequest.Register, error) {
-	return validatorhelpers.NormalizeRegistration(request)
+	return validatorhelpers.NormalizeRegister(request)
 }

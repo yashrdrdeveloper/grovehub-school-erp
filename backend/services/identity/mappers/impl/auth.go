@@ -6,14 +6,14 @@ import (
 	identitymappers "grovehub/services/identity/mappers"
 )
 
-type RegistrationMapper struct{}
+type AuthMapper struct{}
 
-func NewRegistrationMapper() identitymappers.RegistrationMapper {
-	return &RegistrationMapper{}
+func NewAuthMapper() identitymappers.AuthMapper {
+	return &AuthMapper{}
 }
 
-func (mapper *RegistrationMapper) ToRegistrationResponse(account entity.Account) identityresponse.Registration {
-	return identityresponse.Registration{
+func (mapper *AuthMapper) ToRegisterResponse(account entity.Account) identityresponse.Register {
+	return identityresponse.Register{
 		AccountId: string(account.GetAccountId()),
 		PersonGid: string(account.GetPersonGid()),
 		Email:     account.GetEmail(),

@@ -12,17 +12,17 @@ import (
 	identityservices "grovehub/services/identity/services"
 )
 
-type RegistrationController struct {
-	service identityservices.RegistrationService
+type AuthController struct {
+	service identityservices.AuthService
 }
 
-func NewRegistrationController(service identityservices.RegistrationService) controller.RegistrationController {
-	return &RegistrationController{service: service}
+func NewAuthController(service identityservices.AuthService) controller.AuthController {
+	return &AuthController{service: service}
 }
 
-func (controller *RegistrationController) Register(writer http.ResponseWriter, request *http.Request) {
-	var registrationRequest identityrequest.Register
-	if err := httprequest.DecodeJSON(request, &registrationRequest); err != nil {
+func (controller *AuthController) Register(writer http.ResponseWriter, request *http.Request) {
+	var registerRequest identityrequest.Register
+	if err := httprequest.DecodeJSON(request, &registerRequest); err != nil {
 		_ = httpresponse.WriteErrorContext(
 			request.Context(),
 			writer,
@@ -32,9 +32,9 @@ func (controller *RegistrationController) Register(writer http.ResponseWriter, r
 		return
 	}
 
-	registration, err := controller.service.Register(request.Context(), registrationRequest)
+	registration, err := controller.service.Register(request.Context(), registerRequest)
 	if err != nil {
-		controllerhelpers.WriteRegistrationError(request.Context(), writer, err)
+		controllerhelpers.WriteRegisterError(request.Context(), writer, err)
 		return
 	}
 

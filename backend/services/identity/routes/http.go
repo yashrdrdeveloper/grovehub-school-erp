@@ -7,13 +7,13 @@ import (
 	"grovehub/services/identity/controller"
 )
 
-func RegisterHTTP(mux *http.ServeMux, registrationController controller.RegistrationController) {
+func RegisterHTTP(mux *http.ServeMux, authController controller.AuthController) {
 	mux.Handle(
 		"POST /auth/register",
 		httptracing.ServiceHandler(
 			"identity",
 			"POST /auth/register",
-			http.HandlerFunc(registrationController.Register),
+			http.HandlerFunc(authController.Register),
 		),
 	)
 }

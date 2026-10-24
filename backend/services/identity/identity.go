@@ -22,8 +22,8 @@ type Module interface {
 }
 
 type module struct {
-	logger                 *slog.Logger
-	registrationController controller.RegistrationController
+	logger         *slog.Logger
+	authController controller.AuthController
 }
 
 func New(logger *slog.Logger, pool *pgxpool.Pool, foundationClient foundationclient.Client) Module {
@@ -38,24 +38,24 @@ func New(logger *slog.Logger, pool *pgxpool.Pool, foundationClient foundationcli
 		passwordCredentialValidator,
 	)
 
-	registrationMapper := mapperimpl.NewRegistrationMapper()
-	registrationValidator := validatorimpl.NewRegistrationValidator()
-	registrationService := serviceimpl.NewRegistrationService(
+	authMapper := mapperimpl.NewAuthMapper()
+	authValidator := validatorimpl.NewAuthValidator()
+	authService := serviceimpl.NewAuthService(
 		foundationClient,
 		accountService,
 		passwordCredentialService,
-		registrationMapper,
-		registrationValidator,
+		authMapper,
+		authValidator,
 	)
 
 	return &module{
-		logger:                 logger,
-		registrationController: controllerimpl.NewRegistrationController(registrationService),
+		logger:         logger,
+		authController: controllerimpl.NewAuthController(authService),
 	}
 }
 
 func (service *module) RegisterHTTP(mux *http.ServeMux) {
-	routes.RegisterHTTP(mux, service.registrationController)
+	routes.RegisterHTTP(mux, service.authController)
 	service.logger.Info(
 		"identity service registered",
 		"service", coretelemetry.ServiceIdentity.Name,

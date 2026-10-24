@@ -7,6 +7,6 @@ import (
 	identityresponse "grovehub/services/identity/dto/response"
 )
 
-type RegistrationService interface {
-	Register(ctx context.Context, request identityrequest.Register) (identityresponse.Registration, error)
+type AuthService interface {
+	Register(ctx context.Context, request identityrequest.Register) (identityresponse.Register, error)
 }

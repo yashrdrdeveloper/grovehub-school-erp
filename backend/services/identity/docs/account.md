@@ -4,7 +4,7 @@
 
 Phase 2.1 establishes the internal Identity Account foundation. Account lifecycle operations remain internal service capabilities; there is no public `/identity/accounts` HTTP API.
 
-Registration now consumes `AccountService.Create` as part of `POST /auth/register`. Authentication flows will later read accounts by email or account identity.
+`AuthService.Register` consumes `AccountService.Create` as part of `POST /auth/register`. Future Auth methods will use the same internal Account boundary.
 
 ## Ownership
 
@@ -76,31 +76,16 @@ PermanentlyDelete
 
 `Deactivate` changes lifecycle state without deleting the row.
 
-`PermanentlyDelete` irreversibly removes the Account and is intentionally internal. Registration currently uses it only as compensation when a newly created Account cannot receive its password credential.
+`PermanentlyDelete` irreversibly removes the Account and is intentionally internal. Auth registration uses it only as compensation when a newly created Account cannot receive its password credential.
 
-## Repository boundary
+## Auth boundary
 
-`repository.AccountRepository` exposes persistence primitives only:
-
-```text
-Create
-FindById
-FindByPersonGid
-FindByEmail
-Update
-Delete
-```
-
-Business lifecycle decisions remain in the service layer.
-
-## Registration boundary
-
-Registration performs:
+`AuthService.Register` performs:
 
 ```text
-Resolve/create Foundation Person through Foundation Client
+Resolve/create Foundation Person
         ↓
-Foundation GID + normalized primary contacts
+Patch mandatory first/middle/last names through Foundation
         ↓
 AccountService.Create
         ↓
@@ -109,7 +94,7 @@ PasswordCredentialService.Set
 
 The Account service remains an internal Identity dependency rather than an HTTP resource.
 
-See `backend/services/identity/docs/registration.md` for orchestration and compensation rules.
+See `backend/services/identity/docs/auth.md` for orchestration and compensation rules.
 
 ## Authentication readiness
 

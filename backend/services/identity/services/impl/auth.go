@@ -17,22 +17,22 @@ import (
 	identityvalidators "grovehub/services/identity/validators"
 )
 
-type RegistrationService struct {
+type AuthService struct {
 	foundationClient          foundationclient.Client
 	accountService            identityservices.AccountService
 	passwordCredentialService identityservices.PasswordCredentialService
-	mapper                    identitymappers.RegistrationMapper
-	validator                 identityvalidators.RegistrationValidator
+	mapper                    identitymappers.AuthMapper
+	validator                 identityvalidators.AuthValidator
 }
 
-func NewRegistrationService(
+func NewAuthService(
 	foundationClient foundationclient.Client,
 	accountService identityservices.AccountService,
 	passwordCredentialService identityservices.PasswordCredentialService,
-	mapper identitymappers.RegistrationMapper,
-	validator identityvalidators.RegistrationValidator,
-) identityservices.RegistrationService {
-	return &RegistrationService{
+	mapper identitymappers.AuthMapper,
+	validator identityvalidators.AuthValidator,
+) identityservices.AuthService {
+	return &AuthService{
 		foundationClient:          foundationClient,
 		accountService:            accountService,
 		passwordCredentialService: passwordCredentialService,
@@ -41,18 +41,27 @@ func NewRegistrationService(
 	}
 }
 
-func (service *RegistrationService) Register(
+func (service *AuthService) Register(
 	ctx context.Context,
 	request identityrequest.Register,
-) (identityresponse.Registration, error) {
-	validated, err := service.validator.Validate(request)
+) (identityresponse.Register, error) {
+	validated, err := service.validator.ValidateRegister(request)
 	if err != nil {
-		return identityresponse.Registration{}, err
+		return identityresponse.Register{}, err
 	}
 
-	person, err := service.resolvePerson(ctx, validated)
+	person, err := service.resolveRegisterPerson(ctx, validated)
 	if err != nil {
-		return identityresponse.Registration{}, err
+		return identityresponse.Register{}, err
+	}
+
+	person, err = service.foundationClient.UpdatePerson(
+		ctx,
+		foundationrequest.PersonByGID{GID: person.GID},
+		servicehelpers.BuildRegisterPersonUpdate(validated),
+	)
+	if err != nil {
+		return identityresponse.Register{}, servicehelpers.MapAuthDependencyError(err)
 	}
 
 	account, err := service.accountService.Create(ctx, identityservices.CreateAccountInput{
@@ -61,25 +70,25 @@ func (service *RegistrationService) Register(
 		Phone:     validated.PhoneNumber,
 	})
 	if err != nil {
-		return identityresponse.Registration{}, servicehelpers.MapRegistrationDependencyError(err)
+		return identityresponse.Register{}, servicehelpers.MapAuthDependencyError(err)
 	}
 
 	accountId := string(account.GetAccountId())
 	if err := service.passwordCredentialService.Set(ctx, accountId, validated.Password); err != nil {
 		cleanupErr := service.accountService.PermanentlyDelete(ctx, accountId)
 		if cleanupErr != nil {
-			return identityresponse.Registration{}, coreerrors.Wrap(
+			return identityresponse.Register{}, coreerrors.Wrap(
 				identityerror.RegistrationFailed,
 				errors.Join(err, cleanupErr),
 			)
 		}
-		return identityresponse.Registration{}, servicehelpers.MapRegistrationDependencyError(err)
+		return identityresponse.Register{}, servicehelpers.MapAuthDependencyError(err)
 	}
 
-	return service.mapper.ToRegistrationResponse(account), nil
+	return service.mapper.ToRegisterResponse(account), nil
 }
 
-func (service *RegistrationService) resolvePerson(
+func (service *AuthService) resolveRegisterPerson(
 	ctx context.Context,
 	request identityrequest.Register,
 ) (foundationresponse.Person, error) {
@@ -89,7 +98,7 @@ func (service *RegistrationService) resolvePerson(
 			foundationrequest.PersonByGID{GID: request.Gid},
 		)
 		if err != nil {
-			return foundationresponse.Person{}, servicehelpers.MapRegistrationDependencyError(err)
+			return foundationresponse.Person{}, servicehelpers.MapAuthDependencyError(err)
 		}
 		if !servicehelpers.PersonHasEmail(person, request.Email) {
 			return foundationresponse.Person{}, coreerrors.NewError(identityerror.InvalidRegistration)
@@ -99,10 +108,10 @@ func (service *RegistrationService) resolvePerson(
 
 	result, err := service.foundationClient.SearchPersons(
 		ctx,
-		servicehelpers.RegistrationEmailSearch(request.Email),
+		servicehelpers.RegisterEmailSearch(request.Email),
 	)
 	if err != nil {
-		return foundationresponse.Person{}, servicehelpers.MapRegistrationDependencyError(err)
+		return foundationresponse.Person{}, servicehelpers.MapAuthDependencyError(err)
 	}
 	if len(result.Items) > 1 {
 		return foundationresponse.Person{}, coreerrors.NewError(identityerror.RegistrationFailed)
@@ -113,10 +122,10 @@ func (service *RegistrationService) resolvePerson(
 
 	person, _, err := service.foundationClient.CreatePerson(
 		ctx,
-		servicehelpers.BuildRegistrationPersonRequest(request),
+		servicehelpers.BuildRegisterPersonRequest(request),
 	)
 	if err != nil {
-		return foundationresponse.Person{}, servicehelpers.MapRegistrationDependencyError(err)
+		return foundationresponse.Person{}, servicehelpers.MapAuthDependencyError(err)
 	}
 	if !servicehelpers.PersonHasEmail(person, request.Email) {
 		return foundationresponse.Person{}, coreerrors.NewError(identityerror.RegistrationAlreadyExists)

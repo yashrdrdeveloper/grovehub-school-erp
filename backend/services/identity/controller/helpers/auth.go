@@ -10,13 +10,13 @@ import (
 	identityerror "grovehub/services/identity/constants/error"
 )
 
-var registrationErrorStatus = map[coreerrors.Code]int{
+var registerErrorStatus = map[coreerrors.Code]int{
 	identityerror.InvalidRegistration.Code():       http.StatusBadRequest,
 	identityerror.RegistrationAlreadyExists.Code(): http.StatusConflict,
 	identityerror.RegistrationFailed.Code():        http.StatusInternalServerError,
 }
 
-func WriteRegistrationError(ctx context.Context, writer http.ResponseWriter, err error) {
+func WriteRegisterError(ctx context.Context, writer http.ResponseWriter, err error) {
 	var applicationError *coreerrors.Error
 	if !errors.As(err, &applicationError) {
 		_ = httpresponse.WriteErrorContext(
@@ -28,7 +28,7 @@ func WriteRegistrationError(ctx context.Context, writer http.ResponseWriter, err
 		return
 	}
 
-	statusCode := registrationErrorStatus[applicationError.Definition().Code()]
+	statusCode := registerErrorStatus[applicationError.Definition().Code()]
 	if statusCode == 0 {
 		statusCode = http.StatusInternalServerError
 	}

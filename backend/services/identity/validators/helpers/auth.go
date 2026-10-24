@@ -8,7 +8,12 @@ import (
 	identityrequest "grovehub/services/identity/dto/request"
 )
 
-func NormalizeRegistration(request identityrequest.Register) (identityrequest.Register, error) {
+func NormalizeRegister(request identityrequest.Register) (identityrequest.Register, error) {
+	if strings.TrimSpace(request.FirstName) == "" ||
+		request.MiddleName == nil ||
+		strings.TrimSpace(request.LastName) == "" {
+		return identityrequest.Register{}, invalidRegistration()
+	}
 	if err := ValidatePassword(request.Password); err != nil {
 		return identityrequest.Register{}, invalidRegistration()
 	}

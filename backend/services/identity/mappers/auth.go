@@ -5,6 +5,6 @@ import (
 	"grovehub/services/identity/entity"
 )
 
-type RegistrationMapper interface {
-	ToRegistrationResponse(account entity.Account) identityresponse.Registration
+type AuthMapper interface {
+	ToRegisterResponse(account entity.Account) identityresponse.Register
 }

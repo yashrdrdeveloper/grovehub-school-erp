@@ -2,7 +2,7 @@
 
 ## Scope
 
-Password credentials are internal Identity state used by higher-level authentication flows. They are not an HTTP resource and do not have standalone password CRUD endpoints.
+Password credentials are internal Identity state used by higher-level Auth flows. They are not an HTTP resource and do not have standalone password CRUD endpoints.
 
 There must be no routes such as:
 
@@ -12,18 +12,18 @@ PUT /password
 DELETE /password
 ```
 
-Higher-level flows call the internal password credential service instead:
+Higher-level Auth methods call the internal password credential service instead:
 
 ```text
 Register              -> PasswordCredentialService.Set
 Login                 -> PasswordCredentialService.Verify
 Forgot/Reset Password -> PasswordCredentialService.Replace
-Change Password       -> verify current password in the flow, then Replace
+Change Password       -> verify current password in the Auth flow, then Replace
 ```
 
-Registration is now implemented through `POST /auth/register`; the other authentication flows remain future work.
+`AuthService.Register` is implemented through `POST /auth/register`; the other Auth methods remain future work.
 
-The higher-level flow owns authorization, OTP/recovery proof, current-password checks, account status checks, throttling, and response behavior.
+The higher-level Auth method owns authorization, OTP/recovery proof, current-password checks, account status checks, throttling, and response behavior.
 
 ## Account relationship
 
@@ -63,7 +63,7 @@ Verify
 Replace
 ```
 
-`Set` creates the first password credential for an existing account and is currently used by Registration.
+`Set` creates the first password credential for an existing account and is currently used by `AuthService.Register`.
 
 `Verify` compares a candidate password with the stored encoded hash and returns a boolean. It does not decide whether login is allowed.
 
@@ -95,25 +95,13 @@ backend/services/identity/services/helpers/password_hasher.go
 
 The implementation uses Argon2id from `golang.org/x/crypto/argon2` with 64 MiB memory, 3 passes, 1 thread, a 16-byte random salt, and a 32-byte derived key. Encoded hashes carry algorithm/version/work parameters, and verification validates/bounds those parameters before running Argon2id. Hash comparison is constant-time.
 
-## Repository boundary
+## Register integration
 
-`repository.PasswordCredentialRepository` owns only:
+Auth validates the new password before any cross-service write. After Foundation Person resolution/name update and Identity Account creation, `AuthService.Register` calls `PasswordCredentialService.Set`.
 
-```text
-Create
-FindByAccountId
-Update
-```
+If `Set` fails after Account creation, Auth compensates by permanently deleting that newly created Account. It does not delete or deactivate the Foundation Person.
 
-No password verification logic belongs in the repository.
-
-## Registration integration
-
-Registration validates the new password before any cross-service write. After Foundation Person and Identity Account creation, it calls `PasswordCredentialService.Set`.
-
-If `Set` fails after Account creation, Registration compensates by permanently deleting that newly created Account. It does not delete or deactivate the Foundation Person.
-
-See `backend/services/identity/docs/registration.md`.
+See `backend/services/identity/docs/auth.md`.
 
 ## Still future
 

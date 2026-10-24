@@ -2,24 +2,25 @@ openapi: 3.1.0
 info:
   title: GroveHub Identity API
   version: 0.2.0
-  description: Identity registration and authentication entry-point contract.
+  description: Identity Auth entry-point contract.
 paths:
   /auth/register:
     post:
       operationId: registerIdentityAccount
       summary: Register a GroveHub identity account and password credential
       description: >-
-        Registration first resolves an existing Foundation Person by the optional gid or by exact normalized email.
-        A new Foundation Person/GID is created only when no existing person is resolved by email. When gid is supplied,
-        the email must belong to that Foundation Person. firstName and lastName are used only when a new Person must be created.
+        Auth resolves an existing Foundation Person by optional gid or exact normalized email, creating a new Person/GID only when needed.
+        firstName, middleName, and lastName are always mandatory fields. After Person resolution, Auth always patches those three names through
+        Foundation UpdatePerson before creating the Identity Account. middleName may be an explicit empty string. When gid is supplied,
+        the email must already belong to that Person.
       tags:
-        - Identity
+        - Auth
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RegistrationRequest"
+              $ref: "#/components/schemas/RegisterRequest"
       responses:
         "201":
           description: Identity account and password credential created.
@@ -29,7 +30,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RegistrationSuccessResponse"
+                $ref: "#/components/schemas/RegisterSuccessResponse"
         "400":
           $ref: "#/components/responses/InvalidRegistration"
         "409":
@@ -44,10 +45,13 @@ components:
         type: string
         pattern: "^[0-9a-f]{32}$"
   schemas:
-    RegistrationRequest:
+    RegisterRequest:
       type: object
       additionalProperties: false
       required:
+        - firstName
+        - middleName
+        - lastName
         - email
         - password
       properties:
@@ -58,15 +62,18 @@ components:
           description: Optional existing Foundation Person GID. When supplied, the submitted email must belong to that Person.
         firstName:
           type: string
+          minLength: 1
           maxLength: 100
-          description: Required by Foundation only when registration must create a new Person.
+          description: Mandatory current first name; applied to the resolved Foundation Person before Account creation.
         middleName:
           type: string
           maxLength: 100
+          description: Mandatory field; may be empty when the person has no middle name. Applied to the resolved Foundation Person before Account creation.
         lastName:
           type: string
+          minLength: 1
           maxLength: 100
-          description: Required by Foundation only when registration must create a new Person.
+          description: Mandatory current last name; applied to the resolved Foundation Person before Account creation.
         email:
           type: string
           format: email
@@ -74,14 +81,14 @@ components:
           description: Required Identity email and canonical Person-resolution key when gid is omitted.
         phoneNumber:
           type: string
-          description: Optional phone number. Identity normalizes it before account creation.
+          description: Optional phone number. Identity normalizes it before Account creation.
         password:
           type: string
           format: password
           minLength: 8
           maxLength: 128
           description: Password is validated but never trimmed, lowercased, or otherwise normalized.
-    Registration:
+    RegisterResult:
       type: object
       additionalProperties: false
       required:
@@ -107,7 +114,7 @@ components:
             - ACTIVE
             - SUSPENDED
             - DEACTIVATED
-    RegistrationSuccessResponse:
+    RegisterSuccessResponse:
       type: object
       additionalProperties: false
       required:
@@ -118,7 +125,7 @@ components:
           type: boolean
           const: true
         data:
-          $ref: "#/components/schemas/Registration"
+          $ref: "#/components/schemas/RegisterResult"
     ErrorResponse:
       type: object
       additionalProperties: false
@@ -143,7 +150,7 @@ components:
           additionalProperties: true
   responses:
     InvalidRegistration:
-      description: Registration payload, gid/email relationship, email, phone, or password is invalid.
+      description: Registration names, gid/email relationship, email, phone, or password are invalid.
       headers:
         X-Trace-ID:
           $ref: "#/components/headers/TraceID"

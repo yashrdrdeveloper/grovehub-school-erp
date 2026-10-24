@@ -1,6 +1,6 @@
 package response
 
-type Registration struct {
+type Register struct {
 	AccountId string `json:"accountId"`
 	PersonGid string `json:"personGid"`
 	Email     string `json:"email"`
