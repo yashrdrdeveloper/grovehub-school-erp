@@ -1,16 +1,13 @@
 package helpers
 
 import (
-	"net/mail"
-	"regexp"
 	"strings"
 	"time"
 	"unicode/utf8"
 
-	"github.com/google/uuid"
-
 	searchcontract "grovehub/libs/core/contracts/search"
 	coreerrors "grovehub/libs/core/errors"
+	corenormalize "grovehub/libs/core/helpers/normalize"
 	coresearch "grovehub/libs/core/search"
 	personerror "grovehub/services/foundation/constants/error"
 	foundationrequest "grovehub/services/foundation/dto/request"
@@ -25,8 +22,6 @@ const (
 	maxSearchFilters    = 20
 	maxFilterValues     = 50
 )
-
-var phonePattern = regexp.MustCompile(`^\+[1-9][0-9]{7,14}$`)
 
 type valueNormalizer func(searchcontract.Operator, string) (string, error)
 type cursorValueExtractor func(entity.Person) string
@@ -178,24 +173,23 @@ func ContactsEqual(left, right []entity.Contact) bool {
 }
 
 func ValidateGID(gid entity.GID) error {
-	if err := validateUUIDv7String(string(gid)); err != nil {
+	if _, err := corenormalize.UUIDv7(string(gid)); err != nil {
 		return coreerrors.NewError(personerror.InvalidPersonGID)
 	}
 	return nil
 }
 
 func NormalizeEmail(value string) (string, error) {
-	normalized := strings.ToLower(strings.TrimSpace(value))
-	address, err := mail.ParseAddress(normalized)
-	if err != nil || strings.ToLower(address.Address) != normalized {
+	normalized, err := corenormalize.Email(value)
+	if err != nil {
 		return "", coreerrors.NewError(personerror.InvalidPersonContact)
 	}
 	return normalized, nil
 }
 
 func NormalizePhone(value string) (string, error) {
-	normalized, err := normalizePhoneCharacters(value)
-	if err != nil || !phonePattern.MatchString(normalized) {
+	normalized, err := corenormalize.Phone(value)
+	if err != nil {
 		return "", coreerrors.NewError(personerror.InvalidPersonContact)
 	}
 	return normalized, nil
@@ -419,11 +413,11 @@ func operatorSet(operators ...searchcontract.Operator) map[searchcontract.Operat
 }
 
 func normalizeGIDSearchValue(_ searchcontract.Operator, value string) (string, error) {
-	if err := validateUUIDv7String(strings.TrimSpace(value)); err != nil {
+	normalized, err := corenormalize.UUIDv7(value)
+	if err != nil {
 		return "", invalidPersonSearch()
 	}
-	parsed, _ := uuid.Parse(strings.TrimSpace(value))
-	return parsed.String(), nil
+	return normalized, nil
 }
 
 func normalizeStatusSearchValue(_ searchcontract.Operator, value string) (string, error) {
@@ -467,7 +461,7 @@ func normalizePhoneSearchFieldValue(operator searchcontract.Operator, value stri
 		searchcontract.OperatorStartsWith: {},
 	}
 	if _, ok := partialOperators[operator]; ok {
-		normalized, err := normalizePhoneCharacters(value)
+		normalized, err := corenormalize.PhoneCharacters(value)
 		if err != nil || normalized == "" {
 			return "", invalidPersonSearch()
 		}
@@ -476,26 +470,8 @@ func normalizePhoneSearchFieldValue(operator searchcontract.Operator, value stri
 	return NormalizePhone(value)
 }
 
-func normalizePhoneCharacters(value string) (string, error) {
-	trimmed := strings.TrimSpace(value)
-	builder := strings.Builder{}
-	for index, character := range trimmed {
-		allowed := character >= '0' && character <= '9'
-		separator := character == ' ' || character == '-' || character == '(' || character == ')'
-		if character == '+' && index == 0 {
-			builder.WriteRune(character)
-		} else if allowed {
-			builder.WriteRune(character)
-		} else if !separator {
-			return "", invalidPersonSearch()
-		}
-	}
-	return builder.String(), nil
-}
-
 func validateUUIDv7String(value string) error {
-	parsed, err := uuid.Parse(value)
-	if err != nil || parsed == uuid.Nil || parsed.Version() != uuid.Version(7) {
+	if _, err := corenormalize.UUIDv7(value); err != nil {
 		return invalidPersonSearchCursor()
 	}
 	return nil
