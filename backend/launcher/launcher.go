@@ -18,6 +18,7 @@ import (
 	"grovehub/launcher/routing"
 	coretelemetry "grovehub/libs/core/telemetry"
 	"grovehub/services/foundation"
+	"grovehub/services/identity"
 )
 
 const httpAddress = ":8080"
@@ -35,6 +36,9 @@ func Run(logger *slog.Logger) error {
 
 	foundationModule := foundation.New(logger, pool)
 	foundationModule.RegisterHTTP(mux)
+
+	identityModule := identity.New(logger, pool, foundationModule.Client())
+	identityModule.RegisterHTTP(mux)
 
 	routing.RegisterFallback(mux)
 

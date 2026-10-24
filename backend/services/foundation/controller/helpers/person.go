@@ -2,12 +2,11 @@ package helpers
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"io"
 	"net/http"
 
 	coreerrors "grovehub/libs/core/errors"
+	httprequest "grovehub/libs/core/http/request"
 	httpresponse "grovehub/libs/core/http/response"
 	personerror "grovehub/services/foundation/constants/error"
 )
@@ -23,15 +22,7 @@ var personErrorStatus = map[coreerrors.Code]int{
 }
 
 func DecodeRequest(request *http.Request, destination any) error {
-	decoder := json.NewDecoder(request.Body)
-	if err := decoder.Decode(destination); err != nil {
-		return err
-	}
-
-	if err := decoder.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
-		return errors.New("request body must contain one JSON value")
-	}
-	return nil
+	return httprequest.DecodeJSON(request, destination)
 }
 
 func WritePersonError(

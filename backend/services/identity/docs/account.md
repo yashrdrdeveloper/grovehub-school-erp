@@ -2,9 +2,9 @@
 
 ## Scope
 
-Phase 2.1 establishes the internal Identity Account foundation only. It does not expose an Account HTTP API.
+Phase 2.1 establishes the internal Identity Account foundation. Account lifecycle operations remain internal service capabilities; there is no public `/identity/accounts` HTTP API.
 
-Account lifecycle operations are internal Identity service capabilities. Registration/provisioning will create accounts later, while authentication flows will read accounts by email or account identity.
+Registration now consumes `AccountService.Create` as part of `POST /auth/register`. Authentication flows will later read accounts by email or account identity.
 
 ## Ownership
 
@@ -12,7 +12,7 @@ Foundation owns the canonical Person and GID.
 
 Identity owns the login account used to authenticate that Person.
 
-Identity stores the Foundation Person GID as a cross-domain reference but does not create a database foreign key to `foundation.persons`. Cross-service existence and orchestration must go through Foundation's public client.
+Identity stores the Foundation Person GID as a cross-domain reference but does not create a database foreign key to `foundation.persons`. Cross-service existence and orchestration go through Foundation's public client.
 
 ## Account model
 
@@ -37,12 +37,10 @@ Rules:
 - When present, phone is normalized to E.164 form and globally unique.
 - Account IDs use UUIDv7.
 - Initial account status is `ACTIVE`.
-- Supported lifecycle states in this phase are `ACTIVE`, `SUSPENDED`, and `DEACTIVATED`.
+- Supported lifecycle states are `ACTIVE`, `SUSPENDED`, and `DEACTIVATED`.
 - PersonGid and AccountId are immutable after account creation.
 
 ## Validation boundary
-
-Identity Account request/service-input validation is separate from business orchestration.
 
 ```text
 services.CreateAccountInput / UpdateAccountInput / lookup value
@@ -51,33 +49,16 @@ validators.AccountValidator
         ↓
 validators/impl.AccountValidator
         ↓
-validators/helpers
-        ↓
-validated / normalized account values
+validated / normalized existing contract
         ↓
 services.AccountService
 ```
 
-The validator owns:
-
-```text
-AccountId UUIDv7 validation
-PersonGid UUIDv7 validation
-required email normalization/validation
-optional phone normalization/validation
-CreateAccountInput validation
-UpdateAccountInput validation
-```
-
-The validator reuses `libs/core/helpers/normalize` for shared technical normalization and maps failures to Identity account errors.
-
-The validator must not query repositories or make account lifecycle/business decisions.
+The validator owns AccountId/PersonGid UUIDv7 validation, required email normalization/validation, optional phone normalization/validation, and create/update input validation. It reuses `libs/core/helpers/normalize` and performs no repository I/O or lifecycle decisions.
 
 Repository-backed conflicts, reads, lifecycle transitions, persistence, and error mapping remain in `AccountService`.
 
 ## Internal lifecycle contract
-
-`services.AccountService` owns the Identity account use cases and is implemented under `services/impl`.
 
 Supported operations:
 
@@ -91,11 +72,11 @@ Deactivate
 PermanentlyDelete
 ```
 
-`Update` currently changes email and/or phone only. Email can never be cleared. Phone may be cleared.
+`Update` changes email and/or phone only. Email cannot be cleared. Phone may be cleared.
 
-`Deactivate` is a lifecycle state change and does not delete the row.
+`Deactivate` changes lifecycle state without deleting the row.
 
-`PermanentlyDelete` irreversibly removes the Identity account row and is intentionally distinct from deactivation. Any future registration/admin flow exposing permanent deletion must apply its own authorization and safety policy before calling this operation.
+`PermanentlyDelete` irreversibly removes the Account and is intentionally internal. Registration currently uses it only as compensation when a newly created Account cannot receive its password credential.
 
 ## Repository boundary
 
@@ -110,34 +91,28 @@ Update
 Delete
 ```
 
-Business lifecycle decisions such as deactivation remain in the service layer and are persisted through `Update`. The repository uses the generic persistence verb `Delete`; the service exposes the more explicit `PermanentlyDelete` use case.
+Business lifecycle decisions remain in the service layer.
 
 ## Registration boundary
 
-There is deliberately no `/identity/accounts` endpoint.
-
-The later registration/provisioning use case will perform this flow:
+Registration performs:
 
 ```text
-Registration / Provisioning
+Resolve/create Foundation Person through Foundation Client
         ↓
-Resolve or create Foundation Person
+Foundation GID + normalized primary contacts
         ↓
-Foundation GID
+AccountService.Create
         ↓
-Identity AccountValidator
-        ↓
-Identity AccountService.Create(...)
-        ↓
-identity.accounts
+PasswordCredentialService.Set
 ```
 
-The Account service is therefore an internal Identity use-case dependency, not an HTTP resource.
+The Account service remains an internal Identity dependency rather than an HTTP resource.
+
+See `backend/services/identity/docs/registration.md` for orchestration and compensation rules.
 
 ## Authentication readiness
 
-Phase 2.1 does not implement authentication.
+Google and Microsoft login can later use provider-verified email to locate an existing GrooveHub Identity Account through `AccountService.GetByEmail`. A GrooveHub password is not required for provider-only accounts.
 
-Later Google and Microsoft login can use the provider-verified email to locate the existing GrooveHub Identity Account through `AccountService.GetByEmail`. No GrooveHub password is required for those provider login flows.
-
-Password credentials, Google/Microsoft protocol handling, sessions, access tokens, refresh tokens, logout, OTP, MFA, and launcher authentication middleware are explicitly outside Phase 2.1.
+Login, sessions, access tokens, refresh tokens, logout, OTP, MFA, provider protocol handling, and launcher authentication middleware remain future work.
