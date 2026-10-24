@@ -19,4 +19,4 @@ if ! configure_docker_access || ! docker info >/dev/null 2>&1; then
 fi
 
 log_info "Stopping GroveHub Mail Provider transport"
-docker_compose -f "${COMPOSE_FILE}" --project-directory "${REPO_ROOT}" down
+docker_compose -f "${COMPOSE_FILE}" down

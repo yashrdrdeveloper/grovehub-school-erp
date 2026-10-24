@@ -23,7 +23,7 @@ export HARAKA_MEMORY_LIMIT="${HARAKA_MEMORY_LIMIT:-512m}"
 [[ -f "${COMPOSE_FILE}" ]] || die "Mail Provider compose file not found: ${COMPOSE_FILE}"
 
 log_info "Starting GroveHub Mail Provider transport (Haraka)"
-docker_compose -f "${COMPOSE_FILE}" --project-directory "${REPO_ROOT}" up --detach --build
+docker_compose -f "${COMPOSE_FILE}" up --detach --build
 
 for _ in {1..30}; do
   health="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "${HARAKA_CONTAINER_NAME}" 2>/dev/null || true)"
