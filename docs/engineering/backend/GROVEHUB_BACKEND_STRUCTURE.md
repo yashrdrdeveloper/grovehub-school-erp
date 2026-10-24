@@ -328,7 +328,10 @@ entity/value construction from already validated request data
 entity comparison for update orchestration
 next-page cursor value extraction after repository results return
 service-result construction helpers
+service-owned technical operations that do not perform I/O or workflow decisions
 ```
+
+A concrete technical operation with one current implementation may remain a service helper instead of introducing an interface solely for abstraction. Identity password hashing is the canonical example: `services/helpers/password_hasher.go` owns hashing and verification while the password credential service owns orchestration. Introduce a separate interface only when there is a real interchangeable implementation requirement.
 
 Payload validation, normalization, and validator-only search parsing do not belong in `services/helpers`.
 
@@ -556,6 +559,7 @@ NO arbitrary client field names becoming SQL expressions
 NO direct mutable entity field access outside entity package
 NO separate error DTO/mapper files when metadata belongs only to one resource
 NO mapper package for a resource with no real representation change
+NO interface introduced for a single concrete service helper without an actual substitution requirement
 ```
 
 > **Guiding principle:** interfaces define boundaries, `impl` packages implement them, validators canonicalize payloads without inventing duplicate contracts, resource helpers stay with their actual consumer, and truly generic mechanics are promoted to `libs/core` only when domain-specific knowledge remains outside the shared package.
