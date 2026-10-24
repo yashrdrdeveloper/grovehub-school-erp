@@ -2,6 +2,7 @@ package impl
 
 import (
 	searchcontract "grovehub/libs/core/contracts/search"
+	coresearch "grovehub/libs/core/search"
 	foundationrequest "grovehub/services/foundation/dto/request"
 	"grovehub/services/foundation/entity"
 	foundationvalidators "grovehub/services/foundation/validators"
@@ -16,65 +17,61 @@ func NewPersonValidator() foundationvalidators.PersonValidator {
 
 func (validator *PersonValidator) ValidateCreate(
 	request foundationrequest.CreatePerson,
-) (foundationvalidators.ValidatedCreatePerson, error) {
+) (foundationrequest.CreatePerson, error) {
 	firstName, middleName, lastName, err := validatorhelpers.NormalizePersonNames(
 		request.FirstName,
 		request.MiddleName,
 		request.LastName,
 	)
 	if err != nil {
-		return foundationvalidators.ValidatedCreatePerson{}, err
+		return foundationrequest.CreatePerson{}, err
 	}
 
-	contacts, err := validatorhelpers.BuildContacts(request.Contacts, nil)
+	contacts, err := validatorhelpers.NormalizeContacts(request.Contacts)
 	if err != nil {
-		return foundationvalidators.ValidatedCreatePerson{}, err
+		return foundationrequest.CreatePerson{}, err
 	}
 
-	return foundationvalidators.ValidatedCreatePerson{
-		FirstName:  firstName,
-		MiddleName: middleName,
-		LastName:   lastName,
-		Contacts:   contacts,
-	}, nil
+	request.FirstName = firstName
+	request.MiddleName = middleName
+	request.LastName = lastName
+	request.Contacts = contacts
+	return request, nil
 }
 
 func (validator *PersonValidator) ValidateUpdate(
 	request foundationrequest.UpdatePerson,
-	existingContacts []entity.Contact,
-) (foundationvalidators.ValidatedUpdatePerson, error) {
-	validated := foundationvalidators.ValidatedUpdatePerson{}
-
+) (foundationrequest.UpdatePerson, error) {
 	if request.FirstName != nil {
 		value, err := validatorhelpers.NormalizeRequiredName(*request.FirstName)
 		if err != nil {
-			return foundationvalidators.ValidatedUpdatePerson{}, err
+			return foundationrequest.UpdatePerson{}, err
 		}
-		validated.FirstName = &value
+		request.FirstName = &value
 	}
 	if request.MiddleName != nil {
 		value, err := validatorhelpers.NormalizeOptionalName(*request.MiddleName)
 		if err != nil {
-			return foundationvalidators.ValidatedUpdatePerson{}, err
+			return foundationrequest.UpdatePerson{}, err
 		}
-		validated.MiddleName = &value
+		request.MiddleName = &value
 	}
 	if request.LastName != nil {
 		value, err := validatorhelpers.NormalizeRequiredName(*request.LastName)
 		if err != nil {
-			return foundationvalidators.ValidatedUpdatePerson{}, err
+			return foundationrequest.UpdatePerson{}, err
 		}
-		validated.LastName = &value
+		request.LastName = &value
 	}
 	if request.Contacts != nil {
-		contacts, err := validatorhelpers.BuildContacts(*request.Contacts, existingContacts)
+		contacts, err := validatorhelpers.NormalizeContacts(*request.Contacts)
 		if err != nil {
-			return foundationvalidators.ValidatedUpdatePerson{}, err
+			return foundationrequest.UpdatePerson{}, err
 		}
-		validated.Contacts = &contacts
+		request.Contacts = &contacts
 	}
 
-	return validated, nil
+	return request, nil
 }
 
 func (validator *PersonValidator) ValidateGID(gid entity.GID) error {
@@ -83,13 +80,6 @@ func (validator *PersonValidator) ValidateGID(gid entity.GID) error {
 
 func (validator *PersonValidator) ValidateSearch(
 	request searchcontract.Request,
-) (foundationvalidators.ValidatedPersonSearch, error) {
-	query, cursorPayload, err := validatorhelpers.NormalizePersonSearchRequest(request)
-	if err != nil {
-		return foundationvalidators.ValidatedPersonSearch{}, err
-	}
-	return foundationvalidators.ValidatedPersonSearch{
-		Query:         query,
-		CursorPayload: cursorPayload,
-	}, nil
+) (coresearch.Query[entity.GID], coresearch.CursorPayload, error) {
+	return validatorhelpers.NormalizePersonSearchRequest(request)
 }
