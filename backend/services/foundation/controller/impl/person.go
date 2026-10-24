@@ -9,13 +9,14 @@ import (
 	"grovehub/services/foundation/controller"
 	controllerhelpers "grovehub/services/foundation/controller/helpers"
 	foundationrequest "grovehub/services/foundation/dto/request"
+	foundationservices "grovehub/services/foundation/services"
 )
 
 type PersonController struct {
-	service controller.PersonService
+	service foundationservices.PersonService
 }
 
-func NewPersonController(service controller.PersonService) controller.PersonController {
+func NewPersonController(service foundationservices.PersonService) controller.PersonController {
 	return &PersonController{service: service}
 }
 

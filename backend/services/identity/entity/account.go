@@ -76,3 +76,28 @@ func (account Account) GetCreatedAt() time.Time {
 func (account Account) GetUpdatedAt() time.Time {
 	return account.updatedAt
 }
+
+func (account Account) SetEmail(email string) Account {
+	account.email = email
+	return account
+}
+
+func (account Account) SetPhone(phone string) Account {
+	account.phone = phone
+	return account
+}
+
+func (account Account) SetStatus(status AccountStatus) Account {
+	account.status = status
+	return account
+}
+
+func (account Account) SetVersion(version int64) Account {
+	account.version = version
+	return account
+}
+
+func (account Account) SetUpdatedAt(updatedAt time.Time) Account {
+	account.updatedAt = updatedAt
+	return account
+}

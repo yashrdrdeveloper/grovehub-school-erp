@@ -16,6 +16,15 @@ const maxEmailLength = 254
 
 var phonePattern = regexp.MustCompile(`^\+[1-9][0-9]{7,14}$`)
 
+func NormalizeAccountId(value string) (entity.AccountId, error) {
+	normalized := strings.TrimSpace(value)
+	parsed, err := uuid.Parse(normalized)
+	if err != nil || parsed == uuid.Nil || parsed.Version() != uuid.Version(7) {
+		return "", invalidAccount()
+	}
+	return entity.AccountId(parsed.String()), nil
+}
+
 func NormalizePersonGid(value string) (entity.PersonGid, error) {
 	normalized := strings.TrimSpace(value)
 	parsed, err := uuid.Parse(normalized)

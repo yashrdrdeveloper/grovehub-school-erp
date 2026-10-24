@@ -7,31 +7,14 @@ import (
 	foundationclient "grovehub/services/foundation/client"
 	foundationrequest "grovehub/services/foundation/dto/request"
 	foundationresponse "grovehub/services/foundation/dto/response"
+	foundationservices "grovehub/services/foundation/services"
 )
 
-type personService interface {
-	Create(
-		ctx context.Context,
-		request foundationrequest.CreatePerson,
-	) (foundationresponse.Person, bool, error)
-	GetByGID(ctx context.Context, request foundationrequest.PersonByGID) (foundationresponse.Person, error)
-	Update(
-		ctx context.Context,
-		personRequest foundationrequest.PersonByGID,
-		request foundationrequest.UpdatePerson,
-	) (foundationresponse.Person, error)
-	Search(
-		ctx context.Context,
-		request searchcontract.Request,
-	) (searchcontract.Result[foundationresponse.Person], error)
-	Deactivate(ctx context.Context, request foundationrequest.PersonByGID) (foundationresponse.Person, error)
-}
-
 type personClient struct {
-	personService personService
+	personService foundationservices.PersonService
 }
 
-func NewPersonClient(personService personService) foundationclient.Client {
+func NewPersonClient(personService foundationservices.PersonService) foundationclient.Client {
 	return &personClient{personService: personService}
 }
 

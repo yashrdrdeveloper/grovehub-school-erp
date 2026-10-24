@@ -29,12 +29,17 @@ backend/services/<service>/
 │   └── response/
 ├── entity/
 ├── mappers/
+│   ├── <resource>.go
+│   └── impl/
+│       └── <resource>.go
 ├── repository/
 │   ├── <resource>.go
 │   └── impl/
 │       └── <resource>.go
 ├── services/
 │   ├── <resource>.go
+│   ├── impl/
+│   │   └── <resource>.go
 │   └── helpers/
 │       └── <resource>.go
 ├── controller/
@@ -55,21 +60,51 @@ backend/services/<service>/
 
 Create only files/folders with a current responsibility.
 
+Do not create an empty `mappers/` package for a resource that has no real representation conversion yet.
+
 ---
 
 ## 2. Contract / Implementation Rule
 
 Interfaces belong at the package boundary. Concrete implementations belong under `impl/`.
 
+### Mapper
+
+```text
+mappers/person.go
+    -> PersonMapper interface only
+
+mappers/impl/person.go
+    -> concrete PersonMapper implementation
+```
+
+Consumers depend on `mappers.PersonMapper`, not on the concrete implementation. Concrete mapper construction belongs to the owning service composition root.
+
+### Service
+
+```text
+services/person.go
+    -> PersonService interface only
+    -> service-owned input/result contracts when they are not transport DTOs
+
+services/impl/person.go
+    -> concrete use-case orchestration
+
+services/helpers/person.go
+    -> pure Person-specific validation/normalization/helper behavior
+```
+
+Controller and client adapters depend on `services.PersonService`. Do not redeclare duplicate service interfaces in controller or client packages.
+
 ### Controller
 
 ```text
 controller/person.go
-    -> PersonController interface
-    -> PersonService dependency interface
+    -> PersonController interface only
 
 controller/impl/person.go
     -> HTTP implementation of PersonController
+    -> depends on services.PersonService
 
 controller/helpers/person.go
     -> Person-specific request/error transport helpers
@@ -99,7 +134,8 @@ client/person.go
 
 client/impl/person.go
     -> concrete in-process client implementation
-    -> service delegation
+    -> depends on services.PersonService
+    -> service delegation only
 ```
 
 Consuming services depend on `client.Client` and import only the public `client` package.
@@ -113,18 +149,22 @@ Only the service root composition file imports its concrete `impl` packages:
 ```text
 foundation.go
     repository/impl
-       ↓
-    services
-       ↓
+         │
+    mappers/impl
+         │
+         ▼
+    services/impl
+         │
+         ├──────────────► client/impl
+         │                    │
+         │                    ▼
+         │               client interface
+         │
+         ▼
     controller/impl
-       ↓
+         │
+         ▼
     controller interface
-
-    services
-       ↓
-    client/impl
-       ↓
-    client interface
 ```
 
 The launcher may receive the owning module's public client interface and inject it into another module. It must not construct or expose another service's client implementation directly.
@@ -142,7 +182,9 @@ Controller implementation
   ↓
 Request DTO / shared contract
   ↓
-Service
+Service interface
+  ↓
+Service implementation
   ↓
 Repository interface
   ↓
@@ -160,7 +202,9 @@ Provider client interface
   ↓
 Provider client implementation
   ↓
-Provider service
+Provider service interface
+  ↓
+Provider service implementation
   ↓
 Provider repository
 ```
@@ -189,20 +233,29 @@ Do not create `dto/response/error.go` solely for Person metadata.
 
 ### Mapper
 
-A resource mapper owns representation changes for that resource.
+`mappers/<resource>.go` defines the mapper interface.
+
+`mappers/impl/<resource>.go` owns real representation changes for that resource.
+
+Example:
 
 ```text
 mappers/person.go
-    ToPersonGID
-    ToPersonResponse
-    ToPersonErrorMetadata
+    -> PersonMapper interface
+
+mappers/impl/person.go
+    -> ToPersonGID
+    -> ToPersonResponse
+    -> ToPersonErrorMetadata
 ```
 
-Do not create `mappers/error.go` when the mapper only serves Person.
+Do not create a mapper when there is no actual representation boundary yet. Do not create `mappers/error.go` when the mapper only serves Person.
 
 ### Service
 
-`services/<resource>.go` owns use-case orchestration.
+`services/<resource>.go` defines the service interface.
+
+`services/impl/<resource>.go` owns use-case orchestration.
 
 `services/helpers/<resource>.go` may own pure, resource-specific helper behavior such as:
 
@@ -312,13 +365,17 @@ backend/services/foundation/
 │   ├── contact.go
 │   └── person.go
 ├── mappers/
-│   └── person.go
+│   ├── person.go
+│   └── impl/
+│       └── person.go
 ├── repository/
 │   ├── person.go
 │   └── impl/
 │       └── person.go
 ├── services/
 │   ├── person.go
+│   ├── impl/
+│   │   └── person.go
 │   └── helpers/
 │       └── person.go
 ├── controller/
@@ -387,6 +444,9 @@ This keeps shared mechanics OCP-friendly while service ownership stays explicit.
 NO src/ wrapper
 NO service-local launcher/
 NO repository/postgres package for current GroveHub repository implementations; use repository/impl
+NO concrete mapper dependency outside the owning service composition root
+NO concrete service dependency outside the owning service composition root
+NO duplicate service interfaces in controller/client packages
 NO concrete controller dependency in routes
 NO controller implementation mixed into controller contract file
 NO client implementation mixed into client contract file
@@ -400,6 +460,7 @@ NO duplicated generic search SQL operator switches in repositories
 NO arbitrary client field names becoming SQL expressions
 NO direct mutable entity field access outside entity package
 NO separate error DTO/mapper files when metadata belongs only to one resource
+NO mapper package for a resource with no real representation change
 ```
 
 > **Guiding principle:** interfaces define boundaries, `impl` packages implement them, resource helpers reduce local complexity, and truly generic mechanics are promoted to `libs/core` only when the domain-specific knowledge remains outside the shared package.

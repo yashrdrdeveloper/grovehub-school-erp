@@ -4,7 +4,7 @@
 
 Phase 2.1 establishes the internal Identity Account foundation only. It does not expose an Account HTTP API.
 
-Account creation will be invoked later by the Identity registration/provisioning flow after the Foundation Person has been resolved or created.
+Account lifecycle operations are internal Identity service capabilities. Registration/provisioning will create accounts later, while authentication flows will read accounts by email or account identity.
 
 ## Ownership
 
@@ -38,6 +38,44 @@ Rules:
 - Account IDs use UUIDv7.
 - Initial account status is `ACTIVE`.
 - Supported lifecycle states in this phase are `ACTIVE`, `SUSPENDED`, and `DEACTIVATED`.
+- PersonGid and AccountId are immutable after account creation.
+
+## Internal lifecycle contract
+
+`services.AccountService` owns the Identity account use cases and is implemented under `services/impl`.
+
+Supported operations:
+
+```text
+Create
+GetById
+GetByPersonGid
+GetByEmail
+Update
+Deactivate
+PermanentlyDelete
+```
+
+`Update` currently changes email and/or phone only. Email can never be cleared. Phone may be cleared.
+
+`Deactivate` is a lifecycle state change and does not delete the row.
+
+`PermanentlyDelete` irreversibly removes the Identity account row and is intentionally distinct from deactivation. Any future registration/admin flow exposing permanent deletion must apply its own authorization and safety policy before calling this operation.
+
+## Repository boundary
+
+`repository.AccountRepository` exposes persistence primitives only:
+
+```text
+Create
+FindById
+FindByPersonGid
+FindByEmail
+Update
+Delete
+```
+
+Business lifecycle decisions such as deactivation remain in the service layer and are persisted through `Update`. The repository uses the generic persistence verb `Delete`; the service exposes the more explicit `PermanentlyDelete` use case.
 
 ## Registration boundary
 
@@ -63,6 +101,6 @@ The Account service is therefore an internal Identity use-case dependency, not a
 
 Phase 2.1 does not implement authentication.
 
-Later Google and Microsoft login can use the provider-verified email to locate the existing GrooveHub Identity Account. No GrooveHub password is required for those provider login flows.
+Later Google and Microsoft login can use the provider-verified email to locate the existing GrooveHub Identity Account through `AccountService.GetByEmail`. No GrooveHub password is required for those provider login flows.
 
 Password credentials, Google/Microsoft protocol handling, sessions, access tokens, refresh tokens, logout, OTP, MFA, and launcher authentication middleware are explicitly outside Phase 2.1.

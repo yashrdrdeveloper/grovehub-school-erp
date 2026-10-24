@@ -19,8 +19,24 @@ var (
 		"IDENTITY_ACCOUNT_PHONE_ALREADY_EXISTS",
 		"Identity account phone is already in use",
 	)
+	AccountNotFound = coreerrors.NewDefinition(
+		"IDENTITY_ACCOUNT_NOT_FOUND",
+		"Identity account was not found",
+	)
 	AccountCreateFailed = coreerrors.NewDefinition(
 		"IDENTITY_ACCOUNT_CREATE_FAILED",
 		"Unable to create identity account",
+	)
+	AccountReadFailed = coreerrors.NewDefinition(
+		"IDENTITY_ACCOUNT_READ_FAILED",
+		"Unable to read identity account",
+	)
+	AccountUpdateFailed = coreerrors.NewDefinition(
+		"IDENTITY_ACCOUNT_UPDATE_FAILED",
+		"Unable to update identity account",
+	)
+	AccountDeleteFailed = coreerrors.NewDefinition(
+		"IDENTITY_ACCOUNT_DELETE_FAILED",
+		"Unable to permanently delete identity account",
 	)
 )
