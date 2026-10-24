@@ -33,6 +33,7 @@ func Run(logger *slog.Logger) error {
 	defer pool.Close()
 
 	mux := http.NewServeMux()
+	routing.RegisterHealth(mux)
 
 	foundationModule := foundation.New(logger, pool)
 	foundationModule.RegisterHTTP(mux)

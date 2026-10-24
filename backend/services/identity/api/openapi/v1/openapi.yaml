@@ -1,0 +1,171 @@
+openapi: 3.1.0
+info:
+  title: GroveHub Identity API
+  version: 0.2.0
+  description: Identity registration and authentication entry-point contract.
+paths:
+  /auth/register:
+    post:
+      operationId: registerIdentityAccount
+      summary: Register a GroveHub identity account and password credential
+      description: >-
+        Registration first resolves an existing Foundation Person by the optional gid or by exact normalized email.
+        A new Foundation Person/GID is created only when no existing person is resolved by email. When gid is supplied,
+        the email must belong to that Foundation Person. firstName and lastName are used only when a new Person must be created.
+      tags:
+        - Identity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationRequest"
+      responses:
+        "201":
+          description: Identity account and password credential created.
+          headers:
+            X-Trace-ID:
+              $ref: "#/components/headers/TraceID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistrationSuccessResponse"
+        "400":
+          $ref: "#/components/responses/InvalidRegistration"
+        "409":
+          $ref: "#/components/responses/RegistrationAlreadyExists"
+        "500":
+          $ref: "#/components/responses/RegistrationFailed"
+components:
+  headers:
+    TraceID:
+      description: GroveHub trace identifier for support and correlation. W3C traceparent remains the propagation contract.
+      schema:
+        type: string
+        pattern: "^[0-9a-f]{32}$"
+  schemas:
+    RegistrationRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - email
+        - password
+      properties:
+        gid:
+          type: string
+          format: uuid
+          pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          description: Optional existing Foundation Person GID. When supplied, the submitted email must belong to that Person.
+        firstName:
+          type: string
+          maxLength: 100
+          description: Required by Foundation only when registration must create a new Person.
+        middleName:
+          type: string
+          maxLength: 100
+        lastName:
+          type: string
+          maxLength: 100
+          description: Required by Foundation only when registration must create a new Person.
+        email:
+          type: string
+          format: email
+          minLength: 1
+          description: Required Identity email and canonical Person-resolution key when gid is omitted.
+        phoneNumber:
+          type: string
+          description: Optional phone number. Identity normalizes it before account creation.
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          description: Password is validated but never trimmed, lowercased, or otherwise normalized.
+    Registration:
+      type: object
+      additionalProperties: false
+      required:
+        - accountId
+        - personGid
+        - email
+        - status
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        personGid:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - SUSPENDED
+            - DEACTIVATED
+    RegistrationSuccessResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          $ref: "#/components/schemas/Registration"
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - success
+        - errorCode
+        - errorMessage
+        - httpErrorCode
+        - errorMetaData
+      properties:
+        success:
+          type: boolean
+          const: false
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        httpErrorCode:
+          type: integer
+        errorMetaData:
+          type: object
+          additionalProperties: true
+  responses:
+    InvalidRegistration:
+      description: Registration payload, gid/email relationship, email, phone, or password is invalid.
+      headers:
+        X-Trace-ID:
+          $ref: "#/components/headers/TraceID"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    RegistrationAlreadyExists:
+      description: An Identity account/credential already exists or the registration conflicts with an existing identity.
+      headers:
+        X-Trace-ID:
+          $ref: "#/components/headers/TraceID"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    RegistrationFailed:
+      description: Registration could not be completed because of an internal dependency or persistence failure.
+      headers:
+        X-Trace-ID:
+          $ref: "#/components/headers/TraceID"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
