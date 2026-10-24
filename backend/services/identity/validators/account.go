@@ -5,20 +5,9 @@ import (
 	identityservices "grovehub/services/identity/services"
 )
 
-type ValidatedCreateAccount struct {
-	PersonGid entity.PersonGid
-	Email     string
-	Phone     string
-}
-
-type ValidatedUpdateAccount struct {
-	Email *string
-	Phone *string
-}
-
 type AccountValidator interface {
-	ValidateCreate(input identityservices.CreateAccountInput) (ValidatedCreateAccount, error)
-	ValidateUpdate(input identityservices.UpdateAccountInput) (ValidatedUpdateAccount, error)
+	ValidateCreate(input identityservices.CreateAccountInput) (identityservices.CreateAccountInput, error)
+	ValidateUpdate(input identityservices.UpdateAccountInput) (identityservices.UpdateAccountInput, error)
 	ValidateAccountId(value string) (entity.AccountId, error)
 	ValidatePersonGid(value string) (entity.PersonGid, error)
 	ValidateEmail(value string) (string, error)
