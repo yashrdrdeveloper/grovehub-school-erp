@@ -42,12 +42,13 @@ func (service *PersonService) Create(
 	ctx context.Context,
 	request foundationrequest.CreatePerson,
 ) (foundationresponse.Person, bool, error) {
-	validated, err := service.validator.ValidateCreate(request)
+	validatedRequest, err := service.validator.ValidateCreate(request)
 	if err != nil {
 		return foundationresponse.Person{}, false, err
 	}
+	contacts := servicehelpers.BuildContacts(validatedRequest.Contacts, nil)
 
-	existingPerson, found, err := service.findExistingPersonByContacts(ctx, validated.Contacts)
+	existingPerson, found, err := service.findExistingPersonByContacts(ctx, contacts)
 	if err != nil || found {
 		if found {
 			return service.mapper.ToPersonResponse(existingPerson), false, nil
@@ -64,10 +65,10 @@ func (service *PersonService) Create(
 	now := time.Now().UTC()
 	person := entity.NewPerson(
 		gid,
-		validated.FirstName,
-		validated.MiddleName,
-		validated.LastName,
-		validated.Contacts,
+		validatedRequest.FirstName,
+		validatedRequest.MiddleName,
+		validatedRequest.LastName,
+		contacts,
 		entity.PersonStatusActive,
 		1,
 		now,
@@ -76,7 +77,7 @@ func (service *PersonService) Create(
 
 	if err := service.repository.Create(ctx, person); err != nil {
 		if errors.Is(err, foundationrepository.ErrPersonContactAlreadyExists) {
-			return service.resolveConcurrentCreate(ctx, validated.Contacts)
+			return service.resolveConcurrentCreate(ctx, contacts)
 		}
 		return foundationresponse.Person{}, false, coreerrors.WrapWithMetadata(
 			personerror.PersonCreateFailed,
@@ -110,12 +111,12 @@ func (service *PersonService) Update(
 		return foundationresponse.Person{}, err
 	}
 
-	validated, err := service.validator.ValidateUpdate(request, person.GetContacts())
+	validatedRequest, err := service.validator.ValidateUpdate(request)
 	if err != nil {
 		return foundationresponse.Person{}, err
 	}
 
-	updatedPerson, changed, err := service.applyPersonUpdate(ctx, person, validated)
+	updatedPerson, changed, err := service.applyPersonUpdate(ctx, person, validatedRequest)
 	if err != nil {
 		return foundationresponse.Person{}, err
 	}
@@ -137,12 +138,12 @@ func (service *PersonService) Search(
 	ctx context.Context,
 	request searchcontract.Request,
 ) (searchcontract.Result[foundationresponse.Person], error) {
-	validated, err := service.validator.ValidateSearch(request)
+	query, cursorPayload, err := service.validator.ValidateSearch(request)
 	if err != nil {
 		return searchcontract.Result[foundationresponse.Person]{}, err
 	}
 
-	result, err := service.repository.Search(ctx, validated.Query)
+	result, err := service.repository.Search(ctx, query)
 	if err != nil {
 		if errors.Is(err, coresearch.ErrInvalidQuery) {
 			return searchcontract.Result[foundationresponse.Person]{}, coreerrors.NewError(personerror.InvalidPersonSearch)
@@ -155,7 +156,7 @@ func (service *PersonService) Search(
 		items = append(items, service.mapper.ToPersonResponse(person))
 	}
 
-	nextCursor, err := buildNextCursor(result, validated.Query, validated.CursorPayload)
+	nextCursor, err := buildNextCursor(result, query, cursorPayload)
 	if err != nil {
 		return searchcontract.Result[foundationresponse.Person]{}, coreerrors.Wrap(personerror.PersonSearchFailed, err)
 	}
@@ -163,7 +164,7 @@ func (service *PersonService) Search(
 	return searchcontract.Result[foundationresponse.Person]{
 		Items: items,
 		PageInfo: searchcontract.PageResponse{
-			Rows:       validated.Query.Limit,
+			Rows:       query.Limit,
 			NextCursor: nextCursor,
 			HasNext:    result.HasNext,
 		},
@@ -197,7 +198,7 @@ func (service *PersonService) Deactivate(
 func (service *PersonService) applyPersonUpdate(
 	ctx context.Context,
 	person entity.Person,
-	validated foundationvalidators.ValidatedUpdatePerson,
+	request foundationrequest.UpdatePerson,
 ) (entity.Person, bool, error) {
 	updatedPerson := person
 	changed := false
@@ -207,9 +208,9 @@ func (service *PersonService) applyPersonUpdate(
 		current string
 		apply   func(entity.Person, string) entity.Person
 	}{
-		{validated.FirstName, person.GetFirstName(), func(value entity.Person, name string) entity.Person { return value.SetFirstName(name) }},
-		{validated.MiddleName, person.GetMiddleName(), func(value entity.Person, name string) entity.Person { return value.SetMiddleName(name) }},
-		{validated.LastName, person.GetLastName(), func(value entity.Person, name string) entity.Person { return value.SetLastName(name) }},
+		{request.FirstName, person.GetFirstName(), func(value entity.Person, name string) entity.Person { return value.SetFirstName(name) }},
+		{request.MiddleName, person.GetMiddleName(), func(value entity.Person, name string) entity.Person { return value.SetMiddleName(name) }},
+		{request.LastName, person.GetLastName(), func(value entity.Person, name string) entity.Person { return value.SetLastName(name) }},
 	}
 
 	for _, update := range nameUpdates {
@@ -220,11 +221,11 @@ func (service *PersonService) applyPersonUpdate(
 		changed = true
 	}
 
-	if validated.Contacts == nil {
+	if request.Contacts == nil {
 		return updatedPerson, changed, nil
 	}
 
-	contacts := *validated.Contacts
+	contacts := servicehelpers.BuildContacts(*request.Contacts, person.GetContacts())
 	if err := service.ensureContactsBelongToPerson(ctx, person.GetGID(), contacts); err != nil {
 		return entity.Person{}, false, err
 	}
