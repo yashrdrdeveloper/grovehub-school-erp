@@ -15,48 +15,45 @@ func NewAccountValidator() identityvalidators.AccountValidator {
 
 func (validator *AccountValidator) ValidateCreate(
 	input identityservices.CreateAccountInput,
-) (identityvalidators.ValidatedCreateAccount, error) {
+) (identityservices.CreateAccountInput, error) {
 	personGid, err := validatorhelpers.NormalizePersonGid(input.PersonGid)
 	if err != nil {
-		return identityvalidators.ValidatedCreateAccount{}, err
+		return identityservices.CreateAccountInput{}, err
 	}
 	email, err := validatorhelpers.NormalizeEmail(input.Email)
 	if err != nil {
-		return identityvalidators.ValidatedCreateAccount{}, err
+		return identityservices.CreateAccountInput{}, err
 	}
 	phone, err := validatorhelpers.NormalizePhone(input.Phone)
 	if err != nil {
-		return identityvalidators.ValidatedCreateAccount{}, err
+		return identityservices.CreateAccountInput{}, err
 	}
 
-	return identityvalidators.ValidatedCreateAccount{
-		PersonGid: personGid,
-		Email:     email,
-		Phone:     phone,
-	}, nil
+	input.PersonGid = string(personGid)
+	input.Email = email
+	input.Phone = phone
+	return input, nil
 }
 
 func (validator *AccountValidator) ValidateUpdate(
 	input identityservices.UpdateAccountInput,
-) (identityvalidators.ValidatedUpdateAccount, error) {
-	validated := identityvalidators.ValidatedUpdateAccount{}
-
+) (identityservices.UpdateAccountInput, error) {
 	if input.Email != nil {
 		email, err := validatorhelpers.NormalizeEmail(*input.Email)
 		if err != nil {
-			return identityvalidators.ValidatedUpdateAccount{}, err
+			return identityservices.UpdateAccountInput{}, err
 		}
-		validated.Email = &email
+		input.Email = &email
 	}
 	if input.Phone != nil {
 		phone, err := validatorhelpers.NormalizePhone(*input.Phone)
 		if err != nil {
-			return identityvalidators.ValidatedUpdateAccount{}, err
+			return identityservices.UpdateAccountInput{}, err
 		}
-		validated.Phone = &phone
+		input.Phone = &phone
 	}
 
-	return validated, nil
+	return input, nil
 }
 
 func (validator *AccountValidator) ValidateAccountId(value string) (entity.AccountId, error) {
