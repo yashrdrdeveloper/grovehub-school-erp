@@ -40,6 +40,41 @@ Rules:
 - Supported lifecycle states in this phase are `ACTIVE`, `SUSPENDED`, and `DEACTIVATED`.
 - PersonGid and AccountId are immutable after account creation.
 
+## Validation boundary
+
+Identity Account request/service-input validation is separate from business orchestration.
+
+```text
+services.CreateAccountInput / UpdateAccountInput / lookup value
+        ↓
+validators.AccountValidator
+        ↓
+validators/impl.AccountValidator
+        ↓
+validators/helpers
+        ↓
+validated / normalized account values
+        ↓
+services.AccountService
+```
+
+The validator owns:
+
+```text
+AccountId UUIDv7 validation
+PersonGid UUIDv7 validation
+required email normalization/validation
+optional phone normalization/validation
+CreateAccountInput validation
+UpdateAccountInput validation
+```
+
+The validator reuses `libs/core/helpers/normalize` for shared technical normalization and maps failures to Identity account errors.
+
+The validator must not query repositories or make account lifecycle/business decisions.
+
+Repository-backed conflicts, reads, lifecycle transitions, persistence, and error mapping remain in `AccountService`.
+
 ## Internal lifecycle contract
 
 `services.AccountService` owns the Identity account use cases and is implemented under `services/impl`.
@@ -89,6 +124,8 @@ Registration / Provisioning
 Resolve or create Foundation Person
         ↓
 Foundation GID
+        ↓
+Identity AccountValidator
         ↓
 Identity AccountService.Create(...)
         ↓

@@ -11,30 +11,29 @@ import (
 	"grovehub/services/identity/entity"
 	identityrepository "grovehub/services/identity/repository"
 	identityservices "grovehub/services/identity/services"
-	servicehelpers "grovehub/services/identity/services/helpers"
+	identityvalidators "grovehub/services/identity/validators"
 )
 
 type AccountService struct {
 	repository identityrepository.AccountRepository
+	validator  identityvalidators.AccountValidator
 }
 
-func NewAccountService(repository identityrepository.AccountRepository) identityservices.AccountService {
-	return &AccountService{repository: repository}
+func NewAccountService(
+	repository identityrepository.AccountRepository,
+	validator identityvalidators.AccountValidator,
+) identityservices.AccountService {
+	return &AccountService{
+		repository: repository,
+		validator:  validator,
+	}
 }
 
 func (service *AccountService) Create(
 	ctx context.Context,
 	input identityservices.CreateAccountInput,
 ) (entity.Account, error) {
-	personGid, err := servicehelpers.NormalizePersonGid(input.PersonGid)
-	if err != nil {
-		return entity.Account{}, err
-	}
-	email, err := servicehelpers.NormalizeEmail(input.Email)
-	if err != nil {
-		return entity.Account{}, err
-	}
-	phone, err := servicehelpers.NormalizePhone(input.Phone)
+	validated, err := service.validator.ValidateCreate(input)
 	if err != nil {
 		return entity.Account{}, err
 	}
@@ -47,9 +46,9 @@ func (service *AccountService) Create(
 	now := time.Now().UTC()
 	account := entity.NewAccount(
 		entity.AccountId(accountIdValue),
-		personGid,
-		email,
-		phone,
+		validated.PersonGid,
+		validated.Email,
+		validated.Phone,
 		entity.AccountStatusActive,
 		1,
 		now,
@@ -66,33 +65,33 @@ func (service *AccountService) GetById(
 	ctx context.Context,
 	accountId string,
 ) (entity.Account, error) {
-	normalizedAccountId, err := servicehelpers.NormalizeAccountId(accountId)
+	validatedAccountId, err := service.validator.ValidateAccountId(accountId)
 	if err != nil {
 		return entity.Account{}, err
 	}
-	return service.readAccount(service.repository.FindById(ctx, normalizedAccountId))
+	return service.readAccount(service.repository.FindById(ctx, validatedAccountId))
 }
 
 func (service *AccountService) GetByPersonGid(
 	ctx context.Context,
 	personGid string,
 ) (entity.Account, error) {
-	normalizedPersonGid, err := servicehelpers.NormalizePersonGid(personGid)
+	validatedPersonGid, err := service.validator.ValidatePersonGid(personGid)
 	if err != nil {
 		return entity.Account{}, err
 	}
-	return service.readAccount(service.repository.FindByPersonGid(ctx, normalizedPersonGid))
+	return service.readAccount(service.repository.FindByPersonGid(ctx, validatedPersonGid))
 }
 
 func (service *AccountService) GetByEmail(
 	ctx context.Context,
 	email string,
 ) (entity.Account, error) {
-	normalizedEmail, err := servicehelpers.NormalizeEmail(email)
+	validatedEmail, err := service.validator.ValidateEmail(email)
 	if err != nil {
 		return entity.Account{}, err
 	}
-	return service.readAccount(service.repository.FindByEmail(ctx, normalizedEmail))
+	return service.readAccount(service.repository.FindByEmail(ctx, validatedEmail))
 }
 
 func (service *AccountService) Update(
@@ -105,10 +104,12 @@ func (service *AccountService) Update(
 		return entity.Account{}, err
 	}
 
-	updatedAccount, changed, err := applyAccountUpdate(account, input)
+	validated, err := service.validator.ValidateUpdate(input)
 	if err != nil {
 		return entity.Account{}, err
 	}
+
+	updatedAccount, changed := applyAccountUpdate(account, validated)
 	if !changed {
 		return account, nil
 	}
@@ -145,11 +146,11 @@ func (service *AccountService) Deactivate(
 }
 
 func (service *AccountService) PermanentlyDelete(ctx context.Context, accountId string) error {
-	normalizedAccountId, err := servicehelpers.NormalizeAccountId(accountId)
+	validatedAccountId, err := service.validator.ValidateAccountId(accountId)
 	if err != nil {
 		return err
 	}
-	if err := service.repository.Delete(ctx, normalizedAccountId); err != nil {
+	if err := service.repository.Delete(ctx, validatedAccountId); err != nil {
 		if errors.Is(err, identityrepository.ErrAccountNotFound) {
 			return coreerrors.NewError(identityerror.AccountNotFound)
 		}
@@ -170,34 +171,22 @@ func (service *AccountService) readAccount(account entity.Account, err error) (e
 
 func applyAccountUpdate(
 	account entity.Account,
-	input identityservices.UpdateAccountInput,
-) (entity.Account, bool, error) {
+	validated identityvalidators.ValidatedUpdateAccount,
+) (entity.Account, bool) {
 	updatedAccount := account
 	changed := false
 
-	if input.Email != nil {
-		email, err := servicehelpers.NormalizeEmail(*input.Email)
-		if err != nil {
-			return entity.Account{}, false, err
-		}
-		if email != account.GetEmail() {
-			updatedAccount = updatedAccount.SetEmail(email)
-			changed = true
-		}
+	if validated.Email != nil && *validated.Email != account.GetEmail() {
+		updatedAccount = updatedAccount.SetEmail(*validated.Email)
+		changed = true
 	}
 
-	if input.Phone != nil {
-		phone, err := servicehelpers.NormalizePhone(*input.Phone)
-		if err != nil {
-			return entity.Account{}, false, err
-		}
-		if phone != account.GetPhone() {
-			updatedAccount = updatedAccount.SetPhone(phone)
-			changed = true
-		}
+	if validated.Phone != nil && *validated.Phone != account.GetPhone() {
+		updatedAccount = updatedAccount.SetPhone(*validated.Phone)
+		changed = true
 	}
 
-	return updatedAccount, changed, nil
+	return updatedAccount, changed
 }
 
 func mapAccountWriteError(err error, fallback coreerrors.Definition) error {

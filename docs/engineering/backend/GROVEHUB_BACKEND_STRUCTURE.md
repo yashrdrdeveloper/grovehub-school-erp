@@ -8,6 +8,8 @@ Also read when relevant:
 
 ```text
 docs/engineering/backend/MAPPER_AND_DTO_GUIDELINES.md
+docs/engineering/backend/VALIDATOR_GUIDELINES.md
+docs/engineering/backend/NORMALIZATION_AND_DRY_GUIDELINES.md
 docs/engineering/backend/SEARCH_API_GUIDELINES.md
 ```
 
@@ -31,6 +33,12 @@ backend/services/<service>/
 ├── mappers/
 │   ├── <resource>.go
 │   └── impl/
+│       └── <resource>.go
+├── validators/
+│   ├── <resource>.go
+│   ├── impl/
+│   │   └── <resource>.go
+│   └── helpers/
 │       └── <resource>.go
 ├── repository/
 │   ├── <resource>.go
@@ -62,6 +70,8 @@ Create only files/folders with a current responsibility.
 
 Do not create an empty `mappers/` package for a resource that has no real representation conversion yet.
 
+Do not create an empty `validators/` package when there is no request/service-input validation responsibility yet.
+
 ---
 
 ## 2. Contract / Implementation Rule
@@ -80,6 +90,24 @@ mappers/impl/person.go
 
 Consumers depend on `mappers.PersonMapper`, not on the concrete implementation. Concrete mapper construction belongs to the owning service composition root.
 
+### Validator
+
+```text
+validators/person.go
+    -> PersonValidator interface
+    -> validated result contracts
+
+validators/impl/person.go
+    -> concrete request/service-input validation
+
+validators/helpers/person.go
+    -> pure Person-specific validation/normalization helpers
+```
+
+Consumers depend on `validators.PersonValidator`, never directly on `validators/impl.PersonValidator`.
+
+Validator implementations must not query repositories or own business workflow decisions. Their job is payload validation and canonicalization.
+
 ### Service
 
 ```text
@@ -91,10 +119,12 @@ services/impl/person.go
     -> concrete use-case orchestration
 
 services/helpers/person.go
-    -> pure Person-specific validation/normalization/helper behavior
+    -> pure helpers actually used by service orchestration
 ```
 
 Controller and client adapters depend on `services.PersonService`. Do not redeclare duplicate service interfaces in controller or client packages.
+
+Validation/normalization helpers used only by validators belong under `validators/helpers`, not under `services/helpers`.
 
 ### Controller
 
@@ -152,6 +182,8 @@ foundation.go
          │
     mappers/impl
          │
+    validators/impl
+         │
          ▼
     services/impl
          │
@@ -185,6 +217,11 @@ Request DTO / shared contract
 Service interface
   ↓
 Service implementation
+  ├──► Validator interface
+  │       ↓
+  │    Validator implementation
+  │       ↓
+  │    validated/normalized values
   ↓
 Repository interface
   ↓
@@ -251,26 +288,46 @@ mappers/impl/person.go
 
 Do not create a mapper when there is no actual representation boundary yet. Do not create `mappers/error.go` when the mapper only serves Person.
 
+### Validator
+
+`validators/<resource>.go` defines the validator interface and validated input/result contracts.
+
+`validators/impl/<resource>.go` owns request/service-input validation orchestration.
+
+`validators/helpers/<resource>.go` owns pure resource-specific validation helpers such as:
+
+```text
+required/optional field validation
+request normalization
+contact payload construction
+search field/operator validation
+search cursor validation
+resource-specific domain error mapping for invalid payloads
+```
+
+Validators may reuse shared technical normalizers from `backend/libs/core/helpers/normalize`.
+
+Validators must not query repositories, call external services, authorize users, generate IDs, read clocks, or choose business workflows.
+
 ### Service
 
 `services/<resource>.go` defines the service interface.
 
 `services/impl/<resource>.go` owns use-case orchestration.
 
-`services/helpers/<resource>.go` may own pure, resource-specific helper behavior such as:
+`services/helpers/<resource>.go` may own pure, resource-specific helper behavior actually used by service orchestration, such as:
 
 ```text
-normalization
-validation
-contact construction
-search field registry
-search cursor field registry
-resource comparison helpers
+entity comparison for update orchestration
+next-page cursor value extraction after repository results return
+service-result construction helpers
 ```
+
+Payload validation, normalization, and validator-only search parsing do not belong in `services/helpers`.
 
 Helpers must not call repositories or perform workflow orchestration.
 
-Keep service methods readable. Extract reusable resource logic instead of growing deeply nested conditionals.
+Keep service methods readable. Validate/canonicalize through the validator boundary, then perform business/repository work in the service.
 
 ### Repository implementation
 
@@ -368,6 +425,12 @@ backend/services/foundation/
 │   ├── person.go
 │   └── impl/
 │       └── person.go
+├── validators/
+│   ├── person.go
+│   ├── impl/
+│   │   └── person.go
+│   └── helpers/
+│       └── person.go
 ├── repository/
 │   ├── person.go
 │   └── impl/
@@ -426,7 +489,16 @@ opaque cursor encode/decode
 
 It must not know Foundation tables, Person fields, or business rules.
 
-Foundation owns only mappings such as:
+Foundation validators own request-level mappings and validation such as:
+
+```text
+allowed filter fields/operators
+email/phone search value normalization
+sort field validation
+cursor value validation
+```
+
+Foundation repository code owns SQL mappings such as:
 
 ```text
 firstName -> LOWER(p.first_name)
@@ -445,6 +517,7 @@ NO src/ wrapper
 NO service-local launcher/
 NO repository/postgres package for current GroveHub repository implementations; use repository/impl
 NO concrete mapper dependency outside the owning service composition root
+NO concrete validator dependency outside the owning service composition root
 NO concrete service dependency outside the owning service composition root
 NO duplicate service interfaces in controller/client packages
 NO concrete controller dependency in routes
@@ -453,6 +526,10 @@ NO client implementation mixed into client contract file
 NO consuming service importing another service's client/impl package
 NO client implementation bypassing the provider service layer
 NO resource-specific helper dumped into generic common/misc files
+NO validator-only helper left under services/helpers
+NO request-payload normalization duplicated inside service implementations
+NO repository/network access from validators
+NO authorization/business workflow in validators
 NO separate Person search implementation file when it is the same Person responsibility
 NO business logic in controller/repository/entity/mapper/client adapter
 NO duplicated generic search SQL operator switches in services
@@ -463,4 +540,4 @@ NO separate error DTO/mapper files when metadata belongs only to one resource
 NO mapper package for a resource with no real representation change
 ```
 
-> **Guiding principle:** interfaces define boundaries, `impl` packages implement them, resource helpers reduce local complexity, and truly generic mechanics are promoted to `libs/core` only when the domain-specific knowledge remains outside the shared package.
+> **Guiding principle:** interfaces define boundaries, `impl` packages implement them, validators canonicalize payloads before business orchestration, resource helpers stay with their actual consumer, and truly generic mechanics are promoted to `libs/core` only when domain-specific knowledge remains outside the shared package.

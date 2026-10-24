@@ -4,16 +4,20 @@
 
 ## 1. Purpose
 
-DTOs define request/response shapes. Mappers perform real representation changes only.
+DTOs define request/response shapes. Mappers perform real representation changes only. Validators validate and normalize request/service-input payloads.
 
 ```text
 dto/request/<resource>.go
 dto/response/<resource>.go
 mappers/<resource>.go
 mappers/impl/<resource>.go
+validators/<resource>.go
+validators/impl/<resource>.go
 ```
 
 `mappers/<resource>.go` defines the public mapper interface. The concrete mapper implementation belongs under `mappers/impl/`.
+
+`validators/<resource>.go` defines the public validator interface. The concrete validator implementation belongs under `validators/impl/`.
 
 Do not create a mapper for a resource that has no real representation change yet. Do not create extra files solely because a resource has an error metadata shape.
 
@@ -54,7 +58,38 @@ The concrete implementation belongs under `mappers/impl` and is constructed only
 
 Consumers depend on `mappers.PersonMapper`, never directly on `mappers/impl.PersonMapper`.
 
-## 4. Mapper Rules
+## 4. Mapper vs Validator
+
+Use the mapper for representation conversion and the validator for payload correctness/canonicalization.
+
+```text
+Mapper
+    request/response representation conversion
+
+Validator
+    request/service-input validation
+    normalization/canonicalization
+
+Service
+    business orchestration
+```
+
+Example:
+
+```text
+PersonByGID DTO -> entity.GID
+    -> mapper
+
+validate UUIDv7 format
+    -> validator
+
+load Person and decide not-found behavior
+    -> service
+```
+
+Do not hide payload validation inside mapper code simply because a mapper already touches the field.
+
+## 5. Mapper Rules
 
 Mappers may:
 
@@ -68,6 +103,7 @@ Mappers must not:
 
 ```text
 query repositories
+perform request validation
 perform business validation
 generate IDs
 read clocks
@@ -75,24 +111,50 @@ select HTTP status
 own lifecycle decisions
 ```
 
-## 5. Entity Encapsulation
+## 6. Validator interaction
+
+A service may use both a mapper and validator:
+
+```text
+request DTO
+   ↓
+mapper for representation conversion when needed
+   ↓
+validator for validity/canonicalization
+   ↓
+service business orchestration
+   ↓
+mapper for response conversion
+```
+
+Do not duplicate normalization in mapper and validator. Shared technical normalization belongs in `libs/core/helpers/normalize` and is consumed by the validator.
+
+See:
+
+```text
+docs/engineering/backend/VALIDATOR_GUIDELINES.md
+docs/engineering/backend/NORMALIZATION_AND_DRY_GUIDELINES.md
+```
+
+## 7. Entity Encapsulation
 
 Read state through getters. Copy-style entity changes use value-receiver setters selected by the service.
 
 Never mutate private entity state through mapper code.
 
-## 6. SRP / OCP
+## 8. SRP / OCP
 
 When mapping behavior is selected by a stable resource key (for example contact type), prefer a small registry of mapping functions over a growing switch tree when it improves extensibility.
 
 Do not introduce builders/factories for simple assignments.
 
-## 7. Hard Rules
+## 9. Hard Rules
 
 ```text
 NO direct entity serialization
 NO repository returning response DTOs
 NO business logic in DTOs/mappers
+NO request validation hidden inside mappers
 NO concrete mapper dependency outside the owning composition root
 NO separate resource error files without an independent/shared responsibility
 NO mapper without a real representation change

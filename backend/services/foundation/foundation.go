@@ -15,6 +15,7 @@ import (
 	repositoryimpl "grovehub/services/foundation/repository/impl"
 	"grovehub/services/foundation/routes"
 	serviceimpl "grovehub/services/foundation/services/impl"
+	validatorimpl "grovehub/services/foundation/validators/impl"
 )
 
 type Module interface {
@@ -31,7 +32,8 @@ type module struct {
 func New(logger *slog.Logger, pool *pgxpool.Pool) Module {
 	personRepository := repositoryimpl.NewPersonRepository(pool)
 	personMapper := mapperimpl.NewPersonMapper()
-	personService := serviceimpl.NewPersonService(personRepository, personMapper)
+	personValidator := validatorimpl.NewPersonValidator()
+	personService := serviceimpl.NewPersonService(personRepository, personMapper, personValidator)
 
 	return &module{
 		logger:           logger,
