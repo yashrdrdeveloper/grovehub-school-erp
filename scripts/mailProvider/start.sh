@@ -16,9 +16,11 @@ HARAKA_CONTAINER_NAME="grovehub-haraka"
 
 require_docker
 load_backend_runtime_env
+load_mail_provider_state_env
 
 export MAIL_PROVIDER_SMTP_PORT="${MAIL_PROVIDER_SMTP_PORT:-2525}"
 export HARAKA_MEMORY_LIMIT="${HARAKA_MEMORY_LIMIT:-512m}"
+export MAIL_PROVIDER_HARAKA_HOSTNAME="${MAIL_PROVIDER_HARAKA_HOSTNAME:-mail.local.grovehub}"
 
 [[ -f "${COMPOSE_FILE}" ]] || die "Mail Provider compose file not found: ${COMPOSE_FILE}"
 
@@ -29,6 +31,7 @@ for _ in {1..30}; do
   health="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "${HARAKA_CONTAINER_NAME}" 2>/dev/null || true)"
   if [[ "${health}" == "healthy" ]]; then
     log_info "Haraka is ready on 127.0.0.1:${MAIL_PROVIDER_SMTP_PORT}"
+    log_info "Haraka public hostname: ${MAIL_PROVIDER_HARAKA_HOSTNAME}"
     exit 0
   fi
   if [[ "${health}" == "unhealthy" || "${health}" == "exited" ]]; then

@@ -51,54 +51,100 @@ VERIFIED
 DEACTIVATED
 ```
 
-A deactivated domain cannot be re-verified through the verification endpoint. Re-activation, if required later, must be an explicit lifecycle operation.
-
 ## Cloudflare domain readiness
 
-For a Cloudflare-managed sending domain, GroveHub can prepare the DNS records and Haraka DKIM key automatically.
+For a Cloudflare-managed sending domain, GroveHub can prepare its outbound-mail DNS identity and Haraka DKIM key automatically.
 
-Create a Cloudflare API token scoped to the relevant zone with:
+Create a Cloudflare API token scoped to the sending zone with:
 
 ```text
 Zone -> Zone -> Read
 Zone -> DNS -> Edit
 ```
 
-Put it in the repository-root `.env` file:
+Put only the token and zone ID in the repository-root `.env` file:
 
 ```text
 CLOUDFLARE_API_TOKEN=<token>
-# Optional; normally auto-discovered from DOMAIN.
-CLOUDFLARE_ZONE_ID=
-MAIL_PROVIDER_DKIM_SELECTOR=groovehub1
+CLOUDFLARE_ZONE_ID=<zone-id>
 ```
 
-Then run:
+Optional overrides exist, but they are not required for the normal flow:
+
+```text
+MAIL_PROVIDER_DKIM_SELECTOR=groovehub1
+MAIL_PROVIDER_PUBLIC_IP=
+```
+
+When `MAIL_PROVIDER_PUBLIC_IP` is empty, GroveHub discovers the public address of the machine running the command through Cloudflare.
+
+Run exactly:
 
 ```bash
-make mail-domain-ready DOMAIN=school.example PUBLIC_IP=203.0.113.10
+make mail-domain-ready
 ```
 
 The command is safe to rerun. It:
 
 ```text
-1. Starts/ensures Haraka.
-2. Starts the backend when it is not already running.
-3. Registers the domain or reuses the existing registration by name.
-4. Generates/persists a 2048-bit RSA DKIM key inside the Haraka DKIM volume.
-5. Creates/updates the GroveHub ownership TXT record in Cloudflare.
-6. Creates/updates groovehub1._domainkey.<domain> with the DKIM public key.
-7. Creates SPF when the domain does not already have one.
-8. Preserves an existing SPF and tells the operator which ip4/ip6 mechanism to merge instead of creating an invalid second SPF record.
-9. Creates a non-enforcing DMARC policy when no DMARC policy exists; an existing policy is preserved.
-10. Restarts Haraka so the signing key is loaded and calls the GroveHub domain verification endpoint until the ownership record resolves.
+1. Verifies the Cloudflare API token.
+2. Reads the zone directly from CLOUDFLARE_ZONE_ID and uses the zone name as the sending domain.
+3. Discovers this machine's public IP unless MAIL_PROVIDER_PUBLIC_IP overrides it.
+4. Persists the derived mail.<domain> Haraka hostname under .state/mailProvider/runtime.env.
+5. Starts/ensures the OS-specific container runtime and Haraka.
+6. Starts the GroveHub backend when it is not already running and applies Mail Provider migrations.
+7. Registers the domain or reuses the existing Mail Provider domain by normalized name.
+8. Generates/reuses a 2048-bit RSA DKIM private key in the persistent Haraka DKIM volume.
+9. Creates/updates a DNS-only A/AAAA record for mail.<domain> pointing at the sending host.
+10. Creates/updates GroveHub's ownership TXT record.
+11. Creates/updates <selector>._domainkey.<domain> with the DKIM public key.
+12. Creates SPF when absent, or merges GroveHub's ip4/ip6 mechanism into the single existing SPF record.
+13. Creates a non-enforcing DMARC policy when absent; existing DMARC is preserved.
+14. Restarts Haraka so its public hostname and DKIM material are active.
+15. Calls the GroveHub verification endpoint until the ownership TXT record resolves.
+16. Checks reverse DNS/PTR when possible and checks outbound TCP/25 when `nc` is available.
 ```
+
+The command does **not** create or change MX records. GroveHub Mail Provider is outbound-only, so it must not take over a school's Google Workspace, Microsoft 365, or other inbound mail routing.
 
 The Cloudflare token is never written to source control. `.env`, `.state`, and `.runtime` are gitignored.
 
-Cloudflare does not control reverse DNS/PTR for the server public IP. Production internet delivery still requires the VPS/cloud provider to set PTR/rDNS for the sending IP to the public mail hostname used by Haraka.
+Cloudflare cannot configure PTR/rDNS for a public IP owned by a VPS/cloud provider. For production delivery, the provider must set:
 
-### Manual HTTP flow
+```text
+<PUBLIC_IP> PTR -> mail.<domain>
+mail.<domain> A/AAAA -> <PUBLIC_IP>
+```
+
+The hosting provider must also allow outbound TCP/25 for Haraka's direct MX delivery.
+
+### Useful Cloudflare curls
+
+Verify the API token:
+
+```bash
+curl --request GET \
+  --url https://api.cloudflare.com/client/v4/user/tokens/verify \
+  --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}"
+```
+
+Read the zone that `mail-domain-ready` will use:
+
+```bash
+curl --request GET \
+  --url "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}" \
+  --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}"
+```
+
+List the resulting mail-related records:
+
+```bash
+curl --request GET \
+  --url "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/dns_records?per_page=100" \
+  --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}"
+```
+
+### Manual GroveHub HTTP flow
 
 Register the domain:
 
@@ -121,14 +167,6 @@ After publishing the returned verification TXT record:
 ```bash
 curl --request POST \
   --url http://localhost:8080/mail-provider/domains/<domainId>/verify
-```
-
-To verify a Cloudflare API token itself:
-
-```bash
-curl --request GET \
-  --url https://api.cloudflare.com/client/v4/user/tokens/verify \
-  --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}"
 ```
 
 ## Sender identities
@@ -207,4 +245,4 @@ Then it starts Haraka, runs all service migrations, starts the Go backend with A
 
 ## Production work still required
 
-The service now has domain verification, SPF/DMARC provisioning guidance, per-domain DKIM signing material, and Haraka outbound queueing. Production deployment still needs a static public IP, matching PTR/rDNS and public Haraka hostname, hardened SMTP/TLS/auth policy, bounce/delivery event ingestion, suppression handling, rate limits, abuse controls, key rotation, and reputation monitoring.
+The service now has domain verification, outbound DNS provisioning, persistent per-domain DKIM signing material, Haraka hostname alignment, and Haraka outbound queueing. Production still requires a static public IP, matching PTR/rDNS, outbound TCP/25, hardened SMTP/TLS/auth policy, bounce/delivery event ingestion, suppression handling, rate limits, abuse controls, key rotation, and reputation monitoring.

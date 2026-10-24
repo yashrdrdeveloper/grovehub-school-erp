@@ -39,7 +39,7 @@ mail-provider-status:
 	@bash ./scripts/mailProvider/status.sh
 
 mail-domain-ready:
-	@DOMAIN="$(DOMAIN)" PUBLIC_IP="$(PUBLIC_IP)" bash ./scripts/mailProvider/domain-ready.sh
+	@bash ./scripts/mailProvider/domain-ready.sh
 
 .PHONY: db-migrate-status db-migrate-up db-migrate-down
 db-migrate-status:

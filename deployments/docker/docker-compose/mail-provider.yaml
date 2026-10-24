@@ -5,6 +5,8 @@ services:
       dockerfile: deployments/docker/haraka/Dockerfile
     container_name: grovehub-haraka
     restart: unless-stopped
+    environment:
+      HARAKA_HOSTNAME: ${MAIL_PROVIDER_HARAKA_HOSTNAME:-mail.local.grovehub}
     ports:
       - "127.0.0.1:${MAIL_PROVIDER_SMTP_PORT:-2525}:2525"
     volumes:

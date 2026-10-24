@@ -16,8 +16,8 @@ Mail Provider
   make mail-provider-start   Ensure the container runtime and start Haraka
   make mail-provider-stop    Stop Haraka while preserving queue and DKIM volumes
   make mail-provider-status  Show Haraka container and health status
-  make mail-domain-ready DOMAIN=school.example PUBLIC_IP=203.0.113.10
-                             Register/reuse the domain, generate DKIM, configure Cloudflare DNS, and verify it
+  make mail-domain-ready     Read Cloudflare token/zone from .env, discover domain/public IP,
+                             configure outbound-mail DNS + DKIM, and verify the GroveHub domain
 
 Database
   make db-migrate-status  Show all GroveHub service migration status using DATABASE_URL

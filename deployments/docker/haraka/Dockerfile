@@ -13,7 +13,9 @@ RUN apk add --no-cache openssl \
     && mkdir -p /opt/haraka/queue /opt/haraka/config/dkim
 
 COPY deployments/docker/haraka/config/ /opt/haraka/config/
+COPY deployments/docker/haraka/entrypoint.sh /usr/local/bin/grovehub-haraka-entrypoint
+RUN chmod +x /usr/local/bin/grovehub-haraka-entrypoint
 
 EXPOSE 2525
 
-CMD ["haraka", "-c", "/opt/haraka"]
+ENTRYPOINT ["/usr/local/bin/grovehub-haraka-entrypoint"]
