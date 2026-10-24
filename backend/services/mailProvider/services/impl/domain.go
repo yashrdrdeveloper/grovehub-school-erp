@@ -71,14 +71,15 @@ func (service *DomainService) GetById(ctx context.Context, domainId string) (ent
 	if err != nil {
 		return entity.Domain{}, err
 	}
-	domain, err := service.repository.FindById(ctx, validatedId)
-	if errors.Is(err, mailproviderrepository.ErrDomainNotFound) {
-		return entity.Domain{}, coreerrors.NewError(mailprovidererror.DomainNotFound)
-	}
+	return service.readDomain(service.repository.FindById(ctx, validatedId))
+}
+
+func (service *DomainService) GetByName(ctx context.Context, name string) (entity.Domain, error) {
+	validatedName, err := service.validator.ValidateDomainName(name)
 	if err != nil {
-		return entity.Domain{}, coreerrors.Wrap(mailprovidererror.DomainReadFailed, err)
+		return entity.Domain{}, err
 	}
-	return domain, nil
+	return service.readDomain(service.repository.FindByName(ctx, validatedName))
 }
 
 func (service *DomainService) Verify(ctx context.Context, domainId string) (entity.Domain, error) {
@@ -134,4 +135,14 @@ func (service *DomainService) Deactivate(ctx context.Context, domainId string) (
 		return entity.Domain{}, coreerrors.Wrap(mailprovidererror.DomainUpdateFailed, err)
 	}
 	return updated, nil
+}
+
+func (service *DomainService) readDomain(domain entity.Domain, err error) (entity.Domain, error) {
+	if errors.Is(err, mailproviderrepository.ErrDomainNotFound) {
+		return entity.Domain{}, coreerrors.NewError(mailprovidererror.DomainNotFound)
+	}
+	if err != nil {
+		return entity.Domain{}, coreerrors.Wrap(mailprovidererror.DomainReadFailed, err)
+	}
+	return domain, nil
 }

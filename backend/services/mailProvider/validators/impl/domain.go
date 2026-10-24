@@ -27,3 +27,7 @@ func (validator *DomainValidator) ValidateRegister(
 func (validator *DomainValidator) ValidateDomainId(value string) (entity.DomainId, error) {
 	return validatorhelpers.NormalizeDomainId(value)
 }
+
+func (validator *DomainValidator) ValidateDomainName(value string) (string, error) {
+	return validatorhelpers.NormalizeDomain(value)
+}

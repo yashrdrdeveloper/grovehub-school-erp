@@ -28,7 +28,7 @@ backend-status:
 backend-dev:
 	@bash ./scripts/backend/dev.sh
 
-.PHONY: mail-provider-start mail-provider-stop mail-provider-status
+.PHONY: mail-provider-start mail-provider-stop mail-provider-status mail-domain-ready
 mail-provider-start:
 	@bash ./scripts/mailProvider/start.sh
 
@@ -37,6 +37,9 @@ mail-provider-stop:
 
 mail-provider-status:
 	@bash ./scripts/mailProvider/status.sh
+
+mail-domain-ready:
+	@DOMAIN="$(DOMAIN)" PUBLIC_IP="$(PUBLIC_IP)" bash ./scripts/mailProvider/domain-ready.sh
 
 .PHONY: db-migrate-status db-migrate-up db-migrate-down
 db-migrate-status:

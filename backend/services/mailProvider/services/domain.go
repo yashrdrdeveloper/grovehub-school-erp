@@ -13,6 +13,7 @@ type RegisterDomainInput struct {
 type DomainService interface {
 	Register(ctx context.Context, input RegisterDomainInput) (entity.Domain, error)
 	GetById(ctx context.Context, domainId string) (entity.Domain, error)
+	GetByName(ctx context.Context, name string) (entity.Domain, error)
 	Verify(ctx context.Context, domainId string) (entity.Domain, error)
 	Deactivate(ctx context.Context, domainId string) (entity.Domain, error)
 }

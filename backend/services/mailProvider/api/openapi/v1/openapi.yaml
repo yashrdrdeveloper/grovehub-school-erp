@@ -25,6 +25,23 @@ paths:
         '400': { $ref: '#/components/responses/BadRequest' }
         '409': { $ref: '#/components/responses/Conflict' }
         '500': { $ref: '#/components/responses/InternalError' }
+  /mail-provider/domains/by-name/{domainName}:
+    parameters:
+      - $ref: '#/components/parameters/DomainName'
+    get:
+      operationId: getMailProviderDomainByName
+      summary: Get a registered sending domain by normalized domain name
+      tags: [Mail Provider]
+      responses:
+        '200':
+          description: Domain returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainSuccessResponse'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
   /mail-provider/domains/{domainId}:
     parameters:
       - $ref: '#/components/parameters/DomainId'
@@ -181,6 +198,11 @@ components:
       in: path
       required: true
       schema: { type: string, format: uuid }
+    DomainName:
+      name: domainName
+      in: path
+      required: true
+      schema: { type: string, example: school.example }
     SenderId:
       name: senderId
       in: path

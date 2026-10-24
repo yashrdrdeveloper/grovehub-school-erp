@@ -18,6 +18,7 @@ func RegisterHTTP(
 	}
 
 	register("POST /mail-provider/domains", domainController.Register)
+	register("GET /mail-provider/domains/by-name/{domainName}", domainController.GetByName)
 	register("GET /mail-provider/domains/{domainId}", domainController.GetById)
 	register("POST /mail-provider/domains/{domainId}/verify", domainController.Verify)
 	register("POST /mail-provider/domains/{domainId}/deactivate", domainController.Deactivate)

@@ -45,6 +45,15 @@ func (controller *DomainController) GetById(writer http.ResponseWriter, request 
 	_ = httpresponse.WriteSuccess(writer, http.StatusOK, controller.mapper.ToResponse(domain))
 }
 
+func (controller *DomainController) GetByName(writer http.ResponseWriter, request *http.Request) {
+	domain, err := controller.service.GetByName(request.Context(), request.PathValue("domainName"))
+	if err != nil {
+		controllerhelpers.WriteError(request.Context(), writer, err)
+		return
+	}
+	_ = httpresponse.WriteSuccess(writer, http.StatusOK, controller.mapper.ToResponse(domain))
+}
+
 func (controller *DomainController) Verify(writer http.ResponseWriter, request *http.Request) {
 	domain, err := controller.service.Verify(request.Context(), request.PathValue("domainId"))
 	if err != nil {
