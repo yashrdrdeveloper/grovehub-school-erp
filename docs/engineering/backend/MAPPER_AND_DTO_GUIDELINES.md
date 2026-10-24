@@ -74,7 +74,23 @@ Service
     business orchestration
 ```
 
+Validation does not require a second DTO. When a request remains the same shape after normalization, the validator returns the existing request DTO directly.
+
 Example:
+
+```text
+CreatePerson DTO
+    ↓
+validator
+    ↓
+normalized CreatePerson DTO
+```
+
+Do not create `ValidatedCreatePerson` merely to duplicate the fields of `CreatePerson`.
+
+For generic infrastructure contracts, reuse the existing generic type directly. Example: Person search validation returns `coresearch.Query[entity.GID]` and `coresearch.CursorPayload`, not a `ValidatedPersonSearch` wrapper.
+
+For representation changes:
 
 ```text
 PersonByGID DTO -> entity.GID
@@ -113,19 +129,21 @@ own lifecycle decisions
 
 ## 6. Validator interaction
 
-A service may use both a mapper and validator:
+A service may use both a mapper and validator. The order depends on the responsibility:
 
 ```text
 request DTO
    ↓
-mapper for representation conversion when needed
+validator for payload validity/canonicalization
    ↓
-validator for validity/canonicalization
+mapper/service helper for a real representation conversion when needed
    ↓
 service business orchestration
    ↓
 mapper for response conversion
 ```
+
+For a primitive representation that must be converted before validation, conversion may happen first, as with `PersonByGID -> entity.GID`.
 
 Do not duplicate normalization in mapper and validator. Shared technical normalization belongs in `libs/core/helpers/normalize` and is consumed by the validator.
 
@@ -158,6 +176,8 @@ NO request validation hidden inside mappers
 NO concrete mapper dependency outside the owning composition root
 NO separate resource error files without an independent/shared responsibility
 NO mapper without a real representation change
+NO duplicate validated DTO when the existing request/service-input contract already represents the data
+NO wrapper around an existing generic core contract without new semantics
 NO builder for simple assignment
 NO generic mapper dumping-ground file
 ```
