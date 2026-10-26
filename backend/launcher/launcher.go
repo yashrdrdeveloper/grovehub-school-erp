@@ -27,16 +27,27 @@ const httpAddress = ":8080"
 func Run(logger *slog.Logger) error {
 	databaseContext, cancelDatabase := context.WithTimeout(context.Background(), 5*time.Second)
 	pool, err := bootstrap.NewPostgresPool(databaseContext)
-	cancelDatabase()
 	if err != nil {
-		return fmt.Errorf("bootstrap postgres: %w", err)
+		cancelDatabase()
+		return fmt.Errorf("bootstrap postgres pool: %w", err)
 	}
 	defer pool.Close()
+
+	db, err := bootstrap.NewPostgresDB(databaseContext)
+	cancelDatabase()
+	if err != nil {
+		return fmt.Errorf("bootstrap postgres gorm db: %w", err)
+	}
+	sqlDB, err := db.DB()
+	if err != nil {
+		return fmt.Errorf("access postgres gorm db: %w", err)
+	}
+	defer func() { _ = sqlDB.Close() }()
 
 	mux := http.NewServeMux()
 	routing.RegisterHealth(mux)
 
-	foundationModule := foundation.New(logger, pool)
+	foundationModule := foundation.New(logger, db)
 	foundationModule.RegisterHTTP(mux)
 
 	identityModule := identity.New(logger, pool, foundationModule.Client())

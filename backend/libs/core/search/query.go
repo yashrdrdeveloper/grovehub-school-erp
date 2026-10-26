@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"strings"
 
+	"gorm.io/gorm"
+
 	searchcontract "grovehub/libs/core/contracts/search"
 )
 
@@ -77,7 +79,7 @@ type QueryBuilder struct {
 
 func (builder *QueryBuilder) Add(value any) string {
 	builder.args = append(builder.args, value)
-	return fmt.Sprintf("$%d", len(builder.args))
+	return "?"
 }
 
 func (builder *QueryBuilder) Args() []any {
@@ -105,6 +107,65 @@ type RelationField struct {
 type SortField struct {
 	Expression string
 	Cast       string
+}
+
+type Config struct {
+	SearchExpression string
+	CursorExpression string
+	ScalarFields     map[string]ScalarField
+	RelationFields   map[string]RelationField
+	SortFields       map[string]SortField
+}
+
+func Apply[TId any](db *gorm.DB, query Query[TId], config Config) (*gorm.DB, error) {
+	if db == nil || query.Limit <= 0 {
+		return nil, ErrInvalidQuery
+	}
+
+	for _, term := range query.SearchTerms {
+		value := "%" + EscapeLike(term) + "%"
+		db = db.Where(config.SearchExpression+" ILIKE ?", value)
+	}
+
+	for _, filter := range query.Filters {
+		builder := &QueryBuilder{}
+		condition, err := buildFilter(builder, filter, config)
+		if err != nil {
+			return nil, err
+		}
+		db = db.Where(condition, builder.Args()...)
+	}
+
+	sortField, ok := config.SortFields[query.Sort.Field]
+	if !ok {
+		return nil, ErrInvalidQuery
+	}
+
+	direction := query.Sort.Direction
+	if direction != searchcontract.DirectionAscending && direction != searchcontract.DirectionDescending {
+		return nil, ErrInvalidQuery
+	}
+
+	if query.Cursor != nil {
+		builder := &QueryBuilder{}
+		condition := BuildCursorCondition(
+			builder,
+			sortField,
+			direction,
+			query.Cursor.Value,
+			fmt.Sprint(query.Cursor.CursorId),
+			config.CursorExpression,
+		)
+		db = db.Where(condition, builder.Args()...)
+	}
+
+	directionValue := string(direction)
+	db = db.Order(sortField.Expression + " " + directionValue)
+	if sortField.Expression != config.CursorExpression {
+		db = db.Order(config.CursorExpression + " " + directionValue)
+	}
+
+	return db.Limit(query.Limit + 1), nil
 }
 
 type operatorFactory func(builder *QueryBuilder, field ScalarField, values []string) (string, error)
@@ -175,21 +236,22 @@ func BuildCursorCondition(
 		searchcontract.DirectionAscending:  ">",
 		searchcontract.DirectionDescending: "<",
 	}[direction]
-	valuePlaceholder := builder.Add(value)
-	cursorPlaceholder := builder.Add(cursorId)
-
 	if sort.Expression == cursorExpression {
+		valuePlaceholder := builder.Add(value)
 		return fmt.Sprintf("%s %s %s%s", cursorExpression, comparison, valuePlaceholder, sort.Cast)
 	}
 
+	comparisonPlaceholder := builder.Add(value)
+	equalityPlaceholder := builder.Add(value)
+	cursorPlaceholder := builder.Add(cursorId)
 	return fmt.Sprintf(
 		"(%s %s %s%s OR (%s = %s%s AND %s %s %s))",
 		sort.Expression,
 		comparison,
-		valuePlaceholder,
+		comparisonPlaceholder,
 		sort.Cast,
 		sort.Expression,
-		valuePlaceholder,
+		equalityPlaceholder,
 		sort.Cast,
 		cursorExpression,
 		comparison,
@@ -204,6 +266,25 @@ func EscapeLike(value string) string {
 		`_`, `\_`,
 	)
 	return replacer.Replace(value)
+}
+
+func buildFilter(builder *QueryBuilder, filter Filter, config Config) (string, error) {
+	if field, ok := config.ScalarFields[filter.Field]; ok {
+		condition, err := BuildScalarCondition(builder, field, filter.Operator, filter.Values)
+		return mapBuildError(condition, err)
+	}
+	if field, ok := config.RelationFields[filter.Field]; ok {
+		condition, err := BuildRelationCondition(builder, field, filter.Operator, filter.Values)
+		return mapBuildError(condition, err)
+	}
+	return "", ErrInvalidQuery
+}
+
+func mapBuildError(condition string, err error) (string, error) {
+	if errors.Is(err, ErrUnsupportedOperator) {
+		return "", ErrInvalidQuery
+	}
+	return condition, err
 }
 
 func scalarBinary(operator string) operatorFactory {
