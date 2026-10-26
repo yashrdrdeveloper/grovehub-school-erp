@@ -3,6 +3,7 @@ package impl
 import (
 	"context"
 	"errors"
+	"sort"
 	"strings"
 
 	"github.com/jackc/pgx/v5/pgconn"
@@ -54,14 +55,13 @@ func NewPersonRepository(db *gorm.DB) foundationrepository.PersonRepository {
 }
 
 func (repository *PersonRepository) Create(ctx context.Context, person entity.Person) error {
+	person.SearchDetails = buildPersonSearchDetails(person)
+
 	return repository.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(&person).Error; err != nil {
 			return mapPersonWriteError(err)
 		}
-		if err := upsertPersonContacts(tx, person, false); err != nil {
-			return err
-		}
-		return refreshPersonSearchDetails(tx, person.GetGID())
+		return upsertPersonContacts(tx, person, false)
 	})
 }
 
@@ -153,16 +153,19 @@ func (repository *PersonRepository) Search(
 }
 
 func (repository *PersonRepository) Update(ctx context.Context, person entity.Person) error {
+	searchDetails := buildPersonSearchDetails(person)
+
 	return repository.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		result := tx.Model(&entity.Person{}).
 			Where("gid = ?", person.GetGID()).
 			Updates(map[string]any{
-				"first_name":  person.FirstName,
-				"middle_name": person.MiddleName,
-				"last_name":   person.LastName,
-				"status":      person.Status,
-				"version":     person.Version,
-				"updated_at":  person.UpdatedAt,
+				"first_name":     person.FirstName,
+				"middle_name":    person.MiddleName,
+				"last_name":      person.LastName,
+				"status":         person.Status,
+				"version":        person.Version,
+				"search_details": searchDetails,
+				"updated_at":     person.UpdatedAt,
 			})
 		if result.Error != nil {
 			return mapPersonWriteError(result.Error)
@@ -171,10 +174,7 @@ func (repository *PersonRepository) Update(ctx context.Context, person entity.Pe
 			return foundationrepository.ErrPersonNotFound
 		}
 
-		if err := upsertPersonContacts(tx, person, true); err != nil {
-			return err
-		}
-		return refreshPersonSearchDetails(tx, person.GetGID())
+		return upsertPersonContacts(tx, person, true)
 	})
 }
 
@@ -282,23 +282,29 @@ func deleteStalePersonContacts(tx *gorm.DB, gid entity.GID, contacts []entity.Co
 		Delete(&entity.Contact{}).Error
 }
 
-func refreshPersonSearchDetails(tx *gorm.DB, gid entity.GID) error {
-	return tx.Exec(
-		`UPDATE foundation.persons AS person
-		 SET search_details = LOWER(TRIM(CONCAT_WS(
-			' ', person.gid::text, person.first_name, person.middle_name, person.last_name,
-			COALESCE((
-				SELECT STRING_AGG(
-					CONCAT_WS(' ', contact.value, contact.normalized_value),
-					' ' ORDER BY contact.type, contact.normalized_value
-				)
-				FROM foundation.person_contacts AS contact
-				WHERE contact.person_gid = person.gid
-			), '')
-		 )))
-		 WHERE person.gid = ?`,
-		gid,
-	).Error
+func buildPersonSearchDetails(person entity.Person) string {
+	contacts := person.GetContacts()
+	sort.Slice(contacts, func(leftIndex int, rightIndex int) bool {
+		left := contacts[leftIndex]
+		right := contacts[rightIndex]
+		if left.GetType() == right.GetType() {
+			return left.GetNormalizedValue() < right.GetNormalizedValue()
+		}
+		return left.GetType() < right.GetType()
+	})
+
+	parts := make([]string, 0, 4+(len(contacts)*2))
+	parts = append(parts, string(person.GetGID()), person.GetFirstName())
+	if middleName := person.GetMiddleName(); middleName != "" {
+		parts = append(parts, middleName)
+	}
+	parts = append(parts, person.GetLastName())
+
+	for _, contact := range contacts {
+		parts = append(parts, contact.GetValue(), contact.GetNormalizedValue())
+	}
+
+	return strings.ToLower(strings.TrimSpace(strings.Join(parts, " ")))
 }
 
 func mapPersonWriteError(err error) error {
