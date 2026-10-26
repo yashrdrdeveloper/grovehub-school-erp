@@ -9,6 +9,7 @@ Also read when relevant:
 ```text
 docs/engineering/backend/MAPPER_AND_DTO_GUIDELINES.md
 docs/engineering/backend/SEARCH_API_GUIDELINES.md
+docs/engineering/backend/GORM_REPOSITORY_GUIDELINES.md
 ```
 
 ---
@@ -32,7 +33,9 @@ backend/services/<service>/
 ├── repository/
 │   ├── <resource>.go
 │   └── impl/
-│       └── <resource>.go
+│       ├── <resource>.go
+│       ├── <resource>_model.go
+│       └── <resource>_mapper.go
 ├── services/
 │   ├── <resource>.go
 │   └── helpers/
@@ -53,7 +56,7 @@ backend/services/<service>/
     └── unit-test/
 ```
 
-Create only files/folders with a current responsibility.
+Create only files/folders with a current responsibility. Persistence model/mapper files are created only for resources that actually persist data.
 
 ---
 
@@ -86,10 +89,19 @@ repository/person.go
     -> repository sentinel errors
 
 repository/impl/person.go
-    -> PostgreSQL implementation
+    -> GORM/PostgreSQL implementation
+    -> aggregate persistence, transactions, validated query execution, constraint mapping
+
+repository/impl/person_model.go
+    -> persistence-only models and GORM tags
+
+repository/impl/person_mapper.go
+    -> explicit persistence model <-> domain entity mapping
 ```
 
 Do not encode the database technology into the public repository package path. `impl/` is the concrete adapter boundary.
+
+GORM types, persistence models, table names, and PostgreSQL driver types must not leak into `repository/<resource>.go`.
 
 ### Client
 
@@ -112,6 +124,8 @@ Only the service root composition file imports its concrete `impl` packages:
 
 ```text
 foundation.go
+    *gorm.DB
+       ↓
     repository/impl
        ↓
     services
@@ -126,6 +140,8 @@ foundation.go
        ↓
     client interface
 ```
+
+The launcher/bootstrap owns creation and shutdown of the shared PostgreSQL GORM handle. Service composition roots receive that handle and pass it only to repository implementations.
 
 The launcher may receive the owning module's public client interface and inject it into another module. It must not construct or expose another service's client implementation directly.
 
@@ -147,6 +163,8 @@ Service
 Repository interface
   ↓
 Repository implementation
+  ↓
+GORM
   ↓
 PostgreSQL
 ```
@@ -170,6 +188,8 @@ Provider repository
 Entities own encapsulated state only. Stateful fields remain private; external code reads through getters and changes state through copy-returning setters.
 
 Entities must not own business decisions, repositories, HTTP, clocks, ID generation, authorization, or workflow orchestration.
+
+Entities must also remain persistence-agnostic: no `gorm.Model`, no GORM tags, no table/column names, and no persistence lifecycle hooks.
 
 ### DTO
 
@@ -200,6 +220,10 @@ mappers/person.go
 
 Do not create `mappers/error.go` when the mapper only serves Person.
 
+Persistence mapping is a separate private concern and lives under `repository/impl/<resource>_mapper.go`.
+
+Do not use reflection-based generic copy libraries to hide domain/persistence mapping. Persistence mapping should remain explicit and compile-time-visible.
+
 ### Service
 
 `services/<resource>.go` owns use-case orchestration.
@@ -224,15 +248,24 @@ Keep service methods readable. Extract reusable resource logic instead of growin
 `repository/impl/<resource>.go` owns:
 
 ```text
-SQL
-transactions
-row scanning
-constraint mapping
-aggregate persistence
+GORM query execution
+aggregate-local persistence transactions
+constraint/error mapping
 validated search query execution
+PostgreSQL-specific SQL expressions when required
 ```
 
-Generic SQL operator behavior must not be copied into every repository. Reusable search SQL mechanics belong in `backend/libs/core/search`.
+`repository/impl/<resource>_model.go` owns persistence structs and GORM tags.
+
+`repository/impl/<resource>_mapper.go` owns explicit domain entity <-> persistence model mapping.
+
+Use ordinary GORM APIs for ordinary CRUD. Raw SQL is allowed only when PostgreSQL-specific behavior is materially clearer or required. All user values remain parameterized.
+
+Generic search contracts/mechanics must not be copied into every repository. Shared search types remain in `backend/libs/core/contracts/search` and entity-neutral mechanics remain in `backend/libs/core/search` where they are genuinely reusable.
+
+SQL migrations remain the authoritative schema definition. Runtime `AutoMigrate` is forbidden for GroveHub schema evolution.
+
+See `GORM_REPOSITORY_GUIDELINES.md` for the full persistence standard.
 
 ### Client implementation
 
@@ -316,7 +349,9 @@ backend/services/foundation/
 ├── repository/
 │   ├── person.go
 │   └── impl/
-│       └── person.go
+│       ├── person.go
+│       ├── person_model.go
+│       └── person_mapper.go
 ├── services/
 │   ├── person.go
 │   └── helpers/
@@ -333,10 +368,13 @@ backend/services/foundation/
 │       └── person.go
 ├── docs/
 │   ├── contracts.md
-│   └── search.md
+│   ├── search.md
+│   └── persistence.md
 ├── routes/http.go
 └── migrations/
 ```
+
+The Person entity remains free of GORM. `person_model.go` owns storage mapping and `person_mapper.go` explicitly maps between persistence and domain representations.
 
 Do not create `person_search.go` merely because Person has a search use case. Search remains part of the Person responsibility unless it becomes an independently owned subsystem.
 
@@ -359,15 +397,12 @@ backend/libs/core/search/
 `libs/core/search` may own generic technical behavior such as:
 
 ```text
-parameter placeholder builder
-operator factories
-scalar/relation filter builders
-LIKE escaping
-cursor comparison construction
 opaque cursor encode/decode
+LIKE escaping
+entity-neutral search contracts/helpers
 ```
 
-It must not know Foundation tables, Person fields, or business rules.
+It must not know Foundation tables, Person fields, GORM models, or business rules.
 
 Foundation owns only mappings such as:
 
@@ -377,16 +412,40 @@ contacts.email -> person_contacts EMAIL relation
 createdAt -> p.created_at
 ```
 
+The owning service validates public search fields/operators. The repository implementation translates only those approved semantics to fixed GORM/SQL expressions.
+
 This keeps shared mechanics OCP-friendly while service ownership stays explicit.
 
 ---
 
-## 7. Hard Rules
+## 7. GORM / Database Rules
+
+One GORM PostgreSQL handle is created by launcher bootstrap and reused by service repository implementations.
+
+Every request-path repository operation must use:
+
+```go
+db.WithContext(ctx)
+```
+
+A single repository operation may use `db.Transaction(...)` when one aggregate spans multiple owned tables and must persist atomically.
+
+If a future business use case requires one transaction across multiple repositories, promote the transaction boundary to an explicit service/unit-of-work contract rather than nesting hidden independent transactions.
+
+Do not add GORM association auto-save, soft-delete behavior, hooks, or generic `BaseRepository[T]` abstractions by default.
+
+---
+
+## 8. Hard Rules
 
 ```text
 NO src/ wrapper
 NO service-local launcher/
 NO repository/postgres package for current GroveHub repository implementations; use repository/impl
+NO GORM imports outside libs/core/database/postgres and services/*/repository/impl
+NO gorm.Model or GORM tags in domain entities
+NO GORM types/models/clauses in public repository interfaces
+NO runtime AutoMigrate as GroveHub schema evolution
 NO concrete controller dependency in routes
 NO controller implementation mixed into controller contract file
 NO client implementation mixed into client contract file
@@ -395,11 +454,12 @@ NO client implementation bypassing the provider service layer
 NO resource-specific helper dumped into generic common/misc files
 NO separate Person search implementation file when it is the same Person responsibility
 NO business logic in controller/repository/entity/mapper/client adapter
-NO duplicated generic search SQL operator switches in services
-NO duplicated generic search SQL operator switches in repositories
+NO duplicated entity-specific search contract wrappers when shared generic search types already express the requirement
 NO arbitrary client field names becoming SQL expressions
+NO reflection-based generic domain/persistence mapping
 NO direct mutable entity field access outside entity package
 NO separate error DTO/mapper files when metadata belongs only to one resource
+NO generic BaseRepository[T] that erases domain semantics
 ```
 
-> **Guiding principle:** interfaces define boundaries, `impl` packages implement them, resource helpers reduce local complexity, and truly generic mechanics are promoted to `libs/core` only when the domain-specific knowledge remains outside the shared package.
+> **Guiding principle:** interfaces define boundaries, `impl` packages implement them, GORM simplifies persistence only behind that boundary, resource helpers reduce local complexity, and truly generic mechanics are promoted to `libs/core` only when domain-specific knowledge remains outside the shared package.
