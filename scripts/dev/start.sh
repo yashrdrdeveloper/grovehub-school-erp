@@ -7,6 +7,6 @@ SCRIPT_DIR="$(
 )"
 
 bash "${SCRIPT_DIR}/../mailProvider/start.sh"
-bash "${SCRIPT_DIR}/../database/migrate.sh" up all
+bash "${SCRIPT_DIR}/../database/migrate.sh" init all
 BACKEND_HOT_RELOAD=1 bash "${SCRIPT_DIR}/../backend/start.sh"
 bash "${SCRIPT_DIR}/../swagger/start.sh"

@@ -20,9 +20,13 @@ Mail Provider
                              configure outbound-mail DNS + DKIM, and verify the GroveHub domain
 
 Database
-  make db-migrate-status  Show all GroveHub service migration status using DATABASE_URL
-  make db-migrate-up      Apply pending migrations for all services
-  make db-migrate-down    Roll back the latest migration for each service in reverse order
+  make db-schema-status                       Show current GroveHub schema baseline state
+  make db-schema-init                         Initialize all service schemas from the current baseline
+  make db-schema-reset                        Destructively reset all service schemas to the current baseline
+  make db-schema-reset DB_SERVICE=foundation  Reset only one service schema
+
+  DB_SERVICE can be: all, foundation, identity, or mailProvider.
+  Schema reset is development-only and deletes data in the selected service schema.
 
 Swagger
   make swagger-start    Start Swagger UI on http://localhost:8081
@@ -30,7 +34,7 @@ Swagger
   make swagger-status   Show Swagger UI status
 
 Development
-  make dev-start            Auto-start container runtime, Haraka, migrations, Air backend, and Swagger
+  make dev-start            Auto-start container runtime, Haraka, schema initialization, Air backend, and Swagger
   make dev-start-with-logs  Same as dev-start plus the local OTEL collector
   make dev-stop             Stop Swagger UI, backend, Haraka, and optional OTEL collector
   make dev-status           Show backend, Mail Provider, and Swagger UI status

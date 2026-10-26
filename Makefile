@@ -3,6 +3,7 @@ SHELL := /usr/bin/env bash
 .DEFAULT_GOAL := help
 
 SWAGGER_PORT ?= 8081
+DB_SERVICE ?= all
 export SWAGGER_PORT
 
 .PHONY: help
@@ -41,15 +42,15 @@ mail-provider-status:
 mail-domain-ready:
 	@bash ./scripts/mailProvider/domain-ready.sh
 
-.PHONY: db-migrate-status db-migrate-up db-migrate-down
-db-migrate-status:
-	@bash ./scripts/database/migrate.sh status
+.PHONY: db-schema-status db-schema-init db-schema-reset
+db-schema-status:
+	@bash ./scripts/database/migrate.sh status "$(DB_SERVICE)"
 
-db-migrate-up:
-	@bash ./scripts/database/migrate.sh up
+db-schema-init:
+	@bash ./scripts/database/migrate.sh init "$(DB_SERVICE)"
 
-db-migrate-down:
-	@bash ./scripts/database/migrate.sh down
+db-schema-reset:
+	@bash ./scripts/database/migrate.sh reset "$(DB_SERVICE)"
 
 .PHONY: swagger-start swagger-stop swagger-status
 swagger-start:
