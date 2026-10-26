@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/gorm"
 
 	coretelemetry "grovehub/libs/core/telemetry"
 	foundationclient "grovehub/services/foundation/client"
@@ -27,8 +27,8 @@ type module struct {
 	client           foundationclient.Client
 }
 
-func New(logger *slog.Logger, pool *pgxpool.Pool) Module {
-	personRepository := repositoryimpl.NewPersonRepository(pool)
+func New(logger *slog.Logger, database *gorm.DB) Module {
+	personRepository := repositoryimpl.NewPersonRepository(database)
 	personService := services.NewPersonService(personRepository)
 
 	return &module{
