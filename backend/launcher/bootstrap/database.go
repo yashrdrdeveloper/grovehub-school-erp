@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/gorm"
 
 	corepostgres "grovehub/libs/core/database/postgres"
 )
@@ -16,21 +16,15 @@ const databaseURLEnv = "DATABASE_URL"
 
 var ErrDatabaseURLRequired = errors.New("DATABASE_URL is required")
 
-func NewPostgresPool(ctx context.Context) (*pgxpool.Pool, error) {
+func NewPostgresDatabase(ctx context.Context) (*gorm.DB, error) {
 	databaseURL := strings.TrimSpace(os.Getenv(databaseURLEnv))
 	if databaseURL == "" {
 		return nil, ErrDatabaseURLRequired
 	}
 
-	pool, err := corepostgres.NewPool(ctx, databaseURL)
+	database, err := corepostgres.Open(ctx, databaseURL)
 	if err != nil {
-		return nil, fmt.Errorf("create postgres pool: %w", err)
+		return nil, fmt.Errorf("open postgres database: %w", err)
 	}
-
-	if err := pool.Ping(ctx); err != nil {
-		pool.Close()
-		return nil, fmt.Errorf("ping postgres: %w", err)
-	}
-
-	return pool, nil
+	return database, nil
 }
