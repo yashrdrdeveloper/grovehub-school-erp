@@ -31,6 +31,7 @@ var errorStatus = map[coreerrors.Code]int{
 	mailprovidererror.InvalidMessageIdempotencyKey.Code():  http.StatusBadRequest,
 	mailprovidererror.MessageIdempotencyConflict.Code():    http.StatusConflict,
 	mailprovidererror.MessageSubmissionInProgress.Code():   http.StatusConflict,
+	mailprovidererror.MessageRetryNotAllowed.Code():        http.StatusConflict,
 	mailprovidererror.MessageConcurrentModification.Code(): http.StatusConflict,
 	mailprovidererror.MessageNotFound.Code():               http.StatusNotFound,
 	mailprovidererror.MessageCreateFailed.Code():           http.StatusInternalServerError,

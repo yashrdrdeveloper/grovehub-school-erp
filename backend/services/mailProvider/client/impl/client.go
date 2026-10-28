@@ -35,3 +35,11 @@ func (client *Client) Send(ctx context.Context, request mailproviderclient.SendR
 	}
 	return client.mapper.ToResponse(message), nil
 }
+
+func (client *Client) Retry(ctx context.Context, messageId string) (mailproviderresponse.Message, error) {
+	message, err := client.service.Retry(ctx, messageId)
+	if err != nil {
+		return mailproviderresponse.Message{}, err
+	}
+	return client.mapper.ToResponse(message), nil
+}

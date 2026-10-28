@@ -242,6 +242,26 @@ paths:
         '400': { $ref: '#/components/responses/BadRequest' }
         '404': { $ref: '#/components/responses/NotFound' }
         '500': { $ref: '#/components/responses/InternalError' }
+  /mail-provider/messages/{messageId}/retry:
+    parameters:
+      - $ref: '#/components/parameters/MessageId'
+    post:
+      operationId: retryMailProviderMessage
+      summary: Retry submission of an existing failed message
+      description: Only FAILED messages can be retried. The same message row and messageId are reused; retry never creates a new message record or retry-specific database field.
+      tags: [Mail Provider]
+      responses:
+        '200':
+          description: Existing message retried and submitted to Haraka.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageSuccessResponse'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '502': { $ref: '#/components/responses/DependencyError' }
+        '500': { $ref: '#/components/responses/InternalError' }
 components:
   parameters:
     DomainId:

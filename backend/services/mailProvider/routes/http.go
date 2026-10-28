@@ -31,5 +31,6 @@ func RegisterHTTP(
 
 	register("POST /mail-provider/messages", messageController.Send)
 	register("POST /mail-provider/messages/search", messageController.Search)
+	register("POST /mail-provider/messages/{messageId}/retry", messageController.Retry)
 	register("GET /mail-provider/messages/{messageId}", messageController.GetById)
 }

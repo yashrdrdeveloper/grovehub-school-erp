@@ -20,4 +20,5 @@ type SendRequest struct {
 
 type Client interface {
 	Send(ctx context.Context, request SendRequest) (mailproviderresponse.Message, error)
+	Retry(ctx context.Context, messageId string) (mailproviderresponse.Message, error)
 }

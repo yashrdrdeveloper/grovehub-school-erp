@@ -52,6 +52,15 @@ func (controller *MessageController) Send(writer http.ResponseWriter, request *h
 	_ = httpresponse.WriteSuccess(writer, http.StatusCreated, controller.mapper.ToResponse(message))
 }
 
+func (controller *MessageController) Retry(writer http.ResponseWriter, request *http.Request) {
+	message, err := controller.service.Retry(request.Context(), request.PathValue("messageId"))
+	if err != nil {
+		controllerhelpers.WriteError(request.Context(), writer, err)
+		return
+	}
+	_ = httpresponse.WriteSuccess(writer, http.StatusOK, controller.mapper.ToResponse(message))
+}
+
 func (controller *MessageController) Search(writer http.ResponseWriter, request *http.Request) {
 	var searchRequest coresearch.Request
 	if err := httprequest.DecodeJSON(request, &searchRequest); err != nil {

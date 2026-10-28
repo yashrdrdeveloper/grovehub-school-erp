@@ -19,6 +19,10 @@ var (
 		"MAIL_PROVIDER_MESSAGE_SUBMISSION_IN_PROGRESS",
 		"Mail provider message submission is already in progress",
 	)
+	MessageRetryNotAllowed = coreerrors.NewDefinition(
+		"MAIL_PROVIDER_MESSAGE_RETRY_NOT_ALLOWED",
+		"Only failed mail provider messages can be retried",
+	)
 	MessageConcurrentModification = coreerrors.NewDefinition(
 		"MAIL_PROVIDER_MESSAGE_CONCURRENT_MODIFICATION",
 		"Mail provider message was modified by another request",

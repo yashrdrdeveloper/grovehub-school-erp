@@ -98,6 +98,37 @@ func (repository *MessageRepository) Search(
 	return coresearch.QueryResult[entity.Message]{Items: messages, HasNext: hasNext}, nil
 }
 
+func (repository *MessageRepository) PrepareRetry(
+	ctx context.Context,
+	message entity.Message,
+	retryAt time.Time,
+) (entity.Message, error) {
+	result := repository.db.WithContext(ctx).
+		Model(&entity.Message{}).
+		Where(&entity.Message{MessageId: message.GetMessageId(), Status: entity.MessageStatusFailed}).
+		Where("version = ?", message.GetVersion()).
+		Updates(map[string]any{
+			"status":                entity.MessageStatusQueued,
+			"failure_message":       nil,
+			"submission_started_at": nil,
+			"version":               message.GetVersion() + 1,
+			"updated_at":            retryAt,
+		})
+	if result.Error != nil {
+		return entity.Message{}, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return entity.Message{}, mailproviderrepository.ErrMessageVersionConflict
+	}
+
+	message.Status = entity.MessageStatusQueued
+	message.FailureMessage = nil
+	message.SubmissionStartedAt = nil
+	message.Version = message.GetVersion() + 1
+	message.UpdatedAt = retryAt
+	return message, nil
+}
+
 func (repository *MessageRepository) ClaimSubmission(
 	ctx context.Context,
 	message entity.Message,

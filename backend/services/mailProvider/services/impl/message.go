@@ -109,6 +109,49 @@ func (service *MessageService) Send(
 	return service.submit(ctx, message)
 }
 
+func (service *MessageService) Retry(ctx context.Context, messageId string) (entity.Message, error) {
+	validatedId, err := service.validator.ValidateMessageId(messageId)
+	if err != nil {
+		return entity.Message{}, err
+	}
+
+	message, err := service.repository.FindById(ctx, validatedId)
+	if errors.Is(err, mailproviderrepository.ErrMessageNotFound) {
+		return entity.Message{}, coreerrors.NewError(mailprovidererror.MessageNotFound)
+	}
+	if err != nil {
+		return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageReadFailed, err)
+	}
+	if message.GetStatus() != entity.MessageStatusFailed {
+		return entity.Message{}, coreerrors.NewError(mailprovidererror.MessageRetryNotAllowed)
+	}
+
+	sender, err := service.resolveSubmissionSender(ctx, message)
+	if err != nil {
+		return entity.Message{}, err
+	}
+
+	prepared, err := service.repository.PrepareRetry(ctx, message, time.Now().UTC())
+	if err != nil {
+		if errors.Is(err, mailproviderrepository.ErrMessageVersionConflict) {
+			latest, readErr := service.repository.FindById(ctx, validatedId)
+			if readErr != nil {
+				return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageReadFailed, readErr)
+			}
+			if latest.GetStatus() == entity.MessageStatusSubmitted {
+				return latest, nil
+			}
+			if latest.GetStatus() == entity.MessageStatusQueued && latest.GetSubmissionStartedAt() != nil {
+				return latest, coreerrors.NewError(mailprovidererror.MessageSubmissionInProgress)
+			}
+			return entity.Message{}, coreerrors.NewError(mailprovidererror.MessageConcurrentModification)
+		}
+		return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageUpdateFailed, err)
+	}
+
+	return service.submitWithSender(ctx, prepared, sender)
+}
+
 func (service *MessageService) replayOrSubmit(
 	ctx context.Context,
 	message entity.Message,
@@ -133,21 +176,39 @@ func (service *MessageService) replayOrSubmit(
 }
 
 func (service *MessageService) submit(ctx context.Context, message entity.Message) (entity.Message, error) {
-	sender, err := service.senderService.GetById(ctx, string(message.GetSenderId()))
+	sender, err := service.resolveSubmissionSender(ctx, message)
 	if err != nil {
 		return entity.Message{}, err
 	}
+	return service.submitWithSender(ctx, message, sender)
+}
+
+func (service *MessageService) resolveSubmissionSender(
+	ctx context.Context,
+	message entity.Message,
+) (entity.Sender, error) {
+	sender, err := service.senderService.GetById(ctx, string(message.GetSenderId()))
+	if err != nil {
+		return entity.Sender{}, err
+	}
 	if sender.GetStatus() != entity.SenderStatusActive {
-		return entity.Message{}, coreerrors.NewError(mailprovidererror.InvalidSender)
+		return entity.Sender{}, coreerrors.NewError(mailprovidererror.InvalidSender)
 	}
 	domain, err := service.domainService.GetById(ctx, string(sender.GetDomainId()))
 	if err != nil {
-		return entity.Message{}, err
+		return entity.Sender{}, err
 	}
 	if domain.GetStatus() != entity.DomainStatusVerified {
-		return entity.Message{}, coreerrors.NewError(mailprovidererror.DomainNotVerified)
+		return entity.Sender{}, coreerrors.NewError(mailprovidererror.DomainNotVerified)
 	}
+	return sender, nil
+}
 
+func (service *MessageService) submitWithSender(
+	ctx context.Context,
+	message entity.Message,
+	sender entity.Sender,
+) (entity.Message, error) {
 	claimed, err := service.repository.ClaimSubmission(ctx, message, time.Now().UTC())
 	if err != nil {
 		if errors.Is(err, mailproviderrepository.ErrMessageSubmissionAlreadyClaimed) {

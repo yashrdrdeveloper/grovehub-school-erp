@@ -21,6 +21,7 @@ type MessageRepository interface {
 	FindById(ctx context.Context, messageId entity.MessageId) (entity.Message, error)
 	FindByIdempotencyKey(ctx context.Context, key string) (entity.Message, error)
 	Search(ctx context.Context, query coresearch.Query[entity.MessageId]) (coresearch.QueryResult[entity.Message], error)
+	PrepareRetry(ctx context.Context, message entity.Message, retryAt time.Time) (entity.Message, error)
 	ClaimSubmission(ctx context.Context, message entity.Message, startedAt time.Time) (entity.Message, error)
 	Update(ctx context.Context, message entity.Message) error
 }

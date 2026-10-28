@@ -21,6 +21,7 @@ type SendMessageInput struct {
 
 type MessageService interface {
 	Send(ctx context.Context, input SendMessageInput) (entity.Message, error)
+	Retry(ctx context.Context, messageId string) (entity.Message, error)
 	GetById(ctx context.Context, messageId string) (entity.Message, error)
 	Search(ctx context.Context, request coresearch.Request) (coresearch.Result[entity.Message], error)
 }
