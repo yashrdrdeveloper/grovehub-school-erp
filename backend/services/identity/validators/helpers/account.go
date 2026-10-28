@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	coreerrors "grovehub/libs/core/errors"
-	corenormalize "grovehub/libs/core/helpers/normalize"
+	corenormalize "grovehub/libs/core/normalize"
 	identityerror "grovehub/services/identity/constants/error"
 	"grovehub/services/identity/entity"
 )

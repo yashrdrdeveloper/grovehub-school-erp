@@ -6,7 +6,7 @@ import (
 	"time"
 
 	coreerrors "grovehub/libs/core/errors"
-	coreid "grovehub/libs/core/helpers/id"
+	coreid "grovehub/libs/core/id"
 	identityerror "grovehub/services/identity/constants/error"
 	"grovehub/services/identity/entity"
 	identityrepository "grovehub/services/identity/repository"

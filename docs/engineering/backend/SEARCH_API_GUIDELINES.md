@@ -1,16 +1,56 @@
 # GroveHub Search API Guidelines
 
 > **Status:** Mandatory GroveHub search standard  
-> **Applies to:** shared search contracts, filters, sorting, cursor pagination, validator policy, repository query construction, and search indexing.
+> **Applies to:** shared search contracts, filters, sorting, cursor pagination, validators, repository query construction, and search projection data.
+
+Also read:
+
+```text
+docs/engineering/backend/CORE_LIBRARY_GUIDELINES.md
+```
 
 ---
 
-## 1. Shared Boundary
+## 1. One Public Search Package
 
-Every GroveHub search endpoint uses the external HTTP contract from:
+All consumers import:
+
+```go
+import coresearch "grovehub/libs/core/search"
+```
+
+Do not import `core/search/contracts`, `core/search/helpers`, `core/search/mappers`, or `core/search/validators` from services/modules. Those are implementation details of the search capability.
+
+The internal layout is:
 
 ```text
-backend/libs/core/contracts/search/
+backend/libs/core/search/
+├── search.go
+├── contracts/
+│   └── search.go
+├── helpers/
+│   └── query.go
+├── mappers/
+│   └── cursor.go
+└── validators/
+    └── query.go
+```
+
+`search/search.go` is the supported façade.
+
+---
+
+## 2. External Search Contract
+
+The root search package exposes the transport-safe request/response contract:
+
+```go
+search.Request
+search.Filter
+search.Sort
+search.PageRequest
+search.PageResponse
+search.Result[T]
 ```
 
 Canonical request:
@@ -31,45 +71,46 @@ Canonical request:
 }
 ```
 
-Cursor pagination is mandatory. Do not mix page-number/offset semantics into this contract.
+Cursor pagination is mandatory. Do not add offset/page-number semantics to this shared contract.
 
-The raw `contracts/search.Request` must not be passed directly to a repository.
+A raw `search.Request` must not be passed directly to a repository.
 
 ---
 
-## 2. Shared Validated Search Model
+## 3. Validated Repository Search Model
 
-After validator validation and normalization, every service uses the generic internal search model from:
-
-```text
-backend/libs/core/search/
-```
-
-Canonical internal types:
+After resource validation/normalization, use:
 
 ```go
-search.Filter
-search.Sort
+search.QueryFilter
+search.QuerySort
 search.Cursor[TId]
 search.Query[TId]
-search.Result[T]
+search.QueryResult[T]
+search.CursorPayload
 ```
 
-Example for Foundation Person:
+The `Query` prefix intentionally distinguishes validated repository input/output from HTTP request/response types.
 
-```go
+Example:
+
+```text
+search.Request
+      ↓
+PersonValidator
+      ↓
 search.Query[entity.GID]
-search.Result[entity.Person]
+      ↓
+PersonRepository
+      ↓
+search.QueryResult[entity.Person]
+      ↓
+PersonService
+      ↓
+search.Result[response.Person]
 ```
 
-Example for another resource:
-
-```go
-search.Query[entity.LeadId]
-search.Result[entity.Lead]
-```
-
-Do not create resource-specific wrappers such as:
+Do not create resource wrappers such as:
 
 ```text
 PersonSearchFilter
@@ -79,45 +120,57 @@ PersonSearchQuery
 PersonSearchResult
 ```
 
-when they only duplicate the shared search model.
-
-Resource-specific validated result types are allowed when they carry additional validator output such as a cursor payload required by the service, but they must not duplicate the generic search model fields unnecessarily.
+when they only duplicate the generic search capability.
 
 ---
 
-## 3. Shared Technical Search Engine
+## 4. Search Capability Responsibilities
 
-Reusable search mechanics live in:
+### `search/contracts`
+
+Owns shared search types and configuration contracts.
+
+### `search/helpers`
+
+Owns generic query mechanics:
 
 ```text
-backend/libs/core/search/
-```
-
-The shared engine owns generic mechanics only:
-
-```text
-validated Filter / Sort / Cursor / Query / Result models
-query arguments/placeholders
-EQUALS / NOT_EQUALS
-IN / NIN
-EXISTS / NOT_EXISTS
-GT / GTE / LT / LTE
-CONTAINS / STARTS_WITH
-LIKE escaping
-scalar field predicates
+parameter argument collection
+operator factories
+scalar predicates
 relation/EXISTS predicates
+LIKE escaping
 keyset cursor predicates
-opaque cursor payload encoding/decoding
-generic invalid-query errors
 ```
 
-Operator behavior is registered through factories. Validators/repositories must not recreate large generic operator switch blocks.
+### `search/mappers`
+
+Owns generic representation conversion such as opaque cursor encode/decode.
+
+### `search/validators`
+
+Owns domain-neutral query/config validation such as valid limit, sort mapping, and direction.
+
+### `search/search.go`
+
+Is the public façade and orchestration entry point. `Apply` composes validation and query-building behavior and is the only package path repositories need.
+
+The shared search capability must never know Foundation tables, Person fields, or service-specific business policy.
 
 ---
 
-## 4. Validator-Owned Search Policy
+## 5. Resource Validator Owns Public Search Policy
 
-Each service's resource validator owns the registry of supported public fields/operators and turns the raw search request into a validated generic query.
+Each resource validator owns:
+
+```text
+allowed public fields
+allowed operators per field
+value normalization
+sort-field policy
+cursor value validation
+resource-specific cursor ID validation
+```
 
 Example:
 
@@ -138,204 +191,147 @@ contacts.email
 The flow is:
 
 ```text
-contracts/search.Request
-        ↓
+search.Request
+      ↓
 validators/<resource>.go
-        ↓
+      ↓
 validators/impl/<resource>.go
-        ↓
+      ↓
 validators/helpers/<resource>.go
-        ↓
+      ↓
 search.Query[TId]
-        ↓
-service orchestration
-        ↓
-repository
 ```
 
-Unknown fields/operators are rejected before repository execution.
+Unknown fields/operators must be rejected before repository execution.
 
-The validator also validates its concrete cursor identity type. For example, Foundation validates that `search.Cursor[entity.GID].CursorId` is a valid Person UUIDv7.
-
-The service should not duplicate field/operator/cursor validation after receiving a validated query.
+A service must not repeat this validation after receiving a validated query.
 
 ---
 
-## 5. Repository-Owned Field Mapping
+## 6. Repository Owns Safe Field Mapping
 
-Repositories receive only validated generic `search.Query[TId]` values.
+Repositories receive only validated `search.Query[TId]` values.
 
-The repository implementation owns a field registry mapping public field names to safe SQL definitions:
+The repository implementation owns mappings from public field names to safe persistence expressions:
 
 ```text
-firstName -> LOWER(p.first_name)
-createdAt -> p.created_at ::timestamptz
+firstName      -> LOWER(p.first_name)
+createdAt      -> p.created_at ::timestamptz
 contacts.email -> person_contacts relation + EMAIL fixed predicate
 ```
 
-Raw client field names must never be concatenated into SQL.
+Raw client field names must never be concatenated directly into SQL.
 
-Repository implementations call the shared `libs/core/search` factories for generic operator behavior.
+The repository calls `search.Apply` using a capability `search.Config`.
 
-Repository results use:
+Repository search methods return:
 
 ```go
-search.Result[Entity]
+search.QueryResult[Entity]
 ```
 
-rather than resource-specific search result wrappers.
+not transport-facing `search.Result`.
 
 ---
 
-## 6. No Resource-Specific Generic Operator Switch Trees
+## 7. Generic Operators
 
-Do not implement patterns such as:
+Generic operator behavior is implemented once inside the search capability:
 
-```go
-switch operator {
-case EQUALS:
-case IN:
-case EXISTS:
-case CONTAINS:
-...
-}
+```text
+EQUALS / NOT_EQUALS
+IN / NIN
+EXISTS / NOT_EXISTS
+GT / GTE / LT / LTE
+CONTAINS / STARTS_WITH
 ```
 
-inside every validator or repository.
+Do not copy generic operator switch trees into every validator or repository.
 
 Use:
 
 ```text
-operator -> shared factory
-field -> validator/repository specification
+operator -> shared search helper/factory
+field -> resource validator/repository specification
 ```
 
-A new generic operator should be implemented once in `libs/core/search` and then explicitly enabled by each validator field registry that supports it.
+A new generic operator is added to `core/search` once and explicitly enabled in each resource policy that supports it.
 
 ---
 
-## 7. Cursor Rules
+## 8. Cursor Rules
 
 Cursor values are opaque to clients.
 
-The shared search package owns serialization/encoding and generic keyset predicate construction. The owning validator/repository supplies and validates resource-specific cursor policy.
-
-The shared core must never assume that the stable cursor ID is a GroveHub GID, UUID, or any specific domain identifier.
-
-Examples of valid service-owned cursor IDs include:
+The search capability owns:
 
 ```text
-Person          -> GID
-Lead            -> leadId
-Communication   -> communicationId
-Admission       -> admissionId
+CursorPayload
+encoding/decoding
+keyset predicate construction
 ```
 
-The validated internal cursor is typed:
-
-```go
-search.Cursor[TId]
-```
-
-and contains:
+The resource validator owns validation of:
 
 ```text
-Value
-CursorId
+requested sort field
+requested direction
+sort value type
+resource-specific cursor ID type
 ```
 
-The opaque encoded cursor payload contains only transport-safe values and is converted to the typed cursor after validator validation.
-
-The generic cursor predicate receives:
-
-```text
-sort expression
-sort direction
-sort value
-cursorId
-cursorExpression
-```
-
-`cursorExpression` is owned by the repository mapping and may point to any stable unique field appropriate for that resource.
+The repository owns the actual stable cursor expression.
 
 Example:
 
 ```text
 Foundation Person:
-    cursorId         = person GID value
-    cursorExpression = p.gid
-
-Admissions Lead:
-    cursorId         = leadId value
-    cursorExpression = lead.lead_id
+    CursorId         = Person GID
+    CursorExpression = p.gid
 ```
 
-The shared core must not hardcode casts such as `::uuid` for the cursor ID. PostgreSQL type resolution comes from the owning repository's cursor expression. If a resource requires an explicit expression/cast, the repository owns that expression.
+The generic search capability must not assume a UUID/GID cursor ID or hardcode a cursor-ID cast.
 
-The owning validator validates that the decoded cursor matches:
-
-```text
-requested sort field
-requested direction
-sort field value type
-resource-specific cursorId type
-```
-
-Repositories use keyset predicates, never `OFFSET` for the shared search contract.
+Repositories use keyset pagination, not `OFFSET`.
 
 ---
 
-## 8. Search Projection vs Uniqueness
+## 9. Search Projection vs Source of Truth
 
-`search_details` is derived search projection data for human-friendly free-text matching.
-
-It is not authoritative and must not be used for uniqueness/deduplication.
+`search_details` is denormalized projection data for free-text search. It is not authoritative and must not be used for uniqueness/deduplication.
 
 Foundation example:
 
 ```text
-exact normalized person_contacts indexes -> duplicate/GID protection
-persons.search_details + trigram index -> searchText
+person_contacts unique/indexed normalized values -> uniqueness/source of truth
+persons.search_details + trigram index            -> free-text search projection
 ```
 
-Whenever names/contacts change, refresh `search_details` in the same persistence transaction.
+When a Person or its contacts change, the repository rebuilds and persists `search_details` inside the same transaction. This projection calculation belongs to persistence/repository code, not the entity.
 
----
-
-## 9. Complexity Rules
-
-Search code must remain SRP/OCP friendly:
-
-```text
-external contract       -> libs/core/contracts/search
-validated generic model -> libs/core/search
-shared SQL mechanics    -> libs/core/search
-resource search policy  -> validators/helpers/<resource>.go
-validation orchestration-> validators/impl/<resource>.go
-repository mapping      -> repository/impl/<resource>.go
-use-case orchestration  -> services/impl/<resource>.go
-```
-
-Do not create `<resource>_search.go` by default. Split only when search has become a genuinely independent responsibility rather than a use case of the resource.
-
-Do not duplicate generic search DTOs inside a resource repository contract.
+Do not perform a second SQL aggregation query when the repository already has the complete aggregate in memory.
 
 ---
 
 ## 10. Hard Rules
 
 ```text
-NO raw contracts/search.Request passed directly to repositories
-NO search request field/operator/cursor validation duplicated in service implementations
-NO validator-only search helpers under services/helpers
-NO resource-specific wrappers that merely duplicate search.Filter/Sort/Cursor/Query/Result
+NO imports of core/search internals from services/modules
+NO core/contracts/search package
+NO raw search.Request passed to repositories
+NO search request validation duplicated in services
+NO resource wrappers duplicating Query/QueryResult
 NO raw client field -> SQL identifier mapping
 NO unparameterized filter values
-NO copied generic operator switch tree per validator/repository
+NO copied generic operator switch tree per repository
 NO copied cursor codec per service
-NO offset/page-number pagination in the shared contract
-NO search projection as source of truth
-NO generic core package containing Person/Foundation-specific knowledge
-NO GID/UUID-specific cursor logic in libs/core/search
-NO hardcoded cursor-id cast such as ::uuid in generic cursor mechanics
+NO offset/page-number pagination
+NO search projection used as uniqueness/source of truth
+NO Foundation/Person-specific knowledge in core/search
+NO UUID/GID-specific cursor assumptions in core/search
+YES search/search.go as the supported façade
+YES QueryFilter/QuerySort/QueryResult for repository-side models
+YES Filter/Sort/Result for external request/response models
 ```
+
+> **Guiding principle:** one search capability, one public import, explicit transport-vs-query names, resource-owned policy, repository-owned field mapping, and generic mechanics implemented once.

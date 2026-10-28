@@ -5,9 +5,8 @@ import (
 	"time"
 	"unicode/utf8"
 
-	searchcontract "grovehub/libs/core/contracts/search"
 	coreerrors "grovehub/libs/core/errors"
-	corenormalize "grovehub/libs/core/helpers/normalize"
+	corenormalize "grovehub/libs/core/normalize"
 	coresearch "grovehub/libs/core/search"
 	personerror "grovehub/services/foundation/constants/error"
 	foundationrequest "grovehub/services/foundation/dto/request"
@@ -23,11 +22,11 @@ const (
 	maxFilterValues     = 50
 )
 
-type valueNormalizer func(searchcontract.Operator, string) (string, error)
+type valueNormalizer func(coresearch.Operator, string) (string, error)
 type cursorValueValidator func(string) error
 
 type searchFieldSpec struct {
-	operators  map[searchcontract.Operator]struct{}
+	operators  map[coresearch.Operator]struct{}
 	normalizer valueNormalizer
 }
 
@@ -37,14 +36,24 @@ type sortFieldSpec struct {
 
 var personSearchFields = map[string]searchFieldSpec{
 	"gid": {
-		operators:  operatorSet(searchcontract.OperatorEquals, searchcontract.OperatorNotEquals, searchcontract.OperatorIn, searchcontract.OperatorNotIn),
+		operators: operatorSet(
+			coresearch.OperatorEquals,
+			coresearch.OperatorNotEquals,
+			coresearch.OperatorIn,
+			coresearch.OperatorNotIn,
+		),
 		normalizer: normalizeGIDSearchValue,
 	},
 	"firstName":  nameSearchField(),
 	"middleName": nameSearchField(),
 	"lastName":   nameSearchField(),
 	"status": {
-		operators:  operatorSet(searchcontract.OperatorEquals, searchcontract.OperatorNotEquals, searchcontract.OperatorIn, searchcontract.OperatorNotIn),
+		operators: operatorSet(
+			coresearch.OperatorEquals,
+			coresearch.OperatorNotEquals,
+			coresearch.OperatorIn,
+			coresearch.OperatorNotIn,
+		),
 		normalizer: normalizeStatusSearchValue,
 	},
 	"createdAt":              timeSearchField(),
@@ -65,11 +74,11 @@ var personSortFields = map[string]sortFieldSpec{
 	"updatedAt": {validate: validateTimeCursorValue},
 }
 
-var valueCountValidators = map[searchcontract.Operator]func(int) bool{
-	searchcontract.OperatorExists:    func(count int) bool { return count == 0 },
-	searchcontract.OperatorNotExists: func(count int) bool { return count == 0 },
-	searchcontract.OperatorIn:        func(count int) bool { return count > 0 },
-	searchcontract.OperatorNotIn:     func(count int) bool { return count > 0 },
+var valueCountValidators = map[coresearch.Operator]func(int) bool{
+	coresearch.OperatorExists:    func(count int) bool { return count == 0 },
+	coresearch.OperatorNotExists: func(count int) bool { return count == 0 },
+	coresearch.OperatorIn:        func(count int) bool { return count > 0 },
+	coresearch.OperatorNotIn:     func(count int) bool { return count > 0 },
 }
 
 func NormalizePersonNames(firstName, middleName, lastName string) (string, string, string, error) {
@@ -119,10 +128,7 @@ func NormalizeContacts(request foundationrequest.Contacts) (foundationrequest.Co
 		return foundationrequest.Contacts{}, err
 	}
 
-	return foundationrequest.Contacts{
-		Emails: emails,
-		Phones: phones,
-	}, nil
+	return foundationrequest.Contacts{Emails: emails, Phones: phones}, nil
 }
 
 func ValidateGID(gid entity.GID) error {
@@ -133,7 +139,7 @@ func ValidateGID(gid entity.GID) error {
 }
 
 func NormalizePersonSearchRequest(
-	request searchcontract.Request,
+	request coresearch.Request,
 ) (coresearch.Query[entity.GID], coresearch.CursorPayload, error) {
 	searchText := strings.TrimSpace(request.SearchText)
 	if len(searchText) > maxSearchTextLength {
@@ -146,9 +152,9 @@ func NormalizePersonSearchRequest(
 
 	rows := request.PageInfo.Rows
 	if rows == 0 {
-		rows = searchcontract.DefaultRows
+		rows = coresearch.DefaultRows
 	}
-	if rows < 1 || rows > searchcontract.MaxRows {
+	if rows < 1 || rows > coresearch.MaxRows {
 		return coresearch.Query[entity.GID]{}, coresearch.CursorPayload{}, invalidPersonSearch()
 	}
 
@@ -209,27 +215,27 @@ func normalizeContactGroup(
 	return normalized, nil
 }
 
-func normalizeSort(sortRequest []searchcontract.Sort) (coresearch.Sort, error) {
-	sort := coresearch.Sort{Field: "createdAt", Direction: searchcontract.DirectionDescending}
+func normalizeSort(sortRequest []coresearch.Sort) (coresearch.QuerySort, error) {
+	sort := coresearch.QuerySort{Field: "createdAt", Direction: coresearch.DirectionDescending}
 	if len(sortRequest) > 1 {
-		return coresearch.Sort{}, invalidPersonSearch()
+		return coresearch.QuerySort{}, invalidPersonSearch()
 	}
 	if len(sortRequest) == 1 {
 		sort.Field = strings.TrimSpace(sortRequest[0].Field)
 		sort.Direction = sortRequest[0].Direction
 		if sort.Direction == "" {
-			sort.Direction = searchcontract.DirectionDescending
+			sort.Direction = coresearch.DirectionDescending
 		}
 	}
 	if _, ok := personSortFields[sort.Field]; !ok ||
-		(sort.Direction != searchcontract.DirectionAscending && sort.Direction != searchcontract.DirectionDescending) {
-		return coresearch.Sort{}, invalidPersonSearch()
+		(sort.Direction != coresearch.DirectionAscending && sort.Direction != coresearch.DirectionDescending) {
+		return coresearch.QuerySort{}, invalidPersonSearch()
 	}
 	return sort, nil
 }
 
-func normalizeFilters(filters []searchcontract.Filter) ([]coresearch.Filter, error) {
-	normalized := make([]coresearch.Filter, 0, len(filters))
+func normalizeFilters(filters []coresearch.Filter) ([]coresearch.QueryFilter, error) {
+	normalized := make([]coresearch.QueryFilter, 0, len(filters))
 	for _, filter := range filters {
 		field := strings.TrimSpace(filter.Field)
 		spec, ok := personSearchFields[field]
@@ -249,14 +255,18 @@ func normalizeFilters(filters []searchcontract.Filter) ([]coresearch.Filter, err
 			}
 			values = append(values, normalizedValue)
 		}
-		normalized = append(normalized, coresearch.Filter{Field: field, Operator: filter.Operator, Values: values})
+		normalized = append(normalized, coresearch.QueryFilter{
+			Field: field,
+			Operator: filter.Operator,
+			Values: values,
+		})
 	}
 	return normalized, nil
 }
 
 func normalizeCursor(
 	value string,
-	sort coresearch.Sort,
+	sort coresearch.QuerySort,
 ) (*coresearch.Cursor[entity.GID], coresearch.CursorPayload, error) {
 	payload := coresearch.CursorPayload{Field: sort.Field, Direction: sort.Direction}
 	if strings.TrimSpace(value) == "" {
@@ -270,10 +280,13 @@ func normalizeCursor(
 	if err := spec.validate(decoded.Value); err != nil || validateUUIDv7String(decoded.CursorId) != nil {
 		return nil, coresearch.CursorPayload{}, invalidPersonSearchCursor()
 	}
-	return &coresearch.Cursor[entity.GID]{Value: decoded.Value, CursorId: entity.GID(decoded.CursorId)}, decoded, nil
+	return &coresearch.Cursor[entity.GID]{
+		Value: decoded.Value,
+		CursorId: entity.GID(decoded.CursorId),
+	}, decoded, nil
 }
 
-func validSearchValueCount(operator searchcontract.Operator, count int) bool {
+func validSearchValueCount(operator coresearch.Operator, count int) bool {
 	if validate, ok := valueCountValidators[operator]; ok {
 		return validate(count)
 	}
@@ -283,16 +296,16 @@ func validSearchValueCount(operator searchcontract.Operator, count int) bool {
 func nameSearchField() searchFieldSpec {
 	return searchFieldSpec{
 		operators: operatorSet(
-			searchcontract.OperatorEquals,
-			searchcontract.OperatorNotEquals,
-			searchcontract.OperatorIn,
-			searchcontract.OperatorNotIn,
-			searchcontract.OperatorExists,
-			searchcontract.OperatorNotExists,
-			searchcontract.OperatorContains,
-			searchcontract.OperatorStartsWith,
+			coresearch.OperatorEquals,
+			coresearch.OperatorNotEquals,
+			coresearch.OperatorIn,
+			coresearch.OperatorNotIn,
+			coresearch.OperatorExists,
+			coresearch.OperatorNotExists,
+			coresearch.OperatorContains,
+			coresearch.OperatorStartsWith,
 		),
-		normalizer: func(_ searchcontract.Operator, value string) (string, error) {
+		normalizer: func(_ coresearch.Operator, value string) (string, error) {
 			value = strings.ToLower(strings.TrimSpace(value))
 			if value == "" {
 				return "", invalidPersonSearch()
@@ -305,11 +318,11 @@ func nameSearchField() searchFieldSpec {
 func timeSearchField() searchFieldSpec {
 	return searchFieldSpec{
 		operators: operatorSet(
-			searchcontract.OperatorEquals,
-			searchcontract.OperatorGreaterThan,
-			searchcontract.OperatorGTE,
-			searchcontract.OperatorLessThan,
-			searchcontract.OperatorLTE,
+			coresearch.OperatorEquals,
+			coresearch.OperatorGreaterThan,
+			coresearch.OperatorGTE,
+			coresearch.OperatorLessThan,
+			coresearch.OperatorLTE,
 		),
 		normalizer: normalizeTimeSearchValue,
 	}
@@ -318,28 +331,28 @@ func timeSearchField() searchFieldSpec {
 func contactSearchField(normalizer valueNormalizer) searchFieldSpec {
 	return searchFieldSpec{
 		operators: operatorSet(
-			searchcontract.OperatorEquals,
-			searchcontract.OperatorNotEquals,
-			searchcontract.OperatorIn,
-			searchcontract.OperatorNotIn,
-			searchcontract.OperatorExists,
-			searchcontract.OperatorNotExists,
-			searchcontract.OperatorContains,
-			searchcontract.OperatorStartsWith,
+			coresearch.OperatorEquals,
+			coresearch.OperatorNotEquals,
+			coresearch.OperatorIn,
+			coresearch.OperatorNotIn,
+			coresearch.OperatorExists,
+			coresearch.OperatorNotExists,
+			coresearch.OperatorContains,
+			coresearch.OperatorStartsWith,
 		),
 		normalizer: normalizer,
 	}
 }
 
-func operatorSet(operators ...searchcontract.Operator) map[searchcontract.Operator]struct{} {
-	set := make(map[searchcontract.Operator]struct{}, len(operators))
+func operatorSet(operators ...coresearch.Operator) map[coresearch.Operator]struct{} {
+	set := make(map[coresearch.Operator]struct{}, len(operators))
 	for _, operator := range operators {
 		set[operator] = struct{}{}
 	}
 	return set
 }
 
-func normalizeGIDSearchValue(_ searchcontract.Operator, value string) (string, error) {
+func normalizeGIDSearchValue(_ coresearch.Operator, value string) (string, error) {
 	normalized, err := corenormalize.UUIDv7(value)
 	if err != nil {
 		return "", invalidPersonSearch()
@@ -347,7 +360,7 @@ func normalizeGIDSearchValue(_ searchcontract.Operator, value string) (string, e
 	return normalized, nil
 }
 
-func normalizeStatusSearchValue(_ searchcontract.Operator, value string) (string, error) {
+func normalizeStatusSearchValue(_ coresearch.Operator, value string) (string, error) {
 	status := strings.ToUpper(strings.TrimSpace(value))
 	allowed := map[string]struct{}{
 		string(entity.PersonStatusActive):      {},
@@ -359,7 +372,7 @@ func normalizeStatusSearchValue(_ searchcontract.Operator, value string) (string
 	return status, nil
 }
 
-func normalizeTimeSearchValue(_ searchcontract.Operator, value string) (string, error) {
+func normalizeTimeSearchValue(_ coresearch.Operator, value string) (string, error) {
 	parsed, err := time.Parse(time.RFC3339, strings.TrimSpace(value))
 	if err != nil {
 		return "", invalidPersonSearch()
@@ -367,11 +380,11 @@ func normalizeTimeSearchValue(_ searchcontract.Operator, value string) (string, 
 	return parsed.UTC().Format(time.RFC3339Nano), nil
 }
 
-func normalizeEmailSearchValue(operator searchcontract.Operator, value string) (string, error) {
+func normalizeEmailSearchValue(operator coresearch.Operator, value string) (string, error) {
 	value = strings.TrimSpace(value)
-	partialOperators := map[searchcontract.Operator]struct{}{
-		searchcontract.OperatorContains:   {},
-		searchcontract.OperatorStartsWith: {},
+	partialOperators := map[coresearch.Operator]struct{}{
+		coresearch.OperatorContains:   {},
+		coresearch.OperatorStartsWith: {},
 	}
 	if _, ok := partialOperators[operator]; ok {
 		if value == "" {
@@ -382,10 +395,10 @@ func normalizeEmailSearchValue(operator searchcontract.Operator, value string) (
 	return normalizeEmail(value)
 }
 
-func normalizePhoneSearchFieldValue(operator searchcontract.Operator, value string) (string, error) {
-	partialOperators := map[searchcontract.Operator]struct{}{
-		searchcontract.OperatorContains:   {},
-		searchcontract.OperatorStartsWith: {},
+func normalizePhoneSearchFieldValue(operator coresearch.Operator, value string) (string, error) {
+	partialOperators := map[coresearch.Operator]struct{}{
+		coresearch.OperatorContains:   {},
+		coresearch.OperatorStartsWith: {},
 	}
 	if _, ok := partialOperators[operator]; ok {
 		normalized, err := corenormalize.PhoneCharacters(value)

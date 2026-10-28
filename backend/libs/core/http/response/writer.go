@@ -9,12 +9,12 @@ import (
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 
-	responsedto "grovehub/libs/core/dto/response"
 	coreerrors "grovehub/libs/core/errors"
+	httpcontracts "grovehub/libs/core/http/contracts"
 )
 
 func WriteSuccess[T any](writer http.ResponseWriter, statusCode int, data T) error {
-	return writeJSON(writer, statusCode, responsedto.NewSuccess(data))
+	return writeJSON(writer, statusCode, httpcontracts.NewSuccess(data))
 }
 
 func WriteError(writer http.ResponseWriter, statusCode int, definition coreerrors.Definition) error {
@@ -39,7 +39,7 @@ func WriteErrorWithMetadata[M any](
 	return writeJSON(
 		writer,
 		statusCode,
-		responsedto.NewError(definition.Code(), definition.Message(), statusCode, metadata),
+		httpcontracts.NewError(definition.Code(), definition.Message(), statusCode, metadata),
 	)
 }
 

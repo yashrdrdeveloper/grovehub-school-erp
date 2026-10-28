@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	coreerrors "grovehub/libs/core/errors"
-	corenormalize "grovehub/libs/core/helpers/normalize"
+	corenormalize "grovehub/libs/core/normalize"
 	mailprovidererror "grovehub/services/mailProvider/constants/error"
 	"grovehub/services/mailProvider/entity"
 )

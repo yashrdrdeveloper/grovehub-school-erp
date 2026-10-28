@@ -5,9 +5,8 @@ import (
 	"errors"
 	"time"
 
-	searchcontract "grovehub/libs/core/contracts/search"
 	coreerrors "grovehub/libs/core/errors"
-	coreid "grovehub/libs/core/helpers/id"
+	coreid "grovehub/libs/core/id"
 	coresearch "grovehub/libs/core/search"
 	personerror "grovehub/services/foundation/constants/error"
 	foundationrequest "grovehub/services/foundation/dto/request"
@@ -136,19 +135,19 @@ func (service *PersonService) Update(
 
 func (service *PersonService) Search(
 	ctx context.Context,
-	request searchcontract.Request,
-) (searchcontract.Result[foundationresponse.Person], error) {
+	request coresearch.Request,
+) (coresearch.Result[foundationresponse.Person], error) {
 	query, cursorPayload, err := service.validator.ValidateSearch(request)
 	if err != nil {
-		return searchcontract.Result[foundationresponse.Person]{}, err
+		return coresearch.Result[foundationresponse.Person]{}, err
 	}
 
 	result, err := service.repository.Search(ctx, query)
 	if err != nil {
 		if errors.Is(err, coresearch.ErrInvalidQuery) {
-			return searchcontract.Result[foundationresponse.Person]{}, coreerrors.NewError(personerror.InvalidPersonSearch)
+			return coresearch.Result[foundationresponse.Person]{}, coreerrors.NewError(personerror.InvalidPersonSearch)
 		}
-		return searchcontract.Result[foundationresponse.Person]{}, coreerrors.Wrap(personerror.PersonSearchFailed, err)
+		return coresearch.Result[foundationresponse.Person]{}, coreerrors.Wrap(personerror.PersonSearchFailed, err)
 	}
 
 	items := make([]foundationresponse.Person, 0, len(result.Items))
@@ -158,12 +157,12 @@ func (service *PersonService) Search(
 
 	nextCursor, err := buildNextCursor(result, query, cursorPayload)
 	if err != nil {
-		return searchcontract.Result[foundationresponse.Person]{}, coreerrors.Wrap(personerror.PersonSearchFailed, err)
+		return coresearch.Result[foundationresponse.Person]{}, coreerrors.Wrap(personerror.PersonSearchFailed, err)
 	}
 
-	return searchcontract.Result[foundationresponse.Person]{
+	return coresearch.Result[foundationresponse.Person]{
 		Items: items,
-		PageInfo: searchcontract.PageResponse{
+		PageInfo: coresearch.PageResponse{
 			Rows:       query.Limit,
 			NextCursor: nextCursor,
 			HasNext:    result.HasNext,
@@ -350,7 +349,7 @@ func (service *PersonService) mapUpdateError(gid entity.GID, err error) error {
 }
 
 func buildNextCursor(
-	result coresearch.Result[entity.Person],
+	result coresearch.QueryResult[entity.Person],
 	query coresearch.Query[entity.GID],
 	cursor coresearch.CursorPayload,
 ) (string, error) {

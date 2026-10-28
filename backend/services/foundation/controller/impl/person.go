@@ -3,8 +3,8 @@ package impl
 import (
 	"net/http"
 
-	searchcontract "grovehub/libs/core/contracts/search"
 	httpresponse "grovehub/libs/core/http/response"
+	coresearch "grovehub/libs/core/search"
 	personerror "grovehub/services/foundation/constants/error"
 	"grovehub/services/foundation/controller"
 	controllerhelpers "grovehub/services/foundation/controller/helpers"
@@ -74,7 +74,7 @@ func (controller *PersonController) Update(writer http.ResponseWriter, request *
 }
 
 func (controller *PersonController) Search(writer http.ResponseWriter, request *http.Request) {
-	var searchRequest searchcontract.Request
+	var searchRequest coresearch.Request
 	if err := controllerhelpers.DecodeRequest(request, &searchRequest); err != nil {
 		_ = httpresponse.WriteErrorContext(request.Context(), writer, http.StatusBadRequest, personerror.InvalidPersonSearch)
 		return

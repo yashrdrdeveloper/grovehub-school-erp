@@ -1,21 +1,38 @@
 # GroveHub Normalization and DRY Guidelines
 
 > **Status:** Mandatory GroveHub backend standard  
-> **Applies to:** all backend services, shared libraries, search helpers, validators, and future modules
+> **Applies to:** all backend services, shared libraries, search validation, validators, and future modules
+
+Also read:
+
+```text
+docs/engineering/backend/CORE_LIBRARY_GUIDELINES.md
+```
+
+---
 
 ## 1. Principle
 
-GroveHub follows DRY for stable technical normalization rules that are used by more than one domain.
+GroveHub shares stable, domain-neutral technical normalization once.
 
-A service must not duplicate generic normalization logic merely to translate the result into its own domain error.
-
-Shared technical normalization belongs under:
+Normalization is its own core capability:
 
 ```text
-backend/libs/core/helpers/normalize/
+backend/libs/core/normalize/
+├── normalize.go
+└── helpers/
+    └── normalize.go
 ```
 
-Resource request validation and domain-specific error mapping belong under the owning service's validator boundary:
+Consumers import only:
+
+```go
+import corenormalize "grovehub/libs/core/normalize"
+```
+
+Do not import `normalize/helpers` from services and do not create a repository-wide `libs/core/helpers/normalize` package.
+
+Resource request validation and domain-specific error mapping remain under the owning service validator:
 
 ```text
 validators/<resource>.go
@@ -25,16 +42,11 @@ validators/helpers/<resource>.go
 
 Business policy remains inside the owning service.
 
-## 2. Current shared normalizers
+---
 
-```text
-backend/libs/core/helpers/normalize/
-├── email.go
-├── phone.go
-└── uuid.go
-```
+## 2. Current Shared Normalizers
 
-The package currently owns:
+The `core/normalize` façade currently exposes:
 
 ```text
 normalize.Email(value)
@@ -43,38 +55,58 @@ normalize.PhoneCharacters(value)
 normalize.UUIDv7(value)
 ```
 
-These functions own only stable technical behavior such as trimming, canonical casing, syntax parsing, allowed phone characters, E.164-compatible phone shape, UUID parsing, UUID version checks, and canonical string output.
+It also exposes stable generic technical errors such as:
 
-## 3. Domain error boundary
+```text
+ErrInvalidEmail
+ErrInvalidPhone
+ErrInvalidUUIDv7
+```
 
-`libs/core` must never import a service's error definitions.
+These functions own technical behavior only:
+
+```text
+trimming
+canonical case
+email syntax/canonicalization
+allowed phone characters
+E.164-compatible phone shape
+UUID parsing/version validation
+canonical output formatting
+```
+
+---
+
+## 3. Domain Error Boundary
+
+`libs/core` must never import service-specific error definitions.
 
 Correct:
 
 ```text
 Identity validator/helper
     ↓
-normalize.Email(...)
+core/normalize.Email(...)
     ↓
-shared generic normalization error
+generic normalization failure
     ↓
-Identity maps failure to IDENTITY_ACCOUNT_INVALID
+Identity maps to IDENTITY_ACCOUNT_INVALID
 ```
 
 ```text
 Foundation validator/helper
     ↓
-normalize.Email(...)
+core/normalize.Email(...)
     ↓
-shared generic normalization error
+generic normalization failure
     ↓
-Foundation maps failure to FOUNDATION_PERSON_INVALID_CONTACT
+Foundation maps to FOUNDATION_PERSON_INVALID_CONTACT
 ```
 
 Incorrect:
 
 ```text
-libs/core/helpers/normalize/email.go
+core/normalize/helpers
     ↓
 imports foundation/constants/error
 ```
@@ -82,21 +114,23 @@ imports foundation/constants/error
 or:
 
 ```text
-libs/core/helpers/normalize/email.go
+core/normalize/helpers
     ↓
 imports identity/constants/error
 ```
 
-Shared helpers know technical formats, not domain semantics.
+Shared normalization knows technical formats, not domain semantics.
 
-## 4. What belongs in shared normalization
+---
 
-Promote logic to `libs/core/helpers/normalize` when all of the following are true:
+## 4. What Belongs in `core/normalize`
+
+Promote logic when all are true:
 
 - the input represents the same technical concept across services;
-- the canonical output must be identical across services;
-- the rule does not depend on domain state, repositories, authorization, or workflow;
-- at least two current consumers need the behavior, or the behavior is an established repository-wide technical primitive.
+- canonical output must be identical across services;
+- the rule does not depend on repositories, authorization, workflow, or domain state;
+- more than one consumer needs it, or it is an established repository-wide primitive.
 
 Examples:
 
@@ -106,119 +140,123 @@ phone canonicalization
 UUIDv7 validation/canonicalization
 ```
 
-## 5. What belongs in validators
+Do not move domain-specific validation to core merely to reduce line count.
 
-Validators own request/service-input policy around shared normalizers.
+---
+
+## 5. What Belongs in Service Validators
+
+Validators own request/service-input policy around shared normalization.
 
 Examples:
 
 ```text
-email is required for an Identity account
-phone may be empty for an optional account phone
+Identity account email is required
+optional account phone may be empty
 Foundation allows at most N contacts per type
-only one primary contact is allowed per type
+only one primary contact per type
 search filter values are valid for their operators
-cursor fields and values match the requested sort
+cursor values match the requested resource sort
 ```
 
-A validator may call `libs/core/helpers/normalize`, then translate a generic normalization failure into the owning domain's invalid-request error.
+A validator may call `core/normalize`, then translate a generic normalization failure into the owning domain's error.
 
-Do not repeat these checks directly inside service methods.
+Do not repeat these checks inside service methods.
 
-## 6. What must remain service-owned
+---
 
-Do not move these into shared normalizers or request validators:
+## 6. What Must Remain Service-Owned
+
+Do not move stateful/business decisions into normalization or request validators:
 
 ```text
-whether an email already belongs to another account
-whether a Foundation contact belongs to another Person
+whether an email belongs to another account
+whether a contact belongs to another Person
 whether an account may transition lifecycle state
-whether the caller is authorized
-authorization or lifecycle rules
-repository-backed uniqueness/existence checks
+whether a caller is authorized
+repository-backed uniqueness/existence rules
+workflow decisions
 ```
 
-Those decisions require business state or I/O and remain in the service.
+Those require business state or I/O and remain in services/repositories.
 
-## 7. Search behavior
+---
 
-Search validators must reuse the same canonical normalization when an exact search value represents the same stored value.
+## 7. Search Normalization
+
+Exact search values representing stored canonical values must reuse `core/normalize`.
 
 Examples:
 
 ```text
 exact email search -> normalize.Email
 exact phone search -> normalize.Phone
-GID/cursor UUID -> normalize.UUIDv7
+GID/cursor UUID     -> normalize.UUIDv7
 ```
 
-Partial-search behavior may use a lower-level shared lexical helper such as `normalize.PhoneCharacters` when full-value validation would be incorrect for `contains` or `startsWith` queries.
+Partial search may use a lower-level public capability operation such as `normalize.PhoneCharacters` when full-value validation would reject valid `contains` / `startsWith` input.
 
-Do not copy phone character-stripping logic into validator helpers.
+Do not copy phone-character stripping into resource validators.
 
-## 8. Helper placement by consumer
+---
 
-Place helpers with the layer that actually consumes them.
+## 8. ID Generation Is a Separate Capability
+
+Generation and normalization are different responsibilities.
+
+Generate IDs through:
+
+```go
+import coreid "grovehub/libs/core/id"
+
+value, err := coreid.NewUUIDv7()
+```
+
+Validate/canonicalize existing IDs through:
+
+```go
+import corenormalize "grovehub/libs/core/normalize"
+
+value, err := corenormalize.UUIDv7(input)
+```
+
+Do not place either under a generic `core/helpers` package.
+
+---
+
+## 9. Helper Placement by Owner
 
 ```text
+core/normalize/helpers
+    -> implementation mechanics of shared normalization
+
 validators/helpers/<resource>.go
-    -> payload validation and normalization helpers
+    -> resource payload validation/canonicalization policy
 
 services/helpers/<resource>.go
-    -> helpers used by business/service orchestration
+    -> pure helpers used by service orchestration
 ```
 
-Do not keep a function under `services/helpers` merely because it historically lived there.
+The presence of the word “helper” does not determine ownership. The capability/layer that owns the behavior determines placement.
 
-If only validators use it, move it to `validators/helpers`.
+---
 
-If both layers need a stable technical primitive across domains, consider `libs/core` only when the behavior is genuinely domain-neutral.
-
-## 9. Interface / implementation consistency
-
-The same boundary principle used for shared normalization applies to service architecture:
+## 10. Hard Rules
 
 ```text
-services/<resource>.go
-    -> public service interface
-services/impl/<resource>.go
-    -> concrete implementation
-
-validators/<resource>.go
-    -> public validator interface
-validators/impl/<resource>.go
-    -> concrete implementation
-validators/helpers/<resource>.go
-    -> validator-only resource helpers
-
-mappers/<resource>.go
-    -> public mapper interface when a real mapping boundary exists
-mappers/impl/<resource>.go
-    -> concrete implementation
-
-repository/<resource>.go
-    -> repository interface
-repository/impl/<resource>.go
-    -> persistence implementation
-```
-
-Do not create empty mapper abstractions when there is no current representation change. Introduce the mapper boundary when DTO/entity or other real representation mapping exists.
-
-## 10. Hard rules
-
-```text
-NO duplicate email normalization in Foundation and Identity
-NO duplicate phone normalization in Foundation and Identity
+NO libs/core/helpers/normalize
+NO service importing core/normalize/helpers directly
+NO duplicate email normalization across services
+NO duplicate phone normalization across services
 NO duplicate UUIDv7 validation across services
 NO service error definitions imported by libs/core
-NO repository calls from shared normalizers
-NO repository/network calls from validators
+NO repository/network calls from shared normalizers
 NO authorization/business policy in shared normalizers
-NO repository-backed business rule inside request validators
-NO payload normalization duplicated inside service implementations
-NO validator-only helpers left under services/helpers
-NO giant generic utils/common package
-NO domain-specific behavior promoted to core just to reduce line count
+NO repository-backed rules in request validators
+NO payload normalization duplicated in service implementations
+NO giant generic utils/common/helpers package
+YES core/normalize as the public normalization façade
+YES core/id as the public ID-generation façade
 ```
 
-> **Guiding principle:** share stable technical mechanics once; validate/canonicalize payloads in validators; keep business meaning, policy, and I/O with the owning service.
+> **Guiding principle:** share technical canonicalization once behind the capability façade; keep request policy with validators and business meaning/state with services.

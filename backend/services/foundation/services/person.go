@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 
-	searchcontract "grovehub/libs/core/contracts/search"
+	coresearch "grovehub/libs/core/search"
 	foundationrequest "grovehub/services/foundation/dto/request"
 	foundationresponse "grovehub/services/foundation/dto/response"
 )
@@ -21,7 +21,7 @@ type PersonService interface {
 	) (foundationresponse.Person, error)
 	Search(
 		ctx context.Context,
-		request searchcontract.Request,
-	) (searchcontract.Result[foundationresponse.Person], error)
+		request coresearch.Request,
+	) (coresearch.Result[foundationresponse.Person], error)
 	Deactivate(ctx context.Context, request foundationrequest.PersonByGID) (foundationresponse.Person, error)
 }

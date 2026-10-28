@@ -7,6 +7,7 @@
 Also read when relevant:
 
 ```text
+docs/engineering/backend/CORE_LIBRARY_GUIDELINES.md
 docs/engineering/backend/MAPPER_AND_DTO_GUIDELINES.md
 docs/engineering/backend/VALIDATOR_GUIDELINES.md
 docs/engineering/backend/NORMALIZATION_AND_DRY_GUIDELINES.md
@@ -63,14 +64,9 @@ backend/services/<service>/
 │       └── <resource>.go
 ├── migrations/
 └── tests/
-    └── unit-test/
 ```
 
-Create only files/folders with a current responsibility.
-
-Do not create an empty `mappers/` package for a resource that has no real representation conversion yet.
-
-Do not create an empty `validators/` package when there is no request/service-input validation responsibility yet.
+Create only folders/files that have a current responsibility. Do not create empty mapper, validator, helper, or implementation packages merely for symmetry.
 
 ---
 
@@ -78,136 +74,51 @@ Do not create an empty `validators/` package when there is no request/service-in
 
 Interfaces belong at the package boundary. Concrete implementations belong under `impl/`.
 
-### Mapper
-
 ```text
-mappers/person.go
-    -> PersonMapper interface only
+mappers/<resource>.go
+    -> mapper interface
+mappers/impl/<resource>.go
+    -> concrete representation conversion
 
-mappers/impl/person.go
-    -> concrete PersonMapper implementation
+validators/<resource>.go
+    -> validator interface
+validators/impl/<resource>.go
+    -> validation orchestration
+validators/helpers/<resource>.go
+    -> pure resource-specific validation/normalization policy
+
+repository/<resource>.go
+    -> repository interface + repository sentinel errors
+repository/impl/<resource>.go
+    -> database query/persistence implementation
+
+services/<resource>.go
+    -> service interface + service-owned input/result contracts
+services/impl/<resource>.go
+    -> use-case orchestration
+services/helpers/<resource>.go
+    -> pure helpers used by service orchestration
+
+controller/<resource>.go
+    -> controller interface
+controller/impl/<resource>.go
+    -> HTTP adapter
+controller/helpers/<resource>.go
+    -> request/error transport helpers
+
+client/<resource>.go
+    -> public in-process client interface
+client/impl/<resource>.go
+    -> adapter to provider service
 ```
 
-Consumers depend on `mappers.PersonMapper`, not on the concrete implementation. Concrete mapper construction belongs to the owning service composition root.
-
-### Validator
-
-```text
-validators/person.go
-    -> PersonValidator interface
-    -> reuses existing request/service-input/core contracts
-
-validators/impl/person.go
-    -> concrete request/service-input validation
-
-validators/helpers/person.go
-    -> pure Person-specific validation/normalization helpers
-```
-
-Consumers depend on `validators.PersonValidator`, never directly on `validators/impl.PersonValidator`.
-
-Validator implementations must not query repositories or own business workflow decisions. Their job is payload validation and canonicalization.
-
-Validation does not justify a parallel data model. If validation/canonicalization leaves the shape unchanged, validators return the existing request DTO or service-input contract. If a generic internal contract already exists, such as `coresearch.Query[TId]` or `coresearch.CursorPayload`, validators return that contract directly.
-
-Do not create `ValidatedCreateX`, `ValidatedUpdateX`, or `ValidatedSearchX` wrappers merely to mark data as validated.
-
-### Service
-
-```text
-services/person.go
-    -> PersonService interface only
-    -> service-owned input/result contracts when they are not transport DTOs
-
-services/impl/person.go
-    -> concrete use-case orchestration
-
-services/helpers/person.go
-    -> pure helpers actually used by service orchestration
-```
-
-Controller and client adapters depend on `services.PersonService`. Do not redeclare duplicate service interfaces in controller or client packages.
-
-Validation/normalization helpers used only by validators belong under `validators/helpers`, not under `services/helpers`.
-
-### Controller
-
-```text
-controller/person.go
-    -> PersonController interface only
-
-controller/impl/person.go
-    -> HTTP implementation of PersonController
-    -> depends on services.PersonService
-
-controller/helpers/person.go
-    -> Person-specific request/error transport helpers
-```
-
-Routes depend on `controller.PersonController`, never on `controller/impl.PersonController`.
-
-### Repository
-
-```text
-repository/person.go
-    -> PersonRepository interface
-    -> persistence query/result types when genuinely repository-specific
-    -> repository sentinel errors
-
-repository/impl/person.go
-    -> PostgreSQL implementation
-```
-
-Do not encode the database technology into the public repository package path. `impl/` is the concrete adapter boundary.
-
-### Client
-
-```text
-client/person.go
-    -> public client interface only
-
-client/impl/person.go
-    -> concrete in-process client implementation
-    -> depends on services.PersonService
-    -> service delegation only
-```
-
-Consuming services depend on `client.Client` and import only the public `client` package.
-
-A consuming service must never import another service's `client/impl` package. Concrete client construction belongs to the owning service composition root.
-
-### Construction
-
-Only the service root composition file imports its concrete `impl` packages:
-
-```text
-foundation.go
-    repository/impl
-         │
-    mappers/impl
-         │
-    validators/impl
-         │
-         ▼
-    services/impl
-         │
-         ├──────────────► client/impl
-         │                    │
-         │                    ▼
-         │               client interface
-         │
-         ▼
-    controller/impl
-         │
-         ▼
-    controller interface
-```
-
-The launcher may receive the owning module's public client interface and inject it into another module. It must not construct or expose another service's client implementation directly.
+Consumers depend on public interfaces, not concrete `impl` packages. Concrete construction belongs in the owning module composition root.
 
 ---
 
-## 3. Layer Responsibilities
+## 3. Layer Flow
+
+HTTP flow:
 
 ```text
 Route
@@ -231,10 +142,10 @@ Repository interface
   ↓
 Repository implementation
   ↓
-PostgreSQL
+Database
 ```
 
-For in-process service-to-service calls:
+In-process service-to-service flow:
 
 ```text
 Consuming service
@@ -250,156 +161,332 @@ Provider service implementation
 Provider repository
 ```
 
-### Entity
+Do not bypass the provider service layer by importing its repository or implementation packages.
 
-Entities own encapsulated state only. Stateful fields remain private; external code reads through getters and changes state through copy-returning setters.
+---
 
-Entities must not own business decisions, repositories, HTTP, clocks, ID generation, authorization, or workflow orchestration.
+## 4. Entity Rule
 
-### DTO
+An entity represents the persisted resource/domain record used by the owning service.
 
-DTOs contain data only. Resource-owned response metadata belongs with that resource DTO when it has no independent lifecycle.
+For GORM-backed modules, the entity is also the GORM database struct. Do not introduce a parallel persistence model and mapper when the entity already represents the same database record.
 
-Example:
-
-```text
-dto/response/person.go
-    Person
-    ContactValue
-    Contacts
-    PersonErrorMetadata
-```
-
-Do not create `dto/response/error.go` solely for Person metadata.
-
-### Mapper
-
-`mappers/<resource>.go` defines the mapper interface.
-
-`mappers/impl/<resource>.go` owns real representation changes for that resource.
-
-Example:
+Foundation Person is the canonical example:
 
 ```text
-mappers/person.go
-    -> PersonMapper interface
+entity/person.go
+    -> Person GORM/database struct
+    -> TableName
+    -> constructor
+    -> simple getters/setters/builders related to entity state
 
-mappers/impl/person.go
-    -> ToPersonGID
-    -> ToPersonResponse
-    -> ToPersonErrorMetadata
+entity/contact.go
+    -> Contact GORM/database struct
+    -> TableName
+    -> constructor/entity-state helpers
 ```
 
-Do not create a mapper when there is no actual representation boundary yet. Do not create `mappers/error.go` when the mapper only serves Person.
-
-### Validator
-
-`validators/<resource>.go` defines the validator interface and reuses existing request/service-input/generic core contracts whenever their shape already represents the validated data.
-
-`validators/impl/<resource>.go` owns request/service-input validation orchestration.
-
-`validators/helpers/<resource>.go` owns pure resource-specific validation helpers such as:
+Do not create:
 
 ```text
-required/optional field validation
-request normalization
-contact payload validation/canonicalization
-search field/operator validation
-search cursor validation
-resource-specific domain error mapping for invalid payloads
+person_model.go
+person_mapper.go
 ```
 
-Validators may reuse shared technical normalizers from `backend/libs/core/helpers/normalize`.
+solely to copy identical fields between a persistence model and `entity.Person`.
 
-Validators must not query repositories, call external services, authorize users, generate IDs, read clocks, or choose business workflows.
-
-A validator-specific result type is allowed only when validation produces genuinely new information that cannot be represented safely by an existing DTO, service input, entity value object, or generic core contract. A type whose only meaning is “the same request, but validated” is not allowed.
-
-### Service
-
-`services/<resource>.go` defines the service interface.
-
-`services/impl/<resource>.go` owns use-case orchestration.
-
-`services/helpers/<resource>.go` may own pure, resource-specific helper behavior actually used by service orchestration, such as:
+Entities must **not** own:
 
 ```text
-entity/value construction from already validated request data
-entity comparison for update orchestration
-next-page cursor value extraction after repository results return
-service-result construction helpers
-service-owned technical operations that do not perform I/O or workflow decisions
+repository queries
+search projection calculation
+HTTP behavior
+authorization
+workflow orchestration
+cross-aggregate business decisions
+external I/O
 ```
 
-A concrete technical operation with one current implementation may remain a service helper instead of introducing an interface solely for abstraction. Identity password hashing is the canonical example: `services/helpers/password_hasher.go` owns hashing and verification while the password credential service owns orchestration. Introduce a separate interface only when there is a real interchangeable implementation requirement.
+Persistence-derived behavior that exists only to store/query database data belongs in the repository implementation.
 
-Payload validation, normalization, and validator-only search parsing do not belong in `services/helpers`.
+For example, Foundation's denormalized `search_details` projection is calculated by `repository/impl/person.go`, not by `entity.Person`.
 
-Helpers must not call repositories or perform workflow orchestration.
+---
 
-Keep service methods readable. Validate/canonicalize through the validator boundary, then perform business/repository work in the service.
+## 5. Repository Rule
 
-### Repository implementation
+The repository boundary is persistence/query ownership.
+
+`repository/<resource>.go` contains the interface and repository-specific errors.
 
 `repository/impl/<resource>.go` owns:
 
 ```text
-SQL
+GORM/PGX database access
+query composition
 transactions
-row scanning
 constraint mapping
 aggregate persistence
+contact/child persistence
 validated search query execution
+persistence-derived projection values
 ```
 
-Generic SQL operator behavior must not be copied into every repository. Reusable search SQL mechanics belong in `backend/libs/core/search`.
+For GORM-backed repositories, prefer GORM APIs for normal CRUD/query behavior. Raw SQL is an exception for database behavior that cannot be expressed cleanly/maintainably through the ORM.
 
-### Client implementation
+Do not move persistence calculations into entities merely to avoid repository code.
 
-`client/impl/<resource>.go` owns only the concrete adapter from the public client contract to the provider service.
+The repository public package path must not encode database technology. Consumers depend on `repository.PersonRepository`, not `repository/postgres` or a concrete GORM type.
+
+---
+
+## 6. Mapper Rule
+
+Create a mapper only when there is a real representation boundary.
+
+Examples:
+
+```text
+entity.Person -> dto/response.Person
+request GID string -> entity.GID
+entity metadata -> response error metadata
+```
+
+Do not create a mapper for identical database/entity structures.
+
+Do not create separate resource error mapper files when the metadata belongs only to that resource.
+
+---
+
+## 7. Validator Rule
+
+Validators own request/service-input validation and canonicalization.
+
+They may:
+
+```text
+validate required/optional fields
+normalize email/phone/UUID through core capabilities
+validate resource search fields/operators
+validate cursor values
+return normalized existing DTO/service/core contracts
+```
+
+They must not:
+
+```text
+query repositories
+perform authorization
+call external services
+own business workflows
+generate IDs/read clocks
+create duplicate ValidatedX wrappers without new information
+```
+
+If validation leaves the shape unchanged, return the existing request/service-input contract.
+
+---
+
+## 8. Service Rule
+
+Service implementations own use-case/business orchestration.
+
+Typical responsibilities:
+
+```text
+call validators
+perform repository-backed existence/uniqueness workflows
+construct/update entities
+manage lifecycle transitions
+call other module clients
+map repository errors to domain/application errors
+```
+
+Services must not duplicate request normalization already owned by validators or generic query mechanics already owned by core capabilities.
+
+---
+
+## 9. Controller Rule
+
+Controllers are HTTP adapters.
+
+They own:
+
+```text
+request decode
+path/query extraction
+calling the service interface
+HTTP status selection
+HTTP response writing
+```
+
+They do not own repository/business logic.
+
+Routes depend on the controller interface, not controller implementations.
+
+---
+
+## 10. Client Rule
+
+A service client is an in-process adapter to the provider's service interface.
 
 It must:
 
 ```text
-forward context.Context unchanged
+forward context.Context
 reuse provider request/response contracts
 call provider service methods
 avoid duplicate business logic
 avoid internal HTTP when both modules are in-process
 ```
 
-It must not import repository implementations or bypass the provider service layer.
+A consuming module imports only the provider's public `client` package.
 
 ---
 
-## 4. SRP / OCP Rules
+## 11. Core Library Structure
 
-Prefer registries/factories over repeated `switch` trees when behavior is selected by a stable key such as:
+`backend/libs/core` is capability-first.
 
-```text
-search field
-search operator
-sort field
-error code
-contact type
-```
-
-Example:
+Canonical shape:
 
 ```text
-operator -> shared factory
-field -> field specification
-error code -> HTTP status
-sort field -> sort specification
+backend/libs/core/
+├── database/
+│   └── postgres/
+├── errors/
+│   ├── contracts/
+│   ├── helpers/
+│   └── errors.go
+├── http/
+│   ├── contracts/
+│   ├── headers/
+│   ├── logging/
+│   ├── request/
+│   ├── response/
+│   └── tracing/
+├── id/
+│   ├── helpers/
+│   └── id.go
+├── logging/
+│   ├── contracts/
+│   ├── helpers/
+│   └── logging.go
+├── normalize/
+│   ├── helpers/
+│   └── normalize.go
+├── search/
+│   ├── contracts/
+│   ├── helpers/
+│   ├── mappers/
+│   ├── validators/
+│   └── search.go
+└── telemetry/
+    ├── contracts/
+    ├── helpers/
+    ├── mappers/
+    ├── validators/
+    └── telemetry.go
 ```
 
-Adding one supported field/operator should normally extend a registry rather than require editing multiple branches across service and repository layers.
+There must not be repository-wide role buckets such as:
 
-Do not force a registry where ordinary linear control flow is clearer. The objective is lower cyclomatic complexity, not abstraction for its own sake.
+```text
+libs/core/contracts
+libs/core/helpers
+libs/core/dto
+libs/core/utils
+libs/core/common
+```
+
+A contract/helper/mapper/validator belongs under the capability that owns it.
+
+Service/module code imports only capability roots:
+
+```go
+coreerrors "grovehub/libs/core/errors"
+coreid "grovehub/libs/core/id"
+corelogging "grovehub/libs/core/logging"
+corenormalize "grovehub/libs/core/normalize"
+coresearch "grovehub/libs/core/search"
+coretelemetry "grovehub/libs/core/telemetry"
+```
+
+Do not import a core capability's internal `contracts/helpers/mappers/validators` package from a service.
+
+See `CORE_LIBRARY_GUIDELINES.md` for the full rule.
 
 ---
 
-## 5. Foundation Person Aggregate
+## 12. Shared Search Infrastructure
+
+Search is one encapsulated core capability:
+
+```text
+backend/libs/core/search/
+├── search.go
+├── contracts/
+├── helpers/
+├── mappers/
+└── validators/
+```
+
+Consumers import only `grovehub/libs/core/search`.
+
+External request/response names:
+
+```text
+search.Request
+search.Filter
+search.Sort
+search.Result[T]
+```
+
+Validated repository names:
+
+```text
+search.QueryFilter
+search.QuerySort
+search.Cursor[TId]
+search.Query[TId]
+search.QueryResult[T]
+```
+
+Resource validators own allowed field/operator policy and resource-specific normalization.
+
+Repositories own safe persistence expression mapping.
+
+The search capability owns generic operator/cursor/query mechanics.
+
+Do not create resource-specific search wrappers that merely duplicate these generic contracts.
+
+---
+
+## 13. Normalization and ID Capabilities
+
+Use:
+
+```go
+coreid "grovehub/libs/core/id"
+corenormalize "grovehub/libs/core/normalize"
+```
+
+`core/id` owns generation such as `NewUUIDv7`.
+
+`core/normalize` owns domain-neutral canonicalization such as:
+
+```text
+Email
+Phone
+PhoneCharacters
+UUIDv7
+```
+
+Domain error mapping remains in the owning service validator/helper.
+
+---
+
+## 14. Foundation Person Aggregate
 
 Foundation exposes one Person aggregate:
 
@@ -409,157 +496,61 @@ Person
 ├── FirstName
 ├── MiddleName
 ├── LastName
-├── Contacts
-│   ├── Emails[]
-│   └── Phones[]
+├── Contacts[]
 ├── Status
 ├── Version
+├── SearchDetails   # persisted search projection; repository maintained
 ├── CreatedAt
 └── UpdatedAt
 ```
 
 Contacts are nested values, not separately addressable public resources.
 
-Current Foundation layout:
-
-```text
-backend/services/foundation/
-├── dto/
-│   ├── request/person.go
-│   └── response/person.go
-├── entity/
-│   ├── gid.go
-│   ├── contact.go
-│   └── person.go
-├── mappers/
-│   ├── person.go
-│   └── impl/
-│       └── person.go
-├── validators/
-│   ├── person.go
-│   ├── impl/
-│   │   └── person.go
-│   └── helpers/
-│       └── person.go
-├── repository/
-│   ├── person.go
-│   └── impl/
-│       └── person.go
-├── services/
-│   ├── person.go
-│   ├── impl/
-│   │   └── person.go
-│   └── helpers/
-│       └── person.go
-├── controller/
-│   ├── person.go
-│   ├── impl/
-│   │   └── person.go
-│   └── helpers/
-│       └── person.go
-├── client/
-│   ├── person.go
-│   └── impl/
-│       └── person.go
-├── docs/
-│   ├── contracts.md
-│   └── search.md
-├── routes/http.go
-└── migrations/
-```
-
-Do not create `person_search.go` merely because Person has a search use case. Search remains part of the Person responsibility unless it becomes an independently owned subsystem.
+Search remains a Person use case; do not create `person_search.go` merely because Person supports search.
 
 ---
 
-## 6. Shared Search Infrastructure
+## 15. SRP / OCP Rules
 
-Shared request/result contracts:
-
-```text
-backend/libs/core/contracts/search/
-```
-
-Reusable search mechanics:
+Prefer registries/factories when behavior is selected by stable keys such as:
 
 ```text
-backend/libs/core/search/
+search operator
+search field
+sort field
+error code
+contact type
 ```
 
-`libs/core/search` may own generic technical behavior such as:
+A new generic search operator should normally be implemented once in `core/search` and enabled by resource policy, rather than copied into every repository.
 
-```text
-parameter placeholder builder
-operator factories
-scalar/relation filter builders
-LIKE escaping
-cursor comparison construction
-opaque cursor encode/decode
-```
-
-It must not know Foundation tables, Person fields, or business rules.
-
-Foundation validators own request-level mappings and validation such as:
-
-```text
-allowed filter fields/operators
-email/phone search value normalization
-sort field validation
-cursor value validation
-```
-
-The validator returns the existing generic search contracts directly:
-
-```text
-coresearch.Query[entity.GID]
-coresearch.CursorPayload
-```
-
-Do not introduce `ValidatedPersonSearch` or another wrapper around those generic contracts.
-
-Foundation repository code owns SQL mappings such as:
-
-```text
-firstName -> LOWER(p.first_name)
-contacts.email -> person_contacts EMAIL relation
-createdAt -> p.created_at
-```
-
-This keeps shared mechanics OCP-friendly while service ownership stays explicit.
+Do not force abstractions where simple linear logic is clearer. The goal is clear ownership and low duplication.
 
 ---
 
-## 7. Hard Rules
+## 16. Hard Rules
 
 ```text
 NO src/ wrapper
-NO service-local launcher/
-NO repository/postgres package for current GroveHub repository implementations; use repository/impl
-NO concrete mapper dependency outside the owning service composition root
-NO concrete validator dependency outside the owning service composition root
-NO concrete service dependency outside the owning service composition root
+NO service-local launcher
+NO consuming service importing another service's impl package
 NO duplicate service interfaces in controller/client packages
-NO concrete controller dependency in routes
-NO controller implementation mixed into controller contract file
-NO client implementation mixed into client contract file
-NO consuming service importing another service's client/impl package
-NO client implementation bypassing the provider service layer
-NO resource-specific helper dumped into generic common/misc files
-NO validator-only helper left under services/helpers
-NO request-payload normalization duplicated inside service implementations
-NO repository/network access from validators
-NO authorization/business workflow in validators
-NO ValidatedCreateX/ValidatedUpdateX wrappers when an existing request/service-input contract has the same shape
-NO ValidatedSearchX wrapper when existing generic search contracts already represent the result
-NO separate Person search implementation file when it is the same Person responsibility
-NO business logic in controller/repository/entity/mapper/client adapter
-NO duplicated generic search SQL operator switches in services
-NO duplicated generic search SQL operator switches in repositories
+NO controller/repository/network I/O from validators
+NO business workflow inside validators/controllers/mappers
+NO persistence query logic inside entities
+NO parallel persistence model/mapper when entity already is the DB model
+NO raw SQL for ordinary ORM CRUD when GORM expresses it cleanly
+NO resource-specific wrappers duplicating generic search contracts
 NO arbitrary client field names becoming SQL expressions
-NO direct mutable entity field access outside entity package
-NO separate error DTO/mapper files when metadata belongs only to one resource
-NO mapper package for a resource with no real representation change
-NO interface introduced for a single concrete service helper without an actual substitution requirement
+NO top-level libs/core/contracts
+NO top-level libs/core/helpers
+NO top-level libs/core/dto
+NO generic libs/core/utils/common dumping ground
+NO service importing core capability internals
+YES repository/impl owns database queries and persistence-derived projections
+YES entity owns DB/entity state and entity-level constructors/helpers
+YES one stable façade per core capability
+YES resource policy stays outside generic core mechanics
 ```
 
-> **Guiding principle:** interfaces define boundaries, `impl` packages implement them, validators canonicalize payloads without inventing duplicate contracts, resource helpers stay with their actual consumer, and truly generic mechanics are promoted to `libs/core` only when domain-specific knowledge remains outside the shared package.
+> **Guiding principle:** services own use cases, repositories own persistence/query behavior, entities represent persisted resource state without workflow/persistence-query logic, and shared core code is encapsulated by capability behind stable root packages.

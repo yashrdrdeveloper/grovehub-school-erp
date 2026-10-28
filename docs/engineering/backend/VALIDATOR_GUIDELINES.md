@@ -3,11 +3,18 @@
 > **Status:** Mandatory GroveHub backend standard  
 > **Applies to:** request/service-input validation in all backend services and modules
 
+Also read:
+
+```text
+docs/engineering/backend/CORE_LIBRARY_GUIDELINES.md
+docs/engineering/backend/NORMALIZATION_AND_DRY_GUIDELINES.md
+```
+
+---
+
 ## 1. Purpose
 
-Validators keep request-payload validation and normalization out of business services.
-
-The standard flow is:
+Validators keep payload validation and canonicalization out of business services.
 
 ```text
 Request DTO / service input
@@ -23,11 +30,11 @@ Service implementation
 Business rules + repository orchestration
 ```
 
-A validator answers: **is this payload structurally and semantically valid before business orchestration, and what are its canonical values?**
+A validator answers whether input is valid and what its canonical values are. A service decides what business action occurs with those valid values.
 
-A service answers: **what business action should happen with valid values?**
+---
 
-## 2. Canonical structure
+## 2. Canonical Structure
 
 ```text
 validators/
@@ -38,58 +45,41 @@ validators/
     └── <resource>.go
 ```
 
-Use the same contract/implementation convention as services, mappers, repositories, and controllers.
+`validators/<resource>.go` defines the interface.
 
-```text
-validators/person.go
-    -> PersonValidator interface
-    -> reuses existing DTO/service-input/core contracts
+`validators/impl/<resource>.go` owns validation orchestration.
 
-validators/impl/person.go
-    -> concrete validation orchestration
+`validators/helpers/<resource>.go` owns pure resource-specific validation/normalization policy.
 
-validators/helpers/person.go
-    -> pure resource-specific validation helpers
-```
+Concrete validator implementations are constructed only by the owning module composition root.
 
-Concrete validator implementations are constructed only by the owning service composition root.
+---
 
-## 3. Reuse existing contracts
+## 3. Reuse Existing Contracts
 
-Validation does not create a new data model by itself.
+Validation does not create a parallel data model by itself.
 
-If validation only trims, normalizes, canonicalizes, or validates values while the shape remains the same, return the existing type.
+If validation only trims, normalizes, canonicalizes, or checks values while the shape remains the same, return the existing type.
 
 Examples:
 
 ```text
-CreatePerson DTO
-    -> validate/normalize
-    -> CreatePerson DTO
-
-UpdatePerson DTO
-    -> validate/normalize
-    -> UpdatePerson DTO
-
-CreateAccountInput
-    -> validate/normalize
-    -> CreateAccountInput
-
-UpdateAccountInput
-    -> validate/normalize
-    -> UpdateAccountInput
+CreatePerson -> normalized CreatePerson
+UpdatePerson -> normalized UpdatePerson
+CreateAccountInput -> normalized CreateAccountInput
+UpdateAccountInput -> normalized UpdateAccountInput
 ```
 
-For shared generic models, return the generic model directly:
+For shared generic search:
 
 ```text
-search.Request
-    -> validate/normalize
-    -> coresearch.Query[entity.GID]
-    -> coresearch.CursorPayload
+coresearch.Request
+      ↓ validator
+coresearch.Query[entity.GID]
+coresearch.CursorPayload
 ```
 
-Do not create wrappers such as:
+Do not create:
 
 ```text
 ValidatedCreatePerson
@@ -99,30 +89,25 @@ ValidatedUpdateAccount
 ValidatedPersonSearch
 ```
 
-when those types only duplicate an existing contract and add no new semantics.
+unless validation genuinely produces new information that cannot be represented by an existing DTO, service input, entity value, or generic core contract.
 
-A validator-specific result type is allowed only when validation produces genuinely new information that cannot be represented safely by an existing DTO, service input, entity value object, or generic core contract.
+---
 
-## 4. Validator responsibilities
+## 4. Validator Responsibilities
 
 Validators may own:
 
 ```text
-required/optional field validation
-string length validation
+required/optional field checks
+string length checks
 request-local relationship checks
-normalization of request values
-UUID/email/phone format validation through libs/core helpers
-contact-list shape validation
-search request validation
-filter/operator/value-count validation
+request normalization
+UUID/email/phone canonicalization through core/normalize
+contact-list shape checks
+search field/operator/value validation
 cursor payload validation
 canonicalization of existing request/service-input contracts
 ```
-
-Validators should validate request payloads, not construct a parallel validated model just to transfer values to the service.
-
-## 5. Validator forbidden responsibilities
 
 Validators must not:
 
@@ -134,26 +119,51 @@ choose business workflows
 make lifecycle transitions
 generate IDs
 read clocks
-write entities to persistence
+persist entities
 publish events
 select HTTP status codes
 ```
 
-If validation requires a repository query, that check belongs in the service because it is a business/integration rule, not payload validation.
+Repository-backed existence/uniqueness checks are service/business orchestration, not request validation.
 
-Examples that stay in the service:
+---
 
-```text
-whether an email already belongs to another account
-whether a Foundation contact belongs to another Person
-whether the caller is allowed to deactivate an account
-whether an entity exists
-whether a lifecycle transition is allowed
+## 5. Core Capability Usage
+
+Validators consume stable core capability façades only.
+
+Correct:
+
+```go
+import corenormalize "grovehub/libs/core/normalize"
+import coresearch "grovehub/libs/core/search"
 ```
 
-## 6. Validator vs mapper vs service helper
+Incorrect:
 
-Do not mix these responsibilities.
+```text
+grovehub/libs/core/helpers/normalize
+grovehub/libs/core/normalize/helpers
+grovehub/libs/core/search/contracts
+grovehub/libs/core/search/helpers
+```
+
+Core subpackages such as `contracts`, `helpers`, `mappers`, and `validators` are implementation details of the owning capability.
+
+Current shared normalization operations include:
+
+```text
+corenormalize.Email
+corenormalize.Phone
+corenormalize.PhoneCharacters
+corenormalize.UUIDv7
+```
+
+The shared normalizer returns a generic technical failure. The owning resource validator maps that failure to its domain/application error contract.
+
+---
+
+## 6. Validator vs Mapper vs Service Helper
 
 ```text
 Mapper
@@ -163,7 +173,7 @@ Validator
     -> payload validation + canonicalization
 
 Service helper
-    -> service-owned entity/value construction from already valid data
+    -> pure service-owned construction/comparison/result mechanics
 
 Service
     -> business orchestration
@@ -174,44 +184,25 @@ Example:
 ```text
 CreatePerson.Contacts
     ↓
-Validator
-    -> checks counts, duplicates, primary rules
-    -> normalizes email/phone values
-    -> returns normalized request.Contacts
+PersonValidator
+    -> count/duplicate/primary checks
+    -> canonical email/phone values
+    -> normalized request.Contacts
     ↓
 Service helper
-    -> constructs entity.Contact values
-    -> preserves existing verification state for update
+    -> entity.Contact values
+    ↓
+Service
+    -> ownership/conflict checks + persistence workflow
 ```
-
-Repository-backed checks remain in the service.
 
 A mapper must not become a validation layer, and a validator must not produce transport responses.
 
-## 7. Shared normalization
+---
 
-Validators must reuse stable technical normalizers from:
+## 7. Validator Helpers
 
-```text
-backend/libs/core/helpers/normalize/
-```
-
-Examples:
-
-```text
-normalize.Email
-normalize.Phone
-normalize.PhoneCharacters
-normalize.UUIDv7
-```
-
-Do not duplicate email, phone, or UUID parsing inside service validators.
-
-The shared normalizer returns a generic technical failure. The owning validator maps that failure to the service/domain error contract.
-
-## 8. Validator helpers
-
-A helper belongs under `validators/helpers` when its consumers are validator implementations and its responsibility is validation/normalization.
+Place a function under `validators/helpers` when its consumers are validator implementations and its responsibility is validation/canonicalization.
 
 Examples:
 
@@ -227,45 +218,49 @@ NormalizePhone
 
 Do not leave validator-only functions under `services/helpers`.
 
-Likewise, do not move genuine service helpers into validators merely to reduce the size of the service package.
-
-Examples that may remain under `services/helpers`:
+Service helpers may own behavior such as:
 
 ```text
-entity/value construction from validated DTOs
-preserving existing entity state while rebuilding values
-entity comparison used by business update orchestration
+entity/value construction from already validated data
+preserving existing state while rebuilding values
+entity comparison used by update orchestration
 next-page cursor value extraction after repository results return
-service-result construction helpers
+service-result construction
 ```
 
-Placement follows the actual consumer and responsibility.
+Placement follows responsibility and consumer, not the generic word “helper”.
 
-## 9. Service methods after validation
+---
 
-Service methods should read primarily as business steps.
+## 8. Search Validation
 
-Preferred shape:
+Resource validators consume the public `core/search` façade.
+
+The resource validator owns:
 
 ```text
-validate payload
-    ↓
-construct domain values if required
-    ↓
-load/check related state
-    ↓
-apply business rule
-    ↓
-construct/update entity
-    ↓
-persist
-    ↓
-map response
+allowed public fields
+allowed operators per field
+value normalization
+sort policy
+cursor value validation
+resource-specific cursor ID validation
 ```
 
-Avoid embedding repeated field parsing, trimming, regex validation, or search-filter validation directly inside service methods.
+It returns:
 
-## 10. Foundation pattern
+```text
+coresearch.Query[TId]
+coresearch.CursorPayload
+```
+
+The generic search capability owns query mechanics. The repository owns persistence expression mapping.
+
+Do not import `core/search/contracts` directly from resource validators.
+
+---
+
+## 9. Foundation Pattern
 
 ```text
 foundation/
@@ -282,7 +277,7 @@ foundation/
     └── impl/person.go
 ```
 
-`PersonValidator` returns normalized `foundationrequest.CreatePerson` / `foundationrequest.UpdatePerson` values directly.
+`PersonValidator` returns normalized request DTOs directly.
 
 For search it returns:
 
@@ -291,41 +286,39 @@ coresearch.Query[entity.GID]
 coresearch.CursorPayload
 ```
 
-directly, without a `ValidatedPersonSearch` wrapper.
+without a `ValidatedPersonSearch` wrapper.
 
-`PersonService` retains repository-backed rules such as contact ownership/conflict checks and uses service helpers for entity contact construction from already validated contact DTOs.
+Repository-backed contact ownership/conflict checks remain in `PersonService`.
 
-## 11. Identity pattern
+---
 
-```text
-identity/
-├── validators/
-│   ├── account.go
-│   ├── impl/account.go
-│   └── helpers/account.go
-└── services/
-    ├── account.go
-    └── impl/account.go
-```
+## 10. Identity Pattern
 
-`AccountValidator` returns normalized `CreateAccountInput` / `UpdateAccountInput` directly instead of duplicate validated wrapper types.
+`AccountValidator` returns normalized `CreateAccountInput` / `UpdateAccountInput` directly.
 
-`AccountService` owns lifecycle and persistence orchestration.
+It uses `core/normalize` for UUID/email/phone technical canonicalization and maps technical failures to Identity errors.
 
-## 12. Hard rules
+`AccountService` owns lifecycle, existence, uniqueness, and persistence orchestration.
+
+---
+
+## 11. Hard Rules
 
 ```text
-NO request-payload validation duplicated inside service implementations
-NO validator implementation mixed into validator contract files
+NO payload validation duplicated inside service implementations
+NO validator implementation mixed into validator interface files
 NO concrete validator dependency outside the owning composition root
 NO repository/network calls from validators
 NO authorization/business workflow in validators
 NO transport response mapping in validators
-NO duplicated technical normalization when libs/core already owns it
+NO duplicate technical normalization when core/normalize owns it
+NO direct imports of core capability internals
 NO validator-only helpers left under services/helpers
-NO generic validators/common or validators/utils dumping ground
-NO ValidatedCreateX/ValidatedUpdateX type when the existing request/service-input type has the same shape
-NO ValidatedSearchX wrapper when existing generic search types already represent the result
+NO validators/common or validators/utils dumping ground
+NO ValidatedCreateX/ValidatedUpdateX when the existing type has the same shape
+NO ValidatedSearchX when coresearch.Query already represents the result
+YES resource validators map generic technical failures to domain errors
+YES services receive normalized existing contracts
 ```
 
-> **Guiding principle:** validate and canonicalize before business orchestration, reuse existing contracts whenever possible, and create new validator result types only when they carry genuinely new semantics.
+> **Guiding principle:** validate and canonicalize before business orchestration, reuse existing contracts, consume shared capabilities through their root façades, and create new validator result types only for genuinely new semantics.

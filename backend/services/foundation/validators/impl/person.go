@@ -1,7 +1,6 @@
 package impl
 
 import (
-	searchcontract "grovehub/libs/core/contracts/search"
 	coresearch "grovehub/libs/core/search"
 	foundationrequest "grovehub/services/foundation/dto/request"
 	"grovehub/services/foundation/entity"
@@ -79,7 +78,7 @@ func (validator *PersonValidator) ValidateGID(gid entity.GID) error {
 }
 
 func (validator *PersonValidator) ValidateSearch(
-	request searchcontract.Request,
+	request coresearch.Request,
 ) (coresearch.Query[entity.GID], coresearch.CursorPayload, error) {
 	return validatorhelpers.NormalizePersonSearchRequest(request)
 }

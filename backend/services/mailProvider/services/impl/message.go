@@ -6,7 +6,7 @@ import (
 	"time"
 
 	coreerrors "grovehub/libs/core/errors"
-	coreid "grovehub/libs/core/helpers/id"
+	coreid "grovehub/libs/core/id"
 	mailprovidererror "grovehub/services/mailProvider/constants/error"
 	"grovehub/services/mailProvider/entity"
 	mailproviderrepository "grovehub/services/mailProvider/repository"

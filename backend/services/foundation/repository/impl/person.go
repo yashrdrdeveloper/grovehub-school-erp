@@ -114,7 +114,7 @@ func (repository *PersonRepository) FindGIDsByContacts(
 func (repository *PersonRepository) Search(
 	ctx context.Context,
 	query coresearch.Query[entity.GID],
-) (coresearch.Result[entity.Person], error) {
+) (coresearch.QueryResult[entity.Person], error) {
 	searchDB, err := coresearch.Apply(
 		repository.db.WithContext(ctx).
 			Model(&entity.Person{}).
@@ -124,12 +124,12 @@ func (repository *PersonRepository) Search(
 		personSearchConfig,
 	)
 	if err != nil {
-		return coresearch.Result[entity.Person]{}, err
+		return coresearch.QueryResult[entity.Person]{}, err
 	}
 
 	persons := make([]entity.Person, 0, query.Limit+1)
 	if err := searchDB.Find(&persons).Error; err != nil {
-		return coresearch.Result[entity.Person]{}, err
+		return coresearch.QueryResult[entity.Person]{}, err
 	}
 
 	hasNext := len(persons) > query.Limit
@@ -143,13 +143,13 @@ func (repository *PersonRepository) Search(
 	}
 	contactsByGID, err := repository.findContactsByGIDs(ctx, gids)
 	if err != nil {
-		return coresearch.Result[entity.Person]{}, err
+		return coresearch.QueryResult[entity.Person]{}, err
 	}
 
 	for index := range persons {
 		persons[index] = persons[index].SetContacts(contactsByGID[persons[index].GetGID()])
 	}
-	return coresearch.Result[entity.Person]{Items: persons, HasNext: hasNext}, nil
+	return coresearch.QueryResult[entity.Person]{Items: persons, HasNext: hasNext}, nil
 }
 
 func (repository *PersonRepository) Update(ctx context.Context, person entity.Person) error {
