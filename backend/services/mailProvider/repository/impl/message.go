@@ -3,13 +3,17 @@ package impl
 import (
 	"context"
 	"errors"
+	"time"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 
 	coresearch "grovehub/libs/core/search"
 	"grovehub/services/mailProvider/entity"
 	mailproviderrepository "grovehub/services/mailProvider/repository"
 )
+
+const uniqueMessageIdempotencyKeyConstraint = "uq_mail_provider_messages_idempotency_key"
 
 type MessageRepository struct {
 	db *gorm.DB
@@ -43,7 +47,7 @@ func NewMessageRepository(db *gorm.DB) mailproviderrepository.MessageRepository 
 }
 
 func (repository *MessageRepository) Create(ctx context.Context, message entity.Message) error {
-	return repository.db.WithContext(ctx).Create(&message).Error
+	return mapMessageWriteError(repository.db.WithContext(ctx).Create(&message).Error)
 }
 
 func (repository *MessageRepository) FindById(ctx context.Context, messageId entity.MessageId) (entity.Message, error) {
@@ -51,10 +55,17 @@ func (repository *MessageRepository) FindById(ctx context.Context, messageId ent
 	if err := repository.db.WithContext(ctx).
 		Where(&entity.Message{MessageId: messageId}).
 		Take(&message).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return entity.Message{}, mailproviderrepository.ErrMessageNotFound
-		}
-		return entity.Message{}, err
+		return mapMessageReadError(err)
+	}
+	return message, nil
+}
+
+func (repository *MessageRepository) FindByIdempotencyKey(ctx context.Context, key string) (entity.Message, error) {
+	var message entity.Message
+	if err := repository.db.WithContext(ctx).
+		Where(&entity.Message{IdempotencyKey: key}).
+		Take(&message).Error; err != nil {
+		return mapMessageReadError(err)
 	}
 	return message, nil
 }
@@ -87,16 +98,66 @@ func (repository *MessageRepository) Search(
 	return coresearch.QueryResult[entity.Message]{Items: messages, HasNext: hasNext}, nil
 }
 
-func (repository *MessageRepository) Update(ctx context.Context, message entity.Message) error {
+func (repository *MessageRepository) ClaimSubmission(
+	ctx context.Context,
+	message entity.Message,
+	startedAt time.Time,
+) (entity.Message, error) {
 	result := repository.db.WithContext(ctx).
-		Model(&entity.Message{MessageId: message.GetMessageId()}).
+		Model(&entity.Message{}).
+		Where(&entity.Message{MessageId: message.GetMessageId(), Status: entity.MessageStatusQueued}).
+		Where("version = ?", message.GetVersion()).
+		Where("submission_started_at IS NULL").
+		Updates(map[string]any{
+			"submission_started_at": startedAt,
+			"version":               message.GetVersion() + 1,
+			"updated_at":            startedAt,
+		})
+	if result.Error != nil {
+		return entity.Message{}, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return entity.Message{}, mailproviderrepository.ErrMessageSubmissionAlreadyClaimed
+	}
+	return message.
+		SetSubmissionStartedAt(startedAt).
+		SetVersion(message.GetVersion() + 1).
+		SetUpdatedAt(startedAt), nil
+}
+
+func (repository *MessageRepository) Update(ctx context.Context, message entity.Message) error {
+	expectedVersion := message.GetVersion() - 1
+	result := repository.db.WithContext(ctx).
+		Model(&entity.Message{}).
+		Where(&entity.Message{MessageId: message.GetMessageId()}).
+		Where("version = ?", expectedVersion).
 		Select("Status", "FailureMessage", "Version", "UpdatedAt").
 		Updates(&message)
 	if result.Error != nil {
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
-		return mailproviderrepository.ErrMessageNotFound
+		return mailproviderrepository.ErrMessageVersionConflict
 	}
 	return nil
+}
+
+func mapMessageReadError(err error) (entity.Message, error) {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return entity.Message{}, mailproviderrepository.ErrMessageNotFound
+	}
+	return entity.Message{}, err
+}
+
+func mapMessageWriteError(err error) error {
+	if err == nil {
+		return nil
+	}
+	var postgresError *pgconn.PgError
+	if errors.As(err, &postgresError) &&
+		postgresError.Code == "23505" &&
+		postgresError.ConstraintName == uniqueMessageIdempotencyKeyConstraint {
+		return mailproviderrepository.ErrMessageIdempotencyKeyAlreadyExists
+	}
+	return err
 }

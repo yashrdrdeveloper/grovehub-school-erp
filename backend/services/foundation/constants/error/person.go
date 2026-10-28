@@ -15,9 +15,21 @@ var (
 		"FOUNDATION_PERSON_INVALID_CONTACT",
 		"Person contact is invalid",
 	)
+	InvalidPersonIdempotencyKey = coreerrors.NewDefinition(
+		"FOUNDATION_PERSON_IDEMPOTENCY_KEY_INVALID",
+		"A valid idempotency key is required for this person create request",
+	)
+	PersonIdempotencyConflict = coreerrors.NewDefinition(
+		"FOUNDATION_PERSON_IDEMPOTENCY_CONFLICT",
+		"Idempotency key was already used for a different person create request",
+	)
 	PersonContactConflict = coreerrors.NewDefinition(
 		"FOUNDATION_PERSON_CONTACT_CONFLICT",
 		"Person contacts resolve to conflicting people",
+	)
+	PersonConcurrentModification = coreerrors.NewDefinition(
+		"FOUNDATION_PERSON_CONCURRENT_MODIFICATION",
+		"Person was modified by another request",
 	)
 	InvalidPersonSearch = coreerrors.NewDefinition(
 		"FOUNDATION_PERSON_INVALID_SEARCH",

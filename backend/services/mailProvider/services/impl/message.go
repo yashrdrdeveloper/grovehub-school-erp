@@ -7,6 +7,7 @@ import (
 
 	coreerrors "grovehub/libs/core/errors"
 	coreid "grovehub/libs/core/id"
+	coreidempotency "grovehub/libs/core/idempotency"
 	coresearch "grovehub/libs/core/search"
 	mailprovidererror "grovehub/services/mailProvider/constants/error"
 	"grovehub/services/mailProvider/entity"
@@ -46,20 +47,32 @@ func (service *MessageService) Send(
 	if err != nil {
 		return entity.Message{}, err
 	}
-	sender, err := service.senderService.GetById(ctx, validated.SenderId)
+	requestHash, err := coreidempotency.Fingerprint(struct {
+		GID      string   `json:"gid"`
+		SenderId string   `json:"senderId"`
+		To       []string `json:"to"`
+		Cc       []string `json:"cc"`
+		Bcc      []string `json:"bcc"`
+		Subject  string   `json:"subject"`
+		TextBody string   `json:"textBody"`
+		HTMLBody string   `json:"htmlBody"`
+	}{
+		GID: validated.GID, SenderId: validated.SenderId,
+		To: validated.To, Cc: validated.Cc, Bcc: validated.Bcc,
+		Subject: validated.Subject, TextBody: validated.TextBody, HTMLBody: validated.HTMLBody,
+	})
 	if err != nil {
-		return entity.Message{}, err
+		return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageCreateFailed, err)
 	}
-	if sender.GetStatus() != entity.SenderStatusActive {
-		return entity.Message{}, coreerrors.NewError(mailprovidererror.InvalidSender)
+
+	existing, err := service.repository.FindByIdempotencyKey(ctx, validated.IdempotencyKey)
+	if err == nil {
+		return service.replayOrSubmit(ctx, existing, requestHash)
 	}
-	domain, err := service.domainService.GetById(ctx, string(sender.GetDomainId()))
-	if err != nil {
-		return entity.Message{}, err
+	if !errors.Is(err, mailproviderrepository.ErrMessageNotFound) {
+		return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageReadFailed, err)
 	}
-	if domain.GetStatus() != entity.DomainStatusVerified {
-		return entity.Message{}, coreerrors.NewError(mailprovidererror.DomainNotVerified)
-	}
+
 	messageId, err := coreid.NewUUIDv7()
 	if err != nil {
 		return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageCreateFailed, err)
@@ -67,8 +80,10 @@ func (service *MessageService) Send(
 	now := time.Now().UTC()
 	message := entity.NewMessage(
 		entity.MessageId(messageId),
+		validated.IdempotencyKey,
+		requestHash,
 		entity.GID(validated.GID),
-		sender.GetSenderId(),
+		entity.SenderId(validated.SenderId),
 		validated.To,
 		validated.Cc,
 		validated.Bcc,
@@ -82,24 +97,96 @@ func (service *MessageService) Send(
 		now,
 	)
 	if err := service.repository.Create(ctx, message); err != nil {
+		if errors.Is(err, mailproviderrepository.ErrMessageIdempotencyKeyAlreadyExists) {
+			existing, readErr := service.repository.FindByIdempotencyKey(ctx, validated.IdempotencyKey)
+			if readErr != nil {
+				return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageReadFailed, readErr)
+			}
+			return service.replayOrSubmit(ctx, existing, requestHash)
+		}
 		return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageCreateFailed, err)
 	}
-	if err := service.transport.Send(ctx, message, sender); err != nil {
-		failed := message.
+	return service.submit(ctx, message)
+}
+
+func (service *MessageService) replayOrSubmit(
+	ctx context.Context,
+	message entity.Message,
+	requestHash string,
+) (entity.Message, error) {
+	if message.GetRequestHash() != requestHash {
+		return entity.Message{}, coreerrors.NewError(mailprovidererror.MessageIdempotencyConflict)
+	}
+	switch message.GetStatus() {
+	case entity.MessageStatusSubmitted:
+		return message, nil
+	case entity.MessageStatusFailed:
+		return message, coreerrors.NewError(mailprovidererror.MessageSubmissionFailed)
+	case entity.MessageStatusQueued:
+		if message.GetSubmissionStartedAt() != nil {
+			return message, coreerrors.NewError(mailprovidererror.MessageSubmissionInProgress)
+		}
+		return service.submit(ctx, message)
+	default:
+		return entity.Message{}, coreerrors.NewError(mailprovidererror.InvalidMessage)
+	}
+}
+
+func (service *MessageService) submit(ctx context.Context, message entity.Message) (entity.Message, error) {
+	sender, err := service.senderService.GetById(ctx, string(message.GetSenderId()))
+	if err != nil {
+		return entity.Message{}, err
+	}
+	if sender.GetStatus() != entity.SenderStatusActive {
+		return entity.Message{}, coreerrors.NewError(mailprovidererror.InvalidSender)
+	}
+	domain, err := service.domainService.GetById(ctx, string(sender.GetDomainId()))
+	if err != nil {
+		return entity.Message{}, err
+	}
+	if domain.GetStatus() != entity.DomainStatusVerified {
+		return entity.Message{}, coreerrors.NewError(mailprovidererror.DomainNotVerified)
+	}
+
+	claimed, err := service.repository.ClaimSubmission(ctx, message, time.Now().UTC())
+	if err != nil {
+		if errors.Is(err, mailproviderrepository.ErrMessageSubmissionAlreadyClaimed) {
+			latest, readErr := service.repository.FindById(ctx, message.GetMessageId())
+			if readErr != nil {
+				return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageReadFailed, readErr)
+			}
+			return service.replayOrSubmit(ctx, latest, message.GetRequestHash())
+		}
+		return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageUpdateFailed, err)
+	}
+
+	if err := service.transport.Send(ctx, claimed, sender); err != nil {
+		failed := claimed.
 			SetStatus(entity.MessageStatusFailed).
 			SetFailureMessage(err.Error()).
-			SetVersion(2).
+			SetVersion(claimed.GetVersion() + 1).
 			SetUpdatedAt(time.Now().UTC())
 		if updateErr := service.repository.Update(ctx, failed); updateErr != nil {
 			return failed, coreerrors.Wrap(mailprovidererror.MessageUpdateFailed, errors.Join(err, updateErr))
 		}
 		return failed, coreerrors.Wrap(mailprovidererror.MessageSubmissionFailed, err)
 	}
-	submitted := message.
+
+	submitted := claimed.
 		SetStatus(entity.MessageStatusSubmitted).
-		SetVersion(2).
+		SetVersion(claimed.GetVersion() + 1).
 		SetUpdatedAt(time.Now().UTC())
 	if err := service.repository.Update(ctx, submitted); err != nil {
+		if errors.Is(err, mailproviderrepository.ErrMessageVersionConflict) {
+			latest, readErr := service.repository.FindById(ctx, claimed.GetMessageId())
+			if readErr == nil && latest.GetStatus() == entity.MessageStatusSubmitted {
+				return latest, nil
+			}
+			if readErr != nil {
+				return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageReadFailed, readErr)
+			}
+			return entity.Message{}, coreerrors.NewError(mailprovidererror.MessageConcurrentModification)
+		}
 		return submitted, coreerrors.Wrap(mailprovidererror.MessageUpdateFailed, err)
 	}
 	return submitted, nil
@@ -128,7 +215,6 @@ func (service *MessageService) Search(
 	if err != nil {
 		return coresearch.Result[entity.Message]{}, err
 	}
-
 	result, err := service.repository.Search(ctx, query)
 	if err != nil {
 		if errors.Is(err, coresearch.ErrInvalidQuery) {
@@ -136,18 +222,14 @@ func (service *MessageService) Search(
 		}
 		return coresearch.Result[entity.Message]{}, coreerrors.Wrap(mailprovidererror.MessageSearchFailed, err)
 	}
-
 	nextCursor, err := buildMessageNextCursor(result, query, cursorPayload)
 	if err != nil {
 		return coresearch.Result[entity.Message]{}, coreerrors.Wrap(mailprovidererror.MessageSearchFailed, err)
 	}
-
 	return coresearch.Result[entity.Message]{
 		Items: result.Items,
 		PageInfo: coresearch.PageResponse{
-			Rows:       query.Limit,
-			NextCursor: nextCursor,
-			HasNext:    result.HasNext,
+			Rows: query.Limit, NextCursor: nextCursor, HasNext: result.HasNext,
 		},
 	}, nil
 }
@@ -160,7 +242,6 @@ func buildMessageNextCursor(
 	if !result.HasNext || len(result.Items) == 0 {
 		return "", nil
 	}
-
 	lastMessage := result.Items[len(result.Items)-1]
 	cursor.Value = servicehelpers.MessageCursorValue(lastMessage, query.Sort.Field)
 	cursor.CursorId = string(lastMessage.GetMessageId())

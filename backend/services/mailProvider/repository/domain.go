@@ -8,8 +8,9 @@ import (
 )
 
 var (
-	ErrDomainNotFound      = errors.New("mail provider domain not found")
-	ErrDomainAlreadyExists = errors.New("mail provider domain already exists")
+	ErrDomainNotFound        = errors.New("mail provider domain not found")
+	ErrDomainAlreadyExists   = errors.New("mail provider domain already exists")
+	ErrDomainVersionConflict = errors.New("mail provider domain version conflict")
 )
 
 type DomainRepository interface {

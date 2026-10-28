@@ -7,6 +7,22 @@ var (
 		"MAIL_PROVIDER_MESSAGE_INVALID",
 		"Mail provider message is invalid",
 	)
+	InvalidMessageIdempotencyKey = coreerrors.NewDefinition(
+		"MAIL_PROVIDER_MESSAGE_IDEMPOTENCY_KEY_INVALID",
+		"Mail provider message idempotency key is invalid",
+	)
+	MessageIdempotencyConflict = coreerrors.NewDefinition(
+		"MAIL_PROVIDER_MESSAGE_IDEMPOTENCY_CONFLICT",
+		"Idempotency key was already used for a different message request",
+	)
+	MessageSubmissionInProgress = coreerrors.NewDefinition(
+		"MAIL_PROVIDER_MESSAGE_SUBMISSION_IN_PROGRESS",
+		"Mail provider message submission is already in progress",
+	)
+	MessageConcurrentModification = coreerrors.NewDefinition(
+		"MAIL_PROVIDER_MESSAGE_CONCURRENT_MODIFICATION",
+		"Mail provider message was modified by another request",
+	)
 	InvalidMessageSearch = coreerrors.NewDefinition(
 		"MAIL_PROVIDER_MESSAGE_SEARCH_INVALID",
 		"Mail provider message search is invalid",

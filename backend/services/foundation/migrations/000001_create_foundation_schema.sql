@@ -13,13 +13,25 @@ CREATE TABLE foundation.persons (
     status text NOT NULL DEFAULT 'ACTIVE',
     version bigint NOT NULL DEFAULT 1,
     search_details text NOT NULL DEFAULT '',
+    create_idempotency_key text,
+    create_request_hash text,
     created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT pk_persons PRIMARY KEY (gid),
     CONSTRAINT chk_persons_status CHECK (status IN ('ACTIVE', 'DEACTIVATED')),
-    CONSTRAINT chk_persons_version CHECK (version >= 1)
+    CONSTRAINT chk_persons_version CHECK (version >= 1),
+    CONSTRAINT chk_persons_create_idempotency
+        CHECK (
+            (create_idempotency_key IS NULL AND create_request_hash IS NULL)
+            OR
+            (length(btrim(create_idempotency_key)) > 0 AND length(create_request_hash) = 64)
+        )
 );
+
+CREATE UNIQUE INDEX uq_persons_create_idempotency_key
+    ON foundation.persons (create_idempotency_key)
+    WHERE create_idempotency_key IS NOT NULL;
 
 CREATE TABLE foundation.person_contacts (
     person_gid uuid NOT NULL,

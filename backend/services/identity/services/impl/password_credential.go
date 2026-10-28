@@ -23,57 +23,51 @@ func NewPasswordCredentialService(
 	repository identityrepository.PasswordCredentialRepository,
 	validator identityvalidators.PasswordCredentialValidator,
 ) identityservices.PasswordCredentialService {
-	return &PasswordCredentialService{
-		repository: repository,
-		validator:  validator,
-	}
+	return &PasswordCredentialService{repository: repository, validator: validator}
 }
 
-func (service *PasswordCredentialService) Set(
-	ctx context.Context,
-	accountId string,
-	password string,
-) error {
+func (service *PasswordCredentialService) Set(ctx context.Context, accountId string, password string) error {
 	validatedAccountId, err := service.validatePasswordInput(accountId, password)
 	if err != nil {
 		return err
+	}
+
+	credential, err := service.repository.FindByAccountId(ctx, validatedAccountId)
+	if err == nil {
+		return service.ensureSamePassword(password, credential)
+	}
+	if !errors.Is(err, identityrepository.ErrPasswordCredentialNotFound) {
+		return coreerrors.Wrap(identityerror.PasswordCredentialReadFailed, err)
 	}
 
 	passwordHash, err := servicehelpers.HashPassword(password)
 	if err != nil {
 		return coreerrors.Wrap(identityerror.PasswordCredentialCreateFailed, err)
 	}
-
 	now := time.Now().UTC()
-	credential := entity.NewPasswordCredential(
-		validatedAccountId,
-		passwordHash,
-		now,
-		1,
-		now,
-		now,
-	)
+	credential = entity.NewPasswordCredential(validatedAccountId, passwordHash, now, 1, now, now)
 	if err := service.repository.Create(ctx, credential); err != nil {
+		if errors.Is(err, identityrepository.ErrPasswordCredentialAlreadyExists) {
+			existing, readErr := service.repository.FindByAccountId(ctx, validatedAccountId)
+			if readErr != nil {
+				return mapPasswordCredentialWriteError(readErr, identityerror.PasswordCredentialCreateFailed)
+			}
+			return service.ensureSamePassword(password, existing)
+		}
 		return mapPasswordCredentialWriteError(err, identityerror.PasswordCredentialCreateFailed)
 	}
 	return nil
 }
 
-func (service *PasswordCredentialService) Verify(
-	ctx context.Context,
-	accountId string,
-	password string,
-) (bool, error) {
+func (service *PasswordCredentialService) Verify(ctx context.Context, accountId string, password string) (bool, error) {
 	validatedAccountId, err := service.validatePasswordCandidate(accountId, password)
 	if err != nil {
 		return false, err
 	}
-
 	credential, err := service.readCredential(ctx, validatedAccountId)
 	if err != nil {
 		return false, err
 	}
-
 	verified, err := servicehelpers.VerifyPassword(password, credential.GetPasswordHash())
 	if err != nil {
 		return false, coreerrors.Wrap(identityerror.PasswordCredentialVerifyFailed, err)
@@ -81,43 +75,64 @@ func (service *PasswordCredentialService) Verify(
 	return verified, nil
 }
 
-func (service *PasswordCredentialService) Replace(
-	ctx context.Context,
-	accountId string,
-	password string,
-) error {
+func (service *PasswordCredentialService) Replace(ctx context.Context, accountId string, password string) error {
 	validatedAccountId, err := service.validatePasswordInput(accountId, password)
 	if err != nil {
 		return err
 	}
-
 	credential, err := service.readCredential(ctx, validatedAccountId)
 	if err != nil {
 		return err
+	}
+
+	verified, err := servicehelpers.VerifyPassword(password, credential.GetPasswordHash())
+	if err != nil {
+		return coreerrors.Wrap(identityerror.PasswordCredentialVerifyFailed, err)
+	}
+	if verified {
+		return nil
 	}
 
 	passwordHash, err := servicehelpers.HashPassword(password)
 	if err != nil {
 		return coreerrors.Wrap(identityerror.PasswordCredentialUpdateFailed, err)
 	}
-
 	now := time.Now().UTC()
-	updatedCredential := credential.
-		SetPasswordHash(passwordHash).
+	updatedCredential := credential.SetPasswordHash(passwordHash).
 		SetPasswordChangedAt(now).
 		SetVersion(credential.GetVersion() + 1).
 		SetUpdatedAt(now)
-
 	if err := service.repository.Update(ctx, updatedCredential); err != nil {
+		if errors.Is(err, identityrepository.ErrPasswordCredentialVersionConflict) {
+			latest, readErr := service.repository.FindByAccountId(ctx, validatedAccountId)
+			if readErr != nil {
+				return mapPasswordCredentialWriteError(readErr, identityerror.PasswordCredentialUpdateFailed)
+			}
+			verified, verifyErr := servicehelpers.VerifyPassword(password, latest.GetPasswordHash())
+			if verifyErr != nil {
+				return coreerrors.Wrap(identityerror.PasswordCredentialVerifyFailed, verifyErr)
+			}
+			if verified {
+				return nil
+			}
+		}
 		return mapPasswordCredentialWriteError(err, identityerror.PasswordCredentialUpdateFailed)
 	}
 	return nil
 }
 
-func (service *PasswordCredentialService) validatePasswordInput(
-	accountId string,
-	password string,
-) (entity.AccountId, error) {
+func (service *PasswordCredentialService) ensureSamePassword(password string, credential entity.PasswordCredential) error {
+	verified, err := servicehelpers.VerifyPassword(password, credential.GetPasswordHash())
+	if err != nil {
+		return coreerrors.Wrap(identityerror.PasswordCredentialVerifyFailed, err)
+	}
+	if verified {
+		return nil
+	}
+	return coreerrors.NewError(identityerror.PasswordCredentialAlreadyExists)
+}
+
+func (service *PasswordCredentialService) validatePasswordInput(accountId string, password string) (entity.AccountId, error) {
 	validatedAccountId, err := service.validator.ValidateAccountId(accountId)
 	if err != nil {
 		return "", err
@@ -128,10 +143,7 @@ func (service *PasswordCredentialService) validatePasswordInput(
 	return validatedAccountId, nil
 }
 
-func (service *PasswordCredentialService) validatePasswordCandidate(
-	accountId string,
-	password string,
-) (entity.AccountId, error) {
+func (service *PasswordCredentialService) validatePasswordCandidate(accountId string, password string) (entity.AccountId, error) {
 	validatedAccountId, err := service.validator.ValidateAccountId(accountId)
 	if err != nil {
 		return "", err
@@ -158,9 +170,10 @@ func (service *PasswordCredentialService) readCredential(
 
 func mapPasswordCredentialWriteError(err error, fallback coreerrors.Definition) error {
 	mapped := map[error]coreerrors.Definition{
-		identityrepository.ErrPasswordCredentialAlreadyExists:  identityerror.PasswordCredentialAlreadyExists,
-		identityrepository.ErrPasswordCredentialNotFound:       identityerror.PasswordCredentialNotFound,
+		identityrepository.ErrPasswordCredentialAlreadyExists:   identityerror.PasswordCredentialAlreadyExists,
+		identityrepository.ErrPasswordCredentialNotFound:        identityerror.PasswordCredentialNotFound,
 		identityrepository.ErrPasswordCredentialAccountNotFound: identityerror.AccountNotFound,
+		identityrepository.ErrPasswordCredentialVersionConflict: identityerror.PasswordCredentialConcurrentModification,
 	}
 	for repositoryError, definition := range mapped {
 		if errors.Is(err, repositoryError) {

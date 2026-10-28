@@ -8,9 +8,10 @@ import (
 )
 
 var (
-	ErrPasswordCredentialNotFound       = errors.New("password credential not found")
-	ErrPasswordCredentialAlreadyExists  = errors.New("password credential already exists")
+	ErrPasswordCredentialNotFound        = errors.New("password credential not found")
+	ErrPasswordCredentialAlreadyExists   = errors.New("password credential already exists")
 	ErrPasswordCredentialAccountNotFound = errors.New("identity account not found for password credential")
+	ErrPasswordCredentialVersionConflict = errors.New("password credential version conflict")
 )
 
 type PasswordCredentialRepository interface {

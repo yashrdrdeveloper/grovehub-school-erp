@@ -17,28 +17,31 @@ const (
 )
 
 type Message struct {
-	MessageId      MessageId      `gorm:"column:message_id;type:uuid;primaryKey"`
-	GID            GID            `gorm:"column:gid;type:uuid;not null"`
-	SenderId       SenderId       `gorm:"column:sender_id;type:uuid;not null"`
-	To             pq.StringArray `gorm:"column:to_addresses;type:text[];not null"`
-	Cc             pq.StringArray `gorm:"column:cc_addresses;type:text[];not null"`
-	Bcc            pq.StringArray `gorm:"column:bcc_addresses;type:text[];not null"`
-	Subject        string         `gorm:"column:subject;not null"`
-	TextBody       string         `gorm:"column:text_body;not null"`
-	HTMLBody       string         `gorm:"column:html_body;not null"`
-	Status         MessageStatus  `gorm:"column:status;not null"`
-	FailureMessage *string        `gorm:"column:failure_message"`
-	Version        int64          `gorm:"column:version;not null"`
-	CreatedAt      time.Time      `gorm:"column:created_at;not null"`
-	UpdatedAt      time.Time      `gorm:"column:updated_at;not null"`
+	MessageId           MessageId      `gorm:"column:message_id;type:uuid;primaryKey"`
+	IdempotencyKey      string         `gorm:"column:idempotency_key;not null"`
+	RequestHash         string         `gorm:"column:request_hash;not null"`
+	GID                 GID            `gorm:"column:gid;type:uuid;not null"`
+	SenderId            SenderId       `gorm:"column:sender_id;type:uuid;not null"`
+	To                  pq.StringArray `gorm:"column:to_addresses;type:text[];not null"`
+	Cc                  pq.StringArray `gorm:"column:cc_addresses;type:text[];not null"`
+	Bcc                 pq.StringArray `gorm:"column:bcc_addresses;type:text[];not null"`
+	Subject             string         `gorm:"column:subject;not null"`
+	TextBody            string         `gorm:"column:text_body;not null"`
+	HTMLBody            string         `gorm:"column:html_body;not null"`
+	Status              MessageStatus  `gorm:"column:status;not null"`
+	FailureMessage      *string        `gorm:"column:failure_message"`
+	SubmissionStartedAt *time.Time     `gorm:"column:submission_started_at"`
+	Version             int64          `gorm:"column:version;not null"`
+	CreatedAt           time.Time      `gorm:"column:created_at;not null"`
+	UpdatedAt           time.Time      `gorm:"column:updated_at;not null"`
 }
 
-func (Message) TableName() string {
-	return "mail_provider.messages"
-}
+func (Message) TableName() string { return "mail_provider.messages" }
 
 func NewMessage(
 	messageId MessageId,
+	idempotencyKey string,
+	requestHash string,
 	gid GID,
 	senderId SenderId,
 	to []string,
@@ -55,6 +58,8 @@ func NewMessage(
 ) Message {
 	return Message{
 		MessageId:      messageId,
+		IdempotencyKey: idempotencyKey,
+		RequestHash:    requestHash,
 		GID:            gid,
 		SenderId:       senderId,
 		To:             pq.StringArray(copyStrings(to)),
@@ -71,16 +76,22 @@ func NewMessage(
 	}
 }
 
-func (message Message) GetMessageId() MessageId  { return message.MessageId }
-func (message Message) GetGID() GID              { return message.GID }
-func (message Message) GetSenderId() SenderId    { return message.SenderId }
-func (message Message) GetTo() []string          { return copyStrings([]string(message.To)) }
-func (message Message) GetCc() []string          { return copyStrings([]string(message.Cc)) }
-func (message Message) GetBcc() []string         { return copyStrings([]string(message.Bcc)) }
-func (message Message) GetSubject() string       { return message.Subject }
-func (message Message) GetTextBody() string      { return message.TextBody }
-func (message Message) GetHTMLBody() string      { return message.HTMLBody }
-func (message Message) GetStatus() MessageStatus { return message.Status }
+func (message Message) GetMessageId() MessageId        { return message.MessageId }
+func (message Message) GetIdempotencyKey() string      { return message.IdempotencyKey }
+func (message Message) GetRequestHash() string         { return message.RequestHash }
+func (message Message) GetGID() GID                    { return message.GID }
+func (message Message) GetSenderId() SenderId          { return message.SenderId }
+func (message Message) GetTo() []string                { return copyStrings([]string(message.To)) }
+func (message Message) GetCc() []string                { return copyStrings([]string(message.Cc)) }
+func (message Message) GetBcc() []string               { return copyStrings([]string(message.Bcc)) }
+func (message Message) GetSubject() string             { return message.Subject }
+func (message Message) GetTextBody() string            { return message.TextBody }
+func (message Message) GetHTMLBody() string            { return message.HTMLBody }
+func (message Message) GetStatus() MessageStatus       { return message.Status }
+func (message Message) GetVersion() int64              { return message.Version }
+func (message Message) GetCreatedAt() time.Time        { return message.CreatedAt }
+func (message Message) GetUpdatedAt() time.Time        { return message.UpdatedAt }
+func (message Message) GetSubmissionStartedAt() *time.Time { return message.SubmissionStartedAt }
 
 func (message Message) GetFailureMessage() string {
 	if message.FailureMessage == nil {
@@ -89,25 +100,22 @@ func (message Message) GetFailureMessage() string {
 	return *message.FailureMessage
 }
 
-func (message Message) GetVersion() int64       { return message.Version }
-func (message Message) GetCreatedAt() time.Time { return message.CreatedAt }
-func (message Message) GetUpdatedAt() time.Time { return message.UpdatedAt }
-
 func (message Message) SetStatus(status MessageStatus) Message {
 	message.Status = status
 	return message
 }
-
 func (message Message) SetFailureMessage(value string) Message {
 	message.FailureMessage = optionalString(value)
 	return message
 }
-
+func (message Message) SetSubmissionStartedAt(value time.Time) Message {
+	message.SubmissionStartedAt = &value
+	return message
+}
 func (message Message) SetVersion(version int64) Message {
 	message.Version = version
 	return message
 }
-
 func (message Message) SetUpdatedAt(updatedAt time.Time) Message {
 	message.UpdatedAt = updatedAt
 	return message

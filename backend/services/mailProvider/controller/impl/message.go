@@ -3,6 +3,7 @@ package impl
 import (
 	"net/http"
 
+	httpheaders "grovehub/libs/core/http/headers"
 	httprequest "grovehub/libs/core/http/request"
 	httpresponse "grovehub/libs/core/http/response"
 	coresearch "grovehub/libs/core/search"
@@ -34,8 +35,15 @@ func (controller *MessageController) Send(writer http.ResponseWriter, request *h
 		return
 	}
 	message, err := controller.service.Send(request.Context(), mailproviderservices.SendMessageInput{
-		GID: payload.GID, SenderId: payload.SenderId, To: payload.To, Cc: payload.Cc, Bcc: payload.Bcc,
-		Subject: payload.Subject, TextBody: payload.TextBody, HTMLBody: payload.HTMLBody,
+		IdempotencyKey: request.Header.Get(httpheaders.IdempotencyKey),
+		GID:            payload.GID,
+		SenderId:       payload.SenderId,
+		To:             payload.To,
+		Cc:             payload.Cc,
+		Bcc:            payload.Bcc,
+		Subject:        payload.Subject,
+		TextBody:       payload.TextBody,
+		HTMLBody:       payload.HTMLBody,
 	})
 	if err != nil {
 		controllerhelpers.WriteError(request.Context(), writer, err)
@@ -48,28 +56,20 @@ func (controller *MessageController) Search(writer http.ResponseWriter, request 
 	var searchRequest coresearch.Request
 	if err := httprequest.DecodeJSON(request, &searchRequest); err != nil {
 		_ = httpresponse.WriteErrorContext(
-			request.Context(),
-			writer,
-			http.StatusBadRequest,
-			mailprovidererror.InvalidMessageSearch,
+			request.Context(), writer, http.StatusBadRequest, mailprovidererror.InvalidMessageSearch,
 		)
 		return
 	}
-
 	result, err := controller.service.Search(request.Context(), searchRequest)
 	if err != nil {
 		controllerhelpers.WriteError(request.Context(), writer, err)
 		return
 	}
-
 	items := make([]mailproviderresponse.Message, 0, len(result.Items))
 	for _, message := range result.Items {
 		items = append(items, controller.mapper.ToResponse(message))
 	}
-	response := coresearch.Result[mailproviderresponse.Message]{
-		Items:    items,
-		PageInfo: result.PageInfo,
-	}
+	response := coresearch.Result[mailproviderresponse.Message]{Items: items, PageInfo: result.PageInfo}
 	_ = httpresponse.WriteSuccess(writer, http.StatusOK, response)
 }
 

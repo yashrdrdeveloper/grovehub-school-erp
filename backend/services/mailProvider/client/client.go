@@ -7,14 +7,15 @@ import (
 )
 
 type SendRequest struct {
-	GID      string
-	SenderId string
-	To       []string
-	Cc       []string
-	Bcc      []string
-	Subject  string
-	TextBody string
-	HTMLBody string
+	IdempotencyKey string
+	GID            string
+	SenderId       string
+	To             []string
+	Cc             []string
+	Bcc            []string
+	Subject        string
+	TextBody       string
+	HTMLBody       string
 }
 
 type Client interface {

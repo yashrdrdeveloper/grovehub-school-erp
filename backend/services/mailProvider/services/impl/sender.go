@@ -48,6 +48,18 @@ func (service *SenderService) Register(
 	if len(parts) != 2 || parts[1] != domain.GetName() {
 		return entity.Sender{}, coreerrors.NewError(mailprovidererror.InvalidSender)
 	}
+
+	existing, err := service.repository.FindByEmail(ctx, validated.Email)
+	if err == nil {
+		if senderMatchesRegisterInput(existing, domain.GetDomainId(), validated.DisplayName) {
+			return existing, nil
+		}
+		return entity.Sender{}, coreerrors.NewError(mailprovidererror.SenderAlreadyExists)
+	}
+	if !errors.Is(err, mailproviderrepository.ErrSenderNotFound) {
+		return entity.Sender{}, coreerrors.Wrap(mailprovidererror.SenderReadFailed, err)
+	}
+
 	senderId, err := coreid.NewUUIDv7()
 	if err != nil {
 		return entity.Sender{}, coreerrors.Wrap(mailprovidererror.SenderCreateFailed, err)
@@ -65,7 +77,16 @@ func (service *SenderService) Register(
 	)
 	if err := service.repository.Create(ctx, sender); err != nil {
 		if errors.Is(err, mailproviderrepository.ErrSenderAlreadyExists) {
-			return entity.Sender{}, coreerrors.NewError(mailprovidererror.SenderAlreadyExists)
+			existing, readErr := service.repository.FindByEmail(ctx, validated.Email)
+			if readErr == nil {
+				if senderMatchesRegisterInput(existing, domain.GetDomainId(), validated.DisplayName) {
+					return existing, nil
+				}
+				return entity.Sender{}, coreerrors.NewError(mailprovidererror.SenderAlreadyExists)
+			}
+			if !errors.Is(readErr, mailproviderrepository.ErrSenderNotFound) {
+				return entity.Sender{}, coreerrors.Wrap(mailprovidererror.SenderReadFailed, readErr)
+			}
 		}
 		return entity.Sender{}, coreerrors.Wrap(mailprovidererror.SenderCreateFailed, err)
 	}
@@ -108,7 +129,23 @@ func (service *SenderService) Deactivate(ctx context.Context, senderId string) (
 		SetVersion(sender.GetVersion() + 1).
 		SetUpdatedAt(time.Now().UTC())
 	if err := service.repository.Update(ctx, updated); err != nil {
+		if errors.Is(err, mailproviderrepository.ErrSenderVersionConflict) {
+			latest, readErr := service.GetById(ctx, senderId)
+			if readErr != nil {
+				return entity.Sender{}, readErr
+			}
+			if latest.GetStatus() == entity.SenderStatusDeactivated {
+				return latest, nil
+			}
+			return entity.Sender{}, coreerrors.NewError(mailprovidererror.SenderConcurrentModification)
+		}
 		return entity.Sender{}, coreerrors.Wrap(mailprovidererror.SenderUpdateFailed, err)
 	}
 	return updated, nil
+}
+
+func senderMatchesRegisterInput(sender entity.Sender, domainId entity.DomainId, displayName string) bool {
+	return sender.GetDomainId() == domainId &&
+		sender.GetDisplayName() == displayName &&
+		sender.GetStatus() == entity.SenderStatusActive
 }

@@ -18,9 +18,7 @@ type SenderRepository struct {
 	db *gorm.DB
 }
 
-func NewSenderRepository(db *gorm.DB) mailproviderrepository.SenderRepository {
-	return &SenderRepository{db: db}
-}
+func NewSenderRepository(db *gorm.DB) mailproviderrepository.SenderRepository { return &SenderRepository{db: db} }
 
 func (repository *SenderRepository) Create(ctx context.Context, sender entity.Sender) error {
 	return mapSenderWriteError(repository.db.WithContext(ctx).Create(&sender).Error)
@@ -38,9 +36,7 @@ func (repository *SenderRepository) FindAll(ctx context.Context) ([]entity.Sende
 
 func (repository *SenderRepository) FindById(ctx context.Context, senderId entity.SenderId) (entity.Sender, error) {
 	var sender entity.Sender
-	if err := repository.db.WithContext(ctx).
-		Where(&entity.Sender{SenderId: senderId}).
-		Take(&sender).Error; err != nil {
+	if err := repository.db.WithContext(ctx).Where(&entity.Sender{SenderId: senderId}).Take(&sender).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return entity.Sender{}, mailproviderrepository.ErrSenderNotFound
 		}
@@ -51,9 +47,7 @@ func (repository *SenderRepository) FindById(ctx context.Context, senderId entit
 
 func (repository *SenderRepository) FindByEmail(ctx context.Context, email string) (entity.Sender, error) {
 	var sender entity.Sender
-	if err := repository.db.WithContext(ctx).
-		Where(&entity.Sender{Email: email}).
-		Take(&sender).Error; err != nil {
+	if err := repository.db.WithContext(ctx).Where(&entity.Sender{Email: email}).Take(&sender).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return entity.Sender{}, mailproviderrepository.ErrSenderNotFound
 		}
@@ -63,15 +57,18 @@ func (repository *SenderRepository) FindByEmail(ctx context.Context, email strin
 }
 
 func (repository *SenderRepository) Update(ctx context.Context, sender entity.Sender) error {
+	expectedVersion := sender.GetVersion() - 1
 	result := repository.db.WithContext(ctx).
-		Model(&entity.Sender{SenderId: sender.GetSenderId()}).
+		Model(&entity.Sender{}).
+		Where(&entity.Sender{SenderId: sender.GetSenderId()}).
+		Where("version = ?", expectedVersion).
 		Select("Status", "Version", "UpdatedAt").
 		Updates(&sender)
 	if result.Error != nil {
 		return mapSenderWriteError(result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return mailproviderrepository.ErrSenderNotFound
+		return mailproviderrepository.ErrSenderVersionConflict
 	}
 	return nil
 }

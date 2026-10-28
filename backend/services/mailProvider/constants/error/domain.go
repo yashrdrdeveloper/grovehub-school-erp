@@ -19,6 +19,10 @@ var (
 		"MAIL_PROVIDER_DOMAIN_NOT_VERIFIED",
 		"Mail provider domain is not verified",
 	)
+	DomainConcurrentModification = coreerrors.NewDefinition(
+		"MAIL_PROVIDER_DOMAIN_CONCURRENT_MODIFICATION",
+		"Mail provider domain was modified by another request",
+	)
 	DomainCreateFailed = coreerrors.NewDefinition(
 		"MAIL_PROVIDER_DOMAIN_CREATE_FAILED",
 		"Unable to create mail provider domain",

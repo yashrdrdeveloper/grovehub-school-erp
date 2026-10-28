@@ -46,6 +46,8 @@ CREATE INDEX idx_mail_provider_senders_domain_id
 
 CREATE TABLE mail_provider.messages (
     message_id uuid NOT NULL,
+    idempotency_key text NOT NULL,
+    request_hash text NOT NULL,
     gid uuid NOT NULL,
     sender_id uuid NOT NULL,
     to_addresses text[] NOT NULL,
@@ -56,6 +58,7 @@ CREATE TABLE mail_provider.messages (
     html_body text NOT NULL DEFAULT '',
     status text NOT NULL DEFAULT 'QUEUED',
     failure_message text,
+    submission_started_at timestamptz,
     version bigint NOT NULL DEFAULT 1,
     created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -64,6 +67,9 @@ CREATE TABLE mail_provider.messages (
     CONSTRAINT fk_mail_provider_messages_sender
         FOREIGN KEY (sender_id)
         REFERENCES mail_provider.senders(sender_id),
+    CONSTRAINT uq_mail_provider_messages_idempotency_key UNIQUE (idempotency_key),
+    CONSTRAINT chk_mail_provider_messages_idempotency_key CHECK (length(btrim(idempotency_key)) > 0),
+    CONSTRAINT chk_mail_provider_messages_request_hash CHECK (length(request_hash) = 64),
     CONSTRAINT chk_mail_provider_messages_to CHECK (cardinality(to_addresses) > 0),
     CONSTRAINT chk_mail_provider_messages_subject CHECK (length(btrim(subject)) > 0),
     CONSTRAINT chk_mail_provider_messages_body CHECK (length(btrim(text_body)) > 0 OR length(btrim(html_body)) > 0),

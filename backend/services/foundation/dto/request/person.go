@@ -11,10 +11,11 @@ type Contacts struct {
 }
 
 type CreatePerson struct {
-	FirstName  string   `json:"firstName"`
-	MiddleName string   `json:"middleName,omitempty"`
-	LastName   string   `json:"lastName"`
-	Contacts   Contacts `json:"contacts,omitempty"`
+	IdempotencyKey string   `json:"-"`
+	FirstName      string   `json:"firstName"`
+	MiddleName     string   `json:"middleName,omitempty"`
+	LastName       string   `json:"lastName"`
+	Contacts       Contacts `json:"contacts,omitempty"`
 }
 
 type UpdatePerson struct {

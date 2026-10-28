@@ -20,8 +20,15 @@ func NewClient(service mailproviderservices.MessageService, mapper mailproviderm
 
 func (client *Client) Send(ctx context.Context, request mailproviderclient.SendRequest) (mailproviderresponse.Message, error) {
 	message, err := client.service.Send(ctx, mailproviderservices.SendMessageInput{
-		GID: request.GID, SenderId: request.SenderId, To: request.To, Cc: request.Cc, Bcc: request.Bcc,
-		Subject: request.Subject, TextBody: request.TextBody, HTMLBody: request.HTMLBody,
+		IdempotencyKey: request.IdempotencyKey,
+		GID:            request.GID,
+		SenderId:       request.SenderId,
+		To:             request.To,
+		Cc:             request.Cc,
+		Bcc:            request.Bcc,
+		Subject:        request.Subject,
+		TextBody:       request.TextBody,
+		HTMLBody:       request.HTMLBody,
 	})
 	if err != nil {
 		return mailproviderresponse.Message{}, err

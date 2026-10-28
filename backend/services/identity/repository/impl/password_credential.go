@@ -51,15 +51,18 @@ func (repository *PasswordCredentialRepository) Update(
 	ctx context.Context,
 	credential entity.PasswordCredential,
 ) error {
+	expectedVersion := credential.GetVersion() - 1
 	result := repository.db.WithContext(ctx).
-		Model(&entity.PasswordCredential{AccountId: credential.GetAccountId()}).
+		Model(&entity.PasswordCredential{}).
+		Where(&entity.PasswordCredential{AccountId: credential.GetAccountId()}).
+		Where("version = ?", expectedVersion).
 		Select("PasswordHash", "PasswordChangedAt", "Version", "UpdatedAt").
 		Updates(&credential)
 	if result.Error != nil {
 		return mapPasswordCredentialWriteError(result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return identityrepository.ErrPasswordCredentialNotFound
+		return identityrepository.ErrPasswordCredentialVersionConflict
 	}
 	return nil
 }

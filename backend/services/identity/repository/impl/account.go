@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	uniqueAccountPersonGidConstraint = "uq_accounts_person_gid"
-	uniqueAccountEmailConstraint     = "uq_accounts_email"
-	uniqueAccountPhoneConstraint     = "uq_accounts_phone"
+	uniqueAccountPersonGidConstraint                  = "uq_accounts_person_gid"
+	uniqueAccountEmailConstraint                      = "uq_accounts_email"
+	uniqueAccountPhoneConstraint                      = "uq_accounts_phone"
+	uniqueAccountRegistrationIdempotencyKeyConstraint = "uq_accounts_registration_idempotency_key"
 )
 
 type AccountRepository struct {
@@ -68,16 +69,32 @@ func (repository *AccountRepository) FindByEmail(
 	return account, nil
 }
 
+func (repository *AccountRepository) FindByRegistrationIdempotencyKey(
+	ctx context.Context,
+	key string,
+) (entity.Account, error) {
+	var account entity.Account
+	if err := repository.db.WithContext(ctx).
+		Where(&entity.Account{RegistrationIdempotencyKey: &key}).
+		Take(&account).Error; err != nil {
+		return mapAccountReadError(err)
+	}
+	return account, nil
+}
+
 func (repository *AccountRepository) Update(ctx context.Context, account entity.Account) error {
+	expectedVersion := account.GetVersion() - 1
 	result := repository.db.WithContext(ctx).
-		Model(&entity.Account{AccountId: account.GetAccountId()}).
+		Model(&entity.Account{}).
+		Where(&entity.Account{AccountId: account.GetAccountId()}).
+		Where("version = ?", expectedVersion).
 		Select("Email", "Phone", "Status", "Version", "UpdatedAt").
 		Updates(&account)
 	if result.Error != nil {
 		return mapAccountWriteError(result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return identityrepository.ErrAccountNotFound
+		return identityrepository.ErrAccountVersionConflict
 	}
 	return nil
 }
@@ -115,9 +132,10 @@ func mapAccountWriteError(err error) error {
 	}
 
 	mappedErrors := map[string]error{
-		uniqueAccountPersonGidConstraint: identityrepository.ErrAccountPersonAlreadyExists,
-		uniqueAccountEmailConstraint:     identityrepository.ErrAccountEmailAlreadyExists,
-		uniqueAccountPhoneConstraint:     identityrepository.ErrAccountPhoneAlreadyExists,
+		uniqueAccountPersonGidConstraint:                  identityrepository.ErrAccountPersonAlreadyExists,
+		uniqueAccountEmailConstraint:                      identityrepository.ErrAccountEmailAlreadyExists,
+		uniqueAccountPhoneConstraint:                      identityrepository.ErrAccountPhoneAlreadyExists,
+		uniqueAccountRegistrationIdempotencyKeyConstraint: identityrepository.ErrAccountRegistrationIdempotencyKeyAlreadyExists,
 	}
 	mappedError, ok := mappedErrors[postgresError.ConstraintName]
 	if !ok {

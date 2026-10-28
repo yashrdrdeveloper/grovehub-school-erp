@@ -15,6 +15,10 @@ var (
 		"IDENTITY_PASSWORD_CREDENTIAL_NOT_FOUND",
 		"Password credential was not found",
 	)
+	PasswordCredentialConcurrentModification = coreerrors.NewDefinition(
+		"IDENTITY_PASSWORD_CREDENTIAL_CONCURRENT_MODIFICATION",
+		"Password credential was modified by another request",
+	)
 	PasswordCredentialCreateFailed = coreerrors.NewDefinition(
 		"IDENTITY_PASSWORD_CREDENTIAL_CREATE_FAILED",
 		"Unable to create password credential",

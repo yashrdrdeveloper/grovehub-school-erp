@@ -15,6 +15,10 @@ var (
 		"MAIL_PROVIDER_SENDER_NOT_FOUND",
 		"Mail provider sender was not found",
 	)
+	SenderConcurrentModification = coreerrors.NewDefinition(
+		"MAIL_PROVIDER_SENDER_CONCURRENT_MODIFICATION",
+		"Mail provider sender was modified by another request",
+	)
 	SenderCreateFailed = coreerrors.NewDefinition(
 		"MAIL_PROVIDER_SENDER_CREATE_FAILED",
 		"Unable to create mail provider sender",

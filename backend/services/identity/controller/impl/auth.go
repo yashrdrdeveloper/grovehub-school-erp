@@ -3,6 +3,7 @@ package impl
 import (
 	"net/http"
 
+	httpheaders "grovehub/libs/core/http/headers"
 	httprequest "grovehub/libs/core/http/request"
 	httpresponse "grovehub/libs/core/http/response"
 	identityerror "grovehub/services/identity/constants/error"
@@ -31,6 +32,7 @@ func (controller *AuthController) Register(writer http.ResponseWriter, request *
 		)
 		return
 	}
+	registerRequest.IdempotencyKey = request.Header.Get(httpheaders.IdempotencyKey)
 
 	registration, err := controller.service.Register(request.Context(), registerRequest)
 	if err != nil {

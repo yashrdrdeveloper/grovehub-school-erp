@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	coreerrors "grovehub/libs/core/errors"
+	coreidempotency "grovehub/libs/core/idempotency"
 	foundationclient "grovehub/services/foundation/client"
 	foundationrequest "grovehub/services/foundation/dto/request"
 	foundationresponse "grovehub/services/foundation/dto/response"
@@ -45,14 +46,43 @@ func (service *AuthService) Register(
 	ctx context.Context,
 	request identityrequest.Register,
 ) (identityresponse.Register, error) {
+	idempotencyKey, err := coreidempotency.ValidateKey(request.IdempotencyKey)
+	if err != nil {
+		return identityresponse.Register{}, coreerrors.NewError(identityerror.InvalidRegistrationIdempotencyKey)
+	}
+	request.IdempotencyKey = idempotencyKey
+
 	validated, err := service.validator.ValidateRegister(request)
 	if err != nil {
 		return identityresponse.Register{}, err
+	}
+	validated.IdempotencyKey = idempotencyKey
+	requestHash, err := coreidempotency.Fingerprint(validated)
+	if err != nil {
+		return identityresponse.Register{}, coreerrors.Wrap(identityerror.RegistrationFailed, err)
+	}
+
+	if account, readErr := service.accountService.GetByRegistrationIdempotencyKey(ctx, idempotencyKey); readErr == nil {
+		if account.GetRegistrationRequestHash() != requestHash {
+			return identityresponse.Register{}, coreerrors.NewError(identityerror.RegistrationIdempotencyConflict)
+		}
+		if err := service.passwordCredentialService.Set(ctx, string(account.GetAccountId()), validated.Password); err != nil {
+			return identityresponse.Register{}, servicehelpers.MapAuthDependencyError(err)
+		}
+		return service.mapper.ToRegisterResponse(account), nil
+	} else if !isAccountNotFound(readErr) {
+		return identityresponse.Register{}, servicehelpers.MapAuthDependencyError(readErr)
 	}
 
 	person, err := service.resolveRegisterPerson(ctx, validated)
 	if err != nil {
 		return identityresponse.Register{}, err
+	}
+
+	if _, readErr := service.accountService.GetByPersonGid(ctx, person.GID); readErr == nil {
+		return identityresponse.Register{}, coreerrors.NewError(identityerror.RegistrationAlreadyExists)
+	} else if !isAccountNotFound(readErr) {
+		return identityresponse.Register{}, servicehelpers.MapAuthDependencyError(readErr)
 	}
 
 	person, err = service.foundationClient.UpdatePerson(
@@ -64,10 +94,12 @@ func (service *AuthService) Register(
 		return identityresponse.Register{}, servicehelpers.MapAuthDependencyError(err)
 	}
 
-	account, err := service.accountService.Create(ctx, identityservices.CreateAccountInput{
-		PersonGid: person.GID,
-		Email:     validated.Email,
-		Phone:     validated.PhoneNumber,
+	account, created, err := service.accountService.Create(ctx, identityservices.CreateAccountInput{
+		PersonGid:                  person.GID,
+		Email:                      validated.Email,
+		Phone:                      validated.PhoneNumber,
+		RegistrationIdempotencyKey: idempotencyKey,
+		RegistrationRequestHash:    requestHash,
 	})
 	if err != nil {
 		return identityresponse.Register{}, servicehelpers.MapAuthDependencyError(err)
@@ -75,6 +107,9 @@ func (service *AuthService) Register(
 
 	accountId := string(account.GetAccountId())
 	if err := service.passwordCredentialService.Set(ctx, accountId, validated.Password); err != nil {
+		if !created {
+			return identityresponse.Register{}, servicehelpers.MapAuthDependencyError(err)
+		}
 		cleanupErr := service.accountService.PermanentlyDelete(ctx, accountId)
 		if cleanupErr != nil {
 			return identityresponse.Register{}, coreerrors.Wrap(
@@ -131,4 +166,10 @@ func (service *AuthService) resolveRegisterPerson(
 		return foundationresponse.Person{}, coreerrors.NewError(identityerror.RegistrationAlreadyExists)
 	}
 	return person, nil
+}
+
+func isAccountNotFound(err error) bool {
+	var applicationError *coreerrors.Error
+	return errors.As(err, &applicationError) &&
+		applicationError.Definition().Code() == identityerror.AccountNotFound.Code()
 }

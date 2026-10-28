@@ -38,6 +38,14 @@ func (service *DomainService) Register(
 		return entity.Domain{}, err
 	}
 
+	existing, err := service.repository.FindByName(ctx, validated.Name)
+	if err == nil {
+		return existing, nil
+	}
+	if !errors.Is(err, mailproviderrepository.ErrDomainNotFound) {
+		return entity.Domain{}, coreerrors.Wrap(mailprovidererror.DomainReadFailed, err)
+	}
+
 	domainId, err := coreid.NewUUIDv7()
 	if err != nil {
 		return entity.Domain{}, coreerrors.Wrap(mailprovidererror.DomainCreateFailed, err)
@@ -59,7 +67,13 @@ func (service *DomainService) Register(
 	)
 	if err := service.repository.Create(ctx, domain); err != nil {
 		if errors.Is(err, mailproviderrepository.ErrDomainAlreadyExists) {
-			return entity.Domain{}, coreerrors.NewError(mailprovidererror.DomainAlreadyExists)
+			existing, readErr := service.repository.FindByName(ctx, validated.Name)
+			if readErr == nil {
+				return existing, nil
+			}
+			if !errors.Is(readErr, mailproviderrepository.ErrDomainNotFound) {
+				return entity.Domain{}, coreerrors.Wrap(mailprovidererror.DomainReadFailed, readErr)
+			}
 		}
 		return entity.Domain{}, coreerrors.Wrap(mailprovidererror.DomainCreateFailed, err)
 	}
@@ -121,6 +135,16 @@ func (service *DomainService) Verify(ctx context.Context, domainId string) (enti
 		SetVersion(domain.GetVersion() + 1).
 		SetUpdatedAt(time.Now().UTC())
 	if err := service.repository.Update(ctx, updated); err != nil {
+		if errors.Is(err, mailproviderrepository.ErrDomainVersionConflict) {
+			latest, readErr := service.GetById(ctx, domainId)
+			if readErr != nil {
+				return entity.Domain{}, readErr
+			}
+			if latest.GetStatus() == entity.DomainStatusVerified {
+				return latest, nil
+			}
+			return entity.Domain{}, coreerrors.NewError(mailprovidererror.DomainConcurrentModification)
+		}
 		return entity.Domain{}, coreerrors.Wrap(mailprovidererror.DomainUpdateFailed, err)
 	}
 	return updated, nil
@@ -140,6 +164,16 @@ func (service *DomainService) Deactivate(ctx context.Context, domainId string) (
 		SetVersion(domain.GetVersion() + 1).
 		SetUpdatedAt(time.Now().UTC())
 	if err := service.repository.Update(ctx, updated); err != nil {
+		if errors.Is(err, mailproviderrepository.ErrDomainVersionConflict) {
+			latest, readErr := service.GetById(ctx, domainId)
+			if readErr != nil {
+				return entity.Domain{}, readErr
+			}
+			if latest.GetStatus() == entity.DomainStatusDeactivated {
+				return latest, nil
+			}
+			return entity.Domain{}, coreerrors.NewError(mailprovidererror.DomainConcurrentModification)
+		}
 		return entity.Domain{}, coreerrors.Wrap(mailprovidererror.DomainUpdateFailed, err)
 	}
 	return updated, nil

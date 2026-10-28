@@ -12,13 +12,16 @@ import (
 )
 
 var personErrorStatus = map[coreerrors.Code]int{
-	personerror.InvalidPersonGID.Code():          http.StatusBadRequest,
-	personerror.InvalidPersonRequest.Code():      http.StatusBadRequest,
-	personerror.InvalidPersonContact.Code():      http.StatusBadRequest,
-	personerror.InvalidPersonSearch.Code():       http.StatusBadRequest,
-	personerror.InvalidPersonSearchCursor.Code(): http.StatusBadRequest,
-	personerror.PersonNotFound.Code():             http.StatusNotFound,
-	personerror.PersonContactConflict.Code():      http.StatusConflict,
+	personerror.InvalidPersonGID.Code():             http.StatusBadRequest,
+	personerror.InvalidPersonRequest.Code():         http.StatusBadRequest,
+	personerror.InvalidPersonContact.Code():         http.StatusBadRequest,
+	personerror.InvalidPersonIdempotencyKey.Code():  http.StatusBadRequest,
+	personerror.InvalidPersonSearch.Code():          http.StatusBadRequest,
+	personerror.InvalidPersonSearchCursor.Code():    http.StatusBadRequest,
+	personerror.PersonNotFound.Code():               http.StatusNotFound,
+	personerror.PersonContactConflict.Code():        http.StatusConflict,
+	personerror.PersonIdempotencyConflict.Code():    http.StatusConflict,
+	personerror.PersonConcurrentModification.Code(): http.StatusConflict,
 }
 
 func DecodeRequest(request *http.Request, destination any) error {

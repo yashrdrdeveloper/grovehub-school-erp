@@ -13,19 +13,19 @@ const (
 )
 
 type Account struct {
-	AccountId AccountId     `gorm:"column:account_id;type:uuid;primaryKey"`
-	PersonGid PersonGid     `gorm:"column:person_gid;type:uuid;not null"`
-	Email     string        `gorm:"column:email;not null"`
-	Phone     *string       `gorm:"column:phone"`
-	Status    AccountStatus `gorm:"column:status;not null"`
-	Version   int64         `gorm:"column:version;not null"`
-	CreatedAt time.Time     `gorm:"column:created_at;not null"`
-	UpdatedAt time.Time     `gorm:"column:updated_at;not null"`
+	AccountId                  AccountId     `gorm:"column:account_id;type:uuid;primaryKey"`
+	RegistrationIdempotencyKey *string       `gorm:"column:registration_idempotency_key"`
+	RegistrationRequestHash    *string       `gorm:"column:registration_request_hash"`
+	PersonGid                  PersonGid     `gorm:"column:person_gid;type:uuid;not null"`
+	Email                      string        `gorm:"column:email;not null"`
+	Phone                      *string       `gorm:"column:phone"`
+	Status                     AccountStatus `gorm:"column:status;not null"`
+	Version                    int64         `gorm:"column:version;not null"`
+	CreatedAt                  time.Time     `gorm:"column:created_at;not null"`
+	UpdatedAt                  time.Time     `gorm:"column:updated_at;not null"`
 }
 
-func (Account) TableName() string {
-	return "identity.accounts"
-}
+func (Account) TableName() string { return "identity.accounts" }
 
 func NewAccount(
 	accountId AccountId,
@@ -50,6 +50,18 @@ func NewAccount(
 }
 
 func (account Account) GetAccountId() AccountId { return account.AccountId }
+func (account Account) GetRegistrationIdempotencyKey() string {
+	if account.RegistrationIdempotencyKey == nil {
+		return ""
+	}
+	return *account.RegistrationIdempotencyKey
+}
+func (account Account) GetRegistrationRequestHash() string {
+	if account.RegistrationRequestHash == nil {
+		return ""
+	}
+	return *account.RegistrationRequestHash
+}
 func (account Account) GetPersonGid() PersonGid { return account.PersonGid }
 func (account Account) GetEmail() string        { return account.Email }
 func (account Account) GetPhone() string {
@@ -63,26 +75,18 @@ func (account Account) GetVersion() int64        { return account.Version }
 func (account Account) GetCreatedAt() time.Time  { return account.CreatedAt }
 func (account Account) GetUpdatedAt() time.Time  { return account.UpdatedAt }
 
-func (account Account) SetEmail(email string) Account {
-	account.Email = email
+func (account Account) SetRegistrationIdempotency(key, requestHash string) Account {
+	account.RegistrationIdempotencyKey = optionalString(key)
+	account.RegistrationRequestHash = optionalString(requestHash)
 	return account
 }
-
-func (account Account) SetPhone(phone string) Account {
-	account.Phone = optionalString(phone)
-	return account
-}
-
+func (account Account) SetEmail(email string) Account { account.Email = email; return account }
+func (account Account) SetPhone(phone string) Account { account.Phone = optionalString(phone); return account }
 func (account Account) SetStatus(status AccountStatus) Account {
 	account.Status = status
 	return account
 }
-
-func (account Account) SetVersion(version int64) Account {
-	account.Version = version
-	return account
-}
-
+func (account Account) SetVersion(version int64) Account { account.Version = version; return account }
 func (account Account) SetUpdatedAt(updatedAt time.Time) Account {
 	account.UpdatedAt = updatedAt
 	return account

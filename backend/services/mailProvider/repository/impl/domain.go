@@ -18,9 +18,7 @@ type DomainRepository struct {
 	db *gorm.DB
 }
 
-func NewDomainRepository(db *gorm.DB) mailproviderrepository.DomainRepository {
-	return &DomainRepository{db: db}
-}
+func NewDomainRepository(db *gorm.DB) mailproviderrepository.DomainRepository { return &DomainRepository{db: db} }
 
 func (repository *DomainRepository) Create(ctx context.Context, domain entity.Domain) error {
 	return mapDomainWriteError(repository.db.WithContext(ctx).Create(&domain).Error)
@@ -38,9 +36,7 @@ func (repository *DomainRepository) FindAll(ctx context.Context) ([]entity.Domai
 
 func (repository *DomainRepository) FindById(ctx context.Context, domainId entity.DomainId) (entity.Domain, error) {
 	var domain entity.Domain
-	if err := repository.db.WithContext(ctx).
-		Where(&entity.Domain{DomainId: domainId}).
-		Take(&domain).Error; err != nil {
+	if err := repository.db.WithContext(ctx).Where(&entity.Domain{DomainId: domainId}).Take(&domain).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return entity.Domain{}, mailproviderrepository.ErrDomainNotFound
 		}
@@ -51,9 +47,7 @@ func (repository *DomainRepository) FindById(ctx context.Context, domainId entit
 
 func (repository *DomainRepository) FindByName(ctx context.Context, name string) (entity.Domain, error) {
 	var domain entity.Domain
-	if err := repository.db.WithContext(ctx).
-		Where(&entity.Domain{Name: name}).
-		Take(&domain).Error; err != nil {
+	if err := repository.db.WithContext(ctx).Where(&entity.Domain{Name: name}).Take(&domain).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return entity.Domain{}, mailproviderrepository.ErrDomainNotFound
 		}
@@ -63,15 +57,18 @@ func (repository *DomainRepository) FindByName(ctx context.Context, name string)
 }
 
 func (repository *DomainRepository) Update(ctx context.Context, domain entity.Domain) error {
+	expectedVersion := domain.GetVersion() - 1
 	result := repository.db.WithContext(ctx).
-		Model(&entity.Domain{DomainId: domain.GetDomainId()}).
+		Model(&entity.Domain{}).
+		Where(&entity.Domain{DomainId: domain.GetDomainId()}).
+		Where("version = ?", expectedVersion).
 		Select("Status", "Version", "UpdatedAt").
 		Updates(&domain)
 	if result.Error != nil {
 		return mapDomainWriteError(result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return mailproviderrepository.ErrDomainNotFound
+		return mailproviderrepository.ErrDomainVersionConflict
 	}
 	return nil
 }

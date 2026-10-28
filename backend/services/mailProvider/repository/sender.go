@@ -8,8 +8,9 @@ import (
 )
 
 var (
-	ErrSenderNotFound      = errors.New("mail provider sender not found")
-	ErrSenderAlreadyExists = errors.New("mail provider sender already exists")
+	ErrSenderNotFound        = errors.New("mail provider sender not found")
+	ErrSenderAlreadyExists   = errors.New("mail provider sender already exists")
+	ErrSenderVersionConflict = errors.New("mail provider sender version conflict")
 )
 
 type SenderRepository interface {
