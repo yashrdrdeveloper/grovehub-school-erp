@@ -3,7 +3,7 @@ package impl
 import (
 	"context"
 
-	searchcontract "grovehub/libs/core/contracts/search"
+	coresearch "grovehub/libs/core/search"
 	foundationclient "grovehub/services/foundation/client"
 	foundationrequest "grovehub/services/foundation/dto/request"
 	foundationresponse "grovehub/services/foundation/dto/response"
@@ -42,8 +42,8 @@ func (client *personClient) UpdatePerson(
 
 func (client *personClient) SearchPersons(
 	ctx context.Context,
-	request searchcontract.Request,
-) (searchcontract.Result[foundationresponse.Person], error) {
+	request coresearch.Request,
+) (coresearch.Result[foundationresponse.Person], error) {
 	return client.personService.Search(ctx, request)
 }
 
