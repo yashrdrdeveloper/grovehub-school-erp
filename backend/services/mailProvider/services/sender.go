@@ -14,6 +14,7 @@ type RegisterSenderInput struct {
 
 type SenderService interface {
 	Register(ctx context.Context, input RegisterSenderInput) (entity.Sender, error)
+	ListAll(ctx context.Context) ([]entity.Sender, error)
 	GetById(ctx context.Context, senderId string) (entity.Sender, error)
 	Deactivate(ctx context.Context, senderId string) (entity.Sender, error)
 }

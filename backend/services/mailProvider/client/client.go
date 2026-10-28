@@ -7,6 +7,7 @@ import (
 )
 
 type SendRequest struct {
+	GID      string
 	SenderId string
 	To       []string
 	Cc       []string

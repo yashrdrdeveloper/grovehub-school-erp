@@ -4,6 +4,7 @@ import "time"
 
 type Message struct {
 	MessageId      string    `json:"messageId"`
+	GID            string    `json:"gid"`
 	SenderId       string    `json:"senderId"`
 	To             []string  `json:"to"`
 	Cc             []string  `json:"cc,omitempty"`

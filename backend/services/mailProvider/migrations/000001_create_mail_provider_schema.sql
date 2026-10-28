@@ -46,6 +46,7 @@ CREATE INDEX idx_mail_provider_senders_domain_id
 
 CREATE TABLE mail_provider.messages (
     message_id uuid NOT NULL,
+    gid uuid NOT NULL,
     sender_id uuid NOT NULL,
     to_addresses text[] NOT NULL,
     cc_addresses text[] NOT NULL DEFAULT '{}',
@@ -69,6 +70,9 @@ CREATE TABLE mail_provider.messages (
     CONSTRAINT chk_mail_provider_messages_status CHECK (status IN ('QUEUED', 'SUBMITTED', 'FAILED')),
     CONSTRAINT chk_mail_provider_messages_version CHECK (version >= 1)
 );
+
+CREATE INDEX idx_mail_provider_messages_gid_created_at
+    ON mail_provider.messages(gid, created_at DESC);
 
 CREATE INDEX idx_mail_provider_messages_sender_id
     ON mail_provider.messages(sender_id);

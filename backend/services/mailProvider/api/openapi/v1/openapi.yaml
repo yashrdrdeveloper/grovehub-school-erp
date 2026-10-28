@@ -5,6 +5,19 @@ info:
   description: GroveHub outbound mail-provider domain, sender, and message submission contract.
 paths:
   /mail-provider/domains:
+    get:
+      operationId: listMailProviderDomains
+      summary: List all registered sending domains
+      description: Returns the complete domain list. This endpoint is intentionally not paginated because the domain set is expected to remain limited.
+      tags: [Mail Provider]
+      responses:
+        '200':
+          description: Domains returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainListSuccessResponse'
+        '500': { $ref: '#/components/responses/InternalError' }
     post:
       operationId: registerMailProviderDomain
       summary: Register a sending domain and obtain its DNS TXT ownership challenge
@@ -95,6 +108,19 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '500': { $ref: '#/components/responses/InternalError' }
   /mail-provider/senders:
+    get:
+      operationId: listMailProviderSenders
+      summary: List all registered senders
+      description: Returns the complete sender list. This endpoint is intentionally not paginated because the sender set is expected to remain limited.
+      tags: [Mail Provider]
+      responses:
+        '200':
+          description: Senders returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SenderListSuccessResponse'
+        '500': { $ref: '#/components/responses/InternalError' }
     post:
       operationId: registerMailProviderSender
       summary: Register a sender address under a verified domain
@@ -154,7 +180,7 @@ paths:
     post:
       operationId: sendMailProviderMessage
       summary: Persist and submit a message to the GroveHub Haraka MTA
-      description: A SUBMITTED response means Haraka accepted the message for its outbound path; it does not mean final mailbox delivery.
+      description: A SUBMITTED response means Haraka accepted the message for its outbound path; it does not mean final mailbox delivery. gid is mandatory and associates the message with the GroveHub global entity.
       tags: [Mail Provider]
       requestBody:
         required: true
@@ -173,6 +199,31 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
         '502': { $ref: '#/components/responses/DependencyError' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /mail-provider/messages/search:
+    post:
+      operationId: searchMailProviderMessages
+      summary: Search mail-provider messages with cursor pagination, filters, and sorting
+      description: |
+        Search text matches message ID, gid, sender ID, subject, status, and recipient addresses.
+        Supported filter fields: messageId, gid, senderId, subject, status, createdAt, updatedAt.
+        Supported sort fields: messageId, gid, senderId, subject, status, createdAt, updatedAt.
+        Only one sort field is accepted. Default sort is createdAt DESC. rows defaults to 25 and is capped at 100.
+      tags: [Mail Provider]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageSearchRequest'
+      responses:
+        '200':
+          description: Matching messages returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageSearchSuccessResponse'
+        '400': { $ref: '#/components/responses/BadRequest' }
         '500': { $ref: '#/components/responses/InternalError' }
   /mail-provider/messages/{messageId}:
     parameters:
@@ -231,8 +282,12 @@ components:
     SendMessageRequest:
       type: object
       additionalProperties: false
-      required: [senderId, to, subject]
+      required: [gid, senderId, to, subject]
       properties:
+        gid:
+          type: string
+          format: uuid
+          description: Mandatory GroveHub global entity identifier associated with this message.
         senderId: { type: string, format: uuid }
         to:
           type: array
@@ -248,6 +303,69 @@ components:
         subject: { type: string, minLength: 1 }
         textBody: { type: string }
         htmlBody: { type: string }
+    MessageSearchRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        searchText:
+          type: string
+          maxLength: 256
+        filters:
+          type: array
+          maxItems: 20
+          items:
+            $ref: '#/components/schemas/SearchFilter'
+        sort:
+          type: array
+          maxItems: 1
+          items:
+            $ref: '#/components/schemas/SearchSort'
+        pageInfo:
+          $ref: '#/components/schemas/SearchPageRequest'
+    SearchFilter:
+      type: object
+      additionalProperties: false
+      required: [field, operator]
+      properties:
+        field:
+          type: string
+          enum: [messageId, gid, senderId, subject, status, createdAt, updatedAt]
+        operator:
+          type: string
+          enum: [EQUALS, NOT_EQUALS, IN, NIN, GT, GTE, LT, LTE, CONTAINS, STARTS_WITH]
+        values:
+          type: array
+          maxItems: 50
+          items: { type: string }
+    SearchSort:
+      type: object
+      additionalProperties: false
+      required: [field]
+      properties:
+        field:
+          type: string
+          enum: [messageId, gid, senderId, subject, status, createdAt, updatedAt]
+        direction:
+          type: string
+          enum: [ASC, DESC]
+    SearchPageRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        rows:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 25
+        cursor:
+          type: string
+    SearchPageResponse:
+      type: object
+      required: [rows, hasNext]
+      properties:
+        rows: { type: integer }
+        nextCursor: { type: string }
+        hasNext: { type: boolean }
     Domain:
       type: object
       required: [domainId, name, verificationHost, verificationValue, status, version, createdAt, updatedAt]
@@ -274,9 +392,13 @@ components:
         updatedAt: { type: string, format: date-time }
     Message:
       type: object
-      required: [messageId, senderId, to, subject, status, version, createdAt, updatedAt]
+      required: [messageId, gid, senderId, to, subject, status, version, createdAt, updatedAt]
       properties:
         messageId: { type: string, format: uuid }
+        gid:
+          type: string
+          format: uuid
+          description: GroveHub global entity identifier associated with the message.
         senderId: { type: string, format: uuid }
         to:
           type: array
@@ -293,24 +415,59 @@ components:
         version: { type: integer, format: int64 }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
+    MessageSearchResult:
+      type: object
+      required: [items, pageInfo]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        pageInfo:
+          $ref: '#/components/schemas/SearchPageResponse'
     DomainSuccessResponse:
       type: object
       required: [success, data]
       properties:
         success: { type: boolean, const: true }
         data: { $ref: '#/components/schemas/Domain' }
+    DomainListSuccessResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, const: true }
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Domain'
     SenderSuccessResponse:
       type: object
       required: [success, data]
       properties:
         success: { type: boolean, const: true }
         data: { $ref: '#/components/schemas/Sender' }
+    SenderListSuccessResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, const: true }
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sender'
     MessageSuccessResponse:
       type: object
       required: [success, data]
       properties:
         success: { type: boolean, const: true }
         data: { $ref: '#/components/schemas/Message' }
+    MessageSearchSuccessResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, const: true }
+        data:
+          $ref: '#/components/schemas/MessageSearchResult'
     ErrorResponse:
       type: object
       required: [success, errorCode, errorMessage, httpErrorCode, errorMetaData]

@@ -6,6 +6,7 @@ import (
 	"github.com/lib/pq"
 )
 
+type GID string
 type MessageId string
 type MessageStatus string
 
@@ -17,6 +18,7 @@ const (
 
 type Message struct {
 	MessageId      MessageId      `gorm:"column:message_id;type:uuid;primaryKey"`
+	GID            GID            `gorm:"column:gid;type:uuid;not null"`
 	SenderId       SenderId       `gorm:"column:sender_id;type:uuid;not null"`
 	To             pq.StringArray `gorm:"column:to_addresses;type:text[];not null"`
 	Cc             pq.StringArray `gorm:"column:cc_addresses;type:text[];not null"`
@@ -37,6 +39,7 @@ func (Message) TableName() string {
 
 func NewMessage(
 	messageId MessageId,
+	gid GID,
 	senderId SenderId,
 	to []string,
 	cc []string,
@@ -52,6 +55,7 @@ func NewMessage(
 ) Message {
 	return Message{
 		MessageId:      messageId,
+		GID:            gid,
 		SenderId:       senderId,
 		To:             pq.StringArray(copyStrings(to)),
 		Cc:             pq.StringArray(copyStrings(cc)),
@@ -68,6 +72,7 @@ func NewMessage(
 }
 
 func (message Message) GetMessageId() MessageId  { return message.MessageId }
+func (message Message) GetGID() GID              { return message.GID }
 func (message Message) GetSenderId() SenderId    { return message.SenderId }
 func (message Message) GetTo() []string          { return copyStrings([]string(message.To)) }
 func (message Message) GetCc() []string          { return copyStrings([]string(message.Cc)) }
@@ -76,12 +81,14 @@ func (message Message) GetSubject() string       { return message.Subject }
 func (message Message) GetTextBody() string      { return message.TextBody }
 func (message Message) GetHTMLBody() string      { return message.HTMLBody }
 func (message Message) GetStatus() MessageStatus { return message.Status }
+
 func (message Message) GetFailureMessage() string {
 	if message.FailureMessage == nil {
 		return ""
 	}
 	return *message.FailureMessage
 }
+
 func (message Message) GetVersion() int64       { return message.Version }
 func (message Message) GetCreatedAt() time.Time { return message.CreatedAt }
 func (message Message) GetUpdatedAt() time.Time { return message.UpdatedAt }

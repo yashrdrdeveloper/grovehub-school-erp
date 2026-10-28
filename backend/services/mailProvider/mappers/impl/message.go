@@ -13,6 +13,7 @@ func NewMessageMapper() mailprovidermappers.MessageMapper { return &MessageMappe
 func (mapper *MessageMapper) ToResponse(message entity.Message) mailproviderresponse.Message {
 	return mailproviderresponse.Message{
 		MessageId:      string(message.GetMessageId()),
+		GID:            string(message.GetGID()),
 		SenderId:       string(message.GetSenderId()),
 		To:             message.GetTo(),
 		Cc:             message.GetCc(),

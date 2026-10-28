@@ -1,6 +1,7 @@
 package request
 
 type SendMessage struct {
+	GID      string   `json:"gid"`
 	SenderId string   `json:"senderId"`
 	To       []string `json:"to"`
 	Cc       []string `json:"cc,omitempty"`

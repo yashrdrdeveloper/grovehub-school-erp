@@ -66,6 +66,14 @@ func (service *DomainService) Register(
 	return domain, nil
 }
 
+func (service *DomainService) ListAll(ctx context.Context) ([]entity.Domain, error) {
+	domains, err := service.repository.FindAll(ctx)
+	if err != nil {
+		return nil, coreerrors.Wrap(mailprovidererror.DomainReadFailed, err)
+	}
+	return domains, nil
+}
+
 func (service *DomainService) GetById(ctx context.Context, domainId string) (entity.Domain, error) {
 	validatedId, err := service.validator.ValidateDomainId(domainId)
 	if err != nil {

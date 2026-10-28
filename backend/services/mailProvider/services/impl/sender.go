@@ -21,11 +21,18 @@ type SenderService struct {
 	validator     mailprovidervalidators.SenderValidator
 }
 
-func NewSenderService(repository mailproviderrepository.SenderRepository, domainService mailproviderservices.DomainService, validator mailprovidervalidators.SenderValidator) mailproviderservices.SenderService {
+func NewSenderService(
+	repository mailproviderrepository.SenderRepository,
+	domainService mailproviderservices.DomainService,
+	validator mailprovidervalidators.SenderValidator,
+) mailproviderservices.SenderService {
 	return &SenderService{repository: repository, domainService: domainService, validator: validator}
 }
 
-func (service *SenderService) Register(ctx context.Context, input mailproviderservices.RegisterSenderInput) (entity.Sender, error) {
+func (service *SenderService) Register(
+	ctx context.Context,
+	input mailproviderservices.RegisterSenderInput,
+) (entity.Sender, error) {
 	validated, err := service.validator.ValidateRegister(input)
 	if err != nil {
 		return entity.Sender{}, err
@@ -46,7 +53,16 @@ func (service *SenderService) Register(ctx context.Context, input mailproviderse
 		return entity.Sender{}, coreerrors.Wrap(mailprovidererror.SenderCreateFailed, err)
 	}
 	now := time.Now().UTC()
-	sender := entity.NewSender(entity.SenderId(senderId), domain.GetDomainId(), validated.Email, validated.DisplayName, entity.SenderStatusActive, 1, now, now)
+	sender := entity.NewSender(
+		entity.SenderId(senderId),
+		domain.GetDomainId(),
+		validated.Email,
+		validated.DisplayName,
+		entity.SenderStatusActive,
+		1,
+		now,
+		now,
+	)
 	if err := service.repository.Create(ctx, sender); err != nil {
 		if errors.Is(err, mailproviderrepository.ErrSenderAlreadyExists) {
 			return entity.Sender{}, coreerrors.NewError(mailprovidererror.SenderAlreadyExists)
@@ -54,6 +70,14 @@ func (service *SenderService) Register(ctx context.Context, input mailproviderse
 		return entity.Sender{}, coreerrors.Wrap(mailprovidererror.SenderCreateFailed, err)
 	}
 	return sender, nil
+}
+
+func (service *SenderService) ListAll(ctx context.Context) ([]entity.Sender, error) {
+	senders, err := service.repository.FindAll(ctx)
+	if err != nil {
+		return nil, coreerrors.Wrap(mailprovidererror.SenderReadFailed, err)
+	}
+	return senders, nil
 }
 
 func (service *SenderService) GetById(ctx context.Context, senderId string) (entity.Sender, error) {
@@ -79,7 +103,10 @@ func (service *SenderService) Deactivate(ctx context.Context, senderId string) (
 	if sender.GetStatus() == entity.SenderStatusDeactivated {
 		return sender, nil
 	}
-	updated := sender.SetStatus(entity.SenderStatusDeactivated).SetVersion(sender.GetVersion()+1).SetUpdatedAt(time.Now().UTC())
+	updated := sender.
+		SetStatus(entity.SenderStatusDeactivated).
+		SetVersion(sender.GetVersion() + 1).
+		SetUpdatedAt(time.Now().UTC())
 	if err := service.repository.Update(ctx, updated); err != nil {
 		return entity.Sender{}, coreerrors.Wrap(mailprovidererror.SenderUpdateFailed, err)
 	}

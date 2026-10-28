@@ -3,10 +3,12 @@ package services
 import (
 	"context"
 
+	coresearch "grovehub/libs/core/search"
 	"grovehub/services/mailProvider/entity"
 )
 
 type SendMessageInput struct {
+	GID      string
 	SenderId string
 	To       []string
 	Cc       []string
@@ -19,4 +21,5 @@ type SendMessageInput struct {
 type MessageService interface {
 	Send(ctx context.Context, input SendMessageInput) (entity.Message, error)
 	GetById(ctx context.Context, messageId string) (entity.Message, error)
+	Search(ctx context.Context, request coresearch.Request) (coresearch.Result[entity.Message], error)
 }

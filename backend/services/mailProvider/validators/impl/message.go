@@ -3,6 +3,7 @@ package impl
 import (
 	"strings"
 
+	coresearch "grovehub/libs/core/search"
 	"grovehub/services/mailProvider/entity"
 	mailproviderservices "grovehub/services/mailProvider/services"
 	mailprovidervalidators "grovehub/services/mailProvider/validators"
@@ -18,6 +19,10 @@ func NewMessageValidator() mailprovidervalidators.MessageValidator {
 func (validator *MessageValidator) ValidateSend(
 	input mailproviderservices.SendMessageInput,
 ) (mailproviderservices.SendMessageInput, error) {
+	gid, err := validatorhelpers.NormalizeGID(input.GID)
+	if err != nil {
+		return mailproviderservices.SendMessageInput{}, err
+	}
 	senderId, err := validatorhelpers.NormalizeSenderId(input.SenderId)
 	if err != nil {
 		return mailproviderservices.SendMessageInput{}, err
@@ -38,6 +43,7 @@ func (validator *MessageValidator) ValidateSend(
 		return mailproviderservices.SendMessageInput{}, err
 	}
 
+	input.GID = string(gid)
 	input.SenderId = string(senderId)
 	input.To = to
 	input.Cc = cc
@@ -48,4 +54,10 @@ func (validator *MessageValidator) ValidateSend(
 
 func (validator *MessageValidator) ValidateMessageId(value string) (entity.MessageId, error) {
 	return validatorhelpers.NormalizeMessageId(value)
+}
+
+func (validator *MessageValidator) ValidateSearch(
+	request coresearch.Request,
+) (coresearch.Query[entity.MessageId], coresearch.CursorPayload, error) {
+	return validatorhelpers.NormalizeMessageSearchRequest(request)
 }

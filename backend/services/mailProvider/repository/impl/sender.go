@@ -6,6 +6,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"grovehub/services/mailProvider/entity"
 	mailproviderrepository "grovehub/services/mailProvider/repository"
@@ -23,6 +24,16 @@ func NewSenderRepository(db *gorm.DB) mailproviderrepository.SenderRepository {
 
 func (repository *SenderRepository) Create(ctx context.Context, sender entity.Sender) error {
 	return mapSenderWriteError(repository.db.WithContext(ctx).Create(&sender).Error)
+}
+
+func (repository *SenderRepository) FindAll(ctx context.Context) ([]entity.Sender, error) {
+	senders := make([]entity.Sender, 0)
+	if err := repository.db.WithContext(ctx).
+		Order(clause.OrderByColumn{Column: clause.Column{Name: "created_at"}, Desc: true}).
+		Find(&senders).Error; err != nil {
+		return nil, err
+	}
+	return senders, nil
 }
 
 func (repository *SenderRepository) FindById(ctx context.Context, senderId entity.SenderId) (entity.Sender, error) {

@@ -7,6 +7,10 @@ var (
 		"MAIL_PROVIDER_MESSAGE_INVALID",
 		"Mail provider message is invalid",
 	)
+	InvalidMessageSearch = coreerrors.NewDefinition(
+		"MAIL_PROVIDER_MESSAGE_SEARCH_INVALID",
+		"Mail provider message search is invalid",
+	)
 	MessageNotFound = coreerrors.NewDefinition(
 		"MAIL_PROVIDER_MESSAGE_NOT_FOUND",
 		"Mail provider message was not found",
@@ -18,6 +22,10 @@ var (
 	MessageReadFailed = coreerrors.NewDefinition(
 		"MAIL_PROVIDER_MESSAGE_READ_FAILED",
 		"Unable to read mail provider message",
+	)
+	MessageSearchFailed = coreerrors.NewDefinition(
+		"MAIL_PROVIDER_MESSAGE_SEARCH_FAILED",
+		"Unable to search mail provider messages",
 	)
 	MessageUpdateFailed = coreerrors.NewDefinition(
 		"MAIL_PROVIDER_MESSAGE_UPDATE_FAILED",

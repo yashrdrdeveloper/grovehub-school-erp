@@ -6,6 +6,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"grovehub/services/mailProvider/entity"
 	mailproviderrepository "grovehub/services/mailProvider/repository"
@@ -23,6 +24,16 @@ func NewDomainRepository(db *gorm.DB) mailproviderrepository.DomainRepository {
 
 func (repository *DomainRepository) Create(ctx context.Context, domain entity.Domain) error {
 	return mapDomainWriteError(repository.db.WithContext(ctx).Create(&domain).Error)
+}
+
+func (repository *DomainRepository) FindAll(ctx context.Context) ([]entity.Domain, error) {
+	domains := make([]entity.Domain, 0)
+	if err := repository.db.WithContext(ctx).
+		Order(clause.OrderByColumn{Column: clause.Column{Name: "created_at"}, Desc: true}).
+		Find(&domains).Error; err != nil {
+		return nil, err
+	}
+	return domains, nil
 }
 
 func (repository *DomainRepository) FindById(ctx context.Context, domainId entity.DomainId) (entity.Domain, error) {

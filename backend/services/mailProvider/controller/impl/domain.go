@@ -9,6 +9,7 @@ import (
 	"grovehub/services/mailProvider/controller"
 	controllerhelpers "grovehub/services/mailProvider/controller/helpers"
 	mailproviderrequest "grovehub/services/mailProvider/dto/request"
+	mailproviderresponse "grovehub/services/mailProvider/dto/response"
 	mailprovidermappers "grovehub/services/mailProvider/mappers"
 	mailproviderservices "grovehub/services/mailProvider/services"
 )
@@ -18,7 +19,10 @@ type DomainController struct {
 	mapper  mailprovidermappers.DomainMapper
 }
 
-func NewDomainController(service mailproviderservices.DomainService, mapper mailprovidermappers.DomainMapper) controller.DomainController {
+func NewDomainController(
+	service mailproviderservices.DomainService,
+	mapper mailprovidermappers.DomainMapper,
+) controller.DomainController {
 	return &DomainController{service: service, mapper: mapper}
 }
 
@@ -34,6 +38,20 @@ func (controller *DomainController) Register(writer http.ResponseWriter, request
 		return
 	}
 	_ = httpresponse.WriteSuccess(writer, http.StatusCreated, controller.mapper.ToResponse(domain))
+}
+
+func (controller *DomainController) ListAll(writer http.ResponseWriter, request *http.Request) {
+	domains, err := controller.service.ListAll(request.Context())
+	if err != nil {
+		controllerhelpers.WriteError(request.Context(), writer, err)
+		return
+	}
+
+	response := make([]mailproviderresponse.Domain, 0, len(domains))
+	for _, domain := range domains {
+		response = append(response, controller.mapper.ToResponse(domain))
+	}
+	_ = httpresponse.WriteSuccess(writer, http.StatusOK, response)
 }
 
 func (controller *DomainController) GetById(writer http.ResponseWriter, request *http.Request) {

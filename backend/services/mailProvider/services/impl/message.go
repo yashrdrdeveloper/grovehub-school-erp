@@ -7,10 +7,12 @@ import (
 
 	coreerrors "grovehub/libs/core/errors"
 	coreid "grovehub/libs/core/id"
+	coresearch "grovehub/libs/core/search"
 	mailprovidererror "grovehub/services/mailProvider/constants/error"
 	"grovehub/services/mailProvider/entity"
 	mailproviderrepository "grovehub/services/mailProvider/repository"
 	mailproviderservices "grovehub/services/mailProvider/services"
+	servicehelpers "grovehub/services/mailProvider/services/helpers"
 	mailprovidertransport "grovehub/services/mailProvider/transport"
 	mailprovidervalidators "grovehub/services/mailProvider/validators"
 )
@@ -30,10 +32,16 @@ func NewMessageService(
 	transport mailprovidertransport.Sender,
 	validator mailprovidervalidators.MessageValidator,
 ) mailproviderservices.MessageService {
-	return &MessageService{repository: repository, domainService: domainService, senderService: senderService, transport: transport, validator: validator}
+	return &MessageService{
+		repository: repository, domainService: domainService, senderService: senderService,
+		transport: transport, validator: validator,
+	}
 }
 
-func (service *MessageService) Send(ctx context.Context, input mailproviderservices.SendMessageInput) (entity.Message, error) {
+func (service *MessageService) Send(
+	ctx context.Context,
+	input mailproviderservices.SendMessageInput,
+) (entity.Message, error) {
 	validated, err := service.validator.ValidateSend(input)
 	if err != nil {
 		return entity.Message{}, err
@@ -57,19 +65,40 @@ func (service *MessageService) Send(ctx context.Context, input mailproviderservi
 		return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageCreateFailed, err)
 	}
 	now := time.Now().UTC()
-	message := entity.NewMessage(entity.MessageId(messageId), sender.GetSenderId(), validated.To, validated.Cc, validated.Bcc,
-		validated.Subject, validated.TextBody, validated.HTMLBody, entity.MessageStatusQueued, "", 1, now, now)
+	message := entity.NewMessage(
+		entity.MessageId(messageId),
+		entity.GID(validated.GID),
+		sender.GetSenderId(),
+		validated.To,
+		validated.Cc,
+		validated.Bcc,
+		validated.Subject,
+		validated.TextBody,
+		validated.HTMLBody,
+		entity.MessageStatusQueued,
+		"",
+		1,
+		now,
+		now,
+	)
 	if err := service.repository.Create(ctx, message); err != nil {
 		return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageCreateFailed, err)
 	}
 	if err := service.transport.Send(ctx, message, sender); err != nil {
-		failed := message.SetStatus(entity.MessageStatusFailed).SetFailureMessage(err.Error()).SetVersion(2).SetUpdatedAt(time.Now().UTC())
+		failed := message.
+			SetStatus(entity.MessageStatusFailed).
+			SetFailureMessage(err.Error()).
+			SetVersion(2).
+			SetUpdatedAt(time.Now().UTC())
 		if updateErr := service.repository.Update(ctx, failed); updateErr != nil {
 			return failed, coreerrors.Wrap(mailprovidererror.MessageUpdateFailed, errors.Join(err, updateErr))
 		}
 		return failed, coreerrors.Wrap(mailprovidererror.MessageSubmissionFailed, err)
 	}
-	submitted := message.SetStatus(entity.MessageStatusSubmitted).SetVersion(2).SetUpdatedAt(time.Now().UTC())
+	submitted := message.
+		SetStatus(entity.MessageStatusSubmitted).
+		SetVersion(2).
+		SetUpdatedAt(time.Now().UTC())
 	if err := service.repository.Update(ctx, submitted); err != nil {
 		return submitted, coreerrors.Wrap(mailprovidererror.MessageUpdateFailed, err)
 	}
@@ -89,4 +118,51 @@ func (service *MessageService) GetById(ctx context.Context, messageId string) (e
 		return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageReadFailed, err)
 	}
 	return message, nil
+}
+
+func (service *MessageService) Search(
+	ctx context.Context,
+	request coresearch.Request,
+) (coresearch.Result[entity.Message], error) {
+	query, cursorPayload, err := service.validator.ValidateSearch(request)
+	if err != nil {
+		return coresearch.Result[entity.Message]{}, err
+	}
+
+	result, err := service.repository.Search(ctx, query)
+	if err != nil {
+		if errors.Is(err, coresearch.ErrInvalidQuery) {
+			return coresearch.Result[entity.Message]{}, coreerrors.NewError(mailprovidererror.InvalidMessageSearch)
+		}
+		return coresearch.Result[entity.Message]{}, coreerrors.Wrap(mailprovidererror.MessageSearchFailed, err)
+	}
+
+	nextCursor, err := buildMessageNextCursor(result, query, cursorPayload)
+	if err != nil {
+		return coresearch.Result[entity.Message]{}, coreerrors.Wrap(mailprovidererror.MessageSearchFailed, err)
+	}
+
+	return coresearch.Result[entity.Message]{
+		Items: result.Items,
+		PageInfo: coresearch.PageResponse{
+			Rows:       query.Limit,
+			NextCursor: nextCursor,
+			HasNext:    result.HasNext,
+		},
+	}, nil
+}
+
+func buildMessageNextCursor(
+	result coresearch.QueryResult[entity.Message],
+	query coresearch.Query[entity.MessageId],
+	cursor coresearch.CursorPayload,
+) (string, error) {
+	if !result.HasNext || len(result.Items) == 0 {
+		return "", nil
+	}
+
+	lastMessage := result.Items[len(result.Items)-1]
+	cursor.Value = servicehelpers.MessageCursorValue(lastMessage, query.Sort.Field)
+	cursor.CursorId = string(lastMessage.GetMessageId())
+	return servicehelpers.EncodeMessageSearchCursor(cursor)
 }

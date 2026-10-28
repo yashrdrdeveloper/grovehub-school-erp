@@ -18,15 +18,18 @@ func RegisterHTTP(
 	}
 
 	register("POST /mail-provider/domains", domainController.Register)
+	register("GET /mail-provider/domains", domainController.ListAll)
 	register("GET /mail-provider/domains/by-name/{domainName}", domainController.GetByName)
 	register("GET /mail-provider/domains/{domainId}", domainController.GetById)
 	register("POST /mail-provider/domains/{domainId}/verify", domainController.Verify)
 	register("POST /mail-provider/domains/{domainId}/deactivate", domainController.Deactivate)
 
 	register("POST /mail-provider/senders", senderController.Register)
+	register("GET /mail-provider/senders", senderController.ListAll)
 	register("GET /mail-provider/senders/{senderId}", senderController.GetById)
 	register("POST /mail-provider/senders/{senderId}/deactivate", senderController.Deactivate)
 
 	register("POST /mail-provider/messages", messageController.Send)
+	register("POST /mail-provider/messages/search", messageController.Search)
 	register("GET /mail-provider/messages/{messageId}", messageController.GetById)
 }
