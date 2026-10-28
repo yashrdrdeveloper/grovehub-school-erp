@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/gorm"
 
 	coretelemetry "grovehub/libs/core/telemetry"
 	foundationclient "grovehub/services/foundation/client"
@@ -26,12 +26,12 @@ type module struct {
 	authController controller.AuthController
 }
 
-func New(logger *slog.Logger, pool *pgxpool.Pool, foundationClient foundationclient.Client) Module {
-	accountRepository := repositoryimpl.NewAccountRepository(pool)
+func New(logger *slog.Logger, db *gorm.DB, foundationClient foundationclient.Client) Module {
+	accountRepository := repositoryimpl.NewAccountRepository(db)
 	accountValidator := validatorimpl.NewAccountValidator()
 	accountService := serviceimpl.NewAccountService(accountRepository, accountValidator)
 
-	passwordCredentialRepository := repositoryimpl.NewPasswordCredentialRepository(pool)
+	passwordCredentialRepository := repositoryimpl.NewPasswordCredentialRepository(db)
 	passwordCredentialValidator := validatorimpl.NewPasswordCredentialValidator()
 	passwordCredentialService := serviceimpl.NewPasswordCredentialService(
 		passwordCredentialRepository,

@@ -3,11 +3,9 @@ package impl
 import (
 	"context"
 	"errors"
-	"time"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/gorm"
 
 	"grovehub/services/identity/entity"
 	identityrepository "grovehub/services/identity/repository"
@@ -20,85 +18,65 @@ const (
 )
 
 type AccountRepository struct {
-	pool *pgxpool.Pool
+	db *gorm.DB
 }
 
-func NewAccountRepository(pool *pgxpool.Pool) identityrepository.AccountRepository {
-	return &AccountRepository{pool: pool}
+func NewAccountRepository(db *gorm.DB) identityrepository.AccountRepository {
+	return &AccountRepository{db: db}
 }
 
 func (repository *AccountRepository) Create(ctx context.Context, account entity.Account) error {
-	_, err := repository.pool.Exec(
-		ctx,
-		`INSERT INTO identity.accounts (
-			account_id, person_gid, email, phone, status, version, created_at, updated_at
-		) VALUES ($1, $2, $3, NULLIF($4, ''), $5, $6, $7, $8)`,
-		string(account.GetAccountId()),
-		string(account.GetPersonGid()),
-		account.GetEmail(),
-		account.GetPhone(),
-		string(account.GetStatus()),
-		account.GetVersion(),
-		account.GetCreatedAt(),
-		account.GetUpdatedAt(),
-	)
-	return mapAccountWriteError(err)
+	return mapAccountWriteError(repository.db.WithContext(ctx).Create(&account).Error)
 }
 
 func (repository *AccountRepository) FindById(
 	ctx context.Context,
 	accountId entity.AccountId,
 ) (entity.Account, error) {
-	return scanAccount(repository.pool.QueryRow(
-		ctx,
-		accountSelect+` WHERE account_id = $1`,
-		string(accountId),
-	))
+	var account entity.Account
+	if err := repository.db.WithContext(ctx).
+		Where(&entity.Account{AccountId: accountId}).
+		Take(&account).Error; err != nil {
+		return mapAccountReadError(err)
+	}
+	return account, nil
 }
 
 func (repository *AccountRepository) FindByPersonGid(
 	ctx context.Context,
 	personGid entity.PersonGid,
 ) (entity.Account, error) {
-	return scanAccount(repository.pool.QueryRow(
-		ctx,
-		accountSelect+` WHERE person_gid = $1`,
-		string(personGid),
-	))
+	var account entity.Account
+	if err := repository.db.WithContext(ctx).
+		Where(&entity.Account{PersonGid: personGid}).
+		Take(&account).Error; err != nil {
+		return mapAccountReadError(err)
+	}
+	return account, nil
 }
 
 func (repository *AccountRepository) FindByEmail(
 	ctx context.Context,
 	email string,
 ) (entity.Account, error) {
-	return scanAccount(repository.pool.QueryRow(
-		ctx,
-		accountSelect+` WHERE email = $1`,
-		email,
-	))
+	var account entity.Account
+	if err := repository.db.WithContext(ctx).
+		Where(&entity.Account{Email: email}).
+		Take(&account).Error; err != nil {
+		return mapAccountReadError(err)
+	}
+	return account, nil
 }
 
 func (repository *AccountRepository) Update(ctx context.Context, account entity.Account) error {
-	result, err := repository.pool.Exec(
-		ctx,
-		`UPDATE identity.accounts
-		 SET email = $2,
-		     phone = NULLIF($3, ''),
-		     status = $4,
-		     version = $5,
-		     updated_at = $6
-		 WHERE account_id = $1`,
-		string(account.GetAccountId()),
-		account.GetEmail(),
-		account.GetPhone(),
-		string(account.GetStatus()),
-		account.GetVersion(),
-		account.GetUpdatedAt(),
-	)
-	if err != nil {
-		return mapAccountWriteError(err)
+	result := repository.db.WithContext(ctx).
+		Model(&entity.Account{AccountId: account.GetAccountId()}).
+		Select("Email", "Phone", "Status", "Version", "UpdatedAt").
+		Updates(&account)
+	if result.Error != nil {
+		return mapAccountWriteError(result.Error)
 	}
-	if result.RowsAffected() == 0 {
+	if result.RowsAffected == 0 {
 		return identityrepository.ErrAccountNotFound
 	}
 	return nil
@@ -108,65 +86,22 @@ func (repository *AccountRepository) Delete(
 	ctx context.Context,
 	accountId entity.AccountId,
 ) error {
-	result, err := repository.pool.Exec(
-		ctx,
-		`DELETE FROM identity.accounts WHERE account_id = $1`,
-		string(accountId),
-	)
-	if err != nil {
-		return err
+	result := repository.db.WithContext(ctx).
+		Delete(&entity.Account{AccountId: accountId})
+	if result.Error != nil {
+		return result.Error
 	}
-	if result.RowsAffected() == 0 {
+	if result.RowsAffected == 0 {
 		return identityrepository.ErrAccountNotFound
 	}
 	return nil
 }
 
-const accountSelect = `SELECT
-	account_id, person_gid, email, phone, status, version, created_at, updated_at
- FROM identity.accounts`
-
-func scanAccount(row pgx.Row) (entity.Account, error) {
-	var (
-		accountId string
-		personGid string
-		email     string
-		phone     *string
-		status    string
-		version   int64
-		createdAt time.Time
-		updatedAt time.Time
-	)
-	if err := row.Scan(
-		&accountId,
-		&personGid,
-		&email,
-		&phone,
-		&status,
-		&version,
-		&createdAt,
-		&updatedAt,
-	); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return entity.Account{}, identityrepository.ErrAccountNotFound
-		}
-		return entity.Account{}, err
+func mapAccountReadError(err error) (entity.Account, error) {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return entity.Account{}, identityrepository.ErrAccountNotFound
 	}
-
-	phoneValue := ""
-	if phone != nil {
-		phoneValue = *phone
-	}
-	return entity.NewAccount(
-		entity.AccountId(accountId),
-		entity.PersonGid(personGid),
-		email,
-		phoneValue,
-		entity.AccountStatus(status),
-		version,
-		createdAt,
-		updatedAt,
-	), nil
+	return entity.Account{}, err
 }
 
 func mapAccountWriteError(err error) error {

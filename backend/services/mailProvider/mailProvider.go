@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/gorm"
 
 	coretelemetry "grovehub/libs/core/telemetry"
 	mailproviderclient "grovehub/services/mailProvider/client"
@@ -32,18 +32,18 @@ type module struct {
 	client            mailproviderclient.Client
 }
 
-func New(logger *slog.Logger, pool *pgxpool.Pool) Module {
-	domainRepository := repositoryimpl.NewDomainRepository(pool)
+func New(logger *slog.Logger, db *gorm.DB) Module {
+	domainRepository := repositoryimpl.NewDomainRepository(db)
 	domainValidator := validatorimpl.NewDomainValidator()
 	domainService := serviceimpl.NewDomainService(domainRepository, domainValidator)
 	domainMapper := mapperimpl.NewDomainMapper()
 
-	senderRepository := repositoryimpl.NewSenderRepository(pool)
+	senderRepository := repositoryimpl.NewSenderRepository(db)
 	senderValidator := validatorimpl.NewSenderValidator()
 	senderService := serviceimpl.NewSenderService(senderRepository, domainService, senderValidator)
 	senderMapper := mapperimpl.NewSenderMapper()
 
-	messageRepository := repositoryimpl.NewMessageRepository(pool)
+	messageRepository := repositoryimpl.NewMessageRepository(db)
 	messageValidator := validatorimpl.NewMessageValidator()
 	messageTransport := transportimpl.NewHarakaSenderFromEnvironment()
 	messageService := serviceimpl.NewMessageService(messageRepository, domainService, senderService, messageTransport, messageValidator)

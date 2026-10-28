@@ -12,13 +12,17 @@ const (
 )
 
 type Domain struct {
-	domainId          DomainId
-	name              string
-	verificationToken string
-	status            DomainStatus
-	version           int64
-	createdAt         time.Time
-	updatedAt         time.Time
+	DomainId          DomainId     `gorm:"column:domain_id;type:uuid;primaryKey"`
+	Name              string       `gorm:"column:name;not null"`
+	VerificationToken string       `gorm:"column:verification_token;not null"`
+	Status            DomainStatus `gorm:"column:status;not null"`
+	Version           int64        `gorm:"column:version;not null"`
+	CreatedAt         time.Time    `gorm:"column:created_at;not null"`
+	UpdatedAt         time.Time    `gorm:"column:updated_at;not null"`
+}
+
+func (Domain) TableName() string {
+	return "mail_provider.domains"
 }
 
 func NewDomain(
@@ -31,35 +35,35 @@ func NewDomain(
 	updatedAt time.Time,
 ) Domain {
 	return Domain{
-		domainId:          domainId,
-		name:              name,
-		verificationToken: verificationToken,
-		status:            status,
-		version:           version,
-		createdAt:         createdAt,
-		updatedAt:         updatedAt,
+		DomainId:          domainId,
+		Name:              name,
+		VerificationToken: verificationToken,
+		Status:            status,
+		Version:           version,
+		CreatedAt:         createdAt,
+		UpdatedAt:         updatedAt,
 	}
 }
 
-func (domain Domain) GetDomainId() DomainId { return domain.domainId }
-func (domain Domain) GetName() string { return domain.name }
-func (domain Domain) GetVerificationToken() string { return domain.verificationToken }
-func (domain Domain) GetStatus() DomainStatus { return domain.status }
-func (domain Domain) GetVersion() int64 { return domain.version }
-func (domain Domain) GetCreatedAt() time.Time { return domain.createdAt }
-func (domain Domain) GetUpdatedAt() time.Time { return domain.updatedAt }
+func (domain Domain) GetDomainId() DomainId        { return domain.DomainId }
+func (domain Domain) GetName() string              { return domain.Name }
+func (domain Domain) GetVerificationToken() string { return domain.VerificationToken }
+func (domain Domain) GetStatus() DomainStatus      { return domain.Status }
+func (domain Domain) GetVersion() int64            { return domain.Version }
+func (domain Domain) GetCreatedAt() time.Time      { return domain.CreatedAt }
+func (domain Domain) GetUpdatedAt() time.Time      { return domain.UpdatedAt }
 
 func (domain Domain) SetStatus(status DomainStatus) Domain {
-	domain.status = status
+	domain.Status = status
 	return domain
 }
 
 func (domain Domain) SetVersion(version int64) Domain {
-	domain.version = version
+	domain.Version = version
 	return domain
 }
 
 func (domain Domain) SetUpdatedAt(updatedAt time.Time) Domain {
-	domain.updatedAt = updatedAt
+	domain.UpdatedAt = updatedAt
 	return domain
 }

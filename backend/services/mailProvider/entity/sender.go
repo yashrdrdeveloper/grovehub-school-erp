@@ -11,14 +11,18 @@ const (
 )
 
 type Sender struct {
-	senderId    SenderId
-	domainId    DomainId
-	email       string
-	displayName string
-	status      SenderStatus
-	version     int64
-	createdAt   time.Time
-	updatedAt   time.Time
+	SenderId    SenderId     `gorm:"column:sender_id;type:uuid;primaryKey"`
+	DomainId    DomainId     `gorm:"column:domain_id;type:uuid;not null"`
+	Email       string       `gorm:"column:email;not null"`
+	DisplayName string       `gorm:"column:display_name;not null"`
+	Status      SenderStatus `gorm:"column:status;not null"`
+	Version     int64        `gorm:"column:version;not null"`
+	CreatedAt   time.Time    `gorm:"column:created_at;not null"`
+	UpdatedAt   time.Time    `gorm:"column:updated_at;not null"`
+}
+
+func (Sender) TableName() string {
+	return "mail_provider.senders"
 }
 
 func NewSender(
@@ -32,37 +36,37 @@ func NewSender(
 	updatedAt time.Time,
 ) Sender {
 	return Sender{
-		senderId:    senderId,
-		domainId:    domainId,
-		email:       email,
-		displayName: displayName,
-		status:      status,
-		version:     version,
-		createdAt:   createdAt,
-		updatedAt:   updatedAt,
+		SenderId:    senderId,
+		DomainId:    domainId,
+		Email:       email,
+		DisplayName: displayName,
+		Status:      status,
+		Version:     version,
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
 	}
 }
 
-func (sender Sender) GetSenderId() SenderId { return sender.senderId }
-func (sender Sender) GetDomainId() DomainId { return sender.domainId }
-func (sender Sender) GetEmail() string { return sender.email }
-func (sender Sender) GetDisplayName() string { return sender.displayName }
-func (sender Sender) GetStatus() SenderStatus { return sender.status }
-func (sender Sender) GetVersion() int64 { return sender.version }
-func (sender Sender) GetCreatedAt() time.Time { return sender.createdAt }
-func (sender Sender) GetUpdatedAt() time.Time { return sender.updatedAt }
+func (sender Sender) GetSenderId() SenderId   { return sender.SenderId }
+func (sender Sender) GetDomainId() DomainId   { return sender.DomainId }
+func (sender Sender) GetEmail() string        { return sender.Email }
+func (sender Sender) GetDisplayName() string  { return sender.DisplayName }
+func (sender Sender) GetStatus() SenderStatus { return sender.Status }
+func (sender Sender) GetVersion() int64       { return sender.Version }
+func (sender Sender) GetCreatedAt() time.Time { return sender.CreatedAt }
+func (sender Sender) GetUpdatedAt() time.Time { return sender.UpdatedAt }
 
 func (sender Sender) SetStatus(status SenderStatus) Sender {
-	sender.status = status
+	sender.Status = status
 	return sender
 }
 
 func (sender Sender) SetVersion(version int64) Sender {
-	sender.version = version
+	sender.Version = version
 	return sender
 }
 
 func (sender Sender) SetUpdatedAt(updatedAt time.Time) Sender {
-	sender.updatedAt = updatedAt
+	sender.UpdatedAt = updatedAt
 	return sender
 }

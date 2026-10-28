@@ -26,13 +26,6 @@ const httpAddress = ":8080"
 
 func Run(logger *slog.Logger) error {
 	databaseContext, cancelDatabase := context.WithTimeout(context.Background(), 5*time.Second)
-	pool, err := bootstrap.NewPostgresPool(databaseContext)
-	if err != nil {
-		cancelDatabase()
-		return fmt.Errorf("bootstrap postgres pool: %w", err)
-	}
-	defer pool.Close()
-
 	db, err := bootstrap.NewPostgresDB(databaseContext)
 	cancelDatabase()
 	if err != nil {
@@ -50,10 +43,10 @@ func Run(logger *slog.Logger) error {
 	foundationModule := foundation.New(logger, db)
 	foundationModule.RegisterHTTP(mux)
 
-	identityModule := identity.New(logger, pool, foundationModule.Client())
+	identityModule := identity.New(logger, db, foundationModule.Client())
 	identityModule.RegisterHTTP(mux)
 
-	mailProviderModule := mailprovider.New(logger, pool)
+	mailProviderModule := mailprovider.New(logger, db)
 	mailProviderModule.RegisterHTTP(mux)
 
 	routing.RegisterFallback(mux)

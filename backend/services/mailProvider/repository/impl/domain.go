@@ -3,11 +3,9 @@ package impl
 import (
 	"context"
 	"errors"
-	"time"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/gorm"
 
 	"grovehub/services/mailProvider/entity"
 	mailproviderrepository "grovehub/services/mailProvider/repository"
@@ -16,58 +14,55 @@ import (
 const uniqueDomainNameConstraint = "uq_mail_provider_domains_name"
 
 type DomainRepository struct {
-	pool *pgxpool.Pool
+	db *gorm.DB
 }
 
-func NewDomainRepository(pool *pgxpool.Pool) mailproviderrepository.DomainRepository {
-	return &DomainRepository{pool: pool}
+func NewDomainRepository(db *gorm.DB) mailproviderrepository.DomainRepository {
+	return &DomainRepository{db: db}
 }
 
 func (repository *DomainRepository) Create(ctx context.Context, domain entity.Domain) error {
-	_, err := repository.pool.Exec(ctx, `INSERT INTO mail_provider.domains (
-		domain_id, name, verification_token, status, version, created_at, updated_at
-	) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-		string(domain.GetDomainId()), domain.GetName(), domain.GetVerificationToken(),
-		string(domain.GetStatus()), domain.GetVersion(), domain.GetCreatedAt(), domain.GetUpdatedAt(),
-	)
-	return mapDomainWriteError(err)
+	return mapDomainWriteError(repository.db.WithContext(ctx).Create(&domain).Error)
 }
 
 func (repository *DomainRepository) FindById(ctx context.Context, domainId entity.DomainId) (entity.Domain, error) {
-	return scanDomain(repository.pool.QueryRow(ctx, domainSelect+` WHERE domain_id = $1`, string(domainId)))
-}
-
-func (repository *DomainRepository) FindByName(ctx context.Context, name string) (entity.Domain, error) {
-	return scanDomain(repository.pool.QueryRow(ctx, domainSelect+` WHERE name = $1`, name))
-}
-
-func (repository *DomainRepository) Update(ctx context.Context, domain entity.Domain) error {
-	result, err := repository.pool.Exec(ctx, `UPDATE mail_provider.domains
-	SET status = $2, version = $3, updated_at = $4 WHERE domain_id = $1`,
-		string(domain.GetDomainId()), string(domain.GetStatus()), domain.GetVersion(), domain.GetUpdatedAt(),
-	)
-	if err != nil {
-		return mapDomainWriteError(err)
-	}
-	if result.RowsAffected() == 0 {
-		return mailproviderrepository.ErrDomainNotFound
-	}
-	return nil
-}
-
-const domainSelect = `SELECT domain_id, name, verification_token, status, version, created_at, updated_at FROM mail_provider.domains`
-
-func scanDomain(row pgx.Row) (entity.Domain, error) {
-	var domainId, name, token, status string
-	var version int64
-	var createdAt, updatedAt time.Time
-	if err := row.Scan(&domainId, &name, &token, &status, &version, &createdAt, &updatedAt); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
+	var domain entity.Domain
+	if err := repository.db.WithContext(ctx).
+		Where(&entity.Domain{DomainId: domainId}).
+		Take(&domain).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return entity.Domain{}, mailproviderrepository.ErrDomainNotFound
 		}
 		return entity.Domain{}, err
 	}
-	return entity.NewDomain(entity.DomainId(domainId), name, token, entity.DomainStatus(status), version, createdAt, updatedAt), nil
+	return domain, nil
+}
+
+func (repository *DomainRepository) FindByName(ctx context.Context, name string) (entity.Domain, error) {
+	var domain entity.Domain
+	if err := repository.db.WithContext(ctx).
+		Where(&entity.Domain{Name: name}).
+		Take(&domain).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return entity.Domain{}, mailproviderrepository.ErrDomainNotFound
+		}
+		return entity.Domain{}, err
+	}
+	return domain, nil
+}
+
+func (repository *DomainRepository) Update(ctx context.Context, domain entity.Domain) error {
+	result := repository.db.WithContext(ctx).
+		Model(&entity.Domain{DomainId: domain.GetDomainId()}).
+		Select("Status", "Version", "UpdatedAt").
+		Updates(&domain)
+	if result.Error != nil {
+		return mapDomainWriteError(result.Error)
+	}
+	if result.RowsAffected == 0 {
+		return mailproviderrepository.ErrDomainNotFound
+	}
+	return nil
 }
 
 func mapDomainWriteError(err error) error {

@@ -3,11 +3,9 @@ package impl
 import (
 	"context"
 	"errors"
-	"time"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/gorm"
 
 	"grovehub/services/identity/entity"
 	identityrepository "grovehub/services/identity/repository"
@@ -19,105 +17,51 @@ const (
 )
 
 type PasswordCredentialRepository struct {
-	pool *pgxpool.Pool
+	db *gorm.DB
 }
 
-func NewPasswordCredentialRepository(pool *pgxpool.Pool) identityrepository.PasswordCredentialRepository {
-	return &PasswordCredentialRepository{pool: pool}
+func NewPasswordCredentialRepository(db *gorm.DB) identityrepository.PasswordCredentialRepository {
+	return &PasswordCredentialRepository{db: db}
 }
 
 func (repository *PasswordCredentialRepository) Create(
 	ctx context.Context,
 	credential entity.PasswordCredential,
 ) error {
-	_, err := repository.pool.Exec(
-		ctx,
-		`INSERT INTO identity.password_credentials (
-			account_id, password_hash, password_changed_at, version, created_at, updated_at
-		) VALUES ($1, $2, $3, $4, $5, $6)`,
-		string(credential.GetAccountId()),
-		credential.GetPasswordHash(),
-		credential.GetPasswordChangedAt(),
-		credential.GetVersion(),
-		credential.GetCreatedAt(),
-		credential.GetUpdatedAt(),
-	)
-	return mapPasswordCredentialWriteError(err)
+	return mapPasswordCredentialWriteError(repository.db.WithContext(ctx).Create(&credential).Error)
 }
 
 func (repository *PasswordCredentialRepository) FindByAccountId(
 	ctx context.Context,
 	accountId entity.AccountId,
 ) (entity.PasswordCredential, error) {
-	return scanPasswordCredential(repository.pool.QueryRow(
-		ctx,
-		passwordCredentialSelect+` WHERE account_id = $1`,
-		string(accountId),
-	))
+	var credential entity.PasswordCredential
+	if err := repository.db.WithContext(ctx).
+		Where(&entity.PasswordCredential{AccountId: accountId}).
+		Take(&credential).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return entity.PasswordCredential{}, identityrepository.ErrPasswordCredentialNotFound
+		}
+		return entity.PasswordCredential{}, err
+	}
+	return credential, nil
 }
 
 func (repository *PasswordCredentialRepository) Update(
 	ctx context.Context,
 	credential entity.PasswordCredential,
 ) error {
-	result, err := repository.pool.Exec(
-		ctx,
-		`UPDATE identity.password_credentials
-		 SET password_hash = $2,
-		     password_changed_at = $3,
-		     version = $4,
-		     updated_at = $5
-		 WHERE account_id = $1`,
-		string(credential.GetAccountId()),
-		credential.GetPasswordHash(),
-		credential.GetPasswordChangedAt(),
-		credential.GetVersion(),
-		credential.GetUpdatedAt(),
-	)
-	if err != nil {
-		return mapPasswordCredentialWriteError(err)
+	result := repository.db.WithContext(ctx).
+		Model(&entity.PasswordCredential{AccountId: credential.GetAccountId()}).
+		Select("PasswordHash", "PasswordChangedAt", "Version", "UpdatedAt").
+		Updates(&credential)
+	if result.Error != nil {
+		return mapPasswordCredentialWriteError(result.Error)
 	}
-	if result.RowsAffected() == 0 {
+	if result.RowsAffected == 0 {
 		return identityrepository.ErrPasswordCredentialNotFound
 	}
 	return nil
-}
-
-const passwordCredentialSelect = `SELECT
-	account_id, password_hash, password_changed_at, version, created_at, updated_at
- FROM identity.password_credentials`
-
-func scanPasswordCredential(row pgx.Row) (entity.PasswordCredential, error) {
-	var (
-		accountId         string
-		passwordHash      string
-		passwordChangedAt time.Time
-		version           int64
-		createdAt         time.Time
-		updatedAt         time.Time
-	)
-	if err := row.Scan(
-		&accountId,
-		&passwordHash,
-		&passwordChangedAt,
-		&version,
-		&createdAt,
-		&updatedAt,
-	); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return entity.PasswordCredential{}, identityrepository.ErrPasswordCredentialNotFound
-		}
-		return entity.PasswordCredential{}, err
-	}
-
-	return entity.NewPasswordCredential(
-		entity.AccountId(accountId),
-		passwordHash,
-		passwordChangedAt,
-		version,
-		createdAt,
-		updatedAt,
-	), nil
 }
 
 func mapPasswordCredentialWriteError(err error) error {
