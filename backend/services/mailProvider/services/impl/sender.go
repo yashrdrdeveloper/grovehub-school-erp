@@ -49,11 +49,8 @@ func (service *SenderService) Register(
 		return entity.Sender{}, coreerrors.NewError(mailprovidererror.InvalidSender)
 	}
 
-	existing, err := service.repository.FindByEmail(ctx, validated.Email)
+	_, err = service.repository.FindByEmail(ctx, validated.Email)
 	if err == nil {
-		if senderMatchesRegisterInput(existing, domain.GetDomainId(), validated.DisplayName) {
-			return existing, nil
-		}
 		return entity.Sender{}, coreerrors.NewError(mailprovidererror.SenderAlreadyExists)
 	}
 	if !errors.Is(err, mailproviderrepository.ErrSenderNotFound) {
@@ -77,16 +74,7 @@ func (service *SenderService) Register(
 	)
 	if err := service.repository.Create(ctx, sender); err != nil {
 		if errors.Is(err, mailproviderrepository.ErrSenderAlreadyExists) {
-			existing, readErr := service.repository.FindByEmail(ctx, validated.Email)
-			if readErr == nil {
-				if senderMatchesRegisterInput(existing, domain.GetDomainId(), validated.DisplayName) {
-					return existing, nil
-				}
-				return entity.Sender{}, coreerrors.NewError(mailprovidererror.SenderAlreadyExists)
-			}
-			if !errors.Is(readErr, mailproviderrepository.ErrSenderNotFound) {
-				return entity.Sender{}, coreerrors.Wrap(mailprovidererror.SenderReadFailed, readErr)
-			}
+			return entity.Sender{}, coreerrors.NewError(mailprovidererror.SenderAlreadyExists)
 		}
 		return entity.Sender{}, coreerrors.Wrap(mailprovidererror.SenderCreateFailed, err)
 	}
@@ -142,10 +130,4 @@ func (service *SenderService) Deactivate(ctx context.Context, senderId string) (
 		return entity.Sender{}, coreerrors.Wrap(mailprovidererror.SenderUpdateFailed, err)
 	}
 	return updated, nil
-}
-
-func senderMatchesRegisterInput(sender entity.Sender, domainId entity.DomainId, displayName string) bool {
-	return sender.GetDomainId() == domainId &&
-		sender.GetDisplayName() == displayName &&
-		sender.GetStatus() == entity.SenderStatusActive
 }

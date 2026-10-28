@@ -38,9 +38,9 @@ func (service *DomainService) Register(
 		return entity.Domain{}, err
 	}
 
-	existing, err := service.repository.FindByName(ctx, validated.Name)
+	_, err = service.repository.FindByName(ctx, validated.Name)
 	if err == nil {
-		return existing, nil
+		return entity.Domain{}, coreerrors.NewError(mailprovidererror.DomainAlreadyExists)
 	}
 	if !errors.Is(err, mailproviderrepository.ErrDomainNotFound) {
 		return entity.Domain{}, coreerrors.Wrap(mailprovidererror.DomainReadFailed, err)
@@ -67,13 +67,7 @@ func (service *DomainService) Register(
 	)
 	if err := service.repository.Create(ctx, domain); err != nil {
 		if errors.Is(err, mailproviderrepository.ErrDomainAlreadyExists) {
-			existing, readErr := service.repository.FindByName(ctx, validated.Name)
-			if readErr == nil {
-				return existing, nil
-			}
-			if !errors.Is(readErr, mailproviderrepository.ErrDomainNotFound) {
-				return entity.Domain{}, coreerrors.Wrap(mailprovidererror.DomainReadFailed, readErr)
-			}
+			return entity.Domain{}, coreerrors.NewError(mailprovidererror.DomainAlreadyExists)
 		}
 		return entity.Domain{}, coreerrors.Wrap(mailprovidererror.DomainCreateFailed, err)
 	}
