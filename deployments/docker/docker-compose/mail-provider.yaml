@@ -16,7 +16,7 @@ services:
       - "127.0.0.1:${MAIL_PROVIDER_SMTP_PORT:-2525}:2525"
     volumes:
       - grovehub_haraka_queue:/opt/haraka/queue
-      - grovehub_haraka_dkim:/opt/haraka/config/dkim
+      - ${MAIL_PROVIDER_DKIM_STATE_DIR:-../../../.state/mailProvider/dkim}:/opt/haraka/config/dkim
     mem_limit: ${HARAKA_MEMORY_LIMIT:-512m}
     healthcheck:
       test: ["CMD-SHELL", "nc -z 127.0.0.1 2525"]
@@ -27,4 +27,3 @@ services:
 
 volumes:
   grovehub_haraka_queue:
-  grovehub_haraka_dkim:
