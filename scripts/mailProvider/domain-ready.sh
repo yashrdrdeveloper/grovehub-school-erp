@@ -33,6 +33,7 @@ backend_request() {
   local path="$2"
   local payload="${3:-}"
   local response
+  local exit_code
   local args=(
     --silent
     --show-error
@@ -50,14 +51,13 @@ backend_request() {
     )
   fi
 
-  if response="$(curl "${args[@]}")"; then
-    printf '%s\n' "${response}"
-    return 0
-  fi
+  response="$(curl "${args[@]}")" || {
+    exit_code=$?
+    log_warn "Backend request failed (${method} ${path}, curl exit ${exit_code})"
+    return "${exit_code}"
+  }
 
-  local exit_code=$?
-  log_warn "Backend request failed (${method} ${path}, curl exit ${exit_code})"
-  return "${exit_code}"
+  printf '%s\n' "${response}"
 }
 
 cloudflare_request() {
