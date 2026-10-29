@@ -2,8 +2,10 @@ package impl
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	mail "github.com/wneessen/go-mail"
@@ -62,6 +64,27 @@ func (sender *HarakaSender) Send(ctx context.Context, message entity.Message, fr
 			return err
 		}
 	}
+
+	internetMessageId := strings.TrimSpace(message.GetInternetMessageId())
+	if internetMessageId != "" {
+		mailMessage.SetMessageIDWithValue(trimMessageIDBrackets(internetMessageId))
+	}
+	if inReplyTo := strings.TrimSpace(message.GetInReplyTo()); inReplyTo != "" {
+		mailMessage.SetGenHeader(mail.HeaderInReplyTo, formatMessageIDHeader(inReplyTo))
+	}
+	if references := message.GetReferenceMessageIds(); len(references) > 0 {
+		formattedReferences := make([]string, 0, len(references))
+		for _, reference := range references {
+			if strings.TrimSpace(reference) == "" {
+				continue
+			}
+			formattedReferences = append(formattedReferences, formatMessageIDHeader(reference))
+		}
+		if len(formattedReferences) > 0 {
+			mailMessage.SetGenHeader(mail.HeaderReferences, strings.Join(formattedReferences, " "))
+		}
+	}
+
 	mailMessage.Subject(message.GetSubject())
 	if message.GetTextBody() != "" {
 		mailMessage.SetBodyString(mail.TypeTextPlain, message.GetTextBody())
@@ -75,4 +98,12 @@ func (sender *HarakaSender) Send(ctx context.Context, message entity.Message, fr
 	sendContext, cancel := context.WithTimeout(ctx, defaultSubmitTimeout)
 	defer cancel()
 	return client.DialAndSendWithContext(sendContext, mailMessage)
+}
+
+func trimMessageIDBrackets(value string) string {
+	return strings.Trim(strings.TrimSpace(value), "<>")
+}
+
+func formatMessageIDHeader(value string) string {
+	return fmt.Sprintf("<%s>", trimMessageIDBrackets(value))
 }

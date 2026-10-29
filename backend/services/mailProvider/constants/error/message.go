@@ -23,6 +23,14 @@ var (
 		"MAIL_PROVIDER_MESSAGE_RETRY_NOT_ALLOWED",
 		"Only failed mail provider messages can be retried",
 	)
+	MessageResendNotAllowed = coreerrors.NewDefinition(
+		"MAIL_PROVIDER_MESSAGE_RESEND_NOT_ALLOWED",
+		"Only submitted mail provider messages can be resent",
+	)
+	MessageReplyNotAllowed = coreerrors.NewDefinition(
+		"MAIL_PROVIDER_MESSAGE_REPLY_NOT_ALLOWED",
+		"Only submitted mail provider messages can be replied to",
+	)
 	MessageConcurrentModification = coreerrors.NewDefinition(
 		"MAIL_PROVIDER_MESSAGE_CONCURRENT_MODIFICATION",
 		"Mail provider message was modified by another request",

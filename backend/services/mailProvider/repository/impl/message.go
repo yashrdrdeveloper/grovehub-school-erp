@@ -20,16 +20,20 @@ type MessageRepository struct {
 }
 
 var messageSearchConfig = coresearch.Config{
-	SearchExpression: "CONCAT_WS(' ', m.message_id::text, m.gid::text, m.sender_id::text, m.subject, m.status, array_to_string(m.to_addresses, ' '), array_to_string(m.cc_addresses, ' '), array_to_string(m.bcc_addresses, ' '))",
+	SearchExpression: "CONCAT_WS(' ', m.message_id::text, m.gid::text, m.sender_id::text, m.thread_id::text, m.parent_message_id::text, m.resend_of_message_id::text, m.internet_message_id, m.subject, m.status, array_to_string(m.to_addresses, ' '), array_to_string(m.cc_addresses, ' '), array_to_string(m.bcc_addresses, ' '))",
 	CursorExpression: "m.message_id",
 	ScalarFields: map[string]coresearch.ScalarField{
-		"messageId": {Expression: "m.message_id::text"},
-		"gid":       {Expression: "m.gid::text"},
-		"senderId":  {Expression: "m.sender_id::text"},
-		"subject":   {Expression: "LOWER(m.subject)"},
-		"status":    {Expression: "m.status"},
-		"createdAt": {Expression: "m.created_at", Cast: "::timestamptz"},
-		"updatedAt": {Expression: "m.updated_at", Cast: "::timestamptz"},
+		"messageId":         {Expression: "m.message_id::text"},
+		"gid":               {Expression: "m.gid::text"},
+		"senderId":          {Expression: "m.sender_id::text"},
+		"threadId":          {Expression: "m.thread_id::text"},
+		"parentMessageId":   {Expression: "m.parent_message_id::text"},
+		"resendOfMessageId": {Expression: "m.resend_of_message_id::text"},
+		"internetMessageId": {Expression: "LOWER(m.internet_message_id)"},
+		"subject":           {Expression: "LOWER(m.subject)"},
+		"status":            {Expression: "m.status"},
+		"createdAt":         {Expression: "m.created_at", Cast: "::timestamptz"},
+		"updatedAt":         {Expression: "m.updated_at", Cast: "::timestamptz"},
 	},
 	SortFields: map[string]coresearch.SortField{
 		"messageId": {Expression: "m.message_id", Cast: "::uuid"},

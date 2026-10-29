@@ -61,6 +61,41 @@ func (controller *MessageController) Retry(writer http.ResponseWriter, request *
 	_ = httpresponse.WriteSuccess(writer, http.StatusOK, controller.mapper.ToResponse(message))
 }
 
+func (controller *MessageController) Resend(writer http.ResponseWriter, request *http.Request) {
+	message, err := controller.service.Resend(
+		request.Context(),
+		request.PathValue("messageId"),
+		request.Header.Get(httpheaders.IdempotencyKey),
+	)
+	if err != nil {
+		controllerhelpers.WriteError(request.Context(), writer, err)
+		return
+	}
+	_ = httpresponse.WriteSuccess(writer, http.StatusCreated, controller.mapper.ToResponse(message))
+}
+
+func (controller *MessageController) Reply(writer http.ResponseWriter, request *http.Request) {
+	var payload mailproviderrequest.ReplyMessage
+	if err := httprequest.DecodeJSON(request, &payload); err != nil {
+		_ = httpresponse.WriteErrorContext(request.Context(), writer, http.StatusBadRequest, mailprovidererror.InvalidMessage)
+		return
+	}
+	message, err := controller.service.Reply(
+		request.Context(),
+		request.PathValue("messageId"),
+		mailproviderservices.ReplyMessageInput{
+			IdempotencyKey: request.Header.Get(httpheaders.IdempotencyKey),
+			TextBody:       payload.TextBody,
+			HTMLBody:       payload.HTMLBody,
+		},
+	)
+	if err != nil {
+		controllerhelpers.WriteError(request.Context(), writer, err)
+		return
+	}
+	_ = httpresponse.WriteSuccess(writer, http.StatusCreated, controller.mapper.ToResponse(message))
+}
+
 func (controller *MessageController) Search(writer http.ResponseWriter, request *http.Request) {
 	var searchRequest coresearch.Request
 	if err := httprequest.DecodeJSON(request, &searchRequest); err != nil {

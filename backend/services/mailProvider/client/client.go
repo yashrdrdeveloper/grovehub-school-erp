@@ -18,7 +18,15 @@ type SendRequest struct {
 	HTMLBody       string
 }
 
+type ReplyRequest struct {
+	IdempotencyKey string
+	TextBody       string
+	HTMLBody       string
+}
+
 type Client interface {
 	Send(ctx context.Context, request SendRequest) (mailproviderresponse.Message, error)
 	Retry(ctx context.Context, messageId string) (mailproviderresponse.Message, error)
+	Resend(ctx context.Context, messageId string, idempotencyKey string) (mailproviderresponse.Message, error)
+	Reply(ctx context.Context, messageId string, request ReplyRequest) (mailproviderresponse.Message, error)
 }

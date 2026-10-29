@@ -3,6 +3,7 @@ package impl
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	coreerrors "grovehub/libs/core/errors"
@@ -17,6 +18,20 @@ import (
 	mailprovidertransport "grovehub/services/mailProvider/transport"
 	mailprovidervalidators "grovehub/services/mailProvider/validators"
 )
+
+const (
+	messageOperationSend   = "SEND"
+	messageOperationResend = "RESEND"
+	messageOperationReply  = "REPLY"
+)
+
+type messageRelation struct {
+	threadId          entity.MessageId
+	parentMessageId   entity.MessageId
+	resendOfMessageId entity.MessageId
+	inReplyTo         string
+	references        []string
+}
 
 type MessageService struct {
 	repository    mailproviderrepository.MessageRepository
@@ -47,24 +62,147 @@ func (service *MessageService) Send(
 	if err != nil {
 		return entity.Message{}, err
 	}
-	requestHash, err := coreidempotency.Fingerprint(struct {
-		GID      string   `json:"gid"`
-		SenderId string   `json:"senderId"`
-		To       []string `json:"to"`
-		Cc       []string `json:"cc"`
-		Bcc      []string `json:"bcc"`
-		Subject  string   `json:"subject"`
-		TextBody string   `json:"textBody"`
-		HTMLBody string   `json:"htmlBody"`
-	}{
-		GID: validated.GID, SenderId: validated.SenderId,
-		To: validated.To, Cc: validated.Cc, Bcc: validated.Bcc,
-		Subject: validated.Subject, TextBody: validated.TextBody, HTMLBody: validated.HTMLBody,
+	requestHash, err := fingerprintMessageRequest(messageOperationSend, "", validated)
+	if err != nil {
+		return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageCreateFailed, err)
+	}
+	return service.createOrReplay(ctx, validated, requestHash, messageRelation{})
+}
+
+func (service *MessageService) Retry(ctx context.Context, messageId string) (entity.Message, error) {
+	validatedId, err := service.validator.ValidateMessageId(messageId)
+	if err != nil {
+		return entity.Message{}, err
+	}
+
+	message, err := service.findMessageById(ctx, validatedId)
+	if err != nil {
+		return entity.Message{}, err
+	}
+	if message.GetStatus() != entity.MessageStatusFailed {
+		return entity.Message{}, coreerrors.NewError(mailprovidererror.MessageRetryNotAllowed)
+	}
+
+	sender, err := service.resolveSubmissionSender(ctx, message)
+	if err != nil {
+		return entity.Message{}, err
+	}
+
+	prepared, err := service.repository.PrepareRetry(ctx, message, time.Now().UTC())
+	if err != nil {
+		if errors.Is(err, mailproviderrepository.ErrMessageVersionConflict) {
+			latest, readErr := service.findMessageById(ctx, validatedId)
+			if readErr != nil {
+				return entity.Message{}, readErr
+			}
+			if latest.GetStatus() == entity.MessageStatusSubmitted {
+				return latest, nil
+			}
+			if latest.GetStatus() == entity.MessageStatusQueued && latest.GetSubmissionStartedAt() != nil {
+				return latest, coreerrors.NewError(mailprovidererror.MessageSubmissionInProgress)
+			}
+			return entity.Message{}, coreerrors.NewError(mailprovidererror.MessageConcurrentModification)
+		}
+		return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageUpdateFailed, err)
+	}
+
+	return service.submitWithSender(ctx, prepared, sender)
+}
+
+func (service *MessageService) Resend(
+	ctx context.Context,
+	messageId string,
+	idempotencyKey string,
+) (entity.Message, error) {
+	validatedId, err := service.validator.ValidateMessageId(messageId)
+	if err != nil {
+		return entity.Message{}, err
+	}
+	source, err := service.findMessageById(ctx, validatedId)
+	if err != nil {
+		return entity.Message{}, err
+	}
+	if source.GetStatus() != entity.MessageStatusSubmitted {
+		return entity.Message{}, coreerrors.NewError(mailprovidererror.MessageResendNotAllowed)
+	}
+
+	validated, err := service.validator.ValidateSend(mailproviderservices.SendMessageInput{
+		IdempotencyKey: idempotencyKey,
+		GID:            string(source.GetGID()),
+		SenderId:       string(source.GetSenderId()),
+		To:             source.GetTo(),
+		Cc:             source.GetCc(),
+		Bcc:            source.GetBcc(),
+		Subject:        source.GetSubject(),
+		TextBody:       source.GetTextBody(),
+		HTMLBody:       source.GetHTMLBody(),
 	})
+	if err != nil {
+		return entity.Message{}, err
+	}
+	requestHash, err := fingerprintMessageRequest(messageOperationResend, string(validatedId), validated)
+	if err != nil {
+		return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageCreateFailed, err)
+	}
+	return service.createOrReplay(ctx, validated, requestHash, messageRelation{
+		resendOfMessageId: validatedId,
+	})
+}
+
+func (service *MessageService) Reply(
+	ctx context.Context,
+	messageId string,
+	input mailproviderservices.ReplyMessageInput,
+) (entity.Message, error) {
+	validatedId, err := service.validator.ValidateMessageId(messageId)
+	if err != nil {
+		return entity.Message{}, err
+	}
+	parent, err := service.findMessageById(ctx, validatedId)
+	if err != nil {
+		return entity.Message{}, err
+	}
+	if parent.GetStatus() != entity.MessageStatusSubmitted {
+		return entity.Message{}, coreerrors.NewError(mailprovidererror.MessageReplyNotAllowed)
+	}
+
+	validated, err := service.validator.ValidateSend(mailproviderservices.SendMessageInput{
+		IdempotencyKey: input.IdempotencyKey,
+		GID:            string(parent.GetGID()),
+		SenderId:       string(parent.GetSenderId()),
+		To:             parent.GetTo(),
+		Cc:             parent.GetCc(),
+		Bcc:            nil,
+		Subject:        replySubject(parent.GetSubject()),
+		TextBody:       input.TextBody,
+		HTMLBody:       input.HTMLBody,
+	})
+	if err != nil {
+		return entity.Message{}, err
+	}
+	requestHash, err := fingerprintMessageRequest(messageOperationReply, string(validatedId), validated)
 	if err != nil {
 		return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageCreateFailed, err)
 	}
 
+	parentInternetMessageId := parent.GetInternetMessageId()
+	return service.createOrReplay(ctx, validated, requestHash, messageRelation{
+		threadId:        parent.GetThreadId(),
+		parentMessageId: validatedId,
+		inReplyTo:       parentInternetMessageId,
+		references: appendUniqueMessageID(
+			parent.GetReferenceMessageIds(),
+			parentInternetMessageId,
+		),
+	})
+}
+
+func (service *MessageService) createOrReplay(
+	ctx context.Context,
+	validated mailproviderservices.SendMessageInput,
+	requestHash string,
+	relation messageRelation,
+) (entity.Message, error) {
 	existing, err := service.repository.FindByIdempotencyKey(ctx, validated.IdempotencyKey)
 	if err == nil {
 		return service.replayOrSubmit(ctx, existing, requestHash)
@@ -73,13 +211,18 @@ func (service *MessageService) Send(
 		return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageReadFailed, err)
 	}
 
-	messageId, err := coreid.NewUUIDv7()
+	sender, err := service.resolveSender(ctx, entity.SenderId(validated.SenderId))
+	if err != nil {
+		return entity.Message{}, err
+	}
+	messageIdValue, err := coreid.NewUUIDv7()
 	if err != nil {
 		return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageCreateFailed, err)
 	}
+	messageId := entity.MessageId(messageIdValue)
 	now := time.Now().UTC()
 	message := entity.NewMessage(
-		entity.MessageId(messageId),
+		messageId,
 		validated.IdempotencyKey,
 		requestHash,
 		entity.GID(validated.GID),
@@ -95,7 +238,24 @@ func (service *MessageService) Send(
 		1,
 		now,
 		now,
-	)
+	).SetInternetMessageId(buildInternetMessageID(messageId, sender.GetEmail()))
+
+	if relation.threadId != "" {
+		message = message.SetThreadId(relation.threadId)
+	}
+	if relation.parentMessageId != "" {
+		message = message.SetParentMessageId(relation.parentMessageId)
+	}
+	if relation.resendOfMessageId != "" {
+		message = message.SetResendOfMessageId(relation.resendOfMessageId)
+	}
+	if relation.inReplyTo != "" {
+		message = message.SetInReplyTo(relation.inReplyTo)
+	}
+	if len(relation.references) > 0 {
+		message = message.SetReferenceMessageIds(relation.references)
+	}
+
 	if err := service.repository.Create(ctx, message); err != nil {
 		if errors.Is(err, mailproviderrepository.ErrMessageIdempotencyKeyAlreadyExists) {
 			existing, readErr := service.repository.FindByIdempotencyKey(ctx, validated.IdempotencyKey)
@@ -106,50 +266,7 @@ func (service *MessageService) Send(
 		}
 		return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageCreateFailed, err)
 	}
-	return service.submit(ctx, message)
-}
-
-func (service *MessageService) Retry(ctx context.Context, messageId string) (entity.Message, error) {
-	validatedId, err := service.validator.ValidateMessageId(messageId)
-	if err != nil {
-		return entity.Message{}, err
-	}
-
-	message, err := service.repository.FindById(ctx, validatedId)
-	if errors.Is(err, mailproviderrepository.ErrMessageNotFound) {
-		return entity.Message{}, coreerrors.NewError(mailprovidererror.MessageNotFound)
-	}
-	if err != nil {
-		return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageReadFailed, err)
-	}
-	if message.GetStatus() != entity.MessageStatusFailed {
-		return entity.Message{}, coreerrors.NewError(mailprovidererror.MessageRetryNotAllowed)
-	}
-
-	sender, err := service.resolveSubmissionSender(ctx, message)
-	if err != nil {
-		return entity.Message{}, err
-	}
-
-	prepared, err := service.repository.PrepareRetry(ctx, message, time.Now().UTC())
-	if err != nil {
-		if errors.Is(err, mailproviderrepository.ErrMessageVersionConflict) {
-			latest, readErr := service.repository.FindById(ctx, validatedId)
-			if readErr != nil {
-				return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageReadFailed, readErr)
-			}
-			if latest.GetStatus() == entity.MessageStatusSubmitted {
-				return latest, nil
-			}
-			if latest.GetStatus() == entity.MessageStatusQueued && latest.GetSubmissionStartedAt() != nil {
-				return latest, coreerrors.NewError(mailprovidererror.MessageSubmissionInProgress)
-			}
-			return entity.Message{}, coreerrors.NewError(mailprovidererror.MessageConcurrentModification)
-		}
-		return entity.Message{}, coreerrors.Wrap(mailprovidererror.MessageUpdateFailed, err)
-	}
-
-	return service.submitWithSender(ctx, prepared, sender)
+	return service.submitWithSender(ctx, message, sender)
 }
 
 func (service *MessageService) replayOrSubmit(
@@ -187,7 +304,14 @@ func (service *MessageService) resolveSubmissionSender(
 	ctx context.Context,
 	message entity.Message,
 ) (entity.Sender, error) {
-	sender, err := service.senderService.GetById(ctx, string(message.GetSenderId()))
+	return service.resolveSender(ctx, message.GetSenderId())
+}
+
+func (service *MessageService) resolveSender(
+	ctx context.Context,
+	senderId entity.SenderId,
+) (entity.Sender, error) {
+	sender, err := service.senderService.GetById(ctx, string(senderId))
 	if err != nil {
 		return entity.Sender{}, err
 	}
@@ -258,7 +382,14 @@ func (service *MessageService) GetById(ctx context.Context, messageId string) (e
 	if err != nil {
 		return entity.Message{}, err
 	}
-	message, err := service.repository.FindById(ctx, validatedId)
+	return service.findMessageById(ctx, validatedId)
+}
+
+func (service *MessageService) findMessageById(
+	ctx context.Context,
+	messageId entity.MessageId,
+) (entity.Message, error) {
+	message, err := service.repository.FindById(ctx, messageId)
 	if errors.Is(err, mailproviderrepository.ErrMessageNotFound) {
 		return entity.Message{}, coreerrors.NewError(mailprovidererror.MessageNotFound)
 	}
@@ -293,6 +424,70 @@ func (service *MessageService) Search(
 			Rows: query.Limit, NextCursor: nextCursor, HasNext: result.HasNext,
 		},
 	}, nil
+}
+
+func fingerprintMessageRequest(
+	operation string,
+	sourceMessageId string,
+	input mailproviderservices.SendMessageInput,
+) (string, error) {
+	return coreidempotency.Fingerprint(struct {
+		Operation       string   `json:"operation"`
+		SourceMessageId string   `json:"sourceMessageId,omitempty"`
+		GID             string   `json:"gid"`
+		SenderId        string   `json:"senderId"`
+		To              []string `json:"to"`
+		Cc              []string `json:"cc"`
+		Bcc             []string `json:"bcc"`
+		Subject         string   `json:"subject"`
+		TextBody        string   `json:"textBody"`
+		HTMLBody        string   `json:"htmlBody"`
+	}{
+		Operation:       operation,
+		SourceMessageId: sourceMessageId,
+		GID:             input.GID,
+		SenderId:        input.SenderId,
+		To:              input.To,
+		Cc:              input.Cc,
+		Bcc:             input.Bcc,
+		Subject:         input.Subject,
+		TextBody:        input.TextBody,
+		HTMLBody:        input.HTMLBody,
+	})
+}
+
+func buildInternetMessageID(messageId entity.MessageId, senderEmail string) string {
+	domain := "grovehub.local"
+	email := strings.TrimSpace(senderEmail)
+	if separator := strings.LastIndex(email, "@"); separator >= 0 && separator < len(email)-1 {
+		domain = strings.ToLower(strings.TrimSpace(email[separator+1:]))
+	}
+	return string(messageId) + "@" + domain
+}
+
+func replySubject(subject string) string {
+	normalized := strings.TrimSpace(subject)
+	if strings.HasPrefix(strings.ToLower(normalized), "re:") {
+		return normalized
+	}
+	return "Re: " + normalized
+}
+
+func appendUniqueMessageID(values []string, value string) []string {
+	result := make([]string, 0, len(values)+1)
+	seen := make(map[string]struct{}, len(values)+1)
+	for _, candidate := range append(values, value) {
+		normalized := strings.Trim(strings.TrimSpace(candidate), "<>")
+		if normalized == "" {
+			continue
+		}
+		if _, exists := seen[normalized]; exists {
+			continue
+		}
+		seen[normalized] = struct{}{}
+		result = append(result, normalized)
+	}
+	return result
 }
 
 func buildMessageNextCursor(

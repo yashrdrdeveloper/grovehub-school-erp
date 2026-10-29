@@ -50,6 +50,12 @@ CREATE TABLE mail_provider.messages (
     request_hash text NOT NULL,
     gid uuid NOT NULL,
     sender_id uuid NOT NULL,
+    thread_id uuid NOT NULL,
+    parent_message_id uuid,
+    resend_of_message_id uuid,
+    internet_message_id text NOT NULL,
+    in_reply_to text,
+    reference_message_ids text[] NOT NULL DEFAULT '{}',
     to_addresses text[] NOT NULL,
     cc_addresses text[] NOT NULL DEFAULT '{}',
     bcc_addresses text[] NOT NULL DEFAULT '{}',
@@ -67,9 +73,19 @@ CREATE TABLE mail_provider.messages (
     CONSTRAINT fk_mail_provider_messages_sender
         FOREIGN KEY (sender_id)
         REFERENCES mail_provider.senders(sender_id),
+    CONSTRAINT fk_mail_provider_messages_parent
+        FOREIGN KEY (parent_message_id)
+        REFERENCES mail_provider.messages(message_id),
+    CONSTRAINT fk_mail_provider_messages_resend_of
+        FOREIGN KEY (resend_of_message_id)
+        REFERENCES mail_provider.messages(message_id),
     CONSTRAINT uq_mail_provider_messages_idempotency_key UNIQUE (idempotency_key),
+    CONSTRAINT uq_mail_provider_messages_internet_message_id UNIQUE (internet_message_id),
     CONSTRAINT chk_mail_provider_messages_idempotency_key CHECK (length(btrim(idempotency_key)) > 0),
     CONSTRAINT chk_mail_provider_messages_request_hash CHECK (length(request_hash) = 64),
+    CONSTRAINT chk_mail_provider_messages_internet_message_id CHECK (length(btrim(internet_message_id)) > 0),
+    CONSTRAINT chk_mail_provider_messages_parent CHECK (parent_message_id IS NULL OR parent_message_id <> message_id),
+    CONSTRAINT chk_mail_provider_messages_resend_of CHECK (resend_of_message_id IS NULL OR resend_of_message_id <> message_id),
     CONSTRAINT chk_mail_provider_messages_to CHECK (cardinality(to_addresses) > 0),
     CONSTRAINT chk_mail_provider_messages_subject CHECK (length(btrim(subject)) > 0),
     CONSTRAINT chk_mail_provider_messages_body CHECK (length(btrim(text_body)) > 0 OR length(btrim(html_body)) > 0),
@@ -82,6 +98,17 @@ CREATE INDEX idx_mail_provider_messages_gid_created_at
 
 CREATE INDEX idx_mail_provider_messages_sender_id
     ON mail_provider.messages(sender_id);
+
+CREATE INDEX idx_mail_provider_messages_thread_id_created_at
+    ON mail_provider.messages(thread_id, created_at ASC);
+
+CREATE INDEX idx_mail_provider_messages_parent_message_id
+    ON mail_provider.messages(parent_message_id)
+    WHERE parent_message_id IS NOT NULL;
+
+CREATE INDEX idx_mail_provider_messages_resend_of_message_id
+    ON mail_provider.messages(resend_of_message_id)
+    WHERE resend_of_message_id IS NOT NULL;
 
 CREATE INDEX idx_mail_provider_messages_created_at
     ON mail_provider.messages(created_at DESC);

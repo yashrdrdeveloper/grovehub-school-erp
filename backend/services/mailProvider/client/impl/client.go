@@ -43,3 +43,31 @@ func (client *Client) Retry(ctx context.Context, messageId string) (mailprovider
 	}
 	return client.mapper.ToResponse(message), nil
 }
+
+func (client *Client) Resend(
+	ctx context.Context,
+	messageId string,
+	idempotencyKey string,
+) (mailproviderresponse.Message, error) {
+	message, err := client.service.Resend(ctx, messageId, idempotencyKey)
+	if err != nil {
+		return mailproviderresponse.Message{}, err
+	}
+	return client.mapper.ToResponse(message), nil
+}
+
+func (client *Client) Reply(
+	ctx context.Context,
+	messageId string,
+	request mailproviderclient.ReplyRequest,
+) (mailproviderresponse.Message, error) {
+	message, err := client.service.Reply(ctx, messageId, mailproviderservices.ReplyMessageInput{
+		IdempotencyKey: request.IdempotencyKey,
+		TextBody:       request.TextBody,
+		HTMLBody:       request.HTMLBody,
+	})
+	if err != nil {
+		return mailproviderresponse.Message{}, err
+	}
+	return client.mapper.ToResponse(message), nil
+}

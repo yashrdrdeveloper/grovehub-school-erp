@@ -10,3 +10,8 @@ type SendMessage struct {
 	TextBody string   `json:"textBody,omitempty"`
 	HTMLBody string   `json:"htmlBody,omitempty"`
 }
+
+type ReplyMessage struct {
+	TextBody string `json:"textBody,omitempty"`
+	HTMLBody string `json:"htmlBody,omitempty"`
+}
