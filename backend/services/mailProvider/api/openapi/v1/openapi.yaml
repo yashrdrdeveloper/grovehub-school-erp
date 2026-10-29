@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: GroveHub Mail Provider API
   version: 0.1.0
-  description: GroveHub outbound mail-provider domain, sender, and message submission contract.
+  description: GroveHub outbound mail-provider domain, sender, message submission, retry, resend, and reply-thread contract.
 paths:
   /mail-provider/domains:
     get:
@@ -179,9 +179,11 @@ paths:
   /mail-provider/messages:
     post:
       operationId: sendMailProviderMessage
-      summary: Persist and submit a message to the GroveHub Haraka MTA
-      description: A SUBMITTED response means Haraka accepted the message for its outbound path; it does not mean final mailbox delivery. gid is mandatory and associates the message with the GroveHub global entity.
+      summary: Persist and submit a new message to the GroveHub Haraka MTA
+      description: A SUBMITTED response means Haraka accepted the message for its outbound path; it does not mean final mailbox delivery. Replaying the same request with the same Idempotency-Key returns the same message and never sends a second copy. Use the resend action for an intentional second copy.
       tags: [Mail Provider]
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
         required: true
         content:
@@ -190,7 +192,7 @@ paths:
               $ref: '#/components/schemas/SendMessageRequest'
       responses:
         '201':
-          description: Message submitted to Haraka.
+          description: Message submitted to Haraka or the matching idempotent message returned.
           content:
             application/json:
               schema:
@@ -205,7 +207,7 @@ paths:
       operationId: searchMailProviderMessages
       summary: Search mail-provider messages with cursor pagination, filters, and sorting
       description: |
-        Search text matches message ID, gid, sender ID, subject, status, and recipient addresses.
+        Search text matches message ID, gid, sender ID, thread/relation IDs, internet Message-ID, subject, status, and recipient addresses.
         Supported filter fields: messageId, gid, senderId, subject, status, createdAt, updatedAt.
         Supported sort fields: messageId, gid, senderId, subject, status, createdAt, updatedAt.
         Only one sort field is accepted. Default sort is createdAt DESC. rows defaults to 25 and is capped at 100.
@@ -248,11 +250,59 @@ paths:
     post:
       operationId: retryMailProviderMessage
       summary: Retry submission of an existing failed message
-      description: Only FAILED messages can be retried. The same message row and messageId are reused; retry never creates a new message record or retry-specific database field.
+      description: Only FAILED messages can be retried. The same message row and messageId are reused and no new copy is created.
       tags: [Mail Provider]
       responses:
         '200':
           description: Existing message retried and submitted to Haraka.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageSuccessResponse'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '502': { $ref: '#/components/responses/DependencyError' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /mail-provider/messages/{messageId}/resend:
+    parameters:
+      - $ref: '#/components/parameters/MessageId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+    post:
+      operationId: resendMailProviderMessage
+      summary: Send a new copy of an existing submitted message
+      description: Only SUBMITTED messages can be resent. A resend creates a new messageId and a new independent email thread, while recording resendOfMessageId. The Idempotency-Key protects this resend action from duplicate HTTP retries.
+      tags: [Mail Provider]
+      responses:
+        '201':
+          description: New message copy created and submitted to Haraka.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageSuccessResponse'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '502': { $ref: '#/components/responses/DependencyError' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /mail-provider/messages/{messageId}/reply:
+    parameters:
+      - $ref: '#/components/parameters/MessageId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+    post:
+      operationId: replyMailProviderMessage
+      summary: Send a reply in the same email thread
+      description: Only SUBMITTED messages can be replied to. The new message inherits gid, sender, To/Cc recipients, uses the same threadId, and emits Message-ID, In-Reply-To, and References headers for mail-client threading. Bcc recipients are not carried into replies.
+      tags: [Mail Provider]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReplyMessageRequest'
+      responses:
+        '201':
+          description: Reply created and submitted to Haraka.
           content:
             application/json:
               schema:
@@ -284,6 +334,15 @@ components:
       in: path
       required: true
       schema: { type: string, format: uuid }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Client-generated key for one logical create/resend/reply action. Reuse the same key only when retrying the same HTTP action.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 128
   schemas:
     RegisterDomainRequest:
       type: object
@@ -323,6 +382,15 @@ components:
         subject: { type: string, minLength: 1 }
         textBody: { type: string }
         htmlBody: { type: string }
+    ReplyMessageRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        textBody: { type: string }
+        htmlBody: { type: string }
+      anyOf:
+        - required: [textBody]
+        - required: [htmlBody]
     MessageSearchRequest:
       type: object
       additionalProperties: false
@@ -412,7 +480,7 @@ components:
         updatedAt: { type: string, format: date-time }
     Message:
       type: object
-      required: [messageId, gid, senderId, to, subject, status, version, createdAt, updatedAt]
+      required: [messageId, gid, senderId, threadId, internetMessageId, to, subject, status, version, createdAt, updatedAt]
       properties:
         messageId: { type: string, format: uuid }
         gid:
@@ -420,6 +488,28 @@ components:
           format: uuid
           description: GroveHub global entity identifier associated with the message.
         senderId: { type: string, format: uuid }
+        threadId:
+          type: string
+          format: uuid
+          description: GroveHub mail thread identifier. The first message uses its own messageId.
+        parentMessageId:
+          type: string
+          format: uuid
+          description: Immediate parent when this message is a reply.
+        resendOfMessageId:
+          type: string
+          format: uuid
+          description: Source message when this message is an intentional resend.
+        internetMessageId:
+          type: string
+          description: RFC 5322 Message-ID value stored without angle brackets.
+        inReplyTo:
+          type: string
+          description: Parent RFC 5322 Message-ID value stored without angle brackets.
+        referenceMessageIds:
+          type: array
+          items: { type: string }
+          description: Ordered RFC 5322 References chain stored without angle brackets.
         to:
           type: array
           items: { type: string, format: email }
