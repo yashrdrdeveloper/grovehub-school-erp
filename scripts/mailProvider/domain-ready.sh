@@ -16,6 +16,7 @@ HARAKA_CONTAINER_NAME="grovehub-haraka"
 CLOUDFLARE_API_BASE="https://api.cloudflare.com/client/v4"
 MAIL_PROVIDER_STATE_DIR="${STATE_DIR}/mailProvider"
 MAIL_PROVIDER_RUNTIME_ENV="${MAIL_PROVIDER_STATE_DIR}/runtime.env"
+BACKEND_NO_PROXY="localhost,127.0.0.1,::1"
 
 load_backend_runtime_env
 
@@ -25,6 +26,38 @@ require_value() {
   local name="$1"
   local value="$2"
   [[ -n "${value}" ]] || die "Missing ${name}. Add it to the repository root .env file."
+}
+
+backend_request() {
+  local method="$1"
+  local path="$2"
+  local payload="${3:-}"
+  local response
+  local args=(
+    --silent
+    --show-error
+    --connect-timeout 5
+    --max-time 15
+    --noproxy "${BACKEND_NO_PROXY}"
+    --request "${method}"
+    --url "${BACKEND_BASE_URL}${path}"
+  )
+
+  if [[ -n "${payload}" ]]; then
+    args+=(
+      --header "Content-Type: application/json"
+      --data "${payload}"
+    )
+  fi
+
+  if response="$(curl "${args[@]}")"; then
+    printf '%s\n' "${response}"
+    return 0
+  fi
+
+  local exit_code=$?
+  log_warn "Backend request failed (${method} ${path}, curl exit ${exit_code})"
+  return "${exit_code}"
 }
 
 cloudflare_request() {
@@ -165,12 +198,15 @@ upsert_managed_txt() {
   local content="$3"
   local prefix="$4"
   local records
+  local record_ids
   local record_id
+  local stale_id
   local payload
 
   records="$(cloudflare_request GET "/zones/${zone_id}/dns_records?type=TXT&name=${name}&per_page=100")"
-  record_id="$(jq -r --arg prefix "${prefix}" \
-    '.result[] | select((.content // "") | startswith($prefix)) | .id' <<<"${records}" | head -n 1)"
+  record_ids="$(jq -r --arg prefix "${prefix}" \
+    '.result[] | select((.content // "") | startswith($prefix)) | .id' <<<"${records}")"
+  record_id="$(head -n 1 <<<"${record_ids}")"
   payload="$(jq -nc \
     --arg name "${name}" \
     --arg content "${content}" \
@@ -183,6 +219,13 @@ upsert_managed_txt() {
     cloudflare_request POST "/zones/${zone_id}/dns_records" "${payload}" >/dev/null
     log_info "Created TXT ${name}"
   fi
+
+  while IFS= read -r stale_id; do
+    [[ -n "${stale_id}" ]] || continue
+    [[ "${stale_id}" == "${record_id}" ]] && continue
+    cloudflare_request DELETE "/zones/${zone_id}/dns_records/${stale_id}" >/dev/null
+    log_info "Removed stale managed TXT ${name}"
+  done <<<"${record_ids}"
 }
 
 ensure_spf() {
@@ -294,8 +337,13 @@ wait_for_haraka() {
 lookup_or_register_domain() {
   local response
   local error_code
+  local payload
 
-  response="$(curl --silent --show-error "${BACKEND_BASE_URL}/mail-provider/domains/by-name/${DOMAIN}")"
+  if ! response="$(backend_request GET "/mail-provider/domains/by-name/${DOMAIN}")"; then
+    log_error "Unable to reach the Mail Provider backend while looking up ${DOMAIN}"
+    return 1
+  fi
+
   if [[ "$(jq -r '.success // false' <<<"${response}")" == "true" ]]; then
     printf '%s\n' "${response}"
     return 0
@@ -308,11 +356,12 @@ lookup_or_register_domain() {
     return 1
   fi
 
-  response="$(curl --silent --show-error \
-    --request POST \
-    --url "${BACKEND_BASE_URL}/mail-provider/domains" \
-    --header 'Content-Type: application/json' \
-    --data "$(jq -nc --arg name "${DOMAIN}" '{name:$name}')")"
+  payload="$(jq -nc --arg name "${DOMAIN}" '{name:$name}')"
+  if ! response="$(backend_request POST "/mail-provider/domains" "${payload}")"; then
+    log_error "Unable to reach the Mail Provider backend while registering ${DOMAIN}"
+    return 1
+  fi
+
   if [[ "$(jq -r '.success // false' <<<"${response}")" != "true" ]]; then
     log_error "Unable to register mail-provider domain"
     jq -c '.' <<<"${response}" >&2 || true
@@ -329,9 +378,12 @@ verify_domain() {
   local error_code
 
   for ((attempt = 1; attempt <= 36; attempt++)); do
-    response="$(curl --silent --show-error \
-      --request POST \
-      --url "${BACKEND_BASE_URL}/mail-provider/domains/${domain_id}/verify")"
+    if ! response="$(backend_request POST "/mail-provider/domains/${domain_id}/verify")"; then
+      log_warn "Mail Provider verification request could not reach the backend; retrying (${attempt}/36)"
+      sleep 5
+      continue
+    fi
+
     if [[ "$(jq -r '.success // false' <<<"${response}")" == "true" ]]; then
       printf '%s\n' "${response}"
       return 0
@@ -410,7 +462,7 @@ log_info "GroveHub public mail hostname: ${MAIL_HOST}"
 
 bash "${SCRIPT_DIR}/start.sh"
 
-if ! curl --fail --silent --max-time 1 "${BACKEND_BASE_URL}/health" >/dev/null 2>&1; then
+if ! curl --noproxy "${BACKEND_NO_PROXY}" --fail --silent --max-time 1 "${BACKEND_BASE_URL}/health" >/dev/null 2>&1; then
   log_info "Backend is not running; applying Mail Provider migrations and starting it"
   bash "${SCRIPT_DIR}/../database/migrate.sh" up mailProvider
   BACKEND_HOT_RELOAD=1 bash "${SCRIPT_DIR}/../backend/start.sh"
@@ -452,17 +504,26 @@ if ! wait_for_haraka; then
   die "Haraka did not become healthy after loading DKIM"
 fi
 
-log_info "Waiting for the GroveHub ownership TXT record to become resolvable"
-if ! VERIFIED_RESPONSE="$(verify_domain "${DOMAIN_ID}")"; then
-  log_error "Cloudflare records were created, but DNS verification has not propagated yet"
-  log_error "Retry: curl --request POST --url ${BACKEND_BASE_URL}/mail-provider/domains/${DOMAIN_ID}/verify"
-  exit 1
+VERIFIED_RESPONSE="${DOMAIN_RESPONSE}"
+if [[ "${DOMAIN_STATUS}" == "VERIFIED" ]]; then
+  log_info "Mail Provider domain is already verified; skipping ownership verification wait"
+else
+  log_info "Waiting for the GroveHub ownership TXT record to become resolvable"
+  if ! VERIFIED_RESPONSE="$(verify_domain "${DOMAIN_ID}")"; then
+    log_warn "Cloudflare records were created, but DNS verification is still pending"
+    log_warn "mail-domain-ready will not fail for DNS propagation; rerun it later to confirm verification"
+    VERIFIED_RESPONSE="${DOMAIN_RESPONSE}"
+  fi
 fi
 
 check_reverse_dns
 check_outbound_smtp
 
-log_info "Mail Provider domain is verified: $(jq -r '.data.name' <<<"${VERIFIED_RESPONSE}")"
+if [[ "$(jq -r '.data.status // empty' <<<"${VERIFIED_RESPONSE}")" == "VERIFIED" ]]; then
+  log_info "Mail Provider domain is verified: $(jq -r '.data.name' <<<"${VERIFIED_RESPONSE}")"
+else
+  log_warn "Mail Provider domain DNS is prepared but verification is still pending: ${DOMAIN}"
+fi
 log_info "Domain ID: ${DOMAIN_ID}"
 log_info "Mail hostname: ${MAIL_HOST} -> ${PUBLIC_IP}"
 log_info "DKIM: ${DKIM_HOST}"
