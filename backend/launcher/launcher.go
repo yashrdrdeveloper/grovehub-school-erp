@@ -19,6 +19,7 @@ import (
 	coretelemetry "grovehub/libs/core/telemetry"
 	"grovehub/services/foundation"
 	"grovehub/services/identity"
+	mailinfrastructure "grovehub/services/infrastructure/mail/impl"
 	mailprovider "grovehub/services/mailProvider"
 )
 
@@ -46,7 +47,8 @@ func Run(logger *slog.Logger) error {
 	identityModule := identity.New(logger, db, foundationModule.Client())
 	identityModule.RegisterHTTP(mux)
 
-	mailProviderModule := mailprovider.New(logger, db)
+	mailClient := mailinfrastructure.NewMailClientFromEnvironment()
+	mailProviderModule := mailprovider.New(logger, db, mailClient)
 	mailProviderModule.RegisterHTTP(mux)
 
 	routing.RegisterFallback(mux)

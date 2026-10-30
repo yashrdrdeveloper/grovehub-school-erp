@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	coretelemetry "grovehub/libs/core/telemetry"
+	inframail "grovehub/services/infrastructure/mail"
 	mailproviderclient "grovehub/services/mailProvider/client"
 	clientimpl "grovehub/services/mailProvider/client/impl"
 	"grovehub/services/mailProvider/controller"
@@ -15,7 +16,7 @@ import (
 	repositoryimpl "grovehub/services/mailProvider/repository/impl"
 	"grovehub/services/mailProvider/routes"
 	serviceimpl "grovehub/services/mailProvider/services/impl"
-	transportimpl "grovehub/services/mailProvider/transport/impl"
+	mailprovidertransport "grovehub/services/mailProvider/transport"
 	validatorimpl "grovehub/services/mailProvider/validators/impl"
 )
 
@@ -32,7 +33,7 @@ type module struct {
 	client            mailproviderclient.Client
 }
 
-func New(logger *slog.Logger, db *gorm.DB) Module {
+func New(logger *slog.Logger, db *gorm.DB, mailClient inframail.MailClient) Module {
 	domainRepository := repositoryimpl.NewDomainRepository(db)
 	domainValidator := validatorimpl.NewDomainValidator()
 	domainService := serviceimpl.NewDomainService(domainRepository, domainValidator)
@@ -45,7 +46,7 @@ func New(logger *slog.Logger, db *gorm.DB) Module {
 
 	messageRepository := repositoryimpl.NewMessageRepository(db)
 	messageValidator := validatorimpl.NewMessageValidator()
-	messageTransport := transportimpl.NewHarakaSenderFromEnvironment()
+	messageTransport := mailprovidertransport.NewSender(mailClient)
 	messageService := serviceimpl.NewMessageService(messageRepository, domainService, senderService, messageTransport, messageValidator)
 	messageMapper := mapperimpl.NewMessageMapper()
 
