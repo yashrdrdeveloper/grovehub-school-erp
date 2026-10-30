@@ -2,42 +2,32 @@ package impl
 
 import (
 	"context"
-	"fmt"
 	"net"
-	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	mail "github.com/wneessen/go-mail"
 
+	infrastructureconfig "grovehub/services/infrastructure/config"
+	infrastructurerequest "grovehub/services/infrastructure/dto/request"
 	infrastructureservices "grovehub/services/infrastructure/services"
-)
-
-const (
-	defaultSMTPHost      = "127.0.0.1"
-	defaultSMTPPort      = 2525
-	defaultSubmitTimeout = 15 * time.Second
-	defaultHealthTimeout = 3 * time.Second
+	servicehelpers "grovehub/services/infrastructure/services/helpers"
 )
 
 type SMTPService struct {
-	host string
-	port int
+	config infrastructureconfig.SMTP
 }
 
-func NewSMTPServiceFromEnvironment() infrastructureservices.SMTPService {
-	host := firstNonEmpty(
-		os.Getenv("MAIL_INFRASTRUCTURE_SMTP_HOST"),
-		os.Getenv("MAIL_PROVIDER_SMTP_HOST"),
-		defaultSMTPHost,
+func NewSMTPService(config infrastructureconfig.SMTP) infrastructureservices.SMTPService {
+	return &SMTPService{config: config}
+}
+
+func (service *SMTPService) Send(ctx context.Context, message infrastructurerequest.MailMessage) error {
+	client, err := mail.NewClient(
+		service.config.Host,
+		mail.WithPort(service.config.Port),
+		mail.WithTLSPolicy(mail.NoTLS),
 	)
-	port := envPort("MAIL_INFRASTRUCTURE_SMTP_PORT", "MAIL_PROVIDER_SMTP_PORT", defaultSMTPPort)
-	return &SMTPService{host: host, port: port}
-}
-
-func (service *SMTPService) Send(ctx context.Context, message infrastructureservices.Message) error {
-	client, err := mail.NewClient(service.host, mail.WithPort(service.port), mail.WithTLSPolicy(mail.NoTLS))
 	if err != nil {
 		return err
 	}
@@ -64,22 +54,13 @@ func (service *SMTPService) Send(ctx context.Context, message infrastructureserv
 
 	internetMessageID := strings.TrimSpace(message.InternetMessageID)
 	if internetMessageID != "" {
-		mailMessage.SetMessageIDWithValue(trimMessageIDBrackets(internetMessageID))
+		mailMessage.SetMessageIDWithValue(servicehelpers.TrimMessageIDBrackets(internetMessageID))
 	}
 	if inReplyTo := strings.TrimSpace(message.InReplyTo); inReplyTo != "" {
-		mailMessage.SetGenHeader(mail.HeaderInReplyTo, formatMessageIDHeader(inReplyTo))
+		mailMessage.SetGenHeader(mail.HeaderInReplyTo, servicehelpers.FormatMessageIDHeader(inReplyTo))
 	}
-	if len(message.ReferenceMessageIDs) > 0 {
-		formattedReferences := make([]string, 0, len(message.ReferenceMessageIDs))
-		for _, reference := range message.ReferenceMessageIDs {
-			if strings.TrimSpace(reference) == "" {
-				continue
-			}
-			formattedReferences = append(formattedReferences, formatMessageIDHeader(reference))
-		}
-		if len(formattedReferences) > 0 {
-			mailMessage.SetGenHeader(mail.HeaderReferences, strings.Join(formattedReferences, " "))
-		}
+	if references := servicehelpers.FormatReferenceMessageIDs(message.ReferenceMessageIDs); references != "" {
+		mailMessage.SetGenHeader(mail.HeaderReferences, references)
 	}
 
 	mailMessage.Subject(message.Subject)
@@ -92,54 +73,23 @@ func (service *SMTPService) Send(ctx context.Context, message infrastructureserv
 		mailMessage.SetBodyString(mail.TypeTextHTML, message.HTMLBody)
 	}
 
-	sendContext, cancel := context.WithTimeout(ctx, defaultSubmitTimeout)
+	sendContext, cancel := context.WithTimeout(ctx, service.config.SubmitTimeout)
 	defer cancel()
 	return client.DialAndSendWithContext(sendContext, mailMessage)
 }
 
 func (service *SMTPService) Health(ctx context.Context) error {
-	healthContext, cancel := context.WithTimeout(ctx, defaultHealthTimeout)
+	healthContext, cancel := context.WithTimeout(ctx, service.config.HealthTimeout)
 	defer cancel()
 
 	connection, err := (&net.Dialer{}).DialContext(
 		healthContext,
 		"tcp",
-		net.JoinHostPort(service.host, strconv.Itoa(service.port)),
+		net.JoinHostPort(service.config.Host, strconv.Itoa(service.config.Port)),
 	)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = connection.Close() }()
 	return nil
-}
-
-func envPort(primary string, fallback string, defaultValue int) int {
-	for _, name := range []string{primary, fallback} {
-		value := strings.TrimSpace(os.Getenv(name))
-		if value == "" {
-			continue
-		}
-		parsed, err := strconv.Atoi(value)
-		if err == nil && parsed > 0 && parsed <= 65535 {
-			return parsed
-		}
-	}
-	return defaultValue
-}
-
-func firstNonEmpty(values ...string) string {
-	for _, value := range values {
-		if strings.TrimSpace(value) != "" {
-			return strings.TrimSpace(value)
-		}
-	}
-	return ""
-}
-
-func trimMessageIDBrackets(value string) string {
-	return strings.Trim(strings.TrimSpace(value), "<>")
-}
-
-func formatMessageIDHeader(value string) string {
-	return fmt.Sprintf("<%s>", trimMessageIDBrackets(value))
 }

@@ -1,21 +1,18 @@
 package services
 
-import (
-	"context"
-	"errors"
-)
+import "context"
 
-var (
-	ErrInvalidDKIMIdentity  = errors.New("invalid DKIM identity")
-	ErrDKIMSelectorConflict = errors.New("DKIM selector does not match the persisted identity")
-)
+type EnsureDKIMInput struct {
+	Domain   string
+	Selector string
+}
 
 type DKIMIdentity struct {
-	Domain    string `json:"domain"`
-	Selector  string `json:"selector"`
-	PublicKey string `json:"publicKey"`
+	Domain    string
+	Selector  string
+	PublicKey string
 }
 
 type DKIMService interface {
-	Ensure(ctx context.Context, domain string, selector string) (DKIMIdentity, error)
+	Ensure(ctx context.Context, input EnsureDKIMInput) (DKIMIdentity, error)
 }

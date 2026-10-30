@@ -1,26 +1,12 @@
 package services
 
-import "context"
+import (
+	"context"
 
-type Address struct {
-	Email       string
-	DisplayName string
-}
-
-type Message struct {
-	From                Address
-	To                  []string
-	Cc                  []string
-	Bcc                 []string
-	Subject             string
-	TextBody            string
-	HTMLBody            string
-	InternetMessageID   string
-	InReplyTo           string
-	ReferenceMessageIDs []string
-}
+	infrastructurerequest "grovehub/services/infrastructure/dto/request"
+)
 
 type SMTPService interface {
-	Send(ctx context.Context, message Message) error
+	Send(ctx context.Context, message infrastructurerequest.MailMessage) error
 	Health(ctx context.Context) error
 }

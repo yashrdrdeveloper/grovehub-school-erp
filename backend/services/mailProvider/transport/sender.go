@@ -3,7 +3,7 @@ package transport
 import (
 	"context"
 
-	"grovehub/services/infrastructure"
+	infrastructureclient "grovehub/services/infrastructure/client"
 	"grovehub/services/mailProvider/entity"
 )
 
@@ -12,16 +12,16 @@ type Sender interface {
 }
 
 type sender struct {
-	mailClient infrastructure.MailClient
+	mailClient infrastructureclient.MailClient
 }
 
-func NewSender(mailClient infrastructure.MailClient) Sender {
+func NewSender(mailClient infrastructureclient.MailClient) Sender {
 	return &sender{mailClient: mailClient}
 }
 
 func (adapter *sender) Send(ctx context.Context, message entity.Message, from entity.Sender) error {
-	return adapter.mailClient.Send(ctx, infrastructure.Message{
-		From: infrastructure.Address{
+	return adapter.mailClient.Send(ctx, infrastructureclient.Message{
+		From: infrastructureclient.Address{
 			Email:       from.GetEmail(),
 			DisplayName: from.GetDisplayName(),
 		},
