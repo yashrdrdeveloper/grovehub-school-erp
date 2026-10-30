@@ -23,10 +23,10 @@ case "${command_name}" in
 esac
 
 case "${service_name}" in
-  all|foundation|identity|mailProvider)
+  all|foundation|identity|infrastructure|mailProvider)
     ;;
   *)
-    die "Unsupported database service: ${service_name}. Expected all, foundation, identity, or mailProvider."
+    die "Unsupported database service: ${service_name}. Expected all, foundation, identity, infrastructure, or mailProvider."
     ;;
 esac
 
@@ -40,6 +40,7 @@ schema_state_table() {
   case "$1" in
     foundation) printf '%s\n' "foundation_schema_state" ;;
     identity) printf '%s\n' "identity_schema_state" ;;
+    infrastructure) printf '%s\n' "infrastructure_schema_state" ;;
     mailProvider) printf '%s\n' "mail_provider_schema_state" ;;
   esac
 }
@@ -89,19 +90,23 @@ case "${command_name}" in
   init)
     init_service foundation
     init_service identity
+    init_service infrastructure
     init_service mailProvider
     ;;
   reset)
     run_service_schema mailProvider reset
+    run_service_schema infrastructure reset
     run_service_schema identity reset
     run_service_schema foundation reset
     init_service foundation
     init_service identity
+    init_service infrastructure
     init_service mailProvider
     ;;
   status)
     status_service foundation
     status_service identity
+    status_service infrastructure
     status_service mailProvider
     ;;
 esac

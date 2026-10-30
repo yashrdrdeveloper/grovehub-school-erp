@@ -292,29 +292,27 @@ ensure_dmarc() {
   upsert_managed_txt "${zone_id}" "${name}" "v=DMARC1; p=none; adkim=r; aspf=r" "v=DMARC1"
 }
 
-ensure_haraka_dkim_key() {
-  docker exec \
-    --env "GROVEHUB_DOMAIN=${DOMAIN}" \
-    --env "GROVEHUB_SELECTOR=${DKIM_SELECTOR}" \
-    "${HARAKA_CONTAINER_NAME}" \
-    sh -eu -c '
-      key_dir="/opt/haraka/config/dkim/${GROVEHUB_DOMAIN}"
-      mkdir -p "${key_dir}"
-      if [ ! -s "${key_dir}/private" ]; then
-        openssl genrsa -out "${key_dir}/private" 2048 >/dev/null 2>&1
-      fi
-      chmod 600 "${key_dir}/private"
-      printf "%s\n" "${GROVEHUB_SELECTOR}" >"${key_dir}/selector"
-      openssl rsa -in "${key_dir}/private" -pubout -out "${key_dir}/public" >/dev/null 2>&1
-    '
+ensure_infrastructure_dkim_key() {
+  local payload
+  local response
 
-  docker exec \
-    --env "GROVEHUB_DOMAIN=${DOMAIN}" \
-    "${HARAKA_CONTAINER_NAME}" \
-    sh -eu -c '
-      sed -e "/-----BEGIN PUBLIC KEY-----/d" -e "/-----END PUBLIC KEY-----/d" \
-        "/opt/haraka/config/dkim/${GROVEHUB_DOMAIN}/public" | tr -d "\r\n"
-    '
+  payload="$(jq -nc \
+    --arg domain "${DOMAIN}" \
+    --arg selector "${DKIM_SELECTOR}" \
+    '{domain:$domain,selector:$selector}')"
+
+  if ! response="$(backend_request POST "/internal/infrastructure/mail/dkim/ensure" "${payload}")"; then
+    log_error "Unable to reach the Infrastructure backend while preparing DKIM"
+    return 1
+  fi
+
+  if [[ "$(jq -r '.success // false' <<<"${response}")" != "true" ]]; then
+    log_error "Infrastructure backend could not prepare DKIM"
+    jq -c '.' <<<"${response}" >&2 || true
+    return 1
+  fi
+
+  jq -r '.data.publicKey // empty' <<<"${response}"
 }
 
 wait_for_haraka() {
@@ -463,8 +461,8 @@ log_info "GroveHub public mail hostname: ${MAIL_HOST}"
 bash "${SCRIPT_DIR}/start.sh"
 
 if ! curl --noproxy "${BACKEND_NO_PROXY}" --fail --silent --max-time 1 "${BACKEND_BASE_URL}/health" >/dev/null 2>&1; then
-  log_info "Backend is not running; applying Mail Provider migrations and starting it"
-  bash "${SCRIPT_DIR}/../database/migrate.sh" up mailProvider
+  log_info "Backend is not running; applying database migrations and starting it"
+  bash "${SCRIPT_DIR}/../database/migrate.sh" init all
   BACKEND_HOT_RELOAD=1 bash "${SCRIPT_DIR}/../backend/start.sh"
 fi
 
@@ -478,9 +476,9 @@ if [[ "${DOMAIN_STATUS}" == "DEACTIVATED" ]]; then
   die "Mail Provider domain ${DOMAIN} is deactivated and cannot be prepared"
 fi
 
-log_info "Preparing DKIM key for ${DOMAIN}"
-DKIM_PUBLIC_KEY="$(ensure_haraka_dkim_key)"
-[[ -n "${DKIM_PUBLIC_KEY}" ]] || die "Unable to read generated DKIM public key"
+log_info "Preparing durable DKIM identity for ${DOMAIN}"
+DKIM_PUBLIC_KEY="$(ensure_infrastructure_dkim_key)"
+[[ -n "${DKIM_PUBLIC_KEY}" ]] || die "Unable to read persisted DKIM public key"
 DKIM_HOST="${DKIM_SELECTOR}._domainkey.${DOMAIN}"
 DKIM_VALUE="v=DKIM1; k=rsa; p=${DKIM_PUBLIC_KEY}"
 
@@ -497,7 +495,7 @@ fi
 ensure_spf "${CLOUDFLARE_ZONE_ID}" "${SPF_MECHANISM}"
 ensure_dmarc "${CLOUDFLARE_ZONE_ID}"
 
-log_info "Reloading Haraka with the domain DKIM key and public hostname"
+log_info "Reloading Haraka with the persisted domain DKIM key and public hostname"
 docker restart "${HARAKA_CONTAINER_NAME}" >/dev/null
 if ! wait_for_haraka; then
   docker logs "${HARAKA_CONTAINER_NAME}" >&2 || true

@@ -17,6 +17,8 @@ ensure_runtime_dirs
 require_command curl
 load_backend_runtime_env
 
+export MAIL_INFRASTRUCTURE_DKIM_STATE_DIR="${MAIL_INFRASTRUCTURE_DKIM_STATE_DIR:-${MAIL_PROVIDER_DKIM_STATE_DIR:-${STATE_DIR}/mailProvider/dkim}}"
+
 PID_FILE="${RUNTIME_PID_DIR}/backend.pid"
 LOG_FILE="${RUNTIME_LOG_DIR}/backend.log"
 BINARY="${RUNTIME_BIN_DIR}/groovehub-platform"

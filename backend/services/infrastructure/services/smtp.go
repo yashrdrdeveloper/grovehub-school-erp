@@ -1,4 +1,4 @@
-package mail
+package services
 
 import "context"
 
@@ -20,7 +20,7 @@ type Message struct {
 	ReferenceMessageIDs []string
 }
 
-type MailClient interface {
+type SMTPService interface {
 	Send(ctx context.Context, message Message) error
 	Health(ctx context.Context) error
 }

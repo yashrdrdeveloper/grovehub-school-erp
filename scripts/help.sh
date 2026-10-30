@@ -14,18 +14,19 @@ Backend
 
 Mail Provider
   make mail-provider-start   Ensure the container runtime and start Haraka
-  make mail-provider-stop    Stop Haraka while preserving queue and DKIM volumes
+  make mail-provider-stop    Stop Haraka while preserving queue and DKIM state
   make mail-provider-status  Show Haraka container and health status
   make mail-domain-ready     Read Cloudflare token/zone from .env, discover domain/public IP,
-                             configure outbound-mail DNS + DKIM, and verify the GroveHub domain
+                             prepare durable DKIM state, configure outbound-mail DNS, and verify the domain
 
 Database
-  make db-schema-status                       Show current GroveHub schema baseline state
-  make db-schema-init                         Initialize all service schemas from the current baseline
-  make db-schema-reset                        Destructively reset all service schemas to the current baseline
-  make db-schema-reset DB_SERVICE=foundation  Reset only one service schema
+  make db-schema-status                           Show current GroveHub schema baseline state
+  make db-schema-init                             Initialize all service schemas from the current baseline
+  make db-schema-reset                            Destructively reset all service schemas to the current baseline
+  make db-schema-reset DB_SERVICE=foundation      Reset only the Foundation schema
+  make db-schema-reset DB_SERVICE=infrastructure  Reset only the Infrastructure schema
 
-  DB_SERVICE can be: all, foundation, identity, or mailProvider.
+  DB_SERVICE can be: all, foundation, identity, infrastructure, or mailProvider.
   Schema reset is development-only and deletes data in the selected service schema.
 
 Swagger

@@ -11,7 +11,7 @@ import (
 
 	mail "github.com/wneessen/go-mail"
 
-	inframail "grovehub/services/infrastructure/mail"
+	infrastructureservices "grovehub/services/infrastructure/services"
 )
 
 const (
@@ -21,23 +21,23 @@ const (
 	defaultHealthTimeout = 3 * time.Second
 )
 
-type smtpClient struct {
+type SMTPService struct {
 	host string
 	port int
 }
 
-func NewMailClientFromEnvironment() inframail.MailClient {
+func NewSMTPServiceFromEnvironment() infrastructureservices.SMTPService {
 	host := firstNonEmpty(
 		os.Getenv("MAIL_INFRASTRUCTURE_SMTP_HOST"),
 		os.Getenv("MAIL_PROVIDER_SMTP_HOST"),
 		defaultSMTPHost,
 	)
 	port := envPort("MAIL_INFRASTRUCTURE_SMTP_PORT", "MAIL_PROVIDER_SMTP_PORT", defaultSMTPPort)
-	return &smtpClient{host: host, port: port}
+	return &SMTPService{host: host, port: port}
 }
 
-func (client *smtpClient) Send(ctx context.Context, message inframail.Message) error {
-	smtpClient, err := mail.NewClient(client.host, mail.WithPort(client.port), mail.WithTLSPolicy(mail.NoTLS))
+func (service *SMTPService) Send(ctx context.Context, message infrastructureservices.Message) error {
+	client, err := mail.NewClient(service.host, mail.WithPort(service.port), mail.WithTLSPolicy(mail.NoTLS))
 	if err != nil {
 		return err
 	}
@@ -62,9 +62,9 @@ func (client *smtpClient) Send(ctx context.Context, message inframail.Message) e
 		}
 	}
 
-	internetMessageId := strings.TrimSpace(message.InternetMessageID)
-	if internetMessageId != "" {
-		mailMessage.SetMessageIDWithValue(trimMessageIDBrackets(internetMessageId))
+	internetMessageID := strings.TrimSpace(message.InternetMessageID)
+	if internetMessageID != "" {
+		mailMessage.SetMessageIDWithValue(trimMessageIDBrackets(internetMessageID))
 	}
 	if inReplyTo := strings.TrimSpace(message.InReplyTo); inReplyTo != "" {
 		mailMessage.SetGenHeader(mail.HeaderInReplyTo, formatMessageIDHeader(inReplyTo))
@@ -94,17 +94,17 @@ func (client *smtpClient) Send(ctx context.Context, message inframail.Message) e
 
 	sendContext, cancel := context.WithTimeout(ctx, defaultSubmitTimeout)
 	defer cancel()
-	return smtpClient.DialAndSendWithContext(sendContext, mailMessage)
+	return client.DialAndSendWithContext(sendContext, mailMessage)
 }
 
-func (client *smtpClient) Health(ctx context.Context) error {
+func (service *SMTPService) Health(ctx context.Context) error {
 	healthContext, cancel := context.WithTimeout(ctx, defaultHealthTimeout)
 	defer cancel()
 
 	connection, err := (&net.Dialer{}).DialContext(
 		healthContext,
 		"tcp",
-		net.JoinHostPort(client.host, strconv.Itoa(client.port)),
+		net.JoinHostPort(service.host, strconv.Itoa(service.port)),
 	)
 	if err != nil {
 		return err

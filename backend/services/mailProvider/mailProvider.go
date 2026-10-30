@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	coretelemetry "grovehub/libs/core/telemetry"
-	inframail "grovehub/services/infrastructure/mail"
+	"grovehub/services/infrastructure"
 	mailproviderclient "grovehub/services/mailProvider/client"
 	clientimpl "grovehub/services/mailProvider/client/impl"
 	"grovehub/services/mailProvider/controller"
@@ -33,7 +33,7 @@ type module struct {
 	client            mailproviderclient.Client
 }
 
-func New(logger *slog.Logger, db *gorm.DB, mailClient inframail.MailClient) Module {
+func New(logger *slog.Logger, db *gorm.DB, mailClient infrastructure.MailClient) Module {
 	domainRepository := repositoryimpl.NewDomainRepository(db)
 	domainValidator := validatorimpl.NewDomainValidator()
 	domainService := serviceimpl.NewDomainService(domainRepository, domainValidator)
