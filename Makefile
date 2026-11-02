@@ -4,11 +4,7 @@ SHELL := /usr/bin/env bash
 
 SWAGGER_PORT ?= 8081
 DB_SERVICE ?= all
-NATS_CLIENT_PORT ?= 4222
-NATS_MONITOR_PORT ?= 8222
 export SWAGGER_PORT
-export NATS_CLIENT_PORT
-export NATS_MONITOR_PORT
 
 .PHONY: help
 help:
