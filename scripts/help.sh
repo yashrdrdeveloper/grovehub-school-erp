@@ -27,6 +27,14 @@ Messaging / NATS JetStream
   make nats-stop      Stop the NATS container and preserve JetStream data
   make nats-status    Show NATS health, endpoints, and persistent volume
 
+Testing
+  make sanity
+      Start/verify NATS, run all backend sanity tests, generate an HTML report,
+      and open .runtime/reports/sanity/index.html in the browser.
+
+  make sanity SANITY_SCOPE=./tests/sanity/infrastructure/messaging/...
+      Run only the selected backend sanity package tree.
+
 Swagger
   make swagger-start    Start Swagger UI on http://localhost:8081
   make swagger-stop     Stop the managed Swagger UI container
