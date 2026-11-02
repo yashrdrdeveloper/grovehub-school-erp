@@ -11,11 +11,13 @@ import (
 	clientimpl "grovehub/services/foundation/client/impl"
 	"grovehub/services/foundation/controller"
 	controllerimpl "grovehub/services/foundation/controller/impl"
+	personeventimpl "grovehub/services/foundation/events/persons/impl"
 	mapperimpl "grovehub/services/foundation/mappers/impl"
 	repositoryimpl "grovehub/services/foundation/repository/impl"
 	"grovehub/services/foundation/routes"
 	serviceimpl "grovehub/services/foundation/services/impl"
 	validatorimpl "grovehub/services/foundation/validators/impl"
+	infrastructureclient "grovehub/services/infrastructure/client"
 )
 
 type Module interface {
@@ -29,11 +31,16 @@ type module struct {
 	client           foundationclient.Client
 }
 
-func New(logger *slog.Logger, db *gorm.DB) Module {
+func New(
+	logger *slog.Logger,
+	db *gorm.DB,
+	messagingClient infrastructureclient.MessagingClient,
+) Module {
 	personRepository := repositoryimpl.NewPersonRepository(db)
 	personMapper := mapperimpl.NewPersonMapper()
 	personValidator := validatorimpl.NewPersonValidator()
 	personService := serviceimpl.NewPersonService(personRepository, personMapper, personValidator)
+	personService = personeventimpl.NewPersonService(personService, messagingClient, logger)
 
 	return &module{
 		logger:           logger,
