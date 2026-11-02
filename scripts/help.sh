@@ -22,16 +22,21 @@ Database
   DB_SERVICE can be: all, foundation, identity, or infrastructure.
   Schema reset is development-only and deletes data in the selected service schema.
 
+Messaging / NATS JetStream
+  make nats-start     Start local NATS JetStream with persistent storage
+  make nats-stop      Stop the NATS container and preserve JetStream data
+  make nats-status    Show NATS health, endpoints, and persistent volume
+
 Swagger
   make swagger-start    Start Swagger UI on http://localhost:8081
   make swagger-stop     Stop the managed Swagger UI container
   make swagger-status   Show Swagger UI status
 
 Development
-  make dev-start            Initialize schemas, start Air backend, and start Swagger
+  make dev-start            Start NATS, initialize schemas, start Air backend, and start Swagger
   make dev-start-with-logs  Same as dev-start plus the local OTEL collector
-  make dev-stop             Stop Swagger UI, backend, and optional OTEL collector
-  make dev-status           Show backend and Swagger UI status
+  make dev-stop             Stop Swagger UI, backend, NATS, and optional OTEL collector
+  make dev-status           Show NATS, backend, and Swagger UI status
 
 Container runtime used by dev-start
   macOS    Colima (installed/started automatically; Docker CLI/Compose via Homebrew)
@@ -40,4 +45,5 @@ Container runtime used by dev-start
 
 Overrides
   make swagger-start SWAGGER_PORT=8082
+  make nats-start NATS_CLIENT_PORT=4223 NATS_MONITOR_PORT=8223
 EOF
