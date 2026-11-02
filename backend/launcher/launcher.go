@@ -47,7 +47,11 @@ func Run(logger *slog.Logger) error {
 	mux := http.NewServeMux()
 	routing.RegisterHealth(mux)
 
-	foundationModule := foundation.New(logger, db)
+	foundationModule := foundation.New(
+		logger,
+		db,
+		infrastructureModule.MessagingClient(),
+	)
 	foundationModule.RegisterHTTP(mux)
 
 	identityModule := identity.New(
