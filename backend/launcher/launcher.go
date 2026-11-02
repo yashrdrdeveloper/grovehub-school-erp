@@ -20,6 +20,7 @@ import (
 	"grovehub/services/foundation"
 	"grovehub/services/identity"
 	"grovehub/services/infrastructure"
+	infrastructureconfig "grovehub/services/infrastructure/config"
 )
 
 const httpAddress = ":8080"
@@ -37,17 +38,25 @@ func Run(logger *slog.Logger) error {
 	}
 	defer func() { _ = sqlDB.Close() }()
 
+	infrastructureModule, err := infrastructure.New(infrastructureconfig.DefaultMessaging())
+	if err != nil {
+		return fmt.Errorf("bootstrap infrastructure messaging: %w", err)
+	}
+	defer func() { _ = infrastructureModule.Close() }()
+
 	mux := http.NewServeMux()
 	routing.RegisterHealth(mux)
 
 	foundationModule := foundation.New(logger, db)
 	foundationModule.RegisterHTTP(mux)
 
-	identityModule := identity.New(logger, db, foundationModule.Client())
+	identityModule := identity.New(
+		logger,
+		db,
+		foundationModule.Client(),
+		infrastructureModule.MessagingClient(),
+	)
 	identityModule.RegisterHTTP(mux)
-
-	infrastructureModule := infrastructure.New(logger, db)
-	infrastructureModule.RegisterHTTP(mux)
 
 	routing.RegisterFallback(mux)
 
