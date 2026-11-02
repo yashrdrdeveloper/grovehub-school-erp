@@ -8,7 +8,7 @@
 
 ## 1. Single Infrastructure Ownership Boundary
 
-All GroveHub **backend integration code for infrastructure capabilities** lives under:
+All GroveHub backend integration code for infrastructure capabilities lives under:
 
 ```text
 backend/services/infrastructure/
@@ -16,62 +16,46 @@ backend/services/infrastructure/
 
 Business services must not create provider-specific infrastructure adapters inside their own service roots.
 
-Examples:
-
-```text
-GOOD
-backend/services/infrastructure/services/impl/smtp.go
-backend/services/infrastructure/services/impl/dkim.go
-backend/services/infrastructure/repository/impl/dkim.go
-
-BAD
-backend/services/identity/smtp.go
-backend/services/identity/redis.go
-backend/services/foundation/s3.go
-```
-
 The business service owns the business use case. Infrastructure owns the technical integration.
-
-Runtime/deployment assets still follow repository-wide deployment ownership. Dockerfiles, Compose files, deployment manifests, and developer shell orchestration may remain under `deployments/` and `scripts/`; the Go integration and infrastructure state boundary belongs under `backend/services/infrastructure`.
 
 ---
 
 ## 2. Canonical Infrastructure Structure
 
-Infrastructure follows the same GroveHub service structure as every other backend module:
+Infrastructure follows the normal GroveHub flat service structure and adds two explicit infrastructure responsibilities when needed:
 
 ```text
 backend/services/infrastructure/
 ├── infrastructure.go
-├── client/
-│   ├── <capability>.go
-│   └── impl/
-│       └── <capability>.go
 ├── config/
 ├── constants/
 │   └── error/
-├── dto/
-│   ├── request/
-│   └── response/
 ├── entity/
 ├── repository/
-│   ├── <resource>.go
 │   └── impl/
-│       └── <resource>.go
 ├── services/
 │   ├── <capability>.go
 │   ├── impl/
 │   │   └── <capability>.go
-│   └── helpers/
+│   ├── helpers/
+│   │   └── <capability>.go
+│   └── strategy/
+│       ├── registry.go
+│       └── <capability>/
+│           ├── strategy.go
+│           └── <provider>.go
+├── externalService/
+│   └── <provider>/
+│       ├── adapters/
+│       └── webhooks/
+├── client/
+│   ├── <capability>.go
+│   └── impl/
 │       └── <capability>.go
 ├── controller/
-│   ├── <resource>.go
-│   ├── impl/
-│   │   └── <resource>.go
-│   └── helpers/
+│   └── impl/
 ├── routes/
-├── migrations/
-└── tests/
+└── migrations/
 ```
 
 Create only folders that have a current responsibility.
@@ -94,165 +78,179 @@ infrastructure/services interface
 infrastructure/services/impl
 ```
 
-For mail:
+Client implementations are intentionally thin. They forward `context.Context` and delegate to the owning service. They must not duplicate provider behavior, retry policy, configuration resolution, or external API logic.
 
-```text
-Consuming communication service
-    ↓
-client.MailClient
-    ↓
-client/impl.MailClient
-    ↓
-services.SMTPService
-    ↓
-services/impl.SMTPService
-    ↓
-configured SMTP endpoint
-```
-
-The client implementation is intentionally thin. It forwards `context.Context` and delegates to the owning service. It must not duplicate SMTP behavior, retry policy, DKIM logic, or provider-specific configuration.
-
-Business services must not import:
-
-```text
-grovehub/services/infrastructure/services/impl
-grovehub/services/infrastructure/repository/impl
-```
-
-They import the public `grovehub/services/infrastructure/client` package.
+Business services must not import Infrastructure implementation, strategy, or external-service packages.
 
 ---
 
-## 4. Service and Helper Rule
+## 4. Service Rule
 
-`services/<capability>.go` defines the service contract.
+`services/<capability>.go` defines the capability service contract.
 
-`services/impl/<capability>.go` owns technical use-case orchestration and external I/O required by the infrastructure capability.
+`services/impl/<capability>.go` owns technical use-case orchestration and resolves the configured provider strategy.
 
-`services/helpers/<capability>.go` contains **pure capability-specific helpers only**.
+`services/helpers/<capability>.go` contains pure capability-specific service helpers only.
 
-Good helper examples:
-
-```text
-normalize DKIM domain/selector
-parse PEM data
-format Message-ID headers
-format References headers
-convert a PEM public key to a DNS value
-```
-
-Do not put these in `services/helpers/`:
-
-```text
-database access
-environment reads
-network calls
-SMTP connections
-filesystem mutation
-Docker execution
-HTTP controller logic
-```
-
-Environment/configuration loading belongs under `config/`. Persistence belongs under `repository/impl/`. HTTP transport belongs under `controller/` and `routes/`.
+Repositories remain persistence-only. Do not move provider selection, business decisions, or external API calls into repositories.
 
 ---
 
-## 5. Provider-Agnostic Naming
+## 5. Strategy / Registry Rule
+
+Provider selection must use a registry/strategy pattern instead of growing vendor `if/else` or `switch` trees.
+
+```text
+Capability Service
+    ↓
+Registry[CapabilityStrategy]
+    ↓
+configured provider key
+    ↓
+Capability Strategy
+    ↓
+External Service Adapter
+```
+
+A generic registry may be reused across capabilities:
+
+```text
+Registry[T]
+    Register(key, strategy)
+    Resolve(key)
+```
+
+Each capability still owns a strongly typed strategy interface. Do not force unrelated capabilities into one giant generic `Execute()` contract.
+
+Example:
+
+```text
+MessagingService
+    ↓
+Registry[MessagingStrategy]
+    ↓
+NATS strategy
+```
+
+Adding another messaging provider should normally register another strategy during module composition without changing `MessagingService` provider branching logic.
+
+---
+
+## 6. External Service Rule
+
+Concrete vendor/API mechanics live under:
+
+```text
+backend/services/infrastructure/externalService/<provider>/
+```
+
+Examples:
+
+```text
+externalService/nats/adapters/
+externalService/gmail/adapters/
+externalService/gmail/webhooks/
+```
+
+Provider-specific SDK types, request mapping, protocol behavior, webhook verification, and external API calls remain inside the external-service boundary.
+
+Generic service/client contracts must not expose vendor SDK types.
+
+---
+
+## 7. Provider-Agnostic Naming
 
 Public contracts use capability names, not implementation/vendor names.
 
 Use:
 
 ```text
+MessagingClient
 MailClient
-SMTPService
 StorageClient
 CacheClient
-QueueClient
 ```
 
-Avoid public names such as:
+Avoid public contracts such as:
 
 ```text
-VendorSMTPClient
+NATSClient
+GmailClient
 RedisClient
 S3Client
-KafkaClient
 ```
 
-Provider-specific names may exist only inside a concrete implementation when the distinction is genuinely required. A business service must not know which SMTP implementation or provider is currently configured.
+Consumers request the capability. Infrastructure resolves the configured provider internally.
 
 ---
 
-## 6. DKIM State Ownership
+## 8. Messaging Ownership
 
-DKIM identity is infrastructure state, not consuming business-service state.
-
-The durable source of truth is the Infrastructure database schema:
+The first messaging implementation uses Watermill with NATS JetStream.
 
 ```text
-infrastructure.dkim_keys
+Consumer Service
+    ↓
+MessagingClient
+    ↓
+MessagingService
+    ↓
+MessagingStrategy registry
+    ↓
+NATS strategy
+    ↓
+externalService/nats/adapters
+    ↓
+Watermill
+    ↓
+NATS JetStream
 ```
 
-The persisted identity includes the domain, selector, private key material, public key material, and creation time.
+JetStream owns durable broker message and consumer state. A GroveHub database table is not required solely for event registration or broker delivery state.
 
-Current rule:
-
-```text
-first setup
-    -> import an existing valid filesystem key when present
-    -> otherwise generate once
-    -> persist once in infrastructure.dkim_keys
-
-later startup/recreate/rebuild
-    -> read the same persisted DB identity
-    -> materialize the same key for the SMTP/DKIM runtime
-    -> never silently generate a replacement key
-```
-
-DKIM rows are immutable. Rotation must be an explicit future workflow; normal startup/domain preparation must never rotate a DKIM identity.
-
-The private key must never be returned through the Infrastructure HTTP/API response. Only the public key required for DNS publication may be returned.
-
-A future secret-provider/KMS implementation may replace direct private-key storage with a secret reference without changing the public Infrastructure client/service ownership model.
+A database may be introduced later only when GroveHub needs application-owned dynamic configuration such as tenant-specific runtime subscriptions, admin-managed bindings, or auditable runtime registration.
 
 ---
 
-## 7. HTTP/Internal Operations
+## 9. Trace Context Across Messaging
 
-If infrastructure exposes an internal HTTP operation, it still follows the normal GroveHub flow:
+Messaging publish/consume boundaries must preserve GroveHub trace context.
 
-```text
-Route
-  ↓
-Controller
-  ↓
-Service
-  ↓
-Repository / external infrastructure
-```
+Publishing propagates W3C trace context in message metadata and may include `X-Trace-ID` for support correlation.
 
-Do not put HTTP handlers directly in `infrastructure.go`.
+Consumers extract the W3C parent before invoking the handler so downstream work continues the same distributed trace.
 
-The module file is the composition root only: construct repositories, services, clients, controllers, and register routes.
+Provider-specific adapters must not create disconnected traces for normal request-derived message flows.
 
 ---
 
-## 8. Hard Rules
+## 10. Durable Broker State
+
+NATS JetStream persistence must use persistent storage outside the disposable application container/process.
+
+Application restarts must not remove broker state.
+
+Server migration/rebuild must preserve or restore JetStream storage, or use a clustered deployment when higher availability is required.
+
+GroveHub application code must not duplicate all event payloads into PostgreSQL merely to compensate for ephemeral broker storage.
+
+---
+
+## 11. Hard Rules
 
 ```text
 YES all backend infrastructure integration code is owned by backend/services/infrastructure
 YES consumers use infrastructure/client contracts
 YES client implementations delegate to infrastructure services
-YES provider-specific behavior stays behind infrastructure services
-YES services/helpers contains pure helper logic only
-YES infrastructure owns durable technical state such as DKIM identity
-YES DKIM startup reuses persisted identity and never silently rotates it
+YES provider selection uses typed strategy + registry resolution
+YES provider-specific API/SDK behavior stays under externalService/<provider>
+YES context.Context crosses messaging/provider boundaries
+YES JetStream owns durable broker delivery state
 
-NO provider-specific SMTP client exposed to business services
-NO business service importing infrastructure impl packages
-NO SMTP implementation inside consuming business services
+NO vendor switch trees in business/service methods
+NO provider-specific client exposed to consuming business services
+NO business service importing infrastructure impl/strategy/externalService packages
 NO database/network/filesystem work inside services/helpers
-NO HTTP handlers directly inside infrastructure.go
-NO silent DKIM key replacement during restart/recreate/rebuild
+NO vendor SDK types in generic client/service contracts
+NO DB table solely for broker event registration/delivery state
 ```
