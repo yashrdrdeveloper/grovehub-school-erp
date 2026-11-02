@@ -45,5 +45,4 @@ Container runtime used by dev-start
 
 Overrides
   make swagger-start SWAGGER_PORT=8082
-  make nats-start NATS_CLIENT_PORT=4223 NATS_MONITOR_PORT=8223
 EOF
