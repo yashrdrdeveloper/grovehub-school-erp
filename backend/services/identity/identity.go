@@ -8,6 +8,7 @@ import (
 
 	coretelemetry "grovehub/libs/core/telemetry"
 	foundationclient "grovehub/services/foundation/client"
+	infrastructureclient "grovehub/services/infrastructure/client"
 	"grovehub/services/identity/controller"
 	controllerimpl "grovehub/services/identity/controller/impl"
 	mapperimpl "grovehub/services/identity/mappers/impl"
@@ -26,10 +27,16 @@ type module struct {
 	authController controller.AuthController
 }
 
-func New(logger *slog.Logger, db *gorm.DB, foundationClient foundationclient.Client) Module {
+func New(
+	logger *slog.Logger,
+	db *gorm.DB,
+	foundationClient foundationclient.Client,
+	messagingClient infrastructureclient.MessagingClient,
+) Module {
 	accountRepository := repositoryimpl.NewAccountRepository(db)
 	accountValidator := validatorimpl.NewAccountValidator()
 	accountService := serviceimpl.NewAccountService(accountRepository, accountValidator)
+	accountService = serviceimpl.NewAccountEventService(accountService, messagingClient, logger)
 
 	passwordCredentialRepository := repositoryimpl.NewPasswordCredentialRepository(db)
 	passwordCredentialValidator := validatorimpl.NewPasswordCredentialValidator()
