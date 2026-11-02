@@ -7,6 +7,7 @@
 Also read when relevant:
 
 ```text
+docs/engineering/backend/EVENT_GUIDELINES.md
 docs/engineering/backend/CORE_LIBRARY_GUIDELINES.md
 docs/engineering/backend/MAPPER_AND_DTO_GUIDELINES.md
 docs/engineering/backend/VALIDATOR_GUIDELINES.md
@@ -31,6 +32,13 @@ backend/services/<service>/
 │   ├── request/
 │   └── response/
 ├── entity/
+├── events/
+│   └── <resource>/
+│       ├── <resource>.go
+│       ├── impl/
+│       │   └── <resource>.go
+│       └── helpers/
+│           └── <resource>.go
 ├── mappers/
 │   ├── <resource>.go
 │   └── impl/
@@ -66,15 +74,22 @@ backend/services/<service>/
 └── tests/
 ```
 
-Create only folders/files that have a current responsibility. Do not create empty mapper, validator, helper, or implementation packages merely for symmetry.
+Create only folders/files that have a current responsibility. Do not create empty event, mapper, validator, helper, or implementation packages merely for symmetry.
 
 ---
 
 ## 2. Contract / Implementation Rule
 
-Interfaces belong at the package boundary. Concrete implementations belong under `impl/`.
+Interfaces and public contracts belong at the package boundary. Concrete implementations belong under `impl/`.
 
 ```text
+events/<resource>/<resource>.go
+    -> public domain-event contracts + stable topic/type/source identifiers
+events/<resource>/impl/<resource>.go
+    -> event publication/decorator implementation
+events/<resource>/helpers/<resource>.go
+    -> pure event envelope/payload/metadata construction
+
 mappers/<resource>.go
     -> mapper interface
 mappers/impl/<resource>.go
@@ -112,7 +127,7 @@ client/impl/<resource>.go
     -> adapter to provider service
 ```
 
-Consumers depend on public interfaces, not concrete `impl` packages. Concrete construction belongs in the owning module composition root.
+Consumers depend on public interfaces/contracts, not concrete `impl` packages. Concrete construction belongs in the owning module composition root.
 
 ---
 
@@ -161,7 +176,23 @@ Provider service implementation
 Provider repository
 ```
 
+Domain-event publication flow:
+
+```text
+Owning service operation
+  ↓
+Event implementation/decorator
+  ↓
+Infrastructure MessagingClient
+  ↓
+Messaging provider strategy
+  ↓
+NATS JetStream
+```
+
 Do not bypass the provider service layer by importing its repository or implementation packages.
+
+Do not import NATS/Watermill/provider mechanics from domain event packages. Domain events depend only on the public Infrastructure messaging client.
 
 ---
 
@@ -304,6 +335,8 @@ map repository errors to domain/application errors
 
 Services must not duplicate request normalization already owned by validators or generic query mechanics already owned by core capabilities.
 
+Domain-event publication orchestration belongs under the owning service's `events/<resource>/impl` package, not mixed into the normal `services/impl` implementation.
+
 ---
 
 ## 9. Controller Rule
@@ -344,6 +377,47 @@ A consuming module imports only the provider's public `client` package.
 
 ---
 
+## 10.1 Event Rule
+
+A service owns the semantic meaning and public contract of the events caused by changes to resources it owns.
+
+Examples:
+
+```text
+Foundation -> Person/GID events
+Identity   -> Account/Credential/Session events
+```
+
+Event contracts live under:
+
+```text
+services/<service>/events/<resource>/
+```
+
+Event publication implementations live under:
+
+```text
+services/<service>/events/<resource>/impl/
+```
+
+Pure mapping/envelope helpers live under:
+
+```text
+services/<service>/events/<resource>/helpers/
+```
+
+Stable subjects/topics must be reused across message instances. Message/event IDs provide uniqueness; random subjects must not be created for every message or sanity-test run.
+
+Created events are emitted only when a create operation genuinely returns `created == true`; idempotent replays returning `created == false` must not emit duplicate created events.
+
+Event payloads should contain the minimum required contract and should not copy PII/secrets by default.
+
+All events use the generic envelope from `libs/core/events` and publish through Infrastructure's public `MessagingClient`.
+
+See `EVENT_GUIDELINES.md` for the complete event standard.
+
+---
+
 ## 11. Core Library Structure
 
 `backend/libs/core` is capability-first.
@@ -358,6 +432,8 @@ backend/libs/core/
 │   ├── contracts/
 │   ├── helpers/
 │   └── errors.go
+├── events/
+│   └── envelope.go
 ├── http/
 │   ├── contracts/
 │   ├── headers/
@@ -405,6 +481,7 @@ Service/module code imports only capability roots:
 
 ```go
 coreerrors "grovehub/libs/core/errors"
+coreevents "grovehub/libs/core/events"
 coreid "grovehub/libs/core/id"
 corelogging "grovehub/libs/core/logging"
 corenormalize "grovehub/libs/core/normalize"
@@ -508,6 +585,8 @@ Contacts are nested values, not separately addressable public resources.
 
 Search remains a Person use case; do not create `person_search.go` merely because Person supports search.
 
+Foundation owns the Person/GID lifecycle event contract. The first current Foundation event is `foundation.person.created.v1` on the stable `foundation_person_created` topic.
+
 ---
 
 ## 15. SRP / OCP Rules
@@ -534,7 +613,6 @@ Do not force abstractions where simple linear logic is clearer. The goal is clea
 NO src/ wrapper
 NO service-local launcher
 NO consuming service importing another service's impl package
-NO duplicate service interfaces in controller/client packages
 NO controller/repository/network I/O from validators
 NO business workflow inside validators/controllers/mappers
 NO persistence query logic inside entities
@@ -547,10 +625,15 @@ NO top-level libs/core/helpers
 NO top-level libs/core/dto
 NO generic libs/core/utils/common dumping ground
 NO service importing core capability internals
+NO NATS/Watermill/provider imports from domain event packages
+NO random event topics/subjects per message or test run
 YES repository/impl owns database queries and persistence-derived projections
 YES entity owns DB/entity state and entity-level constructors/helpers
 YES one stable façade per core capability
 YES resource policy stays outside generic core mechanics
+YES domain services own event meaning/contracts
+YES Infrastructure owns event transport mechanics
+YES events are grouped under events/<resource>/{impl,helpers}
 ```
 
-> **Guiding principle:** services own use cases, repositories own persistence/query behavior, entities represent persisted resource state without workflow/persistence-query logic, and shared core code is encapsulated by capability behind stable root packages.
+> **Guiding principle:** services own use cases and domain-event meaning, repositories own persistence/query behavior, entities represent persisted resource state without workflow/persistence-query logic, Infrastructure owns transport mechanics, and shared core code is encapsulated by capability behind stable root packages.
