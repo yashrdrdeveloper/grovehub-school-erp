@@ -4,7 +4,11 @@ SHELL := /usr/bin/env bash
 
 SWAGGER_PORT ?= 8081
 DB_SERVICE ?= all
+NATS_CLIENT_PORT ?= 4222
+NATS_MONITOR_PORT ?= 8222
 export SWAGGER_PORT
+export NATS_CLIENT_PORT
+export NATS_MONITOR_PORT
 
 .PHONY: help
 help:
@@ -38,6 +42,16 @@ db-schema-init:
 
 db-schema-reset:
 	@bash ./scripts/database/migrate.sh reset "$(DB_SERVICE)"
+
+.PHONY: nats-start nats-stop nats-status
+nats-start:
+	@bash ./scripts/infrastructure/nats/start.sh
+
+nats-stop:
+	@bash ./scripts/infrastructure/nats/stop.sh
+
+nats-status:
+	@bash ./scripts/infrastructure/nats/status.sh
 
 .PHONY: swagger-start swagger-stop swagger-status
 swagger-start:
