@@ -13,9 +13,9 @@ import (
 
 	coreevents "grovehub/libs/core/events"
 	"grovehub/services/identity/entity"
-	identityevents "grovehub/services/identity/events"
+	accountevents "grovehub/services/identity/events/accounts"
+	accounteventimpl "grovehub/services/identity/events/accounts/impl"
 	identityservices "grovehub/services/identity/services"
-	serviceimpl "grovehub/services/identity/services/impl"
 	"grovehub/services/infrastructure"
 	infrastructureconfig "grovehub/services/infrastructure/config"
 	infrastructureservices "grovehub/services/infrastructure/services"
@@ -89,15 +89,15 @@ var _ = Describe("Identity account events", func() {
 			now,
 		)
 
-		received := make(chan coreevents.Envelope[identityevents.AccountCreated], 1)
+		received := make(chan coreevents.Envelope[accountevents.Created], 1)
 		consumerDone := make(chan struct{})
 		go func() {
 			defer close(consumerDone)
 			_ = infrastructureModule.MessagingClient().Consume(
 				ctx,
-				identityevents.AccountCreatedTopic,
+				accountevents.CreatedTopic,
 				func(_ context.Context, message infrastructureservices.Message) error {
-					var envelope coreevents.Envelope[identityevents.AccountCreated]
+					var envelope coreevents.Envelope[accountevents.Created]
 					if err := json.Unmarshal(message.Payload, &envelope); err != nil {
 						return nil
 					}
@@ -114,7 +114,7 @@ var _ = Describe("Identity account events", func() {
 		}()
 
 		logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-		accountService := serviceimpl.NewAccountEventService(
+		accountService := accounteventimpl.NewAccountService(
 			&accountServiceStub{account: account},
 			infrastructureModule.MessagingClient(),
 			logger,
@@ -125,12 +125,12 @@ var _ = Describe("Identity account events", func() {
 		Expect(created).To(BeTrue())
 		Expect(string(createdAccount.GetAccountId())).To(Equal(accountID))
 
-		var envelope coreevents.Envelope[identityevents.AccountCreated]
+		var envelope coreevents.Envelope[accountevents.Created]
 		Eventually(received, sanityTimeout, sanityInterval).Should(Receive(&envelope))
 
 		Expect(envelope.EventID).NotTo(BeEmpty())
-		Expect(envelope.EventType).To(Equal(identityevents.AccountCreatedType))
-		Expect(envelope.Source).To(Equal(identityevents.Source))
+		Expect(envelope.EventType).To(Equal(accountevents.CreatedType))
+		Expect(envelope.Source).To(Equal(accountevents.Source))
 		Expect(envelope.Data.AccountID).To(Equal(accountID))
 		Expect(envelope.Data.PersonGID).To(Equal(personGID))
 		Expect(envelope.Data.Status).To(Equal(string(entity.AccountStatusActive)))
