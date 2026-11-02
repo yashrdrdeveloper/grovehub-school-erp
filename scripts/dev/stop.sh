@@ -10,7 +10,6 @@ source "${SCRIPT_DIR}/../lib/container.sh"
 
 bash "${SCRIPT_DIR}/../swagger/stop.sh"
 bash "${SCRIPT_DIR}/../backend/stop.sh"
-bash "${SCRIPT_DIR}/../mailProvider/stop.sh"
 
 COLLECTOR_NAME="grovehub-otel-collector"
 prepare_existing_docker_cli

@@ -16,8 +16,6 @@ func ResolveService(value string) contracts.Service {
 		return contracts.ServiceFoundation
 	case "identity":
 		return contracts.ServiceIdentity
-	case "mail-provider", "mailprovider", "mail provider":
-		return contracts.ServiceMailProvider
 	default:
 		return contracts.Service{
 			Key:  normalized,

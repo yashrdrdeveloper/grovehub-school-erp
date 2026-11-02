@@ -20,7 +20,6 @@ import (
 	"grovehub/services/foundation"
 	"grovehub/services/identity"
 	"grovehub/services/infrastructure"
-	mailprovider "grovehub/services/mailProvider"
 )
 
 const httpAddress = ":8080"
@@ -49,9 +48,6 @@ func Run(logger *slog.Logger) error {
 
 	infrastructureModule := infrastructure.New(logger, db)
 	infrastructureModule.RegisterHTTP(mux)
-
-	mailProviderModule := mailprovider.New(logger, db, infrastructureModule.Client())
-	mailProviderModule.RegisterHTTP(mux)
 
 	routing.RegisterFallback(mux)
 

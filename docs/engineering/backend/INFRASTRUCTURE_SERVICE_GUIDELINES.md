@@ -25,7 +25,7 @@ backend/services/infrastructure/services/impl/dkim.go
 backend/services/infrastructure/repository/impl/dkim.go
 
 BAD
-backend/services/mailProvider/transport/impl/haraka.go
+backend/services/identity/smtp.go
 backend/services/identity/redis.go
 backend/services/foundation/s3.go
 ```
@@ -97,7 +97,7 @@ infrastructure/services/impl
 For mail:
 
 ```text
-MailProvider
+Consuming communication service
     ↓
 client.MailClient
     ↓
@@ -107,7 +107,7 @@ services.SMTPService
     ↓
 services/impl.SMTPService
     ↓
-SMTP endpoint / Haraka
+configured SMTP endpoint
 ```
 
 The client implementation is intentionally thin. It forwards `context.Context` and delegates to the owning service. It must not duplicate SMTP behavior, retry policy, DKIM logic, or provider-specific configuration.
@@ -174,19 +174,19 @@ QueueClient
 Avoid public names such as:
 
 ```text
-HarakaClient
+VendorSMTPClient
 RedisClient
 S3Client
 KafkaClient
 ```
 
-Provider-specific names may exist only inside a concrete implementation when the distinction is genuinely required. A business service must not know whether SMTP is currently delivered through Haraka, Postfix, SES, or another implementation.
+Provider-specific names may exist only inside a concrete implementation when the distinction is genuinely required. A business service must not know which SMTP implementation or provider is currently configured.
 
 ---
 
 ## 6. DKIM State Ownership
 
-DKIM identity is infrastructure state, not MailProvider message/domain business state.
+DKIM identity is infrastructure state, not consuming business-service state.
 
 The durable source of truth is the Infrastructure database schema:
 
@@ -249,9 +249,9 @@ YES services/helpers contains pure helper logic only
 YES infrastructure owns durable technical state such as DKIM identity
 YES DKIM startup reuses persisted identity and never silently rotates it
 
-NO Haraka-specific client exposed to MailProvider
+NO provider-specific SMTP client exposed to business services
 NO business service importing infrastructure impl packages
-NO SMTP implementation inside MailProvider
+NO SMTP implementation inside consuming business services
 NO database/network/filesystem work inside services/helpers
 NO HTTP handlers directly inside infrastructure.go
 NO silent DKIM key replacement during restart/recreate/rebuild

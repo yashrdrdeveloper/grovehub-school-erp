@@ -24,11 +24,11 @@ type SMTP struct {
 func SMTPFromEnvironment() SMTP {
 	return SMTP{
 		Host: firstEnvironmentValue(
-			[]string{"MAIL_INFRASTRUCTURE_SMTP_HOST", "MAIL_PROVIDER_SMTP_HOST"},
+			[]string{"MAIL_INFRASTRUCTURE_SMTP_HOST"},
 			defaultSMTPHost,
 		),
 		Port: environmentPort(
-			[]string{"MAIL_INFRASTRUCTURE_SMTP_PORT", "MAIL_PROVIDER_SMTP_PORT"},
+			[]string{"MAIL_INFRASTRUCTURE_SMTP_PORT"},
 			defaultSMTPPort,
 		),
 		SubmitTimeout: defaultSubmitTimeout,

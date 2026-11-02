@@ -17,7 +17,7 @@ ensure_runtime_dirs
 require_command curl
 load_backend_runtime_env
 
-export MAIL_INFRASTRUCTURE_DKIM_STATE_DIR="${MAIL_INFRASTRUCTURE_DKIM_STATE_DIR:-${MAIL_PROVIDER_DKIM_STATE_DIR:-${STATE_DIR}/mailProvider/dkim}}"
+export MAIL_INFRASTRUCTURE_DKIM_STATE_DIR="${MAIL_INFRASTRUCTURE_DKIM_STATE_DIR:-${STATE_DIR}/infrastructure/dkim}"
 
 PID_FILE="${RUNTIME_PID_DIR}/backend.pid"
 LOG_FILE="${RUNTIME_LOG_DIR}/backend.log"

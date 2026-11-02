@@ -15,5 +15,4 @@ var (
 	ServiceLauncherEdge = Service{Key: "launcher-edge", Name: "LAUNCHER (EDGE)"}
 	ServiceFoundation   = Service{Key: "foundation", Name: "FOUNDATION"}
 	ServiceIdentity     = Service{Key: "identity", Name: "IDENTITY"}
-	ServiceMailProvider = Service{Key: "mail-provider", Name: "MAIL PROVIDER"}
 )

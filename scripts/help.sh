@@ -12,13 +12,6 @@ Backend
   make backend-status   Show backend process, hot-reload mode, and health status
   make backend-dev      Run backend with Air hot reload in the foreground
 
-Mail Provider
-  make mail-provider-start   Ensure the container runtime and start Haraka
-  make mail-provider-stop    Stop Haraka while preserving queue and DKIM state
-  make mail-provider-status  Show Haraka container and health status
-  make mail-domain-ready     Read Cloudflare token/zone from .env, discover domain/public IP,
-                             prepare durable DKIM state, configure outbound-mail DNS, and verify the domain
-
 Database
   make db-schema-status                           Show current GroveHub schema baseline state
   make db-schema-init                             Initialize all service schemas from the current baseline
@@ -26,7 +19,7 @@ Database
   make db-schema-reset DB_SERVICE=foundation      Reset only the Foundation schema
   make db-schema-reset DB_SERVICE=infrastructure  Reset only the Infrastructure schema
 
-  DB_SERVICE can be: all, foundation, identity, infrastructure, or mailProvider.
+  DB_SERVICE can be: all, foundation, identity, or infrastructure.
   Schema reset is development-only and deletes data in the selected service schema.
 
 Swagger
@@ -35,10 +28,10 @@ Swagger
   make swagger-status   Show Swagger UI status
 
 Development
-  make dev-start            Auto-start container runtime, Haraka, schema initialization, Air backend, and Swagger
+  make dev-start            Initialize schemas, start Air backend, and start Swagger
   make dev-start-with-logs  Same as dev-start plus the local OTEL collector
-  make dev-stop             Stop Swagger UI, backend, Haraka, and optional OTEL collector
-  make dev-status           Show backend, Mail Provider, and Swagger UI status
+  make dev-stop             Stop Swagger UI, backend, and optional OTEL collector
+  make dev-status           Show backend and Swagger UI status
 
 Container runtime used by dev-start
   macOS    Colima (installed/started automatically; Docker CLI/Compose via Homebrew)

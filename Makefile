@@ -29,19 +29,6 @@ backend-status:
 backend-dev:
 	@bash ./scripts/backend/dev.sh
 
-.PHONY: mail-provider-start mail-provider-stop mail-provider-status mail-domain-ready
-mail-provider-start:
-	@bash ./scripts/mailProvider/start.sh
-
-mail-provider-stop:
-	@bash ./scripts/mailProvider/stop.sh
-
-mail-provider-status:
-	@bash ./scripts/mailProvider/status.sh
-
-mail-domain-ready:
-	@bash ./scripts/mailProvider/domain-ready.sh
-
 .PHONY: db-schema-status db-schema-init db-schema-reset
 db-schema-status:
 	@bash ./scripts/database/migrate.sh status "$(DB_SERVICE)"
