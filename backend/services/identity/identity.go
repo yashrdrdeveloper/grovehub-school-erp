@@ -8,14 +8,15 @@ import (
 
 	coretelemetry "grovehub/libs/core/telemetry"
 	foundationclient "grovehub/services/foundation/client"
-	infrastructureclient "grovehub/services/infrastructure/client"
 	"grovehub/services/identity/controller"
 	controllerimpl "grovehub/services/identity/controller/impl"
+	accounteventimpl "grovehub/services/identity/events/accounts/impl"
 	mapperimpl "grovehub/services/identity/mappers/impl"
 	repositoryimpl "grovehub/services/identity/repository/impl"
 	"grovehub/services/identity/routes"
 	serviceimpl "grovehub/services/identity/services/impl"
 	validatorimpl "grovehub/services/identity/validators/impl"
+	infrastructureclient "grovehub/services/infrastructure/client"
 )
 
 type Module interface {
@@ -36,7 +37,7 @@ func New(
 	accountRepository := repositoryimpl.NewAccountRepository(db)
 	accountValidator := validatorimpl.NewAccountValidator()
 	accountService := serviceimpl.NewAccountService(accountRepository, accountValidator)
-	accountService = serviceimpl.NewAccountEventService(accountService, messagingClient, logger)
+	accountService = accounteventimpl.NewAccountService(accountService, messagingClient, logger)
 
 	passwordCredentialRepository := repositoryimpl.NewPasswordCredentialRepository(db)
 	passwordCredentialValidator := validatorimpl.NewPasswordCredentialValidator()
