@@ -4,6 +4,7 @@ SHELL := /usr/bin/env bash
 
 SWAGGER_PORT ?= 8081
 DB_SERVICE ?= all
+SANITY_SCOPE ?= ./tests/sanity/...
 export SWAGGER_PORT
 
 .PHONY: help
@@ -48,6 +49,10 @@ nats-stop:
 
 nats-status:
 	@bash ./scripts/infrastructure/nats/status.sh
+
+.PHONY: sanity
+sanity:
+	@bash ./scripts/testing/sanity.sh "$(SANITY_SCOPE)"
 
 .PHONY: swagger-start swagger-stop swagger-status
 swagger-start:
