@@ -2,6 +2,7 @@ package messaging_test
 
 import (
 	"context"
+	"strings"
 
 	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
@@ -35,12 +36,14 @@ var _ = Describe("Infrastructure messaging", func() {
 		ctx, cancel := context.WithCancel(context.Background())
 		DeferCleanup(cancel)
 
-		topic := "sanity.infrastructure.messaging." + uuid.NewString()
+		topic := "sanity_infrastructure_messaging_" + strings.ReplaceAll(uuid.NewString(), "-", "_")
 		payload := []byte("grovehub-messaging-sanity")
 		metadata := map[string]string{"sanity": "true"}
 		received := make(chan infrastructureservices.Message, 1)
+		consumerDone := make(chan struct{})
 
 		go func() {
+			defer close(consumerDone)
 			_ = module.MessagingClient().Consume(ctx, topic, func(_ context.Context, message infrastructureservices.Message) error {
 				select {
 				case received <- message:
@@ -60,5 +63,8 @@ var _ = Describe("Infrastructure messaging", func() {
 		Expect(message.ID).NotTo(BeEmpty())
 		Expect(message.Payload).To(Equal(payload))
 		Expect(message.Metadata).To(HaveKeyWithValue("sanity", "true"))
+
+		cancel()
+		Eventually(consumerDone, sanityTimeout, sanityInterval).Should(BeClosed())
 	})
 })
