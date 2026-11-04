@@ -27,7 +27,9 @@ backend/services/<service>/
 ├── api/
 ├── config/
 ├── constants/
-│   └── error/
+│   ├── error/
+│   └── events/
+│       └── operation.go
 ├── dto/
 │   ├── request/
 │   └── response/
@@ -83,6 +85,8 @@ Create only folders/files that have a current responsibility. Do not create empt
 Interfaces and public contracts belong at the package boundary. Concrete implementations belong under `impl/`.
 
 ```text
+constants/events/operation.go
+    -> service-owned lifecycle operation type and constants (when needed)
 events/<resource>/<resource>.go
     -> public domain-event contracts + stable topic/type/source identifiers
 events/<resource>/impl/<resource>.go

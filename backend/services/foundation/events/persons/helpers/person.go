@@ -4,11 +4,12 @@ import (
     "time"
 
     coreevents "grovehub/libs/core/events"
+    foundationevents "grovehub/services/foundation/constants/events"
     foundationresponse "grovehub/services/foundation/dto/response"
     personevents "grovehub/services/foundation/events/persons"
 )
 
-func BuildChanged(eventID string, operation personevents.Operation, old, next *foundationresponse.Person) coreevents.Envelope[personevents.Changed] {
+func BuildChanged(eventID string, operation foundationevents.Operation, old, next *foundationresponse.Person) coreevents.Envelope[personevents.Changed] {
     return coreevents.Envelope[personevents.Changed]{
         EventID: eventID,
         EventType: personevents.ChangedType,

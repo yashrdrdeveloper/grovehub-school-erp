@@ -52,6 +52,8 @@ backend/services/identity/events/accounts/
 └── helpers/account.go
 ```
 
+Foundation lifecycle operation names and the `Operation` type live at `backend/services/foundation/constants/events/operation.go` (Go package `events`), not in `libs/core/constants` or `events/persons/person.go`. Event contracts import this Foundation-owned type; producers and consumers use `foundationevents.Created`, `foundationevents.Updated`, and `foundationevents.Deactivated`. Other domains define their own operations only when required; do not impose a single global operation enum.
+
 Create only folders that have a current responsibility.
 
 ---
@@ -174,6 +176,7 @@ Default to minimal, non-sensitive payloads unless a concrete domain contract req
 **Current Foundation Person contract is an explicit full-response-snapshot exception**, adopted to support consumer-side old/new comparison:
 
 - Topic: `foundation_person_changed`; event type: `foundation.person.changed.v1`.
+- Operation type and constants: `foundation/constants/events/operation.go`; JSON values remain unchanged.
 - Envelope: `coreevents.Envelope[persons.Changed]` with `eventId`, `eventType`, `source`, `occurredAt`, and `data`.
 - `data`: `{ "operation": "UPDATED", "old": {...}, "new": {...} }`.
 - Each non-null snapshot uses the public `foundation/dto/response.Person` representation (GID, names, contacts, status, version, createdAt, updatedAt).

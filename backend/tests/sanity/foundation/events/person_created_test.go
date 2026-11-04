@@ -13,6 +13,7 @@ import (
 
     coreevents "grovehub/libs/core/events"
     coresearch "grovehub/libs/core/search"
+    foundationevents "grovehub/services/foundation/constants/events"
     foundationrequest "grovehub/services/foundation/dto/request"
     foundationresponse "grovehub/services/foundation/dto/response"
     personevents "grovehub/services/foundation/events/persons"
@@ -95,7 +96,7 @@ var _ = Describe("Foundation person changed events", func() {
         Expect(err).NotTo(HaveOccurred())
         Expect(changedPerson.Status).To(Equal("DEACTIVATED"))
 
-        got := map[personevents.Operation]coreevents.Envelope[personevents.Changed]{}
+        got := map[foundationevents.Operation]coreevents.Envelope[personevents.Changed]{}
         Eventually(func() int {
             for {
                 select {
@@ -104,18 +105,18 @@ var _ = Describe("Foundation person changed events", func() {
                 }
             }
         }, sanityTimeout, sanityInterval).Should(Equal(3))
-        for _, op := range []personevents.Operation{personevents.Created, personevents.Updated, personevents.Deactivated} {
+        for _, op := range []foundationevents.Operation{foundationevents.Created, foundationevents.Updated, foundationevents.Deactivated} {
             envelope := got[op]
             Expect(envelope.EventID).NotTo(BeEmpty())
             Expect(envelope.EventType).To(Equal(personevents.ChangedType))
             Expect(envelope.Source).To(Equal(personevents.Source))
             Expect(envelope.Data.New.GID).To(Equal(gid))
         }
-        Expect(got[personevents.Created].Data.Old).To(BeNil())
-        Expect(got[personevents.Updated].Data.Old.LastName).To(Equal("Kumar"))
-        Expect(got[personevents.Updated].Data.New.LastName).To(Equal("Sharma"))
-        Expect(got[personevents.Deactivated].Data.Old.Status).To(Equal("ACTIVE"))
-        Expect(got[personevents.Deactivated].Data.New.Status).To(Equal("DEACTIVATED"))
+        Expect(got[foundationevents.Created].Data.Old).To(BeNil())
+        Expect(got[foundationevents.Updated].Data.Old.LastName).To(Equal("Kumar"))
+        Expect(got[foundationevents.Updated].Data.New.LastName).To(Equal("Sharma"))
+        Expect(got[foundationevents.Deactivated].Data.Old.Status).To(Equal("ACTIVE"))
+        Expect(got[foundationevents.Deactivated].Data.New.Status).To(Equal("DEACTIVATED"))
 
         cancel()
         Eventually(consumerDone, sanityTimeout, sanityInterval).Should(BeClosed())

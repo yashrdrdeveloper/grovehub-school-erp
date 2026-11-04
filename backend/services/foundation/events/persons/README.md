@@ -3,6 +3,8 @@
 Topic: `foundation_person_changed`  
 Type: `foundation.person.changed.v1`
 
+Operation type/constants: `backend/services/foundation/constants/events/operation.go` (`foundationevents.Operation`, `foundationevents.Created`, `foundationevents.Updated`, `foundationevents.Deactivated`). The JSON operation values do not change.
+
 Foundation emits one event after a successful state transition:
 
 - `CREATED`: `old: null`, `new`: complete `dto/response.Person`.

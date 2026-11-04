@@ -8,6 +8,7 @@ import (
     "github.com/google/uuid"
 
     coresearch "grovehub/libs/core/search"
+    foundationevents "grovehub/services/foundation/constants/events"
     foundationrequest "grovehub/services/foundation/dto/request"
     foundationresponse "grovehub/services/foundation/dto/response"
     personevents "grovehub/services/foundation/events/persons"
@@ -29,7 +30,7 @@ func NewPersonService(delegate foundationservices.PersonService, messagingClient
 func (service *PersonService) Create(ctx context.Context, request foundationrequest.CreatePerson) (foundationresponse.Person, bool, error) {
     person, created, err := service.delegate.Create(ctx, request)
     if err != nil || !created { return person, created, err }
-    service.publishChanged(ctx, personevents.Created, nil, &person)
+    service.publishChanged(ctx, foundationevents.Created, nil, &person)
     return person, true, nil
 }
 
@@ -43,7 +44,7 @@ func (service *PersonService) Update(ctx context.Context, personRequest foundati
     next, err := service.delegate.Update(ctx, personRequest, request)
     if err != nil { return next, err }
     if next.Version != old.Version {
-        service.publishChanged(ctx, personevents.Updated, &old, &next)
+        service.publishChanged(ctx, foundationevents.Updated, &old, &next)
     }
     return next, nil
 }
@@ -58,12 +59,12 @@ func (service *PersonService) Deactivate(ctx context.Context, request foundation
     next, err := service.delegate.Deactivate(ctx, request)
     if err != nil { return next, err }
     if next.Version != old.Version {
-        service.publishChanged(ctx, personevents.Deactivated, &old, &next)
+        service.publishChanged(ctx, foundationevents.Deactivated, &old, &next)
     }
     return next, nil
 }
 
-func (service *PersonService) publishChanged(ctx context.Context, operation personevents.Operation, old, next *foundationresponse.Person) {
+func (service *PersonService) publishChanged(ctx context.Context, operation foundationevents.Operation, old, next *foundationresponse.Person) {
     eventID := uuid.NewString()
     envelope := eventhelpers.BuildChanged(eventID, operation, old, next)
     payload, err := json.Marshal(envelope)
