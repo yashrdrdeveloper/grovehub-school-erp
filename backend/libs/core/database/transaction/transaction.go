@@ -30,6 +30,12 @@ func AfterCommit(ctx context.Context, callback func()) bool {
  return true
 }
 
+// DetachedContext preserves trace values but removes the transaction marker for
+// post-commit event publication; WithoutCancel alone would retain the marker.
+func DetachedContext(ctx context.Context) context.Context {
+ return context.WithValue(context.WithoutCancel(ctx), contextKey{}, nil)
+}
+
 // Run joins an existing transaction or starts a GORM transaction.
 // All registered callbacks run after commit and are discarded on rollback.
 func Run(ctx context.Context, db *gorm.DB, operation func(context.Context) error) error {

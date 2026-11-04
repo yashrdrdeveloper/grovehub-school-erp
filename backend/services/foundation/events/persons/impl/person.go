@@ -68,7 +68,7 @@ func (service *PersonService) Deactivate(ctx context.Context, request foundation
 
 func (service *PersonService) publishChanged(ctx context.Context, operation foundationevents.Operation, old, next *foundationresponse.Person) {
     if coretransaction.AfterCommit(ctx, func() {
-        service.publishChanged(context.WithoutCancel(ctx), operation, old, next)
+        service.publishChanged(coretransaction.DetachedContext(ctx), operation, old, next)
     }) { return }
     eventID := uuid.NewString()
     envelope := eventhelpers.BuildChanged(eventID, operation, old, next)

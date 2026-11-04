@@ -19,3 +19,5 @@ Route: `POST /auth/register` with no request GID.
 ## Limitations
 
 Database atomicity requires the same PostgreSQL connection; this is not a distributed transaction. NATS publication is still best effort after commit, not an outbox. Password setup/reset by email, email token and mail outbox remain unimplemented. Existing-Person name changes by email alone require ownership verification before public use. PostgreSQL integration tests (rollback, commit, idempotency and concurrency) remain necessary.
+
+After-commit callbacks use `transaction.DetachedContext(ctx)` to retain trace metadata without retaining the old transaction marker; merely calling `context.WithoutCancel` would re-enqueue the publish attempt.

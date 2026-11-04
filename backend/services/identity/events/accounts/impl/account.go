@@ -84,7 +84,7 @@ func (service *AccountService) PermanentlyDelete(ctx context.Context, accountId 
 
 func (service *AccountService) publishCreated(ctx context.Context, account entity.Account) {
 	if coretransaction.AfterCommit(ctx, func() {
-        service.publishCreated(context.WithoutCancel(ctx), account)
+        service.publishCreated(coretransaction.DetachedContext(ctx), account)
     }) { return }
 	eventID := uuid.NewString()
 	envelope := eventhelpers.BuildCreated(eventID, account)
