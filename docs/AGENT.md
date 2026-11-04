@@ -112,6 +112,10 @@ Before editing or consuming Person events, read `docs/engineering/backend/EVENT_
 
 Consumers decode `coreevents.Envelope[persons.Changed]` and may call `diff.Compare(event.Data.Old, event.Data.New)` using `grovehub/libs/core/diff`. Diff is domain-neutral, accepts typed values, returns `([]diff.Change, error)`, and flattens JSON-named paths. It is *not* part of Foundation or Infrastructure, and the published event does *not* include a computed diff. Full snapshots include PII (names and contact details); restrict subscribers, retention, and logs. Publishing is post-write best-effort, not transactional delivery.
 
+### Identity registration Person lookup
+
+`POST /auth/register` accepts no `gid` in the request. It matches an existing Foundation Person using the validated, normalized email; otherwise creates one, reuses the existing Person GID, and returns `gid` and `personGid` with the same identifier. Never accept caller-supplied GID through this route; unknown request properties are rejected. Consult `backend/services/identity/api/openapi/v1/openapi.yaml` and `services/identity/services/impl/auth.go` before editing. The current password-based flow is **not yet transaction-wide atomic**, and it does **not yet send password-setup emails**; do not present either as implemented.
+
 ### Backend unit tests
 
 The old centralized path `backend/testing/unit-test/` is superseded and must not be recreated.

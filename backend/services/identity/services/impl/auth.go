@@ -127,20 +127,6 @@ func (service *AuthService) resolveRegisterPerson(
 	ctx context.Context,
 	request identityrequest.Register,
 ) (foundationresponse.Person, error) {
-	if request.Gid != "" {
-		person, err := service.foundationClient.GetPersonByGID(
-			ctx,
-			foundationrequest.PersonByGID{GID: request.Gid},
-		)
-		if err != nil {
-			return foundationresponse.Person{}, servicehelpers.MapAuthDependencyError(err)
-		}
-		if !servicehelpers.PersonHasEmail(person, request.Email) {
-			return foundationresponse.Person{}, coreerrors.NewError(identityerror.InvalidRegistration)
-		}
-		return person, nil
-	}
-
 	result, err := service.foundationClient.SearchPersons(
 		ctx,
 		servicehelpers.RegisterEmailSearch(request.Email),

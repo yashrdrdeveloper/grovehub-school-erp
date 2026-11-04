@@ -23,7 +23,7 @@ func NewAuthController(service identityservices.AuthService) controller.AuthCont
 
 func (controller *AuthController) Register(writer http.ResponseWriter, request *http.Request) {
 	var registerRequest identityrequest.Register
-	if err := httprequest.DecodeJSON(request, &registerRequest); err != nil {
+	if err := httprequest.DecodeStrictJSON(request, &registerRequest); err != nil {
 		_ = httpresponse.WriteErrorContext(
 			request.Context(),
 			writer,

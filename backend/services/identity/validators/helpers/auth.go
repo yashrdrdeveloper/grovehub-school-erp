@@ -30,14 +30,6 @@ func NormalizeRegister(request identityrequest.Register) (identityrequest.Regist
 	}
 	request.PhoneNumber = phone
 
-	if strings.TrimSpace(request.Gid) != "" {
-		personGid, err := NormalizePersonGid(request.Gid)
-		if err != nil {
-			return identityrequest.Register{}, invalidRegistration()
-		}
-		request.Gid = string(personGid)
-	}
-
 	return request, nil
 }
 

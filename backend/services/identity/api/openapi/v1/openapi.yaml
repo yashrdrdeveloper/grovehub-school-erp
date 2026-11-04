@@ -9,10 +9,10 @@ paths:
       operationId: registerIdentityAccount
       summary: Register a GroveHub identity account and password credential
       description: >-
-        Auth resolves an existing Foundation Person by optional gid or exact normalized email, creating a new Person/GID only when needed.
-        firstName, middleName, and lastName are always mandatory fields. After Person resolution, Auth always patches those three names through
-        Foundation UpdatePerson before creating the Identity Account. middleName may be an explicit empty string. When gid is supplied,
-        the email must already belong to that Person.
+        Auth resolves an existing Foundation Person by exact normalized email, creating a new Person/GID only when needed.
+        The request does not accept a gid. firstName, middleName, and lastName are mandatory fields; Auth patches those names on
+        the resolved Foundation Person before creating the Identity Account. middleName may be an explicit empty string.
+        Note: registration currently uses password credentials and does not yet guarantee transaction-wide rollback across Foundation and Identity.
       tags:
         - Auth
       requestBody:
@@ -55,11 +55,6 @@ components:
         - email
         - password
       properties:
-        gid:
-          type: string
-          format: uuid
-          pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
-          description: Optional existing Foundation Person GID. When supplied, the submitted email must belong to that Person.
         firstName:
           type: string
           minLength: 1
@@ -78,7 +73,7 @@ components:
           type: string
           format: email
           minLength: 1
-          description: Required Identity email and canonical Person-resolution key when gid is omitted.
+          description: Required Identity email and canonical Person-resolution key.
         phoneNumber:
           type: string
           description: Optional phone number. Identity normalizes it before Account creation.
@@ -94,6 +89,7 @@ components:
       required:
         - accountId
         - personGid
+        - gid
         - email
         - status
       properties:
@@ -103,6 +99,10 @@ components:
         personGid:
           type: string
           format: uuid
+        gid:
+          type: string
+          format: uuid
+          description: Same Foundation Person identifier as personGid.
         email:
           type: string
           format: email
@@ -150,7 +150,7 @@ components:
           additionalProperties: true
   responses:
     InvalidRegistration:
-      description: Registration names, gid/email relationship, email, phone, or password are invalid.
+      description: Registration names, email, phone, password or request fields are invalid.
       headers:
         X-Trace-ID:
           $ref: "#/components/headers/TraceID"

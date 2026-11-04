@@ -16,6 +16,7 @@ func (mapper *AuthMapper) ToRegisterResponse(account entity.Account) identityres
 	return identityresponse.Register{
 		AccountId: string(account.GetAccountId()),
 		PersonGid: string(account.GetPersonGid()),
+		GID:       string(account.GetPersonGid()),
 		Email:     account.GetEmail(),
 		Phone:     account.GetPhone(),
 		Status:    string(account.GetStatus()),
