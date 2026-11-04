@@ -42,7 +42,7 @@ func walk(path string, old, next any, changes *[]Change) {
     if reflect.DeepEqual(old, next) { return }
     oldMap, oldIsMap := old.(map[string]any)
     newMap, newIsMap := next.(map[string]any)
-    if oldIsMap && newIsMap {
+    if (oldIsMap && newIsMap) || (oldIsMap && next == nil) || (newIsMap && old == nil) {
         names := make(map[string]struct{}, len(oldMap)+len(newMap))
         for name := range oldMap { names[name] = struct{}{} }
         for name := range newMap { names[name] = struct{}{} }
@@ -58,7 +58,7 @@ func walk(path string, old, next any, changes *[]Change) {
     }
     oldList, oldIsList := old.([]any)
     newList, newIsList := next.([]any)
-    if oldIsList && newIsList {
+    if (oldIsList && newIsList) || (oldIsList && next == nil) || (newIsList && old == nil) {
         length := len(oldList)
         if len(newList) > length { length = len(newList) }
         for i := 0; i < length; i++ {
