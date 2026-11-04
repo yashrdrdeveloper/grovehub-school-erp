@@ -365,6 +365,17 @@ Both values have the same inferred generic Go type; no Foundation dependency or 
 
 Core diff owns comparison mechanics only. Source types remain in their domain (for example, Foundation `dto/response.Person`). Do not create Foundation-specific types inside core, automatically publish a diff as part of an event, or place diff inside messaging infrastructure.
 
+## 11.2 Database Transaction Capability
+
+`backend/libs/core/database/transaction` provides technical GORM transaction scoping for operations spanning modules in the same PostgreSQL database:
+
+- `transaction.Run(ctx, db, operation)` starts a transaction; a nested `Run` joins the active one.
+- `transaction.Database(ctx, repository.db)` selects the active transaction for repository reads/writes or the ordinary DB outside a transaction.
+- `transaction.AfterCommit(ctx, callback)` queues work to run only after successful commit. No callbacks execute on rollback or failed commit.
+- `transaction.DetachedContext(ctx)` retains trace metadata while masking the committed transaction; publishers use it to prevent re-queueing events.
+
+GORM remains an implementation detail of core database and repository/orchestration construction; do not expose a transaction handle inside Foundation/Identity API DTOs or event contracts. This capability does not coordinate remote services or provide guaranteed event delivery. See `docs/engineering/backend/REGISTRATION_TRANSACTION.md`.
+
 ## 12. Hard Rules
 
 ```text
