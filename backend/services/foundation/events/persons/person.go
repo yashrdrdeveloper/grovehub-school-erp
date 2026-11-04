@@ -1,13 +1,26 @@
 package persons
 
+import foundationresponse "grovehub/services/foundation/dto/response"
+
 const (
-	CreatedTopic = "foundation_person_created"
-	CreatedType  = "foundation.person.created.v1"
-	Source       = "foundation"
+    ChangedTopic = "foundation_person_changed"
+    ChangedType = "foundation.person.changed.v1"
+    Source = "foundation"
 )
 
-type Created struct {
-	GID     string `json:"gid"`
-	Status  string `json:"status"`
-	Version int64  `json:"version"`
+type Operation string
+
+const (
+    Created Operation = "CREATED"
+    Updated Operation = "UPDATED"
+    Deactivated Operation = "DEACTIVATED"
+)
+
+// Changed carries full public Person response snapshots. Nil Old means creation;
+// nil New is reserved for deletion, should the service later support it.
+// Consumers must protect contact PII and should not log raw event payloads.
+type Changed struct {
+    Operation Operation `json:"operation"`
+    Old *foundationresponse.Person `json:"old"`
+    New *foundationresponse.Person `json:"new"`
 }
