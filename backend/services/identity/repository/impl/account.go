@@ -7,6 +7,8 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 
+ coretransaction "grovehub/libs/core/database/transaction"
+
 	"grovehub/services/identity/entity"
 	identityrepository "grovehub/services/identity/repository"
 )
@@ -27,7 +29,7 @@ func NewAccountRepository(db *gorm.DB) identityrepository.AccountRepository {
 }
 
 func (repository *AccountRepository) Create(ctx context.Context, account entity.Account) error {
-	return mapAccountWriteError(repository.db.WithContext(ctx).Create(&account).Error)
+	return mapAccountWriteError(coretransaction.Database(ctx, repository.db).Create(&account).Error)
 }
 
 func (repository *AccountRepository) FindById(
@@ -35,7 +37,7 @@ func (repository *AccountRepository) FindById(
 	accountId entity.AccountId,
 ) (entity.Account, error) {
 	var account entity.Account
-	if err := repository.db.WithContext(ctx).
+	if err := coretransaction.Database(ctx, repository.db).
 		Where(&entity.Account{AccountId: accountId}).
 		Take(&account).Error; err != nil {
 		return mapAccountReadError(err)
@@ -48,7 +50,7 @@ func (repository *AccountRepository) FindByPersonGid(
 	personGid entity.PersonGid,
 ) (entity.Account, error) {
 	var account entity.Account
-	if err := repository.db.WithContext(ctx).
+	if err := coretransaction.Database(ctx, repository.db).
 		Where(&entity.Account{PersonGid: personGid}).
 		Take(&account).Error; err != nil {
 		return mapAccountReadError(err)
@@ -61,7 +63,7 @@ func (repository *AccountRepository) FindByEmail(
 	email string,
 ) (entity.Account, error) {
 	var account entity.Account
-	if err := repository.db.WithContext(ctx).
+	if err := coretransaction.Database(ctx, repository.db).
 		Where(&entity.Account{Email: email}).
 		Take(&account).Error; err != nil {
 		return mapAccountReadError(err)
@@ -74,7 +76,7 @@ func (repository *AccountRepository) FindByRegistrationIdempotencyKey(
 	key string,
 ) (entity.Account, error) {
 	var account entity.Account
-	if err := repository.db.WithContext(ctx).
+	if err := coretransaction.Database(ctx, repository.db).
 		Where(&entity.Account{RegistrationIdempotencyKey: &key}).
 		Take(&account).Error; err != nil {
 		return mapAccountReadError(err)
@@ -84,7 +86,7 @@ func (repository *AccountRepository) FindByRegistrationIdempotencyKey(
 
 func (repository *AccountRepository) Update(ctx context.Context, account entity.Account) error {
 	expectedVersion := account.GetVersion() - 1
-	result := repository.db.WithContext(ctx).
+	result := coretransaction.Database(ctx, repository.db).
 		Model(&entity.Account{}).
 		Where(&entity.Account{AccountId: account.GetAccountId()}).
 		Where("version = ?", expectedVersion).
@@ -103,7 +105,7 @@ func (repository *AccountRepository) Delete(
 	ctx context.Context,
 	accountId entity.AccountId,
 ) error {
-	result := repository.db.WithContext(ctx).
+	result := coretransaction.Database(ctx, repository.db).
 		Delete(&entity.Account{AccountId: accountId})
 	if result.Error != nil {
 		return result.Error

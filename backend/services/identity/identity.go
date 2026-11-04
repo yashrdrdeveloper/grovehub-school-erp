@@ -54,6 +54,7 @@ func New(
 		passwordCredentialService,
 		authMapper,
 		authValidator,
+        db,
 	)
 
 	return &module{

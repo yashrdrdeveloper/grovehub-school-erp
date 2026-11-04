@@ -114,7 +114,7 @@ Consumers decode `coreevents.Envelope[persons.Changed]` and may call `diff.Compa
 
 ### Identity registration Person lookup
 
-`POST /auth/register` accepts no `gid` in the request. It matches an existing Foundation Person using the validated, normalized email; otherwise creates one, reuses the existing Person GID, and returns `gid` and `personGid` with the same identifier. Never accept caller-supplied GID through this route; unknown request properties are rejected. Consult `backend/services/identity/api/openapi/v1/openapi.yaml` and `services/identity/services/impl/auth.go` before editing. The current password-based flow is **not yet transaction-wide atomic**, and it does **not yet send password-setup emails**; do not present either as implemented.
+`POST /auth/register` accepts no `gid` in the request. It matches an existing Foundation Person using the validated, normalized email; otherwise creates one, reuses the existing Person GID, and returns `gid` and `personGid` with the same identifier. Never accept caller-supplied GID through this route; unknown request properties are rejected. Consult `backend/services/identity/api/openapi/v1/openapi.yaml` and `services/identity/services/impl/auth.go` before editing. Identity registration uses `core/database/transaction.Run` and context-aware repositories for atomic Foundation Person, Identity Account, and credential writes. Event decorators use `AfterCommit` to prevent publishing rolled-back changes. Password-setup email and reliable database-to-broker delivery are not yet implemented.
 
 ### Backend unit tests
 

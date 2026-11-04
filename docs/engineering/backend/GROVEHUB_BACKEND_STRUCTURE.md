@@ -339,7 +339,7 @@ map repository errors to domain/application errors
 
 Services must not duplicate request normalization already owned by validators or generic query mechanics already owned by core capabilities.
 
-Domain-event publication orchestration belongs under the owning service's `events/<resource>/impl` package, not mixed into the normal `services/impl` implementation.
+Domain-event publication orchestration belongs under the owning service's `events/<resource>/impl` package, not mixed into the normal `services/impl` implementation. For registration, Identity owns one `core/database/transaction.Run(ctx, db, operation)` transaction; all Foundation/Identity repositories use `transaction.Database(ctx, repository.db)` and events use `transaction.AfterCommit`. Domain contracts do not expose GORM.
 
 ---
 

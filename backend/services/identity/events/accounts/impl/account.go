@@ -7,6 +7,8 @@ import (
 
 	"github.com/google/uuid"
 
+ coretransaction "grovehub/libs/core/database/transaction"
+
 	"grovehub/services/identity/entity"
 	accountevents "grovehub/services/identity/events/accounts"
 	eventhelpers "grovehub/services/identity/events/accounts/helpers"
@@ -81,6 +83,9 @@ func (service *AccountService) PermanentlyDelete(ctx context.Context, accountId 
 }
 
 func (service *AccountService) publishCreated(ctx context.Context, account entity.Account) {
+	if coretransaction.AfterCommit(ctx, func() {
+        service.publishCreated(context.WithoutCancel(ctx), account)
+    }) { return }
 	eventID := uuid.NewString()
 	envelope := eventhelpers.BuildCreated(eventID, account)
 	payload, err := json.Marshal(envelope)

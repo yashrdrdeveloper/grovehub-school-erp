@@ -12,7 +12,7 @@ paths:
         Auth resolves an existing Foundation Person by exact normalized email, creating a new Person/GID only when needed.
         The request does not accept a gid. firstName, middleName, and lastName are mandatory fields; Auth patches those names on
         the resolved Foundation Person before creating the Identity Account. middleName may be an explicit empty string.
-        Note: registration currently uses password credentials and does not yet guarantee transaction-wide rollback across Foundation and Identity.
+        Person, Account, and password credential database writes share a PostgreSQL transaction and roll back together on failure. Events are sent after commit. Email password setup remains unimplemented.
       tags:
         - Auth
       requestBody:

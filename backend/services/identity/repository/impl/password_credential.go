@@ -7,6 +7,8 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 
+ coretransaction "grovehub/libs/core/database/transaction"
+
 	"grovehub/services/identity/entity"
 	identityrepository "grovehub/services/identity/repository"
 )
@@ -28,7 +30,7 @@ func (repository *PasswordCredentialRepository) Create(
 	ctx context.Context,
 	credential entity.PasswordCredential,
 ) error {
-	return mapPasswordCredentialWriteError(repository.db.WithContext(ctx).Create(&credential).Error)
+	return mapPasswordCredentialWriteError(coretransaction.Database(ctx, repository.db).Create(&credential).Error)
 }
 
 func (repository *PasswordCredentialRepository) FindByAccountId(
@@ -36,7 +38,7 @@ func (repository *PasswordCredentialRepository) FindByAccountId(
 	accountId entity.AccountId,
 ) (entity.PasswordCredential, error) {
 	var credential entity.PasswordCredential
-	if err := repository.db.WithContext(ctx).
+	if err := coretransaction.Database(ctx, repository.db).
 		Where(&entity.PasswordCredential{AccountId: accountId}).
 		Take(&credential).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -52,7 +54,7 @@ func (repository *PasswordCredentialRepository) Update(
 	credential entity.PasswordCredential,
 ) error {
 	expectedVersion := credential.GetVersion() - 1
-	result := repository.db.WithContext(ctx).
+	result := coretransaction.Database(ctx, repository.db).
 		Model(&entity.PasswordCredential{}).
 		Where(&entity.PasswordCredential{AccountId: credential.GetAccountId()}).
 		Where("version = ?", expectedVersion).

@@ -222,15 +222,17 @@ Domain event implementations depend only on the public Infrastructure client con
 
 ## 9. Current Delivery Model
 
-GroveHub currently uses direct post-success event publishing:
+GroveHub publishes after successful persistence; shared GORM transactions defer events through `core/database/transaction.AfterCommit`:
 
 ```text
-business write succeeds
+shared transaction writes succeed
   ↓
-publish event
+commit succeeds
+  ↓
+publish events (best effort)
 ```
 
-A publish failure is logged and must not incorrectly report that an already-committed database write failed.
+Rollback or failed commit discards registered event callbacks. Outside shared transactions, events publish after successful writes. A publish failure is logged and must not incorrectly report that an already-committed database write failed.
 
 A transactional outbox may be introduced later when guaranteed database-to-event delivery becomes a production requirement. Do not add an outbox prematurely without that requirement.
 

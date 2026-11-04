@@ -4,6 +4,10 @@ import (
 	"context"
 	"errors"
 
+ "gorm.io/gorm"
+
+ coretransaction "grovehub/libs/core/database/transaction"
+
 	coreerrors "grovehub/libs/core/errors"
 	coreidempotency "grovehub/libs/core/idempotency"
 	foundationclient "grovehub/services/foundation/client"
@@ -24,6 +28,7 @@ type AuthService struct {
 	passwordCredentialService identityservices.PasswordCredentialService
 	mapper                    identitymappers.AuthMapper
 	validator                 identityvalidators.AuthValidator
+ db *gorm.DB
 }
 
 func NewAuthService(
@@ -32,6 +37,7 @@ func NewAuthService(
 	passwordCredentialService identityservices.PasswordCredentialService,
 	mapper identitymappers.AuthMapper,
 	validator identityvalidators.AuthValidator,
+ db *gorm.DB,
 ) identityservices.AuthService {
 	return &AuthService{
 		foundationClient:          foundationClient,
@@ -39,6 +45,7 @@ func NewAuthService(
 		passwordCredentialService: passwordCredentialService,
 		mapper:                    mapper,
 		validator:                 validator,
+ db: db,
 	}
 }
 
@@ -62,6 +69,22 @@ func (service *AuthService) Register(
 		return identityresponse.Register{}, coreerrors.Wrap(identityerror.RegistrationFailed, err)
 	}
 
+    var registration identityresponse.Register
+    err = coretransaction.Run(ctx, service.db, func(txCtx context.Context) error {
+        var operationErr error
+        registration, operationErr = service.register(txCtx, validated, idempotencyKey, requestHash)
+        return operationErr
+    })
+    if err != nil { return identityresponse.Register{}, err }
+    return registration, nil
+}
+
+func (service *AuthService) register(
+    ctx context.Context,
+    validated identityrequest.Register,
+    idempotencyKey string,
+    requestHash string,
+) (identityresponse.Register, error) {
 	if account, readErr := service.accountService.GetByRegistrationIdempotencyKey(ctx, idempotencyKey); readErr == nil {
 		if account.GetRegistrationRequestHash() != requestHash {
 			return identityresponse.Register{}, coreerrors.NewError(identityerror.RegistrationIdempotencyConflict)
@@ -94,7 +117,7 @@ func (service *AuthService) Register(
 		return identityresponse.Register{}, servicehelpers.MapAuthDependencyError(err)
 	}
 
-	account, created, err := service.accountService.Create(ctx, identityservices.CreateAccountInput{
+	account, _, err := service.accountService.Create(ctx, identityservices.CreateAccountInput{
 		PersonGid:                  person.GID,
 		Email:                      validated.Email,
 		Phone:                      validated.PhoneNumber,
@@ -107,16 +130,6 @@ func (service *AuthService) Register(
 
 	accountId := string(account.GetAccountId())
 	if err := service.passwordCredentialService.Set(ctx, accountId, validated.Password); err != nil {
-		if !created {
-			return identityresponse.Register{}, servicehelpers.MapAuthDependencyError(err)
-		}
-		cleanupErr := service.accountService.PermanentlyDelete(ctx, accountId)
-		if cleanupErr != nil {
-			return identityresponse.Register{}, coreerrors.Wrap(
-				identityerror.RegistrationFailed,
-				errors.Join(err, cleanupErr),
-			)
-		}
 		return identityresponse.Register{}, servicehelpers.MapAuthDependencyError(err)
 	}
 

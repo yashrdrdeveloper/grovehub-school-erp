@@ -7,6 +7,8 @@ import (
 
     "github.com/google/uuid"
 
+ coretransaction "grovehub/libs/core/database/transaction"
+
     coresearch "grovehub/libs/core/search"
     foundationevents "grovehub/services/foundation/constants/events"
     foundationrequest "grovehub/services/foundation/dto/request"
@@ -65,6 +67,9 @@ func (service *PersonService) Deactivate(ctx context.Context, request foundation
 }
 
 func (service *PersonService) publishChanged(ctx context.Context, operation foundationevents.Operation, old, next *foundationresponse.Person) {
+    if coretransaction.AfterCommit(ctx, func() {
+        service.publishChanged(context.WithoutCancel(ctx), operation, old, next)
+    }) { return }
     eventID := uuid.NewString()
     envelope := eventhelpers.BuildChanged(eventID, operation, old, next)
     payload, err := json.Marshal(envelope)

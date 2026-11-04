@@ -8,6 +8,8 @@ import (
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
+
+ coretransaction "grovehub/libs/core/database/transaction"
 	"gorm.io/gorm/clause"
 
 	coresearch "grovehub/libs/core/search"
@@ -59,7 +61,7 @@ func NewPersonRepository(db *gorm.DB) foundationrepository.PersonRepository {
 
 func (repository *PersonRepository) Create(ctx context.Context, person entity.Person) error {
 	person.SearchDetails = buildPersonSearchDetails(person)
-	return repository.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+	return coretransaction.Database(ctx, repository.db).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(&person).Error; err != nil {
 			return mapPersonWriteError(err)
 		}
@@ -69,7 +71,7 @@ func (repository *PersonRepository) Create(ctx context.Context, person entity.Pe
 
 func (repository *PersonRepository) FindByGID(ctx context.Context, gid entity.GID) (entity.Person, error) {
 	var person entity.Person
-	if err := repository.db.WithContext(ctx).Where("gid = ?", gid).Take(&person).Error; err != nil {
+	if err := coretransaction.Database(ctx, repository.db).Where("gid = ?", gid).Take(&person).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return entity.Person{}, foundationrepository.ErrPersonNotFound
 		}
@@ -84,7 +86,7 @@ func (repository *PersonRepository) FindByGID(ctx context.Context, gid entity.GI
 
 func (repository *PersonRepository) FindByCreateIdempotencyKey(ctx context.Context, key string) (entity.Person, error) {
 	var person entity.Person
-	if err := repository.db.WithContext(ctx).Where(&entity.Person{CreateIdempotencyKey: &key}).Take(&person).Error; err != nil {
+	if err := coretransaction.Database(ctx, repository.db).Where(&entity.Person{CreateIdempotencyKey: &key}).Take(&person).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return entity.Person{}, foundationrepository.ErrPersonNotFound
 		}
@@ -111,7 +113,7 @@ func (repository *PersonRepository) FindGIDsByContacts(
 		args = append(args, contact.GetType(), contact.GetNormalizedValue())
 	}
 	gids := make([]entity.GID, 0)
-	err := repository.db.WithContext(ctx).
+	err := coretransaction.Database(ctx, repository.db).
 		Model(&entity.Contact{}).
 		Distinct("person_gid").
 		Where(strings.Join(conditions, " OR "), args...).
@@ -128,7 +130,7 @@ func (repository *PersonRepository) Search(
 	query coresearch.Query[entity.GID],
 ) (coresearch.QueryResult[entity.Person], error) {
 	searchDB, err := coresearch.Apply(
-		repository.db.WithContext(ctx).
+		coretransaction.Database(ctx, repository.db).
 			Model(&entity.Person{}).
 			Table(entity.Person{}.TableName()+" AS p").
 			Select("p.*"),
@@ -163,7 +165,7 @@ func (repository *PersonRepository) Search(
 func (repository *PersonRepository) Update(ctx context.Context, person entity.Person) error {
 	searchDetails := buildPersonSearchDetails(person)
 	expectedVersion := person.GetVersion() - 1
-	return repository.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+	return coretransaction.Database(ctx, repository.db).Transaction(func(tx *gorm.DB) error {
 		result := tx.Model(&entity.Person{}).
 			Where("gid = ? AND version = ?", person.GetGID(), expectedVersion).
 			Updates(map[string]any{
@@ -186,7 +188,7 @@ func (repository *PersonRepository) Update(ctx context.Context, person entity.Pe
 }
 
 func (repository *PersonRepository) Delete(ctx context.Context, gid entity.GID) error {
-	result := repository.db.WithContext(ctx).Where("gid = ?", gid).Delete(&entity.Person{})
+	result := coretransaction.Database(ctx, repository.db).Where("gid = ?", gid).Delete(&entity.Person{})
 	if result.Error != nil {
 		return result.Error
 	}
@@ -210,7 +212,7 @@ func (repository *PersonRepository) findContactsByGIDs(
 		return contactsByGID, nil
 	}
 	contacts := make([]entity.Contact, 0)
-	if err := repository.db.WithContext(ctx).
+	if err := coretransaction.Database(ctx, repository.db).
 		Where("person_gid IN ?", gids).
 		Order("person_gid, type, is_primary DESC, normalized_value").
 		Find(&contacts).Error; err != nil {
