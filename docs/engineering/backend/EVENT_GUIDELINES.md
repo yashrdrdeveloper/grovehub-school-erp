@@ -135,14 +135,14 @@ Topics/subjects are stable and must not be randomized per message or per test ru
 Examples:
 
 ```text
-foundation_person_created
+foundation_person_changed
 identity_account_created
 ```
 
 Event types are versioned:
 
 ```text
-foundation.person.created.v1
+foundation.person.changed.v1
 identity.account.created.v1
 ```
 
@@ -167,32 +167,33 @@ This is required for Foundation Person creation and Identity Account creation.
 
 ---
 
-## 7. Event Payload Policy
+## 7. Event Payload Policy and Foundation Person exception
 
-Publish the minimum information consumers need.
+Default to minimal, non-sensitive payloads unless a concrete domain contract requires otherwise. Never include credentials, tokens, secrets or unrelated personal data.
 
-Default to identifiers and lifecycle/version information instead of copying the full entity.
+**Current Foundation Person contract is an explicit full-response-snapshot exception**, adopted to support consumer-side old/new comparison:
 
-Current examples:
+- Topic: `foundation_person_changed`; event type: `foundation.person.changed.v1`.
+- Envelope: `coreevents.Envelope[persons.Changed]` with `eventId`, `eventType`, `source`, `occurredAt`, and `data`.
+- `data`: `{ "operation": "UPDATED", "old": {...}, "new": {...} }`.
+- Each non-null snapshot uses the public `foundation/dto/response.Person` representation (GID, names, contacts, status, version, createdAt, updatedAt).
+- `CREATED`: old is null, new is the created Person. `UPDATED`: old/new are complete snapshots. `DEACTIVATED`: old/new are complete snapshots with status transition. A deactivation emits only DEACTIVATED, not UPDATED as well.
+- No publish on failed operations, idempotent create replay, no-op update, or already-deactivated Person.
+- `DELETED` is **not implemented** in the current Person service. New null is reserved for future deletion semantics; do not invent a delete event.
 
-```text
-foundation.person.created.v1
-├── gid
-├── status
-└── version
+This change replaces the earlier `foundation_person_created` / `foundation.person.created.v1` consumer contract. Migrate subscribers instead of assuming backward compatibility.
 
-identity.account.created.v1
-├── accountId
-├── personGid
-├── status
-└── version
+**Security:** Complete Person DTOs contain names, email addresses and phone numbers. Scope subscribers by authorization, protect broker storage and retention, and never log raw event snapshots. Do not generalize full-snapshot publishing to every aggregate automatically. Consider data minimization and compliance when evolving the contract.
+
+### Consumer-side diff
+
+The producer emits `{operation, old, new}` only; it does not include a computed diff. Consumers decode into `Envelope[persons.Changed]` and can run:
+
+```go
+changes, err := diff.Compare(envelope.Data.Old, envelope.Data.New)
 ```
 
-Do not publish email, phone, names, credentials, secrets, or other PII merely because those fields exist on the source entity.
-
-Add fields only when a concrete consumer contract requires them.
-
----
+Use `grovehub/libs/core/diff`, which is generic, typed via Go type inference, and returns `([]diff.Change, error)`. The result is a flat list of JSON field paths with old and new values (for example `contacts.emails[0].value`); arrays compare by position. The domain event contract lives in Foundation, while the comparison algorithm lives in core. Consumers use the Infrastructure `MessagingClient.Consume` transport; no separate HTTP client is needed to receive messages. Ensure handlers are idempotent because broker redelivery can occur.
 
 ## 8. Composition
 
@@ -239,7 +240,7 @@ Sanity tests must verify real Infrastructure messaging/NATS delivery using stabl
 Current sanity coverage includes:
 
 ```text
-Foundation Person Created
+Foundation Person Changed (CREATED, UPDATED, DEACTIVATED)
 Identity Account Created
 ```
 

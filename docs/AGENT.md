@@ -15,6 +15,9 @@ Mandatory current standards:
 
 ```text
 docs/engineering/backend/GROVEHUB_BACKEND_STRUCTURE.md
+docs/engineering/backend/EVENT_GUIDELINES.md
+docs/engineering/backend/CORE_LIBRARY_GUIDELINES.md
+docs/engineering/backend/INFRASTRUCTURE_MESSAGING_STRATEGY.md
 docs/engineering/testing/BACKEND_UNIT_TEST_STRUCTURE.md
 docs/engineering/observability/TRACE_CONTEXT_GUIDELINES.md
 docs/engineering/observability/GROVEHUB_OBSERVABILITY.md
@@ -102,6 +105,12 @@ repository/postgres/entity.go
 ```
 
 These are persistence models and are distinct from domain data under `entity/`.
+
+### Foundation Person events and reusable diff
+
+Before editing or consuming Person events, read `docs/engineering/backend/EVENT_GUIDELINES.md` and `backend/services/foundation/events/persons/README.md`. The canonical event is `foundation.person.changed.v1` on the stable topic `foundation_person_changed`. It carries `data: { operation, old, new }`, where old/new are full `foundation/dto/response.Person` snapshots or null. Only `CREATED`, `UPDATED`, and `DEACTIVATED` are currently emitted, once per successful real state change. Deactivation does not also emit UPDATED; no-op or idempotent operations do not publish.
+
+Consumers decode `coreevents.Envelope[persons.Changed]` and may call `diff.Compare(event.Data.Old, event.Data.New)` using `grovehub/libs/core/diff`. Diff is domain-neutral, accepts typed values, returns `([]diff.Change, error)`, and flattens JSON-named paths. It is *not* part of Foundation or Infrastructure, and the published event does *not* include a computed diff. Full snapshots include PII (names and contact details); restrict subscribers, retention, and logs. Publishing is post-write best-effort, not transactional delivery.
 
 ### Backend unit tests
 

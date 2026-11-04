@@ -15,6 +15,8 @@ Correct:
 ```text
 backend/libs/core/
 ├── search/
+├── diff/
+├── events/
 ├── telemetry/
 ├── logging/
 ├── errors/
@@ -326,6 +328,7 @@ Core tests should mirror capability ownership rather than obsolete technical-rol
 Preferred:
 
 ```text
+backend/libs/core/tests/unit-test/diff/
 backend/libs/core/tests/unit-test/id/
 backend/libs/core/tests/unit-test/logging/
 backend/libs/core/tests/unit-test/telemetry/
@@ -349,6 +352,18 @@ Before adding code under `libs/core`, answer these questions:
 If there is no clear capability owner, the code is probably not ready for `libs/core`.
 
 ---
+
+## 11.1 Generic JSON Diff Capability
+
+`backend/libs/core/diff` is the domain-neutral public comparison API. Consumers use:
+
+```go
+changes, err := diff.Compare(old, next)
+```
+
+Both values have the same inferred generic Go type; no Foundation dependency or manual datatype string is required. `Compare[T]` returns `([]diff.Change, error)`, where each change has `field`, `oldValue`, and `newValue`. Paths are flat and JSON-named, such as `contacts.emails[0].value`. Change ordering is deterministic; arrays compare by index, not by domain identifier. Missing properties use JSON null in the result, and numeric values decode as `json.Number`. Consumers should check errors.
+
+Core diff owns comparison mechanics only. Source types remain in their domain (for example, Foundation `dto/response.Person`). Do not create Foundation-specific types inside core, automatically publish a diff as part of an event, or place diff inside messaging infrastructure.
 
 ## 12. Hard Rules
 

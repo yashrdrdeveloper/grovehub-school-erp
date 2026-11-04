@@ -17,7 +17,7 @@ infrastructure/client/impl
 infrastructure/services.MessagingService
 ```
 
-Consumers publish/consume logical topics. They never select NATS, Kafka, RabbitMQ, or another provider directly.
+Consumers publish/consume logical topics through the same public `MessagingClient` (`Publish` and `Consume`). Event listeners implement domain handlers; an additional HTTP client or separate consumer transport client is not required. They never select NATS, Kafka, RabbitMQ, or another provider directly. Domain event meaning/contracts and core JSON diffing are outside Infrastructure; see `EVENT_GUIDELINES.md`.
 
 ## 2. Strategy Resolution
 
