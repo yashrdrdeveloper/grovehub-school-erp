@@ -91,11 +91,19 @@ func(c *Client)Delta(ctx context.Context,accessToken,cursor string)(DeltaPage,er
   if len(cursor)>4096{return result,providers.ErrInvalidActionInput}
   parsed,err:=url.Parse(cursor)
   if err!=nil||parsed.Scheme!="https"||parsed.Host!="graph.microsoft.com"||parsed.User!=nil||
-   parsed.Fragment!=""||parsed.Path!="/v1.0/me/mailFolders/inbox/messages/delta"{
+   parsed.Fragment!=""||!allowedDeltaPath(parsed.Path){
    return result,providers.ErrInvalidActionInput
   }
   path="/me/mailFolders/inbox/messages/delta?"+parsed.RawQuery
  }
  err:=c.graph(ctx,accessToken,http.MethodGet,path,nil,"",&result)
  return result,err
+}
+
+// allowedDeltaPath accepts only the inbox delta resource in Microsoft Graph's
+// supported URL spellings. Caller-provided URLs never control the remote host.
+func allowedDeltaPath(path string)bool{
+ lower:=strings.ToLower(path)
+ return lower=="/v1.0/me/mailfolders/inbox/messages/delta"||
+  lower=="/v1.0/me/mailfolders('inbox')/messages/delta"
 }
