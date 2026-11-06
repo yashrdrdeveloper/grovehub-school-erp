@@ -12,6 +12,7 @@ import (
  integrationrequest "grovehub/services/integration/dto/request"
  integrationresponse "grovehub/services/integration/dto/response"
  "grovehub/services/integration/entity"
+ "grovehub/services/integration/providers/gmail"
  "grovehub/services/integration/providers"
  integrationrepository "grovehub/services/integration/repository"
  integrationservices "grovehub/services/integration/services"
@@ -23,9 +24,13 @@ var ErrConnectionNotReady = errors.New("provider authorization is not implemente
 type ConnectionService struct {
  repository integrationrepository.ConnectionRepository
  registry *providers.Registry
+ gmail *gmail.Client
+ cipher tokenCipher
 }
-func NewConnectionService(repository integrationrepository.ConnectionRepository,registry *providers.Registry) integrationservices.ConnectionService {
- return &ConnectionService{repository:repository,registry:registry}
+func NewConnectionService(repository integrationrepository.ConnectionRepository,registry *providers.Registry, gmailClient *gmail.Client, encryptionKey []byte) (integrationservices.ConnectionService,error) {
+ cipher,err:=newTokenCipher(encryptionKey)
+ if err!=nil && gmailClient!=nil{return nil,err}
+ return &ConnectionService{repository:repository,registry:registry,gmail:gmailClient,cipher:cipher},nil
 }
 func (s *ConnectionService) Providers(_ context.Context) []providers.Descriptor { return s.registry.List() }
 func (s *ConnectionService) Create(ctx context.Context,tenantID string,input integrationrequest.CreateConnection)(integrationresponse.Connection,error){
@@ -66,7 +71,7 @@ func (s *ConnectionService) Disconnect(ctx context.Context,tenantID,id string)(i
 func toConnection(c entity.Connection) integrationresponse.Connection{
  return integrationresponse.Connection{
  ID:c.ID,TenantID:c.TenantID,OwnerGID:c.OwnerGID,Provider:c.Provider,
- Status:c.Status,CreatedAt:c.CreatedAt,UpdatedAt:c.UpdatedAt,
+ Status:c.Status,ExternalID:c.ExternalID,LastTestedAt:c.LastTestedAt,LastTestStatus:c.LastTestStatus,CreatedAt:c.CreatedAt,UpdatedAt:c.UpdatedAt,
  }
 }
 func isUUID(raw string)bool{
