@@ -1,14 +1,22 @@
 openapi: 3.1.0
 info:
   title: GrooveHub Integration API
-  version: 0.3.0
-  description: Provider connection, OAuth, mailbox watch, test history and stateless Gmail API capabilities. Message storage and synchronization belong to Communication.
+  version: 0.5.0
+  description: Generic capability-based Integration service with Gmail and Outlook OAuth, provider actions, connection tests and Gmail webhook watch. Communication owns message storage and synchronization.
 paths:
   /integrations/providers:
     get:
       summary: List registered provider descriptors
       responses:
         "200": { description: Provider catalog }
+  /integrations/providers/{provider}:
+    parameters:
+      - { in: path, name: provider, required: true, schema: { type: string } }
+    get:
+      summary: Discover provider capabilities and currently configured executable actions
+      responses:
+        "200": { description: Provider descriptor with availableActions and oauthConfigured }
+        "400": { description: Unknown provider }
   /integrations/connections:
     post:
       security: [{ verifiedPrincipal: [] }]
@@ -53,10 +61,11 @@ paths:
       summary: Start Gmail OAuth connection authorization
       responses:
         "200": { description: Authorization URL }
-  /integrations/oauth/gmail/callback:
+  /integrations/oauth/{provider}/callback:
     get:
-      summary: Exchange Google callback code with one-time OAuth state
+      summary: Exchange Gmail or Outlook authorization code with a one-time OAuth state
       parameters:
+        - { in: path, name: provider, required: true, schema: { type: string, enum: [gmail, outlook] } }
         - { in: query, name: state, required: true, schema: { type: string } }
         - { in: query, name: code, required: true, schema: { type: string } }
       responses:
@@ -66,7 +75,7 @@ paths:
       - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
     post:
       security: [{ verifiedPrincipal: [] }]
-      summary: Persist Gmail inbound-access or self-addressed outbound test
+      summary: Persist Gmail or Outlook inbound-access or self-addressed outbound test
       requestBody:
         required: true
         content:
@@ -95,56 +104,46 @@ paths:
       summary: Register or renew Gmail provider subscription
       responses:
         "200": { description: Watch expiry }
-  /integrations/connections/{id}/mail/profile:
-    get:
-      security: [{ verifiedPrincipal: [] }]
-      summary: Fetch live Gmail profile and current history cursor (not persisted)
-      responses:
-        "200": { description: Live Gmail profile }
-  /integrations/connections/{id}/mail/messages:
-    get:
-      security: [{ verifiedPrincipal: [] }]
-      summary: List one page of Gmail message IDs
-      parameters:
-        - { in: query, name: pageToken, schema: { type: string } }
-      responses:
-        "200": { description: Provider message page }
-  /integrations/connections/{id}/mail/messages/{messageId}:
-    get:
-      security: [{ verifiedPrincipal: [] }]
-      summary: Read Gmail message metadata; no message stored
-      parameters:
-        - { in: path, name: messageId, required: true, schema: { type: string } }
-      responses:
-        "200": { description: Provider message metadata }
-  /integrations/connections/{id}/mail/history:
-    get:
-      security: [{ verifiedPrincipal: [] }]
-      summary: Read provider history page from caller-owned cursor; no cursor stored
-      parameters:
-        - { in: query, name: startHistoryId, required: true, schema: { type: string } }
-        - { in: query, name: pageToken, schema: { type: string } }
-      responses:
-        "200": { description: Gmail history page with cursor }
-        "500": { description: Provider history error, including expired provider cursor }
-  /integrations/connections/{id}/mail/send:
+  /integrations/connections/{id}/actions/{action}:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      - { in: path, name: action, required: true, schema: { type: string, example: mail.send } }
     post:
+      summary: Execute a registered provider capability using the connection's encrypted credentials
+      description: >
+        Available actions depend on provider configuration. Gmail supports mail.profile,
+        mail.list, mail.get, mail.history, mail.attachment.get, mail.send.
+        Outlook supports mail.profile, mail.list, mail.get, mail.delta,
+        mail.attachment.get and mail.send. OAuth state and provider credentials
+        never appear in this request. Mailbox data and cursors are not stored by Integration.
       security: [{ verifiedPrincipal: [] }]
-      summary: Send caller-composed raw RFC 5322 Gmail message; Integration stores no message
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required: [input]
               additionalProperties: false
-              required: [raw]
               properties:
-                raw:
-                  type: string
-                  description: Base64url-encoded RFC 5322 email
+                input:
+                  type: object
+                  additionalProperties: true
+            examples:
+              gmailList: { value: { input: { pageToken: "" } } }
+              gmailHistory: { value: { input: { startHistoryId: "123456" } } }
+              outlookDelta: { value: { input: { cursor: "" } } }
+              mailGet: { value: { input: { messageId: "provider-message-id" } } }
+              attachmentGet: { value: { input: { messageId: "id", attachmentId: "attachment-id" } } }
+              send: { value: { input: { raw: "base64url-encoded-RFC5322" } } }
       responses:
-        "200": { description: Gmail provider IDs, not a delivery receipt }
+        "200": { description: Provider action output; Graph sendMail only returns accepted status }
+        "400": { description: Invalid action input }
+        "403": { description: Access denied or connection not owned }
+        "409": { description: Connection not active }
+        "429": { description: Provider rate limited }
+        "501": { description: Unsupported action }
+        "503": { description: Provider not configured }
   /integrations/webhooks/gmail:
     post:
       security: [{ googlePushJWT: [] }]
