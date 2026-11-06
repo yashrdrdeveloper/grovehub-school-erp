@@ -3,8 +3,8 @@ package impl
 import (
  "context"
  "errors"
- mailboxevents "grovehub/services/integration/events/mailbox"
- mailboximpl "grovehub/services/integration/events/mailbox/impl"
+ mailboxevents "grovehub/services/integration/events/connections/mailbox"
+ mailboximpl "grovehub/services/integration/events/connections/mailbox/impl"
  "time"
 
  integrationresponse "grovehub/services/integration/dto/response"

@@ -7,7 +7,7 @@ import (
  "github.com/google/uuid"
 
  coreevents "grovehub/libs/core/events"
- mailboxevents "grovehub/services/integration/events/mailbox"
+ mailboxevents "grovehub/services/integration/events/connections/mailbox"
 )
 
 func BuildChanged(ctx context.Context,payload mailboxevents.Payload)mailboxevents.Changed{

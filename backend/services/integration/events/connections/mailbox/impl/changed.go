@@ -4,8 +4,8 @@ import (
  "context"
  "encoding/json"
 
- mailboxevents "grovehub/services/integration/events/mailbox"
- eventhelpers "grovehub/services/integration/events/mailbox/helpers"
+ mailboxevents "grovehub/services/integration/events/connections/mailbox"
+ eventhelpers "grovehub/services/integration/events/connections/mailbox/helpers"
  infrastructureclient "grovehub/services/infrastructure/client"
 )
 
