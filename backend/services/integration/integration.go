@@ -14,6 +14,7 @@ import (
  integrationconfig "grovehub/services/integration/config"
  controllerimpl "grovehub/services/integration/controller/impl"
  "grovehub/services/integration/providers"
+ providerimpl "grovehub/services/integration/providers/impl"
  "grovehub/services/integration/providers/gmail"
  "grovehub/services/integration/providers/outlook"
  repositoryimpl "grovehub/services/integration/repository/impl"
@@ -24,7 +25,7 @@ import (
 type Module interface{RegisterHTTP(*http.ServeMux);Close()}
 type module struct{controller controller.ConnectionController;stop chan struct{}}
 func New(logger *slog.Logger,db *gorm.DB,messaging infrastructureclient.MessagingClient)(Module,error){
- registry,err:=providers.NewRegistry(gmail.New(),outlook.New())
+ registry,err:=providerimpl.NewRegistry(gmail.New(),outlook.New())
  if err!=nil{return nil,err}
  repository:=repositoryimpl.NewConnectionRepository(db)
  gmailConfig,configErr:=integrationconfig.GmailFromEnvironment()
@@ -35,8 +36,8 @@ func New(logger *slog.Logger,db *gorm.DB,messaging infrastructureclient.Messagin
  outlookConfig,outlookErr:=integrationconfig.OutlookFromEnvironment()
  var outlookClient *outlook.Client
  if outlookErr==nil&&keyErr==nil {outlookClient=outlook.NewClient(outlookConfig)} else {logger.Warn("Outlook OAuth not configured; Outlook actions disabled")}
- actions:=providers.NewActionRegistry()
- oauth:=providers.NewOAuthRegistry()
+ actions:=providerimpl.NewActionRegistry()
+ oauth:=providerimpl.NewOAuthRegistry()
  if client!=nil {
   if err:=gmail.RegisterActions(actions,client);err!=nil{return nil,err}
   if err:=oauth.Register("GMAIL",client);err!=nil{return nil,err}

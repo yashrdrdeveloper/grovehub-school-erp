@@ -28,9 +28,9 @@ type ConnectionService struct {
  watchRepository integrationrepository.WatchRepository
  pushTopic string
  messaging infrastructureclient.MessagingClient
- registry *providers.Registry
- actions *providers.ActionRegistry
- oauth *providers.OAuthRegistry
+ registry providers.Registry
+ actions providers.ActionRegistry
+ oauth providers.OAuthRegistry
  gmail *gmail.Client
  outlook *outlook.Client
  cipher tokenCipher

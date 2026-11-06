@@ -12,6 +12,7 @@ import (
  "grovehub/services/integration/entity"
  mailboxevents "grovehub/services/integration/events/mailbox"
  "grovehub/services/integration/providers"
+ providerimpl "grovehub/services/integration/providers/impl"
  "grovehub/services/integration/providers/gmail"
  integrationimpl "grovehub/services/integration/services/impl"
  messagingclient "grovehub/services/infrastructure/client"
@@ -56,12 +57,12 @@ func(*messagingFake)Health(context.Context)error{return nil}
 
 var _=Describe("Provider push event ownership",func(){
  It("publishes one normalized event per connection without storing or syncing messages",func(){
-  registry,err:=providers.NewRegistry(gmail.New())
+  registry,err:=providerimpl.NewRegistry(gmail.New())
   Expect(err).NotTo(HaveOccurred())
   messaging:=&messagingFake{}
   service,err:=integrationimpl.NewConnectionService(
    &connectionRepositoryFake{},&watchRepositoryFake{},
-   registry,providers.NewActionRegistry(),providers.NewOAuthRegistry(),nil,nil,nil,"projects/test/topics/gmail",messaging,
+   registry,providerimpl.NewActionRegistry(),providerimpl.NewOAuthRegistry(),nil,nil,nil,"projects/test/topics/gmail",messaging,
   )
   Expect(err).NotTo(HaveOccurred())
   err=service.ProcessPush(context.Background(),gmail.PushNotification{

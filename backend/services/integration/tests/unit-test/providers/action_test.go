@@ -9,6 +9,7 @@ import (
 
  integrationconfig "grovehub/services/integration/config"
  "grovehub/services/integration/providers"
+ providerimpl "grovehub/services/integration/providers/impl"
  "grovehub/services/integration/providers/gmail"
  "grovehub/services/integration/providers/outlook"
 )
@@ -20,7 +21,7 @@ func(actionFake)Execute(_ context.Context,_ providers.Session,_ json.RawMessage)
 
 var _=Describe("Generic action strategy registry",func(){
  It("routes only registered capabilities without provider-name branching",func(){
-  registry:=providers.NewActionRegistry()
+  registry:=providerimpl.NewActionRegistry()
   Expect(registry.Register("CUSTOM",providers.Action("lead.import"),actionFake{})).To(Succeed())
   result,err:=registry.Execute(context.Background(),providers.Session{ProviderID:"CUSTOM"},providers.Action("lead.import"),json.RawMessage("{}"))
   Expect(err).NotTo(HaveOccurred())
@@ -29,7 +30,7 @@ var _=Describe("Generic action strategy registry",func(){
   Expect(err).To(MatchError(providers.ErrUnsupportedAction))
  })
  It("rejects duplicate action registrations",func(){
-  registry:=providers.NewActionRegistry()
+  registry:=providerimpl.NewActionRegistry()
   Expect(registry.Register("GMAIL",providers.ActionMailSend,actionFake{})).To(Succeed())
   Expect(registry.Register("GMAIL",providers.ActionMailSend,actionFake{})).To(HaveOccurred())
  })
