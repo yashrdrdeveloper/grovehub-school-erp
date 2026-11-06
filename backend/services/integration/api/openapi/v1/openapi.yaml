@@ -81,6 +81,17 @@ paths:
                 direction: { type: string, enum: [INBOUND, OUTBOUND] }
       responses:
         "200": { description: Saved test result including SUCCESS or FAILED }
+  /integrations/connections/{id}/sync:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+    post:
+      security: [{ verifiedPrincipal: [] }]
+      summary: Run paginated Gmail initial or history-based incremental sync
+      description: Stores provider message references only. Requires ACTIVE Gmail connection. Does not populate Communication or ingest email bodies. Protected until IAM middleware is connected.
+      responses:
+        "200": { description: Sync summary including mode, processed, deleted and cursor }
+        "403": { description: Verified principal absent or connection not owned }
+        "413": { description: Sync exceeds 100 pages, cursor not advanced }
   /integrations/connections/{id}/tests:
     parameters:
       - { in: path, name: id, required: true, schema: { type: string, format: uuid } }

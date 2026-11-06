@@ -34,6 +34,9 @@ func (*serviceStub) BeginOAuth(context.Context,string,string)(integrationrespons
 func (*serviceStub) FinishOAuth(context.Context,string,string)(integrationresponse.OAuthCompletion,error){
  return integrationresponse.OAuthCompletion{},nil
 }
+func (*serviceStub) Sync(context.Context,string,string)(integrationresponse.SyncResult,error){
+ return integrationresponse.SyncResult{},nil
+}
 func (*serviceStub) RunTest(context.Context,string,string,string)(integrationresponse.ConnectionTest,error){
  return integrationresponse.ConnectionTest{},nil
 }
@@ -59,6 +62,7 @@ var _ = Describe("Integration HTTP authorization",func(){
    {"/integrations/connections/abc/oauth/start",c.BeginOAuth},
    {"/integrations/connections/abc/test",c.RunTest},
    {"/integrations/connections/abc/tests",c.ListTests},
+   {"/integrations/connections/abc/sync",c.Sync},
   } {
    recorder:=httptest.NewRecorder()
    request:=httptest.NewRequest(http.MethodPost,testCase.route,nil)

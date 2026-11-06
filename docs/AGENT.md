@@ -128,6 +128,10 @@ Integration follows the flat GroveHub service root structure. Read `docs/enginee
 
 Read `docs/engineering/backend/INTEGRATION_PHASE_2.md` and `backend/services/integration/api/openapi/v1/openapi.yaml`. Gmail OAuth, encrypted mailbox credentials and persisted INBOUND (read-access) / OUTBOUND (self-addressed send) tests are implemented. These tests do not confirm delivery. Trusted principal authorization is still absent at the launcher, so protected endpoints deny access until IAM is connected. No Temporal or mail synchronization yet.
 
+### Integration Phase 3
+
+Read `docs/engineering/backend/INTEGRATION_PHASE_3.md`: sync is provider-reference metadata only, with `(connection_id,provider_message_id)` uniqueness and cursor advancement only after a completed scan. It does not populate Communication or ingest email bodies. No Pub/Sub webhook, scheduler, IAM middleware or Temporal in Integration yet.
+
 ### Backend unit tests
 
 The old centralized path `backend/testing/unit-test/` is superseded and must not be recreated.

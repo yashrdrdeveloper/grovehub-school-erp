@@ -12,4 +12,5 @@ type ConnectionController interface {
  FinishOAuth(http.ResponseWriter,*http.Request)
  RunTest(http.ResponseWriter,*http.Request)
  ListTests(http.ResponseWriter,*http.Request)
+ Sync(http.ResponseWriter,*http.Request)
 }

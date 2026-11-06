@@ -76,6 +76,8 @@ func (c *ConnectionController) writeServiceError(w http.ResponseWriter,r *http.R
   writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid)
  case errors.Is(err,serviceimpl.ErrOAuthInvalid):
   writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid)
+ case errors.Is(err,serviceimpl.ErrSyncTooLarge):
+ writeError(w,r,http.StatusRequestEntityTooLarge,integrationerrors.SyncLimit)
  case errors.Is(err,serviceimpl.ErrConnectionInactive):
   writeError(w,r,http.StatusConflict,integrationerrors.NotReady)
  case errors.Is(err,serviceimpl.ErrOAuthUnavailable),errors.Is(err,serviceimpl.ErrConnectionNotReady):
@@ -119,6 +121,13 @@ func(c *ConnectionController)RunTest(w http.ResponseWriter,r *http.Request){
 func(c *ConnectionController)ListTests(w http.ResponseWriter,r *http.Request){
  p,ok:=c.owned(w,r);if !ok{return}
  result,err:=c.service.ListTests(r.Context(),p.TenantID,r.PathValue("id"))
+ if err!=nil{c.writeServiceError(w,r,err);return}
+ _=httpresponse.WriteSuccess(w,http.StatusOK,result)
+}
+
+func(c *ConnectionController)Sync(w http.ResponseWriter,r *http.Request){
+ p,ok:=c.owned(w,r);if !ok{return}
+ result,err:=c.service.Sync(r.Context(),p.TenantID,r.PathValue("id"))
  if err!=nil{c.writeServiceError(w,r,err);return}
  _=httpresponse.WriteSuccess(w,http.StatusOK,result)
 }
