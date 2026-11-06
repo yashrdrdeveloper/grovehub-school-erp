@@ -14,17 +14,29 @@ source "${SCRIPT_DIR}/../config/services.sh"
 require_docker
 require_command curl
 
+log_info "Swagger configuration: ${SWAGGER_BASE_URL} -> container port 8080 (Docker localhost publish)"
+
 if container_is_running "${SWAGGER_CONTAINER_NAME}"; then
-  log_info "Swagger UI is already running: ${SWAGGER_BASE_URL}"
-  exit 0
+  if curl --noproxy '*' --fail --silent --max-time 3 "${SWAGGER_BASE_URL}/index.html" >/dev/null 2>&1; then
+    log_info "Swagger UI is already running: ${SWAGGER_BASE_URL}"
+    exit 0
+  fi
+  log_warn "Swagger container is running but the host HTTP endpoint is unreachable"
+  docker port "${SWAGGER_CONTAINER_NAME}" >&2 || true
+  die "Existing Swagger container failed readiness; inspect it before replacing it (docker logs ${SWAGGER_CONTAINER_NAME})"
 fi
 
 if container_exists "${SWAGGER_CONTAINER_NAME}"; then
   docker rm "${SWAGGER_CONTAINER_NAME}" >/dev/null
 fi
 
-if curl --fail --silent --max-time 1 "${SWAGGER_BASE_URL}" >/dev/null 2>&1; then
-  die "Swagger port ${SWAGGER_PORT} is already in use by another service"
+if command -v lsof >/dev/null 2>&1 && lsof -nP -t -iTCP:"${SWAGGER_PORT}" -sTCP:LISTEN 2>/dev/null | grep -q .; then
+  log_error "Another process is listening on Swagger port ${SWAGGER_PORT}:"
+  lsof -nP -iTCP:"${SWAGGER_PORT}" -sTCP:LISTEN >&2 || true
+  die "Swagger port ${SWAGGER_PORT} is occupied; choose an unused port or stop the confirmed process"
+fi
+if curl --noproxy '*' --silent --max-time 2 "${SWAGGER_BASE_URL}/index.html" >/dev/null 2>&1; then
+  die "Swagger port ${SWAGGER_PORT} already responds to HTTP; refusing to replace it"
 fi
 
 swagger_urls="["
@@ -47,11 +59,32 @@ docker run --detach \
   --volume "${REPO_ROOT}/backend/services:/usr/share/nginx/html/specs:ro" \
   "${SWAGGER_IMAGE}" >/dev/null
 
-if ! wait_for_http "${SWAGGER_BASE_URL}" "Swagger UI" 30; then
-  log_error "Swagger UI failed to become ready"
-  docker logs --tail 50 "${SWAGGER_CONTAINER_NAME}" >&2 || true
-  docker rm --force "${SWAGGER_CONTAINER_NAME}" >/dev/null 2>&1 || true
-  exit 1
-fi
+swagger_ready=0
+for ((attempt=1; attempt<=30; attempt++)); do
+  if curl --noproxy '*' --fail --silent --max-time 2 "${SWAGGER_BASE_URL}/index.html" >/dev/null 2>&1; then
+    swagger_ready=1
+    break
+  fi
+  if ! container_is_running "${SWAGGER_CONTAINER_NAME}"; then
+    log_error "Swagger container exited during startup"
+    break
+  fi
+  sleep 1
+done
 
+if [[ "${swagger_ready}" != "1" ]]; then
+  log_error "Swagger UI cannot be reached on the host at ${SWAGGER_BASE_URL}/index.html"
+  log_error "Docker published ports:"
+  docker port "${SWAGGER_CONTAINER_NAME}" >&2 || true
+  log_error "Docker container state:"
+  docker inspect --format 'status={{.State.Status}} exit={{.State.ExitCode}} network={{.HostConfig.NetworkMode}} ports={{json .NetworkSettings.Ports}}' "${SWAGGER_CONTAINER_NAME}" >&2 || true
+  log_error "HTTP diagnostic (direct connection without proxy):"
+  curl --noproxy '*' --verbose --location --max-time 5 "${SWAGGER_BASE_URL}/index.html" -o /dev/null >&2 || true
+  log_error "HTTP diagnostic from inside container:"
+  docker exec "${SWAGGER_CONTAINER_NAME}" sh -c 'wget -S -O /dev/null http://127.0.0.1:8080/index.html 2>&1' >&2 || true
+  log_error "Container log tail:"
+  docker logs --tail 35 "${SWAGGER_CONTAINER_NAME}" >&2 || true
+  die "Swagger readiness failed. Container retained as ${SWAGGER_CONTAINER_NAME} for diagnosis; use make swagger-stop after inspecting."
+fi
+log_info "Swagger UI is ready: ${SWAGGER_BASE_URL}"
 log_info "Swagger UI: ${SWAGGER_BASE_URL}"
