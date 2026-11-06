@@ -4,10 +4,9 @@ import (
  "context"
  "encoding/json"
  "strings"
- "io"
- "errors"
 
  "grovehub/services/integration/providers"
+ providerhelpers "grovehub/services/integration/providers/helpers"
 )
 
 type ActionHandler struct {
@@ -31,34 +30,25 @@ func(h *ActionHandler)Execute(ctx context.Context,session providers.Session,inpu
   return h.client.Profile(ctx,session.AccessToken)
  case providers.ActionMailList:
   var request struct{PageToken string `json:"pageToken"`}
-  if err:=decodeInput(input,&request);err!=nil{return nil,err}
+  if err:=providerhelpers.DecodeStrictActionInput(input,&request);err!=nil{return nil,err}
   return h.client.Messages(ctx,session.AccessToken,request.PageToken)
  case providers.ActionMailGet:
   var request struct{MessageID string `json:"messageId"`}
-  if err:=decodeInput(input,&request);err!=nil{return nil,err}
+  if err:=providerhelpers.DecodeStrictActionInput(input,&request);err!=nil{return nil,err}
   return h.client.Message(ctx,session.AccessToken,request.MessageID)
  case providers.ActionMailAttachment:
   var request struct{MessageID string `json:"messageId"`;AttachmentID string `json:"attachmentId"`}
-  if err:=decodeInput(input,&request);err!=nil{return nil,err}
+  if err:=providerhelpers.DecodeStrictActionInput(input,&request);err!=nil{return nil,err}
   return h.client.Attachment(ctx,session.AccessToken,request.MessageID,request.AttachmentID)
  case providers.ActionMailDelta:
   var request struct{Cursor string `json:"cursor"`}
-  if err:=decodeInput(input,&request);err!=nil{return nil,err}
+  if err:=providerhelpers.DecodeStrictActionInput(input,&request);err!=nil{return nil,err}
   return h.client.Delta(ctx,session.AccessToken,request.Cursor)
  case providers.ActionMailSend:
   var request struct{Raw string `json:"raw"`}
-  if err:=decodeInput(input,&request);err!=nil{return nil,err}
+  if err:=providerhelpers.DecodeStrictActionInput(input,&request);err!=nil{return nil,err}
   return h.client.SendRaw(ctx,session.AccessToken,request.Raw)
  default:
   return nil,providers.ErrUnsupportedAction
  }
-}
-func decodeInput(raw json.RawMessage,out any)error{
- if len(raw)==0{raw=[]byte("{}")}
- dec:=json.NewDecoder(strings.NewReader(string(raw)))
- dec.DisallowUnknownFields()
- if err:=dec.Decode(out);err!=nil{return errors.Join(providers.ErrInvalidActionInput,err)}
- var trailing any
- if err:=dec.Decode(&trailing);err!=io.EOF{return providers.ErrInvalidActionInput}
- return nil
 }

@@ -3,11 +3,10 @@ package impl
 import (
  "context"
  "encoding/json"
- "errors"
- "io"
  "strings"
 
  "grovehub/services/integration/providers"
+ providerhelpers "grovehub/services/integration/providers/helpers"
 )
 
 type ActionHandler struct {
@@ -33,17 +32,17 @@ func(h *ActionHandler)Execute(ctx context.Context,session providers.Session,inpu
   return h.client.Profile(ctx,token)
  case providers.ActionMailList:
   var request struct{PageToken string `json:"pageToken"`}
-  if err:=decodeActionInput(input,&request);err!=nil{return nil,err}
+  if err:=providerhelpers.DecodeStrictActionInput(input,&request);err!=nil{return nil,err}
   if len(request.PageToken)>2048{return nil,providers.ErrInvalidActionInput}
   return h.client.Messages(ctx,token,request.PageToken)
  case providers.ActionMailGet:
   var request struct{MessageID string `json:"messageId"`}
-  if err:=decodeActionInput(input,&request);err!=nil{return nil,err}
+  if err:=providerhelpers.DecodeStrictActionInput(input,&request);err!=nil{return nil,err}
   if len(request.MessageID)==0||len(request.MessageID)>512{return nil,providers.ErrInvalidActionInput}
   return h.client.MessageMetadata(ctx,token,request.MessageID)
  case providers.ActionMailAttachment:
   var request struct{MessageID string `json:"messageId"`;AttachmentID string `json:"attachmentId"`}
-  if err:=decodeActionInput(input,&request);err!=nil{return nil,err}
+  if err:=providerhelpers.DecodeStrictActionInput(input,&request);err!=nil{return nil,err}
   if request.MessageID==""||request.AttachmentID==""||len(request.MessageID)>512||len(request.AttachmentID)>512{
    return nil,providers.ErrInvalidActionInput
   }
@@ -53,14 +52,14 @@ func(h *ActionHandler)Execute(ctx context.Context,session providers.Session,inpu
    StartHistoryID string `json:"startHistoryId"`
    PageToken string `json:"pageToken"`
   }
-  if err:=decodeActionInput(input,&request);err!=nil{return nil,err}
+  if err:=providerhelpers.DecodeStrictActionInput(input,&request);err!=nil{return nil,err}
   if request.StartHistoryID==""||len(request.StartHistoryID)>128||len(request.PageToken)>2048{
    return nil,providers.ErrInvalidActionInput
   }
   return h.client.History(ctx,token,request.StartHistoryID,request.PageToken)
  case providers.ActionMailSend:
   var request struct{Raw string `json:"raw"`}
-  if err:=decodeActionInput(input,&request);err!=nil{return nil,err}
+  if err:=providerhelpers.DecodeStrictActionInput(input,&request);err!=nil{return nil,err}
   if request.Raw==""{return nil,providers.ErrInvalidActionInput}
   return h.client.SendRaw(ctx,token,request.Raw)
  default:
@@ -68,12 +67,3 @@ func(h *ActionHandler)Execute(ctx context.Context,session providers.Session,inpu
  }
 }
 
-func decodeActionInput(input json.RawMessage,target any)error{
- if len(input)==0 {input=[]byte("{}")}
- decoder:=json.NewDecoder(strings.NewReader(string(input)))
- decoder.DisallowUnknownFields()
- if err:=decoder.Decode(target);err!=nil{return errors.Join(providers.ErrInvalidActionInput,err)}
- var trailing any
- if decoder.Decode(&trailing)!=io.EOF{return providers.ErrInvalidActionInput}
- return nil
-}
