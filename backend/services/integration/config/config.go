@@ -36,5 +36,4 @@ type Loader interface {
 	Outlook() (Outlook, error)
 	GmailPush() GmailPush
 	CredentialKey() ([]byte, error)
- DevAuth() (DevAuth,error)
 }

@@ -20,6 +20,7 @@ import (
 	"grovehub/services/foundation"
 	"grovehub/services/identity"
  "grovehub/services/integration"
+ integrationconfig "grovehub/services/integration/config"
 	"grovehub/services/infrastructure"
 	infrastructureconfig "grovehub/services/infrastructure/config"
 )
@@ -61,7 +62,15 @@ func Run(logger *slog.Logger) error {
 	)
 	identityModule.RegisterHTTP(mux)
 
- integrationModule, err := integration.New(logger,db,infrastructureModule.MessagingClient())
+ // TEMPORARY: local-only Integration identity until IAM middleware exists.
+ // All protected Integration routes use this fixed development principal.
+ // Remove when Identity provides a verified principal; never deploy this mode.
+ integrationDevAuth := integrationconfig.DevAuth{
+  Enabled: true,
+  TenantID: "018f5d04-315c-75a9-b890-df0d02e787c1",
+  ActorGID: "01a1b210-402c-7622-a33c-f82ceba26c7d",
+ }
+ integrationModule, err := integration.New(logger,db,infrastructureModule.MessagingClient(),integrationDevAuth)
  if err != nil { return fmt.Errorf("initialize integration module: %w",err) }
  integrationModule.RegisterHTTP(mux)
  defer integrationModule.Close()

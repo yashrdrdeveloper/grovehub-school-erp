@@ -13,6 +13,7 @@ import (
 	integrationclient "grovehub/services/integration/client"
 	clientimpl "grovehub/services/integration/client/impl"
 	configimpl "grovehub/services/integration/config/impl"
+ integrationconfig "grovehub/services/integration/config"
 	"grovehub/services/integration/controller"
 	controllerimpl "grovehub/services/integration/controller/impl"
 	mailfactory "grovehub/services/integration/providers/mailprovider/impl"
@@ -36,9 +37,9 @@ type module struct {
  localOnly bool
 }
 
-func New(logger *slog.Logger, db *gorm.DB, messaging infrastructureclient.MessagingClient) (Module, error) {
-	devAuth,devErr:=configimpl.NewEnvironmentLoader().DevAuth()
- if devErr!=nil{return nil,devErr}
+func New(logger *slog.Logger, db *gorm.DB, messaging infrastructureclient.MessagingClient, developmentAuth ...integrationconfig.DevAuth) (Module, error) {
+ devAuth := integrationconfig.DevAuth{}
+ if len(developmentAuth)>0 {devAuth=developmentAuth[0]}
  if devAuth.Enabled{
   logger.Warn("Integration development authentication bypass enabled for loopback clients only; never enable in production")
  }
