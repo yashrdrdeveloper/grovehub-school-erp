@@ -28,6 +28,18 @@ func (*serviceStub) Get(context.Context,string,string)(integrationresponse.Conne
 func (*serviceStub) List(context.Context,string)([]integrationresponse.Connection,error){
  return nil,nil
 }
+func (*serviceStub) BeginOAuth(context.Context,string,string)(integrationresponse.OAuthStart,error){
+ return integrationresponse.OAuthStart{},nil
+}
+func (*serviceStub) FinishOAuth(context.Context,string,string)(integrationresponse.OAuthCompletion,error){
+ return integrationresponse.OAuthCompletion{},nil
+}
+func (*serviceStub) RunTest(context.Context,string,string,string)(integrationresponse.ConnectionTest,error){
+ return integrationresponse.ConnectionTest{},nil
+}
+func (*serviceStub) ListTests(context.Context,string,string)([]integrationresponse.ConnectionTest,error){
+ return nil,nil
+}
 func (*serviceStub) Disconnect(context.Context,string,string)(integrationresponse.Connection,error){
  return integrationresponse.Connection{},nil
 }
@@ -40,6 +52,19 @@ var _ = Describe("Integration HTTP authorization",func(){
   c.Providers(recorder,req)
   Expect(recorder.Code).To(Equal(http.StatusOK))
   Expect(recorder.Body.String()).To(ContainSubstring("GMAIL"))
+ })
+ It("denies unauthorized OAuth starts and mail tests",func(){
+  c:=integrationcontroller.NewConnectionController(&serviceStub{})
+  for _,testCase:=range []struct{route string;handler http.HandlerFunc}{
+   {"/integrations/connections/abc/oauth/start",c.BeginOAuth},
+   {"/integrations/connections/abc/test",c.RunTest},
+   {"/integrations/connections/abc/tests",c.ListTests},
+  } {
+   recorder:=httptest.NewRecorder()
+   request:=httptest.NewRequest(http.MethodPost,testCase.route,nil)
+   testCase.handler(recorder,request)
+   Expect(recorder.Code).To(Equal(http.StatusForbidden))
+  }
  })
  It("denies connection creation without a verified principal",func(){
   c:=integrationcontroller.NewConnectionController(&serviceStub{})

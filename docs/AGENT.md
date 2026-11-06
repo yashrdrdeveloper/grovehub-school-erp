@@ -124,6 +124,10 @@ Consumers decode `coreevents.Envelope[persons.Changed]` and may call `diff.Compa
 
 Integration follows the flat GroveHub service root structure. Read `docs/engineering/backend/INTEGRATION_PHASE_1.md` before editing. Provider descriptors for Gmail/Outlook are only a catalogue; OAuth, sync, and sending are **not** implemented. Connections remain PENDING_SETUP and connection HTTP routes are denied by default until verified IAM context is supplied. Never derive tenant authorization from arbitrary HTTP headers. Integration uses capability-specific provider interfaces; Temporal belongs to the future orchestrator.
 
+### Integration Phase 2
+
+Read `docs/engineering/backend/INTEGRATION_PHASE_2.md` and `backend/services/integration/api/openapi/v1/openapi.yaml`. Gmail OAuth, encrypted mailbox credentials and persisted INBOUND (read-access) / OUTBOUND (self-addressed send) tests are implemented. These tests do not confirm delivery. Trusted principal authorization is still absent at the launcher, so protected endpoints deny access until IAM is connected. No Temporal or mail synchronization yet.
+
 ### Backend unit tests
 
 The old centralized path `backend/testing/unit-test/` is superseded and must not be recreated.

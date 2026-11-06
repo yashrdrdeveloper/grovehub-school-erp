@@ -74,7 +74,11 @@ func (c *ConnectionController) writeServiceError(w http.ResponseWriter,r *http.R
   if errors.Is(err,integrationrepository.ErrConnectionNotFound){writeError(w,r,http.StatusNotFound,integrationerrors.NotFound)}else{writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid)}
  case errors.Is(err,providers.ErrUnknownProvider):
   writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid)
- case errors.Is(err,serviceimpl.ErrConnectionNotReady):
+ case errors.Is(err,serviceimpl.ErrOAuthInvalid):
+  writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid)
+ case errors.Is(err,serviceimpl.ErrConnectionInactive):
+  writeError(w,r,http.StatusConflict,integrationerrors.NotReady)
+ case errors.Is(err,serviceimpl.ErrOAuthUnavailable),errors.Is(err,serviceimpl.ErrConnectionNotReady):
   writeError(w,r,http.StatusNotImplemented,integrationerrors.NotReady)
  default:
   writeError(w,r,http.StatusInternalServerError,integrationerrors.Failed)
@@ -82,4 +86,39 @@ func (c *ConnectionController) writeServiceError(w http.ResponseWriter,r *http.R
 }
 func writeError(w http.ResponseWriter,r *http.Request,status int,definition coreerrors.Definition){
  _=httpresponse.WriteErrorContext(r.Context(),w,status,definition)
+}
+
+func(c *ConnectionController)owned(w http.ResponseWriter,r *http.Request)(VerifiedPrincipal,bool){
+ p,ok:=principalFrom(r.Context())
+ if !ok{writeError(w,r,http.StatusForbidden,integrationerrors.Forbidden);return p,false}
+ current,err:=c.service.Get(r.Context(),p.TenantID,r.PathValue("id"))
+ if err!=nil{c.writeServiceError(w,r,err);return p,false}
+ if current.OwnerGID!=p.ActorGID{writeError(w,r,http.StatusForbidden,integrationerrors.Forbidden);return p,false}
+ return p,true
+}
+func(c *ConnectionController)BeginOAuth(w http.ResponseWriter,r *http.Request){
+ p,ok:=c.owned(w,r);if !ok{return}
+ result,err:=c.service.BeginOAuth(r.Context(),p.TenantID,r.PathValue("id"))
+ if err!=nil{c.writeServiceError(w,r,err);return}
+ _=httpresponse.WriteSuccess(w,http.StatusOK,result)
+}
+func(c *ConnectionController)FinishOAuth(w http.ResponseWriter,r *http.Request){
+ if r.URL.Query().Get("error")!=""{writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid);return}
+ result,err:=c.service.FinishOAuth(r.Context(),r.URL.Query().Get("code"),r.URL.Query().Get("state"))
+ if err!=nil{c.writeServiceError(w,r,err);return}
+ _=httpresponse.WriteSuccess(w,http.StatusOK,result)
+}
+func(c *ConnectionController)RunTest(w http.ResponseWriter,r *http.Request){
+ p,ok:=c.owned(w,r);if !ok{return}
+ var payload struct{Direction string `json:"direction"`}
+ if err:=httprequest.DecodeStrictJSON(r,&payload);err!=nil{writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid);return}
+ result,err:=c.service.RunTest(r.Context(),p.TenantID,r.PathValue("id"),payload.Direction)
+ if err!=nil{c.writeServiceError(w,r,err);return}
+ _=httpresponse.WriteSuccess(w,http.StatusOK,result)
+}
+func(c *ConnectionController)ListTests(w http.ResponseWriter,r *http.Request){
+ p,ok:=c.owned(w,r);if !ok{return}
+ result,err:=c.service.ListTests(r.Context(),p.TenantID,r.PathValue("id"))
+ if err!=nil{c.writeServiceError(w,r,err);return}
+ _=httpresponse.WriteSuccess(w,http.StatusOK,result)
 }

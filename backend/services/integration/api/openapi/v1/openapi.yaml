@@ -1,20 +1,18 @@
 openapi: 3.1.0
 info:
-  title: GroveHub Integration API
-  version: 0.1.0
-  description: Phase 1 provider discovery and pending-setup connections; OAuth and actual connectivity are not implemented.
+  title: GrooveHub Integration API
+  version: 0.2.0
+  description: Gmail OAuth and mailbox tests; account APIs need trusted verified-principal middleware.
 paths:
   /integrations/providers:
     get:
-      summary: List registered providers and advertised future capabilities
+      summary: List registered provider descriptors
       responses:
-        "200":
-          description: Provider descriptors
+        "200": { description: Provider catalog }
   /integrations/connections:
     post:
-      summary: Create a pending-setup connection (not an authenticated mailbox)
-      security:
-        - verifiedPrincipal: []
+      security: [{ verifiedPrincipal: [] }]
+      summary: Create a provider connection in PENDING_SETUP
       requestBody:
         required: true
         content:
@@ -24,46 +22,76 @@ paths:
               additionalProperties: false
               required: [provider, ownerGid]
               properties:
-                provider:
-                  type: string
-                  enum: [GMAIL, OUTLOOK]
-                ownerGid:
-                  type: string
-                  format: uuid
+                provider: { type: string, enum: [GMAIL, OUTLOOK] }
+                ownerGid: { type: string, format: uuid }
       responses:
-        "201": { description: Connection created with PENDING_SETUP status }
-        "403": { description: Verified principal missing or owner mismatch }
+        "201": { description: Pending connection created }
+        "403": { description: Verified principal not provided }
     get:
-      security:
-        - verifiedPrincipal: []
-      summary: List current actor's connections
+      security: [{ verifiedPrincipal: [] }]
+      summary: List connections owned by current actor
       responses:
-        "200": { description: Connections }
-        "403": { description: Verified principal missing }
+        "200": { description: Connections with lastTestedAt and lastTestStatus }
   /integrations/connections/{id}:
     parameters:
-      - in: path
-        name: id
-        required: true
-        schema: { type: string, format: uuid }
+      - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
     get:
-      security:
-        - verifiedPrincipal: []
-      summary: Get a connection
+      security: [{ verifiedPrincipal: [] }]
+      summary: Get owned connection
       responses:
         "200": { description: Connection }
-        "403": { description: Access denied }
-        "404": { description: Not found }
     delete:
-      security:
-        - verifiedPrincipal: []
-      summary: Mark a connection disconnected
+      security: [{ verifiedPrincipal: [] }]
+      summary: Disconnect account and erase saved OAuth credential
       responses:
         "200": { description: Disconnected connection }
-        "403": { description: Access denied }
+  /integrations/connections/{id}/oauth/start:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+    post:
+      security: [{ verifiedPrincipal: [] }]
+      summary: Start Gmail OAuth for pending connection
+      responses:
+        "200": { description: Authorization URL }
+        "501": { description: Gmail OAuth not configured }
+  /integrations/oauth/gmail/callback:
+    get:
+      summary: Google OAuth callback authenticated by single-use short-lived state
+      parameters:
+        - { in: query, name: state, required: true, schema: { type: string } }
+        - { in: query, name: code, required: true, schema: { type: string } }
+      responses:
+        "200": { description: Active connection established }
+        "400": { description: OAuth denied or state invalid }
+  /integrations/connections/{id}/test:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+    post:
+      security: [{ verifiedPrincipal: [] }]
+      summary: Run Gmail read-permission or self-addressed send test, persisting result
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [direction]
+              properties:
+                direction: { type: string, enum: [INBOUND, OUTBOUND] }
+      responses:
+        "200": { description: Saved test result including SUCCESS or FAILED }
+  /integrations/connections/{id}/tests:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+    get:
+      security: [{ verifiedPrincipal: [] }]
+      summary: List latest 100 saved tests for owned connection
+      responses:
+        "200": { description: Test history }
 components:
   securitySchemes:
     verifiedPrincipal:
       type: http
       scheme: bearer
-      description: Trusted verified identity middleware required; not wired in Phase 1, so connection endpoints deny access.
+      description: Trusted middleware must populate verified principal context; not connected in current launcher.

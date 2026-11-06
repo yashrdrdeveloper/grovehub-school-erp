@@ -13,6 +13,10 @@ func RegisterHTTP(mux *http.ServeMux,c controller.ConnectionController) {
   {"GET","/integrations/connections",c.List},
   {"GET","/integrations/connections/{id}",c.Get},
   {"DELETE","/integrations/connections/{id}",c.Disconnect},
+  {"POST","/integrations/connections/{id}/oauth/start",c.BeginOAuth},
+  {"GET","/integrations/oauth/gmail/callback",c.FinishOAuth},
+  {"POST","/integrations/connections/{id}/test",c.RunTest},
+  {"GET","/integrations/connections/{id}/tests",c.ListTests},
  }
  for _,route:=range routes {
   pattern:=route.method+" "+route.pattern
