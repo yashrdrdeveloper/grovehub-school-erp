@@ -7,7 +7,7 @@ import (
 
  . "github.com/onsi/ginkgo/v2"
  . "github.com/onsi/gomega"
- "grovehub/services/integration/providers/gmail"
+ "grovehub/services/integration/providers/mailprovider/providers/gmail"
 )
 
 var _=Describe("Gmail push payload",func(){

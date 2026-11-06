@@ -5,8 +5,8 @@ import (
  . "github.com/onsi/gomega"
  "grovehub/services/integration/providers"
  providerimpl "grovehub/services/integration/providers/impl"
- "grovehub/services/integration/providers/gmail"
- "grovehub/services/integration/providers/outlook"
+ "grovehub/services/integration/providers/mailprovider/providers/gmail"
+ "grovehub/services/integration/providers/mailprovider/providers/outlook"
 )
 var _ = Describe("Provider registry",func(){
  It("lists providers and resolves them case-insensitively",func(){

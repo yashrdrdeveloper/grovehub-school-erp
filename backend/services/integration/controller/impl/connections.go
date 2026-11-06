@@ -15,7 +15,7 @@ import (
  integrationrequest "grovehub/services/integration/dto/request"
  integrationresponse "grovehub/services/integration/dto/response"
  "grovehub/services/integration/providers"
- "grovehub/services/integration/providers/gmail"
+ "grovehub/services/integration/providers/mailprovider/providers/gmail"
  integrationrepository "grovehub/services/integration/repository"
  integrationservices "grovehub/services/integration/services"
  serviceimpl "grovehub/services/integration/services/impl"

@@ -10,8 +10,8 @@ import (
  integrationconfig "grovehub/services/integration/config"
  "grovehub/services/integration/providers"
  providerimpl "grovehub/services/integration/providers/impl"
- "grovehub/services/integration/providers/gmail"
- "grovehub/services/integration/providers/outlook"
+ "grovehub/services/integration/providers/mailprovider/providers/gmail"
+ "grovehub/services/integration/providers/mailprovider/providers/outlook"
 )
 
 type actionFake struct{}

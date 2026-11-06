@@ -9,7 +9,7 @@ import (
 
  integrationresponse "grovehub/services/integration/dto/response"
  "grovehub/services/integration/entity"
- "grovehub/services/integration/providers/gmail"
+ "grovehub/services/integration/providers/mailprovider/providers/gmail"
 )
 
 var ErrPushUnavailable=errors.New("Gmail Pub/Sub push is not configured")

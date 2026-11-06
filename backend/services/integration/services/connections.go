@@ -7,7 +7,7 @@ import (
  integrationrequest "grovehub/services/integration/dto/request"
  integrationresponse "grovehub/services/integration/dto/response"
  "grovehub/services/integration/providers"
- "grovehub/services/integration/providers/gmail"
+ "grovehub/services/integration/providers/mailprovider/providers/gmail"
 )
 
 // ConnectionService owns provider connectivity and offers provider capabilities.

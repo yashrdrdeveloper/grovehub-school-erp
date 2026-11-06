@@ -12,7 +12,7 @@ import (
  mailboxevents "grovehub/services/integration/events/mailbox"
  "grovehub/services/integration/providers"
  providerimpl "grovehub/services/integration/providers/impl"
- "grovehub/services/integration/providers/gmail"
+ "grovehub/services/integration/providers/mailprovider/providers/gmail"
  integrationimpl "grovehub/services/integration/services/impl"
  messagingclient "grovehub/services/infrastructure/client"
 )
