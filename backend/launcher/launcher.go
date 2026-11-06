@@ -63,7 +63,7 @@ func Run(logger *slog.Logger) error {
 	)
 	identityModule.RegisterHTTP(mux)
 
- integrationModule, err := integration.New(logger,db)
+ integrationModule, err := integration.New(logger,db,infrastructureModule.MessagingClient())
  if err != nil { return fmt.Errorf("initialize integration module: %w",err) }
  integrationModule.RegisterHTTP(mux)
  defer integrationModule.Close()

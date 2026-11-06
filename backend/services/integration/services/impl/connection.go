@@ -13,6 +13,7 @@ import (
  integrationresponse "grovehub/services/integration/dto/response"
  "grovehub/services/integration/entity"
  "grovehub/services/integration/providers/gmail"
+ infrastructureclient "grovehub/services/infrastructure/client"
  "grovehub/services/integration/providers"
  integrationrepository "grovehub/services/integration/repository"
  integrationservices "grovehub/services/integration/services"
@@ -23,17 +24,17 @@ var ErrConnectionNotReady = errors.New("provider authorization is not implemente
 
 type ConnectionService struct {
  repository integrationrepository.ConnectionRepository
- syncRepository integrationrepository.MailSyncRepository
  watchRepository integrationrepository.WatchRepository
  pushTopic string
+ messaging infrastructureclient.MessagingClient
  registry *providers.Registry
  gmail *gmail.Client
  cipher tokenCipher
 }
-func NewConnectionService(repository integrationrepository.ConnectionRepository,syncRepository integrationrepository.MailSyncRepository,watchRepository integrationrepository.WatchRepository,registry *providers.Registry, gmailClient *gmail.Client, encryptionKey []byte,pushTopic string) (integrationservices.ConnectionService,error) {
+func NewConnectionService(repository integrationrepository.ConnectionRepository,watchRepository integrationrepository.WatchRepository,registry *providers.Registry, gmailClient *gmail.Client, encryptionKey []byte,pushTopic string,messaging infrastructureclient.MessagingClient) (integrationservices.ConnectionService,error) {
  cipher,err:=newTokenCipher(encryptionKey)
  if err!=nil && gmailClient!=nil{return nil,err}
- return &ConnectionService{repository:repository,syncRepository:syncRepository,watchRepository:watchRepository,pushTopic:pushTopic,registry:registry,gmail:gmailClient,cipher:cipher},nil
+ return &ConnectionService{repository:repository,watchRepository:watchRepository,pushTopic:pushTopic,messaging:messaging,registry:registry,gmail:gmailClient,cipher:cipher},nil
 }
 func (s *ConnectionService) Providers(_ context.Context) []providers.Descriptor { return s.registry.List() }
 func (s *ConnectionService) Create(ctx context.Context,tenantID string,input integrationrequest.CreateConnection)(integrationresponse.Connection,error){

@@ -10,6 +10,7 @@ import (
  "gorm.io/gorm"
 
  "grovehub/services/integration/controller"
+ infrastructureclient "grovehub/services/infrastructure/client"
  integrationconfig "grovehub/services/integration/config"
  controllerimpl "grovehub/services/integration/controller/impl"
  "grovehub/services/integration/providers"
@@ -22,7 +23,7 @@ import (
 
 type Module interface{RegisterHTTP(*http.ServeMux);Close()}
 type module struct{controller controller.ConnectionController;stop chan struct{}}
-func New(logger *slog.Logger,db *gorm.DB)(Module,error){
+func New(logger *slog.Logger,db *gorm.DB,messaging infrastructureclient.MessagingClient)(Module,error){
  registry,err:=providers.NewRegistry(gmail.New(),outlook.New())
  if err!=nil{return nil,err}
  repository:=repositoryimpl.NewConnectionRepository(db)
@@ -30,7 +31,7 @@ func New(logger *slog.Logger,db *gorm.DB)(Module,error){
  var client *gmail.Client
  var key []byte
  if configErr==nil {client=gmail.NewClient(gmailConfig);key=gmailConfig.EncryptionKey} else {logger.Warn("gmail provider not configured; OAuth and tests disabled")}
- service,err:=serviceimpl.NewConnectionService(repository,repositoryimpl.NewMailSyncRepository(db),repositoryimpl.NewWatchRepository(db),registry,client,key,integrationconfig.GmailPushFromEnvironment().Topic)
+ service,err:=serviceimpl.NewConnectionService(repository,repositoryimpl.NewWatchRepository(db),registry,client,key,integrationconfig.GmailPushFromEnvironment().Topic,messaging)
  if err!=nil{return nil,err}
  push:=integrationconfig.GmailPushFromEnvironment()
  mod:=&module{controller:controllerimpl.NewConnectionController(service,push),stop:make(chan struct{})}
