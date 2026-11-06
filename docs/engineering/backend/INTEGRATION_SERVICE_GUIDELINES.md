@@ -167,3 +167,7 @@ is unrelated to the temporary identity.
 ## Known limitations
 
 Verified IAM middleware has not been connected to the Integration HTTP routes; protected endpoints deny rather than trusting arbitrary tenant headers. Outlook webhook watch is not implemented. Integration notifications rely on messaging delivery but do not yet implement a transactional outbox. No Communication implementation is included.
+
+### Gmail mail.send input validation
+
+`mail.send` accepts `{"input":{"raw":"..."}}` where `raw` is a base64url (unpadded) encoded RFC 5322 message with From/To headers and a CRLF-separated header/body. An explanatory placeholder is not sendable. Invalid encodings or malformed messages return HTTP 400 `INTEGRATION_INVALID`, not a generic HTTP 500. The mail provider still enforces scopes and may reject syntactically valid messages. Never store message contents in Integration.

@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+ "encoding/base64"
 	"encoding/json"
 	"strings"
 
@@ -87,10 +88,20 @@ func (h *ActionHandler) Execute(ctx context.Context, session providers.Session, 
 		if err := providerhelpers.DecodeStrictActionInput(input, &request); err != nil {
 			return nil, err
 		}
-		if request.Raw == "" {
-			return nil, providers.ErrInvalidActionInput
-		}
-		return h.client.SendRaw(ctx, token, request.Raw)
+		if request.Raw == "" || len(request.Raw) > 8*1024*1024 {
+   return nil, providers.ErrInvalidActionInput
+  }
+  decoded,err:=base64.RawURLEncoding.DecodeString(request.Raw)
+  if err!=nil || len(decoded)==0 {
+   return nil,providers.ErrInvalidActionInput
+  }
+  // A send request must contain basic RFC 5322 headers and header/body
+  // separator; reject obviously invalid payloads before contacting Gmail.
+  message:=string(decoded)
+  if !strings.Contains(message,"\r\n\r\n") || !strings.Contains(strings.ToLower(message),"to:") || !strings.Contains(strings.ToLower(message),"from:") {
+   return nil,providers.ErrInvalidActionInput
+  }
+  return h.client.SendRaw(ctx, token, request.Raw)
 	default:
 		return nil, providers.ErrUnsupportedAction
 	}

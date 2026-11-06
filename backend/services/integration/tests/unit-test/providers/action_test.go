@@ -3,6 +3,7 @@ package providers_test
 import (
 	"context"
 	"encoding/json"
+ "encoding/base64"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -47,6 +48,17 @@ var _ = Describe("Generic action strategy registry", func() {
 		_, err = client.Delta(context.Background(), "test", "https://graph.microsoft.com.evil.example/v1.0/me/mailFolders/inbox/messages/delta")
 		Expect(err).To(MatchError(providers.ErrInvalidActionInput))
 	})
+	It("returns invalid-input for placeholder and malformed Gmail sends without contacting Google", func() {
+  registry:=providerimpl.NewActionRegistry()
+  client:=gmail.NewClient(integrationconfig.Gmail{})
+  Expect(gmail.RegisterActions(registry,client)).To(Succeed())
+  session:=providers.Session{ProviderID:"GMAIL",AccessToken:"dummy"}
+  for _,raw:=range []string{"base64url-encoded-RFC5322","%%%","",base64.RawURLEncoding.EncodeToString([]byte("hello"))}{
+   body,_:=json.Marshal(map[string]string{"raw":raw})
+   _,err:=registry.Execute(context.Background(),session,providers.ActionMailSend,body)
+   Expect(err).To(MatchError(providers.ErrInvalidActionInput))
+  }
+ })
 	It("rejects malformed Gmail raw mail without remote requests", func() {
 		client := gmail.NewClient(integrationconfig.Gmail{})
 		_, err := client.SendRaw(context.Background(), gmail.Token{AccessToken: "dummy"}, "%%%")
