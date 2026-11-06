@@ -45,7 +45,8 @@ var _=Describe("Provider-neutral mail MIME codec",func(){
   Expect(part.Header.Get("Content-Type")).To(ContainSubstring("multipart/alternative"))
   alternate,err:=io.ReadAll(part)
   Expect(err).NotTo(HaveOccurred())
-  Expect(string(alternate)).To(ContainSubstring("Hello")) // encoded multipart text has MIME part headers
+  Expect(string(alternate)).To(ContainSubstring("text/plain"))
+  Expect(string(alternate)).To(ContainSubstring("text/html"))
   file,err:=reader.NextPart()
   Expect(err).NotTo(HaveOccurred())
   Expect(file.FileName()).To(Equal("test.txt"))

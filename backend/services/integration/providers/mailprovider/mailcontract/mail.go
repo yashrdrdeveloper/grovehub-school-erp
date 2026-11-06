@@ -173,7 +173,9 @@ func BuildMIME(sender string,s Send)([]byte,error){
  for _,attachment:=range s.Attachments{
   data,_:=base64.StdEncoding.DecodeString(attachment.ContentBase64)
   h:=make(textproto.MIMEHeader)
-  h.Set("Content-Type",mime.FormatMediaType(attachment.ContentType,map[string]string{"name":attachment.Filename}))
+  mediaType,params,_:=mime.ParseMediaType(attachment.ContentType)
+  params["name"]=attachment.Filename
+  h.Set("Content-Type",mime.FormatMediaType(mediaType,params))
   disposition:="attachment"
   if attachment.Inline{disposition="inline"}
   h.Set("Content-Disposition",mime.FormatMediaType(disposition,map[string]string{"filename":attachment.Filename}))

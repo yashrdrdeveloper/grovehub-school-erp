@@ -169,6 +169,55 @@ paths:
         "429": { description: Provider rate limited }
         "501": { description: Unsupported action }
         "503": { description: Provider not configured }
+  /integrations/connections/{id}/actions/mail.send:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+    post:
+      summary: Send structured email through the connected Gmail or Outlook account
+      description: >
+        Convenience documented endpoint for mail.send. The generic actions/{action}
+        route accepts the exact same JSON. From is inferred from the OAuth mailbox.
+        Attachments contain standard padded base64, never provider-specific raw MIME.
+      security: [{ verifiedPrincipal: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [input]
+              additionalProperties: false
+              properties:
+                input:
+                  $ref: '#/components/schemas/MailSendInput'
+            examples:
+              plainText:
+                value:
+                  input:
+                    to: ["yashrdrdeveloper@gmail.com"]
+                    subject: "GrooveHub Integration Test"
+                    body:
+                      text: "Hello from GrooveHub!"
+              withHTMLAndAttachment:
+                value:
+                  input:
+                    to: ["yashrdrdeveloper@gmail.com"]
+                    cc: []
+                    bcc: []
+                    subject: "GrooveHub HTML Test"
+                    body:
+                      text: "Hello from GrooveHub!"
+                      html: "<p>Hello from <strong>GrooveHub</strong>!</p>"
+                    attachments:
+                      - filename: hello.txt
+                        contentType: text/plain
+                        contentBase64: SGVsbG8gZnJvbSBHcm9vdmVIdWIhCg==
+      responses:
+        "200": { description: Gmail message identifier or Outlook accepted status }
+        "400": { description: Invalid recipients, message body, or attachments }
+        "403": { description: Connection access denied }
+        "409": { description: Connection not active }
+        "429": { description: Mail provider rate limited }
   /integrations/webhooks/gmail:
     post:
       security: [{ googlePushJWT: [] }]
@@ -179,6 +228,37 @@ paths:
         "401": { description: Google push JWT authentication failed }
         "503": { description: Event publishing failed, Pub/Sub should retry }
 components:
+  schemas:
+    MailSendInput:
+      type: object
+      additionalProperties: false
+      required: [to, subject, body]
+      properties:
+        to: { type: array, items: { type: string, format: email }, description: Primary recipients }
+        cc: { type: array, items: { type: string, format: email } }
+        bcc: { type: array, items: { type: string, format: email } }
+        replyTo: { type: array, items: { type: string, format: email } }
+        subject: { type: string, minLength: 1, maxLength: 998 }
+        body:
+          type: object
+          additionalProperties: false
+          properties:
+            text: { type: string, description: Plain-text fallback content }
+            html: { type: string, description: Optional HTML content }
+          description: At least one of text or html is required.
+        attachments:
+          type: array
+          maxItems: 20
+          items:
+            type: object
+            required: [filename, contentType, contentBase64]
+            additionalProperties: false
+            properties:
+              filename: { type: string }
+              contentType: { type: string, example: application/pdf }
+              contentBase64: { type: string, contentEncoding: base64, description: Standard padded base64 of file bytes }
+              inline: { type: boolean, default: false }
+              contentId: { type: string, description: CID for inline HTML images }
   securitySchemes:
     googlePushJWT:
       type: http
