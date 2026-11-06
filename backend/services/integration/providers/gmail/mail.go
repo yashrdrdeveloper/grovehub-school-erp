@@ -4,10 +4,14 @@ import (
  "context"
  "errors"
  "fmt"
+ "encoding/base64"
  "net/http"
  "net/url"
  "strings"
 )
+
+type MailProfile struct {EmailAddress string `json:"emailAddress"`;HistoryID string `json:"historyId"`}
+type SentMessage struct {ID string `json:"id"`; ThreadID string `json:"threadId"`}
 
 type Message struct {
  ID string `json:"id"`
@@ -65,6 +69,16 @@ func(c *Client)History(ctx context.Context,t Token,startID,page string)(HistoryP
  }
  return p,nil
 }
+// SendRaw submits an RFC 5322 message encoded as base64url.
+// The caller (eventually Communication) owns its message and delivery state.
+func(c *Client)SendRaw(ctx context.Context,t Token,raw string)(SentMessage,error){
+ var sent SentMessage
+ if len(raw)==0||len(raw)>8*1024*1024{return sent,errors.New("invalid raw email size")}
+ if _,err:=base64.RawURLEncoding.DecodeString(raw);err!=nil{return sent,errors.New("invalid base64url email")}
+ err:=c.do(ctx,t,http.MethodPost,"/messages/send",map[string]string{"raw":raw},&sent)
+ return sent,err
+}
+
 func MailDirection(labels []string)string{
  for _,label:=range labels{if strings.EqualFold(label,"SENT"){return "OUTBOUND"}}
  return "INBOUND"
