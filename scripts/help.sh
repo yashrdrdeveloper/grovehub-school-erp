@@ -18,8 +18,9 @@ Database
   make db-schema-reset                            Destructively reset all service schemas to the current baseline
   make db-schema-reset DB_SERVICE=foundation      Reset only the Foundation schema
   make db-schema-reset DB_SERVICE=infrastructure  Reset only the Infrastructure schema
+  make db-schema-reset DB_SERVICE=integration     Reset only the Integration schema (dev data lost)
 
-  DB_SERVICE can be: all, foundation, identity, or infrastructure.
+  DB_SERVICE can be: all, foundation, identity, infrastructure, or integration.
   Schema reset is development-only and deletes data in the selected service schema.
 
 Messaging / NATS JetStream
@@ -41,7 +42,7 @@ Swagger
   make swagger-status   Show Swagger UI status
 
 Development
-  make dev-start            Start NATS, initialize schemas, start Air backend, and start Swagger
+  make dev-start            Start NATS, initialize all schemas (including Integration), start Air backend, and Swagger
   make dev-start-with-logs  Same as dev-start plus the local OTEL collector
   make dev-stop             Stop Swagger UI, backend, NATS, and optional OTEL collector
   make dev-status           Show NATS, backend, and Swagger UI status
