@@ -5,6 +5,7 @@ import (
  integrationrequest "grovehub/services/integration/dto/request"
  integrationresponse "grovehub/services/integration/dto/response"
  "grovehub/services/integration/providers"
+ "grovehub/services/integration/providers/gmail"
 )
 
 type ConnectionService interface {
@@ -18,4 +19,7 @@ type ConnectionService interface {
  RunTest(ctx context.Context,tenantID,id,direction string)(integrationresponse.ConnectionTest,error)
  ListTests(ctx context.Context,tenantID,id string)([]integrationresponse.ConnectionTest,error)
  Sync(ctx context.Context,tenantID,id string)(integrationresponse.SyncResult,error)
+ Watch(ctx context.Context,tenantID,id string)(integrationresponse.Watch,error)
+ ProcessPush(ctx context.Context,notification gmail.PushNotification)error
+ RenewExpiring(ctx context.Context)error
 }

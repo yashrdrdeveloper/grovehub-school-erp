@@ -66,6 +66,7 @@ func Run(logger *slog.Logger) error {
  integrationModule, err := integration.New(logger,db)
  if err != nil { return fmt.Errorf("initialize integration module: %w",err) }
  integrationModule.RegisterHTTP(mux)
+ defer integrationModule.Close()
 
 	routing.RegisterFallback(mux)
 
