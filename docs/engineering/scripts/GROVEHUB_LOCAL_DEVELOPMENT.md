@@ -58,6 +58,10 @@ Do not route `dev-start` or `dev-start-with-logs` through a one-time backend bin
 
 ---
 
+### Optional service database migrations
+
+`make dev-start` executes `scripts/database/migrate.sh init all`. For each registered service, a missing `migrations/` directory or a directory containing no `*.sql` files is a legitimate **no-op**, logged as a skip. This also applies to `status` and `reset` for services with no migrations. Services with actual SQL migrations must still propagate Goose/database failures (never silently skip failed migrations). This allows Infrastructure to run without a schema directory while Foundation, Identity, and Integration migrate normally.
+
 ## 2. Local NATS JetStream
 
 The local messaging broker is NATS JetStream.

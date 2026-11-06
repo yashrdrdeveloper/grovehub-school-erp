@@ -52,7 +52,20 @@ run_service_schema() {
   local state_table
   state_table="$(schema_state_table "${service}")"
 
-  [[ -d "${schema_dir}" ]] || die "Database schema directory not found for ${service}: ${schema_dir}"
+  if [[ ! -d "${schema_dir}" ]]; then
+    log_info "Skipping ${service} database schema command (${action}): no migrations directory"
+    return 0
+  fi
+
+  local -a migration_files=()
+  shopt -s nullglob
+  migration_files=("${schema_dir}"/*.sql)
+  shopt -u nullglob
+
+  if (( ${#migration_files[@]} == 0 )); then
+    log_info "Skipping ${service} database schema command (${action}): no SQL migrations"
+    return 0
+  fi
 
   log_info "Running ${service} database schema command: ${action}"
 
