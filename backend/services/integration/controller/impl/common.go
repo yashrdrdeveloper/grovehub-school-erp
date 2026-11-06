@@ -36,7 +36,6 @@ func principalFrom(ctx context.Context)(VerifiedPrincipal,bool){
  return p,ok && p.TenantID!="" && p.ActorGID!=""
 }
 
-type ConnectionController struct{service integrationservices.ConnectionService; verifier *gmail.PushVerifier; pushEnabled bool}
 
 func (c *ConnectionController) writeServiceError(w http.ResponseWriter,r *http.Request,err error){
  if status:=providers.HTTPStatus(err);status!=0{
@@ -64,8 +63,6 @@ func (c *ConnectionController) writeServiceError(w http.ResponseWriter,r *http.R
   writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid)
  case errors.Is(err,serviceimpl.ErrPushUnavailable):
  writeError(w,r,http.StatusServiceUnavailable,integrationerrors.NotReady)
- case errors.Is(err,serviceimpl.ErrUnsupportedMailProvider):
-  writeError(w,r,http.StatusNotImplemented,integrationerrors.NotReady)
  case errors.Is(err,serviceimpl.ErrConnectionInactive):
   writeError(w,r,http.StatusConflict,integrationerrors.NotReady)
  case errors.Is(err,serviceimpl.ErrOAuthUnavailable),errors.Is(err,serviceimpl.ErrConnectionNotReady):

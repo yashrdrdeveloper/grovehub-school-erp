@@ -33,4 +33,4 @@ func RegisterActions(registry providers.ActionRegistry,client *Client)error{
 func NewPushVerifier(audience,email string)*PushVerifier{
  return impl.NewPushVerifier(audience,email)
 }
-func DecodePush(body io.Reader)(PushNotification,error{return impl.DecodePush(body)}
+func DecodePush(body io.Reader)(PushNotification,error){return impl.DecodePush(body)}
