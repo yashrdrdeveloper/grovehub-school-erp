@@ -58,10 +58,10 @@ paths:
       - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
     post:
       security: [{ verifiedPrincipal: [] }]
-      summary: Start Gmail OAuth connection authorization
+      summary: Start Gmail or Outlook OAuth connection authorization
       responses:
         "200": { description: Authorization URL }
-  /integrations/oauth/{provider}/callback:
+  /integrations/connections/oauth/{provider}/callback:
     get:
       summary: Exchange Gmail or Outlook authorization code with a one-time OAuth state
       parameters:

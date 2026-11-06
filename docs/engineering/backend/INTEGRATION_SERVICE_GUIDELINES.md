@@ -24,7 +24,12 @@ constants/error/integration.go           error definitions and sentinels
 controller/{connection,oauth,...}.go     separate public controller interfaces
 controller/impl/{connection,oauth,...}   matching HTTP implementations
 controller/impl/common.go                shared trusted principal/error helpers
-routes/{connection,oauth,...}.go         independent route groups
+routes/connections.go                    all /integrations/connections/** endpoints
+routes/providers.go                      all /integrations/providers/** endpoints
+routes/webhooks.go                       all /integrations/webhooks/** endpoints
+routes/helpers/http.go                   shared traced HTTP registration
+services/impl/connections.go             connection business operations
+services/helpers/connections/            reusable ID validation and entity/DTO mapping
 routes/http.go                           route-group composition
 entity/                                  Integration-owned GORM persistence models only
 repository/{resource}.go                 public repository interfaces
@@ -49,7 +54,7 @@ Content-Type: application/json
 
 Gmail supports profile, list, get, attachment, history, send and Gmail watch. Outlook supports profile, list, get, attachment, delta and send. Outlook webhook watch and durable event ingestion have not been implemented. The generic controller does not choose providers by hard-coded brand.
 
-OAuth initiation uses the connection's provider strategy and a one-time hashed state. Provider callbacks are at `/integrations/oauth/{provider}/callback`. Each active connection has its own encrypted credentials. Both Gmail and Outlook require provider secrets, redirect configuration and a stable 32-byte encryption key. Provider testing supports independent INBOUND read probes and OUTBOUND self-addressed sends, saving sanitized outcomes only.
+OAuth initiation uses the connection's provider strategy and a one-time hashed state. Provider callbacks are at `/integrations/connections/oauth/{provider}/callback`. Each active connection has its own encrypted credentials. Both Gmail and Outlook require provider secrets, redirect configuration and a stable 32-byte encryption key. Provider testing supports independent INBOUND read probes and OUTBOUND self-addressed sends, saving sanitized outcomes only.
 
 ## Events
 
