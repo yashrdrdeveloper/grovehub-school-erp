@@ -17,6 +17,43 @@ docs/engineering/backend/SEARCH_API_GUIDELINES.md
 
 ---
 
+## Integration-backed service design rules (mandatory for all backend services)
+
+These rules govern new services and refactors, not a particular Integration implementation phase.
+
+### Public contracts and implementation boundaries
+- Expose stable **interfaces, DTOs, domain contracts and reusable types** at package roots (`providers/providers.go`, `services/connection.go`, `repository/watch.go`, `controller/connection.go`, `config/config.go`).
+- Put stateful/concrete implementations under the corresponding `impl/` folder. Provider adapters use `providers/<provider>/impl/` and an intentionally small public `providers/<provider>/` facade. Module wiring belongs in `<service>.go`, not in public contracts.
+- A provider registry is itself an interface. Registry map/sort/dispatch, vendor routing and constructor logic belong under `providers/impl/`. Declare **only implemented capabilities**; use optional action or OAuth interfaces rather than forcing all providers to implement mail, webhook, send, or read functions.
+- Put pure reusable helpers in `helpers/` of the owning domain. Do not add helpers solely to rearrange one-line calls. If a data structure is reused across multiple layers, put its stable public definition in the **owning package** or `types/` when there is no clearer owner; do not create duplicate copies in each layer.
+- All action/capability/provider keys and status literals should be defined once in `constants/`. Preserve type-safe aliases in a public contract only if needed for existing consumers. Keep typed error definitions/sentinels in `constants/error/`, with transport-agnostic errors mapped to HTTP only in controllers.
+
+### Controller and route organization
+- Split controllers by **responsibility**: `controller/connection.go`, `controller/oauth.go`, `controller/webhook.go`, `controller/action.go`, etc. Keep each public interface separate; put method implementations in corresponding files under `controller/impl/`.
+- Put reusable controller authorization/error/response mapping into an owning common/helper file; do not duplicate it in every controller.
+- Keep `routes/http.go` as the **composition entry point**; use `routes/connection.go`, `routes/oauth.go`, `routes/webhook.go`, and other resource files for route registration. Route files depend on controller interfaces and contain no business logic.
+
+### Configuration
+- `config/config.go` declares the module's configuration structures and a `Loader` interface. `config/impl/config.go` loads the environment, normalizes and validates optional provider settings. Pure parsing helpers may live in `config/helpers/` when reused.
+- Never load secrets in controller/request code. Load at composition startup; inject configured provider clients; when optional secrets are absent, disable those capabilities without exposing secret values.
+
+### GORM ORM-first repository convention
+- Use GORM models, `Model`, `Where(&typedStruct)`, associations (`Preload`), `Find/First`, `OnConflict`, and `Transaction` for ordinary CRUD/upsert/joins. A GORM `Where` is an ORM query builder, **not** equivalent to hand-writing a full SQL query.
+- Do **not** hand-build `Table(...).Select(...).Joins(...).Scan(...)` when an entity relation and `Preload` express the same operation clearly.
+- A small SQL condition inside `Where` for non-equality operators (such as `expires_at < ?`) is appropriate. Raw SQL is allowed only when a genuine database-specific feature cannot be expressed cleanly in GORM; document why.
+- Define foreign-key relations on entity structs only if they express the owning service's persistence relation, not to duplicate foreign-domain data.
+- Scope all tenant/owner queries correctly. Do not list another tenant's data and filter in application code if the database can scope the query.
+
+### Events
+- Define a **payload contract** alongside an alias of `coreevents.Envelope[Payload]` for each versioned service event. Use `core/events.NewEnvelope` via pure event helpers for event identity/correlation metadata.
+- Put publication/serialization in `events/<resource>/impl/`, rather than in normal business-service implementation. Delivery and acknowledgment semantics must be explicit; failure to publish a provider notification must not be reported as successful delivery.
+- Provider notification events contain references/hints, not copied messages or secret data. Each consuming domain owns its own processing checkpoint and deduplication.
+
+### Schema and development commands
+- A **brand-new service on an unapplied development branch** may use one `000001` schema baseline. After migrations have been applied/shared, **never squash or renumber them** without a documented upgrade/migration plan; resetting a database deletes data.
+- `make dev-start` must start the platform's infrastructure, apply every registered service's migrations, load module environment settings and run the backend/Swagger. Update `scripts/database/migrate.sh`, `scripts/config/services.sh`, and `scripts/lib/env.sh` when adding a service or its new required runtime variables.
+- Document service boundaries and shared rules here, not in a new phase document for every change. Update per-service documentation only for genuine API/schema/operational contracts.
+
 ## 1. Canonical Service Structure
 
 GroveHub uses flat service roots. Do not add `src/` or service-local launchers.
