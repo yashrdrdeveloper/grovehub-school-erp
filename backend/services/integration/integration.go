@@ -26,12 +26,14 @@ import (
 type Module interface {
 	RegisterHTTP(*http.ServeMux)
 	Client() integrationclient.Client
+ LocalOnly() bool
 	Close()
 }
 type module struct {
 	controller controller.Controller
 	client     integrationclient.Client
 	stop       chan struct{}
+ localOnly bool
 }
 
 func New(logger *slog.Logger, db *gorm.DB, messaging infrastructureclient.MessagingClient) (Module, error) {
@@ -78,6 +80,7 @@ func New(logger *slog.Logger, db *gorm.DB, messaging infrastructureclient.Messag
 		controller: controllerimpl.NewConnectionController(service, providerService, push, devAuth),
 		client:     clientimpl.NewClient(service, providerService),
 		stop:       make(chan struct{}),
+  localOnly:devAuth.Enabled,
 	}
 	if push.Enabled() && client != nil {
 		go mod.watchRenewal(service)
@@ -86,6 +89,7 @@ func New(logger *slog.Logger, db *gorm.DB, messaging infrastructureclient.Messag
 }
 func (m *module) RegisterHTTP(mux *http.ServeMux)  { routes.RegisterHTTP(mux, m.controller) }
 func (m *module) Client() integrationclient.Client { return m.client }
+func (m *module) LocalOnly() bool { return m.localOnly }
 
 func (m *module) Close() { close(m.stop) }
 func (m *module) watchRenewal(service integrationservices.ConnectionService) {

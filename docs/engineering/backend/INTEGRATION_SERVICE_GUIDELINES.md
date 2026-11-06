@@ -156,7 +156,7 @@ The IDs above are **examples**; use a deliberate UUIDv7 tenant and actor and set
 Restart `make dev-start` after editing `.env`. Without this setting, protected
 routes still reject requests with HTTP 403. When enabled, ONLY requests whose
 actual TCP peer address is IPv4/IPv6 loopback can use the fixed development
-principal. `X-Tenant-ID`, `X-Forwarded-For`, `ownerGid`, and other request data
+principal. The launcher also binds to `127.0.0.1:8080` instead of all interfaces while this mode is enabled. `X-Tenant-ID`, `X-Forwarded-For`, `ownerGid`, and other request data
 never select the principal. Public provider discovery and Google Pub/Sub push
 JWT checks are unchanged. OAuth state remains verified.
 

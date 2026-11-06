@@ -24,8 +24,6 @@ import (
 	infrastructureconfig "grovehub/services/infrastructure/config"
 )
 
-const httpAddress = ":8080"
-
 func Run(logger *slog.Logger) error {
 	databaseContext, cancelDatabase := context.WithTimeout(context.Background(), 5*time.Second)
 	db, err := bootstrap.NewPostgresDB(databaseContext)
@@ -67,6 +65,14 @@ func Run(logger *slog.Logger) error {
  if err != nil { return fmt.Errorf("initialize integration module: %w",err) }
  integrationModule.RegisterHTTP(mux)
  defer integrationModule.Close()
+
+ // A development principal must never expose the HTTP listener to the LAN.
+ // Bind to loopback even if the default platform listener binds all interfaces.
+ httpAddress := ":8080"
+ if integrationModule.LocalOnly(){
+  httpAddress="127.0.0.1:8080"
+ }
+
 
 	routing.RegisterFallback(mux)
 
