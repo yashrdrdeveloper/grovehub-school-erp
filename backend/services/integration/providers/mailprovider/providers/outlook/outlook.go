@@ -3,7 +3,7 @@ package outlook
 import (
  integrationconfig "grovehub/services/integration/config"
  "grovehub/services/integration/providers"
- impl "grovehub/services/integration/providers/outlook/impl"
+ impl "grovehub/services/integration/providers/mailprovider/providers/outlook/impl"
 )
 
 // Public Outlook provider API. Concrete Graph and OAuth behavior is in impl.

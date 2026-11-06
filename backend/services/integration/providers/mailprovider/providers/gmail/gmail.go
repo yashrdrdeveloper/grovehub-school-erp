@@ -5,7 +5,7 @@ import (
 
  integrationconfig "grovehub/services/integration/config"
  "grovehub/services/integration/providers"
- impl "grovehub/services/integration/providers/gmail/impl"
+ impl "grovehub/services/integration/providers/mailprovider/providers/gmail/impl"
 )
 
 // Public Gmail adapter contracts and factories. Concrete provider
