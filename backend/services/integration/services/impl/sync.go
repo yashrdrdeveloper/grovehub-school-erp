@@ -17,12 +17,17 @@ const maxSyncPages=100
 // ErrSyncTooLarge means the initial scan was deliberately not acknowledged.
 // It can be retried; upsert makes replay idempotent.
 var ErrSyncTooLarge=errors.New("mailbox sync requires more pages than allowed per run")
+var ErrSyncBusy=errors.New("mailbox sync already in progress")
 
 func(s *ConnectionService)Sync(ctx context.Context,tenantID,id string)(integrationresponse.SyncResult,error){
  if s.gmail==nil{return integrationresponse.SyncResult{},ErrOAuthUnavailable}
  c,err:=s.repository.Get(ctx,tenantID,id)
  if err!=nil{return integrationresponse.SyncResult{},err}
  if c.Provider!="GMAIL"||c.Status!=entity.StatusActive{return integrationresponse.SyncResult{},ErrConnectionInactive}
+ release,locked,err:=s.syncRepository.AcquireMailbox(ctx,id)
+ if err!=nil{return integrationresponse.SyncResult{},err}
+ if !locked{return integrationresponse.SyncResult{},ErrSyncBusy}
+ defer release()
  token,err:=s.validToken(ctx,id)
  if err!=nil{return integrationresponse.SyncResult{},err}
  cursor,err:=s.syncRepository.Cursor(ctx,id)

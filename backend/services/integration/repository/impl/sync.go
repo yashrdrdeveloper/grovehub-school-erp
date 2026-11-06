@@ -49,3 +49,22 @@ func(r *MailSyncRepository)SaveCursor(ctx context.Context,connectionID,cursor st
   DoUpdates:clause.AssignmentColumns([]string{"cursor","last_synced_at"}),
  }).Create(&state).Error
 }
+
+func(r *MailSyncRepository)AcquireMailbox(ctx context.Context,connectionID string)(func(),bool,error){
+ pool,err:=r.db.DB();if err!=nil{return nil,false,err}
+ conn,err:=pool.Conn(ctx);if err!=nil{return nil,false,err}
+ var acquired bool
+ // Session advisory locks serialize sync across Go processes and instances.
+ // Use dedicated sql.Conn so unlocking happens on the same PG session.
+ err=conn.QueryRowContext(ctx,"SELECT pg_try_advisory_lock(hashtextextended($1,0))",connectionID).Scan(&acquired)
+ if err!=nil{conn.Close();return nil,false,err}
+ if !acquired{conn.Close();return nil,false,nil}
+ release:=func(){
+  cleanupCtx,cancel:=context.WithTimeout(context.Background(),5*time.Second)
+  defer cancel()
+  var unlocked bool
+  _=conn.QueryRowContext(cleanupCtx,"SELECT pg_advisory_unlock(hashtextextended($1,0))",connectionID).Scan(&unlocked)
+  _=conn.Close()
+ }
+ return release,true,nil
+}
