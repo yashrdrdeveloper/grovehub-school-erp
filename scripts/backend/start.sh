@@ -39,11 +39,33 @@ if owned_pid_is_running "${PID_FILE}" "${BINARY}"; then
   fi
 fi
 
+# A stale/missing PID file can happen after a manual 'make backend-dev'
+# or a previous shell exit. Recover only an Air process whose executable and
+# working directory prove it belongs to this checkout.
+if [[ "${HOT_RELOAD}" == "1" ]]; then
+  listener_pids="$(listening_tcp_pids "${BACKEND_PORT}")"
+  if [[ -n "${listener_pids}" ]]; then
+    for listener_pid in ${listener_pids}; do
+      supervisor_pid="$(repo_air_supervisor_for_listener "${listener_pid}" "${AIR_BIN}" "${BACKEND_DIR}" || true)"
+      if [[ -n "${supervisor_pid}" ]]; then
+        printf '%s\n' "${supervisor_pid}" >"${PID_FILE}"
+        log_info "Recovered this repository's existing Air backend (PID ${supervisor_pid}); skipping duplicate startup"
+        exit 0
+      fi
+    done
+  fi
+fi
+
 rm -f -- "${PID_FILE}"
 
 for health_path in "${BACKEND_HEALTH_ENDPOINTS[@]}"; do
   if curl --fail --silent --max-time 1 "${BACKEND_BASE_URL}${health_path}" >/dev/null 2>&1; then
-    die "Backend endpoint is already reachable but is not owned by this repository: ${BACKEND_BASE_URL}${health_path}"
+    log_error "Backend endpoint is reachable but no managed GroveHub process could be verified: ${BACKEND_BASE_URL}${health_path}"
+    if command -v lsof >/dev/null 2>&1; then
+      log_error "Port ${BACKEND_PORT} listeners (inspect before stopping anything):"
+      lsof -nP -iTCP:"${BACKEND_PORT}" -sTCP:LISTEN >&2 || true
+    fi
+    die "Port ${BACKEND_PORT} is occupied. Inspect the listener, stop only the confirmed old process, and rerun make dev-start."
   fi
 done
 

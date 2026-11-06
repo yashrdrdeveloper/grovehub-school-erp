@@ -193,6 +193,10 @@ Containerized development dependencies use explicit container names and are stop
 
 ---
 
+### Existing backend on port 8080
+
+`dev-start` first trusts only a running process with a verified repository PID file. If that file is stale or missing, it may **recover** a running Air supervisor only when `lsof` identifies the listener and the parent process executable and working directory match this checkout's Air installation and backend directory. This prevents duplicate Air instances and preserves hot reload. If port 8080 is occupied by anything else, startup **must refuse to take over**, print the listener with `lsof -nP -iTCP:8080 -sTCP:LISTEN`, and ask the developer to inspect and stop only the confirmed conflicting process. Never run indiscriminate `pkill`, `killall`, or an unconditional `kill` against the port occupant.
+
 ## 6. Logs
 
 Both one-time and Air-backed development startup write backend output to:
