@@ -8,6 +8,6 @@ func New() providers.Provider { return Provider{} }
 func (Provider) Descriptor() providers.Descriptor {
  return providers.Descriptor{
   ID: "OUTLOOK", DisplayName: "Outlook", AuthType: "OAUTH2",
-  Capabilities: nil, // Outlook operations not yet implemented.
+  Capabilities: []providers.Capability{providers.CapabilityMailSend,providers.CapabilityMailRead}, // mail.history and watch still unsupported
  }
 }

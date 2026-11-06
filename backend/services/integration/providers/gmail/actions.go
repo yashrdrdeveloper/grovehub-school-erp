@@ -4,6 +4,7 @@ import (
  "context"
  "encoding/json"
  "errors"
+ "io"
  "strings"
 
  "grovehub/services/integration/providers"
@@ -66,6 +67,6 @@ func decodeActionInput(input json.RawMessage,target any)error{
  decoder.DisallowUnknownFields()
  if err:=decoder.Decode(target);err!=nil{return errors.Join(providers.ErrInvalidActionInput,err)}
  var trailing any
- if decoder.Decode(&trailing)==nil{return providers.ErrInvalidActionInput}
+ if decoder.Decode(&trailing)!=io.EOF{return providers.ErrInvalidActionInput}
  return nil
 }
