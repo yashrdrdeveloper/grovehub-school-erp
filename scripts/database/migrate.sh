@@ -23,10 +23,10 @@ case "${command_name}" in
 esac
 
 case "${service_name}" in
-  all|foundation|identity|infrastructure|integration)
+  all|foundation|identity|integration)
     ;;
   *)
-    die "Unsupported database service: ${service_name}. Expected all, foundation, identity, infrastructure, or integration."
+    die "Unsupported database service: ${service_name}. Expected all, foundation, identity, or integration."
     ;;
 esac
 
@@ -90,23 +90,19 @@ case "${command_name}" in
   init)
     init_service foundation
     init_service identity
-    init_service infrastructure
     init_service integration
     ;;
   reset)
     run_service_schema integration reset
-    run_service_schema infrastructure reset
     run_service_schema identity reset
     run_service_schema foundation reset
     init_service foundation
     init_service identity
-    init_service infrastructure
     init_service integration
     ;;
   status)
     status_service foundation
     status_service identity
-    status_service infrastructure
     status_service integration
     ;;
 esac

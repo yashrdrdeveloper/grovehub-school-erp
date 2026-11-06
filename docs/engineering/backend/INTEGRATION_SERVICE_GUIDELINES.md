@@ -137,7 +137,7 @@ make dev-start
 
 Tests belong under `tests/unit-test/<owner>/` with `suite_test.go`, Ginkgo v2 and Gomega. Never put `*_test.go` in runtime implementation folders.
 
-`dev-start` already includes NATS, Integration database migration, backend Air and Swagger. Gmail/Outlook API, OAuth, webhook and database tests must still be verified against real configuration.
+`dev-start` initializes Foundation, Identity and Integration schemas (Infrastructure has no migration directory), then starts NATS, backend Air and Swagger. Gmail/Outlook API, OAuth, webhook and database tests must still be verified against real configuration.
 
 ## Known limitations
 
