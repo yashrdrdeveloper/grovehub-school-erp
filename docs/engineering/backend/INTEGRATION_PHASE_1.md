@@ -27,3 +27,7 @@ The GORM entity and SQL migration use schema `integration`; migration must be ap
 4. Implement Outlook Graph as another strategy.
 
 Never treat a PENDING_SETUP record as a connected mailbox. No secrets are accepted over the Phase 1 connection API. No SMTP/IMAP, Maddy, Temporal or mail sync is active.
+
+## Database and Swagger commands
+
+Use `scripts/database/migrate.sh init integration` to create `integration` tables, `status integration` to inspect, and `reset integration` only for destructive local resets. The `all` migration commands include Integration. The shared Swagger configuration now registers the Integration OpenAPI specification.

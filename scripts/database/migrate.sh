@@ -23,10 +23,10 @@ case "${command_name}" in
 esac
 
 case "${service_name}" in
-  all|foundation|identity|infrastructure)
+  all|foundation|identity|infrastructure|integration)
     ;;
   *)
-    die "Unsupported database service: ${service_name}. Expected all, foundation, identity, or infrastructure."
+    die "Unsupported database service: ${service_name}. Expected all, foundation, identity, infrastructure, or integration."
     ;;
 esac
 
@@ -40,6 +40,7 @@ schema_state_table() {
   case "$1" in
     foundation) printf '%s\n' "foundation_schema_state" ;;
     identity) printf '%s\n' "identity_schema_state" ;;
+    integration) printf '%s\n' "integration_schema_state" ;;
     infrastructure) printf '%s\n' "infrastructure_schema_state" ;;
   esac
 }
@@ -90,18 +91,22 @@ case "${command_name}" in
     init_service foundation
     init_service identity
     init_service infrastructure
+    init_service integration
     ;;
   reset)
+    run_service_schema integration reset
     run_service_schema infrastructure reset
     run_service_schema identity reset
     run_service_schema foundation reset
     init_service foundation
     init_service identity
     init_service infrastructure
+    init_service integration
     ;;
   status)
     status_service foundation
     status_service identity
     status_service infrastructure
+    status_service integration
     ;;
 esac

@@ -11,6 +11,7 @@ import (
  coreerrors "grovehub/libs/core/errors"
  "grovehub/services/integration/providers"
  integrationrequest "grovehub/services/integration/dto/request"
+ integrationresponse "grovehub/services/integration/dto/response"
  integrationrepository "grovehub/services/integration/repository"
  integrationservices "grovehub/services/integration/services"
  serviceimpl "grovehub/services/integration/services/impl"
@@ -53,7 +54,7 @@ func (c *ConnectionController) List(w http.ResponseWriter,r *http.Request){
  p,ok:=principalFrom(r.Context());if !ok {writeError(w,r,http.StatusForbidden,integrationerrors.Forbidden);return}
  rows,err:=c.service.List(r.Context(),p.TenantID)
  if err!=nil{c.writeServiceError(w,r,err);return}
- own:=make([]any,0,len(rows))
+ own:=make([]integrationresponse.Connection,0,len(rows))
  for _,row:=range rows{if row.OwnerGID==p.ActorGID{own=append(own,row)}}
  _=httpresponse.WriteSuccess(w,http.StatusOK,own)
 }
