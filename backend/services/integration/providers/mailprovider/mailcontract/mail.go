@@ -13,7 +13,7 @@ import (
  "strings"
 )
 
-const MaxAttachmentBytes = 5 << 20
+const MaxAttachmentBytes = 3 << 20
 
 // Send is provider-independent. The authenticated connection selects the sender.
 // contentBase64 is standard RFC 4648 base64, not a provider-specific encoding.

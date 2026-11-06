@@ -61,7 +61,21 @@ func (h *ActionHandler) Execute(ctx context.Context, session providers.Session, 
 		if err := providerhelpers.DecodeStrictActionInput(input, &request); err != nil {
 			return nil, err
 		}
-		return h.client.Attachment(ctx, session.AccessToken, request.MessageID, request.AttachmentID)
+		raw,err:=h.client.Attachment(ctx,session.AccessToken,request.MessageID,request.AttachmentID)
+  if err!=nil{return nil,err}
+  var file struct{
+   ID string `json:"id"`
+   Name string `json:"name"`
+   ContentType string `json:"contentType"`
+   Size int64 `json:"size"`
+   ContentBytes string `json:"contentBytes"`
+  }
+  if json.Unmarshal(raw,&file)!=nil{return nil,providers.ErrProviderUnavailable}
+  if file.ContentBytes==""{return nil,providers.ErrUnsupportedAction}
+  return mailcontract.AttachmentData{
+   AttachmentID:file.ID,Filename:file.Name,ContentType:file.ContentType,
+   Size:file.Size,ContentBase64:file.ContentBytes,
+  },nil
 	case providers.ActionMailDelta:
 		var request struct {
 			Cursor string `json:"cursor"`
