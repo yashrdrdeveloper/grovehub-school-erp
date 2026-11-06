@@ -1,80 +1,144 @@
-# Integration Service — canonical contract
+# Integration Service — canonical architecture
 
-This is the current source of truth for `backend/services/integration`. For **all** backend modules, also follow `GROVEHUB_BACKEND_STRUCTURE.md`.
+> This is the **current** Integration implementation contract. Follow
+> `GROVEHUB_BACKEND_STRUCTURE.md`, `EVENT_GUIDELINES.md`,
+> `NORMALIZATION_AND_DRY_GUIDELINES.md`, and
+> `docs/engineering/testing/BACKEND_UNIT_TEST_STRUCTURE.md` as well.
 
 ## Ownership
 
-Integration owns provider discovery, external account connections, OAuth/refresh credentials, encrypted secret records, connectivity tests, provider webhook subscriptions, token validation and stateless provider operations.
+**Integration** owns provider catalogs, provider selection, OAuth, encrypted tokens, refresh, provider connection lifecycle, connectivity tests, provider webhook subscriptions, authenticated provider notifications, and stateless provider actions.
 
-Communication (not yet implemented) owns business mailbox setup, message history, threads, attachments, outbound intent/delivery status, sync checkpoints, duplicate suppression and per-provider message ingestion. Integration must not persist those resources.
+**Communication** (not implemented) owns mailbox/user messaging records, messages, threads, attachments, message deduplication, delivery state and synchronization checkpoints. Integration does not persist messages or consumer cursors. **Temporal is not an Integration dependency.**
 
-An external Gmail notification is authenticated by Integration and published as a generic event; Communication will later decide when and how to synchronize. Temporal belongs to a future workflow orchestrator, never a mandatory Integration dependency.
-
-## Layer architecture
+## Canonical package layout
 
 ```text
-providers/providers.go                   public registry + capability interfaces
-providers/impl/{registry,action,oauth}.go concrete registries
-providers/{gmail,outlook}/              public adapter facade
-providers/{gmail,outlook}/impl/         provider HTTP/OAuth/actions implementations
-config/config.go                         public configuration Loader interface and types
-config/impl/config.go                    environment-backed implementation
-constants/action.go                      action, capability, provider, resource identifiers
-constants/error/integration.go           error definitions and sentinels
-controller/{connection,oauth,...}.go     separate public controller interfaces
-controller/impl/{connection,oauth,...}   matching HTTP implementations
-controller/impl/common.go                shared trusted principal/error helpers
-routes/connections.go                    all /integrations/connections/** endpoints
-routes/providers.go                      all /integrations/providers/** endpoints
-routes/webhooks.go                       all /integrations/webhooks/** endpoints
-routes/helpers/http.go                   shared traced HTTP registration
-services/impl/connections.go             connection business operations
-services/helpers/connections/            reusable ID validation and entity/DTO mapping
-routes/http.go                           route-group composition
-entity/                                  Integration-owned GORM persistence models only
-repository/{resource}.go                 public repository interfaces
-repository/impl/                          ORM-first repository implementations
-events/mailbox/changed.go               alias of coreevents.Envelope[Payload]
-events/mailbox/helpers/changed.go        event envelope helpers
-events/mailbox/impl/changed.go           event publication
+integration/
+  integration.go                              composition + Module.Client()
+  client/
+    client.go                                public in-process Client interface
+    impl/client.go                           service-delegating implementation
+  config/config.go                           public Loader interface and config contracts
+  config/impl/config.go                      environment implementation
+  constants/
+    actions/gmail.go                         type-safe mail actions and capabilities
+    providers/providers.go                   provider identifiers
+    connections/status.go                    connection status and resource identifiers
+    error/integration.go                     errors
+  controller/
+    connections.go                           all connection HTTP method contracts
+    provider.go                              provider discovery HTTP contract
+    controller.go                            composed controller
+    impl/connections.go                      all connection HTTP handling
+    impl/provider.go                         provider discovery HTTP handling
+  routes/
+    http.go                                  compose resource route groups
+    connections.go                           EVERY /integrations/connections/** endpoint
+    provider.go                              EVERY /integrations/providers/** endpoint
+    webhooks.go                              /integrations/webhooks/** endpoint
+    helpers/http.go                          shared route registration and tracing
+  services/
+    connections.go                           connection and provider-action service interface
+    providers.go                             separate ProviderService interface
+    impl/connections.go                      connection lifecycle implementation
+    impl/providers.go                        provider discovery service implementation
+    impl/oauth.go                            connection OAuth implementation
+    impl/action.go                           provider action execution implementation
+    impl/test.go                             connectivity tests
+    impl/watch.go                            provider watch/notifications
+    helpers/connections/                     pure UUIDv7 checks and response conversion
+  providers/
+    providers.go                             generic provider/strategy registry contracts
+    oauth.go                                 generic optional OAuth strategy contract
+    impl/                                    generic registry implementations
+    helpers/                                 shared strict action input parser
+    mailprovider/
+      mailprovider.go                        mail strategy, factory, runtime/resolver contracts
+      impl/factory.go                        provider factory and capability-based resolver
+      providers/
+        gmail/
+          gmail.go                           Gmail public facade
+          strategy.go                        Gmail mailprovider.Strategy
+          impl/                              Gmail OAuth/Gmail API/webhook implementation
+        outlook/
+          outlook.go                         Outlook public facade
+          strategy.go                        Outlook mailprovider.Strategy
+          impl/                              Outlook OAuth/Graph API implementation
+  events/
+    connections/mailbox/
+      changed.go                             alias to coreevents.Envelope[Payload]
+      helpers/changed.go                     pure envelope/metadata builders
+      impl/changed.go                        NATS publish orchestration
+  entity/                                    connection/OAuth/test/webhook GORM entities only
+  repository/                                public data access contracts
+    impl/                                    GORM-first concrete repositories
+  migrations/000001_create_integration_schema.sql
+  tests/unit-test/                           separate Ginkgo suites for config/controller/providers/services
 ```
 
-## Provider capabilities
+**Public vs private:** Consumers of Integration import `services/integration/client`, or stable provider DTO contracts where needed. They do not import Integration's GORM entities, `services/impl`, `providers/impl`, or vendor implementation packages. Composition roots may import concrete implementation packages.
 
-Every provider registers only its implemented operations via the generic action strategy registry. Consumers use:
+**Factory:** A `mailprovider.Strategy` declares its descriptor and optionally registers actions/OAuth. The factory builds the provider registry, OAuth registry and action registry. `Runtime.Resolver.Resolve(providerID, capability)` selects a declared provider without a hard-coded provider switch in the consumer; it does not imply that OAuth credentials are configured. The provider details endpoint shows runtime `availableActions`.
 
-```http
-GET /integrations/providers
-GET /integrations/providers/{provider}
-POST /integrations/connections/{id}/actions/{action}
-Content-Type: application/json
+## HTTP routes by resource
 
-{"input": {"messageId":"..."}}
+```text
+GET    /integrations/providers
+GET    /integrations/providers/{provider}
+
+POST   /integrations/connections
+GET    /integrations/connections
+GET    /integrations/connections/{id}
+DELETE /integrations/connections/{id}
+POST   /integrations/connections/{id}/oauth/start
+GET    /integrations/connections/oauth/{provider}/callback
+POST   /integrations/connections/{id}/test
+GET    /integrations/connections/{id}/tests
+POST   /integrations/connections/{id}/watch
+POST   /integrations/connections/{id}/actions/{action}
+
+POST   /integrations/webhooks/gmail
 ```
 
-Gmail supports profile, list, get, attachment, history, send and Gmail watch. Outlook supports profile, list, get, attachment, delta and send. Outlook webhook watch and durable event ingestion have not been implemented. The generic controller does not choose providers by hard-coded brand.
+All `/integrations/connections/**` routes are registered from `routes/connections.go`, even when their handlers represent OAuth, action execution or tests. Public controller declarations likewise share `controller/connections.go`; the actual methods live in `controller/impl/connections.go`. Provider discovery remains separate: `controller/provider.go`, `controller/impl/provider.go`, `routes/provider.go` and `services/impl/providers.go`.
 
-OAuth initiation uses the connection's provider strategy and a one-time hashed state. Provider callbacks are at `/integrations/connections/oauth/{provider}/callback`. Each active connection has its own encrypted credentials. Both Gmail and Outlook require provider secrets, redirect configuration and a stable 32-byte encryption key. Provider testing supports independent INBOUND read probes and OUTBOUND self-addressed sends, saving sanitized outcomes only.
+Gmail and Outlook OAuth redirect URIs must use the corresponding `/integrations/connections/oauth/{provider}/callback` endpoint; update registered provider-console callback URLs after the route change.
+
+## In-process client for other backend services
+
+Follow Foundation's established `client/` + `client/impl/` convention:
+
+```go
+integrationClient := integrationModule.Client()
+
+providers := integrationClient.Providers(ctx)
+result, err := integrationClient.ExecuteAction(
+    ctx, tenantID, connectionID, integrationproviders.ActionMailGet,
+    json.RawMessage(`{"messageId":"provider-id"}`),
+)
+```
+
+The client calls the application services in the same modular monolith; it does **not** make an unnecessary HTTP loopback call. The caller is responsible for established cross-service authorization and tenant/owner scopes. Do not expose this client directly to an untrusted public caller.
 
 ## Events
 
-The type `mailbox.Changed` is `coreevents.Envelope[mailbox.Payload]`. A changed notification is published on `integration_mailbox_changed` as event type `integration.mailbox.changed.v1`; payload includes tenant, owner, provider, connection ID and provider history *hint*. No authoritative Communication cursor lives in Integration.
+`mailbox.Changed` aliases `coreevents.Envelope[mailbox.Payload]`. Gmail Pub/Sub authentication and mailbox connection resolution happen in Integration. The publisher emits `integration.mailbox.changed.v1` to the stable `integration_mailbox_changed` subject using the generic core envelope. The event contains provider/connection/owner/tenant and a history **hint** only, not message contents or a committed checkpoint. A future Communication consumer will own idempotent ingestion and cursor advancement.
 
-## Database
+## Schema, testing and startup
 
-This development branch has **one** `000001_create_integration_schema.sql` baseline, representing connections, encrypted credentials, OAuth states, webhook subscriptions and connection tests. No email ledger/synchronization tables exist in the canonical schema. For already-migrated databases, do **not** replace applied migrations with a squashed baseline: preserve data and create an explicit forward-only upgrade plan. `db-schema-reset` is destructive.
-
-## Developer commands
+The single `000001` migration is a **fresh-development baseline only**; do not apply the squashed migration list on existing databases with Goose versions 2–5 or important archived data. Use forward-only migrations for deployed databases.
 
 ```bash
-make dev-start
 make backend-format FORMAT_SCOPE=integration
-make db-schema-init DB_SERVICE=integration
-make db-schema-status DB_SERVICE=integration
+cd backend && go test ./services/integration/...
+make dev-start
 ```
 
-`make dev-start` loads Integration OAuth/Pub/Sub environment variables, starts NATS, runs all schema migrations, starts the backend in Air, and starts Swagger. `scripts/config/services.sh` registers Integration OpenAPI.
+Tests belong under `tests/unit-test/<owner>/` with `suite_test.go`, Ginkgo v2 and Gomega. Never put `*_test.go` in runtime implementation folders.
 
-## Known blockers
+`dev-start` already includes NATS, Integration database migration, backend Air and Swagger. Gmail/Outlook API, OAuth, webhook and database tests must still be verified against real configuration.
 
-Authenticated owner/tenant principal middleware has not yet been wired; protected Integration endpoints deny requests rather than trusting headers. External provider calls, DB migration and Ginkgo tests have not been validated in a live deployment.
+## Known limitations
+
+Verified IAM middleware has not been connected to the Integration HTTP routes; protected endpoints deny rather than trusting arbitrary tenant headers. Outlook webhook watch is not implemented. Integration notifications rely on messaging delivery but do not yet implement a transactional outbox. No Communication implementation is included.

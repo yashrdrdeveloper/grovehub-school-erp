@@ -126,7 +126,7 @@ Follow `docs/engineering/backend/GROVEHUB_BACKEND_STRUCTURE.md` for every servic
 
 ### Integration service
 
-Read `docs/engineering/backend/INTEGRATION_SERVICE_GUIDELINES.md` and its OpenAPI spec. Integration owns provider connectivity, OAuth, webhooks, tests and stateless provider actions; Communication owns messages and synchronization. Never add Integration-owned message ledgers or cursor storage. Protected connection endpoints must require verified principal middleware. Gmail and Outlook provider implementation packages are under `providers/<provider>/impl`. Only one fresh-development baseline migration exists; do not apply the squashed baseline to an already migrated database without a forward-only data-safe upgrade.
+Read `docs/engineering/backend/INTEGRATION_SERVICE_GUIDELINES.md` and its OpenAPI spec. Integration owns provider connectivity, OAuth, webhooks, tests and stateless provider actions; Communication owns messages and synchronization. Never add Integration-owned message ledgers or cursor storage. Protected connection endpoints must require verified principal middleware. Gmail and Outlook provider implementations are under `providers/mailprovider/providers/<vendor>/impl`, composed with the `providers/mailprovider` strategy factory. The provider discovery service is separate from the connection service, and sibling modules use the `client.Client` in-process contract. The public connection controller and routes are resource-grouped in `connections.go`. Only one fresh-development baseline migration exists; do not apply the squashed baseline to an already migrated database without a forward-only data-safe upgrade.
 
 ### Backend unit tests
 
