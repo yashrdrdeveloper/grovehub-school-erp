@@ -21,7 +21,7 @@ type connectionRepositoryFake struct{}
 func(*connectionRepositoryFake)Create(context.Context,entity.Connection)error{return nil}
 func(*connectionRepositoryFake)Get(context.Context,string,string)(entity.Connection,error){return entity.Connection{},nil}
 func(*connectionRepositoryFake)GetByID(context.Context,string)(entity.Connection,error){return entity.Connection{},nil}
-func(*connectionRepositoryFake)List(context.Context,string)([]entity.Connection,error){return nil,nil}
+func(*connectionRepositoryFake)List(context.Context,string,string)([]entity.Connection,error){return nil,nil}
 func(*connectionRepositoryFake)Disconnect(context.Context,string,string)(entity.Connection,error){return entity.Connection{},nil}
 func(*connectionRepositoryFake)SaveOAuthState(context.Context,entity.OAuthState)error{return nil}
 func(*connectionRepositoryFake)ConsumeOAuthState(context.Context,string,time.Time)(entity.OAuthState,error){return entity.OAuthState{},nil}

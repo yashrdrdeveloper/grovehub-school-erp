@@ -6,7 +6,6 @@ import (
  httpresponse "grovehub/libs/core/http/response"
  integrationerrors "grovehub/services/integration/constants/error"
  integrationrequest "grovehub/services/integration/dto/request"
- integrationresponse "grovehub/services/integration/dto/response"
 )
 
 func (c *ConnectionController) Create(w http.ResponseWriter,r *http.Request){
@@ -29,11 +28,9 @@ func (c *ConnectionController) Get(w http.ResponseWriter,r *http.Request){
 
 func (c *ConnectionController) List(w http.ResponseWriter,r *http.Request){
  p,ok:=principalFrom(r.Context());if !ok {writeError(w,r,http.StatusForbidden,integrationerrors.Forbidden);return}
- rows,err:=c.service.List(r.Context(),p.TenantID)
+ rows,err:=c.service.List(r.Context(),p.TenantID,p.ActorGID)
  if err!=nil{c.writeServiceError(w,r,err);return}
- own:=make([]integrationresponse.Connection,0,len(rows))
- for _,row:=range rows{if row.OwnerGID==p.ActorGID{own=append(own,row)}}
- _=httpresponse.WriteSuccess(w,http.StatusOK,own)
+ _=httpresponse.WriteSuccess(w,http.StatusOK,rows)
 }
 
 func (c *ConnectionController) Disconnect(w http.ResponseWriter,r *http.Request){

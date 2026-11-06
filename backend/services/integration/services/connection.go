@@ -17,7 +17,7 @@ type ConnectionService interface {
  Provider(ctx context.Context,id string)(integrationresponse.ProviderDetails,error)
  Create(ctx context.Context,tenantID string,input integrationrequest.CreateConnection)(integrationresponse.Connection,error)
  Get(ctx context.Context,tenantID,id string)(integrationresponse.Connection,error)
- List(ctx context.Context,tenantID string)([]integrationresponse.Connection,error)
+ List(ctx context.Context,tenantID,ownerGID string)([]integrationresponse.Connection,error)
  Disconnect(ctx context.Context,tenantID,id string)(integrationresponse.Connection,error)
  BeginOAuth(ctx context.Context,tenantID,id string)(integrationresponse.OAuthStart,error)
  FinishOAuth(ctx context.Context,provider,code,state string)(integrationresponse.OAuthCompletion,error)

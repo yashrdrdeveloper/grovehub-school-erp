@@ -14,7 +14,7 @@ type ConnectionRepository interface {
  Create(ctx context.Context, connection entity.Connection) error
  Get(ctx context.Context, tenantID, id string) (entity.Connection, error)
  GetByID(ctx context.Context,id string)(entity.Connection,error)
- List(ctx context.Context, tenantID string) ([]entity.Connection, error)
+ List(ctx context.Context, tenantID, ownerGID string) ([]entity.Connection, error)
  Disconnect(ctx context.Context, tenantID, id string) (entity.Connection, error)
  SaveOAuthState(ctx context.Context, state entity.OAuthState) error
  ConsumeOAuthState(ctx context.Context,hash string,now time.Time)(entity.OAuthState,error)

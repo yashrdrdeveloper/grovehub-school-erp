@@ -29,7 +29,7 @@ func (*serviceStub) Create(context.Context,string,integrationrequest.CreateConne
 func (*serviceStub) Get(context.Context,string,string)(integrationresponse.Connection,error){
  return integrationresponse.Connection{},nil
 }
-func (*serviceStub) List(context.Context,string)([]integrationresponse.Connection,error){
+func (*serviceStub) List(context.Context,string,string)([]integrationresponse.Connection,error){
  return nil,nil
 }
 func (*serviceStub) BeginOAuth(context.Context,string,string)(integrationresponse.OAuthStart,error){

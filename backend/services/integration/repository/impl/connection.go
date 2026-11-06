@@ -27,9 +27,9 @@ func(r *ConnectionRepository)GetByID(ctx context.Context,id string)(entity.Conne
  if errors.Is(err,gorm.ErrRecordNotFound){return c,integrationrepository.ErrConnectionNotFound}
  return c,err
 }
-func(r *ConnectionRepository)List(ctx context.Context,tenantID string)([]entity.Connection,error){
+func(r *ConnectionRepository)List(ctx context.Context,tenantID,ownerGID string)([]entity.Connection,error){
  rows:=make([]entity.Connection,0)
- err:=coretransaction.Database(ctx,r.db).Where("tenant_id = ?",tenantID).Order("created_at DESC, id DESC").Limit(200).Find(&rows).Error
+ err:=coretransaction.Database(ctx,r.db).Where(&entity.Connection{TenantID:tenantID,OwnerGID:ownerGID}).Order("created_at DESC, id DESC").Limit(200).Find(&rows).Error
  return rows,err
 }
 func(r *ConnectionRepository)Disconnect(ctx context.Context,tenantID,id string)(entity.Connection,error){

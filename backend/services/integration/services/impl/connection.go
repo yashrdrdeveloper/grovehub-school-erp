@@ -74,9 +74,9 @@ func (s *ConnectionService) Get(ctx context.Context,tenantID,id string)(integrat
  if err!=nil{return integrationresponse.Connection{},err}
  return toConnection(c),nil
 }
-func (s *ConnectionService) List(ctx context.Context,tenantID string)([]integrationresponse.Connection,error){
+func (s *ConnectionService) List(ctx context.Context,tenantID,ownerGID string)([]integrationresponse.Connection,error){
  if !isUUID(tenantID){return nil,ErrInvalidConnection}
- rows,err:=s.repository.List(ctx,tenantID)
+ rows,err:=s.repository.List(ctx,tenantID,ownerGID)
  if err!=nil{return nil,err}
  result:=make([]integrationresponse.Connection,0,len(rows))
  for _,c:=range rows{result=append(result,toConnection(c))}
