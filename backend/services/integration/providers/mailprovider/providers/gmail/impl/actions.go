@@ -2,8 +2,6 @@ package impl
 
 import (
 	"context"
- "bytes"
- "net/mail"
  	"encoding/json"
 	"strings"
 

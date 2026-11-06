@@ -38,7 +38,7 @@ Testing
       Run only the selected backend sanity package tree.
 
 Swagger
-  make swagger-start    Start Swagger UI on http://localhost:8081
+  make swagger-start    Start Swagger UI on http://localhost:8080
   make swagger-stop     Stop the managed Swagger UI container
   make swagger-status   Show Swagger UI status
 
