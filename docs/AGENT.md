@@ -132,6 +132,10 @@ Read `docs/engineering/backend/INTEGRATION_PHASE_2.md` and `backend/services/int
 
 Read `docs/engineering/backend/INTEGRATION_PHASE_3.md`: sync is provider-reference metadata only, with `(connection_id,provider_message_id)` uniqueness and cursor advancement only after a completed scan. It does not populate Communication or ingest email bodies. No Pub/Sub webhook, scheduler, IAM middleware or Temporal in Integration yet.
 
+### Integration Phase 4
+
+Read `docs/engineering/backend/INTEGRATION_PHASE_4.md`. Gmail Pub/Sub watch and OIDC/JWKS-verified push sync are implemented. Mailbox Postgres advisory lock protects across processes; watch expiration has scheduled renewal. No IAM principal middleware or asynchronous durable webhook queue yet. Never acknowledge a failed sync, never bypass JWT verification, and never treat Integration's provider-reference ledger as Communication message storage.
+
 ### Backend unit tests
 
 The old centralized path `backend/testing/unit-test/` is superseded and must not be recreated.

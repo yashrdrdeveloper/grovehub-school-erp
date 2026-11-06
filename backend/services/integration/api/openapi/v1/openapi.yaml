@@ -92,6 +92,27 @@ paths:
         "200": { description: Sync summary including mode, processed, deleted and cursor }
         "403": { description: Verified principal absent or connection not owned }
         "413": { description: Sync exceeds 100 pages, cursor not advanced }
+  /integrations/connections/{id}/watch:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+    post:
+      security: [{ verifiedPrincipal: [] }]
+      summary: Register or renew Gmail mailbox push watch
+      description: Requires active Gmail mailbox, configured Pub/Sub topic, verified tenant principal. Watch expires and is periodically renewed.
+      responses:
+        "200": { description: Watch expiration and connection ID }
+        "403": { description: Verified principal missing or owner mismatch }
+        "501": { description: Gmail OAuth not configured }
+  /integrations/webhooks/gmail:
+    post:
+      summary: Receive Google Cloud Pub/Sub push notifications
+      description: Google-signed JWT is verified against Google JWKS; issuer, audience, service-account email, and expiry validated. Synchronization completes before a 204 acknowledgement. Failed sync returns non-2xx for Pub/Sub retry.
+      security: [{ googlePushJWT: [] }]
+      responses:
+        "204": { description: Gmail history synchronized }
+        "400": { description: Invalid notification }
+        "401": { description: Invalid or missing Google-signed JWT }
+        "503": { description: Temporary processing failure; Pub/Sub should retry }
   /integrations/connections/{id}/tests:
     parameters:
       - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
@@ -102,6 +123,11 @@ paths:
         "200": { description: Test history }
 components:
   securitySchemes:
+    googlePushJWT:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Signed Google Pub/Sub push OIDC JWT; audience and service-account email must match configuration.
     verifiedPrincipal:
       type: http
       scheme: bearer
