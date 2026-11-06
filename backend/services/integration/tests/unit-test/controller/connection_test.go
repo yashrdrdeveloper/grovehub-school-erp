@@ -116,7 +116,35 @@ var _ = Describe("Integration HTTP authorization", func() {
 			Expect(response.Code).To(Equal(route.want), route.path)
 		}
 	})
-	It("denies connection creation without a verified principal", func() {
+	It("permits a matching development actor on loopback only when explicitly enabled",func(){
+  dev:=integrationconfig.DevAuth{
+   Enabled:true,
+   TenantID:"018f5d04-315c-75a9-b890-df0d02e787c1",
+   ActorGID:"01a1b210-402c-7622-a33c-f82ceba26c7d",
+  }
+  c:=integrationcontroller.NewConnectionController(&serviceStub{},&serviceStub{},integrationconfig.GmailPush{},dev)
+  requestBody:=`{"provider":"GMAIL","ownerGid":"01a1b210-402c-7622-a33c-f82ceba26c7d"}`
+
+  local:=httptest.NewRequest(http.MethodPost,"/integrations/connections",strings.NewReader(requestBody))
+  local.RemoteAddr="127.0.0.1:50231"
+  response:=httptest.NewRecorder()
+  c.Create(response,local)
+  Expect(response.Code).To(Equal(http.StatusCreated))
+
+  remote:=httptest.NewRequest(http.MethodPost,"/integrations/connections",strings.NewReader(requestBody))
+  remote.RemoteAddr="198.51.100.10:50231"
+  remote.Header.Set("X-Forwarded-For","127.0.0.1")
+  response=httptest.NewRecorder()
+  c.Create(response,remote)
+  Expect(response.Code).To(Equal(http.StatusForbidden))
+
+  forged:=httptest.NewRequest(http.MethodPost,"/integrations/connections",strings.NewReader(`{"provider":"GMAIL","ownerGid":"018f5d04-315c-75a9-b890-df0d02e787c1"}`))
+  forged.RemoteAddr="[::1]:50231"
+  response=httptest.NewRecorder()
+  c.Create(response,forged)
+  Expect(response.Code).To(Equal(http.StatusForbidden))
+ })
+ It("denies connection creation without a verified principal", func() {
 		c := integrationcontroller.NewConnectionController(&serviceStub{}, &serviceStub{}, integrationconfig.GmailPush{})
 		recorder := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPost, "/integrations/connections", strings.NewReader(`{"provider":"GMAIL","ownerGid":"a"}`))

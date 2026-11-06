@@ -49,3 +49,38 @@ var _ = Describe("OAuth callback validation", func() {
 		})
 	}
 })
+
+var _=Describe("local Integration authentication bypass",func(){
+ It("defaults to disabled",func(){
+  withEnv("GROVEHUB_INTEGRATION_DEV_AUTH_BYPASS","false")
+  cfg,err:=configimpl.NewEnvironmentLoader().DevAuth()
+  Expect(err).NotTo(HaveOccurred())
+  Expect(cfg.Enabled).To(BeFalse())
+ })
+ It("requires valid fixed UUIDv7 identities and local deployment",func(){
+  withEnv("GROVEHUB_INTEGRATION_DEV_AUTH_BYPASS","true")
+  withEnv("OTEL_DEPLOYMENT_ENVIRONMENT","local")
+  withEnv("GROVEHUB_INTEGRATION_DEV_TENANT_ID","018f5d04-315c-75a9-b890-df0d02e787c1")
+  withEnv("GROVEHUB_INTEGRATION_DEV_ACTOR_GID","01a1b210-402c-7622-a33c-f82ceba26c7d")
+  cfg,err:=configimpl.NewEnvironmentLoader().DevAuth()
+  Expect(err).NotTo(HaveOccurred())
+  Expect(cfg.Enabled).To(BeTrue())
+  Expect(cfg.ActorGID).To(Equal("01a1b210-402c-7622-a33c-f82ceba26c7d"))
+ })
+ It("rejects production deployment",func(){
+  withEnv("GROVEHUB_INTEGRATION_DEV_AUTH_BYPASS","true")
+  withEnv("OTEL_DEPLOYMENT_ENVIRONMENT","production")
+  withEnv("GROVEHUB_INTEGRATION_DEV_TENANT_ID","018f5d04-315c-75a9-b890-df0d02e787c1")
+  withEnv("GROVEHUB_INTEGRATION_DEV_ACTOR_GID","01a1b210-402c-7622-a33c-f82ceba26c7d")
+  _,err:=configimpl.NewEnvironmentLoader().DevAuth()
+  Expect(err).To(HaveOccurred())
+ })
+ It("rejects malformed actor identity",func(){
+  withEnv("GROVEHUB_INTEGRATION_DEV_AUTH_BYPASS","true")
+  withEnv("OTEL_DEPLOYMENT_ENVIRONMENT","local")
+  withEnv("GROVEHUB_INTEGRATION_DEV_TENANT_ID","018f5d04-315c-75a9-b890-df0d02e787c1")
+  withEnv("GROVEHUB_INTEGRATION_DEV_ACTOR_GID","not-a-uuid")
+  _,err:=configimpl.NewEnvironmentLoader().DevAuth()
+  Expect(err).To(HaveOccurred())
+ })
+})

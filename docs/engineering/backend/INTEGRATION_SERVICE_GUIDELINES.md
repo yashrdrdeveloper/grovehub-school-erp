@@ -139,6 +139,32 @@ Tests belong under `tests/unit-test/<owner>/` with `suite_test.go`, Ginkgo v2 an
 
 `dev-start` initializes Foundation, Identity and Integration schemas (Infrastructure has no migration directory), then starts NATS, backend Air and Swagger. Gmail/Outlook API, OAuth, webhook and database tests must still be verified against real configuration.
 
+## Temporary local-only authentication bypass
+
+Until the Identity/IAM principal middleware is available, explicitly enable a fixed
+development identity in the repository root `.env`:
+
+```dotenv
+GROVEHUB_INTEGRATION_DEV_AUTH_BYPASS=true
+GROVEHUB_INTEGRATION_DEV_TENANT_ID="018f5d04-315c-75a9-b890-df0d02e787c1"
+GROVEHUB_INTEGRATION_DEV_ACTOR_GID="01a1b210-402c-7622-a33c-f82ceba26c7d"
+OTEL_DEPLOYMENT_ENVIRONMENT=local
+```
+
+The IDs above are **examples**; use a deliberate UUIDv7 tenant and actor and set
+`ownerGid` in connection creation to exactly `GROVEHUB_INTEGRATION_DEV_ACTOR_GID`.
+Restart `make dev-start` after editing `.env`. Without this setting, protected
+routes still reject requests with HTTP 403. When enabled, ONLY requests whose
+actual TCP peer address is IPv4/IPv6 loopback can use the fixed development
+principal. `X-Tenant-ID`, `X-Forwarded-For`, `ownerGid`, and other request data
+never select the principal. Public provider discovery and Google Pub/Sub push
+JWT checks are unchanged. OAuth state remains verified.
+
+**Unsafe outside isolated local development:** the bypass has no authentication
+and must never be used behind a public reverse proxy (which could forward traffic
+over loopback). Disable it before tunneling or deploying the server, and replace it
+with verified IAM middleware. For secure multi-user testing, use IAM instead.
+
 ## Known limitations
 
 Verified IAM middleware has not been connected to the Integration HTTP routes; protected endpoints deny rather than trusting arbitrary tenant headers. Outlook webhook watch is not implemented. Integration notifications rely on messaging delivery but do not yet implement a transactional outbox. No Communication implementation is included.
