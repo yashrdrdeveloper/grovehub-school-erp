@@ -8,6 +8,7 @@ type Capability string
 const (
  CapabilityMailSend Capability = "mail.send"
  CapabilityMailRead Capability = "mail.read"
+ CapabilityMailAttachment Capability = "mail.attachment.get"
  CapabilityMailHistory Capability = "mail.history"
  CapabilityMailDelta Capability = "mail.delta"
  CapabilityMailWatch Capability = "mail.watch"

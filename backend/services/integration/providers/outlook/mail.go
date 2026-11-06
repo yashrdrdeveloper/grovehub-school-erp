@@ -107,3 +107,17 @@ func allowedDeltaPath(path string)bool{
  return lower=="/v1.0/me/mailfolders/inbox/messages/delta"||
   lower=="/v1.0/me/mailfolders('inbox')/messages/delta"
 }
+
+// Attachment reads one Graph message attachment. Data and metadata remain
+// transient; Communication will own any attachment persistence.
+func(c *Client)Attachment(ctx context.Context,accessToken,messageID,attachmentID string)(json.RawMessage,error){
+ if messageID==""||attachmentID==""||len(messageID)>512||len(attachmentID)>512||
+  strings.ContainsAny(messageID,"?#/")||strings.ContainsAny(attachmentID,"?#/"){
+  return nil,providers.ErrInvalidActionInput
+ }
+ var attachment json.RawMessage
+ err:=c.graph(ctx,accessToken,http.MethodGet,
+  "/me/messages/"+url.PathEscape(messageID)+"/attachments/"+url.PathEscape(attachmentID),
+  nil,"",&attachment)
+ return attachment,err
+}

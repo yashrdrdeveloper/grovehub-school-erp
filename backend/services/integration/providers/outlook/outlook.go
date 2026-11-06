@@ -8,6 +8,6 @@ func New() providers.Provider { return Provider{} }
 func (Provider) Descriptor() providers.Descriptor {
  return providers.Descriptor{
   ID: "OUTLOOK", DisplayName: "Outlook", AuthType: "OAUTH2",
-  Capabilities: []providers.Capability{providers.CapabilityMailSend,providers.CapabilityMailRead,providers.CapabilityMailDelta}, // mail.history and watch still unsupported
+  Capabilities: []providers.Capability{providers.CapabilityMailSend,providers.CapabilityMailRead,providers.CapabilityMailDelta,providers.CapabilityMailAttachment}, // mail.history and watch still unsupported
  }
 }

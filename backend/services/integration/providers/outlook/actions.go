@@ -18,7 +18,7 @@ type ActionHandler struct {
 func RegisterActions(registry *providers.ActionRegistry,client *Client)error{
  for _,action:=range []providers.Action{
   providers.ActionMailProfile,providers.ActionMailList,
-  providers.ActionMailGet,providers.ActionMailSend,providers.ActionMailDelta,
+  providers.ActionMailGet,providers.ActionMailSend,providers.ActionMailDelta,providers.ActionMailAttachment,
  } {
   if err:=registry.Register("OUTLOOK",action,&ActionHandler{client:client,action:action});err!=nil{return err}
  }
@@ -37,6 +37,10 @@ func(h *ActionHandler)Execute(ctx context.Context,session providers.Session,inpu
   var request struct{MessageID string `json:"messageId"`}
   if err:=decodeInput(input,&request);err!=nil{return nil,err}
   return h.client.Message(ctx,session.AccessToken,request.MessageID)
+ case providers.ActionMailAttachment:
+  var request struct{MessageID string `json:"messageId"`;AttachmentID string `json:"attachmentId"`}
+  if err:=decodeInput(input,&request);err!=nil{return nil,err}
+  return h.client.Attachment(ctx,session.AccessToken,request.MessageID,request.AttachmentID)
  case providers.ActionMailDelta:
   var request struct{Cursor string `json:"cursor"`}
   if err:=decodeInput(input,&request);err!=nil{return nil,err}

@@ -5,6 +5,7 @@ import (
  "errors"
  "grovehub/services/integration/providers"
  "encoding/base64"
+ "encoding/json"
  "net/http"
  "net/url"
 )
@@ -17,6 +18,9 @@ type Message struct {
  ThreadID string `json:"threadId"`
  HistoryID string `json:"historyId"`
  LabelIDs []string `json:"labelIds"`
+ Snippet string `json:"snippet,omitempty"`
+ SizeEstimate int64 `json:"sizeEstimate,omitempty"`
+ Payload json.RawMessage `json:"payload,omitempty"`
 }
 type MessagePage struct{
  Messages []Message `json:"messages"`
@@ -51,7 +55,7 @@ func(c *Client)Messages(ctx context.Context,t Token,page string)(MessagePage,err
 func(c *Client)MessageMetadata(ctx context.Context,t Token,id string)(Message,error){
  var m Message
  // Google returns labelIds, threadId, historyId in METADATA format without body.
- err:=c.do(ctx,t,http.MethodGet,"/messages/"+url.PathEscape(id)+"?format=metadata",nil,&m)
+ err:=c.do(ctx,t,http.MethodGet,"/messages/"+url.PathEscape(id)+"?format=full",nil,&m)
  return m,err
 }
 func(c *Client)History(ctx context.Context,t Token,startID,page string)(HistoryPage,error){
@@ -77,3 +81,21 @@ func(c *Client)SendRaw(ctx context.Context,t Token,raw string)(SentMessage,error
  return sent,err
 }
 
+
+// Attachment returns Gmail's base64url-encoded attachment bytes without
+// creating any Integration-owned attachment record.
+func(c *Client)Attachment(ctx context.Context,t Token,messageID,attachmentID string)(any,error){
+ if messageID==""||attachmentID==""||len(messageID)>512||len(attachmentID)>512{
+  return nil,errors.New("invalid Gmail attachment reference")
+ }
+ var result struct{
+  AttachmentID string `json:"attachmentId,omitempty"`
+  Size int64 `json:"size"`
+  Data string `json:"data"`
+ }
+ err:=c.do(ctx,t,http.MethodGet,
+  "/messages/"+url.PathEscape(messageID)+"/attachments/"+url.PathEscape(attachmentID),
+  nil,&result)
+ if err!=nil{return nil,err}
+ return result,nil
+}

@@ -18,7 +18,7 @@ type ActionHandler struct {
 func RegisterActions(registry *providers.ActionRegistry,client *Client)error{
  for _,action:=range []providers.Action{
   providers.ActionMailProfile,providers.ActionMailList,providers.ActionMailGet,
-  providers.ActionMailHistory,providers.ActionMailSend,
+  providers.ActionMailHistory,providers.ActionMailSend,providers.ActionMailAttachment,
  } {
   if err:=registry.Register("GMAIL",action,&ActionHandler{client:client,action:action});err!=nil{return err}
  }
@@ -41,6 +41,13 @@ func(h *ActionHandler)Execute(ctx context.Context,session providers.Session,inpu
   if err:=decodeActionInput(input,&request);err!=nil{return nil,err}
   if len(request.MessageID)==0||len(request.MessageID)>512{return nil,providers.ErrInvalidActionInput}
   return h.client.MessageMetadata(ctx,token,request.MessageID)
+ case providers.ActionMailAttachment:
+  var request struct{MessageID string `json:"messageId"`;AttachmentID string `json:"attachmentId"`}
+  if err:=decodeActionInput(input,&request);err!=nil{return nil,err}
+  if request.MessageID==""||request.AttachmentID==""||len(request.MessageID)>512||len(request.AttachmentID)>512{
+   return nil,providers.ErrInvalidActionInput
+  }
+  return h.client.Attachment(ctx,token,request.MessageID,request.AttachmentID)
  case providers.ActionMailHistory:
   var request struct{
    StartHistoryID string `json:"startHistoryId"`

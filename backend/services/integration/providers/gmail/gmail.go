@@ -10,7 +10,7 @@ func (Provider) Descriptor() providers.Descriptor {
   ID: "GMAIL", DisplayName: "Gmail", AuthType: "OAUTH2",
   Capabilities: []providers.Capability{
    providers.CapabilityMailSend, providers.CapabilityMailRead,
-   providers.CapabilityMailHistory, providers.CapabilityMailWatch,
+   providers.CapabilityMailHistory, providers.CapabilityMailWatch,providers.CapabilityMailAttachment,
   },
  }
 }

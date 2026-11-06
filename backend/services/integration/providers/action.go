@@ -17,6 +17,7 @@ const (
  ActionMailProfile Action = "mail.profile"
  ActionMailList Action = "mail.list"
  ActionMailGet Action = "mail.get"
+ ActionMailAttachment Action = "mail.attachment.get"
  ActionMailHistory Action = "mail.history"
  ActionMailDelta Action = "mail.delta"
  ActionMailSend Action = "mail.send"
