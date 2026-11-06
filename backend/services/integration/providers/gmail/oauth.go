@@ -92,7 +92,7 @@ func(c *Client)do(ctx context.Context,token Token,method,path string,body any,ou
  defer resp.Body.Close()
  if resp.StatusCode<200||resp.StatusCode>=300{return providers.NormalizeStatus(resp.StatusCode)}
  if out==nil{return nil}
- return json.NewDecoder(io.LimitReader(resp.Body,1<<20)).Decode(out)
+ return json.NewDecoder(io.LimitReader(resp.Body,12<<20)).Decode(out)
 }
 func(c *Client)Mailbox(ctx context.Context,token Token)(string,error){
  var response struct{EmailAddress string `json:"emailAddress"`}
