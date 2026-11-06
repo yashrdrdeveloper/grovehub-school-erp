@@ -18,6 +18,7 @@ const (
  ActionMailList Action = "mail.list"
  ActionMailGet Action = "mail.get"
  ActionMailHistory Action = "mail.history"
+ ActionMailDelta Action = "mail.delta"
  ActionMailSend Action = "mail.send"
 )
 

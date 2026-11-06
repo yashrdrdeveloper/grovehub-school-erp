@@ -46,6 +46,7 @@ func (*serviceStub) RunTest(context.Context,string,string,string)(integrationres
 func (*serviceStub) ListTests(context.Context,string,string)([]integrationresponse.ConnectionTest,error){
  return nil,nil
 }
+func (*serviceStub) ExecuteAction(context.Context,string,string,providers.Action,json.RawMessage)(any,error){return nil,nil}
 func (*serviceStub) Disconnect(context.Context,string,string)(integrationresponse.Connection,error){
  return integrationresponse.Connection{},nil
 }

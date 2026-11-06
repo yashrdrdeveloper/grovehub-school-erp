@@ -9,6 +9,7 @@ const (
  CapabilityMailSend Capability = "mail.send"
  CapabilityMailRead Capability = "mail.read"
  CapabilityMailHistory Capability = "mail.history"
+ CapabilityMailDelta Capability = "mail.delta"
  CapabilityMailWatch Capability = "mail.watch"
 )
 

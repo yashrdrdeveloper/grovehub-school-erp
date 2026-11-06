@@ -75,3 +75,27 @@ func(c *Client)SendRaw(ctx context.Context,accessToken,raw string)(SendResult,er
  result.Accepted=true
  return result,nil
 }
+
+type DeltaPage struct{
+ Messages []Message `json:"value"`
+ NextLink string `json:"@odata.nextLink,omitempty"`
+ DeltaLink string `json:"@odata.deltaLink,omitempty"`
+}
+
+// Delta reads changes without persisting the cursor.
+// Communication must commit messages before advancing its delta cursor.
+func(c *Client)Delta(ctx context.Context,accessToken,cursor string)(DeltaPage,error){
+ var result DeltaPage
+ path:="/me/mailFolders/inbox/messages/delta?$select=id,subject,conversationId,internetMessageId,receivedDateTime,sentDateTime,from,toRecipients,isRead"
+ if cursor!=""{
+  if len(cursor)>4096{return result,providers.ErrInvalidActionInput}
+  parsed,err:=url.Parse(cursor)
+  if err!=nil||parsed.Scheme!="https"||parsed.Host!="graph.microsoft.com"||parsed.User!=nil||
+   parsed.Fragment!=""||parsed.Path!="/v1.0/me/mailFolders/inbox/messages/delta"{
+   return result,providers.ErrInvalidActionInput
+  }
+  path="/me/mailFolders/inbox/messages/delta?"+parsed.RawQuery
+ }
+ err:=c.graph(ctx,accessToken,http.MethodGet,path,nil,"",&result)
+ return result,err
+}
