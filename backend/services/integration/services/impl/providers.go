@@ -5,17 +5,17 @@ import (
 
 	integrationresponse "grovehub/services/integration/dto/response"
 	"grovehub/services/integration/providers"
- services "grovehub/services/integration/services"
+	services "grovehub/services/integration/services"
 )
 
-type providerService struct{
- registry providers.Registry
- actions providers.ActionRegistry
- oauth providers.OAuthRegistry
+type providerService struct {
+	registry providers.Registry
+	actions  providers.ActionRegistry
+	oauth    providers.OAuthRegistry
 }
 
-func NewProviderService(registry providers.Registry,actions providers.ActionRegistry,oauth providers.OAuthRegistry) services.ProviderService{
- return &providerService{registry:registry,actions:actions,oauth:oauth}
+func NewProviderService(registry providers.Registry, actions providers.ActionRegistry, oauth providers.OAuthRegistry) services.ProviderService {
+	return &providerService{registry: registry, actions: actions, oauth: oauth}
 }
 
 // Provider discovery is independent of connection lifecycle operations.

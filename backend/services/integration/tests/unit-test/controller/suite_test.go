@@ -1,12 +1,12 @@
 package controller_test
 
 import (
- "testing"
- . "github.com/onsi/ginkgo/v2"
- . "github.com/onsi/gomega"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	"testing"
 )
 
 func TestIntegrationController(t *testing.T) {
- RegisterFailHandler(Fail)
- RunSpecs(t,"Integration Controller Suite")
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Integration Controller Suite")
 }

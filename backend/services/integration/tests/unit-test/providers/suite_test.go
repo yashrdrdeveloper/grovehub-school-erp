@@ -1,8 +1,12 @@
 package providers_test
 
 import (
- "testing"
- . "github.com/onsi/ginkgo/v2"
- . "github.com/onsi/gomega"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	"testing"
 )
-func TestProviders(t *testing.T) { RegisterFailHandler(Fail);RunSpecs(t,"Integration Providers Suite") }
+
+func TestProviders(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Integration Providers Suite")
+}

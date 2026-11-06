@@ -6,6 +6,7 @@ import (
 	"time"
 
 	coreid "grovehub/libs/core/id"
+	infrastructureclient "grovehub/services/infrastructure/client"
 	integrationrequest "grovehub/services/integration/dto/request"
 	integrationresponse "grovehub/services/integration/dto/response"
 	"grovehub/services/integration/entity"
@@ -15,11 +16,10 @@ import (
 	integrationrepository "grovehub/services/integration/repository"
 	integrationservices "grovehub/services/integration/services"
 	connectionhelpers "grovehub/services/integration/services/helpers/connections"
-	infrastructureclient "grovehub/services/infrastructure/client"
 )
 
 var (
-	ErrInvalidConnection = errors.New("invalid integration connection")
+	ErrInvalidConnection  = errors.New("invalid integration connection")
 	ErrConnectionNotReady = errors.New("provider authorization is not implemented")
 )
 

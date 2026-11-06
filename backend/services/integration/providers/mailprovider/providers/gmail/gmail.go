@@ -1,11 +1,11 @@
 package gmail
 
 import (
- "io"
+	"io"
 
- integrationconfig "grovehub/services/integration/config"
- "grovehub/services/integration/providers"
- impl "grovehub/services/integration/providers/mailprovider/providers/gmail/impl"
+	integrationconfig "grovehub/services/integration/config"
+	"grovehub/services/integration/providers"
+	impl "grovehub/services/integration/providers/mailprovider/providers/gmail/impl"
 )
 
 // Public Gmail adapter contracts and factories. Concrete provider
@@ -25,12 +25,12 @@ type StatusError = impl.StatusError
 
 var ErrExpiredHistory = impl.ErrExpiredHistory
 
-func New()providers.Provider{return impl.New()}
-func NewClient(cfg integrationconfig.Gmail)*Client{return impl.NewClient(cfg)}
-func RegisterActions(registry providers.ActionRegistry,client *Client)error{
- return impl.RegisterActions(registry,client)
+func New() providers.Provider                       { return impl.New() }
+func NewClient(cfg integrationconfig.Gmail) *Client { return impl.NewClient(cfg) }
+func RegisterActions(registry providers.ActionRegistry, client *Client) error {
+	return impl.RegisterActions(registry, client)
 }
-func NewPushVerifier(audience,email string)*PushVerifier{
- return impl.NewPushVerifier(audience,email)
+func NewPushVerifier(audience, email string) *PushVerifier {
+	return impl.NewPushVerifier(audience, email)
 }
-func DecodePush(body io.Reader)(PushNotification,error){return impl.DecodePush(body)}
+func DecodePush(body io.Reader) (PushNotification, error) { return impl.DecodePush(body) }

@@ -1,6 +1,6 @@
 package providers
 
 const (
- Gmail = "GMAIL"
- Outlook = "OUTLOOK"
+	Gmail   = "GMAIL"
+	Outlook = "OUTLOOK"
 )

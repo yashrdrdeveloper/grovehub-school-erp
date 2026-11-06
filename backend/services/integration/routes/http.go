@@ -1,14 +1,13 @@
 package routes
 
 import (
- "net/http"
+	"net/http"
 
- "grovehub/services/integration/controller"
+	"grovehub/services/integration/controller"
 )
 
 // RegisterHTTP composes routes by URL resource, not internal capability.
-func RegisterHTTP(mux *http.ServeMux,c controller.Controller){
- registerProviderRoutes(mux,c)
- registerConnectionRoutes(mux,c)
- registerWebhookRoutes(mux,c)
+func RegisterHTTP(mux *http.ServeMux, c controller.Controller) {
+	registerProviderRoutes(mux, c)
+	registerConnectionRoutes(mux, c)
 }

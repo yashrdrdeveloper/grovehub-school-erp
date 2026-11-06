@@ -4,19 +4,19 @@ import coreevents "grovehub/libs/core/events"
 
 // Payload describes the provider notification only.
 // Communication owns message state and the authoritative sync cursor.
-type Payload struct{
- Provider string `json:"provider"`
- ConnectionID string `json:"connectionId"`
- TenantID string `json:"tenantId"`
- OwnerGID string `json:"ownerGid"`
- Mailbox string `json:"mailbox"`
- HistoryHint string `json:"historyHint"`
+type Payload struct {
+	Provider     string `json:"provider"`
+	ConnectionID string `json:"connectionId"`
+	TenantID     string `json:"tenantId"`
+	OwnerGID     string `json:"ownerGid"`
+	Mailbox      string `json:"mailbox"`
+	HistoryHint  string `json:"historyHint"`
 }
 
 // Changed uses the shared generic event envelope, never a custom event wrapper.
 type Changed = coreevents.Envelope[Payload]
 
 const (
- ChangedTopic = "integration_mailbox_changed"
- ChangedEventType = "integration.mailbox.changed.v1"
+	ChangedTopic     = "integration_mailbox_changed"
+	ChangedEventType = "integration.mailbox.changed.v1"
 )

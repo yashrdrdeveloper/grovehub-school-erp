@@ -1,8 +1,8 @@
 package connections
 
 const (
- DirectionInbound = "INBOUND"
- DirectionOutbound = "OUTBOUND"
- TestSuccess = "SUCCESS"
- TestFailed = "FAILED"
+	DirectionInbound  = "INBOUND"
+	DirectionOutbound = "OUTBOUND"
+	TestSuccess       = "SUCCESS"
+	TestFailed        = "FAILED"
 )

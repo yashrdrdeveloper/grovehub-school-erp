@@ -1,6 +1,6 @@
 package controller
 
-type Controller interface{
- ConnectionController
- ProviderController
+type Controller interface {
+	ConnectionController
+	ProviderController
 }
