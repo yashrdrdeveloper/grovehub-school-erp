@@ -2,7 +2,7 @@ SHELL := /usr/bin/env bash
 
 .DEFAULT_GOAL := help
 
-SWAGGER_PORT ?= 8080
+SWAGGER_PORT ?= 8081
 FORMAT_SCOPE ?= all
 DB_SERVICE ?= all
 SANITY_SCOPE ?= ./tests/sanity/...
