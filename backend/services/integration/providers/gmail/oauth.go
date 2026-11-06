@@ -13,6 +13,7 @@ import (
  "time"
 
  integrationconfig "grovehub/services/integration/config"
+ "grovehub/services/integration/providers"
 )
 
 const (
@@ -21,13 +22,7 @@ const (
  gmailAPI="https://gmail.googleapis.com/gmail/v1/users/me"
 )
 
-type Token struct{
- AccessToken string `json:"access_token"`
- RefreshToken string `json:"refresh_token"`
- ExpiresIn int `json:"expires_in"`
- TokenType string `json:"token_type"`
- Expiry time.Time `json:"expiry"`
-}
+type Token = providers.OAuthToken
 type StatusError struct {StatusCode int}
 func(e *StatusError)Error()string{return fmt.Sprintf("gmail request failed (HTTP %d)",e.StatusCode)}
 
