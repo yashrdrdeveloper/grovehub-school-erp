@@ -4,6 +4,7 @@ import "net/http"
 
 type ConnectionController interface {
  Providers(http.ResponseWriter,*http.Request)
+ Provider(http.ResponseWriter,*http.Request)
  Create(http.ResponseWriter,*http.Request)
  Get(http.ResponseWriter,*http.Request)
  List(http.ResponseWriter,*http.Request)

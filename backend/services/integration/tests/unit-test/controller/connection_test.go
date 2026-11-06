@@ -22,6 +22,7 @@ type serviceStub struct{}
 func (*serviceStub) Providers(context.Context) []providers.Descriptor {
  return []providers.Descriptor{{ID:"GMAIL"}}
 }
+func (*serviceStub) Provider(context.Context,string)(integrationresponse.ProviderDetails,error){return integrationresponse.ProviderDetails{},nil}
 func (*serviceStub) Create(context.Context,string,integrationrequest.CreateConnection)(integrationresponse.Connection,error){
  return integrationresponse.Connection{},nil
 }

@@ -9,6 +9,7 @@ import (
 func RegisterHTTP(mux *http.ServeMux,c controller.ConnectionController) {
  routes:=[]struct{method,pattern string;handle http.HandlerFunc}{
   {"GET","/integrations/providers",c.Providers},
+  {"GET","/integrations/providers/{provider}",c.Provider},
   {"POST","/integrations/connections",c.Create},
   {"GET","/integrations/connections",c.List},
   {"GET","/integrations/connections/{id}",c.Get},

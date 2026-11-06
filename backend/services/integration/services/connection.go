@@ -14,6 +14,7 @@ import (
 // It never persists email messages, threads, or consumer synchronization cursors.
 type ConnectionService interface {
  Providers(ctx context.Context) []providers.Descriptor
+ Provider(ctx context.Context,id string)(integrationresponse.ProviderDetails,error)
  Create(ctx context.Context,tenantID string,input integrationrequest.CreateConnection)(integrationresponse.Connection,error)
  Get(ctx context.Context,tenantID,id string)(integrationresponse.Connection,error)
  List(ctx context.Context,tenantID string)([]integrationresponse.Connection,error)
