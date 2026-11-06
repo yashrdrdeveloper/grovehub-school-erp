@@ -2,8 +2,11 @@ package routes
 
 import (
  "net/http"
+
  "grovehub/services/integration/controller"
+ routehelpers "grovehub/services/integration/routes/helpers"
 )
+
 func registerWebhookRoutes(mux *http.ServeMux,c controller.WebhookController){
- handle(mux,"POST","/integrations/webhooks/gmail",c.GmailPush)
+ routehelpers.Handle(mux,"POST","/integrations/webhooks/gmail",c.GmailPush)
 }
