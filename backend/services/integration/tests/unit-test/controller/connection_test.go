@@ -13,6 +13,8 @@ import (
  integrationrequest "grovehub/services/integration/dto/request"
  integrationresponse "grovehub/services/integration/dto/response"
  "grovehub/services/integration/providers"
+ "grovehub/services/integration/providers/gmail"
+ integrationconfig "grovehub/services/integration/config"
 )
 
 type serviceStub struct{}
@@ -34,6 +36,9 @@ func (*serviceStub) BeginOAuth(context.Context,string,string)(integrationrespons
 func (*serviceStub) FinishOAuth(context.Context,string,string)(integrationresponse.OAuthCompletion,error){
  return integrationresponse.OAuthCompletion{},nil
 }
+func (*serviceStub) Watch(context.Context,string,string)(integrationresponse.Watch,error){return integrationresponse.Watch{},nil}
+func (*serviceStub) ProcessPush(context.Context,gmail.PushNotification)error{return nil}
+func (*serviceStub) RenewExpiring(context.Context)error{return nil}
 func (*serviceStub) Sync(context.Context,string,string)(integrationresponse.SyncResult,error){
  return integrationresponse.SyncResult{},nil
 }
@@ -49,7 +54,7 @@ func (*serviceStub) Disconnect(context.Context,string,string)(integrationrespons
 
 var _ = Describe("Integration HTTP authorization",func(){
  It("allows public provider discovery",func(){
-  c:=integrationcontroller.NewConnectionController(&serviceStub{})
+  c:=integrationcontroller.NewConnectionController(&serviceStub{},integrationconfig.GmailPush{})
   recorder:=httptest.NewRecorder()
   req:=httptest.NewRequest(http.MethodGet,"/integrations/providers",nil)
   c.Providers(recorder,req)
@@ -63,12 +68,19 @@ var _ = Describe("Integration HTTP authorization",func(){
    {"/integrations/connections/abc/test",c.RunTest},
    {"/integrations/connections/abc/tests",c.ListTests},
    {"/integrations/connections/abc/sync",c.Sync},
+   {"/integrations/connections/abc/watch",c.Watch},
   } {
    recorder:=httptest.NewRecorder()
    request:=httptest.NewRequest(http.MethodPost,testCase.route,nil)
    testCase.handler(recorder,request)
    Expect(recorder.Code).To(Equal(http.StatusForbidden))
   }
+ })
+ It("rejects unauthenticated Gmail push",func(){
+ c:=integrationcontroller.NewConnectionController(&serviceStub{},integrationconfig.GmailPush{Topic:"projects/test/topics/mail",Audience:"https://example.test/push",ServiceAccount:"push@example.test"})
+ response:=httptest.NewRecorder()
+ c.GmailPush(response,httptest.NewRequest(http.MethodPost,"/integrations/webhooks/gmail",strings.NewReader("{}")))
+ Expect(response.Code).To(Equal(http.StatusUnauthorized))
  })
  It("denies connection creation without a verified principal",func(){
   c:=integrationcontroller.NewConnectionController(&serviceStub{})

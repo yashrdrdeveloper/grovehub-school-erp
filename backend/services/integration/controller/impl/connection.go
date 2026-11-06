@@ -4,6 +4,8 @@ import (
  "context"
  "errors"
  "net/http"
+ "grovehub/services/integration/providers/gmail"
+ integrationconfig "grovehub/services/integration/config"
 
  httprequest "grovehub/libs/core/http/request"
  httpresponse "grovehub/libs/core/http/response"
@@ -29,8 +31,10 @@ func principalFrom(ctx context.Context)(VerifiedPrincipal,bool){
  return p,ok && p.TenantID!="" && p.ActorGID!=""
 }
 
-type ConnectionController struct{service integrationservices.ConnectionService}
-func NewConnectionController(s integrationservices.ConnectionService)*ConnectionController{return &ConnectionController{service:s}}
+type ConnectionController struct{service integrationservices.ConnectionService; verifier *gmail.PushVerifier; pushEnabled bool}
+func NewConnectionController(s integrationservices.ConnectionService,push integrationconfig.GmailPush)*ConnectionController{
+ return &ConnectionController{service:s,verifier:gmail.NewPushVerifier(push.Audience,push.ServiceAccount),pushEnabled:push.Enabled()}
+}
 func (c *ConnectionController) Providers(w http.ResponseWriter,r *http.Request){
  _=httpresponse.WriteSuccess(w,http.StatusOK,c.service.Providers(r.Context()))
 }
@@ -76,6 +80,10 @@ func (c *ConnectionController) writeServiceError(w http.ResponseWriter,r *http.R
   writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid)
  case errors.Is(err,serviceimpl.ErrOAuthInvalid):
   writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid)
+ case errors.Is(err,serviceimpl.ErrSyncBusy):
+ writeError(w,r,http.StatusConflict,integrationerrors.SyncBusy)
+ case errors.Is(err,serviceimpl.ErrPushUnavailable):
+ writeError(w,r,http.StatusServiceUnavailable,integrationerrors.NotReady)
  case errors.Is(err,serviceimpl.ErrSyncTooLarge):
  writeError(w,r,http.StatusRequestEntityTooLarge,integrationerrors.SyncLimit)
  case errors.Is(err,serviceimpl.ErrConnectionInactive):
@@ -130,4 +138,26 @@ func(c *ConnectionController)Sync(w http.ResponseWriter,r *http.Request){
  result,err:=c.service.Sync(r.Context(),p.TenantID,r.PathValue("id"))
  if err!=nil{c.writeServiceError(w,r,err);return}
  _=httpresponse.WriteSuccess(w,http.StatusOK,result)
+}
+
+func(c *ConnectionController)Watch(w http.ResponseWriter,r *http.Request){
+ p,ok:=c.owned(w,r);if !ok{return}
+ result,err:=c.service.Watch(r.Context(),p.TenantID,r.PathValue("id"))
+ if err!=nil{c.writeServiceError(w,r,err);return}
+ _=httpresponse.WriteSuccess(w,http.StatusOK,result)
+}
+func(c *ConnectionController)GmailPush(w http.ResponseWriter,r *http.Request){
+ if !c.pushEnabled{
+  writeError(w,r,http.StatusServiceUnavailable,integrationerrors.NotReady);return
+ }
+ if err:=c.verifier.Verify(r.Context(),r.Header.Get("Authorization"));err!=nil{
+  writeError(w,r,http.StatusUnauthorized,integrationerrors.Forbidden);return
+ }
+ data,err:=gmail.DecodePush(r.Body)
+ if err!=nil{writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid);return}
+ if err=c.service.ProcessPush(r.Context(),data);err!=nil{
+  // Pub/Sub retries non-2xx. A concurrent sync is also retried.
+  writeError(w,r,http.StatusServiceUnavailable,integrationerrors.Failed);return
+ }
+ w.WriteHeader(http.StatusNoContent)
 }

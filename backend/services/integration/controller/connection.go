@@ -13,4 +13,6 @@ type ConnectionController interface {
  RunTest(http.ResponseWriter,*http.Request)
  ListTests(http.ResponseWriter,*http.Request)
  Sync(http.ResponseWriter,*http.Request)
+ Watch(http.ResponseWriter,*http.Request)
+ GmailPush(http.ResponseWriter,*http.Request)
 }
