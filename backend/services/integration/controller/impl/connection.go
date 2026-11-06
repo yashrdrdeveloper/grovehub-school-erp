@@ -80,12 +80,10 @@ func (c *ConnectionController) writeServiceError(w http.ResponseWriter,r *http.R
   writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid)
  case errors.Is(err,serviceimpl.ErrOAuthInvalid):
   writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid)
- case errors.Is(err,serviceimpl.ErrSyncBusy):
- writeError(w,r,http.StatusConflict,integrationerrors.SyncBusy)
  case errors.Is(err,serviceimpl.ErrPushUnavailable):
  writeError(w,r,http.StatusServiceUnavailable,integrationerrors.NotReady)
- case errors.Is(err,serviceimpl.ErrSyncTooLarge):
- writeError(w,r,http.StatusRequestEntityTooLarge,integrationerrors.SyncLimit)
+ case errors.Is(err,serviceimpl.ErrUnsupportedMailProvider):
+  writeError(w,r,http.StatusNotImplemented,integrationerrors.NotReady)
  case errors.Is(err,serviceimpl.ErrConnectionInactive):
   writeError(w,r,http.StatusConflict,integrationerrors.NotReady)
  case errors.Is(err,serviceimpl.ErrOAuthUnavailable),errors.Is(err,serviceimpl.ErrConnectionNotReady):
@@ -133,13 +131,6 @@ func(c *ConnectionController)ListTests(w http.ResponseWriter,r *http.Request){
  _=httpresponse.WriteSuccess(w,http.StatusOK,result)
 }
 
-func(c *ConnectionController)Sync(w http.ResponseWriter,r *http.Request){
- p,ok:=c.owned(w,r);if !ok{return}
- result,err:=c.service.Sync(r.Context(),p.TenantID,r.PathValue("id"))
- if err!=nil{c.writeServiceError(w,r,err);return}
- _=httpresponse.WriteSuccess(w,http.StatusOK,result)
-}
-
 func(c *ConnectionController)Watch(w http.ResponseWriter,r *http.Request){
  p,ok:=c.owned(w,r);if !ok{return}
  result,err:=c.service.Watch(r.Context(),p.TenantID,r.PathValue("id"))
@@ -156,8 +147,41 @@ func(c *ConnectionController)GmailPush(w http.ResponseWriter,r *http.Request){
  data,err:=gmail.DecodePush(r.Body)
  if err!=nil{writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid);return}
  if err=c.service.ProcessPush(r.Context(),data);err!=nil{
-  // Pub/Sub retries non-2xx. A concurrent sync is also retried.
+  // Pub/Sub retries on publish failure; Communication will ingest later.
   writeError(w,r,http.StatusServiceUnavailable,integrationerrors.Failed);return
  }
  w.WriteHeader(http.StatusNoContent)
+}
+
+func(c *ConnectionController)MailProfile(w http.ResponseWriter,r *http.Request){
+ p,ok:=c.owned(w,r);if !ok{return}
+ result,err:=c.service.MailProfile(r.Context(),p.TenantID,r.PathValue("id"))
+ if err!=nil{c.writeServiceError(w,r,err);return}
+ _=httpresponse.WriteSuccess(w,http.StatusOK,result)
+}
+func(c *ConnectionController)MailMessages(w http.ResponseWriter,r *http.Request){
+ p,ok:=c.owned(w,r);if !ok{return}
+ result,err:=c.service.MailMessages(r.Context(),p.TenantID,r.PathValue("id"),r.URL.Query().Get("pageToken"))
+ if err!=nil{c.writeServiceError(w,r,err);return}
+ _=httpresponse.WriteSuccess(w,http.StatusOK,result)
+}
+func(c *ConnectionController)MailMessage(w http.ResponseWriter,r *http.Request){
+ p,ok:=c.owned(w,r);if !ok{return}
+ result,err:=c.service.MailMessage(r.Context(),p.TenantID,r.PathValue("id"),r.PathValue("messageId"))
+ if err!=nil{c.writeServiceError(w,r,err);return}
+ _=httpresponse.WriteSuccess(w,http.StatusOK,result)
+}
+func(c *ConnectionController)MailHistory(w http.ResponseWriter,r *http.Request){
+ p,ok:=c.owned(w,r);if !ok{return}
+ result,err:=c.service.MailHistory(r.Context(),p.TenantID,r.PathValue("id"),r.URL.Query().Get("startHistoryId"),r.URL.Query().Get("pageToken"))
+ if err!=nil{c.writeServiceError(w,r,err);return}
+ _=httpresponse.WriteSuccess(w,http.StatusOK,result)
+}
+func(c *ConnectionController)MailSend(w http.ResponseWriter,r *http.Request){
+ p,ok:=c.owned(w,r);if !ok{return}
+ var input struct{Raw string `json:"raw"`}
+ if err:=httprequest.DecodeStrictJSON(r,&input);err!=nil{writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid);return}
+ result,err:=c.service.MailSend(r.Context(),p.TenantID,r.PathValue("id"),input.Raw)
+ if err!=nil{c.writeServiceError(w,r,err);return}
+ _=httpresponse.WriteSuccess(w,http.StatusOK,result)
 }

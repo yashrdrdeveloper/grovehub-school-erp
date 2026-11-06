@@ -17,9 +17,13 @@ func RegisterHTTP(mux *http.ServeMux,c controller.ConnectionController) {
   {"GET","/integrations/oauth/gmail/callback",c.FinishOAuth},
   {"POST","/integrations/connections/{id}/test",c.RunTest},
   {"GET","/integrations/connections/{id}/tests",c.ListTests},
-  {"POST","/integrations/connections/{id}/sync",c.Sync},
   {"POST","/integrations/connections/{id}/watch",c.Watch},
   {"POST","/integrations/webhooks/gmail",c.GmailPush},
+  {"GET","/integrations/connections/{id}/mail/profile",c.MailProfile},
+  {"GET","/integrations/connections/{id}/mail/messages",c.MailMessages},
+  {"GET","/integrations/connections/{id}/mail/messages/{messageId}",c.MailMessage},
+  {"GET","/integrations/connections/{id}/mail/history",c.MailHistory},
+  {"POST","/integrations/connections/{id}/mail/send",c.MailSend},
  }
  for _,route:=range routes {
   pattern:=route.method+" "+route.pattern
