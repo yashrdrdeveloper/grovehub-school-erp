@@ -120,6 +120,10 @@ Consumers decode `coreevents.Envelope[persons.Changed]` and may call `diff.Compa
 
 `POST /auth/register` accepts no `gid` in the request. It matches an existing Foundation Person using the validated, normalized email; otherwise creates one, reuses the existing Person GID, and returns `gid` and `personGid` with the same identifier. Never accept caller-supplied GID through this route; unknown request properties are rejected. Consult `backend/services/identity/api/openapi/v1/openapi.yaml` and `services/identity/services/impl/auth.go` before editing. Identity registration uses `core/database/transaction.Run` and context-aware repositories for atomic Foundation Person, Identity Account, and credential writes. Event decorators use `AfterCommit` to prevent publishing rolled-back changes. Password-setup email and reliable database-to-broker delivery are not yet implemented.
 
+### Integration Phase 1
+
+Integration follows the flat GroveHub service root structure. Read `docs/engineering/backend/INTEGRATION_PHASE_1.md` before editing. Provider descriptors for Gmail/Outlook are only a catalogue; OAuth, sync, and sending are **not** implemented. Connections remain PENDING_SETUP and connection HTTP routes are denied by default until verified IAM context is supplied. Never derive tenant authorization from arbitrary HTTP headers. Integration uses capability-specific provider interfaces; Temporal belongs to the future orchestrator.
+
 ### Backend unit tests
 
 The old centralized path `backend/testing/unit-test/` is superseded and must not be recreated.

@@ -1,0 +1,69 @@
+openapi: 3.1.0
+info:
+  title: GroveHub Integration API
+  version: 0.1.0
+  description: Phase 1 provider discovery and pending-setup connections; OAuth and actual connectivity are not implemented.
+paths:
+  /integrations/providers:
+    get:
+      summary: List registered providers and advertised future capabilities
+      responses:
+        "200":
+          description: Provider descriptors
+  /integrations/connections:
+    post:
+      summary: Create a pending-setup connection (not an authenticated mailbox)
+      security:
+        - verifiedPrincipal: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [provider, ownerGid]
+              properties:
+                provider:
+                  type: string
+                  enum: [GMAIL, OUTLOOK]
+                ownerGid:
+                  type: string
+                  format: uuid
+      responses:
+        "201": { description: Connection created with PENDING_SETUP status }
+        "403": { description: Verified principal missing or owner mismatch }
+    get:
+      security:
+        - verifiedPrincipal: []
+      summary: List current actor's connections
+      responses:
+        "200": { description: Connections }
+        "403": { description: Verified principal missing }
+  /integrations/connections/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      security:
+        - verifiedPrincipal: []
+      summary: Get a connection
+      responses:
+        "200": { description: Connection }
+        "403": { description: Access denied }
+        "404": { description: Not found }
+    delete:
+      security:
+        - verifiedPrincipal: []
+      summary: Mark a connection disconnected
+      responses:
+        "200": { description: Disconnected connection }
+        "403": { description: Access denied }
+components:
+  securitySchemes:
+    verifiedPrincipal:
+      type: http
+      scheme: bearer
+      description: Trusted verified identity middleware required; not wired in Phase 1, so connection endpoints deny access.

@@ -19,6 +19,7 @@ import (
 	coretelemetry "grovehub/libs/core/telemetry"
 	"grovehub/services/foundation"
 	"grovehub/services/identity"
+ "grovehub/services/integration"
 	"grovehub/services/infrastructure"
 	infrastructureconfig "grovehub/services/infrastructure/config"
 )
@@ -61,6 +62,10 @@ func Run(logger *slog.Logger) error {
 		infrastructureModule.MessagingClient(),
 	)
 	identityModule.RegisterHTTP(mux)
+
+ integrationModule, err := integration.New(logger,db)
+ if err != nil { return fmt.Errorf("initialize integration module: %w",err) }
+ integrationModule.RegisterHTTP(mux)
 
 	routing.RegisterFallback(mux)
 
