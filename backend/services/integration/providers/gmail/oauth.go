@@ -90,7 +90,7 @@ func(c *Client)do(ctx context.Context,token Token,method,path string,body any,ou
  resp,err:=c.http.Do(req)
  if err!=nil{return err}
  defer resp.Body.Close()
- if resp.StatusCode<200||resp.StatusCode>=300{return &StatusError{StatusCode:resp.StatusCode}}
+ if resp.StatusCode<200||resp.StatusCode>=300{return providers.NormalizeStatus(resp.StatusCode)}
  if out==nil{return nil}
  return json.NewDecoder(io.LimitReader(resp.Body,1<<20)).Decode(out)
 }

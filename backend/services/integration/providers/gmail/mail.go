@@ -3,6 +3,7 @@ package gmail
 import (
  "context"
  "errors"
+ "grovehub/services/integration/providers"
  "encoding/base64"
  "net/http"
  "net/url"
@@ -61,8 +62,7 @@ func(c *Client)History(ctx context.Context,t Token,startID,page string)(HistoryP
  path:="/history?"+query.Encode()
  err:=c.do(ctx,t,http.MethodGet,path,nil,&p)
  if err!=nil {
-  var failure *StatusError
-  if errors.As(err,&failure)&&failure.StatusCode==http.StatusNotFound{return p,ErrExpiredHistory}
+  if providers.HTTPStatus(err)==http.StatusNotFound{return p,ErrExpiredHistory}
   return p,err
  }
  return p,nil

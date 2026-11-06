@@ -75,6 +75,16 @@ func (c *ConnectionController) Disconnect(w http.ResponseWriter,r *http.Request)
  _=httpresponse.WriteSuccess(w,http.StatusOK,result)
 }
 func (c *ConnectionController) writeServiceError(w http.ResponseWriter,r *http.Request,err error){
+ if status:=providers.HTTPStatus(err);status!=0{
+  switch status{
+  case http.StatusBadRequest:writeError(w,r,status,integrationerrors.Invalid)
+  case http.StatusUnauthorized,http.StatusForbidden:writeError(w,r,status,integrationerrors.Forbidden)
+  case http.StatusNotFound:writeError(w,r,status,integrationerrors.NotFound)
+  case http.StatusConflict:writeError(w,r,status,integrationerrors.NotReady)
+  default:writeError(w,r,status,integrationerrors.Failed)
+  }
+  return
+ }
  switch {
  case errors.Is(err,serviceimpl.ErrInvalidConnection),errors.Is(err,integrationrepository.ErrConnectionNotFound):
   if errors.Is(err,integrationrepository.ErrConnectionNotFound){writeError(w,r,http.StatusNotFound,integrationerrors.NotFound)}else{writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid)}

@@ -20,11 +20,12 @@ import (
 type connectionRepositoryFake struct{}
 func(*connectionRepositoryFake)Create(context.Context,entity.Connection)error{return nil}
 func(*connectionRepositoryFake)Get(context.Context,string,string)(entity.Connection,error){return entity.Connection{},nil}
+func(*connectionRepositoryFake)GetByID(context.Context,string)(entity.Connection,error){return entity.Connection{},nil}
 func(*connectionRepositoryFake)List(context.Context,string)([]entity.Connection,error){return nil,nil}
 func(*connectionRepositoryFake)Disconnect(context.Context,string,string)(entity.Connection,error){return entity.Connection{},nil}
 func(*connectionRepositoryFake)SaveOAuthState(context.Context,entity.OAuthState)error{return nil}
 func(*connectionRepositoryFake)ConsumeOAuthState(context.Context,string,time.Time)(entity.OAuthState,error){return entity.OAuthState{},nil}
-func(*connectionRepositoryFake)Activate(context.Context,string,string,[]byte)error{return nil}
+func(*connectionRepositoryFake)Activate(context.Context,string,string,string,[]byte)error{return nil}
 func(*connectionRepositoryFake)Credential(context.Context,string)([]byte,error){return nil,nil}
 func(*connectionRepositoryFake)UpdateCredential(context.Context,string,[]byte)error{return nil}
 func(*connectionRepositoryFake)SaveTest(context.Context,entity.ConnectionTest)error{return nil}
@@ -60,7 +61,7 @@ var _=Describe("Provider push event ownership",func(){
   messaging:=&messagingFake{}
   service,err:=integrationimpl.NewConnectionService(
    &connectionRepositoryFake{},&watchRepositoryFake{},
-   registry,nil,nil,"projects/test/topics/gmail",messaging,
+   registry,providers.NewActionRegistry(),nil,nil,nil,"projects/test/topics/gmail",messaging,
   )
   Expect(err).NotTo(HaveOccurred())
   err=service.ProcessPush(context.Background(),gmail.PushNotification{

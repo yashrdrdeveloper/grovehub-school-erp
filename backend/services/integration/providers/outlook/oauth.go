@@ -80,7 +80,7 @@ func(c *Client)graph(ctx context.Context,accessToken,method,path string,body io.
  if contentType!=""{req.Header.Set("Content-Type",contentType)}
  res,err:=c.http.Do(req);if err!=nil{return err}
  defer res.Body.Close()
- if res.StatusCode<200||res.StatusCode>=300{return &StatusError{StatusCode:res.StatusCode}}
+ if res.StatusCode<200||res.StatusCode>=300{return providers.NormalizeStatus(res.StatusCode)}
  if dst==nil{return nil}
  return json.NewDecoder(io.LimitReader(res.Body,2<<20)).Decode(dst)
 }
