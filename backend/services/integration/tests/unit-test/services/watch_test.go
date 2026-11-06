@@ -61,7 +61,7 @@ var _=Describe("Provider push event ownership",func(){
   messaging:=&messagingFake{}
   service,err:=integrationimpl.NewConnectionService(
    &connectionRepositoryFake{},&watchRepositoryFake{},
-   registry,providers.NewActionRegistry(),nil,nil,nil,"projects/test/topics/gmail",messaging,
+   registry,providers.NewActionRegistry(),providers.NewOAuthRegistry(),nil,nil,nil,"projects/test/topics/gmail",messaging,
   )
   Expect(err).NotTo(HaveOccurred())
   err=service.ProcessPush(context.Background(),gmail.PushNotification{

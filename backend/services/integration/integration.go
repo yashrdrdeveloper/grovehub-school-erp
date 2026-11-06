@@ -36,13 +36,16 @@ func New(logger *slog.Logger,db *gorm.DB,messaging infrastructureclient.Messagin
  var outlookClient *outlook.Client
  if outlookErr==nil&&keyErr==nil {outlookClient=outlook.NewClient(outlookConfig)} else {logger.Warn("Outlook OAuth not configured; Outlook actions disabled")}
  actions:=providers.NewActionRegistry()
+ oauth:=providers.NewOAuthRegistry()
  if client!=nil {
   if err:=gmail.RegisterActions(actions,client);err!=nil{return nil,err}
+  if err:=oauth.Register("GMAIL",client);err!=nil{return nil,err}
  }
  if outlookClient!=nil{
   if err:=outlook.RegisterActions(actions,outlookClient);err!=nil{return nil,err}
+  if err:=oauth.Register("OUTLOOK",outlookClient);err!=nil{return nil,err}
  }
- service,err:=serviceimpl.NewConnectionService(repository,repositoryimpl.NewWatchRepository(db),registry,actions,client,outlookClient,key,integrationconfig.GmailPushFromEnvironment().Topic,messaging)
+ service,err:=serviceimpl.NewConnectionService(repository,repositoryimpl.NewWatchRepository(db),registry,actions,oauth,client,outlookClient,key,integrationconfig.GmailPushFromEnvironment().Topic,messaging)
  if err!=nil{return nil,err}
  push:=integrationconfig.GmailPushFromEnvironment()
  mod:=&module{controller:controllerimpl.NewConnectionController(service,push),stop:make(chan struct{})}

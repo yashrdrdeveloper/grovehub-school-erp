@@ -25,13 +25,8 @@ func(s *ConnectionService)BeginOAuth(ctx context.Context,tenantID,id string)(int
  c,err:=s.repository.Get(ctx,tenantID,id)
  if err!=nil{return integrationresponse.OAuthStart{},err}
  if c.Status!=entity.StatusPendingSetup{return integrationresponse.OAuthStart{},ErrInvalidConnection}
- switch c.Provider{
- case "GMAIL":
-  if s.gmail==nil{return integrationresponse.OAuthStart{},ErrOAuthUnavailable}
- case "OUTLOOK":
-  if s.outlook==nil{return integrationresponse.OAuthStart{},ErrOAuthUnavailable}
- default:return integrationresponse.OAuthStart{},ErrOAuthUnavailable
- }
+ strategy,err:=s.oauth.Find(c.Provider)
+ if err!=nil{return integrationresponse.OAuthStart{},ErrOAuthUnavailable}
  nonce:=make([]byte,32)
  if _,err=rand.Read(nonce);err!=nil{return integrationresponse.OAuthStart{},err}
  state:=base64.RawURLEncoding.EncodeToString(nonce)
@@ -40,10 +35,7 @@ func(s *ConnectionService)BeginOAuth(ctx context.Context,tenantID,id string)(int
   Hash:hash,ConnectionID:id,ExpiresAt:time.Now().UTC().Add(10*time.Minute),
  })
  if err!=nil{return integrationresponse.OAuthStart{},err}
- if c.Provider=="GMAIL"{
-  return integrationresponse.OAuthStart{AuthorizationURL:s.gmail.AuthorizationURL(state)},nil
- }
- return integrationresponse.OAuthStart{AuthorizationURL:s.outlook.AuthorizationURL(state)},nil
+ return integrationresponse.OAuthStart{AuthorizationURL:strategy.AuthorizationURL(state)},nil
 }
 
 func(s *ConnectionService)FinishOAuth(ctx context.Context,provider,code,state string)(integrationresponse.OAuthCompletion,error){
@@ -58,19 +50,12 @@ func(s *ConnectionService)FinishOAuth(ctx context.Context,provider,code,state st
  if connection.Provider!=provider || connection.Status!=entity.StatusPendingSetup{
   return integrationresponse.OAuthCompletion{},ErrOAuthInvalid
  }
- var token providers.OAuthToken
- var mailbox string
- switch provider{
- case "GMAIL":
-  if s.gmail==nil{return integrationresponse.OAuthCompletion{},ErrOAuthUnavailable}
-  token,err=s.gmail.Exchange(ctx,code)
-  if err==nil && token.RefreshToken!=""{mailbox,err=s.gmail.Mailbox(ctx,token)}
- case "OUTLOOK":
-  if s.outlook==nil{return integrationresponse.OAuthCompletion{},ErrOAuthUnavailable}
-  token,err=s.outlook.Exchange(ctx,code)
-  if err==nil && token.RefreshToken!=""{mailbox,err=s.outlook.Mailbox(ctx,token)}
- default:return integrationresponse.OAuthCompletion{},ErrOAuthUnavailable
- }
+ strategy,err:=s.oauth.Find(provider)
+ if err!=nil{return integrationresponse.OAuthCompletion{},ErrOAuthUnavailable}
+ token,err:=strategy.Exchange(ctx,code)
+ if err!=nil{return integrationresponse.OAuthCompletion{},err}
+ if token.RefreshToken==""{return integrationresponse.OAuthCompletion{},ErrOAuthInvalid}
+ mailbox,err:=strategy.Mailbox(ctx,token)
  if err!=nil{return integrationresponse.OAuthCompletion{},err}
  if mailbox==""||token.RefreshToken==""{return integrationresponse.OAuthCompletion{},ErrOAuthInvalid}
  encrypted,err:=s.cipher.Seal(token)
@@ -93,15 +78,9 @@ func(s *ConnectionService)validProviderToken(ctx context.Context,connectionID,pr
  token,err:=s.cipher.Open(encrypted)
  if err!=nil{return empty,err}
  if time.Until(token.Expiry)>time.Minute{return token,nil}
- switch provider{
- case "GMAIL":
-  if s.gmail==nil{return empty,ErrOAuthUnavailable}
-  token,err=s.gmail.Refresh(ctx,token)
- case "OUTLOOK":
-  if s.outlook==nil{return empty,ErrOAuthUnavailable}
-  token,err=s.outlook.Refresh(ctx,token)
- default:return empty,ErrOAuthUnavailable
- }
+ strategy,findErr:=s.oauth.Find(provider)
+ if findErr!=nil{return empty,ErrOAuthUnavailable}
+ token,err=strategy.Refresh(ctx,token)
  if err!=nil{return empty,err}
  encrypted,err=s.cipher.Seal(token)
  if err!=nil{return empty,err}
