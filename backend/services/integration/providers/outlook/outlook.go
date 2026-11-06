@@ -1,13 +1,22 @@
 package outlook
 
-import "grovehub/services/integration/providers"
+import (
+ integrationconfig "grovehub/services/integration/config"
+ "grovehub/services/integration/providers"
+ impl "grovehub/services/integration/providers/outlook/impl"
+)
 
-// Descriptor-only provider; do not advertise unsupported operations.
-type Provider struct{}
-func New() providers.Provider { return Provider{} }
-func (Provider) Descriptor() providers.Descriptor {
- return providers.Descriptor{
-  ID: "OUTLOOK", DisplayName: "Outlook", AuthType: "OAUTH2",
-  Capabilities: []providers.Capability{providers.CapabilityMailSend,providers.CapabilityMailRead,providers.CapabilityMailDelta,providers.CapabilityMailAttachment}, // mail.history and watch still unsupported
- }
+// Public Outlook provider API. Concrete Graph and OAuth behavior is in impl.
+type Client = impl.Client
+type Provider = impl.Provider
+type Message = impl.Message
+type MessagePage = impl.MessagePage
+type DeltaPage = impl.DeltaPage
+type SendResult = impl.SendResult
+type StatusError = impl.StatusError
+
+func New()providers.Provider{return impl.New()}
+func NewClient(cfg integrationconfig.Outlook)*Client{return impl.NewClient(cfg)}
+func RegisterActions(registry providers.ActionRegistry,client *Client)error{
+ return impl.RegisterActions(registry,client)
 }

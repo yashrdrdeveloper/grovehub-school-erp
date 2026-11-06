@@ -1,4 +1,4 @@
-package outlook
+package impl
 
 import (
  "context"
