@@ -4,6 +4,7 @@ import (
  "encoding/base64"
  "errors"
  "os"
+ "net/url"
  "strings"
 
  "grovehub/services/integration/config"
@@ -21,7 +22,7 @@ func(environmentLoader)Gmail()(config.Gmail,error){
  if value.ClientID==""||value.ClientSecret==""||value.RedirectURI==""{
   return config.Gmail{},errors.New("Gmail OAuth configuration missing")
  }
- if !secureRedirect(value.RedirectURI){return config.Gmail{},errors.New("Gmail redirect URI requires HTTPS")}
+ if !validCallback(value.RedirectURI,"gmail"){return config.Gmail{},errors.New("Gmail redirect URI must use the connections OAuth callback path over HTTPS")}
  return value,nil
 }
 func(environmentLoader)Outlook()(config.Outlook,error){
@@ -35,7 +36,7 @@ func(environmentLoader)Outlook()(config.Outlook,error){
  if value.ClientID==""||value.ClientSecret==""||value.RedirectURI==""{
   return config.Outlook{},errors.New("Outlook OAuth configuration missing")
  }
- if !secureRedirect(value.RedirectURI){return config.Outlook{},errors.New("Outlook redirect URI requires HTTPS")}
+ if !validCallback(value.RedirectURI,"outlook"){return config.Outlook{},errors.New("Outlook redirect URI must use the connections OAuth callback path over HTTPS")}
  if strings.ContainsAny(value.Tenant,"/?#\\ \t\r\n"){
   return config.Outlook{},errors.New("invalid Outlook tenant")
  }
@@ -55,4 +56,15 @@ func(environmentLoader)CredentialKey()([]byte,error){
 }
 func secureRedirect(uri string)bool{
  return strings.HasPrefix(uri,"https://")||strings.HasPrefix(uri,"http://localhost:")
+}
+
+// validCallback prevents an obsolete provider redirect from being configured
+// while the HTTP router only exposes the new canonical connections endpoint.
+func validCallback(raw,provider string)bool{
+ if !secureRedirect(raw){return false}
+ uri,err:=url.Parse(raw)
+ if err!=nil||uri.User!=nil||uri.Hostname()==""||uri.RawQuery!=""||uri.Fragment!=""{
+  return false
+ }
+ return uri.Path=="/integrations/connections/oauth/"+provider+"/callback"
 }
