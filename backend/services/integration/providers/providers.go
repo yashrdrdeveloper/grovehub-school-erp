@@ -3,28 +3,28 @@ package providers
 import (
  "context"
  "encoding/json"
- "grovehub/services/integration/constants"
+ actionconstants "grovehub/services/integration/constants/actions"
  errorcode "grovehub/services/integration/constants/error"
 )
 
 // Public provider contracts; implementation and registration belong in impl.
-type Action = constants.Action
-type Capability = constants.Capability
+type Action = actionconstants.Action
+type Capability = actionconstants.Capability
 
 const (
- ActionMailProfile = constants.ActionMailProfile
- ActionMailList = constants.ActionMailList
- ActionMailGet = constants.ActionMailGet
- ActionMailAttachment = constants.ActionMailAttachment
- ActionMailHistory = constants.ActionMailHistory
- ActionMailDelta = constants.ActionMailDelta
- ActionMailSend = constants.ActionMailSend
- CapabilityMailSend = constants.CapabilityMailSend
- CapabilityMailRead = constants.CapabilityMailRead
- CapabilityMailAttachment = constants.CapabilityMailAttachment
- CapabilityMailHistory = constants.CapabilityMailHistory
- CapabilityMailDelta = constants.CapabilityMailDelta
- CapabilityMailWatch = constants.CapabilityMailWatch
+ ActionMailProfile = actionconstants.MailProfile
+ ActionMailList = actionconstants.MailList
+ ActionMailGet = actionconstants.MailGet
+ ActionMailAttachment = actionconstants.MailAttachment
+ ActionMailHistory = actionconstants.MailHistory
+ ActionMailDelta = actionconstants.MailDelta
+ ActionMailSend = actionconstants.MailSend
+ CapabilityMailSend = actionconstants.CapabilityMailSend
+ CapabilityMailRead = actionconstants.CapabilityMailRead
+ CapabilityMailAttachment = actionconstants.CapabilityMailAttachment
+ CapabilityMailHistory = actionconstants.CapabilityMailHistory
+ CapabilityMailDelta = actionconstants.CapabilityMailDelta
+ CapabilityMailWatch = actionconstants.CapabilityMailWatch
 )
 
 var (
