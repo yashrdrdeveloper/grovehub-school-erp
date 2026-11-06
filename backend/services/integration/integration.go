@@ -11,7 +11,7 @@ import (
 
  "grovehub/services/integration/controller"
  infrastructureclient "grovehub/services/infrastructure/client"
- integrationconfig "grovehub/services/integration/config"
+ configimpl "grovehub/services/integration/config/impl"
  controllerimpl "grovehub/services/integration/controller/impl"
  "grovehub/services/integration/providers"
  providerimpl "grovehub/services/integration/providers/impl"
@@ -28,12 +28,13 @@ func New(logger *slog.Logger,db *gorm.DB,messaging infrastructureclient.Messagin
  registry,err:=providerimpl.NewRegistry(gmail.New(),outlook.New())
  if err!=nil{return nil,err}
  repository:=repositoryimpl.NewConnectionRepository(db)
- gmailConfig,configErr:=integrationconfig.GmailFromEnvironment()
+ loader:=configimpl.NewEnvironmentLoader()
+ gmailConfig,configErr:=loader.Gmail()
  var client *gmail.Client
- key,keyErr:=integrationconfig.CredentialEncryptionKey()
+ key,keyErr:=loader.CredentialKey()
  if keyErr!=nil{logger.Warn("integration encryption key not configured; OAuth providers disabled")}
  if configErr==nil&&keyErr==nil {client=gmail.NewClient(gmailConfig)} else {logger.Warn("gmail provider not configured; OAuth and tests disabled")}
- outlookConfig,outlookErr:=integrationconfig.OutlookFromEnvironment()
+ outlookConfig,outlookErr:=loader.Outlook()
  var outlookClient *outlook.Client
  if outlookErr==nil&&keyErr==nil {outlookClient=outlook.NewClient(outlookConfig)} else {logger.Warn("Outlook OAuth not configured; Outlook actions disabled")}
  actions:=providerimpl.NewActionRegistry()
@@ -46,9 +47,9 @@ func New(logger *slog.Logger,db *gorm.DB,messaging infrastructureclient.Messagin
   if err:=outlook.RegisterActions(actions,outlookClient);err!=nil{return nil,err}
   if err:=oauth.Register("OUTLOOK",outlookClient);err!=nil{return nil,err}
  }
- service,err:=serviceimpl.NewConnectionService(repository,repositoryimpl.NewWatchRepository(db),registry,actions,oauth,client,outlookClient,key,integrationconfig.GmailPushFromEnvironment().Topic,messaging)
+ service,err:=serviceimpl.NewConnectionService(repository,repositoryimpl.NewWatchRepository(db),registry,actions,oauth,client,outlookClient,key,loader.GmailPush().Topic,messaging)
  if err!=nil{return nil,err}
- push:=integrationconfig.GmailPushFromEnvironment()
+ push:=loader.GmailPush()
  mod:=&module{controller:controllerimpl.NewConnectionController(service,push),stop:make(chan struct{})}
  if push.Enabled()&&client!=nil {go mod.watchRenewal(service)}
  return mod,nil

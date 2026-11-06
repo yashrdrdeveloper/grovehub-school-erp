@@ -1,0 +1,58 @@
+package impl
+
+import (
+ "encoding/base64"
+ "errors"
+ "os"
+ "strings"
+
+ "grovehub/services/integration/config"
+)
+
+type environmentLoader struct{}
+func NewEnvironmentLoader()config.Loader{return environmentLoader{}}
+
+func(environmentLoader)Gmail()(config.Gmail,error){
+ value:=config.Gmail{
+  ClientID:strings.TrimSpace(os.Getenv("GROVEHUB_GMAIL_CLIENT_ID")),
+  ClientSecret:strings.TrimSpace(os.Getenv("GROVEHUB_GMAIL_CLIENT_SECRET")),
+  RedirectURI:strings.TrimSpace(os.Getenv("GROVEHUB_GMAIL_REDIRECT_URI")),
+ }
+ if value.ClientID==""||value.ClientSecret==""||value.RedirectURI==""{
+  return config.Gmail{},errors.New("Gmail OAuth configuration missing")
+ }
+ if !secureRedirect(value.RedirectURI){return config.Gmail{},errors.New("Gmail redirect URI requires HTTPS")}
+ return value,nil
+}
+func(environmentLoader)Outlook()(config.Outlook,error){
+ value:=config.Outlook{
+  ClientID:strings.TrimSpace(os.Getenv("GROVEHUB_OUTLOOK_CLIENT_ID")),
+  ClientSecret:strings.TrimSpace(os.Getenv("GROVEHUB_OUTLOOK_CLIENT_SECRET")),
+  RedirectURI:strings.TrimSpace(os.Getenv("GROVEHUB_OUTLOOK_REDIRECT_URI")),
+  Tenant:strings.TrimSpace(os.Getenv("GROVEHUB_OUTLOOK_TENANT")),
+ }
+ if value.Tenant==""{value.Tenant="common"}
+ if value.ClientID==""||value.ClientSecret==""||value.RedirectURI==""{
+  return config.Outlook{},errors.New("Outlook OAuth configuration missing")
+ }
+ if !secureRedirect(value.RedirectURI){return config.Outlook{},errors.New("Outlook redirect URI requires HTTPS")}
+ if strings.ContainsAny(value.Tenant,"/?#\\ \t\r\n"){
+  return config.Outlook{},errors.New("invalid Outlook tenant")
+ }
+ return value,nil
+}
+func(environmentLoader)GmailPush()config.GmailPush{
+ return config.GmailPush{
+  Topic:strings.TrimSpace(os.Getenv("GROVEHUB_GMAIL_PUBSUB_TOPIC")),
+  Audience:strings.TrimSpace(os.Getenv("GROVEHUB_GMAIL_PUBSUB_AUDIENCE")),
+  ServiceAccount:strings.TrimSpace(os.Getenv("GROVEHUB_GMAIL_PUBSUB_SERVICE_ACCOUNT")),
+ }
+}
+func(environmentLoader)CredentialKey()([]byte,error){
+ key,err:=base64.StdEncoding.DecodeString(os.Getenv("GROVEHUB_INTEGRATION_ENCRYPTION_KEY"))
+ if err!=nil||len(key)!=32{return nil,errors.New("integration encryption key must be base64-encoded 32 bytes")}
+ return key,nil
+}
+func secureRedirect(uri string)bool{
+ return strings.HasPrefix(uri,"https://")||strings.HasPrefix(uri,"http://localhost:")
+}
