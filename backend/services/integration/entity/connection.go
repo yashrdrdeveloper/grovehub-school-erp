@@ -1,11 +1,14 @@
 package entity
 
-import "time"
+import (
+ "time"
+ "grovehub/services/integration/constants"
+)
 
 const (
- StatusPendingSetup = "PENDING_SETUP"
- StatusActive = "ACTIVE"
- StatusDisconnected = "DISCONNECTED"
+ StatusPendingSetup = constants.StatusPendingSetup
+ StatusActive = constants.StatusActive
+ StatusDisconnected = constants.StatusDisconnected
 )
 
 type Connection struct {

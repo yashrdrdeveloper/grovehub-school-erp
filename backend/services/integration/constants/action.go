@@ -22,5 +22,7 @@ const (
  ProviderGmail = "GMAIL"
  ProviderOutlook = "OUTLOOK"
  ResourceGmailMailbox = "GMAIL_MAILBOX"
+ StatusPendingSetup = "PENDING_SETUP"
  StatusActive = "ACTIVE"
+ StatusDisconnected = "DISCONNECTED"
 )
