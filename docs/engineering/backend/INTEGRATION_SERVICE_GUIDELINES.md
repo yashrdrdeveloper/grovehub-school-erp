@@ -170,4 +170,4 @@ Verified IAM middleware has not been connected to the Integration HTTP routes; p
 
 ### Gmail mail.send input validation
 
-`mail.send` accepts `{"input":{"raw":"..."}}` where `raw` is a base64url (unpadded) encoded RFC 5322 message with From/To headers and a CRLF-separated header/body. An explanatory placeholder is not sendable. Invalid encodings or malformed messages return HTTP 400 `INTEGRATION_INVALID`, not a generic HTTP 500. The mail provider still enforces scopes and may reject syntactically valid messages. Never store message contents in Integration.
+`mail.send` accepts `{"input":{"raw":"..."}}` where `raw` is a base64url (unpadded) encoded RFC 5322 message with From/To headers and a header/body separator. Validation accepts CRLF or LF line endings; generating RFC 5322 via Python `email.policy.SMTP` is recommended for Gmail interoperability. An explanatory placeholder is not sendable. Invalid encodings or malformed messages return HTTP 400 `INTEGRATION_INVALID`, not a generic HTTP 500. The mail provider still enforces scopes and may reject syntactically valid messages. Never store message contents in Integration.

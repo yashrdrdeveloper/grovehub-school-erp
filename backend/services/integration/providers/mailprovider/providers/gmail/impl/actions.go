@@ -2,6 +2,8 @@ package impl
 
 import (
 	"context"
+ "bytes"
+ "net/mail"
  "encoding/base64"
 	"encoding/json"
 	"strings"
@@ -95,10 +97,10 @@ func (h *ActionHandler) Execute(ctx context.Context, session providers.Session, 
   if err!=nil || len(decoded)==0 {
    return nil,providers.ErrInvalidActionInput
   }
-  // A send request must contain basic RFC 5322 headers and header/body
-  // separator; reject obviously invalid payloads before contacting Gmail.
-  message:=string(decoded)
-  if !strings.Contains(message,"\r\n\r\n") || !strings.Contains(strings.ToLower(message),"to:") || !strings.Contains(strings.ToLower(message),"from:") {
+  // Go's RFC 5322 reader accepts both CRLF and LF line endings.
+  // Require actual message headers rather than substrings in the body.
+  parsed,parseErr:=mail.ReadMessage(bytes.NewReader(decoded))
+  if parseErr!=nil || parsed.Header.Get("To")=="" || parsed.Header.Get("From")=="" {
    return nil,providers.ErrInvalidActionInput
   }
   return h.client.SendRaw(ctx, token, request.Raw)
