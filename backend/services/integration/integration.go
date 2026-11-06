@@ -15,8 +15,7 @@ import (
  infrastructureclient "grovehub/services/infrastructure/client"
  configimpl "grovehub/services/integration/config/impl"
  controllerimpl "grovehub/services/integration/controller/impl"
- "grovehub/services/integration/providers"
- providerimpl "grovehub/services/integration/providers/impl"
+ mailfactory "grovehub/services/integration/providers/mailprovider/impl"
  "grovehub/services/integration/providers/mailprovider/providers/gmail"
  "grovehub/services/integration/providers/mailprovider/providers/outlook"
  repositoryimpl "grovehub/services/integration/repository/impl"
@@ -27,8 +26,6 @@ import (
 type Module interface{RegisterHTTP(*http.ServeMux);Client()integrationclient.Client;Close()}
 type module struct{controller controller.Controller;client integrationclient.Client;stop chan struct{}}
 func New(logger *slog.Logger,db *gorm.DB,messaging infrastructureclient.MessagingClient)(Module,error){
- registry,err:=providerimpl.NewRegistry(gmail.New(),outlook.New())
- if err!=nil{return nil,err}
  repository:=repositoryimpl.NewConnectionRepository(db)
  loader:=configimpl.NewEnvironmentLoader()
  gmailConfig,configErr:=loader.Gmail()
@@ -39,16 +36,12 @@ func New(logger *slog.Logger,db *gorm.DB,messaging infrastructureclient.Messagin
  outlookConfig,outlookErr:=loader.Outlook()
  var outlookClient *outlook.Client
  if outlookErr==nil&&keyErr==nil {outlookClient=outlook.NewClient(outlookConfig)} else {logger.Warn("Outlook OAuth not configured; Outlook actions disabled")}
- actions:=providerimpl.NewActionRegistry()
- oauth:=providerimpl.NewOAuthRegistry()
- if client!=nil {
-  if err:=gmail.RegisterActions(actions,client);err!=nil{return nil,err}
-  if err:=oauth.Register("GMAIL",client);err!=nil{return nil,err}
- }
- if outlookClient!=nil{
-  if err:=outlook.RegisterActions(actions,outlookClient);err!=nil{return nil,err}
-  if err:=oauth.Register("OUTLOOK",outlookClient);err!=nil{return nil,err}
- }
+ runtime,err:=mailfactory.NewFactory().Build(
+  gmail.NewStrategy(client),
+  outlook.NewStrategy(outlookClient),
+ )
+ if err!=nil{return nil,err}
+ registry,actions,oauth:=runtime.Registry,runtime.Actions,runtime.OAuth
  service,err:=serviceimpl.NewConnectionService(repository,repositoryimpl.NewWatchRepository(db),registry,actions,oauth,client,outlookClient,key,loader.GmailPush().Topic,messaging)
  if err!=nil{return nil,err}
  push:=loader.GmailPush()
