@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"grovehub/services/integration/providers"
+ "grovehub/services/integration/providers/mailprovider/mailcontract"
 )
 
 type Message struct {
@@ -80,6 +81,17 @@ func (c *Client) Message(ctx context.Context, accessToken, id string) (Message, 
 	err := c.graph(ctx, accessToken, http.MethodGet, "/me/messages/"+url.PathEscape(id), nil, "", &result)
 	return result, err
 }
+// Send converts provider-neutral mail into the Graph MIME sendMail request.
+func (c *Client) Send(ctx context.Context, accessToken string, request mailcontract.Send) (SendResult, error) {
+ identity, err := c.Profile(ctx, accessToken)
+ if err != nil { return SendResult{}, err }
+ me, ok := identity.(map[string]string)
+ if !ok || me["emailAddress"] == "" { return SendResult{}, providers.ErrProviderUnavailable }
+ raw, err := mailcontract.BuildMIME(me["emailAddress"], request)
+ if err != nil { return SendResult{}, providers.ErrInvalidActionInput }
+ return c.SendRaw(ctx, accessToken, base64.RawURLEncoding.EncodeToString(raw))
+}
+
 func (c *Client) SendRaw(ctx context.Context, accessToken, raw string) (SendResult, error) {
 	var result SendResult
 	if len(raw) == 0 || len(raw) > 8*1024*1024 {

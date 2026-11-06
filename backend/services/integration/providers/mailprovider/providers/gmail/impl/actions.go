@@ -4,11 +4,11 @@ import (
 	"context"
  "bytes"
  "net/mail"
- "encoding/base64"
-	"encoding/json"
+ 	"encoding/json"
 	"strings"
 
 	"grovehub/services/integration/providers"
+ "grovehub/services/integration/providers/mailprovider/mailcontract"
 	providerhelpers "grovehub/services/integration/providers/helpers"
 )
 
@@ -84,26 +84,14 @@ func (h *ActionHandler) Execute(ctx context.Context, session providers.Session, 
 		}
 		return h.client.History(ctx, token, request.StartHistoryID, request.PageToken)
 	case providers.ActionMailSend:
-		var request struct {
-			Raw string `json:"raw"`
-		}
+		var request mailcontract.Send
 		if err := providerhelpers.DecodeStrictActionInput(input, &request); err != nil {
 			return nil, err
 		}
-		if request.Raw == "" || len(request.Raw) > 8*1024*1024 {
-   return nil, providers.ErrInvalidActionInput
-  }
-  decoded,err:=base64.RawURLEncoding.DecodeString(request.Raw)
-  if err!=nil || len(decoded)==0 {
-   return nil,providers.ErrInvalidActionInput
-  }
-  // Go's RFC 5322 reader accepts both CRLF and LF line endings.
-  // Require actual message headers rather than substrings in the body.
-  parsed,parseErr:=mail.ReadMessage(bytes.NewReader(decoded))
-  if parseErr!=nil || parsed.Header.Get("To")=="" || parsed.Header.Get("From")=="" {
-   return nil,providers.ErrInvalidActionInput
-  }
-  return h.client.SendRaw(ctx, token, request.Raw)
+		if err := request.Validate(); err != nil {
+			return nil, providers.ErrInvalidActionInput
+		}
+		return h.client.Send(ctx, token, request)
 	default:
 		return nil, providers.ErrUnsupportedAction
 	}

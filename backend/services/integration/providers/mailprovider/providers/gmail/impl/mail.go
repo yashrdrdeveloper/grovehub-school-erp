@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"grovehub/services/integration/providers"
+ "grovehub/services/integration/providers/mailprovider/mailcontract"
 	"net/http"
 	"net/url"
 )
@@ -102,6 +103,16 @@ func (c *Client) History(ctx context.Context, t Token, startID, page string) (Hi
 		return p, err
 	}
 	return p, nil
+}
+
+// Send builds RFC 5322/MIME on the server and translates it to Gmail's
+// base64url request format. The authenticated mailbox is the sender.
+func (c *Client) Send(ctx context.Context, t Token, request mailcontract.Send) (SentMessage, error) {
+ profile, err := c.Profile(ctx, t)
+ if err != nil { return SentMessage{}, err }
+ raw, err := mailcontract.BuildMIME(profile.EmailAddress, request)
+ if err != nil { return SentMessage{}, providers.ErrInvalidActionInput }
+ return c.SendRaw(ctx, t, base64.RawURLEncoding.EncodeToString(raw))
 }
 
 // SendRaw submits an RFC 5322 message encoded as base64url.

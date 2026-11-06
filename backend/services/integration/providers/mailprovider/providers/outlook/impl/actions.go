@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"grovehub/services/integration/providers"
+ "grovehub/services/integration/providers/mailprovider/mailcontract"
 	providerhelpers "grovehub/services/integration/providers/helpers"
 )
 
@@ -66,13 +67,14 @@ func (h *ActionHandler) Execute(ctx context.Context, session providers.Session, 
 		}
 		return h.client.Delta(ctx, session.AccessToken, request.Cursor)
 	case providers.ActionMailSend:
-		var request struct {
-			Raw string `json:"raw"`
-		}
+		var request mailcontract.Send
 		if err := providerhelpers.DecodeStrictActionInput(input, &request); err != nil {
 			return nil, err
 		}
-		return h.client.SendRaw(ctx, session.AccessToken, request.Raw)
+		if err := request.Validate(); err != nil {
+			return nil, providers.ErrInvalidActionInput
+		}
+		return h.client.Send(ctx, session.AccessToken, request)
 	default:
 		return nil, providers.ErrUnsupportedAction
 	}

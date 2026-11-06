@@ -14,6 +14,7 @@ import (
 	"grovehub/services/integration/entity"
 	"grovehub/services/integration/providers"
 	connectionhelpers "grovehub/services/integration/services/helpers/connections"
+ mailcontract "grovehub/services/integration/providers/mailprovider/mailcontract"
 )
 
 // RunTest uses the registered provider strategy, without Gmail/Outlook branching.
@@ -43,13 +44,12 @@ func (s *ConnectionService) RunTest(ctx context.Context, tenantID, id, direction
 	payload := json.RawMessage("{}")
 
 	if direction == connectionconstants.DirectionOutbound {
-		var encoded string
-		encoded, err = connectionhelpers.BuildSelfTestRaw(*connection.ExternalID, test.ID)
-		if err == nil {
-			payload, err = json.Marshal(map[string]string{"raw": encoded})
-		}
-	}
-
+  payload, err = json.Marshal(mailcontract.Send{
+   To: []string{*connection.ExternalID},
+   Subject: "GrooveHub Connection Test",
+   Body: mailcontract.Body{Text: "This email verifies that the connected provider accepts outgoing mail. Test ID: "+test.ID},
+  })
+ }
 	if err == nil {
 		var token providers.OAuthToken
 		token, err = s.validProviderToken(ctx, id, connection.Provider)
