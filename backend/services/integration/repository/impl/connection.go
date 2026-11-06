@@ -73,7 +73,7 @@ func(r *ConnectionRepository)UpdateCredential(ctx context.Context,connectionID s
 func(r *ConnectionRepository)SaveTest(ctx context.Context,test entity.ConnectionTest)error{
  return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB)error{
   if err:=tx.Create(&test).Error;err!=nil{return err}
-  return tx.Model(&entity.Connection{}).Where("id = ?",test.ConnectionID).
+  return tx.Model(&entity.Connection{}).Where("id = ? AND (last_tested_at IS NULL OR last_tested_at <= ?)",test.ConnectionID,test.CompletedAt).
    Updates(map[string]any{"last_tested_at":test.CompletedAt,"last_test_status":test.Status,"updated_at":time.Now().UTC()}).Error
  })
 }
