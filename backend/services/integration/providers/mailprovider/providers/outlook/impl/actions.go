@@ -40,7 +40,9 @@ func (h *ActionHandler) Execute(ctx context.Context, session providers.Session, 
 		if err := providerhelpers.DecodeStrictActionInput(input, &request); err != nil {
 			return nil, err
 		}
-		return h.client.Messages(ctx, session.AccessToken, request.PageToken)
+		page,err:=h.client.Messages(ctx,session.AccessToken,request.PageToken)
+  if err!=nil{return nil,err}
+  return normalizeOutlookPage(page),nil
 	case providers.ActionMailGet:
 		var request struct {
 			MessageID string `json:"messageId"`
@@ -48,7 +50,9 @@ func (h *ActionHandler) Execute(ctx context.Context, session providers.Session, 
 		if err := providerhelpers.DecodeStrictActionInput(input, &request); err != nil {
 			return nil, err
 		}
-		return h.client.Message(ctx, session.AccessToken, request.MessageID)
+		message,err:=h.client.Message(ctx,session.AccessToken,request.MessageID)
+  if err!=nil{return nil,err}
+  return normalizeOutlookMessage(message),nil
 	case providers.ActionMailAttachment:
 		var request struct {
 			MessageID    string `json:"messageId"`

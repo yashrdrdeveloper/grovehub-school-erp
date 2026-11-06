@@ -22,6 +22,9 @@ type Message struct {
 	SentDateTime      string          `json:"sentDateTime"`
 	From              json.RawMessage `json:"from,omitempty"`
 	ToRecipients      json.RawMessage `json:"toRecipients,omitempty"`
+ CcRecipients json.RawMessage `json:"ccRecipients,omitempty"`
+ BccRecipients json.RawMessage `json:"bccRecipients,omitempty"`
+ ReplyTo json.RawMessage `json:"replyTo,omitempty"`
 	Body              json.RawMessage `json:"body,omitempty"`
 	IsRead            bool            `json:"isRead"`
 }
@@ -49,7 +52,7 @@ func (c *Client) Profile(ctx context.Context, accessToken string) (any, error) {
 }
 func safeNextLink(raw string) (string, error) {
 	if raw == "" {
-		return "/me/messages?$top=50&$select=id,subject,conversationId,internetMessageId,receivedDateTime,sentDateTime,from,toRecipients,isRead", nil
+		return "/me/messages?$top=50&$select=id,subject,conversationId,internetMessageId,receivedDateTime,sentDateTime,from,toRecipients,ccRecipients,bccRecipients,replyTo,body,isRead", nil
 	}
 	if len(raw) > 4096 {
 		return "", providers.ErrInvalidActionInput

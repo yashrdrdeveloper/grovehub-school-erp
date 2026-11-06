@@ -47,7 +47,9 @@ func (h *ActionHandler) Execute(ctx context.Context, session providers.Session, 
 		if len(request.PageToken) > 2048 {
 			return nil, providers.ErrInvalidActionInput
 		}
-		return h.client.Messages(ctx, token, request.PageToken)
+		page,err:=h.client.Messages(ctx,token,request.PageToken)
+  if err!=nil{return nil,err}
+  return normalizeGmailPage(page),nil
 	case providers.ActionMailGet:
 		var request struct {
 			MessageID string `json:"messageId"`
@@ -58,7 +60,9 @@ func (h *ActionHandler) Execute(ctx context.Context, session providers.Session, 
 		if len(request.MessageID) == 0 || len(request.MessageID) > 512 {
 			return nil, providers.ErrInvalidActionInput
 		}
-		return h.client.MessageMetadata(ctx, token, request.MessageID)
+		message,err:=h.client.MessageMetadata(ctx,token,request.MessageID)
+  if err!=nil{return nil,err}
+  return normalizeGmailMessage(message),nil
 	case providers.ActionMailAttachment:
 		var request struct {
 			MessageID    string `json:"messageId"`
