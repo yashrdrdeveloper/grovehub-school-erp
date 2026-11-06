@@ -2,6 +2,7 @@ package controller_test
 
 import (
  "context"
+ "encoding/json"
  "net/http"
  "net/http/httptest"
  "strings"
@@ -33,7 +34,7 @@ func (*serviceStub) List(context.Context,string)([]integrationresponse.Connectio
 func (*serviceStub) BeginOAuth(context.Context,string,string)(integrationresponse.OAuthStart,error){
  return integrationresponse.OAuthStart{},nil
 }
-func (*serviceStub) FinishOAuth(context.Context,string,string)(integrationresponse.OAuthCompletion,error){
+func (*serviceStub) FinishOAuth(context.Context,string,string,string)(integrationresponse.OAuthCompletion,error){
  return integrationresponse.OAuthCompletion{},nil
 }
 func (*serviceStub) MailProfile(context.Context,string,string)(gmail.MailProfile,error){return gmail.MailProfile{},nil}
@@ -41,6 +42,7 @@ func (*serviceStub) MailMessages(context.Context,string,string,string)(gmail.Mes
 func (*serviceStub) MailMessage(context.Context,string,string,string)(gmail.Message,error){return gmail.Message{},nil}
 func (*serviceStub) MailHistory(context.Context,string,string,string,string)(gmail.HistoryPage,error){return gmail.HistoryPage{},nil}
 func (*serviceStub) MailSend(context.Context,string,string,string)(gmail.SentMessage,error){return gmail.SentMessage{},nil}
+func (*serviceStub) ExecuteAction(context.Context,string,string,providers.Action,json.RawMessage)(any,error){return nil,nil}
 func (*serviceStub) Watch(context.Context,string,string)(integrationresponse.Watch,error){return integrationresponse.Watch{},nil}
 func (*serviceStub) ProcessPush(context.Context,gmail.PushNotification)error{return nil}
 func (*serviceStub) RenewExpiring(context.Context)error{return nil}

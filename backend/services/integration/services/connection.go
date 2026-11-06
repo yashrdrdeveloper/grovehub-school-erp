@@ -19,7 +19,7 @@ type ConnectionService interface {
  List(ctx context.Context,tenantID string)([]integrationresponse.Connection,error)
  Disconnect(ctx context.Context,tenantID,id string)(integrationresponse.Connection,error)
  BeginOAuth(ctx context.Context,tenantID,id string)(integrationresponse.OAuthStart,error)
- FinishOAuth(ctx context.Context,code,state string)(integrationresponse.OAuthCompletion,error)
+ FinishOAuth(ctx context.Context,provider,code,state string)(integrationresponse.OAuthCompletion,error)
  RunTest(ctx context.Context,tenantID,id,direction string)(integrationresponse.ConnectionTest,error)
  ListTests(ctx context.Context,tenantID,id string)([]integrationresponse.ConnectionTest,error)
  Watch(ctx context.Context,tenantID,id string)(integrationresponse.Watch,error)
