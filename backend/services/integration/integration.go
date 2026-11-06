@@ -10,6 +10,8 @@ import (
  "gorm.io/gorm"
 
  "grovehub/services/integration/controller"
+ integrationclient "grovehub/services/integration/client"
+ clientimpl "grovehub/services/integration/client/impl"
  infrastructureclient "grovehub/services/infrastructure/client"
  configimpl "grovehub/services/integration/config/impl"
  controllerimpl "grovehub/services/integration/controller/impl"
@@ -22,8 +24,8 @@ import (
  serviceimpl "grovehub/services/integration/services/impl"
 )
 
-type Module interface{RegisterHTTP(*http.ServeMux);Close()}
-type module struct{controller controller.Controller;stop chan struct{}}
+type Module interface{RegisterHTTP(*http.ServeMux);Client()integrationclient.Client;Close()}
+type module struct{controller controller.Controller;client integrationclient.Client;stop chan struct{}}
 func New(logger *slog.Logger,db *gorm.DB,messaging infrastructureclient.MessagingClient)(Module,error){
  registry,err:=providerimpl.NewRegistry(gmail.New(),outlook.New())
  if err!=nil{return nil,err}
@@ -50,11 +52,17 @@ func New(logger *slog.Logger,db *gorm.DB,messaging infrastructureclient.Messagin
  service,err:=serviceimpl.NewConnectionService(repository,repositoryimpl.NewWatchRepository(db),registry,actions,oauth,client,outlookClient,key,loader.GmailPush().Topic,messaging)
  if err!=nil{return nil,err}
  push:=loader.GmailPush()
- mod:=&module{controller:controllerimpl.NewConnectionController(service,push),stop:make(chan struct{})}
+ providerService:=serviceimpl.NewProviderService(registry,actions,oauth)
+ mod:=&module{
+  controller:controllerimpl.NewConnectionController(service,providerService,push),
+  client:clientimpl.NewClient(service,providerService),
+  stop:make(chan struct{}),
+ }
  if push.Enabled()&&client!=nil {go mod.watchRenewal(service)}
  return mod,nil
 }
 func (m *module)RegisterHTTP(mux *http.ServeMux){routes.RegisterHTTP(mux,m.controller)}
+func (m *module)Client()integrationclient.Client{return m.client}
 
 func(m *module)Close(){close(m.stop)}
 func(m *module)watchRenewal(service integrationservices.ConnectionService){
