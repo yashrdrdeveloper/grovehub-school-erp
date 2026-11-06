@@ -21,6 +21,12 @@ func(r *ConnectionRepository)Get(ctx context.Context,tenantID,id string)(entity.
  if errors.Is(err,gorm.ErrRecordNotFound){return c,integrationrepository.ErrConnectionNotFound}
  return c,err
 }
+func(r *ConnectionRepository)GetByID(ctx context.Context,id string)(entity.Connection,error){
+ var c entity.Connection
+ err:=coretransaction.Database(ctx,r.db).Where("id = ?",id).Take(&c).Error
+ if errors.Is(err,gorm.ErrRecordNotFound){return c,integrationrepository.ErrConnectionNotFound}
+ return c,err
+}
 func(r *ConnectionRepository)List(ctx context.Context,tenantID string)([]entity.Connection,error){
  rows:=make([]entity.Connection,0)
  err:=coretransaction.Database(ctx,r.db).Where("tenant_id = ?",tenantID).Order("created_at DESC, id DESC").Limit(200).Find(&rows).Error
@@ -51,9 +57,9 @@ func(r *ConnectionRepository)ConsumeOAuthState(ctx context.Context,hash string,n
  if state.Hash==""{return entity.OAuthState{},integrationrepository.ErrOAuthStateInvalid}
  return state,nil
 }
-func(r *ConnectionRepository)Activate(ctx context.Context,connectionID,externalID string,ciphertext []byte)error{
+func(r *ConnectionRepository)Activate(ctx context.Context,connectionID,provider,externalID string,ciphertext []byte)error{
  return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB)error{
-  result:=tx.Model(&entity.Connection{}).Where("id = ? AND provider = ? AND status = ?",connectionID,"GMAIL",entity.StatusPendingSetup).
+  result:=tx.Model(&entity.Connection{}).Where("id = ? AND provider = ? AND status = ?",connectionID,provider,entity.StatusPendingSetup).
    Updates(map[string]any{"external_id":externalID,"status":entity.StatusActive,"updated_at":time.Now().UTC()})
   if result.Error!=nil{return result.Error}
   if result.RowsAffected==0{return integrationrepository.ErrConnectionNotFound}
