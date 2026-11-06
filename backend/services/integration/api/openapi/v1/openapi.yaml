@@ -115,7 +115,7 @@ paths:
         mail.list, mail.get, mail.history, mail.attachment.get, mail.send.
         Outlook supports mail.profile, mail.list, mail.get, mail.delta,
         mail.attachment.get and mail.send. OAuth state and provider credentials
-        never appear in this request. Mailbox data and cursors are not stored by Integration.
+        never appear in this request. The mail.send action takes structured to/cc/bcc/subject/body/attachments,\n        and the adapters build MIME and provider-specific encoding. mail.get and mail.list return\n        normalized messages. Attachment downloads return standard base64 content.\n        Mailbox data and cursors are not stored by Integration.
       security: [{ verifiedPrincipal: [] }]
       requestBody:
         required: true
@@ -135,10 +135,35 @@ paths:
               outlookDelta: { value: { input: { cursor: "" } } }
               mailGet: { value: { input: { messageId: "provider-message-id" } } }
               attachmentGet: { value: { input: { messageId: "id", attachmentId: "attachment-id" } } }
-              send: { value: { input: { raw: "base64url-encoded-RFC5322" } } }
+              send:
+                summary: Send a plain-text email using the connected mailbox
+                value:
+                  input:
+                    to: ["yashrdrdeveloper@gmail.com"]
+                    cc: []
+                    bcc: []
+                    subject: "GrooveHub Integration Test"
+                    body:
+                      text: "Hello from GrooveHub! This is a Gmail integration test."
+              sendHTML:
+                summary: Send HTML and text with a small attachment
+                value:
+                  input:
+                    to: ["yashrdrdeveloper@gmail.com"]
+                    cc: ["copy@example.com"]
+                    bcc: []
+                    replyTo: []
+                    subject: "GrooveHub HTML Test"
+                    body:
+                      text: "Hello from GrooveHub!"
+                      html: "<p>Hello from <strong>GrooveHub</strong>!</p>"
+                    attachments:
+                      - filename: "hello.txt"
+                        contentType: "text/plain"
+                        contentBase64: "SGVsbG8gZnJvbSBHcm9vdmVIdWIhCg=="
       responses:
         "200": { description: Provider action output; Graph sendMail only returns accepted status }
-        "400": { description: Invalid action input }
+        "400": { description: Invalid action input; malformed recipients, message or attachment }
         "403": { description: Access denied or connection not owned }
         "409": { description: Connection not active }
         "429": { description: Provider rate limited }

@@ -168,6 +168,50 @@ is unrelated to the temporary identity.
 
 Verified IAM middleware has not been connected to the Integration HTTP routes; protected endpoints deny rather than trusting arbitrary tenant headers. Outlook webhook watch is not implemented. Integration notifications rely on messaging delivery but do not yet implement a transactional outbox. No Communication implementation is included.
 
-### Gmail mail.send input validation
+### Provider-neutral mail actions
 
-`mail.send` accepts `{"input":{"raw":"..."}}` where `raw` is a base64url (unpadded) encoded RFC 5322 message with From/To headers and a header/body separator. Validation accepts CRLF or LF line endings; generating RFC 5322 via Python `email.policy.SMTP` is recommended for Gmail interoperability. An explanatory placeholder is not sendable. Invalid encodings or malformed messages return HTTP 400 `INTEGRATION_INVALID`, not a generic HTTP 500. The mail provider still enforces scopes and may reject syntactically valid messages. Never store message contents in Integration.
+`mail.send` now accepts a typed structured request. Neither Communication nor the
+Swagger caller should build raw RFC 5322 or provider-specific Base64URL strings:
+
+```json
+{
+  "input": {
+    "to": ["yashrdrdeveloper@gmail.com"],
+    "cc": [],
+    "bcc": [],
+    "replyTo": [],
+    "subject": "GrooveHub Integration Test",
+    "body": {
+      "text": "Hello from GrooveHub!",
+      "html": "<p>Hello from <strong>GrooveHub</strong>!</p>"
+    },
+    "attachments": [
+      {
+        "filename": "hello.txt",
+        "contentType": "text/plain",
+        "contentBase64": "SGVsbG8gZnJvbSBHcm9vdmVIdWIhCg=="
+      }
+    ]
+  }
+}
+```
+
+The `from` identity is automatically resolved from the authorized provider
+mailbox and **cannot be spoofed by request input**. Addresses, body, and attachment
+limits are checked before invoking provider APIs; maximum total decoded
+attachment bytes is 3 MiB. Attachments use standard padded RFC 4648 base64.
+The generic `mailcontract.BuildMIME` helper produces standards-compatible
+RFC 5322/MIME with alternate text/HTML parts and attachments. Gmail transport
+sends Base64URL raw email; Outlook transport converts to its Graph MIME
+`sendMail` payload. The generic outbound connection test uses this same
+contract. Invalid input returns HTTP 400.
+
+`mail.get` and `mail.list` return a shared object with `id`, `threadId`,
+`subject`, `from`, `to`, `cc`, `bcc`, `body.text`, `body.html`, `snippet`,
+`receivedAt`, `sentAt`, and `attachments` where supported. Gmail list
+returns lightweight message identifiers because Gmail's list API provides
+no full message details; use `mail.get` to retrieve content. Provider-specific
+history/delta cursors remain opaque and are not stored by Integration.
+`mail.attachment.get` normalizes encoded file content to standard base64
+(`contentBase64`), with metadata when available. No Integration message
+persistence is introduced.
