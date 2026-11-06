@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
   title: GrooveHub Integration API
-  version: 0.2.0
-  description: Gmail OAuth and mailbox tests; account APIs need trusted verified-principal middleware.
+  version: 0.3.0
+  description: Provider connection, OAuth, mailbox watch, test history and stateless Gmail API capabilities. Message storage and synchronization belong to Communication.
 paths:
   /integrations/providers:
     get:
@@ -12,7 +12,7 @@ paths:
   /integrations/connections:
     post:
       security: [{ verifiedPrincipal: [] }]
-      summary: Create a provider connection in PENDING_SETUP
+      summary: Create PENDING_SETUP provider connection
       requestBody:
         required: true
         content:
@@ -25,24 +25,24 @@ paths:
                 provider: { type: string, enum: [GMAIL, OUTLOOK] }
                 ownerGid: { type: string, format: uuid }
       responses:
-        "201": { description: Pending connection created }
-        "403": { description: Verified principal not provided }
+        "201": { description: Pending connection }
+        "403": { description: Authorization unavailable }
     get:
       security: [{ verifiedPrincipal: [] }]
-      summary: List connections owned by current actor
+      summary: List current actor's connections
       responses:
-        "200": { description: Connections with lastTestedAt and lastTestStatus }
+        "200": { description: Connections with latest connectivity test }
   /integrations/connections/{id}:
     parameters:
       - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
     get:
       security: [{ verifiedPrincipal: [] }]
-      summary: Get owned connection
+      summary: Get connection
       responses:
         "200": { description: Connection }
     delete:
       security: [{ verifiedPrincipal: [] }]
-      summary: Disconnect account and erase saved OAuth credential
+      summary: Disconnect and erase stored OAuth token
       responses:
         "200": { description: Disconnected connection }
   /integrations/connections/{id}/oauth/start:
@@ -50,25 +50,23 @@ paths:
       - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
     post:
       security: [{ verifiedPrincipal: [] }]
-      summary: Start Gmail OAuth for pending connection
+      summary: Start Gmail OAuth connection authorization
       responses:
         "200": { description: Authorization URL }
-        "501": { description: Gmail OAuth not configured }
   /integrations/oauth/gmail/callback:
     get:
-      summary: Google OAuth callback authenticated by single-use short-lived state
+      summary: Exchange Google callback code with one-time OAuth state
       parameters:
         - { in: query, name: state, required: true, schema: { type: string } }
         - { in: query, name: code, required: true, schema: { type: string } }
       responses:
-        "200": { description: Active connection established }
-        "400": { description: OAuth denied or state invalid }
+        "200": { description: Connection activated }
   /integrations/connections/{id}/test:
     parameters:
       - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
     post:
       security: [{ verifiedPrincipal: [] }]
-      summary: Run Gmail read-permission or self-addressed send test, persisting result
+      summary: Persist Gmail inbound-access or self-addressed outbound test
       requestBody:
         required: true
         content:
@@ -80,55 +78,90 @@ paths:
               properties:
                 direction: { type: string, enum: [INBOUND, OUTBOUND] }
       responses:
-        "200": { description: Saved test result including SUCCESS or FAILED }
-  /integrations/connections/{id}/sync:
-    parameters:
-      - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
-    post:
-      security: [{ verifiedPrincipal: [] }]
-      summary: Run paginated Gmail initial or history-based incremental sync
-      description: Stores provider message references only. Requires ACTIVE Gmail connection. Does not populate Communication or ingest email bodies. Protected until IAM middleware is connected.
-      responses:
-        "200": { description: Sync summary including mode, processed, deleted and cursor }
-        "403": { description: Verified principal absent or connection not owned }
-        "413": { description: Sync exceeds 100 pages, cursor not advanced }
-  /integrations/connections/{id}/watch:
-    parameters:
-      - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
-    post:
-      security: [{ verifiedPrincipal: [] }]
-      summary: Register or renew Gmail mailbox push watch
-      description: Requires active Gmail mailbox, configured Pub/Sub topic, verified tenant principal. Watch expires and is periodically renewed.
-      responses:
-        "200": { description: Watch expiration and connection ID }
-        "403": { description: Verified principal missing or owner mismatch }
-        "501": { description: Gmail OAuth not configured }
-  /integrations/webhooks/gmail:
-    post:
-      summary: Receive Google Cloud Pub/Sub push notifications
-      description: Google-signed JWT is verified against Google JWKS; issuer, audience, service-account email, and expiry validated. Synchronization completes before a 204 acknowledgement. Failed sync returns non-2xx for Pub/Sub retry.
-      security: [{ googlePushJWT: [] }]
-      responses:
-        "204": { description: Gmail history synchronized }
-        "400": { description: Invalid notification }
-        "401": { description: Invalid or missing Google-signed JWT }
-        "503": { description: Temporary processing failure; Pub/Sub should retry }
+        "200": { description: Saved test result (not a delivery receipt) }
   /integrations/connections/{id}/tests:
     parameters:
       - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
     get:
       security: [{ verifiedPrincipal: [] }]
-      summary: List latest 100 saved tests for owned connection
+      summary: Connection test history
       responses:
-        "200": { description: Test history }
+        "200": { description: Latest 100 results }
+  /integrations/connections/{id}/watch:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+    post:
+      security: [{ verifiedPrincipal: [] }]
+      summary: Register or renew Gmail provider subscription
+      responses:
+        "200": { description: Watch expiry }
+  /integrations/connections/{id}/mail/profile:
+    get:
+      security: [{ verifiedPrincipal: [] }]
+      summary: Fetch live Gmail profile and current history cursor (not persisted)
+      responses:
+        "200": { description: Live Gmail profile }
+  /integrations/connections/{id}/mail/messages:
+    get:
+      security: [{ verifiedPrincipal: [] }]
+      summary: List one page of Gmail message IDs
+      parameters:
+        - { in: query, name: pageToken, schema: { type: string } }
+      responses:
+        "200": { description: Provider message page }
+  /integrations/connections/{id}/mail/messages/{messageId}:
+    get:
+      security: [{ verifiedPrincipal: [] }]
+      summary: Read Gmail message metadata; no message stored
+      parameters:
+        - { in: path, name: messageId, required: true, schema: { type: string } }
+      responses:
+        "200": { description: Provider message metadata }
+  /integrations/connections/{id}/mail/history:
+    get:
+      security: [{ verifiedPrincipal: [] }]
+      summary: Read provider history page from caller-owned cursor; no cursor stored
+      parameters:
+        - { in: query, name: startHistoryId, required: true, schema: { type: string } }
+        - { in: query, name: pageToken, schema: { type: string } }
+      responses:
+        "200": { description: Gmail history page with cursor }
+        "500": { description: Provider history error, including expired provider cursor }
+  /integrations/connections/{id}/mail/send:
+    post:
+      security: [{ verifiedPrincipal: [] }]
+      summary: Send caller-composed raw RFC 5322 Gmail message; Integration stores no message
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [raw]
+              properties:
+                raw:
+                  type: string
+                  description: Base64url-encoded RFC 5322 email
+      responses:
+        "200": { description: Gmail provider IDs, not a delivery receipt }
+  /integrations/webhooks/gmail:
+    post:
+      security: [{ googlePushJWT: [] }]
+      summary: Verify Gmail Pub/Sub notification and publish mailbox-change event
+      description: Publishes integration.mailbox.changed.v1 to NATS for each matched active provider connection. No message sync or persistence. Returns retryable failure on publish error.
+      responses:
+        "204": { description: Notification published to configured messaging transport }
+        "401": { description: Google push JWT authentication failed }
+        "503": { description: Event publishing failed, Pub/Sub should retry }
 components:
   securitySchemes:
     googlePushJWT:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: Signed Google Pub/Sub push OIDC JWT; audience and service-account email must match configuration.
+      description: Google-signed Pub/Sub push OIDC JWT
     verifiedPrincipal:
       type: http
       scheme: bearer
-      description: Trusted middleware must populate verified principal context; not connected in current launcher.
+      description: Trusted IAM middleware must supply owner/tenant context; not yet connected to the launcher.

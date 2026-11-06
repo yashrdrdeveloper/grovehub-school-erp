@@ -136,6 +136,10 @@ Read `docs/engineering/backend/INTEGRATION_PHASE_3.md`: sync is provider-referen
 
 Read `docs/engineering/backend/INTEGRATION_PHASE_4.md`. Gmail Pub/Sub watch and OIDC/JWKS-verified push sync are implemented. Mailbox Postgres advisory lock protects across processes; watch expiration has scheduled renewal. No IAM principal middleware or asynchronous durable webhook queue yet. Never acknowledge a failed sync, never bypass JWT verification, and never treat Integration's provider-reference ledger as Communication message storage.
 
+### Integration ownership refactor (supersedes old Phase 3/4 behavior)
+
+Read `docs/engineering/backend/INTEGRATION_BOUNDARY_REFACTOR.md` first. Integration only owns provider connections/OAuth/secrets/watch subscriptions/test history and exposes stateless provider API actions. **Never persist message references, message metadata, threads or consumer sync cursors inside Integration.** Old ledger/cursors were archived non-destructively in `integration_legacy` by migration 000005 for later Communication migration. The legacy `/integrations/connections/{id}/sync` endpoint was removed. Gmail push emits `integration.mailbox.changed.v1` on NATS; **Communication is not implemented**. Prior INTEGRATION_PHASE_3/4 docs describe historical behavior and must not override this boundary.
+
 ### Backend unit tests
 
 The old centralized path `backend/testing/unit-test/` is superseded and must not be recreated.
