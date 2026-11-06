@@ -48,7 +48,7 @@ var _ = Describe("Generic action strategy registry", func() {
 		_, err = client.Delta(context.Background(), "test", "https://graph.microsoft.com.evil.example/v1.0/me/mailFolders/inbox/messages/delta")
 		Expect(err).To(MatchError(providers.ErrInvalidActionInput))
 	})
-	It("returns invalid-input for placeholder and malformed Gmail sends without contacting Google", func() {
+	It("rejects obsolete raw Gmail send payloads without contacting Google", func() {
   registry:=providerimpl.NewActionRegistry()
   client:=gmail.NewClient(integrationconfig.Gmail{})
   Expect(gmail.RegisterActions(registry,client)).To(Succeed())
