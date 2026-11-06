@@ -8,7 +8,6 @@ import (
  . "github.com/onsi/ginkgo/v2"
  . "github.com/onsi/gomega"
 
- coreevents "grovehub/libs/core/events"
  "grovehub/services/integration/entity"
  mailboxevents "grovehub/services/integration/events/mailbox"
  "grovehub/services/integration/providers"
@@ -73,7 +72,7 @@ var _=Describe("Provider push event ownership",func(){
   ids:=map[string]bool{}
   for _,published:=range messaging.published{
    Expect(published.topic).To(Equal(mailboxevents.ChangedTopic))
-   var envelope coreevents.Envelope[mailboxevents.Changed]
+   var envelope mailboxevents.Changed
    Expect(json.Unmarshal(published.data,&envelope)).To(Succeed())
    Expect(envelope.EventType).To(Equal(mailboxevents.ChangedEventType))
    Expect(envelope.Data.HistoryHint).To(Equal("10001"))
