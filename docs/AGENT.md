@@ -140,6 +140,10 @@ Read `docs/engineering/backend/INTEGRATION_PHASE_4.md`. Gmail Pub/Sub watch and 
 
 Read `docs/engineering/backend/INTEGRATION_BOUNDARY_REFACTOR.md` first. Integration only owns provider connections/OAuth/secrets/watch subscriptions/test history and exposes stateless provider API actions. **Never persist message references, message metadata, threads or consumer sync cursors inside Integration.** Old ledger/cursors were archived non-destructively in `integration_legacy` by migration 000005 for later Communication migration. The legacy `/integrations/connections/{id}/sync` endpoint was removed. Gmail push emits `integration.mailbox.changed.v1` on NATS; **Communication is not implemented**. Prior INTEGRATION_PHASE_3/4 docs describe historical behavior and must not override this boundary.
 
+### Integration Phase 5 — provider strategies and generic actions
+
+Read `docs/engineering/backend/INTEGRATION_PHASE_5.md` before editing Integration. Provider actions register through `providers.ActionRegistry`, OAuth strategies through `providers.OAuthRegistry`. The generic HTTP action controller delegates to services; Gmail and Outlook adapters execute provider operations. Never add vendor name switches in the generic controller, or persist messages/threads/attachments/cursors in Integration. Outlook Graph mailbox delta is only an on-demand provider capability; Outlook webhook subscription is not implemented. Protected endpoints require verified IAM middleware, which is not wired yet.
+
 ### Backend unit tests
 
 The old centralized path `backend/testing/unit-test/` is superseded and must not be recreated.
