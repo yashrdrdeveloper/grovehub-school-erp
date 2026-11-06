@@ -39,11 +39,20 @@ type HistoryPage struct{
 }
 var ErrExpiredHistory = errors.New("gmail history cursor expired")
 
+func(c *Client)Profile(ctx context.Context,t Token)(MailProfile,error){
+ var profile MailProfile
+ if err:=c.do(ctx,t,http.MethodGet,"/profile",nil,&profile);err!=nil{
+  return MailProfile{},err
+ }
+ if profile.EmailAddress==""||profile.HistoryID==""{
+  return MailProfile{},errors.New("gmail profile missing mailbox or history cursor")
+ }
+ return profile,nil
+}
+
 func(c *Client)HistoryID(ctx context.Context,t Token)(string,error){
- var p struct{HistoryID string `json:"historyId"`}
- if err:=c.do(ctx,t,http.MethodGet,"/profile",nil,&p);err!=nil{return "",err}
- if p.HistoryID==""{return "",errors.New("gmail profile has no history cursor")}
- return p.HistoryID,nil
+ profile,err:=c.Profile(ctx,t)
+ return profile.HistoryID,err
 }
 func(c *Client)Messages(ctx context.Context,t Token,page string)(MessagePage,error){
  var p MessagePage
@@ -54,7 +63,7 @@ func(c *Client)Messages(ctx context.Context,t Token,page string)(MessagePage,err
 }
 func(c *Client)MessageMetadata(ctx context.Context,t Token,id string)(Message,error){
  var m Message
- // Google returns labelIds, threadId, historyId in METADATA format without body.
+ // Full format is an ephemeral provider response, not an Integration record.
  err:=c.do(ctx,t,http.MethodGet,"/messages/"+url.PathEscape(id)+"?format=full",nil,&m)
  return m,err
 }
