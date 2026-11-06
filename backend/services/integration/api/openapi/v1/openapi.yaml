@@ -115,7 +115,10 @@ paths:
         mail.list, mail.get, mail.history, mail.attachment.get, mail.send.
         Outlook supports mail.profile, mail.list, mail.get, mail.delta,
         mail.attachment.get and mail.send. OAuth state and provider credentials
-        never appear in this request. The mail.send action takes structured to/cc/bcc/subject/body/attachments,\n        and the adapters build MIME and provider-specific encoding. mail.get and mail.list return\n        normalized messages. Attachment downloads return standard base64 content.\n        Mailbox data and cursors are not stored by Integration.
+        never appear in this request. The mail.send action takes structured to/cc/bcc/subject/body/attachments,
+        and the adapters build MIME and provider-specific encoding. mail.get and mail.list return
+        normalized messages. Attachment downloads return standard base64 content.
+        Mailbox data and cursors are not stored by Integration.
       security: [{ verifiedPrincipal: [] }]
       requestBody:
         required: true

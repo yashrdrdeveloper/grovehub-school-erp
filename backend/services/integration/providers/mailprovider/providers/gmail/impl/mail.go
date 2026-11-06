@@ -28,6 +28,7 @@ type Message struct {
 	LabelIDs     []string        `json:"labelIds"`
 	Snippet      string          `json:"snippet,omitempty"`
 	SizeEstimate int64           `json:"sizeEstimate,omitempty"`
+ InternalDate string `json:"internalDate,omitempty"`
 	Payload      json.RawMessage `json:"payload,omitempty"`
 }
 type MessagePage struct {

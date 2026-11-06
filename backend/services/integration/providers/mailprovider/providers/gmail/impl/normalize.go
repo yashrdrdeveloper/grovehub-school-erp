@@ -4,6 +4,8 @@ import (
  "encoding/base64"
  "encoding/json"
  "net/mail"
+ "strconv"
+ "time"
  "strings"
 
  "grovehub/services/integration/providers/mailprovider/mailcontract"
@@ -56,6 +58,11 @@ func splitGmailAddresses(raw string)[]string{
 }
 func normalizeGmailMessage(m Message)mailcontract.Message{
  out:=mailcontract.Message{ID:m.ID,ThreadID:m.ThreadID,Snippet:m.Snippet,Labels:m.LabelIDs}
+ if m.InternalDate!=""{
+  if ms,err:=strconv.ParseInt(m.InternalDate,10,64);err==nil{
+   out.ReceivedAt=time.UnixMilli(ms).UTC().Format(time.RFC3339)
+  }
+ }
  if len(m.Payload)>0{
   var part gmailPart
   if json.Unmarshal(m.Payload,&part)==nil{applyGmailPart(&out,part)}
