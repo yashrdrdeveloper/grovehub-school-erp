@@ -3,6 +3,7 @@ SHELL := /usr/bin/env bash
 .DEFAULT_GOAL := help
 
 SWAGGER_PORT ?= 8081
+FORMAT_SCOPE ?= all
 DB_SERVICE ?= all
 SANITY_SCOPE ?= ./tests/sanity/...
 export SWAGGER_PORT
@@ -11,7 +12,7 @@ export SWAGGER_PORT
 help:
 	@bash ./scripts/help.sh
 
-.PHONY: backend-setup backend-build backend-start backend-stop backend-status backend-dev
+.PHONY: backend-setup backend-build backend-start backend-stop backend-status backend-dev backend-format
 backend-setup:
 	@bash ./scripts/backend/setup.sh
 
@@ -29,6 +30,9 @@ backend-status:
 
 backend-dev:
 	@bash ./scripts/backend/dev.sh
+
+backend-format:
+	@bash ./scripts/backend/format.sh "$(FORMAT_SCOPE)"
 
 .PHONY: db-schema-status db-schema-init db-schema-reset
 db-schema-status:

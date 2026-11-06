@@ -5,6 +5,8 @@ cat <<'EOF'
 GroveHub developer commands
 
 Backend
+  make backend-format FORMAT_SCOPE=integration   Format Integration Go files with gofmt
+  make backend-format                            Format all backend Go files
   make backend-setup    Install/pin local backend development tools
   make backend-build    Build the platform binary into .runtime/bin
   make backend-start    Start the backend binary in the background (no hot reload)
