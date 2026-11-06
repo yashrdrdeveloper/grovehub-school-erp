@@ -10,6 +10,7 @@ import (
  integrationresponse "grovehub/services/integration/dto/response"
  "grovehub/services/integration/entity"
  "grovehub/services/integration/providers/mailprovider/providers/gmail"
+ providerconstants "grovehub/services/integration/constants/providers"
 )
 
 var ErrPushUnavailable=errors.New("Gmail Pub/Sub push is not configured")
@@ -18,7 +19,7 @@ func(s *ConnectionService)Watch(ctx context.Context,tenantID,id string)(integrat
  if s.gmail==nil||s.pushTopic==""{return integrationresponse.Watch{},ErrPushUnavailable}
  c,err:=s.repository.Get(ctx,tenantID,id)
  if err!=nil{return integrationresponse.Watch{},err}
- if c.Provider!="GMAIL"||c.Status!=entity.StatusActive{return integrationresponse.Watch{},ErrConnectionInactive}
+ if c.Provider!=providerconstants.Gmail||c.Status!=entity.StatusActive{return integrationresponse.Watch{},ErrConnectionInactive}
  token,err:=s.validToken(ctx,id);if err!=nil{return integrationresponse.Watch{},err}
  historyID,expiration,err:=s.gmail.Watch(ctx,token,s.pushTopic)
  if err!=nil{return integrationresponse.Watch{},err}
@@ -34,7 +35,7 @@ func(s *ConnectionService)ProcessPush(ctx context.Context,notification gmail.Pus
  for _,connection:=range matches{
   if s.messaging==nil{return errors.New("integration messaging is unavailable")}
   notificationData:=mailboxevents.Payload{
-   Provider:"GMAIL",
+   Provider:providerconstants.Gmail,
    ConnectionID:connection.ID,
    TenantID:connection.TenantID,
    OwnerGID:connection.OwnerGID,

@@ -2,72 +2,74 @@ package impl
 
 import (
  "context"
- "encoding/base64"
- "fmt"
- "net/mail"
+ "encoding/json"
+ "errors"
  "strings"
  "time"
 
  "github.com/google/uuid"
 
+ connectionconstants "grovehub/services/integration/constants/connections"
  integrationresponse "grovehub/services/integration/dto/response"
  "grovehub/services/integration/entity"
+ "grovehub/services/integration/providers"
  connectionhelpers "grovehub/services/integration/services/helpers/connections"
 )
 
+// RunTest uses the registered provider strategy, without Gmail/Outlook branching.
 func(s *ConnectionService)RunTest(ctx context.Context,tenantID,id,direction string)(integrationresponse.ConnectionTest,error){
- c,err:=s.repository.Get(ctx,tenantID,id)
+ connection,err:=s.repository.Get(ctx,tenantID,id)
  if err!=nil{return integrationresponse.ConnectionTest{},err}
+
  direction=strings.ToUpper(strings.TrimSpace(direction))
- if c.Status!=entity.StatusActive||c.ExternalID==nil{
+ if connection.Status!=entity.StatusActive||connection.ExternalID==nil{
   return integrationresponse.ConnectionTest{},ErrConnectionInactive
  }
- if c.Provider!="GMAIL"&&c.Provider!="OUTLOOK"{
-  return integrationresponse.ConnectionTest{},ErrOAuthUnavailable
- }
- if direction!="INBOUND"&&direction!="OUTBOUND"{
-  return integrationresponse.ConnectionTest{},ErrInvalidConnection
- }
+ action,err:=connectionhelpers.ProbeAction(direction)
+ if err!=nil{return integrationresponse.ConnectionTest{},ErrInvalidConnection}
+
  started:=time.Now().UTC()
  test:=entity.ConnectionTest{
-  ID:uuid.NewString(),ConnectionID:id,Direction:direction,Status:"SUCCESS",StartedAt:started,
+  ID:uuid.NewString(),
+  ConnectionID:id,
+  Direction:direction,
+  Status:connectionconstants.TestSuccess,
+  StartedAt:started,
  }
- token,err:=s.validProviderToken(ctx,id,c.Provider)
+ payload:=json.RawMessage("{}")
+
+ if direction==connectionconstants.DirectionOutbound{
+  var encoded string
+  encoded,err=connectionhelpers.BuildSelfTestRaw(*connection.ExternalID,test.ID)
+  if err==nil{payload,err=json.Marshal(map[string]string{"raw":encoded})}
+ }
+
  if err==nil{
-  switch direction{
-  case "INBOUND":
-   switch c.Provider{
-   case "GMAIL":
-    if s.gmail==nil{return integrationresponse.ConnectionTest{},ErrOAuthUnavailable}
-    err=s.gmail.InboundAccess(ctx,token)
-   case "OUTLOOK":
-    if s.outlook==nil{return integrationresponse.ConnectionTest{},ErrOAuthUnavailable}
-    _,err=s.outlook.Messages(ctx,token.AccessToken,"")
-   }
-   if err==nil{test.Detail="Provider mailbox read capability verified; inbound delivery not verified"}
-  case "OUTBOUND":
-   var address *mail.Address
-   address,err=mail.ParseAddress(*c.ExternalID)
-   if err==nil&&address.Address!=*c.ExternalID{err=ErrInvalidConnection}
-   if err==nil{
-    message:=fmt.Sprintf("From: <%s>\r\nTo: <%s>\r\nSubject: GrooveHub connection test\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\nGrooveHub outbound connectivity test. Test ID: %s\r\n",address.Address,address.Address,test.ID)
-    raw:=base64.RawURLEncoding.EncodeToString([]byte(message))
-    switch c.Provider{
-    case "GMAIL":
-     if s.gmail==nil{return integrationresponse.ConnectionTest{},ErrOAuthUnavailable}
-     err=s.gmail.Outbound(ctx,token,raw)
-    case "OUTLOOK":
-     if s.outlook==nil{return integrationresponse.ConnectionTest{},ErrOAuthUnavailable}
-     _,err=s.outlook.SendRaw(ctx,token.AccessToken,raw)
-    }
-    if err==nil{test.Detail="Provider accepted self-addressed test message; delivery not confirmed"}
+  var token providers.OAuthToken
+  token,err=s.validProviderToken(ctx,id,connection.Provider)
+  if err==nil{
+   if s.actions==nil{
+    err=providers.ErrProviderUnavailable
+   }else if token.AccessToken==""{
+    err=errors.New("provider token missing")
+   }else{
+    _,err=s.actions.Execute(ctx,providers.Session{
+     ConnectionID:id,
+     ProviderID:connection.Provider,
+     AccessToken:token.AccessToken,
+    },action,payload)
    }
   }
  }
  if err!=nil{
-  test.Status="FAILED"
-  test.Detail="Provider connection test failed; upstream error details redacted"
+  test.Status=connectionconstants.TestFailed
+  test.Detail="Provider connection test failed; upstream details redacted"
+ }else if direction==connectionconstants.DirectionInbound{
+  test.Detail="Provider mailbox read capability verified; inbound delivery not verified"
+ }else{
+  test.Detail="Provider accepted self-addressed test message; delivery not confirmed"
  }
+
  test.CompletedAt=time.Now().UTC()
  if err:=s.repository.SaveTest(ctx,test);err!=nil{return integrationresponse.ConnectionTest{},err}
  return connectionhelpers.TestToResponse(test),nil
