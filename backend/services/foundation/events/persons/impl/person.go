@@ -71,7 +71,7 @@ func (service *PersonService) publishChanged(ctx context.Context, operation foun
         service.publishChanged(coretransaction.DetachedContext(ctx), operation, old, next)
     }) { return }
     eventID := uuid.NewString()
-    envelope := eventhelpers.BuildChanged(eventID, operation, old, next)
+    envelope := eventhelpers.BuildChanged(ctx, eventID, operation, old, next)
     payload, err := json.Marshal(envelope)
     if err != nil {
         service.logger.ErrorContext(ctx, "failed to marshal foundation person changed event", "operation", operation, "error", err)

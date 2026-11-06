@@ -87,7 +87,7 @@ func (service *AccountService) publishCreated(ctx context.Context, account entit
         service.publishCreated(coretransaction.DetachedContext(ctx), account)
     }) { return }
 	eventID := uuid.NewString()
-	envelope := eventhelpers.BuildCreated(eventID, account)
+	envelope := eventhelpers.BuildCreated(ctx, eventID, account)
 	payload, err := json.Marshal(envelope)
 	if err != nil {
 		service.logger.ErrorContext(ctx, "failed to marshal identity account created event", "error", err)

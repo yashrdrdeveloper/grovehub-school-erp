@@ -1,6 +1,7 @@
 package helpers
 
 import (
+    "context"
     "time"
 
     coreevents "grovehub/libs/core/events"
@@ -9,20 +10,32 @@ import (
     personevents "grovehub/services/foundation/events/persons"
 )
 
-func BuildChanged(eventID string, operation foundationevents.Operation, old, next *foundationresponse.Person) coreevents.Envelope[personevents.Changed] {
-    return coreevents.Envelope[personevents.Changed]{
-        EventID: eventID,
-        EventType: personevents.ChangedType,
-        Source: personevents.Source,
-        OccurredAt: time.Now().UTC(),
-        Data: personevents.Changed{Operation: operation, Old: old, New: next},
+// BuildChanged uses the shared generic envelope; the domain owns only its data.
+func BuildChanged(
+    ctx context.Context,
+    eventID string,
+    operation foundationevents.Operation,
+    old, next *foundationresponse.Person,
+) coreevents.Envelope[personevents.Changed] {
+    gid := ""
+    if next != nil {
+        gid = next.GID
+    } else if old != nil {
+        gid = old.GID
     }
+    return coreevents.NewEnvelope(ctx, coreevents.Metadata{
+        EventID:     eventID,
+        EventType:   personevents.ChangedType,
+        Version:     1,
+        AggregateID: gid,
+        OccurredAt:  time.Now().UTC(),
+    }, personevents.Changed{Operation: operation, Old: old, New: next})
 }
 
 func ChangedMetadata(eventID string) map[string]string {
     return map[string]string{
-        "event-id": eventID,
+        "event-id":   eventID,
         "event-type": personevents.ChangedType,
-        "source": personevents.Source,
+        "source":     personevents.Source,
     }
 }

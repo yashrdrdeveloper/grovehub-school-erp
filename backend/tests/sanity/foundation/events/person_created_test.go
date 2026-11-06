@@ -109,7 +109,8 @@ var _ = Describe("Foundation person changed events", func() {
             envelope := got[op]
             Expect(envelope.EventID).NotTo(BeEmpty())
             Expect(envelope.EventType).To(Equal(personevents.ChangedType))
-            Expect(envelope.Source).To(Equal(personevents.Source))
+            Expect(envelope.Version).To(Equal(1))
+            Expect(envelope.AggregateID).To(Equal(gid))
             Expect(envelope.Data.New.GID).To(Equal(gid))
         }
         Expect(got[foundationevents.Created].Data.Old).To(BeNil())

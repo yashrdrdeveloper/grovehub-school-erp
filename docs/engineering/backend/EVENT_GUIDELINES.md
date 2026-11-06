@@ -99,7 +99,7 @@ Pure event construction helpers.
 Typical responsibilities:
 
 ```text
-build the shared event envelope
+build the shared event envelope via `coreevents.NewEnvelope`
 map domain/service output into the public event payload
 build standard event metadata
 ```
@@ -116,17 +116,29 @@ All service events use the shared core envelope from:
 backend/libs/core/events
 ```
 
-Canonical shape:
+Canonical JSON envelope, implemented by `coreevents.Envelope[T any]` and `coreevents.NewEnvelope(ctx, metadata, payload)`:
 
-```text
-EventID
-EventType
-Source
-OccurredAt
-Data
+```json
+{
+  "eventId": "evt_1001",
+  "eventType": "identity.account.created.v1",
+  "version": 1,
+  "aggregateId": "account_123",
+  "occurredAt": "2026-11-06T10:00:00Z",
+  "correlationId": "request-or-trace-id",
+  "causationId": "command-or-prior-event-id",
+  "data": {}
+}
 ```
 
-The domain payload belongs to the owning service event package; only the generic envelope belongs in core.
+- `eventId` identifies this unique event; `aggregateId` identifies the Person GID or Account ID that changed.
+- `version` is the **event schema version** (currently `1`), not the entity record version; `data.version` may separately hold the record's version.
+- `correlationId` identifies the end-to-end request/workflow. Use explicitly propagated context when available, otherwise the active OpenTelemetry trace ID.
+- `causationId` identifies the originating command or prior event, never a freshly invented event ID. Registration supplies its validated idempotency key as the command ID.
+- When correlation or causation is genuinely unavailable (for example, an internal background job with no trace or command context), the field is omitted instead of inventing a misleading value.
+- `source` is **not** part of the envelope; it stays in broker message metadata as a transport detail.
+- Keep existing domain event-type strings and stable NATS topics when migrating consumers; adding the top-level properties changes the JSON contract.
+- The domain payload belongs to its owning service package. Only `Envelope[T]`, `Metadata`, context propagation, and generic construction live in `libs/core/events`.
 
 ---
 
@@ -177,7 +189,7 @@ Default to minimal, non-sensitive payloads unless a concrete domain contract req
 
 - Topic: `foundation_person_changed`; event type: `foundation.person.changed.v1`.
 - Operation type and constants: `foundation/constants/events/operation.go`; JSON values remain unchanged.
-- Envelope: `coreevents.Envelope[persons.Changed]` with `eventId`, `eventType`, `source`, `occurredAt`, and `data`.
+- Envelope: `coreevents.Envelope[persons.Changed]` with `eventId`, `eventType`, `version`, `aggregateId`, `occurredAt`, optional `correlationId`/`causationId`, and `data`.
 - `data`: `{ "operation": "UPDATED", "old": {...}, "new": {...} }`.
 - Each non-null snapshot uses the public `foundation/dto/response.Person` representation (GID, names, contacts, status, version, createdAt, updatedAt).
 - `CREATED`: old is null, new is the created Person. `UPDATED`: old/new are complete snapshots. `DEACTIVATED`: old/new are complete snapshots with status transition. A deactivation emits only DEACTIVATED, not UPDATED as well.

@@ -130,7 +130,8 @@ var _ = Describe("Identity account events", func() {
 
 		Expect(envelope.EventID).NotTo(BeEmpty())
 		Expect(envelope.EventType).To(Equal(accountevents.CreatedType))
-		Expect(envelope.Source).To(Equal(accountevents.Source))
+		Expect(envelope.Version).To(Equal(1))
+		Expect(envelope.AggregateID).To(Equal(accountID))
 		Expect(envelope.Data.AccountID).To(Equal(accountID))
 		Expect(envelope.Data.PersonGID).To(Equal(personGID))
 		Expect(envelope.Data.Status).To(Equal(string(entity.AccountStatusActive)))

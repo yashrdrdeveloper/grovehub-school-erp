@@ -10,6 +10,7 @@ import (
 
 	coreerrors "grovehub/libs/core/errors"
 	coreidempotency "grovehub/libs/core/idempotency"
+    coreevents "grovehub/libs/core/events"
 	foundationclient "grovehub/services/foundation/client"
 	foundationrequest "grovehub/services/foundation/dto/request"
 	foundationresponse "grovehub/services/foundation/dto/response"
@@ -58,6 +59,7 @@ func (service *AuthService) Register(
 		return identityresponse.Register{}, coreerrors.NewError(identityerror.InvalidRegistrationIdempotencyKey)
 	}
 	request.IdempotencyKey = idempotencyKey
+    ctx = coreevents.WithCausationID(ctx, idempotencyKey)
 
 	validated, err := service.validator.ValidateRegister(request)
 	if err != nil {

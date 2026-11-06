@@ -394,3 +394,7 @@ YES capability tests aligned with capability ownership
 ```
 
 > **Guiding principle:** organize shared code by what it **does**, keep its implementation details inside that capability, and expose one stable root package to the rest of GroveHub.
+
+## Shared generic domain-event contract
+
+`backend/libs/core/events/envelope.go` defines `Envelope[T any]`, a transport-agnostic `Metadata` struct, and generic `NewEnvelope(ctx, metadata, payload)`. The stable top-level JSON keys are `eventId`, `eventType`, `version` (event **schema** version), `aggregateId`, `occurredAt`, `correlationId`, `causationId`, and `data` (typed payload). Correlation ID may be explicitly propagated using `WithCorrelationID(ctx, id)` or derived from the current trace; causation ID is explicitly propagated with `WithCausationID(ctx, id)`. Unknown optional IDs must not be fabricated. Domains keep their event names, operation identifiers and payload structs under their own `services/<domain>/events/` packages. See `docs/engineering/backend/EVENT_GUIDELINES.md`.

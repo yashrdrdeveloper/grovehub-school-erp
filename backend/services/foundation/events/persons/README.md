@@ -17,3 +17,7 @@ Consumers decode `coreevents.Envelope[persons.Changed]`, then call `diff.Compare
 The old `foundation_person_created` topic / `foundation.person.created.v1` contract is replaced; existing subscribers must migrate to the changed topic. Messages contain contact email/phone PII and must only be consumed by authorized services. Avoid logging raw payloads, and apply appropriate topic permissions and retention.
 
 Publication is best-effort after persistence: an unavailable broker does not roll back the database operation, so events can be lost until an outbox/retry mechanism is implemented. A pre-update read provides the old snapshot; concurrent writers require careful consideration of ordering and snapshot consistency.
+
+## Envelope metadata
+
+The event uses `coreevents.Envelope[persons.Changed]` built with `coreevents.NewEnvelope` in Foundation helpers. `version: 1` indicates the **event schema version**, while `aggregateId` is the Person GID. `correlationId` comes from an explicit context value or OpenTelemetry trace; `causationId` comes from the originating command or event context if known. Both IDs are omitted if unknown. Broker metadata retains `source: foundation`; the JSON envelope has no `source` field. Other Person operations keep the existing `foundation.person.changed.v1` type and stable topic.

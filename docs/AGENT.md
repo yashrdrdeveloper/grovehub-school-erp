@@ -106,6 +106,10 @@ repository/postgres/entity.go
 
 These are persistence models and are distinct from domain data under `entity/`.
 
+### Shared generic event envelope
+
+All domain events use `backend/libs/core/events.Envelope[T any]` via `coreevents.NewEnvelope(ctx, metadata, data)`. The JSON envelope carries `eventId`, `eventType`, `version`, `aggregateId`, `occurredAt`, optional `correlationId` and `causationId`, and typed `data`. `version` is the schema version, distinct from domain record version. `source` exists only in broker metadata. Domain code supplies aggregate ID and payload; generic fields live exclusively in core. See `docs/engineering/backend/EVENT_GUIDELINES.md`.
+
 ### Foundation Person events and reusable diff
 
 Before editing or consuming Person events, read `docs/engineering/backend/EVENT_GUIDELINES.md` and `backend/services/foundation/events/persons/README.md`. The canonical event is `foundation.person.changed.v1` on the stable topic `foundation_person_changed`. It carries `data: { operation, old, new }`, where old/new are full `foundation/dto/response.Person` snapshots or null. Only `CREATED`, `UPDATED`, and `DEACTIVATED` are currently emitted, once per successful real state change. Their Go type and constants must live in `backend/services/foundation/constants/events/operation.go` (import as `foundationevents`), not inside the Person event contract or global `libs/core/constants`; this is the domain-owned pattern for future agent changes. Deactivation does not also emit UPDATED; no-op or idempotent operations do not publish.
