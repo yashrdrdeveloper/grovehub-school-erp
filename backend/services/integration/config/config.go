@@ -23,9 +23,18 @@ func (c GmailPush) Enabled() bool {
 	return c.Topic != "" && c.Audience != "" && c.ServiceAccount != ""
 }
 
+// DevAuth is an explicitly opt-in principal for local Integration testing.
+// Never derive the principal from caller-controlled request headers.
+type DevAuth struct {
+ Enabled bool
+ TenantID string
+ ActorGID string
+}
+
 type Loader interface {
 	Gmail() (Gmail, error)
 	Outlook() (Outlook, error)
 	GmailPush() GmailPush
 	CredentialKey() ([]byte, error)
+ DevAuth() (DevAuth,error)
 }

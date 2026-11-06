@@ -35,7 +35,12 @@ type module struct {
 }
 
 func New(logger *slog.Logger, db *gorm.DB, messaging infrastructureclient.MessagingClient) (Module, error) {
-	repository := repositoryimpl.NewConnectionRepository(db)
+	devAuth,devErr:=configimpl.NewEnvironmentLoader().DevAuth()
+ if devErr!=nil{return nil,devErr}
+ if devAuth.Enabled{
+  logger.Warn("Integration development authentication bypass enabled for loopback clients only; never enable in production")
+ }
+ repository := repositoryimpl.NewConnectionRepository(db)
 	loader := configimpl.NewEnvironmentLoader()
 	gmailConfig, configErr := loader.Gmail()
 	var client *gmail.Client
@@ -70,7 +75,7 @@ func New(logger *slog.Logger, db *gorm.DB, messaging infrastructureclient.Messag
 	push := loader.GmailPush()
 	providerService := serviceimpl.NewProviderService(registry, actions, oauth)
 	mod := &module{
-		controller: controllerimpl.NewConnectionController(service, providerService, push),
+		controller: controllerimpl.NewConnectionController(service, providerService, push, devAuth),
 		client:     clientimpl.NewClient(service, providerService),
 		stop:       make(chan struct{}),
 	}

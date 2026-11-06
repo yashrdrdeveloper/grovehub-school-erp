@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+ "net"
 	"strings"
 
 	coreerrors "grovehub/libs/core/errors"
@@ -25,13 +26,16 @@ type ConnectionController struct {
 	providerService integrationservices.ProviderService
 	verifier        *gmail.PushVerifier
 	pushEnabled     bool
+ devAuth integrationconfig.DevAuth
 }
 
 type VerifiedPrincipal struct{ TenantID, ActorGID string }
 type principalContextKey struct{}
 
-func NewConnectionController(s integrationservices.ConnectionService, p integrationservices.ProviderService, push integrationconfig.GmailPush) *ConnectionController {
-	return &ConnectionController{service: s, providerService: p, verifier: gmail.NewPushVerifier(push.Audience, push.ServiceAccount), pushEnabled: push.Enabled()}
+func NewConnectionController(s integrationservices.ConnectionService,p integrationservices.ProviderService,push integrationconfig.GmailPush,devOptions ...integrationconfig.DevAuth)*ConnectionController{
+ c:=&ConnectionController{service:s,providerService:p,verifier:gmail.NewPushVerifier(push.Audience,push.ServiceAccount),pushEnabled:push.Enabled()}
+ if len(devOptions)>0{c.devAuth=devOptions[0]}
+ return c
 }
 
 func WithVerifiedPrincipal(ctx context.Context, principal VerifiedPrincipal) context.Context {
@@ -41,6 +45,19 @@ func WithVerifiedPrincipal(ctx context.Context, principal VerifiedPrincipal) con
 func principalFrom(ctx context.Context) (VerifiedPrincipal, bool) {
 	p, ok := ctx.Value(principalContextKey{}).(VerifiedPrincipal)
 	return p, ok && p.TenantID != "" && p.ActorGID != ""
+}
+
+// principalFromRequest trusts verified IAM context first; when explicitly
+// configured, it falls back to a fixed development identity for loopback only.
+// No HTTP headers or JSON request fields can select this identity.
+func(c *ConnectionController)principalFromRequest(r *http.Request)(VerifiedPrincipal,bool){
+ if principal,ok:=principalFrom(r.Context());ok{return principal,true}
+ if !c.devAuth.Enabled{return VerifiedPrincipal{},false}
+ host,_,err:=net.SplitHostPort(r.RemoteAddr)
+ if err!=nil{return VerifiedPrincipal{},false}
+ ip:=net.ParseIP(host)
+ if ip==nil||!ip.IsLoopback(){return VerifiedPrincipal{},false}
+ return VerifiedPrincipal{TenantID:c.devAuth.TenantID,ActorGID:c.devAuth.ActorGID},true
 }
 
 func (c *ConnectionController) writeServiceError(w http.ResponseWriter, r *http.Request, err error) {
@@ -92,7 +109,7 @@ func writeError(w http.ResponseWriter, r *http.Request, status int, definition c
 }
 
 func (c *ConnectionController) owned(w http.ResponseWriter, r *http.Request) (VerifiedPrincipal, bool) {
-	p, ok := principalFrom(r.Context())
+	p, ok := c.principalFromRequest(r)
 	if !ok {
 		writeError(w, r, http.StatusForbidden, integrationerrors.Forbidden)
 		return p, false
@@ -110,7 +127,7 @@ func (c *ConnectionController) owned(w http.ResponseWriter, r *http.Request) (Ve
 }
 
 func (c *ConnectionController) Create(w http.ResponseWriter, r *http.Request) {
-	p, ok := principalFrom(r.Context())
+	p, ok := c.principalFromRequest(r)
 	if !ok {
 		writeError(w, r, http.StatusForbidden, integrationerrors.Forbidden)
 		return
@@ -133,7 +150,7 @@ func (c *ConnectionController) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *ConnectionController) Get(w http.ResponseWriter, r *http.Request) {
-	p, ok := principalFrom(r.Context())
+	p, ok := c.principalFromRequest(r)
 	if !ok {
 		writeError(w, r, http.StatusForbidden, integrationerrors.Forbidden)
 		return
@@ -151,7 +168,7 @@ func (c *ConnectionController) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *ConnectionController) List(w http.ResponseWriter, r *http.Request) {
-	p, ok := principalFrom(r.Context())
+	p, ok := c.principalFromRequest(r)
 	if !ok {
 		writeError(w, r, http.StatusForbidden, integrationerrors.Forbidden)
 		return
@@ -165,7 +182,7 @@ func (c *ConnectionController) List(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *ConnectionController) Disconnect(w http.ResponseWriter, r *http.Request) {
-	p, ok := principalFrom(r.Context())
+	p, ok := c.principalFromRequest(r)
 	if !ok {
 		writeError(w, r, http.StatusForbidden, integrationerrors.Forbidden)
 		return

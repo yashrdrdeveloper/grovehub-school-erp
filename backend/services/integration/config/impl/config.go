@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"grovehub/services/integration/config"
+ corenormalize "grovehub/libs/core/normalize"
 )
 
 type environmentLoader struct{}
@@ -78,4 +79,27 @@ func validCallback(raw, provider string) bool {
 		return false
 	}
 	return uri.Path == "/integrations/connections/oauth/"+provider+"/callback"
+}
+
+
+// DevAuth is disabled by default and intended only for a locally running
+// application. Invalid opt-in configuration fails application startup.
+func (environmentLoader) DevAuth()(config.DevAuth,error){
+ raw:=strings.TrimSpace(os.Getenv("GROVEHUB_INTEGRATION_DEV_AUTH_BYPASS"))
+ if raw==""||raw=="false"||raw=="0"{
+  return config.DevAuth{},nil
+ }
+ if raw!="true"&&raw!="1"{
+  return config.DevAuth{},errors.New("GROVEHUB_INTEGRATION_DEV_AUTH_BYPASS must be true or false")
+ }
+ deployment:=strings.ToLower(strings.TrimSpace(os.Getenv("OTEL_DEPLOYMENT_ENVIRONMENT")))
+ if deployment!=""&&deployment!="local"&&deployment!="development"{
+  return config.DevAuth{},errors.New("Integration development auth bypass cannot be enabled outside local development")
+ }
+ tenant,tenantErr:=corenormalize.UUIDv7(os.Getenv("GROVEHUB_INTEGRATION_DEV_TENANT_ID"))
+ actor,actorErr:=corenormalize.UUIDv7(os.Getenv("GROVEHUB_INTEGRATION_DEV_ACTOR_GID"))
+ if tenantErr!=nil||actorErr!=nil{
+  return config.DevAuth{},errors.New("Integration development auth bypass requires valid UUIDv7 tenant and actor IDs")
+ }
+ return config.DevAuth{Enabled:true,TenantID:tenant,ActorGID:actor},nil
 }
