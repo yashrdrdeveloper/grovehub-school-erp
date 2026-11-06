@@ -27,7 +27,7 @@ func New(logger *slog.Logger,db *gorm.DB)(Module,error){
  var client *gmail.Client
  var key []byte
  if configErr==nil {client=gmail.NewClient(gmailConfig);key=gmailConfig.EncryptionKey} else {logger.Warn("gmail provider not configured; OAuth and tests disabled")}
- service,err:=serviceimpl.NewConnectionService(repository,registry,client,key)
+ service,err:=serviceimpl.NewConnectionService(repository,repositoryimpl.NewMailSyncRepository(db),registry,client,key)
  if err!=nil{return nil,err}
  return &module{controller:controllerimpl.NewConnectionController(service)},nil
 }

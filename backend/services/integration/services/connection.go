@@ -17,4 +17,5 @@ type ConnectionService interface {
  FinishOAuth(ctx context.Context,code,state string)(integrationresponse.OAuthCompletion,error)
  RunTest(ctx context.Context,tenantID,id,direction string)(integrationresponse.ConnectionTest,error)
  ListTests(ctx context.Context,tenantID,id string)([]integrationresponse.ConnectionTest,error)
+ Sync(ctx context.Context,tenantID,id string)(integrationresponse.SyncResult,error)
 }

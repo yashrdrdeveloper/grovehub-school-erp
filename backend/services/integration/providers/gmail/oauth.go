@@ -28,6 +28,9 @@ type Token struct{
  TokenType string `json:"token_type"`
  Expiry time.Time `json:"expiry"`
 }
+type StatusError struct {StatusCode int}
+func(e *StatusError)Error()string{return fmt.Sprintf("gmail request failed (HTTP %d)",e.StatusCode)}
+
 type Client struct{
  config integrationconfig.Gmail
  http *http.Client
@@ -92,7 +95,7 @@ func(c *Client)do(ctx context.Context,token Token,method,path string,body any,ou
  resp,err:=c.http.Do(req)
  if err!=nil{return err}
  defer resp.Body.Close()
- if resp.StatusCode<200||resp.StatusCode>=300{return fmt.Errorf("gmail request failed (HTTP %d)",resp.StatusCode)}
+ if resp.StatusCode<200||resp.StatusCode>=300{return &StatusError{StatusCode:resp.StatusCode}}
  if out==nil{return nil}
  return json.NewDecoder(io.LimitReader(resp.Body,1<<20)).Decode(out)
 }
