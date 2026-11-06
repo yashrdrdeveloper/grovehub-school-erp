@@ -19,4 +19,5 @@ type ConnectionController interface {
  MailMessage(http.ResponseWriter,*http.Request)
  MailHistory(http.ResponseWriter,*http.Request)
  MailSend(http.ResponseWriter,*http.Request)
+ ExecuteAction(http.ResponseWriter,*http.Request)
 }

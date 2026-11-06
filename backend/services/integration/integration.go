@@ -31,7 +31,11 @@ func New(logger *slog.Logger,db *gorm.DB,messaging infrastructureclient.Messagin
  var client *gmail.Client
  var key []byte
  if configErr==nil {client=gmail.NewClient(gmailConfig);key=gmailConfig.EncryptionKey} else {logger.Warn("gmail provider not configured; OAuth and tests disabled")}
- service,err:=serviceimpl.NewConnectionService(repository,repositoryimpl.NewWatchRepository(db),registry,client,key,integrationconfig.GmailPushFromEnvironment().Topic,messaging)
+ actions:=providers.NewActionRegistry()
+ if client!=nil {
+  if err:=gmail.RegisterActions(actions,client);err!=nil{return nil,err}
+ }
+ service,err:=serviceimpl.NewConnectionService(repository,repositoryimpl.NewWatchRepository(db),registry,actions,client,key,integrationconfig.GmailPushFromEnvironment().Topic,messaging)
  if err!=nil{return nil,err}
  push:=integrationconfig.GmailPushFromEnvironment()
  mod:=&module{controller:controllerimpl.NewConnectionController(service,push),stop:make(chan struct{})}

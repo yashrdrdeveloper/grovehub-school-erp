@@ -28,13 +28,14 @@ type ConnectionService struct {
  pushTopic string
  messaging infrastructureclient.MessagingClient
  registry *providers.Registry
+ actions *providers.ActionRegistry
  gmail *gmail.Client
  cipher tokenCipher
 }
-func NewConnectionService(repository integrationrepository.ConnectionRepository,watchRepository integrationrepository.WatchRepository,registry *providers.Registry, gmailClient *gmail.Client, encryptionKey []byte,pushTopic string,messaging infrastructureclient.MessagingClient) (integrationservices.ConnectionService,error) {
+func NewConnectionService(repository integrationrepository.ConnectionRepository,watchRepository integrationrepository.WatchRepository,registry *providers.Registry,actions *providers.ActionRegistry, gmailClient *gmail.Client, encryptionKey []byte,pushTopic string,messaging infrastructureclient.MessagingClient) (integrationservices.ConnectionService,error) {
  cipher,err:=newTokenCipher(encryptionKey)
  if err!=nil && gmailClient!=nil{return nil,err}
- return &ConnectionService{repository:repository,watchRepository:watchRepository,pushTopic:pushTopic,messaging:messaging,registry:registry,gmail:gmailClient,cipher:cipher},nil
+ return &ConnectionService{repository:repository,watchRepository:watchRepository,pushTopic:pushTopic,messaging:messaging,registry:registry,actions:actions,gmail:gmailClient,cipher:cipher},nil
 }
 func (s *ConnectionService) Providers(_ context.Context) []providers.Descriptor { return s.registry.List() }
 func (s *ConnectionService) Create(ctx context.Context,tenantID string,input integrationrequest.CreateConnection)(integrationresponse.Connection,error){

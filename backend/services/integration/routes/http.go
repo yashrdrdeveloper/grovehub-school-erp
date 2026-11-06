@@ -24,6 +24,7 @@ func RegisterHTTP(mux *http.ServeMux,c controller.ConnectionController) {
   {"GET","/integrations/connections/{id}/mail/messages/{messageId}",c.MailMessage},
   {"GET","/integrations/connections/{id}/mail/history",c.MailHistory},
   {"POST","/integrations/connections/{id}/mail/send",c.MailSend},
+  {"POST","/integrations/connections/{id}/actions/{action}",c.ExecuteAction},
  }
  for _,route:=range routes {
   pattern:=route.method+" "+route.pattern

@@ -2,6 +2,7 @@ package services
 
 import (
  "context"
+ "encoding/json"
 
  integrationrequest "grovehub/services/integration/dto/request"
  integrationresponse "grovehub/services/integration/dto/response"
@@ -24,6 +25,7 @@ type ConnectionService interface {
  Watch(ctx context.Context,tenantID,id string)(integrationresponse.Watch,error)
  ProcessPush(ctx context.Context,notification gmail.PushNotification)error
  RenewExpiring(ctx context.Context)error
+ ExecuteAction(ctx context.Context,tenantID,connectionID string,action providers.Action,input json.RawMessage)(any,error)
  MailProfile(ctx context.Context,tenantID,id string)(gmail.MailProfile,error)
  MailMessages(ctx context.Context,tenantID,id,page string)(gmail.MessagePage,error)
  MailMessage(ctx context.Context,tenantID,id,messageID string)(gmail.Message,error)

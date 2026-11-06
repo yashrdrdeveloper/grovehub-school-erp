@@ -3,6 +3,8 @@ package impl
 import (
  "context"
  "errors"
+ "encoding/json"
+ "strings"
  "net/http"
  "grovehub/services/integration/providers/gmail"
  integrationconfig "grovehub/services/integration/config"
@@ -76,6 +78,12 @@ func (c *ConnectionController) writeServiceError(w http.ResponseWriter,r *http.R
  switch {
  case errors.Is(err,serviceimpl.ErrInvalidConnection),errors.Is(err,integrationrepository.ErrConnectionNotFound):
   if errors.Is(err,integrationrepository.ErrConnectionNotFound){writeError(w,r,http.StatusNotFound,integrationerrors.NotFound)}else{writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid)}
+ case errors.Is(err,providers.ErrInvalidActionInput):
+  writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid)
+ case errors.Is(err,providers.ErrUnsupportedAction):
+  writeError(w,r,http.StatusNotImplemented,integrationerrors.NotReady)
+ case errors.Is(err,providers.ErrProviderUnavailable):
+  writeError(w,r,http.StatusServiceUnavailable,integrationerrors.NotReady)
  case errors.Is(err,providers.ErrUnknownProvider):
   writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid)
  case errors.Is(err,serviceimpl.ErrOAuthInvalid):
@@ -182,6 +190,24 @@ func(c *ConnectionController)MailSend(w http.ResponseWriter,r *http.Request){
  var input struct{Raw string `json:"raw"`}
  if err:=httprequest.DecodeStrictJSON(r,&input);err!=nil{writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid);return}
  result,err:=c.service.MailSend(r.Context(),p.TenantID,r.PathValue("id"),input.Raw)
+ if err!=nil{c.writeServiceError(w,r,err);return}
+ _=httpresponse.WriteSuccess(w,http.StatusOK,result)
+}
+
+func(c *ConnectionController)ExecuteAction(w http.ResponseWriter,r *http.Request){
+ p,ok:=c.owned(w,r)
+ if !ok{return}
+ action:=providers.Action(strings.TrimSpace(r.PathValue("action")))
+ if action==""||len(action)>100 {
+  writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid)
+  return
+ }
+ var payload struct{Input json.RawMessage `json:"input"`}
+ if err:=httprequest.DecodeStrictJSON(r,&payload);err!=nil{
+  writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid)
+  return
+ }
+ result,err:=c.service.ExecuteAction(r.Context(),p.TenantID,r.PathValue("id"),action,payload.Input)
  if err!=nil{c.writeServiceError(w,r,err);return}
  _=httpresponse.WriteSuccess(w,http.StatusOK,result)
 }
