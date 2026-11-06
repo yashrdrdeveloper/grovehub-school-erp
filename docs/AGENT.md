@@ -120,33 +120,13 @@ Consumers decode `coreevents.Envelope[persons.Changed]` and may call `diff.Compa
 
 `POST /auth/register` accepts no `gid` in the request. It matches an existing Foundation Person using the validated, normalized email; otherwise creates one, reuses the existing Person GID, and returns `gid` and `personGid` with the same identifier. Never accept caller-supplied GID through this route; unknown request properties are rejected. Consult `backend/services/identity/api/openapi/v1/openapi.yaml` and `services/identity/services/impl/auth.go` before editing. Identity registration uses `core/database/transaction.Run` and context-aware repositories for atomic Foundation Person, Identity Account, and credential writes. Event decorators use `AfterCommit` to prevent publishing rolled-back changes. Password-setup email and reliable database-to-broker delivery are not yet implemented.
 
-### Integration Phase 1
+### Generic backend module conventions
 
-Integration follows the flat GroveHub service root structure. Read `docs/engineering/backend/INTEGRATION_PHASE_1.md` before editing. Provider descriptors for Gmail/Outlook are only a catalogue; OAuth, sync, and sending are **not** implemented. Connections remain PENDING_SETUP and connection HTTP routes are denied by default until verified IAM context is supplied. Never derive tenant authorization from arbitrary HTTP headers. Integration uses capability-specific provider interfaces; Temporal belongs to the future orchestrator.
+Follow `docs/engineering/backend/GROVEHUB_BACKEND_STRUCTURE.md` for every service, including public interfaces/DTOs, corresponding `impl/` packages, `constants/`, `config/config.go` plus environment `config/impl/`, ORM-first GORM repositories, generic core event envelopes, split route/controller files, and developer startup integration.
 
-### Integration Phase 2
+### Integration service
 
-Read `docs/engineering/backend/INTEGRATION_PHASE_2.md` and `backend/services/integration/api/openapi/v1/openapi.yaml`. Gmail OAuth, encrypted mailbox credentials and persisted INBOUND (read-access) / OUTBOUND (self-addressed send) tests are implemented. These tests do not confirm delivery. Trusted principal authorization is still absent at the launcher, so protected endpoints deny access until IAM is connected. No Temporal or mail synchronization yet.
-
-### Integration Phase 3
-
-Read `docs/engineering/backend/INTEGRATION_PHASE_3.md`: sync is provider-reference metadata only, with `(connection_id,provider_message_id)` uniqueness and cursor advancement only after a completed scan. It does not populate Communication or ingest email bodies. No Pub/Sub webhook, scheduler, IAM middleware or Temporal in Integration yet.
-
-### Integration Phase 4
-
-Read `docs/engineering/backend/INTEGRATION_PHASE_4.md`. Gmail Pub/Sub watch and OIDC/JWKS-verified push sync are implemented. Mailbox Postgres advisory lock protects across processes; watch expiration has scheduled renewal. No IAM principal middleware or asynchronous durable webhook queue yet. Never acknowledge a failed sync, never bypass JWT verification, and never treat Integration's provider-reference ledger as Communication message storage.
-
-### Integration ownership refactor (supersedes old Phase 3/4 behavior)
-
-Read `docs/engineering/backend/INTEGRATION_BOUNDARY_REFACTOR.md` first. Integration only owns provider connections/OAuth/secrets/watch subscriptions/test history and exposes stateless provider API actions. **Never persist message references, message metadata, threads or consumer sync cursors inside Integration.** Old ledger/cursors were archived non-destructively in `integration_legacy` by migration 000005 for later Communication migration. The legacy `/integrations/connections/{id}/sync` endpoint was removed. Gmail push emits `integration.mailbox.changed.v1` on NATS; **Communication is not implemented**. Prior INTEGRATION_PHASE_3/4 docs describe historical behavior and must not override this boundary.
-
-### Generic backend rules — canonical service ownership and structure
-
-`docs/engineering/backend/GROVEHUB_BACKEND_STRUCTURE.md` is authoritative for **all** services: public root interfaces, `impl/` implementations, constants, config loader, ORM-first GORM repositories, core generic events, split routes and controllers. Do not create a phase document for routine refactors. Integration's boundaries are documented in `docs/engineering/backend/INTEGRATION_BOUNDARY_REFACTOR.md`.
-
-### Integration Phase 5 — provider strategies and generic actions
-
-Read `docs/engineering/backend/INTEGRATION_PHASE_5.md` before editing Integration. Provider actions register through `providers.ActionRegistry`, OAuth strategies through `providers.OAuthRegistry`. The generic HTTP action controller delegates to services; Gmail and Outlook adapters execute provider operations. Never add vendor name switches in the generic controller, or persist messages/threads/attachments/cursors in Integration. Outlook Graph mailbox delta is only an on-demand provider capability; Outlook webhook subscription is not implemented. Protected endpoints require verified IAM middleware, which is not wired yet.
+Read `docs/engineering/backend/INTEGRATION_SERVICE_GUIDELINES.md` and its OpenAPI spec. Integration owns provider connectivity, OAuth, webhooks, tests and stateless provider actions; Communication owns messages and synchronization. Never add Integration-owned message ledgers or cursor storage. Protected connection endpoints must require verified principal middleware. Gmail and Outlook provider implementation packages are under `providers/<provider>/impl`. Only one fresh-development baseline migration exists; do not apply the squashed baseline to an already migrated database without a forward-only data-safe upgrade.
 
 ### Backend unit tests
 
