@@ -188,3 +188,9 @@ func(c *ConnectionController)ExecuteAction(w http.ResponseWriter,r *http.Request
  if err!=nil{c.writeServiceError(w,r,err);return}
  _=httpresponse.WriteSuccess(w,http.StatusOK,result)
 }
+
+func(c *ConnectionController)Provider(w http.ResponseWriter,r *http.Request){
+ result,err:=c.service.Provider(r.Context(),r.PathValue("provider"))
+ if err!=nil{c.writeServiceError(w,r,err);return}
+ _=httpresponse.WriteSuccess(w,http.StatusOK,result)
+}
