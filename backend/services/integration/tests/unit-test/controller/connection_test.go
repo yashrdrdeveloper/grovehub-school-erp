@@ -36,12 +36,14 @@ func (*serviceStub) BeginOAuth(context.Context,string,string)(integrationrespons
 func (*serviceStub) FinishOAuth(context.Context,string,string)(integrationresponse.OAuthCompletion,error){
  return integrationresponse.OAuthCompletion{},nil
 }
+func (*serviceStub) MailProfile(context.Context,string,string)(gmail.MailProfile,error){return gmail.MailProfile{},nil}
+func (*serviceStub) MailMessages(context.Context,string,string,string)(gmail.MessagePage,error){return gmail.MessagePage{},nil}
+func (*serviceStub) MailMessage(context.Context,string,string,string)(gmail.Message,error){return gmail.Message{},nil}
+func (*serviceStub) MailHistory(context.Context,string,string,string,string)(gmail.HistoryPage,error){return gmail.HistoryPage{},nil}
+func (*serviceStub) MailSend(context.Context,string,string,string)(gmail.SentMessage,error){return gmail.SentMessage{},nil}
 func (*serviceStub) Watch(context.Context,string,string)(integrationresponse.Watch,error){return integrationresponse.Watch{},nil}
 func (*serviceStub) ProcessPush(context.Context,gmail.PushNotification)error{return nil}
 func (*serviceStub) RenewExpiring(context.Context)error{return nil}
-func (*serviceStub) Sync(context.Context,string,string)(integrationresponse.SyncResult,error){
- return integrationresponse.SyncResult{},nil
-}
 func (*serviceStub) RunTest(context.Context,string,string,string)(integrationresponse.ConnectionTest,error){
  return integrationresponse.ConnectionTest{},nil
 }
@@ -62,12 +64,14 @@ var _ = Describe("Integration HTTP authorization",func(){
   Expect(recorder.Body.String()).To(ContainSubstring("GMAIL"))
  })
  It("denies unauthorized OAuth starts and mail tests",func(){
-  c:=integrationcontroller.NewConnectionController(&serviceStub{})
+  c:=integrationcontroller.NewConnectionController(&serviceStub{},integrationconfig.GmailPush{})
   for _,testCase:=range []struct{route string;handler http.HandlerFunc}{
    {"/integrations/connections/abc/oauth/start",c.BeginOAuth},
    {"/integrations/connections/abc/test",c.RunTest},
    {"/integrations/connections/abc/tests",c.ListTests},
-   {"/integrations/connections/abc/sync",c.Sync},
+   {"/integrations/connections/abc/mail/messages",c.MailMessages},
+   {"/integrations/connections/abc/mail/history",c.MailHistory},
+   {"/integrations/connections/abc/mail/send",c.MailSend},
    {"/integrations/connections/abc/watch",c.Watch},
   } {
    recorder:=httptest.NewRecorder()
