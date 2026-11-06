@@ -3,10 +3,8 @@ package impl
 import (
  "context"
  "errors"
- "strings"
  "time"
 
- "github.com/google/uuid"
 
  coreid "grovehub/libs/core/id"
  integrationrequest "grovehub/services/integration/dto/request"
@@ -18,6 +16,7 @@ import (
  "grovehub/services/integration/providers"
  integrationrepository "grovehub/services/integration/repository"
  integrationservices "grovehub/services/integration/services"
+ connectionhelpers "grovehub/services/integration/services/helpers/connections"
 )
 
 var ErrInvalidConnection = errors.New("invalid integration connection")
@@ -54,7 +53,7 @@ func (s *ConnectionService) Provider(_ context.Context,id string)(integrationres
  },nil
 }
 func (s *ConnectionService) Create(ctx context.Context,tenantID string,input integrationrequest.CreateConnection)(integrationresponse.Connection,error){
- if !isUUID(tenantID) || !isUUID(input.OwnerGID) {return integrationresponse.Connection{},ErrInvalidConnection}
+ if !connectionhelpers.ValidID(tenantID) || !connectionhelpers.ValidID(input.OwnerGID) {return integrationresponse.Connection{},ErrInvalidConnection}
  provider,err:=s.registry.Find(input.Provider)
  if err!=nil{return integrationresponse.Connection{},err}
  id,err:=coreid.NewUUIDv7()
@@ -66,35 +65,25 @@ func (s *ConnectionService) Create(ctx context.Context,tenantID string,input int
   CreatedAt:now,UpdatedAt:now,
  }
  if err=s.repository.Create(ctx,c);err!=nil{return integrationresponse.Connection{},err}
- return toConnection(c),nil
+ return connectionhelpers.ToResponse(c),nil
 }
 func (s *ConnectionService) Get(ctx context.Context,tenantID,id string)(integrationresponse.Connection,error){
- if !isUUID(tenantID)||!isUUID(id){return integrationresponse.Connection{},ErrInvalidConnection}
+ if !connectionhelpers.ValidID(tenantID)||!connectionhelpers.ValidID(id){return integrationresponse.Connection{},ErrInvalidConnection}
  c,err:=s.repository.Get(ctx,tenantID,id)
  if err!=nil{return integrationresponse.Connection{},err}
- return toConnection(c),nil
+ return connectionhelpers.ToResponse(c),nil
 }
 func (s *ConnectionService) List(ctx context.Context,tenantID,ownerGID string)([]integrationresponse.Connection,error){
- if !isUUID(tenantID){return nil,ErrInvalidConnection}
+ if !connectionhelpers.ValidID(tenantID){return nil,ErrInvalidConnection}
  rows,err:=s.repository.List(ctx,tenantID,ownerGID)
  if err!=nil{return nil,err}
  result:=make([]integrationresponse.Connection,0,len(rows))
- for _,c:=range rows{result=append(result,toConnection(c))}
+ for _,c:=range rows{result=append(result,connectionhelpers.ToResponse(c))}
  return result,nil
 }
 func (s *ConnectionService) Disconnect(ctx context.Context,tenantID,id string)(integrationresponse.Connection,error){
- if !isUUID(tenantID)||!isUUID(id){return integrationresponse.Connection{},ErrInvalidConnection}
+ if !connectionhelpers.ValidID(tenantID)||!connectionhelpers.ValidID(id){return integrationresponse.Connection{},ErrInvalidConnection}
  c,err:=s.repository.Disconnect(ctx,tenantID,id)
  if err!=nil{return integrationresponse.Connection{},err}
- return toConnection(c),nil
-}
-func toConnection(c entity.Connection) integrationresponse.Connection{
- return integrationresponse.Connection{
- ID:c.ID,TenantID:c.TenantID,OwnerGID:c.OwnerGID,Provider:c.Provider,
- Status:c.Status,ExternalID:c.ExternalID,LastTestedAt:c.LastTestedAt,LastTestStatus:c.LastTestStatus,CreatedAt:c.CreatedAt,UpdatedAt:c.UpdatedAt,
- }
-}
-func isUUID(raw string)bool{
- parsed,err:=uuid.Parse(strings.TrimSpace(raw))
- return err==nil && parsed.Version()==7
+ return connectionhelpers.ToResponse(c),nil
 }

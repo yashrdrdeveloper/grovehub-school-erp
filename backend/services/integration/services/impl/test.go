@@ -12,6 +12,7 @@ import (
 
  integrationresponse "grovehub/services/integration/dto/response"
  "grovehub/services/integration/entity"
+ connectionhelpers "grovehub/services/integration/services/helpers/connections"
 )
 
 func(s *ConnectionService)RunTest(ctx context.Context,tenantID,id,direction string)(integrationresponse.ConnectionTest,error){
@@ -22,7 +23,7 @@ func(s *ConnectionService)RunTest(ctx context.Context,tenantID,id,direction stri
   return integrationresponse.ConnectionTest{},ErrConnectionInactive
  }
  if c.Provider!="GMAIL"&&c.Provider!="OUTLOOK"{
-  return integrationresponse.ConnectionTest{},ErrUnsupportedMailProvider
+  return integrationresponse.ConnectionTest{},ErrOAuthUnavailable
  }
  if direction!="INBOUND"&&direction!="OUTBOUND"{
   return integrationresponse.ConnectionTest{},ErrInvalidConnection
@@ -69,7 +70,7 @@ func(s *ConnectionService)RunTest(ctx context.Context,tenantID,id,direction stri
  }
  test.CompletedAt=time.Now().UTC()
  if err:=s.repository.SaveTest(ctx,test);err!=nil{return integrationresponse.ConnectionTest{},err}
- return toTest(test),nil
+ return connectionhelpers.TestToResponse(test),nil
 }
 
 func(s *ConnectionService)ListTests(ctx context.Context,tenantID,id string)([]integrationresponse.ConnectionTest,error){
@@ -77,12 +78,6 @@ func(s *ConnectionService)ListTests(ctx context.Context,tenantID,id string)([]in
  rows,err:=s.repository.ListTests(ctx,id)
  if err!=nil{return nil,err}
  result:=make([]integrationresponse.ConnectionTest,0,len(rows))
- for _,test:=range rows{result=append(result,toTest(test))}
+ for _,test:=range rows{result=append(result,connectionhelpers.TestToResponse(test))}
  return result,nil
-}
-func toTest(test entity.ConnectionTest)integrationresponse.ConnectionTest{
- return integrationresponse.ConnectionTest{
-  ID:test.ID,ConnectionID:test.ConnectionID,Direction:test.Direction,
-  Status:test.Status,Detail:test.Detail,StartedAt:test.StartedAt,CompletedAt:test.CompletedAt,
- }
 }
