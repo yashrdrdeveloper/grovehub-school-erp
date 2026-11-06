@@ -1,21 +1,17 @@
 package connections
 
 import (
- "strings"
-
- "github.com/google/uuid"
-
+ corenormalize "grovehub/libs/core/normalize"
  integrationresponse "grovehub/services/integration/dto/response"
  "grovehub/services/integration/entity"
 )
 
-// ValidID enforces the platform's UUIDv7 identity contract.
+// ValidID reuses the platform's canonical UUIDv7 validator.
 func ValidID(raw string)bool{
- parsed,err:=uuid.Parse(strings.TrimSpace(raw))
- return err==nil&&parsed.Version()==7
+ _,err:=corenormalize.UUIDv7(raw)
+ return err==nil
 }
 
-// ToResponse prevents GORM entities from leaking into transport responses.
 func ToResponse(connection entity.Connection)integrationresponse.Connection{
  return integrationresponse.Connection{
   ID:connection.ID,
