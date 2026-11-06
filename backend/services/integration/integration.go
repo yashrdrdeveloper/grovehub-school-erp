@@ -23,7 +23,7 @@ import (
 )
 
 type Module interface{RegisterHTTP(*http.ServeMux);Close()}
-type module struct{controller controller.ConnectionController;stop chan struct{}}
+type module struct{controller controller.Controller;stop chan struct{}}
 func New(logger *slog.Logger,db *gorm.DB,messaging infrastructureclient.MessagingClient)(Module,error){
  registry,err:=providerimpl.NewRegistry(gmail.New(),outlook.New())
  if err!=nil{return nil,err}
