@@ -14,10 +14,5 @@ type ConnectionController interface {
  ListTests(http.ResponseWriter,*http.Request)
  Watch(http.ResponseWriter,*http.Request)
  GmailPush(http.ResponseWriter,*http.Request)
- MailProfile(http.ResponseWriter,*http.Request)
- MailMessages(http.ResponseWriter,*http.Request)
- MailMessage(http.ResponseWriter,*http.Request)
- MailHistory(http.ResponseWriter,*http.Request)
- MailSend(http.ResponseWriter,*http.Request)
  ExecuteAction(http.ResponseWriter,*http.Request)
 }

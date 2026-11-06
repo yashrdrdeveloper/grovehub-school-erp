@@ -26,9 +26,4 @@ type ConnectionService interface {
  ProcessPush(ctx context.Context,notification gmail.PushNotification)error
  RenewExpiring(ctx context.Context)error
  ExecuteAction(ctx context.Context,tenantID,connectionID string,action providers.Action,input json.RawMessage)(any,error)
- MailProfile(ctx context.Context,tenantID,id string)(gmail.MailProfile,error)
- MailMessages(ctx context.Context,tenantID,id,page string)(gmail.MessagePage,error)
- MailMessage(ctx context.Context,tenantID,id,messageID string)(gmail.Message,error)
- MailHistory(ctx context.Context,tenantID,id,startHistoryID,page string)(gmail.HistoryPage,error)
- MailSend(ctx context.Context,tenantID,id,raw string)(gmail.SentMessage,error)
 }

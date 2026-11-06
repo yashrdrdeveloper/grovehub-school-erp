@@ -171,39 +171,6 @@ func(c *ConnectionController)GmailPush(w http.ResponseWriter,r *http.Request){
  w.WriteHeader(http.StatusNoContent)
 }
 
-func(c *ConnectionController)MailProfile(w http.ResponseWriter,r *http.Request){
- p,ok:=c.owned(w,r);if !ok{return}
- result,err:=c.service.MailProfile(r.Context(),p.TenantID,r.PathValue("id"))
- if err!=nil{c.writeServiceError(w,r,err);return}
- _=httpresponse.WriteSuccess(w,http.StatusOK,result)
-}
-func(c *ConnectionController)MailMessages(w http.ResponseWriter,r *http.Request){
- p,ok:=c.owned(w,r);if !ok{return}
- result,err:=c.service.MailMessages(r.Context(),p.TenantID,r.PathValue("id"),r.URL.Query().Get("pageToken"))
- if err!=nil{c.writeServiceError(w,r,err);return}
- _=httpresponse.WriteSuccess(w,http.StatusOK,result)
-}
-func(c *ConnectionController)MailMessage(w http.ResponseWriter,r *http.Request){
- p,ok:=c.owned(w,r);if !ok{return}
- result,err:=c.service.MailMessage(r.Context(),p.TenantID,r.PathValue("id"),r.PathValue("messageId"))
- if err!=nil{c.writeServiceError(w,r,err);return}
- _=httpresponse.WriteSuccess(w,http.StatusOK,result)
-}
-func(c *ConnectionController)MailHistory(w http.ResponseWriter,r *http.Request){
- p,ok:=c.owned(w,r);if !ok{return}
- result,err:=c.service.MailHistory(r.Context(),p.TenantID,r.PathValue("id"),r.URL.Query().Get("startHistoryId"),r.URL.Query().Get("pageToken"))
- if err!=nil{c.writeServiceError(w,r,err);return}
- _=httpresponse.WriteSuccess(w,http.StatusOK,result)
-}
-func(c *ConnectionController)MailSend(w http.ResponseWriter,r *http.Request){
- p,ok:=c.owned(w,r);if !ok{return}
- var input struct{Raw string `json:"raw"`}
- if err:=httprequest.DecodeStrictJSON(r,&input);err!=nil{writeError(w,r,http.StatusBadRequest,integrationerrors.Invalid);return}
- result,err:=c.service.MailSend(r.Context(),p.TenantID,r.PathValue("id"),input.Raw)
- if err!=nil{c.writeServiceError(w,r,err);return}
- _=httpresponse.WriteSuccess(w,http.StatusOK,result)
-}
-
 func(c *ConnectionController)ExecuteAction(w http.ResponseWriter,r *http.Request){
  p,ok:=c.owned(w,r)
  if !ok{return}

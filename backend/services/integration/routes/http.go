@@ -19,11 +19,6 @@ func RegisterHTTP(mux *http.ServeMux,c controller.ConnectionController) {
   {"GET","/integrations/connections/{id}/tests",c.ListTests},
   {"POST","/integrations/connections/{id}/watch",c.Watch},
   {"POST","/integrations/webhooks/gmail",c.GmailPush},
-  {"GET","/integrations/connections/{id}/mail/profile",c.MailProfile},
-  {"GET","/integrations/connections/{id}/mail/messages",c.MailMessages},
-  {"GET","/integrations/connections/{id}/mail/messages/{messageId}",c.MailMessage},
-  {"GET","/integrations/connections/{id}/mail/history",c.MailHistory},
-  {"POST","/integrations/connections/{id}/mail/send",c.MailSend},
   {"POST","/integrations/connections/{id}/actions/{action}",c.ExecuteAction},
  }
  for _,route:=range routes {
