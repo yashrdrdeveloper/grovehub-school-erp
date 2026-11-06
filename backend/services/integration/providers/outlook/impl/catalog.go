@@ -2,7 +2,7 @@ package impl
 
 import "grovehub/services/integration/providers"
 
-// Descriptor-only provider; do not advertise unsupported operations.
+// Outlook provider descriptor; supported action strategies are registered separately.
 type Provider struct{}
 func New() providers.Provider { return Provider{} }
 func (Provider) Descriptor() providers.Descriptor {

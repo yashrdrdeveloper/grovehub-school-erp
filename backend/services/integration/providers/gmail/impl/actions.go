@@ -15,7 +15,7 @@ type ActionHandler struct {
  action providers.Action
 }
 
-func RegisterActions(registry *providers.ActionRegistry,client *Client)error{
+func RegisterActions(registry providers.ActionRegistry,client *Client)error{
  for _,action:=range []providers.Action{
   providers.ActionMailProfile,providers.ActionMailList,providers.ActionMailGet,
   providers.ActionMailHistory,providers.ActionMailSend,providers.ActionMailAttachment,
