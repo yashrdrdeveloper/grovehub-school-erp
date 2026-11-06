@@ -3,11 +3,9 @@ package gmail
 import (
  "context"
  "errors"
- "fmt"
  "encoding/base64"
  "net/http"
  "net/url"
- "strings"
 )
 
 type MailProfile struct {EmailAddress string `json:"emailAddress"`;HistoryID string `json:"historyId"`}
@@ -79,11 +77,3 @@ func(c *Client)SendRaw(ctx context.Context,t Token,raw string)(SentMessage,error
  return sent,err
 }
 
-func MailDirection(labels []string)string{
- for _,label:=range labels{if strings.EqualFold(label,"SENT"){return "OUTBOUND"}}
- return "INBOUND"
-}
-func validateMessage(m Message)error{
- if m.ID==""||m.ThreadID==""{return fmt.Errorf("incomplete Gmail message metadata")}
- return nil
-}

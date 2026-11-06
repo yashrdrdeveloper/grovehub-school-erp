@@ -87,7 +87,7 @@ var _ = Describe("Integration HTTP authorization",func(){
  Expect(response.Code).To(Equal(http.StatusUnauthorized))
  })
  It("denies connection creation without a verified principal",func(){
-  c:=integrationcontroller.NewConnectionController(&serviceStub{})
+  c:=integrationcontroller.NewConnectionController(&serviceStub{},integrationconfig.GmailPush{})
   recorder:=httptest.NewRecorder()
   req:=httptest.NewRequest(http.MethodPost,"/integrations/connections",strings.NewReader(`{"provider":"GMAIL","ownerGid":"a"}`))
   req.Header.Set("X-Tenant-ID","spoofed")
