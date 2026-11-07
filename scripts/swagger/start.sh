@@ -54,13 +54,14 @@ log_info "Starting Swagger UI (${SWAGGER_IMAGE})"
 docker run --detach \
   --name "${SWAGGER_CONTAINER_NAME}" \
   --publish "127.0.0.1:${SWAGGER_PORT}:8080" \
+  --env "PORT=8080" \
   --env "URLS=${swagger_urls}" \
   --env "DEEP_LINKING=true" \
   --volume "${REPO_ROOT}/backend/services:/usr/share/nginx/html/specs:ro" \
   "${SWAGGER_IMAGE}" >/dev/null
 
 swagger_ready=0
-for ((attempt=1; attempt<=30; attempt++)); do
+for ((attempt=1; attempt<=60; attempt++)); do
   if curl --noproxy '*' --fail --silent --max-time 2 "${SWAGGER_BASE_URL}/index.html" >/dev/null 2>&1; then
     swagger_ready=1
     break
@@ -74,17 +75,30 @@ done
 
 if [[ "${swagger_ready}" != "1" ]]; then
   log_error "Swagger UI cannot be reached on the host at ${SWAGGER_BASE_URL}/index.html"
+  log_error "Docker context: $(docker context show)"
   log_error "Docker published ports:"
   docker port "${SWAGGER_CONTAINER_NAME}" >&2 || true
   log_error "Docker container state:"
   docker inspect --format 'status={{.State.Status}} exit={{.State.ExitCode}} network={{.HostConfig.NetworkMode}} ports={{json .NetworkSettings.Ports}}' "${SWAGGER_CONTAINER_NAME}" >&2 || true
   log_error "HTTP diagnostic (direct connection without proxy):"
   curl --noproxy '*' --verbose --location --max-time 5 "${SWAGGER_BASE_URL}/index.html" -o /dev/null >&2 || true
+  log_error "Nginx listen directive:"
+  docker exec "${SWAGGER_CONTAINER_NAME}" sh -c 'grep -n "listen " /etc/nginx/conf.d/default.conf' >&2 || true
   log_error "HTTP diagnostic from inside container:"
   docker exec "${SWAGGER_CONTAINER_NAME}" sh -c 'wget -S -O /dev/null http://127.0.0.1:8080/index.html 2>&1' >&2 || true
   log_error "Container log tail:"
   docker logs --tail 35 "${SWAGGER_CONTAINER_NAME}" >&2 || true
   die "Swagger readiness failed. Container retained as ${SWAGGER_CONTAINER_NAME} for diagnosis; use make swagger-stop after inspecting."
 fi
+# Confirm each registered OpenAPI document is served, not just the static UI.
+for spec in "${SWAGGER_SPECS[@]}"; do
+  IFS='|' read -r spec_name spec_path <<<"${spec}"
+  if ! curl --noproxy '*' --fail --silent --max-time 5 "${SWAGGER_BASE_URL}/specs/${spec_path}" >/dev/null; then
+    log_error "Swagger UI is reachable, but the OpenAPI spec is not: ${spec_name} (${spec_path})"
+    log_error "Verify the bind mount under ${REPO_ROOT}/backend/services and the container file path"
+    die "Swagger OpenAPI specification readiness failed; container retained for diagnosis."
+  fi
+done
+
 log_info "Swagger UI is ready: ${SWAGGER_BASE_URL}"
 log_info "Swagger UI: ${SWAGGER_BASE_URL}"
