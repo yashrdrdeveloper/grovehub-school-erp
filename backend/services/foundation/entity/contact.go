@@ -12,7 +12,7 @@ const (
 // @Builder
 // @Getter
 // @Setter
-// @GroveTable foundation.person_contacts
+// @Table foundation.person_contacts
 type Contact struct {
 	PersonGID       GID         `gorm:"column:person_gid;type:uuid;primaryKey"`
 	Type            ContactType `gorm:"column:type;primaryKey"`
@@ -22,4 +22,12 @@ type Contact struct {
 	IsVerified      bool        `gorm:"column:is_verified;not null"`
 	CreatedAt       time.Time   `gorm:"column:created_at;not null"`
 	UpdatedAt       time.Time   `gorm:"column:updated_at;not null"`
+}
+
+// ForPerson attaches this contact to a person while retaining the original creation time.
+func (contact Contact) ForPerson(gid GID, createdAt time.Time, updatedAt time.Time) Contact {
+    contact.PersonGID = gid
+    if contact.CreatedAt.IsZero() { contact.CreatedAt = createdAt }
+    contact.UpdatedAt = updatedAt
+    return contact
 }
