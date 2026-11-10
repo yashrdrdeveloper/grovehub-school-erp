@@ -54,6 +54,7 @@ Code-generation outputs stay under the owning module's ignored `.generated/` dir
 ## Active Phase 2 slices
 
 - `generation/routes`: generates traced `net/http` registrations from annotated controller interfaces into service-local `.generated/routes/`.
+- `generation/clients`: generates typed in-process forwarding adapters from `@Client`/`@Proxy` contracts into `.generated/client/impl/` for Foundation, Integration and Infrastructure.
 - `configuration`: typed, startup-only environment parsing for Integration Gmail and Outlook; domain-specific callback validation remains manual.
 - `validation`: explicit DTO field-tag normalization and rules for Foundation names; contact, search and business validation stay manual.
 - The migration record and remaining work are in [ANNOTATION_PHASE2_MIGRATION.md](../../../../docs/engineering/backend/ANNOTATION_PHASE2_MIGRATION.md).
