@@ -8,7 +8,8 @@ Backend
   make backend-format FORMAT_SCOPE=integration   Format Integration Go files with gofmt
   make backend-format                            Format all backend Go files
   make backend-setup    Install/pin local backend development tools
-  make backend-build    Build the platform binary into .runtime/bin
+  make backend-build    Generate annotation code and build the platform binary into .runtime/bin
+  make backend-test     Generate annotation code and run all backend Go tests with overlay
   make backend-start    Start the backend binary in the background (no hot reload)
   make backend-stop     Stop the managed backend process (binary or Air)
   make backend-status   Show backend process, hot-reload mode, and health status
