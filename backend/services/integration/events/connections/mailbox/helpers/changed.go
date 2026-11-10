@@ -14,7 +14,7 @@ func BuildChanged(ctx context.Context, payload mailboxevents.Payload) mailboxeve
 	return coreevents.NewEnvelope(ctx, coreevents.Metadata{
 		EventID:     uuid.NewString(),
 		EventType:   mailboxevents.ChangedEventType,
-		Version:     1,
+		Version:     mailboxevents.ChangedVersion,
 		AggregateID: payload.ConnectionID,
 		OccurredAt:  time.Now().UTC(),
 	}, payload)
