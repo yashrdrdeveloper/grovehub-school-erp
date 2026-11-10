@@ -2,6 +2,8 @@ package controller
 
 import "net/http"
 
+// @Routes /auth
 type AuthController interface {
-	Register(writer http.ResponseWriter, request *http.Request)
+    // @POST /register
+    Register(writer http.ResponseWriter, request *http.Request)
 }
