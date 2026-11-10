@@ -2,16 +2,28 @@ package controller
 
 import "net/http"
 
+// @Routes /integrations
 type ConnectionController interface {
-	Create(http.ResponseWriter, *http.Request)
-	Get(http.ResponseWriter, *http.Request)
-	List(http.ResponseWriter, *http.Request)
-	Disconnect(http.ResponseWriter, *http.Request)
-	BeginOAuth(http.ResponseWriter, *http.Request)
-	FinishOAuth(http.ResponseWriter, *http.Request)
-	RunTest(http.ResponseWriter, *http.Request)
-	ListTests(http.ResponseWriter, *http.Request)
-	Watch(http.ResponseWriter, *http.Request)
-	GmailPush(http.ResponseWriter, *http.Request)
-	ExecuteAction(http.ResponseWriter, *http.Request)
+    // @POST /connections
+    Create(http.ResponseWriter, *http.Request)
+    // @GET /connections/{id}
+    Get(http.ResponseWriter, *http.Request)
+    // @GET /connections
+    List(http.ResponseWriter, *http.Request)
+    // @DELETE /connections/{id}
+    Disconnect(http.ResponseWriter, *http.Request)
+    // @POST /connections/{id}/oauth/start
+    BeginOAuth(http.ResponseWriter, *http.Request)
+    // @GET /connections/oauth/{provider}/callback
+    FinishOAuth(http.ResponseWriter, *http.Request)
+    // @POST /connections/{id}/test
+    RunTest(http.ResponseWriter, *http.Request)
+    // @GET /connections/{id}/tests
+    ListTests(http.ResponseWriter, *http.Request)
+    // @POST /connections/{id}/watch
+    Watch(http.ResponseWriter, *http.Request)
+    // @POST /webhooks/gmail
+    GmailPush(http.ResponseWriter, *http.Request)
+    // @POST /connections/{id}/actions/{action}
+    ExecuteAction(http.ResponseWriter, *http.Request)
 }
