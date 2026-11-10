@@ -14,58 +14,79 @@ GOIMPORTS_VERSION="v0.51.0"
 install_generator() {
   local name="$1" package="$2" version="$3" version_file="${STATE_DIR}/${name}.version"
   if [[ -x "${TOOLS_BIN_DIR}/${name}" && -f "${version_file}" && "$(cat "${version_file}")" == "${version}" ]]; then
-    return 0
+    return
   fi
-  log_info "Installing ${name}@${version} for GroveHub entity generation"
+  log_info "Installing ${name}@${version}"
   GOBIN="${TOOLS_BIN_DIR}" go install "${package}@${version}"
   printf '%s\n' "${version}" >"${version_file}"
 }
 
-# Scan service entity packages individually: Gombok walks recursively from its CWD.
-# Non-annotated packages remain untouched, and tool installations are on demand.
-for entity_dir in "${BACKEND_DIR}"/services/*/entity; do
-  [[ -d "${entity_dir}" ]] || continue
-  declared=()
-  has_table=0
-  fingerprint=""
-  for source in "${entity_dir}"/*.go; do
-    [[ -f "${source}" ]] || continue
-    case "${source}" in *_gombok.go|*/zz_grove_tables.gen.go) continue ;; esac
-    fingerprint+="$(shasum -a 256 "${source}")"$'\n'
-    if grep -Eq '^[[:space:]]*//[[:space:]]*@(Builder|Getter|Setter|AllArgsConstructor|NoArgsConstructor|RequiredArgsConstructor|ToString|Equals)([.[:space:]]|$)' "${source}"; then
-      declared+=("${entity_dir}/$(basename "${source}" .go)_gombok.go")
-    fi
-    if grep -Eq '^[[:space:]]*//[[:space:]]*@GroveTable[[:space:]]+' "${source}"; then
-      has_table=1
-    fi
-  done
-  if [[ ${#declared[@]} -eq 0 && "${has_table}" == 0 ]]; then
-    continue
-  fi
+# Phase 2.1: Foundation is the first and only migrated service.
+# The generated methods never reside in services/foundation/entity.
+entity_dir="${BACKEND_DIR}/services/foundation/entity"
+generated_dir="${BACKEND_DIR}/services/foundation/.generated/entity"
+state_file="${STATE_DIR}/foundation-entity-codegen.sha256"
+declare -a source_files=()
+declare -a generated_files=()
+fingerprint=""
 
-  fingerprint+="Gombok=${GOMBOK_VERSION};goimports=${GOIMPORTS_VERSION};GroveTable=v1"
-  digest="$(printf '%s' "${fingerprint}" | shasum -a 256 | awk '{print $1}')"
-  state_file="${STATE_DIR}/$(basename "$(dirname "${entity_dir}")")-entity-codegen.sha256"
-  ready=1
-  if [[ ! -f "${state_file}" || "$(cat "${state_file}")" != "${digest}" ]]; then ready=0; fi
-  for generated in "${declared[@]}"; do [[ -s "${generated}" ]] || ready=0; done
-  if [[ "${has_table}" == 1 && ! -s "${entity_dir}/zz_grove_tables.gen.go" ]]; then ready=0; fi
-  if [[ "${ready}" == 1 ]]; then continue; fi
-
-  if [[ ${#declared[@]} -gt 0 ]]; then
-    install_generator gombok github.com/YangTaeyoung/gombok "${GOMBOK_VERSION}"
-    install_generator goimports golang.org/x/tools/cmd/goimports "${GOIMPORTS_VERSION}"
-    export PATH="${TOOLS_BIN_DIR}:${PATH}"
-    log_info "Running Gombok in ${entity_dir}"
-    (cd -- "${entity_dir}" && "${TOOLS_BIN_DIR}/gombok")
-    for generated in "${declared[@]}"; do
-      [[ -s "${generated}" ]] || die "Gombok did not generate ${generated}"
-    done
+for file in "${entity_dir}"/*.go; do
+  [[ -f "${file}" ]] || continue
+  case "${file}" in *_gombok.go|*/zz_grove_tables.gen.go|*/zz_tables.gen.go) continue ;; esac
+  source_files+=("${file}")
+  fingerprint+="$(shasum -a 256 "${file}")"$'\n'
+  if grep -Eq '^[[:space:]]*//[[:space:]]*@(Builder|Getter|Setter|AllArgsConstructor|NoArgsConstructor|RequiredArgsConstructor|ToString|Equals)([.[:space:]]|$)' "${file}"; then
+    generated_files+=("$(basename "${file}" .go)_gombok.go")
   fi
-  if [[ "${has_table}" == 1 ]]; then
-    log_info "Generating GORM table methods in ${entity_dir}"
-    (cd -- "${BACKEND_DIR}" && go run ./libs/core/entity/cmd/gormtable "${entity_dir}")
-    [[ -s "${entity_dir}/zz_grove_tables.gen.go" ]] || die "GORM TableName generation failed for ${entity_dir}"
-  fi
-  printf '%s\n' "${digest}" >"${state_file}"
 done
+
+fingerprint+="gombok=${GOMBOK_VERSION};goimports=${GOIMPORTS_VERSION};table=v2;overlay=v1"
+digest="$(printf '%s' "${fingerprint}" | shasum -a 256 | awk '{print $1}')"
+ready=1
+[[ -f "${state_file}" && "$(cat "${state_file}")" == "${digest}" ]] || ready=0
+for generated in "${generated_files[@]}" "zz_tables.gen.go"; do
+  [[ -s "${generated_dir}/${generated}" ]] || ready=0
+done
+
+if [[ "${ready}" != 1 ]]; then
+  install_generator gombok github.com/YangTaeyoung/gombok "${GOMBOK_VERSION}"
+  install_generator goimports golang.org/x/tools/cmd/goimports "${GOIMPORTS_VERSION}"
+  export PATH="${TOOLS_BIN_DIR}:${PATH}"
+
+  stage="$(mktemp -d "${STATE_DIR}/entity-stage.XXXXXXXX")"
+  trap 'rm -rf -- "${stage}"' EXIT
+  for file in "${source_files[@]}"; do
+    cp -- "${file}" "${stage}/"
+  done
+
+  log_info "Generating Foundation Gombok implementations in isolated staging directory"
+  (
+    cd -- "${stage}"
+    "${TOOLS_BIN_DIR}/gombok"
+  )
+  for generated in "${generated_files[@]}"; do
+    [[ -s "${stage}/${generated}" ]] || die "Gombok did not generate ${generated}"
+  done
+
+  mkdir -p -- "${generated_dir}"
+  # Clean old generated files so removed annotations cannot leave stale methods.
+  find "${generated_dir}" -maxdepth 1 -type f \( -name '*_gombok.go' -o -name 'zz_tables.gen.go' \) -delete
+  for generated in "${generated_files[@]}"; do
+    cp -- "${stage}/${generated}" "${generated_dir}/"
+  done
+  (
+    cd -- "${BACKEND_DIR}"
+    go run ./libs/core/entity/cmd/gormtable "${entity_dir}" "${generated_dir}/zz_tables.gen.go"
+  )
+  [[ -s "${generated_dir}/zz_tables.gen.go" ]] || die "GORM table generator did not produce an output"
+
+  printf '%s\n' "${digest}" >"${state_file}"
+fi
+
+# The overlay manifest is recreated even when the source fingerprint is unchanged.
+# This ensures normal Go builds see virtual files under the original entity package.
+(
+  cd -- "${BACKEND_DIR}"
+  go run ./libs/core/entity/cmd/overlay "${BACKEND_DIR}"
+)
+log_info "Foundation entity overlay ready: ${BACKEND_DIR}/.generated/overlay.json"
