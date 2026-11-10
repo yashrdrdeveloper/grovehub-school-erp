@@ -58,3 +58,47 @@ func TestRejectInvalidSignatureAndMissingVerb(t *testing.T) {
         if _,err:=discover(dir);err==nil{t.Errorf("accepted invalid route declaration %s",method)}
     }
 }
+
+
+func TestCurrentBackendRoutesMatchContract(t *testing.T) {
+    expected:=map[string][]string{
+        "foundation":{
+            "POST /foundation/persons",
+            "POST /foundation/persons/search",
+            "GET /foundation/persons/{gid}",
+            "PATCH /foundation/persons/{gid}",
+            "PATCH /foundation/persons/{gid}/deactivate",
+        },
+        "identity":{"POST /auth/register"},
+        "integration":{
+            "POST /integrations/connections",
+            "GET /integrations/connections",
+            "GET /integrations/connections/{id}",
+            "DELETE /integrations/connections/{id}",
+            "POST /integrations/connections/{id}/oauth/start",
+            "GET /integrations/connections/oauth/{provider}/callback",
+            "POST /integrations/connections/{id}/test",
+            "GET /integrations/connections/{id}/tests",
+            "POST /integrations/connections/{id}/watch",
+            "POST /integrations/connections/{id}/actions/{action}",
+            "POST /integrations/webhooks/gmail",
+            "GET /integrations/providers",
+            "GET /integrations/providers/{provider}",
+        },
+    }
+    for service,patterns:=range expected{
+        source:=filepath.Join("..","..","..","..","..","services",service,"controller")
+        groups,err:=discover(source)
+        if err!=nil{t.Fatalf("%s: %v",service,err)}
+        actual:=map[string]bool{}
+        for _,group:=range groups{
+            for _,route:=range group.routes{
+                actual[route.verb+" "+route.path]=true
+            }
+        }
+        if len(actual)!=len(patterns){t.Errorf("%s expected %d routes, found %d: %v",service,len(patterns),len(actual),actual)}
+        for _,p:=range patterns{
+            if !actual[p]{t.Errorf("%s missing route %s",service,p)}
+        }
+    }
+}
