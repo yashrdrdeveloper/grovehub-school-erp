@@ -1,6 +1,6 @@
-// Command entities generates the existing Gombok-compatible builder, getter,
-// and setter APIs from the maintained Go entity structs. Unlike the upstream
-// Gombok CLI, it does not stage source outside a package or run goimports.
+// Command entities generates optional builders/getters/setters only when
+// explicitly requested on NON-entity types. @Entity itself only maps a GORM
+// table and must not imply any constructor or accessor generation.
 // Code is written only to the owning service's ignored .generated/entity tree.
 package main
 

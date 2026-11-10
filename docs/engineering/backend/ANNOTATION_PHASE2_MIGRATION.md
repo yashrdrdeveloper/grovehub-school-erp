@@ -28,12 +28,13 @@
 | Annotation safety check | Build-time AST scanner rejects unimplemented directives such as `@Authorize` before generating code | `generation/check` | Does not replace actual IAM middleware or authorization decisions |
 | Strict DTO projection | Identity registration response and Foundation Person error metadata generated; contact grouping remains custom | `@Mapper`, `@Mapping` | Explicit fields fail generation when destination gains unmapped fields |
 | GORM table-only entities | Removed manual `TableName()` methods for seven Identity/Integration models; no new credential setters | `@Entity ... mode=table` | CI compilation verified; DB schema unchanged |
+| Passive entity refactor | Removed generated entity builders and entity-owned New/Get/Set/helper methods in Foundation and Identity; replaced usage with service-owned constructors, copies and explicit updates | `@Entity` now maps tables only | Go 1.27 CI compilation and existing unit suites passed; live DB regression remains pending |
 | Event identity declarations | Foundation Person changed, Identity Account created, Integration Mailbox changed topics/types/versions generated | `@Event` | Event publication timing, after-commit, error policies unchanged |
 | CI regression gate | GitHub Actions Go 1.27.3 binary compilation, package resolution, core/launcher/Identity/Integration unit tests, and generated-output checks | `.github/workflows/backend-annotations.yml` | Live database/NATS integration regression remains separate |
 
 The source retains service methods, service interfaces, client constructors, GORM repositories, domain event decorators, provider strategies, authentication decisions, and middleware behavior.
 
-**Generator change:** the upstream Gombok v1.2.0 formatter failed on clean-checkout staging. `generation/entities` now implements the previously committed builder/getter/setter signatures directly via the Go AST. The original `generation/expand` tool remains in-tree for compatibility but is no longer invoked by the build. Explicit Gombok-only directives such as `@AllArgsConstructor` are not yet implemented by the unified generator.
+**Generator change:** `generation/entities` no longer implicitly generates constructors/builders/getters/setters from `@Entity` and fails on combinations of `@Entity` with `@Builder`/`@Getter`/`@Setter`. Explicit opt-in builder/accessor directives remain available only for non-entity types. `generation/gormtable` remains the sole `@Entity` codegen for all services. The deprecated Gombok staging/expand path remains inactive.
 
 ### Endpoint parity
 

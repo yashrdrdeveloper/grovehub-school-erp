@@ -15,7 +15,7 @@ This is the **historical Phase 1 inventory** implemented as typed metadata defin
 
 Annotations in Go are currently `// @Name [arguments]` comments. They are not Go syntax, reflection-based decorators, or runtime interceptors. The library at `backend/libs/core/annotation` exports `All`, `Lookup`, `Uses`, `Patterns`, `ParseComment` and `ValidateDirective`. The AST scanner at `backend/libs/core/annotation/generation/parser` recognizes comments without changing files. Validation tags and executable generators/wrappers remain future Phase 2 capabilities.
 
-The **only pre-existing executable custom directive** is Foundation's `@Entity schema.table`, implemented by the existing staging/Gombok/GORM-table/Go-overlay toolchain. Gombok's upstream annotations are also supported by that toolchain. Other entries below are definitions only, even when their intended mode is GEN, WRAP, REG or TAG.
+The current `@Entity schema.table` processor generates only GORM `TableName()` using service-local Go overlays. It does not generate constructors, builders, getters or setters. Standalone `@Builder`/`@Getter`/`@Setter` are optional processor directives for non-entity types, not automatically implied by `@Entity`. The remainder of the registry is metadata except for processors listed in the Phase 2 migration ledger.
 
 ### Contract rules
 
@@ -35,7 +35,7 @@ Repeated names indicate **different planned contexts** of a single canonical ann
 
 | Directive / usage | Intended semantics | Mechanism | Status and roadmap |
 | --- | --- | --- | --- |
-| `@Entity schema.table` | Gombok builder, safe accessors, GORM TableName; existing Foundation directive | GEN | EXISTING / P0 |
+| `@Entity schema.table [mode=table]` | GORM TableName only; service layer owns construction and mutations | GEN | EXISTING / P0 |
 | `@Builder` | Fluent typed builder; preserve field types and optional semantics | GEN | EXISTING / P0 |
 | `@Getter` | Typed getter; suppress conflicting custom methods | GEN | EXISTING / P0 |
 | `@Setter` | Mutable typed setter; never default for sensitive fields | GEN | EXISTING / P0 |

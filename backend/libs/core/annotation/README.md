@@ -54,7 +54,7 @@ type Contact struct {
 }
 ```
 
-This generates `NewContactBuilder()`, supported getters and setters, and GORM `TableName()`. Existing custom Person value getters/setters are preserved; the generator suppresses conflicting accessor categories.
+This generates **only** GORM `TableName()`. No `NewContactBuilder`, `NewPersonBuilder`, entity constructors, implicit getters or setters are produced. Foundation and Identity entity construction, optional strings, mutable contact copies and lifecycle updates now belong to their service implementations/helpers.
 
 For sensitive records:
 
@@ -65,7 +65,7 @@ type PasswordCredential struct {
 }
 ```
 
-**Only `TableName()` is generated**; no builder or mutator is emitted. Identity and Integration use this mode for seven persistence models.
+**Only `TableName()` is generated** for every `@Entity` model. The `mode=table` suffix remains a backward-compatible alias for the default.
 
 ### HTTP routes
 

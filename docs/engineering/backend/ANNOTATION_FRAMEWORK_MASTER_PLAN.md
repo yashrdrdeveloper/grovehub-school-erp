@@ -20,9 +20,9 @@ The exhaustive Phase 1 catalog and status contract are published in [ANNOTATION_
 
 ### Verified Phase 2 scope (November 10, 2026)
 
-The clean-checkout `make backend-build` has compiled on GitHub Actions with Go 1.27.3. Generated source is injected by a Go overlay without committing generated files. Active migrations are `@Entity` (Foundation builders, getters, setters and safe table-only mode for Identity/Integration), `@Routes`, `@Client`/`@Proxy`, strict `@Mapper`/`@Mapping` DTO projections, `@Event` topic/type/version constants, typed Integration configuration and Foundation/Identity request validation. Annotation-specific test cases were removed at request; CI continues to verify compilation, package loading and unrelated backend unit suites. Live database, NATS, HTTP authorization and full Ginkgo/Gomega regression coverage are separate acceptance gates.
+The clean-checkout `make backend-build` has compiled on GitHub Actions with Go 1.27.3. Generated source is injected by a Go overlay without committing generated files. Active migrations are `@Entity` (GORM table names only for Foundation, Identity and Integration), `@Routes`, `@Client`/`@Proxy`, strict `@Mapper`/`@Mapping` DTO projections, `@Event` topic/type/version constants, typed Integration configuration and Foundation/Identity request validation. Annotation-specific test cases were removed at request; CI continues to verify compilation, package loading and unrelated backend unit suites. Live database, NATS, HTTP authorization and full Ginkgo/Gomega regression coverage are separate acceptance gates.
 
-`@Entity schema.table mode=table` is the required form for entities whose credentials or lifecycle-sensitive fields must **not** gain generated setters or builders. For example:
+`@Entity schema.table` now means **GORM table mapping only for every entity**. `mode=table` is still accepted for backward compatibility but is not required. Sensitive fields never receive generated setters or builders. For example:
 
 ```go
 // @Entity identity.password_credentials mode=table
@@ -31,9 +31,9 @@ type PasswordCredential struct {
 }
 ```
 
-This adds only GORM's `TableName()`. Default `@Entity foundation.person_contacts` retains its builder and safe-accessor behavior.
+This adds only GORM's `TableName()`. Default `@Entity foundation.person_contacts` does **not** generate builders, constructors or accessors.
 
-The original upstream Gombok CLI was removed from the unified generation pipeline because its formatter failed in clean-checkout CI. `annotation/generation/entities` now provides the same currently used Foundation builder/getter/setter signatures without external codegen. Standalone Gombok-only directives that are cataloged but not supported by the new generator remain **unimplemented**. See [ANNOTATION_PHASE2_MIGRATION.md](ANNOTATION_PHASE2_MIGRATION.md) for current file-level scope.
+The original upstream Gombok CLI was removed from the unified generation pipeline. `annotation/generation/entities` supports explicit builder/getter/setter directives only on non-entity types; entity annotations exclusively generate table mappings. Standalone Gombok-only directives that are cataloged but not supported by the new generator remain **unimplemented**. See [ANNOTATION_PHASE2_MIGRATION.md](ANNOTATION_PHASE2_MIGRATION.md) for current file-level scope.
 
 ---
 
@@ -42,6 +42,8 @@ The original upstream Gombok CLI was removed from the unified generation pipelin
 > **Document status:** Phase 1 definition registry created in `backend/libs/core/annotation` (all 226 use cases, 232 unique names including GoF-only candidates, all 23 GoF pattern decisions). This means **metadata/catalog and AST discovery, not executable annotations**. The Phase 2 implementation adds Go AST-based entity, route, client, mapper, table-name and event generators, plus typed configuration and validation. Service business workflows remain handwritten.
 
 **Folder ownership (November 2026).** Category definitions are located in dedicated annotation packages (`entity/`, `validation/`, `event/`, `utilities/`, `patterns/` and other responsibilities). The acyclic metadata contract is in `annotation/contract/`; the root registry preserves existing consumers. Annotation-specific test cases have been removed, but the backend CI build and unrelated unit suites remain enabled.
+
+**Current entity ownership:** Foundation Person/Contact and Identity Account/PasswordCredential are passive structs; construction, nil conversions, contact copying and lifecycle updates moved to owning services. All other existing Integration entity models were already passive. `@Entity` only generates GORM table names.
 
 **Purpose.** Replace mechanical boilerplate with typed, auditable generation while retaining readable Go and GrooveHub's explicit layer ownership. Cover all backend folders, middleware, server bootstrap, database and repositories, mappers, validation, external providers, events, messaging, observability, configuration, security, tests, scheduling, utilities and the 23 Gang of Four (GoF) patterns.
 
@@ -124,7 +126,7 @@ This catalog names the planned semantics for the backend. **Only the observed Fo
 
 | Directive | Expected effect | Mode | Status / phase |
 | --- | --- | --- | --- |
-| @Entity schema.table [mode=table] | Generate Gombok-compatible builder, accessors and GORM TableName by default; mode=table generates only TableName without mutators | GEN | EXISTING / P0 |
+| @Entity schema.table [mode=table] | Generate GORM TableName only; all construction and mutation belongs to owning service | GEN | EXISTING / P0 |
 | @Builder | Fluent typed builder; preserve field types and optional semantics | GEN | EXISTING / P0 |
 | @Getter | Typed getter; suppress conflicting custom methods | GEN | EXISTING / P0 |
 | @Setter | Mutable typed setter; never default for sensitive fields | GEN | EXISTING / P0 |
@@ -601,7 +603,7 @@ type Contact struct {
 }
 ```
 
-This is already the maintained style. Generation produces builder/accessors/table mapping outside `entity/`. Business association rules stay in `services/helpers`.
+This now generates only `TableName()` outside `entity/`. Builders/constructors/accessors are not generated for entities; service helpers own creation, optional-value normalization and contact copying.
 
 ### 2. DTO validation with named error definition (proposed)
 

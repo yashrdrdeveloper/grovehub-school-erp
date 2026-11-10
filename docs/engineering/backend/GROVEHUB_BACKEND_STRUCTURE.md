@@ -255,15 +255,17 @@ Foundation Person is the canonical example:
 
 ```text
 entity/person.go
-    -> Person GORM/database struct
-    -> TableName
-    -> constructor
-    -> simple getters/setters/builders related to entity state
+    -> Person passive GORM/database struct and field tags
+    -> @Entity table name mapping only (generated outside source)
 
 entity/contact.go
-    -> Contact GORM/database struct
-    -> TableName
-    -> constructor/entity-state helpers
+    -> Contact passive GORM/database struct and field tags
+    -> @Entity table name mapping only (generated outside source)
+
+services/helpers/person.go
+    -> NewPerson and contact construction
+    -> OptionalString, NullableString, CopyContacts and association rules
+    -> use-case owned state updates
 ```
 
 Do not create:
@@ -677,7 +679,7 @@ NO service importing core capability internals
 NO NATS/Watermill/provider imports from domain event packages
 NO random event topics/subjects per message or test run
 YES repository/impl owns database queries and persistence-derived projections
-YES entity owns DB/entity state and entity-level constructors/helpers
+YES entities contain only passive persisted state, types and database field tags; service helpers own constructors, optional values and collection copies
 YES one stable façade per core capability
 YES resource policy stays outside generic core mechanics
 YES domain services own event meaning/contracts

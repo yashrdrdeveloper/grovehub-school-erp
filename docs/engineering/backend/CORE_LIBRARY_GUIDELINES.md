@@ -403,7 +403,7 @@ YES capability tests aligned with capability ownership
 
 ## Entity declarations: unified @Entity and source overlays
 
-Entity declarations live under the owning service's maintained `entity/` folder. Go comments such as `// @Entity foundation.person_contacts` are build-time directives. The active `libs/core/annotation/generation/entities` parser generates Gombok-compatible builders and accessors where safe, while `generation/gormtable` generates GORM `TableName()` implementations. The legacy `generation/expand` command is retained but is **not** used by the current build.
+Entity declarations live under the owning service's maintained `entity/` folder and contain only persisted fields, types, constants and GORM tags. The `// @Entity schema.table` directive generates **only** a GORM `TableName()` method, never builders, constructors, getters or setters. The `generation/entities` tool can process separately opted-in builder/accessor annotations on *non-entity* types, but rejects any such annotation combined with `@Entity`. The legacy `generation/expand` tool remains inactive.
 
 ```go
 // @Entity foundation.person_contacts
@@ -413,7 +413,7 @@ type Contact struct { Value string }
 type PasswordCredential struct { PasswordHash string }
 ```
 
-Use `mode=table` for security-sensitive or immutable models: it emits **no builder or setters**. Maintain Foundation Person's custom value-returning setters and business state transitions explicitly. Domain association rules such as `AssociateContacts` belong in the service layer, not passive entities.
+`mode=table` remains accepted for compatibility and is now equivalent to the default. `Person`, `Contact`, `Account`, `PasswordCredential` and Integration persistence models are passive structs; no entity-owned `New*`, `Get*`, `Set*`, `optionalString` or `copyContacts` methods are required. Use ordinary field reads and write updated copies within the owning service. Foundation's `NewPerson`, `OptionalString` and `CopyContacts` and Identity's account/credential constructors and optional-field rules live under `services/helpers`.
 
 The unified build command is `scripts/backend/generate-annotations.sh` (the old `generate-entities.sh` is a compatibility wrapper). It processes entities, GORM tables, routes, in-process clients, mapper contracts and event definitions, then writes the Go overlay at `backend/.generated/overlay.json`. Generated implementations are placed only in `services/<service>/.generated/<package>/`, never in maintained source folders or Git.
 
