@@ -2,7 +2,10 @@ package controller
 
 import "net/http"
 
+// @Routes /integrations
 type ProviderController interface {
-	Providers(http.ResponseWriter, *http.Request)
-	Provider(http.ResponseWriter, *http.Request)
+    // @GET /providers
+    Providers(http.ResponseWriter, *http.Request)
+    // @GET /providers/{provider}
+    Provider(http.ResponseWriter, *http.Request)
 }
