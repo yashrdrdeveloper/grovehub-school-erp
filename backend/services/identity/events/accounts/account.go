@@ -1,11 +1,6 @@
 package accounts
 
-const (
-	CreatedTopic = "identity_account_created"
-	CreatedType  = "identity.account.created.v1"
-	Source       = "identity"
-)
-
+// @Event topic=identity_account_created type=identity.account.created.v1 source=identity
 type Created struct {
 	AccountID string `json:"accountId"`
 	PersonGID string `json:"personGid"`
