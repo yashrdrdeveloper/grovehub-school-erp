@@ -3,12 +3,12 @@ package annotation
 
 var httpUseCases = []UseCase{
     {Name:"Controller",Syntax:"@Controller",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"Register typed HTTP controller/adapter",Mode:"REG",Status:Proposed,Roadmap:"P3",Target:InterfaceTarget},
-    {Name:"Routes",Syntax:"@Routes",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"Controller/resource path prefix and grouping",Mode:"REG",Status:Proposed,Roadmap:"P3",Target:InterfaceTarget},
-    {Name:"GET",Syntax:"@GET",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"GET route with typed path and handler contract",Mode:"GEN",Status:Proposed,Roadmap:"P3",Target:MethodTarget},
-    {Name:"POST",Syntax:"@POST",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"POST route with typed handler contract",Mode:"GEN",Status:Proposed,Roadmap:"P3",Target:MethodTarget},
-    {Name:"PUT",Syntax:"@PUT",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"PUT route with replacement semantics",Mode:"GEN",Status:Proposed,Roadmap:"P3",Target:MethodTarget},
-    {Name:"PATCH",Syntax:"@PATCH",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"PATCH route preserving field presence",Mode:"GEN",Status:Proposed,Roadmap:"P3",Target:MethodTarget},
-    {Name:"DELETE",Syntax:"@DELETE",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"DELETE route",Mode:"GEN",Status:Proposed,Roadmap:"P3",Target:MethodTarget},
+    {Name:"Routes",Syntax:"@Routes",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"Controller/resource path prefix and grouping",Mode:"REG",Status:Pilot,Roadmap:"P3",Target:InterfaceTarget},
+    {Name:"GET",Syntax:"@GET",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"GET route with typed path and handler contract",Mode:"GEN",Status:Pilot,Roadmap:"P3",Target:MethodTarget},
+    {Name:"POST",Syntax:"@POST",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"POST route with typed handler contract",Mode:"GEN",Status:Pilot,Roadmap:"P3",Target:MethodTarget},
+    {Name:"PUT",Syntax:"@PUT",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"PUT route with replacement semantics",Mode:"GEN",Status:Pilot,Roadmap:"P3",Target:MethodTarget},
+    {Name:"PATCH",Syntax:"@PATCH",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"PATCH route preserving field presence",Mode:"GEN",Status:Pilot,Roadmap:"P3",Target:MethodTarget},
+    {Name:"DELETE",Syntax:"@DELETE",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"DELETE route",Mode:"GEN",Status:Pilot,Roadmap:"P3",Target:MethodTarget},
     {Name:"PathParam",Syntax:"@PathParam",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"Typed path extraction with decoding/validation",Mode:"GEN",Status:Optional,Roadmap:"P3",Target:MethodTarget},
     {Name:"QueryParam",Syntax:"@QueryParam",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"Typed query extraction, limits and defaults",Mode:"GEN",Status:Optional,Roadmap:"P3",Target:MethodTarget},
     {Name:"HeaderParam",Syntax:"@HeaderParam",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"Typed header extraction; do not trust user/tenant IDs",Mode:"GEN",Status:Optional,Roadmap:"P3",Target:MethodTarget},
