@@ -84,7 +84,7 @@ var _ = Describe("Provider push event ownership", func() {
 		messaging := &messagingFake{}
 		service, err := integrationimpl.NewConnectionService(
 			&connectionRepositoryFake{}, &watchRepositoryFake{},
-			registry, providerimpl.NewActionRegistry(), providerimpl.NewOAuthRegistry(), gmail.NewClient(integrationconfig.Gmail{}), nil, nil, "projects/test/topics/gmail", messaging,
+			registry, providerimpl.NewActionRegistry(), providerimpl.NewOAuthRegistry(), gmail.NewClient(integrationconfig.Gmail{}), nil, []byte("01234567890123456789012345678901"), "projects/test/topics/gmail", messaging,
 		)
 		Expect(err).NotTo(HaveOccurred())
 		err = service.ProcessPush(context.Background(), gmail.PushNotification{
