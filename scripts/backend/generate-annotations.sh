@@ -7,6 +7,13 @@ source "${SCRIPT_DIR}/../lib/common.sh"
 
 require_command go
 
+# Fail closed on unimplemented annotations, especially security policies.
+log_info "Validating annotation targets and rejecting metadata-only directives"
+(
+  cd -- "${BACKEND_DIR}"
+  go run ./libs/core/annotation/generation/check "${BACKEND_DIR}"
+)
+
 # Generate typed boilerplate directly into service-local ignored .generated/
 # directories. The original Go packages stay entirely developer-maintained.
 log_info "Generating annotated entity builders/accessors"
