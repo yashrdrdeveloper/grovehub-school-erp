@@ -31,7 +31,7 @@ type Client interface {
 }
 
 func TestCurrentServiceClientContracts(t *testing.T){
-    expected:=map[string]int{"foundation":5,"integration":7}
+    expected:=map[string]int{"foundation":5,"integration":7,"infrastructure":3}
     for service,count:=range expected {
         source:=filepath.Join("..","..","..","..","..","services",service,"client")
         proxies,err:=discover(source)
