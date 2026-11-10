@@ -9,9 +9,11 @@ import (
 )
 
 func NormalizeRegister(request identityrequest.Register) (identityrequest.Register, error) {
-	if _, err := annotationvalidation.Normalize(request); err != nil {
+	normalized, err := annotationvalidation.Normalize(request)
+	if err != nil {
 		return identityrequest.Register{}, invalidRegistration()
 	}
+	request = normalized
 	if err := ValidatePassword(request.Password); err != nil {
 		return identityrequest.Register{}, invalidRegistration()
 	}

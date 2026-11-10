@@ -48,10 +48,8 @@ func BuildRegisterPersonRequest(request identityrequest.Register) foundationrequ
 		contacts.Phones = []foundationrequest.ContactValue{{Value: request.PhoneNumber, IsPrimary: true}}
 	}
 	return foundationrequest.CreatePerson{
-		FirstName:  request.FirstName,
-		MiddleName: *request.MiddleName,
-		LastName:   request.LastName,
-		Contacts:   contacts,
+		Person: foundationrequest.Person[string]{FirstName: request.FirstName, MiddleName: *request.MiddleName, LastName: request.LastName},
+		Contacts: contacts,
 	}
 }
 
@@ -59,11 +57,7 @@ func BuildRegisterPersonUpdate(request identityrequest.Register) foundationreque
 	firstName := request.FirstName
 	middleName := *request.MiddleName
 	lastName := request.LastName
-	return foundationrequest.UpdatePerson{
-		FirstName:  &firstName,
-		MiddleName: &middleName,
-		LastName:   &lastName,
-	}
+	return foundationrequest.UpdatePerson{Person: foundationrequest.Person[*string]{FirstName: &firstName, MiddleName: &middleName, LastName: &lastName}}
 }
 
 func PersonHasEmail(person foundationresponse.Person, email string) bool {

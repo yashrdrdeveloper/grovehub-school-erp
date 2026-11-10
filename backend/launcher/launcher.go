@@ -17,6 +17,7 @@ import (
 	"grovehub/launcher/middleware"
 	"grovehub/launcher/routing"
 	coretelemetry "grovehub/libs/core/telemetry"
+	headercontext "grovehub/libs/core/headercontext"
 	"grovehub/services/foundation"
 	"grovehub/services/identity"
  "grovehub/services/integration"
@@ -87,7 +88,7 @@ func Run(logger *slog.Logger) error {
 
 	edgeService := coretelemetry.ServiceLauncherEdge
 	edgeHandler := otelhttp.NewHandler(
-		middleware.RequestObservability(logger, mux),
+		middleware.RequestObservability(logger, headercontext.Middleware(mux)),
 		"grovehub.edge",
 		otelhttp.WithTracerProvider(coretelemetry.TracerProvider(edgeService.Key)),
 		otelhttp.WithMeterProvider(coretelemetry.MeterProvider(edgeService.Key)),

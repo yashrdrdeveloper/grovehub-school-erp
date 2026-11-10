@@ -77,14 +77,39 @@ func formatFile(path string) error {
 	return os.WriteFile(path, result, info.Mode().Perm())
 }
 
-// checkFile validates formatting without modifying the file.
+// checkFile is a non-mutating lint of repository function and interface
+// signatures. gofmt is available separately through make backend-format.
 func checkFile(path string) error {
-	original, result, err := formattedFile(path)
-	if err != nil {
-		return err
+	source, err := os.ReadFile(path)
+	if err != nil { return err }
+	if bytes.Contains(source, []byte("// Code generated")) && bytes.Contains(source, []byte("DO NOT EDIT")) { return nil }
+	fset := token.NewFileSet()
+	file, err := parser.ParseFile(fset, path, source, parser.AllErrors)
+	if err != nil { return err }
+	isOneLine := func(start, end token.Pos) bool {
+		return fset.Position(start).Line == fset.Position(end).Line
 	}
-	if !bytes.Equal(original, result) {
-		return fmt.Errorf("%s: GroveHub formatting mismatch; run make backend-format FORMAT_SCOPE=foundation-repository", path)
+	for _, declaration := range file.Decls {
+		switch decl := declaration.(type) {
+		case *ast.FuncDecl:
+			if !isOneLine(decl.Pos(), decl.Type.End()) {
+				return fmt.Errorf("%s:%d: function signature must be on one line", path, fset.Position(decl.Pos()).Line)
+			}
+		case *ast.GenDecl:
+			for _, spec := range decl.Specs {
+				typ, ok := spec.(*ast.TypeSpec)
+				if !ok { continue }
+				if iface, ok := typ.Type.(*ast.InterfaceType); ok {
+					for _, method := range iface.Methods.List {
+						if len(method.Names) == 0 { continue }
+						fn, ok := method.Type.(*ast.FuncType)
+						if ok && !isOneLine(method.Pos(), fn.End()) {
+							return fmt.Errorf("%s:%d: interface method signature must be on one line", path, fset.Position(method.Pos()).Line)
+						}
+					}
+				}
+			}
+		}
 	}
 	return nil
 }

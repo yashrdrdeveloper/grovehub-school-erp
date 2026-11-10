@@ -1,32 +1,47 @@
 package request
 
 type ContactValue struct {
-	Value     string `json:"value"`
-	IsPrimary bool   `json:"isPrimary"`
+	// @NotBlank
+	Value string `json:"value" validate:"notblank"`
+	IsPrimary bool `json:"isPrimary"`
 }
 
 type Contacts struct {
-	Emails []ContactValue `json:"emails,omitempty"`
-	Phones []ContactValue `json:"phones,omitempty"`
+	// @Valid
+	Emails []ContactValue `json:"emails,omitempty" validate:"valid"`
+	// @Valid
+	Phones []ContactValue `json:"phones,omitempty" validate:"valid"`
+}
+
+// @Data
+// Person is the shared name contract; string is used for create, *string for PATCH.
+type Person[T any] struct {
+	// @NotBlank
+	// @Size max=100
+	FirstName T `json:"firstName,omitempty" normalize:"trim" validate:"notblank,maxrunes=100"`
+	// @Size max=100
+	MiddleName T `json:"middleName,omitempty" normalize:"trim" validate:"maxrunes=100"`
+	// @NotBlank
+	// @Size max=100
+	LastName T `json:"lastName,omitempty" normalize:"trim" validate:"notblank,maxrunes=100"`
 }
 
 // @Validator
-// Name fields are normalized and checked before service orchestration.
+// Header metadata is not part of the JSON request body.
 type CreatePerson struct {
-	IdempotencyKey string   `json:"-"`
-	FirstName      string   `json:"firstName" normalize:"trim" validate:"notblank,maxrunes=100"`
-	MiddleName     string   `json:"middleName,omitempty" normalize:"trim" validate:"maxrunes=100"`
-	LastName       string   `json:"lastName" normalize:"trim" validate:"notblank,maxrunes=100"`
-	Contacts       Contacts `json:"contacts,omitempty"`
+	// @Valid
+	Person[string] `validate:"valid"`
+	// @Valid
+	Contacts Contacts `json:"contacts,omitempty" validate:"valid"`
 }
 
 // @Validator
-// Nil PATCH fields remain absent; supplied fields are validated.
+// Nil PATCH fields remain absent; supplied values are validated.
 type UpdatePerson struct {
-	FirstName  *string   `json:"firstName,omitempty" normalize:"trim" validate:"notblank,maxrunes=100"`
-	MiddleName *string   `json:"middleName,omitempty" normalize:"trim" validate:"maxrunes=100"`
-	LastName   *string   `json:"lastName,omitempty" normalize:"trim" validate:"notblank,maxrunes=100"`
-	Contacts   *Contacts `json:"contacts,omitempty"`
+	// @Valid
+	Person[*string] `validate:"valid"`
+	// @Valid
+	Contacts *Contacts `json:"contacts,omitempty" validate:"valid"`
 }
 
 type PersonByGID struct {

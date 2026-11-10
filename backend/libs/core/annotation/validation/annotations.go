@@ -5,10 +5,12 @@ import "grovehub/libs/core/annotation/contract"
 
 var UseCases = []contract.UseCase{
     {Name:"Validator",Syntax:"@Validator",Category:"Validation, normalization and structured errors",Purpose:"Typed validator registration / wrapper for DTO type",Mode:"GEN/REG",Status:contract.Pilot,Roadmap:"P2",Target:contract.TypeTarget},
-    {Name:"Valid",Syntax:"@Valid",Category:"Validation, normalization and structured errors",Purpose:"Nested/request validation at explicit service/controller boundary",Mode:"WRAP/TAG",Status:contract.Proposed,Roadmap:"P2",Target:contract.FieldTarget},
-    {Name:"NonNull",Syntax:"@NonNull",Category:"Validation, normalization and structured errors",Purpose:"Reject nil/absent nullable input; distinguish from blank/zero",Mode:"TAG",Status:contract.Proposed,Roadmap:"P2",Target:contract.FieldTarget},
+    {Name:"Valid",Syntax:"@Valid",Category:"Validation, normalization and structured errors",Purpose:"Nested DTO validation via validate:valid",Mode:"TAG/CHECK",Status:contract.Pilot,Roadmap:"P2",Target:contract.FieldTarget},
+    {Name:"NonNull",Syntax:"@NonNull",Category:"Validation, normalization and structured errors",Purpose:"Reject nil via validate:nonnull",Mode:"TAG/CHECK",Status:contract.Pilot,Roadmap:"P2",Target:contract.FieldTarget},
     {Name:"NotBlank",Syntax:"@NotBlank",Category:"Validation, normalization and structured errors",Purpose:"Trim-aware non-whitespace text validation",Mode:"TAG",Status:contract.Pilot,Roadmap:"P2",Target:contract.FieldTarget},
     {Name:"NotEmpty",Syntax:"@NotEmpty",Category:"Validation, normalization and structured errors",Purpose:"Non-empty string/list/map",Mode:"TAG",Status:contract.Proposed,Roadmap:"P2",Target:contract.FieldTarget},
+    {Name:"Size",Syntax:"@Size max=N",Category:"Validation, normalization and structured errors",Purpose:"Maximum rune length via validate:maxrunes=N",Mode:"TAG/CHECK",Status:contract.Pilot,Roadmap:"P2",Target:contract.FieldTarget},
+    {Name:"NotNull",Syntax:"@NotNull",Category:"Validation, normalization and structured errors",Purpose:"Reject nil via validate:nonnull",Mode:"TAG/CHECK",Status:contract.Pilot,Roadmap:"P2",Target:contract.FieldTarget},
     {Name:"Length",Syntax:"@Length",Category:"Validation, normalization and structured errors",Purpose:"Rune-based or byte-based length with declared unit",Mode:"TAG",Status:contract.Proposed,Roadmap:"P2",Target:contract.FieldTarget},
     {Name:"Min",Syntax:"@Min",Category:"Validation, normalization and structured errors",Purpose:"Minimum numeric value or length, explicit semantics",Mode:"TAG",Status:contract.Proposed,Roadmap:"P2",Target:contract.FieldTarget},
     {Name:"Max",Syntax:"@Max",Category:"Validation, normalization and structured errors",Purpose:"Maximum numeric value or length, explicit semantics",Mode:"TAG",Status:contract.Proposed,Roadmap:"P2",Target:contract.FieldTarget},

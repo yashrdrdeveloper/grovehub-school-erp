@@ -2,6 +2,7 @@ package impl
 
 import (
     "errors"
+    "strings"
 
     annotationvalidation "grovehub/libs/core/annotation/validation"
     coreerrors "grovehub/libs/core/errors"
@@ -52,6 +53,9 @@ func normalizePersonRequest[T any](request T)(T,error) {
     var invalid annotationvalidation.Error
     if errors.As(err,&invalid){
         var zero T
+        if strings.Contains(invalid.Field, "Contacts") {
+            return zero,coreerrors.NewError(personerror.InvalidPersonContact)
+        }
         return zero,coreerrors.NewError(personerror.InvalidPersonRequest)
     }
     var zero T

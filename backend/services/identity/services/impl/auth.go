@@ -10,6 +10,7 @@ import (
 
 	coreerrors "grovehub/libs/core/errors"
 	coreidempotency "grovehub/libs/core/idempotency"
+    headercontext "grovehub/libs/core/headercontext"
     coreevents "grovehub/libs/core/events"
 	foundationclient "grovehub/services/foundation/client"
 	foundationrequest "grovehub/services/foundation/dto/request"
@@ -54,18 +55,16 @@ func (service *AuthService) Register(
 	ctx context.Context,
 	request identityrequest.Register,
 ) (identityresponse.Register, error) {
-	idempotencyKey, err := coreidempotency.ValidateKey(request.IdempotencyKey)
+	idempotencyKey, err := coreidempotency.ValidateKey(headercontext.IdempotencyKey(ctx))
 	if err != nil {
 		return identityresponse.Register{}, coreerrors.NewError(identityerror.InvalidRegistrationIdempotencyKey)
 	}
-	request.IdempotencyKey = idempotencyKey
     ctx = coreevents.WithCausationID(ctx, idempotencyKey)
 
 	validated, err := service.validator.ValidateRegister(request)
 	if err != nil {
 		return identityresponse.Register{}, err
 	}
-	validated.IdempotencyKey = idempotencyKey
 	requestHash, err := coreidempotency.Fingerprint(validated)
 	if err != nil {
 		return identityresponse.Register{}, coreerrors.Wrap(identityerror.RegistrationFailed, err)
@@ -157,7 +156,7 @@ func (service *AuthService) resolveRegisterPerson(
 	}
 
 	person, _, err := service.foundationClient.CreatePerson(
-		ctx,
+		headercontext.WithoutIdempotencyKey(ctx),
 		servicehelpers.BuildRegisterPersonRequest(request),
 	)
 	if err != nil {

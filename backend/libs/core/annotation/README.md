@@ -124,6 +124,9 @@ The build-time `generation/search` processor resolves external repository search
 
 ### Configuration, validation and events
 
+The Foundation request DTOs embed the shared generic `Person[T]` (`string` for create, `*string` for PATCH). `@Data` is a **checked passive DTO marker**, not auto-generated getters or setters. The `@Valid`, `@NotBlank`, `@NotNull`, and `@Size max=N` annotations require matching executable validation tags. `headercontext` captures validated HTTP metadata once at the edge, rather than storing it in JSON DTOs.
+
+
 Integration config uses `// @Configuration` and `env`, `required`, `default`, `secret` struct tags with the typed startup loader. Foundation and Identity request DTOs use `// @Validator` and explicit `normalize` / `validate` tags for the supported rules. Cross-field business checks remain in their existing validators.
 
 ```go

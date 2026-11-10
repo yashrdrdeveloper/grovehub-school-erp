@@ -8,6 +8,7 @@ import (
 	coreerrors "grovehub/libs/core/errors"
 	coreid "grovehub/libs/core/id"
 	coreidempotency "grovehub/libs/core/idempotency"
+	headercontext "grovehub/libs/core/headercontext"
 	coresearch "grovehub/libs/core/search"
 	coretransaction "grovehub/libs/core/database/transaction"
 	personerror "grovehub/services/foundation/constants/error"
@@ -52,8 +53,8 @@ func (service *PersonService) Create(ctx context.Context, request foundationrequ
 	if err != nil { return foundationresponse.Person{}, false, err }
 	contacts := servicehelpers.BuildContacts(validatedRequest.Contacts, nil)
 	idempotencyKey, requestHash := "", ""
-	if request.IdempotencyKey != "" {
-		idempotencyKey, err = coreidempotency.ValidateKey(request.IdempotencyKey)
+	if headercontext.IdempotencyKey(ctx) != "" {
+		idempotencyKey, err = coreidempotency.ValidateKey(headercontext.IdempotencyKey(ctx))
 		if err != nil { return foundationresponse.Person{}, false, coreerrors.NewError(personerror.InvalidPersonIdempotencyKey) }
 		requestHash, err = coreidempotency.Fingerprint(validatedRequest)
 		if err != nil { return foundationresponse.Person{}, false, coreerrors.Wrap(personerror.PersonCreateFailed, err) }

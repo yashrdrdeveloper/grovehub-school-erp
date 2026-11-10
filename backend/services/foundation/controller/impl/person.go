@@ -2,8 +2,6 @@ package impl
 
 import (
 	"net/http"
-
-	httpheaders "grovehub/libs/core/http/headers"
 	httpresponse "grovehub/libs/core/http/response"
 	coresearch "grovehub/libs/core/search"
 	personerror "grovehub/services/foundation/constants/error"
@@ -27,7 +25,6 @@ func (controller *PersonController) Create(writer http.ResponseWriter, request *
 		_ = httpresponse.WriteErrorContext(request.Context(), writer, http.StatusBadRequest, personerror.InvalidPersonRequest)
 		return
 	}
-	personRequest.IdempotencyKey = request.Header.Get(httpheaders.IdempotencyKey)
 	person, created, err := controller.service.Create(request.Context(), personRequest)
 	if err != nil {
 		controllerhelpers.WritePersonError(request.Context(), writer, err, personerror.PersonCreateFailed)

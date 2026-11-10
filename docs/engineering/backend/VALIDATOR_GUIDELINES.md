@@ -12,6 +12,13 @@ docs/engineering/backend/NORMALIZATION_AND_DRY_GUIDELINES.md
 
 ---
 
+## Executable DTO annotations and header context
+
+- `// @Data` declares a checked passive shared DTO shape; it does not create unsafe implicit setters or runtime hooks.
+- `// @Validator` declares the validation boundary. Field annotations `// @Valid`, `// @NotBlank`, `// @NotNull` and `// @Size max=N` require matching executable `validate:"valid"`, `validate:"notblank"`, `validate:"nonnull"`, `validate:"maxrunes=N"` tags. The annotation checker rejects missing tags.
+- The shared generic Foundation `request.Person[T]` is embedded with `T=string` for create and `T=*string` for PATCH; nil pointers remain absent, including nested optional contacts.
+- `libs/core/headercontext.Middleware` captures and validates `Idempotency-Key`, `X-Correlation-ID` and `X-Request-ID` once at the launcher HTTP boundary. Services consume `headercontext.IdempotencyKey(ctx)` directly; no request-body header fields or controller extraction. Never treat client-supplied `X-Trace-ID` as authoritative telemetry.
+
 ## 1. Purpose
 
 Validators keep payload validation and canonicalization out of business services.
