@@ -1,6 +1,10 @@
 package entity
 
-import "time"
+import (
+ "time"
+
+ coreentity "grovehub/libs/core/entity"
+)
 
 type ContactType string
 
@@ -24,29 +28,25 @@ func (Contact) TableName() string {
 	return "foundation.person_contacts"
 }
 
-func NewContact(
-	contactType ContactType,
-	value string,
-	normalizedValue string,
-	isPrimary bool,
-	isVerified bool,
-) Contact {
-	return Contact{
-		Type:            contactType,
-		Value:           value,
-		NormalizedValue: normalizedValue,
-		IsPrimary:       isPrimary,
-		IsVerified:      isVerified,
-	}
+// NewContact preserves the current constructor contract; new use cases may use coreentity.New[Contact] directly.
+func NewContact(contactType ContactType, value string, normalizedValue string, isPrimary bool, isVerified bool) Contact {
+ return coreentity.New[Contact]().With(func(contact *Contact) {
+  contact.Type = contactType
+  contact.Value = value
+  contact.NormalizedValue = normalizedValue
+  contact.IsPrimary = isPrimary
+  contact.IsVerified = isVerified
+ }).Build()
 }
 
 func (contact Contact) ForPerson(gid GID, createdAt time.Time, updatedAt time.Time) Contact {
-	contact.PersonGID = gid
-	if contact.CreatedAt.IsZero() {
-		contact.CreatedAt = createdAt
-	}
-	contact.UpdatedAt = updatedAt
-	return contact
+ return coreentity.From(contact).With(func(value *Contact) {
+  value.PersonGID = gid
+  if value.CreatedAt.IsZero() {
+   value.CreatedAt = createdAt
+  }
+  value.UpdatedAt = updatedAt
+ }).Build()
 }
 
 func (contact Contact) GetPersonGID() GID {
