@@ -13,7 +13,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	oteltrace "go.opentelemetry.io/otel/trace"
 
-	responsedto "grovehub/libs/core/dto/response"
+	responsedto "grovehub/libs/core/http/contracts"
 	coreerrors "grovehub/libs/core/errors"
 	coretelemetry "grovehub/libs/core/telemetry"
 )
