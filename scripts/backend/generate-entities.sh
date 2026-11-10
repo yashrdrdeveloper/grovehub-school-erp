@@ -35,12 +35,12 @@ for file in "${entity_dir}"/*.go; do
   case "${file}" in *_gombok.go|*/zz_grove_tables.gen.go|*/zz_tables.gen.go) continue ;; esac
   source_files+=("${file}")
   fingerprint+="$(shasum -a 256 "${file}")"$'\n'
-  if grep -Eq '^[[:space:]]*//[[:space:]]*@(Builder|Getter|Setter|AllArgsConstructor|NoArgsConstructor|RequiredArgsConstructor|ToString|Equals)([.[:space:]]|$)' "${file}"; then
+  if grep -Eq '^[[:space:]]*//[[:space:]]*@(Entity|Builder|Getter|Setter|AllArgsConstructor|NoArgsConstructor|RequiredArgsConstructor|ToString|Equals)([.[:space:]]|$)' "${file}"; then
     generated_files+=("$(basename "${file}" .go)_gombok.go")
   fi
 done
 
-fingerprint+="gombok=${GOMBOK_VERSION};goimports=${GOIMPORTS_VERSION};table=v2;overlay=v1"
+fingerprint+="gombok=${GOMBOK_VERSION};goimports=${GOIMPORTS_VERSION};entity=v1;table=v3;overlay=v1"
 digest="$(printf '%s' "${fingerprint}" | shasum -a 256 | awk '{print $1}')"
 ready=1
 [[ -f "${state_file}" && "$(cat "${state_file}")" == "${digest}" ]] || ready=0
@@ -59,6 +59,11 @@ if [[ "${ready}" != 1 ]]; then
     cp -- "${file}" "${stage}/"
   done
 
+  log_info "Expanding @Entity annotations in isolated staging directory"
+  (
+    cd -- "${BACKEND_DIR}"
+    go run ./libs/core/entity/cmd/expand "${stage}"
+  )
   log_info "Generating Foundation Gombok implementations in isolated staging directory"
   (
     cd -- "${stage}"
