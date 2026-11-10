@@ -37,9 +37,11 @@ func New(
 	messagingClient infrastructureclient.MessagingClient,
 ) Module {
 	personRepository := repositoryimpl.NewPersonRepository(db)
+	contactRepository := repositoryimpl.NewContactRepository(db)
+	unitOfWork := repositoryimpl.NewUnitOfWork(db)
 	personMapper := mapperimpl.NewPersonMapper()
 	personValidator := validatorimpl.NewPersonValidator()
-	personService := serviceimpl.NewPersonService(personRepository, personMapper, personValidator)
+	personService := serviceimpl.NewPersonService(personRepository, contactRepository, unitOfWork, personMapper, personValidator)
 	personService = personeventimpl.NewPersonService(personService, messagingClient, logger)
 
 	return &module{
