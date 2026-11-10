@@ -1,32 +1,48 @@
-// Phase 1 annotation inventory. Each domain owns only its own declarations.
-// The library remains the single metadata package; runtime capabilities stay
-// in their existing owning core/service packages.
+// Package-level inventory composition. Each annotation category owns its
+// definitions under its own directory. Keep public All/Lookup/Uses unchanged.
 package annotation
 
+import (
+    "grovehub/libs/core/annotation/entity"
+    "grovehub/libs/core/annotation/mapping"
+    "grovehub/libs/core/annotation/validation"
+    "grovehub/libs/core/annotation/persistence"
+    "grovehub/libs/core/annotation/composition"
+    "grovehub/libs/core/annotation/http"
+    "grovehub/libs/core/annotation/middleware"
+    "grovehub/libs/core/annotation/security"
+    "grovehub/libs/core/annotation/external"
+    "grovehub/libs/core/annotation/event"
+    "grovehub/libs/core/annotation/messaging"
+    "grovehub/libs/core/annotation/configuration"
+    "grovehub/libs/core/annotation/observability"
+    "grovehub/libs/core/annotation/server"
+    "grovehub/libs/core/annotation/testing"
+    "grovehub/libs/core/annotation/utilities"
+)
+
 func buildInventory() []UseCase {
-    groups := [][]UseCase{
-        entityUseCases,
-        mappingUseCases,
-        validationUseCases,
-        persistenceUseCases,
-        compositionUseCases,
-        httpUseCases,
-        middlewareUseCases,
-        securityUseCases,
-        externalUseCases,
-        eventsUseCases,
-        messagingUseCases,
-        configurationUseCases,
-        observabilityUseCases,
-        serverUseCases,
-        testingUseCases,
-        utilitiesUseCases,
+    categories := [][]UseCase{
+        entity.UseCases,
+        mapping.UseCases,
+        validation.UseCases,
+        persistence.UseCases,
+        composition.UseCases,
+        http.UseCases,
+        middleware.UseCases,
+        security.UseCases,
+        external.UseCases,
+        event.UseCases,
+        messaging.UseCases,
+        configuration.UseCases,
+        observability.UseCases,
+        server.UseCases,
+        testing.UseCases,
+        utilities.UseCases,
     }
-    var result []UseCase
-    for _, group := range groups { result = append(result, group...) }
-    return result
+    var definitions []UseCase
+    for _, entries := range categories { definitions = append(definitions, entries...) }
+    return definitions
 }
 
-// inventory contains every documented use case; name collisions intentionally
-// represent one directive applied in different architectural contexts.
 var inventory = buildInventory()
