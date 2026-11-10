@@ -403,6 +403,8 @@ YES capability tests aligned with capability ownership
 
 ## Entity declarations: unified @Entity and source overlays
 
+> **Proposed expansion only:** The complete annotation catalog, 23 GoF pattern review, and phased implementation gates are in [ANNOTATION_FRAMEWORK_MASTER_PLAN.md](ANNOTATION_FRAMEWORK_MASTER_PLAN.md). Its proposals do not change current mandatory coding rules.
+
 **Foundation phase:** Use one product-neutral declaration, `// @Entity schema.table`, on Go entity structs. It includes builder, getter, setter, and GORM `TableName()` generation without repeating `@Builder`, `@Getter`, `@Setter`, or `@Table` on each struct.
 
 ```go
