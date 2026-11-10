@@ -38,7 +38,7 @@ backend/libs/core/annotation/
     patterns.go              # all 23 GoF decisions
   generation/
     entities/ gormtable/ routes/ clients/ mappers/ events/
-    check/ parser/ overlay/ expand/
+    search/ check/ parser/ overlay/ expand/
 ```
 
 All code generated for a service is placed under **that service's ignored `.generated/` directory**, not beside its maintained Go files.
@@ -103,6 +103,21 @@ type AuthMapper interface {
 
 The mapper generator requires **complete destination-field coverage** and fails rather than silently dropping fields. Complex Foundation contact grouping stays handwritten.
 
+### Annotated repository search
+
+```go
+// @Repository entity=Person
+type PersonRepository interface {
+    // @Searchable impl=PersonRepository entity=Person config=personSearchConfig alias=p
+    // @Filterable fields=gid,firstName,middleName,lastName,status,createdAt,updatedAt,contacts.email,contacts.phone,contacts.primaryEmail,contacts.primaryPhone,contacts.verifiedEmail,contacts.verifiedPhone
+    // @Sortable fields=gid,firstName,lastName,createdAt,updatedAt
+    // @Cursor field=gid
+    Search(ctx context.Context, query coresearch.Query[string]) (coresearch.QueryResult[entity.Person], error)
+}
+```
+
+The build-time `generation/search` processor checks the configured field allowlists and cursor expression, and generates the `Search` method into the service's ignored `.generated/repository/impl/` folder. Execution delegates to the shared `core/search.Execute`. The resource validator still controls operators and normalized values; repository-owned `coresearch.Config` keeps all SQL expressions explicit and reviewed. `@Repository` is ownership metadata validation only, **not** DI or transaction generation.
+
 ### Configuration, validation and events
 
 Integration config uses `// @Configuration` and `env`, `required`, `default`, `secret` struct tags with the typed startup loader. Foundation and Identity request DTOs use `// @Validator` and explicit `normalize` / `validate` tags for the supported rules. Cross-field business checks remain in their existing validators.
@@ -124,11 +139,11 @@ make backend-test
 bash scripts/backend/generate-annotations.sh
 ```
 
-The unified generator first checks annotation validity, then runs entities → GORM table metadata → routes → clients → mappers → events → Go overlay. The `generation/check` tool blocks unsupported or metadata-only directives from being used as if they enforce security or transaction policy. CI at `.github/workflows/backend-annotations.yml` compiles the backend with Go 1.27.3, verifies annotation packages resolve, and runs existing non-annotation backend unit suites. Annotation-framework test cases were removed as requested; this does not disable other backend tests. Direct Go commands need the `-overlay` option; the test wrapper uses `-vet=off` for virtual files and is not a substitute for separate static analysis.
+The unified generator first checks annotation validity, then runs entities → GORM table metadata → routes → clients → repository searches → mappers → events → Go overlay. The `generation/check` tool blocks unsupported or metadata-only directives from being used as if they enforce security or transaction policy. CI at `.github/workflows/backend-annotations.yml` compiles the backend with Go 1.27.3, verifies annotation packages resolve, and runs existing non-annotation backend unit suites. Annotation-framework test cases were removed as requested; this does not disable other backend tests. Direct Go commands need the `-overlay` option; the test wrapper uses `-vet=off` for virtual files and is not a substitute for separate static analysis.
 
 ## Security and migration limits
 
-`@Service`, `@Repository`, `@Consumer`, `@Producer`, `@Authorize`, `@Transactional`, `@Audit`, `@Retry` and most other cataloged directives **do not enforce behavior yet**. Do not use them as security, durability, or transaction guarantees. Keep authorization, domain decisions, GORM predicates, credential/OAuth policy, message acknowledgments and event publication explicit until tested processors are separately implemented.
+`@Service`, `@Consumer`, `@Producer`, `@Authorize`, `@Transactional`, `@Audit`, `@Retry` and most other cataloged directives **do not enforce behavior yet**. `@Repository` only validates ownership metadata; it does not enforce transaction boundaries. Do not use them as security, durability, or transaction guarantees. Keep authorization, domain decisions, GORM predicates, credential/OAuth policy, message acknowledgments and event publication explicit until tested processors are separately implemented.
 
 The complete remaining work and acceptance criteria are in the Phase 2 migration ledger.
 

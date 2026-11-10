@@ -270,8 +270,14 @@ services/helpers/person.go
     -> OptionalString, NullableString, CopyContacts and association rules
 
 repository/impl/person.go
-    -> persists Person and Contact in the same transaction
-    -> returns Contact rows separately from Person records
+    -> persists Person columns and their SearchDetails projection
+    -> uses @Searchable-generated Search with validated read-only contact filters
+
+repository/impl/contact.go
+    -> persists Contact rows only; queries PersonGID foreign keys
+
+repository/impl/transaction.go
+    -> coordinates both repositories through a shared GORM transaction
 
 services/impl/person.go
     -> coordinates both entity values through Person's lifecycle
@@ -303,7 +309,7 @@ external I/O
 
 Persistence-derived behavior that exists only to store/query database data belongs in the repository implementation.
 
-For example, Foundation's denormalized `search_details` projection is calculated by `repository/impl/person.go`, not by `entity.Person`. The `Person.IdempotencyKey` and `Person.RequestHash` Go fields continue mapping to the existing `create_idempotency_key` and `create_request_hash` PostgreSQL columns; no schema migration is needed.
+For example, Foundation's denormalized `search_details` projection is calculated by `services/helpers/person.go` and written through `PersonRepository`, not by `entity.Person`. The `Person.IdempotencyKey` and `Person.RequestHash` Go fields continue mapping to the existing `create_idempotency_key` and `create_request_hash` PostgreSQL columns; no schema migration is needed.
 
 ---
 
@@ -644,7 +650,7 @@ Person
 └── UpdatedAt
 ```
 
-Contacts are nested API values, not separately addressable public resources. `entity.Person` contains **no** `Contacts` field. The repository returns `Person` and `[]Contact` separately, `PersonService` owns contact changes, and the mapper combines them into the existing DTO. No `PersonWithContacts` model or new `@Model` annotation is needed.
+Contacts are nested API values, not separately addressable public resources. `entity.Person` contains **no** `Contacts` field. `PersonRepository` returns Person rows, `ContactRepository` returns separate Contact rows, `PersonService` owns and transactionally coordinates contact changes, and the mapper combines them into the existing DTO. No `PersonWithContacts` model or new `@Model` annotation is needed.
 
 Search remains a Person use case; do not create `person_search.go` merely because Person supports search.
 

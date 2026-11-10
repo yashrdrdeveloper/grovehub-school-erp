@@ -197,7 +197,7 @@ This catalog names the planned semantics for the backend. **Only the observed Fo
 
 | Directive | Expected effect | Mode | Status / phase |
 | --- | --- | --- | --- |
-| @Repository | Repository implementation metadata and constructor wiring | REG | PROPOSED / P4 |
+| @Repository | Validate repository ownership declaration (`entity=Type`), without wiring or transactions | CHECK | PILOT / P4 |
 | @CRUD | Opt-in GORM basic CRUD only; no guessed aggregate persistence | GEN | OPTIONAL / P4 |
 | @Query | Explicit typed query declaration; parameterized only | GEN/CHECK | OPTIONAL / P4 |
 | @FindBy | Allowlisted trivial finder generation; fail on ambiguity | GEN | OPTIONAL / P4 |
@@ -206,10 +206,10 @@ This catalog names the planned semantics for the backend. **Only the observed Fo
 | @OptimisticLock | Version predicate plus conflict mapping | GEN | OPTIONAL / P4 |
 | @TenantScoped | Require trusted tenant context in repository predicates | CHECK/WRAP | PROPOSED / P7 |
 | @SoftDelete | Optional GORM soft-delete integration | GEN | OPTIONAL / P4 |
-| @Searchable | Declare allowed search fields, not raw SQL expressions | REG/CHECK | PROPOSED / P4 |
-| @Filterable | Allowed filters/operators with canonicalization | REG/CHECK | OPTIONAL / P4 |
-| @Sortable | Allowed stable sort keys and null ordering | REG/CHECK | OPTIONAL / P4 |
-| @Cursor | Typed cursor serialization/validation policy | GEN/CHECK | OPTIONAL / P4 |
+| @Searchable | Generate typed Search method delegating to shared `core/search.Execute` with maintained config | GEN | PILOT / P4 |
+| @Filterable | Verify configured filter field keys match declared allowlist | CHECK | PILOT / P4 |
+| @Sortable | Verify configured sort field keys match declared allowlist | CHECK | PILOT / P4 |
+| @Cursor | Verify stable cursor field matches configured sort cursor expression | CHECK | PILOT / P4 |
 | @Migration | Only mark migration files for linting; never auto-apply DDL | CHECK | DISCOURAGED / P4 |
 
 **Boundary:** GORM remains the ORM. Foundation contact upsert, search projection, optimistic concurrency conflict resolution, and database error mapping remain explicit repository code. No repository may invent service business decisions.

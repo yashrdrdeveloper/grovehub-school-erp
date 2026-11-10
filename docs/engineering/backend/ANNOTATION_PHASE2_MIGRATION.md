@@ -29,6 +29,7 @@
 | Strict DTO projection | Identity registration response and Foundation Person error metadata generated; contact grouping remains custom | `@Mapper`, `@Mapping` | Explicit fields fail generation when destination gains unmapped fields |
 | GORM table-only entities | Removed manual `TableName()` methods for seven Identity/Integration models; no new credential setters | `@Entity ... mode=table` | CI compilation verified; DB schema unchanged |
 | Passive entity refactor | Removed generated entity builders and entity-owned New/Get/Set/helper methods in Foundation and Identity; replaced usage with service-owned constructors, copies and explicit updates | `@Entity` now maps tables only | Go 1.27 CI compilation and existing unit suites passed; live DB regression remains pending |
+| Annotated repository search | Generates reusable typed Search implementations backed by `core/search.Execute`; checks declared filter/sort/cursor fields against developer-maintained `search.Config` | `@Searchable`, `@Filterable`, `@Sortable`, `@Cursor` | Foundation Person is the first supported repository; validators/authorization, database mappings and relation filters remain explicit |
 | Person/contact separation | Removed non-column `Person.Contacts`; repository and service pass child `[]Contact` explicitly, while mapper emits unchanged response DTO; renamed Go idempotency fields with old database column tags | GORM `@Entity` and existing `PersonRepository` | Go build/CI verification; live DB regression remains pending |
 | Event identity declarations | Foundation Person changed, Identity Account created, Integration Mailbox changed topics/types/versions generated | `@Event` | Event publication timing, after-commit, error policies unchanged |
 | CI regression gate | GitHub Actions Go 1.27.3 binary compilation, package resolution, core/launcher/Identity/Integration unit tests, and generated-output checks | `.github/workflows/backend-annotations.yml` | Live database/NATS integration regression remains separate |
@@ -68,6 +69,7 @@ backend/
       entities/                       # Gombok-compatible AST builder/accessor generator
       gormtable/                      # @Entity TableName generator (full or table-only)
       mappers/                        # exact-field DTO projection generator
+      search/                         # typed repository search and allowlist checker
       events/                         # versioned topic/type constant generator
       routes/                         # Go AST -> traced HTTP route generation
       clients/                        # typed @Client/@Proxy delegation
@@ -91,7 +93,7 @@ backend/
       .generated/routes/zz_routes.gen.go
   .generated/overlay.json             # generated Go -overlay manifest
 
-scripts/backend/generate-annotations.sh # entity -> tables -> routes -> clients -> mappers -> events -> overlay
+scripts/backend/generate-annotations.sh # entity -> tables -> routes -> clients -> search -> mappers -> events -> overlay
 scripts/backend/generate-entities.sh    # compatibility wrapper
 scripts/backend/build.sh               # overlay-aware build
 scripts/backend/air-build.sh           # overlay-aware hot reload
@@ -163,7 +165,7 @@ These remain work items, **not implemented features**.
 
 **Do not proceed with automatic replacement of service, repository, messaging or security logic until these gates pass.**
 
-**Confirmed boundary:** `@Repository`, `@Service`, `@Consumer`, `@Authorize`, `@Transactional`, `@Retry`, `@Audit`, and most design-pattern annotations remain metadata-only, not effective runtime policy. No endpoint must rely on an inert annotation for protection.
+**Confirmed boundary:** `@Repository` now validates the entity ownership declaration but does not generate constructors, transactions, or persistence. `@Searchable` generates only search plumbing; `@Filterable`, `@Sortable`, and `@Cursor` check allowlisted configuration. `@Service`, `@Consumer`, `@Authorize`, `@Transactional`, `@Retry`, `@Audit`, and most design-pattern annotations remain metadata-only, not effective runtime policy. No endpoint must rely on an inert annotation for protection.
 
 ## Annotation folder refactor
 

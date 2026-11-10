@@ -417,7 +417,7 @@ type PasswordCredential struct { PasswordHash string }
 
 `mode=table` remains accepted for compatibility and is now equivalent to the default. `Person`, `Contact`, `Account`, `PasswordCredential` and Integration persistence models are passive structs; no entity-owned `New*`, `Get*`, `Set*`, `optionalString` or `copyContacts` methods are required. Use ordinary field reads and write updated copies within the owning service. Foundation's `NewPerson`, `OptionalString` and `CopyContacts` and Identity's account/credential constructors and optional-field rules live under `services/helpers`.
 
-The unified build command is `scripts/backend/generate-annotations.sh` (the old `generate-entities.sh` is a compatibility wrapper). It processes entities, GORM tables, routes, in-process clients, mapper contracts and event definitions, then writes the Go overlay at `backend/.generated/overlay.json`. Generated implementations are placed only in `services/<service>/.generated/<package>/`, never in maintained source folders or Git.
+The unified build command is `scripts/backend/generate-annotations.sh` (the old `generate-entities.sh` is a compatibility wrapper). It processes entities, GORM tables, routes, in-process clients, annotated repository searches, mapper contracts and event definitions, then writes the Go overlay at `backend/.generated/overlay.json`. Generated implementations are placed only in `services/<service>/.generated/<package>/`, never in maintained source folders or Git.
 
 ```bash
 make backend-build

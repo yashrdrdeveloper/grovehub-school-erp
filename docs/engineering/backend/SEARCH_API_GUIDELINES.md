@@ -222,7 +222,7 @@ contacts.email -> person_contacts relation + EMAIL fixed predicate
 
 Raw client field names must never be concatenated directly into SQL.
 
-The repository calls `search.Apply` using a capability `search.Config`.
+A repository can declare `@Searchable` on the Search method. The generated implementation delegates to generic `search.Execute`, which performs `search.Apply`, query execution, and keyset pagination using a developer-maintained `search.Config`. There is no handwritten Search implementation for annotated repositories.
 
 Repository search methods return:
 
@@ -234,7 +234,26 @@ not transport-facing `search.Result`.
 
 ---
 
-## 7. Generic Operators
+## 7. Annotation-driven search (implemented for Foundation Person)
+
+```go
+// @Repository entity=Person
+type PersonRepository interface {
+    // @Searchable impl=PersonRepository entity=Person config=personSearchConfig alias=p
+    // @Filterable fields=gid,firstName,middleName,lastName,status,createdAt,updatedAt,contacts.email,contacts.phone,contacts.primaryEmail,contacts.primaryPhone,contacts.verifiedEmail,contacts.verifiedPhone
+    // @Sortable fields=gid,firstName,lastName,createdAt,updatedAt
+    // @Cursor field=gid
+    Search(ctx context.Context, query search.Query[string]) (search.QueryResult[entity.Person], error)
+}
+```
+
+The search generator checks the method signature, repository implementation, exact filter and sort allowlists, and that the cursor uses the configured stable sort expression. It generates a method into `services/foundation/.generated/repository/impl/zz_search.gen.go`; the source overlay injects it into the existing `repository/impl` package. Each resource still maintains its own safe field expressions and relation mappings in its `search.Config`.
+
+The directives do **not** infer SQL or automatically authorize fields/operators: the resource validator continues to normalize requests, enforce permitted operators, and check cursor content. The repository controls its persisted table, joins, GORM query and trusted expressions. `@Repository` validates ownership metadata but does not create transactions; `PersonService` explicitly coordinates the two repositories through `UnitOfWork`.
+
+---
+
+## 8. Generic Operators
 
 Generic operator behavior is implemented once inside the search capability:
 
@@ -259,7 +278,7 @@ A new generic operator is added to `core/search` once and explicitly enabled in 
 
 ---
 
-## 8. Cursor Rules
+## 9. Cursor Rules
 
 Cursor values are opaque to clients.
 
@@ -296,7 +315,7 @@ Repositories use keyset pagination, not `OFFSET`.
 
 ---
 
-## 9. Search Projection vs Source of Truth
+## 10. Search Projection vs Source of Truth
 
 `search_details` is denormalized projection data for free-text search. It is not authoritative and must not be used for uniqueness/deduplication.
 
@@ -307,13 +326,13 @@ person_contacts unique/indexed normalized values -> uniqueness/source of truth
 persons.search_details + trigram index            -> free-text search projection
 ```
 
-When a Person or its contacts change, the repository rebuilds and persists `search_details` inside the same transaction. This projection calculation belongs to persistence/repository code, not the entity.
+When Person or its contacts change, `PersonService` rebuilds `search_details` from the Person and Contact records; `PersonRepository` persists the projection inside the same unit-of-work transaction as `ContactRepository`. The projection is owned by Person, not Contact.
 
-Do not perform a second SQL aggregation query when the repository already has the complete aggregate in memory.
+Do not perform a second SQL aggregation query when the service already has the complete aggregate in memory.
 
 ---
 
-## 10. Hard Rules
+## 11. Hard Rules
 
 ```text
 NO imports of core/search internals from services/modules
