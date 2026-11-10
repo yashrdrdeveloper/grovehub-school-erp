@@ -1,6 +1,6 @@
 # GrooveHub | Backend Annotation Framework - Master Plan
 
-**Version:** 1.2 Phase 2 pilot migrations  |  **Date:** 10 November 2026  |  **Branch:** `phase-2.1-identity-account`  |  **Change type:** Annotation contracts and documentation; no service migration
+**Version:** 1.3 Phase 2 migration verified in Go 1.27 CI  |  **Date:** 10 November 2026  |  **Branch:** `phase-2.1-identity-account`  |  **Change type:** Generator implementation, selected backend migrations and CI
 
 **Scope:** Complete Go modular-monolith annotation catalog, all backend folders and cross-cutting concerns, 23 GoF patterns, phased execution, acceptance criteria and risks.
 
@@ -10,7 +10,7 @@
 
 **Phase 1 — annotation contract definitions (this change).** Register every named annotation centrally under `backend/libs/core/annotation`, with name/syntax, purpose, category, intended mechanism (GEN/WRAP/REG/CHECK/TAG), current implementation status, roadmap workstream and structural target. Include all 23 GoF pattern decisions, a read-only AST scanner, contract tests and a complete reference document. **Do not apply new annotations to any service in Phase 1.** The pre-existing Foundation `@Entity` workflow remains unchanged.
 
-**Phase 2 — implementation and migration (partially started).** Design the per-annotation argument schema, implement the approved generator or runtime wrapper, prove behavior in tests, then replace repetitive code layer by layer. The original P0-P8 roadmap below is now the **set of Phase 2 workstreams**, not a claim that all those processors are working. The current route, in-process client, configuration and Foundation DTO-validation pilot is tracked in [ANNOTATION_PHASE2_MIGRATION.md](ANNOTATION_PHASE2_MIGRATION.md). In particular, `@Service` is registered for completeness **but not applied to service code** under the current Phase 1 request.
+**Phase 2 — implementation and migration (partially started).** Design the per-annotation argument schema, implement the approved generator or runtime wrapper, prove behavior in tests, then replace repetitive code layer by layer. The original P0-P8 roadmap below is now the **set of Phase 2 workstreams**, not a claim that all those processors are working. The current entity, route, client, mapper, configuration, validation and event migrations are tracked in [ANNOTATION_PHASE2_MIGRATION.md](ANNOTATION_PHASE2_MIGRATION.md). In particular, `@Service` is registered for completeness **but not applied to service code** under the current Phase 1 request.
 
 The exhaustive Phase 1 catalog and status contract are published in [ANNOTATION_PHASE1_REFERENCE.md](ANNOTATION_PHASE1_REFERENCE.md). The code catalog is under `backend/libs/core/annotation/{annotation.go,annotations_*.go,inventory.go,patterns.go}`.
 
@@ -18,9 +18,28 @@ The exhaustive Phase 1 catalog and status contract are published in [ANNOTATION_
 
 ---
 
+### Verified Phase 2 scope (November 10, 2026)
+
+The clean-checkout `make backend-build` has compiled on GitHub Actions with Go 1.27.3. Generated source is injected by a Go overlay without committing generated files. Active migrations are `@Entity` (Foundation builders, getters, setters and safe table-only mode for Identity/Integration), `@Routes`, `@Client`/`@Proxy`, strict `@Mapper`/`@Mapping` DTO projections, `@Event` topic/type/version constants, typed Integration configuration and Foundation/Identity request validation. The new annotation generators have focused unit tests; live database, NATS, HTTP authorization and full Ginkgo/Gomega regression coverage are still separate acceptance gates.
+
+`@Entity schema.table mode=table` is the required form for entities whose credentials or lifecycle-sensitive fields must **not** gain generated setters or builders. For example:
+
+```go
+// @Entity identity.password_credentials mode=table
+type PasswordCredential struct {
+    PasswordHash string `gorm:"column:password_hash;not null"`
+}
+```
+
+This adds only GORM's `TableName()`. Default `@Entity foundation.person_contacts` retains its builder and safe-accessor behavior.
+
+The original upstream Gombok CLI was removed from the unified generation pipeline because its formatter failed in clean-checkout CI. `annotation/generation/entities` now provides the same currently used Foundation builder/getter/setter signatures without external codegen. Standalone Gombok-only directives that are cataloged but not supported by the new generator remain **unimplemented**. See [ANNOTATION_PHASE2_MIGRATION.md](ANNOTATION_PHASE2_MIGRATION.md) for current file-level scope.
+
+---
+
 ## 01. Executive decision and scope
 
-> **Document status:** Phase 1 definition registry created in `backend/libs/core/annotation` (all 226 use cases, 232 unique names including GoF-only candidates, all 23 GoF pattern decisions). This means **metadata/catalog and AST discovery, not executable annotations**. Existing Foundation `@Entity` / Gombok remains the only custom runtime-build generation path observed. No service implementation was rewritten.
+> **Document status:** Phase 1 definition registry created in `backend/libs/core/annotation` (all 226 use cases, 232 unique names including GoF-only candidates, all 23 GoF pattern decisions). This means **metadata/catalog and AST discovery, not executable annotations**. The Phase 2 implementation adds Go AST-based entity, route, client, mapper, table-name and event generators, plus typed configuration and validation. Service business workflows remain handwritten.
 
 **Purpose.** Replace mechanical boilerplate with typed, auditable generation while retaining readable Go and GrooveHub's explicit layer ownership. Cover all backend folders, middleware, server bootstrap, database and repositories, mappers, validation, external providers, events, messaging, observability, configuration, security, tests, scheduling, utilities and the 23 Gang of Four (GoF) patterns.
 
@@ -31,7 +50,7 @@ The exhaustive Phase 1 catalog and status contract are published in [ANNOTATION_
 1. Adopt `// @Name arguments` comment directives on declarations, with ordinary struct tags for field constraints. These are build-tool metadata, **not Go language features**.
 2. Keep typed, deterministic generated source in `services/<service>/.generated/<package>/` and `libs/core/.generated/<package>/`; map virtual files to the maintained package using Go `-overlay` where necessary.
 3. Run source discovery, syntax/type checking, annotation expansion, code generation, manifest creation and compilation through one documented developer/CI entry point. Fail on unknown annotations, collisions or unsupported combinations.
-4. Prefer **existing libraries** and explicit Go implementations: Gombok for builder/accessor generation, evaluate Goverter for mappers, evaluate go-playground/validator for struct validation, GORM for persistence, standard `net/http` for routing, existing core telemetry (OpenTelemetry), NATS JetStream + Watermill for transport, `slog` for logging and Ginkgo/Gomega for tests.
+4. Prefer **existing libraries** and explicit Go implementations: the in-repository Gombok-compatible AST generator for builder/accessor generation, strict typed mapping generation (Goverter remains optional for later expansion), evaluate go-playground/validator for struct validation, GORM for persistence, standard `net/http` for routing, existing core telemetry (OpenTelemetry), NATS JetStream + Watermill for transport, `slog` for logging and Ginkgo/Gomega for tests.
 5. Generated code may remove technical glue, but **business logic, security, ownership checks, lifecycle, transaction boundaries and event semantics remain explicit**.
 
 **Acceptance standard.** No feature is considered adopted until it works on clean checkout, `make backend-build`, Air, direct build/test wrappers, CI, editor navigation (or documented fallback), deterministic regeneration, migration compatibility and existing behavior regressions.
@@ -103,7 +122,7 @@ This catalog names the planned semantics for the backend. **Only the observed Fo
 
 | Directive | Expected effect | Mode | Status / phase |
 | --- | --- | --- | --- |
-| @Entity schema.table | Gombok builder, safe accessors, GORM TableName; existing Foundation directive | GEN | EXISTING / P0 |
+| @Entity schema.table [mode=table] | Generate Gombok-compatible builder, accessors and GORM TableName by default; mode=table generates only TableName without mutators | GEN | EXISTING / P0 |
 | @Builder | Fluent typed builder; preserve field types and optional semantics | GEN | EXISTING / P0 |
 | @Getter | Typed getter; suppress conflicting custom methods | GEN | EXISTING / P0 |
 | @Setter | Mutable typed setter; never default for sensitive fields | GEN | EXISTING / P0 |
@@ -127,8 +146,8 @@ This catalog names the planned semantics for the backend. **Only the observed Fo
 
 | Directive | Expected effect | Mode | Status / phase |
 | --- | --- | --- | --- |
-| @Mapper | Generate typed mapping implementation for interface | GEN | PROPOSED / P2 |
-| @Mapping | Explicit source-to-target field relation / rename | GEN | PROPOSED / P2 |
+| @Mapper | Generate typed mapping implementation for explicitly annotated interface methods | GEN | PILOT / P2 |
+| @Mapping | Explicit source-to-target projection; require every destination field | GEN | PILOT / P2 |
 | @MapIgnore | Prevent source/destination field copy; required for secrets | CHECK/GEN | PROPOSED / P2 |
 | @MappingIgnore | Deprecated alias for @MapIgnore; no separate implementation | CHECK | DISCOURAGED / P2 |
 | @ConvertWith | Call declared pure conversion function | GEN | PROPOSED / P2 |
@@ -302,7 +321,7 @@ This catalog names the planned semantics for the backend. **Only the observed Fo
 
 | Directive | Expected effect | Mode | Status / phase |
 | --- | --- | --- | --- |
-| @Event | Domain-owned topic, version and payload metadata | REG/CHECK | PROPOSED / P6 |
+| @Event | Generate stable topic/type/schema version identifiers without automatic publication | GEN/CHECK | PILOT / P6 |
 | @EventVersion | Stable event schema version and compatibility checks | CHECK | PROPOSED / P6 |
 | @EventHandler | Typed event handler registration | REG | PROPOSED / P6 |
 | @PublishEvent | Explicit event publisher decorator metadata only | REG/WRAP | OPTIONAL / P6 |
