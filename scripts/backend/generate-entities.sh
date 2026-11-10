@@ -62,7 +62,7 @@ if [[ "${ready}" != 1 ]]; then
   log_info "Expanding @Entity annotations in isolated staging directory"
   (
     cd -- "${BACKEND_DIR}"
-    go run ./libs/core/entity/cmd/expand "${stage}"
+    go run ./libs/core/annotation/generation/expand "${stage}"
   )
   log_info "Generating Foundation Gombok implementations in isolated staging directory"
   (
@@ -81,7 +81,7 @@ if [[ "${ready}" != 1 ]]; then
   done
   (
     cd -- "${BACKEND_DIR}"
-    go run ./libs/core/entity/cmd/gormtable "${entity_dir}" "${generated_dir}/zz_tables.gen.go"
+    go run ./libs/core/annotation/generation/gormtable "${entity_dir}" "${generated_dir}/zz_tables.gen.go"
   )
   [[ -s "${generated_dir}/zz_tables.gen.go" ]] || die "GORM table generator did not produce an output"
 
@@ -92,6 +92,6 @@ fi
 # This ensures normal Go builds see virtual files under the original entity package.
 (
   cd -- "${BACKEND_DIR}"
-  go run ./libs/core/entity/cmd/overlay "${BACKEND_DIR}"
+  go run ./libs/core/annotation/generation/overlay "${BACKEND_DIR}"
 )
 log_info "Foundation entity overlay ready: ${BACKEND_DIR}/.generated/overlay.json"
