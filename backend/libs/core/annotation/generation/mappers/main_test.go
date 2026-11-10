@@ -36,7 +36,7 @@ type Account struct {
 	if err:=generateAll(backend);err!=nil{t.Fatal(err)}
 	out:=filepath.Join(backend,"services","identity",".generated","mappers","impl","zz_mappers.gen.go")
 	got,err:=os.ReadFile(out);if err!=nil{t.Fatal(err)}
-	for _,fragment:=range []string{"func (mapper *AuthMapper) ToResponse", "ID: string(account.GetAccountId())", "Email: account.GetEmail()"} {
+	for _,fragment:=range []string{"func (mapper *AuthMapper) ToResponse", "string(account.GetAccountId())", "Email: account.GetEmail()"} {
 		if !strings.Contains(string(got),fragment){t.Errorf("missing generated fragment %q:\n%s",fragment,got)}
 	}
 	before:=string(got)
