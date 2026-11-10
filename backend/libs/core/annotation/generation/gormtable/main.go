@@ -53,7 +53,11 @@ func generateInto(dir, output string)error {
      for _,comment:=range doc.List {
       text:=strings.TrimSpace(strings.TrimPrefix(comment.Text,"//"))
       if !strings.HasPrefix(text,"@Entity ") {continue}
-      table:=strings.TrimSpace(strings.TrimPrefix(text,"@Entity "))
+      args:=strings.Fields(strings.TrimSpace(strings.TrimPrefix(text,"@Entity ")))
+      if len(args)<1 || len(args)>2 || (len(args)==2 && args[1]!="mode=table") {
+       return fmt.Errorf("%s: invalid @Entity options",ts.Name.Name)
+      }
+      table:=args[0]
       if !validTable.MatchString(table) {return fmt.Errorf("%s: invalid @Entity %q",ts.Name.Name,table)}
       if old,ok:=tables[ts.Name.Name];ok&&old!=table {return fmt.Errorf("conflicting table declarations for %s",ts.Name.Name)}
       tables[ts.Name.Name]=table
