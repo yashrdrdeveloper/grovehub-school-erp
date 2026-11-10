@@ -4,7 +4,6 @@ import (
 	"strings"
 	"time"
 
-	coreentity "grovehub/libs/core/entity"
 	coresearch "grovehub/libs/core/search"
 	foundationrequest "grovehub/services/foundation/dto/request"
 	"grovehub/services/foundation/entity"
@@ -80,13 +79,13 @@ func buildContactGroup(
 	contacts := make([]entity.Contact, 0, len(values))
 	for _, contact := range values {
 		key := contactKey(contactType, contact.Value)
-		contacts = append(contacts, coreentity.New[entity.Contact]().With(func(value *entity.Contact) {
-            value.Type = contactType
-            value.Value = contact.Value
-            value.NormalizedValue = contact.Value
-            value.IsPrimary = contact.IsPrimary
-            value.IsVerified = existingVerification[key]
-        }).Build())
+		contacts = append(contacts, entity.NewContactBuilder().
+            WithType(contactType).
+            WithValue(contact.Value).
+            WithNormalizedValue(contact.Value).
+            WithIsPrimary(contact.IsPrimary).
+            WithIsVerified(existingVerification[key]).
+            Build())
 	}
 	return contacts
 }
