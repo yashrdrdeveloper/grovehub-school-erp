@@ -2,7 +2,7 @@
 package annotation
 
 var eventsUseCases = []UseCase{
-    {Name:"Event",Syntax:"@Event",Category:"Events, envelopes and event lifecycle",Purpose:"Domain-owned topic, version and payload metadata",Mode:"REG/CHECK",Status:Proposed,Roadmap:"P6",Target:TypeTarget},
+    {Name:"Event",Syntax:"@Event",Category:"Events, envelopes and event lifecycle",Purpose:"Domain-owned topic, version and payload metadata",Mode:"GEN/CHECK",Status:Pilot,Roadmap:"P6",Target:TypeTarget},
     {Name:"EventVersion",Syntax:"@EventVersion",Category:"Events, envelopes and event lifecycle",Purpose:"Stable event schema version and compatibility checks",Mode:"CHECK",Status:Proposed,Roadmap:"P6",Target:TypeTarget},
     {Name:"EventHandler",Syntax:"@EventHandler",Category:"Events, envelopes and event lifecycle",Purpose:"Typed event handler registration",Mode:"REG",Status:Proposed,Roadmap:"P6",Target:MethodTarget},
     {Name:"PublishEvent",Syntax:"@PublishEvent",Category:"Events, envelopes and event lifecycle",Purpose:"Explicit event publisher decorator metadata only",Mode:"REG/WRAP",Status:Optional,Roadmap:"P6",Target:MethodTarget},
