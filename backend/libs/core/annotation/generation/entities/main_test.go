@@ -84,3 +84,13 @@ func TestGenerateFoundationContracts(t *testing.T) {
 	if !strings.Contains(string(contact),"GetValue")||!strings.Contains(string(contact),"SetValue"){t.Fatal("Contact accessors missing")}
 	if strings.Contains(string(person),"func (value *Person) SetStatus"){t.Fatal("Person transition method was overridden")}
 }
+
+
+func TestEntityTableOnlyDoesNotGenerateAccessors(t *testing.T) {
+    source:=t.TempDir()
+    output:=filepath.Join(t.TempDir(),"entity")
+    code:="package entity\n// @Entity identity.password_credentials mode=table\ntype PasswordCredential struct {PasswordHash string}\n"
+    if err:=os.WriteFile(filepath.Join(source,"password.go"),[]byte(code),0644);err!=nil{t.Fatal(err)}
+    if err:=generate(source,output);err!=nil{t.Fatal(err)}
+    if _,err:=os.Stat(filepath.Join(output,"password_gombok.go"));!os.IsNotExist(err){t.Fatalf("table-only entity generated accessors: %v",err)}
+}
