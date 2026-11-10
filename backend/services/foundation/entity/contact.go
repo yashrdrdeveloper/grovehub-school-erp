@@ -9,10 +9,7 @@ const (
 	ContactTypePhone ContactType = "PHONE"
 )
 
-// @Builder
-// @Getter
-// @Setter
-// @Table foundation.person_contacts
+// @Entity foundation.person_contacts
 type Contact struct {
 	PersonGID       GID         `gorm:"column:person_gid;type:uuid;primaryKey"`
 	Type            ContactType `gorm:"column:type;primaryKey"`
