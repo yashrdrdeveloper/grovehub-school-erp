@@ -9,7 +9,7 @@ import (
 
 func TestGenerate(t *testing.T){
  dir:=t.TempDir()
- content:="package sample\n// @GroveTable foundation.person_contacts\ntype Contact struct { Value string }\n"
+ content:="package sample\n// @Entity foundation.person_contacts\ntype Contact struct { Value string }\n"
  if err:=os.WriteFile(filepath.Join(dir,"contact.go"),[]byte(content),0644);err!=nil {t.Fatal(err)}
  if err:=generate(dir);err!=nil {t.Fatal(err)}
  path:=filepath.Join(dir,"zz_tables.gen.go")
@@ -21,13 +21,13 @@ func TestGenerate(t *testing.T){
 
 func TestRejectInvalidTable(t *testing.T){
  dir:=t.TempDir()
- if err:=os.WriteFile(filepath.Join(dir,"contact.go"),[]byte("package sample\n// @GroveTable foundation.person_contacts;DROP\ntype Contact struct{}\n"),0644);err!=nil {t.Fatal(err)}
+ if err:=os.WriteFile(filepath.Join(dir,"contact.go"),[]byte("package sample\n// @Entity foundation.person_contacts;DROP\ntype Contact struct{}\n"),0644);err!=nil {t.Fatal(err)}
  if err:=generate(dir);err==nil{t.Fatal("expected invalid table error")}
 }
 
 func TestRejectDuplicateTableName(t *testing.T){
  dir:=t.TempDir()
- source:="package sample\n// @GroveTable foundation.person_contacts\ntype Contact struct{}\nfunc (Contact) TableName() string{return \"foundation.person_contacts\"}\n"
+ source:="package sample\n// @Entity foundation.person_contacts\ntype Contact struct{}\nfunc (Contact) TableName() string{return \"foundation.person_contacts\"}\n"
  if err:=os.WriteFile(filepath.Join(dir,"contact.go"),[]byte(source),0644);err!=nil {t.Fatal(err)}
  if err:=generate(dir);err==nil{t.Fatal("expected duplicate TableName error")}
 }
