@@ -13,7 +13,7 @@ func BuildCreated(ctx context.Context, eventID string, account entity.Account) c
     return coreevents.NewEnvelope(ctx, coreevents.Metadata{
         EventID:     eventID,
         EventType:   accountevents.CreatedType,
-        Version:     1,
+        Version:     accountevents.CreatedVersion,
         AggregateID: string(account.GetAccountId()),
         OccurredAt:  account.GetCreatedAt(),
     }, accountevents.Created{
