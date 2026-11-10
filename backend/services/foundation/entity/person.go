@@ -96,13 +96,6 @@ func (person Person) SetUpdatedAt(updatedAt time.Time) Person {
 	return person
 }
 
-func (person Person) BuildContacts() []Contact {
-	contacts := copyContacts(person.Contacts)
-	for index := range contacts {
-		contacts[index] = contacts[index].ForPerson(person.GID, person.UpdatedAt, person.UpdatedAt)
-	}
-	return contacts
-}
 
 func optionalString(value string) *string {
 	if value == "" {
