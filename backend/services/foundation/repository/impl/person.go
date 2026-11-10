@@ -245,7 +245,7 @@ func upsertPersonContacts(tx *gorm.DB, person entity.Person, clearPrimary bool) 
 			return err
 		}
 	}
-	contacts := person.BuildContacts()
+	contacts := person.GetContacts()
 	if len(contacts) > 0 {
 		if err := tx.Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "person_gid"}, {Name: "type"}, {Name: "normalized_value"}},
