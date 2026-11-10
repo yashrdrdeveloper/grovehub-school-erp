@@ -6,8 +6,10 @@ import (
 	"grovehub/services/foundation/entity"
 )
 
+// @Mapper PersonMapper
 type PersonMapper interface {
 	ToPersonGID(request foundationrequest.PersonByGID) entity.GID
 	ToPersonResponse(person entity.Person) foundationresponse.Person
+	// @Mapping GID=string(gid)
 	ToPersonErrorMetadata(gid entity.GID) foundationresponse.PersonErrorMetadata
 }
