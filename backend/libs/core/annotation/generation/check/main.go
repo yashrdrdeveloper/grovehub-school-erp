@@ -6,7 +6,6 @@
 package main
 
 import (
-    "errors"
     "fmt"
     "io/fs"
     "os"
@@ -66,5 +65,3 @@ func checkFile(path string) error {
 // annotation tooling and editor integrations without invoking the build.
 func CheckSource(path string) error {return checkFile(path)}
 
-// Confirm errors are reported as ordinary errors, rather than policy bypasses.
-var _ = errors.Is
