@@ -118,6 +118,7 @@ This catalog names the planned semantics for the backend. **Only the observed Fo
 | @Mapper | Generate typed mapping implementation for interface | GEN | PROPOSED / P2 |
 | @Mapping | Explicit source-to-target field relation / rename | GEN | PROPOSED / P2 |
 | @MapIgnore | Prevent source/destination field copy; required for secrets | CHECK/GEN | PROPOSED / P2 |
+| @MappingIgnore | Deprecated alias for @MapIgnore; no separate implementation | CHECK | DISCOURAGED / P2 |
 | @ConvertWith | Call declared pure conversion function | GEN | PROPOSED / P2 |
 | @EnumMapping | Enum/name conversion with exhaustive unknown handling | GEN | PROPOSED / P2 |
 | @AfterMapping | Invoke explicit pure post-mapper, not business behavior | GEN | OPTIONAL / P2 |
@@ -143,6 +144,7 @@ This catalog names the planned semantics for the backend. **Only the observed Fo
 | @Email | Email syntax; coordinate with normalized canonical value | TAG | PROPOSED / P2 |
 | @Phone | Phone technical format and supported region policy | TAG | PROPOSED / P2 |
 | @UUIDv7 | UUIDv7 requirement, not generic UUID-only | TAG | PROPOSED / P2 |
+| @UUID | Generic UUID syntax when version is unrestricted; prefer @UUIDv7 for domain GIDs | TAG | OPTIONAL / P2 |
 | @Pattern | Constrained regex/pattern with bounded compile cost | TAG | OPTIONAL / P2 |
 | @OneOf | Allow-listed enum values and unknown handling | TAG | PROPOSED / P2 |
 | @UniqueItems | Duplicate detection with explicit key/normalization | TAG | PROPOSED / P2 |
@@ -214,6 +216,7 @@ This catalog names the planned semantics for the backend. **Only the observed Fo
 | @Consumes | Request media-type constraints | CHECK | OPTIONAL / P3 |
 | @Produces | Response content-type constraints | CHECK | OPTIONAL / P3 |
 | @OpenAPI | Generate or validate OpenAPI from contract source | CHECK/GEN | PROPOSED / P3 |
+| @Schema | DTO/OpenAPI schema metadata checked against authoritative public schema | CHECK/GEN | PROPOSED / P3 |
 | @OperationID | Stable API operation identity | CHECK | OPTIONAL / P3 |
 | @Example | API examples with contract validation | CHECK | OPTIONAL / P3 |
 | @Deprecated | Deprecation metadata and compatibility warning | CHECK | OPTIONAL / P3 |
