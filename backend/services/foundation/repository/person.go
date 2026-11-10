@@ -27,5 +27,4 @@ type PersonRepository interface {
 	// @Cursor field=gid
 	Search(ctx context.Context, query coresearch.Query[string]) (coresearch.QueryResult[entity.Person], error)
 	Update(ctx context.Context, person entity.Person) error
-	Delete(ctx context.Context, gid string) error
 }

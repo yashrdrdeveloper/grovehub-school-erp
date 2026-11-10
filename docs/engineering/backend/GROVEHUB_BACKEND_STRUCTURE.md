@@ -650,6 +650,8 @@ Person
 └── UpdatedAt
 ```
 
+`PersonRepository` has five methods (`Create`, `FindByGID`, `FindByIdempotencyKey`, annotated `Search`, `Update`) and no hard `Delete` because deactivation is the supported lifecycle action. `ContactRepository` owns contact lookups and atomic replacement, with no independent ContactService. Contact replacement joins the shared unit of work and name-only Person changes avoid unnecessary contact writes.
+
 Contacts are nested API values, not separately addressable public resources. `entity.Person` contains **no** `Contacts` field. `PersonRepository` returns Person rows, `ContactRepository` returns separate Contact rows, `PersonService` owns and transactionally coordinates contact changes, and the mapper combines them into the existing DTO. No `PersonWithContacts` model or new `@Model` annotation is needed.
 
 Search remains a Person use case; do not create `person_search.go` merely because Person supports search.

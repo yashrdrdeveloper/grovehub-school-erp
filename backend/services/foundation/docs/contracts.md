@@ -309,7 +309,7 @@ In-process:
 foundationClient.DeactivatePerson(ctx, foundationrequest.PersonByGID{GID: gid})
 ```
 
-Deactivation is idempotent. It changes Person status; it does not delete the Person or contacts.
+Deactivation is idempotent. It changes Person status; it does not delete the Person or contacts. PersonRepository intentionally has no public hard-Delete method.
 
 ## 10. Contact rules
 
@@ -348,8 +348,10 @@ The service root owns Foundation concrete construction, while the launcher passe
 
 ```text
 Foundation module
-├── Person repository interface
-│   └── repository/impl
+├── PersonRepository (persons table, 5 methods)
+├── ContactRepository (person_contacts table, 4 methods)
+├── UnitOfWork (shared Person + Contact transaction)
+├── PersonService (sole owner of contact lifecycle)
 ├── Person service
 ├── controller interface
 │   └── controller/impl

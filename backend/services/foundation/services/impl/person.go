@@ -131,11 +131,19 @@ func (service *PersonService) Update(ctx context.Context, personRequest foundati
 	if !changed { return service.mapper.ToPersonResponse(person, contacts), nil }
 	updatedPerson.Version = person.Version + 1
 	updatedPerson.UpdatedAt = time.Now().UTC()
-	updatedContacts = servicehelpers.AssociateContacts(updatedPerson, updatedContacts)
+	contactsChanged := !servicehelpers.ContactsEqual(contacts, updatedContacts)
+	if contactsChanged {
+		updatedContacts = servicehelpers.AssociateContacts(updatedPerson, updatedContacts)
+	}
 	updatedPerson.SearchDetails = servicehelpers.BuildPersonSearchDetails(updatedPerson, updatedContacts)
 	err = service.unitOfWork.Run(ctx, func(txCtx context.Context) error {
-		if err := service.personRepository.Update(txCtx, updatedPerson); err != nil { return err }
-		return service.contactRepository.ReplaceForPerson(txCtx, updatedPerson.GID, updatedContacts)
+		if err := service.personRepository.Update(txCtx, updatedPerson); err != nil {
+			return err
+		}
+		if contactsChanged {
+			return service.contactRepository.ReplaceForPerson(txCtx, updatedPerson.GID, updatedContacts)
+		}
+		return nil
 	})
 	if err != nil {
 		if errors.Is(err, foundationrepository.ErrPersonVersionConflict) {

@@ -102,18 +102,6 @@ func (repository *PersonRepository) Update(ctx context.Context, person entity.Pe
 	return nil
 }
 
-func (repository *PersonRepository) Delete(ctx context.Context, gid string) error {
-	result := coretransaction.Database(ctx, repository.db).Where("gid = ?", gid).Delete(&entity.Person{})
-	if result.Error != nil {
-		return result.Error
-	}
-	if result.RowsAffected == 0 {
-		return foundationrepository.ErrPersonNotFound
-	}
-	return nil
-}
-
-
 func contactSearchField(contactType entity.ContactType, conditions ...coresearch.FixedCondition) coresearch.RelationField {
 	return coresearch.RelationField{
 		Table:           entity.Contact{}.TableName(),

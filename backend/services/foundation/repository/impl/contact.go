@@ -78,27 +78,33 @@ func (repository *ContactRepository) FindPersonGIDsByContacts(
 
 // ReplaceForPerson replaces the child collection; caller must start a shared
 // unit-of-work transaction before updating Person and Contact together.
+// ReplaceForPerson replaces the Person-owned child collection atomically.
+// It joins the outer PersonService transaction or creates its own transaction
+// when called without one, so primary-reset, upsert, and deletion never partially commit.
 func (repository *ContactRepository) ReplaceForPerson(
 	ctx context.Context,
 	gid string,
 	contacts []entity.Contact,
 ) error {
-	db := coretransaction.Database(ctx, repository.db)
-	if err := db.Model(&entity.Contact{}).
-		Where("person_gid = ?", gid).Update("is_primary", false).Error; err != nil {
-		return err
-	}
-	if len(contacts) > 0 {
-		if err := db.Clauses(clause.OnConflict{
-			Columns: []clause.Column{
-				{Name: "person_gid"}, {Name: "type"}, {Name: "normalized_value"},
-			},
-			DoUpdates: clause.AssignmentColumns([]string{"value", "is_primary", "is_verified", "updated_at"}),
-		}).Create(&contacts).Error; err != nil {
-			return mapContactWriteError(err)
+	return coretransaction.Run(ctx, repository.db, func(txCtx context.Context) error {
+		db := coretransaction.Database(txCtx, repository.db)
+		if err := db.Model(&entity.Contact{}).
+			Where("person_gid = ?", gid).
+			Update("is_primary", false).Error; err != nil {
+			return err
 		}
-	}
-	return deleteStalePersonContacts(db, gid, contacts)
+		if len(contacts) > 0 {
+			if err := db.Clauses(clause.OnConflict{
+				Columns: []clause.Column{
+					{Name: "person_gid"}, {Name: "type"}, {Name: "normalized_value"},
+				},
+				DoUpdates: clause.AssignmentColumns([]string{"value", "is_primary", "is_verified", "updated_at"}),
+			}).Create(&contacts).Error; err != nil {
+				return mapContactWriteError(err)
+			}
+		}
+		return deleteStalePersonContacts(db, gid, contacts)
+	})
 }
 
 func deleteStalePersonContacts(tx *gorm.DB, gid string, contacts []entity.Contact) error {
