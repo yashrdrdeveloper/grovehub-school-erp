@@ -32,28 +32,30 @@ func (mapper *PersonMapper) ToPersonResponse(person entity.Person) foundationres
 		},
 	}
 
-	for _, contact := range person.GetContacts() {
-		appendValue, ok := appendContact[contact.GetType()]
+	for _, contact := range person.Contacts {
+		appendValue, ok := appendContact[contact.Type]
 		if !ok {
 			continue
 		}
 		appendValue(foundationresponse.ContactValue{
-			Value:      contact.GetValue(),
-			IsPrimary:  contact.GetIsPrimary(),
-			IsVerified: contact.GetIsVerified(),
+			Value:      contact.Value,
+			IsPrimary:  contact.IsPrimary,
+			IsVerified: contact.IsVerified,
 		})
 	}
 
+	middleName := ""
+	if person.MiddleName != nil { middleName = *person.MiddleName }
 	return foundationresponse.Person{
-		GID:        string(person.GetGID()),
-		FirstName:  person.GetFirstName(),
-		MiddleName: person.GetMiddleName(),
-		LastName:   person.GetLastName(),
+		GID:        string(person.GID),
+		FirstName:  person.FirstName,
+		MiddleName: middleName,
+		LastName:   person.LastName,
 		Contacts:   contacts,
-		Status:     string(person.GetStatus()),
-		Version:    person.GetVersion(),
-		CreatedAt:  person.GetCreatedAt(),
-		UpdatedAt:  person.GetUpdatedAt(),
+		Status:     string(person.Status),
+		Version:    person.Version,
+		CreatedAt:  person.CreatedAt,
+		UpdatedAt:  person.UpdatedAt,
 	}
 }
 

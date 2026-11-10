@@ -57,7 +57,7 @@ func (service *PersonService) Create(
 		}
 		existing, readErr := service.repository.FindByCreateIdempotencyKey(ctx, idempotencyKey)
 		if readErr == nil {
-			if existing.GetCreateRequestHash() != requestHash {
+			if servicehelpers.NullableString(existing.CreateRequestHash) != requestHash {
 				return foundationresponse.Person{}, false, coreerrors.NewError(personerror.PersonIdempotencyConflict)
 			}
 			return service.mapper.ToPersonResponse(existing), false, nil
@@ -84,20 +84,7 @@ func (service *PersonService) Create(
 	}
 	gid := entity.GID(gidValue)
 	now := time.Now().UTC()
-	personBuilder := entity.NewPersonBuilder().
-        WithGID(gid).
-        WithFirstName(validatedRequest.FirstName).
-        WithLastName(validatedRequest.LastName).
-        WithContacts(append([]entity.Contact(nil), contacts...)).
-        WithStatus(entity.PersonStatusActive).
-        WithVersion(1).
-        WithCreatedAt(now).
-        WithUpdatedAt(now)
-    if validatedRequest.MiddleName != "" {
-        middleName := validatedRequest.MiddleName
-        personBuilder = personBuilder.WithMiddleName(&middleName)
-    }
-    person := personBuilder.Build()
+	person := servicehelpers.NewPerson(gid, validatedRequest, contacts, now)
 	if idempotencyKey != "" {
 		person.CreateIdempotencyKey = &idempotencyKey
 		person.CreateRequestHash = &requestHash
@@ -110,7 +97,7 @@ func (service *PersonService) Create(
 			if readErr != nil {
 				return foundationresponse.Person{}, false, coreerrors.Wrap(personerror.PersonReadFailed, readErr)
 			}
-			if existing.GetCreateRequestHash() != requestHash {
+			if servicehelpers.NullableString(existing.CreateRequestHash) != requestHash {
 				return foundationresponse.Person{}, false, coreerrors.NewError(personerror.PersonIdempotencyConflict)
 			}
 			return service.mapper.ToPersonResponse(existing), false, nil
@@ -159,7 +146,8 @@ func (service *PersonService) Update(
 	if !changed {
 		return service.mapper.ToPersonResponse(person), nil
 	}
-	updatedPerson = updatedPerson.SetVersion(person.GetVersion() + 1).SetUpdatedAt(time.Now().UTC())
+	updatedPerson.Version = person.Version + 1
+	updatedPerson.UpdatedAt = time.Now().UTC()
 	updatedPerson = servicehelpers.AssociateContacts(updatedPerson)
 	if err := service.repository.Update(ctx, updatedPerson); err != nil {
 		if errors.Is(err, foundationrepository.ErrPersonVersionConflict) {
@@ -220,19 +208,20 @@ func (service *PersonService) Deactivate(
 	if err != nil {
 		return foundationresponse.Person{}, err
 	}
-	if person.GetStatus() == entity.PersonStatusDeactivated {
+	if person.Status == entity.PersonStatusDeactivated {
 		return service.mapper.ToPersonResponse(person), nil
 	}
-	updatedPerson := person.SetStatus(entity.PersonStatusDeactivated).
-		SetVersion(person.GetVersion() + 1).
-		SetUpdatedAt(time.Now().UTC())
+	updatedPerson := person
+	updatedPerson.Status = entity.PersonStatusDeactivated
+	updatedPerson.Version = person.Version + 1
+	updatedPerson.UpdatedAt = time.Now().UTC()
 	if err := service.repository.Update(ctx, updatedPerson); err != nil {
 		if errors.Is(err, foundationrepository.ErrPersonVersionConflict) {
 			latest, readErr := service.getPersonByGID(ctx, gid)
 			if readErr != nil {
 				return foundationresponse.Person{}, readErr
 			}
-			if latest.GetStatus() == entity.PersonStatusDeactivated {
+			if latest.Status == entity.PersonStatusDeactivated {
 				return service.mapper.ToPersonResponse(latest), nil
 			}
 		}
@@ -253,9 +242,9 @@ func (service *PersonService) applyPersonUpdate(
 		current string
 		apply   func(entity.Person, string) entity.Person
 	}{
-		{request.FirstName, person.GetFirstName(), func(value entity.Person, name string) entity.Person { return value.SetFirstName(name) }},
-		{request.MiddleName, person.GetMiddleName(), func(value entity.Person, name string) entity.Person { return value.SetMiddleName(name) }},
-		{request.LastName, person.GetLastName(), func(value entity.Person, name string) entity.Person { return value.SetLastName(name) }},
+		{request.FirstName, person.FirstName, func(value entity.Person, name string) entity.Person { value.FirstName = name; return value }},
+		{request.MiddleName, servicehelpers.NullableString(person.MiddleName), func(value entity.Person, name string) entity.Person { value.MiddleName = servicehelpers.OptionalString(name); return value }},
+		{request.LastName, person.LastName, func(value entity.Person, name string) entity.Person { value.LastName = name; return value }},
 	}
 	for _, update := range nameUpdates {
 		if update.value == nil || *update.value == update.current {
@@ -267,12 +256,12 @@ func (service *PersonService) applyPersonUpdate(
 	if request.Contacts == nil {
 		return updatedPerson, changed, nil
 	}
-	contacts := servicehelpers.BuildContacts(*request.Contacts, person.GetContacts())
-	if err := service.ensureContactsBelongToPerson(ctx, person.GetGID(), contacts); err != nil {
+	contacts := servicehelpers.BuildContacts(*request.Contacts, person.Contacts)
+	if err := service.ensureContactsBelongToPerson(ctx, person.GID, contacts); err != nil {
 		return entity.Person{}, false, err
 	}
-	if !servicehelpers.ContactsEqual(contacts, person.GetContacts()) {
-		updatedPerson = updatedPerson.SetContacts(contacts)
+	if !servicehelpers.ContactsEqual(contacts, person.Contacts) {
+		updatedPerson.Contacts = servicehelpers.CopyContacts(contacts)
 		changed = true
 	}
 	return updatedPerson, changed, nil
@@ -404,6 +393,6 @@ func buildNextCursor(
 	}
 	lastPerson := result.Items[len(result.Items)-1]
 	cursor.Value = servicehelpers.PersonCursorValue(lastPerson, query.Sort.Field)
-	cursor.CursorId = string(lastPerson.GetGID())
+	cursor.CursorId = string(lastPerson.GID)
 	return servicehelpers.EncodePersonSearchCursor(cursor)
 }

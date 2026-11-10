@@ -81,7 +81,8 @@ func (repository *PersonRepository) FindByGID(ctx context.Context, gid entity.GI
 	if err != nil {
 		return entity.Person{}, err
 	}
-	return person.SetContacts(contacts), nil
+	person.Contacts = append([]entity.Contact(nil), contacts...)
+	return person, nil
 }
 
 func (repository *PersonRepository) FindByCreateIdempotencyKey(ctx context.Context, key string) (entity.Person, error) {
@@ -92,11 +93,12 @@ func (repository *PersonRepository) FindByCreateIdempotencyKey(ctx context.Conte
 		}
 		return entity.Person{}, err
 	}
-	contacts, err := repository.findContactsByGID(ctx, person.GetGID())
+	contacts, err := repository.findContactsByGID(ctx, person.GID)
 	if err != nil {
 		return entity.Person{}, err
 	}
-	return person.SetContacts(contacts), nil
+	person.Contacts = append([]entity.Contact(nil), contacts...)
+	return person, nil
 }
 
 func (repository *PersonRepository) FindGIDsByContacts(
@@ -110,7 +112,7 @@ func (repository *PersonRepository) FindGIDsByContacts(
 	args := make([]any, 0, len(contacts)*2)
 	for _, contact := range contacts {
 		conditions = append(conditions, "(type = ? AND normalized_value = ?)")
-		args = append(args, contact.GetType(), contact.GetNormalizedValue())
+		args = append(args, contact.Type, contact.NormalizedValue)
 	}
 	gids := make([]entity.GID, 0)
 	err := coretransaction.Database(ctx, repository.db).
@@ -150,24 +152,24 @@ func (repository *PersonRepository) Search(
 	}
 	gids := make([]entity.GID, 0, len(persons))
 	for _, person := range persons {
-		gids = append(gids, person.GetGID())
+		gids = append(gids, person.GID)
 	}
 	contactsByGID, err := repository.findContactsByGIDs(ctx, gids)
 	if err != nil {
 		return coresearch.QueryResult[entity.Person]{}, err
 	}
 	for index := range persons {
-		persons[index] = persons[index].SetContacts(contactsByGID[persons[index].GetGID()])
+		persons[index].Contacts = append([]entity.Contact(nil), contactsByGID[persons[index].GID]...)
 	}
 	return coresearch.QueryResult[entity.Person]{Items: persons, HasNext: hasNext}, nil
 }
 
 func (repository *PersonRepository) Update(ctx context.Context, person entity.Person) error {
 	searchDetails := buildPersonSearchDetails(person)
-	expectedVersion := person.GetVersion() - 1
+	expectedVersion := person.Version - 1
 	return coretransaction.Database(ctx, repository.db).Transaction(func(tx *gorm.DB) error {
 		result := tx.Model(&entity.Person{}).
-			Where("gid = ? AND version = ?", person.GetGID(), expectedVersion).
+			Where("gid = ? AND version = ?", person.GID, expectedVersion).
 			Updates(map[string]any{
 				"first_name":     person.FirstName,
 				"middle_name":    person.MiddleName,
@@ -219,7 +221,7 @@ func (repository *PersonRepository) findContactsByGIDs(
 		return nil, err
 	}
 	for _, contact := range contacts {
-		gid := contact.GetPersonGID()
+		gid := contact.PersonGID
 		contactsByGID[gid] = append(contactsByGID[gid], contact)
 	}
 	return contactsByGID, nil
@@ -239,13 +241,13 @@ func contactSearchField(contactType entity.ContactType, conditions ...coresearch
 }
 
 func upsertPersonContacts(tx *gorm.DB, person entity.Person, clearPrimary bool) error {
-	gid := person.GetGID()
+	gid := person.GID
 	if clearPrimary {
 		if err := tx.Model(&entity.Contact{}).Where("person_gid = ?", gid).Update("is_primary", false).Error; err != nil {
 			return err
 		}
 	}
-	contacts := person.GetContacts()
+	contacts := person.Contacts
 	if len(contacts) > 0 {
 		if err := tx.Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "person_gid"}, {Name: "type"}, {Name: "normalized_value"}},
@@ -266,29 +268,29 @@ func deleteStalePersonContacts(tx *gorm.DB, gid entity.GID, contacts []entity.Co
 	args := make([]any, 0, len(contacts)*2)
 	for _, contact := range contacts {
 		conditions = append(conditions, "(type = ? AND normalized_value = ?)")
-		args = append(args, contact.GetType(), contact.GetNormalizedValue())
+		args = append(args, contact.Type, contact.NormalizedValue)
 	}
 	return query.Where("NOT ("+strings.Join(conditions, " OR ")+")", args...).Delete(&entity.Contact{}).Error
 }
 
 func buildPersonSearchDetails(person entity.Person) string {
-	contacts := person.GetContacts()
+	contacts := append([]entity.Contact(nil), person.Contacts...)
 	sort.Slice(contacts, func(leftIndex int, rightIndex int) bool {
 		left := contacts[leftIndex]
 		right := contacts[rightIndex]
-		if left.GetType() == right.GetType() {
-			return left.GetNormalizedValue() < right.GetNormalizedValue()
+		if left.Type == right.Type {
+			return left.NormalizedValue < right.NormalizedValue
 		}
-		return left.GetType() < right.GetType()
+		return left.Type < right.Type
 	})
 	parts := make([]string, 0, 4+(len(contacts)*2))
-	parts = append(parts, string(person.GetGID()), person.GetFirstName())
-	if middleName := person.GetMiddleName(); middleName != "" {
-		parts = append(parts, middleName)
+	parts = append(parts, string(person.GID), person.FirstName)
+	if middleName := person.MiddleName; middleName != nil {
+		parts = append(parts, *middleName)
 	}
-	parts = append(parts, person.GetLastName())
+	parts = append(parts, person.LastName)
 	for _, contact := range contacts {
-		parts = append(parts, contact.GetValue(), contact.GetNormalizedValue())
+		parts = append(parts, contact.Value, contact.NormalizedValue)
 	}
 	return strings.ToLower(strings.TrimSpace(strings.Join(parts, " ")))
 }
