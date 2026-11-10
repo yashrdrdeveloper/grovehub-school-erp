@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	annotationconfig "grovehub/libs/core/annotation/configuration"
 	"grovehub/services/integration/config"
 )
 
@@ -15,39 +16,27 @@ type environmentLoader struct{}
 func NewEnvironmentLoader() config.Loader { return environmentLoader{} }
 
 func (environmentLoader) Gmail() (config.Gmail, error) {
-	value := config.Gmail{
-		ClientID:     strings.TrimSpace(os.Getenv("GROVEHUB_GMAIL_CLIENT_ID")),
-		ClientSecret: strings.TrimSpace(os.Getenv("GROVEHUB_GMAIL_CLIENT_SECRET")),
-		RedirectURI:  strings.TrimSpace(os.Getenv("GROVEHUB_GMAIL_REDIRECT_URI")),
-	}
-	if value.ClientID == "" || value.ClientSecret == "" || value.RedirectURI == "" {
-		return config.Gmail{}, errors.New("Gmail OAuth configuration missing")
-	}
-	if !validCallback(value.RedirectURI, "gmail") {
-		return config.Gmail{}, errors.New("Gmail redirect URI must use the connections OAuth callback path over HTTPS")
-	}
-	return value, nil
+    value, err := annotationconfig.FromEnv[config.Gmail]()
+    if err != nil {
+        return config.Gmail{}, errors.New("Gmail OAuth configuration missing")
+    }
+    if !validCallback(value.RedirectURI, "gmail") {
+        return config.Gmail{}, errors.New("Gmail redirect URI must use the connections OAuth callback path over HTTPS")
+    }
+    return value,nil
 }
 func (environmentLoader) Outlook() (config.Outlook, error) {
-	value := config.Outlook{
-		ClientID:     strings.TrimSpace(os.Getenv("GROVEHUB_OUTLOOK_CLIENT_ID")),
-		ClientSecret: strings.TrimSpace(os.Getenv("GROVEHUB_OUTLOOK_CLIENT_SECRET")),
-		RedirectURI:  strings.TrimSpace(os.Getenv("GROVEHUB_OUTLOOK_REDIRECT_URI")),
-		Tenant:       strings.TrimSpace(os.Getenv("GROVEHUB_OUTLOOK_TENANT")),
-	}
-	if value.Tenant == "" {
-		value.Tenant = "common"
-	}
-	if value.ClientID == "" || value.ClientSecret == "" || value.RedirectURI == "" {
-		return config.Outlook{}, errors.New("Outlook OAuth configuration missing")
-	}
-	if !validCallback(value.RedirectURI, "outlook") {
-		return config.Outlook{}, errors.New("Outlook redirect URI must use the connections OAuth callback path over HTTPS")
-	}
-	if strings.ContainsAny(value.Tenant, "/?#\\ \t\r\n") {
-		return config.Outlook{}, errors.New("invalid Outlook tenant")
-	}
-	return value, nil
+    value, err := annotationconfig.FromEnv[config.Outlook]()
+    if err != nil {
+        return config.Outlook{}, errors.New("Outlook OAuth configuration missing")
+    }
+    if !validCallback(value.RedirectURI, "outlook") {
+        return config.Outlook{}, errors.New("Outlook redirect URI must use the connections OAuth callback path over HTTPS")
+    }
+    if strings.ContainsAny(value.Tenant, "/?#\\ \t\r\n") {
+        return config.Outlook{}, errors.New("invalid Outlook tenant")
+    }
+    return value,nil
 }
 func (environmentLoader) GmailPush() config.GmailPush {
 	return config.GmailPush{
