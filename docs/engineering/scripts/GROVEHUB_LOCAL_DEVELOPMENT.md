@@ -318,3 +318,23 @@ When changing local developer startup:
 18. Preserve traces + metrics export in `dev-start-with-logs`, not only log shipping.
 19. Never add broad process termination.
 20. Report the actual start/stop/hot-reload/infrastructure/telemetry validation performed.
+
+---
+
+## Backend Custom Formatting
+
+`make backend-format` runs the repository-owned Go formatter at
+`scripts/backend/groovefmt/main.go`. Supported scopes include
+`FORMAT_SCOPE=all`, `FORMAT_SCOPE=foundation`, and `FORMAT_SCOPE=integration`.
+
+The formatter first applies standard `gofmt` (imports, indentation, spacing, and
+blank lines between top-level function, type, and constant declarations), then
+compacts multiline function/method/interface signatures onto one line, dropping
+trailing commas used only for multiline parameter lists. Interface members remain
+consecutive as in idiomatic Go. Signatures containing comments or raw string
+literals are not flattened, and generated files are not modified.
+
+The formatter checks that the resulting Go source still parses and is designed
+to be idempotent. Use `go test ./scripts/backend/groovefmt/...` from a module
+containing the tool, or `GO111MODULE=off go test scripts/backend/groovefmt/*.go`
+from the repository root to run its isolated standard-library-only tests.
