@@ -11,7 +11,7 @@ const (
 
 // @Entity foundation.person_contacts
 type Contact struct {
-	PersonGID       string         `gorm:"column:person_gid;type:uuid;primaryKey"`
+	PersonGID       string      `gorm:"column:person_gid;type:uuid;primaryKey"`
 	Type            ContactType `gorm:"column:type;primaryKey"`
 	Value           string      `gorm:"column:value;not null"`
 	NormalizedValue string      `gorm:"column:normalized_value;primaryKey;not null"`

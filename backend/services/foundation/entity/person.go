@@ -11,7 +11,7 @@ const (
 
 // @Entity foundation.persons
 type Person struct {
-	GID                  string          `gorm:"column:gid;type:uuid;primaryKey"`
+	GID                  string       `gorm:"column:gid;type:uuid;primaryKey"`
 	FirstName            string       `gorm:"column:first_name;not null"`
 	MiddleName           *string      `gorm:"column:middle_name"`
 	LastName             string       `gorm:"column:last_name;not null"`

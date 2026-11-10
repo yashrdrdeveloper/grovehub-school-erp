@@ -249,6 +249,8 @@ Do not import NATS/Watermill/provider mechanics from domain event packages. Doma
 
 An entity represents the persisted resource/domain record used by the owning service.
 
+Foundation identity fields use **plain Go `string`**: `Person.GID string` and `Contact.PersonGID string`. There is no `entity.GID` type or `entity/gid.go`; services and repositories accept strings while validators enforce UUIDv7 and GORM retains PostgreSQL `uuid` columns.
+
 For GORM-backed modules, the entity is also the GORM database struct. Do not introduce a parallel persistence model and mapper when the entity already represents the same database record.
 
 Foundation Person is the canonical example:
@@ -330,7 +332,7 @@ Examples:
 
 ```text
 entity.Person -> dto/response.Person
-request GID string -> string (UUIDv7-validated)
+request.GID (string) -> UUIDv7 validation -> repository string argument
 entity metadata -> response error metadata
 ```
 

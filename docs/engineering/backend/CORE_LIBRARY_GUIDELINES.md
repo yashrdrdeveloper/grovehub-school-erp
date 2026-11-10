@@ -403,6 +403,8 @@ YES capability tests aligned with capability ownership
 
 ## Entity declarations: unified @Entity and source overlays
 
+Foundation GIDs are plain Go `string` values. There is no entity-level GID type; UUIDv7 validation belongs to service validators and the database columns remain PostgreSQL `uuid`.
+
 Entity declarations live under the owning service's maintained `entity/` folder and contain only persisted fields, types, constants and GORM tags. The `// @Entity schema.table` directive generates **only** a GORM `TableName()` method, never builders, constructors, getters or setters. The `generation/entities` tool can process separately opted-in builder/accessor annotations on *non-entity* types, but rejects any such annotation combined with `@Entity`. The legacy `generation/expand` tool remains inactive.
 
 ```go
