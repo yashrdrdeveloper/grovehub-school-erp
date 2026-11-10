@@ -12,12 +12,15 @@ export SWAGGER_PORT
 help:
 	@bash ./scripts/help.sh
 
-.PHONY: backend-setup backend-build backend-start backend-stop backend-status backend-dev backend-format
+.PHONY: backend-setup backend-build backend-test backend-start backend-stop backend-status backend-dev backend-format
 backend-setup:
 	@bash ./scripts/backend/setup.sh
 
 backend-build:
 	@bash ./scripts/backend/build.sh
+
+backend-test:
+	@bash ./scripts/backend/test.sh ./...
 
 backend-start:
 	@bash ./scripts/backend/start.sh
