@@ -54,7 +54,9 @@ if [[ "${ready}" != 1 ]]; then
   install_generator goimports golang.org/x/tools/cmd/goimports "${GOIMPORTS_VERSION}"
   export PATH="${TOOLS_BIN_DIR}:${PATH}"
 
-  stage="$(mktemp -d "${STATE_DIR}/entity-stage.XXXXXXXX")"
+  # Stage inside backend so goimports/Gombok can resolve the parent Go module.
+  mkdir -p -- "$(dirname "${generated_dir}")"
+  stage="$(mktemp -d "$(dirname "${generated_dir}")/.entity-stage.XXXXXXXX")"
   trap 'rm -rf -- "${stage}"' EXIT
   for file in "${source_files[@]}"; do
     cp -- "${file}" "${stage}/"
