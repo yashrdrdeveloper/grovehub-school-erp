@@ -266,14 +266,21 @@ Example:
 }
 ```
 
-### Contact replacement semantics
-
-`contacts` is optional.
+### PATCH presence and clearing semantics
 
 ```text
-contacts omitted -> contacts unchanged
-contacts present -> supplied contacts become desired aggregate contact state
+firstName / lastName omitted -> unchanged
+firstName / lastName null    -> 400 (required names cannot be cleared)
+firstName / lastName string  -> trim, validate, update
+middleName omitted          -> unchanged
+middleName null             -> clear (persist NULL)
+middleName string           -> trim, validate, update (empty string also clears)
+contacts omitted            -> unchanged
+contacts null               -> remove every email and phone contact
+contacts object             -> replace all contacts with the supplied arrays
 ```
+
+The DTO uses `PatchString` and `PatchContacts` with `Set` for JSON presence and `Value` for null/value; nested `emails` or `phones` omitted from a supplied contacts object means an empty group.
 
 Example:
 

@@ -32,18 +32,31 @@ func (validator *PersonValidator) ValidateCreate(
     return normalized,nil
 }
 
-func (validator *PersonValidator) ValidateUpdate(
-    request foundationrequest.UpdatePerson,
-) (foundationrequest.UpdatePerson,error) {
-    normalized,err:=normalizePersonRequest(request)
-    if err!=nil{return foundationrequest.UpdatePerson{},err}
-
-    if normalized.Contacts!=nil {
-        contacts,err:=validatorhelpers.NormalizeContacts(*normalized.Contacts)
-        if err!=nil{return foundationrequest.UpdatePerson{},err}
-        normalized.Contacts=&contacts
+func (validator *PersonValidator) ValidateUpdate(request foundationrequest.UpdatePerson) (foundationrequest.UpdatePerson, error) {
+    normalized := request
+    if normalized.FirstName.Set {
+        if normalized.FirstName.Value == nil { return foundationrequest.UpdatePerson{}, coreerrors.NewError(personerror.InvalidPersonRequest) }
+        name, err := validatorhelpers.NormalizeRequiredName(*normalized.FirstName.Value)
+        if err != nil { return foundationrequest.UpdatePerson{}, err }
+        normalized.FirstName.Value = &name
     }
-    return normalized,nil
+    if normalized.MiddleName.Set && normalized.MiddleName.Value != nil {
+        name, err := validatorhelpers.NormalizeOptionalName(*normalized.MiddleName.Value)
+        if err != nil { return foundationrequest.UpdatePerson{}, err }
+        normalized.MiddleName.Value = &name
+    }
+    if normalized.LastName.Set {
+        if normalized.LastName.Value == nil { return foundationrequest.UpdatePerson{}, coreerrors.NewError(personerror.InvalidPersonRequest) }
+        name, err := validatorhelpers.NormalizeRequiredName(*normalized.LastName.Value)
+        if err != nil { return foundationrequest.UpdatePerson{}, err }
+        normalized.LastName.Value = &name
+    }
+    if normalized.Contacts.Set && normalized.Contacts.Value != nil {
+        contacts, err := validatorhelpers.NormalizeContacts(*normalized.Contacts.Value)
+        if err != nil { return foundationrequest.UpdatePerson{}, err }
+        normalized.Contacts.Value = &contacts
+    }
+    return normalized, nil
 }
 
 func normalizePersonRequest[T any](request T)(T,error) {

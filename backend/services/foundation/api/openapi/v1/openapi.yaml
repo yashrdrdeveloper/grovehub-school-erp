@@ -100,8 +100,9 @@ paths:
       operationId: updateFoundationPerson
       summary: Partially update names or replace the Person contact set
       description: >-
-        Omitted fields are unchanged. When contacts is present, its emails and phones arrays are treated as the
-        complete desired contact set for the person. isVerified is Foundation-controlled and cannot be set here.
+        Omitted fields are unchanged. Explicit null clears middleName or the entire contacts set.
+        firstName and lastName reject null. When contacts is an object, its emails and phones arrays
+        replace the complete desired contact set. isVerified is Foundation-controlled and cannot be set here.
       tags:
         - Foundation
       requestBody:
@@ -254,14 +255,16 @@ components:
           minLength: 1
           maxLength: 100
         middleName:
-          type: string
+          type: [string, "null"]
           maxLength: 100
         lastName:
           type: string
           minLength: 1
           maxLength: 100
         contacts:
-          $ref: "#/components/schemas/ContactsInput"
+          anyOf:
+            - $ref: "#/components/schemas/ContactsInput"
+            - type: "null"
     Person:
       type: object
       additionalProperties: false

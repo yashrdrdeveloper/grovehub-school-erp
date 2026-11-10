@@ -229,24 +229,34 @@ func (service *PersonService) applyPersonUpdate(
 	updatedPerson := person
 	updatedContacts := servicehelpers.CopyContacts(contacts)
 	changed := false
-	if request.FirstName != nil && *request.FirstName != person.FirstName {
-		updatedPerson.FirstName = *request.FirstName
+	if request.FirstName.Set && request.FirstName.Value != nil && *request.FirstName.Value != person.FirstName {
+		updatedPerson.FirstName = *request.FirstName.Value
 		changed = true
 	}
-	if request.MiddleName != nil && *request.MiddleName != servicehelpers.NullableString(person.MiddleName) {
-		updatedPerson.MiddleName = servicehelpers.OptionalString(*request.MiddleName)
+	if request.MiddleName.Set {
+		if request.MiddleName.Value == nil {
+			if person.MiddleName != nil {
+				updatedPerson.MiddleName = nil
+				changed = true
+			}
+		} else if *request.MiddleName.Value != servicehelpers.NullableString(person.MiddleName) {
+			updatedPerson.MiddleName = servicehelpers.OptionalString(*request.MiddleName.Value)
+			changed = true
+		}
+	}
+	if request.LastName.Set && request.LastName.Value != nil && *request.LastName.Value != person.LastName {
+		updatedPerson.LastName = *request.LastName.Value
 		changed = true
 	}
-	if request.LastName != nil && *request.LastName != person.LastName {
-		updatedPerson.LastName = *request.LastName
-		changed = true
-	}
-	if request.Contacts == nil {
+	if !request.Contacts.Set {
 		return updatedPerson, updatedContacts, changed, nil
 	}
-	newContacts := servicehelpers.BuildContacts(*request.Contacts, contacts)
-	if err := service.ensureContactsBelongToPerson(ctx, person.GID, newContacts); err != nil {
-		return entity.Person{}, nil, false, err
+	var newContacts []entity.Contact
+	if request.Contacts.Value != nil {
+		newContacts = servicehelpers.BuildContacts(*request.Contacts.Value, contacts)
+		if err := service.ensureContactsBelongToPerson(ctx, person.GID, newContacts); err != nil {
+			return entity.Person{}, nil, false, err
+		}
 	}
 	if !servicehelpers.ContactsEqual(newContacts, contacts) {
 		updatedContacts = servicehelpers.CopyContacts(newContacts)

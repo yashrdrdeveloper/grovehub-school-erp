@@ -22,12 +22,13 @@ type CreatePerson struct {
 	Contacts Contacts `json:"contacts,omitempty" validate:"valid"`
 }
 
-// UpdatePerson keeps pointer fields so absent PATCH values remain unchanged.
+// UpdatePerson distinguishes absent, null, and populated PATCH fields.
+// FirstName and LastName cannot be cleared; MiddleName and Contacts can.
 type UpdatePerson struct {
-	FirstName  *string   `json:"firstName,omitempty" normalize:"trim" validate:"notblank,maxrunes=100"`
-	MiddleName *string   `json:"middleName,omitempty" normalize:"trim" validate:"maxrunes=100"`
-	LastName   *string   `json:"lastName,omitempty" normalize:"trim" validate:"notblank,maxrunes=100"`
-	Contacts   *Contacts `json:"contacts,omitempty" validate:"valid"`
+	FirstName  PatchString   `json:"firstName"`
+	MiddleName PatchString   `json:"middleName"`
+	LastName   PatchString   `json:"lastName"`
+	Contacts   PatchContacts `json:"contacts"`
 }
 
 type PersonByGID struct {

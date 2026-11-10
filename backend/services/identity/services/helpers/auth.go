@@ -57,7 +57,11 @@ func BuildRegisterPersonUpdate(request identityrequest.Register) foundationreque
 	firstName := request.FirstName
 	middleName := *request.MiddleName
 	lastName := request.LastName
-	return foundationrequest.UpdatePerson{FirstName: &firstName, MiddleName: &middleName, LastName: &lastName}
+	return foundationrequest.UpdatePerson{
+        FirstName: foundationrequest.PatchString{Set: true, Value: &firstName},
+        MiddleName: foundationrequest.PatchString{Set: true, Value: &middleName},
+        LastName: foundationrequest.PatchString{Set: true, Value: &lastName},
+    }
 }
 
 func PersonHasEmail(person foundationresponse.Person, email string) bool {
