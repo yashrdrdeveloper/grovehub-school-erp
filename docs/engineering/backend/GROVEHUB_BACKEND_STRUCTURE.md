@@ -330,7 +330,7 @@ Examples:
 
 ```text
 entity.Person -> dto/response.Person
-request GID string -> entity.GID
+request GID string -> string (UUIDv7-validated)
 entity metadata -> response error metadata
 ```
 

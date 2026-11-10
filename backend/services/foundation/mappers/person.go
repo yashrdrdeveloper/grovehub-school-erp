@@ -8,8 +8,8 @@ import (
 
 // @Mapper PersonMapper
 type PersonMapper interface {
-	ToPersonGID(request foundationrequest.PersonByGID) entity.GID
+	ToPersonGID(request foundationrequest.PersonByGID) string
 	ToPersonResponse(person entity.Person) foundationresponse.Person
-	// @Mapping GID=string(gid)
-	ToPersonErrorMetadata(gid entity.GID) foundationresponse.PersonErrorMetadata
+	// @Mapping GID=gid
+	ToPersonErrorMetadata(gid string) foundationresponse.PersonErrorMetadata
 }

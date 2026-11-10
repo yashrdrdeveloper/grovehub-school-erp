@@ -69,7 +69,7 @@ func (repository *PersonRepository) Create(ctx context.Context, person entity.Pe
 	})
 }
 
-func (repository *PersonRepository) FindByGID(ctx context.Context, gid entity.GID) (entity.Person, error) {
+func (repository *PersonRepository) FindByGID(ctx context.Context, gid string) (entity.Person, error) {
 	var person entity.Person
 	if err := coretransaction.Database(ctx, repository.db).Where("gid = ?", gid).Take(&person).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -104,9 +104,9 @@ func (repository *PersonRepository) FindByCreateIdempotencyKey(ctx context.Conte
 func (repository *PersonRepository) FindGIDsByContacts(
 	ctx context.Context,
 	contacts []entity.Contact,
-) ([]entity.GID, error) {
+) ([]string, error) {
 	if len(contacts) == 0 {
-		return []entity.GID{}, nil
+		return []string{}, nil
 	}
 	conditions := make([]string, 0, len(contacts))
 	args := make([]any, 0, len(contacts)*2)
@@ -114,7 +114,7 @@ func (repository *PersonRepository) FindGIDsByContacts(
 		conditions = append(conditions, "(type = ? AND normalized_value = ?)")
 		args = append(args, contact.Type, contact.NormalizedValue)
 	}
-	gids := make([]entity.GID, 0)
+	gids := make([]string, 0)
 	err := coretransaction.Database(ctx, repository.db).
 		Model(&entity.Contact{}).
 		Distinct("person_gid").
@@ -129,7 +129,7 @@ func (repository *PersonRepository) FindGIDsByContacts(
 
 func (repository *PersonRepository) Search(
 	ctx context.Context,
-	query coresearch.Query[entity.GID],
+	query coresearch.Query[string],
 ) (coresearch.QueryResult[entity.Person], error) {
 	searchDB, err := coresearch.Apply(
 		coretransaction.Database(ctx, repository.db).
@@ -150,7 +150,7 @@ func (repository *PersonRepository) Search(
 	if hasNext {
 		persons = persons[:query.Limit]
 	}
-	gids := make([]entity.GID, 0, len(persons))
+	gids := make([]string, 0, len(persons))
 	for _, person := range persons {
 		gids = append(gids, person.GID)
 	}
@@ -189,7 +189,7 @@ func (repository *PersonRepository) Update(ctx context.Context, person entity.Pe
 	})
 }
 
-func (repository *PersonRepository) Delete(ctx context.Context, gid entity.GID) error {
+func (repository *PersonRepository) Delete(ctx context.Context, gid string) error {
 	result := coretransaction.Database(ctx, repository.db).Where("gid = ?", gid).Delete(&entity.Person{})
 	if result.Error != nil {
 		return result.Error
@@ -200,16 +200,16 @@ func (repository *PersonRepository) Delete(ctx context.Context, gid entity.GID) 
 	return nil
 }
 
-func (repository *PersonRepository) findContactsByGID(ctx context.Context, gid entity.GID) ([]entity.Contact, error) {
-	contactsByGID, err := repository.findContactsByGIDs(ctx, []entity.GID{gid})
+func (repository *PersonRepository) findContactsByGID(ctx context.Context, gid string) ([]entity.Contact, error) {
+	contactsByGID, err := repository.findContactsByGIDs(ctx, []string{gid})
 	return contactsByGID[gid], err
 }
 
 func (repository *PersonRepository) findContactsByGIDs(
 	ctx context.Context,
-	gids []entity.GID,
-) (map[entity.GID][]entity.Contact, error) {
-	contactsByGID := make(map[entity.GID][]entity.Contact, len(gids))
+	gids []string,
+) (map[string][]entity.Contact, error) {
+	contactsByGID := make(map[string][]entity.Contact, len(gids))
 	if len(gids) == 0 {
 		return contactsByGID, nil
 	}
@@ -259,7 +259,7 @@ func upsertPersonContacts(tx *gorm.DB, person entity.Person, clearPrimary bool) 
 	return deleteStalePersonContacts(tx, gid, contacts)
 }
 
-func deleteStalePersonContacts(tx *gorm.DB, gid entity.GID, contacts []entity.Contact) error {
+func deleteStalePersonContacts(tx *gorm.DB, gid string, contacts []entity.Contact) error {
 	query := tx.Where("person_gid = ?", gid)
 	if len(contacts) == 0 {
 		return query.Delete(&entity.Contact{}).Error
@@ -284,7 +284,7 @@ func buildPersonSearchDetails(person entity.Person) string {
 		return left.Type < right.Type
 	})
 	parts := make([]string, 0, 4+(len(contacts)*2))
-	parts = append(parts, string(person.GID), person.FirstName)
+	parts = append(parts, person.GID, person.FirstName)
 	if middleName := person.MiddleName; middleName != nil {
 		parts = append(parts, *middleName)
 	}

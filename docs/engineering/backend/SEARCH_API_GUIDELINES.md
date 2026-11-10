@@ -99,7 +99,7 @@ search.Request
       ↓
 PersonValidator
       ↓
-search.Query[entity.GID]
+search.Query[string]
       ↓
 PersonRepository
       ↓

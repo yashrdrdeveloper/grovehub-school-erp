@@ -82,7 +82,7 @@ func (service *PersonService) Create(
 	if err != nil {
 		return foundationresponse.Person{}, false, coreerrors.Wrap(personerror.PersonCreateFailed, err)
 	}
-	gid := entity.GID(gidValue)
+	gid := gidValue
 	now := time.Now().UTC()
 	person := servicehelpers.NewPerson(gid, validatedRequest, contacts, now)
 	if idempotencyKey != "" {
@@ -267,7 +267,7 @@ func (service *PersonService) applyPersonUpdate(
 	return updatedPerson, changed, nil
 }
 
-func (service *PersonService) getPersonByGID(ctx context.Context, gid entity.GID) (entity.Person, error) {
+func (service *PersonService) getPersonByGID(ctx context.Context, gid string) (entity.Person, error) {
 	if err := service.validator.ValidateGID(gid); err != nil {
 		return entity.Person{}, coreerrors.NewErrorWithMetadata(
 			personerror.InvalidPersonGID,
@@ -317,7 +317,7 @@ func (service *PersonService) findExistingPersonByContacts(
 
 func (service *PersonService) ensureContactsBelongToPerson(
 	ctx context.Context,
-	gid entity.GID,
+	gid string,
 	contacts []entity.Contact,
 ) error {
 	if len(contacts) == 0 {
@@ -353,7 +353,7 @@ func (service *PersonService) resolveConcurrentCreate(
 	return foundationresponse.Person{}, false, coreerrors.NewError(personerror.PersonCreateFailed)
 }
 
-func (service *PersonService) mapUpdateError(gid entity.GID, err error) error {
+func (service *PersonService) mapUpdateError(gid string, err error) error {
 	mapped := map[error]func() error{
 		foundationrepository.ErrPersonNotFound: func() error {
 			return coreerrors.NewErrorWithMetadata(
@@ -385,7 +385,7 @@ func (service *PersonService) mapUpdateError(gid entity.GID, err error) error {
 
 func buildNextCursor(
 	result coresearch.QueryResult[entity.Person],
-	query coresearch.Query[entity.GID],
+	query coresearch.Query[string],
 	cursor coresearch.CursorPayload,
 ) (string, error) {
 	if !result.HasNext || len(result.Items) == 0 {
@@ -393,6 +393,6 @@ func buildNextCursor(
 	}
 	lastPerson := result.Items[len(result.Items)-1]
 	cursor.Value = servicehelpers.PersonCursorValue(lastPerson, query.Sort.Field)
-	cursor.CursorId = string(lastPerson.GID)
+	cursor.CursorId = lastPerson.GID
 	return servicehelpers.EncodePersonSearchCursor(cursor)
 }

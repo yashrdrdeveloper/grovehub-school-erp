@@ -131,8 +131,8 @@ func NormalizeContacts(request foundationrequest.Contacts) (foundationrequest.Co
 	return foundationrequest.Contacts{Emails: emails, Phones: phones}, nil
 }
 
-func ValidateGID(gid entity.GID) error {
-	if _, err := corenormalize.UUIDv7(string(gid)); err != nil {
+func ValidateGID(gid string) error {
+	if _, err := corenormalize.UUIDv7(gid); err != nil {
 		return coreerrors.NewError(personerror.InvalidPersonGID)
 	}
 	return nil
@@ -140,14 +140,14 @@ func ValidateGID(gid entity.GID) error {
 
 func NormalizePersonSearchRequest(
 	request coresearch.Request,
-) (coresearch.Query[entity.GID], coresearch.CursorPayload, error) {
+) (coresearch.Query[string], coresearch.CursorPayload, error) {
 	searchText := strings.TrimSpace(request.SearchText)
 	if len(searchText) > maxSearchTextLength {
-		return coresearch.Query[entity.GID]{}, coresearch.CursorPayload{}, invalidPersonSearch()
+		return coresearch.Query[string]{}, coresearch.CursorPayload{}, invalidPersonSearch()
 	}
 	searchTerms := strings.Fields(strings.ToLower(searchText))
 	if len(searchTerms) > maxSearchTerms || len(request.Filters) > maxSearchFilters {
-		return coresearch.Query[entity.GID]{}, coresearch.CursorPayload{}, invalidPersonSearch()
+		return coresearch.Query[string]{}, coresearch.CursorPayload{}, invalidPersonSearch()
 	}
 
 	rows := request.PageInfo.Rows
@@ -155,23 +155,23 @@ func NormalizePersonSearchRequest(
 		rows = coresearch.DefaultRows
 	}
 	if rows < 1 || rows > coresearch.MaxRows {
-		return coresearch.Query[entity.GID]{}, coresearch.CursorPayload{}, invalidPersonSearch()
+		return coresearch.Query[string]{}, coresearch.CursorPayload{}, invalidPersonSearch()
 	}
 
 	sort, err := normalizeSort(request.Sort)
 	if err != nil {
-		return coresearch.Query[entity.GID]{}, coresearch.CursorPayload{}, err
+		return coresearch.Query[string]{}, coresearch.CursorPayload{}, err
 	}
 	filters, err := normalizeFilters(request.Filters)
 	if err != nil {
-		return coresearch.Query[entity.GID]{}, coresearch.CursorPayload{}, err
+		return coresearch.Query[string]{}, coresearch.CursorPayload{}, err
 	}
 	cursor, payload, err := normalizeCursor(request.PageInfo.Cursor, sort)
 	if err != nil {
-		return coresearch.Query[entity.GID]{}, coresearch.CursorPayload{}, err
+		return coresearch.Query[string]{}, coresearch.CursorPayload{}, err
 	}
 
-	return coresearch.Query[entity.GID]{
+	return coresearch.Query[string]{
 		SearchTerms: searchTerms,
 		Filters:     filters,
 		Sort:        sort,
@@ -267,7 +267,7 @@ func normalizeFilters(filters []coresearch.Filter) ([]coresearch.QueryFilter, er
 func normalizeCursor(
 	value string,
 	sort coresearch.QuerySort,
-) (*coresearch.Cursor[entity.GID], coresearch.CursorPayload, error) {
+) (*coresearch.Cursor[string], coresearch.CursorPayload, error) {
 	payload := coresearch.CursorPayload{Field: sort.Field, Direction: sort.Direction}
 	if strings.TrimSpace(value) == "" {
 		return nil, payload, nil
@@ -280,9 +280,9 @@ func normalizeCursor(
 	if err := spec.validate(decoded.Value); err != nil || validateUUIDv7String(decoded.CursorId) != nil {
 		return nil, coresearch.CursorPayload{}, invalidPersonSearchCursor()
 	}
-	return &coresearch.Cursor[entity.GID]{
+	return &coresearch.Cursor[string]{
 		Value: decoded.Value,
-		CursorId: entity.GID(decoded.CursorId),
+		CursorId: decoded.CursorId,
 	}, decoded, nil
 }
 

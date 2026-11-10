@@ -17,10 +17,10 @@ var (
 
 type PersonRepository interface {
 	Create(ctx context.Context, person entity.Person) error
-	FindByGID(ctx context.Context, gid entity.GID) (entity.Person, error)
+	FindByGID(ctx context.Context, gid string) (entity.Person, error)
 	FindByCreateIdempotencyKey(ctx context.Context, key string) (entity.Person, error)
-	FindGIDsByContacts(ctx context.Context, contacts []entity.Contact) ([]entity.GID, error)
-	Search(ctx context.Context, query coresearch.Query[entity.GID]) (coresearch.QueryResult[entity.Person], error)
+	FindGIDsByContacts(ctx context.Context, contacts []entity.Contact) ([]string, error)
+	Search(ctx context.Context, query coresearch.Query[string]) (coresearch.QueryResult[entity.Person], error)
 	Update(ctx context.Context, person entity.Person) error
-	Delete(ctx context.Context, gid entity.GID) error
+	Delete(ctx context.Context, gid string) error
 }

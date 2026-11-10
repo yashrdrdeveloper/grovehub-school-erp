@@ -62,9 +62,9 @@ The public mapper package contains the interface:
 
 ```go
 type PersonMapper interface {
-    ToPersonGID(request request.PersonByGID) entity.GID
+    ToPersonGID(request request.PersonByGID) string
     ToPersonResponse(person entity.Person) response.Person
-    ToPersonErrorMetadata(gid entity.GID) response.PersonErrorMetadata
+    ToPersonErrorMetadata(gid string) response.PersonErrorMetadata
 }
 ```
 
@@ -105,7 +105,7 @@ Do not create `ValidatedCreatePerson` merely to duplicate `CreatePerson`.
 For generic shared contracts, reuse the public capability types directly. Person search validation returns:
 
 ```text
-coresearch.Query[entity.GID]
+coresearch.Query[string]
 coresearch.CursorPayload
 ```
 

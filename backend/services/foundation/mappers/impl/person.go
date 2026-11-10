@@ -13,8 +13,8 @@ func NewPersonMapper() foundationmappers.PersonMapper {
 	return &PersonMapper{}
 }
 
-func (mapper *PersonMapper) ToPersonGID(request foundationrequest.PersonByGID) entity.GID {
-	return entity.GID(request.GID)
+func (mapper *PersonMapper) ToPersonGID(request foundationrequest.PersonByGID) string {
+	return request.GID
 }
 
 func (mapper *PersonMapper) ToPersonResponse(person entity.Person) foundationresponse.Person {
@@ -47,7 +47,7 @@ func (mapper *PersonMapper) ToPersonResponse(person entity.Person) foundationres
 	middleName := ""
 	if person.MiddleName != nil { middleName = *person.MiddleName }
 	return foundationresponse.Person{
-		GID:        string(person.GID),
+		GID:        person.GID,
 		FirstName:  person.FirstName,
 		MiddleName: middleName,
 		LastName:   person.LastName,

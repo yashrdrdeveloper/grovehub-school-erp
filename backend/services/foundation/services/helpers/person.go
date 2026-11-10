@@ -12,7 +12,7 @@ import (
 type cursorValueExtractor func(entity.Person) string
 
 var personCursorExtractors = map[string]cursorValueExtractor{
-	"gid":       func(person entity.Person) string { return string(person.GID) },
+	"gid":       func(person entity.Person) string { return person.GID },
 	"firstName": func(person entity.Person) string { return strings.ToLower(person.FirstName) },
 	"lastName":  func(person entity.Person) string { return strings.ToLower(person.LastName) },
 	"createdAt": func(person entity.Person) string { return person.CreatedAt.UTC().Format(time.RFC3339Nano) },
@@ -127,7 +127,7 @@ func CopyContacts(contacts []entity.Contact) []entity.Contact {
 }
 
 // NewPerson is use-case construction, not entity behavior.
-func NewPerson(gid entity.GID, input foundationrequest.CreatePerson, contacts []entity.Contact, now time.Time) entity.Person {
+func NewPerson(gid string, input foundationrequest.CreatePerson, contacts []entity.Contact, now time.Time) entity.Person {
 	return entity.Person{
 		GID: gid,
 		FirstName: input.FirstName,

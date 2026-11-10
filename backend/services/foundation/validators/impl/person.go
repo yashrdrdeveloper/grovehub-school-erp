@@ -8,7 +8,6 @@ import (
     coresearch "grovehub/libs/core/search"
     personerror "grovehub/services/foundation/constants/error"
     foundationrequest "grovehub/services/foundation/dto/request"
-    "grovehub/services/foundation/entity"
     foundationvalidators "grovehub/services/foundation/validators"
     validatorhelpers "grovehub/services/foundation/validators/helpers"
 )
@@ -59,12 +58,12 @@ func normalizePersonRequest[T any](request T)(T,error) {
     return zero,err
 }
 
-func (validator *PersonValidator) ValidateGID(gid entity.GID) error {
+func (validator *PersonValidator) ValidateGID(gid string) error {
     return validatorhelpers.ValidateGID(gid)
 }
 
 func (validator *PersonValidator) ValidateSearch(
     request coresearch.Request,
-) (coresearch.Query[entity.GID],coresearch.CursorPayload,error) {
+) (coresearch.Query[string],coresearch.CursorPayload,error) {
     return validatorhelpers.NormalizePersonSearchRequest(request)
 }

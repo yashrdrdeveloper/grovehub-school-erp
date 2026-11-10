@@ -75,7 +75,7 @@ For shared generic search:
 ```text
 coresearch.Request
       ↓ validator
-coresearch.Query[entity.GID]
+coresearch.Query[string]
 coresearch.CursorPayload
 ```
 
@@ -282,7 +282,7 @@ foundation/
 For search it returns:
 
 ```text
-coresearch.Query[entity.GID]
+coresearch.Query[string]
 coresearch.CursorPayload
 ```
 
