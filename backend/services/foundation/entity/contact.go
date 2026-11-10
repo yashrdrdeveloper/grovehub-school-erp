@@ -1,9 +1,6 @@
 package entity
 
-import (
-	"time"
-
-)
+import "time"
 
 type ContactType string
 
