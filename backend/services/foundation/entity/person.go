@@ -1,6 +1,10 @@
 package entity
 
-import "time"
+import (
+ "time"
+
+ coreentity "grovehub/libs/core/entity"
+)
 
 type PersonStatus string
 
@@ -26,28 +30,19 @@ type Person struct {
 
 func (Person) TableName() string { return "foundation.persons" }
 
-func NewPerson(
-	gid GID,
-	firstName string,
-	middleName string,
-	lastName string,
-	contacts []Contact,
-	status PersonStatus,
-	version int64,
-	createdAt time.Time,
-	updatedAt time.Time,
-) Person {
-	return Person{
-		GID:        gid,
-		FirstName:  firstName,
-		MiddleName: optionalString(middleName),
-		LastName:   lastName,
-		Contacts:   copyContacts(contacts),
-		Status:     status,
-		Version:    version,
-		CreatedAt:  createdAt,
-		UpdatedAt:  updatedAt,
-	}
+// NewPerson preserves the existing constructor contract; new use cases may use coreentity.New[Person] directly.
+func NewPerson(gid GID, firstName string, middleName string, lastName string, contacts []Contact, status PersonStatus, version int64, createdAt time.Time, updatedAt time.Time) Person {
+ return coreentity.New[Person]().With(func(person *Person) {
+  person.GID = gid
+  person.FirstName = firstName
+  person.MiddleName = optionalString(middleName)
+  person.LastName = lastName
+  person.Contacts = copyContacts(contacts)
+  person.Status = status
+  person.Version = version
+  person.CreatedAt = createdAt
+  person.UpdatedAt = updatedAt
+ }).Build()
 }
 
 func (person Person) GetGID() GID          { return person.GID }
