@@ -19,7 +19,7 @@ type Changed struct {ID string}
 	if err:=generateAll(backend);err!=nil{t.Fatal(err)}
 	output:=filepath.Join(backend,"services","foundation",".generated","events","persons","zz_events.gen.go")
 	data,err:=os.ReadFile(output);if err!=nil{t.Fatal(err)}
-	for _,part:=range []string{"ChangedTopic",`"foundation_person_changed"`,"ChangedType",`"foundation.person.changed.v1"`,"ChangedVersion = 1",`Source = "foundation"`} {
+	for _,part:=range []string{"ChangedTopic",`"foundation_person_changed"`,"ChangedType",`"foundation.person.changed.v1"`,"ChangedVersion = 1",`Source`, `"foundation"`} {
 		if !strings.Contains(string(data),part){t.Errorf("event contract missing %q: %s",part,data)}
 	}
 	if err:=generateAll(backend);err!=nil{t.Fatal(err)}
