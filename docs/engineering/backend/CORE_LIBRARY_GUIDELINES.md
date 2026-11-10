@@ -401,27 +401,27 @@ YES capability tests aligned with capability ownership
 
 ---
 
-## Entity Boilerplate Generation
+## Entity Builder (No Code Generation)
 
-`backend/libs/core/entity/cmd/entitygen` is a domain-neutral, build-time code generator. Go does not support custom `Entity<table> Name { ... }` declarations; entity definitions remain normal Go structs. It does not introduce runtime base entities, persistence access, or business logic.
+`backend/libs/core/entity` offers an optional, domain-neutral generic builder directly at runtime. Go cannot define a new `Entity<Table> Name { ... }` syntax or automatically synthesize typed `Get<Field>` and `Set<Field>` methods from a struct without code generation; GroveHub does not require generators for this capability.
 
-An entity can opt in with a standard `go:generate` directive:
+Define entities as ordinary passive Go structs, preserving existing GORM annotations and `TableName()` mappings where required by the service's schema. Construct values without creating a per-entity builder:
 
 ```go
-//go:generate go run grovehub/libs/core/entity/cmd/entitygen -type PasswordCredential -table identity.password_credentials
-type PasswordCredential struct {
-    AccountId AccountId `gorm:"column:account_id;type:uuid;primaryKey"`
-    PasswordHash string `gorm:"column:password_hash;not null"`
-}
+credential := coreentity.New[entity.PasswordCredential]().
+    With(func(v *entity.PasswordCredential) {
+        v.AccountId = accountId
+        v.PasswordHash = passwordHash
+        v.PasswordChangedAt = now
+        v.Version = 1
+        v.CreatedAt = now
+        v.UpdatedAt = now
+    }).
+    Build()
 ```
 
-Run from `backend/`:
+`New[T]()`, `From(value)`, `With(func(*T))`, and `Build()` are the complete stable core API. `With` acts on a copy of a value struct; it does not implement domain validation, permissions, clock/ID generation, persistence, or lifecycle rules. Struct fields must remain accessible to their callers, and nested pointer/slice/map fields are not deep-copied. Service orchestration continues to own all business decisions. No `go generate` command or generated files are needed. Do not use generic reflection-based field-name setters that lose compile-time type checking.
 
-```bash
-go generate ./services/identity/entity
-go test ./libs/core/entity/cmd/entitygen/...
-```
+For compatibility with current integrations, legacy entity constructors/accessors may remain until their consumers are deliberately migrated. For new entities, do not add trivial constructors or accessors solely to implement generic construction; prefer `coreentity.New[T]()` or a direct struct literal when more readable.
 
-The generated `zz_<lowercase-type>_entity.gen.go` file belongs in the same package and is checked into source control. It includes `New<Type>`, `TableName`, `Get<Field>`, and value-copy `Set<Field>` methods for exported fields. The constructor accepts all fields in declaration order. The generator omits methods already manually declared on that entity, making incremental adoption possible. It preserves concrete field types and relevant imports; unsupported embedded or unexported fields cause explicit errors. Use domain service logic for validation, ID generation, timestamps, lifecycle rules, and transactional behavior.
-
-Do not edit generated files manually. Regenerate after changing entity fields. Because generated `Set<Field>` methods return modified copies rather than mutate pointers, callers must assign the returned value. Generating setters for every exported field is a mechanical convenience, **not** authorization to modify protected state or bypass service rules.
+Run the dedicated Ginkgo suite with `cd backend && go test ./libs/core/tests/unit-test/entity/...`.
