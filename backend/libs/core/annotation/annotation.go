@@ -198,7 +198,66 @@ func ValidateDirective(d Directive) error {
             return fmt.Errorf("%w: unsupported @Entity option %q",ErrInvalidDirective,args[1])
         }
     }
+    switch d.Name {
+    case "Repository":
+        parts, err := directiveOptions(d.Arguments, []string{"entity"})
+        if err != nil || !tokenIdentifier(parts["entity"]) {
+            return fmt.Errorf("%w: @Repository requires entity=Type", ErrInvalidDirective)
+        }
+    case "Searchable":
+        parts, err := directiveOptions(d.Arguments, []string{"impl", "entity", "config", "alias"})
+        if err != nil || !tokenIdentifier(parts["impl"]) || !tokenIdentifier(parts["entity"]) ||
+            !tokenIdentifier(parts["config"]) || !tokenIdentifier(parts["alias"]) {
+            return fmt.Errorf("%w: @Searchable requires impl=Type entity=Type config=identifier alias=identifier", ErrInvalidDirective)
+        }
+    case "Filterable", "Sortable":
+        parts, err := directiveOptions(d.Arguments, []string{"fields"})
+        if err != nil || !validFieldList(parts["fields"]) {
+            return fmt.Errorf("%w: @%s requires fields=comma,separated,names", ErrInvalidDirective, d.Name)
+        }
+    case "Cursor":
+        parts, err := directiveOptions(d.Arguments, []string{"field"})
+        if err != nil || !validFieldName(parts["field"]) {
+            return fmt.Errorf("%w: @Cursor requires field=fieldName", ErrInvalidDirective)
+        }
+    }
     return nil
+}
+
+func directiveOptions(raw string, required []string) (map[string]string,error) {
+    result := make(map[string]string,len(required))
+    for _, arg := range strings.Fields(raw) {
+        pieces := strings.SplitN(arg,"=",2)
+        if len(pieces)!=2 || pieces[1]=="" {return nil,ErrInvalidDirective}
+        allowed := false
+        for _, key := range required {if pieces[0]==key {allowed=true;break}}
+        if !allowed || result[pieces[0]]!="" {return nil,ErrInvalidDirective}
+        result[pieces[0]]=pieces[1]
+    }
+    for _, key := range required {if result[key]=="" {return nil,ErrInvalidDirective}}
+    return result,nil
+}
+func tokenIdentifier(s string) bool {
+    if s=="" {return false}
+    for i,r := range s {
+        if i==0 {if !(r>='a'&&r<='z'||r>='A'&&r<='Z'||r=='_'){return false}}
+        if !(r>='a'&&r<='z'||r>='A'&&r<='Z'||r>='0'&&r<='9'||r=='_'){return false}
+    }
+    return true
+}
+func validFieldName(s string) bool {
+    if s=="" {return false}
+    for _,part := range strings.Split(s,".") {if !tokenIdentifier(part) {return false}}
+    return true
+}
+func validFieldList(s string) bool {
+    if s=="" {return false}
+    seen:=map[string]bool{}
+    for _,field:=range strings.Split(s,",") {
+        if !validFieldName(field)||seen[field] {return false}
+        seen[field]=true
+    }
+    return true
 }
 
 func identifier(value string) bool {
