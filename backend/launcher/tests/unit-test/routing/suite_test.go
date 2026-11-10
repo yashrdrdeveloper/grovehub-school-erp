@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	responsedto "grovehub/libs/core/dto/response"
+	responsedto "grovehub/libs/core/http/contracts"
 	"grovehub/launcher/routing"
 )
 
