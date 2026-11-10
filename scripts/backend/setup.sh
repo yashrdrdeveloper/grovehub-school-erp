@@ -14,7 +14,7 @@ source "${SCRIPT_DIR}/../lib/go.sh"
 ensure_air
 ensure_goose
 sync_backend_go_modules
-bash "${SCRIPT_DIR}/generate-entities.sh"
+bash "${SCRIPT_DIR}/generate-annotations.sh"
 
 log_info "Backend development tools are ready"
 log_info "Air: ${AIR_VERSION} (${AIR_BIN})"
