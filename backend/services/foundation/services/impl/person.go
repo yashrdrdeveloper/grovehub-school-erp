@@ -103,6 +103,7 @@ func (service *PersonService) Create(
 		person.CreateRequestHash = &requestHash
 	}
 
+	person = servicehelpers.AssociateContacts(person)
 	if err := service.repository.Create(ctx, person); err != nil {
 		if errors.Is(err, foundationrepository.ErrPersonIdempotencyKeyAlreadyExists) {
 			existing, readErr := service.repository.FindByCreateIdempotencyKey(ctx, idempotencyKey)
@@ -159,6 +160,7 @@ func (service *PersonService) Update(
 		return service.mapper.ToPersonResponse(person), nil
 	}
 	updatedPerson = updatedPerson.SetVersion(person.GetVersion() + 1).SetUpdatedAt(time.Now().UTC())
+	updatedPerson = servicehelpers.AssociateContacts(updatedPerson)
 	if err := service.repository.Update(ctx, updatedPerson); err != nil {
 		if errors.Is(err, foundationrepository.ErrPersonVersionConflict) {
 			latest, readErr := service.getPersonByGID(ctx, gid)
