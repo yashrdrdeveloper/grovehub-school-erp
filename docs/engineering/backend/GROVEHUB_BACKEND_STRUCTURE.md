@@ -253,7 +253,7 @@ Foundation identity fields use **plain Go `string`**: `Person.GID string` and `C
 
 For GORM-backed modules, the entity is also the GORM database struct. Do not introduce a parallel persistence model and mapper when the entity already represents the same database record.
 
-Foundation Person is the canonical example:
+Foundation Person is the canonical example; entity structs contain only persisted columns:
 
 ```text
 entity/person.go
@@ -264,10 +264,20 @@ entity/contact.go
     -> Contact passive GORM/database struct and field tags
     -> @Entity table name mapping only (generated outside source)
 
+
 services/helpers/person.go
-    -> NewPerson and contact construction
+    -> NewPerson and contact construction (independent values)
     -> OptionalString, NullableString, CopyContacts and association rules
-    -> use-case owned state updates
+
+repository/impl/person.go
+    -> persists Person and Contact in the same transaction
+    -> returns Contact rows separately from Person records
+
+services/impl/person.go
+    -> coordinates both entity values through Person's lifecycle
+
+mappers/impl/person.go
+    -> joins Person and []Contact into the existing response DTO
 ```
 
 Do not create:
@@ -293,7 +303,7 @@ external I/O
 
 Persistence-derived behavior that exists only to store/query database data belongs in the repository implementation.
 
-For example, Foundation's denormalized `search_details` projection is calculated by `repository/impl/person.go`, not by `entity.Person`.
+For example, Foundation's denormalized `search_details` projection is calculated by `repository/impl/person.go`, not by `entity.Person`. The `Person.IdempotencyKey` and `Person.RequestHash` Go fields continue mapping to the existing `create_idempotency_key` and `create_request_hash` PostgreSQL columns; no schema migration is needed.
 
 ---
 
@@ -626,7 +636,7 @@ Person
 ├── FirstName
 ├── MiddleName
 ├── LastName
-├── Contacts[]
+├── Contacts[]       # Person-owned child rows (NOT a field in entity.Person)
 ├── Status
 ├── Version
 ├── SearchDetails   # persisted search projection; repository maintained
@@ -634,7 +644,7 @@ Person
 └── UpdatedAt
 ```
 
-Contacts are nested values, not separately addressable public resources.
+Contacts are nested API values, not separately addressable public resources. `entity.Person` contains **no** `Contacts` field. The repository returns `Person` and `[]Contact` separately, `PersonService` owns contact changes, and the mapper combines them into the existing DTO. No `PersonWithContacts` model or new `@Model` annotation is needed.
 
 Search remains a Person use case; do not create `person_search.go` merely because Person supports search.
 

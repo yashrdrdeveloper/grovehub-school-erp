@@ -63,7 +63,7 @@ The public mapper package contains the interface:
 ```go
 type PersonMapper interface {
     ToPersonGID(request request.PersonByGID) string
-    ToPersonResponse(person entity.Person) response.Person
+    ToPersonResponse(person entity.Person, contacts []entity.Contact) response.Person
     ToPersonErrorMetadata(gid string) response.PersonErrorMetadata
 }
 ```
