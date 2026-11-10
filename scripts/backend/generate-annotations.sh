@@ -12,7 +12,8 @@ GOMBOK_VERSION="v1.2.0"
 GOIMPORTS_VERSION="v0.51.0"
 
 install_generator() {
-  local name="$1" package="$2" version="$3" version_file="${STATE_DIR}/${name}.version"
+  local name="$1" package="$2" version="$3"
+  local version_file="${STATE_DIR}/${name}.version"
   if [[ -x "${TOOLS_BIN_DIR}/${name}" && -f "${version_file}" && "$(cat "${version_file}")" == "${version}" ]]; then
     return
   fi
