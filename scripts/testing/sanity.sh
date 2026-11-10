@@ -59,12 +59,14 @@ require_command go
 log_info "Ensuring NATS JetStream is available for sanity tests"
 bash "${SCRIPT_DIR}/../infrastructure/nats/start.sh"
 
+bash "${SCRIPT_DIR}/../backend/generate-entities.sh"
+
 log_info "Running backend sanity tests: ${SANITY_SCOPE}"
 
 set +e
 (
   cd "${BACKEND_DIR}"
-  go test -count=1 -v "${SANITY_SCOPE}"
+  go test -vet=off -overlay="${BACKEND_DIR}/.generated/overlay.json" -count=1 -v "${SANITY_SCOPE}"
 ) 2>&1 | tee "${RAW_REPORT_FILE}"
 test_status=${PIPESTATUS[0]}
 set -e
