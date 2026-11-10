@@ -23,11 +23,3 @@ type Contact struct {
 	CreatedAt       time.Time   `gorm:"column:created_at;not null"`
 	UpdatedAt       time.Time   `gorm:"column:updated_at;not null"`
 }
-
-// ForPerson is intentional Foundation behavior, not generated boilerplate.
-func (contact Contact) ForPerson(gid GID, createdAt time.Time, updatedAt time.Time) Contact {
-	contact.PersonGID = gid
- if contact.CreatedAt.IsZero() { contact.CreatedAt = createdAt }
- contact.UpdatedAt = updatedAt
- return contact
-}
