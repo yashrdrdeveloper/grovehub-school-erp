@@ -88,6 +88,13 @@ if [[ "${ready}" != 1 ]]; then
   printf '%s\n' "${digest}" >"${state_file}"
 fi
 
+# Generate typed HTTP registrations from @Routes and @GET/@POST/etc
+# in controller contracts. The router writes only to service-local .generated/.
+(
+  cd -- "${BACKEND_DIR}"
+  go run ./libs/core/annotation/generation/routes "${BACKEND_DIR}"
+)
+
 # The overlay manifest is recreated even when the source fingerprint is unchanged.
 # This ensures normal Go builds see virtual files under the original entity package.
 (
