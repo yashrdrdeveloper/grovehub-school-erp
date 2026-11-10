@@ -9,6 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	messagingclient "grovehub/services/infrastructure/client"
+ integrationconfig "grovehub/services/integration/config"
 	"grovehub/services/integration/entity"
 	mailboxevents "grovehub/services/integration/events/connections/mailbox"
 	providerimpl "grovehub/services/integration/providers/impl"
@@ -83,7 +84,7 @@ var _ = Describe("Provider push event ownership", func() {
 		messaging := &messagingFake{}
 		service, err := integrationimpl.NewConnectionService(
 			&connectionRepositoryFake{}, &watchRepositoryFake{},
-			registry, providerimpl.NewActionRegistry(), providerimpl.NewOAuthRegistry(), nil, nil, nil, "projects/test/topics/gmail", messaging,
+			registry, providerimpl.NewActionRegistry(), providerimpl.NewOAuthRegistry(), gmail.NewClient(integrationconfig.Gmail{}), nil, nil, "projects/test/topics/gmail", messaging,
 		)
 		Expect(err).NotTo(HaveOccurred())
 		err = service.ProcessPush(context.Background(), gmail.PushNotification{
