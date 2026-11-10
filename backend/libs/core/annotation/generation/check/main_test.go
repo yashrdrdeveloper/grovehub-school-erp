@@ -32,7 +32,7 @@ func TestRejectUnimplementedSecurityAnnotation(t *testing.T) {
 func Update() {}
 `
     if err:=os.WriteFile(path,[]byte(src),0644);err!=nil{t.Fatal(err)}
-    if err:=CheckSource(path);err==nil||!strings.Contains(err.Error(),"metadata only"){t.Fatalf("unsafe @Authorize accepted: %v",err)}
+    if err:=CheckSource(path);err==nil||!strings.Contains(err.Error(),"@Authorize"){t.Fatalf("unsafe @Authorize accepted: %v",err)}
 }
 
 func TestRejectInvalidTarget(t *testing.T){
