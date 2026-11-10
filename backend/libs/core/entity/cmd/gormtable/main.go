@@ -37,7 +37,7 @@ func generate(dir string)error {
   for _,decl:=range file.Decls {
    switch d:=decl.(type) {
    case *ast.FuncDecl:
-    if d.Name.Name!="TableName"||len(d.Recv.List)!=1 {continue}
+    if d.Name.Name!="TableName"||d.Recv==nil||len(d.Recv.List)!=1 {continue}
     recv:=d.Recv.List[0].Type
     if ptr,ok:=recv.(*ast.StarExpr);ok {recv=ptr.X}
     if id,ok:=recv.(*ast.Ident);ok {existing[id.Name]=true}
