@@ -46,6 +46,12 @@ log_info "Generating strict DTO mappers"
   go run ./libs/core/annotation/generation/mappers "${BACKEND_DIR}"
 )
 
+log_info "Generating domain-owned event schema identifiers"
+(
+  cd -- "${BACKEND_DIR}"
+  go run ./libs/core/annotation/generation/events "${BACKEND_DIR}"
+)
+
 log_info "Generating consolidated Go source overlay"
 (
   cd -- "${BACKEND_DIR}"
