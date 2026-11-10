@@ -104,7 +104,7 @@ func (service *AccountService) publishCreated(ctx context.Context, account entit
 			ctx,
 			"failed to publish identity account created event",
 			"eventId", eventID,
-			"accountId", string(account.GetAccountId()),
+			"accountId", string(account.AccountId),
 			"error", err,
 		)
 	}

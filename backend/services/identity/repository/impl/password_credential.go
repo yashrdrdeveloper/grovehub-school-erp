@@ -53,10 +53,10 @@ func (repository *PasswordCredentialRepository) Update(
 	ctx context.Context,
 	credential entity.PasswordCredential,
 ) error {
-	expectedVersion := credential.GetVersion() - 1
+	expectedVersion := credential.Version - 1
 	result := coretransaction.Database(ctx, repository.db).
 		Model(&entity.PasswordCredential{}).
-		Where(&entity.PasswordCredential{AccountId: credential.GetAccountId()}).
+		Where(&entity.PasswordCredential{AccountId: credential.AccountId}).
 		Where("version = ?", expectedVersion).
 		Select("PasswordHash", "PasswordChangedAt", "Version", "UpdatedAt").
 		Updates(&credential)

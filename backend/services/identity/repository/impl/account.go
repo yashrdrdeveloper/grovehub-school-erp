@@ -85,10 +85,10 @@ func (repository *AccountRepository) FindByRegistrationIdempotencyKey(
 }
 
 func (repository *AccountRepository) Update(ctx context.Context, account entity.Account) error {
-	expectedVersion := account.GetVersion() - 1
+	expectedVersion := account.Version - 1
 	result := coretransaction.Database(ctx, repository.db).
 		Model(&entity.Account{}).
-		Where(&entity.Account{AccountId: account.GetAccountId()}).
+		Where(&entity.Account{AccountId: account.AccountId}).
 		Where("version = ?", expectedVersion).
 		Select("Email", "Phone", "Status", "Version", "UpdatedAt").
 		Updates(&account)

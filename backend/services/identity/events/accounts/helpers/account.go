@@ -14,13 +14,13 @@ func BuildCreated(ctx context.Context, eventID string, account entity.Account) c
         EventID:     eventID,
         EventType:   accountevents.CreatedType,
         Version:     accountevents.CreatedVersion,
-        AggregateID: string(account.GetAccountId()),
-        OccurredAt:  account.GetCreatedAt(),
+        AggregateID: string(account.AccountId),
+        OccurredAt:  account.CreatedAt,
     }, accountevents.Created{
-        AccountID: string(account.GetAccountId()),
-        PersonGID: string(account.GetPersonGid()),
-        Status:    string(account.GetStatus()),
-        Version:   account.GetVersion(),
+        AccountID: string(account.AccountId),
+        PersonGID: string(account.PersonGid),
+        Status:    string(account.Status),
+        Version:   account.Version,
     })
 }
 

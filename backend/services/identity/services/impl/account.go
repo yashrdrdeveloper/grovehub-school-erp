@@ -11,6 +11,7 @@ import (
 	"grovehub/services/identity/entity"
 	identityrepository "grovehub/services/identity/repository"
 	identityservices "grovehub/services/identity/services"
+	servicehelpers "grovehub/services/identity/services/helpers"
 	identityvalidators "grovehub/services/identity/validators"
 )
 
@@ -52,23 +53,11 @@ func (service *AccountService) Create(
 	}
 
 	now := time.Now().UTC()
-	account := entity.NewAccount(
-		entity.AccountId(accountIdValue),
-		entity.PersonGid(validatedInput.PersonGid),
-		validatedInput.Email,
-		validatedInput.Phone,
-		entity.AccountStatusActive,
-		1,
-		now,
-		now,
-	).SetRegistrationIdempotency(
-		validatedInput.RegistrationIdempotencyKey,
-		validatedInput.RegistrationRequestHash,
-	)
+	account := servicehelpers.NewAccount(entity.AccountId(accountIdValue), validatedInput, now)
 
 	if err := service.repository.Create(ctx, account); err != nil {
 		if errors.Is(err, identityrepository.ErrAccountPersonAlreadyExists) {
-			existing, readErr := service.repository.FindByPersonGid(ctx, account.GetPersonGid())
+			existing, readErr := service.repository.FindByPersonGid(ctx, account.PersonGid)
 			if readErr == nil && accountMatchesCreateInput(existing, validatedInput) {
 				return existing, false, nil
 			}
@@ -142,7 +131,8 @@ func (service *AccountService) Update(
 	if !changed {
 		return account, nil
 	}
-	updatedAccount = updatedAccount.SetVersion(account.GetVersion() + 1).SetUpdatedAt(time.Now().UTC())
+	updatedAccount.Version = account.Version + 1
+	updatedAccount.UpdatedAt = time.Now().UTC()
 	if err := service.repository.Update(ctx, updatedAccount); err != nil {
 		if errors.Is(err, identityrepository.ErrAccountVersionConflict) {
 			latest, readErr := service.GetById(ctx, accountId)
@@ -164,19 +154,20 @@ func (service *AccountService) Deactivate(ctx context.Context, accountId string)
 	if err != nil {
 		return entity.Account{}, err
 	}
-	if account.GetStatus() == entity.AccountStatusDeactivated {
+	if account.Status == entity.AccountStatusDeactivated {
 		return account, nil
 	}
-	updatedAccount := account.SetStatus(entity.AccountStatusDeactivated).
-		SetVersion(account.GetVersion() + 1).
-		SetUpdatedAt(time.Now().UTC())
+	updatedAccount := account
+	updatedAccount.Status = entity.AccountStatusDeactivated
+	updatedAccount.Version = account.Version + 1
+	updatedAccount.UpdatedAt = time.Now().UTC()
 	if err := service.repository.Update(ctx, updatedAccount); err != nil {
 		if errors.Is(err, identityrepository.ErrAccountVersionConflict) {
 			latest, readErr := service.GetById(ctx, accountId)
 			if readErr != nil {
 				return entity.Account{}, readErr
 			}
-			if latest.GetStatus() == entity.AccountStatusDeactivated {
+			if latest.Status == entity.AccountStatusDeactivated {
 				return latest, nil
 			}
 		}
@@ -212,24 +203,24 @@ func (service *AccountService) readAccount(account entity.Account, err error) (e
 func applyAccountUpdate(account entity.Account, input identityservices.UpdateAccountInput) (entity.Account, bool) {
 	updatedAccount := account
 	changed := false
-	if input.Email != nil && *input.Email != account.GetEmail() {
-		updatedAccount = updatedAccount.SetEmail(*input.Email)
+	if input.Email != nil && *input.Email != account.Email {
+		updatedAccount.Email = *input.Email
 		changed = true
 	}
-	if input.Phone != nil && *input.Phone != account.GetPhone() {
-		updatedAccount = updatedAccount.SetPhone(*input.Phone)
+	if input.Phone != nil && *input.Phone != servicehelpers.NullableString(account.Phone) {
+		updatedAccount.Phone = servicehelpers.OptionalString(*input.Phone)
 		changed = true
 	}
 	return updatedAccount, changed
 }
 
 func accountMatchesCreateInput(account entity.Account, input identityservices.CreateAccountInput) bool {
-	return string(account.GetPersonGid()) == input.PersonGid &&
-		account.GetEmail() == input.Email &&
-		account.GetPhone() == input.Phone &&
-		account.GetRegistrationIdempotencyKey() == input.RegistrationIdempotencyKey &&
-		account.GetRegistrationRequestHash() == input.RegistrationRequestHash &&
-		account.GetStatus() == entity.AccountStatusActive
+	return string(account.PersonGid) == input.PersonGid &&
+		account.Email == input.Email &&
+		servicehelpers.NullableString(account.Phone) == input.Phone &&
+		servicehelpers.NullableString(account.RegistrationIdempotencyKey) == input.RegistrationIdempotencyKey &&
+		servicehelpers.NullableString(account.RegistrationRequestHash) == input.RegistrationRequestHash &&
+		account.Status == entity.AccountStatusActive
 }
 
 func mapAccountWriteError(err error, fallback coreerrors.Definition) error {

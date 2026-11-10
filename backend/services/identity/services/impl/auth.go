@@ -88,10 +88,10 @@ func (service *AuthService) register(
     requestHash string,
 ) (identityresponse.Register, error) {
 	if account, readErr := service.accountService.GetByRegistrationIdempotencyKey(ctx, idempotencyKey); readErr == nil {
-		if account.GetRegistrationRequestHash() != requestHash {
+		if servicehelpers.NullableString(account.RegistrationRequestHash) != requestHash {
 			return identityresponse.Register{}, coreerrors.NewError(identityerror.RegistrationIdempotencyConflict)
 		}
-		if err := service.passwordCredentialService.Set(ctx, string(account.GetAccountId()), validated.Password); err != nil {
+		if err := service.passwordCredentialService.Set(ctx, string(account.AccountId), validated.Password); err != nil {
 			return identityresponse.Register{}, servicehelpers.MapAuthDependencyError(err)
 		}
 		return service.mapper.ToRegisterResponse(account), nil
@@ -130,7 +130,7 @@ func (service *AuthService) register(
 		return identityresponse.Register{}, servicehelpers.MapAuthDependencyError(err)
 	}
 
-	accountId := string(account.GetAccountId())
+	accountId := string(account.AccountId)
 	if err := service.passwordCredentialService.Set(ctx, accountId, validated.Password); err != nil {
 		return identityresponse.Register{}, servicehelpers.MapAuthDependencyError(err)
 	}

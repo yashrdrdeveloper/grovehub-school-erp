@@ -45,7 +45,7 @@ func (service *PasswordCredentialService) Set(ctx context.Context, accountId str
 		return coreerrors.Wrap(identityerror.PasswordCredentialCreateFailed, err)
 	}
 	now := time.Now().UTC()
-	credential = entity.NewPasswordCredential(validatedAccountId, passwordHash, now, 1, now, now)
+	credential = servicehelpers.NewPasswordCredential(validatedAccountId, passwordHash, now)
 	if err := service.repository.Create(ctx, credential); err != nil {
 		if errors.Is(err, identityrepository.ErrPasswordCredentialAlreadyExists) {
 			existing, readErr := service.repository.FindByAccountId(ctx, validatedAccountId)
@@ -68,7 +68,7 @@ func (service *PasswordCredentialService) Verify(ctx context.Context, accountId 
 	if err != nil {
 		return false, err
 	}
-	verified, err := servicehelpers.VerifyPassword(password, credential.GetPasswordHash())
+	verified, err := servicehelpers.VerifyPassword(password, credential.PasswordHash)
 	if err != nil {
 		return false, coreerrors.Wrap(identityerror.PasswordCredentialVerifyFailed, err)
 	}
@@ -85,7 +85,7 @@ func (service *PasswordCredentialService) Replace(ctx context.Context, accountId
 		return err
 	}
 
-	verified, err := servicehelpers.VerifyPassword(password, credential.GetPasswordHash())
+	verified, err := servicehelpers.VerifyPassword(password, credential.PasswordHash)
 	if err != nil {
 		return coreerrors.Wrap(identityerror.PasswordCredentialVerifyFailed, err)
 	}
@@ -98,17 +98,18 @@ func (service *PasswordCredentialService) Replace(ctx context.Context, accountId
 		return coreerrors.Wrap(identityerror.PasswordCredentialUpdateFailed, err)
 	}
 	now := time.Now().UTC()
-	updatedCredential := credential.SetPasswordHash(passwordHash).
-		SetPasswordChangedAt(now).
-		SetVersion(credential.GetVersion() + 1).
-		SetUpdatedAt(now)
+	updatedCredential := credential
+	updatedCredential.PasswordHash = passwordHash
+	updatedCredential.PasswordChangedAt = now
+	updatedCredential.Version = credential.Version + 1
+	updatedCredential.UpdatedAt = now
 	if err := service.repository.Update(ctx, updatedCredential); err != nil {
 		if errors.Is(err, identityrepository.ErrPasswordCredentialVersionConflict) {
 			latest, readErr := service.repository.FindByAccountId(ctx, validatedAccountId)
 			if readErr != nil {
 				return mapPasswordCredentialWriteError(readErr, identityerror.PasswordCredentialUpdateFailed)
 			}
-			verified, verifyErr := servicehelpers.VerifyPassword(password, latest.GetPasswordHash())
+			verified, verifyErr := servicehelpers.VerifyPassword(password, latest.PasswordHash)
 			if verifyErr != nil {
 				return coreerrors.Wrap(identityerror.PasswordCredentialVerifyFailed, verifyErr)
 			}
@@ -122,7 +123,7 @@ func (service *PasswordCredentialService) Replace(ctx context.Context, accountId
 }
 
 func (service *PasswordCredentialService) ensureSamePassword(password string, credential entity.PasswordCredential) error {
-	verified, err := servicehelpers.VerifyPassword(password, credential.GetPasswordHash())
+	verified, err := servicehelpers.VerifyPassword(password, credential.PasswordHash)
 	if err != nil {
 		return coreerrors.Wrap(identityerror.PasswordCredentialVerifyFailed, err)
 	}
