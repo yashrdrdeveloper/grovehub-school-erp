@@ -3,7 +3,6 @@ package entity
 import (
 	"time"
 
-	coreentity "grovehub/libs/core/entity"
 )
 
 type ContactType string
@@ -30,11 +29,8 @@ type Contact struct {
 
 // ForPerson is intentional Foundation behavior, not generated boilerplate.
 func (contact Contact) ForPerson(gid GID, createdAt time.Time, updatedAt time.Time) Contact {
-	return coreentity.From(contact).With(func(value *Contact) {
-		value.PersonGID = gid
-		if value.CreatedAt.IsZero() {
-			value.CreatedAt = createdAt
-		}
-		value.UpdatedAt = updatedAt
-	}).Build()
+	contact.PersonGID = gid
+ if contact.CreatedAt.IsZero() { contact.CreatedAt = createdAt }
+ contact.UpdatedAt = updatedAt
+ return contact
 }
