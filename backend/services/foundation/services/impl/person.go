@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	coreentity "grovehub/libs/core/entity"
 	coreerrors "grovehub/libs/core/errors"
 	coreid "grovehub/libs/core/id"
 	coreidempotency "grovehub/libs/core/idempotency"
@@ -84,17 +85,20 @@ func (service *PersonService) Create(
 	}
 	gid := entity.GID(gidValue)
 	now := time.Now().UTC()
-	person := entity.NewPerson(
-		gid,
-		validatedRequest.FirstName,
-		validatedRequest.MiddleName,
-		validatedRequest.LastName,
-		contacts,
-		entity.PersonStatusActive,
-		1,
-		now,
-		now,
-	)
+	person := coreentity.New[entity.Person]().With(func(value *entity.Person) {
+        value.GID = gid
+        value.FirstName = validatedRequest.FirstName
+        if validatedRequest.MiddleName != "" {
+            middleName := validatedRequest.MiddleName
+            value.MiddleName = &middleName
+        }
+        value.LastName = validatedRequest.LastName
+        value.Contacts = append([]entity.Contact(nil), contacts...)
+        value.Status = entity.PersonStatusActive
+        value.Version = 1
+        value.CreatedAt = now
+        value.UpdatedAt = now
+    }).Build()
 	if idempotencyKey != "" {
 		person.CreateIdempotencyKey = &idempotencyKey
 		person.CreateRequestHash = &requestHash
