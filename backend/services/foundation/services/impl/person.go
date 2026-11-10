@@ -55,12 +55,12 @@ func (service *PersonService) Create(
 		if err != nil {
 			return foundationresponse.Person{}, false, coreerrors.Wrap(personerror.PersonCreateFailed, err)
 		}
-		existing, readErr := service.repository.FindByCreateIdempotencyKey(ctx, idempotencyKey)
+		existing, existingContacts, readErr := service.repository.FindByCreateIdempotencyKey(ctx, idempotencyKey)
 		if readErr == nil {
-			if servicehelpers.NullableString(existing.CreateRequestHash) != requestHash {
+			if servicehelpers.NullableString(existing.RequestHash) != requestHash {
 				return foundationresponse.Person{}, false, coreerrors.NewError(personerror.PersonIdempotencyConflict)
 			}
-			return service.mapper.ToPersonResponse(existing), false, nil
+			return service.mapper.ToPersonResponse(existing, existingContacts), false, nil
 		}
 		if !errors.Is(readErr, foundationrepository.ErrPersonNotFound) {
 			return foundationresponse.Person{}, false, coreerrors.Wrap(personerror.PersonReadFailed, readErr)
@@ -70,10 +70,10 @@ func (service *PersonService) Create(
 		return foundationresponse.Person{}, false, coreerrors.NewError(personerror.InvalidPersonIdempotencyKey)
 	}
 
-	existingPerson, found, err := service.findExistingPersonByContacts(ctx, contacts)
+	existingPerson, existingContacts, found, err := service.findExistingPersonByContacts(ctx, contacts)
 	if err != nil || found {
 		if found {
-			return service.mapper.ToPersonResponse(existingPerson), false, nil
+			return service.mapper.ToPersonResponse(existingPerson, existingContacts), false, nil
 		}
 		return foundationresponse.Person{}, false, err
 	}
@@ -84,23 +84,23 @@ func (service *PersonService) Create(
 	}
 	gid := gidValue
 	now := time.Now().UTC()
-	person := servicehelpers.NewPerson(gid, validatedRequest, contacts, now)
+	person := servicehelpers.NewPerson(gid, validatedRequest, now)
 	if idempotencyKey != "" {
-		person.CreateIdempotencyKey = &idempotencyKey
-		person.CreateRequestHash = &requestHash
+		person.IdempotencyKey = &idempotencyKey
+		person.RequestHash = &requestHash
 	}
 
-	person = servicehelpers.AssociateContacts(person)
-	if err := service.repository.Create(ctx, person); err != nil {
+	contacts = servicehelpers.AssociateContacts(person, contacts)
+	if err := service.repository.Create(ctx, person, contacts); err != nil {
 		if errors.Is(err, foundationrepository.ErrPersonIdempotencyKeyAlreadyExists) {
-			existing, readErr := service.repository.FindByCreateIdempotencyKey(ctx, idempotencyKey)
+			existing, existingContacts, readErr := service.repository.FindByCreateIdempotencyKey(ctx, idempotencyKey)
 			if readErr != nil {
 				return foundationresponse.Person{}, false, coreerrors.Wrap(personerror.PersonReadFailed, readErr)
 			}
-			if servicehelpers.NullableString(existing.CreateRequestHash) != requestHash {
+			if servicehelpers.NullableString(existing.RequestHash) != requestHash {
 				return foundationresponse.Person{}, false, coreerrors.NewError(personerror.PersonIdempotencyConflict)
 			}
-			return service.mapper.ToPersonResponse(existing), false, nil
+			return service.mapper.ToPersonResponse(existing, existingContacts), false, nil
 		}
 		if errors.Is(err, foundationrepository.ErrPersonContactAlreadyExists) {
 			return service.resolveConcurrentCreate(ctx, contacts)
@@ -111,19 +111,21 @@ func (service *PersonService) Create(
 			service.mapper.ToPersonErrorMetadata(gid),
 		)
 	}
-	return service.mapper.ToPersonResponse(person), true, nil
+	return service.mapper.ToPersonResponse(person, contacts), true, nil
 }
+
 
 func (service *PersonService) GetByGID(
 	ctx context.Context,
 	request foundationrequest.PersonByGID,
 ) (foundationresponse.Person, error) {
-	person, err := service.getPersonByGID(ctx, service.mapper.ToPersonGID(request))
+	person, contacts, err := service.getPersonByGID(ctx, service.mapper.ToPersonGID(request))
 	if err != nil {
 		return foundationresponse.Person{}, err
 	}
-	return service.mapper.ToPersonResponse(person), nil
+	return service.mapper.ToPersonResponse(person, contacts), nil
 }
+
 
 func (service *PersonService) Update(
 	ctx context.Context,
@@ -131,7 +133,7 @@ func (service *PersonService) Update(
 	request foundationrequest.UpdatePerson,
 ) (foundationresponse.Person, error) {
 	gid := service.mapper.ToPersonGID(personRequest)
-	person, err := service.getPersonByGID(ctx, gid)
+	person, contacts, err := service.getPersonByGID(ctx, gid)
 	if err != nil {
 		return foundationresponse.Person{}, err
 	}
@@ -139,34 +141,35 @@ func (service *PersonService) Update(
 	if err != nil {
 		return foundationresponse.Person{}, err
 	}
-	updatedPerson, changed, err := service.applyPersonUpdate(ctx, person, validatedRequest)
+	updatedPerson, updatedContacts, changed, err := service.applyPersonUpdate(ctx, person, contacts, validatedRequest)
 	if err != nil {
 		return foundationresponse.Person{}, err
 	}
 	if !changed {
-		return service.mapper.ToPersonResponse(person), nil
+		return service.mapper.ToPersonResponse(person, contacts), nil
 	}
 	updatedPerson.Version = person.Version + 1
 	updatedPerson.UpdatedAt = time.Now().UTC()
-	updatedPerson = servicehelpers.AssociateContacts(updatedPerson)
-	if err := service.repository.Update(ctx, updatedPerson); err != nil {
+	updatedContacts = servicehelpers.AssociateContacts(updatedPerson, updatedContacts)
+	if err := service.repository.Update(ctx, updatedPerson, updatedContacts); err != nil {
 		if errors.Is(err, foundationrepository.ErrPersonVersionConflict) {
-			latest, readErr := service.getPersonByGID(ctx, gid)
+			latest, latestContacts, readErr := service.getPersonByGID(ctx, gid)
 			if readErr != nil {
 				return foundationresponse.Person{}, readErr
 			}
-			_, stillChanged, reconcileErr := service.applyPersonUpdate(ctx, latest, validatedRequest)
+			_, _, stillChanged, reconcileErr := service.applyPersonUpdate(ctx, latest, latestContacts, validatedRequest)
 			if reconcileErr != nil {
 				return foundationresponse.Person{}, reconcileErr
 			}
 			if !stillChanged {
-				return service.mapper.ToPersonResponse(latest), nil
+				return service.mapper.ToPersonResponse(latest, latestContacts), nil
 			}
 		}
 		return foundationresponse.Person{}, service.mapUpdateError(gid, err)
 	}
-	return service.mapper.ToPersonResponse(updatedPerson), nil
+	return service.mapper.ToPersonResponse(updatedPerson, updatedContacts), nil
 }
+
 
 func (service *PersonService) Search(
 	ctx context.Context,
@@ -176,7 +179,7 @@ func (service *PersonService) Search(
 	if err != nil {
 		return coresearch.Result[foundationresponse.Person]{}, err
 	}
-	result, err := service.repository.Search(ctx, query)
+	result, contactsByGID, err := service.repository.Search(ctx, query)
 	if err != nil {
 		if errors.Is(err, coresearch.ErrInvalidQuery) {
 			return coresearch.Result[foundationresponse.Person]{}, coreerrors.NewError(personerror.InvalidPersonSearch)
@@ -185,7 +188,7 @@ func (service *PersonService) Search(
 	}
 	items := make([]foundationresponse.Person, 0, len(result.Items))
 	for _, person := range result.Items {
-		items = append(items, service.mapper.ToPersonResponse(person))
+		items = append(items, service.mapper.ToPersonResponse(person, contactsByGID[person.GID]))
 	}
 	nextCursor, err := buildNextCursor(result, query, cursorPayload)
 	if err != nil {
@@ -199,120 +202,122 @@ func (service *PersonService) Search(
 	}, nil
 }
 
+
 func (service *PersonService) Deactivate(
 	ctx context.Context,
 	request foundationrequest.PersonByGID,
 ) (foundationresponse.Person, error) {
 	gid := service.mapper.ToPersonGID(request)
-	person, err := service.getPersonByGID(ctx, gid)
+	person, contacts, err := service.getPersonByGID(ctx, gid)
 	if err != nil {
 		return foundationresponse.Person{}, err
 	}
 	if person.Status == entity.PersonStatusDeactivated {
-		return service.mapper.ToPersonResponse(person), nil
+		return service.mapper.ToPersonResponse(person, contacts), nil
 	}
 	updatedPerson := person
 	updatedPerson.Status = entity.PersonStatusDeactivated
 	updatedPerson.Version = person.Version + 1
 	updatedPerson.UpdatedAt = time.Now().UTC()
-	if err := service.repository.Update(ctx, updatedPerson); err != nil {
+	if err := service.repository.Update(ctx, updatedPerson, contacts); err != nil {
 		if errors.Is(err, foundationrepository.ErrPersonVersionConflict) {
-			latest, readErr := service.getPersonByGID(ctx, gid)
+			latest, latestContacts, readErr := service.getPersonByGID(ctx, gid)
 			if readErr != nil {
 				return foundationresponse.Person{}, readErr
 			}
 			if latest.Status == entity.PersonStatusDeactivated {
-				return service.mapper.ToPersonResponse(latest), nil
+				return service.mapper.ToPersonResponse(latest, latestContacts), nil
 			}
 		}
 		return foundationresponse.Person{}, service.mapUpdateError(gid, err)
 	}
-	return service.mapper.ToPersonResponse(updatedPerson), nil
+	return service.mapper.ToPersonResponse(updatedPerson, contacts), nil
 }
+
 
 func (service *PersonService) applyPersonUpdate(
 	ctx context.Context,
 	person entity.Person,
+	contacts []entity.Contact,
 	request foundationrequest.UpdatePerson,
-) (entity.Person, bool, error) {
+) (entity.Person, []entity.Contact, bool, error) {
 	updatedPerson := person
+	updatedContacts := servicehelpers.CopyContacts(contacts)
 	changed := false
-	nameUpdates := []struct {
-		value   *string
-		current string
-		apply   func(entity.Person, string) entity.Person
-	}{
-		{request.FirstName, person.FirstName, func(value entity.Person, name string) entity.Person { value.FirstName = name; return value }},
-		{request.MiddleName, servicehelpers.NullableString(person.MiddleName), func(value entity.Person, name string) entity.Person { value.MiddleName = servicehelpers.OptionalString(name); return value }},
-		{request.LastName, person.LastName, func(value entity.Person, name string) entity.Person { value.LastName = name; return value }},
+	if request.FirstName != nil && *request.FirstName != person.FirstName {
+		updatedPerson.FirstName = *request.FirstName
+		changed = true
 	}
-	for _, update := range nameUpdates {
-		if update.value == nil || *update.value == update.current {
-			continue
-		}
-		updatedPerson = update.apply(updatedPerson, *update.value)
+	if request.MiddleName != nil && *request.MiddleName != servicehelpers.NullableString(person.MiddleName) {
+		updatedPerson.MiddleName = servicehelpers.OptionalString(*request.MiddleName)
+		changed = true
+	}
+	if request.LastName != nil && *request.LastName != person.LastName {
+		updatedPerson.LastName = *request.LastName
 		changed = true
 	}
 	if request.Contacts == nil {
-		return updatedPerson, changed, nil
+		return updatedPerson, updatedContacts, changed, nil
 	}
-	contacts := servicehelpers.BuildContacts(*request.Contacts, person.Contacts)
-	if err := service.ensureContactsBelongToPerson(ctx, person.GID, contacts); err != nil {
-		return entity.Person{}, false, err
+	newContacts := servicehelpers.BuildContacts(*request.Contacts, contacts)
+	if err := service.ensureContactsBelongToPerson(ctx, person.GID, newContacts); err != nil {
+		return entity.Person{}, nil, false, err
 	}
-	if !servicehelpers.ContactsEqual(contacts, person.Contacts) {
-		updatedPerson.Contacts = servicehelpers.CopyContacts(contacts)
+	if !servicehelpers.ContactsEqual(newContacts, contacts) {
+		updatedContacts = servicehelpers.CopyContacts(newContacts)
 		changed = true
 	}
-	return updatedPerson, changed, nil
+	return updatedPerson, updatedContacts, changed, nil
 }
 
-func (service *PersonService) getPersonByGID(ctx context.Context, gid string) (entity.Person, error) {
+
+func (service *PersonService) getPersonByGID(ctx context.Context, gid string) (entity.Person, []entity.Contact, error) {
 	if err := service.validator.ValidateGID(gid); err != nil {
-		return entity.Person{}, coreerrors.NewErrorWithMetadata(
+		return entity.Person{}, nil, coreerrors.NewErrorWithMetadata(
 			personerror.InvalidPersonGID,
 			service.mapper.ToPersonErrorMetadata(gid),
 		)
 	}
-	person, err := service.repository.FindByGID(ctx, gid)
+	person, contacts, err := service.repository.FindByGID(ctx, gid)
 	if errors.Is(err, foundationrepository.ErrPersonNotFound) {
-		return entity.Person{}, coreerrors.NewErrorWithMetadata(
+		return entity.Person{}, nil, coreerrors.NewErrorWithMetadata(
 			personerror.PersonNotFound,
 			service.mapper.ToPersonErrorMetadata(gid),
 		)
 	}
 	if err != nil {
-		return entity.Person{}, coreerrors.WrapWithMetadata(
+		return entity.Person{}, nil, coreerrors.WrapWithMetadata(
 			personerror.PersonReadFailed,
 			err,
 			service.mapper.ToPersonErrorMetadata(gid),
 		)
 	}
-	return person, nil
+	return person, contacts, nil
 }
+
 
 func (service *PersonService) findExistingPersonByContacts(
 	ctx context.Context,
 	contacts []entity.Contact,
-) (entity.Person, bool, error) {
+) (entity.Person, []entity.Contact, bool, error) {
 	if len(contacts) == 0 {
-		return entity.Person{}, false, nil
+		return entity.Person{}, nil, false, nil
 	}
 	gids, err := service.repository.FindGIDsByContacts(ctx, contacts)
 	if err != nil {
-		return entity.Person{}, false, coreerrors.Wrap(personerror.PersonReadFailed, err)
+		return entity.Person{}, nil, false, coreerrors.Wrap(personerror.PersonReadFailed, err)
 	}
 	if len(gids) > 1 {
-		return entity.Person{}, false, coreerrors.NewError(personerror.PersonContactConflict)
+		return entity.Person{}, nil, false, coreerrors.NewError(personerror.PersonContactConflict)
 	}
 	if len(gids) == 0 {
-		return entity.Person{}, false, nil
+		return entity.Person{}, nil, false, nil
 	}
-	person, err := service.repository.FindByGID(ctx, gids[0])
+	person, storedContacts, err := service.repository.FindByGID(ctx, gids[0])
 	if err != nil {
-		return entity.Person{}, false, coreerrors.Wrap(personerror.PersonReadFailed, err)
+		return entity.Person{}, nil, false, coreerrors.Wrap(personerror.PersonReadFailed, err)
 	}
-	return person, true, nil
+	return person, storedContacts, true, nil
 }
 
 func (service *PersonService) ensureContactsBelongToPerson(
@@ -339,16 +344,17 @@ func (service *PersonService) ensureContactsBelongToPerson(
 	return nil
 }
 
+
 func (service *PersonService) resolveConcurrentCreate(
 	ctx context.Context,
 	contacts []entity.Contact,
 ) (foundationresponse.Person, bool, error) {
-	existingPerson, found, err := service.findExistingPersonByContacts(ctx, contacts)
+	existingPerson, existingContacts, found, err := service.findExistingPersonByContacts(ctx, contacts)
 	if err != nil {
 		return foundationresponse.Person{}, false, err
 	}
 	if found {
-		return service.mapper.ToPersonResponse(existingPerson), false, nil
+		return service.mapper.ToPersonResponse(existingPerson, existingContacts), false, nil
 	}
 	return foundationresponse.Person{}, false, coreerrors.NewError(personerror.PersonCreateFailed)
 }
