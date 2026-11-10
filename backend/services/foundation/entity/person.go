@@ -10,7 +10,7 @@ const (
 )
 
 // @Builder
-// @GroveTable foundation.persons
+// @Table foundation.persons
 type Person struct {
 	GID                  GID          `gorm:"column:gid;type:uuid;primaryKey"`
 	FirstName            string       `gorm:"column:first_name;not null"`
