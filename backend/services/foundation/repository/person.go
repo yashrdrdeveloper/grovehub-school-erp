@@ -17,13 +17,7 @@ type PersonRepository interface {
 	Create(ctx context.Context, person entity.Person) error
 	FindByGID(ctx context.Context, gid string) (entity.Person, error)
 	FindByIdempotencyKey(ctx context.Context, key string) (entity.Person, error)
-
-	/**
-	 * Search returns validated, cursor-paginated Person records.
-	 * Allowed filter and sort fields are specified in search.PersonConfig.
-	 */
+	Update(ctx context.Context, person entity.Person) error
 	// @Searchable config=search.PersonConfig alias=p
 	Search(ctx context.Context, query coresearch.Query[string]) (coresearch.QueryResult[entity.Person], error)
-
-	Update(ctx context.Context, person entity.Person) error
 }

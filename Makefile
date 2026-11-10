@@ -4,6 +4,7 @@ SHELL := /usr/bin/env bash
 
 SWAGGER_PORT ?= 8081
 FORMAT_SCOPE ?= all
+LINT_SCOPE ?= foundation-repository
 DB_SERVICE ?= all
 SANITY_SCOPE ?= ./tests/sanity/...
 export SWAGGER_PORT
@@ -12,7 +13,7 @@ export SWAGGER_PORT
 help:
 	@bash ./scripts/help.sh
 
-.PHONY: backend-setup backend-build backend-test backend-start backend-stop backend-status backend-dev backend-format
+.PHONY: backend-setup backend-build backend-test backend-start backend-stop backend-status backend-dev backend-format backend-lint
 backend-setup:
 	@bash ./scripts/backend/setup.sh
 
@@ -36,6 +37,9 @@ backend-dev:
 
 backend-format:
 	@bash ./scripts/backend/format.sh "$(FORMAT_SCOPE)"
+
+backend-lint:
+	@bash ./scripts/backend/format.sh "$(LINT_SCOPE)" --check
 
 .PHONY: db-schema-status db-schema-init db-schema-reset
 db-schema-status:

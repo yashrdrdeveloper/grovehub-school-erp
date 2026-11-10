@@ -18,10 +18,25 @@ case "${scope}" in
   foundation)
     path="${BACKEND_DIR}/services/foundation"
     ;;
+  foundation-repository)
+    path="${BACKEND_DIR}/services/foundation/repository"
+    ;;
   *)
-    die "Unsupported format scope: ${scope}. Expected all, foundation, or integration."
+    die "Unsupported format scope: ${scope}. Expected all, foundation, foundation-repository, or integration."
     ;;
 esac
 
-go run "${SCRIPT_DIR}/groovefmt/main.go" "${path}"
-log_info "Formatted Go code with GroveHub style under ${path}"
+mode="${2:-}"
+case "${mode}" in
+  --check)
+    go run "${SCRIPT_DIR}/groovefmt/main.go" -check "${path}"
+    log_info "GroveHub formatting lint passed under ${path}"
+    ;;
+  "")
+    go run "${SCRIPT_DIR}/groovefmt/main.go" "${path}"
+    log_info "Formatted Go code with GroveHub style under ${path}"
+    ;;
+  *)
+    die "Unsupported formatting mode: ${mode}"
+    ;;
+esac

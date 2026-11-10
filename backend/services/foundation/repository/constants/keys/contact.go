@@ -1,4 +1,4 @@
-package constants
+package keys
 
 // ContactTypeNormalizedValueUniqueConstraint prevents a normalized contact
 // from belonging to more than one Person.

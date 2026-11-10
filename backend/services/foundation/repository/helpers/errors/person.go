@@ -5,7 +5,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgconn"
 
-	repositoryconstants "grovehub/services/foundation/repository/constants"
+	repositorykeys "grovehub/services/foundation/repository/constants/keys"
 	repositoryerrors "grovehub/services/foundation/repository/constants/errors"
 )
 
@@ -16,7 +16,7 @@ func MapPersonWriteError(err error) error {
 	}
 	var postgresError *pgconn.PgError
 	if stderrors.As(err, &postgresError) && postgresError.Code == "23505" &&
-		postgresError.ConstraintName == repositoryconstants.PersonIdempotencyKeyUniqueConstraint {
+		postgresError.ConstraintName == repositorykeys.PersonIdempotencyKeyUniqueConstraint {
 		return repositoryerrors.ErrPersonIdempotencyKeyAlreadyExists
 	}
 	return err

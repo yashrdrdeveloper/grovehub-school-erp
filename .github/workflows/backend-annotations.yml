@@ -26,6 +26,8 @@ jobs:
         with:
           go-version: "1.27.3"
           cache-dependency-path: backend/go.sum
+      - name: Lint Foundation repository formatting and function signatures
+        run: make backend-lint
       - name: Compile the complete backend with generated annotations
         run: make backend-build
       - name: Verify annotation packages resolve after folder refactor

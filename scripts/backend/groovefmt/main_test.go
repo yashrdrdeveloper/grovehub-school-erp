@@ -104,3 +104,27 @@ func TestGeneratedFileUnchanged(t *testing.T) {
 		t.Fatal("generated file was modified")
 	}
 }
+
+func TestCheckFileEnforcesSingleLineSignaturesWithoutWriting(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "repository.go")
+	input := []byte("package repository\nfunc Find(\n ctx string,\n id string,\n) error { return nil }\n")
+	if err := os.WriteFile(path, input, 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := checkFile(path); err == nil {
+		t.Fatal("expected formatting lint to reject multiline signature")
+	}
+	unchanged, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(unchanged, input) {
+		t.Fatal("formatting lint must not modify source")
+	}
+	if err := formatFile(path); err != nil {
+		t.Fatal(err)
+	}
+	if err := checkFile(path); err != nil {
+		t.Fatalf("expected formatted source to pass lint: %v", err)
+	}
+}

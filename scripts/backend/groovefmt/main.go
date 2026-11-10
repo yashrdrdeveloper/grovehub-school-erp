@@ -26,11 +26,16 @@ type edit struct {
 }
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "usage: groovefmt <file-or-directory>...")
+	args := os.Args[1:]
+	check := len(args) > 0 && args[0] == "-check"
+	if check {
+		args = args[1:]
+	}
+	if len(args) == 0 {
+		fmt.Fprintln(os.Stderr, "usage: groovefmt [-check] <file-or-directory>...")
 		os.Exit(2)
 	}
-	for _, path := range os.Args[1:] {
+	for _, path := range args {
 		err := filepath.WalkDir(path, func(name string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return err
@@ -45,6 +50,9 @@ func main() {
 			if !strings.HasSuffix(name, ".go") {
 				return nil
 			}
+			if check {
+				return checkFile(name)
+			}
 			return formatFile(name)
 		})
 		if err != nil {
@@ -55,23 +63,9 @@ func main() {
 }
 
 func formatFile(path string) error {
-	original, err := os.ReadFile(path)
+	original, result, err := formattedFile(path)
 	if err != nil {
 		return err
-	}
-	if bytes.Contains(original, []byte("// Code generated")) && bytes.Contains(original, []byte("DO NOT EDIT")) {
-		return nil
-	}
-	formatted, err := format.Source(original)
-	if err != nil {
-		return fmt.Errorf("%s: gofmt: %w", path, err)
-	}
-	result, err := singleLineSignatures(formatted)
-	if err != nil {
-		return fmt.Errorf("%s: %w", path, err)
-	}
-	if _, err := parser.ParseFile(token.NewFileSet(), path, result, parser.AllErrors); err != nil {
-		return fmt.Errorf("%s: custom formatting: %w", path, err)
 	}
 	if bytes.Equal(original, result) {
 		return nil
@@ -81,6 +75,40 @@ func formatFile(path string) error {
 		return err
 	}
 	return os.WriteFile(path, result, info.Mode().Perm())
+}
+
+// checkFile validates formatting without modifying the file.
+func checkFile(path string) error {
+	original, result, err := formattedFile(path)
+	if err != nil {
+		return err
+	}
+	if !bytes.Equal(original, result) {
+		return fmt.Errorf("%s: GroveHub formatting mismatch; run make backend-format FORMAT_SCOPE=foundation-repository", path)
+	}
+	return nil
+}
+
+func formattedFile(path string) ([]byte, []byte, error) {
+	original, err := os.ReadFile(path)
+	if err != nil {
+		return nil, nil, err
+	}
+	if bytes.Contains(original, []byte("// Code generated")) && bytes.Contains(original, []byte("DO NOT EDIT")) {
+		return original, original, nil
+	}
+	formatted, err := format.Source(original)
+	if err != nil {
+		return nil, nil, fmt.Errorf("%s: gofmt: %w", path, err)
+	}
+	result, err := singleLineSignatures(formatted)
+	if err != nil {
+		return nil, nil, fmt.Errorf("%s: %w", path, err)
+	}
+	if _, err := parser.ParseFile(token.NewFileSet(), path, result, parser.AllErrors); err != nil {
+		return nil, nil, fmt.Errorf("%s: custom formatting: %w", path, err)
+	}
+	return original, result, nil
 }
 
 func singleLineSignatures(source []byte) ([]byte, error) {

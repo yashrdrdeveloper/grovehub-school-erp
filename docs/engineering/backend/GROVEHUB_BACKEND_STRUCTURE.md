@@ -286,8 +286,8 @@ repository/helpers/errors/{person,contact}.go
 repository/constants/errors/{person,contact}.go
     -> repository-specific sentinel errors
 
-repository/constants/{person,contact}.go
-    -> named PostgreSQL uniqueness constraint constants
+repository/constants/keys/{person,contact}.go
+    -> named PostgreSQL uniqueness constraint identifiers; keys/ may hold other named repository keys
 
 libs/core/database/transaction/unit_of_work.go
     -> shared UnitOfWork interface and constructor across all modules
@@ -330,7 +330,7 @@ For example, Foundation's denormalized `search_details` projection is calculated
 
 The repository boundary is persistence/query ownership.
 
-`repository/<resource>.go` contains the interface. `repository/constants/errors/<resource>.go` owns sentinel errors; `repository/helpers/errors/<resource>.go` owns PostgreSQL error translation; `repository/constants/<resource>.go` owns schema constraint identifiers.
+`repository/<resource>.go` contains the interface. `repository/constants/errors/<resource>.go` owns sentinel errors; `repository/helpers/errors/<resource>.go` owns PostgreSQL error translation; `repository/constants/keys/<resource>.go` owns schema constraint identifiers and other repository keys.
 
 `repository/impl/<resource>.go` owns:
 
@@ -347,6 +347,8 @@ For GORM-backed repositories, prefer GORM APIs for normal CRUD/query behavior. R
 Do not move persistence calculations into entities merely to avoid repository code.
 
 The shared `libs/core/database/transaction.UnitOfWork` coordinates aggregate writes; the repository implementation must not invent new domain business rules. The `repository/helpers/search/` package owns explicit resource-specific search mappings, while `core/search` provides generic execution.
+
+Foundation repository function and method signatures (including repository helpers) must be on one line, regardless of parameter count. Use `make backend-format FORMAT_SCOPE=foundation-repository` to apply GroveHub formatting; `make backend-lint` checks that scope without modifying files, and CI enforces the same rule.
 
 The repository public package path must not encode database technology. Consumers depend on `repository.PersonRepository`, not `repository/postgres` or a concrete GORM type.
 

@@ -26,10 +26,7 @@ func (repository *ContactRepository) FindByPersonGID(ctx context.Context, gid st
 	return contactsByGID[gid], err
 }
 
-func (repository *ContactRepository) FindByPersonGIDs(
-	ctx context.Context,
-	gids []string,
-) (map[string][]entity.Contact, error) {
+func (repository *ContactRepository) FindByPersonGIDs(ctx context.Context, gids []string) (map[string][]entity.Contact, error) {
 	contactsByGID := make(map[string][]entity.Contact, len(gids))
 	if len(gids) == 0 {
 		return contactsByGID, nil
@@ -47,10 +44,7 @@ func (repository *ContactRepository) FindByPersonGIDs(
 	return contactsByGID, nil
 }
 
-func (repository *ContactRepository) FindPersonGIDsByContacts(
-	ctx context.Context,
-	contacts []entity.Contact,
-) ([]string, error) {
+func (repository *ContactRepository) FindPersonGIDsByContacts(ctx context.Context, contacts []entity.Contact) ([]string, error) {
 	if len(contacts) == 0 {
 		return []string{}, nil
 	}
@@ -76,11 +70,7 @@ func (repository *ContactRepository) FindPersonGIDsByContacts(
 // ReplaceForPerson replaces the Person-owned child collection atomically.
 // It joins the outer PersonService transaction or creates its own transaction
 // when called without one, so primary-reset, upsert, and deletion never partially commit.
-func (repository *ContactRepository) ReplaceForPerson(
-	ctx context.Context,
-	gid string,
-	contacts []entity.Contact,
-) error {
+func (repository *ContactRepository) ReplaceForPerson(ctx context.Context, gid string, contacts []entity.Contact) error {
 	return coretransaction.Run(ctx, repository.db, func(txCtx context.Context) error {
 		db := coretransaction.Database(txCtx, repository.db)
 		if err := db.Model(&entity.Contact{}).
