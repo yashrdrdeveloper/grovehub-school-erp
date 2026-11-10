@@ -101,19 +101,21 @@ func generate(sourceDir,outputDir string) error {
 				typ,ok:=spec.Type.(*ast.StructType);if !ok{continue}
 				doc:=spec.Doc;if doc==nil{doc=group.Doc}
 				flags:=annotations(doc)
-				if !flags["Entity"]&&!flags["Builder"]&&!flags["Getter"]&&!flags["Setter"]{continue}
-				if isTableOnly(doc) {
+				// @Entity maps GORM tables only. Builder/getter/setter
+				// generation is reserved for explicit non-entity directives.
+				if flags["Entity"] {
 					if flags["Builder"]||flags["Getter"]||flags["Setter"] {
-						return fmt.Errorf("%s.%s: table-only @Entity cannot generate accessors/builders",src.name,spec.Name.Name)
+						return fmt.Errorf("%s.%s: @Entity cannot request builders or accessors",src.name,spec.Name.Name)
 					}
 					continue
 				}
+				if !flags["Builder"]&&!flags["Getter"]&&!flags["Setter"]{continue}
 
 				e:=entitySpec{
 					name:spec.Name.Name,
-					builder:flags["Entity"]||flags["Builder"],
-					getter:flags["Entity"]||flags["Getter"],
-					setter:flags["Entity"]||flags["Setter"],
+					builder:flags["Builder"],
+					getter:flags["Getter"],
+					setter:flags["Setter"],
 				}
 				for _,field:=range typ.Fields.List {
 					if len(field.Names)==0{return fmt.Errorf("%s.%s: embedded fields are not supported",src.name,e.name)}
@@ -214,11 +216,3 @@ func write(src sourceFile,output string)error {
 	return os.WriteFile(output,formatted,0644)
 }
 
-func isTableOnly(doc *ast.CommentGroup) bool {
-    if doc==nil{return false}
-    for _,comment:=range doc.List{
-        line:=strings.TrimSpace(strings.TrimPrefix(comment.Text,"//"))
-        if strings.HasPrefix(line,"@Entity ") && strings.HasSuffix(line," mode=table"){return true}
-    }
-    return false
-}

@@ -4,7 +4,7 @@ package entity
 import "grovehub/libs/core/annotation/contract"
 
 var UseCases = []contract.UseCase{
-    {Name:"Entity",Syntax:"@Entity schema.table [mode=table]",Category:"Entity, DTO and model lifecycle",Purpose:"Generate API-compatible entity builders, safe accessors and GORM TableName; mode=table omits builders/accessors for sensitive models",Mode:"GEN",Status:contract.Existing,Roadmap:"P0",Target:contract.TypeTarget},
+    {Name:"Entity",Syntax:"@Entity schema.table [mode=table]",Category:"Entity, DTO and model lifecycle",Purpose:"Generate GORM TableName only; entity structs remain passive and never receive implicit builders, getters, or setters",Mode:"GEN",Status:contract.Existing,Roadmap:"P0",Target:contract.TypeTarget},
     {Name:"Builder",Syntax:"@Builder",Category:"Entity, DTO and model lifecycle",Purpose:"Fluent typed builder; preserve field types and optional semantics",Mode:"GEN",Status:contract.Existing,Roadmap:"P0",Target:contract.TypeTarget},
     {Name:"Getter",Syntax:"@Getter",Category:"Entity, DTO and model lifecycle",Purpose:"Typed getter; suppress conflicting custom methods",Mode:"GEN",Status:contract.Existing,Roadmap:"P0",Target:contract.TypeTarget},
     {Name:"Setter",Syntax:"@Setter",Category:"Entity, DTO and model lifecycle",Purpose:"Mutable typed setter; never default for sensitive fields",Mode:"GEN",Status:contract.Existing,Roadmap:"P0",Target:contract.TypeTarget},

@@ -9,7 +9,7 @@ const (
 	PersonStatusDeactivated PersonStatus = "DEACTIVATED"
 )
 
-// @Entity foundation.persons
+// @Entity foundation.persons mode=table
 type Person struct {
 	GID                  GID          `gorm:"column:gid;type:uuid;primaryKey"`
 	FirstName            string       `gorm:"column:first_name;not null"`
@@ -23,92 +23,4 @@ type Person struct {
 	CreateRequestHash    *string      `gorm:"column:create_request_hash"`
 	CreatedAt            time.Time    `gorm:"column:created_at;not null"`
 	UpdatedAt            time.Time    `gorm:"column:updated_at;not null"`
-}
-
-// NewPerson preserves the existing constructor contract; new use cases may use NewPersonBuilder.
-func NewPerson(gid GID, firstName string, middleName string, lastName string, contacts []Contact, status PersonStatus, version int64, createdAt time.Time, updatedAt time.Time) Person {
- builder := NewPersonBuilder().
-    WithGID(gid).
-    WithFirstName(firstName).
-    WithMiddleName(optionalString(middleName)).
-    WithLastName(lastName).
-    WithContacts(copyContacts(contacts)).
-    WithStatus(status).
-    WithVersion(version).
-    WithCreatedAt(createdAt).
-    WithUpdatedAt(updatedAt)
- return builder.Build()
-}
-
-func (person Person) GetGID() GID          { return person.GID }
-func (person Person) GetFirstName() string { return person.FirstName }
-func (person Person) GetMiddleName() string {
-	if person.MiddleName == nil {
-		return ""
-	}
-	return *person.MiddleName
-}
-func (person Person) GetLastName() string     { return person.LastName }
-func (person Person) GetContacts() []Contact  { return copyContacts(person.Contacts) }
-func (person Person) GetStatus() PersonStatus { return person.Status }
-func (person Person) GetVersion() int64       { return person.Version }
-func (person Person) GetCreateIdempotencyKey() string {
-	if person.CreateIdempotencyKey == nil {
-		return ""
-	}
-	return *person.CreateIdempotencyKey
-}
-func (person Person) GetCreateRequestHash() string {
-	if person.CreateRequestHash == nil {
-		return ""
-	}
-	return *person.CreateRequestHash
-}
-func (person Person) GetCreatedAt() time.Time { return person.CreatedAt }
-func (person Person) GetUpdatedAt() time.Time { return person.UpdatedAt }
-
-func (person Person) SetFirstName(firstName string) Person {
-	person.FirstName = firstName
-	return person
-}
-func (person Person) SetMiddleName(middleName string) Person {
-	person.MiddleName = optionalString(middleName)
-	return person
-}
-func (person Person) SetLastName(lastName string) Person {
-	person.LastName = lastName
-	return person
-}
-func (person Person) SetContacts(contacts []Contact) Person {
-	person.Contacts = copyContacts(contacts)
-	return person
-}
-func (person Person) SetStatus(status PersonStatus) Person {
-	person.Status = status
-	return person
-}
-func (person Person) SetVersion(version int64) Person {
-	person.Version = version
-	return person
-}
-func (person Person) SetUpdatedAt(updatedAt time.Time) Person {
-	person.UpdatedAt = updatedAt
-	return person
-}
-
-
-func optionalString(value string) *string {
-	if value == "" {
-		return nil
-	}
-	return &value
-}
-
-func copyContacts(contacts []Contact) []Contact {
-	if len(contacts) == 0 {
-		return nil
-	}
-	copied := make([]Contact, len(contacts))
-	copy(copied, contacts)
-	return copied
 }
