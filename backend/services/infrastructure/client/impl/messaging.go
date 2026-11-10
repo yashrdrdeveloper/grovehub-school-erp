@@ -6,7 +6,7 @@ import (
 )
 
 // messagingClient preserves the public messaging facade.
-// @Client/@Proxy generates the technical forwarding methods.
+// Typed forwarding methods are generated from the client interface annotations.
 type messagingClient struct {
     service infrastructureservices.MessagingService
 }
