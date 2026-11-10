@@ -47,6 +47,12 @@ log_info "Generating annotated in-process client proxies"
   go run ./libs/core/annotation/generation/clients "${BACKEND_DIR}"
 )
 
+log_info "Generating annotated repository searches"
+(
+  cd -- "${BACKEND_DIR}"
+  go run ./libs/core/annotation/generation/search "${BACKEND_DIR}"
+)
+
 log_info "Generating strict DTO mappers"
 (
   cd -- "${BACKEND_DIR}"

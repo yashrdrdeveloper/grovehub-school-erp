@@ -21,6 +21,10 @@ type PersonRepository interface {
 	Create(ctx context.Context, person entity.Person) error
 	FindByGID(ctx context.Context, gid string) (entity.Person, error)
 	FindByIdempotencyKey(ctx context.Context, key string) (entity.Person, error)
+	// @Searchable impl=PersonRepository entity=Person config=personSearchConfig alias=p
+	// @Filterable fields=gid,firstName,middleName,lastName,status,createdAt,updatedAt,contacts.email,contacts.phone,contacts.primaryEmail,contacts.primaryPhone,contacts.verifiedEmail,contacts.verifiedPhone
+	// @Sortable fields=gid,firstName,lastName,createdAt,updatedAt
+	// @Cursor field=gid
 	Search(ctx context.Context, query coresearch.Query[string]) (coresearch.QueryResult[entity.Person], error)
 	Update(ctx context.Context, person entity.Person) error
 	Delete(ctx context.Context, gid string) error

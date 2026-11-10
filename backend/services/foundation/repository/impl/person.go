@@ -79,32 +79,6 @@ func (repository *PersonRepository) FindByIdempotencyKey(ctx context.Context, ke
 	return person, nil
 }
 
-func (repository *PersonRepository) Search(
-	ctx context.Context,
-	query coresearch.Query[string],
-) (coresearch.QueryResult[entity.Person], error) {
-	searchDB, err := coresearch.Apply(
-		coretransaction.Database(ctx, repository.db).
-			Model(&entity.Person{}).
-			Table(entity.Person{}.TableName()+" AS p").
-			Select("p.*"),
-		query,
-		personSearchConfig,
-	)
-	if err != nil {
-		return coresearch.QueryResult[entity.Person]{}, err
-	}
-	persons := make([]entity.Person, 0, query.Limit+1)
-	if err := searchDB.Find(&persons).Error; err != nil {
-		return coresearch.QueryResult[entity.Person]{}, err
-	}
-	hasNext := len(persons) > query.Limit
-	if hasNext {
-		persons = persons[:query.Limit]
-	}
-	return coresearch.QueryResult[entity.Person]{Items: persons, HasNext: hasNext}, nil
-}
-
 func (repository *PersonRepository) Update(ctx context.Context, person entity.Person) error {
 	expectedVersion := person.Version - 1
 	result := coretransaction.Database(ctx, repository.db).

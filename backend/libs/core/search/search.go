@@ -104,6 +104,24 @@ func Apply[TId any](db *gorm.DB, query Query[TId], config Config) (*gorm.DB, err
 	return db.Limit(query.Limit + 1), nil
 }
 
+// Execute shares the safe, parameterized search and keyset-pagination mechanics.
+// The repository supplies its own explicit model/table and allowlisted Config.
+func Execute[TId any, T any](db *gorm.DB, query Query[TId], config Config) (QueryResult[T], error) {
+	searchDB, err := Apply(db, query, config)
+	if err != nil {
+		return QueryResult[T]{}, err
+	}
+	items := make([]T, 0, query.Limit+1)
+	if err := searchDB.Find(&items).Error; err != nil {
+		return QueryResult[T]{}, err
+	}
+	hasNext := len(items) > query.Limit
+	if hasNext {
+		items = items[:query.Limit]
+	}
+	return QueryResult[T]{Items: items, HasNext: hasNext}, nil
+}
+
 func EncodeCursor(cursor CursorPayload) (string, error) {
 	return mappers.EncodeCursor(cursor)
 }

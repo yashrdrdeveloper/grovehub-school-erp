@@ -44,6 +44,7 @@ jobs:
           test -s backend/services/integration/.generated/routes/zz_routes.gen.go
           test -s backend/services/identity/.generated/mappers/impl/zz_mappers.gen.go
           test -s backend/services/foundation/.generated/mappers/impl/zz_mappers.gen.go
+          test -s backend/services/foundation/.generated/repository/impl/zz_search.gen.go
           test -s backend/services/identity/.generated/entity/zz_tables.gen.go
           test -s backend/services/integration/.generated/entity/zz_tables.gen.go
           test -s backend/services/foundation/.generated/events/persons/zz_events.gen.go
