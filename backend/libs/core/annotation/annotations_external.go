@@ -2,7 +2,7 @@
 package annotation
 
 var externalUseCases = []UseCase{
-    {Name:"Client",Syntax:"@Client",Category:"Typed HTTP clients, provider adapters and external services",Purpose:"Typed in-process or HTTP client descriptor / adapter",Mode:"GEN/REG",Status:Proposed,Roadmap:"P3",Target:InterfaceTarget},
+    {Name:"Client",Syntax:"@Client",Category:"Typed HTTP clients, provider adapters and external services",Purpose:"Typed in-process or HTTP client descriptor / adapter",Mode:"GEN/REG",Status:Pilot,Roadmap:"P3",Target:InterfaceTarget},
     {Name:"ExternalService",Syntax:"@ExternalService",Category:"Typed HTTP clients, provider adapters and external services",Purpose:"Explicit third-party boundary and provider ownership",Mode:"REG",Status:Proposed,Roadmap:"P5",Target:InterfaceTarget},
     {Name:"Provider",Syntax:"@Provider",Category:"Typed HTTP clients, provider adapters and external services",Purpose:"Provider identity, capabilities and factory registration",Mode:"REG",Status:Proposed,Roadmap:"P5",Target:InterfaceTarget},
     {Name:"Adapter",Syntax:"@Adapter",Category:"Typed HTTP clients, provider adapters and external services",Purpose:"Bind vendor implementation to stable provider interface",Mode:"REG",Status:Proposed,Roadmap:"P5",Target:InterfaceTarget},
