@@ -12,6 +12,7 @@ const (
 	AccountStatusDeactivated AccountStatus = "DEACTIVATED"
 )
 
+// @Entity identity.accounts mode=table
 type Account struct {
 	AccountId                  AccountId     `gorm:"column:account_id;type:uuid;primaryKey"`
 	RegistrationIdempotencyKey *string       `gorm:"column:registration_idempotency_key"`
@@ -25,7 +26,6 @@ type Account struct {
 	UpdatedAt                  time.Time     `gorm:"column:updated_at;not null"`
 }
 
-func (Account) TableName() string { return "identity.accounts" }
 
 func NewAccount(
 	accountId AccountId,
