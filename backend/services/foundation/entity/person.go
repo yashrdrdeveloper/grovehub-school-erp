@@ -32,17 +32,17 @@ type Person struct {
 
 // NewPerson preserves the existing constructor contract; new use cases may use coreentity.New[Person] directly.
 func NewPerson(gid GID, firstName string, middleName string, lastName string, contacts []Contact, status PersonStatus, version int64, createdAt time.Time, updatedAt time.Time) Person {
- return coreentity.New[Person]().With(func(person *Person) {
-  person.GID = gid
-  person.FirstName = firstName
-  person.MiddleName = optionalString(middleName)
-  person.LastName = lastName
-  person.Contacts = copyContacts(contacts)
-  person.Status = status
-  person.Version = version
-  person.CreatedAt = createdAt
-  person.UpdatedAt = updatedAt
- }).Build()
+ builder := NewPersonBuilder().
+    WithGID(gid).
+    WithFirstName(firstName).
+    WithMiddleName(optionalString(middleName)).
+    WithLastName(lastName).
+    WithContacts(copyContacts(contacts)).
+    WithStatus(status).
+    WithVersion(version).
+    WithCreatedAt(createdAt).
+    WithUpdatedAt(updatedAt)
+ return builder.Build()
 }
 
 func (person Person) GetGID() GID          { return person.GID }
