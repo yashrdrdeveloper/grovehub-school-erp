@@ -66,7 +66,7 @@ type AuthMapper interface {
 }
 
 func TestCurrentMappersIncludeExplicitRules(t *testing.T) {
-	backend:=filepath.Join("..","..","..","..","..","..")
+	backend:=filepath.Join("..","..","..","..","..")
 	for _,service:=range []string{"foundation","identity"} {
 		dir:=filepath.Join(backend,"services",service,"mappers")
 		m,found,err:=discover(backend,dir)
