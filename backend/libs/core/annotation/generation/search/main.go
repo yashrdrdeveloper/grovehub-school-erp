@@ -177,21 +177,21 @@ func resolveConfig(repositoryDir,service,reference string)(dir,importPath,alias,
 	if len(parts)!=2||!token.IsIdentifier(parts[0])||!token.IsIdentifier(parts[1]) {
 		return "","","","",fmt.Errorf("invalid @Searchable config %q",reference)
 	}
-	entries,err:=os.ReadDir(repositoryDir)
-	if err!=nil{return "","","","",err}
-	for _,entry:=range entries {
-		if !entry.IsDir() {continue}
-		candidate:=filepath.Join(repositoryDir,entry.Name())
+	// Repository-owned search configs may live in repository/search (legacy)
+	// or repository/helpers/search, keeping the annotation independent of folders.
+	candidates:=[]string{parts[0], filepath.Join("helpers",parts[0])}
+	for _,relative:=range candidates {
+		candidate:=filepath.Join(repositoryDir,relative)
 		files,err:=filepath.Glob(filepath.Join(candidate,"*.go"))
 		if err!=nil{return "","","","",err}
 		for _,f:=range files {
 			pkg,err:=parser.ParseFile(token.NewFileSet(),f,nil,parser.PackageClauseOnly)
 			if err!=nil{return "","","","",err}
 			if pkg.Name.Name!=parts[0] {continue}
-			return candidate,"grovehub/services/"+service+"/repository/"+entry.Name(),parts[0],parts[1],nil
+			return candidate,"grovehub/services/"+service+"/repository/"+filepath.ToSlash(relative),parts[0],parts[1],nil
 		}
 	}
-	return "","","","",fmt.Errorf("@Searchable config package %q not found under %s",parts[0],repositoryDir)
+	return "","","","",fmt.Errorf("@Searchable config package %q not found under %s or its helpers directory",parts[0],repositoryDir)
 }
 
 func fieldsFrom(group *ast.CommentGroup, name string) ([]string,error) {
