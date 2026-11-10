@@ -2,6 +2,7 @@ package entity
 
 import "time"
 
+// @Entity integration.connection_tests mode=table
 type ConnectionTest struct {
 	ID           string    `gorm:"column:id;type:uuid;primaryKey"`
 	ConnectionID string    `gorm:"column:connection_id;type:uuid;not null;index"`
@@ -12,4 +13,3 @@ type ConnectionTest struct {
 	CompletedAt  time.Time `gorm:"column:completed_at;not null"`
 }
 
-func (ConnectionTest) TableName() string { return "integration.connection_tests" }
