@@ -71,7 +71,8 @@ backend/
       .generated/routes/zz_routes.gen.go
   .generated/overlay.json             # generated Go -overlay manifest
 
-scripts/backend/generate-entities.sh   # entity -> routes -> overlay
+scripts/backend/generate-annotations.sh # entity -> routes -> clients -> overlay
+scripts/backend/generate-entities.sh    # compatibility wrapper
 scripts/backend/build.sh               # overlay-aware build
 scripts/backend/air-build.sh           # overlay-aware hot reload
 scripts/backend/test.sh                # overlay-aware go test
@@ -94,7 +95,7 @@ make sanity
 When invoking Go directly:
 
 ```bash
-bash scripts/backend/generate-entities.sh
+bash scripts/backend/generate-annotations.sh
 cd backend
 go build -overlay=.generated/overlay.json ./cmd/platform
 go test -vet=off -overlay=.generated/overlay.json ./...
