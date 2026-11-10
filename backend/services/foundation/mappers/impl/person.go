@@ -57,6 +57,3 @@ func (mapper *PersonMapper) ToPersonResponse(person entity.Person) foundationres
 	}
 }
 
-func (mapper *PersonMapper) ToPersonErrorMetadata(gid entity.GID) foundationresponse.PersonErrorMetadata {
-	return foundationresponse.PersonErrorMetadata{GID: string(gid)}
-}
