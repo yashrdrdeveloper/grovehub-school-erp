@@ -17,16 +17,22 @@
 
 | Area | Code moved or replaced | Annotation / API | Current limitation |
 | --- | --- | --- | --- |
-| Foundation HTTP routes | Replaced five manual mux entries with generated registrations | `@Routes`, `@POST`, `@GET`, `@PATCH` on `controller.PersonController` | Needs full clean-checkout build and runtime smoke test |
-| Identity HTTP routes | Replaced manual registration for `POST /auth/register` | `@Routes`, `@POST` | Needs auth registration HTTP regression test |
+| Foundation HTTP routes | Replaced five manual mux entries with generated registrations | `@Routes`, `@POST`, `@GET`, `@PATCH` | CI clean-checkout compilation verified; runtime smoke test pending |
+| Identity HTTP routes | Replaced manual registration for `POST /auth/register` | `@Routes`, `@POST` | CI compilation verified; auth registration HTTP regression pending |
 | Integration HTTP routes | Replaced 13 manual connection, webhook and provider route entries | `@Routes`, `@GET`, `@POST`, `@DELETE` on two controller interfaces | Needs OAuth callback, webhook, and ownership regression tests |
 | HTTP build tooling | New `generation/routes` tool, generalized overlay maps service-local generated package files | Go AST, `-overlay` | Gopls and standard direct Go invocations need explicit configuration |
-| Foundation, Integration and Infrastructure clients | 15 in-process forwarding methods now generated; constructors and injected service contracts remain maintained Go | `@Client` and `@Proxy` | Must verify all delegations compile and preserve context, signatures, auth boundaries |
+| Foundation, Integration and Infrastructure clients | Generated 15 typed in-process forwarding methods; maintained constructors and service contracts retained | `@Client`, `@Proxy` | CI compilation verified; runtime context and auth tests pending |
 | Integration config | Gmail and Outlook env parsing moved to typed tagged loader; preserved callback checks and error semantics | `@Configuration`, `env`, `required`, `default`, `secret` | `GmailPush` and encryption-key loaders remain explicit |
-| Foundation DTO validation | Create/update name trimming, notblank and rune-length limits moved to DTO tags and shared validator | `@Validator`, `normalize`, `validate` tags | Contact uniqueness/primary/search validation stays custom |
+| Foundation and Identity request validation | Foundation create/update name normalization and rune-length limits; Identity registration required-name/presence checks | `@Validator`, `normalize`, `validate` tags | Password/email/phone, contact, search, and domain rules remain explicit |
 | Test tooling | Added overlay-aware `make backend-test`; sanity tests prepare overlay | `go test -vet=off -overlay=...` | Go vet cannot automatically read non-existent virtual paths; see below |
+| Strict DTO projection | Identity registration response and Foundation Person error metadata generated; contact grouping remains custom | `@Mapper`, `@Mapping` | Explicit fields fail generation when destination gains unmapped fields |
+| GORM table-only entities | Removed manual `TableName()` methods for seven Identity/Integration models; no new credential setters | `@Entity ... mode=table` | CI compilation verified; DB schema unchanged |
+| Event identity declarations | Foundation Person changed, Identity Account created, Integration Mailbox changed topics/types/versions generated | `@Event` | Event publication timing, after-commit, error policies unchanged |
+| CI regression gate | GitHub Actions Go 1.27.3 binary compilation, generator tests and clean-checkout output checks | `.github/workflows/backend-annotations.yml` | Full live integration regression remains separate |
 
 The source retains service methods, service interfaces, client constructors, GORM repositories, domain event decorators, provider strategies, authentication decisions, and middleware behavior.
+
+**Generator change:** the upstream Gombok v1.2.0 formatter failed on clean-checkout staging. `generation/entities` now implements the previously committed builder/getter/setter signatures directly via the Go AST. The original `generation/expand` tool remains in-tree for compatibility but is no longer invoked by the build. Explicit Gombok-only directives such as `@AllArgsConstructor` are not yet implemented by the unified generator.
 
 ### Endpoint parity
 
@@ -48,9 +54,12 @@ backend/
     configuration/configuration.go    # typed env/default/required loader
     validation/validation.go          # DTO string/*string normalization and validation
     generation/
-      expand/                         # existing Foundation @Entity preprocessor
-      gormtable/                      # existing GORM table generator
-      routes/                         # NEW Go AST -> traced HTTP route generation
+      entities/                       # Gombok-compatible AST builder/accessor generator
+      gormtable/                      # @Entity TableName generator (full or table-only)
+      mappers/                        # exact-field DTO projection generator
+      events/                         # versioned topic/type constant generator
+      routes/                         # Go AST -> traced HTTP route generation
+      clients/                        # typed @Client/@Proxy delegation
       overlay/                        # expanded to all service-local generated packages
   services/
     foundation/
@@ -71,7 +80,7 @@ backend/
       .generated/routes/zz_routes.gen.go
   .generated/overlay.json             # generated Go -overlay manifest
 
-scripts/backend/generate-annotations.sh # entity -> routes -> clients -> overlay
+scripts/backend/generate-annotations.sh # entity -> tables -> routes -> clients -> mappers -> events -> overlay
 scripts/backend/generate-entities.sh    # compatibility wrapper
 scripts/backend/build.sh               # overlay-aware build
 scripts/backend/air-build.sh           # overlay-aware hot reload
@@ -107,19 +116,19 @@ go test -vet=off -overlay=.generated/overlay.json ./...
 
 - Source updates committed on the integration branch.
 - Pure generator test code and route parity expectations added; startup config and DTO validation unit tests added.
-- The full Go 1.27.x backend build, Ginkgo/Gomega suite, and HTTP/integration smoke tests **have not been executed** in this environment.
+- The **complete backend binary has compiled successfully** on GitHub Actions using Go **1.27.3** and the clean-checkout generation pipeline. Annotation unit tests and generators are CI-checked. The **full Ginkgo/Gomega suite and live database/NATS/HTTP integration smoke tests have not yet been executed**.
 - No claim of full runtime compatibility or 232 executable annotations is made.
 
 ## 5. Remaining backend migration work
 
 | Responsibility | Next safe migration | Required checks |
 | --- | --- | --- |
-| Entity/GORM models | Consider `@Entity` for Identity and Integration only after allowing safe accessor exclusions | No accidental credential/PII setters; schema/table parity |
-| Mapper/DTO | Typed MapStruct-style mapper with explicit nested/converter mappings | No secret export, exhaustive destination fields, error DTO semantics |
+| Entity/GORM models | Identity and Integration tables now use `@Entity schema.table mode=table`; remaining work is parity and migration tooling verification | No accidental credential/PII setters; GORM schema/table parity |
+| Mapper/DTO | Strict `@Mapper` generator active for Identity registration and Foundation error metadata; complex mappings remain handwritten | No secret export, exhaustive destination fields, error DTO semantics |
 | Validators | Extend field tag rules for email/phone/UUID, cross-field rules, PATCH presence | Preserve existing resource errors and normalization |
 | Clients | Pilot applied to Foundation, Integration and Infrastructure; extend only after compile tests | No authorization bypass, no signature drift |
 | Repositories | Opt-in CRUD, transaction and query contracts where safe | Preserve SQL/GORM, tenant boundaries, search, conflict mapping |
-| Events | Typed domain event descriptors and handlers | Keep `Envelope[T]`, event topics, idempotent/no-op semantics |
+| Events | `@Event` generates Foundation, Identity and Integration topic/type/version identifiers; event handlers and publishers remain explicit | Keep `Envelope[T]`, event topics, idempotent/no-op semantics |
 | Messaging | Producer/consumer registration descriptors | NATS/Watermill ack/retry/trace/backpressure semantics |
 | External services | Register provider Strategy/Factory/Adapter metadata | Gmail/Outlook OAuth, webhook and token safety |
 | HTTP middleware | Verified wrappers for authentication, authorization, limits, tracing | Stable ordering, no trust bypass |
@@ -142,3 +151,5 @@ These remain work items, **not implemented features**.
 8. Measure generation overhead, Air reload latency and config/validation performance before further migrations.
 
 **Do not proceed with automatic replacement of service, repository, messaging or security logic until these gates pass.**
+
+**Confirmed boundary:** `@Repository`, `@Service`, `@Consumer`, `@Authorize`, `@Transactional`, `@Retry`, `@Audit`, and most design-pattern annotations remain metadata-only, not effective runtime policy. No endpoint must rely on an inert annotation for protection.
