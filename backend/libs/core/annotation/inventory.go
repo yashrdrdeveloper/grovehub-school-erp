@@ -2,7 +2,7 @@
 // This file is the Phase 1 contract inventory, NOT runtime implementations.
 package annotation
 
-// inventory retains all 223 documented use cases, including repeated directives.
+// inventory retains all 226 documented use cases, including repeated directives.
 var inventory = []UseCase{
     {Name:"Entity",Syntax:"@Entity schema.table",Category:"Entity, DTO and model lifecycle",Purpose:"Gombok builder, safe accessors, GORM TableName; existing Foundation directive",Mode:"GEN",Status:Existing,Roadmap:"P0",Target:TypeTarget},
     {Name:"Builder",Syntax:"@Builder",Category:"Entity, DTO and model lifecycle",Purpose:"Fluent typed builder; preserve field types and optional semantics",Mode:"GEN",Status:Existing,Roadmap:"P0",Target:TypeTarget},
@@ -227,4 +227,7 @@ var inventory = []UseCase{
     {Name:"UploadLimit",Syntax:"@UploadLimit",Category:"Utilities, helpers, cache, concurrency and shared contracts",Purpose:"Enforce file request/storage limit",Mode:"WRAP",Status:Optional,Roadmap:"P8",Target:FunctionTarget},
     {Name:"Encrypt",Syntax:"@Encrypt",Category:"Utilities, helpers, cache, concurrency and shared contracts",Purpose:"Bounded encryption policy via core/crypto if added",Mode:"WRAP",Status:Optional,Roadmap:"P8",Target:FunctionTarget},
     {Name:"GenerateStringer",Syntax:"@GenerateStringer",Category:"Utilities, helpers, cache, concurrency and shared contracts",Purpose:"Typed enum stringer when needed",Mode:"GEN",Status:Optional,Roadmap:"P8",Target:FunctionTarget},
+    {Name:"UUID",Syntax:"@UUID",Category:"Validation, normalization and structured errors",Purpose:"Validate UUID syntax when any version is permitted; use @UUIDv7 when the domain requires v7",Mode:"TAG",Status:Optional,Roadmap:"P2",Target:FieldTarget},
+    {Name:"MappingIgnore",Syntax:"@MappingIgnore",Category:"Mappers and representation conversion",Purpose:"Discouraged legacy spelling; canonical directive is @MapIgnore, with no separate generator behavior",Mode:"CHECK",Status:Discouraged,Roadmap:"P2",Target:MethodTarget},
+    {Name:"Schema",Syntax:"@Schema",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"Typed DTO/OpenAPI schema metadata; verify against authoritative public OpenAPI contract",Mode:"CHECK/GEN",Status:Proposed,Roadmap:"P3",Target:TypeTarget},
 }
