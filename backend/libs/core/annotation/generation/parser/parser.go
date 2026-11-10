@@ -59,9 +59,22 @@ func ScanFile(path string) ([]Occurrence,error) {
                 if _,ok:=decl.Type.(*ast.InterfaceType);ok {target=annotation.InterfaceTarget}
                 targets[decl.Doc]=target
             }
+        case *ast.InterfaceType:
+            // Method declarations are represented by *ast.Field in Go's AST,
+            // but their annotation target is Method, not a struct field.
+            for _,method := range decl.Methods.List {
+                if len(method.Names)!=1 {continue}
+                if _,ok:=method.Type.(*ast.FuncType);!ok{continue}
+                if method.Doc!=nil {targets[method.Doc]=annotation.MethodTarget}
+                if method.Comment!=nil {targets[method.Comment]=annotation.MethodTarget}
+            }
         case *ast.Field:
-            if decl.Doc!=nil {targets[decl.Doc]=annotation.FieldTarget}
-            if decl.Comment!=nil {targets[decl.Comment]=annotation.FieldTarget}
+            if decl.Doc!=nil {
+                if _,seen:=targets[decl.Doc];!seen {targets[decl.Doc]=annotation.FieldTarget}
+            }
+            if decl.Comment!=nil {
+                if _,seen:=targets[decl.Comment];!seen {targets[decl.Comment]=annotation.FieldTarget}
+            }
         }
         return true
     })
