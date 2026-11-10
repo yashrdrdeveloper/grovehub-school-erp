@@ -102,6 +102,12 @@ fi
   go run ./libs/core/annotation/generation/clients "${BACKEND_DIR}"
 )
 
+# Generate explicitly annotated DTO projections; complex mappers remain handwritten.
+(
+  cd -- "${BACKEND_DIR}"
+  go run ./libs/core/annotation/generation/mappers "${BACKEND_DIR}"
+)
+
 # The overlay manifest is recreated even when the source fingerprint is unchanged.
 # This ensures normal Go builds see virtual files under the original entity package.
 (
