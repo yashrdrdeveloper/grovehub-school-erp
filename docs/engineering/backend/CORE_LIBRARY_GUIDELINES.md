@@ -403,38 +403,33 @@ YES capability tests aligned with capability ownership
 
 ## Entity declarations: unified @Entity and source overlays
 
-> **Phase 1 metadata registered; Phase 2 pilot migration underway:** The typed catalog, 23 GoF decisions and two-stage migration plan are in [ANNOTATION_FRAMEWORK_MASTER_PLAN.md](ANNOTATION_FRAMEWORK_MASTER_PLAN.md) and [ANNOTATION_PHASE1_REFERENCE.md](ANNOTATION_PHASE1_REFERENCE.md). Foundation `@Entity` and new Phase 2 `@Routes`, Integration configuration, and Foundation DTO validation are active in their defined scopes. Most other directives remain inert; see [ANNOTATION_PHASE2_MIGRATION.md](ANNOTATION_PHASE2_MIGRATION.md). Existing backend rules remain mandatory.
-
-**Foundation phase:** Use one product-neutral declaration, `// @Entity schema.table`, on Go entity structs. It includes builder, getter, setter, and GORM `TableName()` generation without repeating `@Builder`, `@Getter`, `@Setter`, or `@Table` on each struct.
+Entity declarations live under the owning service's maintained `entity/` folder. Go comments such as `// @Entity foundation.person_contacts` are build-time directives. The active `libs/core/annotation/generation/entities` parser generates Gombok-compatible builders and accessors where safe, while `generation/gormtable` generates GORM `TableName()` implementations. The legacy `generation/expand` command is retained but is **not** used by the current build.
 
 ```go
 // @Entity foundation.person_contacts
-type Contact struct {
-    Value string `gorm:"column:value;not null"`
-}
+type Contact struct { Value string }
+
+// @Entity identity.password_credentials mode=table
+type PasswordCredential struct { PasswordHash string }
 ```
 
-The `libs/core/annotation/generation/expand` preprocessing tool operates **only on a disposable staging copy** of the original Go source, expanding `@Entity` to Gombok annotations. `@Builder` is always enabled. For entities that already define custom `Get*` or `Set*` methods, the respective **entire** generated accessor category is disabled to avoid method-name collisions; therefore `Person` retains its existing custom value-copy and nullable-field semantics. For entities with no such methods, both `@Getter` and `@Setter` are generated. This is a package-level conservative safeguard; it does not yet selectively generate missing accessor methods. The `gormtable` tool reads the original `@Entity schema.table` comment and generates GORM's `TableName()` method. Existing GORM field tags remain unchanged.
+Use `mode=table` for security-sensitive or immutable models: it emits **no builder or setters**. Maintain Foundation Person's custom value-returning setters and business state transitions explicitly. Domain association rules such as `AssociateContacts` belong in the service layer, not passive entities.
 
-**Generated code does not appear within `services/foundation/entity/`.** The wrapper `scripts/backend/generate-entities.sh` stages the maintained entity files, expands `@Entity`, invokes Gombok v1.2.0, and places generated files in `backend/services/foundation/.generated/entity/`. The table generator writes `zz_tables.gen.go` there. `libs/core/annotation/generation/overlay` generates `backend/.generated/overlay.json`, mapping virtual files under the original Go entity package to the actual module-local generated implementations. Go compiles them with `-overlay`.
+The unified build command is `scripts/backend/generate-annotations.sh` (the old `generate-entities.sh` is a compatibility wrapper). It processes entities, GORM tables, routes, in-process clients, mapper contracts and event definitions, then writes the Go overlay at `backend/.generated/overlay.json`. Generated implementations are placed only in `services/<service>/.generated/<package>/`, never in maintained source folders or Git.
 
-```text
-backend/services/foundation/
-  entity/contact.go              # maintained, @Entity
-  entity/person.go               # maintained, @Entity
-  entity/gid.go                  # maintained
-  .generated/entity/             # ignored by Git, generated
-    contact_gombok.go
-    person_gombok.go
-    zz_tables.gen.go
-backend/.generated/overlay.json # ignored generated build manifest
+```bash
+make backend-build
+make backend-test
 ```
 
-`make backend-build`, `make backend-setup`, and Air builds prepare the overlay automatically. Changes are cached using source fingerprints; `.generated/` directories are ignored by Git. Direct Go commands require the generated overlay, for example `cd backend && go test -overlay=.generated/overlay.json ./services/foundation/...`. Editor/`gopls` support needs explicit overlay-aware configuration.
+Direct Go builds must use the overlay after generation; direct tests use `-vet=off -overlay=.generated/overlay.json` because virtual generated filenames are not accessible to the implicit vet process. Code editor and static-analysis overlay support need explicit configuration.
 
-This annotation is a build-tool convention, **not** a native Go feature or a Gombok annotation. Keep association and audit-timestamp business rules in `services/helpers`, not entity methods. Foundation uses `AssociateContacts` before persistence; the repository receives prepared contacts and only persists them. Generated setters mutate pointer receivers; existing `Person` setters are value-returning and deliberately retained. Automatically generating setters for sensitive or immutable fields is not recommended; future refinement should support explicit exclusions. No runtime reflection is involved.
+### Annotation folder ownership
 
+Each category owns an `annotations.go` definition catalog beneath `backend/libs/core/annotation/<category>/`. Examples include `entity/`, `validation/`, `configuration/`, `event/`, `utilities/`, `messaging/`, `persistence/`, `security/`, `testing/` and `patterns/` (Creational, Structural and Behavioral GoF patterns). All 16 categories are listed in [ANNOTATION_PHASE2_MIGRATION.md](ANNOTATION_PHASE2_MIGRATION.md).
 
-### Annotation ownership
+The `annotation/contract/` package owns shared metadata types and has **no dependency on category packages**; category packages import only `contract`. The root `annotation/` package aggregates these catalogs and preserves `All`, `Lookup`, `Uses`, `Patterns` and source-comment parsing. Generators remain isolated in `annotation/generation/`.
 
-The runtime generic builder is provided by `backend/libs/core/annotation/entity` (import `grovehub/libs/core/annotation/entity`), while build-time annotation processors live under `backend/libs/core/annotation/generation/{expand,gormtable,overlay}`. No standalone `backend/libs/core/entity` package remains. Annotation generation is implementation tooling; service entities themselves remain under `backend/services/<service>/entity`, and the generated artifacts remain under each service's ignored `.generated/entity` folder.
+The annotation framework's own test cases were removed at request; other backend suites and the CI compile/package-loading checks remain. An unimplemented directive (e.g. `@Authorize`, `@Transactional` or `@Consumer`) remains metadata only and must not be treated as executing security, transactions or messaging policy. The build-time checker rejects such annotations in maintained service code.
+
+See [ANNOTATION_FRAMEWORK_MASTER_PLAN.md](ANNOTATION_FRAMEWORK_MASTER_PLAN.md) for the intended capability catalog and [ANNOTATION_PHASE2_MIGRATION.md](ANNOTATION_PHASE2_MIGRATION.md) for actually supported processors and remaining work.
