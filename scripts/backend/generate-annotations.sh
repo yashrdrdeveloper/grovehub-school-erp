@@ -108,4 +108,4 @@ fi
   cd -- "${BACKEND_DIR}"
   go run ./libs/core/annotation/generation/overlay "${BACKEND_DIR}"
 )
-log_info "Foundation entity overlay ready: ${BACKEND_DIR}/.generated/overlay.json"
+log_info "Annotation overlay ready (Foundation entities, HTTP routes, client proxies): ${BACKEND_DIR}/.generated/overlay.json"
