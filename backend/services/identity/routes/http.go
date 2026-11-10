@@ -1,19 +1,12 @@
 package routes
 
 import (
-	"net/http"
+    "net/http"
 
-	httptracing "grovehub/libs/core/http/tracing"
-	"grovehub/services/identity/controller"
+    "grovehub/services/identity/controller"
 )
 
+// RegisterHTTP composes Identity's generated, traced route registrations.
 func RegisterHTTP(mux *http.ServeMux, authController controller.AuthController) {
-	mux.Handle(
-		"POST /auth/register",
-		httptracing.ServiceHandler(
-			"identity",
-			"POST /auth/register",
-			http.HandlerFunc(authController.Register),
-		),
-	)
+    registerAuthRoutes(mux, authController)
 }
