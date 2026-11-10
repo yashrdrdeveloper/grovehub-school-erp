@@ -3,7 +3,6 @@ package entity
 import (
  "time"
 
- coreentity "grovehub/libs/core/entity"
 )
 
 type PersonStatus string
