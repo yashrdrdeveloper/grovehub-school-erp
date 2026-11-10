@@ -24,7 +24,7 @@ type routeGroup struct {
 	routes []route
 }
 
-var verbs=map[string]bool{"GET":true,"POST":true,"PUT":true,"PATCH":true,"DELETE":true,"HEAD":true,"OPTIONS":true}
+var verbs=map[string]bool{"GET":true,"POST":true,"PUT":true,"PATCH":true,"DELETE":true}
 
 func main() {
 	if len(os.Args)!=2 { fmt.Fprintln(os.Stderr,"usage: routes <backend-dir>"); os.Exit(2) }
