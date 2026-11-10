@@ -2,10 +2,16 @@ package controller
 
 import "net/http"
 
+// @Routes /foundation/persons
 type PersonController interface {
-	Create(writer http.ResponseWriter, request *http.Request)
-	GetByGID(writer http.ResponseWriter, request *http.Request)
-	Update(writer http.ResponseWriter, request *http.Request)
-	Search(writer http.ResponseWriter, request *http.Request)
-	Deactivate(writer http.ResponseWriter, request *http.Request)
+    // @POST /
+    Create(writer http.ResponseWriter, request *http.Request)
+    // @GET /{gid}
+    GetByGID(writer http.ResponseWriter, request *http.Request)
+    // @PATCH /{gid}
+    Update(writer http.ResponseWriter, request *http.Request)
+    // @POST /search
+    Search(writer http.ResponseWriter, request *http.Request)
+    // @PATCH /{gid}/deactivate
+    Deactivate(writer http.ResponseWriter, request *http.Request)
 }
