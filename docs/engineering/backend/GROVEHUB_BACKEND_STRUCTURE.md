@@ -9,6 +9,7 @@ Also read when relevant:
 ```text
 docs/engineering/backend/EVENT_GUIDELINES.md
 docs/engineering/backend/CORE_LIBRARY_GUIDELINES.md
+docs/engineering/backend/ANNOTATION_FRAMEWORK_MASTER_PLAN.md  # proposal, not implemented
 docs/engineering/backend/MAPPER_AND_DTO_GUIDELINES.md
 docs/engineering/backend/VALIDATOR_GUIDELINES.md
 docs/engineering/backend/NORMALIZATION_AND_DRY_GUIDELINES.md
