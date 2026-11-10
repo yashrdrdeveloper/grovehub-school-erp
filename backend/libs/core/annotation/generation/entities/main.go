@@ -102,6 +102,12 @@ func generate(sourceDir,outputDir string) error {
 				doc:=spec.Doc;if doc==nil{doc=group.Doc}
 				flags:=annotations(doc)
 				if !flags["Entity"]&&!flags["Builder"]&&!flags["Getter"]&&!flags["Setter"]{continue}
+				if isTableOnly(doc) {
+					if flags["Builder"]||flags["Getter"]||flags["Setter"] {
+						return fmt.Errorf("%s.%s: table-only @Entity cannot generate accessors/builders",src.name,spec.Name.Name)
+					}
+					continue
+				}
 
 				e:=entitySpec{
 					name:spec.Name.Name,
@@ -206,4 +212,13 @@ func write(src sourceFile,output string)error {
 	if old,err:=os.ReadFile(output);err==nil&&bytes.Equal(old,formatted){return nil}else if err!=nil&&!os.IsNotExist(err){return err}
 	if err:=os.MkdirAll(filepath.Dir(output),0755);err!=nil{return err}
 	return os.WriteFile(output,formatted,0644)
+}
+
+func isTableOnly(doc *ast.CommentGroup) bool {
+    if doc==nil{return false}
+    for _,comment:=range doc.List{
+        line:=strings.TrimSpace(strings.TrimPrefix(comment.Text,"//"))
+        if strings.HasPrefix(line,"@Entity ") && strings.HasSuffix(line," mode=table"){return true}
+    }
+    return false
 }
