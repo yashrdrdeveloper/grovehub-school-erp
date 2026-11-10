@@ -33,6 +33,10 @@ jobs:
         run: |
           go test -vet=off -overlay=.generated/overlay.json ./libs/core/annotation/...
           go test -vet=off -overlay=.generated/overlay.json ./libs/core/tests/unit-test/annotation/...
+      - name: Run core, launcher, Identity and Integration unit suites
+        working-directory: backend
+        run: |
+          go test -vet=off -overlay=.generated/overlay.json ./libs/core/tests/unit-test/... ./launcher/tests/unit-test/... ./services/identity/tests/unit-test/... ./services/integration/tests/unit-test/...
       - name: Validate generated source on a clean checkout
         shell: bash
         run: |
@@ -42,3 +46,8 @@ jobs:
           test -s backend/services/integration/.generated/routes/zz_routes.gen.go
           test -s backend/services/identity/.generated/mappers/impl/zz_mappers.gen.go
           test -s backend/services/foundation/.generated/mappers/impl/zz_mappers.gen.go
+          test -s backend/services/identity/.generated/entity/zz_tables.gen.go
+          test -s backend/services/integration/.generated/entity/zz_tables.gen.go
+          test -s backend/services/foundation/.generated/events/persons/zz_events.gen.go
+          test -s backend/services/identity/.generated/events/accounts/zz_events.gen.go
+          test -s backend/services/integration/.generated/events/connections/mailbox/zz_events.gen.go
