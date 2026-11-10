@@ -24,6 +24,7 @@ const (
     Proposed   Status = "PROPOSED"
     Optional   Status = "OPTIONAL"
     Discouraged Status = "DISCOURAGED"
+    Pilot Status = "PILOT" // processor exists but full backend verification is pending
 )
 
 // Mode describes the planned mechanism rather than runtime behavior.
