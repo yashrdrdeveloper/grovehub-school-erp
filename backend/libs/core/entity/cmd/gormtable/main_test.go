@@ -12,7 +12,7 @@ func TestGenerate(t *testing.T){
  content:="package sample\n// @GroveTable foundation.person_contacts\ntype Contact struct { Value string }\n"
  if err:=os.WriteFile(filepath.Join(dir,"contact.go"),[]byte(content),0644);err!=nil {t.Fatal(err)}
  if err:=generate(dir);err!=nil {t.Fatal(err)}
- path:=filepath.Join(dir,"zz_grove_tables.gen.go")
+ path:=filepath.Join(dir,"zz_tables.gen.go")
  first,err:=os.ReadFile(path);if err!=nil {t.Fatal(err)}
  if !strings.Contains(string(first),`func (Contact) TableName() string`)||!strings.Contains(string(first),`"foundation.person_contacts"`){t.Fatalf("bad output: %s",first)}
  if err:=generate(dir);err!=nil {t.Fatal(err)}
