@@ -1,9 +1,6 @@
 package entity
 
-import (
- "time"
-
-)
+import "time"
 
 type PersonStatus string
 
@@ -29,7 +26,7 @@ type Person struct {
 	UpdatedAt            time.Time    `gorm:"column:updated_at;not null"`
 }
 
-// NewPerson preserves the existing constructor contract; new use cases may use coreentity.New[Person] directly.
+// NewPerson preserves the existing constructor contract; new use cases may use NewPersonBuilder.
 func NewPerson(gid GID, firstName string, middleName string, lastName string, contacts []Contact, status PersonStatus, version int64, createdAt time.Time, updatedAt time.Time) Person {
  builder := NewPersonBuilder().
     WithGID(gid).
