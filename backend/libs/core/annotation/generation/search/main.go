@@ -19,6 +19,7 @@ import (
 
 type spec struct {
 	service, impl, entity, config, alias string
+	configImport, configAlias string
 }
 
 func main() {
@@ -76,26 +77,40 @@ func discover(dir, service string) ([]spec, error) {
 				for _, member := range iface.Methods.List {
 					args := directive(member.Doc,"Searchable")
 					if args=="" {continue}
-					opts,err:=options(args,[]string{"impl","entity","config","alias"})
+					opts,err:=searchOptions(args)
 					if err!=nil{return nil,fmt.Errorf("%s.%s: %w",typeSpec.Name.Name,member.Names[0].Name,err)}
 					if len(member.Names)!=1 || member.Names[0].Name!="Search" {
 						return nil,fmt.Errorf("%s: @Searchable only supports a Search method",typeSpec.Name.Name)
 					}
-					if opts["entity"]==""||opts["impl"]==""||opts["config"]==""||opts["alias"]=="" { return nil,fmt.Errorf("%s: incomplete search config",typeSpec.Name.Name) }
-					expectedRepo:="entity="+opts["entity"]
-					if strings.TrimSpace(repoDirective)!=expectedRepo {return nil,fmt.Errorf("%s: @Repository %s must match @Searchable entity",typeSpec.Name.Name,expectedRepo)}
-					if opts["impl"]!=typeSpec.Name.Name {return nil,fmt.Errorf("%s.Search: impl must equal repository interface name",typeSpec.Name.Name)}
-					if err:=validateSignature(member.Type,opts["entity"]);err!=nil{return nil,fmt.Errorf("%s.Search: %w",typeSpec.Name.Name,err)}
-					filterFields,err:=fieldsFrom(member.Doc,"Filterable")
+					repoOpts,err:=options(repoDirective,[]string{"entity"})
+					if err!=nil{return nil,fmt.Errorf("%s.Search: @Repository entity declaration required: %w",typeSpec.Name.Name,err)}
+					entityName:=repoOpts["entity"]
+					if opts["entity"]!="" && opts["entity"]!=entityName {
+						return nil,fmt.Errorf("%s.Search: @Searchable entity must match @Repository",typeSpec.Name.Name)
+					}
+					implName:=typeSpec.Name.Name
+					if opts["impl"]!="" && opts["impl"]!=implName {
+						return nil,fmt.Errorf("%s.Search: @Searchable impl must match repository interface",typeSpec.Name.Name)
+					}
+					if err:=validateSignature(member.Type,entityName);err!=nil{return nil,fmt.Errorf("%s.Search: %w",typeSpec.Name.Name,err)}
+					filterFields,err:=optionalFields(member.Doc,"Filterable")
 					if err!=nil{return nil,err}
-					sortFields,err:=fieldsFrom(member.Doc,"Sortable")
+					sortFields,err:=optionalFields(member.Doc,"Sortable")
 					if err!=nil{return nil,err}
-					cursorArgs,err:=options(directive(member.Doc,"Cursor"),[]string{"field"})
-					if err!=nil{return nil,fmt.Errorf("@Cursor: %w",err)}
-					if !contains(sortFields,cursorArgs["field"]) {return nil,fmt.Errorf("@Cursor field must be sortable")}
-					implDir:=filepath.Join(dir,"impl")
-					if err:=validateConfig(implDir,opts["config"],filterFields,sortFields,cursorArgs["field"]);err!=nil{return nil,err}
-					result=append(result,spec{service:service,impl:opts["impl"],entity:opts["entity"],config:opts["config"],alias:opts["alias"]})
+					cursorName:=""
+					if raw:=directive(member.Doc,"Cursor");raw!="" {
+						cursorArgs,err:=options(raw,[]string{"field"})
+						if err!=nil{return nil,fmt.Errorf("@Cursor: %w",err)}
+						cursorName=cursorArgs["field"]
+						if len(sortFields)>0 && !contains(sortFields,cursorName) {return nil,fmt.Errorf("@Cursor field must be sortable")}
+					}
+					configDir,configImport,configAlias,configName,err:=resolveConfig(dir,service,opts["config"])
+					if err!=nil{return nil,err}
+					if err:=validateConfig(configDir,configName,filterFields,sortFields,cursorName);err!=nil{return nil,err}
+					result=append(result,spec{
+						service:service,impl:implName,entity:entityName,config:opts["config"],
+						alias:opts["alias"],configImport:configImport,configAlias:configAlias,
+					})
 				}
 			}
 		}
@@ -125,6 +140,58 @@ func options(raw string, expected []string)(map[string]string,error) {
 	}
 	for _,key:=range expected {if r[key]=="" {return nil,fmt.Errorf("missing %s option",key)}}
 	return r,nil
+}
+
+func searchOptions(raw string) (map[string]string,error) {
+	result:=map[string]string{}
+	allowed:=map[string]bool{"impl":true,"entity":true,"config":true,"alias":true}
+	for _,item:=range strings.Fields(raw) {
+		pair:=strings.SplitN(item,"=",2)
+		if len(pair)!=2||pair[1]==""||!allowed[pair[0]]||result[pair[0]]!="" {
+			return nil,fmt.Errorf("invalid or repeated @Searchable option %q",item)
+		}
+		result[pair[0]]=pair[1]
+	}
+	if result["config"]==""||result["alias"]=="" {
+		return nil,fmt.Errorf("@Searchable requires config=... alias=...")
+	}
+	return result,nil
+}
+
+func optionalFields(group *ast.CommentGroup,name string)([]string,error){
+	raw:=directive(group,name)
+	if raw=="" {return nil,nil}
+	opts,err:=options(raw,[]string{"fields"})
+	if err!=nil{return nil,fmt.Errorf("@%s: %w",name,err)}
+	return strings.Split(opts["fields"],","),nil
+}
+
+// resolveConfig finds an explicitly imported repository search configuration
+// in a subfolder by its declared Go package, not by an inferred SQL/table name.
+func resolveConfig(repositoryDir,service,reference string)(dir,importPath,alias,variable string,err error) {
+	parts:=strings.Split(reference,".")
+	if len(parts)==1 {
+		if !token.IsIdentifier(parts[0]) {return "","","","",fmt.Errorf("invalid @Searchable config %q",reference)}
+		return filepath.Join(repositoryDir,"impl"),"","",parts[0],nil
+	}
+	if len(parts)!=2||!token.IsIdentifier(parts[0])||!token.IsIdentifier(parts[1]) {
+		return "","","","",fmt.Errorf("invalid @Searchable config %q",reference)
+	}
+	entries,err:=os.ReadDir(repositoryDir)
+	if err!=nil{return "","","","",err}
+	for _,entry:=range entries {
+		if !entry.IsDir() {continue}
+		candidate:=filepath.Join(repositoryDir,entry.Name())
+		files,err:=filepath.Glob(filepath.Join(candidate,"*.go"))
+		if err!=nil{return "","","","",err}
+		for _,f:=range files {
+			pkg,err:=parser.ParseFile(token.NewFileSet(),f,nil,parser.PackageClauseOnly)
+			if err!=nil{return "","","","",err}
+			if pkg.Name.Name!=parts[0] {continue}
+			return candidate,"grovehub/services/"+service+"/repository/"+entry.Name(),parts[0],parts[1],nil
+		}
+	}
+	return "","","","",fmt.Errorf("@Searchable config package %q not found under %s",parts[0],repositoryDir)
 }
 
 func fieldsFrom(group *ast.CommentGroup, name string) ([]string,error) {
@@ -211,21 +278,27 @@ func validateConfig(dir,config string,filters,sorts []string,cursor string) erro
 	lit,err:=findConfig(dir,config);if err!=nil{return err}
 	scalars,err:=names(field(lit,"ScalarFields"));if err!=nil{return err}
 	relations,err:=names(field(lit,"RelationFields"));if err!=nil{return err}
-	if err:=compareFields(append(scalars,relations...),filters,"@Filterable");err!=nil{return err}
+	if len(filters)>0 {
+		if err:=compareFields(append(scalars,relations...),filters,"@Filterable");err!=nil{return err}
+	}
 	configuredSorts,err:=names(field(lit,"SortFields"));if err!=nil{return err}
-	if err:=compareFields(configuredSorts,sorts,"@Sortable");err!=nil{return err}
+	if len(sorts)>0 {
+		if err:=compareFields(configuredSorts,sorts,"@Sortable");err!=nil{return err}
+	}
 	cursorExpr,err:=stringExpr(field(lit,"CursorExpression"));if err!=nil{return err}
 	sortsNode,ok:=field(lit,"SortFields").(*ast.CompositeLit);if !ok{return fmt.Errorf("invalid SortFields")}
 	for _,item:=range sortsNode.Elts {
 		pair:=item.(*ast.KeyValueExpr)
 		name,err:=stringExpr(pair.Key);if err!=nil{return err}
-		if name!=cursor {continue}
+		if cursor!="" && name!=cursor {continue}
 		value,ok:=pair.Value.(*ast.CompositeLit);if !ok{return fmt.Errorf("sort field %s must use a literal",cursor)}
 		expression,err:=stringExpr(field(value,"Expression"));if err!=nil{return err}
-		if expression!=cursorExpr{return fmt.Errorf("@Cursor field %s must match CursorExpression",cursor)}
-		return nil
+		if expression==cursorExpr{return nil}
 	}
-	return fmt.Errorf("@Cursor sort %s missing",cursor)
+	if cursor!="" {
+		return fmt.Errorf("@Cursor sort %s must match CursorExpression",cursor)
+	}
+	return fmt.Errorf("no sortable field matches the stable CursorExpression %q",cursorExpr)
 }
 func validateImplementation(dir string,specs []spec)error{
 	files,err:=filepath.Glob(filepath.Join(dir,"*.go"));if err!=nil{return err}
@@ -259,7 +332,20 @@ func write(path string,specs []spec)error{
 	b.WriteString("// Code generated by GrooveHub @Searchable. DO NOT EDIT.\npackage impl\n\n")
 	b.WriteString("import (\n\"context\"\ncoresearch \"grovehub/libs/core/search\"\ncoretransaction \"grovehub/libs/core/database/transaction\"\n")
 	// All @Searchable declarations in this service share its entity package.
-	fmt.Fprintf(&b,"\"grovehub/services/%s/entity\"\n)\n\n",specs[0].service)
+	fmt.Fprintf(&b,"\"grovehub/services/%s/entity\"\n",specs[0].service)
+	imports:=map[string]string{}
+	for _,sp:=range specs {
+		if sp.configImport=="" {continue}
+		if old,ok:=imports[sp.configAlias];ok&&old!=sp.configImport {
+			return fmt.Errorf("conflicting config package alias %s",sp.configAlias)
+		}
+		imports[sp.configAlias]=sp.configImport
+	}
+	aliases:=make([]string,0,len(imports))
+	for name:=range imports {aliases=append(aliases,name)}
+	sort.Strings(aliases)
+	for _,name:=range aliases {fmt.Fprintf(&b,"%s %q\n",name,imports[name])}
+	b.WriteString(")\n\n")
 	for _,sp:=range specs{
 		if sp.service!=specs[0].service{return fmt.Errorf("mixed service annotations")}
 		fmt.Fprintf(&b,"func (repository *%s) Search(ctx context.Context, query coresearch.Query[string]) (coresearch.QueryResult[entity.%s], error) {\n",sp.impl,sp.entity)

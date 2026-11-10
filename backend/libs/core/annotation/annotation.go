@@ -205,10 +205,14 @@ func ValidateDirective(d Directive) error {
             return fmt.Errorf("%w: @Repository requires entity=Type", ErrInvalidDirective)
         }
     case "Searchable":
-        parts, err := directiveOptions(d.Arguments, []string{"impl", "entity", "config", "alias"})
-        if err != nil || !tokenIdentifier(parts["impl"]) || !tokenIdentifier(parts["entity"]) ||
-            !tokenIdentifier(parts["config"]) || !tokenIdentifier(parts["alias"]) {
-            return fmt.Errorf("%w: @Searchable requires impl=Type entity=Type config=identifier alias=identifier", ErrInvalidDirective)
+        parts, err := directiveSearchOptions(d.Arguments)
+        config := strings.Split(parts["config"], ".")
+        configValid := len(config)>0 && len(config)<=2
+        for _,part := range config {if !tokenIdentifier(part) {configValid=false}}
+        if err != nil || !configValid || !tokenIdentifier(parts["alias"]) ||
+            (parts["impl"]!="" && !tokenIdentifier(parts["impl"])) ||
+            (parts["entity"]!="" && !tokenIdentifier(parts["entity"])) {
+            return fmt.Errorf("%w: @Searchable requires config=identifier[.identifier] alias=identifier (impl/entity optional)", ErrInvalidDirective)
         }
     case "Filterable", "Sortable":
         parts, err := directiveOptions(d.Arguments, []string{"fields"})
@@ -222,6 +226,20 @@ func ValidateDirective(d Directive) error {
         }
     }
     return nil
+}
+
+func directiveSearchOptions(raw string) (map[string]string,error) {
+	allowed:=map[string]bool{"config":true,"alias":true,"impl":true,"entity":true}
+	result:=map[string]string{}
+	for _,option:=range strings.Fields(raw) {
+		parts:=strings.SplitN(option,"=",2)
+		if len(parts)!=2||parts[1]==""||!allowed[parts[0]]||result[parts[0]]!="" {
+			return nil,ErrInvalidDirective
+		}
+		result[parts[0]]=parts[1]
+	}
+	if result["config"]==""||result["alias"]=="" {return nil,ErrInvalidDirective}
+	return result,nil
 }
 
 func directiveOptions(raw string, required []string) (map[string]string,error) {
