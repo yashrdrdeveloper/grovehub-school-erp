@@ -270,14 +270,23 @@ services/helpers/person.go
     -> OptionalString, NullableString, CopyContacts and association rules
 
 repository/impl/person.go
-    -> persists Person columns and their SearchDetails projection
-    -> uses @Searchable-generated Search with validated read-only contact filters
+    -> persists Person rows and their SearchDetails projection
+    -> annotated Search implementation generated into .generated/repository/impl/
 
 repository/impl/contact.go
     -> persists Contact rows only; queries PersonGID foreign keys
 
-repository/impl/transaction.go
-    -> coordinates both repositories through a shared GORM transaction
+repository/searchDetails/person.go
+    -> PersonConfig holds explicit search/sort/cursor and contact relation mappings
+
+repository/helpers/{person,contact}.go
+    -> constraint error translation and safe search relation field construction
+
+repository/constants/{person,contact}.go
+    -> repository-specific sentinel errors
+
+libs/core/database/transaction/unit_of_work.go
+    -> shared UnitOfWork interface and constructor across all modules
 
 services/impl/person.go
     -> coordinates both entity values through Person's lifecycle
@@ -317,24 +326,23 @@ For example, Foundation's denormalized `search_details` projection is calculated
 
 The repository boundary is persistence/query ownership.
 
-`repository/<resource>.go` contains the interface and repository-specific errors.
+`repository/<resource>.go` contains the interface. `repository/constants/<resource>.go` owns sentinel errors; `repository/helpers/<resource>.go` owns reusable non-query implementation helpers.
 
 `repository/impl/<resource>.go` owns:
 
 ```text
 GORM/PGX database access
-query composition
-transactions
-constraint mapping
-aggregate persistence
-contact/child persistence
-validated search query execution
-persistence-derived projection values
+query composition and explicit relation filters
+database row persistence of its own entity
+transaction.Database(ctx, db) participation
+generated, validated search execution
 ```
 
 For GORM-backed repositories, prefer GORM APIs for normal CRUD/query behavior. Raw SQL is an exception for database behavior that cannot be expressed cleanly/maintainably through the ORM.
 
 Do not move persistence calculations into entities merely to avoid repository code.
+
+The shared `libs/core/database/transaction.UnitOfWork` coordinates aggregate writes; the repository implementation must not invent new domain business rules. The `repository/searchDetails/` package owns explicit resource-specific search mappings, while `core/search` provides generic execution.
 
 The repository public package path must not encode database technology. Consumers depend on `repository.PersonRepository`, not `repository/postgres` or a concrete GORM type.
 

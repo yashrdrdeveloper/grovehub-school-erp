@@ -106,17 +106,21 @@ The mapper generator requires **complete destination-field coverage** and fails 
 ### Annotated repository search
 
 ```go
+/**
+ * PersonRepository owns foundation.persons and the derived SearchDetails.
+ * ContactRepository owns contact rows; PersonService coordinates mutations.
+ */
 // @Repository entity=Person
 type PersonRepository interface {
-    // @Searchable impl=PersonRepository entity=Person config=personSearchConfig alias=p
-    // @Filterable fields=gid,firstName,middleName,lastName,status,createdAt,updatedAt,contacts.email,contacts.phone,contacts.primaryEmail,contacts.primaryPhone,contacts.verifiedEmail,contacts.verifiedPhone
-    // @Sortable fields=gid,firstName,lastName,createdAt,updatedAt
-    // @Cursor field=gid
+    /**
+     * Search uses trusted field mappings from searchdetails.PersonConfig.
+     */
+    // @Searchable config=searchdetails.PersonConfig alias=p
     Search(ctx context.Context, query coresearch.Query[string]) (coresearch.QueryResult[entity.Person], error)
 }
 ```
 
-The build-time `generation/search` processor checks the configured field allowlists and cursor expression, and generates the `Search` method into the service's ignored `.generated/repository/impl/` folder. Execution delegates to the shared `core/search.Execute`. The resource validator still controls operators and normalized values; repository-owned `coresearch.Config` keeps all SQL expressions explicit and reviewed. `@Repository` is ownership metadata validation only, **not** DI or transaction generation.
+The build-time `generation/search` processor resolves external repository search configuration, verifies that the cursor expression matches a stable sort key, optionally checks `@Filterable`/`@Sortable`/`@Cursor` declarations when provided, and generates the `Search` method into the service's ignored `.generated/repository/impl/` folder. Execution delegates to the shared `core/search.Execute`. The resource validator still controls operators and normalized values; repository-owned `coresearch.Config` keeps all SQL expressions explicit and reviewed. `@Repository` is ownership metadata validation only, **not** DI or transaction generation.
 
 ### Configuration, validation and events
 

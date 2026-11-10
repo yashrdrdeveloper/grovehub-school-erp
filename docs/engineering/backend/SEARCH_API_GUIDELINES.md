@@ -237,19 +237,24 @@ not transport-facing `search.Result`.
 ## 7. Annotation-driven search (implemented for Foundation Person)
 
 ```go
+/**
+ * PersonRepository persists foundation.persons, including SearchDetails.
+ * ContactRepository exclusively owns changes to person_contacts.
+ */
 // @Repository entity=Person
 type PersonRepository interface {
-    // @Searchable impl=PersonRepository entity=Person config=personSearchConfig alias=p
-    // @Filterable fields=gid,firstName,middleName,lastName,status,createdAt,updatedAt,contacts.email,contacts.phone,contacts.primaryEmail,contacts.primaryPhone,contacts.verifiedEmail,contacts.verifiedPhone
-    // @Sortable fields=gid,firstName,lastName,createdAt,updatedAt
-    // @Cursor field=gid
+    /**
+     * Search returns validated, cursor-paginated Person records.
+     * The allowlists live in repository/searchDetails/person.go.
+     */
+    // @Searchable config=searchdetails.PersonConfig alias=p
     Search(ctx context.Context, query search.Query[string]) (search.QueryResult[entity.Person], error)
 }
 ```
 
-The search generator checks the method signature, repository implementation, exact filter and sort allowlists, and that the cursor uses the configured stable sort expression. It generates a method into `services/foundation/.generated/repository/impl/zz_search.gen.go`; the source overlay injects it into the existing `repository/impl` package. Each resource still maintains its own safe field expressions and relation mappings in its `search.Config`.
+The search generator derives the repository implementation and entity from the interface and `@Repository`, resolves `searchdetails.PersonConfig` from `repository/searchDetails/person.go`, checks the method signature and that the configured cursor expression has a matching sort key, then emits the method into `services/foundation/.generated/repository/impl/zz_search.gen.go`. The filter and sort allowlists are defined exactly once in that `search.Config`; optional `@Filterable`, `@Sortable` and `@Cursor` directives remain available for explicit parity checks but are not required on each method.
 
-The directives do **not** infer SQL or automatically authorize fields/operators: the resource validator continues to normalize requests, enforce permitted operators, and check cursor content. The repository controls its persisted table, joins, GORM query and trusted expressions. `@Repository` validates ownership metadata but does not create transactions; `PersonService` explicitly coordinates the two repositories through `UnitOfWork`.
+The directives do **not** infer SQL or automatically authorize fields/operators: the resource validator continues to normalize requests, enforce permitted operators, and check cursor content. The repository controls its persisted table, joins, GORM query and trusted expressions. `@Repository` validates ownership metadata but does not create transactions; `PersonService` uses the shared `libs/core/database/transaction.UnitOfWork`.
 
 ---
 

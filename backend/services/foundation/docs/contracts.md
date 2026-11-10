@@ -350,9 +350,11 @@ The service root owns Foundation concrete construction, while the launcher passe
 Foundation module
 ├── PersonRepository (persons table, 5 methods)
 ├── ContactRepository (person_contacts table, 4 methods)
-├── UnitOfWork (shared Person + Contact transaction)
+├── core/transaction.UnitOfWork (reusable shared transaction)
+├── repository/constants/ (sentinel persistence errors)
+├── repository/helpers/ (non-query persistence helpers)
+├── repository/searchDetails/person.go (trusted Search Config)
 ├── PersonService (sole owner of contact lifecycle)
-├── Person service
 ├── controller interface
 │   └── controller/impl
 └── client interface

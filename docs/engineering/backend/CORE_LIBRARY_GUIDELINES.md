@@ -374,6 +374,8 @@ Core diff owns comparison mechanics only. Source types remain in their domain (f
 - `transaction.AfterCommit(ctx, callback)` queues work to run only after successful commit. No callbacks execute on rollback or failed commit.
 - `transaction.DetachedContext(ctx)` retains trace metadata while masking the committed transaction; publishers use it to prevent re-queueing events.
 
+The reusable `transaction.UnitOfWork` interface and `transaction.NewUnitOfWork(db)` constructor live in `libs/core/database/transaction/unit_of_work.go`, avoiding separate transaction wrappers in individual modules. A service's Person and Contact repository calls use the same bound context to join one operation. Do not move provider-specific lifecycle rules or unique constraint mapping into core.
+
 GORM remains an implementation detail of core database and repository/orchestration construction; do not expose a transaction handle inside Foundation/Identity API DTOs or event contracts. This capability does not coordinate remote services or provide guaranteed event delivery. See `docs/engineering/backend/REGISTRATION_TRANSACTION.md`.
 
 ## 12. Hard Rules
