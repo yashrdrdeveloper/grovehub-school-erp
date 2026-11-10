@@ -209,9 +209,16 @@ func ValidateDirective(d Directive) error {
         return fmt.Errorf("%w: multiline arguments are not supported",ErrInvalidDirective)
     }
     if d.Name=="Entity" {
-        parts:=strings.Split(d.Arguments,".")
+        args:=strings.Fields(d.Arguments)
+        if len(args)<1 || len(args)>2 {
+            return fmt.Errorf("%w: @Entity requires schema.table [mode=table]",ErrInvalidDirective)
+        }
+        parts:=strings.Split(args[0],".")
         if len(parts)!=2 || !identifier(parts[0]) || !identifier(parts[1]) {
             return fmt.Errorf("%w: @Entity requires schema.table",ErrInvalidDirective)
+        }
+        if len(args)==2 && args[1]!="mode=table" {
+            return fmt.Errorf("%w: unsupported @Entity option %q",ErrInvalidDirective,args[1])
         }
     }
     return nil
