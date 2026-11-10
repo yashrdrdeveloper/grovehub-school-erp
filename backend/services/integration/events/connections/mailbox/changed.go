@@ -14,9 +14,6 @@ type Payload struct {
 }
 
 // Changed uses the shared generic event envelope, never a custom event wrapper.
+// @Event topic=integration_mailbox_changed type=integration.mailbox.changed.v1 typeConst=ChangedEventType
 type Changed = coreevents.Envelope[Payload]
 
-const (
-	ChangedTopic     = "integration_mailbox_changed"
-	ChangedEventType = "integration.mailbox.changed.v1"
-)
