@@ -1,4 +1,4 @@
-// Command gormtable creates GORM TableName methods for @Table declarations.
+// Command gormtable creates GORM TableName methods for @Entity declarations.
 package main
 
 import (
@@ -52,9 +52,9 @@ func generateInto(dir, output string)error {
      if doc==nil {continue}
      for _,comment:=range doc.List {
       text:=strings.TrimSpace(strings.TrimPrefix(comment.Text,"//"))
-      if !strings.HasPrefix(text,"@Table ") {continue}
-      table:=strings.TrimSpace(strings.TrimPrefix(text,"@Table "))
-      if !validTable.MatchString(table) {return fmt.Errorf("%s: invalid @Table %q",ts.Name.Name,table)}
+      if !strings.HasPrefix(text,"@Entity ") {continue}
+      table:=strings.TrimSpace(strings.TrimPrefix(text,"@Entity "))
+      if !validTable.MatchString(table) {return fmt.Errorf("%s: invalid @Entity %q",ts.Name.Name,table)}
       if old,ok:=tables[ts.Name.Name];ok&&old!=table {return fmt.Errorf("conflicting table declarations for %s",ts.Name.Name)}
       tables[ts.Name.Name]=table
      }
@@ -65,7 +65,7 @@ func generateInto(dir, output string)error {
  if pkg=="" {return fmt.Errorf("no Go source files in %s",dir)}
  names:=make([]string,0,len(tables))
  for name:=range tables {
-  if existing[name] {return fmt.Errorf("%s declares TableName manually and with @Table",name)}
+  if existing[name] {return fmt.Errorf("%s declares TableName manually and with @Entity",name)}
   names=append(names,name)
  }
  sort.Strings(names)
