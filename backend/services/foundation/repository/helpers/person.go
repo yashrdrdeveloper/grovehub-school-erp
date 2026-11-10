@@ -5,8 +5,6 @@ import (
 
 	"github.com/jackc/pgx/v5/pgconn"
 
-	coresearch "grovehub/libs/core/search"
-	"grovehub/services/foundation/entity"
 	repositoryerrors "grovehub/services/foundation/repository/constants/errors"
 )
 
@@ -23,18 +21,4 @@ func MapPersonWriteError(err error) error {
 		return repositoryerrors.ErrPersonIdempotencyKeyAlreadyExists
 	}
 	return err
-}
-
-/** ContactSearchField constructs a trusted, read-only contact relation filter. */
-func ContactSearchField(contactType entity.ContactType, conditions ...coresearch.FixedCondition) coresearch.RelationField {
-	return coresearch.RelationField{
-		Table: entity.Contact{}.TableName(),
-		Alias: "contact",
-		ParentCondition: "contact.person_gid = p.gid",
-		ValueExpression: "contact.normalized_value",
-		FixedConditions: append(
-			[]coresearch.FixedCondition{{Expression: "contact.type = ", Value: contactType}},
-			conditions...,
-		),
-	}
 }

@@ -3,7 +3,6 @@ package search
 import (
 	coresearch "grovehub/libs/core/search"
 	"grovehub/services/foundation/entity"
-	repositoryhelpers "grovehub/services/foundation/repository/helpers"
 )
 
 /**
@@ -24,12 +23,12 @@ var PersonConfig = coresearch.Config{
 		"updatedAt":  {Expression: "p.updated_at", Cast: "::timestamptz"},
 	},
 	RelationFields: map[string]coresearch.RelationField{
-		"contacts.email":         repositoryhelpers.ContactSearchField(entity.ContactTypeEmail),
-		"contacts.phone":         repositoryhelpers.ContactSearchField(entity.ContactTypePhone),
-		"contacts.primaryEmail":  repositoryhelpers.ContactSearchField(entity.ContactTypeEmail, coresearch.FixedCondition{Expression: "contact.is_primary = ", Value: true}),
-		"contacts.primaryPhone":  repositoryhelpers.ContactSearchField(entity.ContactTypePhone, coresearch.FixedCondition{Expression: "contact.is_primary = ", Value: true}),
-		"contacts.verifiedEmail": repositoryhelpers.ContactSearchField(entity.ContactTypeEmail, coresearch.FixedCondition{Expression: "contact.is_verified = ", Value: true}),
-		"contacts.verifiedPhone": repositoryhelpers.ContactSearchField(entity.ContactTypePhone, coresearch.FixedCondition{Expression: "contact.is_verified = ", Value: true}),
+		"contacts.email":         contactSearchField(entity.ContactTypeEmail),
+		"contacts.phone":         contactSearchField(entity.ContactTypePhone),
+		"contacts.primaryEmail":  contactSearchField(entity.ContactTypeEmail, coresearch.FixedCondition{Expression: "contact.is_primary = ", Value: true}),
+		"contacts.primaryPhone":  contactSearchField(entity.ContactTypePhone, coresearch.FixedCondition{Expression: "contact.is_primary = ", Value: true}),
+		"contacts.verifiedEmail": contactSearchField(entity.ContactTypeEmail, coresearch.FixedCondition{Expression: "contact.is_verified = ", Value: true}),
+		"contacts.verifiedPhone": contactSearchField(entity.ContactTypePhone, coresearch.FixedCondition{Expression: "contact.is_verified = ", Value: true}),
 	},
 	SortFields: map[string]coresearch.SortField{
 		"gid":       {Expression: "p.gid", Cast: "::uuid"},
@@ -38,4 +37,18 @@ var PersonConfig = coresearch.Config{
 		"createdAt": {Expression: "p.created_at", Cast: "::timestamptz"},
 		"updatedAt": {Expression: "p.updated_at", Cast: "::timestamptz"},
 	},
+}
+
+/** contactSearchField builds the trusted contact-relation predicate for Person searches. */
+func contactSearchField(contactType entity.ContactType, conditions ...coresearch.FixedCondition) coresearch.RelationField {
+	return coresearch.RelationField{
+		Table: entity.Contact{}.TableName(),
+		Alias: "contact",
+		ParentCondition: "contact.person_gid = p.gid",
+		ValueExpression: "contact.normalized_value",
+		FixedConditions: append(
+			[]coresearch.FixedCondition{{Expression: "contact.type = ", Value: contactType}},
+			conditions...,
+		),
+	}
 }
