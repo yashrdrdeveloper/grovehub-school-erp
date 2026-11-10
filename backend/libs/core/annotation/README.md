@@ -1,62 +1,121 @@
-# GrooveHub Annotation Core — Phase 1 catalog + Phase 2 pilots
+# GrooveHub Core Annotation Framework
 
-> **Status:** Phase 1 catalog is complete. Phase 2 has implemented selected route, startup configuration and Foundation DTO-validation functionality; most annotations are still metadata only.
+> **Status:** Phase 1 catalog completed; Phase 2 generators active in selected backend layers. Other annotations remain metadata only.
 >
-> **Source of truth:** [Backend annotation master plan](../../../../docs/engineering/backend/ANNOTATION_FRAMEWORK_MASTER_PLAN.md) and [Phase 1 annotation reference](../../../../docs/engineering/backend/ANNOTATION_PHASE1_REFERENCE.md).
+> [Complete master plan](../../../../docs/engineering/backend/ANNOTATION_FRAMEWORK_MASTER_PLAN.md) · [Phase 1 catalog](../../../../docs/engineering/backend/ANNOTATION_PHASE1_REFERENCE.md) · [Phase 2 migration ledger](../../../../docs/engineering/backend/ANNOTATION_PHASE2_MIGRATION.md)
 
-This directory owns `@...` annotation definitions and a small number of approved processors. It **does not** replace GORM, Watermill, Go's HTTP server, any application service, or any business logic.
+Go doesn't natively support Java-style annotations. GrooveHub accepts source comments such as `// @Entity ...`, parses them at build time and generates ordinary typed Go where a processor exists. No annotation alters a function automatically at runtime.
 
-## Inventory
+## Inventory and code structure
 
-- **226 use cases** across 16 backend responsibility categories.
-- **232 unique directive names**, including 21 GoF-only annotations.
-- **All 23 GoF design patterns** classified with automation decisions; `@Builder` and `@Adapter` already appear in the primary inventory.
-- `annotations_*.go` files own a category, `inventory.go` assembles it, and `patterns.go` records pattern decisions.
-- `annotation.go` exposes typed definitions, safe catalog lookup, source comment parsing, and basic syntax validation.
-- `generation/parser/parser.go` scans ordinary Go source using the Go AST; it never changes or executes source.
+The Phase 1 registry defines **226 use cases, 232 distinct annotation names and all 23 GoF design patterns**. `annotations_*.go` organizes metadata by responsibility; `inventory.go` and `annotation.go` expose `All`, `Lookup`, `Uses`, `Patterns`, `ParseComment` and `ValidateDirective`.
 
-## Phase 1 API
-
-```go
-definition, ok := annotation.Lookup("Mapper")
-entries := annotation.All()
-contexts := annotation.Uses()
-patterns := annotation.Patterns()
-
-directive, found, err := annotation.ParseComment("// @Entity foundation.person_contacts")
-occurrences, err := parser.ScanFile("path/to/contact.go")
+```text
+backend/libs/core/annotation/
+  annotation.go                    # metadata registry and parser
+  annotations_*.go                # 16 responsibility catalogs
+  configuration/                  # typed startup env loader
+  validation/                     # safe request field rules and normalization
+  entity/                         # existing generic builder facade
+  generation/
+    entities/                     # Gombok-compatible builders, getters and setters
+    gormtable/                    # GORM TableName() generation
+    routes/                       # traced net/http registration
+    clients/                      # typed in-process client forwarding
+    mappers/                      # exact-field DTO projections
+    events/                       # stable domain event topic/type/version constants
+    overlay/                      # virtual Go package source injection
+    parser/                       # read-only catalog AST scan
+    expand/                       # retained legacy tool; not in active build path
 ```
 
-`ParseComment` rejects unknown annotation names and validates the existing `@Entity schema.table` syntax. Other directive arguments are currently opaque strings: they **must not be treated as validated** until Phase 2 provides the processor and schema. `ScanFile` reports structural target and source position for each occurrence.
+All code generated for a service is placed under **that service's ignored `.generated/` directory**, not beside its maintained Go files.
 
-## Recognized syntax and implemented processors
+## Active annotation examples
+
+### Entities and GORM tables
 
 ```go
-// @Entity foundation.person_contacts   // existing generator: Foundation only
-// @Mapper                               // metadata only
-// @NonNull identity.InvalidRegistration // metadata only; does NOT validate nil
-// @Repository                           // metadata only
-// @Service                              // metadata only; do NOT apply in services in Phase 1
-// @Producer                             // metadata only; does NOT publish
+// @Entity foundation.person_contacts
+type Contact struct {
+    Value string
+}
 ```
 
-**The original Phase 1 catalog migration did not apply new directives. Phase 2 now uses @Routes on controller contracts, @Configuration on Integration config types and @Validator on Foundation request DTOs.** For example, the comment `// @Authorize` does not enforce an access-control policy; neither does `// @Transactional` begin a transaction. This distinction is a security requirement, not a missing optional convenience.
+This generates `NewContactBuilder()`, supported getters and setters, and GORM `TableName()`. Existing custom Person value getters/setters are preserved; the generator suppresses conflicting accessor categories.
 
-The existing `@Entity` and upstream Gombok annotations retain their prior generator behavior; they were already present before this phase. Their existing `generation/expand`, `generation/gormtable`, `generation/overlay` tools are not rewritten here.
+For sensitive records:
 
-## Contracts and migration
+```go
+// @Entity identity.password_credentials mode=table
+type PasswordCredential struct {
+    PasswordHash string
+}
+```
 
-Phase 2 is incrementally adding typed processors and explicit runtime helpers, then migrating each backend layer **after behavior tests**, preserving all explicit service rules. Do not substitute metadata annotations for working validation, authorization, durable message delivery, secret management, or transaction handling.
+**Only `TableName()` is generated**; no builder or mutator is emitted. Identity and Integration use this mode for seven persistence models.
 
-Code-generation outputs stay under the owning module's ignored `.generated/` directory and compile using the established Go overlay strategy. The annotation registry is **not** a runtime reflection container or a service locator.
+### HTTP routes
 
+```go
+// @Routes /auth
+type AuthController interface {
+    // @POST /register
+    Register(http.ResponseWriter, *http.Request)
+}
+```
 
-## Active Phase 2 slices
+`generation/routes` validates method/path contracts and emits `net/http` handlers with the existing tracing middleware. All 19 Foundation/Identity/Integration endpoints were preserved.
 
-- `generation/routes`: generates traced `net/http` registrations from annotated controller interfaces into service-local `.generated/routes/`.
-- `generation/clients`: generates typed in-process forwarding adapters from `@Client`/`@Proxy` contracts into `.generated/client/impl/` for Foundation, Integration and Infrastructure.
-- `configuration`: typed, startup-only environment parsing for Integration Gmail and Outlook; domain-specific callback validation remains manual.
-- `validation`: explicit DTO field-tag normalization and rules for Foundation names; contact, search and business validation stay manual.
-- The migration record and remaining work are in [ANNOTATION_PHASE2_MIGRATION.md](../../../../docs/engineering/backend/ANNOTATION_PHASE2_MIGRATION.md).
+### Typed clients and mappers
 
-The `@Service`, `@Repository`, `@Consumer`, `@Authorize`, `@Mapper` and most other directives are still metadata only. Do not add those directives expecting runtime enforcement.
+```go
+// @Client messagingClient
+type MessagingClient interface {
+    // @Proxy service.Health
+    Health(ctx context.Context) error
+}
+```
+
+This generates a signature-preserving delegation to an explicitly injected implementation. No service locator or network call is invented.
+
+```go
+// @Mapper AuthMapper
+type AuthMapper interface {
+    // @Mapping Email=account.GetEmail()
+    // @Mapping Status=string(account.GetStatus())
+    // ... every other destination field must also be declared
+    ToRegisterResponse(account entity.Account) response.Register
+}
+```
+
+The mapper generator requires **complete destination-field coverage** and fails rather than silently dropping fields. Complex Foundation contact grouping stays handwritten.
+
+### Configuration, validation and events
+
+Integration config uses `// @Configuration` and `env`, `required`, `default`, `secret` struct tags with the typed startup loader. Foundation and Identity request DTOs use `// @Validator` and explicit `normalize` / `validate` tags for the supported rules. Cross-field business checks remain in their existing validators.
+
+```go
+// @Event topic=identity_account_created type=identity.account.created.v1 source=identity
+type Created struct {
+    AccountID string
+}
+```
+
+This generates `CreatedTopic`, `CreatedType`, `CreatedVersion` and `Source`, **not** the event publisher, consumer or after-commit transaction policy. The original NATS/Watermill event envelopes and publication behavior are unchanged.
+
+## Build and tests
+
+```bash
+make backend-build
+make backend-test
+bash scripts/backend/generate-annotations.sh
+```
+
+The unified generator runs entities → GORM table metadata → routes → clients → mappers → events → Go overlay. CI at `.github/workflows/backend-annotations.yml` compiles the backend with Go 1.27.3 and runs annotation tests. Direct Go commands need the `-overlay` option; the test wrapper uses `-vet=off` for virtual files and is not a substitute for separate static analysis.
+
+## Security and migration limits
+
+`@Service`, `@Repository`, `@Consumer`, `@Producer`, `@Authorize`, `@Transactional`, `@Audit`, `@Retry` and most other cataloged directives **do not enforce behavior yet**. Do not use them as security, durability, or transaction guarantees. Keep authorization, domain decisions, GORM predicates, credential/OAuth policy, message acknowledgments and event publication explicit until tested processors are separately implemented.
+
+The complete remaining work and acceptance criteria are in the Phase 2 migration ledger.
