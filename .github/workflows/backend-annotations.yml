@@ -1,0 +1,44 @@
+name: Backend annotation build
+
+on:
+  push:
+    branches:
+      - phase-2.1-identity-account
+    paths:
+      - "backend/**"
+      - "scripts/**"
+      - "Makefile"
+      - ".github/workflows/backend-annotations.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  annotation-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Install Go toolchain
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.27.3"
+          cache-dependency-path: backend/go.sum
+      - name: Compile the complete backend with generated annotations
+        run: make backend-build
+      - name: Run annotation and generator tests
+        working-directory: backend
+        run: |
+          go test -vet=off -overlay=.generated/overlay.json ./libs/core/annotation/...
+          go test -vet=off -overlay=.generated/overlay.json ./libs/core/tests/unit-test/annotation/...
+      - name: Validate generated source on a clean checkout
+        shell: bash
+        run: |
+          test -s backend/.generated/overlay.json
+          test -s backend/services/foundation/.generated/routes/zz_routes.gen.go
+          test -s backend/services/identity/.generated/routes/zz_routes.gen.go
+          test -s backend/services/integration/.generated/routes/zz_routes.gen.go
+          test -s backend/services/identity/.generated/mappers/impl/zz_mappers.gen.go
+          test -s backend/services/foundation/.generated/mappers/impl/zz_mappers.gen.go
