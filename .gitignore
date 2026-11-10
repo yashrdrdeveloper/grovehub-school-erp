@@ -2,3 +2,6 @@
 .state/
 .tools/
 .env
+
+# Module-local generated Go files and overlay manifest
+.generated/
