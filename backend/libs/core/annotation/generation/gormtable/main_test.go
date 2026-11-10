@@ -31,3 +31,15 @@ func TestRejectDuplicateTableName(t *testing.T){
  if err:=os.WriteFile(filepath.Join(dir,"contact.go"),[]byte(source),0644);err!=nil {t.Fatal(err)}
  if err:=generate(dir);err==nil{t.Fatal("expected duplicate TableName error")}
 }
+
+
+func TestGenerateTableOnlyEntity(t *testing.T) {
+    source:=t.TempDir()
+    output:=filepath.Join(t.TempDir(),"entity","zz_tables.gen.go")
+    code:="package entity\n// @Entity identity.password_credentials mode=table\ntype PasswordCredential struct {PasswordHash string}\n"
+    if err:=os.WriteFile(filepath.Join(source,"password.go"),[]byte(code),0644);err!=nil{t.Fatal(err)}
+    if err:=generateInto(source,output);err!=nil{t.Fatal(err)}
+    generated,err:=os.ReadFile(output);if err!=nil{t.Fatal(err)}
+    if !strings.Contains(string(generated),`func (PasswordCredential) TableName() string`)||
+       !strings.Contains(string(generated),`"identity.password_credentials"`) {t.Fatalf("wrong table-only mapping: %s",generated)}
+}
