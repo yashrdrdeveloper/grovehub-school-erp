@@ -48,7 +48,7 @@ func writeOverlay(backend string)error {
         if err:=scan(filepath.Join(root,"services",service.Name()));err!=nil{return err}
     }
     if err:=scan(filepath.Join(root,"libs","core"));err!=nil{return err}
-    if len(replacement)==0{return fmt.Errorf("no generated Go files found; run generate-entities.sh first")}
+    if len(replacement)==0{return fmt.Errorf("no generated Go files found; run generate-annotations.sh first")}
 
     outDir:=filepath.Join(root,".generated")
     if err:=os.MkdirAll(outDir,0755);err!=nil{return err}
