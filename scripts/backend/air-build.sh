@@ -11,7 +11,7 @@ source "${SCRIPT_DIR}/../lib/common.sh"
 source "${SCRIPT_DIR}/../lib/go.sh"
 
 sync_backend_go_modules
-bash "${SCRIPT_DIR}/generate-entities.sh"
+bash "${SCRIPT_DIR}/generate-annotations.sh"
 
 OUTPUT="${RUNTIME_BIN_DIR}/groovehub-dev"
 
