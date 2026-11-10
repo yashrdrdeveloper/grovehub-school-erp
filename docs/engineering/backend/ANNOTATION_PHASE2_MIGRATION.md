@@ -21,11 +21,12 @@
 | Identity HTTP routes | Replaced manual registration for `POST /auth/register` | `@Routes`, `@POST` | Needs auth registration HTTP regression test |
 | Integration HTTP routes | Replaced 13 manual connection, webhook and provider route entries | `@Routes`, `@GET`, `@POST`, `@DELETE` on two controller interfaces | Needs OAuth callback, webhook, and ownership regression tests |
 | HTTP build tooling | New `generation/routes` tool, generalized overlay maps service-local generated package files | Go AST, `-overlay` | Gopls and standard direct Go invocations need explicit configuration |
+| Foundation, Integration and Infrastructure clients | 15 in-process forwarding methods now generated; constructors and injected service contracts remain maintained Go | `@Client` and `@Proxy` | Must verify all delegations compile and preserve context, signatures, auth boundaries |
 | Integration config | Gmail and Outlook env parsing moved to typed tagged loader; preserved callback checks and error semantics | `@Configuration`, `env`, `required`, `default`, `secret` | `GmailPush` and encryption-key loaders remain explicit |
 | Foundation DTO validation | Create/update name trimming, notblank and rune-length limits moved to DTO tags and shared validator | `@Validator`, `normalize`, `validate` tags | Contact uniqueness/primary/search validation stays custom |
 | Test tooling | Added overlay-aware `make backend-test`; sanity tests prepare overlay | `go test -vet=off -overlay=...` | Go vet cannot automatically read non-existent virtual paths; see below |
 
-The source retains service methods, service interfaces, GORM repositories, domain event decorators, provider strategies, authentication decisions, and middleware behavior.
+The source retains service methods, service interfaces, client constructors, GORM repositories, domain event decorators, provider strategies, authentication decisions, and middleware behavior.
 
 ### Endpoint parity
 
@@ -79,6 +80,8 @@ scripts/testing/sanity.sh              # overlay-aware sanity test
 
 Generated files are **not committed**; directories above show runtime outputs after the generation step.
 
+`generation/clients` adds `.generated/client/impl/zz_clients.gen.go` within Foundation, Integration and Infrastructure. The Go overlay scanner now supports nested generated package paths. `client/impl` retains only the constructor and injected service dependencies; generated forwarders are defined by `@Proxy` method bindings on each public client interface.
+
 ## 4. Development and verification commands
 
 ```bash
@@ -113,7 +116,7 @@ go test -vet=off -overlay=.generated/overlay.json ./...
 | Entity/GORM models | Consider `@Entity` for Identity and Integration only after allowing safe accessor exclusions | No accidental credential/PII setters; schema/table parity |
 | Mapper/DTO | Typed MapStruct-style mapper with explicit nested/converter mappings | No secret export, exhaustive destination fields, error DTO semantics |
 | Validators | Extend field tag rules for email/phone/UUID, cross-field rules, PATCH presence | Preserve existing resource errors and normalization |
-| Clients | Typed in-process delegation generation for Foundation, Integration and Infrastructure | No authorization bypass, no signature drift |
+| Clients | Pilot applied to Foundation, Integration and Infrastructure; extend only after compile tests | No authorization bypass, no signature drift |
 | Repositories | Opt-in CRUD, transaction and query contracts where safe | Preserve SQL/GORM, tenant boundaries, search, conflict mapping |
 | Events | Typed domain event descriptors and handlers | Keep `Envelope[T]`, event topics, idempotent/no-op semantics |
 | Messaging | Producer/consumer registration descriptors | NATS/Watermill ack/retry/trace/backpressure semantics |
