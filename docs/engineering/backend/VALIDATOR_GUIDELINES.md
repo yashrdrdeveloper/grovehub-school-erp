@@ -12,11 +12,10 @@ docs/engineering/backend/NORMALIZATION_AND_DRY_GUIDELINES.md
 
 ---
 
-## Executable DTO annotations and header context
+## Request DTOs and header context
 
-- `// @Data` declares a checked passive shared DTO shape; it does not create unsafe implicit setters or runtime hooks.
-- `// @Validator` declares the validation boundary. Field annotations `// @Valid`, `// @NotBlank`, `// @NotNull` and `// @Size max=N` require matching executable `validate:"valid"`, `validate:"notblank"`, `validate:"nonnull"`, `validate:"maxrunes=N"` tags. The annotation checker rejects missing tags.
-- The shared generic Foundation `request.Person[T]` is embedded with `T=string` for create and `T=*string` for PATCH; nil pointers remain absent, including nested optional contacts.
+- Foundation uses a plain `request.Person` with string fields embedded in `CreatePerson`; `UpdatePerson` declares optional `*string` PATCH fields explicitly so missing properties never overwrite existing names.
+- Validation and normalization are applied by existing validator code using the `normalize` and `validate` struct tags; repeating the same rules as `@NotBlank`, `@Size`, `@Valid`, `@Data`, or `@Validator` comments in these DTOs adds no value and is not required.
 - `libs/core/headercontext.Middleware` captures and validates `Idempotency-Key`, `X-Correlation-ID` and `X-Request-ID` once at the launcher HTTP boundary. Services consume `headercontext.IdempotencyKey(ctx)` directly; no request-body header fields or controller extraction. Never treat client-supplied `X-Trace-ID` as authoritative telemetry.
 
 ## 1. Purpose

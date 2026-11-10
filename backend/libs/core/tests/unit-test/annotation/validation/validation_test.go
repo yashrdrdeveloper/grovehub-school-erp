@@ -10,15 +10,18 @@ import (
 	annotationvalidation "grovehub/libs/core/annotation/validation"
 )
 
-type CommonPerson[T any] struct {
-	FirstName T `json:"firstName" normalize:"trim" validate:"notblank,maxrunes=100"`
-	LastName T `json:"lastName" normalize:"trim" validate:"notblank,maxrunes=100"`
+type CommonPerson struct {
+	FirstName string `json:"firstName" normalize:"trim" validate:"notblank,maxrunes=100"`
+	LastName string `json:"lastName" normalize:"trim" validate:"notblank,maxrunes=100"`
 }
 type createPerson struct {
-	CommonPerson[string] `validate:"valid"`
+	CommonPerson `validate:"valid"`
 	Contacts []struct{ Value string `validate:"notblank"` } `json:"contacts" validate:"valid"`
 }
-type patchPerson struct { CommonPerson[*string] `validate:"valid"` }
+type patchPerson struct {
+	FirstName *string `json:"firstName,omitempty" normalize:"trim" validate:"notblank,maxrunes=100"`
+	LastName *string `json:"lastName,omitempty" normalize:"trim" validate:"notblank,maxrunes=100"`
+}
 
 var _ = Describe("Nested tagged validation", func() {
 	It("normalizes embedded create fields without changing wire names", func() {
@@ -32,7 +35,7 @@ var _ = Describe("Nested tagged validation", func() {
 
 	It("preserves optional PATCH pointers and does not mutate caller data", func() {
 		firstName := "  Alice  "
-		request := patchPerson{CommonPerson: CommonPerson[*string]{FirstName:&firstName}}
+		request := patchPerson{FirstName: &firstName}
 		normalized, err := annotationvalidation.Normalize(request)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(*normalized.FirstName).To(Equal("Alice"))
@@ -45,7 +48,7 @@ var _ = Describe("Nested tagged validation", func() {
 		var violation annotationvalidation.Error
 		Expect(errors.As(err, &violation)).To(BeTrue())
 		_, err = annotationvalidation.Normalize(createPerson{
-			CommonPerson: CommonPerson[string]{FirstName:"A", LastName:"B"},
+			CommonPerson: CommonPerson{FirstName:"A", LastName:"B"},
 			Contacts: []struct{ Value string `validate:"notblank"` }{{Value:" "}},
 		})
 		Expect(errors.As(err, &violation)).To(BeTrue())

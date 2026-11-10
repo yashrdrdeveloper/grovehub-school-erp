@@ -169,7 +169,7 @@ func setup(t *testing.T) (*fakePersonRepository, *fakeContactRepository, *fakeUn
 func TestCreatePersistsPersonAndContactsInsideOneTransaction(t *testing.T) {
 	people, contacts, work, service := setup(t)
 	result, created, err := service.Create(context.Background(), foundationrequest.CreatePerson{
-		Person: foundationrequest.Person[string]{FirstName: "Anu", LastName: "Roy"},
+		Person: foundationrequest.Person{FirstName: "Anu", LastName: "Roy"},
 		Contacts: foundationrequest.Contacts{
 			Emails: []foundationrequest.ContactValue{{Value: "anu@example.com", IsPrimary: true}},
 		},
@@ -193,7 +193,7 @@ func TestUpdateNameOnlyDoesNotRewriteContacts(t *testing.T) {
 	people.person = entity.Person{GID: "person-id", FirstName: "Old", LastName: "Name", Version: 1, UpdatedAt: time.Now().UTC()}
 	contacts.byPerson[people.person.GID] = []entity.Contact{{PersonGID: people.person.GID, Type: entity.ContactTypeEmail, Value: "old@example.com", NormalizedValue: "old@example.com"}}
 	name := "New"
-	result, err := service.Update(context.Background(), foundationrequest.PersonByGID{GID: "person-id"}, foundationrequest.UpdatePerson{Person: foundationrequest.Person[*string]{FirstName: &name}})
+	result, err := service.Update(context.Background(), foundationrequest.PersonByGID{GID: "person-id"}, foundationrequest.UpdatePerson{FirstName: &name})
 	if err != nil { t.Fatal(err) }
 	if result.FirstName != "New" || people.person.Version != 2 { t.Fatalf("unexpected person update: %#v", people.person) }
 	if contacts.replacements != 0 { t.Fatal("name-only update must not rewrite unchanged contacts") }
