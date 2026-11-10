@@ -278,9 +278,10 @@ repository/impl/contact.go
 
 repository/search/person.go
     -> PersonConfig holds explicit search/sort/cursor and contact relation mappings
+    -> private contactSearchField builds its own read-only contact relation predicates
 
 repository/helpers/{person,contact}.go
-    -> constraint error translation and safe search relation field construction
+    -> PostgreSQL constraint error translation only
 
 repository/constants/errors/{person,contact}.go
     -> repository-specific sentinel errors
