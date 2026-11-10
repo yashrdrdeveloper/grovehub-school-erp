@@ -2,7 +2,7 @@
 package annotation
 
 var entityUseCases = []UseCase{
-    {Name:"Entity",Syntax:"@Entity schema.table",Category:"Entity, DTO and model lifecycle",Purpose:"Gombok builder, safe accessors, GORM TableName; existing Foundation directive",Mode:"GEN",Status:Existing,Roadmap:"P0",Target:TypeTarget},
+    {Name:"Entity",Syntax:"@Entity schema.table [mode=table]",Category:"Entity, DTO and model lifecycle",Purpose:"Generate API-compatible entity builders, safe accessors and GORM TableName; mode=table omits builders/accessors for sensitive models",Mode:"GEN",Status:Existing,Roadmap:"P0",Target:TypeTarget},
     {Name:"Builder",Syntax:"@Builder",Category:"Entity, DTO and model lifecycle",Purpose:"Fluent typed builder; preserve field types and optional semantics",Mode:"GEN",Status:Existing,Roadmap:"P0",Target:TypeTarget},
     {Name:"Getter",Syntax:"@Getter",Category:"Entity, DTO and model lifecycle",Purpose:"Typed getter; suppress conflicting custom methods",Mode:"GEN",Status:Existing,Roadmap:"P0",Target:TypeTarget},
     {Name:"Setter",Syntax:"@Setter",Category:"Entity, DTO and model lifecycle",Purpose:"Mutable typed setter; never default for sensitive fields",Mode:"GEN",Status:Existing,Roadmap:"P0",Target:TypeTarget},
