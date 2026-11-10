@@ -1,14 +1,26 @@
 # GrooveHub | Backend Annotation Framework - Master Plan
 
-**Version:** 1.0 planning draft  |  **Date:** 10 November 2026  |  **Branch:** `phase-2.1-identity-account`  |  **Change type:** Documentation / design only
+**Version:** 1.1 Phase 1 registered  |  **Date:** 10 November 2026  |  **Branch:** `phase-2.1-identity-account`  |  **Change type:** Annotation contracts and documentation; no service migration
 
 **Scope:** Complete Go modular-monolith annotation catalog, all backend folders and cross-cutting concerns, 23 GoF patterns, phased execution, acceptance criteria and risks.
 
 ---
 
+## Phase 1 / Phase 2 implementation agreement (supersedes P0-P8 as release stages)
+
+**Phase 1 — annotation contract definitions (this change).** Register every named annotation centrally under `backend/libs/core/annotation`, with name/syntax, purpose, category, intended mechanism (GEN/WRAP/REG/CHECK/TAG), current implementation status, roadmap workstream and structural target. Include all 23 GoF pattern decisions, a read-only AST scanner, contract tests and a complete reference document. **Do not apply new annotations to any service in Phase 1.** The pre-existing Foundation `@Entity` workflow remains unchanged.
+
+**Phase 2 — implementation and migration (not started).** Design the per-annotation argument schema, implement the approved generator or runtime wrapper, prove behavior in tests, then replace repetitive code layer by layer. The original P0-P8 roadmap below is now the **set of Phase 2 workstreams**, not a claim that any of those processors are working. In particular, `@Service` is registered for completeness **but not applied to service code** under the current Phase 1 request.
+
+The exhaustive Phase 1 catalog and status contract are published in [ANNOTATION_PHASE1_REFERENCE.md](ANNOTATION_PHASE1_REFERENCE.md). The code catalog is under `backend/libs/core/annotation/{annotation.go,annotations_*.go,inventory.go,patterns.go}`.
+
+**Runtime-safety rule:** An annotation that is recognized by the Phase 1 parser is **not automatically enforced**. Do not use unimplemented `@NonNull`, `@Authorize`, `@Transactional`, `@Retry`, `@Consumer` or `@Service` as a substitute for working code.
+
+---
+
 ## 01. Executive decision and scope
 
-> **Document status:** architecture and implementation plan only. No new annotation framework implementation is claimed. The existing Foundation `@Entity` / Gombok expansion and service-local Go overlays are the only custom annotation capability observed in the reviewed branch; Gombok supports its own directives.
+> **Document status:** Phase 1 definition registry created in `backend/libs/core/annotation` (all 226 use cases, 232 unique names including GoF-only candidates, all 23 GoF pattern decisions). This means **metadata/catalog and AST discovery, not executable annotations**. Existing Foundation `@Entity` / Gombok remains the only custom runtime-build generation path observed. No service implementation was rewritten.
 
 **Purpose.** Replace mechanical boilerplate with typed, auditable generation while retaining readable Go and GrooveHub's explicit layer ownership. Cover all backend folders, middleware, server bootstrap, database and repositories, mappers, validation, external providers, events, messaging, observability, configuration, security, tests, scheduling, utilities and the 23 Gang of Four (GoF) patterns.
 
@@ -38,7 +50,7 @@
 | Launcher | `cmd/platform`, `launcher/bootstrap`, `launcher/middleware`, `launcher/routing`, `http.Server` | Explicit startup and security wiring, carefully generated route registration |
 | Core libraries | annotation, database, diff, errors, events, http, id, idempotency, logging, normalize, search, telemetry | Annotation owns generator metadata; technical capabilities stay in their existing core packages |
 
-**Already observed in current code:** `// @Entity foundation.person_contacts`, `// @Entity foundation.persons`; Gombok directives `@Builder`, `@Getter`, `@Setter` and related supported CLI directives; `libs/core/annotation/generation/{expand,gormtable,overlay}`; module-local `.generated`; `-overlay` integration. The complete build and IDE behavior are **not assumed verified**.
+**Pre-existing implementation baseline (before Phase 1 registry):** `// @Entity foundation.person_contacts`, `// @Entity foundation.persons`; Gombok directives `@Builder`, `@Getter`, `@Setter` and related supported CLI directives; `libs/core/annotation/generation/{expand,gormtable,overlay}`; module-local `.generated`; `-overlay` integration. The complete build and IDE behavior are **not assumed verified**.
 
 **Observed pain points:** repeated field conversion in `foundation/mappers/impl/person.go`; long normalization/search checks in `foundation/validators/helpers/person.go`; route registration duplication across modules; in-process client forwarding wrappers; manual provider catalog/strategy registration; config `os.Getenv` parsing; repeated logging and tracing context; extensive service construction in `foundation.go`/`identity.go`/`integration.go`.
 
@@ -428,7 +440,7 @@ This catalog names the planned semantics for the backend. **Only the observed Fo
 
 ## 05. GoF design patterns - all 23 and annotation decision
 
-These are the **23 classic GoF patterns**, not 23 mandatory annotations. A pattern is an architectural technique, not automatically a code-generation feature. Prefer `@Strategy`, `@Adapter`, `@FactoryMethod`, `@Decorator`, `@Proxy`, `@Observer` and `@Chain` for meaningful registry/wrapper generation. Most other names would only decorate code without eliminating real boilerplate and should remain plain Go or a linter.
+These are the **23 classic GoF patterns**, now registered as Phase 1 metadata decisions, not 23 mandatory executable annotations. A pattern is an architectural technique, not automatically a code-generation feature. Prefer `@Strategy`, `@Adapter`, `@FactoryMethod`, `@Decorator`, `@Proxy`, `@Observer` and `@Chain` for meaningful registry/wrapper generation. Most other names would only decorate code without eliminating real boilerplate and should remain plain Go or a linter.
 
 | Family | Pattern | Candidate annotation | Allowed automation / purpose | Decision |
 | --- | --- | --- | --- | --- |
