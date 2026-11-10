@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	coretelemetry "grovehub/libs/core/telemetry"
+	coretransaction "grovehub/libs/core/database/transaction"
 	foundationclient "grovehub/services/foundation/client"
 	clientimpl "grovehub/services/foundation/client/impl"
 	"grovehub/services/foundation/controller"
@@ -38,7 +39,7 @@ func New(
 ) Module {
 	personRepository := repositoryimpl.NewPersonRepository(db)
 	contactRepository := repositoryimpl.NewContactRepository(db)
-	unitOfWork := repositoryimpl.NewUnitOfWork(db)
+	unitOfWork := coretransaction.NewUnitOfWork(db)
 	personMapper := mapperimpl.NewPersonMapper()
 	personValidator := validatorimpl.NewPersonValidator()
 	personService := serviceimpl.NewPersonService(personRepository, contactRepository, unitOfWork, personMapper, personValidator)

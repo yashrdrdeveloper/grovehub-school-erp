@@ -9,12 +9,14 @@ import (
 	coreid "grovehub/libs/core/id"
 	coreidempotency "grovehub/libs/core/idempotency"
 	coresearch "grovehub/libs/core/search"
+	coretransaction "grovehub/libs/core/database/transaction"
 	personerror "grovehub/services/foundation/constants/error"
 	foundationrequest "grovehub/services/foundation/dto/request"
 	foundationresponse "grovehub/services/foundation/dto/response"
 	"grovehub/services/foundation/entity"
 	foundationmappers "grovehub/services/foundation/mappers"
 	foundationrepository "grovehub/services/foundation/repository"
+	repositoryconstants "grovehub/services/foundation/repository/constants"
 	foundationservices "grovehub/services/foundation/services"
 	servicehelpers "grovehub/services/foundation/services/helpers"
 	foundationvalidators "grovehub/services/foundation/validators"
@@ -23,7 +25,7 @@ import (
 type PersonService struct {
 	personRepository foundationrepository.PersonRepository
 	contactRepository foundationrepository.ContactRepository
-	unitOfWork foundationrepository.UnitOfWork
+	unitOfWork coretransaction.UnitOfWork
 	mapper foundationmappers.PersonMapper
 	validator foundationvalidators.PersonValidator
 }
@@ -31,7 +33,7 @@ type PersonService struct {
 func NewPersonService(
 	personRepository foundationrepository.PersonRepository,
 	contactRepository foundationrepository.ContactRepository,
-	unitOfWork foundationrepository.UnitOfWork,
+	unitOfWork coretransaction.UnitOfWork,
 	mapper foundationmappers.PersonMapper,
 	validator foundationvalidators.PersonValidator,
 ) foundationservices.PersonService {
@@ -62,7 +64,7 @@ func (service *PersonService) Create(ctx context.Context, request foundationrequ
 			}
 			return service.mapper.ToPersonResponse(existing, storedContacts), false, nil
 		}
-		if !errors.Is(readErr, foundationrepository.ErrPersonNotFound) {
+		if !errors.Is(readErr, repositoryconstants.ErrPersonNotFound) {
 			return foundationresponse.Person{}, false, coreerrors.Wrap(personerror.PersonReadFailed, readErr)
 		}
 	}
@@ -85,7 +87,7 @@ func (service *PersonService) Create(ctx context.Context, request foundationrequ
 		return service.contactRepository.ReplaceForPerson(txCtx, person.GID, contacts)
 	})
 	if err != nil {
-		if errors.Is(err, foundationrepository.ErrPersonIdempotencyKeyAlreadyExists) {
+		if errors.Is(err, repositoryconstants.ErrPersonIdempotencyKeyAlreadyExists) {
 			existing, storedContacts, readErr := service.findPersonByIdempotencyKey(ctx, idempotencyKey)
 			if readErr != nil { return foundationresponse.Person{}, false, coreerrors.Wrap(personerror.PersonReadFailed, readErr) }
 			if servicehelpers.NullableString(existing.RequestHash) != requestHash {
@@ -93,7 +95,7 @@ func (service *PersonService) Create(ctx context.Context, request foundationrequ
 			}
 			return service.mapper.ToPersonResponse(existing, storedContacts), false, nil
 		}
-		if errors.Is(err, foundationrepository.ErrContactAlreadyExists) { return service.resolveConcurrentCreate(ctx, contacts) }
+		if errors.Is(err, repositoryconstants.ErrContactAlreadyExists) { return service.resolveConcurrentCreate(ctx, contacts) }
 		return foundationresponse.Person{}, false, coreerrors.WrapWithMetadata(personerror.PersonCreateFailed, err, service.mapper.ToPersonErrorMetadata(gid))
 	}
 	return service.mapper.ToPersonResponse(person, contacts), true, nil
@@ -146,7 +148,7 @@ func (service *PersonService) Update(ctx context.Context, personRequest foundati
 		return nil
 	})
 	if err != nil {
-		if errors.Is(err, foundationrepository.ErrPersonVersionConflict) {
+		if errors.Is(err, repositoryconstants.ErrPersonVersionConflict) {
 			latest, latestContacts, readErr := service.getPersonByGID(ctx, gid)
 			if readErr != nil { return foundationresponse.Person{}, readErr }
 			_, _, stillChanged, reconcileErr := service.applyPersonUpdate(ctx, latest, latestContacts, validatedRequest)
@@ -202,7 +204,7 @@ func (service *PersonService) Deactivate(
 	updatedPerson.Version = person.Version + 1
 	updatedPerson.UpdatedAt = time.Now().UTC()
 	if err := service.personRepository.Update(ctx, updatedPerson); err != nil {
-		if errors.Is(err, foundationrepository.ErrPersonVersionConflict) {
+		if errors.Is(err, repositoryconstants.ErrPersonVersionConflict) {
 			latest, latestContacts, readErr := service.getPersonByGID(ctx, gid)
 			if readErr != nil {
 				return foundationresponse.Person{}, readErr
@@ -259,7 +261,7 @@ func (service *PersonService) getPersonByGID(ctx context.Context, gid string) (e
 		return entity.Person{}, nil, coreerrors.NewErrorWithMetadata(personerror.InvalidPersonGID, service.mapper.ToPersonErrorMetadata(gid))
 	}
 	person, err := service.personRepository.FindByGID(ctx, gid)
-	if errors.Is(err, foundationrepository.ErrPersonNotFound) {
+	if errors.Is(err, repositoryconstants.ErrPersonNotFound) {
 		return entity.Person{}, nil, coreerrors.NewErrorWithMetadata(personerror.PersonNotFound, service.mapper.ToPersonErrorMetadata(gid))
 	}
 	if err != nil {
@@ -325,16 +327,16 @@ func (service *PersonService) resolveConcurrentCreate(
 
 func (service *PersonService) mapUpdateError(gid string, err error) error {
 	mapped := map[error]func() error{
-		foundationrepository.ErrPersonNotFound: func() error {
+		repositoryconstants.ErrPersonNotFound: func() error {
 			return coreerrors.NewErrorWithMetadata(
 				personerror.PersonNotFound,
 				service.mapper.ToPersonErrorMetadata(gid),
 			)
 		},
-		foundationrepository.ErrContactAlreadyExists: func() error {
+		repositoryconstants.ErrContactAlreadyExists: func() error {
 			return coreerrors.NewError(personerror.PersonContactConflict)
 		},
-		foundationrepository.ErrPersonVersionConflict: func() error {
+		repositoryconstants.ErrPersonVersionConflict: func() error {
 			return coreerrors.NewErrorWithMetadata(
 				personerror.PersonConcurrentModification,
 				service.mapper.ToPersonErrorMetadata(gid),

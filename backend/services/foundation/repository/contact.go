@@ -2,16 +2,16 @@ package repository
 
 import (
 	"context"
-	"errors"
 
 	"grovehub/services/foundation/entity"
 )
 
-var ErrContactAlreadyExists = errors.New("person contact already belongs to another person")
-
+/**
+ * ContactRepository exclusively persists foundation.person_contacts rows.
+ * Contacts are Person-owned children, not independently mutable resources.
+ * Changes to contacts must be coordinated by the owning PersonService.
+ */
 // @Repository entity=Contact
-// ContactRepository exclusively owns persistence of foundation.person_contacts.
-// Contact remains a Person-owned child; no ContactService or independent API exists.
 type ContactRepository interface {
 	FindByPersonGID(ctx context.Context, personGID string) ([]entity.Contact, error)
 	FindByPersonGIDs(ctx context.Context, personGIDs []string) (map[string][]entity.Contact, error)

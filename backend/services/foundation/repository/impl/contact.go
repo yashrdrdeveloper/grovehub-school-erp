@@ -2,19 +2,16 @@ package impl
 
 import (
 	"context"
-	"errors"
 	"strings"
 
-	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
 	coretransaction "grovehub/libs/core/database/transaction"
 	"grovehub/services/foundation/entity"
 	foundationrepository "grovehub/services/foundation/repository"
+	repositoryhelpers "grovehub/services/foundation/repository/helpers"
 )
-
-const uniqueContactConstraint = "uq_person_contacts_type_normalized_value"
 
 type ContactRepository struct {
 	db *gorm.DB
@@ -76,8 +73,6 @@ func (repository *ContactRepository) FindPersonGIDsByContacts(
 	return gids, nil
 }
 
-// ReplaceForPerson replaces the child collection; caller must start a shared
-// unit-of-work transaction before updating Person and Contact together.
 // ReplaceForPerson replaces the Person-owned child collection atomically.
 // It joins the outer PersonService transaction or creates its own transaction
 // when called without one, so primary-reset, upsert, and deletion never partially commit.
@@ -100,7 +95,7 @@ func (repository *ContactRepository) ReplaceForPerson(
 				},
 				DoUpdates: clause.AssignmentColumns([]string{"value", "is_primary", "is_verified", "updated_at"}),
 			}).Create(&contacts).Error; err != nil {
-				return mapContactWriteError(err)
+				return repositoryhelpers.MapContactWriteError(err)
 			}
 		}
 		return deleteStalePersonContacts(db, gid, contacts)
@@ -119,16 +114,4 @@ func deleteStalePersonContacts(tx *gorm.DB, gid string, contacts []entity.Contac
 		args = append(args, contact.Type, contact.NormalizedValue)
 	}
 	return query.Where("NOT ("+strings.Join(conditions, " OR ")+")", args...).Delete(&entity.Contact{}).Error
-}
-
-func mapContactWriteError(err error) error {
-	if err == nil {
-		return nil
-	}
-	var postgresError *pgconn.PgError
-	if errors.As(err, &postgresError) && postgresError.Code == "23505" &&
-		postgresError.ConstraintName == uniqueContactConstraint {
-		return foundationrepository.ErrContactAlreadyExists
-	}
-	return err
 }
