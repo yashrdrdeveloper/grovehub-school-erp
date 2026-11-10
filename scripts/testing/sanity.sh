@@ -59,7 +59,7 @@ require_command go
 log_info "Ensuring NATS JetStream is available for sanity tests"
 bash "${SCRIPT_DIR}/../infrastructure/nats/start.sh"
 
-bash "${SCRIPT_DIR}/../backend/generate-entities.sh"
+bash "${SCRIPT_DIR}/../backend/generate-annotations.sh"
 
 log_info "Running backend sanity tests: ${SANITY_SCOPE}"
 
