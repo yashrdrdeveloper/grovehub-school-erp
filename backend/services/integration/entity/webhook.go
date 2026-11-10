@@ -3,7 +3,7 @@ package entity
 import "time"
 
 // WebhookSubscription stores provider connectivity, never mailbox messages.
-// @Entity integration.webhook_subscriptions mode=table
+// @Entity integration.webhook_subscriptions
 type WebhookSubscription struct {
 	ID           string     `gorm:"column:id;type:uuid;primaryKey"`
 	ConnectionID string     `gorm:"column:connection_id;type:uuid;not null"`

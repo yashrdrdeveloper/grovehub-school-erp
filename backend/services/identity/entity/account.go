@@ -12,7 +12,7 @@ const (
 	AccountStatusDeactivated AccountStatus = "DEACTIVATED"
 )
 
-// @Entity identity.accounts mode=table
+// @Entity identity.accounts
 type Account struct {
 	AccountId                  AccountId     `gorm:"column:account_id;type:uuid;primaryKey"`
 	RegistrationIdempotencyKey *string       `gorm:"column:registration_idempotency_key"`

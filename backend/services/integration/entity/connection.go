@@ -11,7 +11,7 @@ const (
 	StatusDisconnected = connectionconstants.Disconnected
 )
 
-// @Entity integration.connections mode=table
+// @Entity integration.connections
 type Connection struct {
 	ID             string     `gorm:"column:id;type:uuid;primaryKey"`
 	TenantID       string     `gorm:"column:tenant_id;type:uuid;not null;index"`

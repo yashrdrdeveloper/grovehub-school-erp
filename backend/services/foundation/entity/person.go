@@ -9,7 +9,7 @@ const (
 	PersonStatusDeactivated PersonStatus = "DEACTIVATED"
 )
 
-// @Entity foundation.persons mode=table
+// @Entity foundation.persons
 type Person struct {
 	GID                  GID          `gorm:"column:gid;type:uuid;primaryKey"`
 	FirstName            string       `gorm:"column:first_name;not null"`

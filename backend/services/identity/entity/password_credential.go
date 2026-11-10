@@ -2,7 +2,7 @@ package entity
 
 import "time"
 
-// @Entity identity.password_credentials mode=table
+// @Entity identity.password_credentials
 type PasswordCredential struct {
 	AccountId         AccountId `gorm:"column:account_id;type:uuid;primaryKey"`
 	PasswordHash      string    `gorm:"column:password_hash;not null"`

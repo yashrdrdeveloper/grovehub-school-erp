@@ -2,7 +2,7 @@ package entity
 
 import "time"
 
-// @Entity integration.oauth_states mode=table
+// @Entity integration.oauth_states
 type OAuthState struct {
 	Hash         string    `gorm:"column:hash;primaryKey"`
 	ConnectionID string    `gorm:"column:connection_id;type:uuid;not null"`
@@ -10,7 +10,7 @@ type OAuthState struct {
 }
 
 
-// @Entity integration.oauth_credentials mode=table
+// @Entity integration.oauth_credentials
 type OAuthCredential struct {
 	ConnectionID string    `gorm:"column:connection_id;type:uuid;primaryKey"`
 	Ciphertext   []byte    `gorm:"column:ciphertext;not null"`
