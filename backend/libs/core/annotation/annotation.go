@@ -116,12 +116,20 @@ func buildDefinitions() map[string]Definition {
     // including patterns intentionally not recommended for generation.
     for _, pattern := range patternInventory {
         if _, exists := registry[pattern.Name]; exists { continue }
+        implementation := Optional
+        mode := "CHECK"
+        target := TypeTarget
+        if pattern.Name == "Proxy" {
+            implementation = Pilot
+            mode = "GEN"
+            target = MethodTarget
+        }
         registry[pattern.Name] = Definition{
             Name: pattern.Name,
             UseCases: []UseCase{{
                 Name:pattern.Name, Syntax:"@"+pattern.Name,
                 Category:"GoF design patterns", Purpose:pattern.Purpose,
-                Mode:"CHECK", Status:Optional, Roadmap:"P8", Target:TypeTarget,
+                Mode:mode, Status:implementation, Roadmap:"P8", Target:target,
             }},
         }
     }
