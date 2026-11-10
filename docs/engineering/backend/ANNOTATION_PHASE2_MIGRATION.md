@@ -25,10 +25,11 @@
 | Integration config | Gmail and Outlook env parsing moved to typed tagged loader; preserved callback checks and error semantics | `@Configuration`, `env`, `required`, `default`, `secret` | `GmailPush` and encryption-key loaders remain explicit |
 | Foundation and Identity request validation | Foundation create/update name normalization and rune-length limits; Identity registration required-name/presence checks | `@Validator`, `normalize`, `validate` tags | Password/email/phone, contact, search, and domain rules remain explicit |
 | Test tooling | Added overlay-aware `make backend-test`; sanity tests prepare overlay | `go test -vet=off -overlay=...` | Go vet cannot automatically read non-existent virtual paths; see below |
+| Annotation safety check | Build-time AST scanner rejects unimplemented directives such as `@Authorize` before generating code | `generation/check` | Does not replace actual IAM middleware or authorization decisions |
 | Strict DTO projection | Identity registration response and Foundation Person error metadata generated; contact grouping remains custom | `@Mapper`, `@Mapping` | Explicit fields fail generation when destination gains unmapped fields |
 | GORM table-only entities | Removed manual `TableName()` methods for seven Identity/Integration models; no new credential setters | `@Entity ... mode=table` | CI compilation verified; DB schema unchanged |
 | Event identity declarations | Foundation Person changed, Identity Account created, Integration Mailbox changed topics/types/versions generated | `@Event` | Event publication timing, after-commit, error policies unchanged |
-| CI regression gate | GitHub Actions Go 1.27.3 binary compilation, generator tests and clean-checkout output checks | `.github/workflows/backend-annotations.yml` | Full live integration regression remains separate |
+| CI regression gate | GitHub Actions Go 1.27.3 binary compilation, generator and core/launcher/Identity/Integration unit tests, and generated-output checks | `.github/workflows/backend-annotations.yml` | Live database/NATS integration regression remains separate |
 
 The source retains service methods, service interfaces, client constructors, GORM repositories, domain event decorators, provider strategies, authentication decisions, and middleware behavior.
 
@@ -116,7 +117,7 @@ go test -vet=off -overlay=.generated/overlay.json ./...
 
 - Source updates committed on the integration branch.
 - Pure generator test code and route parity expectations added; startup config and DTO validation unit tests added.
-- The **complete backend binary has compiled successfully** on GitHub Actions using Go **1.27.3** and the clean-checkout generation pipeline. Annotation unit tests and generators are CI-checked. The **full Ginkgo/Gomega suite and live database/NATS/HTTP integration smoke tests have not yet been executed**.
+- The **complete backend binary has compiled successfully** on GitHub Actions using Go **1.27.3** and clean-checkout generation. Focused annotation tests and the available core/launcher/Identity/Integration unit suites are CI-checked. The **live database/NATS/HTTP integration smoke tests have not yet been executed**.
 - No claim of full runtime compatibility or 232 executable annotations is made.
 
 ## 5. Remaining backend migration work
