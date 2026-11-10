@@ -95,6 +95,13 @@ fi
   go run ./libs/core/annotation/generation/routes "${BACKEND_DIR}"
 )
 
+# Generate in-process @Client/@Proxy forwarding methods for supported clients.
+# Source client/impl constructors remain explicit and unchanged.
+(
+  cd -- "${BACKEND_DIR}"
+  go run ./libs/core/annotation/generation/clients "${BACKEND_DIR}"
+)
+
 # The overlay manifest is recreated even when the source fingerprint is unchanged.
 # This ensures normal Go builds see virtual files under the original entity package.
 (
