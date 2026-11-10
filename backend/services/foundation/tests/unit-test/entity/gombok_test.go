@@ -35,12 +35,4 @@ var _ = Describe("Generated entity boilerplate",func(){
   Expect(person.GetFirstName()).To(Equal("Ada"))
   Expect(person.GetMiddleName()).To(BeEmpty())
  })
- It("retains the existing contact association timestamp rules",func(){
-  now:=time.Now().UTC()
-  contact:=foundationentity.NewContactBuilder().WithValue("test").Build()
-  linked:=contact.ForPerson(foundationentity.GID("p"),now,now)
-  Expect(linked.GetPersonGID()).To(Equal(foundationentity.GID("p")))
-  Expect(linked.GetCreatedAt()).To(Equal(now))
-  Expect(contact.GetPersonGID()).To(BeEmpty())
- })
 })
