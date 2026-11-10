@@ -398,3 +398,30 @@ YES capability tests aligned with capability ownership
 ## Shared generic domain-event contract
 
 `backend/libs/core/events/envelope.go` defines `Envelope[T any]`, a transport-agnostic `Metadata` struct, and generic `NewEnvelope(ctx, metadata, payload)`. The stable top-level JSON keys are `eventId`, `eventType`, `version` (event **schema** version), `aggregateId`, `occurredAt`, `correlationId`, `causationId`, and `data` (typed payload). Correlation ID may be explicitly propagated using `WithCorrelationID(ctx, id)` or derived from the current trace; causation ID is explicitly propagated with `WithCausationID(ctx, id)`. Unknown optional IDs must not be fabricated. Domains keep their event names, operation identifiers and payload structs under their own `services/<domain>/events/` packages. See `docs/engineering/backend/EVENT_GUIDELINES.md`.
+
+---
+
+## Entity Boilerplate Generation
+
+`backend/libs/core/entity/cmd/entitygen` is a domain-neutral, build-time code generator. Go does not support custom `Entity<table> Name { ... }` declarations; entity definitions remain normal Go structs. It does not introduce runtime base entities, persistence access, or business logic.
+
+An entity can opt in with a standard `go:generate` directive:
+
+```go
+//go:generate go run grovehub/libs/core/entity/cmd/entitygen -type PasswordCredential -table identity.password_credentials
+type PasswordCredential struct {
+    AccountId AccountId `gorm:"column:account_id;type:uuid;primaryKey"`
+    PasswordHash string `gorm:"column:password_hash;not null"`
+}
+```
+
+Run from `backend/`:
+
+```bash
+go generate ./services/identity/entity
+go test ./libs/core/entity/cmd/entitygen/...
+```
+
+The generated `zz_<lowercase-type>_entity.gen.go` file belongs in the same package and is checked into source control. It includes `New<Type>`, `TableName`, `Get<Field>`, and value-copy `Set<Field>` methods for exported fields. The constructor accepts all fields in declaration order. The generator omits methods already manually declared on that entity, making incremental adoption possible. It preserves concrete field types and relevant imports; unsupported embedded or unexported fields cause explicit errors. Use domain service logic for validation, ID generation, timestamps, lifecycle rules, and transactional behavior.
+
+Do not edit generated files manually. Regenerate after changing entity fields. Because generated `Set<Field>` methods return modified copies rather than mutate pointers, callers must assign the returned value. Generating setters for every exported field is a mechanical convenience, **not** authorization to modify protected state or bypass service rules.
