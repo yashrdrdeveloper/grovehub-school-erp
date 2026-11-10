@@ -94,18 +94,18 @@ func contactKey(contactType entity.ContactType, normalizedValue string) string {
 	return string(contactType) + "\x00" + normalizedValue
 }
 
-// AssociateContacts applies ownership and audit timestamps before persistence.
-func AssociateContacts(person entity.Person) entity.Person {
-    contacts := CopyContacts(person.Contacts)
-    for index := range contacts {
-        contacts[index].PersonGID = person.GID
-        if contacts[index].CreatedAt.IsZero() {
-            contacts[index].CreatedAt = person.UpdatedAt
-        }
-        contacts[index].UpdatedAt = person.UpdatedAt
-    }
-    person.Contacts = contacts
-	return person
+
+// AssociateContacts applies Person ownership and audit timestamps to separate Contact entities.
+func AssociateContacts(person entity.Person, contacts []entity.Contact) []entity.Contact {
+	associated := CopyContacts(contacts)
+	for index := range associated {
+		associated[index].PersonGID = person.GID
+		if associated[index].CreatedAt.IsZero() {
+			associated[index].CreatedAt = person.UpdatedAt
+		}
+		associated[index].UpdatedAt = person.UpdatedAt
+	}
+	return associated
 }
 
 // OptionalString maps an empty optional request string to NULL at the service layer.
@@ -127,13 +127,12 @@ func CopyContacts(contacts []entity.Contact) []entity.Contact {
 }
 
 // NewPerson is use-case construction, not entity behavior.
-func NewPerson(gid string, input foundationrequest.CreatePerson, contacts []entity.Contact, now time.Time) entity.Person {
+func NewPerson(gid string, input foundationrequest.CreatePerson, now time.Time) entity.Person {
 	return entity.Person{
 		GID: gid,
 		FirstName: input.FirstName,
 		MiddleName: OptionalString(input.MiddleName),
 		LastName: input.LastName,
-		Contacts: CopyContacts(contacts),
 		Status: entity.PersonStatusActive,
 		Version: 1,
 		CreatedAt: now,

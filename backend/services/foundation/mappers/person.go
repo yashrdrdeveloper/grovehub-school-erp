@@ -9,7 +9,7 @@ import (
 // @Mapper PersonMapper
 type PersonMapper interface {
 	ToPersonGID(request foundationrequest.PersonByGID) string
-	ToPersonResponse(person entity.Person) foundationresponse.Person
+	ToPersonResponse(person entity.Person, contacts []entity.Contact) foundationresponse.Person
 	// @Mapping GID=gid
 	ToPersonErrorMetadata(gid string) foundationresponse.PersonErrorMetadata
 }

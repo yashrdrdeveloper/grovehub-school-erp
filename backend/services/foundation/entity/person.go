@@ -15,12 +15,11 @@ type Person struct {
 	FirstName            string       `gorm:"column:first_name;not null"`
 	MiddleName           *string      `gorm:"column:middle_name"`
 	LastName             string       `gorm:"column:last_name;not null"`
-	Contacts             []Contact    `gorm:"-"`
 	Status               PersonStatus `gorm:"column:status;not null"`
 	Version              int64        `gorm:"column:version;not null"`
 	SearchDetails        string       `gorm:"column:search_details;not null"`
-	CreateIdempotencyKey *string      `gorm:"column:create_idempotency_key"`
-	CreateRequestHash    *string      `gorm:"column:create_request_hash"`
+	IdempotencyKey       *string      `gorm:"column:create_idempotency_key"`
+	RequestHash          *string      `gorm:"column:create_request_hash"`
 	CreatedAt            time.Time    `gorm:"column:created_at;not null"`
 	UpdatedAt            time.Time    `gorm:"column:updated_at;not null"`
 }

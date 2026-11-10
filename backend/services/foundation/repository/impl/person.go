@@ -59,46 +59,46 @@ func NewPersonRepository(db *gorm.DB) foundationrepository.PersonRepository {
 	return &PersonRepository{db: db}
 }
 
-func (repository *PersonRepository) Create(ctx context.Context, person entity.Person) error {
-	person.SearchDetails = buildPersonSearchDetails(person)
+func (repository *PersonRepository) Create(ctx context.Context, person entity.Person, contacts []entity.Contact) error {
+	person.SearchDetails = buildPersonSearchDetails(person, contacts)
 	return coretransaction.Database(ctx, repository.db).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(&person).Error; err != nil {
 			return mapPersonWriteError(err)
 		}
-		return upsertPersonContacts(tx, person, false)
+		return upsertPersonContacts(tx, person.GID, contacts, false)
 	})
 }
 
-func (repository *PersonRepository) FindByGID(ctx context.Context, gid string) (entity.Person, error) {
+
+func (repository *PersonRepository) FindByGID(ctx context.Context, gid string) (entity.Person, []entity.Contact, error) {
 	var person entity.Person
 	if err := coretransaction.Database(ctx, repository.db).Where("gid = ?", gid).Take(&person).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return entity.Person{}, foundationrepository.ErrPersonNotFound
+			return entity.Person{}, nil, foundationrepository.ErrPersonNotFound
 		}
-		return entity.Person{}, err
+		return entity.Person{}, nil, err
 	}
 	contacts, err := repository.findContactsByGID(ctx, gid)
 	if err != nil {
-		return entity.Person{}, err
+		return entity.Person{}, nil, err
 	}
-	person.Contacts = append([]entity.Contact(nil), contacts...)
-	return person, nil
+	return person, contacts, nil
 }
 
-func (repository *PersonRepository) FindByCreateIdempotencyKey(ctx context.Context, key string) (entity.Person, error) {
+
+func (repository *PersonRepository) FindByCreateIdempotencyKey(ctx context.Context, key string) (entity.Person, []entity.Contact, error) {
 	var person entity.Person
-	if err := coretransaction.Database(ctx, repository.db).Where(&entity.Person{CreateIdempotencyKey: &key}).Take(&person).Error; err != nil {
+	if err := coretransaction.Database(ctx, repository.db).Where(&entity.Person{IdempotencyKey: &key}).Take(&person).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return entity.Person{}, foundationrepository.ErrPersonNotFound
+			return entity.Person{}, nil, foundationrepository.ErrPersonNotFound
 		}
-		return entity.Person{}, err
+		return entity.Person{}, nil, err
 	}
 	contacts, err := repository.findContactsByGID(ctx, person.GID)
 	if err != nil {
-		return entity.Person{}, err
+		return entity.Person{}, nil, err
 	}
-	person.Contacts = append([]entity.Contact(nil), contacts...)
-	return person, nil
+	return person, contacts, nil
 }
 
 func (repository *PersonRepository) FindGIDsByContacts(
@@ -127,10 +127,11 @@ func (repository *PersonRepository) FindGIDsByContacts(
 	return gids, nil
 }
 
+
 func (repository *PersonRepository) Search(
 	ctx context.Context,
 	query coresearch.Query[string],
-) (coresearch.QueryResult[entity.Person], error) {
+) (coresearch.QueryResult[entity.Person], map[string][]entity.Contact, error) {
 	searchDB, err := coresearch.Apply(
 		coretransaction.Database(ctx, repository.db).
 			Model(&entity.Person{}).
@@ -140,11 +141,11 @@ func (repository *PersonRepository) Search(
 		personSearchConfig,
 	)
 	if err != nil {
-		return coresearch.QueryResult[entity.Person]{}, err
+		return coresearch.QueryResult[entity.Person]{}, nil, err
 	}
 	persons := make([]entity.Person, 0, query.Limit+1)
 	if err := searchDB.Find(&persons).Error; err != nil {
-		return coresearch.QueryResult[entity.Person]{}, err
+		return coresearch.QueryResult[entity.Person]{}, nil, err
 	}
 	hasNext := len(persons) > query.Limit
 	if hasNext {
@@ -156,16 +157,13 @@ func (repository *PersonRepository) Search(
 	}
 	contactsByGID, err := repository.findContactsByGIDs(ctx, gids)
 	if err != nil {
-		return coresearch.QueryResult[entity.Person]{}, err
+		return coresearch.QueryResult[entity.Person]{}, nil, err
 	}
-	for index := range persons {
-		persons[index].Contacts = append([]entity.Contact(nil), contactsByGID[persons[index].GID]...)
-	}
-	return coresearch.QueryResult[entity.Person]{Items: persons, HasNext: hasNext}, nil
+	return coresearch.QueryResult[entity.Person]{Items: persons, HasNext: hasNext}, contactsByGID, nil
 }
 
-func (repository *PersonRepository) Update(ctx context.Context, person entity.Person) error {
-	searchDetails := buildPersonSearchDetails(person)
+func (repository *PersonRepository) Update(ctx context.Context, person entity.Person, contacts []entity.Contact) error {
+	searchDetails := buildPersonSearchDetails(person, contacts)
 	expectedVersion := person.Version - 1
 	return coretransaction.Database(ctx, repository.db).Transaction(func(tx *gorm.DB) error {
 		result := tx.Model(&entity.Person{}).
@@ -185,7 +183,7 @@ func (repository *PersonRepository) Update(ctx context.Context, person entity.Pe
 		if result.RowsAffected == 0 {
 			return foundationrepository.ErrPersonVersionConflict
 		}
-		return upsertPersonContacts(tx, person, true)
+		return upsertPersonContacts(tx, person.GID, contacts, true)
 	})
 }
 
@@ -240,14 +238,12 @@ func contactSearchField(contactType entity.ContactType, conditions ...coresearch
 	}
 }
 
-func upsertPersonContacts(tx *gorm.DB, person entity.Person, clearPrimary bool) error {
-	gid := person.GID
+func upsertPersonContacts(tx *gorm.DB, gid string, contacts []entity.Contact, clearPrimary bool) error {
 	if clearPrimary {
 		if err := tx.Model(&entity.Contact{}).Where("person_gid = ?", gid).Update("is_primary", false).Error; err != nil {
 			return err
 		}
 	}
-	contacts := person.Contacts
 	if len(contacts) > 0 {
 		if err := tx.Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "person_gid"}, {Name: "type"}, {Name: "normalized_value"}},
@@ -273,8 +269,8 @@ func deleteStalePersonContacts(tx *gorm.DB, gid string, contacts []entity.Contac
 	return query.Where("NOT ("+strings.Join(conditions, " OR ")+")", args...).Delete(&entity.Contact{}).Error
 }
 
-func buildPersonSearchDetails(person entity.Person) string {
-	contacts := append([]entity.Contact(nil), person.Contacts...)
+func buildPersonSearchDetails(person entity.Person, personContacts []entity.Contact) string {
+	contacts := append([]entity.Contact(nil), personContacts...)
 	sort.Slice(contacts, func(leftIndex int, rightIndex int) bool {
 		left := contacts[leftIndex]
 		right := contacts[rightIndex]

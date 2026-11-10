@@ -17,7 +17,7 @@ func (mapper *PersonMapper) ToPersonGID(request foundationrequest.PersonByGID) s
 	return request.GID
 }
 
-func (mapper *PersonMapper) ToPersonResponse(person entity.Person) foundationresponse.Person {
+func (mapper *PersonMapper) ToPersonResponse(person entity.Person, personContacts []entity.Contact) foundationresponse.Person {
 	contacts := foundationresponse.Contacts{
 		Emails: make([]foundationresponse.ContactValue, 0),
 		Phones: make([]foundationresponse.ContactValue, 0),
@@ -32,7 +32,7 @@ func (mapper *PersonMapper) ToPersonResponse(person entity.Person) foundationres
 		},
 	}
 
-	for _, contact := range person.Contacts {
+	for _, contact := range personContacts {
 		appendValue, ok := appendContact[contact.Type]
 		if !ok {
 			continue
