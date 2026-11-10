@@ -112,7 +112,7 @@ make backend-test
 bash scripts/backend/generate-annotations.sh
 ```
 
-The unified generator runs entities → GORM table metadata → routes → clients → mappers → events → Go overlay. CI at `.github/workflows/backend-annotations.yml` compiles the backend with Go 1.27.3 and runs annotation tests. Direct Go commands need the `-overlay` option; the test wrapper uses `-vet=off` for virtual files and is not a substitute for separate static analysis.
+The unified generator first checks annotation validity, then runs entities → GORM table metadata → routes → clients → mappers → events → Go overlay. The `generation/check` tool blocks unsupported or metadata-only directives from being used as if they enforce security or transaction policy. CI at `.github/workflows/backend-annotations.yml` compiles the backend with Go 1.27.3 and runs annotation tests. Direct Go commands need the `-overlay` option; the test wrapper uses `-vet=off` for virtual files and is not a substitute for separate static analysis.
 
 ## Security and migration limits
 
