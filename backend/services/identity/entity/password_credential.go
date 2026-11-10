@@ -2,6 +2,7 @@ package entity
 
 import "time"
 
+// @Entity identity.password_credentials mode=table
 type PasswordCredential struct {
 	AccountId         AccountId `gorm:"column:account_id;type:uuid;primaryKey"`
 	PasswordHash      string    `gorm:"column:password_hash;not null"`
@@ -11,7 +12,6 @@ type PasswordCredential struct {
 	UpdatedAt         time.Time `gorm:"column:updated_at;not null"`
 }
 
-func (PasswordCredential) TableName() string { return "identity.password_credentials" }
 
 func NewPasswordCredential(accountId AccountId, passwordHash string, passwordChangedAt time.Time, version int64, createdAt time.Time, updatedAt time.Time) PasswordCredential {
 	return PasswordCredential{AccountId:accountId,PasswordHash:passwordHash,PasswordChangedAt:passwordChangedAt,Version:version,CreatedAt:createdAt,UpdatedAt:updatedAt}
