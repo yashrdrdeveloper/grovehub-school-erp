@@ -1,6 +1,6 @@
 # GrooveHub | Backend Annotation Framework - Master Plan
 
-**Version:** 1.1 Phase 1 registered  |  **Date:** 10 November 2026  |  **Branch:** `phase-2.1-identity-account`  |  **Change type:** Annotation contracts and documentation; no service migration
+**Version:** 1.2 Phase 2 pilot migrations  |  **Date:** 10 November 2026  |  **Branch:** `phase-2.1-identity-account`  |  **Change type:** Annotation contracts and documentation; no service migration
 
 **Scope:** Complete Go modular-monolith annotation catalog, all backend folders and cross-cutting concerns, 23 GoF patterns, phased execution, acceptance criteria and risks.
 
@@ -10,7 +10,7 @@
 
 **Phase 1 — annotation contract definitions (this change).** Register every named annotation centrally under `backend/libs/core/annotation`, with name/syntax, purpose, category, intended mechanism (GEN/WRAP/REG/CHECK/TAG), current implementation status, roadmap workstream and structural target. Include all 23 GoF pattern decisions, a read-only AST scanner, contract tests and a complete reference document. **Do not apply new annotations to any service in Phase 1.** The pre-existing Foundation `@Entity` workflow remains unchanged.
 
-**Phase 2 — implementation and migration (not started).** Design the per-annotation argument schema, implement the approved generator or runtime wrapper, prove behavior in tests, then replace repetitive code layer by layer. The original P0-P8 roadmap below is now the **set of Phase 2 workstreams**, not a claim that any of those processors are working. In particular, `@Service` is registered for completeness **but not applied to service code** under the current Phase 1 request.
+**Phase 2 — implementation and migration (partially started).** Design the per-annotation argument schema, implement the approved generator or runtime wrapper, prove behavior in tests, then replace repetitive code layer by layer. The original P0-P8 roadmap below is now the **set of Phase 2 workstreams**, not a claim that all those processors are working. The current route, configuration and Foundation DTO-validation pilot is tracked in [ANNOTATION_PHASE2_MIGRATION.md](ANNOTATION_PHASE2_MIGRATION.md). In particular, `@Service` is registered for completeness **but not applied to service code** under the current Phase 1 request.
 
 The exhaustive Phase 1 catalog and status contract are published in [ANNOTATION_PHASE1_REFERENCE.md](ANNOTATION_PHASE1_REFERENCE.md). The code catalog is under `backend/libs/core/annotation/{annotation.go,annotations_*.go,inventory.go,patterns.go}`.
 
