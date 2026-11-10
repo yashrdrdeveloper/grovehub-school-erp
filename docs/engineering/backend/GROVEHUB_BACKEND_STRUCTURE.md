@@ -9,8 +9,9 @@ Also read when relevant:
 ```text
 docs/engineering/backend/EVENT_GUIDELINES.md
 docs/engineering/backend/CORE_LIBRARY_GUIDELINES.md
-docs/engineering/backend/ANNOTATION_FRAMEWORK_MASTER_PLAN.md  # Phase 1 definitions; Phase 2 not started
+docs/engineering/backend/ANNOTATION_FRAMEWORK_MASTER_PLAN.md  # Phase 1 definitions; Phase 2 partially migrated
 docs/engineering/backend/ANNOTATION_PHASE1_REFERENCE.md  # complete directive contracts
+docs/engineering/backend/ANNOTATION_PHASE2_MIGRATION.md  # implementation status and acceptance gates
 docs/engineering/backend/MAPPER_AND_DTO_GUIDELINES.md
 docs/engineering/backend/VALIDATOR_GUIDELINES.md
 docs/engineering/backend/NORMALIZATION_AND_DRY_GUIDELINES.md
