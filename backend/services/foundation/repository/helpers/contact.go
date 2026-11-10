@@ -5,7 +5,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgconn"
 
-	repositoryconstants "grovehub/services/foundation/repository/constants"
+	repositoryerrors "grovehub/services/foundation/repository/constants/errors"
 )
 
 const uniqueContactConstraint = "uq_person_contacts_type_normalized_value"
@@ -18,7 +18,7 @@ func MapContactWriteError(err error) error {
 	var postgresError *pgconn.PgError
 	if errors.As(err, &postgresError) && postgresError.Code == "23505" &&
 		postgresError.ConstraintName == uniqueContactConstraint {
-		return repositoryconstants.ErrContactAlreadyExists
+		return repositoryerrors.ErrContactAlreadyExists
 	}
 	return err
 }

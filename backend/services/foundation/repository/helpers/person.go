@@ -7,7 +7,7 @@ import (
 
 	coresearch "grovehub/libs/core/search"
 	"grovehub/services/foundation/entity"
-	repositoryconstants "grovehub/services/foundation/repository/constants"
+	repositoryerrors "grovehub/services/foundation/repository/constants/errors"
 )
 
 const uniquePersonIdempotencyKeyConstraint = "uq_persons_create_idempotency_key"
@@ -20,7 +20,7 @@ func MapPersonWriteError(err error) error {
 	var postgresError *pgconn.PgError
 	if errors.As(err, &postgresError) && postgresError.Code == "23505" &&
 		postgresError.ConstraintName == uniquePersonIdempotencyKeyConstraint {
-		return repositoryconstants.ErrPersonIdempotencyKeyAlreadyExists
+		return repositoryerrors.ErrPersonIdempotencyKeyAlreadyExists
 	}
 	return err
 }

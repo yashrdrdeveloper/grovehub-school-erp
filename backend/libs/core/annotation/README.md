@@ -113,9 +113,9 @@ The mapper generator requires **complete destination-field coverage** and fails 
 // @Repository entity=Person
 type PersonRepository interface {
     /**
-     * Search uses trusted field mappings from searchdetails.PersonConfig.
+     * Search uses trusted field mappings from search.PersonConfig.
      */
-    // @Searchable config=searchdetails.PersonConfig alias=p
+    // @Searchable config=search.PersonConfig alias=p
     Search(ctx context.Context, query coresearch.Query[string]) (coresearch.QueryResult[entity.Person], error)
 }
 ```

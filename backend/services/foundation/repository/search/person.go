@@ -1,4 +1,4 @@
-package searchdetails
+package search
 
 import (
 	coresearch "grovehub/libs/core/search"

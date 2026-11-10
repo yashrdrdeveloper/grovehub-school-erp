@@ -20,9 +20,9 @@ type PersonRepository interface {
 
 	/**
 	 * Search returns validated, cursor-paginated Person records.
-	 * Allowed filter and sort fields are specified in searchdetails.PersonConfig.
+	 * Allowed filter and sort fields are specified in search.PersonConfig.
 	 */
-	// @Searchable config=searchdetails.PersonConfig alias=p
+	// @Searchable config=search.PersonConfig alias=p
 	Search(ctx context.Context, query coresearch.Query[string]) (coresearch.QueryResult[entity.Person], error)
 
 	Update(ctx context.Context, person entity.Person) error

@@ -9,7 +9,7 @@ import (
 	coretransaction "grovehub/libs/core/database/transaction"
 	"grovehub/services/foundation/entity"
 	foundationrepository "grovehub/services/foundation/repository"
-	repositoryconstants "grovehub/services/foundation/repository/constants"
+	repositoryerrors "grovehub/services/foundation/repository/constants/errors"
 	repositoryhelpers "grovehub/services/foundation/repository/helpers"
 )
 
@@ -31,7 +31,7 @@ func (repository *PersonRepository) FindByGID(ctx context.Context, gid string) (
 	var person entity.Person
 	if err := coretransaction.Database(ctx, repository.db).Where("gid = ?", gid).Take(&person).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return entity.Person{}, repositoryconstants.ErrPersonNotFound
+			return entity.Person{}, repositoryerrors.ErrPersonNotFound
 		}
 		return entity.Person{}, err
 	}
@@ -42,7 +42,7 @@ func (repository *PersonRepository) FindByIdempotencyKey(ctx context.Context, ke
 	var person entity.Person
 	if err := coretransaction.Database(ctx, repository.db).Where(&entity.Person{IdempotencyKey: &key}).Take(&person).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return entity.Person{}, repositoryconstants.ErrPersonNotFound
+			return entity.Person{}, repositoryerrors.ErrPersonNotFound
 		}
 		return entity.Person{}, err
 	}
@@ -67,7 +67,7 @@ func (repository *PersonRepository) Update(ctx context.Context, person entity.Pe
 		return repositoryhelpers.MapPersonWriteError(result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return repositoryconstants.ErrPersonVersionConflict
+		return repositoryerrors.ErrPersonVersionConflict
 	}
 	return nil
 }

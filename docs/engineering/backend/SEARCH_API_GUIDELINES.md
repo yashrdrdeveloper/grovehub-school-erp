@@ -245,14 +245,14 @@ not transport-facing `search.Result`.
 type PersonRepository interface {
     /**
      * Search returns validated, cursor-paginated Person records.
-     * The allowlists live in repository/searchDetails/person.go.
+     * The allowlists live in repository/search/person.go.
      */
-    // @Searchable config=searchdetails.PersonConfig alias=p
+    // @Searchable config=search.PersonConfig alias=p
     Search(ctx context.Context, query search.Query[string]) (search.QueryResult[entity.Person], error)
 }
 ```
 
-The search generator derives the repository implementation and entity from the interface and `@Repository`, resolves `searchdetails.PersonConfig` from `repository/searchDetails/person.go`, checks the method signature and that the configured cursor expression has a matching sort key, then emits the method into `services/foundation/.generated/repository/impl/zz_search.gen.go`. The filter and sort allowlists are defined exactly once in that `search.Config`; optional `@Filterable`, `@Sortable` and `@Cursor` directives remain available for explicit parity checks but are not required on each method.
+The search generator derives the repository implementation and entity from the interface and `@Repository`, resolves `search.PersonConfig` from `repository/search/person.go`, checks the method signature and that the configured cursor expression has a matching sort key, then emits the method into `services/foundation/.generated/repository/impl/zz_search.gen.go`. The filter and sort allowlists are defined exactly once in that `search.Config`; optional `@Filterable`, `@Sortable` and `@Cursor` directives remain available for explicit parity checks but are not required on each method.
 
 The directives do **not** infer SQL or automatically authorize fields/operators: the resource validator continues to normalize requests, enforce permitted operators, and check cursor content. The repository controls its persisted table, joins, GORM query and trusted expressions. `@Repository` validates ownership metadata but does not create transactions; `PersonService` uses the shared `libs/core/database/transaction.UnitOfWork`.
 

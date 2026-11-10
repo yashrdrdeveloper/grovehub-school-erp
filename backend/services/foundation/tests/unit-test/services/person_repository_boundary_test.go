@@ -12,7 +12,7 @@ import (
 	foundationrequest "grovehub/services/foundation/dto/request"
 	foundationresponse "grovehub/services/foundation/dto/response"
 	"grovehub/services/foundation/entity"
-	repositoryconstants "grovehub/services/foundation/repository/constants"
+	repositoryerrors "grovehub/services/foundation/repository/constants/errors"
 	personservice "grovehub/services/foundation/services/impl"
 )
 
@@ -44,7 +44,7 @@ func (r *fakePersonRepository) Create(ctx context.Context, person entity.Person)
 
 func (r *fakePersonRepository) FindByGID(_ context.Context, gid string) (entity.Person, error) {
 	if r.person.GID != gid {
-		return entity.Person{}, repositoryconstants.ErrPersonNotFound
+		return entity.Person{}, repositoryerrors.ErrPersonNotFound
 	}
 	return r.person, nil
 }
@@ -53,7 +53,7 @@ func (r *fakePersonRepository) FindByIdempotencyKey(_ context.Context, key strin
 	if r.person.IdempotencyKey != nil && *r.person.IdempotencyKey == key {
 		return r.person, nil
 	}
-	return entity.Person{}, repositoryconstants.ErrPersonNotFound
+	return entity.Person{}, repositoryerrors.ErrPersonNotFound
 }
 
 func (r *fakePersonRepository) Search(_ context.Context, query coresearch.Query[string]) (coresearch.QueryResult[entity.Person], error) {
