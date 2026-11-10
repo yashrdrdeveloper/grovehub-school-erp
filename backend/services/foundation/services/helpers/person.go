@@ -93,3 +93,16 @@ func buildContactGroup(
 func contactKey(contactType entity.ContactType, normalizedValue string) string {
 	return string(contactType) + "\x00" + normalizedValue
 }
+
+// AssociateContacts applies ownership and audit timestamps before persistence.
+func AssociateContacts(person entity.Person) entity.Person {
+    contacts := person.GetContacts()
+    for index := range contacts {
+        contacts[index].PersonGID = person.GetGID()
+        if contacts[index].CreatedAt.IsZero() {
+            contacts[index].CreatedAt = person.GetUpdatedAt()
+        }
+        contacts[index].UpdatedAt = person.GetUpdatedAt()
+    }
+    return person.SetContacts(contacts)
+}
