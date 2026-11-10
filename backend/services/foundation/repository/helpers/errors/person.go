@@ -1,14 +1,13 @@
-package helpers
+package errors
 
 import (
-	"errors"
+	stderrors "errors"
 
 	"github.com/jackc/pgx/v5/pgconn"
 
+	repositoryconstants "grovehub/services/foundation/repository/constants"
 	repositoryerrors "grovehub/services/foundation/repository/constants/errors"
 )
-
-const uniquePersonIdempotencyKeyConstraint = "uq_persons_create_idempotency_key"
 
 /** MapPersonWriteError translates known PostgreSQL constraint failures. */
 func MapPersonWriteError(err error) error {
@@ -16,8 +15,8 @@ func MapPersonWriteError(err error) error {
 		return nil
 	}
 	var postgresError *pgconn.PgError
-	if errors.As(err, &postgresError) && postgresError.Code == "23505" &&
-		postgresError.ConstraintName == uniquePersonIdempotencyKeyConstraint {
+	if stderrors.As(err, &postgresError) && postgresError.Code == "23505" &&
+		postgresError.ConstraintName == repositoryconstants.PersonIdempotencyKeyUniqueConstraint {
 		return repositoryerrors.ErrPersonIdempotencyKeyAlreadyExists
 	}
 	return err

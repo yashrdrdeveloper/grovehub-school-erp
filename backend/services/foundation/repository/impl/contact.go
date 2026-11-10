@@ -10,7 +10,7 @@ import (
 	coretransaction "grovehub/libs/core/database/transaction"
 	"grovehub/services/foundation/entity"
 	foundationrepository "grovehub/services/foundation/repository"
-	repositoryhelpers "grovehub/services/foundation/repository/helpers"
+	repositoryerrorshelpers "grovehub/services/foundation/repository/helpers/errors"
 )
 
 type ContactRepository struct {
@@ -95,7 +95,7 @@ func (repository *ContactRepository) ReplaceForPerson(
 				},
 				DoUpdates: clause.AssignmentColumns([]string{"value", "is_primary", "is_verified", "updated_at"}),
 			}).Create(&contacts).Error; err != nil {
-				return repositoryhelpers.MapContactWriteError(err)
+				return repositoryerrorshelpers.MapContactWriteError(err)
 			}
 		}
 		return deleteStalePersonContacts(db, gid, contacts)

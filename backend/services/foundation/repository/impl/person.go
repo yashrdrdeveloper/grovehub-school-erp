@@ -10,10 +10,8 @@ import (
 	"grovehub/services/foundation/entity"
 	foundationrepository "grovehub/services/foundation/repository"
 	repositoryerrors "grovehub/services/foundation/repository/constants/errors"
-	repositoryhelpers "grovehub/services/foundation/repository/helpers"
+	repositoryerrorshelpers "grovehub/services/foundation/repository/helpers/errors"
 )
-
-const uniquePersonIdempotencyKeyConstraint = "uq_persons_create_idempotency_key"
 
 type PersonRepository struct {
 	db *gorm.DB
@@ -24,7 +22,7 @@ func NewPersonRepository(db *gorm.DB) foundationrepository.PersonRepository {
 }
 
 func (repository *PersonRepository) Create(ctx context.Context, person entity.Person) error {
-	return repositoryhelpers.MapPersonWriteError(coretransaction.Database(ctx, repository.db).Create(&person).Error)
+	return repositoryerrorshelpers.MapPersonWriteError(coretransaction.Database(ctx, repository.db).Create(&person).Error)
 }
 
 func (repository *PersonRepository) FindByGID(ctx context.Context, gid string) (entity.Person, error) {
@@ -64,7 +62,7 @@ func (repository *PersonRepository) Update(ctx context.Context, person entity.Pe
 			"updated_at": person.UpdatedAt,
 		})
 	if result.Error != nil {
-		return repositoryhelpers.MapPersonWriteError(result.Error)
+		return repositoryerrorshelpers.MapPersonWriteError(result.Error)
 	}
 	if result.RowsAffected == 0 {
 		return repositoryerrors.ErrPersonVersionConflict
