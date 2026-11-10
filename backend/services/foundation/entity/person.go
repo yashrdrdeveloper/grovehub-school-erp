@@ -13,6 +13,8 @@ const (
 	PersonStatusDeactivated PersonStatus = "DEACTIVATED"
 )
 
+// @Builder
+// @GroveTable foundation.persons
 type Person struct {
 	GID                  GID          `gorm:"column:gid;type:uuid;primaryKey"`
 	FirstName            string       `gorm:"column:first_name;not null"`
@@ -27,8 +29,6 @@ type Person struct {
 	CreatedAt            time.Time    `gorm:"column:created_at;not null"`
 	UpdatedAt            time.Time    `gorm:"column:updated_at;not null"`
 }
-
-func (Person) TableName() string { return "foundation.persons" }
 
 // NewPerson preserves the existing constructor contract; new use cases may use coreentity.New[Person] directly.
 func NewPerson(gid GID, firstName string, middleName string, lastName string, contacts []Contact, status PersonStatus, version int64, createdAt time.Time, updatedAt time.Time) Person {
