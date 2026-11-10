@@ -2,7 +2,7 @@
 
 **Status:** Phase 1 contract definition only  |  **Last updated:** 10 November 2026  |  **Branch:** `phase-2.1-identity-account`
 
-This is the complete directive inventory implemented as **typed metadata definitions**, not as working backend decorators. The authoritative architecture proposal is [ANNOTATION_FRAMEWORK_MASTER_PLAN.md](ANNOTATION_FRAMEWORK_MASTER_PLAN.md). **No services are annotated or refactored in Phase 1.**
+This is the **historical Phase 1 inventory** implemented as typed metadata definitions. Selected directives gained processors in Phase 2; see [ANNOTATION_PHASE2_MIGRATION.md](ANNOTATION_PHASE2_MIGRATION.md). Most entries are still not working backend decorators. The authoritative architecture proposal is [ANNOTATION_FRAMEWORK_MASTER_PLAN.md](ANNOTATION_FRAMEWORK_MASTER_PLAN.md). **No services are annotated or refactored in Phase 1.**
 
 ## Two-stage delivery agreement
 
