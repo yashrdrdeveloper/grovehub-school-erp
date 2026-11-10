@@ -8,7 +8,7 @@ source "${SCRIPT_DIR}/../lib/go.sh"
 
 require_command go
 sync_backend_go_modules
-bash "${SCRIPT_DIR}/generate-entities.sh"
+bash "${SCRIPT_DIR}/generate-annotations.sh"
 
 # go vet cannot read virtual source paths that are present only in a Go overlay.
 # Run compiled generated-code tests with -vet=off, and vet ordinary packages separately.
