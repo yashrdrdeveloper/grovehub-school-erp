@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	"strings"
+	annotationvalidation "grovehub/libs/core/annotation/validation"
 
 	coreerrors "grovehub/libs/core/errors"
 	identityerror "grovehub/services/identity/constants/error"
@@ -9,9 +9,7 @@ import (
 )
 
 func NormalizeRegister(request identityrequest.Register) (identityrequest.Register, error) {
-	if strings.TrimSpace(request.FirstName) == "" ||
-		request.MiddleName == nil ||
-		strings.TrimSpace(request.LastName) == "" {
+	if _, err := annotationvalidation.Normalize(request); err != nil {
 		return identityrequest.Register{}, invalidRegistration()
 	}
 	if err := ValidatePassword(request.Password); err != nil {
