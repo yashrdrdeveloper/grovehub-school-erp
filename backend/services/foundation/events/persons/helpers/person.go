@@ -26,7 +26,7 @@ func BuildChanged(
     return coreevents.NewEnvelope(ctx, coreevents.Metadata{
         EventID:     eventID,
         EventType:   personevents.ChangedType,
-        Version:     1,
+        Version:     personevents.ChangedVersion,
         AggregateID: gid,
         OccurredAt:  time.Now().UTC(),
     }, personevents.Changed{Operation: operation, Old: old, New: next})
