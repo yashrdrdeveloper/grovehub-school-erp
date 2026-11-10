@@ -120,7 +120,7 @@ type PersonRepository interface {
 }
 ```
 
-The build-time `generation/search` processor resolves external repository search configuration, verifies that the cursor expression matches a stable sort key, optionally checks `@Filterable`/`@Sortable`/`@Cursor` declarations when provided, and generates the `Search` method into the service's ignored `.generated/repository/impl/` folder. Execution delegates to the shared `core/search.Execute`. The resource validator still controls operators and normalized values; repository-owned `coresearch.Config` keeps all SQL expressions explicit and reviewed. `@Repository` is ownership metadata validation only, **not** DI or transaction generation.
+The build-time `generation/search` processor resolves external repository search configuration (including nested `repository/helpers/search/`), verifies that the cursor expression matches a stable sort key, optionally checks `@Filterable`/`@Sortable`/`@Cursor` declarations when provided, and generates the `Search` method into the service's ignored `.generated/repository/impl/` folder. Execution delegates to the shared `core/search.Execute`. The resource validator still controls operators and normalized values; repository-owned `coresearch.Config` keeps all SQL expressions explicit and reviewed. `@Repository` is ownership metadata validation only, **not** DI or transaction generation.
 
 ### Configuration, validation and events
 

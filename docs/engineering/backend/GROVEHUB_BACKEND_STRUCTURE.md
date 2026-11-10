@@ -276,15 +276,18 @@ repository/impl/person.go
 repository/impl/contact.go
     -> persists Contact rows only; queries PersonGID foreign keys
 
-repository/search/person.go
+repository/helpers/search/person.go
     -> PersonConfig holds explicit search/sort/cursor and contact relation mappings
     -> private contactSearchField builds its own read-only contact relation predicates
 
-repository/helpers/{person,contact}.go
-    -> PostgreSQL constraint error translation only
+repository/helpers/errors/{person,contact}.go
+    -> PostgreSQL constraint error translation using named constants
 
 repository/constants/errors/{person,contact}.go
     -> repository-specific sentinel errors
+
+repository/constants/{person,contact}.go
+    -> named PostgreSQL uniqueness constraint constants
 
 libs/core/database/transaction/unit_of_work.go
     -> shared UnitOfWork interface and constructor across all modules
@@ -327,7 +330,7 @@ For example, Foundation's denormalized `search_details` projection is calculated
 
 The repository boundary is persistence/query ownership.
 
-`repository/<resource>.go` contains the interface. `repository/constants/errors/<resource>.go` owns sentinel errors; `repository/helpers/<resource>.go` owns reusable non-query implementation helpers.
+`repository/<resource>.go` contains the interface. `repository/constants/errors/<resource>.go` owns sentinel errors; `repository/helpers/errors/<resource>.go` owns PostgreSQL error translation; `repository/constants/<resource>.go` owns schema constraint identifiers.
 
 `repository/impl/<resource>.go` owns:
 
@@ -343,7 +346,7 @@ For GORM-backed repositories, prefer GORM APIs for normal CRUD/query behavior. R
 
 Do not move persistence calculations into entities merely to avoid repository code.
 
-The shared `libs/core/database/transaction.UnitOfWork` coordinates aggregate writes; the repository implementation must not invent new domain business rules. The `repository/search/` package owns explicit resource-specific search mappings, while `core/search` provides generic execution.
+The shared `libs/core/database/transaction.UnitOfWork` coordinates aggregate writes; the repository implementation must not invent new domain business rules. The `repository/helpers/search/` package owns explicit resource-specific search mappings, while `core/search` provides generic execution.
 
 The repository public package path must not encode database technology. Consumers depend on `repository.PersonRepository`, not `repository/postgres` or a concrete GORM type.
 

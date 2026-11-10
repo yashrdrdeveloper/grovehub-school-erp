@@ -352,8 +352,9 @@ Foundation module
 ├── ContactRepository (person_contacts table, 4 methods)
 ├── core/transaction.UnitOfWork (reusable shared transaction)
 ├── repository/constants/errors/ (sentinel persistence errors)
-├── repository/helpers/ (non-query persistence helpers)
-├── repository/search/person.go (trusted Search Config)
+├── repository/helpers/errors/ (database error translation)
+├── repository/constants/{person,contact}.go (schema constraint names)
+├── repository/helpers/search/person.go (trusted Search Config)
 ├── PersonService (sole owner of contact lifecycle)
 ├── controller interface
 │   └── controller/impl
