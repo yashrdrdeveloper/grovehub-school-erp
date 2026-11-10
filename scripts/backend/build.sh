@@ -16,6 +16,7 @@ ensure_runtime_dirs
 OUTPUT="${RUNTIME_BIN_DIR}/groovehub-platform"
 
 sync_backend_go_modules
+bash "${SCRIPT_DIR}/generate-entities.sh"
 
 log_info "Building GroveHub backend"
 (
