@@ -8,11 +8,11 @@
 
 ## Phase 1 / Phase 2 implementation agreement (supersedes P0-P8 as release stages)
 
-**Phase 1 — annotation contract definitions (this change).** Register every named annotation centrally under `backend/libs/core/annotation`, with name/syntax, purpose, category, intended mechanism (GEN/WRAP/REG/CHECK/TAG), current implementation status, roadmap workstream and structural target. Include all 23 GoF pattern decisions, a read-only AST scanner, contract tests and a complete reference document. **Do not apply new annotations to any service in Phase 1.** The pre-existing Foundation `@Entity` workflow remains unchanged.
+**Phase 1 — annotation contract definitions (this change).** Register every named annotation centrally under `backend/libs/core/annotation`, with name/syntax, purpose, category, intended mechanism (GEN/WRAP/REG/CHECK/TAG), current implementation status, roadmap workstream and structural target. Include all 23 GoF pattern decisions, a read-only AST scanner, typed contracts and a complete reference document. **Do not apply new annotations to any service in Phase 1.** The pre-existing Foundation `@Entity` workflow remains unchanged.
 
 **Phase 2 — implementation and migration (partially started).** Design the per-annotation argument schema, implement the approved generator or runtime wrapper, prove behavior in tests, then replace repetitive code layer by layer. The original P0-P8 roadmap below is now the **set of Phase 2 workstreams**, not a claim that all those processors are working. The current entity, route, client, mapper, configuration, validation and event migrations are tracked in [ANNOTATION_PHASE2_MIGRATION.md](ANNOTATION_PHASE2_MIGRATION.md). In particular, `@Service` is registered for completeness **but not applied to service code** under the current Phase 1 request.
 
-The exhaustive Phase 1 catalog and status contract are published in [ANNOTATION_PHASE1_REFERENCE.md](ANNOTATION_PHASE1_REFERENCE.md). The code catalog is under `backend/libs/core/annotation/{annotation.go,annotations_*.go,inventory.go,patterns.go}`.
+The exhaustive Phase 1 catalog and status contract are published in [ANNOTATION_PHASE1_REFERENCE.md](ANNOTATION_PHASE1_REFERENCE.md). The code catalog is under `backend/libs/core/annotation/{annotation.go,inventory.go,contract/,entity/,validation/,event/,utilities/,patterns/, ...}`.
 
 **Runtime-safety rule:** An annotation that is recognized by the Phase 1 parser is **not automatically enforced**. Do not use unimplemented `@NonNull`, `@Authorize`, `@Transactional`, `@Retry`, `@Consumer` or `@Service` as a substitute for working code.
 
@@ -20,7 +20,7 @@ The exhaustive Phase 1 catalog and status contract are published in [ANNOTATION_
 
 ### Verified Phase 2 scope (November 10, 2026)
 
-The clean-checkout `make backend-build` has compiled on GitHub Actions with Go 1.27.3. Generated source is injected by a Go overlay without committing generated files. Active migrations are `@Entity` (Foundation builders, getters, setters and safe table-only mode for Identity/Integration), `@Routes`, `@Client`/`@Proxy`, strict `@Mapper`/`@Mapping` DTO projections, `@Event` topic/type/version constants, typed Integration configuration and Foundation/Identity request validation. The new annotation generators have focused unit tests; live database, NATS, HTTP authorization and full Ginkgo/Gomega regression coverage are still separate acceptance gates.
+The clean-checkout `make backend-build` has compiled on GitHub Actions with Go 1.27.3. Generated source is injected by a Go overlay without committing generated files. Active migrations are `@Entity` (Foundation builders, getters, setters and safe table-only mode for Identity/Integration), `@Routes`, `@Client`/`@Proxy`, strict `@Mapper`/`@Mapping` DTO projections, `@Event` topic/type/version constants, typed Integration configuration and Foundation/Identity request validation. Annotation-specific test cases were removed at request; CI continues to verify compilation, package loading and unrelated backend unit suites. Live database, NATS, HTTP authorization and full Ginkgo/Gomega regression coverage are separate acceptance gates.
 
 `@Entity schema.table mode=table` is the required form for entities whose credentials or lifecycle-sensitive fields must **not** gain generated setters or builders. For example:
 
@@ -40,6 +40,8 @@ The original upstream Gombok CLI was removed from the unified generation pipelin
 ## 01. Executive decision and scope
 
 > **Document status:** Phase 1 definition registry created in `backend/libs/core/annotation` (all 226 use cases, 232 unique names including GoF-only candidates, all 23 GoF pattern decisions). This means **metadata/catalog and AST discovery, not executable annotations**. The Phase 2 implementation adds Go AST-based entity, route, client, mapper, table-name and event generators, plus typed configuration and validation. Service business workflows remain handwritten.
+
+**Folder ownership (November 2026).** Category definitions are located in dedicated annotation packages (`entity/`, `validation/`, `event/`, `utilities/`, `patterns/` and other responsibilities). The acyclic metadata contract is in `annotation/contract/`; the root registry preserves existing consumers. Annotation-specific test cases have been removed, but the backend CI build and unrelated unit suites remain enabled.
 
 **Purpose.** Replace mechanical boilerplate with typed, auditable generation while retaining readable Go and GrooveHub's explicit layer ownership. Cover all backend folders, middleware, server bootstrap, database and repositories, mappers, validation, external providers, events, messaging, observability, configuration, security, tests, scheduling, utilities and the 23 Gang of Four (GoF) patterns.
 

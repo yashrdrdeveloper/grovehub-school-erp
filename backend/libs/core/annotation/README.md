@@ -8,25 +8,37 @@ Go doesn't natively support Java-style annotations. GrooveHub accepts source com
 
 ## Inventory and code structure
 
-The Phase 1 registry defines **226 use cases, 232 distinct annotation names and all 23 GoF design patterns**. `annotations_*.go` organizes metadata by responsibility; `inventory.go` and `annotation.go` expose `All`, `Lookup`, `Uses`, `Patterns`, `ParseComment` and `ValidateDirective`.
+The Phase 1 registry defines **226 use cases, 232 distinct annotation names and all 23 GoF design patterns**. each category's `annotations.go` owns its declarations; `inventory.go` and `annotation.go` expose `All`, `Lookup`, `Uses`, `Patterns`, `ParseComment` and `ValidateDirective`.
 
 ```text
 backend/libs/core/annotation/
-  annotation.go                    # metadata registry and parser
-  annotations_*.go                # 16 responsibility catalogs
-  configuration/                  # typed startup env loader
-  validation/                     # safe request field rules and normalization
-  entity/                         # existing generic builder facade
+  annotation.go              # stable public registry and API
+  inventory.go               # imports category-owned definitions
+  contract/contract.go       # shared types; avoids circular dependencies
+  entity/                    # entity.go + annotations.go
+  validation/                # validation.go + annotations.go
+  configuration/             # configuration.go + annotations.go
+  mapping/annotations.go
+  persistence/annotations.go
+  composition/annotations.go
+  http/annotations.go
+  middleware/annotations.go
+  security/annotations.go
+  external/annotations.go
+  event/annotations.go
+  messaging/annotations.go
+  observability/annotations.go
+  server/annotations.go
+  testing/annotations.go     # definitions, not unit tests
+  utilities/annotations.go
+  patterns/
+    creational.go
+    structural.go
+    behavioral.go
+    patterns.go              # all 23 GoF decisions
   generation/
-    entities/                     # Gombok-compatible builders, getters and setters
-    gormtable/                    # GORM TableName() generation
-    routes/                       # traced net/http registration
-    clients/                      # typed in-process client forwarding
-    mappers/                      # exact-field DTO projections
-    events/                       # stable domain event topic/type/version constants
-    overlay/                      # virtual Go package source injection
-    parser/                       # read-only catalog AST scan
-    expand/                       # retained legacy tool; not in active build path
+    entities/ gormtable/ routes/ clients/ mappers/ events/
+    check/ parser/ overlay/ expand/
 ```
 
 All code generated for a service is placed under **that service's ignored `.generated/` directory**, not beside its maintained Go files.
@@ -104,7 +116,7 @@ type Created struct {
 
 This generates `CreatedTopic`, `CreatedType`, `CreatedVersion` and `Source`, **not** the event publisher, consumer or after-commit transaction policy. The original NATS/Watermill event envelopes and publication behavior are unchanged.
 
-## Build and tests
+## Build and verification
 
 ```bash
 make backend-build
@@ -112,10 +124,14 @@ make backend-test
 bash scripts/backend/generate-annotations.sh
 ```
 
-The unified generator first checks annotation validity, then runs entities → GORM table metadata → routes → clients → mappers → events → Go overlay. The `generation/check` tool blocks unsupported or metadata-only directives from being used as if they enforce security or transaction policy. CI at `.github/workflows/backend-annotations.yml` compiles the backend with Go 1.27.3 and runs annotation tests. Direct Go commands need the `-overlay` option; the test wrapper uses `-vet=off` for virtual files and is not a substitute for separate static analysis.
+The unified generator first checks annotation validity, then runs entities → GORM table metadata → routes → clients → mappers → events → Go overlay. The `generation/check` tool blocks unsupported or metadata-only directives from being used as if they enforce security or transaction policy. CI at `.github/workflows/backend-annotations.yml` compiles the backend with Go 1.27.3, verifies annotation packages resolve, and runs existing non-annotation backend unit suites. Annotation-framework test cases were removed as requested; this does not disable other backend tests. Direct Go commands need the `-overlay` option; the test wrapper uses `-vet=off` for virtual files and is not a substitute for separate static analysis.
 
 ## Security and migration limits
 
 `@Service`, `@Repository`, `@Consumer`, `@Producer`, `@Authorize`, `@Transactional`, `@Audit`, `@Retry` and most other cataloged directives **do not enforce behavior yet**. Do not use them as security, durability, or transaction guarantees. Keep authorization, domain decisions, GORM predicates, credential/OAuth policy, message acknowledgments and event publication explicit until tested processors are separately implemented.
 
 The complete remaining work and acceptance criteria are in the Phase 2 migration ledger.
+
+## Ownership and dependency direction
+
+Each responsibility directory owns an exported `UseCases []contract.UseCase` catalog. The shared `contract/` package has no dependency on the registry, processors or services. The root `annotation` package imports the domain catalogs, exposes the unchanged `All`, `Lookup`, `Uses`, `Patterns`, `ParseComment` APIs and re-exports their contract types. The pattern catalog lives only in `patterns/`, split by the three GoF families. Build-time generators and their output directories remain unchanged.

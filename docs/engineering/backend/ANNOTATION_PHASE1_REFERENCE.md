@@ -8,7 +8,7 @@ This is the **historical Phase 1 inventory** implemented as typed metadata defin
 
 | Stage | Output | Explicit exclusions |
 | --- | --- | --- |
-| **Phase 1 — now** | Every documented directive has metadata for canonical spelling, syntax, purpose, effect category, availability, roadmap phase, and structural target; AST scanner and contract tests exist | No replacement of Foundation/Identity/Integration/Infrastructure code. No new runtime middleware, DAO, event publisher, DI container or parser injection |
+| **Phase 1 — now** | Every documented directive has metadata for canonical spelling, syntax, purpose, effect category, availability, roadmap phase, and structural target; AST scanner and central contracts exist | No replacement of Foundation/Identity/Integration/Infrastructure code. No new runtime middleware, DAO, event publisher, DI container or parser injection |
 | **Phase 2 — later** | Implement selected processors and typed wrappers; migrate existing code incrementally with verified parity | Never infer business decisions, trust caller credentials, invent SQL, or auto-publish domain events on repository writes |
 
 ## What a Phase 1 annotation *is*
@@ -371,21 +371,40 @@ No automatic inheritance for Template Method, global Singleton construction, uns
 
 ```text
 backend/libs/core/annotation/
-  annotation.go                     # contract types, registry, comment validation
-  annotations_{entity,mapping,validation,persistence,composition,http}.go
-  annotations_{middleware,security,external,events,messaging,configuration}.go
-  annotations_{observability,server,testing,utilities}.go
-  inventory.go                      # combines 16 source catalogs
-  patterns.go                       # all 23 GoF decisions
-  entity/entity.go                  # pre-existing generic builder
-  generation/{expand,gormtable,overlay}/ # pre-existing tooling
-  generation/parser/parser.go       # read-only AST discovery (new)
-backend/libs/core/tests/unit-test/annotation/ # contract/scanner tests
+  annotation.go              # stable public registry and API
+  inventory.go               # imports category-owned definitions
+  contract/contract.go       # shared types; avoids circular dependencies
+  entity/                    # entity.go + annotations.go
+  validation/                # validation.go + annotations.go
+  configuration/             # configuration.go + annotations.go
+  mapping/annotations.go
+  persistence/annotations.go
+  composition/annotations.go
+  http/annotations.go
+  middleware/annotations.go
+  security/annotations.go
+  external/annotations.go
+  event/annotations.go
+  messaging/annotations.go
+  observability/annotations.go
+  server/annotations.go
+  testing/annotations.go     # definitions, not unit tests
+  utilities/annotations.go
+  patterns/
+    creational.go
+    structural.go
+    behavioral.go
+    patterns.go              # all 23 GoF decisions
+  generation/
+    entities/ gormtable/ routes/ clients/ mappers/ events/
+    check/ parser/ overlay/ expand/
 ```
+
+// Annotation-framework test cases intentionally removed; other backend tests remain.
 
 These folders are metadata/tool ownership; they do not change the public package boundaries of `core/events`, `core/http`, `core/database`, `core/logging`, `core/telemetry`, or any service.
 
-## Phase 2 migration roadmap (not started)
+## Phase 2 migration roadmap (partially implemented; see migration ledger)
 
 | Workstream | Required verification before application |
 | --- | --- |

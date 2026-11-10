@@ -29,7 +29,7 @@
 | Strict DTO projection | Identity registration response and Foundation Person error metadata generated; contact grouping remains custom | `@Mapper`, `@Mapping` | Explicit fields fail generation when destination gains unmapped fields |
 | GORM table-only entities | Removed manual `TableName()` methods for seven Identity/Integration models; no new credential setters | `@Entity ... mode=table` | CI compilation verified; DB schema unchanged |
 | Event identity declarations | Foundation Person changed, Identity Account created, Integration Mailbox changed topics/types/versions generated | `@Event` | Event publication timing, after-commit, error policies unchanged |
-| CI regression gate | GitHub Actions Go 1.27.3 binary compilation, generator and core/launcher/Identity/Integration unit tests, and generated-output checks | `.github/workflows/backend-annotations.yml` | Live database/NATS integration regression remains separate |
+| CI regression gate | GitHub Actions Go 1.27.3 binary compilation, package resolution, core/launcher/Identity/Integration unit tests, and generated-output checks | `.github/workflows/backend-annotations.yml` | Live database/NATS integration regression remains separate |
 
 The source retains service methods, service interfaces, client constructors, GORM repositories, domain event decorators, provider strategies, authentication decisions, and middleware behavior.
 
@@ -51,7 +51,15 @@ The generator checks duplicate method/path pairs, interface/method signatures, a
 backend/
   libs/core/annotation/
     annotation.go                     # Phase 1 metadata registry
-    annotations_*.go                  # all declared annotation categories
+    contract/contract.go             # shared acyclic annotation contracts
+    inventory.go                     # aggregates category-owned packages
+    entity/annotations.go            # entity declarations (builder also here)
+    event/annotations.go             # event contracts
+    validation/annotations.go        # validation directives
+    utilities/annotations.go         # utility directives
+    patterns/{creational,structural,behavioral,patterns}.go
+    mapping/ persistence/ composition/ http/ middleware/ security/
+    external/ messaging/ observability/ server/ testing/  # other catalogs
     configuration/configuration.go    # typed env/default/required loader
     validation/validation.go          # DTO string/*string normalization and validation
     generation/
@@ -116,8 +124,8 @@ go test -vet=off -overlay=.generated/overlay.json ./...
 ### Verification status
 
 - Source updates committed on the integration branch.
-- Pure generator test code and route parity expectations added; startup config and DTO validation unit tests added.
-- The **complete backend binary has compiled successfully** on GitHub Actions using Go **1.27.3** and clean-checkout generation. Focused annotation tests and the available core/launcher/Identity/Integration unit suites are CI-checked. The **live database/NATS/HTTP integration smoke tests have not yet been executed**.
+- Annotation-framework test cases were removed as requested; other existing backend unit tests remain in the repository.
+- The **complete backend binary has compiled successfully** on GitHub Actions using Go **1.27.3** and clean-checkout generation. CI checks the annotation packages resolve and runs existing core/launcher/Identity/Integration unit suites. The **live database/NATS/HTTP integration smoke tests have not yet been executed**.
 - No claim of full runtime compatibility or 232 executable annotations is made.
 
 ## 5. Remaining backend migration work
@@ -154,3 +162,7 @@ These remain work items, **not implemented features**.
 **Do not proceed with automatic replacement of service, repository, messaging or security logic until these gates pass.**
 
 **Confirmed boundary:** `@Repository`, `@Service`, `@Consumer`, `@Authorize`, `@Transactional`, `@Retry`, `@Audit`, and most design-pattern annotations remain metadata-only, not effective runtime policy. No endpoint must rely on an inert annotation for protection.
+
+## Annotation folder refactor
+
+The 16 category definitions were moved from root-level `annotations_*.go` files into separate category packages under `libs/core/annotation/`, including `event/`, `utilities/`, and `patterns/`. Shared types live in `contract/`, and the original root package remains a compatibility facade. All annotation-framework `*_test.go` files and the former `libs/core/tests/unit-test/annotation/` suite were removed as requested. No Foundation/Identity/Infrastructure/Integration business logic, generators, or runtime imports were changed by this folder-only migration. CI still compiles the backend and runs unrelated existing unit suites.
