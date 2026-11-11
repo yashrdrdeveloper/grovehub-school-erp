@@ -279,6 +279,29 @@ core/telemetry
 
 Do not make services know how telemetry runtime state, logger filtering, or application-error representation is internally implemented.
 
+### HTTP status as part of a semantic error definition
+
+The owning service declares each error's stable code, safe message, and HTTP
+status **once** in `constants/error/`, through the public `core/errors` façade:
+
+```go
+PersonNotFound = coreerrors.NewDefinition(
+    "FOUNDATION_PERSON_NOT_FOUND",
+    "Person was not found",
+    http.StatusNotFound,
+)
+```
+
+Controllers use `applicationError.Definition().HTTPStatus()` rather than
+maintaining parallel maps from error code to HTTP status. The optional third
+argument is an HTTP 4xx or 5xx status. Existing two-argument definitions
+default to HTTP 500, and invalid status declarations fail fast.
+
+An unexpected non-application error must still produce HTTP 500 with a safe
+fallback definition: never expose its raw cause or infer an HTTP 4xx from a
+client-facing fallback definition. The shared HTTP writer remains responsible
+for serializing the standard error envelope and recording trace metadata.
+
 ---
 
 ## 8. ID and Normalization

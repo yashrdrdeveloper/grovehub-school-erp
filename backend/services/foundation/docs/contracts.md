@@ -57,6 +57,12 @@ Foundation exposes the same business behavior through two entry points.
 
 Use HTTP for requests entering GroveHub through the edge. The `protected` path segment declares the intended **future gateway policy**; it does not enforce authentication today. Do not expose these person-data routes to untrusted clients until Identity/gateway enforcement is implemented.
 
+Foundation application errors declare HTTP statuses alongside their code and
+message in `constants/error/person.go`, via `coreerrors.NewDefinition`.
+The controller reads `Definition().HTTPStatus()` directly; no second status
+map is maintained in the controller. Unexpected non-application errors use
+HTTP 500 and the configured safe fallback response.
+
 ```text
 POST   /foundation/protected/persons
 GET    /foundation/protected/persons/{gid}
