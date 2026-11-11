@@ -7,8 +7,8 @@ import (
 	rest "grovehub/libs/core/pipeline/rest"
 	coresearch "grovehub/libs/core/search"
 	personerror "grovehub/services/foundation/constants/error"
-	"grovehub/services/foundation/controller"
-	controllerhelpers "grovehub/services/foundation/controller/helpers"
+	protected "grovehub/services/foundation/controller/protected"
+	controllerhelpers "grovehub/services/foundation/controller/protected/helpers"
 	foundationrequest "grovehub/services/foundation/dto/request"
 	foundationservices "grovehub/services/foundation/services"
 	foundationvalidators "grovehub/services/foundation/validators"
@@ -19,7 +19,7 @@ type PersonController struct {
 	validator foundationvalidators.PersonValidator
 }
 
-func NewPersonController(service foundationservices.PersonService, validator foundationvalidators.PersonValidator) controller.PersonController {
+func NewPersonController(service foundationservices.PersonService, validator foundationvalidators.PersonValidator) protected.PersonController {
 	return &PersonController{service: service, validator: validator}
 }
 

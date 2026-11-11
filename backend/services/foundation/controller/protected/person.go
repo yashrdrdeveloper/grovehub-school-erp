@@ -1,8 +1,8 @@
-package controller
+package protected
 
 import "net/http"
 
-// @Routes /foundation/persons
+// @Routes /persons
 type PersonController interface {
     // @POST /
     Create(writer http.ResponseWriter, request *http.Request)

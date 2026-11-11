@@ -5,7 +5,8 @@ import "grovehub/libs/core/annotation/contract"
 
 var UseCases = []contract.UseCase{
     {Name:"Controller",Syntax:"@Controller",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"Register typed HTTP controller/adapter",Mode:"REG",Status:contract.Proposed,Roadmap:"P3",Target:contract.InterfaceTarget},
-    {Name:"Routes",Syntax:"@Routes",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"Controller/resource path prefix and grouping",Mode:"REG",Status:contract.Pilot,Roadmap:"P3",Target:contract.InterfaceTarget},
+    {Name:"Routes",Syntax:"@Routes /resource",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"Controller/resource path relative to service prefix and access tier",Mode:"GEN",Status:contract.Pilot,Roadmap:"P3",Target:contract.InterfaceTarget},
+    {Name:"Routes",Syntax:"@Routes /service",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"Service-wide route prefix on routes.RegisterHTTP; requires categorized controller packages",Mode:"GEN",Status:contract.Pilot,Roadmap:"P3",Target:contract.FunctionTarget},
     {Name:"GET",Syntax:"@GET",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"GET route with typed path and handler contract",Mode:"GEN",Status:contract.Pilot,Roadmap:"P3",Target:contract.MethodTarget},
     {Name:"POST",Syntax:"@POST",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"POST route with typed handler contract",Mode:"GEN",Status:contract.Pilot,Roadmap:"P3",Target:contract.MethodTarget},
     {Name:"PUT",Syntax:"@PUT",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"PUT route with replacement semantics",Mode:"GEN",Status:contract.Pilot,Roadmap:"P3",Target:contract.MethodTarget},

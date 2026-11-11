@@ -10,8 +10,8 @@ import (
 	coretransaction "grovehub/libs/core/database/transaction"
 	foundationclient "grovehub/services/foundation/client"
 	clientimpl "grovehub/services/foundation/client/impl"
-	"grovehub/services/foundation/controller"
-	controllerimpl "grovehub/services/foundation/controller/impl"
+	protected "grovehub/services/foundation/controller/protected"
+	controllerimpl controllerimpl "grovehub/services/foundation/controller/protected/impl"
 	personeventimpl "grovehub/services/foundation/events/persons/impl"
 	mapperimpl "grovehub/services/foundation/mappers/impl"
 	repositoryimpl "grovehub/services/foundation/repository/impl"
@@ -28,7 +28,7 @@ type Module interface {
 
 type module struct {
 	logger           *slog.Logger
-	personController controller.PersonController
+	personController protected.PersonController
 	client           foundationclient.Client
 }
 
