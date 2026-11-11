@@ -9,8 +9,8 @@ type Code = contracts.Code
 type Definition = contracts.Definition
 type Error = contracts.Error
 
-func NewDefinition(code Code, message string) Definition {
-	return helpers.NewDefinition(code, message)
+func NewDefinition(code Code, message string, httpStatus ...int) Definition {
+	return helpers.NewDefinition(code, message, httpStatus...)
 }
 
 func NewError(definition Definition) *Error {

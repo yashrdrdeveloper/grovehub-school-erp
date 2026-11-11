@@ -2,8 +2,8 @@ package helpers
 
 import "grovehub/libs/core/errors/contracts"
 
-func NewDefinition(code contracts.Code, message string) contracts.Definition {
-	return contracts.NewDefinition(code, message)
+func NewDefinition(code contracts.Code, message string, httpStatus ...int) contracts.Definition {
+	return contracts.NewDefinition(code, message, httpStatus...)
 }
 
 func NewError(definition contracts.Definition) *contracts.Error {
