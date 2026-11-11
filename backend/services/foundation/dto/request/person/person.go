@@ -1,10 +1,6 @@
 package person
 
-import (
-	"encoding/json"
-
-	"grovehub/services/foundation/dto/request/person/helpers"
-)
+import "grovehub/services/foundation/dto/request/person/helpers"
 
 type ContactValue struct {
 	Value     string `json:"value" validate:"notblank"`
@@ -44,12 +40,12 @@ type PersonByGID struct {
 	GID string `json:"gid"`
 }
 
-// MarshalJSON preserves absent versus explicitly-null PATCH fields on round trips.
+// MarshalJSON delegates PATCH presence handling to the shared helper.
 func (request UpdatePerson) MarshalJSON() ([]byte, error) {
-	fields := make(map[string]any, 4)
-	if request.FirstName.Set { fields["firstName"] = request.FirstName.Value }
-	if request.MiddleName.Set { fields["middleName"] = request.MiddleName.Value }
-	if request.LastName.Set { fields["lastName"] = request.LastName.Value }
-	if request.Contacts.Set { fields["contacts"] = request.Contacts.Value }
-	return json.Marshal(fields)
+	return helpers.MarshalPatchJSON(
+		helpers.NamedField("firstName", request.FirstName),
+		helpers.NamedField("middleName", request.MiddleName),
+		helpers.NamedField("lastName", request.LastName),
+		helpers.NamedField("contacts", request.Contacts),
+	)
 }

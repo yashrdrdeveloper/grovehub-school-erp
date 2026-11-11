@@ -24,3 +24,25 @@ func (field *Patch[T]) UnmarshalJSON(data []byte) error {
 	field.Value = &value
 	return nil
 }
+
+// JSONField is a named PATCH field with its presence and value preserved.
+type JSONField struct {
+	Name string
+	Set bool
+	Value any
+}
+
+// NamedField adapts a typed PATCH field for JSON serialization.
+func NamedField[T any](name string, patch Patch[T]) JSONField {
+	return JSONField{Name: name, Set: patch.Set, Value: patch.Value}
+}
+
+// MarshalPatchJSON serializes only explicitly supplied PATCH fields.
+// Explicit null remains JSON null; omitted fields are absent.
+func MarshalPatchJSON(fields ...JSONField) ([]byte, error) {
+	values := make(map[string]any, len(fields))
+	for _, field := range fields {
+		if field.Set { values[field.Name] = field.Value }
+	}
+	return json.Marshal(values)
+}
