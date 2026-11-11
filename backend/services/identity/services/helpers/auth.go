@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	coreerrors "grovehub/libs/core/errors"
+	annotationdto "grovehub/libs/core/annotation/dto"
 	coresearch "grovehub/libs/core/search"
 	personerror "grovehub/services/foundation/constants/error"
 	foundationrequest "grovehub/services/foundation/dto/request/person"
@@ -58,7 +59,7 @@ func BuildRegisterPersonUpdate(request identityrequest.Register) foundationreque
 	middleName := *request.MiddleName
 	lastName := request.LastName
 	return foundationrequest.UpdatePerson{
-        FirstName: foundationrequest.PatchString{Set: true, Value: &firstName},
+        FirstName: annotationdto.Patch[string]{Set: true, Value: &firstName},
         MiddleName: foundationrequest.PatchString{Set: true, Value: &middleName},
         LastName: foundationrequest.PatchString{Set: true, Value: &lastName},
     }

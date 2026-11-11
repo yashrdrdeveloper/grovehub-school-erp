@@ -53,6 +53,12 @@ log_info "Generating annotated repository searches"
   go run ./libs/core/annotation/generation/search "${BACKEND_DIR}"
 )
 
+log_info "Generating @PatchRequestDto JSON methods"
+(
+  cd -- "${BACKEND_DIR}"
+  go run ./libs/core/annotation/generation/patchdto "${BACKEND_DIR}"
+)
+
 log_info "Generating strict DTO mappers"
 (
   cd -- "${BACKEND_DIR}"

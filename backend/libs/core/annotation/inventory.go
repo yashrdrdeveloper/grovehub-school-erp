@@ -4,6 +4,7 @@ package annotation
 
 import (
     "grovehub/libs/core/annotation/entity"
+    "grovehub/libs/core/annotation/dto"
     "grovehub/libs/core/annotation/mapping"
     "grovehub/libs/core/annotation/validation"
     "grovehub/libs/core/annotation/persistence"
@@ -24,6 +25,7 @@ import (
 func buildInventory() []UseCase {
     categories := [][]UseCase{
         entity.UseCases,
+        dto.UseCases,
         mapping.UseCases,
         validation.UseCases,
         persistence.UseCases,
