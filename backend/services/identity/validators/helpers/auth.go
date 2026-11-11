@@ -1,23 +1,16 @@
 package helpers
 
 import (
-	annotationvalidation "grovehub/libs/core/annotation/validation"
+	"errors"
 
+	annotationvalidation "grovehub/libs/core/annotation/validation"
 	coreerrors "grovehub/libs/core/errors"
 	identityerror "grovehub/services/identity/constants/error"
 	identityrequest "grovehub/services/identity/dto/request"
 )
 
-func NormalizeRegister(request identityrequest.Register) (identityrequest.Register, error) {
-	normalized, err := annotationvalidation.Normalize(request)
-	if err != nil {
-		return identityrequest.Register{}, invalidRegistration()
-	}
-	request = normalized
-	if err := ValidatePassword(request.Password); err != nil {
-		return identityrequest.Register{}, invalidRegistration()
-	}
-
+// NormalizeRegisterFields canonicalizes technical values before DTO tag rules.
+func NormalizeRegisterFields(request identityrequest.Register) (identityrequest.Register, error) {
 	email, err := NormalizeEmail(request.Email)
 	if err != nil {
 		return identityrequest.Register{}, invalidRegistration()
@@ -29,8 +22,23 @@ func NormalizeRegister(request identityrequest.Register) (identityrequest.Regist
 		return identityrequest.Register{}, invalidRegistration()
 	}
 	request.PhoneNumber = phone
-
 	return request, nil
+}
+
+// ValidateRegisterCustom checks domain rules that are not expressed by DTO tags.
+func ValidateRegisterCustom(request identityrequest.Register) error {
+	if err := ValidatePassword(request.Password); err != nil {
+		return invalidRegistration()
+	}
+	return nil
+}
+
+func MapRegisterDTOError(err error) error {
+	var fieldError annotationvalidation.Error
+	if errors.As(err, &fieldError) {
+		return invalidRegistration()
+	}
+	return err
 }
 
 func invalidRegistration() error {

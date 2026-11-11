@@ -5,6 +5,7 @@ import (
 
 	httpresponse "grovehub/libs/core/http/response"
 	rest "grovehub/libs/core/pipeline/rest"
+	annotationvalidation "grovehub/libs/core/annotation/validation"
 	coresearch "grovehub/libs/core/search"
 	personerror "grovehub/services/foundation/constants/error"
 	protected "grovehub/services/foundation/controller/protected"
@@ -25,7 +26,7 @@ func NewPersonController(service foundationservices.PersonService, validator fou
 
 func (controller *PersonController) Create(writer http.ResponseWriter, request *http.Request) {
 	personRequest, err := rest.Run(request, rest.Config[foundationrequest.CreatePerson]{
-		Normalize: controller.validator.ValidateCreate,
+		Rules: controller.validator.CreateRules(),
 	})
 	if err != nil {
 		controllerhelpers.WritePersonRequestError(request.Context(), writer, err, personerror.InvalidPersonRequest)
@@ -54,7 +55,7 @@ func (controller *PersonController) GetByGID(writer http.ResponseWriter, request
 
 func (controller *PersonController) Update(writer http.ResponseWriter, request *http.Request) {
 	updateRequest, err := rest.Run(request, rest.Config[foundationrequest.UpdatePerson]{
-		Normalize: controller.validator.ValidateUpdate,
+		Rules: controller.validator.UpdateRules(),
 	})
 	if err != nil {
 		controllerhelpers.WritePersonRequestError(request.Context(), writer, err, personerror.InvalidPersonRequest)
@@ -72,9 +73,11 @@ func (controller *PersonController) Update(writer http.ResponseWriter, request *
 
 func (controller *PersonController) Search(writer http.ResponseWriter, request *http.Request) {
 	searchRequest, err := rest.Run(request, rest.Config[coresearch.Request]{
-		Validate: func(value coresearch.Request) error {
-			_, _, err := controller.validator.ValidateSearch(value)
-			return err
+		Rules: annotationvalidation.Rules[coresearch.Request]{
+			Validate: func(value coresearch.Request) error {
+				_, _, err := controller.validator.ValidateSearch(value)
+				return err
+			},
 		},
 	})
 	if err != nil {

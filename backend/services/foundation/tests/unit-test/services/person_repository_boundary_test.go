@@ -9,6 +9,7 @@ import (
 	"time"
 
 	coresearch "grovehub/libs/core/search"
+	annotationvalidation "grovehub/libs/core/annotation/validation"
 	annotationdto "grovehub/libs/core/annotation/dto"
 	foundationrequest "grovehub/services/foundation/dto/request"
 	foundationresponse "grovehub/services/foundation/dto/response"
@@ -122,6 +123,13 @@ func (r *fakeContactRepository) ReplaceForPerson(ctx context.Context, gid string
 }
 
 type fakeValidator struct{}
+
+func (fakeValidator) CreateRules() annotationvalidation.Rules[foundationrequest.CreatePerson] {
+	return annotationvalidation.Rules[foundationrequest.CreatePerson]{}
+}
+func (fakeValidator) UpdateRules() annotationvalidation.Rules[foundationrequest.UpdatePerson] {
+	return annotationvalidation.Rules[foundationrequest.UpdatePerson]{}
+}
 
 func (fakeValidator) ValidateCreate(request foundationrequest.CreatePerson) (foundationrequest.CreatePerson, error) {
 	return request, nil

@@ -27,7 +27,7 @@ func NewAuthController(service identityservices.AuthService, validator identityv
 func (controller *AuthController) Register(writer http.ResponseWriter, request *http.Request) {
 	registerRequest, err := rest.Run(request, rest.Config[identityrequest.Register]{
 		Decode: httprequest.DecodeStrictJSON,
-		Normalize: controller.validator.ValidateRegister,
+		Rules: controller.validator.RegisterRules(),
 	})
 	if err != nil {
 		var decodeError *rest.DecodeError
