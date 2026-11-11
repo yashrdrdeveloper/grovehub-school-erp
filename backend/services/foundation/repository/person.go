@@ -18,6 +18,5 @@ type PersonRepository interface {
 	FindByGID(ctx context.Context, gid string) (entity.Person, error)
 	FindByIdempotencyKey(ctx context.Context, key string) (entity.Person, error)
 	Update(ctx context.Context, person entity.Person) error
-	// @Searchable config=search.PersonConfig alias=p
 	Search(ctx context.Context, query coresearch.Query[string]) (coresearch.QueryResult[entity.Person], error)
 }

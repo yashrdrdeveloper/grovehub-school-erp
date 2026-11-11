@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	coretransaction "grovehub/libs/core/database/transaction"
+	coresearch "grovehub/libs/core/search"
 	"grovehub/services/foundation/entity"
 	foundationrepository "grovehub/services/foundation/repository"
 	repositoryerrors "grovehub/services/foundation/repository/constants/errors"
@@ -68,4 +69,10 @@ func (repository *PersonRepository) Update(ctx context.Context, person entity.Pe
 		return repositoryerrors.ErrPersonVersionConflict
 	}
 	return nil
+}
+
+// @Searchable config=search.PersonConfig alias=p
+// Search delegates the approved, cursor-safe search query to generated plumbing.
+func (repository *PersonRepository) Search(ctx context.Context, query coresearch.Query[string]) (coresearch.QueryResult[entity.Person], error) {
+	return repository.searchGenerated(ctx, query)
 }

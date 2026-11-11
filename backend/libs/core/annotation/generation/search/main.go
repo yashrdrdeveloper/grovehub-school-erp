@@ -54,68 +54,144 @@ func generateAll(backend string) error {
 	return nil
 }
 
+// @Searchable belongs to the concrete Search method, not the public interface.
+// The developer-maintained Search method delegates to generated searchGenerated.
 func discover(dir, service string) ([]spec, error) {
-	paths, err := filepath.Glob(filepath.Join(dir,"*.go"))
+	paths, err := filepath.Glob(filepath.Join(dir, "impl", "*.go"))
 	if err != nil { return nil, err }
 	sort.Strings(paths)
 	var result []spec
-	for _, path := range paths {
-		if strings.HasSuffix(path,"_test.go") { continue }
-		file, err := parser.ParseFile(token.NewFileSet(),path,nil,parser.ParseComments)
+	seen := make(map[string]bool)
+	for _, filename := range paths {
+		if strings.HasSuffix(filename, "_test.go") { continue }
+		file, err := parser.ParseFile(token.NewFileSet(), filename, nil, parser.ParseComments)
 		if err != nil { return nil, err }
 		for _, decl := range file.Decls {
-			gen, ok := decl.(*ast.GenDecl)
-			if !ok || gen.Tok!=token.TYPE { continue }
-			for _, item := range gen.Specs {
-				typeSpec, ok := item.(*ast.TypeSpec)
-				if !ok { continue }
-				iface, ok := typeSpec.Type.(*ast.InterfaceType)
-				if !ok { continue }
-				doc := typeSpec.Doc
-				if doc==nil {doc=gen.Doc}
-				repoDirective := directive(doc,"Repository")
-				for _, member := range iface.Methods.List {
-					args := directive(member.Doc,"Searchable")
-					if args=="" {continue}
-					opts,err:=searchOptions(args)
-					if err!=nil{return nil,fmt.Errorf("%s.%s: %w",typeSpec.Name.Name,member.Names[0].Name,err)}
-					if len(member.Names)!=1 || member.Names[0].Name!="Search" {
-						return nil,fmt.Errorf("%s: @Searchable only supports a Search method",typeSpec.Name.Name)
-					}
-					repoOpts,err:=options(repoDirective,[]string{"entity"})
-					if err!=nil{return nil,fmt.Errorf("%s.Search: @Repository entity declaration required: %w",typeSpec.Name.Name,err)}
-					entityName:=repoOpts["entity"]
-					if opts["entity"]!="" && opts["entity"]!=entityName {
-						return nil,fmt.Errorf("%s.Search: @Searchable entity must match @Repository",typeSpec.Name.Name)
-					}
-					implName:=typeSpec.Name.Name
-					if opts["impl"]!="" && opts["impl"]!=implName {
-						return nil,fmt.Errorf("%s.Search: @Searchable impl must match repository interface",typeSpec.Name.Name)
-					}
-					if err:=validateSignature(member.Type,entityName);err!=nil{return nil,fmt.Errorf("%s.Search: %w",typeSpec.Name.Name,err)}
-					filterFields,err:=optionalFields(member.Doc,"Filterable")
-					if err!=nil{return nil,err}
-					sortFields,err:=optionalFields(member.Doc,"Sortable")
-					if err!=nil{return nil,err}
-					cursorName:=""
-					if raw:=directive(member.Doc,"Cursor");raw!="" {
-						cursorArgs,err:=options(raw,[]string{"field"})
-						if err!=nil{return nil,fmt.Errorf("@Cursor: %w",err)}
-						cursorName=cursorArgs["field"]
-						if len(sortFields)>0 && !contains(sortFields,cursorName) {return nil,fmt.Errorf("@Cursor field must be sortable")}
-					}
-					configDir,configImport,configAlias,configName,err:=resolveConfig(dir,service,opts["config"])
-					if err!=nil{return nil,err}
-					if err:=validateConfig(configDir,configName,filterFields,sortFields,cursorName);err!=nil{return nil,err}
-					result=append(result,spec{
-						service:service,impl:implName,entity:entityName,config:opts["config"],
-						alias:opts["alias"],configImport:configImport,configAlias:configAlias,
-					})
+			method, ok := decl.(*ast.FuncDecl)
+			if !ok || !hasDirective(method.Doc, "Searchable") { continue }
+			if method.Recv == nil || len(method.Recv.List) != 1 || method.Name.Name != "Search" {
+				return nil, fmt.Errorf("%s: @Searchable requires a concrete Search method", filename)
+			}
+			receiverType := strings.TrimPrefix(exprString(method.Recv.List[0].Type), "*")
+			if !token.IsIdentifier(receiverType) {
+				return nil, fmt.Errorf("%s: @Searchable requires a named repository receiver", filename)
+			}
+			if seen[receiverType] {
+				return nil, fmt.Errorf("%s: duplicate @Searchable Search for %s", filename, receiverType)
+			}
+			seen[receiverType] = true
+			entityName, err := repositoryEntity(dir, receiverType)
+			if err != nil { return nil, fmt.Errorf("%s.Search: %w", receiverType, err) }
+			if err := validateSignature(method.Type, entityName); err != nil {
+				return nil, fmt.Errorf("%s.Search: %w", receiverType, err)
+			}
+			if err := validateSearchDelegate(method); err != nil {
+				return nil, fmt.Errorf("%s.Search: %w", receiverType, err)
+			}
+			opts, err := searchOptions(directive(method.Doc, "Searchable"))
+			if err != nil { return nil, fmt.Errorf("%s.Search: %w", receiverType, err) }
+			if opts["entity"] != "" && opts["entity"] != entityName {
+				return nil, fmt.Errorf("%s.Search: @Searchable entity must match @Repository", receiverType)
+			}
+			if opts["impl"] != "" && opts["impl"] != receiverType {
+				return nil, fmt.Errorf("%s.Search: @Searchable impl must match concrete receiver", receiverType)
+			}
+			filterFields, err := optionalFields(method.Doc, "Filterable")
+			if err != nil { return nil, err }
+			sortFields, err := optionalFields(method.Doc, "Sortable")
+			if err != nil { return nil, err }
+			cursorName := ""
+			if raw := directive(method.Doc, "Cursor"); raw != "" {
+				cursorArgs, err := options(raw, []string{"field"})
+				if err != nil { return nil, fmt.Errorf("@Cursor: %w", err) }
+				cursorName = cursorArgs["field"]
+				if len(sortFields) > 0 && !contains(sortFields, cursorName) {
+					return nil, fmt.Errorf("@Cursor field must be sortable")
 				}
+			}
+			configDir, configImport, configAlias, configName, err := resolveConfig(dir, service, opts["config"])
+			if err != nil { return nil, err }
+			if err := validateConfig(configDir, configName, filterFields, sortFields, cursorName); err != nil { return nil, err }
+			result = append(result, spec{
+				service: service, impl: receiverType, entity: entityName, config: opts["config"],
+				alias: opts["alias"], configImport: configImport, configAlias: configAlias,
+			})
+		}
+	}
+	return result, nil
+}
+
+// repositoryEntity ensures the annotated implementation satisfies the
+// explicit repository interface and its @Repository ownership declaration.
+func repositoryEntity(dir, receiver string) (string, error) {
+	paths, err := filepath.Glob(filepath.Join(dir, "*.go"))
+	if err != nil { return "", err }
+	for _, filename := range paths {
+		if strings.HasSuffix(filename, "_test.go") { continue }
+		file, err := parser.ParseFile(token.NewFileSet(), filename, nil, parser.ParseComments)
+		if err != nil { return "", err }
+		for _, decl := range file.Decls {
+			group, ok := decl.(*ast.GenDecl)
+			if !ok || group.Tok != token.TYPE { continue }
+			for _, node := range group.Specs {
+				typ, ok := node.(*ast.TypeSpec)
+				if !ok || typ.Name.Name != receiver { continue }
+				iface, ok := typ.Type.(*ast.InterfaceType)
+				if !ok { continue }
+				doc := typ.Doc
+				if doc == nil { doc = group.Doc }
+				repoOpts, err := options(directive(doc, "Repository"), []string{"entity"})
+				if err != nil { return "", fmt.Errorf("matching @Repository interface required: %w", err) }
+				entity := repoOpts["entity"]
+				for _, member := range iface.Methods.List {
+					if len(member.Names) != 1 { continue }
+					if member.Names[0].Name != "Search" { continue }
+					if hasDirective(member.Doc, "Searchable") {
+						return "", fmt.Errorf("move @Searchable from interface to %s.Search implementation", receiver)
+					}
+					if err := validateSignature(member.Type, entity); err != nil { return "", err }
+					return entity, nil
+				}
+				return "", fmt.Errorf("repository interface %s must declare Search", receiver)
 			}
 		}
 	}
-	return result,nil
+	return "", fmt.Errorf("missing @Repository interface for concrete %s", receiver)
+}
+
+func hasDirective(doc *ast.CommentGroup, name string) bool {
+	if doc == nil { return false }
+	for _, comment := range doc.List {
+		text := strings.TrimSpace(strings.TrimPrefix(comment.Text, "//"))
+		if text == "@"+name || strings.HasPrefix(text, "@"+name+" ") { return true }
+	}
+	return false
+}
+
+// The explicit Search method is intentionally small: config and query
+// mechanics remain generated, and callers see an ordinary method in impl.
+func validateSearchDelegate(fn *ast.FuncDecl) error {
+	if fn.Body == nil || len(fn.Body.List) != 1 {
+		return fmt.Errorf("@Searchable Search must delegate to repository.searchGenerated(ctx, query)")
+	}
+	stmt, ok := fn.Body.List[0].(*ast.ReturnStmt)
+	if !ok || len(stmt.Results) != 1 {
+		return fmt.Errorf("@Searchable Search must return repository.searchGenerated(ctx, query)")
+	}
+	call, ok := stmt.Results[0].(*ast.CallExpr)
+	if !ok || len(call.Args) != 2 {
+		return fmt.Errorf("@Searchable Search must call the generated search helper")
+	}
+	target, ok := call.Fun.(*ast.SelectorExpr)
+	if !ok || target.Sel.Name != "searchGenerated" { return fmt.Errorf("@Searchable Search must use searchGenerated") }
+	owner, ok := target.X.(*ast.Ident)
+	if !ok || len(fn.Recv.List[0].Names) != 1 || owner.Name != fn.Recv.List[0].Names[0].Name {
+		return fmt.Errorf("@Searchable Search must delegate using its repository receiver")
+	}
+	if exprString(call.Args[0]) != "ctx" || exprString(call.Args[1]) != "query" {
+		return fmt.Errorf("@Searchable Search must forward ctx and query unchanged")
+	}
+	return nil
 }
 
 func directive(group *ast.CommentGroup, name string) string {
@@ -300,33 +376,44 @@ func validateConfig(dir,config string,filters,sorts []string,cursor string) erro
 	}
 	return fmt.Errorf("no sortable field matches the stable CursorExpression %q",cursorExpr)
 }
-func validateImplementation(dir string,specs []spec)error{
-	files,err:=filepath.Glob(filepath.Join(dir,"*.go"));if err!=nil{return err}
-	structs:=make(map[string]bool)
-	for _,p:=range files {
-		f,err:=parser.ParseFile(token.NewFileSet(),p,nil,0);if err!=nil{return err}
-		for _,d:=range f.Decls {
-			switch n:=d.(type) {
+func validateImplementation(dir string, specs []spec) error {
+	files, err := filepath.Glob(filepath.Join(dir, "*.go"))
+	if err != nil { return err }
+	structs := make(map[string]bool)
+	for _, filename := range files {
+		file, err := parser.ParseFile(token.NewFileSet(), filename, nil, 0)
+		if err != nil { return err }
+		for _, decl := range file.Decls {
+			switch node := decl.(type) {
 			case *ast.GenDecl:
-				if n.Tok!=token.TYPE{continue}
-				for _,item:=range n.Specs {
-					ts,ok:=item.(*ast.TypeSpec);if !ok{continue}
-					st,ok:=ts.Type.(*ast.StructType);if !ok{continue}
-					for _,v:=range st.Fields.List {for _,id:=range v.Names {if id.Name=="db"{structs[ts.Name.Name]=true}}}
+				if node.Tok != token.TYPE { continue }
+				for _, item := range node.Specs {
+					typeSpec, ok := item.(*ast.TypeSpec)
+					if !ok { continue }
+					st, ok := typeSpec.Type.(*ast.StructType)
+					if !ok { continue }
+					for _, field := range st.Fields.List {
+						for _, name := range field.Names {
+							if name.Name == "db" { structs[typeSpec.Name.Name] = true }
+						}
+					}
 				}
 			case *ast.FuncDecl:
-				if n.Recv==nil||n.Name.Name!="Search"{continue}
-				for _,wanted:=range specs {
-					if strings.TrimPrefix(strings.TrimPrefix(exprString(n.Recv.List[0].Type),"*"),"impl.")==wanted.impl {
-						return fmt.Errorf("%s has a manual Search implementation; remove it when using @Searchable",wanted.impl)
+				if node.Recv == nil || node.Name.Name != "searchGenerated" { continue }
+				for _, wanted := range specs {
+					if strings.TrimPrefix(exprString(node.Recv.List[0].Type), "*") == wanted.impl {
+						return fmt.Errorf("%s already implements searchGenerated; @Searchable owns that helper", wanted.impl)
 					}
 				}
 			}
 		}
 	}
-	for _,wanted:=range specs {if !structs[wanted.impl]{return fmt.Errorf("%s needs a db field on its implementation struct",wanted.impl)}}
+	for _, wanted := range specs {
+		if !structs[wanted.impl] { return fmt.Errorf("%s needs a db field on its implementation struct", wanted.impl) }
+	}
 	return nil
 }
+
 func write(path string,specs []spec)error{
 	var b strings.Builder
 	b.WriteString("// Code generated by GrooveHub @Searchable. DO NOT EDIT.\npackage impl\n\n")
@@ -348,7 +435,7 @@ func write(path string,specs []spec)error{
 	b.WriteString(")\n\n")
 	for _,sp:=range specs{
 		if sp.service!=specs[0].service{return fmt.Errorf("mixed service annotations")}
-		fmt.Fprintf(&b,"func (repository *%s) Search(ctx context.Context, query coresearch.Query[string]) (coresearch.QueryResult[entity.%s], error) {\n",sp.impl,sp.entity)
+		fmt.Fprintf(&b,"func (repository *%s) searchGenerated(ctx context.Context, query coresearch.Query[string]) (coresearch.QueryResult[entity.%s], error) {\n",sp.impl,sp.entity)
 		fmt.Fprintf(&b,"return coresearch.Execute[string, entity.%s](coretransaction.Database(ctx, repository.db).Model(&entity.%s{}).Table(entity.%s{}.TableName()+\" AS %s\").Select(\"%s.*\"), query, %s)\n}\n\n",sp.entity,sp.entity,sp.entity,sp.alias,sp.alias,sp.config)
 	}
 	formatted,err:=format.Source([]byte(b.String()))
