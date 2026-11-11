@@ -1,32 +1,32 @@
-// Package rest decodes, normalizes and validates typed HTTP request bodies.
-// Service execution and business rules remain the controller/service's responsibility.
+// Package rest decodes HTTP JSON and executes the shared ordered DTO
+// normalization/validation pipeline before the controller calls a service.
 package rest
 
 import (
 	"fmt"
 	"net/http"
 
+	annotationvalidation "grovehub/libs/core/annotation/validation"
 	httprequest "grovehub/libs/core/http/request"
 )
 
-// Config defines the ordered REST input stages. Optional callbacks are skipped.
-// Decode defaults to the existing permissive JSON decoder; endpoints requiring
-// additionalProperties=false should supply httprequest.DecodeStrictJSON.
+// Config controls transport decoding and resource-owned validation rules.
+// Request DTO normalization and tag validation always run automatically.
+// A route may opt into strict JSON with DecodeStrictJSON.
 type Config[T any] struct {
-	Decode    func(*http.Request, any) error
-	Normalize func(T) (T, error)
-	Validate  func(T) error
+	Decode func(*http.Request, any) error
+	Rules  annotationvalidation.Rules[T]
 }
 
-// DecodeError identifies malformed HTTP input without exposing its contents.
-// Domain validators return their existing errors unchanged.
+// DecodeError distinguishes malformed HTTP JSON from validation failures.
 type DecodeError struct{ Err error }
 
 func (err *DecodeError) Error() string { return fmt.Sprintf("decode request: %v", err.Err) }
 func (err *DecodeError) Unwrap() error { return err.Err }
 
-// Run executes decode -> normalize -> validate, failing at the first error.
-// No service invocation, HTTP response writing or request-context mutation occurs.
+// Run follows decode -> tag normalization -> resource normalization ->
+// DTO tag validation -> custom resource validation. It returns the validated
+// DTO to its controller; it never invokes the service or writes a response.
 func Run[T any](request *http.Request, config Config[T]) (T, error) {
 	var value T
 	decode := config.Decode
@@ -36,19 +36,5 @@ func Run[T any](request *http.Request, config Config[T]) (T, error) {
 	if err := decode(request, &value); err != nil {
 		return value, &DecodeError{Err: err}
 	}
-	if config.Normalize != nil {
-		normalized, err := config.Normalize(value)
-		if err != nil {
-			var zero T
-			return zero, err
-		}
-		value = normalized
-	}
-	if config.Validate != nil {
-		if err := config.Validate(value); err != nil {
-			var zero T
-			return zero, err
-		}
-	}
-	return value, nil
+	return annotationvalidation.Process(value, config.Rules)
 }
