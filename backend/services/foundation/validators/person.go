@@ -2,7 +2,7 @@ package validators
 
 import (
 	coresearch "grovehub/libs/core/search"
-	foundationrequest "grovehub/services/foundation/dto/request/person"
+	foundationrequest "grovehub/services/foundation/dto/request"
 )
 
 type PersonValidator interface {

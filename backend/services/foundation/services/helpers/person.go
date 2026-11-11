@@ -6,7 +6,7 @@ import (
 	"time"
 
 	coresearch "grovehub/libs/core/search"
-	foundationrequest "grovehub/services/foundation/dto/request/person"
+	foundationrequest "grovehub/services/foundation/dto/request"
 	"grovehub/services/foundation/entity"
 )
 

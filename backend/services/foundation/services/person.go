@@ -4,8 +4,8 @@ import (
 	"context"
 
 	coresearch "grovehub/libs/core/search"
-	foundationrequest "grovehub/services/foundation/dto/request/person"
-	foundationresponse "grovehub/services/foundation/dto/response/person"
+	foundationrequest "grovehub/services/foundation/dto/request"
+	foundationresponse "grovehub/services/foundation/dto/response"
 )
 
 type PersonService interface {
