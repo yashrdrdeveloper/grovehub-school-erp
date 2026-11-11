@@ -8,7 +8,6 @@ import (
 	coreerrors "grovehub/libs/core/errors"
 	rest "grovehub/libs/core/pipeline/rest"
 	httpresponse "grovehub/libs/core/http/response"
-	personerror "grovehub/services/foundation/constants/error"
 )
 
 func WritePersonRequestError(ctx context.Context, writer http.ResponseWriter, err error, invalid coreerrors.Definition) {
