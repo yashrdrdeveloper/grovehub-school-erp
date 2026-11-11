@@ -57,7 +57,7 @@ import dto "grovehub/libs/core/annotation/dto"
 type UpdateWidget struct { Name dto.Patch[string] }`,
 		"manual MarshalJSON": patchSource + `
 func (UpdateWidget) MarshalJSON() ([]byte, error) { return nil, nil }`,
-		"bad json tag": strings.Replace(patchSource, "` + "`json:\"count\"`" + `", "` + "`json:\"title\"`" + `", 1),
+		"bad json tag": strings.Replace(patchSource, "`json:\"count\"`", "`json:\"title\"`", 1),
 	}
 	for name, src := range cases {
 		t.Run(name, func(t *testing.T) {
