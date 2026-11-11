@@ -80,9 +80,9 @@ backend/
   services/
     foundation/
       controller/person.go            # annotated route contract
-      dto/request/person/person.go    # grouped Person DTO contract
-      dto/request/person/helpers/patch.go # presence-aware PATCH helper
-      dto/response/person/person.go   # grouped Person response contract
+      dto/request/person.go           # Person create/PATCH DTO, using @PatchRequestDto
+      dto/response/person.go          # Person response DTO
+      libs/core/annotation/dto/patch.go # reusable presence-aware PATCH field
       validators/impl/person.go       # application error mapping and contact checks
       routes/http.go                  # composition; delegates to generated routes
       .generated/routes/zz_routes.gen.go

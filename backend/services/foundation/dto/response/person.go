@@ -1,4 +1,4 @@
-package person
+package response
 
 import "time"
 

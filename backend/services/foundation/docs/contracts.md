@@ -148,15 +148,15 @@ Foundation repository
 
 ## DTO layout
 
-Foundation's request/response contracts are resource-grouped:
+Foundation's request/response DTOs use flat, responsibility-owned packages:
 
 ```text
-dto/request/person/person.go          # CreatePerson, UpdatePerson, Contacts, PersonByGID
+dto/request/person.go                 # CreatePerson, UpdatePerson, Contacts, PersonByGID
+dto/response/person.go                # Person, Contacts, PersonErrorMetadata
 libs/core/annotation/dto/patch.go     # shared presence-aware Patch[T] type
-dto/response/person/person.go         # Person, Contacts, PersonErrorMetadata
 ```
 
-Go consumers import `dto/request/person` and `dto/response/person` (usually as `foundationrequest` and `foundationresponse`). PATCH fields use aliases `PatchString` and `PatchContacts` backed by the reusable helper; absent, null and supplied JSON values remain distinct.
+Go consumers import `dto/request` and `dto/response` (usually as `foundationrequest` and `foundationresponse`). `@PatchRequestDto` uses shared `annotationdto.Patch[T]`; absent, null and supplied JSON values remain distinct.
 
 ## 5. Create Person
 

@@ -142,7 +142,7 @@ type UpdatePerson struct {
 The shared `Patch[T]` distinguishes omitted, explicit `null`, and supplied values
 using `Set` and `Value`. The build-time `generation/patchdto` tool validates
 the annotated DTO shape and generates JSON serialization into the service's
-ignored `.generated/dto/request/.../` subtree, mounted by the Go overlay.
+ignored `.generated/dto/request/zz_patchdto.gen.go` file for flat request packages (or a corresponding nested path for other services), mounted by the Go overlay.
 Business validators still decide which fields may be cleared; annotations
 do not create authorization or validation rules. No generated code is checked in.
 

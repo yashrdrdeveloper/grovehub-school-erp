@@ -17,8 +17,8 @@ docs/engineering/backend/NORMALIZATION_AND_DRY_GUIDELINES.md
 DTOs define request/response shapes. Mappers perform real representation changes only. Validators validate and canonicalize request/service-input payloads.
 
 ```text
-dto/request/<resource>/<resource>.go    # Foundation resource-grouped DTOs; other services may remain flat
-dto/response/<resource>/<resource>.go  # Foundation resource-grouped DTOs; other services may remain flat
+dto/request/<resource>.go
+dto/response/<resource>.go
 mappers/<resource>.go
 mappers/impl/<resource>.go
 validators/<resource>.go
@@ -160,7 +160,7 @@ person_mapper.go   # solely for DB <-> entity copying
 A service mapper may still exist for a real boundary such as:
 
 ```text
-entity.Person -> dto/response/person.Person
+entity.Person -> dto/response.Person
 ```
 
 Persistence/query-derived behavior belongs in the repository implementation, not in a mapper or entity.

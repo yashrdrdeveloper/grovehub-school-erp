@@ -361,7 +361,7 @@ Create a mapper only when there is a real representation boundary.
 Examples:
 
 ```text
-entity.Person -> dto/response/person.Person
+entity.Person -> dto/response.Person
 request.GID (string) -> UUIDv7 validation -> repository string argument
 entity metadata -> response error metadata
 ```
@@ -670,7 +670,7 @@ Contacts are nested API values, not separately addressable public resources. `en
 
 Search remains a Person use case; do not create `person_search.go` merely because Person supports search.
 
-Foundation owns the Person/GID lifecycle event contract. Its current unified event is `foundation.person.changed.v1` on the stable `foundation_person_changed` topic. Its `data` contains `operation`, `old`, and `new` using complete `dto/response/person.Person` snapshots; supported operations are CREATED, UPDATED and DEACTIVATED. A successful deactivation publishes only DEACTIVATED, never a duplicate UPDATED event; no-op changes do not publish. Consumers can calculate a flat field-level diff with `libs/core/diff`, which never imports Foundation. See `EVENT_GUIDELINES.md` and `backend/services/foundation/events/persons/README.md` for contract and caveats.
+Foundation owns the Person/GID lifecycle event contract. Its current unified event is `foundation.person.changed.v1` on the stable `foundation_person_changed` topic. Its `data` contains `operation`, `old`, and `new` using complete `dto/response.Person` snapshots; supported operations are CREATED, UPDATED and DEACTIVATED. A successful deactivation publishes only DEACTIVATED, never a duplicate UPDATED event; no-op changes do not publish. Consumers can calculate a flat field-level diff with `libs/core/diff`, which never imports Foundation. See `EVENT_GUIDELINES.md` and `backend/services/foundation/events/persons/README.md` for contract and caveats.
 
 ---
 

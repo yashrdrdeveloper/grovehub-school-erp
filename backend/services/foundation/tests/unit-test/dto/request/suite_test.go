@@ -1,4 +1,4 @@
-package person_test
+package request_test
 
 import (
 	"testing"

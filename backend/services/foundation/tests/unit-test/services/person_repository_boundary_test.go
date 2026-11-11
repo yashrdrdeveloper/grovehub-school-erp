@@ -10,8 +10,8 @@ import (
 
 	coresearch "grovehub/libs/core/search"
 	annotationdto "grovehub/libs/core/annotation/dto"
-	foundationrequest "grovehub/services/foundation/dto/request/person"
-	foundationresponse "grovehub/services/foundation/dto/response/person"
+	foundationrequest "grovehub/services/foundation/dto/request"
+	foundationresponse "grovehub/services/foundation/dto/response"
 	"grovehub/services/foundation/entity"
 	repositoryerrors "grovehub/services/foundation/repository/constants/errors"
 	personservice "grovehub/services/foundation/services/impl"
