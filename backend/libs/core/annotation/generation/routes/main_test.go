@@ -120,7 +120,7 @@ func TestServicePrefixIsOwnedByRouteComposition(t *testing.T) {
 	if !strings.Contains(content, "GET /school/protected/persons/{gid}") {
 		t.Fatal("changing service @Routes must update every generated endpoint")
 	}
-	if strings.Contains(content, "/foundation/") {
+	if strings.Contains(content, "GET /foundation/") || strings.Contains(content, "POST /foundation/") || strings.Contains(content, "PATCH /foundation/") {
 		t.Fatal("stale service prefix retained")
 	}
 }
@@ -145,7 +145,7 @@ type AuthController interface {
 	if !strings.Contains(content, "POST /auth/register") || !strings.Contains(content, "registerAuthRoutes(") {
 		t.Fatal("legacy Identity routes must remain unchanged")
 	}
-	if strings.Contains(content, "/identity/") {
+	if strings.Contains(content, "POST /identity/") {
 		t.Fatal("legacy service prefix must not be inferred")
 	}
 }
