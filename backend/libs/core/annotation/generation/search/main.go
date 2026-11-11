@@ -57,6 +57,7 @@ func generateAll(backend string) error {
 // @Searchable belongs to the concrete Search method, not the public interface.
 // The developer-maintained Search method delegates to generated searchGenerated.
 func discover(dir, service string) ([]spec, error) {
+	if err := rejectInterfaceSearchables(dir); err != nil { return nil, err }
 	paths, err := filepath.Glob(filepath.Join(dir, "impl", "*.go"))
 	if err != nil { return nil, err }
 	sort.Strings(paths)
@@ -119,6 +120,33 @@ func discover(dir, service string) ([]spec, error) {
 		}
 	}
 	return result, nil
+}
+
+// Reject misplaced @Searchable annotations before emitting a search helper.
+func rejectInterfaceSearchables(dir string) error {
+	paths, err := filepath.Glob(filepath.Join(dir, "*.go"))
+	if err != nil { return err }
+	for _, filename := range paths {
+		if strings.HasSuffix(filename, "_test.go") { continue }
+		file, err := parser.ParseFile(token.NewFileSet(), filename, nil, parser.ParseComments)
+		if err != nil { return err }
+		for _, decl := range file.Decls {
+			gen, ok := decl.(*ast.GenDecl)
+			if !ok || gen.Tok != token.TYPE { continue }
+			for _, node := range gen.Specs {
+				t, ok := node.(*ast.TypeSpec)
+				if !ok { continue }
+				iface, ok := t.Type.(*ast.InterfaceType)
+				if !ok { continue }
+				for _, member := range iface.Methods.List {
+					if hasDirective(member.Doc, "Searchable") {
+						return fmt.Errorf("%s: move @Searchable from %s interface to the concrete Search method", filename, t.Name.Name)
+					}
+				}
+			}
+		}
+	}
+	return nil
 }
 
 // repositoryEntity ensures the annotated implementation satisfies the
