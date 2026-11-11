@@ -152,7 +152,7 @@ Foundation's request/response contracts are resource-grouped:
 
 ```text
 dto/request/person/person.go          # CreatePerson, UpdatePerson, Contacts, PersonByGID
-dto/request/person/helpers/patch.go   # generic presence-aware PATCH helper
+libs/core/annotation/dto/patch.go     # shared presence-aware Patch[T] type
 dto/response/person/person.go         # Person, Contacts, PersonErrorMetadata
 ```
 
@@ -292,7 +292,7 @@ contacts null               -> remove every email and phone contact
 contacts object             -> replace all contacts with the supplied arrays
 ```
 
-The DTO uses `PatchString` and `PatchContacts` with `Set` for JSON presence and `Value` for null/value; nested `emails` or `phones` omitted from a supplied contacts object means an empty group.
+The DTO uses `annotation/dto.Patch[T]` with `Set` for JSON presence and `Value` for null/value; its `@PatchRequestDto` annotation generates JSON serialization, without resource-specific helpers; nested `emails` or `phones` omitted from a supplied contacts object means an empty group.
 
 Example:
 

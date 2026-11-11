@@ -9,6 +9,7 @@ import (
 	"time"
 
 	coresearch "grovehub/libs/core/search"
+	annotationdto "grovehub/libs/core/annotation/dto"
 	foundationrequest "grovehub/services/foundation/dto/request/person"
 	foundationresponse "grovehub/services/foundation/dto/response/person"
 	"grovehub/services/foundation/entity"
@@ -193,7 +194,7 @@ func TestUpdateNameOnlyDoesNotRewriteContacts(t *testing.T) {
 	people.person = entity.Person{GID: "person-id", FirstName: "Old", LastName: "Name", Version: 1, UpdatedAt: time.Now().UTC()}
 	contacts.byPerson[people.person.GID] = []entity.Contact{{PersonGID: people.person.GID, Type: entity.ContactTypeEmail, Value: "old@example.com", NormalizedValue: "old@example.com"}}
 	name := "New"
-	result, err := service.Update(context.Background(), foundationrequest.PersonByGID{GID: "person-id"}, foundationrequest.UpdatePerson{FirstName: foundationrequest.PatchString{Set: true, Value: &name}})
+	result, err := service.Update(context.Background(), foundationrequest.PersonByGID{GID: "person-id"}, foundationrequest.UpdatePerson{FirstName: annotationdto.Patch[string]{Set: true, Value: &name}})
 	if err != nil { t.Fatal(err) }
 	if result.FirstName != "New" || people.person.Version != 2 { t.Fatalf("unexpected person update: %#v", people.person) }
 	if contacts.replacements != 0 { t.Fatal("name-only update must not rewrite unchanged contacts") }
@@ -207,7 +208,7 @@ func TestUpdateContactsUsesSamePersonUnitOfWork(t *testing.T) {
 	people, contacts, work, service := setup(t)
 	people.person = entity.Person{GID: "person-id", FirstName: "A", LastName: "B", Version: 2, UpdatedAt: time.Now().UTC()}
 	newContacts := foundationrequest.Contacts{Phones: []foundationrequest.ContactValue{{Value: "+919876543210", IsPrimary: true}}}
-	result, err := service.Update(context.Background(), foundationrequest.PersonByGID{GID: "person-id"}, foundationrequest.UpdatePerson{Contacts: foundationrequest.PatchContacts{Set: true, Value: &newContacts}})
+	result, err := service.Update(context.Background(), foundationrequest.PersonByGID{GID: "person-id"}, foundationrequest.UpdatePerson{Contacts: annotationdto.Patch[foundationrequest.Contacts]{Set: true, Value: &newContacts}})
 	if err != nil { t.Fatal(err) }
 	if work.runs != 1 || contacts.replacements != 1 || people.person.Version != 3 {
 		t.Fatalf("Person and Contact must write in one unit of work: runs=%d replacements=%d version=%d", work.runs, contacts.replacements, people.person.Version)

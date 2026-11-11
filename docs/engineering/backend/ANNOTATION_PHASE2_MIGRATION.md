@@ -23,6 +23,7 @@
 | HTTP build tooling | New `generation/routes` tool, generalized overlay maps service-local generated package files | Go AST, `-overlay` | Gopls and standard direct Go invocations need explicit configuration |
 | Foundation, Integration and Infrastructure clients | Generated 15 typed in-process forwarding methods; maintained constructors and service contracts retained | `@Client`, `@Proxy` | CI compilation verified; runtime context and auth tests pending |
 | Integration config | Gmail and Outlook env parsing moved to typed tagged loader; preserved callback checks and error semantics | `@Configuration`, `env`, `required`, `default`, `secret` | `GmailPush` and encryption-key loaders remain explicit |
+| Shared PATCH DTO generation | Replaced Foundation Person-only PATCH helper and custom JSON serializer with `annotation/dto.Patch[T]` and `@PatchRequestDto` | `generation/patchdto` emits JSON serialization using service-local Go overlay | Omitted/null/value semantics preserved; validation of clearable fields stays in the service |
 | Foundation and Identity request validation | Non-generic Foundation Person name fields for create, explicit pointer-based PATCH, nested contact validation and Identity registration presence checks | Executable `normalize` / `validate` struct tags; redundant DTO comment annotations removed | Idempotency and correlation arrive via validated headercontext; domain checks remain explicit |
 | Test tooling | Added overlay-aware `make backend-test`; sanity tests prepare overlay | `go test -vet=off -overlay=...` | Go vet cannot automatically read non-existent virtual paths; see below |
 | Annotation safety check | Build-time AST scanner rejects unimplemented directives such as `@Authorize` before generating code | `generation/check` | Does not replace actual IAM middleware or authorization decisions |
@@ -69,6 +70,7 @@ backend/
     generation/
       entities/                       # Gombok-compatible AST builder/accessor generator
       gormtable/                      # @Entity TableName generator (full or table-only)
+      patchdto/                       # @PatchRequestDto JSON serialization generator
       mappers/                        # exact-field DTO projection generator
       search/                         # typed repository search and allowlist checker
       events/                         # versioned topic/type constant generator

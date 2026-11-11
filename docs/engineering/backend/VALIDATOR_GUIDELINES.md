@@ -14,7 +14,7 @@ docs/engineering/backend/NORMALIZATION_AND_DRY_GUIDELINES.md
 
 ## Request DTOs and header context
 
-- Foundation uses a plain `dto/request/person.Person` with string fields embedded in `CreatePerson`; `UpdatePerson` uses presence-aware `PatchString`/`PatchContacts` types from `dto/request/person/helpers` so absent, explicit-null and supplied values remain distinct.
+- Foundation uses a plain `dto/request/person.Person` with string fields embedded in `CreatePerson`; `UpdatePerson` uses shared presence-aware `annotation/dto.Patch[T]` fields, with `@PatchRequestDto` generating JSON serialization so absent, explicit-null and supplied values remain distinct.
 - Validation and normalization are applied by existing validator code using the `normalize` and `validate` struct tags; repeating the same rules as `@NotBlank`, `@Size`, `@Valid`, `@Data`, or `@Validator` comments in these DTOs adds no value and is not required.
 - `libs/core/headercontext.Middleware` captures and validates `Idempotency-Key`, `X-Correlation-ID` and `X-Request-ID` once at the launcher HTTP boundary. Services consume `headercontext.IdempotencyKey(ctx)` directly; no request-body header fields or controller extraction. Never treat client-supplied `X-Trace-ID` as authoritative telemetry.
 

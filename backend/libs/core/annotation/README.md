@@ -8,7 +8,7 @@ Go doesn't natively support Java-style annotations. GrooveHub accepts source com
 
 ## Inventory and code structure
 
-The Phase 1 registry defines **226 use cases, 232 distinct annotation names and all 23 GoF design patterns**. each category's `annotations.go` owns its declarations; `inventory.go` and `annotation.go` expose `All`, `Lookup`, `Uses`, `Patterns`, `ParseComment` and `ValidateDirective`.
+The Phase 1 registry defines the catalog of supported annotations, including the new executable `@PatchRequestDto`, and all 23 GoF design patterns. each category's `annotations.go` owns its declarations; `inventory.go` and `annotation.go` expose `All`, `Lookup`, `Uses`, `Patterns`, `ParseComment` and `ValidateDirective`.
 
 ```text
 backend/libs/core/annotation/
@@ -17,6 +17,7 @@ backend/libs/core/annotation/
   contract/contract.go       # shared types; avoids circular dependencies
   entity/                    # entity.go + annotations.go
   validation/                # validation.go + annotations.go
+  dto/                       # shared Patch[T] and @PatchRequestDto catalog
   configuration/             # configuration.go + annotations.go
   mapping/annotations.go
   persistence/annotations.go
@@ -38,7 +39,7 @@ backend/libs/core/annotation/
     patterns.go              # all 23 GoF decisions
   generation/
     entities/ gormtable/ routes/ clients/ mappers/ events/
-    search/ check/ parser/ overlay/ expand/
+    search/ patchdto/ check/ parser/ overlay/ expand/
 ```
 
 All code generated for a service is placed under **that service's ignored `.generated/` directory**, not beside its maintained Go files.
@@ -122,9 +123,32 @@ type PersonRepository interface {
 
 The build-time `generation/search` processor resolves external repository search configuration (including nested `repository/helpers/search/`), verifies that the cursor expression matches a stable sort key, optionally checks `@Filterable`/`@Sortable`/`@Cursor` declarations when provided, and generates the `Search` method into the service's ignored `.generated/repository/impl/` folder. Execution delegates to the shared `core/search.Execute`. The resource validator still controls operators and normalized values; repository-owned `coresearch.Config` keeps all SQL expressions explicit and reviewed. `@Repository` is ownership metadata validation only, **not** DI or transaction generation.
 
+### Reusable PATCH request DTOs
+
+Annotate a DTO to generate its `MarshalJSON` method; no resource-local
+`helpers/patch.go` or handwritten `MarshalJSON` is needed:
+
+```go
+import annotationdto "grovehub/libs/core/annotation/dto"
+
+// @PatchRequestDto
+type UpdatePerson struct {
+    FirstName annotationdto.Patch[string]   `json:"firstName"`
+    MiddleName annotationdto.Patch[string]   `json:"middleName"`
+    Contacts  annotationdto.Patch[Contacts] `json:"contacts"`
+}
+```
+
+The shared `Patch[T]` distinguishes omitted, explicit `null`, and supplied values
+using `Set` and `Value`. The build-time `generation/patchdto` tool validates
+the annotated DTO shape and generates JSON serialization into the service's
+ignored `.generated/dto/request/.../` subtree, mounted by the Go overlay.
+Business validators still decide which fields may be cleared; annotations
+do not create authorization or validation rules. No generated code is checked in.
+
 ### Configuration, validation and events
 
-Foundation uses a plain, non-generic `Person` name DTO embedded in `CreatePerson`; `UpdatePerson` uses explicit optional pointer fields for PATCH. Validation is enforced by `normalize` / `validate` struct tags through the existing validator, not redundant field-level annotation comments. `headercontext` captures validated HTTP metadata once at the edge rather than storing it in JSON DTOs.
+Foundation uses a plain, non-generic `Person` name DTO embedded in `CreatePerson`; `UpdatePerson` uses `@PatchRequestDto` and shared presence-aware `annotation/dto.Patch[T]` fields for PATCH. Validation is enforced by `normalize` / `validate` struct tags through the existing validator, not redundant field-level annotation comments. `headercontext` captures validated HTTP metadata once at the edge rather than storing it in JSON DTOs.
 
 
 Integration config uses `// @Configuration` and `env`, `required`, `default`, `secret` struct tags with the typed startup loader. Foundation and Identity request DTOs use `// @Validator` and explicit `normalize` / `validate` tags for the supported rules. Cross-field business checks remain in their existing validators.
@@ -146,7 +170,7 @@ make backend-test
 bash scripts/backend/generate-annotations.sh
 ```
 
-The unified generator first checks annotation validity, then runs entities → GORM table metadata → routes → clients → repository searches → mappers → events → Go overlay. The `generation/check` tool blocks unsupported or metadata-only directives from being used as if they enforce security or transaction policy. CI at `.github/workflows/backend-annotations.yml` compiles the backend with Go 1.27.3, verifies annotation packages resolve, and runs existing non-annotation backend unit suites. Annotation-framework test cases were removed as requested; this does not disable other backend tests. Direct Go commands need the `-overlay` option; the test wrapper uses `-vet=off` for virtual files and is not a substitute for separate static analysis.
+The unified generator first checks annotation validity, then runs entities → GORM table metadata → routes → clients → repository searches → PATCH DTO JSON → mappers → events → Go overlay. The `generation/check` tool blocks unsupported or metadata-only directives from being used as if they enforce security or transaction policy. CI at `.github/workflows/backend-annotations.yml` compiles the backend with Go 1.27.3, verifies annotation packages resolve, and runs existing non-annotation backend unit suites. Annotation-framework test cases were removed as requested; this does not disable other backend tests. Direct Go commands need the `-overlay` option; the test wrapper uses `-vet=off` for virtual files and is not a substitute for separate static analysis.
 
 ## Security and migration limits
 

@@ -60,7 +60,7 @@ func BuildRegisterPersonUpdate(request identityrequest.Register) foundationreque
 	lastName := request.LastName
 	return foundationrequest.UpdatePerson{
         FirstName: annotationdto.Patch[string]{Set: true, Value: &firstName},
-        MiddleName: foundationrequest.PatchString{Set: true, Value: &middleName},
+        MiddleName: annotationdto.Patch[string]{Set: true, Value: &middleName},
         LastName: foundationrequest.PatchString{Set: true, Value: &lastName},
     }
 }
