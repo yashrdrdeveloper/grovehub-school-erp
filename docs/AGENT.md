@@ -58,6 +58,22 @@ backend/services/<service>/src/
 backend/services/<service>/launcher/
 ```
 
+### Route prefix and access-tier conventions (Foundation)
+
+Foundation's `routes/http.go` declares `// @Routes /foundation` on the
+`RegisterHTTP` function. Controller interfaces live under
+`controller/public/`, `controller/protected/` or `controller/restricted/`,
+with relative `// @Routes /<resource>` directives. The route generator
+composes `/<service>/<access-tier>/<resource>/...` automatically. Foundation
+Person handlers and helpers live under `controller/protected/`; their routes
+are `/foundation/protected/persons`. Identity and Integration currently
+retain their old uncategorized paths.
+
+These tiers are **not active authentication or authorization policies**.
+Never assume that protected/restricted URLs enforce any gate today. Before
+deployment, add and test verified Identity gateway policy and ensure internal
+maintenance APIs cannot be accessed through the external listener.
+
 ### Backend layer responsibilities
 
 GroveHub uses a strict responsibility split:

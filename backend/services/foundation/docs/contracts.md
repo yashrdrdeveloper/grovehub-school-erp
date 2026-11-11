@@ -49,20 +49,20 @@ Foundation is the source of truth for human/profile/contact data.
 
 Identity owns authentication/account/security concerns. Identity may reference a Foundation Person by GID, but Identity must not duplicate or mutate Foundation Person state directly.
 
-## 3. Public Foundation surfaces
+## 3. Foundation contracts and HTTP surfaces
 
 Foundation exposes the same business behavior through two entry points.
 
 ### HTTP
 
-Use HTTP for external callers and requests entering GroveHub through the edge.
+Use HTTP for requests entering GroveHub through the edge. The `protected` path segment declares the intended **future gateway policy**; it does not enforce authentication today. Do not expose these person-data routes to untrusted clients until Identity/gateway enforcement is implemented.
 
 ```text
-POST   /foundation/persons
-GET    /foundation/persons/{gid}
-PATCH  /foundation/persons/{gid}
-POST   /foundation/persons/search
-PATCH  /foundation/persons/{gid}/deactivate
+POST   /foundation/protected/persons
+GET    /foundation/protected/persons/{gid}
+PATCH  /foundation/protected/persons/{gid}
+POST   /foundation/protected/persons/search
+PATCH  /foundation/protected/persons/{gid}/deactivate
 ```
 
 ### In-process client
@@ -249,7 +249,7 @@ Contacts do not expose a public contact ID.
 HTTP:
 
 ```text
-GET /foundation/persons/{gid}
+GET /foundation/protected/persons/{gid}
 ```
 
 In-process:
@@ -283,7 +283,7 @@ business services or touch transactions.
 HTTP:
 
 ```text
-PATCH /foundation/persons/{gid}
+PATCH /foundation/protected/persons/{gid}
 ```
 
 Only supplied top-level fields are updated.
@@ -337,7 +337,7 @@ Existing verification state is preserved for unchanged normalized contacts.
 HTTP:
 
 ```text
-PATCH /foundation/persons/{gid}/deactivate
+PATCH /foundation/protected/persons/{gid}/deactivate
 ```
 
 In-process:
@@ -393,8 +393,8 @@ Foundation module
 ├── repository/constants/{person,contact}.go (schema constraint names)
 ├── repository/helpers/search/person.go (trusted Search Config)
 ├── PersonService (sole owner of contact lifecycle)
-├── controller interface
-│   └── controller/impl
+├── controller/protected/person.go (controller interface)
+│   └── controller/protected/impl/person.go (HTTP adapter)
 └── client interface
     └── client/impl
 

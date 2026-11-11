@@ -70,15 +70,26 @@ type PasswordCredential struct {
 
 ### HTTP routes
 
+The `@Routes` annotation on `routes.RegisterHTTP` owns the service prefix:
+
 ```go
-// @Routes /auth
-type AuthController interface {
-    // @POST /register
-    Register(http.ResponseWriter, *http.Request)
+// In foundation/routes/http.go:
+// @Routes /foundation
+func RegisterHTTP(mux *http.ServeMux, person protected.PersonController) {
+    registerProtectedPersonRoutes(mux, person)
+}
+
+// In foundation/controller/protected/person.go:
+// @Routes /persons
+type PersonController interface {
+    // @GET /{gid}
+    GetByGID(http.ResponseWriter, *http.Request)
 }
 ```
 
-`generation/routes` validates method/path contracts and emits `net/http` handlers with the existing tracing middleware. All 19 Foundation/Identity/Integration endpoints were preserved.
+The controller's folder name supplies the access tier: `public`, `protected` or `restricted`. This example generates `GET /foundation/protected/persons/{gid}`. Updating the service prefix in `routes/http.go` changes every categorized endpoint in that service. New categorized services require the service prefix; older uncategorized Identity and Integration controllers retain their existing `@Routes /auth` and `@Routes /integrations` behavior.
+
+`generation/routes` validates method/path contracts and emits traced `net/http` handlers into service-local overlay files. **Tier paths are not access controls**: public/protected/restricted authentication, authorization, and internal-only restrictions must be enforced separately by the gateway when Identity is implemented. Do not expose protected or restricted endpoints to untrusted networks before that enforcement exists.
 
 ### Typed clients and mappers
 

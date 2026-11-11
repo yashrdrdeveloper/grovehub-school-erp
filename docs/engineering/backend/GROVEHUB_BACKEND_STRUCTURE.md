@@ -34,7 +34,8 @@ These rules govern new services and refactors, not a particular Integration impl
 ### Controller and route organization
 - Split controllers by the owning **resource**, rather than by each action: put connection CRUD/OAuth/tests/watch/actions methods in `controller/connections.go` and `controller/impl/connections.go`; use `controller/provider.go` and `controller/impl/provider.go` for provider discovery. Compose public contracts when needed.
 - Put reusable controller authorization/error/response mapping into an owning common/helper file; do not duplicate it in every controller.
-- Keep `routes/http.go` as the **composition entry point**. Annotate the owning public controller interfaces with `@Routes` and HTTP verb directives; `libs/core/annotation/generation/routes` generates service-local route registrations into `.generated/routes/`. Do not recreate the removed manual `routes/connections.go`, `routes/providers.go` or `routes/helpers/http.go` registrations. Controllers retain all request handling, security and response logic; routing annotations define method/path registration only.
+- Keep `routes/http.go` as the **composition entry point**. For categorized services, annotate `routes.RegisterHTTP` with `// @Routes /<service>`, place controller interfaces in `controller/public/`, `controller/protected/`, or `controller/restricted/`, and annotate each interface with a relative resource `// @Routes /<resource>`. The generator composes `/<service>/<tier>/<resource>` and HTTP method annotations. Existing uncategorized Identity/Integration route interfaces retain their legacy URLs until migrated. `libs/core/annotation/generation/routes` emits registrations under `.generated/routes/`. Controllers retain request handling and response logic; do not recreate manual route registration files.
+- **Security boundary:** Public = intended anonymous access; Protected = future authenticated access; Restricted = future internal-only access. These are URL categories **only** for now—no authentication, authorization, or network restriction is enforced by `@Routes`. Do not deploy sensitive or maintenance endpoints on an exposed gateway until explicit enforcement exists.
 
 ### Provider strategy and internal clients
 - Separate provider-discovery service contracts (`services/providers.go`) from connection lifecycle contracts (`services/connections.go`); provide independent concrete service implementations.
@@ -163,12 +164,15 @@ services/impl/<resource>.go
 services/helpers/<resource>.go
     -> pure helpers used by service orchestration
 
-controller/<resource>.go
-    -> controller interface
-controller/impl/<resource>.go
+controller/<tier>/<resource>.go
+    -> controller interface for categorized services; tier is public/protected/restricted
+controller/<tier>/impl/<resource>.go
     -> HTTP adapter
-controller/helpers/<resource>.go
-    -> request/error transport helpers
+controller/<tier>/helpers/<resource>.go
+    -> request/error transport helpers; only when needed
+
+controller/<resource>.go and controller/impl/<resource>.go
+    -> legacy uncategorized contracts, still used by Identity/Integration
 
 client/<resource>.go
     -> public in-process client interface

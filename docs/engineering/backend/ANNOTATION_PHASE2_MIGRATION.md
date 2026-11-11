@@ -17,7 +17,7 @@
 
 | Area | Code moved or replaced | Annotation / API | Current limitation |
 | --- | --- | --- | --- |
-| Foundation HTTP routes | Replaced five manual mux entries with generated registrations | `@Routes`, `@POST`, `@GET`, `@PATCH` | CI clean-checkout compilation verified; runtime smoke test pending |
+| Foundation HTTP routes | Moved Person controller contracts and implementation to `controller/protected/`; five endpoints now use `/foundation/protected/persons` | `// @Routes /foundation` on `routes.RegisterHTTP`; `// @Routes /persons` on protected PersonController | Route tiers are URL grouping only, without authentication enforcement; update clients and enforce gateway policy before production |
 | Identity HTTP routes | Replaced manual registration for `POST /auth/register` | `@Routes`, `@POST` | CI compilation verified; auth registration HTTP regression pending |
 | Integration HTTP routes | Replaced 13 manual connection, webhook and provider route entries | `@Routes`, `@GET`, `@POST`, `@DELETE` on two controller interfaces | Needs OAuth callback, webhook, and ownership regression tests |
 | HTTP build tooling | New `generation/routes` tool, generalized overlay maps service-local generated package files | Go AST, `-overlay` | Gopls and standard direct Go invocations need explicit configuration |
@@ -42,13 +42,7 @@ The source retains service methods, service interfaces, client constructors, GOR
 
 ### Endpoint parity
 
-The `generation/routes/main_test.go` suite asserts that all **19** canonical route patterns are present:
-
-- Foundation: 5 routes
-- Identity: 1 route
-- Integration: 13 routes
-
-The generator checks duplicate method/path pairs, interface/method signatures, and incomplete route declarations before emitting source. Generation is idempotent.
+The route generator regression suite covers the Foundation five-method protected Person contract, service-prefix changes, example public and restricted controllers, legacy Identity URLs, duplicate routes, missing category/prefix errors, and deterministic output. The build still generates **19 endpoints total**: Foundation 5 (now under `/foundation/protected/persons`), Identity 1 (legacy `/auth/register`), and Integration 13 (legacy `/integrations`). The generator checks duplicate method/path pairs and controller signatures; it does **not** implement access control.
 
 ## 3. Current implementation structure
 
@@ -79,12 +73,12 @@ backend/
       overlay/                        # expanded to all service-local generated packages
   services/
     foundation/
-      controller/person.go            # annotated route contract
+      controller/protected/person.go  # protected Person HTTP contract
       dto/request/person.go           # Person create/PATCH DTO, using @PatchRequestDto
       dto/response/person.go          # Person response DTO
-      libs/core/annotation/dto/patch.go # reusable presence-aware PATCH field
+      # shared PATCH field: backend/libs/core/annotation/dto/patch.go
       validators/impl/person.go       # application error mapping and contact checks
-      routes/http.go                  # composition; delegates to generated routes
+      routes/http.go                  # @Routes /foundation service prefix and generated registrations
       .generated/routes/zz_routes.gen.go
     identity/
       controller/auth.go              # annotated route contract

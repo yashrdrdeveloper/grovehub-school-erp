@@ -24,7 +24,7 @@ Generic search mechanics belong to `libs/core/contracts/search` and `libs/core/s
 HTTP:
 
 ```text
-POST /foundation/persons/search
+POST /foundation/protected/persons/search
 ```
 
 In-process:
