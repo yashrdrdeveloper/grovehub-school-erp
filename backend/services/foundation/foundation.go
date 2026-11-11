@@ -11,7 +11,7 @@ import (
 	foundationclient "grovehub/services/foundation/client"
 	clientimpl "grovehub/services/foundation/client/impl"
 	protected "grovehub/services/foundation/controller/protected"
-	controllerimpl controllerimpl "grovehub/services/foundation/controller/protected/impl"
+	controllerimpl "grovehub/services/foundation/controller/protected/impl"
 	personeventimpl "grovehub/services/foundation/events/persons/impl"
 	mapperimpl "grovehub/services/foundation/mappers/impl"
 	repositoryimpl "grovehub/services/foundation/repository/impl"
