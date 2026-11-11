@@ -7,7 +7,7 @@ import (
 	personerror "grovehub/services/foundation/constants/error"
 	"grovehub/services/foundation/controller"
 	controllerhelpers "grovehub/services/foundation/controller/helpers"
-	foundationrequest "grovehub/services/foundation/dto/request"
+	foundationrequest "grovehub/services/foundation/dto/request/person"
 	foundationservices "grovehub/services/foundation/services"
 )
 

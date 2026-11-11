@@ -1,8 +1,8 @@
 package mappers
 
 import (
-	foundationrequest "grovehub/services/foundation/dto/request"
-	foundationresponse "grovehub/services/foundation/dto/response"
+	foundationrequest "grovehub/services/foundation/dto/request/person"
+	foundationresponse "grovehub/services/foundation/dto/response/person"
 	"grovehub/services/foundation/entity"
 )
 

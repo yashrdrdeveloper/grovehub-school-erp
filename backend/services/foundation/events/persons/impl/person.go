@@ -11,8 +11,8 @@ import (
 
     coresearch "grovehub/libs/core/search"
     foundationevents "grovehub/services/foundation/constants/events"
-    foundationrequest "grovehub/services/foundation/dto/request"
-    foundationresponse "grovehub/services/foundation/dto/response"
+    foundationrequest "grovehub/services/foundation/dto/request/person"
+    foundationresponse "grovehub/services/foundation/dto/response/person"
     personevents "grovehub/services/foundation/events/persons"
     eventhelpers "grovehub/services/foundation/events/persons/helpers"
     foundationservices "grovehub/services/foundation/services"

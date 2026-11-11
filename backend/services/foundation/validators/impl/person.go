@@ -8,7 +8,7 @@ import (
     coreerrors "grovehub/libs/core/errors"
     coresearch "grovehub/libs/core/search"
     personerror "grovehub/services/foundation/constants/error"
-    foundationrequest "grovehub/services/foundation/dto/request"
+    foundationrequest "grovehub/services/foundation/dto/request/person"
     foundationvalidators "grovehub/services/foundation/validators"
     validatorhelpers "grovehub/services/foundation/validators/helpers"
 )

@@ -9,7 +9,7 @@ import (
 	corenormalize "grovehub/libs/core/normalize"
 	coresearch "grovehub/libs/core/search"
 	personerror "grovehub/services/foundation/constants/error"
-	foundationrequest "grovehub/services/foundation/dto/request"
+	foundationrequest "grovehub/services/foundation/dto/request/person"
 	"grovehub/services/foundation/entity"
 )
 
