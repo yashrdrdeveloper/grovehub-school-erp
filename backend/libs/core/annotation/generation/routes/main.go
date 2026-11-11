@@ -1,6 +1,9 @@
-// Command routes generates net/http registration from annotated controller interfaces.
-// The generated file is stored under service-local .generated/routes and injected
-// into the original routes package through the Go overlay.
+// Command routes generates typed net/http registrations from annotated
+// controller interfaces. The service-level @Routes declaration lives on
+// routes.RegisterHTTP; controller package paths declare access tiers.
+//
+// This generator only groups routes. No tier enforces authentication,
+// authorization or internal-network restrictions.
 package main
 
 import (
@@ -17,133 +20,388 @@ import (
 )
 
 type route struct {
-	method, verb, path string
+	method string
+	verb   string
+	path   string
 }
+
 type routeGroup struct {
-	name string
+	name   string
+	tier   string
 	routes []route
 }
 
-var verbs=map[string]bool{"GET":true,"POST":true,"PUT":true,"PATCH":true,"DELETE":true}
+var verbs = map[string]bool{
+	"GET": true, "POST": true, "PUT": true,
+	"PATCH": true, "DELETE": true,
+}
+
+var accessTiers = []string{"public", "protected", "restricted"}
 
 func main() {
-	if len(os.Args)!=2 { fmt.Fprintln(os.Stderr,"usage: routes <backend-dir>"); os.Exit(2) }
-	if err:=generateAll(os.Args[1]);err!=nil { fmt.Fprintln(os.Stderr,err);os.Exit(1) }
+	if len(os.Args) != 2 {
+		fmt.Fprintln(os.Stderr, "usage: routes <backend-dir>")
+		os.Exit(2)
+	}
+	if err := generateAll(os.Args[1]); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }
 
 func generateAll(backend string) error {
-	services,err:=os.ReadDir(filepath.Join(backend,"services"));if err!=nil {return err}
-	for _,service:=range services {
-		if !service.IsDir(){continue}
-		name:=service.Name()
-		directory:=filepath.Join(backend,"services",name,"controller")
-		if info,err:=os.Stat(directory);err!=nil||!info.IsDir(){continue}
-		groups,err:=discover(directory);if err!=nil{return fmt.Errorf("%s routes: %w",name,err)}
-		output:=filepath.Join(backend,"services",name,".generated","routes","zz_routes.gen.go")
-		if len(groups)==0 {
-			if err:=os.Remove(output);err!=nil&&!os.IsNotExist(err){return err}
+	services, err := os.ReadDir(filepath.Join(backend, "services"))
+	if err != nil {
+		return err
+	}
+	for _, service := range services {
+		if !service.IsDir() {
 			continue
 		}
-		if err:=writeRoutes(name,groups,output);err!=nil{return err}
+		name := service.Name()
+		owner := filepath.Join(backend, "services", name)
+		controllerDir := filepath.Join(owner, "controller")
+		if info, err := os.Stat(controllerDir); os.IsNotExist(err) {
+			continue
+		} else if err != nil {
+			return err
+		} else if !info.IsDir() {
+			return fmt.Errorf("%s: controller must be a directory", name)
+		}
+
+		servicePath, configured, err := servicePrefix(filepath.Join(owner, "routes", "http.go"))
+		if err != nil {
+			return fmt.Errorf("%s routes: %w", name, err)
+		}
+		groups, err := discover(controllerDir, servicePath, configured)
+		if err != nil {
+			return fmt.Errorf("%s routes: %w", name, err)
+		}
+		output := filepath.Join(owner, ".generated", "routes", "zz_routes.gen.go")
+		if len(groups) == 0 {
+			if err := os.Remove(output); err != nil && !os.IsNotExist(err) {
+				return err
+			}
+			continue
+		}
+		if err := writeRoutes(name, groups, output); err != nil {
+			return fmt.Errorf("%s routes: %w", name, err)
+		}
 	}
 	return nil
 }
 
-func discover(dir string)([]routeGroup,error) {
-	files,err:=filepath.Glob(filepath.Join(dir,"*.go"));if err!=nil{return nil,err}
-	sort.Strings(files)
-	var result []routeGroup
-	seen:=map[string]string{}
-	for _,path:=range files {
-		if strings.HasSuffix(path,"_test.go"){continue}
-		astFile,err:=parser.ParseFile(token.NewFileSet(),path,nil,parser.ParseComments);if err!=nil{return nil,err}
-		for _,decl:=range astFile.Decls {
-			gen,ok:=decl.(*ast.GenDecl);if !ok||gen.Tok!=token.TYPE{continue}
-			for _,node:=range gen.Specs {
-				spec,ok:=node.(*ast.TypeSpec);if !ok {continue}
-				iface,ok:=spec.Type.(*ast.InterfaceType);if !ok {continue}
-				doc:=spec.Doc;if doc==nil{doc=gen.Doc}
-				prefix,found,err:=prefixFor(doc);if err!=nil{return nil,fmt.Errorf("%s: %w",spec.Name.Name,err)}
-				if !found{continue}
-				if !strings.HasSuffix(spec.Name.Name,"Controller"){return nil,fmt.Errorf("@Routes interface %s must end with Controller",spec.Name.Name)}
-				group:=routeGroup{name:spec.Name.Name}
-				for _,member:=range iface.Methods.List {
-					if len(member.Names)!=1{return nil,fmt.Errorf("%s cannot embed interfaces",spec.Name.Name)}
-					if !validSignature(member.Type){return nil,fmt.Errorf("%s.%s must accept http.ResponseWriter and *http.Request",spec.Name.Name,member.Names[0].Name)}
-					r,err:=methodFor(member.Doc);if err!=nil{return nil,err}
-					if r.verb==""{return nil,fmt.Errorf("%s.%s missing @GET/@POST/etc",spec.Name.Name,member.Names[0].Name)}
-					r.method=member.Names[0].Name
-					if !strings.HasPrefix(r.path,"/"){return nil,fmt.Errorf("%s.%s path must begin with /",spec.Name.Name,r.method)}
-					if r.path=="/"{r.path=prefix}else{r.path=strings.TrimRight(prefix,"/")+r.path}
-					key:=r.verb+" "+r.path
-					if owner,ok:=seen[key];ok{return nil,fmt.Errorf("duplicate route %s: %s and %s.%s",key,owner,spec.Name.Name,r.method)}
-					seen[key]=spec.Name.Name+"."+r.method
-					group.routes=append(group.routes,r)
+// servicePrefix looks only at the service's RegisterHTTP function. Older
+// service controllers without a service prefix retain their existing URLs.
+func servicePrefix(filename string) (string, bool, error) {
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		return "", false, nil
+	} else if err != nil {
+		return "", false, err
+	}
+	file, err := parser.ParseFile(token.NewFileSet(), filename, nil, parser.ParseComments)
+	if err != nil {
+		return "", false, err
+	}
+	var prefix string
+	found := false
+	for _, declaration := range file.Decls {
+		fn, ok := declaration.(*ast.FuncDecl)
+		if !ok || fn.Doc == nil {
+			continue
+		}
+		value, annotated, err := prefixFor(fn.Doc)
+		if err != nil {
+			return "", false, fmt.Errorf("%s: %w", filename, err)
+		}
+		if !annotated {
+			continue
+		}
+		if fn.Name.Name != "RegisterHTTP" || fn.Recv != nil {
+			return "", false, fmt.Errorf("%s: service @Routes must annotate the RegisterHTTP function", filename)
+		}
+		if found {
+			return "", false, fmt.Errorf("%s: duplicate service @Routes", filename)
+		}
+		if strings.ContainsAny(value, "{}*") {
+			return "", false, fmt.Errorf("%s: service prefix cannot contain path variables or wildcards", filename)
+		}
+		found = true
+		prefix = value
+	}
+	return prefix, found, nil
+}
+
+func discover(dir, servicePath string, configured bool) ([]routeGroup, error) {
+	directories := []struct{ dir, tier string }{{dir, ""}}
+	for _, tier := range accessTiers {
+		directories = append(directories, struct{ dir, tier string }{
+			filepath.Join(dir, tier), tier,
+		})
+	}
+
+	groups := make([]routeGroup, 0)
+	patterns := make(map[string]string)
+	for _, directory := range directories {
+		info, err := os.Stat(directory.dir)
+		if os.IsNotExist(err) {
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+		if !info.IsDir() {
+			return nil, fmt.Errorf("%s: controller category must be a directory", directory.dir)
+		}
+		files, err := filepath.Glob(filepath.Join(directory.dir, "*.go"))
+		if err != nil {
+			return nil, err
+		}
+		sort.Strings(files)
+		for _, filename := range files {
+			if strings.HasSuffix(filename, "_test.go") {
+				continue
+			}
+			file, err := parser.ParseFile(token.NewFileSet(), filename, nil, parser.ParseComments)
+			if err != nil {
+				return nil, err
+			}
+			wantPackage := directory.tier
+			if wantPackage == "" {
+				wantPackage = "controller"
+			}
+			if file.Name.Name != wantPackage {
+				return nil, fmt.Errorf("%s: expected controller package %q", filename, wantPackage)
+			}
+			for _, declaration := range file.Decls {
+				gen, ok := declaration.(*ast.GenDecl)
+				if !ok || gen.Tok != token.TYPE {
+					continue
 				}
-				result=append(result,group)
+				for _, node := range gen.Specs {
+					typ, ok := node.(*ast.TypeSpec)
+					if !ok {
+						continue
+					}
+					doc := typ.Doc
+					if doc == nil {
+						doc = gen.Doc
+					}
+					resourcePath, annotated, err := prefixFor(doc)
+					if err != nil {
+						return nil, fmt.Errorf("%s.%s: %w", filename, typ.Name.Name, err)
+					}
+					if !annotated {
+						continue
+					}
+					if configured && directory.tier == "" {
+						return nil, fmt.Errorf("%s: controller @Routes must live in public/, protected/ or restricted/ when service @Routes is configured", filename)
+					}
+					if !configured && directory.tier != "" {
+						return nil, fmt.Errorf("%s: categorized controller requires a service @Routes prefix on routes.RegisterHTTP", filename)
+					}
+					iface, ok := typ.Type.(*ast.InterfaceType)
+					if !ok || !strings.HasSuffix(typ.Name.Name, "Controller") {
+						return nil, fmt.Errorf("%s: @Routes requires a Controller interface", filename)
+					}
+					group := routeGroup{name: typ.Name.Name, tier: directory.tier}
+					for _, member := range iface.Methods.List {
+						if len(member.Names) != 1 {
+							return nil, fmt.Errorf("%s cannot embed interfaces", group.name)
+						}
+						if !validSignature(member.Type) {
+							return nil, fmt.Errorf("%s.%s must accept http.ResponseWriter and *http.Request", group.name, member.Names[0].Name)
+						}
+						item, err := methodFor(member.Doc)
+						if err != nil {
+							return nil, err
+						}
+						if item.verb == "" {
+							return nil, fmt.Errorf("%s.%s missing @GET/@POST/etc", group.name, member.Names[0].Name)
+						}
+						item.method = member.Names[0].Name
+						if err := validatePath(item.path); err != nil {
+							return nil, fmt.Errorf("%s.%s: %w", group.name, item.method, err)
+						}
+						item.path = joinPaths(servicePath, directory.tier, resourcePath, item.path)
+						key := item.verb + " " + item.path
+						if owner, duplicate := patterns[key]; duplicate {
+							return nil, fmt.Errorf("duplicate route %s: %s and %s.%s", key, owner, group.name, item.method)
+						}
+						patterns[key] = group.name + "." + item.method
+						group.routes = append(group.routes, item)
+					}
+					groups = append(groups, group)
+				}
 			}
 		}
 	}
-	sort.Slice(result,func(i,j int)bool{return result[i].name<result[j].name})
-	return result,nil
+	sort.Slice(groups, func(i, j int) bool {
+		return groups[i].tier+":"+groups[i].name < groups[j].tier+":"+groups[j].name
+	})
+	return groups, nil
 }
 
-func prefixFor(doc *ast.CommentGroup)(string,bool,error) {
-	if doc==nil{return "",false,nil}
+func prefixFor(doc *ast.CommentGroup) (string, bool, error) {
+	if doc == nil {
+		return "", false, nil
+	}
+	found := false
 	var prefix string
-	found:=false
-	for _,comment:=range doc.List {
-		line:=strings.TrimSpace(strings.TrimPrefix(comment.Text,"//"))
-		if line=="@Routes"||strings.HasPrefix(line,"@Routes "){
-			if found{return "",true,fmt.Errorf("duplicate @Routes declaration")}
-			found=true
-			prefix=strings.TrimSpace(strings.TrimPrefix(line,"@Routes"))
-			if !strings.HasPrefix(prefix,"/")||strings.ContainsAny(prefix," \t\r\n")||strings.Contains(prefix,"//"){return "",true,fmt.Errorf("invalid route prefix %q",prefix)}
+	for _, comment := range doc.List {
+		line := strings.TrimSpace(strings.TrimPrefix(comment.Text, "//"))
+		if line != "@Routes" && !strings.HasPrefix(line, "@Routes ") {
+			continue
+		}
+		if found {
+			return "", true, fmt.Errorf("duplicate @Routes declaration")
+		}
+		found = true
+		prefix = strings.TrimSpace(strings.TrimPrefix(line, "@Routes"))
+		if err := validatePath(prefix); err != nil {
+			return "", true, err
 		}
 	}
-	return prefix,found,nil
+	return prefix, found, nil
 }
 
-func methodFor(doc *ast.CommentGroup)(route,error) {
-	var r route
-	if doc==nil{return r,nil}
-	for _,comment:=range doc.List {
-		line:=strings.TrimSpace(strings.TrimPrefix(comment.Text,"//"))
-		if !strings.HasPrefix(line,"@"){continue}
-		parts:=strings.Fields(strings.TrimPrefix(line,"@"))
-		if len(parts)==0||!verbs[parts[0]]{continue}
-		if r.verb!="" {return r,fmt.Errorf("multiple HTTP verb annotations")}
-		if len(parts)!=2{return r,fmt.Errorf("@%s requires exactly one path",parts[0])}
-		r.verb=parts[0];r.path=parts[1]
+func validatePath(value string) error {
+	if !strings.HasPrefix(value, "/") || strings.Contains(value, "//") ||
+		strings.ContainsAny(value, " \t\r\n?#") {
+		return fmt.Errorf("invalid route path %q", value)
 	}
-	return r,nil
+	for _, part := range strings.Split(value, "/") {
+		if part == "." || part == ".." {
+			return fmt.Errorf("invalid route path %q", value)
+		}
+	}
+	return nil
 }
 
-func validSignature(expr ast.Expr)bool {
-	fn,ok:=expr.(*ast.FuncType);if !ok||fn.Results!=nil||fn.Params==nil||len(fn.Params.List)!=2{return false}
-	writer,ok:=fn.Params.List[0].Type.(*ast.SelectorExpr);if !ok||writer.Sel.Name!="ResponseWriter"{return false}
-	pkg,ok:=writer.X.(*ast.Ident);if !ok||pkg.Name!="http"{return false}
-	pointer,ok:=fn.Params.List[1].Type.(*ast.StarExpr);if !ok{return false}
-	request,ok:=pointer.X.(*ast.SelectorExpr);if !ok||request.Sel.Name!="Request"{return false}
-	pkg,ok=request.X.(*ast.Ident);return ok&&pkg.Name=="http"
+func joinPaths(parts ...string) string {
+	segments := make([]string, 0, len(parts))
+	for _, part := range parts {
+		if segment := strings.Trim(part, "/"); segment != "" {
+			segments = append(segments, segment)
+		}
+	}
+	return "/" + strings.Join(segments, "/")
 }
 
-func writeRoutes(service string, groups []routeGroup, output string)error {
+func methodFor(doc *ast.CommentGroup) (route, error) {
+	var result route
+	if doc == nil {
+		return result, nil
+	}
+	for _, comment := range doc.List {
+		line := strings.TrimSpace(strings.TrimPrefix(comment.Text, "//"))
+		if !strings.HasPrefix(line, "@") {
+			continue
+		}
+		parts := strings.Fields(strings.TrimPrefix(line, "@"))
+		if len(parts) == 0 || !verbs[parts[0]] {
+			continue
+		}
+		if result.verb != "" {
+			return result, fmt.Errorf("multiple HTTP verb annotations")
+		}
+		if len(parts) != 2 {
+			return result, fmt.Errorf("@%s requires exactly one path", parts[0])
+		}
+		result.verb, result.path = parts[0], parts[1]
+	}
+	return result, nil
+}
+
+func validSignature(expr ast.Expr) bool {
+	fn, ok := expr.(*ast.FuncType)
+	if !ok || fn.Results != nil || fn.Params == nil || len(fn.Params.List) != 2 {
+		return false
+	}
+	writer, ok := fn.Params.List[0].Type.(*ast.SelectorExpr)
+	if !ok || writer.Sel.Name != "ResponseWriter" {
+		return false
+	}
+	pkg, ok := writer.X.(*ast.Ident)
+	if !ok || pkg.Name != "http" {
+		return false
+	}
+	pointer, ok := fn.Params.List[1].Type.(*ast.StarExpr)
+	if !ok {
+		return false
+	}
+	request, ok := pointer.X.(*ast.SelectorExpr)
+	if !ok || request.Sel.Name != "Request" {
+		return false
+	}
+	pkg, ok = request.X.(*ast.Ident)
+	return ok && pkg.Name == "http"
+}
+
+func generatedRegistrationName(group routeGroup) string {
+	tier := ""
+	switch group.tier {
+	case "public":
+		tier = "Public"
+	case "protected":
+		tier = "Protected"
+	case "restricted":
+		tier = "Restricted"
+	}
+	return "register" + tier + strings.TrimSuffix(group.name, "Controller") + "Routes"
+}
+
+func writeRoutes(service string, groups []routeGroup, output string) error {
 	var b strings.Builder
-	b.WriteString("// Code generated by GrooveHub @Routes. DO NOT EDIT.\npackage routes\n\n")
-	fmt.Fprintf(&b,"import (\n\"net/http\"\nhttptracing \"grovehub/libs/core/http/tracing\"\n\"grovehub/services/%s/controller\"\n)\n\n",service)
-	for _,group:=range groups {
-		fmt.Fprintf(&b,"func register%sRoutes(mux *http.ServeMux, c controller.%s) {\n",strings.TrimSuffix(group.name,"Controller"),group.name)
-		for _,r:=range group.routes {
-			pattern:=r.verb+" "+r.path
-			fmt.Fprintf(&b,"mux.Handle(%q, httptracing.ServiceHandler(%q,%q,http.HandlerFunc(c.%s)))\n",pattern,service,pattern,r.method)
+	b.WriteString("// Code generated by GrooveHub @Routes. DO NOT EDIT.\n")
+	b.WriteString("// Route tiers are URL categories only; security enforcement is a separate gateway responsibility.\n")
+	b.WriteString("package routes\n\nimport (\n\"net/http\"\n")
+	b.WriteString("httptracing \"grovehub/libs/core/http/tracing\"\n")
+	imports := map[string]string{}
+	for _, group := range groups {
+		pkg := group.tier
+		if pkg == "" {
+			pkg = "controller"
+		}
+		imports[pkg] = "grovehub/services/" + service + "/controller"
+		if group.tier != "" {
+			imports[pkg] += "/" + group.tier
+		}
+	}
+	aliases := make([]string, 0, len(imports))
+	for alias := range imports {
+		aliases = append(aliases, alias)
+	}
+	sort.Strings(aliases)
+	for _, alias := range aliases {
+		fmt.Fprintf(&b, "%s %q\n", alias, imports[alias])
+	}
+	b.WriteString(")\n\n")
+	for _, group := range groups {
+		pkg := group.tier
+		if pkg == "" {
+			pkg = "controller"
+		}
+		fmt.Fprintf(&b, "func %s(mux *http.ServeMux, c %s.%s) {\n",
+			generatedRegistrationName(group), pkg, group.name)
+		for _, item := range group.routes {
+			pattern := item.verb + " " + item.path
+			fmt.Fprintf(&b, "mux.Handle(%q, httptracing.ServiceHandler(%q, %q, http.HandlerFunc(c.%s)))\n",
+				pattern, service, pattern, item.method)
 		}
 		b.WriteString("}\n\n")
 	}
-	formatted,err:=format.Source([]byte(b.String()));if err!=nil{return err}
-	previous,err:=os.ReadFile(output)
-	if err==nil&&bytes.Equal(previous,formatted){return nil}
-	if err!=nil&&!os.IsNotExist(err){return err}
-	if err:=os.MkdirAll(filepath.Dir(output),0755);err!=nil{return err}
-	return os.WriteFile(output,formatted,0644)
+	source, err := format.Source([]byte(b.String()))
+	if err != nil {
+		return fmt.Errorf("format generated routes: %w", err)
+	}
+	if old, err := os.ReadFile(output); err == nil && bytes.Equal(old, source) {
+		return nil
+	} else if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(output), 0755); err != nil {
+		return err
+	}
+	return os.WriteFile(output, source, 0644)
 }
