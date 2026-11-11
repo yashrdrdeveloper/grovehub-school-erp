@@ -3,63 +3,104 @@ package validation_test
 import (
 	"encoding/json"
 	"errors"
+	"strings"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	annotationvalidation "grovehub/libs/core/annotation/validation"
+	foundationrequest "grovehub/services/foundation/dto/request"
 )
 
-type CommonPerson struct {
-	FirstName string `json:"firstName" normalize:"trim" validate:"notblank,maxrunes=100"`
-	LastName string `json:"lastName" normalize:"trim" validate:"notblank,maxrunes=100"`
-}
-type createPerson struct {
-	CommonPerson `validate:"valid"`
-	Contacts []struct{ Value string `validate:"notblank"` } `json:"contacts" validate:"valid"`
-}
-type patchPerson struct {
-	FirstName *string `json:"firstName,omitempty" normalize:"trim" validate:"notblank,maxrunes=100"`
-	LastName *string `json:"lastName,omitempty" normalize:"trim" validate:"notblank,maxrunes=100"`
-}
-
-var _ = Describe("Nested tagged validation", func() {
-	It("normalizes embedded create fields without changing wire names", func() {
-		var request createPerson
-		Expect(json.Unmarshal([]byte(`{"firstName":"  Arun ","lastName":" Kumar "}`), &request)).To(Succeed())
-		normalized, err := annotationvalidation.Normalize(request)
+var _ = Describe("DTO tag stages", func() {
+	It("normalizes embedded names before enforcing notblank/length rules", func() {
+		input := foundationrequest.CreatePerson{
+			Person: foundationrequest.Person{
+				FirstName: "  Amit  ",
+				MiddleName: "  Kumar  ",
+				LastName: "  Singh  ",
+			},
+		}
+		normalized, err := annotationvalidation.NormalizeFields(input)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(normalized.FirstName).To(Equal("Arun"))
-		Expect(normalized.LastName).To(Equal("Kumar"))
+		Expect(normalized.FirstName).To(Equal("Amit"))
+		Expect(normalized.MiddleName).To(Equal("Kumar"))
+		Expect(normalized.LastName).To(Equal("Singh"))
+		Expect(input.FirstName).To(Equal("  Amit  "))
+		Expect(annotationvalidation.Validate(normalized)).To(Succeed())
 	})
 
-	It("preserves optional PATCH pointers and does not mutate caller data", func() {
-		firstName := "  Alice  "
-		request := patchPerson{FirstName: &firstName}
-		normalized, err := annotationvalidation.Normalize(request)
+	It("rejects trimmed blank strings with a field-specific rule", func() {
+		in := foundationrequest.CreatePerson{Person: foundationrequest.Person{FirstName: "   ", LastName: "Smith"}}
+		normalized, err := annotationvalidation.NormalizeFields(in)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(*normalized.FirstName).To(Equal("Alice"))
-		Expect(normalized.LastName).To(BeNil())
-		Expect(firstName).To(Equal("  Alice  "))
+		err = annotationvalidation.Validate(normalized)
+		var invalid annotationvalidation.Error
+		Expect(errors.As(err, &invalid)).To(BeTrue())
+		Expect(invalid.Field).To(Equal("Person.FirstName"))
+		Expect(invalid.Rule).To(Equal("notblank"))
 	})
 
-	It("fails for missing create fields and nested blank values", func() {
-		_, err := annotationvalidation.Normalize(createPerson{})
-		var violation annotationvalidation.Error
-		Expect(errors.As(err, &violation)).To(BeTrue())
-		_, err = annotationvalidation.Normalize(createPerson{
-			CommonPerson: CommonPerson{FirstName:"A", LastName:"B"},
-			Contacts: []struct{ Value string `validate:"notblank"` }{{Value:" "}},
-		})
-		Expect(errors.As(err, &violation)).To(BeTrue())
-		Expect(violation.Field).To(ContainSubstring("Contacts"))
+	It("uses rune counts after trimming and rejects oversized names", func() {
+		allowed := foundationrequest.CreatePerson{Person: foundationrequest.Person{FirstName: " " + strings.Repeat("ऋ", 100) + " ", LastName: "Singh"}}
+		normalized, err := annotationvalidation.NormalizeFields(allowed)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(annotationvalidation.Validate(normalized)).To(Succeed())
+		tooLong := allowed
+		tooLong.FirstName = strings.Repeat("ऋ", 101)
+		_, err = annotationvalidation.Process(tooLong, annotationvalidation.Rules[foundationrequest.CreatePerson]{})
+		var invalid annotationvalidation.Error
+		Expect(errors.As(err, &invalid)).To(BeTrue())
+		Expect(invalid.Rule).To(Equal("maxrunes"))
 	})
 
-	It("supports explicit non-null pointer validation", func() {
-		type required struct { Name *string `validate:"nonnull"` }
-		_, err := annotationvalidation.Normalize(required{})
-		var violation annotationvalidation.Error
-		Expect(errors.As(err, &violation)).To(BeTrue())
-		Expect(violation.Rule).To(Equal("nonnull"))
+	It("recursively validates nested contact slices after normalization", func() {
+		input := foundationrequest.CreatePerson{
+			Person: foundationrequest.Person{FirstName: "Riya", LastName: "Shah"},
+			Contacts: foundationrequest.Contacts{Emails: []foundationrequest.ContactValue{{Value: "   "}}},
+		}
+		_, err := annotationvalidation.Process(input, annotationvalidation.Rules[foundationrequest.CreatePerson]{})
+		var invalid annotationvalidation.Error
+		Expect(errors.As(err, &invalid)).To(BeTrue())
+		Expect(invalid.Field).To(Equal("Contacts.Emails[0].Value"))
+		Expect(input.Contacts.Emails[0].Value).To(Equal("   ")) // no in-place slice mutation
+	})
+
+	It("preserves PATCH omission and null semantics while checking supplied fields", func() {
+		cases := []struct {
+			payload string
+			field string
+			rule string
+		}{
+			{`{}`, "", ""},
+			{`{"middleName":null,"contacts":null}`, "", ""},
+			{`{"firstName":null}`, "FirstName", "nonnull"},
+			{`{"lastName":null}`, "LastName", "nonnull"},
+			{`{"firstName":"   "}`, "FirstName", "notblank"},
+			{`{"lastName":" ` + strings.Repeat("a", 101) + ` "}`, "LastName", "maxrunes"},
+			{`{"contacts":{"phones":[{"value":"  "}]}}`, "Contacts.Phones[0].Value", "notblank"},
+		}
+		for _, testcase := range cases {
+			var request foundationrequest.UpdatePerson
+			Expect(json.Unmarshal([]byte(testcase.payload), &request)).To(Succeed())
+			_, err := annotationvalidation.Process(request, annotationvalidation.Rules[foundationrequest.UpdatePerson]{})
+			if testcase.field == "" {
+				Expect(err).NotTo(HaveOccurred(), testcase.payload)
+				continue
+			}
+			var invalid annotationvalidation.Error
+			Expect(errors.As(err, &invalid)).To(BeTrue(), testcase.payload)
+			Expect(invalid.Field).To(Equal(testcase.field), testcase.payload)
+			Expect(invalid.Rule).To(Equal(testcase.rule), testcase.payload)
+		}
+	})
+
+	It("trims a supplied PATCH name without modifying the original pointer", func() {
+		var original foundationrequest.UpdatePerson
+		Expect(json.Unmarshal([]byte(`{"firstName":"  Asha  "}`), &original)).To(Succeed())
+		normalized, err := annotationvalidation.Process(original, annotationvalidation.Rules[foundationrequest.UpdatePerson]{})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(*normalized.FirstName.Value).To(Equal("Asha"))
+		Expect(*original.FirstName.Value).To(Equal("  Asha  "))
 	})
 })

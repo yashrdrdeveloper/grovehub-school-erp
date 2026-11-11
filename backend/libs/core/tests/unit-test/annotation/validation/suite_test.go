@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestValidation(t *testing.T) {
+func TestAnnotationValidation(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "DTO validation")
+	RunSpecs(t, "DTO Tag Normalization and Validation")
 }
