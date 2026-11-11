@@ -146,6 +146,18 @@ Foundation service
 Foundation repository
 ```
 
+## DTO layout
+
+Foundation's request/response contracts are resource-grouped:
+
+```text
+dto/request/person/person.go          # CreatePerson, UpdatePerson, Contacts, PersonByGID
+dto/request/person/helpers/patch.go   # generic presence-aware PATCH helper
+dto/response/person/person.go         # Person, Contacts, PersonErrorMetadata
+```
+
+Go consumers import `dto/request/person` and `dto/response/person` (usually as `foundationrequest` and `foundationresponse`). PATCH fields use aliases `PatchString` and `PatchContacts` backed by the reusable helper; absent, null and supplied JSON values remain distinct.
+
 ## 5. Create Person
 
 Request:

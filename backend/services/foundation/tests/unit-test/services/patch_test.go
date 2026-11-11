@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	foundationrequest "grovehub/services/foundation/dto/request"
+	foundationrequest "grovehub/services/foundation/dto/request/person"
 	"grovehub/services/foundation/entity"
 	personservice "grovehub/services/foundation/services/impl"
 	personvalidator "grovehub/services/foundation/validators/impl"

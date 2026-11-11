@@ -9,8 +9,8 @@ import (
 	"time"
 
 	coresearch "grovehub/libs/core/search"
-	foundationrequest "grovehub/services/foundation/dto/request"
-	foundationresponse "grovehub/services/foundation/dto/response"
+	foundationrequest "grovehub/services/foundation/dto/request/person"
+	foundationresponse "grovehub/services/foundation/dto/response/person"
 	"grovehub/services/foundation/entity"
 	repositoryerrors "grovehub/services/foundation/repository/constants/errors"
 	personservice "grovehub/services/foundation/services/impl"

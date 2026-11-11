@@ -1,4 +1,4 @@
-package request_test
+package person_test
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	foundationrequest "grovehub/services/foundation/dto/request"
+	foundationrequest "grovehub/services/foundation/dto/request/person"
 )
 
 var _ = Describe("Person PATCH JSON presence", func() {

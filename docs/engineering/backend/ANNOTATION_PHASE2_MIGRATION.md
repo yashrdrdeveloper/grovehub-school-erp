@@ -78,7 +78,9 @@ backend/
   services/
     foundation/
       controller/person.go            # annotated route contract
-      dto/request/person.go           # declarative validation tags
+      dto/request/person/person.go    # grouped Person DTO contract
+      dto/request/person/helpers/patch.go # presence-aware PATCH helper
+      dto/response/person/person.go   # grouped Person response contract
       validators/impl/person.go       # application error mapping and contact checks
       routes/http.go                  # composition; delegates to generated routes
       .generated/routes/zz_routes.gen.go
