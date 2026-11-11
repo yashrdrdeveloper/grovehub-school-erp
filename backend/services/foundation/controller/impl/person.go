@@ -2,27 +2,33 @@ package impl
 
 import (
 	"net/http"
+
 	httpresponse "grovehub/libs/core/http/response"
+	rest "grovehub/libs/core/pipeline/rest"
 	coresearch "grovehub/libs/core/search"
 	personerror "grovehub/services/foundation/constants/error"
 	"grovehub/services/foundation/controller"
 	controllerhelpers "grovehub/services/foundation/controller/helpers"
 	foundationrequest "grovehub/services/foundation/dto/request"
 	foundationservices "grovehub/services/foundation/services"
+	foundationvalidators "grovehub/services/foundation/validators"
 )
 
 type PersonController struct {
-	service foundationservices.PersonService
+	service   foundationservices.PersonService
+	validator foundationvalidators.PersonValidator
 }
 
-func NewPersonController(service foundationservices.PersonService) controller.PersonController {
-	return &PersonController{service: service}
+func NewPersonController(service foundationservices.PersonService, validator foundationvalidators.PersonValidator) controller.PersonController {
+	return &PersonController{service: service, validator: validator}
 }
 
 func (controller *PersonController) Create(writer http.ResponseWriter, request *http.Request) {
-	var personRequest foundationrequest.CreatePerson
-	if err := controllerhelpers.DecodeRequest(request, &personRequest); err != nil {
-		_ = httpresponse.WriteErrorContext(request.Context(), writer, http.StatusBadRequest, personerror.InvalidPersonRequest)
+	personRequest, err := rest.Run(request, rest.Config[foundationrequest.CreatePerson]{
+		Normalize: controller.validator.ValidateCreate,
+	})
+	if err != nil {
+		controllerhelpers.WritePersonRequestError(request.Context(), writer, err, personerror.InvalidPersonRequest)
 		return
 	}
 	person, created, err := controller.service.Create(request.Context(), personRequest)
@@ -47,9 +53,11 @@ func (controller *PersonController) GetByGID(writer http.ResponseWriter, request
 }
 
 func (controller *PersonController) Update(writer http.ResponseWriter, request *http.Request) {
-	var updateRequest foundationrequest.UpdatePerson
-	if err := controllerhelpers.DecodeRequest(request, &updateRequest); err != nil {
-		_ = httpresponse.WriteErrorContext(request.Context(), writer, http.StatusBadRequest, personerror.InvalidPersonRequest)
+	updateRequest, err := rest.Run(request, rest.Config[foundationrequest.UpdatePerson]{
+		Normalize: controller.validator.ValidateUpdate,
+	})
+	if err != nil {
+		controllerhelpers.WritePersonRequestError(request.Context(), writer, err, personerror.InvalidPersonRequest)
 		return
 	}
 	person, err := controller.service.Update(
@@ -63,9 +71,14 @@ func (controller *PersonController) Update(writer http.ResponseWriter, request *
 }
 
 func (controller *PersonController) Search(writer http.ResponseWriter, request *http.Request) {
-	var searchRequest coresearch.Request
-	if err := controllerhelpers.DecodeRequest(request, &searchRequest); err != nil {
-		_ = httpresponse.WriteErrorContext(request.Context(), writer, http.StatusBadRequest, personerror.InvalidPersonSearch)
+	searchRequest, err := rest.Run(request, rest.Config[coresearch.Request]{
+		Validate: func(value coresearch.Request) error {
+			_, _, err := controller.validator.ValidateSearch(value)
+			return err
+		},
+	})
+	if err != nil {
+		controllerhelpers.WritePersonRequestError(request.Context(), writer, err, personerror.InvalidPersonSearch)
 		return
 	}
 	result, err := controller.service.Search(request.Context(), searchRequest)

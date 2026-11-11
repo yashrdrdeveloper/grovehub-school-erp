@@ -59,7 +59,7 @@ func New(
 
 	return &module{
 		logger:         logger,
-		authController: controllerimpl.NewAuthController(authService),
+		authController: controllerimpl.NewAuthController(authService, authValidator),
 	}
 }
 

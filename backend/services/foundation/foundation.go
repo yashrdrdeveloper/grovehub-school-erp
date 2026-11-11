@@ -47,7 +47,7 @@ func New(
 
 	return &module{
 		logger:           logger,
-		personController: controllerimpl.NewPersonController(personService),
+		personController: controllerimpl.NewPersonController(personService, personValidator),
 		client:           clientimpl.NewPersonClient(personService),
 	}
 }

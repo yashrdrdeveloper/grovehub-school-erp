@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	coreerrors "grovehub/libs/core/errors"
-	httprequest "grovehub/libs/core/http/request"
+	rest "grovehub/libs/core/pipeline/rest"
 	httpresponse "grovehub/libs/core/http/response"
 	personerror "grovehub/services/foundation/constants/error"
 )
@@ -24,8 +24,13 @@ var personErrorStatus = map[coreerrors.Code]int{
 	personerror.PersonConcurrentModification.Code(): http.StatusConflict,
 }
 
-func DecodeRequest(request *http.Request, destination any) error {
-	return httprequest.DecodeJSON(request, destination)
+func WritePersonRequestError(ctx context.Context, writer http.ResponseWriter, err error, invalid coreerrors.Definition) {
+	var decodeError *rest.DecodeError
+	if errors.As(err, &decodeError) {
+		_ = httpresponse.WriteErrorContext(ctx, writer, http.StatusBadRequest, invalid)
+		return
+	}
+	WritePersonError(ctx, writer, err, invalid)
 }
 
 func WritePersonError(
