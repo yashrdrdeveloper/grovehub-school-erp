@@ -116,12 +116,22 @@ type PersonRepository interface {
     /**
      * Search uses trusted field mappings from search.PersonConfig.
      */
-    // @Searchable config=search.PersonConfig alias=p
     Search(ctx context.Context, query coresearch.Query[string]) (coresearch.QueryResult[entity.Person], error)
 }
 ```
 
-The build-time `generation/search` processor resolves external repository search configuration (including nested `repository/helpers/search/`), verifies that the cursor expression matches a stable sort key, optionally checks `@Filterable`/`@Sortable`/`@Cursor` declarations when provided, and generates the `Search` method into the service's ignored `.generated/repository/impl/` folder. Execution delegates to the shared `core/search.Execute`. The resource validator still controls operators and normalized values; repository-owned `coresearch.Config` keeps all SQL expressions explicit and reviewed. `@Repository` is ownership metadata validation only, **not** DI or transaction generation.
+Place `@Searchable` on the concrete `Search` method in `repository/impl/person.go`, not the interface:
+
+```go
+// @Searchable config=search.PersonConfig alias=p
+func (repository *PersonRepository) Search(
+    ctx context.Context, query coresearch.Query[string],
+) (coresearch.QueryResult[entity.Person], error) {
+    return repository.searchGenerated(ctx, query)
+}
+```
+
+`generation/search` generates only the private `searchGenerated` helper in the existing service-local source overlay. This retains an explicit, reviewable `Search` implementation in `impl/` while avoiding handwritten GORM query plumbing. The build-time `generation/search` processor resolves external repository search configuration (including nested `repository/helpers/search/`), verifies that the cursor expression matches a stable sort key, optionally checks `@Filterable`/`@Sortable`/`@Cursor` declarations when provided, and generates the private `searchGenerated` helper into the service's ignored `.generated/repository/impl/` folder. Execution delegates to the shared `core/search.Execute`. The resource validator still controls operators and normalized values; repository-owned `coresearch.Config` keeps all SQL expressions explicit and reviewed. `@Repository` is ownership metadata validation only, **not** DI or transaction generation.
 
 ### Reusable PATCH request DTOs
 

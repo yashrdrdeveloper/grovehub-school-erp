@@ -260,6 +260,13 @@ foundationClient.GetPersonByGID(ctx, foundationrequest.PersonByGID{GID: gid})
 
 The GID must be a valid Foundation Person GID. A valid GID that does not exist returns the stable Person-not-found application error.
 
+## Repository search implementation
+
+The repository interface in `repository/person.go` exposes a plain `Search` method.
+The concrete `repository/impl/person.go` owns its `@Searchable config=search.PersonConfig alias=p` annotation and an explicit `Search(ctx, query)` method that delegates to `repository.searchGenerated(ctx, query)`.
+
+The generator validates the interface signature, `@Repository entity=Person` ownership, approved search configuration and stable cursor, then emits the private query helper in `.generated/repository/impl/zz_search.gen.go`. Existing search filters and field expressions remain in `repository/helpers/search/person.go`.
+
 ## 8. Update Person
 
 HTTP:
