@@ -11,23 +11,10 @@ import (
 	personerror "grovehub/services/foundation/constants/error"
 )
 
-var personErrorStatus = map[coreerrors.Code]int{
-	personerror.InvalidPersonGID.Code():             http.StatusBadRequest,
-	personerror.InvalidPersonRequest.Code():         http.StatusBadRequest,
-	personerror.InvalidPersonContact.Code():         http.StatusBadRequest,
-	personerror.InvalidPersonIdempotencyKey.Code():  http.StatusBadRequest,
-	personerror.InvalidPersonSearch.Code():          http.StatusBadRequest,
-	personerror.InvalidPersonSearchCursor.Code():    http.StatusBadRequest,
-	personerror.PersonNotFound.Code():               http.StatusNotFound,
-	personerror.PersonContactConflict.Code():        http.StatusConflict,
-	personerror.PersonIdempotencyConflict.Code():    http.StatusConflict,
-	personerror.PersonConcurrentModification.Code(): http.StatusConflict,
-}
-
 func WritePersonRequestError(ctx context.Context, writer http.ResponseWriter, err error, invalid coreerrors.Definition) {
 	var decodeError *rest.DecodeError
 	if errors.As(err, &decodeError) {
-		_ = httpresponse.WriteErrorContext(ctx, writer, http.StatusBadRequest, invalid)
+		_ = httpresponse.WriteErrorContext(ctx, writer, invalid.HTTPStatus(), invalid)
 		return
 	}
 	WritePersonError(ctx, writer, err, invalid)
@@ -45,10 +32,7 @@ func WritePersonError(
 		return
 	}
 
-	statusCode := personErrorStatus[applicationError.Definition().Code()]
-	if statusCode == 0 {
-		statusCode = http.StatusInternalServerError
-	}
+	statusCode := applicationError.Definition().HTTPStatus()
 
 	if applicationError.Metadata() == nil {
 		_ = httpresponse.WriteErrorContext(ctx, writer, statusCode, applicationError.Definition())
