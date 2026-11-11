@@ -79,8 +79,6 @@ func (validator *PersonValidator) ValidateGID(gid string) error {
     return validatorhelpers.ValidateGID(gid)
 }
 
-func (validator *PersonValidator) ValidateSearch(
-    request coresearch.Request,
-) (coresearch.Query[string],coresearch.CursorPayload,error) {
+func (validator *PersonValidator) ValidateSearch(request coresearch.Request) (coresearch.Query[string], coresearch.CursorPayload, error) {
     return validatorhelpers.NormalizePersonSearchRequest(request)
 }

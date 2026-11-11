@@ -12,6 +12,34 @@ docs/engineering/backend/NORMALIZATION_AND_DRY_GUIDELINES.md
 
 ---
 
+## REST request pipeline
+
+HTTP controllers call `rest.Run(request, rest.Config[T]{...})` from `libs/core/pipeline/rest`.
+Its ordered stages are: decode JSON, normalize typed DTO, validate typed DTO, then
+return the result. The pipeline never invokes a service or owns authorization.
+Controllers explicitly call services after a successful pipeline result.
+
+```go
+validated, err := rest.Run(request, rest.Config[foundationrequest.CreatePerson]{
+    Normalize: controller.validator.ValidateCreate,
+})
+if err != nil {
+    // Map decode errors to HTTP 400, domain validation errors through the
+    // owning controller's existing application-error contract.
+    return
+}
+person, created, err := controller.service.Create(request.Context(), validated)
+```
+
+Use `Decode: httprequest.DecodeStrictJSON` when the route rejects unknown
+JSON properties. `rest.DecodeError` distinguishes decoding failures from
+domain errors without leaking request data.
+
+Services retain validation on their public/in-process boundaries (for example,
+Identity calling Foundation directly); HTTP controllers validate before invoking
+services for fail-fast behavior. Until an internal validated-input contract is
+introduced, this performs idempotent validation twice for HTTP calls.
+
 ## Request DTOs and header context
 
 - Foundation uses a plain `dto/request.Person` with string fields embedded in `CreatePerson`; `UpdatePerson` uses shared presence-aware `annotation/dto.Patch[T]` fields, with `@PatchRequestDto` generating JSON serialization so absent, explicit-null and supplied values remain distinct.
@@ -213,7 +241,7 @@ Place a function under `validators/helpers` when its consumers are validator imp
 Examples:
 
 ```text
-NormalizePersonNames
+NormalizeRequiredName
 NormalizeContacts
 NormalizePersonSearchRequest
 NormalizeAccountId

@@ -15,6 +15,8 @@ Correct:
 ```text
 backend/libs/core/
 ├── search/
+├── pipeline/
+│   └── rest/
 ├── diff/
 ├── events/
 ├── telemetry/

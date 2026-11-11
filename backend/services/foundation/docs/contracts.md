@@ -267,6 +267,17 @@ The concrete `repository/impl/person.go` owns its `@Searchable config=search.Per
 
 The generator validates the interface signature, `@Repository entity=Person` ownership, approved search configuration and stable cursor, then emits the private query helper in `.generated/repository/impl/zz_search.gen.go`. Existing search filters and field expressions remain in `repository/helpers/search/person.go`.
 
+## HTTP request validation pipeline
+
+Foundation's Create, Update and Search controllers use the shared
+`libs/core/pipeline/rest.Run` to decode, normalize, and validate
+request bodies before calling their service methods. The service performs its
+own validation for in-process Foundation clients such as Identity.
+Raw decode failures map to HTTP 400; domain validation failures preserve
+Foundation's existing error codes. Search still uses its established
+allowlist, operator and cursor policies. The pipeline does not execute
+business services or touch transactions.
+
 ## 8. Update Person
 
 HTTP:

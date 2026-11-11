@@ -53,6 +53,7 @@ normalize.Email(value)
 normalize.Phone(value)
 normalize.PhoneCharacters(value)
 normalize.UUIDv7(value)
+normalize.RFC3339UTC(value)
 ```
 
 It also exposes stable generic technical errors such as:
@@ -61,6 +62,7 @@ It also exposes stable generic technical errors such as:
 ErrInvalidEmail
 ErrInvalidPhone
 ErrInvalidUUIDv7
+ErrInvalidTime
 ```
 
 These functions own technical behavior only:
@@ -135,6 +137,7 @@ Promote logic when all are true:
 Examples:
 
 ```text
+RFC3339 UTC timestamp canonicalization
 email canonicalization
 phone canonicalization
 UUIDv7 validation/canonicalization

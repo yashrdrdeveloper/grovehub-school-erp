@@ -81,22 +81,6 @@ var valueCountValidators = map[coresearch.Operator]func(int) bool{
 	coresearch.OperatorNotIn:     func(count int) bool { return count > 0 },
 }
 
-func NormalizePersonNames(firstName, middleName, lastName string) (string, string, string, error) {
-	firstName, err := NormalizeRequiredName(firstName)
-	if err != nil {
-		return "", "", "", err
-	}
-	middleName, err = NormalizeOptionalName(middleName)
-	if err != nil {
-		return "", "", "", err
-	}
-	lastName, err = NormalizeRequiredName(lastName)
-	if err != nil {
-		return "", "", "", err
-	}
-	return firstName, middleName, lastName, nil
-}
-
 func NormalizeRequiredName(value string) (string, error) {
 	normalized, err := NormalizeOptionalName(value)
 	if err != nil || normalized == "" {
@@ -373,11 +357,11 @@ func normalizeStatusSearchValue(_ coresearch.Operator, value string) (string, er
 }
 
 func normalizeTimeSearchValue(_ coresearch.Operator, value string) (string, error) {
-	parsed, err := time.Parse(time.RFC3339, strings.TrimSpace(value))
+	normalized, err := corenormalize.RFC3339UTC(value)
 	if err != nil {
 		return "", invalidPersonSearch()
 	}
-	return parsed.UTC().Format(time.RFC3339Nano), nil
+	return normalized, nil
 }
 
 func normalizeEmailSearchValue(operator coresearch.Operator, value string) (string, error) {
