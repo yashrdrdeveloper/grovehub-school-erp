@@ -326,6 +326,23 @@ The implementation may live under each capability's `helpers/`, but consumers us
 
 ---
 
+## 8.1 Typed request pipeline
+
+The REST capability lives under `libs/core/pipeline/rest` and delegates typed
+DTO processing to `libs/core/annotation/validation`. For every request the
+order is: decode, normalize tags, resource normalizer, validate DTO tags,
+custom resource validator, then explicit controller service invocation.
+
+`annotationvalidation.Rules[T]` supplies optional `Normalize`, `Validate`
+and `MapDTOError` callbacks. A service may reuse the *same rules* with
+`annotationvalidation.Process(input, rules)` to protect in-process callers.
+This avoids maintaining parallel validation logic for HTTP and service calls.
+
+The pipeline does not authorize requests, perform database operations,
+publish events, run business workflows or write HTTP responses.
+
+---
+
 ## 9. HTTP Contracts
 
 Transport response contracts belong to the HTTP capability:

@@ -74,6 +74,20 @@ Never assume that protected/restricted URLs enforce any gate today. Before
 deployment, add and test verified Identity gateway policy and ensure internal
 maintenance APIs cannot be accessed through the external listener.
 
+### Request validation pipeline
+
+For HTTP request DTOs, use `libs/core/pipeline/rest.Run` with resource-owned
+`annotationvalidation.Rules[T]`. The order is **decode JSON → normalize
+tagged fields → resource canonicalization → validate normalized DTO tags →
+custom resource checks → return to controller → explicit service call**.
+Required, blank, maximum-length, and PATCH-null constraints belong in DTO
+`validate` tags; do not duplicate these rules in validator helpers.
+`annotation/dto.Patch[T]` distinguishes omitted, explicit null and supplied
+values; only supplied fields are validated. The same `Rules[T]` must also
+be reused via `annotationvalidation.Process` on public service entry points
+to protect in-process clients. The pipeline does not own authorization or
+business logic.
+
 ### Backend layer responsibilities
 
 GroveHub uses a strict responsibility split:

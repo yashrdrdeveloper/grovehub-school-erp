@@ -32,6 +32,8 @@ import corenormalize "grovehub/libs/core/normalize"
 
 Do not import `normalize/helpers` from services and do not create a repository-wide `libs/core/helpers/normalize` package.
 
+DTO field normalization and validation are separate stages: `annotation/validation.NormalizeFields` applies `normalize` tags, then `annotation/validation.Validate` enforces `validate` tags against canonical values. Resource-specific canonicalization (e.g. email/phone) runs between those steps via `annotation/validation.Rules[T].Normalize`; contact-count/uniqueness checks run afterward via `Rules[T].Validate`.
+
 Resource request validation and domain-specific error mapping remain under the owning service validator:
 
 ```text

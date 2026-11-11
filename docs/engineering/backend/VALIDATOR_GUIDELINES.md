@@ -14,31 +14,60 @@ docs/engineering/backend/NORMALIZATION_AND_DRY_GUIDELINES.md
 
 ## REST request pipeline
 
-HTTP controllers call `rest.Run(request, rest.Config[T]{...})` from `libs/core/pipeline/rest`.
-Its ordered stages are: decode JSON, normalize typed DTO, validate typed DTO, then
-return the result. The pipeline never invokes a service or owns authorization.
-Controllers explicitly call services after a successful pipeline result.
+All typed REST inputs follow the same **fail-fast order**:
+
+1. Decode JSON to a fresh DTO.
+2. Normalize DTO fields via `normalize` tags (e.g. `normalize:"trim"`).
+3. Apply domain-neutral canonicalization supplied by the resource (e.g. email and phone).
+4. Validate the fully normalized DTO with `validate` tags.
+5. Execute custom request validation (e.g. duplicate contact or primary-contact limits).
+6. Return the validated DTO to the controller, which explicitly invokes the service.
+
+Core owns `libs/core/annotation/validation.Process`, `NormalizeFields`,
+`Validate` and generic typed `Rules[T]`. HTTP transport owns
+`libs/core/pipeline/rest.Run` and its `Config[T]`, with optional strict
+decoder. Domain validators own normalizer callbacks, custom validation
+callbacks and error conversion; **no service invocation or business I/O**
+belongs inside these pipelines.
 
 ```go
-validated, err := rest.Run(request, rest.Config[foundationrequest.CreatePerson]{
-    Normalize: controller.validator.ValidateCreate,
+// Foundation controller; the service call is explicitly outside the pipeline.
+person, err := rest.Run(request, rest.Config[foundationrequest.CreatePerson]{
+    Rules: controller.validator.CreateRules(),
 })
 if err != nil {
-    // Map decode errors to HTTP 400, domain validation errors through the
-    // owning controller's existing application-error contract.
+    controllerhelpers.WritePersonRequestError(request.Context(), writer, err, personerror.InvalidPersonRequest)
     return
 }
-person, created, err := controller.service.Create(request.Context(), validated)
+response, created, err := controller.service.Create(request.Context(), person)
 ```
 
-Use `Decode: httprequest.DecodeStrictJSON` when the route rejects unknown
-JSON properties. `rest.DecodeError` distinguishes decoding failures from
-domain errors without leaking request data.
+Resource validators expose a single shared rule set for HTTP and in-process
+service callers:
 
-Services retain validation on their public/in-process boundaries (for example,
-Identity calling Foundation directly); HTTP controllers validate before invoking
-services for fail-fast behavior. Until an internal validated-input contract is
-introduced, this performs idempotent validation twice for HTTP calls.
+```go
+func (validator *PersonValidator) ValidateCreate(
+    request foundationrequest.CreatePerson,
+) (foundationrequest.CreatePerson, error) {
+    return annotationvalidation.Process(request, validator.CreateRules())
+}
+```
+
+Use `Decode: httprequest.DecodeStrictJSON` for endpoints rejecting unknown
+JSON properties. `rest.DecodeError` distinguishes parse errors from validation
+errors. `Rules[T].MapDTOError` translates tag-validation errors into the
+owning domain's application errors without exposing sensitive request values.
+
+Requiredness, maximum name length, blank values and PATCH `null` constraints
+belong **only in DTO tags**, not repeated in custom validators. A
+presence-aware `annotationdto.Patch[T]` field is checked only when `Set=true`;
+for example, `normalize:"trim" validate:"nonnull,notblank,maxrunes=100"`
+rejects explicit `null` and whitespace-only supplied names, while allowing
+omitted fields to remain unchanged. Clearable fields omit `nonnull`.
+
+Services continue to validate their public in-process entry points; HTTP
+requests therefore receive an idempotent second validation at the service
+boundary until a validated-input contract is established.
 
 ## Request DTOs and header context
 
@@ -219,9 +248,10 @@ Example:
 CreatePerson.Contacts
     ↓
 PersonValidator
-    -> count/duplicate/primary checks
-    -> canonical email/phone values
-    -> normalized request.Contacts
+    -> canonical email/phone values (normalization)
+    -> DTO tag validation of normalized values
+    -> count/duplicate/primary checks (custom validation)
+    -> normalized, validated request.Contacts
     ↓
 Service helper
     -> entity.Contact values
@@ -241,8 +271,8 @@ Place a function under `validators/helpers` when its consumers are validator imp
 Examples:
 
 ```text
-NormalizeRequiredName
 NormalizeContacts
+ValidateContacts
 NormalizePersonSearchRequest
 NormalizeAccountId
 NormalizePersonGid
