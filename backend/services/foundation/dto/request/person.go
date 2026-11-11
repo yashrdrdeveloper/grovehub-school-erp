@@ -3,7 +3,7 @@ package request
 import annotationdto "grovehub/libs/core/annotation/dto"
 
 type ContactValue struct {
-	Value     string `json:"value" validate:"notblank"`
+	Value     string `json:"value" normalize:"trim" validate:"notblank"`
 	IsPrimary bool   `json:"isPrimary"`
 }
 
@@ -28,10 +28,10 @@ type CreatePerson struct {
 // UpdatePerson distinguishes absent, null, and supplied values.
 // FirstName and LastName cannot be cleared; MiddleName and Contacts can.
 type UpdatePerson struct {
-	FirstName  annotationdto.Patch[string]   `json:"firstName"`
-	MiddleName annotationdto.Patch[string]   `json:"middleName"`
-	LastName   annotationdto.Patch[string]   `json:"lastName"`
-	Contacts   annotationdto.Patch[Contacts] `json:"contacts"`
+	FirstName  annotationdto.Patch[string]   `json:"firstName" normalize:"trim" validate:"nonnull,notblank,maxrunes=100"`
+	MiddleName annotationdto.Patch[string]   `json:"middleName" normalize:"trim" validate:"maxrunes=100"`
+	LastName   annotationdto.Patch[string]   `json:"lastName" normalize:"trim" validate:"nonnull,notblank,maxrunes=100"`
+	Contacts   annotationdto.Patch[Contacts] `json:"contacts" validate:"valid"`
 }
 
 type PersonByGID struct {

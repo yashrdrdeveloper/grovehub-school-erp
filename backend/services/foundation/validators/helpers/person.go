@@ -3,7 +3,6 @@ package helpers
 import (
 	"strings"
 	"time"
-	"unicode/utf8"
 
 	coreerrors "grovehub/libs/core/errors"
 	corenormalize "grovehub/libs/core/normalize"
@@ -14,7 +13,6 @@ import (
 )
 
 const (
-	maxPersonNameLength = 100
 	maxContactsPerType  = 10
 	maxSearchTextLength = 256
 	maxSearchTerms      = 10
@@ -81,38 +79,49 @@ var valueCountValidators = map[coresearch.Operator]func(int) bool{
 	coresearch.OperatorNotIn:     func(count int) bool { return count > 0 },
 }
 
-func NormalizeRequiredName(value string) (string, error) {
-	normalized, err := NormalizeOptionalName(value)
-	if err != nil || normalized == "" {
-		return "", coreerrors.NewError(personerror.InvalidPersonRequest)
-	}
-	return normalized, nil
-}
-
-func NormalizeOptionalName(value string) (string, error) {
-	normalized := strings.TrimSpace(value)
-	if utf8.RuneCountInString(normalized) > maxPersonNameLength {
-		return "", coreerrors.NewError(personerror.InvalidPersonRequest)
-	}
-	return normalized, nil
-}
-
+// NormalizeContacts canonicalizes contact values only. Cross-field rules
+// such as duplicate and primary-contact limits run after DTO tag validation.
 func NormalizeContacts(request foundationrequest.Contacts) (foundationrequest.Contacts, error) {
-	if len(request.Emails) > maxContactsPerType || len(request.Phones) > maxContactsPerType {
-		return foundationrequest.Contacts{}, coreerrors.NewError(personerror.InvalidPersonContact)
-	}
-
-	seen := make(map[string]struct{}, len(request.Emails)+len(request.Phones))
-	emails, err := normalizeContactGroup(entity.ContactTypeEmail, request.Emails, normalizeEmail, seen)
+	emails, err := normalizeContactGroup(request.Emails, normalizeEmail)
 	if err != nil {
 		return foundationrequest.Contacts{}, err
 	}
-	phones, err := normalizeContactGroup(entity.ContactTypePhone, request.Phones, normalizePhone, seen)
+	phones, err := normalizeContactGroup(request.Phones, normalizePhone)
 	if err != nil {
 		return foundationrequest.Contacts{}, err
 	}
-
 	return foundationrequest.Contacts{Emails: emails, Phones: phones}, nil
+}
+
+// ValidateContacts enforces request-level contact rules on normalized values.
+func ValidateContacts(request foundationrequest.Contacts) error {
+	if len(request.Emails) > maxContactsPerType || len(request.Phones) > maxContactsPerType {
+		return coreerrors.NewError(personerror.InvalidPersonContact)
+	}
+	seen := make(map[string]struct{}, len(request.Emails)+len(request.Phones))
+	for _, group := range []struct {
+		kind entity.ContactType
+		values []foundationrequest.ContactValue
+	}{
+		{entity.ContactTypeEmail, request.Emails},
+		{entity.ContactTypePhone, request.Phones},
+	} {
+		primaryCount := 0
+		for _, contact := range group.values {
+			key := contactKey(group.kind, contact.Value)
+			if _, duplicate := seen[key]; duplicate {
+				return coreerrors.NewError(personerror.InvalidPersonContact)
+			}
+			seen[key] = struct{}{}
+			if contact.IsPrimary {
+				primaryCount++
+				if primaryCount > 1 {
+					return coreerrors.NewError(personerror.InvalidPersonContact)
+				}
+			}
+		}
+	}
+	return nil
 }
 
 func ValidateGID(gid string) error {
@@ -165,34 +174,17 @@ func NormalizePersonSearchRequest(
 }
 
 func normalizeContactGroup(
-	contactType entity.ContactType,
 	values []foundationrequest.ContactValue,
 	normalize func(string) (string, error),
-	seen map[string]struct{},
 ) ([]foundationrequest.ContactValue, error) {
 	normalized := make([]foundationrequest.ContactValue, 0, len(values))
-	primaryCount := 0
-
 	for _, contact := range values {
 		value, err := normalize(contact.Value)
 		if err != nil {
 			return nil, err
 		}
-		key := contactKey(contactType, value)
-		if _, exists := seen[key]; exists {
-			return nil, coreerrors.NewError(personerror.InvalidPersonContact)
-		}
-		seen[key] = struct{}{}
-
-		if contact.IsPrimary {
-			primaryCount++
-			if primaryCount > 1 {
-				return nil, coreerrors.NewError(personerror.InvalidPersonContact)
-			}
-		}
-
 		normalized = append(normalized, foundationrequest.ContactValue{
-			Value:     value,
+			Value: value,
 			IsPrimary: contact.IsPrimary,
 		})
 	}
