@@ -20,7 +20,7 @@ import (
 )
 
 type endpointMethod struct {
-	verb, path, resultType, pathArg, bodyArg string
+	verb, path, resultType string
 	created bool
 }
 
@@ -210,41 +210,36 @@ func requestLine(doc *ast.CommentGroup) (endpointMethod,bool,error) {
 }
 
 func endpointArguments(set *token.FileSet, fn *ast.FuncType, args []string, method endpointMethod) (endpointMethod,error) {
-	if len(args)<1 || len(args)>3 || fn.Results==nil {
-		return method,fmt.Errorf("@RequestLine requires context plus at most two typed DTO inputs")
+	if len(args)!=2 || fn.Params==nil || len(fn.Params.List)!=2 || fn.Results==nil {
+		return method,fmt.Errorf("@RequestLine requires context and one typed httpendpoint.Request[Path,Query,Body]")
 	}
-	if fn.Params==nil || len(fn.Params.List)<1 || !selectorType(fn.Params.List[0].Type,"context","Context") {
+	if !selectorType(fn.Params.List[0].Type,"context","Context") {
 		return method,fmt.Errorf("first @RequestLine parameter must be context.Context")
 	}
-	results := fn.Results.List
-	if len(results)!=2 && len(results)!=3 { return method,fmt.Errorf("expected (response,error) or (response,bool,error)") }
-	if !identType(results[len(results)-1].Type,"error") { return method,fmt.Errorf("last result must be error") }
-	method.created = len(results)==3
+	wrapper,ok:=fn.Params.List[1].Type.(*ast.IndexListExpr)
+	if !ok || !selectorType(wrapper.X,"httpendpoint","Request") || len(wrapper.Indices)!=3 {
+		return method,fmt.Errorf("second @RequestLine parameter must be httpendpoint.Request[Path,Query,Body]")
+	}
+	if strings.Contains(method.path,"{") && selectorType(wrapper.Indices[0],"rest","Empty") {
+		return method,fmt.Errorf("route path variables require a nonempty Path DTO")
+	}
+	if (method.verb=="GET"||method.verb=="DELETE") && !selectorType(wrapper.Indices[2],"rest","Empty") {
+		return method,fmt.Errorf("GET/DELETE @RequestLine must declare rest.Empty as Body")
+	}
+	results:=fn.Results.List
+	if len(results)!=2 && len(results)!=3 {return method,fmt.Errorf("expected (response,error) or (response,bool,error)")}
+	if !identType(results[len(results)-1].Type,"error") {return method,fmt.Errorf("last result must be error")}
+	method.created=len(results)==3
 	if method.created && !identType(results[1].Type,"bool") {
 		return method,fmt.Errorf("second result must be bool (created flag)")
 	}
-	if method.created && method.verb!="POST" { return method,fmt.Errorf("created flag is supported only for POST") }
+	if method.created && method.verb!="POST" {return method,fmt.Errorf("created flag is supported only for POST")}
 	if len(results[0].Names)>0 || len(results[len(results)-1].Names)>0 {
 		return method,fmt.Errorf("named @RequestLine results are not supported")
 	}
 	var result bytes.Buffer
-	if err := format.Node(&result,set,results[0].Type);err!=nil{return method,err}
+	if err:=format.Node(&result,set,results[0].Type);err!=nil{return method,err}
 	method.resultType=result.String()
-	other:=args[1:]
-	hasPath:=strings.Contains(method.path,"{")
-	if hasPath {
-		if len(other)==0 { return method,fmt.Errorf("path template requires a path DTO") }
-		method.pathArg=other[0]
-		if len(other)==2 { method.bodyArg=other[1] }
-	} else {
-		if len(other)>1 { return method,fmt.Errorf("endpoint without path variables accepts at most one body DTO") }
-		if len(other)==1 { method.bodyArg=other[0] }
-	}
-	if method.bodyArg!="" && (method.verb=="GET" || method.verb=="DELETE") {
-		return method,fmt.Errorf("GET/DELETE @RequestLine cannot have a JSON request body")
-	}
-	if method.pathArg=="" {method.pathArg="nil"}
-	if method.bodyArg=="" {method.bodyArg="nil"}
 	return method,nil
 }
 
@@ -297,12 +292,12 @@ func writeProxies(proxies []clientProxy,output string) error {
 		}
 		ep:=m.endpoint
 		if ep.created {
-			fmt.Fprintf(&b,"result, status, err := httpendpoint.Call[%s](%s, c.handler, %q, %q, %s, %s)\n",
-				ep.resultType,strings.Split(m.arguments,", ")[0],ep.verb,ep.path,ep.pathArg,ep.bodyArg)
+			fmt.Fprintf(&b,"result, status, err := httpendpoint.CallRequest[%s](%s, c.handler, %q, %q, %s)\n",
+				ep.resultType,strings.Split(m.arguments,", ")[0],ep.verb,ep.path,strings.Split(m.arguments,", ")[1])
 			b.WriteString("return result, status == 201 && err == nil, err\n}\n\n")
 		} else {
-			fmt.Fprintf(&b,"result, _, err := httpendpoint.Call[%s](%s, c.handler, %q, %q, %s, %s)\n",
-				ep.resultType,strings.Split(m.arguments,", ")[0],ep.verb,ep.path,ep.pathArg,ep.bodyArg)
+			fmt.Fprintf(&b,"result, _, err := httpendpoint.CallRequest[%s](%s, c.handler, %q, %q, %s)\n",
+				ep.resultType,strings.Split(m.arguments,", ")[0],ep.verb,ep.path,strings.Split(m.arguments,", ")[1])
 			b.WriteString("return result, err\n}\n\n")
 		}
 	}
