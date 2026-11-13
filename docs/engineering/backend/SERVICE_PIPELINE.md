@@ -14,8 +14,8 @@ Under backend/services/foundation/services/person/operations/:
 - search/search.go: Search chain (Prepare -> Query -> Hydrate), with a typed flow, strategies and private helpers/cursor.go.
 - deactivate/deactivate.go: Deactivate chain (Load -> Prepare -> Persist), with a typed flow and strategies.
 
-services/person/helpers/ contains helpers shared between operations: contact
-construction/comparison, contact association, search projection, ReadPerson
+services/person/helpers/ contains helpers shared between operations: contact construction and association (Create and Update), shared search-detail projection
+building, ReadPerson
 (GetByGID/Update/Deactivate), and MapUpdateError (Update/Deactivate).
 Nullable/optional string converters remain in libs/core/helpers.
 
@@ -46,3 +46,16 @@ Each operation is explicitly constructed by NewPersonService.
 Single-step GetByGID uses a strategy directly rather than an artificial chain.
 Operation-private helpers are not promoted to core and actually shared logic
 remains under person/helpers.
+
+## Helper placement audit
+- `services/person/helpers/contacts.go`: BuildContacts, AssociateContacts, CopyContacts, and
+  private contact construction helpers (shared by Create and Update).
+- `services/person/helpers/search_details.go`: BuildPersonSearchDetails (maintained by
+  Create and Update; it is a write-side projection, not Search pagination).
+- `operations/search/helpers/fields.go`: cursor field extractors, only used by Search.
+- `operations/update/helpers/contacts.go`: ContactsEqual, only used by Update PATCH
+  and its persistence change detection.
+- `operations/search/helpers/cursor.go`: BuildNextCursor now references its local
+  cursor extractor, without depending on the shared Person helper package.
+- `services/person/helpers/read.go` and `errors.go`: shared across read/update/deactivate.
+  The original catch-all `services/person/helpers/person.go` has been removed.

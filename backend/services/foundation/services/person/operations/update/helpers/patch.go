@@ -47,7 +47,7 @@ func ApplyPersonUpdate(ctx context.Context, person entity.Person, contacts []ent
 			return entity.Person{}, nil, false, err
 		}
 	}
-	if !servicehelpers.ContactsEqual(newContacts, contacts) {
+	if !ContactsEqual(newContacts, contacts) {
 		updatedContacts = servicehelpers.CopyContacts(newContacts)
 		changed = true
 	}

@@ -52,7 +52,7 @@ func (strategy *Updater) Apply(ctx context.Context, state *updateflow.Update) se
     if !changed { return servicepipeline.Return(strategy.mapper.ToPersonResponse(state.Person, state.Contacts), false) }
     updated.Version = state.Person.Version + 1
     updated.UpdatedAt = time.Now().UTC()
-    state.ContactsChanged = !personhelpers.ContactsEqual(state.Contacts, contacts)
+    state.ContactsChanged = !updatehelpers.ContactsEqual(state.Contacts, contacts)
     if state.ContactsChanged { contacts = personhelpers.AssociateContacts(updated, contacts) }
     updated.SearchDetails = personhelpers.BuildPersonSearchDetails(updated, contacts)
     state.UpdatedPerson, state.UpdatedContacts = updated, contacts
