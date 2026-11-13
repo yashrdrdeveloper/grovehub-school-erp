@@ -10,6 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	annotationvalidation "grovehub/libs/core/annotation/validation"
+	corerequest "grovehub/libs/core/request"
 	foundationrequest "grovehub/services/foundation/dto/request"
 	"grovehub/services/foundation/entity"
 	personservice "grovehub/services/foundation/services/impl"
@@ -40,7 +41,10 @@ var _ = Describe("Person PATCH application", func() {
 		service := personservice.NewPersonService(person, contacts, work, fakeMapper{}, personvalidator.NewPersonValidator())
 		var payload foundationrequest.UpdatePerson
 		Expect(json.Unmarshal([]byte(`{"middleName":null,"contacts":null}`), &payload)).To(Succeed())
-		_, err := service.Update(context.Background(), foundationrequest.PersonByGID{GID:patchPersonGID}, payload)
+		_, err := service.Update(context.Background(), corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, foundationrequest.UpdatePerson]{
+			Path: foundationrequest.PersonByGID{GID: patchPersonGID},
+			Body: payload,
+		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(person.person.MiddleName).To(BeNil())
 		Expect(contacts.byPerson[patchPersonGID]).To(BeEmpty())
@@ -54,7 +58,10 @@ var _ = Describe("Person PATCH application", func() {
 		service := personservice.NewPersonService(person, contacts, work, fakeMapper{}, personvalidator.NewPersonValidator())
 		var payload foundationrequest.UpdatePerson
 		Expect(json.Unmarshal([]byte(`{}`), &payload)).To(Succeed())
-		_, err := service.Update(context.Background(), foundationrequest.PersonByGID{GID:patchPersonGID}, payload)
+		_, err := service.Update(context.Background(), corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, foundationrequest.UpdatePerson]{
+			Path: foundationrequest.PersonByGID{GID: patchPersonGID},
+			Body: payload,
+		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(*person.person.MiddleName).To(Equal("Kumar"))
 		Expect(contacts.byPerson[patchPersonGID]).To(HaveLen(1))
@@ -77,7 +84,10 @@ var _ = Describe("Person PATCH application", func() {
 		service := personservice.NewPersonService(person, &fakeContactRepository{log:person.log,byPerson:map[string][]entity.Contact{}}, &fakeUnitOfWork{}, fakeMapper{}, personvalidator.NewPersonValidator())
 		var payload foundationrequest.UpdatePerson
 		Expect(json.Unmarshal([]byte(`{"middleName":"  ","firstName":"  Arun  "}`), &payload)).To(Succeed())
-		_, err := service.Update(context.Background(), foundationrequest.PersonByGID{GID:patchPersonGID}, payload)
+		_, err := service.Update(context.Background(), corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, foundationrequest.UpdatePerson]{
+			Path: foundationrequest.PersonByGID{GID: patchPersonGID},
+			Body: payload,
+		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(person.person.MiddleName).To(BeNil())
 		Expect(person.person.FirstName).To(Equal("Arun"))
@@ -88,7 +98,10 @@ var _ = Describe("Person PATCH application", func() {
 		service := personservice.NewPersonService(person, contacts, &fakeUnitOfWork{}, fakeMapper{}, personvalidator.NewPersonValidator())
 		var payload foundationrequest.UpdatePerson
 		Expect(json.Unmarshal([]byte(`{"contacts":{"emails":[],"phones":[]}}`), &payload)).To(Succeed())
-		_, err := service.Update(context.Background(), foundationrequest.PersonByGID{GID:patchPersonGID}, payload)
+		_, err := service.Update(context.Background(), corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, foundationrequest.UpdatePerson]{
+			Path: foundationrequest.PersonByGID{GID: patchPersonGID},
+			Body: payload,
+		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(contacts.byPerson[patchPersonGID]).To(BeEmpty())
 	})
@@ -98,7 +111,10 @@ var _ = Describe("Person PATCH application", func() {
 		service := personservice.NewPersonService(person, contacts, work, fakeMapper{}, personvalidator.NewPersonValidator())
 		var payload foundationrequest.UpdatePerson
 		Expect(json.Unmarshal([]byte(`{"middleName":"`+strings.Repeat("x",101)+`"}`), &payload)).To(Succeed())
-		_, err := service.Update(context.Background(), foundationrequest.PersonByGID{GID:patchPersonGID}, payload)
+		_, err := service.Update(context.Background(), corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, foundationrequest.UpdatePerson]{
+			Path: foundationrequest.PersonByGID{GID: patchPersonGID},
+			Body: payload,
+		})
 		Expect(err).To(HaveOccurred())
 		Expect(*person.person.MiddleName).To(Equal("Kumar"))
 		Expect(work.runs).To(Equal(0))

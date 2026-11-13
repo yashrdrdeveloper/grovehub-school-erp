@@ -11,6 +11,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	coreerrors "grovehub/libs/core/errors"
+	corerequest "grovehub/libs/core/request"
 	httpendpoint "grovehub/libs/core/http/endpoint"
 	rest "grovehub/libs/core/pipeline/rest"
 	headercontext "grovehub/libs/core/headercontext"
@@ -37,31 +38,31 @@ type fakeService struct {
 	lastCtx context.Context
 }
 
-func (s *fakeService) Create(ctx context.Context, input foundationrequest.CreatePerson) (foundationresponse.Person, bool, error) {
+func (s *fakeService) Create(ctx context.Context, input corerequest.Request[corerequest.Empty, corerequest.Empty, foundationrequest.CreatePerson]) (foundationresponse.Person, bool, error) {
 	s.calls++
-	s.lastCreate = input
+	s.lastCreate = input.Body
 	s.lastCtx = ctx
-	return foundationresponse.Person{GID: goodGID, FirstName: input.FirstName}, s.created, s.failure
+	return foundationresponse.Person{GID: goodGID, FirstName: input.Body.FirstName}, s.created, s.failure
 }
-func (s *fakeService) GetByGID(_ context.Context, input foundationrequest.PersonByGID) (foundationresponse.Person, error) {
+func (s *fakeService) GetByGID(_ context.Context, input corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, corerequest.Empty]) (foundationresponse.Person, error) {
 	s.calls++
-	s.lastPath = input
-	return foundationresponse.Person{GID: input.GID}, s.failure
+	s.lastPath = input.Path
+	return foundationresponse.Person{GID: input.Path.GID}, s.failure
 }
-func (s *fakeService) Update(_ context.Context, path foundationrequest.PersonByGID, input foundationrequest.UpdatePerson) (foundationresponse.Person, error) {
+func (s *fakeService) Update(_ context.Context, input corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, foundationrequest.UpdatePerson]) (foundationresponse.Person, error) {
 	s.calls++
-	s.lastPath = path
-	s.lastUpdate = input
-	return foundationresponse.Person{GID: path.GID}, s.failure
+	s.lastPath = input.Path
+	s.lastUpdate = input.Body
+	return foundationresponse.Person{GID: input.Path.GID}, s.failure
 }
-func (s *fakeService) Search(_ context.Context, _ coresearch.Request) (coresearch.Result[foundationresponse.Person], error) {
+func (s *fakeService) Search(_ context.Context, _ corerequest.Request[corerequest.Empty, corerequest.Empty, coresearch.Request]) (coresearch.Result[foundationresponse.Person], error) {
 	s.calls++
 	return coresearch.Result[foundationresponse.Person]{}, s.failure
 }
-func (s *fakeService) Deactivate(_ context.Context, path foundationrequest.PersonByGID) (foundationresponse.Person, error) {
+func (s *fakeService) Deactivate(_ context.Context, input corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, corerequest.Empty]) (foundationresponse.Person, error) {
 	s.calls++
-	s.lastPath = path
-	return foundationresponse.Person{GID: path.GID}, s.failure
+	s.lastPath = input.Path
+	return foundationresponse.Person{GID: input.Path.GID}, s.failure
 }
 
 func fixtureMux(service *fakeService) *http.ServeMux {
