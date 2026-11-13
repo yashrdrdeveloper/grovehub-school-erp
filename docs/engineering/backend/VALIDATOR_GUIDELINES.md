@@ -12,62 +12,62 @@ docs/engineering/backend/NORMALIZATION_AND_DRY_GUIDELINES.md
 
 ---
 
-## REST request pipeline
+## REST request executor
 
-All typed REST inputs follow the same **fail-fast order**:
+The `libs/core/pipeline/rest.Run` API is a transport executor. A controller
+provides typed `Config[Path, Query, Body, Response]`, then the pipeline:
 
-1. Decode JSON to a fresh DTO.
-2. Normalize DTO fields via `normalize` tags (e.g. `normalize:"trim"`).
-3. Apply domain-neutral canonicalization supplied by the resource (e.g. email and phone).
-4. Validate the fully normalized DTO with `validate` tags.
-5. Execute custom request validation (e.g. duplicate contact or primary-contact limits).
-6. Return the validated DTO to the controller, which explicitly invokes the service.
+1. Binds path and query parameters into separate typed DTOs (field tags).
+2. Decodes a JSON body unless `Body` is `rest.Empty`.
+3. Applies tagged normalization, resource canonicalization, DTO tag validation,
+   and custom source validation to each typed input in that order.
+4. Applies optional `Config.Validate` cross-source checks.
+5. Calls the configured `Service(context.Context, Input[P,Q,B])` once.
+6. Serializes one success/error response using the shared writer.
 
-Core owns `libs/core/annotation/validation.Process`, `NormalizeFields`,
-`Validate` and generic typed `Rules[T]`. HTTP transport owns
-`libs/core/pipeline/rest.Run` and its `Config[T]`, with optional strict
-decoder. Domain validators own normalizer callbacks, custom validation
-callbacks and error conversion; **no service invocation or business I/O**
-belongs inside these pipelines.
-
-```go
-// Foundation controller; the service call is explicitly outside the pipeline.
-person, err := rest.Run(request, rest.Config[foundationrequest.CreatePerson]{
-    Rules: controller.validator.CreateRules(),
-})
-if err != nil {
-    controllerhelpers.WritePersonRequestError(request.Context(), writer, err, personerror.InvalidPersonRequest)
-    return
-}
-response, created, err := controller.service.Create(request.Context(), person)
-```
-
-Resource validators expose a single shared rule set for HTTP and in-process
-service callers:
+The service callback receives `Input{Path, Query, Body}`. Only the callback
+calls the real business service; no business or authorization logic belongs
+inside the pipeline.
 
 ```go
-func (validator *PersonValidator) ValidateCreate(
-    request foundationrequest.CreatePerson,
-) (foundationrequest.CreatePerson, error) {
-    return annotationvalidation.Process(request, validator.CreateRules())
+func (controller *PersonController) Create(w http.ResponseWriter, r *http.Request) {
+    rest.Run(w, r, rest.Config[rest.Empty, rest.Empty, foundationrequest.CreatePerson, foundationresponse.Person]{
+        Body: controller.validator.CreateRules(),
+        InvalidBody: personerror.InvalidPersonRequest,
+        Fallback: personerror.PersonCreateFailed,
+        Service: func(ctx context.Context, input rest.Input[rest.Empty, rest.Empty, foundationrequest.CreatePerson]) (rest.Result[foundationresponse.Person], error) {
+            person, created, err := controller.service.Create(ctx, input.Body)
+            return rest.CreatedOrOK(person, created), err
+        },
+    })
 }
 ```
 
-Use `Decode: httprequest.DecodeStrictJSON` for endpoints rejecting unknown
-JSON properties. `rest.DecodeError` distinguishes parse errors from validation
-errors. `Rules[T].MapDTOError` translates tag-validation errors into the
-owning domain's application errors without exposing sensitive request values.
+Parameter binding supports exported scalar `string`, `bool`, signed/unsigned
+integer and floating-point fields; optional pointers and repeated query
+slices are supported. Use `path:"gid"` or `query:"page"` field tags and
+`validate:"uuidv7"` / `validate:"required,min=1,max=100"` rules.
+A `normalize:"trim,uuidv7"` tag canonicalizes an existing UUIDv7.
+Missing path values, malformed scalar values and repeated scalar query keys
+fail binding; unknown query keys are ignored. Use pointers when absent and
+zero-value query fields must be distinguished.
 
-Requiredness, maximum name length, blank values and PATCH `null` constraints
-belong **only in DTO tags**, not repeated in custom validators. A
-presence-aware `annotationdto.Patch[T]` field is checked only when `Set=true`;
-for example, `normalize:"trim" validate:"nonnull,notblank,maxrunes=100"`
-rejects explicit `null` and whitespace-only supplied names, while allowing
-omitted fields to remain unchanged. Clearable fields omit `nonnull`.
+`rest.Run` intentionally returns nothing (HTTP handlers return nothing).
+Successful service callbacks return `rest.Result[R]`, normally via
+`rest.OK`, `rest.Created` or `rest.CreatedOrOK`.
+The default writer uses GroveHub's existing response envelope, optional
+result headers and HTTP 204 without a body. `Config.Writer` can override
+success/error presentation. `Config.InvalidPath`, `InvalidQuery`,
+`InvalidBody`, and `Fallback` determine safe error responses; application
+errors use their definition's HTTP status and metadata.
+Always configure a safe `Fallback` and source-specific 4xx definitions.
 
-Services continue to validate their public in-process entry points; HTTP
-requests therefore receive an idempotent second validation at the service
-boundary until a validated-input contract is established.
+Use `Decode: httprequest.DecodeStrictJSON` when rejecting unknown JSON
+body properties. `rest.DecodeError` and `rest.BindError` do not expose
+input values in responses. `rest.ReadBody` remains available for use cases
+requiring only typed body decoding/validation. Services independently
+validate public in-process calls with their reusable
+`annotationvalidation.Rules[T]`, preserving current security boundaries.
 
 ## Request DTOs and header context
 

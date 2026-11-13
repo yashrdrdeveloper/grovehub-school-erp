@@ -79,14 +79,18 @@ maintenance APIs cannot be accessed through the external listener.
 For HTTP request DTOs, use `libs/core/pipeline/rest.Run` with resource-owned
 `annotationvalidation.Rules[T]`. The order is **decode JSON → normalize
 tagged fields → resource canonicalization → validate normalized DTO tags →
-custom resource checks → return to controller → explicit service call**.
+custom resource checks → typed `Input[P,Q,B]` → service callback → response writer**.
 Required, blank, maximum-length, and PATCH-null constraints belong in DTO
 `validate` tags; do not duplicate these rules in validator helpers.
 `annotation/dto.Patch[T]` distinguishes omitted, explicit null and supplied
 values; only supplied fields are validated. The same `Rules[T]` must also
 be reused via `annotationvalidation.Process` on public service entry points
-to protect in-process clients. The pipeline does not own authorization or
-business logic.
+to protect in-process clients. The pipeline owns the HTTP transport lifecycle, not authorization or
+business logic. Configure `rest.Config[Path,Query,Body,Response]` with
+`Path`, `Query` and `Body` validation rules, a `Service` callback,
+safe invalid-input/fallback error definitions, and optional `Writer`.
+Return no value from controller handlers; `rest.Run(w,r,config)` writes
+the response. Keep actual domain services independent of `net/http`.
 
 ### Backend layer responsibilities
 

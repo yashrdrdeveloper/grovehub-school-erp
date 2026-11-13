@@ -273,19 +273,20 @@ The concrete `repository/impl/person.go` owns its `@Searchable config=search.Per
 
 The generator validates the interface signature, `@Repository entity=Person` ownership, approved search configuration and stable cursor, then emits the private query helper in `.generated/repository/impl/zz_search.gen.go`. Existing search filters and field expressions remain in `repository/helpers/search/person.go`.
 
-## HTTP request validation pipeline
+## HTTP request execution pipeline
 
-Foundation's Create, Update and Search controllers use the shared
-`libs/core/pipeline/rest.Run` in this order: decode, normalize tagged
-fields (e.g. trim names), normalize resource values (e.g. email/phone),
-validate the normalized DTO tags (e.g. notblank/length/nullability),
-check custom domain constraints (e.g. contact duplicates and primaries),
-and return the DTO to the controller before invoking the service. The service performs its
-own validation for in-process Foundation clients such as Identity.
-Raw decode failures map to HTTP 400; domain validation failures preserve
-Foundation's existing error codes. Search still uses its established
-allowlist, operator and cursor policies. The pipeline does not execute
-business services or touch transactions.
+Foundation Person controllers invoke `rest.Run(w,r,config)`, with typed
+path, query, body and response contracts. The pipeline binds inputs,
+normalizes and validates them, invokes the Person service through
+`Config.Service`, and writes the GroveHub response envelope.
+
+For GET, PATCH and deactivation, `foundationrequest.PersonByGID` is
+bound from `path:"gid"` and validated/canonicalized as UUIDv7 before
+the service executes. For Create and Search, the pipeline decodes and
+validates the request body. Create returns HTTP 201 when new and HTTP 200
+for an existing Person. Domain errors preserve their definition status
+and metadata; malformed path/body inputs return safe HTTP 400 errors.
+The same resource validators run inside services for in-process clients.
 
 ## 8. Update Person
 

@@ -326,20 +326,29 @@ The implementation may live under each capability's `helpers/`, but consumers us
 
 ---
 
-## 8.1 Typed request pipeline
+## 8.1 Typed REST executor
 
-The REST capability lives under `libs/core/pipeline/rest` and delegates typed
-DTO processing to `libs/core/annotation/validation`. For every request the
-order is: decode, normalize tags, resource normalizer, validate DTO tags,
-custom resource validator, then explicit controller service invocation.
+`libs/core/pipeline/rest.Run` binds typed `Path`, `Query` and `Body` DTOs,
+normalizes and validates each source, executes an explicit typed service
+callback, and writes a standardized HTTP response. `rest.Input[P,Q,B]`
+is the service callback's transport-independent input view;
+`rest.Result[R]` describes the success payload, status and headers.
+The generic callback preserves the existing `context.Context`.
 
-`annotationvalidation.Rules[T]` supplies optional `Normalize`, `Validate`
-and `MapDTOError` callbacks. A service may reuse the *same rules* with
-`annotationvalidation.Process(input, rules)` to protect in-process callers.
-This avoids maintaining parallel validation logic for HTTP and service calls.
+`annotationvalidation.Rules[T]` remains the shared non-HTTP contract:
+tag normalization -> resource normalizer -> DTO tag validation -> custom
+validation. Services reuse the same rules through `Process` for in-process
+callers. DTO field tags support name trimming, UUIDv7 path canonicalization,
+`notblank`, `nonnull`, `maxrunes`, and numeric `min` / `max`.
+Missing path fields and invalid or repeated scalar query fields fail binding.
+Unrecognized query parameters are ignored.
 
-The pipeline does not authorize requests, perform database operations,
-publish events, run business workflows or write HTTP responses.
+The REST executor defaults to the existing core HTTP response envelope;
+`Config.Writer` allows transport-specific writers when necessary.
+Define `InvalidPath`, `InvalidQuery`, `InvalidBody` and `Fallback`
+semantic errors at composition. The pipeline only *invokes* the service:
+business orchestration, persistence, transactions and authorization stay
+outside core.
 
 ---
 
