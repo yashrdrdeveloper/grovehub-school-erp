@@ -1,22 +1,21 @@
 package impl
 
 import (
-	"errors"
+	"context"
 	"net/http"
 
 	httprequest "grovehub/libs/core/http/request"
-	httpresponse "grovehub/libs/core/http/response"
 	rest "grovehub/libs/core/pipeline/rest"
 	identityerror "grovehub/services/identity/constants/error"
 	"grovehub/services/identity/controller"
-	controllerhelpers "grovehub/services/identity/controller/helpers"
 	identityrequest "grovehub/services/identity/dto/request"
+	identityresponse "grovehub/services/identity/dto/response"
 	identityservices "grovehub/services/identity/services"
 	identityvalidators "grovehub/services/identity/validators"
 )
 
 type AuthController struct {
-	service   identityservices.AuthService
+	service identityservices.AuthService
 	validator identityvalidators.AuthValidator
 }
 
@@ -25,25 +24,14 @@ func NewAuthController(service identityservices.AuthService, validator identityv
 }
 
 func (controller *AuthController) Register(writer http.ResponseWriter, request *http.Request) {
-	registerRequest, err := rest.Run(request, rest.Config[identityrequest.Register]{
+	rest.Run(writer, request, rest.Config[rest.Empty, rest.Empty, identityrequest.Register, identityresponse.Register]{
 		Decode: httprequest.DecodeStrictJSON,
-		Rules: controller.validator.RegisterRules(),
+		Body: controller.validator.RegisterRules(),
+		InvalidBody: identityerror.InvalidRegistration,
+		Fallback: identityerror.RegistrationFailed,
+		Service: func(ctx context.Context, input rest.Input[rest.Empty, rest.Empty, identityrequest.Register]) (rest.Result[identityresponse.Register], error) {
+			registration, err := controller.service.Register(ctx, input.Body)
+			return rest.Created(registration), err
+		},
 	})
-	if err != nil {
-		var decodeError *rest.DecodeError
-		if errors.As(err, &decodeError) {
-			_ = httpresponse.WriteErrorContext(request.Context(), writer, http.StatusBadRequest, identityerror.InvalidRegistration)
-		} else {
-			controllerhelpers.WriteRegisterError(request.Context(), writer, err)
-		}
-		return
-	}
-
-	registration, err := controller.service.Register(request.Context(), registerRequest)
-	if err != nil {
-		controllerhelpers.WriteRegisterError(request.Context(), writer, err)
-		return
-	}
-
-	_ = httpresponse.WriteSuccess(writer, http.StatusCreated, registration)
 }

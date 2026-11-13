@@ -1,22 +1,22 @@
 package impl
 
 import (
+	"context"
 	"net/http"
 
-	httpresponse "grovehub/libs/core/http/response"
+	validation "grovehub/libs/core/annotation/validation"
 	rest "grovehub/libs/core/pipeline/rest"
-	annotationvalidation "grovehub/libs/core/annotation/validation"
 	coresearch "grovehub/libs/core/search"
 	personerror "grovehub/services/foundation/constants/error"
 	protected "grovehub/services/foundation/controller/protected"
-	controllerhelpers "grovehub/services/foundation/controller/protected/helpers"
 	foundationrequest "grovehub/services/foundation/dto/request"
+	foundationresponse "grovehub/services/foundation/dto/response"
 	foundationservices "grovehub/services/foundation/services"
 	foundationvalidators "grovehub/services/foundation/validators"
 )
 
 type PersonController struct {
-	service   foundationservices.PersonService
+	service foundationservices.PersonService
 	validator foundationvalidators.PersonValidator
 }
 
@@ -25,78 +25,65 @@ func NewPersonController(service foundationservices.PersonService, validator fou
 }
 
 func (controller *PersonController) Create(writer http.ResponseWriter, request *http.Request) {
-	personRequest, err := rest.Run(request, rest.Config[foundationrequest.CreatePerson]{
-		Rules: controller.validator.CreateRules(),
+	rest.Run(writer, request, rest.Config[rest.Empty, rest.Empty, foundationrequest.CreatePerson, foundationresponse.Person]{
+		Body: controller.validator.CreateRules(),
+		InvalidBody: personerror.InvalidPersonRequest,
+		Fallback: personerror.PersonCreateFailed,
+		Service: func(ctx context.Context, input rest.Input[rest.Empty, rest.Empty, foundationrequest.CreatePerson]) (rest.Result[foundationresponse.Person], error) {
+			person, created, err := controller.service.Create(ctx, input.Body)
+			return rest.CreatedOrOK(person, created), err
+		},
 	})
-	if err != nil {
-		controllerhelpers.WritePersonRequestError(request.Context(), writer, err, personerror.InvalidPersonRequest)
-		return
-	}
-	person, created, err := controller.service.Create(request.Context(), personRequest)
-	if err != nil {
-		controllerhelpers.WritePersonError(request.Context(), writer, err, personerror.PersonCreateFailed)
-		return
-	}
-	statusCode := http.StatusOK
-	if created {
-		statusCode = http.StatusCreated
-	}
-	_ = httpresponse.WriteSuccess(writer, statusCode, person)
 }
 
 func (controller *PersonController) GetByGID(writer http.ResponseWriter, request *http.Request) {
-	person, err := controller.service.GetByGID(request.Context(), foundationrequest.PersonByGID{GID: request.PathValue("gid")})
-	if err != nil {
-		controllerhelpers.WritePersonError(request.Context(), writer, err, personerror.PersonReadFailed)
-		return
-	}
-	_ = httpresponse.WriteSuccess(writer, http.StatusOK, person)
+	rest.Run(writer, request, rest.Config[foundationrequest.PersonByGID, rest.Empty, rest.Empty, foundationresponse.Person]{
+		InvalidPath: personerror.InvalidPersonGID,
+		Fallback: personerror.PersonReadFailed,
+		Service: func(ctx context.Context, input rest.Input[foundationrequest.PersonByGID, rest.Empty, rest.Empty]) (rest.Result[foundationresponse.Person], error) {
+			person, err := controller.service.GetByGID(ctx, input.Path)
+			return rest.OK(person), err
+		},
+	})
 }
 
 func (controller *PersonController) Update(writer http.ResponseWriter, request *http.Request) {
-	updateRequest, err := rest.Run(request, rest.Config[foundationrequest.UpdatePerson]{
-		Rules: controller.validator.UpdateRules(),
+	rest.Run(writer, request, rest.Config[foundationrequest.PersonByGID, rest.Empty, foundationrequest.UpdatePerson, foundationresponse.Person]{
+		Body: controller.validator.UpdateRules(),
+		InvalidPath: personerror.InvalidPersonGID,
+		InvalidBody: personerror.InvalidPersonRequest,
+		Fallback: personerror.PersonUpdateFailed,
+		Service: func(ctx context.Context, input rest.Input[foundationrequest.PersonByGID, rest.Empty, foundationrequest.UpdatePerson]) (rest.Result[foundationresponse.Person], error) {
+			person, err := controller.service.Update(ctx, input.Path, input.Body)
+			return rest.OK(person), err
+		},
 	})
-	if err != nil {
-		controllerhelpers.WritePersonRequestError(request.Context(), writer, err, personerror.InvalidPersonRequest)
-		return
-	}
-	person, err := controller.service.Update(
-		request.Context(), foundationrequest.PersonByGID{GID: request.PathValue("gid")}, updateRequest,
-	)
-	if err != nil {
-		controllerhelpers.WritePersonError(request.Context(), writer, err, personerror.PersonUpdateFailed)
-		return
-	}
-	_ = httpresponse.WriteSuccess(writer, http.StatusOK, person)
 }
 
 func (controller *PersonController) Search(writer http.ResponseWriter, request *http.Request) {
-	searchRequest, err := rest.Run(request, rest.Config[coresearch.Request]{
-		Rules: annotationvalidation.Rules[coresearch.Request]{
+	rest.Run(writer, request, rest.Config[rest.Empty, rest.Empty, coresearch.Request, coresearch.Result[foundationresponse.Person]]{
+		Body: validation.Rules[coresearch.Request]{
 			Validate: func(value coresearch.Request) error {
 				_, _, err := controller.validator.ValidateSearch(value)
 				return err
 			},
 		},
+		InvalidBody: personerror.InvalidPersonSearch,
+		Fallback: personerror.PersonSearchFailed,
+		Service: func(ctx context.Context, input rest.Input[rest.Empty, rest.Empty, coresearch.Request]) (rest.Result[coresearch.Result[foundationresponse.Person]], error) {
+			result, err := controller.service.Search(ctx, input.Body)
+			return rest.OK(result), err
+		},
 	})
-	if err != nil {
-		controllerhelpers.WritePersonRequestError(request.Context(), writer, err, personerror.InvalidPersonSearch)
-		return
-	}
-	result, err := controller.service.Search(request.Context(), searchRequest)
-	if err != nil {
-		controllerhelpers.WritePersonError(request.Context(), writer, err, personerror.PersonSearchFailed)
-		return
-	}
-	_ = httpresponse.WriteSuccess(writer, http.StatusOK, result)
 }
 
 func (controller *PersonController) Deactivate(writer http.ResponseWriter, request *http.Request) {
-	person, err := controller.service.Deactivate(request.Context(), foundationrequest.PersonByGID{GID: request.PathValue("gid")})
-	if err != nil {
-		controllerhelpers.WritePersonError(request.Context(), writer, err, personerror.PersonUpdateFailed)
-		return
-	}
-	_ = httpresponse.WriteSuccess(writer, http.StatusOK, person)
+	rest.Run(writer, request, rest.Config[foundationrequest.PersonByGID, rest.Empty, rest.Empty, foundationresponse.Person]{
+		InvalidPath: personerror.InvalidPersonGID,
+		Fallback: personerror.PersonUpdateFailed,
+		Service: func(ctx context.Context, input rest.Input[foundationrequest.PersonByGID, rest.Empty, rest.Empty]) (rest.Result[foundationresponse.Person], error) {
+			person, err := controller.service.Deactivate(ctx, input.Path)
+			return rest.OK(person), err
+		},
+	})
 }
