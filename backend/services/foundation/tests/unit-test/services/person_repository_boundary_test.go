@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	corerequest "grovehub/libs/core/request"
 	coresearch "grovehub/libs/core/search"
 	annotationvalidation "grovehub/libs/core/annotation/validation"
 	annotationdto "grovehub/libs/core/annotation/dto"
@@ -126,16 +125,16 @@ func (r *fakeContactRepository) ReplaceForPerson(ctx context.Context, gid string
 
 type fakeValidator struct{}
 
-func (fakeValidator) CreateRules() annotationvalidation.Rules[foundationrequest.CreatePerson] {
-	return annotationvalidation.Rules[foundationrequest.CreatePerson]{}
+func (fakeValidator) CreateRules() annotationvalidation.Rules[foundationrequest.CreatePersonRequest] {
+	return annotationvalidation.Rules[foundationrequest.CreatePersonRequest]{}
 }
-func (fakeValidator) UpdateRules() annotationvalidation.Rules[foundationrequest.UpdatePerson] {
-	return annotationvalidation.Rules[foundationrequest.UpdatePerson]{}
+func (fakeValidator) UpdateRules() annotationvalidation.Rules[foundationrequest.UpdatePersonRequest] {
+	return annotationvalidation.Rules[foundationrequest.UpdatePersonRequest]{}
 }
 
 
-func (fakeValidator) SearchRules() annotationvalidation.Rules[coresearch.Request] {
-	return annotationvalidation.Rules[coresearch.Request]{}
+func (fakeValidator) SearchRules() annotationvalidation.Rules[foundationrequest.SearchPersonsRequest] {
+	return annotationvalidation.Rules[foundationrequest.SearchPersonsRequest]{}
 }
 
 type fakeMapper struct{}
@@ -169,8 +168,8 @@ func setup(t *testing.T) (*fakePersonRepository, *fakeContactRepository, *fakeUn
 
 func TestCreatePersistsPersonAndContactsInsideOneTransaction(t *testing.T) {
 	people, contacts, work, service := setup(t)
-	result, created, err := service.Create(context.Background(), corerequest.Request[corerequest.Empty, corerequest.Empty, foundationrequest.CreatePerson]{
-		Body: foundationrequest.CreatePerson{
+	result, created, err := service.Create(context.Background(), foundationrequest.CreatePersonRequest{
+		RequestBody: foundationrequest.CreatePerson{
 			Person: foundationrequest.Person{FirstName: "Anu", LastName: "Roy"},
 			Contacts: foundationrequest.Contacts{
 				Emails: []foundationrequest.ContactValue{{Value: "anu@example.com", IsPrimary: true}},
@@ -196,9 +195,9 @@ func TestUpdateNameOnlyDoesNotRewriteContacts(t *testing.T) {
 	people.person = entity.Person{GID: "018f5d04-315c-75a9-b890-df0d02e787c1", FirstName: "Old", LastName: "Name", Version: 1, UpdatedAt: time.Now().UTC()}
 	contacts.byPerson[people.person.GID] = []entity.Contact{{PersonGID: people.person.GID, Type: entity.ContactTypeEmail, Value: "old@example.com", NormalizedValue: "old@example.com"}}
 	name := "New"
-	result, err := service.Update(context.Background(), corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, foundationrequest.UpdatePerson]{
-		Path: foundationrequest.PersonByGID{GID: "018f5d04-315c-75a9-b890-df0d02e787c1"},
-		Body: foundationrequest.UpdatePerson{FirstName: annotationdto.Patch[string]{Set: true, Value: &name}},
+	result, err := service.Update(context.Background(), foundationrequest.UpdatePersonRequest{
+		Params: foundationrequest.PersonByGID{GID: "018f5d04-315c-75a9-b890-df0d02e787c1"},
+		RequestBody: foundationrequest.UpdatePerson{FirstName: annotationdto.Patch[string]{Set: true, Value: &name}},
 	})
 	if err != nil { t.Fatal(err) }
 	if result.FirstName != "New" || people.person.Version != 2 { t.Fatalf("unexpected person update: %#v", people.person) }
@@ -213,9 +212,9 @@ func TestUpdateContactsUsesSamePersonUnitOfWork(t *testing.T) {
 	people, contacts, work, service := setup(t)
 	people.person = entity.Person{GID: "018f5d04-315c-75a9-b890-df0d02e787c1", FirstName: "A", LastName: "B", Version: 2, UpdatedAt: time.Now().UTC()}
 	newContacts := foundationrequest.Contacts{Phones: []foundationrequest.ContactValue{{Value: "+919876543210", IsPrimary: true}}}
-	result, err := service.Update(context.Background(), corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, foundationrequest.UpdatePerson]{
-		Path: foundationrequest.PersonByGID{GID: "018f5d04-315c-75a9-b890-df0d02e787c1"},
-		Body: foundationrequest.UpdatePerson{Contacts: annotationdto.Patch[foundationrequest.Contacts]{Set: true, Value: &newContacts}},
+	result, err := service.Update(context.Background(), foundationrequest.UpdatePersonRequest{
+		Params: foundationrequest.PersonByGID{GID: "018f5d04-315c-75a9-b890-df0d02e787c1"},
+		RequestBody: foundationrequest.UpdatePerson{Contacts: annotationdto.Patch[foundationrequest.Contacts]{Set: true, Value: &newContacts}},
 	})
 	if err != nil { t.Fatal(err) }
 	if work.runs != 1 || contacts.replacements != 1 || people.person.Version != 3 {
@@ -233,7 +232,7 @@ func TestSearchLoadsContactRowsFromContactRepository(t *testing.T) {
 	people, contacts, work, service := setup(t)
 	people.person = entity.Person{GID: "018f5d04-315c-75a9-b890-df0d02e787c1", FirstName: "A", LastName: "B"}
 	contacts.byPerson["018f5d04-315c-75a9-b890-df0d02e787c1"] = []entity.Contact{{PersonGID: "018f5d04-315c-75a9-b890-df0d02e787c1", Type: entity.ContactTypeEmail, Value: "a@example.com"}}
-	result, err := service.Search(context.Background(), corerequest.Request[corerequest.Empty, corerequest.Empty, coresearch.Request]{Body: coresearch.Request{}})
+	result, err := service.Search(context.Background(), foundationrequest.SearchPersonsRequest{RequestBody: coresearch.Request{}})
 	if err != nil { t.Fatal(err) }
 	if len(result.Items) != 1 || len(result.Items[0].Contacts.Emails) != 1 {
 		t.Fatalf("search must combine Person rows with separately loaded Contact rows: %#v", result)
