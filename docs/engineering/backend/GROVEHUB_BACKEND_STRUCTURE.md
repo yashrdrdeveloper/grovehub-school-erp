@@ -347,11 +347,11 @@ For GORM-backed repositories, prefer GORM APIs for normal CRUD/query behavior. R
 
 Do not move persistence calculations into entities merely to avoid repository code.
 
-The shared `libs/core/database/transaction.UnitOfWork` coordinates aggregate writes; the repository implementation must not invent new domain business rules. The `repository/helpers/search/` package owns explicit resource-specific search mappings, while `core/search` provides generic execution.
+The shared `libs/core/database/transaction.UnitOfWork` coordinates aggregate writes; the repository implementation must not invent new domain business rules. The `repository/<resource>/helpers/search/` package owns explicit resource-specific search mappings, while `core/search` provides generic execution.
 
 Foundation repository function and method signatures (including repository helpers) must be on one line, regardless of parameter count. Use `make backend-format FORMAT_SCOPE=foundation-repository` to apply GroveHub formatting; `make backend-lint` checks that scope without modifying files, and CI enforces the same rule.
 
-The repository public package path must not encode database technology. Consumers depend on `repository.PersonRepository`, not `repository/postgres` or a concrete GORM type.
+The repository public package path must not encode database technology. Consumers depend on `repository/person.PersonRepository`, not `repository/postgres` or a concrete GORM type.
 
 ---
 
@@ -725,7 +725,7 @@ NO generic libs/core/utils/common dumping ground
 NO service importing core capability internals
 NO NATS/Watermill/provider imports from domain event packages
 NO random event topics/subjects per message or test run
-YES repository/impl owns database queries and persistence-derived projections
+YES repository/<resource>/impl owns database queries and persistence-derived projections
 YES entities contain only passive persisted state, types and database field tags; service helpers own constructors, optional values and collection copies
 YES one stable façade per core capability
 YES resource policy stays outside generic core mechanics

@@ -405,7 +405,7 @@ DO store/reference the Person GID when identity linkage is required
 
 DO NOT import foundation/client/person/impl
 DO NOT import foundation/repository/person or foundation/repository/contact
-DO NOT import foundation/repository/person or foundation/repository/contact/impl
+DO NOT import foundation/repository/person/impl or foundation/repository/contact/impl
 DO NOT import foundation/services/person directly
 DO NOT call Foundation tables directly
 DO NOT copy Person DTOs into Identity merely to avoid the client
@@ -430,7 +430,7 @@ Foundation module
 ├── controller/person/protected/person.go (controller interface)
 │   └── controller/person/protected/impl/person.go (HTTP adapter)
 └── client interface
-    └── client/impl
+    └── client/person/impl
 
 launcher
 ├── constructs Foundation module
