@@ -17,6 +17,7 @@ import (
 	"grovehub/services/foundation/entity"
 	repositoryerrors "grovehub/services/foundation/repository/constants/errors"
 	personservice "grovehub/services/foundation/services/impl"
+	foundationservices "grovehub/services/foundation/services"
 )
 
 type transactionMarker struct{}
@@ -156,11 +157,7 @@ func (fakeMapper) ToPersonResponse(person entity.Person, contacts []entity.Conta
 	return response
 }
 
-func setup(t *testing.T) (*fakePersonRepository, *fakeContactRepository, *fakeUnitOfWork, interface {
-	Create(context.Context, foundationrequest.CreatePerson) (foundationresponse.Person, bool, error)
-	Update(context.Context, foundationrequest.PersonByGID, foundationrequest.UpdatePerson) (foundationresponse.Person, error)
-	Search(context.Context, coresearch.Request) (coresearch.Result[foundationresponse.Person], error)
-}) {
+func setup(t *testing.T) (*fakePersonRepository, *fakeContactRepository, *fakeUnitOfWork, foundationservices.PersonService) {
 	t.Helper()
 	var writes []string
 	people := &fakePersonRepository{log: &writes}
