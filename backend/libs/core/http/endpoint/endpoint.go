@@ -11,6 +11,8 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+
+	rest "grovehub/libs/core/pipeline/rest"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -25,6 +27,31 @@ const maxResponseBytes int64 = 8 << 20
 
 var placeholder = regexp.MustCompile(`\{([A-Za-z][A-Za-z0-9_]*)\}`)
 
+// Request groups all endpoint inputs into one typed argument. Use rest.Empty
+// for sources that an endpoint does not consume. The wrapper itself is never
+// serialized: Path binds URL placeholders, Query binds query tags, and Body is
+// encoded as the JSON request payload.
+type Request[Path, Query, Body any] struct {
+	Path  Path
+	Query Query
+	Body  Body
+}
+
+// CallRequest dispatches a single typed request through the registered
+// controller route. Generic input types are inferred from Request[P,Q,B].
+func CallRequest[Response, Path, Query, Body any](ctx context.Context, handler http.Handler, method, route string, input Request[Path, Query, Body]) (Response, int, error) {
+	var zero Response
+	query, err := encodeQuery(input.Query)
+	if err != nil { return zero, 0, err }
+	var body any
+	if reflect.TypeFor[Body]() != reflect.TypeFor[rest.Empty]() {
+		body = input.Body
+	}
+	return call[Response](ctx, handler, method, route, input.Path, query, body)
+}
+
+// Call remains available for earlier callers using separate path and body
+// arguments. New generated @RequestLine clients use CallRequest instead.
 // Call executes one HTTP controller handler in process, using the same
 // routing, decoding, normalization, validation and response envelope as
 // external HTTP calls. pathDTO supplies path:"name" tagged fields.
@@ -32,6 +59,10 @@ var placeholder = regexp.MustCompile(`\{([A-Za-z][A-Za-z0-9_]*)\}`)
 // The handler must be a registered, trusted service router. This is not
 // a network transport and does not automatically run outer gateway middleware.
 func Call[T any](ctx context.Context, handler http.Handler, method, route string, pathDTO any, body any) (T, int, error) {
+	return call[T](ctx, handler, method, route, pathDTO, nil, body)
+}
+
+func call[T any](ctx context.Context, handler http.Handler, method, route string, pathDTO any, query url.Values, body any) (T, int, error) {
 	var zero T
 	if ctx == nil { return zero, 0, errors.New("HTTP endpoint call requires context") }
 	if err := ctx.Err(); err != nil { return zero, 0, err }
@@ -45,7 +76,9 @@ func Call[T any](ctx context.Context, handler http.Handler, method, route string
 		if err != nil { return zero, 0, fmt.Errorf("encode endpoint body: %w", err) }
 		payload = bytes.NewReader(encoded)
 	}
-	request, err := http.NewRequestWithContext(ctx, method, "http://grovehub.internal"+path, payload)
+	endpointURL := "http://grovehub.internal"+path
+	if len(query) != 0 { endpointURL += "?"+query.Encode() }
+	request, err := http.NewRequestWithContext(ctx, method, endpointURL, payload)
 	if err != nil { return zero, 0, fmt.Errorf("construct endpoint request: %w", err) }
 	if body != nil { request.Header.Set("Content-Type", "application/json") }
 
@@ -130,6 +163,63 @@ func (recorder *responseBuffer) Write(payload []byte) (int,error) {
 		return 0, errors.New("endpoint response exceeds maximum size")
 	}
 	return recorder.body.Write(payload)
+}
+
+// encodeQuery converts a typed query DTO into URL values. Unsupported types
+// fail before handler dispatch; absent pointers and empty slices are omitted.
+// The values are URL-escaped by url.Values.Encode in call().
+func encodeQuery[Q any](input Q) (url.Values, error) {
+	values := make(url.Values)
+	if reflect.TypeFor[Q]() == reflect.TypeFor[rest.Empty]() { return values, nil }
+	value := reflect.ValueOf(input)
+	for value.Kind() == reflect.Pointer {
+		if value.IsNil() { return values, nil }
+		value = value.Elem()
+	}
+	if value.Kind() != reflect.Struct { return nil, errors.New("endpoint query DTO must be a struct") }
+	t := value.Type()
+	for i := 0; i < value.NumField(); i++ {
+		field := t.Field(i)
+		name := strings.Split(field.Tag.Get("query"), ",")[0]
+		if name == "" || name == "-" { continue }
+		if !field.IsExported() { return nil, fmt.Errorf("endpoint query field %s must be exported", field.Name) }
+		if _, present := values[name]; present { return nil, fmt.Errorf("duplicate endpoint query field %s", name) }
+		v := value.Field(i)
+		for v.Kind() == reflect.Pointer {
+			if v.IsNil() { break }
+			v = v.Elem()
+		}
+		if v.Kind() == reflect.Pointer && v.IsNil() { continue }
+		if v.Kind() == reflect.Slice {
+			for j := 0; j < v.Len(); j++ {
+				item, err := queryScalar(v.Index(j))
+				if err != nil { return nil, fmt.Errorf("invalid endpoint query field %s: %w", name, err) }
+				values.Add(name, item)
+			}
+			continue
+		}
+		text, err := queryScalar(v)
+		if err != nil { return nil, fmt.Errorf("invalid endpoint query field %s: %w", name, err) }
+		values.Set(name, text)
+	}
+	return values, nil
+}
+
+func queryScalar(v reflect.Value) (string, error) {
+	switch v.Kind() {
+	case reflect.String:
+		return v.String(), nil
+	case reflect.Bool:
+		return strconv.FormatBool(v.Bool()), nil
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return strconv.FormatInt(v.Int(), 10), nil
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return strconv.FormatUint(v.Uint(), 10), nil
+	case reflect.Float32, reflect.Float64:
+		return strconv.FormatFloat(v.Float(), 'g', -1, v.Type().Bits()), nil
+	default:
+		return "", fmt.Errorf("unsupported query value kind %s", v.Kind())
+	}
 }
 
 // expandPath resolves route placeholders exclusively from tagged DTO fields.
