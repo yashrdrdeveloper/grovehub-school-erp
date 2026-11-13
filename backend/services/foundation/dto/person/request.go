@@ -1,4 +1,4 @@
-package request
+package person
 
 import annotationdto "grovehub/libs/core/annotation/dto"
 
@@ -13,14 +13,14 @@ type Contacts struct {
 }
 
 // Person groups the common string-valued names for create requests.
-type Person struct {
+type PersonNames struct {
 	FirstName  string `json:"firstName" normalize:"trim" validate:"notblank,maxrunes=100"`
 	MiddleName string `json:"middleName,omitempty" normalize:"trim" validate:"maxrunes=100"`
 	LastName   string `json:"lastName" normalize:"trim" validate:"notblank,maxrunes=100"`
 }
 
 type CreatePerson struct {
-	Person
+	PersonNames
 	Contacts Contacts `json:"contacts,omitempty" validate:"valid"`
 }
 
@@ -33,8 +33,3 @@ type UpdatePerson struct {
 	LastName   annotationdto.Patch[string]   `json:"lastName" normalize:"trim" validate:"nonnull,notblank,maxrunes=100"`
 	Contacts   annotationdto.Patch[Contacts] `json:"contacts" validate:"valid"`
 }
-
-type PersonByGID struct {
-	GID string `json:"gid" path:"gid" normalize:"trim,uuidv7" validate:"uuidv7"`
-}
-

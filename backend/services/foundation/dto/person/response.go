@@ -1,16 +1,16 @@
-package response
+package person
 
 import "time"
 
-type ContactValue struct {
+type ResponseContactValue struct {
 	Value      string `json:"value"`
 	IsPrimary  bool   `json:"isPrimary"`
 	IsVerified bool   `json:"isVerified"`
 }
 
-type Contacts struct {
-	Emails []ContactValue `json:"emails"`
-	Phones []ContactValue `json:"phones"`
+type ResponseContacts struct {
+	Emails []ResponseContactValue `json:"emails"`
+	Phones []ResponseContactValue `json:"phones"`
 }
 
 type Person struct {
@@ -18,7 +18,7 @@ type Person struct {
 	FirstName  string    `json:"firstName"`
 	MiddleName string    `json:"middleName,omitempty"`
 	LastName   string    `json:"lastName"`
-	Contacts   Contacts  `json:"contacts"`
+	Contacts   ResponseContacts  `json:"contacts"`
 	Status     string    `json:"status"`
 	Version    int64     `json:"version"`
 	CreatedAt  time.Time `json:"createdAt"`

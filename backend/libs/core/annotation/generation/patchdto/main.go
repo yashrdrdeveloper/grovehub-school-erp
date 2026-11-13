@@ -41,15 +41,15 @@ func main() {
 	}
 }
 
-// Every request package is discovered independently, so new services and
-// resources need no generator-specific configuration.
+// Every DTO package is discovered independently under dto/, allowing
+// resource-owned DTOs (dto/person) and legacy request/ packages alike.
 func generateAll(backend string) error {
 	services, err := os.ReadDir(filepath.Join(backend, "services"))
 	if err != nil { return err }
 	for _, entry := range services {
 		if !entry.IsDir() { continue }
 		owner := filepath.Join(backend, "services", entry.Name())
-		root := filepath.Join(owner, "dto", "request")
+		root := filepath.Join(owner, "dto")
 		if _, err := os.Stat(root); os.IsNotExist(err) { continue } else if err != nil { return err }
 		err = filepath.WalkDir(root, func(dir string, item os.DirEntry, walkErr error) error {
 			if walkErr != nil { return walkErr }
