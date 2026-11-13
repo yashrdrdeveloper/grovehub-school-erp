@@ -2,6 +2,7 @@ package rest
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	validation "grovehub/libs/core/annotation/validation"
@@ -23,7 +24,13 @@ type Writer[T any] struct {
 	Error   func(http.ResponseWriter, *http.Request, Failure) error
 }
 
-func writeSuccess[T any](writer http.ResponseWriter, request *http.Request, output Writer[T], result Result[T]) {
+func writeSuccess[T any](writer http.ResponseWriter, request *http.Request, output Writer[T], result Result[T], fallback coreerrors.Definition) {
+	status := result.StatusCode
+	if status == 0 { status = http.StatusOK }
+	if status < 200 || status > 299 {
+		writeFailure(writer, request, output, fmt.Errorf("service returned a non-success result status"), fallback, fallback)
+		return
+	}
 	if output.Success != nil {
 		_ = output.Success(writer, request, result)
 		return
@@ -31,15 +38,8 @@ func writeSuccess[T any](writer http.ResponseWriter, request *http.Request, outp
 	for name, values := range result.Headers {
 		for _, value := range values { writer.Header().Add(name, value) }
 	}
-	status := result.StatusCode
-	if status == 0 { status = http.StatusOK }
 	if status == http.StatusNoContent {
 		writer.WriteHeader(status)
-		return
-	}
-	if status < 200 || status > 299 { 
-		// Invalid callback output is not a successful HTTP response.
-		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	_ = httpresponse.WriteSuccess(writer, status, result.Data)

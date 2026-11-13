@@ -111,5 +111,5 @@ func Run[Path, Query, Body, Response any](writer http.ResponseWriter, request *h
 		writeFailure(writer, request, config.Writer, err, config.Fallback, config.Fallback)
 		return
 	}
-	writeSuccess(writer, request, config.Writer, result)
+	writeSuccess(writer, request, config.Writer, result, config.Fallback)
 }
