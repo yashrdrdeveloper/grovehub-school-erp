@@ -11,10 +11,10 @@ finish without a response.
 ## Layout
 - backend/libs/core/pipeline/service/{chain,strategy,transaction}.go: runner, predicates, outcomes, transactional execution and post-rollback recovery
 - backend/libs/core/annotation/{chain,strategy}: directive metadata
-- backend/services/foundation/services/person/create/flows/create.go: typed Create request state
-- backend/services/foundation/services/person/create/strategies/strategy.go: CreateStrategy interface; service depends on this contract
-- backend/services/foundation/services/person/create/strategies/impl/: Create-only business strategy implementations
-- backend/services/foundation/services/person/create/helpers/: Create-only Person construction and error mapping helpers
+- backend/services/foundation/services/person/operations/create/flows/create.go: typed Create request state
+- backend/services/foundation/services/person/operations/create/strategies/strategy.go: CreateStrategy interface; service depends on this contract
+- backend/services/foundation/services/person/operations/create/strategies/impl/: Create-only business strategy implementations
+- backend/services/foundation/services/person/operations/create/helpers/: Create-only Person construction and error mapping helpers
 - backend/services/foundation/services/person/helpers/: Person utilities shared between Create and other operations
 - backend/libs/core/helpers/string.go: generic nullable/optional string conversions
 - backend/services/foundation/services/person/impl/person.go: thin Create entry point
@@ -22,7 +22,7 @@ finish without a response.
 ## Annotation semantics
 - @Service marks the service type; registration still occurs explicitly in foundation.New.
 - @ChainOfResponsibility marks the Create method; Run executes the chain explicitly.
-- @Strategy marks both the CreateStrategy interface in create/strategies/strategy.go and its concrete Creator implementation in create/strategies/impl/create.go; NewCreateStrategy injects repositories and returns the interface. The annotation checker recognizes both targets, but actual strategy wiring remains explicit.
+- @Strategy marks both the CreateStrategy interface in operations/create/strategies/strategy.go and its concrete Creator implementation in operations/create/strategies/impl/create.go; NewCreateStrategy injects repositories and returns the interface. The annotation checker recognizes both targets, but actual strategy wiring remains explicit.
 - @Transactional marks the persistWrites method; the **actual** transaction is
   enforced by Transactional(unitOfWork, persistWrites), not by the comment.
 
@@ -49,8 +49,8 @@ Foundation. Redundant pass-through cursor encoding has been removed in favor
 of direct `coresearch.EncodeCursor` calls.
 
 ## Use-case ownership
-Person Create owns its `flows`, `strategies`, and `helpers` beneath `services/person/create`.
+Person Create owns its `flows`, `strategies`, and `helpers` beneath `services/person/operations/create`.
 Other Person operations continue using `services/person/helpers` for shared contact
 normalization, association, comparison, and search projection. `NewPerson` and
-Create-only error outcome helpers live in `create/helpers`, not the shared
+Create-only error outcome helpers live in `operations/create/helpers`, not the shared
 Person helper package.

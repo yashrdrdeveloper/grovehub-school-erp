@@ -7,7 +7,7 @@ import (
 
     coreerrors "grovehub/libs/core/errors"
     coretransaction "grovehub/libs/core/database/transaction"
-    createstrategies "grovehub/services/foundation/services/person/create/strategies"
+    createstrategies "grovehub/services/foundation/services/person/operations/create/strategies"
     servicepipeline "grovehub/libs/core/pipeline/service"
     personerror "grovehub/services/foundation/constants/error"
     persondto "grovehub/services/foundation/dto/person"
@@ -15,7 +15,7 @@ import (
     foundationmappers "grovehub/services/foundation/mappers/person"
     personrepository "grovehub/services/foundation/repository/person"
     contactrepository "grovehub/services/foundation/repository/contact"
-    personflow "grovehub/services/foundation/services/person/create/flows"
+    personflow "grovehub/services/foundation/services/person/operations/create/flows"
 )
 
 // @Strategy

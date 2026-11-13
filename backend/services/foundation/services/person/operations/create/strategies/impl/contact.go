@@ -1,7 +1,7 @@
 package impl
 
 import (
-    createhelpers "grovehub/services/foundation/services/person/create/helpers"
+    createhelpers "grovehub/services/foundation/services/person/operations/create/helpers"
     "context"
 
     coreerrors "grovehub/libs/core/errors"
@@ -9,7 +9,7 @@ import (
     personerror "grovehub/services/foundation/constants/error"
     persondto "grovehub/services/foundation/dto/person"
     "grovehub/services/foundation/entity"
-    personflow "grovehub/services/foundation/services/person/create/flows"
+    personflow "grovehub/services/foundation/services/person/operations/create/flows"
 )
 
 func (strategy *Creator) Contacts(ctx context.Context, state *personflow.Create) servicepipeline.Outcome[persondto.Person] {

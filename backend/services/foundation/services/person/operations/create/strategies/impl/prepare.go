@@ -1,7 +1,7 @@
 package impl
 
 import (
-    createhelpers "grovehub/services/foundation/services/person/create/helpers"
+    createhelpers "grovehub/services/foundation/services/person/operations/create/helpers"
     "context"
 
     coreerrors "grovehub/libs/core/errors"
@@ -10,7 +10,7 @@ import (
     servicepipeline "grovehub/libs/core/pipeline/service"
     personerror "grovehub/services/foundation/constants/error"
     persondto "grovehub/services/foundation/dto/person"
-    personflow "grovehub/services/foundation/services/person/create/flows"
+    personflow "grovehub/services/foundation/services/person/operations/create/flows"
     servicehelpers "grovehub/services/foundation/services/person/helpers"
 )
 
