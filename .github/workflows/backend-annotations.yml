@@ -35,7 +35,7 @@ jobs:
         run: go list -overlay=.generated/overlay.json ./libs/core/annotation/...
       - name: Test annotation source generators
         working-directory: backend
-        run: go test ./libs/core/annotation/generation/patchdto ./libs/core/annotation/generation/search ./libs/core/annotation/generation/routes
+        run: go test ./libs/core/annotation/generation/patchdto ./libs/core/annotation/generation/search ./libs/core/annotation/generation/routes ./libs/core/annotation/generation/clients
       - name: Run core, launcher, Foundation, Identity and Integration unit suites
         working-directory: backend
         run: |
