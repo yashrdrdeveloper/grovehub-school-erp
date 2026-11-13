@@ -25,10 +25,10 @@ type fakeAuthService struct {
 	failure error
 }
 
-func (service *fakeAuthService) Register(_ context.Context, input identityrequest.Register) (identityresponse.Register, error) {
+func (service *fakeAuthService) Register(_ context.Context, input identityrequest.RegisterRequest) (identityresponse.Register, error) {
 	service.calls++
-	service.last = input
-	return identityresponse.Register{Email: input.Email}, service.failure
+	service.last = input.RequestBody
+	return identityresponse.Register{Email: input.RequestBody.Email}, service.failure
 }
 
 func serveRegister(service *fakeAuthService, body string) *httptest.ResponseRecorder {

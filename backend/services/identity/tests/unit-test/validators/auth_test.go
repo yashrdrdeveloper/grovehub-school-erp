@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	coreerrors "grovehub/libs/core/errors"
+	annotationvalidation "grovehub/libs/core/annotation/validation"
 	identityerror "grovehub/services/identity/constants/error"
 	identityrequest "grovehub/services/identity/dto/request"
 	authvalidator "grovehub/services/identity/validators/impl"
@@ -21,12 +22,12 @@ var _ = Describe("Registration DTO stages", func() {
 			FirstName: "  Sima  ", MiddleName: &middleName, LastName: "  Bharti ",
 			Email: "  SIMA@example.com  ", Password: "securePassword123",
 		}
-		validated, err := validator.ValidateRegister(request)
+		validated, err := annotationvalidation.Process(identityrequest.RegisterRequest{RequestBody:request},validator.RegisterRules())
 		Expect(err).NotTo(HaveOccurred())
-		Expect(validated.FirstName).To(Equal("Sima"))
-		Expect(*validated.MiddleName).To(Equal("Devi"))
-		Expect(validated.LastName).To(Equal("Bharti"))
-		Expect(validated.Email).To(Equal("sima@example.com"))
+		Expect(validated.RequestBody.FirstName).To(Equal("Sima"))
+		Expect(*validated.RequestBody.MiddleName).To(Equal("Devi"))
+		Expect(validated.RequestBody.LastName).To(Equal("Bharti"))
+		Expect(validated.RequestBody.Email).To(Equal("sima@example.com"))
 		Expect(*request.MiddleName).To(Equal("  Devi "))
 	})
 
@@ -36,13 +37,13 @@ var _ = Describe("Registration DTO stages", func() {
 			FirstName: "   ", MiddleName: &middleName, LastName: "Bharti",
 			Email: "sima@example.com", Password: "securePassword123",
 		}
-		_, err := validator.ValidateRegister(request)
+		_, err := annotationvalidation.Process(identityrequest.RegisterRequest{RequestBody:request},validator.RegisterRules())
 		var invalid *coreerrors.Error
 		Expect(errors.As(err, &invalid)).To(BeTrue())
 		Expect(invalid.Definition().Code()).To(Equal(identityerror.InvalidRegistration.Code()))
 		request.FirstName = "Sima"
 		request.MiddleName = nil
-		_, err = validator.ValidateRegister(request)
+		_, err = annotationvalidation.Process(identityrequest.RegisterRequest{RequestBody:request},validator.RegisterRules())
 		Expect(errors.As(err, &invalid)).To(BeTrue())
 		Expect(invalid.Definition().Code()).To(Equal(identityerror.InvalidRegistration.Code()))
 	})
@@ -53,7 +54,7 @@ var _ = Describe("Registration DTO stages", func() {
 			FirstName: "Sima", MiddleName: &middleName, LastName: "Bharti",
 			Email: "sima@example.com", Password: "short",
 		}
-		_, err := validator.ValidateRegister(request)
+		_, err := annotationvalidation.Process(identityrequest.RegisterRequest{RequestBody:request},validator.RegisterRules())
 		var invalid *coreerrors.Error
 		Expect(errors.As(err, &invalid)).To(BeTrue())
 		Expect(invalid.Definition().Code()).To(Equal(identityerror.InvalidRegistration.Code()))
