@@ -23,18 +23,18 @@ var _ = Describe("Person validation rules", func() {
 			Person: foundationrequest.Person{FirstName: "  Arun ", MiddleName: "  K  ", LastName: "  Kumar  "},
 			Contacts: foundationrequest.Contacts{Emails: []foundationrequest.ContactValue{{Value: "  Arun@Example.COM ", IsPrimary: true}}},
 		}
-		validated, err := annotationvalidation.Process(request, validator.CreateRules())
+		validated, err := annotationvalidation.Process(foundationrequest.CreatePersonRequest{RequestBody: request}, validator.CreateRules())
 		Expect(err).NotTo(HaveOccurred())
-		Expect(validated.FirstName).To(Equal("Arun"))
-		Expect(validated.MiddleName).To(Equal("K"))
-		Expect(validated.LastName).To(Equal("Kumar"))
-		Expect(validated.Contacts.Emails[0].Value).To(Equal("arun@example.com"))
+		Expect(validated.RequestBody.FirstName).To(Equal("Arun"))
+		Expect(validated.RequestBody.MiddleName).To(Equal("K"))
+		Expect(validated.RequestBody.LastName).To(Equal("Kumar"))
+		Expect(validated.RequestBody.Contacts.Emails[0].Value).To(Equal("arun@example.com"))
 		Expect(request.Contacts.Emails[0].Value).To(Equal("  Arun@Example.COM "))
 	})
 
 	It("does not repeat name validation in custom rules", func() {
 		request := foundationrequest.CreatePerson{Person: foundationrequest.Person{FirstName: "  ", LastName: "Kumar"}}
-		_, err := annotationvalidation.Process(request, validator.CreateRules())
+		_, err := annotationvalidation.Process(foundationrequest.CreatePersonRequest{RequestBody: request}, validator.CreateRules())
 		var invalid *coreerrors.Error
 		Expect(errors.As(err, &invalid)).To(BeTrue())
 		Expect(invalid.Definition().Code()).To(Equal(personerror.InvalidPersonRequest.Code()))
@@ -47,7 +47,7 @@ var _ = Describe("Person validation rules", func() {
 				{Value: "ARUN@example.com"}, {Value: "arun@EXAMPLE.com"},
 			}},
 		}
-		_, err := annotationvalidation.Process(request, validator.CreateRules())
+		_, err := annotationvalidation.Process(foundationrequest.CreatePersonRequest{RequestBody: request}, validator.CreateRules())
 		var invalid *coreerrors.Error
 		Expect(errors.As(err, &invalid)).To(BeTrue())
 		Expect(invalid.Definition().Code()).To(Equal(personerror.InvalidPersonContact.Code()))
@@ -55,7 +55,7 @@ var _ = Describe("Person validation rules", func() {
 		request.Contacts.Emails = []foundationrequest.ContactValue{
 			{Value: "a@example.com", IsPrimary: true}, {Value: "b@example.com", IsPrimary: true},
 		}
-		_, err = annotationvalidation.Process(request, validator.CreateRules())
+		_, err = annotationvalidation.Process(foundationrequest.CreatePersonRequest{RequestBody: request}, validator.CreateRules())
 		Expect(errors.As(err, &invalid)).To(BeTrue())
 		Expect(invalid.Definition().Code()).To(Equal(personerror.InvalidPersonContact.Code()))
 	})
@@ -65,22 +65,22 @@ var _ = Describe("Person validation rules", func() {
 		request := foundationrequest.UpdatePerson{}
 		request.FirstName.Set, request.FirstName.Value = true, &firstName
 		request.MiddleName.Set = true
-		validated, err := annotationvalidation.Process(request, validator.UpdateRules())
+		validated, err := annotationvalidation.Process(foundationrequest.UpdatePersonRequest{RequestBody: request}, validator.UpdateRules())
 		Expect(err).NotTo(HaveOccurred())
-		Expect(*validated.FirstName.Value).To(Equal("Arun"))
-		Expect(validated.MiddleName.Set).To(BeTrue())
-		Expect(validated.MiddleName.Value).To(BeNil())
+		Expect(*validated.RequestBody.FirstName.Value).To(Equal("Arun"))
+		Expect(validated.RequestBody.MiddleName.Set).To(BeTrue())
+		Expect(validated.RequestBody.MiddleName.Value).To(BeNil())
 		Expect(*request.FirstName.Value).To(Equal("  Arun "))
 	})
 
 	It("validates generic search requests using SearchRules", func() {
-		normalized, err := annotationvalidation.Process(coresearch.Request{}, validator.SearchRules())
+		normalized, err := annotationvalidation.Process(foundationrequest.SearchPersonsRequest{RequestBody:coresearch.Request{}}, validator.SearchRules())
 		Expect(err).NotTo(HaveOccurred())
-		Expect(normalized).To(Equal(coresearch.Request{}))
+		Expect(normalized).To(Equal(foundationrequest.SearchPersonsRequest{}))
 
-		_, err = annotationvalidation.Process(coresearch.Request{
+		_, err = annotationvalidation.Process(foundationrequest.SearchPersonsRequest{RequestBody:coresearch.Request{
 			SearchText: strings.Repeat("x", 257),
-		}, validator.SearchRules())
+		}}, validator.SearchRules())
 		var applicationError *coreerrors.Error
 		Expect(errors.As(err, &applicationError)).To(BeTrue())
 		Expect(applicationError.Definition().Code()).To(Equal(personerror.InvalidPersonSearch.Code()))
@@ -90,7 +90,7 @@ var _ = Describe("Person validation rules", func() {
 		tooLong := strings.Repeat("a", 101)
 		request := foundationrequest.UpdatePerson{}
 		request.FirstName.Set, request.FirstName.Value = true, &tooLong
-		_, err := annotationvalidation.Process(request, validator.UpdateRules())
+		_, err := annotationvalidation.Process(foundationrequest.UpdatePersonRequest{RequestBody: request}, validator.UpdateRules())
 		var invalid *coreerrors.Error
 		Expect(errors.As(err, &invalid)).To(BeTrue())
 		Expect(invalid.Definition().Code()).To(Equal(personerror.InvalidPersonRequest.Code()))
