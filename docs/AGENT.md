@@ -95,7 +95,10 @@ the response. Keep actual domain services independent of `net/http`.
 ### Service-to-service client routing
 
 Foundation's public `client.Client` uses `// @RequestLine METHOD /protected/...`
-instead of direct `@Proxy personService.*` delegates. The client generator
+instead of direct `@Proxy personService.*` delegates. Every generated
+method now receives exactly `context.Context` plus one typed
+`httpendpoint.Request[Path,Query,Body]` containing `Path`, `Query`, and
+`Body`. Use `rest.Empty` for unused sources. The generator
 verifies the annotated endpoint against the generated controller HTTP routes
 and derives the service base prefix from `routes/http.go`, so the client does
 not duplicate `/foundation`. The injected internal `http.Handler` runs

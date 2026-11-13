@@ -43,6 +43,14 @@ func (controller *PersonController) Create(w http.ResponseWriter, r *http.Reques
 }
 ```
 
+Generated in-process `@RequestLine` clients use one
+`httpendpoint.Request[Path,Query,Body]` after `context.Context`. Its
+`Path` is rendered into named route placeholders, `Query` fields carrying
+`query:` tags are URL-encoded (scalars, optional pointers, and repeated
+slices), and `Body` becomes JSON. Use `rest.Empty` for unused sections so
+GET/deactivation calls send no body. The controller executes the same
+normalization/validation pipeline for these internal requests.
+
 Parameter binding supports exported scalar `string`, `bool`, signed/unsigned
 integer and floating-point fields; optional pointers and repeated query
 slices are supported. Use `path:"gid"` or `query:"page"` field tags and

@@ -120,7 +120,11 @@ SearchPersons(...)
 DeactivatePerson(...)
 ```
 
-The client uses `@RequestLine` to enter the same **controller HTTP pipeline** used by external Foundation requests. Routes are declared relative to the central service prefix, e.g. `@RequestLine POST /protected/persons`; generation verifies an actual `POST /foundation/protected/persons` route exists. Calls dispatch directly to the registered `http.Handler` in-process, with JSON encoding/decoding and no TCP or external HTTP request. Result status 201 maps to the existing `created=true` return; 200 maps to `false`. Service application error codes, status and safe response metadata survive decoding.
+The client uses `@RequestLine` with a single typed
+`httpendpoint.Request[Path,Query,Body]` argument, whose fields map to path
+placeholders, URL-encoded query parameters, and JSON request body. Declare
+`rest.Empty` for unused sections. The generated call executes the same
+**controller HTTP pipeline** used by external Foundation requests. Routes are declared relative to the central service prefix, e.g. `@RequestLine POST /protected/persons`; generation verifies an actual `POST /foundation/protected/persons` route exists. Calls dispatch directly to the registered `http.Handler` in-process, with JSON encoding/decoding and no TCP or external HTTP request. Result status 201 maps to the existing `created=true` return; 200 maps to `false`. Service application error codes, status and safe response metadata survive decoding.
 
 The internal router does **not** run the launcher's outer IAM/gateway middleware; URL tiers are not access controls today. Revisit this trust boundary before enforcing protected/restricted policies or exposing the handler to untrusted callers.
 
@@ -133,7 +137,9 @@ A consuming service must forward its current request context:
 ```go
 person, err := foundationClient.GetPersonByGID(
     request.Context(),
-    foundationrequest.PersonByGID{GID: gid},
+    httpendpoint.Request[foundationrequest.PersonByGID, rest.Empty, rest.Empty]{
+        Path: foundationrequest.PersonByGID{GID: gid},
+    },
 )
 ```
 
