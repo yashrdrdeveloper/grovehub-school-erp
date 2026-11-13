@@ -4,20 +4,19 @@ import (
 	"context"
 
 	coresearch "grovehub/libs/core/search"
-	foundationrequest "grovehub/services/foundation/dto/request"
-	foundationresponse "grovehub/services/foundation/dto/response"
+	persondto "grovehub/services/foundation/dto/person"
 )
 
 // @Client personClient
 type Client interface {
 	// @RequestLine POST /protected/persons
-	CreatePerson(ctx context.Context, request foundationrequest.CreatePersonRequest) (foundationresponse.Person, bool, error)
+	CreatePerson(ctx context.Context, request persondto.CreatePersonRequest) (persondto.Person, bool, error)
 	// @RequestLine GET /protected/persons/{gid}
-	GetPersonByGID(ctx context.Context, request foundationrequest.GetPersonByGIDRequest) (foundationresponse.Person, error)
+	GetPersonByGID(ctx context.Context, request persondto.GetPersonByGIDRequest) (persondto.Person, error)
 	// @RequestLine PATCH /protected/persons/{gid}
-	UpdatePerson(ctx context.Context, request foundationrequest.UpdatePersonRequest) (foundationresponse.Person, error)
+	UpdatePerson(ctx context.Context, request persondto.UpdatePersonRequest) (persondto.Person, error)
 	// @RequestLine POST /protected/persons/search
-	SearchPersons(ctx context.Context, request foundationrequest.SearchPersonsRequest) (coresearch.Result[foundationresponse.Person], error)
+	SearchPersons(ctx context.Context, request persondto.SearchPersonsRequest) (coresearch.Result[persondto.Person], error)
 	// @RequestLine PATCH /protected/persons/{gid}/deactivate
-	DeactivatePerson(ctx context.Context, request foundationrequest.DeactivatePersonRequest) (foundationresponse.Person, error)
+	DeactivatePerson(ctx context.Context, request persondto.DeactivatePersonRequest) (persondto.Person, error)
 }

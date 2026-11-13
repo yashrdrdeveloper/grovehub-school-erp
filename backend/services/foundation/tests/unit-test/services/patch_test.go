@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	annotationvalidation "grovehub/libs/core/annotation/validation"
-	foundationrequest "grovehub/services/foundation/dto/request"
+	persondto "grovehub/services/foundation/dto/person"
 	"grovehub/services/foundation/entity"
 	personservice "grovehub/services/foundation/services/impl"
 	personvalidator "grovehub/services/foundation/validators/impl"
@@ -38,10 +38,10 @@ var _ = Describe("Person PATCH application", func() {
 	It("clears middleName and all contacts when explicitly null", func() {
 		person, contacts, work := patchServiceFixture()
 		service := personservice.NewPersonService(person, contacts, work, fakeMapper{}, personvalidator.NewPersonValidator())
-		var payload foundationrequest.UpdatePerson
+		var payload persondto.UpdatePerson
 		Expect(json.Unmarshal([]byte(`{"middleName":null,"contacts":null}`), &payload)).To(Succeed())
-		_, err := service.Update(context.Background(), foundationrequest.UpdatePersonRequest{
-			Params: foundationrequest.PersonByGID{GID: patchPersonGID},
+		_, err := service.Update(context.Background(), persondto.UpdatePersonRequest{
+			Params: persondto.PersonByGID{GID: patchPersonGID},
 			RequestBody: payload,
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -55,10 +55,10 @@ var _ = Describe("Person PATCH application", func() {
 	It("keeps names and contacts unchanged for omitted fields", func() {
 		person, contacts, work := patchServiceFixture()
 		service := personservice.NewPersonService(person, contacts, work, fakeMapper{}, personvalidator.NewPersonValidator())
-		var payload foundationrequest.UpdatePerson
+		var payload persondto.UpdatePerson
 		Expect(json.Unmarshal([]byte(`{}`), &payload)).To(Succeed())
-		_, err := service.Update(context.Background(), foundationrequest.UpdatePersonRequest{
-			Params: foundationrequest.PersonByGID{GID: patchPersonGID},
+		_, err := service.Update(context.Background(), persondto.UpdatePersonRequest{
+			Params: persondto.PersonByGID{GID: patchPersonGID},
 			RequestBody: payload,
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -71,9 +71,9 @@ var _ = Describe("Person PATCH application", func() {
 	It("rejects explicit null or blank required names", func() {
 		validator := personvalidator.NewPersonValidator()
 		for _, payload := range []string{`{"firstName":null}`,`{"lastName":null}`,`{"firstName":"   "}`,`{"lastName":""}`} {
-			var request foundationrequest.UpdatePerson
+			var request persondto.UpdatePerson
 			Expect(json.Unmarshal([]byte(payload), &request)).To(Succeed())
-			_, err := annotationvalidation.Process(foundationrequest.UpdatePersonRequest{Params:foundationrequest.PersonByGID{GID:patchPersonGID}, RequestBody:request}, validator.UpdateRules())
+			_, err := annotationvalidation.Process(persondto.UpdatePersonRequest{Params:persondto.PersonByGID{GID:patchPersonGID}, RequestBody:request}, validator.UpdateRules())
 			Expect(err).To(HaveOccurred(), payload)
 		}
 	})
@@ -81,10 +81,10 @@ var _ = Describe("Person PATCH application", func() {
 	It("accepts an empty middle name as a removal and validates supplied names", func() {
 		person, _, _ := patchServiceFixture()
 		service := personservice.NewPersonService(person, &fakeContactRepository{log:person.log,byPerson:map[string][]entity.Contact{}}, &fakeUnitOfWork{}, fakeMapper{}, personvalidator.NewPersonValidator())
-		var payload foundationrequest.UpdatePerson
+		var payload persondto.UpdatePerson
 		Expect(json.Unmarshal([]byte(`{"middleName":"  ","firstName":"  Arun  "}`), &payload)).To(Succeed())
-		_, err := service.Update(context.Background(), foundationrequest.UpdatePersonRequest{
-			Params: foundationrequest.PersonByGID{GID: patchPersonGID},
+		_, err := service.Update(context.Background(), persondto.UpdatePersonRequest{
+			Params: persondto.PersonByGID{GID: patchPersonGID},
 			RequestBody: payload,
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -95,10 +95,10 @@ var _ = Describe("Person PATCH application", func() {
 	It("clears contact groups when a supplied object contains empty arrays", func() {
 		person, contacts, _ := patchServiceFixture()
 		service := personservice.NewPersonService(person, contacts, &fakeUnitOfWork{}, fakeMapper{}, personvalidator.NewPersonValidator())
-		var payload foundationrequest.UpdatePerson
+		var payload persondto.UpdatePerson
 		Expect(json.Unmarshal([]byte(`{"contacts":{"emails":[],"phones":[]}}`), &payload)).To(Succeed())
-		_, err := service.Update(context.Background(), foundationrequest.UpdatePersonRequest{
-			Params: foundationrequest.PersonByGID{GID: patchPersonGID},
+		_, err := service.Update(context.Background(), persondto.UpdatePersonRequest{
+			Params: persondto.PersonByGID{GID: patchPersonGID},
 			RequestBody: payload,
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -108,10 +108,10 @@ var _ = Describe("Person PATCH application", func() {
 	It("rejects overlong supplied names without mutating repository values", func() {
 		person, contacts, work := patchServiceFixture()
 		service := personservice.NewPersonService(person, contacts, work, fakeMapper{}, personvalidator.NewPersonValidator())
-		var payload foundationrequest.UpdatePerson
+		var payload persondto.UpdatePerson
 		Expect(json.Unmarshal([]byte(`{"middleName":"`+strings.Repeat("x",101)+`"}`), &payload)).To(Succeed())
-		_, err := service.Update(context.Background(), foundationrequest.UpdatePersonRequest{
-			Params: foundationrequest.PersonByGID{GID: patchPersonGID},
+		_, err := service.Update(context.Background(), persondto.UpdatePersonRequest{
+			Params: persondto.PersonByGID{GID: patchPersonGID},
 			RequestBody: payload,
 		})
 		Expect(err).To(HaveOccurred())

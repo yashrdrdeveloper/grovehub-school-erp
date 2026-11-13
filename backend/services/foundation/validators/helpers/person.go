@@ -8,7 +8,7 @@ import (
 	corenormalize "grovehub/libs/core/normalize"
 	coresearch "grovehub/libs/core/search"
 	personerror "grovehub/services/foundation/constants/error"
-	foundationrequest "grovehub/services/foundation/dto/request"
+	persondto "grovehub/services/foundation/dto/person"
 	"grovehub/services/foundation/entity"
 )
 
@@ -81,27 +81,27 @@ var valueCountValidators = map[coresearch.Operator]func(int) bool{
 
 // NormalizeContacts canonicalizes contact values only. Cross-field rules
 // such as duplicate and primary-contact limits run after DTO tag validation.
-func NormalizeContacts(request foundationrequest.Contacts) (foundationrequest.Contacts, error) {
+func NormalizeContacts(request persondto.Contacts) (persondto.Contacts, error) {
 	emails, err := normalizeContactGroup(request.Emails, normalizeEmail)
 	if err != nil {
-		return foundationrequest.Contacts{}, err
+		return persondto.Contacts{}, err
 	}
 	phones, err := normalizeContactGroup(request.Phones, normalizePhone)
 	if err != nil {
-		return foundationrequest.Contacts{}, err
+		return persondto.Contacts{}, err
 	}
-	return foundationrequest.Contacts{Emails: emails, Phones: phones}, nil
+	return persondto.Contacts{Emails: emails, Phones: phones}, nil
 }
 
 // ValidateContacts enforces request-level contact rules on normalized values.
-func ValidateContacts(request foundationrequest.Contacts) error {
+func ValidateContacts(request persondto.Contacts) error {
 	if len(request.Emails) > maxContactsPerType || len(request.Phones) > maxContactsPerType {
 		return coreerrors.NewError(personerror.InvalidPersonContact)
 	}
 	seen := make(map[string]struct{}, len(request.Emails)+len(request.Phones))
 	for _, group := range []struct {
 		kind entity.ContactType
-		values []foundationrequest.ContactValue
+		values []persondto.ContactValue
 	}{
 		{entity.ContactTypeEmail, request.Emails},
 		{entity.ContactTypePhone, request.Phones},
@@ -174,16 +174,16 @@ func NormalizePersonSearchRequest(
 }
 
 func normalizeContactGroup(
-	values []foundationrequest.ContactValue,
+	values []persondto.ContactValue,
 	normalize func(string) (string, error),
-) ([]foundationrequest.ContactValue, error) {
-	normalized := make([]foundationrequest.ContactValue, 0, len(values))
+) ([]persondto.ContactValue, error) {
+	normalized := make([]persondto.ContactValue, 0, len(values))
 	for _, contact := range values {
 		value, err := normalize(contact.Value)
 		if err != nil {
 			return nil, err
 		}
-		normalized = append(normalized, foundationrequest.ContactValue{
+		normalized = append(normalized, persondto.ContactValue{
 			Value: value,
 			IsPrimary: contact.IsPrimary,
 		})

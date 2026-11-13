@@ -11,8 +11,7 @@ import (
 
     coresearch "grovehub/libs/core/search"
     foundationevents "grovehub/services/foundation/constants/events"
-    foundationrequest "grovehub/services/foundation/dto/request"
-    foundationresponse "grovehub/services/foundation/dto/response"
+    persondto "grovehub/services/foundation/dto/person"
     personevents "grovehub/services/foundation/events/persons"
     eventhelpers "grovehub/services/foundation/events/persons/helpers"
     foundationservices "grovehub/services/foundation/services"
@@ -29,20 +28,20 @@ func NewPersonService(delegate foundationservices.PersonService, messagingClient
     return &PersonService{delegate: delegate, messagingClient: messagingClient, logger: logger}
 }
 
-func (service *PersonService) Create(ctx context.Context, request foundationrequest.CreatePersonRequest) (foundationresponse.Person, bool, error) {
+func (service *PersonService) Create(ctx context.Context, request persondto.CreatePersonRequest) (persondto.Person, bool, error) {
     person, created, err := service.delegate.Create(ctx, request)
     if err != nil || !created { return person, created, err }
     service.publishChanged(ctx, foundationevents.Created, nil, &person)
     return person, true, nil
 }
 
-func (service *PersonService) GetByGID(ctx context.Context, request foundationrequest.GetPersonByGIDRequest) (foundationresponse.Person, error) {
+func (service *PersonService) GetByGID(ctx context.Context, request persondto.GetPersonByGIDRequest) (persondto.Person, error) {
     return service.delegate.GetByGID(ctx, request)
 }
 
-func (service *PersonService) Update(ctx context.Context, request foundationrequest.UpdatePersonRequest) (foundationresponse.Person, error) {
-    old, err := service.delegate.GetByGID(ctx, foundationrequest.GetPersonByGIDRequest{Params: request.Params})
-    if err != nil { return foundationresponse.Person{}, err }
+func (service *PersonService) Update(ctx context.Context, request persondto.UpdatePersonRequest) (persondto.Person, error) {
+    old, err := service.delegate.GetByGID(ctx, persondto.GetPersonByGIDRequest{Params: request.Params})
+    if err != nil { return persondto.Person{}, err }
     next, err := service.delegate.Update(ctx, request)
     if err != nil { return next, err }
     if next.Version != old.Version {
@@ -51,13 +50,13 @@ func (service *PersonService) Update(ctx context.Context, request foundationrequ
     return next, nil
 }
 
-func (service *PersonService) Search(ctx context.Context, request foundationrequest.SearchPersonsRequest) (coresearch.Result[foundationresponse.Person], error) {
+func (service *PersonService) Search(ctx context.Context, request persondto.SearchPersonsRequest) (coresearch.Result[persondto.Person], error) {
     return service.delegate.Search(ctx, request)
 }
 
-func (service *PersonService) Deactivate(ctx context.Context, request foundationrequest.DeactivatePersonRequest) (foundationresponse.Person, error) {
-    old, err := service.delegate.GetByGID(ctx, foundationrequest.GetPersonByGIDRequest{Params:request.Params})
-    if err != nil { return foundationresponse.Person{}, err }
+func (service *PersonService) Deactivate(ctx context.Context, request persondto.DeactivatePersonRequest) (persondto.Person, error) {
+    old, err := service.delegate.GetByGID(ctx, persondto.GetPersonByGIDRequest{Params:request.Params})
+    if err != nil { return persondto.Person{}, err }
     next, err := service.delegate.Deactivate(ctx, request)
     if err != nil { return next, err }
     if next.Version != old.Version {
@@ -66,7 +65,7 @@ func (service *PersonService) Deactivate(ctx context.Context, request foundation
     return next, nil
 }
 
-func (service *PersonService) publishChanged(ctx context.Context, operation foundationevents.Operation, old, next *foundationresponse.Person) {
+func (service *PersonService) publishChanged(ctx context.Context, operation foundationevents.Operation, old, next *persondto.Person) {
     if coretransaction.AfterCommit(ctx, func() {
         service.publishChanged(coretransaction.DetachedContext(ctx), operation, old, next)
     }) { return }

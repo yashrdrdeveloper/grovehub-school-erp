@@ -7,7 +7,7 @@ import (
 	annotationvalidation "grovehub/libs/core/annotation/validation"
 	coreerrors "grovehub/libs/core/errors"
 	personerror "grovehub/services/foundation/constants/error"
-	foundationrequest "grovehub/services/foundation/dto/request"
+	persondto "grovehub/services/foundation/dto/person"
 	foundationvalidators "grovehub/services/foundation/validators"
 	validatorhelpers "grovehub/services/foundation/validators/helpers"
 )
@@ -18,33 +18,33 @@ func NewPersonValidator() foundationvalidators.PersonValidator {
 	return &PersonValidator{}
 }
 
-func (validator *PersonValidator) CreateRules() annotationvalidation.Rules[foundationrequest.CreatePersonRequest] {
-	return annotationvalidation.Rules[foundationrequest.CreatePersonRequest]{
-		Normalize: func(request foundationrequest.CreatePersonRequest) (foundationrequest.CreatePersonRequest, error) {
+func (validator *PersonValidator) CreateRules() annotationvalidation.Rules[persondto.CreatePersonRequest] {
+	return annotationvalidation.Rules[persondto.CreatePersonRequest]{
+		Normalize: func(request persondto.CreatePersonRequest) (persondto.CreatePersonRequest, error) {
 			contacts, err := validatorhelpers.NormalizeContacts(request.RequestBody.Contacts)
-			if err != nil { return foundationrequest.CreatePersonRequest{}, err }
+			if err != nil { return persondto.CreatePersonRequest{}, err }
 			request.RequestBody.Contacts = contacts
 			return request, nil
 		},
-		Validate: func(request foundationrequest.CreatePersonRequest) error {
+		Validate: func(request persondto.CreatePersonRequest) error {
 			return validatorhelpers.ValidateContacts(request.RequestBody.Contacts)
 		},
 		MapDTOError: mapPersonDTOError,
 	}
 }
 
-func (validator *PersonValidator) UpdateRules() annotationvalidation.Rules[foundationrequest.UpdatePersonRequest] {
-	return annotationvalidation.Rules[foundationrequest.UpdatePersonRequest]{
-		Normalize: func(request foundationrequest.UpdatePersonRequest) (foundationrequest.UpdatePersonRequest, error) {
+func (validator *PersonValidator) UpdateRules() annotationvalidation.Rules[persondto.UpdatePersonRequest] {
+	return annotationvalidation.Rules[persondto.UpdatePersonRequest]{
+		Normalize: func(request persondto.UpdatePersonRequest) (persondto.UpdatePersonRequest, error) {
 			contacts := request.RequestBody.Contacts
 			if contacts.Set && contacts.Value != nil {
 				normalized, err := validatorhelpers.NormalizeContacts(*contacts.Value)
-				if err != nil { return foundationrequest.UpdatePersonRequest{}, err }
+				if err != nil { return persondto.UpdatePersonRequest{}, err }
 				request.RequestBody.Contacts.Value = &normalized
 			}
 			return request, nil
 		},
-		Validate: func(request foundationrequest.UpdatePersonRequest) error {
+		Validate: func(request persondto.UpdatePersonRequest) error {
 			contacts := request.RequestBody.Contacts
 			if contacts.Set && contacts.Value != nil {
 				return validatorhelpers.ValidateContacts(*contacts.Value)
@@ -55,9 +55,9 @@ func (validator *PersonValidator) UpdateRules() annotationvalidation.Rules[found
 	}
 }
 
-func (validator *PersonValidator) SearchRules() annotationvalidation.Rules[foundationrequest.SearchPersonsRequest] {
-	return annotationvalidation.Rules[foundationrequest.SearchPersonsRequest]{
-		Validate: func(request foundationrequest.SearchPersonsRequest) error {
+func (validator *PersonValidator) SearchRules() annotationvalidation.Rules[persondto.SearchPersonsRequest] {
+	return annotationvalidation.Rules[persondto.SearchPersonsRequest]{
+		Validate: func(request persondto.SearchPersonsRequest) error {
 			_, _, err := validatorhelpers.NormalizePersonSearchRequest(request.RequestBody)
 			return err
 		},

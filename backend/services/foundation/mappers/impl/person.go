@@ -1,8 +1,7 @@
 package impl
 
 import (
-	foundationrequest "grovehub/services/foundation/dto/request"
-	foundationresponse "grovehub/services/foundation/dto/response"
+	persondto "grovehub/services/foundation/dto/person"
 	"grovehub/services/foundation/entity"
 	foundationmappers "grovehub/services/foundation/mappers"
 )
@@ -13,21 +12,21 @@ func NewPersonMapper() foundationmappers.PersonMapper {
 	return &PersonMapper{}
 }
 
-func (mapper *PersonMapper) ToPersonGID(request foundationrequest.PersonByGID) string {
+func (mapper *PersonMapper) ToPersonGID(request persondto.PersonByGID) string {
 	return request.GID
 }
 
-func (mapper *PersonMapper) ToPersonResponse(person entity.Person, personContacts []entity.Contact) foundationresponse.Person {
-	contacts := foundationresponse.Contacts{
-		Emails: make([]foundationresponse.ContactValue, 0),
-		Phones: make([]foundationresponse.ContactValue, 0),
+func (mapper *PersonMapper) ToPersonResponse(person entity.Person, personContacts []entity.Contact) persondto.Person {
+	contacts := persondto.ResponseContacts{
+		Emails: make([]persondto.ResponseContactValue, 0),
+		Phones: make([]persondto.ResponseContactValue, 0),
 	}
 
-	appendContact := map[entity.ContactType]func(foundationresponse.ContactValue){
-		entity.ContactTypeEmail: func(value foundationresponse.ContactValue) {
+	appendContact := map[entity.ContactType]func(persondto.ResponseContactValue){
+		entity.ContactTypeEmail: func(value persondto.ResponseContactValue) {
 			contacts.Emails = append(contacts.Emails, value)
 		},
-		entity.ContactTypePhone: func(value foundationresponse.ContactValue) {
+		entity.ContactTypePhone: func(value persondto.ResponseContactValue) {
 			contacts.Phones = append(contacts.Phones, value)
 		},
 	}
@@ -37,7 +36,7 @@ func (mapper *PersonMapper) ToPersonResponse(person entity.Person, personContact
 		if !ok {
 			continue
 		}
-		appendValue(foundationresponse.ContactValue{
+		appendValue(persondto.ResponseContactValue{
 			Value:      contact.Value,
 			IsPrimary:  contact.IsPrimary,
 			IsVerified: contact.IsVerified,
@@ -46,7 +45,7 @@ func (mapper *PersonMapper) ToPersonResponse(person entity.Person, personContact
 
 	middleName := ""
 	if person.MiddleName != nil { middleName = *person.MiddleName }
-	return foundationresponse.Person{
+	return persondto.Person{
 		GID:        person.GID,
 		FirstName:  person.FirstName,
 		MiddleName: middleName,

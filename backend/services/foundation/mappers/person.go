@@ -1,15 +1,14 @@
 package mappers
 
 import (
-	foundationrequest "grovehub/services/foundation/dto/request"
-	foundationresponse "grovehub/services/foundation/dto/response"
+	persondto "grovehub/services/foundation/dto/person"
 	"grovehub/services/foundation/entity"
 )
 
 // @Mapper PersonMapper
 type PersonMapper interface {
-	ToPersonGID(request foundationrequest.PersonByGID) string
-	ToPersonResponse(person entity.Person, contacts []entity.Contact) foundationresponse.Person
+	ToPersonGID(request persondto.PersonByGID) string
+	ToPersonResponse(person entity.Person, contacts []entity.Contact) persondto.Person
 	// @Mapping GID=gid
-	ToPersonErrorMetadata(gid string) foundationresponse.PersonErrorMetadata
+	ToPersonErrorMetadata(gid string) persondto.PersonErrorMetadata
 }

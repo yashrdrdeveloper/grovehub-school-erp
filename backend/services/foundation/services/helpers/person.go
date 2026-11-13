@@ -6,7 +6,7 @@ import (
 	"time"
 
 	coresearch "grovehub/libs/core/search"
-	foundationrequest "grovehub/services/foundation/dto/request"
+	persondto "grovehub/services/foundation/dto/person"
 	"grovehub/services/foundation/entity"
 )
 
@@ -20,7 +20,7 @@ var personCursorExtractors = map[string]cursorValueExtractor{
 	"updatedAt": func(person entity.Person) string { return person.UpdatedAt.UTC().Format(time.RFC3339Nano) },
 }
 
-func BuildContacts(request foundationrequest.Contacts, existing []entity.Contact) []entity.Contact {
+func BuildContacts(request persondto.Contacts, existing []entity.Contact) []entity.Contact {
 	existingVerification := make(map[string]bool, len(existing))
 	for _, contact := range existing {
 		existingVerification[contactKey(contact.Type, contact.NormalizedValue)] = contact.IsVerified
@@ -74,7 +74,7 @@ func EncodePersonSearchCursor(cursor coresearch.CursorPayload) (string, error) {
 
 func buildContactGroup(
 	contactType entity.ContactType,
-	values []foundationrequest.ContactValue,
+	values []persondto.ContactValue,
 	existingVerification map[string]bool,
 ) []entity.Contact {
 	contacts := make([]entity.Contact, 0, len(values))
@@ -128,7 +128,7 @@ func CopyContacts(contacts []entity.Contact) []entity.Contact {
 }
 
 // NewPerson is use-case construction, not entity behavior.
-func NewPerson(gid string, input foundationrequest.CreatePerson, now time.Time) entity.Person {
+func NewPerson(gid string, input persondto.CreatePerson, now time.Time) entity.Person {
 	return entity.Person{
 		GID: gid,
 		FirstName: input.FirstName,

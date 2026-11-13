@@ -6,7 +6,7 @@ import (
 
     coreevents "grovehub/libs/core/events"
     foundationevents "grovehub/services/foundation/constants/events"
-    foundationresponse "grovehub/services/foundation/dto/response"
+    persondto "grovehub/services/foundation/dto/person"
     personevents "grovehub/services/foundation/events/persons"
 )
 
@@ -15,7 +15,7 @@ func BuildChanged(
     ctx context.Context,
     eventID string,
     operation foundationevents.Operation,
-    old, next *foundationresponse.Person,
+    old, next *persondto.Person,
 ) coreevents.Envelope[personevents.Changed] {
     gid := ""
     if next != nil {

@@ -6,24 +6,24 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	foundationrequest "grovehub/services/foundation/dto/request"
+	persondto "grovehub/services/foundation/dto/person"
 )
 
 var _ = Describe("Person PATCH JSON presence", func() {
 	It("distinguishes omitted, explicit null, and provided values", func() {
-		var omitted foundationrequest.UpdatePerson
+		var omitted persondto.UpdatePerson
 		Expect(json.Unmarshal([]byte(`{}`), &omitted)).To(Succeed())
 		Expect(omitted.MiddleName.Set).To(BeFalse())
 		Expect(omitted.Contacts.Set).To(BeFalse())
 
-		var cleared foundationrequest.UpdatePerson
+		var cleared persondto.UpdatePerson
 		Expect(json.Unmarshal([]byte(`{"middleName":null,"contacts":null}`), &cleared)).To(Succeed())
 		Expect(cleared.MiddleName.Set).To(BeTrue())
 		Expect(cleared.MiddleName.Value).To(BeNil())
 		Expect(cleared.Contacts.Set).To(BeTrue())
 		Expect(cleared.Contacts.Value).To(BeNil())
 
-		var supplied foundationrequest.UpdatePerson
+		var supplied persondto.UpdatePerson
 		Expect(json.Unmarshal([]byte(`{"middleName":" Kumar ","contacts":{"emails":[]}}`), &supplied)).To(Succeed())
 		Expect(supplied.MiddleName.Set).To(BeTrue())
 		Expect(*supplied.MiddleName.Value).To(Equal(" Kumar "))
@@ -39,13 +39,13 @@ var _ = Describe("Person PATCH JSON presence", func() {
 			`{"contacts":"wrong"}`,
 			`{"contacts":[]}`,
 		} {
-			var request foundationrequest.UpdatePerson
+			var request persondto.UpdatePerson
 			Expect(json.Unmarshal([]byte(payload), &request)).NotTo(Succeed(), payload)
 		}
 	})
 
 	It("round-trips omission and explicit null without inventing fields", func() {
-		var request foundationrequest.UpdatePerson
+		var request persondto.UpdatePerson
 		Expect(json.Unmarshal([]byte(`{"middleName":null,"firstName":"Arun"}`), &request)).To(Succeed())
 		bytes, err := json.Marshal(request)
 		Expect(err).NotTo(HaveOccurred())

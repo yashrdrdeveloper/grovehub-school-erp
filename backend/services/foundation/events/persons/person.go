@@ -2,7 +2,7 @@ package persons
 
 import (
     foundationevents "grovehub/services/foundation/constants/events"
-    foundationresponse "grovehub/services/foundation/dto/response"
+    persondto "grovehub/services/foundation/dto/person"
 )
 
 // Changed carries full public Person response snapshots. Nil Old means creation;
@@ -11,6 +11,6 @@ import (
 // @Event topic=foundation_person_changed type=foundation.person.changed.v1 source=foundation
 type Changed struct {
     Operation foundationevents.Operation `json:"operation"`
-    Old *foundationresponse.Person `json:"old"`
-    New *foundationresponse.Person `json:"new"`
+    Old *persondto.Person `json:"old"`
+    New *persondto.Person `json:"new"`
 }
