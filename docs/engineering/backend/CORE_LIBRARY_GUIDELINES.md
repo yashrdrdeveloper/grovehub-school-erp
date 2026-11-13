@@ -330,9 +330,13 @@ The implementation may live under each capability's `helpers/`, but consumers us
 
 `libs/core/pipeline/rest.Run` binds typed `Path`, `Query` and `Body` DTOs,
 normalizes and validates each source, executes an explicit typed service
-callback, and writes a standardized HTTP response. `rest.Input[P,Q,B]`
-is the service callback's transport-independent input view;
-`rest.Result[R]` describes the success payload, status and headers.
+callback, and writes a standardized HTTP response. `rest.Input[P,Q,B]` is an alias of the transport-independent
+`corerequest.Request[P,Q,B]` in `libs/core/request`. Generated in-process
+clients expose the same underlying type through
+`httpendpoint.Request[P,Q,B]`; Foundation services accept that shared typed
+request directly. No mapping is required between controller, service and
+client arguments. `rest.Result[R]` describes the success payload, status and
+headers.
 The generic callback preserves the existing `context.Context`.
 
 `annotationvalidation.Rules[T]` remains the shared non-HTTP contract:

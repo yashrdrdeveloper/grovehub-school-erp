@@ -296,6 +296,16 @@ validates the request body. Create returns HTTP 201 when new and HTTP 200
 for an existing Person. Domain errors preserve their definition status
 and metadata; malformed path/body inputs return safe HTTP 400 errors.
 The same resource validators run inside services for in-process clients.
+Foundation `PersonService` now receives a single
+`corerequest.Request[Path,Query,Body]` per operation and keeps all interface
+signatures on one line. This is the exact same underlying type as
+`rest.Input[Path,Query,Body]` and `httpendpoint.Request[Path,Query,Body]`.
+The REST controller calls `service.Create(ctx,input)`,
+`service.GetByGID(ctx,input)`, `service.Update(ctx,input)`,
+`service.Search(ctx,input)` or `service.Deactivate(ctx,input)` directly.
+Service methods access `input.Path`, `input.Query`, and `input.Body` as
+needed and independently enforce their own business invariants. Empty
+sections use `corerequest.Empty` (aliased as `rest.Empty`).
 
 ## 8. Update Person
 

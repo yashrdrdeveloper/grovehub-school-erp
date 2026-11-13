@@ -101,7 +101,13 @@ method now receives exactly `context.Context` plus one typed
 `Body`. Use `rest.Empty` for unused sources. The generator
 verifies the annotated endpoint against the generated controller HTTP routes
 and derives the service base prefix from `routes/http.go`, so the client does
-not duplicate `/foundation`. The injected internal `http.Handler` runs
+not duplicate `/foundation`. The input contract is a shared generic `corerequest.Request[Path,Query,Body]`
+from `libs/core/request`; `rest.Input` and `httpendpoint.Request` are
+aliases. Foundation `PersonService` methods accept the same type, with
+one-line signatures, so controllers pass their validated `input` straight
+to the service without unpacking path and body. Services still enforce
+domain invariants and are not coupled to `http.Request` or `ResponseWriter`.
+The injected internal `http.Handler` runs
 the Person controller's REST normalization/validation and response handling
 in-process (no socket), preserving `context.Context`, semantic error
 codes/statuses, and `created` (HTTP 201). Integration/Infrastructure clients

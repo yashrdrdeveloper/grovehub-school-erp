@@ -25,9 +25,14 @@ provides typed `Config[Path, Query, Body, Response]`, then the pipeline:
 5. Calls the configured `Service(context.Context, Input[P,Q,B])` once.
 6. Serializes one success/error response using the shared writer.
 
-The service callback receives `Input{Path, Query, Body}`. Only the callback
-calls the real business service; no business or authorization logic belongs
-inside the pipeline.
+The service callback receives `Input{Path, Query, Body}`, which is
+a **generic alias** of `corerequest.Request[Path, Query, Body]` from
+`libs/core/request`. Foundation service methods accept that same shared
+type, allowing the controller to call `controller.service.Create(ctx, input)`,
+`controller.service.Update(ctx, input)`, etc. without unpacking or mapping
+three separate arguments. This is a typed in-process contract, not an HTTP
+wire envelope; the pipeline remains responsible for decoding and validation.
+No business or authorization logic belongs inside the pipeline.
 
 ```go
 func (controller *PersonController) Create(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +41,7 @@ func (controller *PersonController) Create(w http.ResponseWriter, r *http.Reques
         InvalidBody: personerror.InvalidPersonRequest,
         Fallback: personerror.PersonCreateFailed,
         Service: func(ctx context.Context, input rest.Input[rest.Empty, rest.Empty, foundationrequest.CreatePerson]) (rest.Result[foundationresponse.Person], error) {
-            person, created, err := controller.service.Create(ctx, input.Body)
+            person, created, err := controller.service.Create(ctx, input)
             return rest.CreatedOrOK(person, created), err
         },
     })
