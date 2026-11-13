@@ -123,9 +123,9 @@ func discover(dir, generatedRoutes string) ([]clientProxy,error) {
 							patterns,err = controllerPatterns(generatedRoutes)
 							if err != nil { return nil,err }
 						}
-						if !patterns[line.verb+" "+line.path] {
-							return nil,fmt.Errorf("%s: @RequestLine %s %s has no generated controller route; run routes generator first",name,line.verb,line.path)
-						}
+						route,err := resolveRoute(line.verb, line.path, patterns)
+						if err != nil { return nil,fmt.Errorf("%s: %w",name,err) }
+						line.path = route
 						ep,err := endpointArguments(set,fn,args,line)
 						if err != nil { return nil,fmt.Errorf("%s: %w",name,err) }
 						method.endpoint = &ep
@@ -155,6 +155,29 @@ func controllerPatterns(path string) (map[string]bool,error) {
 		return true
 	})
 	return patterns,nil
+}
+
+// resolveRoute matches an exact registered endpoint or a service-prefix-free
+// @RequestLine such as /protected/persons/{gid}. The generator derives the
+// service prefix from the authoritative generated route registrations.
+func resolveRoute(verb, declared string, patterns map[string]bool) (string,error) {
+	if patterns[verb+" "+declared] { return declared,nil }
+	var matches []string
+	for pattern := range patterns {
+		if !strings.HasPrefix(pattern,verb+" ") { continue }
+		path := strings.TrimPrefix(pattern,verb+" ")
+		if path != declared && strings.HasSuffix(path,declared) {
+			matches = append(matches,path)
+		}
+	}
+	if len(matches)==0 {
+		return "",fmt.Errorf("@RequestLine %s %s has no matching generated controller route",verb,declared)
+	}
+	if len(matches)>1 {
+		sort.Strings(matches)
+		return "",fmt.Errorf("@RequestLine %s %s matches multiple routes; use an unambiguous path",verb,declared)
+	}
+	return matches[0],nil
 }
 
 func requestLine(doc *ast.CommentGroup) (endpointMethod,bool,error) {
@@ -274,8 +297,8 @@ func writeProxies(proxies []clientProxy,output string) error {
 		}
 		ep:=m.endpoint
 		if ep.created {
-			fmt.Fprintf(&b,"result, status, err := httpendpoint.Call[%s](ctx, c.handler, %q, %q, %s, %s)\n",
-				ep.resultType,ep.verb,ep.path,ep.pathArg,ep.bodyArg)
+			fmt.Fprintf(&b,"result, status, err := httpendpoint.Call[%s](%s, c.handler, %q, %q, %s, %s)\n",
+				ep.resultType,strings.Split(m.arguments,", ")[0],ep.verb,ep.path,ep.pathArg,ep.bodyArg)
 			b.WriteString("return result, status == 201 && err == nil, err\n}\n\n")
 		} else {
 			fmt.Fprintf(&b,"result, _, err := httpendpoint.Call[%s](ctx, c.handler, %q, %q, %s, %s)\n",
