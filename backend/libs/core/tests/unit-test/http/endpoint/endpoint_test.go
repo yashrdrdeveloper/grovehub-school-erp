@@ -14,6 +14,7 @@ import (
 	coreerrors "grovehub/libs/core/errors"
 	headercontext "grovehub/libs/core/headercontext"
 	endpoint "grovehub/libs/core/http/endpoint"
+	rest "grovehub/libs/core/pipeline/rest"
 	httpresponse "grovehub/libs/core/http/response"
 )
 
@@ -26,7 +27,69 @@ type personRecord struct {
 	Name string `json:"name"`
 }
 
+
+type queryInputs struct {
+	Page     int      `query:"page"`
+	Active   bool     `query:"active"`
+	Tags     []string `query:"tag"`
+	Note     *string  `query:"note"`
+}
+
+type invalidQueryInputs struct {
+	Unsupported map[string]string `query:"unsupported"`
+}
+
 var _ = Describe("in-process @RequestLine transport", func() {
+	It("serializes typed Path, Query and Body from one Request wrapper", func() {
+		mux := http.NewServeMux()
+		mux.HandleFunc("PATCH /people/{gid}", func(writer http.ResponseWriter, request *http.Request) {
+			Expect(request.PathValue("gid")).To(Equal("valid-gid"))
+			Expect(request.URL.Query().Get("page")).To(Equal("3"))
+			Expect(request.URL.Query().Get("active")).To(Equal("true"))
+			Expect(request.URL.Query()["tag"]).To(Equal([]string{"one & two", "three"}))
+			Expect(request.URL.Query().Has("note")).To(BeFalse())
+			var body struct { Name string `json:"name"` }
+			Expect(json.NewDecoder(request.Body).Decode(&body)).To(Succeed())
+			Expect(body.Name).To(Equal("Ada"))
+			Expect(httpresponse.WriteSuccess(writer, http.StatusOK, personRecord{Name:body.Name})).To(Succeed())
+		})
+		input := endpoint.Request[personPath, queryInputs, struct { Name string `json:"name"` }]{
+			Path: personPath{GID:"valid-gid"},
+			Query: queryInputs{Page:3,Active:true,Tags:[]string{"one & two","three"}},
+			Body: struct { Name string `json:"name"` }{Name:"Ada"},
+		}
+		result, status, err := endpoint.CallRequest[personRecord](context.Background(),mux,http.MethodPatch,"/people/{gid}",input)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(status).To(Equal(http.StatusOK))
+		Expect(result.Name).To(Equal("Ada"))
+	})
+
+	It("omits rest.Empty sources and sends no JSON body for a typed GET request", func() {
+		mux := http.NewServeMux()
+		mux.HandleFunc("GET /people/{gid}", func(writer http.ResponseWriter, request *http.Request) {
+			Expect(request.ContentLength).To(Equal(int64(0)))
+			Expect(request.Header.Get("Content-Type")).To(BeEmpty())
+			Expect(request.URL.RawQuery).To(BeEmpty())
+			Expect(httpresponse.WriteSuccess(writer, http.StatusOK, personRecord{GID:request.PathValue("gid")})).To(Succeed())
+		})
+		input := endpoint.Request[personPath, rest.Empty, rest.Empty]{Path:personPath{GID:"valid-gid"}}
+		result, status, err := endpoint.CallRequest[personRecord](context.Background(),mux,http.MethodGet,"/people/{gid}",input)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(status).To(Equal(http.StatusOK))
+		Expect(result.GID).To(Equal("valid-gid"))
+	})
+
+	It("rejects unsupported Query fields without dispatching a controller", func() {
+		mux := http.NewServeMux()
+		mux.HandleFunc("GET /people", func(http.ResponseWriter,*http.Request) { Fail("should not dispatch") })
+		input := endpoint.Request[rest.Empty,invalidQueryInputs,rest.Empty]{
+			Query:invalidQueryInputs{Unsupported:map[string]string{"key":"value"}},
+		}
+		_,_,err := endpoint.CallRequest[personRecord](context.Background(),mux,http.MethodGet,"/people",input)
+		Expect(err).To(HaveOccurred())
+	})
+
+
 	It("uses a registered controller route, body, status and typed data", func() {
 		mux := http.NewServeMux()
 		mux.HandleFunc("POST /foundation/protected/persons", func(writer http.ResponseWriter, request *http.Request) {
