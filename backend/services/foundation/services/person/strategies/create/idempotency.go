@@ -34,7 +34,7 @@ func (strategy *Creator) readIdempotency(ctx context.Context, state *personflow.
                         return servicepipeline.Fail[persondto.Person](coreerrors.NewError(personerror.PersonIdempotencyConflict))
                     },
                 ),
-                servicepipeline.Otherwise(func(ctx context.Context, *personflow.Create) servicepipeline.Outcome[persondto.Person] {
+                servicepipeline.Otherwise(func(ctx context.Context, _ *personflow.Create) servicepipeline.Outcome[persondto.Person] {
                     return strategy.returnExisting(ctx, person)
                 }),
             )

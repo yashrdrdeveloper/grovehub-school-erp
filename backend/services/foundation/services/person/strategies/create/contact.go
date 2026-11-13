@@ -36,7 +36,7 @@ func (strategy *Creator) readContacts(ctx context.Context, state *personflow.Cre
                         return servicepipeline.Fail[persondto.Person](coreerrors.NewError(personerror.PersonContactConflict))
                     },
                 ),
-                servicepipeline.Otherwise(func(ctx context.Context, *personflow.Create) servicepipeline.Outcome[persondto.Person] {
+                servicepipeline.Otherwise(func(ctx context.Context, _ *personflow.Create) servicepipeline.Outcome[persondto.Person] {
                     return strategy.returnPersonByGID(ctx, gids[0])
                 }),
             )
