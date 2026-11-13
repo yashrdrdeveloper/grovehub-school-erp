@@ -10,16 +10,16 @@ import (
     createstrategies "grovehub/services/foundation/services/person/operations/create/strategies"
 )
 
-// Operation owns the Create-specific strategy dependency; embedding promotes
+// CreateOperation owns the Create-specific strategy dependency; embedding promotes
 // Create to the parent PersonService without a forwarding wrapper.
-type Operation struct {
+type CreateOperation struct {
     creator createstrategies.CreateStrategy
 }
 
-func New(creator createstrategies.CreateStrategy) *Operation { return &Operation{creator: creator} }
+func New(creator createstrategies.CreateStrategy) *CreateOperation { return &CreateOperation{creator: creator} }
 
 // @ChainOfResponsibility
-func (service *Operation) Create(ctx context.Context, request persondto.CreatePersonRequest) (persondto.Person, bool, error) {
+func (service *CreateOperation) Create(ctx context.Context, request persondto.CreatePersonRequest) (persondto.Person, bool, error) {
     flow := personflow.Create{Request: request}
     return servicepipeline.Run(ctx, &flow,
         service.creator.Prepare,
