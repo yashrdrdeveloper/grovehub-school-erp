@@ -8,16 +8,17 @@ import (
 
 	coretelemetry "grovehub/libs/core/telemetry"
 	coretransaction "grovehub/libs/core/database/transaction"
-	foundationclient "grovehub/services/foundation/client"
-	clientimpl "grovehub/services/foundation/client/impl"
-	protected "grovehub/services/foundation/controller/protected"
-	controllerimpl "grovehub/services/foundation/controller/protected/impl"
-	personeventimpl "grovehub/services/foundation/events/persons/impl"
-	mapperimpl "grovehub/services/foundation/mappers/impl"
-	repositoryimpl "grovehub/services/foundation/repository/impl"
+	foundationclient "grovehub/services/foundation/client/person"
+	clientimpl "grovehub/services/foundation/client/person/impl"
+	protected "grovehub/services/foundation/controller/person/protected"
+	controllerimpl "grovehub/services/foundation/controller/person/protected/impl"
+	personeventimpl "grovehub/services/foundation/events/person/impl"
+	mapperimpl "grovehub/services/foundation/mappers/person/impl"
+	personrepositoryimpl "grovehub/services/foundation/repository/person/impl"
+	contactrepositoryimpl "grovehub/services/foundation/repository/contact/impl"
 	"grovehub/services/foundation/routes"
-	serviceimpl "grovehub/services/foundation/services/impl"
-	validatorimpl "grovehub/services/foundation/validators/impl"
+	serviceimpl "grovehub/services/foundation/services/person/impl"
+	validatorimpl "grovehub/services/foundation/validators/person/impl"
 	infrastructureclient "grovehub/services/infrastructure/client"
 )
 
@@ -37,8 +38,8 @@ func New(
 	db *gorm.DB,
 	messagingClient infrastructureclient.MessagingClient,
 ) Module {
-	personRepository := repositoryimpl.NewPersonRepository(db)
-	contactRepository := repositoryimpl.NewContactRepository(db)
+	personRepository := personrepositoryimpl.NewPersonRepository(db)
+	contactRepository := contactrepositoryimpl.NewContactRepository(db)
 	unitOfWork := coretransaction.NewUnitOfWork(db)
 	personMapper := mapperimpl.NewPersonMapper()
 	personValidator := validatorimpl.NewPersonValidator()

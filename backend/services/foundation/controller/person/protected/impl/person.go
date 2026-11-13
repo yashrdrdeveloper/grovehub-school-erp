@@ -7,10 +7,10 @@ import (
 	rest "grovehub/libs/core/pipeline/rest"
 	coresearch "grovehub/libs/core/search"
 	personerror "grovehub/services/foundation/constants/error"
-	protected "grovehub/services/foundation/controller/protected"
+	protected "grovehub/services/foundation/controller/person/protected"
 	persondto "grovehub/services/foundation/dto/person"
-	foundationservices "grovehub/services/foundation/services"
-	foundationvalidators "grovehub/services/foundation/validators"
+	foundationservices "grovehub/services/foundation/services/person"
+	foundationvalidators "grovehub/services/foundation/validators/person"
 )
 
 type PersonController struct {

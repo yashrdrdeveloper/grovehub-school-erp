@@ -9,21 +9,21 @@ import (
 	coretransaction "grovehub/libs/core/database/transaction"
 	coresearch "grovehub/libs/core/search"
 	"grovehub/services/foundation/entity"
-	foundationrepository "grovehub/services/foundation/repository"
+	personrepository "grovehub/services/foundation/repository/person"
 	repositoryerrors "grovehub/services/foundation/repository/constants/errors"
-	repositoryerrorshelpers "grovehub/services/foundation/repository/helpers/errors"
+	personerrorshelpers "grovehub/services/foundation/repository/person/helpers/errors"
 )
 
 type PersonRepository struct {
 	db *gorm.DB
 }
 
-func NewPersonRepository(db *gorm.DB) foundationrepository.PersonRepository {
+func NewPersonRepository(db *gorm.DB) personrepository.PersonRepository {
 	return &PersonRepository{db: db}
 }
 
 func (repository *PersonRepository) Create(ctx context.Context, person entity.Person) error {
-	return repositoryerrorshelpers.MapPersonWriteError(coretransaction.Database(ctx, repository.db).Create(&person).Error)
+	return personerrorshelpers.MapPersonWriteError(coretransaction.Database(ctx, repository.db).Create(&person).Error)
 }
 
 func (repository *PersonRepository) FindByGID(ctx context.Context, gid string) (entity.Person, error) {
@@ -63,7 +63,7 @@ func (repository *PersonRepository) Update(ctx context.Context, person entity.Pe
 			"updated_at": person.UpdatedAt,
 		})
 	if result.Error != nil {
-		return repositoryerrorshelpers.MapPersonWriteError(result.Error)
+		return personerrorshelpers.MapPersonWriteError(result.Error)
 	}
 	if result.RowsAffected == 0 {
 		return repositoryerrors.ErrPersonVersionConflict

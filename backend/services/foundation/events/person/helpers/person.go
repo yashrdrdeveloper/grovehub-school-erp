@@ -7,7 +7,7 @@ import (
     coreevents "grovehub/libs/core/events"
     foundationevents "grovehub/services/foundation/constants/events"
     persondto "grovehub/services/foundation/dto/person"
-    personevents "grovehub/services/foundation/events/persons"
+    personevents "grovehub/services/foundation/events/person"
 )
 
 // BuildChanged uses the shared generic envelope; the domain owns only its data.

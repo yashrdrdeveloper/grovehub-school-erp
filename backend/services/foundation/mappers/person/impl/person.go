@@ -3,7 +3,7 @@ package impl
 import (
 	persondto "grovehub/services/foundation/dto/person"
 	"grovehub/services/foundation/entity"
-	foundationmappers "grovehub/services/foundation/mappers"
+	foundationmappers "grovehub/services/foundation/mappers/person"
 )
 
 type PersonMapper struct{}

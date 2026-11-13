@@ -15,26 +15,27 @@ import (
 	personerror "grovehub/services/foundation/constants/error"
 	persondto "grovehub/services/foundation/dto/person"
 	"grovehub/services/foundation/entity"
-	foundationmappers "grovehub/services/foundation/mappers"
-	foundationrepository "grovehub/services/foundation/repository"
+	foundationmappers "grovehub/services/foundation/mappers/person"
+	personrepository "grovehub/services/foundation/repository/person"
+	contactrepository "grovehub/services/foundation/repository/contact"
 	repositoryerrors "grovehub/services/foundation/repository/constants/errors"
-	foundationservices "grovehub/services/foundation/services"
-	servicehelpers "grovehub/services/foundation/services/helpers"
-	foundationvalidators "grovehub/services/foundation/validators"
-	validatorhelpers "grovehub/services/foundation/validators/helpers"
+	foundationservices "grovehub/services/foundation/services/person"
+	servicehelpers "grovehub/services/foundation/services/person/helpers"
+	foundationvalidators "grovehub/services/foundation/validators/person"
+	validatorhelpers "grovehub/services/foundation/validators/person/helpers"
 )
 
 type PersonService struct {
-	personRepository foundationrepository.PersonRepository
-	contactRepository foundationrepository.ContactRepository
+	personRepository personrepository.PersonRepository
+	contactRepository contactrepository.ContactRepository
 	unitOfWork coretransaction.UnitOfWork
 	mapper foundationmappers.PersonMapper
 	validator foundationvalidators.PersonValidator
 }
 
 func NewPersonService(
-	personRepository foundationrepository.PersonRepository,
-	contactRepository foundationrepository.ContactRepository,
+	personRepository personrepository.PersonRepository,
+	contactRepository contactrepository.ContactRepository,
 	unitOfWork coretransaction.UnitOfWork,
 	mapper foundationmappers.PersonMapper,
 	validator foundationvalidators.PersonValidator,

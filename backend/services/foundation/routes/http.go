@@ -3,7 +3,7 @@ package routes
 import (
     "net/http"
 
-    protected "grovehub/services/foundation/controller/protected"
+    protected "grovehub/services/foundation/controller/person/protected"
 )
 
 // RegisterHTTP composes Foundation's generated, traced route registrations.

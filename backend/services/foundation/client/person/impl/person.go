@@ -3,7 +3,7 @@ package impl
 import (
 	"net/http"
 
-	foundationclient "grovehub/services/foundation/client"
+	foundationclient "grovehub/services/foundation/client/person"
 )
 
 // personClient dispatches annotated requests through the owning controller's

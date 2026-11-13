@@ -12,9 +12,9 @@ import (
     coresearch "grovehub/libs/core/search"
     foundationevents "grovehub/services/foundation/constants/events"
     persondto "grovehub/services/foundation/dto/person"
-    personevents "grovehub/services/foundation/events/persons"
-    eventhelpers "grovehub/services/foundation/events/persons/helpers"
-    foundationservices "grovehub/services/foundation/services"
+    personevents "grovehub/services/foundation/events/person"
+    eventhelpers "grovehub/services/foundation/events/person/helpers"
+    foundationservices "grovehub/services/foundation/services/person"
     infrastructureclient "grovehub/services/infrastructure/client"
 )
 

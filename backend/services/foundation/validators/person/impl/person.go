@@ -8,8 +8,8 @@ import (
 	coreerrors "grovehub/libs/core/errors"
 	personerror "grovehub/services/foundation/constants/error"
 	persondto "grovehub/services/foundation/dto/person"
-	foundationvalidators "grovehub/services/foundation/validators"
-	validatorhelpers "grovehub/services/foundation/validators/helpers"
+	foundationvalidators "grovehub/services/foundation/validators/person"
+	validatorhelpers "grovehub/services/foundation/validators/person/helpers"
 )
 
 type PersonValidator struct{}
