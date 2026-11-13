@@ -10,6 +10,7 @@ import (
  coretransaction "grovehub/libs/core/database/transaction"
 
     coresearch "grovehub/libs/core/search"
+    corerequest "grovehub/libs/core/request"
     foundationevents "grovehub/services/foundation/constants/events"
     foundationrequest "grovehub/services/foundation/dto/request"
     foundationresponse "grovehub/services/foundation/dto/response"
@@ -29,21 +30,21 @@ func NewPersonService(delegate foundationservices.PersonService, messagingClient
     return &PersonService{delegate: delegate, messagingClient: messagingClient, logger: logger}
 }
 
-func (service *PersonService) Create(ctx context.Context, request foundationrequest.CreatePerson) (foundationresponse.Person, bool, error) {
+func (service *PersonService) Create(ctx context.Context, request corerequest.Request[corerequest.Empty, corerequest.Empty, foundationrequest.CreatePerson]) (foundationresponse.Person, bool, error) {
     person, created, err := service.delegate.Create(ctx, request)
     if err != nil || !created { return person, created, err }
     service.publishChanged(ctx, foundationevents.Created, nil, &person)
     return person, true, nil
 }
 
-func (service *PersonService) GetByGID(ctx context.Context, request foundationrequest.PersonByGID) (foundationresponse.Person, error) {
+func (service *PersonService) GetByGID(ctx context.Context, request corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, corerequest.Empty]) (foundationresponse.Person, error) {
     return service.delegate.GetByGID(ctx, request)
 }
 
-func (service *PersonService) Update(ctx context.Context, personRequest foundationrequest.PersonByGID, request foundationrequest.UpdatePerson) (foundationresponse.Person, error) {
-    old, err := service.delegate.GetByGID(ctx, personRequest)
+func (service *PersonService) Update(ctx context.Context, request corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, foundationrequest.UpdatePerson]) (foundationresponse.Person, error) {
+    old, err := service.delegate.GetByGID(ctx, corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, corerequest.Empty]{Path: request.Path})
     if err != nil { return foundationresponse.Person{}, err }
-    next, err := service.delegate.Update(ctx, personRequest, request)
+    next, err := service.delegate.Update(ctx, request)
     if err != nil { return next, err }
     if next.Version != old.Version {
         service.publishChanged(ctx, foundationevents.Updated, &old, &next)
@@ -51,11 +52,11 @@ func (service *PersonService) Update(ctx context.Context, personRequest foundati
     return next, nil
 }
 
-func (service *PersonService) Search(ctx context.Context, request coresearch.Request) (coresearch.Result[foundationresponse.Person], error) {
+func (service *PersonService) Search(ctx context.Context, request corerequest.Request[corerequest.Empty, corerequest.Empty, coresearch.Request]) (coresearch.Result[foundationresponse.Person], error) {
     return service.delegate.Search(ctx, request)
 }
 
-func (service *PersonService) Deactivate(ctx context.Context, request foundationrequest.PersonByGID) (foundationresponse.Person, error) {
+func (service *PersonService) Deactivate(ctx context.Context, request corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, corerequest.Empty]) (foundationresponse.Person, error) {
     old, err := service.delegate.GetByGID(ctx, request)
     if err != nil { return foundationresponse.Person{}, err }
     next, err := service.delegate.Deactivate(ctx, request)
