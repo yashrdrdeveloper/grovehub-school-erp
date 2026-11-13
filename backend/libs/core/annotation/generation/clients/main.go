@@ -55,14 +55,29 @@ func generateAll(backend string) error {
 		owner := filepath.Join(backend,"services",service.Name())
 		clientDir := filepath.Join(owner,"client")
 		if info,err := os.Stat(clientDir); err != nil || !info.IsDir() { continue }
-		proxies,err := discover(clientDir, filepath.Join(owner, ".generated", "routes", "zz_routes.gen.go"))
-		if err != nil { return fmt.Errorf("%s: %w",service.Name(),err) }
-		output := filepath.Join(owner,".generated","client","impl","zz_clients.gen.go")
-		if len(proxies) == 0 {
-			if err := os.Remove(output); err != nil && !os.IsNotExist(err) { return err }
-			continue
+		// Discover both legacy flat clients and client/<resource> contracts.
+		entries,err:=os.ReadDir(clientDir)
+		if err!=nil {return err}
+		directories:=[]string{clientDir}
+		for _,entry:=range entries {
+			if entry.IsDir() && entry.Name()!="impl" && !strings.HasPrefix(entry.Name(),".") {
+				directories=append(directories,filepath.Join(clientDir,entry.Name()))
+			}
 		}
-		if err := writeProxies(proxies,output); err != nil { return fmt.Errorf("%s: %w",service.Name(),err) }
+		for _,dir:=range directories {
+			proxies,err:=discover(dir,filepath.Join(owner,".generated","routes","zz_routes.gen.go"))
+			if err!=nil{return fmt.Errorf("%s %s: %w",service.Name(),dir,err)}
+			rel,err:=filepath.Rel(clientDir,dir)
+			if err!=nil{return err}
+			outDir:=filepath.Join(owner,".generated","client")
+			if rel!="." {outDir=filepath.Join(outDir,rel)}
+			output:=filepath.Join(outDir,"impl","zz_clients.gen.go")
+			if len(proxies)==0 {
+				if err:=os.Remove(output);err!=nil&&!os.IsNotExist(err){return err}
+				continue
+			}
+			if err:=writeProxies(proxies,output);err!=nil{return fmt.Errorf("%s %s: %w",service.Name(),dir,err)}
+		}
 	}
 	return nil
 }

@@ -382,8 +382,6 @@ func writeRoutes(service string, groups []routeGroup, output string) error {
 	b.WriteString("httptracing \"grovehub/libs/core/http/tracing\"\n")
 	imports := map[string]string{}
 	for _, group := range groups {
-		pkg := group.tier
-		if pkg == "" { pkg = "controller" }
 		alias := groupImportAlias(group)
 		importPath := "grovehub/services/" + service + "/controller"
 		if group.resource != "" { importPath += "/" + group.resource }
