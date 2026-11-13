@@ -237,6 +237,37 @@ var _ = Describe("HTTP REST executor", func() {
 		Expect(writer.Code).To(Equal(http.StatusBadRequest))
 	})
 
+	It("rejects malformed query escaping and unknown keys in strict mode", func() {
+		for _, options := range []struct { raw string; strict bool }{
+			{"/people?page=1&unknown=%XX", false},
+			{"/people?page=1&unexpected=1", true},
+		} {
+			writer := httptest.NewRecorder()
+			rest.Run(writer, routeRequest(http.MethodGet, options.raw, "", ""), rest.Config[rest.Empty, personQuery, rest.Empty, personResponse]{
+				StrictQuery: options.strict,
+				InvalidQuery: invalidQuery,
+				Fallback: fallback,
+				Service: func(_ context.Context, _ rest.Input[rest.Empty, personQuery, rest.Empty]) (rest.Result[personResponse], error) {
+					Fail("service must not run with invalid query")
+					return rest.OK(personResponse{}), nil
+				},
+			})
+			Expect(writer.Code).To(Equal(http.StatusBadRequest), options.raw)
+		}
+	})
+
+	It("writes a safe error envelope for an invalid service result status", func() {
+		writer := httptest.NewRecorder()
+		rest.Run(writer, routeRequest(http.MethodGet, "/people", "", ""), rest.Config[rest.Empty, rest.Empty, rest.Empty, personResponse]{
+			Fallback: fallback,
+			Service: func(_ context.Context, _ rest.Input[rest.Empty, rest.Empty, rest.Empty]) (rest.Result[personResponse], error) {
+				return rest.Result[personResponse]{StatusCode: http.StatusConflict}, nil
+			},
+		})
+		Expect(writer.Code).To(Equal(http.StatusInternalServerError))
+		Expect(writer.Body.String()).To(ContainSubstring("TEST_FAILURE"))
+	})
+
 	It("defaults an omitted successful Result status to 200", func() {
 		writer := httptest.NewRecorder()
 		rest.Run(writer, routeRequest(http.MethodGet, "/people", "", ""), rest.Config[rest.Empty, rest.Empty, rest.Empty, personResponse]{
