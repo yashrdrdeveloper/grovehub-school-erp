@@ -1,16 +1,17 @@
 package impl
 
 import (
-    foundationclient "grovehub/services/foundation/client"
-    foundationservices "grovehub/services/foundation/services"
+	"net/http"
+
+	foundationclient "grovehub/services/foundation/client"
 )
 
-// personClient forwards the public Foundation client to its owning service.
-// Typed methods are generated from @Client/@Proxy on client.Client.
+// personClient dispatches annotated requests through the owning controller's
+// HTTP route pipeline in-process. No TCP connection or service proxy is used.
 type personClient struct {
-    personService foundationservices.PersonService
+	handler http.Handler
 }
 
-func NewPersonClient(personService foundationservices.PersonService) foundationclient.Client {
-    return &personClient{personService: personService}
+func NewPersonClient(handler http.Handler) foundationclient.Client {
+	return &personClient{handler: handler}
 }

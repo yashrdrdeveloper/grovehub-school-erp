@@ -10,24 +10,24 @@ import (
 
 // @Client personClient
 type Client interface {
-	// @Proxy personService.Create
+	// @RequestLine POST /foundation/protected/persons
 	CreatePerson(
 		ctx context.Context,
 		request foundationrequest.CreatePerson,
 	) (foundationresponse.Person, bool, error)
-	// @Proxy personService.GetByGID
+	// @RequestLine GET /foundation/protected/persons/{gid}
 	GetPersonByGID(ctx context.Context, request foundationrequest.PersonByGID) (foundationresponse.Person, error)
-	// @Proxy personService.Update
+	// @RequestLine PATCH /foundation/protected/persons/{gid}
 	UpdatePerson(
 		ctx context.Context,
 		personRequest foundationrequest.PersonByGID,
 		request foundationrequest.UpdatePerson,
 	) (foundationresponse.Person, error)
-	// @Proxy personService.Search
+	// @RequestLine POST /foundation/protected/persons/search
 	SearchPersons(
 		ctx context.Context,
 		request coresearch.Request,
 	) (coresearch.Result[foundationresponse.Person], error)
-	// @Proxy personService.Deactivate
+	// @RequestLine PATCH /foundation/protected/persons/{gid}/deactivate
 	DeactivatePerson(ctx context.Context, request foundationrequest.PersonByGID) (foundationresponse.Person, error)
 }

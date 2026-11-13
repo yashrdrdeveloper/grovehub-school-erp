@@ -4,6 +4,7 @@ package http
 import "grovehub/libs/core/annotation/contract"
 
 var UseCases = []contract.UseCase{
+    {Name:"RequestLine",Syntax:"@RequestLine GET /service/access/resource/{id}",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"Generate client methods mapped to verified HTTP controller routes; dispatch in-process through REST validation and response envelopes",Mode:"GEN",Status:contract.Pilot,Roadmap:"P3",Target:contract.MethodTarget},
     {Name:"Controller",Syntax:"@Controller",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"Register typed HTTP controller/adapter",Mode:"REG",Status:contract.Proposed,Roadmap:"P3",Target:contract.InterfaceTarget},
     {Name:"Routes",Syntax:"@Routes /resource",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"Controller/resource path relative to service prefix and access tier",Mode:"GEN",Status:contract.Pilot,Roadmap:"P3",Target:contract.InterfaceTarget},
     {Name:"Routes",Syntax:"@Routes /service",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"Service-wide route prefix on routes.RegisterHTTP; requires categorized controller packages",Mode:"GEN",Status:contract.Pilot,Roadmap:"P3",Target:contract.FunctionTarget},

@@ -44,11 +44,17 @@ func New(
 	personValidator := validatorimpl.NewPersonValidator()
 	personService := serviceimpl.NewPersonService(personRepository, contactRepository, unitOfWork, personMapper, personValidator)
 	personService = personeventimpl.NewPersonService(personService, messagingClient, logger)
+	personController := controllerimpl.NewPersonController(personService, personValidator)
+
+	// The internal client uses the exact same generated routes and controller
+	// pipeline as external HTTP callers, without a loopback TCP hop.
+	internalMux := http.NewServeMux()
+	routes.RegisterHTTP(internalMux, personController)
 
 	return &module{
 		logger:           logger,
-		personController: controllerimpl.NewPersonController(personService, personValidator),
-		client:           clientimpl.NewPersonClient(personService),
+		personController: personController,
+		client:           clientimpl.NewPersonClient(internalMux),
 	}
 }
 
