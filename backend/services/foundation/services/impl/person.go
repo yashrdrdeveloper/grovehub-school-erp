@@ -7,7 +7,6 @@ import (
 
 	annotationvalidation "grovehub/libs/core/annotation/validation"
 	coreerrors "grovehub/libs/core/errors"
-	corerequest "grovehub/libs/core/request"
 	coreid "grovehub/libs/core/id"
 	coreidempotency "grovehub/libs/core/idempotency"
 	headercontext "grovehub/libs/core/headercontext"
@@ -51,15 +50,15 @@ func NewPersonService(
 }
 
 
-func (service *PersonService) Create(ctx context.Context, request corerequest.Request[corerequest.Empty, corerequest.Empty, foundationrequest.CreatePerson]) (foundationresponse.Person, bool, error) {
-	validatedRequest, err := annotationvalidation.Process(request.Body, service.validator.CreateRules())
+func (service *PersonService) Create(ctx context.Context, request foundationrequest.CreatePersonRequest) (foundationresponse.Person, bool, error) {
+	validatedRequest, err := annotationvalidation.Process(request, service.validator.CreateRules())
 	if err != nil { return foundationresponse.Person{}, false, err }
-	contacts := servicehelpers.BuildContacts(validatedRequest.Contacts, nil)
+	contacts := servicehelpers.BuildContacts(validatedRequest.RequestBody.Contacts, nil)
 	idempotencyKey, requestHash := "", ""
 	if headercontext.IdempotencyKey(ctx) != "" {
 		idempotencyKey, err = coreidempotency.ValidateKey(headercontext.IdempotencyKey(ctx))
 		if err != nil { return foundationresponse.Person{}, false, coreerrors.NewError(personerror.InvalidPersonIdempotencyKey) }
-		requestHash, err = coreidempotency.Fingerprint(validatedRequest)
+		requestHash, err = coreidempotency.Fingerprint(validatedRequest.RequestBody)
 		if err != nil { return foundationresponse.Person{}, false, coreerrors.Wrap(personerror.PersonCreateFailed, err) }
 		existing, storedContacts, readErr := service.findPersonByIdempotencyKey(ctx, idempotencyKey)
 		if readErr == nil {
@@ -82,7 +81,7 @@ func (service *PersonService) Create(ctx context.Context, request corerequest.Re
 	}
 	gid, err := coreid.NewUUIDv7()
 	if err != nil { return foundationresponse.Person{}, false, coreerrors.Wrap(personerror.PersonCreateFailed, err) }
-	person := servicehelpers.NewPerson(gid, validatedRequest, time.Now().UTC())
+	person := servicehelpers.NewPerson(gid, validatedRequest.RequestBody, time.Now().UTC())
 	if idempotencyKey != "" { person.IdempotencyKey, person.RequestHash = &idempotencyKey, &requestHash }
 	contacts = servicehelpers.AssociateContacts(person, contacts)
 	person.SearchDetails = servicehelpers.BuildPersonSearchDetails(person, contacts)
@@ -113,8 +112,8 @@ func (service *PersonService) findPersonByIdempotencyKey(ctx context.Context, ke
 	return person, contacts, nil
 }
 
-func (service *PersonService) GetByGID(ctx context.Context, request corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, corerequest.Empty]) (foundationresponse.Person, error) {
-	person, contacts, err := service.getPersonByGID(ctx, service.mapper.ToPersonGID(request.Path))
+func (service *PersonService) GetByGID(ctx context.Context, request foundationrequest.GetPersonByGIDRequest) (foundationresponse.Person, error) {
+	person, contacts, err := service.getPersonByGID(ctx, service.mapper.ToPersonGID(request.Params))
 	if err != nil {
 		return foundationresponse.Person{}, err
 	}
@@ -123,13 +122,13 @@ func (service *PersonService) GetByGID(ctx context.Context, request corerequest.
 
 
 
-func (service *PersonService) Update(ctx context.Context, request corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, foundationrequest.UpdatePerson]) (foundationresponse.Person, error) {
-	gid := service.mapper.ToPersonGID(request.Path)
+func (service *PersonService) Update(ctx context.Context, request foundationrequest.UpdatePersonRequest) (foundationresponse.Person, error) {
+	gid := service.mapper.ToPersonGID(request.Params)
 	person, contacts, err := service.getPersonByGID(ctx, gid)
 	if err != nil { return foundationresponse.Person{}, err }
-	validatedRequest, err := annotationvalidation.Process(request.Body, service.validator.UpdateRules())
+	validatedRequest, err := annotationvalidation.Process(request, service.validator.UpdateRules())
 	if err != nil { return foundationresponse.Person{}, err }
-	updatedPerson, updatedContacts, changed, err := service.applyPersonUpdate(ctx, person, contacts, validatedRequest)
+	updatedPerson, updatedContacts, changed, err := service.applyPersonUpdate(ctx, person, contacts, validatedRequest.RequestBody)
 	if err != nil { return foundationresponse.Person{}, err }
 	if !changed { return service.mapper.ToPersonResponse(person, contacts), nil }
 	updatedPerson.Version = person.Version + 1
@@ -152,7 +151,7 @@ func (service *PersonService) Update(ctx context.Context, request corerequest.Re
 		if errors.Is(err, repositoryerrors.ErrPersonVersionConflict) {
 			latest, latestContacts, readErr := service.getPersonByGID(ctx, gid)
 			if readErr != nil { return foundationresponse.Person{}, readErr }
-			_, _, stillChanged, reconcileErr := service.applyPersonUpdate(ctx, latest, latestContacts, validatedRequest)
+			_, _, stillChanged, reconcileErr := service.applyPersonUpdate(ctx, latest, latestContacts, validatedRequest.RequestBody)
 			if reconcileErr != nil { return foundationresponse.Person{}, reconcileErr }
 			if !stillChanged { return service.mapper.ToPersonResponse(latest, latestContacts), nil }
 		}
@@ -162,8 +161,8 @@ func (service *PersonService) Update(ctx context.Context, request corerequest.Re
 }
 
 
-func (service *PersonService) Search(ctx context.Context, request corerequest.Request[corerequest.Empty, corerequest.Empty, coresearch.Request]) (coresearch.Result[foundationresponse.Person], error) {
-	query, cursorPayload, err := validatorhelpers.NormalizePersonSearchRequest(request.Body)
+func (service *PersonService) Search(ctx context.Context, request foundationrequest.SearchPersonsRequest) (coresearch.Result[foundationresponse.Person], error) {
+	query, cursorPayload, err := validatorhelpers.NormalizePersonSearchRequest(request.RequestBody)
 	if err != nil { return coresearch.Result[foundationresponse.Person]{}, err }
 	result, err := service.personRepository.Search(ctx, query)
 	if err != nil {
@@ -188,8 +187,8 @@ func (service *PersonService) Search(ctx context.Context, request corerequest.Re
 	}, nil
 }
 
-func (service *PersonService) Deactivate(ctx context.Context, request corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, corerequest.Empty]) (foundationresponse.Person, error) {
-	gid := service.mapper.ToPersonGID(request.Path)
+func (service *PersonService) Deactivate(ctx context.Context, request foundationrequest.DeactivatePersonRequest) (foundationresponse.Person, error) {
+	gid := service.mapper.ToPersonGID(request.Params)
 	person, contacts, err := service.getPersonByGID(ctx, gid)
 	if err != nil {
 		return foundationresponse.Person{}, err
