@@ -29,7 +29,7 @@ var placeholder = regexp.MustCompile(`\{([A-Za-z][A-Za-z0-9_]*)\}`)
 
 // Request is the same transport-independent type used by REST controllers
 // and services; only Path, Query and Body are serialized individually.
-type Request[Path, Query, Body any] = corerequest.Request[Path, Query, Body]
+type Request[Path, Query, Body any] = corerequest.Parts[Path, Query, Body]
 
 // CallRequest dispatches a single typed request through the registered
 // controller route. Generic input types are inferred from Request[P,Q,B].

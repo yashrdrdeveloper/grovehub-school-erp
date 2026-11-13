@@ -18,7 +18,7 @@ type Empty = corerequest.Empty
 
 // Input is the shared typed request, so validated controller input can be
 // passed directly into a domain service without transport DTO conversion.
-type Input[Path, Query, Body any] = corerequest.Request[Path, Query, Body]
+type Input[Path, Query, Body any] = corerequest.Parts[Path, Query, Body]
 
 // Result is an HTTP presentation of a successful service result.
 type Result[T any] struct {
