@@ -8,20 +8,23 @@ import (
 )
 
 const sourceClient = `package client
-import "context"
-
+import (
+"context"
+httpendpoint "grovehub/libs/core/http/endpoint"
+rest "grovehub/libs/core/pipeline/rest"
+)
 // @Client personClient
 type Client interface {
 	// @RequestLine POST /protected/persons
-	CreatePerson(ctx context.Context, request CreateDTO) (Person, bool, error)
+	CreatePerson(ctx context.Context, request httpendpoint.Request[rest.Empty, rest.Empty, CreateDTO]) (Person, bool, error)
 	// @RequestLine GET /protected/persons/{gid}
-	GetPersonByGID(parent context.Context, request ByGID) (Person, error)
+	GetPersonByGID(parent context.Context, request httpendpoint.Request[ByGID, rest.Empty, rest.Empty]) (Person, error)
 	// @RequestLine PATCH /protected/persons/{gid}
-	UpdatePerson(ctx context.Context, personRequest ByGID, request UpdateDTO) (Person, error)
+	UpdatePerson(ctx context.Context, request httpendpoint.Request[ByGID, rest.Empty, UpdateDTO]) (Person, error)
 	// @RequestLine POST /protected/persons/search
-	SearchPersons(ctx context.Context, request SearchDTO) (SearchResult, error)
+	SearchPersons(ctx context.Context, request httpendpoint.Request[rest.Empty, rest.Empty, SearchDTO]) (SearchResult, error)
 	// @RequestLine PATCH /protected/persons/{gid}/deactivate
-	DeactivatePerson(ctx context.Context, request ByGID) (Person, error)
+	DeactivatePerson(ctx context.Context, request httpendpoint.Request[ByGID, rest.Empty, rest.Empty]) (Person, error)
 }
 `
 
@@ -57,10 +60,10 @@ func TestRequestLineGeneratesFullControllerDispatch(t *testing.T) {
 	data,err:=os.ReadFile(out);if err!=nil{t.Fatal(err)}
 	generated:=string(data)
 	for _,expected:=range []string{
-		"httpendpoint.Call[Person](ctx, c.handler, \"POST\", \"/foundation/protected/persons\", nil, request)",
-		"httpendpoint.Call[Person](parent, c.handler, \"GET\", \"/foundation/protected/persons/{gid}\", request, nil)",
-		"httpendpoint.Call[Person](ctx, c.handler, \"PATCH\", \"/foundation/protected/persons/{gid}\", personRequest, request)",
-		"httpendpoint.Call[SearchResult](ctx, c.handler, \"POST\", \"/foundation/protected/persons/search\", nil, request)",
+		"httpendpoint.CallRequest[Person](ctx, c.handler, \"POST\", \"/foundation/protected/persons\", request)",
+		"httpendpoint.CallRequest[Person](parent, c.handler, \"GET\", \"/foundation/protected/persons/{gid}\", request)",
+		"httpendpoint.CallRequest[Person](ctx, c.handler, \"PATCH\", \"/foundation/protected/persons/{gid}\", request)",
+		"httpendpoint.CallRequest[SearchResult](ctx, c.handler, \"POST\", \"/foundation/protected/persons/search\", request)",
 		"status == 201 && err == nil",
 	} {
 		if !strings.Contains(generated,expected){t.Errorf("generated client missing %q\n%s",expected,generated)}
@@ -101,6 +104,8 @@ func TestRequestLineRejectsAmbiguousMatches(t *testing.T) {
 func TestRequestLineRejectsInvalidSignatures(t *testing.T) {
 	cases:=[]struct{source,errorFragment string}{
 		{strings.Replace(sourceClient,"(Person, bool, error)","(Person, string, error)",1),"second result must be bool"},
+		{strings.Replace(sourceClient,"request httpendpoint.Request[ByGID, rest.Empty, rest.Empty]","request ByGID",1),"second @RequestLine parameter must be httpendpoint.Request"},
+		{strings.Replace(sourceClient,"request httpendpoint.Request[ByGID, rest.Empty, rest.Empty]","request httpendpoint.Request[rest.Empty, rest.Empty, rest.Empty]",1),"route path variables require a nonempty Path DTO"},
 		{strings.Replace(sourceClient,"// @RequestLine GET /protected/persons/{gid}","// @RequestLine GET /protected/persons/{gid}\n\t// @Proxy service.Get",1),"exactly one of"},
 		{strings.Replace(sourceClient,"// @RequestLine GET /protected/persons/{gid}","// @RequestLine GET /protected/persons/{gid}\n\t// @RequestLine GET /protected/persons/{gid}",1),"duplicate @RequestLine"},
 	}
