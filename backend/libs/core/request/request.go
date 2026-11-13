@@ -38,9 +38,10 @@ type Sections struct {
 
 // Inspect validates the common request shape. It accepts a struct or pointer
 // to struct with an embedded Request and at most one of each named section.
-func Inspect(input Contract) (Sections, error) {
+func Inspect(input any) (Sections, error) {
 	var sections Sections
 	if input == nil { return sections, fmt.Errorf("nil request") }
+	if _,ok := input.(Contract); !ok { return sections, fmt.Errorf("request must implement common Request contract") }
 	value := reflect.ValueOf(input)
 	for value.Kind() == reflect.Pointer {
 		if value.IsNil() { return sections, fmt.Errorf("nil request pointer") }
