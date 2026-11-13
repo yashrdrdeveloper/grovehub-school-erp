@@ -211,20 +211,18 @@ func requestLine(doc *ast.CommentGroup) (endpointMethod,bool,error) {
 
 func endpointArguments(set *token.FileSet, fn *ast.FuncType, args []string, method endpointMethod) (endpointMethod,error) {
 	if len(args)!=2 || fn.Params==nil || len(fn.Params.List)!=2 || fn.Results==nil {
-		return method,fmt.Errorf("@RequestLine requires context and one typed httpendpoint.Request[Path,Query,Body]")
+		return method,fmt.Errorf("@RequestLine requires context and one operation-specific request struct")
 	}
 	if !selectorType(fn.Params.List[0].Type,"context","Context") {
 		return method,fmt.Errorf("first @RequestLine parameter must be context.Context")
 	}
-	wrapper,ok:=fn.Params.List[1].Type.(*ast.IndexListExpr)
-	if !ok || !selectorType(wrapper.X,"httpendpoint","Request") || len(wrapper.Indices)!=3 {
-		return method,fmt.Errorf("second @RequestLine parameter must be httpendpoint.Request[Path,Query,Body]")
-	}
-	if strings.Contains(method.path,"{") && selectorType(wrapper.Indices[0],"rest","Empty") {
-		return method,fmt.Errorf("route path variables require a nonempty Path DTO")
-	}
-	if (method.verb=="GET"||method.verb=="DELETE") && !selectorType(wrapper.Indices[2],"rest","Empty") {
-		return method,fmt.Errorf("GET/DELETE @RequestLine must declare rest.Empty as Body")
+	// A request DTO is a named type (local or qualified). Its only permitted
+	// exported fields are Params, Query and RequestBody; the transport enforces
+	// their shape before dispatch, without any generic Empty placeholders.
+	switch fn.Params.List[1].Type.(type) {
+	case *ast.SelectorExpr, *ast.Ident:
+	default:
+		return method,fmt.Errorf("second @RequestLine parameter must be a named request struct")
 	}
 	results:=fn.Results.List
 	if len(results)!=2 && len(results)!=3 {return method,fmt.Errorf("expected (response,error) or (response,bool,error)")}
@@ -292,11 +290,11 @@ func writeProxies(proxies []clientProxy,output string) error {
 		}
 		ep:=m.endpoint
 		if ep.created {
-			fmt.Fprintf(&b,"result, status, err := httpendpoint.CallRequest[%s](%s, c.handler, %q, %q, %s)\n",
+			fmt.Fprintf(&b,"result, status, err := httpendpoint.CallStruct[%s](%s, c.handler, %q, %q, %s)\n",
 				ep.resultType,strings.Split(m.arguments,", ")[0],ep.verb,ep.path,strings.Split(m.arguments,", ")[1])
 			b.WriteString("return result, status == 201 && err == nil, err\n}\n\n")
 		} else {
-			fmt.Fprintf(&b,"result, _, err := httpendpoint.CallRequest[%s](%s, c.handler, %q, %q, %s)\n",
+			fmt.Fprintf(&b,"result, _, err := httpendpoint.CallStruct[%s](%s, c.handler, %q, %q, %s)\n",
 				ep.resultType,strings.Split(m.arguments,", ")[0],ep.verb,ep.path,strings.Split(m.arguments,", ")[1])
 			b.WriteString("return result, err\n}\n\n")
 		}
