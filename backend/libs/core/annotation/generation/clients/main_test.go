@@ -129,3 +129,21 @@ type Client interface {
 	if !strings.Contains(string(b),"return c.personService.Get(ctx, id)") {t.Fatal("legacy @Proxy forwarder was changed")}
 	if strings.Contains(string(b),"httpendpoint"){t.Fatal("unused endpoint import")}
 }
+
+func TestResourceFirstClientGeneration(t *testing.T) {
+	root,original,_:=fixture(t,sourceClient,"/foundation")
+	owner:=filepath.Join(root,"services","foundation")
+	resource:=filepath.Join(owner,"client","person","person.go")
+	if err:=os.MkdirAll(filepath.Dir(resource),0755);err!=nil{t.Fatal(err)}
+	if err:=os.Rename(original,resource);err!=nil{t.Fatal(err)}
+	if err:=generateAll(root);err!=nil{t.Fatal(err)}
+	output:=filepath.Join(owner,".generated","client","person","impl","zz_clients.gen.go")
+	data,err:=os.ReadFile(output)
+	if err!=nil{t.Fatal(err)}
+	if !strings.Contains(string(data),"httpendpoint.CallStruct[Person]("){
+		t.Fatalf("resource client was not generated at %s:\n%s",output,data)
+	}
+	if _,err:=os.Stat(filepath.Join(owner,".generated","client","impl","zz_clients.gen.go"));!os.IsNotExist(err){
+		t.Fatalf("unexpected flat client generated in resource-only fixture: %v",err)
+	}
+}

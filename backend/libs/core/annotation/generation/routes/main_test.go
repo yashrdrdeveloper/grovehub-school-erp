@@ -211,3 +211,20 @@ func TestGeneratorRejectsMalformedServicePrefix(t *testing.T) {
 		t.Fatalf("expected invalid prefix error, got %v", err)
 	}
 }
+
+func TestResourceFirstControllerPackage(t *testing.T) {
+	backend,output:=testBackend(t)
+	owner:=filepath.Join(backend,"services","foundation")
+	legacy:=filepath.Join(owner,"controller","protected","person.go")
+	if err:=os.Remove(legacy);err!=nil {t.Fatal(err)}
+	writeTestFile(t,filepath.Join(owner,"controller","person","protected","person.go"),personController)
+	content:=generatedRoutes(t,backend,output)
+	for _,required:=range []string{
+		"personprotected \"grovehub/services/foundation/controller/person/protected\"",
+		"func registerProtectedPersonRoutes(",
+		"c personprotected.PersonController",
+		"GET /foundation/protected/persons/{gid}",
+	}{
+		if !strings.Contains(content,required){t.Errorf("missing resource route %q:\n%s",required,content)}
+	}
+}
