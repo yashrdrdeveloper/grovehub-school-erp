@@ -12,7 +12,7 @@ import (
 	"net/http"
 	"net/url"
 
-	rest "grovehub/libs/core/pipeline/rest"
+	corerequest "grovehub/libs/core/request"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -27,15 +27,9 @@ const maxResponseBytes int64 = 8 << 20
 
 var placeholder = regexp.MustCompile(`\{([A-Za-z][A-Za-z0-9_]*)\}`)
 
-// Request groups all endpoint inputs into one typed argument. Use rest.Empty
-// for sources that an endpoint does not consume. The wrapper itself is never
-// serialized: Path binds URL placeholders, Query binds query tags, and Body is
-// encoded as the JSON request payload.
-type Request[Path, Query, Body any] struct {
-	Path  Path
-	Query Query
-	Body  Body
-}
+// Request is the same transport-independent type used by REST controllers
+// and services; only Path, Query and Body are serialized individually.
+type Request[Path, Query, Body any] = corerequest.Request[Path, Query, Body]
 
 // CallRequest dispatches a single typed request through the registered
 // controller route. Generic input types are inferred from Request[P,Q,B].
@@ -44,7 +38,7 @@ func CallRequest[Response, Path, Query, Body any](ctx context.Context, handler h
 	query, err := encodeQuery(input.Query)
 	if err != nil { return zero, 0, err }
 	var body any
-	if reflect.TypeFor[Body]() != reflect.TypeFor[rest.Empty]() {
+	if reflect.TypeFor[Body]() != reflect.TypeFor[corerequest.Empty]() {
 		body = input.Body
 	}
 	return call[Response](ctx, handler, method, route, input.Path, query, body)

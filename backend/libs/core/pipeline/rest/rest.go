@@ -10,17 +10,15 @@ import (
 	validation "grovehub/libs/core/annotation/validation"
 	coreerrors "grovehub/libs/core/errors"
 	httprequest "grovehub/libs/core/http/request"
+	corerequest "grovehub/libs/core/request"
 )
 
-// Empty marks an absent path, query, or JSON body.
-type Empty struct{}
+// Empty marks an absent path, query or JSON body.
+type Empty = corerequest.Empty
 
-// Input contains the normalized and validated values passed to a service.
-type Input[Path, Query, Body any] struct {
-	Path  Path
-	Query Query
-	Body  Body
-}
+// Input is the shared typed request, so validated controller input can be
+// passed directly into a domain service without transport DTO conversion.
+type Input[Path, Query, Body any] = corerequest.Request[Path, Query, Body]
 
 // Result is an HTTP presentation of a successful service result.
 type Result[T any] struct {

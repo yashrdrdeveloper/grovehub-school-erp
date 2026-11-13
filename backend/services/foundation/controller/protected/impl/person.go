@@ -29,7 +29,7 @@ func (controller *PersonController) Create(writer http.ResponseWriter, request *
 		InvalidBody: personerror.InvalidPersonRequest,
 		Fallback: personerror.PersonCreateFailed,
 		Service: func(ctx context.Context, input rest.Input[rest.Empty, rest.Empty, foundationrequest.CreatePerson]) (rest.Result[foundationresponse.Person], error) {
-			person, created, err := controller.service.Create(ctx, input.Body)
+			person, created, err := controller.service.Create(ctx, input)
 			return rest.CreatedOrOK(person, created), err
 		},
 	})
@@ -40,7 +40,7 @@ func (controller *PersonController) GetByGID(writer http.ResponseWriter, request
 		InvalidPath: personerror.InvalidPersonGID,
 		Fallback: personerror.PersonReadFailed,
 		Service: func(ctx context.Context, input rest.Input[foundationrequest.PersonByGID, rest.Empty, rest.Empty]) (rest.Result[foundationresponse.Person], error) {
-			person, err := controller.service.GetByGID(ctx, input.Path)
+			person, err := controller.service.GetByGID(ctx, input)
 			return rest.OK(person), err
 		},
 	})
@@ -53,7 +53,7 @@ func (controller *PersonController) Update(writer http.ResponseWriter, request *
 		InvalidBody: personerror.InvalidPersonRequest,
 		Fallback: personerror.PersonUpdateFailed,
 		Service: func(ctx context.Context, input rest.Input[foundationrequest.PersonByGID, rest.Empty, foundationrequest.UpdatePerson]) (rest.Result[foundationresponse.Person], error) {
-			person, err := controller.service.Update(ctx, input.Path, input.Body)
+			person, err := controller.service.Update(ctx, input)
 			return rest.OK(person), err
 		},
 	})
@@ -65,7 +65,7 @@ func (controller *PersonController) Search(writer http.ResponseWriter, request *
 		InvalidBody: personerror.InvalidPersonSearch,
 		Fallback: personerror.PersonSearchFailed,
 		Service: func(ctx context.Context, input rest.Input[rest.Empty, rest.Empty, coresearch.Request]) (rest.Result[coresearch.Result[foundationresponse.Person]], error) {
-			result, err := controller.service.Search(ctx, input.Body)
+			result, err := controller.service.Search(ctx, input)
 			return rest.OK(result), err
 		},
 	})
@@ -76,7 +76,7 @@ func (controller *PersonController) Deactivate(writer http.ResponseWriter, reque
 		InvalidPath: personerror.InvalidPersonGID,
 		Fallback: personerror.PersonUpdateFailed,
 		Service: func(ctx context.Context, input rest.Input[foundationrequest.PersonByGID, rest.Empty, rest.Empty]) (rest.Result[foundationresponse.Person], error) {
-			person, err := controller.service.Deactivate(ctx, input.Path)
+			person, err := controller.service.Deactivate(ctx, input)
 			return rest.OK(person), err
 		},
 	})
