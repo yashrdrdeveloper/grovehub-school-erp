@@ -9,6 +9,7 @@ import (
 
  coretransaction "grovehub/libs/core/database/transaction"
 
+    coresearch "grovehub/libs/core/search"
     foundationevents "grovehub/services/foundation/constants/events"
     foundationrequest "grovehub/services/foundation/dto/request"
     foundationresponse "grovehub/services/foundation/dto/response"
