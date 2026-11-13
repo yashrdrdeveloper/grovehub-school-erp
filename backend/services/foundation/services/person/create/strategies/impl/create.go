@@ -1,4 +1,4 @@
-// Package create implements Person creation as independently testable strategies.
+// Package impl implements Person creation strategies.
 // Validation belongs to the controller, not this execution chain.
 package impl
 
@@ -7,7 +7,7 @@ import (
 
     coreerrors "grovehub/libs/core/errors"
     coretransaction "grovehub/libs/core/database/transaction"
-    createstrategies "grovehub/services/foundation/services/person/strategies"
+    createstrategies "grovehub/services/foundation/services/person/create/strategies"
     servicepipeline "grovehub/libs/core/pipeline/service"
     personerror "grovehub/services/foundation/constants/error"
     persondto "grovehub/services/foundation/dto/person"
@@ -15,7 +15,7 @@ import (
     foundationmappers "grovehub/services/foundation/mappers/person"
     personrepository "grovehub/services/foundation/repository/person"
     contactrepository "grovehub/services/foundation/repository/contact"
-    personflow "grovehub/services/foundation/services/person/flows"
+    personflow "grovehub/services/foundation/services/person/create/flows"
 )
 
 // @Strategy
@@ -42,14 +42,6 @@ func (strategy *Creator) returnExisting(ctx context.Context, person entity.Perso
             return servicepipeline.Fail[persondto.Person](coreerrors.Wrap(personerror.PersonReadFailed, err))
         },
     )
-}
-
-func failRead(err error) servicepipeline.Outcome[persondto.Person] {
-    return servicepipeline.Fail[persondto.Person](coreerrors.Wrap(personerror.PersonReadFailed, err))
-}
-
-func failCreate(err error) servicepipeline.Outcome[persondto.Person] {
-    return servicepipeline.Fail[persondto.Person](coreerrors.Wrap(personerror.PersonCreateFailed, err))
 }
 
 func (strategy *Creator) failCreateWithGID(_ context.Context, state *personflow.Create, err error) servicepipeline.Outcome[persondto.Person] {

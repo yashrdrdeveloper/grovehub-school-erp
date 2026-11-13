@@ -1,6 +1,7 @@
 package impl
 
 import (
+    createhelpers "grovehub/services/foundation/services/person/create/helpers"
     "context"
 
     coreerrors "grovehub/libs/core/errors"
@@ -9,7 +10,7 @@ import (
     servicepipeline "grovehub/libs/core/pipeline/service"
     personerror "grovehub/services/foundation/constants/error"
     persondto "grovehub/services/foundation/dto/person"
-    personflow "grovehub/services/foundation/services/person/flows"
+    personflow "grovehub/services/foundation/services/person/create/flows"
     servicehelpers "grovehub/services/foundation/services/person/helpers"
 )
 
@@ -51,6 +52,6 @@ func (strategy *Creator) fingerprint(state *personflow.Create) servicepipeline.O
             state.RequestHash = hash
             return servicepipeline.Next[persondto.Person]()
         },
-        failCreate,
+        createhelpers.FailCreate,
     )
 }

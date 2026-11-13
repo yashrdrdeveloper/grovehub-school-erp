@@ -1,4 +1,4 @@
-// Package strategies declares the Foundation Person strategy contracts.
+// Package strategies declares Person Create strategy contracts.
 // Implementations belong to strategies/impl and domain decisions stay there.
 package strategies
 
@@ -7,7 +7,7 @@ import (
 
     servicepipeline "grovehub/libs/core/pipeline/service"
     persondto "grovehub/services/foundation/dto/person"
-    personflow "grovehub/services/foundation/services/person/flows"
+    personflow "grovehub/services/foundation/services/person/create/flows"
 )
 
 // @Strategy

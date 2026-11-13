@@ -1,6 +1,7 @@
 package impl
 
 import (
+    createhelpers "grovehub/services/foundation/services/person/create/helpers"
     "context"
     "time"
 
@@ -10,7 +11,7 @@ import (
     personerror "grovehub/services/foundation/constants/error"
     persondto "grovehub/services/foundation/dto/person"
     repositoryerrors "grovehub/services/foundation/repository/constants/errors"
-    personflow "grovehub/services/foundation/services/person/flows"
+    personflow "grovehub/services/foundation/services/person/create/flows"
     servicehelpers "grovehub/services/foundation/services/person/helpers"
 )
 
@@ -21,12 +22,12 @@ func (strategy *Creator) Persist(ctx context.Context, state *personflow.Create) 
             strategy.buildPerson(state, gid)
             return strategy.persistPrepared(ctx, state)
         },
-        failCreate,
+        createhelpers.FailCreate,
     )
 }
 
 func (strategy *Creator) buildPerson(state *personflow.Create, gid string) {
-    person := servicehelpers.NewPerson(gid, state.Request.RequestBody, time.Now().UTC())
+    person := createhelpers.NewPerson(gid, state.Request.RequestBody, time.Now().UTC())
     servicepipeline.Decide(context.Background(), state,
         servicepipeline.When(
             func(state *personflow.Create) bool { return state.IdempotencyKey != "" },

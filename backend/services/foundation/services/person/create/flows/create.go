@@ -1,4 +1,4 @@
-// Package flows holds operation-local state shared by the Person strategies.
+// Package flows holds typed state used only by Person creation strategies.
 package flows
 
 import (

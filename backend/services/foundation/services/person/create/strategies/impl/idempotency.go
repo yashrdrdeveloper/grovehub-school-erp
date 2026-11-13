@@ -1,6 +1,7 @@
 package impl
 
 import (
+    createhelpers "grovehub/services/foundation/services/person/create/helpers"
     "context"
 
     coreerrors "grovehub/libs/core/errors"
@@ -9,7 +10,7 @@ import (
     persondto "grovehub/services/foundation/dto/person"
     "grovehub/services/foundation/entity"
     repositoryerrors "grovehub/services/foundation/repository/constants/errors"
-    personflow "grovehub/services/foundation/services/person/flows"
+    personflow "grovehub/services/foundation/services/person/create/flows"
     corehelpers "grovehub/libs/core/helpers"
 )
 
@@ -40,6 +41,6 @@ func (strategy *Creator) readIdempotency(ctx context.Context, state *personflow.
             )
         },
         func() servicepipeline.Outcome[persondto.Person] { return servicepipeline.Next[persondto.Person]() },
-        failRead,
+        createhelpers.FailRead,
     )
 }
