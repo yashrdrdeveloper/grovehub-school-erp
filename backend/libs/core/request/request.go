@@ -48,7 +48,7 @@ func Inspect(input any) (Sections, error) {
 		value = value.Elem()
 	}
 	if value.Kind() != reflect.Struct { return sections, fmt.Errorf("request must be a struct") }
-	if value.Type() == reflect.TypeOf(Request{}) { return sections, fmt.Errorf("request cannot consist only of the common marker") }
+	if value.Type() == reflect.TypeOf(Request{}) { return sections, nil }
 	markerFound := false
 	for i:=0; i<value.NumField(); i++ {
 		field := value.Type().Field(i)
@@ -69,9 +69,6 @@ func Inspect(input any) (Sections, error) {
 		}
 	}
 	if !markerFound { return Sections{}, fmt.Errorf("request must embed the common request.Request") }
-	if !sections.HasParams && !sections.HasQuery && !sections.HasRequestBody {
-		return Sections{},fmt.Errorf("request must declare at least one section")
-	}
 	return sections,nil
 }
 
