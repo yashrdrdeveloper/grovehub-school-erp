@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	coretelemetry "grovehub/libs/core/telemetry"
-	foundationclient "grovehub/services/foundation/client"
+	foundationclient "grovehub/services/foundation/client/person"
 	"grovehub/services/identity/controller"
 	controllerimpl "grovehub/services/identity/controller/impl"
 	accounteventimpl "grovehub/services/identity/events/accounts/impl"
