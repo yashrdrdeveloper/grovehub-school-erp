@@ -77,6 +77,29 @@ var _ = Describe("in-process @RequestLine transport", func() {
 		Expect(applicationError.Metadata()).To(Equal(map[string]any{"gid":"valid-gid"}))
 	})
 
+	It("preserves nil error metadata from the standard response envelope", func() {
+		mux := http.NewServeMux()
+		definition := coreerrors.NewDefinition("TEST_NOT_FOUND", "No record", http.StatusNotFound)
+		mux.HandleFunc("GET /record", func(writer http.ResponseWriter, request *http.Request) {
+			Expect(httpresponse.WriteErrorContext(request.Context(), writer, http.StatusNotFound, definition)).To(Succeed())
+		})
+		_, status, err := endpoint.Call[personRecord](context.Background(), mux, http.MethodGet, "/record", nil, nil)
+		Expect(status).To(Equal(http.StatusNotFound))
+		var applicationError *coreerrors.Error
+		Expect(errors.As(err, &applicationError)).To(BeTrue())
+		Expect(applicationError.Definition().Code()).To(Equal(definition.Code()))
+		Expect(applicationError.Metadata()).To(BeNil())
+	})
+
+	It("bounds response buffering without accepting truncated JSON", func() {
+		handler := http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+			_, _ = writer.Write([]byte(strings.Repeat("x", 8<<20+1)))
+		})
+		_, _, err := endpoint.Call[personRecord](context.Background(), handler, http.MethodGet, "/large", nil, nil)
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring("exceeds maximum size"))
+	})
+
 	It("fails closed for malformed envelopes or unmatched controller routes", func() {
 		for _, handler := range []http.Handler{
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { fmt.Fprint(w, "not JSON") }),
