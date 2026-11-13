@@ -14,6 +14,15 @@ import (
 	rest "grovehub/libs/core/pipeline/rest"
 )
 
+type bodyConfig[T any] struct {
+	Decode func(*http.Request, any) error
+	Rules annotationvalidation.Rules[T]
+}
+
+func read[T any](request *http.Request, config bodyConfig[T]) (T, error) {
+	return rest.ReadBody[T](request, config.Decode, config.Rules)
+}
+
 type input struct {
 	Name string `json:"name" normalize:"trim" validate:"notblank,maxrunes=10"`
 }
@@ -25,7 +34,7 @@ func request(body string) *http.Request {
 var _ = Describe("REST request pipeline", func() {
 	It("runs decode -> tagged normalization -> resource normalization -> DTO rules -> custom validation", func() {
 		order := []string{}
-		value, err := rest.Run(request(`{"name":"  Anu  "}`), rest.Config[input]{
+		value, err := read(request(`{"name":"  Anu  "}`), bodyConfig[input]{
 			Decode: func(r *http.Request, dst any) error {
 				order = append(order, "decode")
 				return httprequest.DecodeStrictJSON(r, dst)
@@ -51,7 +60,7 @@ var _ = Describe("REST request pipeline", func() {
 
 	It("validates the trimmed DTO, rejecting whitespace-only values before custom rules", func() {
 		called := false
-		_, err := rest.Run(request(`{"name":"   "}`), rest.Config[input]{
+		_, err := read(request(`{"name":"   "}`), bodyConfig[input]{
 			Rules: annotationvalidation.Rules[input]{
 				Validate: func(v input) error { called = true; return nil },
 			},
@@ -64,14 +73,14 @@ var _ = Describe("REST request pipeline", func() {
 	})
 
 	It("uses normalized values when evaluating max length", func() {
-		value, err := rest.Run(request(`{"name":" 1234567890 "}`), rest.Config[input]{})
+		value, err := read(request(`{"name":" 1234567890 "}`), bodyConfig[input]{})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(value.Name).To(Equal("1234567890"))
 	})
 
 	It("runs custom validation only after DTO validation succeeds", func() {
 		sentinel := errors.New("resource rule")
-		_, err := rest.Run(request(`{"name":"Anu"}`), rest.Config[input]{
+		_, err := read(request(`{"name":"Anu"}`), bodyConfig[input]{
 			Rules: annotationvalidation.Rules[input]{
 				Validate: func(v input) error { return sentinel },
 			},
@@ -81,7 +90,7 @@ var _ = Describe("REST request pipeline", func() {
 
 	It("keeps decoding errors separate from domain validation errors", func() {
 		called := false
-		_, err := rest.Run(request(`{"name":12}`), rest.Config[input]{
+		_, err := read(request(`{"name":12}`), bodyConfig[input]{
 			Rules: annotationvalidation.Rules[input]{
 				Normalize: func(v input) (input, error) { called = true; return v, nil },
 			},
@@ -92,7 +101,7 @@ var _ = Describe("REST request pipeline", func() {
 	})
 
 	It("keeps strict JSON decoding configurable", func() {
-		_, err := rest.Run(request(`{"name":"Sam","unknown":true}`), rest.Config[input]{Decode: httprequest.DecodeStrictJSON})
+		_, err := read(request(`{"name":"Sam","unknown":true}`), bodyConfig[input]{Decode: httprequest.DecodeStrictJSON})
 		var decodeError *rest.DecodeError
 		Expect(errors.As(err, &decodeError)).To(BeTrue())
 	})
@@ -100,7 +109,7 @@ var _ = Describe("REST request pipeline", func() {
 	It("stops on resource normalization errors before DTO and custom checks", func() {
 		sentinel := errors.New("invalid canonical value")
 		validated := false
-		_, err := rest.Run(request(`{"name":"Sam"}`), rest.Config[input]{
+		_, err := read(request(`{"name":"Sam"}`), bodyConfig[input]{
 			Rules: annotationvalidation.Rules[input]{
 				Normalize: func(v input) (input, error) { return v, sentinel },
 				Validate: func(v input) error { validated = true; return nil },
@@ -112,7 +121,7 @@ var _ = Describe("REST request pipeline", func() {
 
 	It("maps only DTO rule failures through the configured mapper", func() {
 		sentinel := errors.New("mapped DTO failure")
-		_, err := rest.Run(request(`{"name":"  "}`), rest.Config[input]{
+		_, err := read(request(`{"name":"  "}`), bodyConfig[input]{
 			Rules: annotationvalidation.Rules[input]{
 				MapDTOError: func(err error) error {
 					var invalid annotationvalidation.Error
