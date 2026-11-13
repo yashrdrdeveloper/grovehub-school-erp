@@ -9,6 +9,9 @@ import (
  coretransaction "grovehub/libs/core/database/transaction"
 
 	coreerrors "grovehub/libs/core/errors"
+	httpendpoint "grovehub/libs/core/http/endpoint"
+	rest "grovehub/libs/core/pipeline/rest"
+	coresearch "grovehub/libs/core/search"
 	coreidempotency "grovehub/libs/core/idempotency"
     headercontext "grovehub/libs/core/headercontext"
     coreevents "grovehub/libs/core/events"
@@ -109,11 +112,10 @@ func (service *AuthService) register(
 		return identityresponse.Register{}, servicehelpers.MapAuthDependencyError(readErr)
 	}
 
-	person, err = service.foundationClient.UpdatePerson(
-		ctx,
-		foundationrequest.PersonByGID{GID: person.GID},
-		servicehelpers.BuildRegisterPersonUpdate(validated),
-	)
+	person, err = service.foundationClient.UpdatePerson(ctx, httpendpoint.Request[foundationrequest.PersonByGID, rest.Empty, foundationrequest.UpdatePerson]{
+		Path: foundationrequest.PersonByGID{GID: person.GID},
+		Body: servicehelpers.BuildRegisterPersonUpdate(validated),
+	})
 	if err != nil {
 		return identityresponse.Register{}, servicehelpers.MapAuthDependencyError(err)
 	}
@@ -141,10 +143,9 @@ func (service *AuthService) resolveRegisterPerson(
 	ctx context.Context,
 	request identityrequest.Register,
 ) (foundationresponse.Person, error) {
-	result, err := service.foundationClient.SearchPersons(
-		ctx,
-		servicehelpers.RegisterEmailSearch(request.Email),
-	)
+	result, err := service.foundationClient.SearchPersons(ctx, httpendpoint.Request[rest.Empty, rest.Empty, coresearch.Request]{
+		Body: servicehelpers.RegisterEmailSearch(request.Email),
+	})
 	if err != nil {
 		return foundationresponse.Person{}, servicehelpers.MapAuthDependencyError(err)
 	}
@@ -155,10 +156,9 @@ func (service *AuthService) resolveRegisterPerson(
 		return result.Items[0], nil
 	}
 
-	person, _, err := service.foundationClient.CreatePerson(
-		headercontext.WithoutIdempotencyKey(ctx),
-		servicehelpers.BuildRegisterPersonRequest(request),
-	)
+	person, _, err := service.foundationClient.CreatePerson(headercontext.WithoutIdempotencyKey(ctx), httpendpoint.Request[rest.Empty, rest.Empty, foundationrequest.CreatePerson]{
+		Body: servicehelpers.BuildRegisterPersonRequest(request),
+	})
 	if err != nil {
 		return foundationresponse.Person{}, servicehelpers.MapAuthDependencyError(err)
 	}
