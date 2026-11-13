@@ -9,7 +9,6 @@ import (
 	coreerrors "grovehub/libs/core/errors"
 	coresearch "grovehub/libs/core/search"
 	coretransaction "grovehub/libs/core/database/transaction"
-    servicepipeline "grovehub/libs/core/pipeline/service"
 	personerror "grovehub/services/foundation/constants/error"
 	persondto "grovehub/services/foundation/dto/person"
 	"grovehub/services/foundation/entity"
@@ -18,8 +17,7 @@ import (
 	contactrepository "grovehub/services/foundation/repository/contact"
 	repositoryerrors "grovehub/services/foundation/repository/constants/errors"
 	foundationservices "grovehub/services/foundation/services/person"
-    personflow "grovehub/services/foundation/services/person/operations/create/flows"
-    createstrategies "grovehub/services/foundation/services/person/operations/create/strategies"
+    createoperation "grovehub/services/foundation/services/person/operations/create"
     createimpl "grovehub/services/foundation/services/person/operations/create/strategies/impl"
 	servicehelpers "grovehub/services/foundation/services/person/helpers"
     corehelpers "grovehub/libs/core/helpers"
@@ -34,7 +32,7 @@ type PersonService struct {
 	unitOfWork coretransaction.UnitOfWork
 	mapper foundationmappers.PersonMapper
 	validator foundationvalidators.PersonValidator
-	creator createstrategies.CreateStrategy
+	*createoperation.Operation
 }
 
 func NewPersonService(
@@ -50,21 +48,10 @@ func NewPersonService(
 		unitOfWork: unitOfWork,
 		mapper: mapper,
 		validator: validator,
-        creator: createimpl.NewCreateStrategy(personRepository, contactRepository, unitOfWork, mapper),
+        Operation: createoperation.New(createimpl.NewCreateStrategy(personRepository, contactRepository, unitOfWork, mapper)),
 	}
 }
 
-
-// @ChainOfResponsibility
-func (service *PersonService) Create(ctx context.Context, request persondto.CreatePersonRequest) (persondto.Person, bool, error) {
-    flow := personflow.Create{Request: request}
-    return servicepipeline.Run(ctx, &flow,
-        service.creator.Prepare,
-        service.creator.Idempotency,
-        service.creator.Contacts,
-        service.creator.Persist,
-    )
-}
 
 func (service *PersonService) GetByGID(ctx context.Context, request persondto.GetPersonByGIDRequest) (persondto.Person, error) {
 	person, contacts, err := service.getPersonByGID(ctx, service.mapper.ToPersonGID(request.Params))

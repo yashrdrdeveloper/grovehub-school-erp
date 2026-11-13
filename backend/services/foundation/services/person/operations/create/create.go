@@ -1,0 +1,30 @@
+// Package create owns the Person Create service operation and its chain.
+package create
+
+import (
+    "context"
+
+    servicepipeline "grovehub/libs/core/pipeline/service"
+    persondto "grovehub/services/foundation/dto/person"
+    personflow "grovehub/services/foundation/services/person/operations/create/flows"
+    createstrategies "grovehub/services/foundation/services/person/operations/create/strategies"
+)
+
+// Operation owns the Create-specific strategy dependency; embedding promotes
+// Create to the parent PersonService without a forwarding wrapper.
+type Operation struct {
+    creator createstrategies.CreateStrategy
+}
+
+func New(creator createstrategies.CreateStrategy) *Operation { return &Operation{creator: creator} }
+
+// @ChainOfResponsibility
+func (service *Operation) Create(ctx context.Context, request persondto.CreatePersonRequest) (persondto.Person, bool, error) {
+    flow := personflow.Create{Request: request}
+    return servicepipeline.Run(ctx, &flow,
+        service.creator.Prepare,
+        service.creator.Idempotency,
+        service.creator.Contacts,
+        service.creator.Persist,
+    )
+}
