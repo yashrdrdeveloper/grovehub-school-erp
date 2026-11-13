@@ -4,7 +4,7 @@ package composition
 import "grovehub/libs/core/annotation/contract"
 
 var UseCases = []contract.UseCase{
-    {Name:"Service",Syntax:"@Service",Category:"Services, composition and dependency injection",Purpose:"Register service contract/constructor for generated composition",Mode:"REG",Status:contract.Proposed,Roadmap:"P5",Target:contract.TypeTarget},
+    {Name:"Service",Syntax:"@Service",Category:"Services, composition and dependency injection",Purpose:"Register service contract/constructor for generated composition",Mode:"CHECK",Status:contract.Pilot,Roadmap:"P5",Target:contract.TypeTarget},
     {Name:"Component",Syntax:"@Component",Category:"Services, composition and dependency injection",Purpose:"Generic registered component when no narrower role",Mode:"REG",Status:contract.Optional,Roadmap:"P5",Target:contract.TypeTarget},
     {Name:"Inject",Syntax:"@Inject",Category:"Services, composition and dependency injection",Purpose:"Constructor parameter binding, not reflection field injection",Mode:"REG",Status:contract.Optional,Roadmap:"P5",Target:contract.TypeTarget},
     {Name:"Provides",Syntax:"@Provides",Category:"Services, composition and dependency injection",Purpose:"Explicit provider function for external dependencies",Mode:"REG",Status:contract.Proposed,Roadmap:"P5",Target:contract.FunctionTarget},

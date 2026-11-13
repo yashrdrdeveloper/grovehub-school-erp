@@ -7,11 +7,9 @@ import (
 
 	annotationvalidation "grovehub/libs/core/annotation/validation"
 	coreerrors "grovehub/libs/core/errors"
-	coreid "grovehub/libs/core/id"
-	coreidempotency "grovehub/libs/core/idempotency"
-	headercontext "grovehub/libs/core/headercontext"
 	coresearch "grovehub/libs/core/search"
 	coretransaction "grovehub/libs/core/database/transaction"
+    servicepipeline "grovehub/libs/core/pipeline/service"
 	personerror "grovehub/services/foundation/constants/error"
 	persondto "grovehub/services/foundation/dto/person"
 	"grovehub/services/foundation/entity"
@@ -20,17 +18,21 @@ import (
 	contactrepository "grovehub/services/foundation/repository/contact"
 	repositoryerrors "grovehub/services/foundation/repository/constants/errors"
 	foundationservices "grovehub/services/foundation/services/person"
+    personflow "grovehub/services/foundation/services/person/flows"
+    createstrategies "grovehub/services/foundation/services/person/strategies/create"
 	servicehelpers "grovehub/services/foundation/services/person/helpers"
 	foundationvalidators "grovehub/services/foundation/validators/person"
 	validatorhelpers "grovehub/services/foundation/validators/person/helpers"
 )
 
+// @Service
 type PersonService struct {
 	personRepository personrepository.PersonRepository
 	contactRepository contactrepository.ContactRepository
 	unitOfWork coretransaction.UnitOfWork
 	mapper foundationmappers.PersonMapper
 	validator foundationvalidators.PersonValidator
+	creator *createstrategies.Creator
 }
 
 func NewPersonService(
@@ -46,70 +48,20 @@ func NewPersonService(
 		unitOfWork: unitOfWork,
 		mapper: mapper,
 		validator: validator,
+        creator: createstrategies.New(personRepository, contactRepository, unitOfWork, mapper),
 	}
 }
 
 
+// @ChainOfResponsibility
 func (service *PersonService) Create(ctx context.Context, request persondto.CreatePersonRequest) (persondto.Person, bool, error) {
-	validatedRequest, err := annotationvalidation.Process(request, service.validator.CreateRules())
-	if err != nil { return persondto.Person{}, false, err }
-	contacts := servicehelpers.BuildContacts(validatedRequest.RequestBody.Contacts, nil)
-	idempotencyKey, requestHash := "", ""
-	if headercontext.IdempotencyKey(ctx) != "" {
-		idempotencyKey, err = coreidempotency.ValidateKey(headercontext.IdempotencyKey(ctx))
-		if err != nil { return persondto.Person{}, false, coreerrors.NewError(personerror.InvalidPersonIdempotencyKey) }
-		requestHash, err = coreidempotency.Fingerprint(validatedRequest.RequestBody)
-		if err != nil { return persondto.Person{}, false, coreerrors.Wrap(personerror.PersonCreateFailed, err) }
-		existing, storedContacts, readErr := service.findPersonByIdempotencyKey(ctx, idempotencyKey)
-		if readErr == nil {
-			if servicehelpers.NullableString(existing.RequestHash) != requestHash {
-				return persondto.Person{}, false, coreerrors.NewError(personerror.PersonIdempotencyConflict)
-			}
-			return service.mapper.ToPersonResponse(existing, storedContacts), false, nil
-		}
-		if !errors.Is(readErr, repositoryerrors.ErrPersonNotFound) {
-			return persondto.Person{}, false, coreerrors.Wrap(personerror.PersonReadFailed, readErr)
-		}
-	}
-	if len(contacts) == 0 && idempotencyKey == "" {
-		return persondto.Person{}, false, coreerrors.NewError(personerror.InvalidPersonIdempotencyKey)
-	}
-	existingPerson, existingContacts, found, err := service.findExistingPersonByContacts(ctx, contacts)
-	if err != nil || found {
-		if found { return service.mapper.ToPersonResponse(existingPerson, existingContacts), false, nil }
-		return persondto.Person{}, false, err
-	}
-	gid, err := coreid.NewUUIDv7()
-	if err != nil { return persondto.Person{}, false, coreerrors.Wrap(personerror.PersonCreateFailed, err) }
-	person := servicehelpers.NewPerson(gid, validatedRequest.RequestBody, time.Now().UTC())
-	if idempotencyKey != "" { person.IdempotencyKey, person.RequestHash = &idempotencyKey, &requestHash }
-	contacts = servicehelpers.AssociateContacts(person, contacts)
-	person.SearchDetails = servicehelpers.BuildPersonSearchDetails(person, contacts)
-	err = service.unitOfWork.Run(ctx, func(txCtx context.Context) error {
-		if err := service.personRepository.Create(txCtx, person); err != nil { return err }
-		return service.contactRepository.ReplaceForPerson(txCtx, person.GID, contacts)
-	})
-	if err != nil {
-		if errors.Is(err, repositoryerrors.ErrPersonIdempotencyKeyAlreadyExists) {
-			existing, storedContacts, readErr := service.findPersonByIdempotencyKey(ctx, idempotencyKey)
-			if readErr != nil { return persondto.Person{}, false, coreerrors.Wrap(personerror.PersonReadFailed, readErr) }
-			if servicehelpers.NullableString(existing.RequestHash) != requestHash {
-				return persondto.Person{}, false, coreerrors.NewError(personerror.PersonIdempotencyConflict)
-			}
-			return service.mapper.ToPersonResponse(existing, storedContacts), false, nil
-		}
-		if errors.Is(err, repositoryerrors.ErrContactAlreadyExists) { return service.resolveConcurrentCreate(ctx, contacts) }
-		return persondto.Person{}, false, coreerrors.WrapWithMetadata(personerror.PersonCreateFailed, err, service.mapper.ToPersonErrorMetadata(gid))
-	}
-	return service.mapper.ToPersonResponse(person, contacts), true, nil
-}
-
-func (service *PersonService) findPersonByIdempotencyKey(ctx context.Context, key string) (entity.Person, []entity.Contact, error) {
-	person, err := service.personRepository.FindByIdempotencyKey(ctx, key)
-	if err != nil { return entity.Person{}, nil, err }
-	contacts, err := service.contactRepository.FindByPersonGID(ctx, person.GID)
-	if err != nil { return entity.Person{}, nil, err }
-	return person, contacts, nil
+    flow := personflow.Create{Request: request}
+    return servicepipeline.Run(ctx, &flow,
+        service.creator.Prepare,
+        service.creator.Idempotency,
+        service.creator.Contacts,
+        service.creator.Persist,
+    )
 }
 
 func (service *PersonService) GetByGID(ctx context.Context, request persondto.GetPersonByGIDRequest) (persondto.Person, error) {
@@ -282,17 +234,6 @@ func (service *PersonService) getPersonByGID(ctx context.Context, gid string) (e
 }
 
 
-func (service *PersonService) findExistingPersonByContacts(ctx context.Context, contacts []entity.Contact) (entity.Person, []entity.Contact, bool, error) {
-	if len(contacts) == 0 { return entity.Person{}, nil, false, nil }
-	gids, err := service.contactRepository.FindPersonGIDsByContacts(ctx, contacts)
-	if err != nil { return entity.Person{}, nil, false, coreerrors.Wrap(personerror.PersonReadFailed, err) }
-	if len(gids) > 1 { return entity.Person{}, nil, false, coreerrors.NewError(personerror.PersonContactConflict) }
-	if len(gids) == 0 { return entity.Person{}, nil, false, nil }
-	person, storedContacts, err := service.getPersonByGID(ctx, gids[0])
-	if err != nil { return entity.Person{}, nil, false, coreerrors.Wrap(personerror.PersonReadFailed, err) }
-	return person, storedContacts, true, nil
-}
-
 func (service *PersonService) ensureContactsBelongToPerson(
 	ctx context.Context,
 	gid string,
@@ -317,20 +258,6 @@ func (service *PersonService) ensureContactsBelongToPerson(
 	return nil
 }
 
-
-func (service *PersonService) resolveConcurrentCreate(
-	ctx context.Context,
-	contacts []entity.Contact,
-) (persondto.Person, bool, error) {
-	existingPerson, existingContacts, found, err := service.findExistingPersonByContacts(ctx, contacts)
-	if err != nil {
-		return persondto.Person{}, false, err
-	}
-	if found {
-		return service.mapper.ToPersonResponse(existingPerson, existingContacts), false, nil
-	}
-	return persondto.Person{}, false, coreerrors.NewError(personerror.PersonCreateFailed)
-}
 
 func (service *PersonService) mapUpdateError(gid string, err error) error {
 	mapped := map[error]func() error{

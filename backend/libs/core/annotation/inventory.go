@@ -9,6 +9,8 @@ import (
     "grovehub/libs/core/annotation/validation"
     "grovehub/libs/core/annotation/persistence"
     "grovehub/libs/core/annotation/composition"
+    "grovehub/libs/core/annotation/chain"
+    "grovehub/libs/core/annotation/strategy"
     "grovehub/libs/core/annotation/http"
     "grovehub/libs/core/annotation/middleware"
     "grovehub/libs/core/annotation/security"
@@ -30,6 +32,8 @@ func buildInventory() []UseCase {
         validation.UseCases,
         persistence.UseCases,
         composition.UseCases,
+        chain.UseCases,
+        strategy.UseCases,
         http.UseCases,
         middleware.UseCases,
         security.UseCases,
