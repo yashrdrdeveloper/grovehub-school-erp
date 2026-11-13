@@ -73,7 +73,7 @@ var _ = Describe("Person PATCH application", func() {
 		for _, payload := range []string{`{"firstName":null}`,`{"lastName":null}`,`{"firstName":"   "}`,`{"lastName":""}`} {
 			var request foundationrequest.UpdatePerson
 			Expect(json.Unmarshal([]byte(payload), &request)).To(Succeed())
-			_, err := annotationvalidation.Process(request, validator.UpdateRules())
+			_, err := annotationvalidation.Process(foundationrequest.UpdatePersonRequest{Params:foundationrequest.PersonByGID{GID:patchPersonGID}, RequestBody:request}, validator.UpdateRules())
 			Expect(err).To(HaveOccurred(), payload)
 		}
 	})

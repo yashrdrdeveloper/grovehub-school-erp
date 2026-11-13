@@ -65,7 +65,7 @@ var _ = Describe("Person validation rules", func() {
 		request := foundationrequest.UpdatePerson{}
 		request.FirstName.Set, request.FirstName.Value = true, &firstName
 		request.MiddleName.Set = true
-		validated, err := annotationvalidation.Process(foundationrequest.UpdatePersonRequest{RequestBody: request}, validator.UpdateRules())
+		validated, err := annotationvalidation.Process(foundationrequest.UpdatePersonRequest{Params:foundationrequest.PersonByGID{GID:"018f5d04-315c-75a9-b890-df0d02e787c1"}, RequestBody:request}, validator.UpdateRules())
 		Expect(err).NotTo(HaveOccurred())
 		Expect(*validated.RequestBody.FirstName.Value).To(Equal("Arun"))
 		Expect(validated.RequestBody.MiddleName.Set).To(BeTrue())
@@ -90,7 +90,7 @@ var _ = Describe("Person validation rules", func() {
 		tooLong := strings.Repeat("a", 101)
 		request := foundationrequest.UpdatePerson{}
 		request.FirstName.Set, request.FirstName.Value = true, &tooLong
-		_, err := annotationvalidation.Process(foundationrequest.UpdatePersonRequest{RequestBody: request}, validator.UpdateRules())
+		_, err := annotationvalidation.Process(foundationrequest.UpdatePersonRequest{Params:foundationrequest.PersonByGID{GID:"018f5d04-315c-75a9-b890-df0d02e787c1"}, RequestBody:request}, validator.UpdateRules())
 		var invalid *coreerrors.Error
 		Expect(errors.As(err, &invalid)).To(BeTrue())
 		Expect(invalid.Definition().Code()).To(Equal(personerror.InvalidPersonRequest.Code()))
