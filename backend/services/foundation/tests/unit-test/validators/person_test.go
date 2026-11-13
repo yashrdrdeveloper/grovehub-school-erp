@@ -9,6 +9,7 @@ import (
 
 	annotationvalidation "grovehub/libs/core/annotation/validation"
 	coreerrors "grovehub/libs/core/errors"
+	coresearch "grovehub/libs/core/search"
 	personerror "grovehub/services/foundation/constants/error"
 	foundationrequest "grovehub/services/foundation/dto/request"
 	personvalidator "grovehub/services/foundation/validators/impl"
@@ -70,6 +71,19 @@ var _ = Describe("Person validation rules", func() {
 		Expect(validated.MiddleName.Set).To(BeTrue())
 		Expect(validated.MiddleName.Value).To(BeNil())
 		Expect(*request.FirstName.Value).To(Equal("  Arun "))
+	})
+
+	It("validates generic search requests using SearchRules", func() {
+		normalized, err := annotationvalidation.Process(coresearch.Request{}, validator.SearchRules())
+		Expect(err).NotTo(HaveOccurred())
+		Expect(normalized).To(Equal(coresearch.Request{}))
+
+		_, err = annotationvalidation.Process(coresearch.Request{
+			SearchText: strings.Repeat("x", 257),
+		}, validator.SearchRules())
+		var applicationError *coreerrors.Error
+		Expect(errors.As(err, &applicationError)).To(BeTrue())
+		Expect(applicationError.Definition().Code()).To(Equal(personerror.InvalidPersonSearch.Code()))
 	})
 
 	It("enforces PATCH required names and max lengths through tags", func() {
