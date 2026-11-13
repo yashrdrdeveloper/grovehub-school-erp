@@ -11,6 +11,9 @@ import (
 	. "github.com/onsi/gomega"
 
 	coreerrors "grovehub/libs/core/errors"
+	headercontext "grovehub/libs/core/headercontext"
+	annotationdto "grovehub/libs/core/annotation/dto"
+	foundationclientimpl "grovehub/services/foundation/client/impl"
 	coresearch "grovehub/libs/core/search"
 	personerror "grovehub/services/foundation/constants/error"
 	controllerimpl "grovehub/services/foundation/controller/protected/impl"
@@ -29,11 +32,13 @@ type fakeService struct {
 	lastCreate foundationrequest.CreatePerson
 	lastUpdate foundationrequest.UpdatePerson
 	lastPath foundationrequest.PersonByGID
+	lastCtx context.Context
 }
 
-func (s *fakeService) Create(_ context.Context, input foundationrequest.CreatePerson) (foundationresponse.Person, bool, error) {
+func (s *fakeService) Create(ctx context.Context, input foundationrequest.CreatePerson) (foundationresponse.Person, bool, error) {
 	s.calls++
 	s.lastCreate = input
+	s.lastCtx = ctx
 	return foundationresponse.Person{GID: goodGID, FirstName: input.FirstName}, s.created, s.failure
 }
 func (s *fakeService) GetByGID(_ context.Context, input foundationrequest.PersonByGID) (foundationresponse.Person, error) {
@@ -107,6 +112,77 @@ var _ = Describe("typed Person controller pipeline", func() {
 		Expect(response.Code).To(Equal(http.StatusConflict))
 		Expect(response.Body.String()).To(ContainSubstring("FOUNDATION_PERSON_CONTACT_CONFLICT"))
 		Expect(response.Body.String()).To(ContainSubstring("email"))
+	})
+
+	It("routes generated @RequestLine CreatePerson through the controller and derives created from HTTP 201", func() {
+		for _, created := range []bool{true, false} {
+			service := &fakeService{created: created}
+			client := foundationclientimpl.NewPersonClient(fixtureMux(service))
+			ctx := headercontext.WithValues(context.Background(), headercontext.Values{IdempotencyKey:"an-internal-key"})
+			person, wasCreated, err := client.CreatePerson(ctx, foundationrequest.CreatePerson{
+				Person: foundationrequest.Person{FirstName:"  Arun ", LastName:"  Kumar "},
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(wasCreated).To(Equal(created))
+			Expect(person.FirstName).To(Equal("Arun"))
+			Expect(service.calls).To(Equal(1))
+			Expect(headercontext.IdempotencyKey(service.lastCtx)).To(Equal("an-internal-key"))
+		}
+	})
+
+	It("maps generated Get, Update, Search and Deactivate clients through controller methods", func() {
+		service := &fakeService{}
+		client := foundationclientimpl.NewPersonClient(fixtureMux(service))
+		path := foundationrequest.PersonByGID{GID: goodGID}
+		person, err := client.GetPersonByGID(context.Background(), path)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(person.GID).To(Equal(goodGID))
+
+		firstName := "  Name  "
+		person, err = client.UpdatePerson(context.Background(), path, foundationrequest.UpdatePerson{
+			FirstName: annotationdto.Patch[string]{Set:true,Value:&firstName},
+		})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(person.GID).To(Equal(goodGID))
+		Expect(*service.lastUpdate.FirstName.Value).To(Equal("Name"))
+		Expect(service.lastPath.GID).To(Equal(goodGID))
+
+		_, err = client.SearchPersons(context.Background(), coresearch.Request{})
+		Expect(err).NotTo(HaveOccurred())
+
+		person, err = client.DeactivatePerson(context.Background(), path)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(person.GID).To(Equal(goodGID))
+		Expect(service.calls).To(Equal(4))
+	})
+
+	It("propagates controller validation errors as typed client application errors", func() {
+		service := &fakeService{}
+		client := foundationclientimpl.NewPersonClient(fixtureMux(service))
+		_, err := client.GetPersonByGID(context.Background(), foundationrequest.PersonByGID{GID:"bad-id"})
+		var applicationError *coreerrors.Error
+		Expect(errors.As(err, &applicationError)).To(BeTrue())
+		Expect(applicationError.Definition().Code()).To(Equal(personerror.InvalidPersonGID.Code()))
+		Expect(applicationError.Definition().HTTPStatus()).To(Equal(http.StatusBadRequest))
+		Expect(service.calls).To(BeZero())
+
+		_, _, err = client.CreatePerson(context.Background(), foundationrequest.CreatePerson{
+			Person: foundationrequest.Person{FirstName:"   ",LastName:"Valid"},
+		})
+		Expect(errors.As(err, &applicationError)).To(BeTrue())
+		Expect(applicationError.Definition().Code()).To(Equal(personerror.InvalidPersonRequest.Code()))
+		Expect(service.calls).To(BeZero())
+	})
+
+	It("round trips service error metadata through the generated HTTP client", func() {
+		service := &fakeService{failure:coreerrors.NewErrorWithMetadata(personerror.PersonContactConflict,map[string]string{"field":"email"})}
+		client := foundationclientimpl.NewPersonClient(fixtureMux(service))
+		_, err := client.GetPersonByGID(context.Background(), foundationrequest.PersonByGID{GID:goodGID})
+		var applicationError *coreerrors.Error
+		Expect(errors.As(err,&applicationError)).To(BeTrue())
+		Expect(applicationError.Definition().Code()).To(Equal(personerror.PersonContactConflict.Code()))
+		Expect(applicationError.Definition().HTTPStatus()).To(Equal(http.StatusConflict))
+		Expect(applicationError.Metadata()).To(Equal(map[string]any{"field":"email"}))
 	})
 
 	It("does not reveal unexpected service failures", func() {
