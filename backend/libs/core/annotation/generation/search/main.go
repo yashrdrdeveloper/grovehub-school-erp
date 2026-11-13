@@ -41,15 +41,31 @@ func generateAll(backend string) error {
 		owner := filepath.Join(backend, "services", service.Name())
 		dir := filepath.Join(owner, "repository")
 		if _, err := os.Stat(dir); os.IsNotExist(err) { continue } else if err != nil { return err }
-		specs, err := discover(dir, service.Name())
-		if err != nil { return fmt.Errorf("%s search: %w", service.Name(), err) }
-		out := filepath.Join(owner, ".generated", "repository", "impl", "zz_search.gen.go")
-		if len(specs)==0 {
-			if err:=os.Remove(out);err!=nil&&!os.IsNotExist(err) {return err}
-			continue
+		// Search contracts are scoped to repository/<resource>, preserving
+		// repository/impl as a legacy flat layout for other services.
+		entries,err:=os.ReadDir(dir)
+		if err!=nil{return err}
+		directories:=[]string{dir}
+		for _,entry:=range entries {
+			if !entry.IsDir(){continue}
+			if entry.Name()=="impl"||entry.Name()=="constants"||entry.Name()=="helpers"||strings.HasPrefix(entry.Name(),"."){continue}
+			directories=append(directories,filepath.Join(dir,entry.Name()))
 		}
-		if err := validateImplementation(filepath.Join(dir,"impl"), specs); err != nil { return err }
-		if err := write(out, specs); err != nil { return err }
+		for _,resourceDir:=range directories {
+			specs,err:=discover(resourceDir,service.Name())
+			if err!=nil{return fmt.Errorf("%s search %s: %w",service.Name(),resourceDir,err)}
+			rel,err:=filepath.Rel(dir,resourceDir)
+			if err!=nil{return err}
+			outDir:=filepath.Join(owner,".generated","repository")
+			if rel!="." {outDir=filepath.Join(outDir,rel)}
+			out:=filepath.Join(outDir,"impl","zz_search.gen.go")
+			if len(specs)==0 {
+				if err:=os.Remove(out);err!=nil&&!os.IsNotExist(err){return err}
+				continue
+			}
+			if err:=validateImplementation(filepath.Join(resourceDir,"impl"),specs);err!=nil{return err}
+			if err:=write(out,specs);err!=nil{return err}
+		}
 	}
 	return nil
 }
@@ -292,7 +308,9 @@ func resolveConfig(repositoryDir,service,reference string)(dir,importPath,alias,
 			pkg,err:=parser.ParseFile(token.NewFileSet(),f,nil,parser.PackageClauseOnly)
 			if err!=nil{return "","","","",err}
 			if pkg.Name.Name!=parts[0] {continue}
-			return candidate,"grovehub/services/"+service+"/repository/"+filepath.ToSlash(relative),parts[0],parts[1],nil
+			prefix:=""
+			if filepath.Base(repositoryDir)!="repository"{prefix=filepath.Base(repositoryDir)+"/"}
+			return candidate,"grovehub/services/"+service+"/repository/"+prefix+filepath.ToSlash(relative),parts[0],parts[1],nil
 		}
 	}
 	return "","","","",fmt.Errorf("@Searchable config package %q not found under %s or its helpers directory",parts[0],repositoryDir)
