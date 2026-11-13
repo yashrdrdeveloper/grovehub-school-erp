@@ -120,11 +120,29 @@ SearchPersons(...)
 DeactivatePerson(...)
 ```
 
-The client uses `@RequestLine` with a single typed
-`httpendpoint.Request[Path,Query,Body]` argument, whose fields map to path
-placeholders, URL-encoded query parameters, and JSON request body. Declare
-`rest.Empty` for unused sections. The generated call executes the same
-**controller HTTP pipeline** used by external Foundation requests. Routes are declared relative to the central service prefix, e.g. `@RequestLine POST /protected/persons`; generation verifies an actual `POST /foundation/protected/persons` route exists. Calls dispatch directly to the registered `http.Handler` in-process, with JSON encoding/decoding and no TCP or external HTTP request. Result status 201 maps to the existing `created=true` return; 200 maps to `false`. Service application error codes, status and safe response metadata survive decoding.
+The `@RequestLine` client uses one concrete request DTO per method,
+embedding `corerequest.Request`, and **only** declares the needed sections.
+The reusable core introspector maps a declared `Params` struct into route
+placeholders, `Query` into URL-encoded query parameters, and
+`RequestBody` into JSON. Missing sections are absent automatically;
+no generic `Empty` placeholders are required. The controller receives
+and validates the exact same struct, then forwards it to the business
+service unchanged. For example:
+
+```go
+type UpdatePersonRequest struct {
+    corerequest.Request
+    Params PersonByGID `validate:"valid"`
+    RequestBody UpdatePerson `validate:"valid"`
+}
+```
+
+A `GetPersonByGIDRequest` declares just `Params`; a
+`SearchPersonsRequest` declares just `RequestBody`. Routes are
+service-prefix-relative (e.g. `@RequestLine POST /protected/persons`).
+The code generator verifies the registered controller route and dispatches
+in-process without TCP. HTTP 201 maps to `created=true`; 200 maps to
+`false`. Safe error codes, HTTP status and public metadata are preserved.
 
 The internal router does **not** run the launcher's outer IAM/gateway middleware; URL tiers are not access controls today. Revisit this trust boundary before enforcing protected/restricted policies or exposing the handler to untrusted callers.
 
@@ -137,8 +155,8 @@ A consuming service must forward its current request context:
 ```go
 person, err := foundationClient.GetPersonByGID(
     request.Context(),
-    httpendpoint.Request[foundationrequest.PersonByGID, rest.Empty, rest.Empty]{
-        Path: foundationrequest.PersonByGID{GID: gid},
+    foundationrequest.GetPersonByGIDRequest{
+        Params: foundationrequest.PersonByGID{GID: gid},
     },
 )
 ```
@@ -284,28 +302,12 @@ The generator validates the interface signature, `@Repository entity=Person` own
 
 ## HTTP request execution pipeline
 
-Foundation Person controllers invoke `rest.Run(w,r,config)`, with typed
-path, query, body and response contracts. The pipeline binds inputs,
-normalizes and validates them, invokes the Person service through
-`Config.Service`, and writes the GroveHub response envelope.
-
-For GET, PATCH and deactivation, `foundationrequest.PersonByGID` is
-bound from `path:"gid"` and validated/canonicalized as UUIDv7 before
-the service executes. For Create and Search, the pipeline decodes and
-validates the request body. Create returns HTTP 201 when new and HTTP 200
-for an existing Person. Domain errors preserve their definition status
-and metadata; malformed path/body inputs return safe HTTP 400 errors.
-The same resource validators run inside services for in-process clients.
-Foundation `PersonService` now receives a single
-`corerequest.Request[Path,Query,Body]` per operation and keeps all interface
-signatures on one line. This is the exact same underlying type as
-`rest.Input[Path,Query,Body]` and `httpendpoint.Request[Path,Query,Body]`.
-The REST controller calls `service.Create(ctx,input)`,
-`service.GetByGID(ctx,input)`, `service.Update(ctx,input)`,
-`service.Search(ctx,input)` or `service.Deactivate(ctx,input)` directly.
-Service methods access `input.Path`, `input.Query`, and `input.Body` as
-needed and independently enforce their own business invariants. Empty
-sections use `corerequest.Empty` (aliased as `rest.Empty`).
+Foundation Person controllers use `rest.RunStruct(w,r,...)` with the
+operation-specific struct and shared request rules. The binder reads only
+declared sections and the service receives the same validated struct. Services
+also validate relevant fields when invoked directly. Invalid path/body/query
+inputs return semantic 4xx responses, and domain errors retain status and
+safe metadata. Create returns 201 for new and 200 for existing Persons.
 
 ## 8. Update Person
 

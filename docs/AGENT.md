@@ -74,49 +74,59 @@ Never assume that protected/restricted URLs enforce any gate today. Before
 deployment, add and test verified Identity gateway policy and ensure internal
 maintenance APIs cannot be accessed through the external listener.
 
-### Request validation pipeline
+### Common endpoint Request contract
 
-For HTTP request DTOs, use `libs/core/pipeline/rest.Run` with resource-owned
-`annotationvalidation.Rules[T]`. The order is **decode JSON → normalize
-tagged fields → resource canonicalization → validate normalized DTO tags →
-custom resource checks → typed `Input[P,Q,B]` → service callback → response writer**.
-Required, blank, maximum-length, and PATCH-null constraints belong in DTO
-`validate` tags; do not duplicate these rules in validator helpers.
-`annotation/dto.Patch[T]` distinguishes omitted, explicit null and supplied
-values; only supplied fields are validated. The same `Rules[T]` must also
-be reused via `annotationvalidation.Process` on public service entry points
-to protect in-process clients. The pipeline owns the HTTP transport lifecycle, not authorization or
-business logic. Configure `rest.Config[Path,Query,Body,Response]` with
-`Path`, `Query` and `Body` validation rules, a `Service` callback,
-safe invalid-input/fallback error definitions, and optional `Writer`.
-Return no value from controller handlers; `rest.Run(w,r,config)` writes
-the response. Keep actual domain services independent of `net/http`.
+All typed HTTP, in-process client, and service requests share
+`libs/core/request.Request`. Every endpoint DTO **embeds this common
+contract** and declares **only the applicable** `Params`, `Query`, and
+`RequestBody` fields, with exactly those names:
+
+```go
+type UpdatePersonRequest struct {
+    corerequest.Request
+    Params PersonByGID `validate:"valid"`
+    RequestBody UpdatePerson `validate:"valid"`
+}
+```
+
+The missing `Query` field is **automatically absent**. Never add
+`rest.Empty`, `corerequest.Empty`, or
+`Request[Path,Query,Body]` type arguments to new interfaces/DTOs.
+This is a reusable structural contract, not an untyped `any` map:
+`Params` and `RequestBody` keep their concrete Go types.
+
+The same concrete DTO appears in the generated `@RequestLine` client,
+`rest.RunStruct(w,r,rest.StructConfig[Request,Response])` controller
+callback, `PersonService` interface and implementation, and event decorators.
+The core request inspector automatically discovers which sections exist.
+`Params` fields use `path:"..."` tags, `Query` fields use `query:"..."`,
+and `RequestBody` is encoded/decoded as the endpoint's JSON body.
+Normalizers and resource validators execute over the common request with
+`validate:"valid"` on nested sections; the service reuses its rules to
+protect direct in-process calls.
+
+HTTP controllers must not return values or perform business logic.
+Configure `StructConfig` with resource-owned `Rules`, semantic
+`InvalidParams` / `InvalidQuery` / `InvalidRequestBody`, a safe
+`Fallback`, and a typed `Service(ctx, input)` callback. The callback
+forwards the same `input` directly into the business service.
+Identity Register uses the same convention.
 
 ### Service-to-service client routing
 
-Foundation's public `client.Client` uses `// @RequestLine METHOD /protected/...`
-instead of direct `@Proxy personService.*` delegates. Every generated
-method now receives exactly `context.Context` plus one typed
-`httpendpoint.Request[Path,Query,Body]` containing `Path`, `Query`, and
-`Body`. Use `rest.Empty` for unused sources. The generator
-verifies the annotated endpoint against the generated controller HTTP routes
-and derives the service base prefix from `routes/http.go`, so the client does
-not duplicate `/foundation`. The input contract is a shared generic `corerequest.Request[Path,Query,Body]`
-from `libs/core/request`; `rest.Input` and `httpendpoint.Request` are
-aliases. Foundation `PersonService` methods accept the same type, with
-one-line signatures, so controllers pass their validated `input` straight
-to the service without unpacking path and body. Services still enforce
-domain invariants and are not coupled to `http.Request` or `ResponseWriter`.
-The injected internal `http.Handler` runs
-the Person controller's REST normalization/validation and response handling
-in-process (no socket), preserving `context.Context`, semantic error
-codes/statuses, and `created` (HTTP 201). Integration/Infrastructure clients
-continue using `@Proxy` until separately migrated.
+Foundation `client.Client` uses `// @RequestLine METHOD /protected/...`
+to address registered controller routes rather than direct `@Proxy`
+service delegates. Every client method accepts `context.Context`
+plus one operation-specific request struct embedding the common Request.
+The generator resolves the service prefix from the actual registered routes
+and invokes the same controller pipeline **in-process** (no socket),
+preserving context, application error status/metadata and HTTP 201 created.
+Integration/Infrastructure legacy `@Proxy` clients remain service-forwarders
+until separately migrated.
 
-**Do not assume local client dispatch executes launcher/gateway middleware**.
-Only the registered service handler is invoked. URL tiers are not security
-boundaries; future IAM policy must be enforced explicitly for privileged
-internal and external requests.
+**Internal router dispatch does not execute outer gateway/IAM middleware**.
+URL tiers are not security boundaries; explicitly enforce IAM policy before
+using these handlers for protected/restricted operations.
 
 ### Backend layer responsibilities
 

@@ -326,35 +326,35 @@ The implementation may live under each capability's `helpers/`, but consumers us
 
 ---
 
-## 8.1 Typed REST executor
+## 8.1 Common request contract and REST pipeline
 
-`libs/core/pipeline/rest.Run` binds typed `Path`, `Query` and `Body` DTOs,
-normalizes and validates each source, executes an explicit typed service
-callback, and writes a standardized HTTP response. `rest.Input[P,Q,B]` is an alias of the transport-independent
-`corerequest.Request[P,Q,B]` in `libs/core/request`. Generated in-process
-clients expose the same underlying type through
-`httpendpoint.Request[P,Q,B]`; Foundation services accept that shared typed
-request directly. No mapping is required between controller, service and
-client arguments. `rest.Result[R]` describes the success payload, status and
-headers.
-The generic callback preserves the existing `context.Context`.
+`libs/core/request.Request` is the **common** zero-sized contract
+embedded in every concrete endpoint DTO. It keeps requests strongly typed
+while allowing endpoints to declare only `Params`, `Query`,
+and/or `RequestBody` fields. Missing sections are automatically absent:
+no `Empty` type arguments are needed.
 
-`annotationvalidation.Rules[T]` remains the shared non-HTTP contract:
-tag normalization -> resource normalizer -> DTO tag validation -> custom
-validation. Services reuse the same rules through `Process` for in-process
-callers. DTO field tags support name trimming, UUIDv7 path canonicalization,
-`notblank`, `nonnull`, `maxrunes`, and numeric `min` / `max`.
-Missing path fields and invalid or repeated scalar query fields fail binding.
-Unrecognized query parameters are ignored unless `Config.StrictQuery` is enabled; malformed query encoding always fails.
+The shared `corerequest.Inspect` reads the declared sections for both
+`rest.RunStruct` and `endpoint.CallStruct`; unsupported sections fail
+closed. `rest.RunStruct[Request,Response]` binds route params and query
+fields, decodes JSON body when declared, normalizes and validates
+`validate:"valid"` nested DTOs, then passes the **same** request type
+to the service callback. The `@RequestLine` generated client uses this
+same request contract, and the business service has no HTTP dependency.
 
-The REST executor defaults to the existing core HTTP response envelope;
-`Config.Writer` allows transport-specific writers when necessary.
-Define `InvalidPath`, `InvalidQuery`, `InvalidBody` and `Fallback`
-semantic errors at composition. The pipeline only *invokes* the service:
-business orchestration, persistence, transactions and authorization stay
-outside core.
+`annotationvalidation.Rules[T]` supplies resource-owned normalization,
+validation and DTO error mapping, preserving PATCH omitted/null/value
+semantics. Set `InvalidParams`, `InvalidQuery`,
+`InvalidRequestBody` and `Fallback` for safe errors. With
+`StrictQuery`, undeclared or malformed query input is rejected.
+The response writer handles semantic statuses, headers and safe metadata;
+business orchestration, persistence, transactions and authorization remain
+outside the core pipeline.
 
----
+`rest.Run` and `endpoint.CallRequest` with legacy generic
+`Parts[Path,Query,Body]` remain solely for compatibility, not new
+controllers, services, or generated clients.
+
 
 ## 9. HTTP Contracts
 
