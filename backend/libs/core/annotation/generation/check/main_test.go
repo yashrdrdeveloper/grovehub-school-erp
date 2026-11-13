@@ -18,3 +18,10 @@ func TestValidationCommentsRequireMatchingExecutableTags(t *testing.T) {
 	if err := os.WriteFile(path, []byte(valid), 0600); err != nil { t.Fatal(err) }
 	if err := CheckSource(path); err != nil { t.Fatalf("expected matching validation tags: %v", err) }
 }
+
+func TestStrategyAnnotationAcceptedOnInterfaceAndImplementation(t *testing.T) {
+    path := filepath.Join(t.TempDir(), "strategy.go")
+    source := "package strategies\n// @Strategy\ntype CreateStrategy interface { Execute() }\n// @Strategy\ntype Creator struct{}\n"
+    if err := os.WriteFile(path, []byte(source), 0600); err != nil { t.Fatal(err) }
+    if err := CheckSource(path); err != nil { t.Fatalf("strategy interface and implementation should be accepted: %v", err) }
+}

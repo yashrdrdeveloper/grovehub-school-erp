@@ -10,6 +10,7 @@ import (
     personflow "grovehub/services/foundation/services/person/flows"
 )
 
+// @Strategy
 // CreateStrategy runs the four ordered steps of the Person creation use case.
 // Each step returns Next, Return (with created flag), or Fail.
 type CreateStrategy interface {

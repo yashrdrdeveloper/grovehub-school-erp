@@ -20,7 +20,7 @@ finish without a response.
 ## Annotation semantics
 - @Service marks the service type; registration still occurs explicitly in foundation.New.
 - @ChainOfResponsibility marks the Create method; Run executes the chain explicitly.
-- @Strategy marks the concrete CreateStrategy implementation; NewCreateStrategy injects repositories and returns the interface.
+- @Strategy marks both the CreateStrategy interface in strategies/strategy.go and its concrete Creator implementation in strategies/impl/create.go; NewCreateStrategy injects repositories and returns the interface. The annotation checker recognizes both targets, but actual strategy wiring remains explicit.
 - @Transactional marks the persistWrites method; the **actual** transaction is
   enforced by Transactional(unitOfWork, persistWrites), not by the comment.
 
