@@ -331,7 +331,7 @@ For example, Foundation's denormalized `search_details` projection is calculated
 
 The repository boundary is persistence/query ownership.
 
-`repository/<resource>/<resource>.go` contains the interface. `repository/constants/errors/<resource>.go` owns sentinel errors; `repository/helpers/errors/<resource>.go` owns PostgreSQL error translation; `repository/constants/keys/<resource>.go` owns schema constraint identifiers and other repository keys.
+`repository/<resource>/<resource>.go` contains the interface. `repository/constants/errors/<resource>.go` owns sentinel errors; `repository/<resource>/helpers/errors/<resource>.go` owns PostgreSQL error translation; `repository/constants/keys/<resource>.go` owns schema constraint identifiers and other repository keys.
 
 `repository/<resource>/impl/<resource>.go` owns:
 

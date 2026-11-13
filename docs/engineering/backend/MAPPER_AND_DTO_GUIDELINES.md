@@ -49,7 +49,7 @@ Its mapping belongs to the Person mapper boundary.
 Do not create generic service-level files such as:
 
 ```text
-dto/<resource>/error.go
+dto/response/error.go
 mappers/error.go
 ```
 

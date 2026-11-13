@@ -103,7 +103,7 @@ grovehub/services/foundation/client/person
 They must never import:
 
 ```text
-grovehub/services/foundation/client/person/person/impl
+grovehub/services/foundation/client/person/impl
 ```
 
 Only Foundation composition code may construct the concrete implementation.
@@ -298,7 +298,7 @@ The GID must be a valid Foundation Person GID. A valid GID that does not exist r
 
 ## Repository search implementation
 
-The repository interface in `repository/person.go` exposes a plain `Search` method.
+The repository interface in `repository/person/person.go` exposes a plain `Search` method.
 The concrete `repository/person/impl/person.go` owns its `@Searchable config=search.PersonConfig alias=p` annotation and an explicit `Search(ctx, query)` method that delegates to `repository.searchGenerated(ctx, query)`.
 
 The generator validates the interface signature, `@Repository entity=Person` ownership, approved search configuration and stable cursor, then emits the private query helper in `.generated/repository/person/impl/zz_search.gen.go`. Existing search filters and field expressions remain in `repository/person/helpers/search/person.go`.
@@ -403,9 +403,9 @@ DO use Foundation request/response contracts
 DO forward the current context.Context
 DO store/reference the Person GID when identity linkage is required
 
-DO NOT import foundation/client/person/person/impl
-DO NOT import foundation/repository/<resource>
-DO NOT import foundation/repository/<resource>/<resource>/impl
+DO NOT import foundation/client/person/impl
+DO NOT import foundation/repository/person or foundation/repository/contact
+DO NOT import foundation/repository/person or foundation/repository/contact/impl
 DO NOT import foundation/services/person directly
 DO NOT call Foundation tables directly
 DO NOT copy Person DTOs into Identity merely to avoid the client
@@ -424,7 +424,7 @@ Foundation module
 ├── core/transaction.UnitOfWork (reusable shared transaction)
 ├── repository/constants/errors/ (sentinel persistence errors)
 ├── repository/<resource>/helpers/errors/ (database error translation)
-├── repository/constants/{person,contact}.go (schema constraint names)
+├── repository/constants/keys/{person,contact}.go (schema constraint names)
 ├── repository/person/helpers/search/person.go (trusted Search Config)
 ├── PersonService (sole owner of contact lifecycle)
 ├── controller/person/protected/person.go (controller interface)
