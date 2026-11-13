@@ -341,7 +341,7 @@ validation. Services reuse the same rules through `Process` for in-process
 callers. DTO field tags support name trimming, UUIDv7 path canonicalization,
 `notblank`, `nonnull`, `maxrunes`, and numeric `min` / `max`.
 Missing path fields and invalid or repeated scalar query fields fail binding.
-Unrecognized query parameters are ignored.
+Unrecognized query parameters are ignored unless `Config.StrictQuery` is enabled; malformed query encoding always fails.
 
 The REST executor defaults to the existing core HTTP response envelope;
 `Config.Writer` allows transport-specific writers when necessary.

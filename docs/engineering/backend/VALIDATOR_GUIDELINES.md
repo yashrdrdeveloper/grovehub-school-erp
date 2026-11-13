@@ -49,7 +49,7 @@ slices are supported. Use `path:"gid"` or `query:"page"` field tags and
 `validate:"uuidv7"` / `validate:"required,min=1,max=100"` rules.
 A `normalize:"trim,uuidv7"` tag canonicalizes an existing UUIDv7.
 Missing path values, malformed scalar values and repeated scalar query keys
-fail binding; unknown query keys are ignored. Use pointers when absent and
+fail binding; unknown query keys are ignored by default, while\n`StrictQuery: true` rejects them. Malformed query encoding is rejected.\nUse pointers when absent and
 zero-value query fields must be distinguished.
 
 `rest.Run` intentionally returns nothing (HTTP handlers return nothing).
