@@ -22,10 +22,10 @@ dto/<resource>/request.go         # typed request bodies
 dto/<resource>/params.go          # typed route path parameters
 dto/<resource>/queryparams.go     # typed URL query parameters, when applicable
 dto/<resource>/response.go        # resource response types
-mappers/<resource>.go
-mappers/impl/<resource>.go
-validators/<resource>.go
-validators/impl/<resource>.go
+mappers/<resource>/<resource>.go
+mappers/<resource>/impl/<resource>.go
+validators/<resource>/<resource>.go
+validators/<resource>/impl/<resource>.go
 ```
 
 Do not create a mapper merely because a resource exists. Create it when there is an actual representation boundary.
@@ -71,9 +71,9 @@ type PersonMapper interface {
 }
 ```
 
-The concrete implementation belongs under `mappers/impl` and is constructed by the owning module composition root.
+The concrete implementation belongs under `mappers/<resource>/impl` and is constructed by the owning module composition root.
 
-Consumers depend on `mappers.PersonMapper`, not `mappers/impl.PersonMapper`.
+Consumers depend on the resource interface `mappers/person.PersonMapper`, not its concrete `mappers/person/impl.PersonMapper`.
 
 ---
 

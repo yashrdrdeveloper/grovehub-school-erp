@@ -76,7 +76,7 @@ PATCH  /foundation/protected/persons/{gid}/deactivate
 Other services inside the GroveHub process must depend on the public client contract:
 
 ```text
-backend/services/foundation/client/
+backend/services/foundation/client/person/
 ├── person.go
 └── impl/
     └── person.go
@@ -85,10 +85,10 @@ backend/services/foundation/client/
 Ownership:
 
 ```text
-client/person.go
+client/person/person.go
     -> public Client interface only
 
-client/impl/person.go
+client/person/impl/person.go
     -> concrete in-process implementation
     -> stores an internal HTTP router registered with Foundation's controller
     -> generated @RequestLine methods dispatch through the REST pipeline
@@ -97,13 +97,13 @@ client/impl/person.go
 Consumers such as Identity import only:
 
 ```text
-grovehub/services/foundation/client
+grovehub/services/foundation/client/person
 ```
 
 They must never import:
 
 ```text
-grovehub/services/foundation/client/impl
+grovehub/services/foundation/client/person/person/impl
 ```
 
 Only Foundation composition code may construct the concrete implementation.
@@ -299,9 +299,9 @@ The GID must be a valid Foundation Person GID. A valid GID that does not exist r
 ## Repository search implementation
 
 The repository interface in `repository/person.go` exposes a plain `Search` method.
-The concrete `repository/impl/person.go` owns its `@Searchable config=search.PersonConfig alias=p` annotation and an explicit `Search(ctx, query)` method that delegates to `repository.searchGenerated(ctx, query)`.
+The concrete `repository/person/impl/person.go` owns its `@Searchable config=search.PersonConfig alias=p` annotation and an explicit `Search(ctx, query)` method that delegates to `repository.searchGenerated(ctx, query)`.
 
-The generator validates the interface signature, `@Repository entity=Person` ownership, approved search configuration and stable cursor, then emits the private query helper in `.generated/repository/impl/zz_search.gen.go`. Existing search filters and field expressions remain in `repository/helpers/search/person.go`.
+The generator validates the interface signature, `@Repository entity=Person` ownership, approved search configuration and stable cursor, then emits the private query helper in `.generated/repository/person/impl/zz_search.gen.go`. Existing search filters and field expressions remain in `repository/person/helpers/search/person.go`.
 
 ## HTTP request execution pipeline
 
@@ -397,16 +397,16 @@ Deactivation is idempotent. It changes Person status; it does not delete the Per
 A consuming service such as Identity must:
 
 ```text
-DO import foundation/client
+DO import foundation/client/person
 DO depend on client.Client
 DO use Foundation request/response contracts
 DO forward the current context.Context
 DO store/reference the Person GID when identity linkage is required
 
-DO NOT import foundation/client/impl
-DO NOT import foundation/repository
-DO NOT import foundation/repository/impl
-DO NOT import foundation/services directly
+DO NOT import foundation/client/person/person/impl
+DO NOT import foundation/repository/<resource>
+DO NOT import foundation/repository/<resource>/<resource>/impl
+DO NOT import foundation/services/person directly
 DO NOT call Foundation tables directly
 DO NOT copy Person DTOs into Identity merely to avoid the client
 DO NOT create an external HTTP/TCP loopback request; use the generated in-process endpoint client
@@ -423,12 +423,12 @@ Foundation module
 ├── ContactRepository (person_contacts table, 4 methods)
 ├── core/transaction.UnitOfWork (reusable shared transaction)
 ├── repository/constants/errors/ (sentinel persistence errors)
-├── repository/helpers/errors/ (database error translation)
+├── repository/<resource>/helpers/errors/ (database error translation)
 ├── repository/constants/{person,contact}.go (schema constraint names)
-├── repository/helpers/search/person.go (trusted Search Config)
+├── repository/person/helpers/search/person.go (trusted Search Config)
 ├── PersonService (sole owner of contact lifecycle)
-├── controller/protected/person.go (controller interface)
-│   └── controller/protected/impl/person.go (HTTP adapter)
+├── controller/person/protected/person.go (controller interface)
+│   └── controller/person/protected/impl/person.go (HTTP adapter)
 └── client interface
     └── client/impl
 

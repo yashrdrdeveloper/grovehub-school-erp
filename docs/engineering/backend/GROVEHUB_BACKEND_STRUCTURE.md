@@ -35,7 +35,7 @@ These rules govern new services and refactors, not a particular Integration impl
 - Split controllers by the owning **resource**, rather than by each action: put connection CRUD/OAuth/tests/watch/actions methods in `controller/connections.go` and `controller/impl/connections.go`; use `controller/provider.go` and `controller/impl/provider.go` for provider discovery. Compose public contracts when needed.
 - Put reusable controller authorization/error/response mapping into an owning common/helper file; do not duplicate it in every controller.
 - Keep HTTP statuses on the owning `coreerrors.NewDefinition(code, message, http.Status...)` declarations under `constants/error/`; controllers read `Definition().HTTPStatus()`. Do not introduce separate per-controller error-code-to-status maps. Always return a safe HTTP 500 for unexpected non-application errors.
-- Keep `routes/http.go` as the **composition entry point**. For categorized services, annotate `routes.RegisterHTTP` with `// @Routes /<service>`, place controller interfaces in `controller/public/`, `controller/protected/`, or `controller/restricted/`, and annotate each interface with a relative resource `// @Routes /<resource>`. The generator composes `/<service>/<tier>/<resource>` and HTTP method annotations. Existing uncategorized Identity/Integration route interfaces retain their legacy URLs until migrated. `libs/core/annotation/generation/routes` emits registrations under `.generated/routes/`. Controllers retain request handling and response logic; do not recreate manual route registration files.
+- Keep `routes/http.go` as the **composition entry point**. For categorized services, annotate `routes.RegisterHTTP` with `// @Routes /<service>`, place controller interfaces in `controller/<resource>/public/`, `controller/<resource>/protected/`, or `controller/<resource>/restricted/`, and annotate each interface with a relative resource `// @Routes /<resource>`. The generator composes `/<service>/<tier>/<resource>` and HTTP method annotations. Existing uncategorized Identity/Integration route interfaces retain their legacy URLs until migrated. `libs/core/annotation/generation/routes` emits registrations under `.generated/routes/`. Controllers retain request handling and response logic; do not recreate manual route registration files.
 - **Security boundary:** Public = intended anonymous access; Protected = future authenticated access; Restricted = future internal-only access. These are URL categories **only** for now—no authentication, authorization, or network restriction is enforced by `@Routes`. Do not deploy sensitive or maintenance endpoints on an exposed gateway until explicit enforcement exists.
 
 ### Provider strategy and internal clients
@@ -67,7 +67,7 @@ These rules govern new services and refactors, not a particular Integration impl
 
 ## 1. Canonical Service Structure
 
-GroveHub uses flat service roots. Do not add `src/` or service-local launchers.
+GroveHub uses flat service roots with **resource-first packages inside each layer**. Do not add `src/` or service-local launchers.
 
 ```text
 backend/services/<service>/
@@ -77,53 +77,41 @@ backend/services/<service>/
 ├── constants/
 │   ├── error/
 │   └── events/
-│       └── operation.go
-├── dto/
-│   └── <resource>/
-│       ├── operations.go
-│       ├── request.go
-│       ├── params.go
-│       ├── queryparams.go
-│       └── response.go
+├── dto/<resource>/
+│   ├── operations.go
+│   ├── request.go
+│   ├── params.go
+│   ├── queryparams.go
+│   └── response.go
 ├── entity/
-├── events/
-│   └── <resource>/
-│       ├── <resource>.go
-│       ├── impl/
-│       │   └── <resource>.go
-│       └── helpers/
-│           └── <resource>.go
-├── mappers/
+├── events/<resource>/
 │   ├── <resource>.go
-│   └── impl/
-│       └── <resource>.go
-├── validators/
+│   ├── impl/<resource>.go
+│   └── helpers/<resource>.go
+├── mappers/<resource>/
 │   ├── <resource>.go
-│   ├── impl/
-│   │   └── <resource>.go
-│   └── helpers/
-│       └── <resource>.go
+│   └── impl/<resource>.go
+├── validators/<resource>/
+│   ├── <resource>.go
+│   ├── impl/<resource>.go
+│   └── helpers/<resource>.go
 ├── repository/
+│   ├── constants/
+│   ├── <resource>/
+│   │   ├── <resource>.go
+│   │   ├── impl/<resource>.go
+│   │   └── helpers/
+├── services/<resource>/
 │   ├── <resource>.go
-│   └── impl/
-│       └── <resource>.go
-├── services/
+│   ├── impl/<resource>.go
+│   └── helpers/<resource>.go
+├── controller/<resource>/<tier>/
 │   ├── <resource>.go
-│   ├── impl/
-│   │   └── <resource>.go
-│   └── helpers/
-│       └── <resource>.go
-├── controller/
+│   └── impl/<resource>.go
+├── client/<resource>/
 │   ├── <resource>.go
-│   ├── impl/
-│   │   └── <resource>.go
-│   └── helpers/
-│       └── <resource>.go
+│   └── impl/<resource>.go
 ├── routes/
-├── client/
-│   ├── <resource>.go
-│   └── impl/
-│       └── <resource>.go
 ├── migrations/
 └── tests/
 ```
@@ -148,43 +136,43 @@ events/<resource>/impl/<resource>.go
 events/<resource>/helpers/<resource>.go
     -> pure event envelope/payload/metadata construction
 
-mappers/<resource>.go
+mappers/<resource>/<resource>.go
     -> mapper interface
-mappers/impl/<resource>.go
+mappers/<resource>/impl/<resource>.go
     -> concrete representation conversion
 
-validators/<resource>.go
+validators/<resource>/<resource>.go
     -> validator interface
-validators/impl/<resource>.go
+validators/<resource>/impl/<resource>.go
     -> validation orchestration
-validators/helpers/<resource>.go
+validators/<resource>/helpers/<resource>.go
     -> pure resource-specific validation/normalization policy
 
-repository/<resource>.go
+repository/<resource>/<resource>.go
     -> repository interface + repository sentinel errors
-repository/impl/<resource>.go
+repository/<resource>/impl/<resource>.go
     -> database query/persistence implementation
 
-services/<resource>.go
+services/<resource>/<resource>.go
     -> service interface + service-owned input/result contracts
-services/impl/<resource>.go
+services/<resource>/impl/<resource>.go
     -> use-case orchestration
-services/helpers/<resource>.go
+services/<resource>/helpers/<resource>.go
     -> pure helpers used by service orchestration
 
-controller/<tier>/<resource>.go
+controller/<resource>/<tier>/<resource>.go
     -> controller interface for categorized services; tier is public/protected/restricted
-controller/<tier>/impl/<resource>.go
+controller/<resource>/<tier>/impl/<resource>.go
     -> HTTP adapter
-controller/<tier>/helpers/<resource>.go
+controller/<resource>/<tier>/helpers/<resource>.go
     -> request/error transport helpers; only when needed
 
 controller/<resource>.go and controller/impl/<resource>.go
     -> legacy uncategorized contracts, still used by Identity/Integration
 
-client/<resource>.go
+client/<resource>/<resource>.go
     -> public in-process client interface
-client/impl/<resource>.go
+client/<resource>/impl/<resource>.go
     -> client constructor; Foundation injects its generated HTTP controller router
     -> Integration/Infrastructure retain injected service forwarding
 ```
@@ -278,22 +266,22 @@ entity/contact.go
     -> @Entity table name mapping only (generated outside source)
 
 
-services/helpers/person.go
+services/person/helpers/person.go
     -> NewPerson and contact construction (independent values)
     -> OptionalString, NullableString, CopyContacts and association rules
 
-repository/impl/person.go
+repository/person/impl/person.go
     -> persists Person rows and their SearchDetails projection
-    -> annotated Search implementation generated into .generated/repository/impl/
+    -> annotated Search implementation generated into .generated/repository/person/impl/
 
-repository/impl/contact.go
+repository/contact/impl/contact.go
     -> persists Contact rows only; queries PersonGID foreign keys
 
-repository/helpers/search/person.go
+repository/person/helpers/search/person.go
     -> PersonConfig holds explicit search/sort/cursor and contact relation mappings
     -> private contactSearchField builds its own read-only contact relation predicates
 
-repository/helpers/errors/{person,contact}.go
+repository/{person,contact}/helpers/errors/<resource>.go
     -> PostgreSQL constraint error translation using named constants
 
 repository/constants/errors/{person,contact}.go
@@ -305,10 +293,10 @@ repository/constants/keys/{person,contact}.go
 libs/core/database/transaction/unit_of_work.go
     -> shared UnitOfWork interface and constructor across all modules
 
-services/impl/person.go
+services/person/impl/person.go
     -> coordinates both entity values through Person's lifecycle
 
-mappers/impl/person.go
+mappers/person/impl/person.go
     -> joins Person and []Contact into the existing response DTO
 ```
 
@@ -335,7 +323,7 @@ external I/O
 
 Persistence-derived behavior that exists only to store/query database data belongs in the repository implementation.
 
-For example, Foundation's denormalized `search_details` projection is calculated by `services/helpers/person.go` and written through `PersonRepository`, not by `entity.Person`. The `Person.IdempotencyKey` and `Person.RequestHash` Go fields continue mapping to the existing `create_idempotency_key` and `create_request_hash` PostgreSQL columns; no schema migration is needed.
+For example, Foundation's denormalized `search_details` projection is calculated by `services/person/helpers/person.go` and written through `PersonRepository`, not by `entity.Person`. The `Person.IdempotencyKey` and `Person.RequestHash` Go fields continue mapping to the existing `create_idempotency_key` and `create_request_hash` PostgreSQL columns; no schema migration is needed.
 
 ---
 
@@ -343,9 +331,9 @@ For example, Foundation's denormalized `search_details` projection is calculated
 
 The repository boundary is persistence/query ownership.
 
-`repository/<resource>.go` contains the interface. `repository/constants/errors/<resource>.go` owns sentinel errors; `repository/helpers/errors/<resource>.go` owns PostgreSQL error translation; `repository/constants/keys/<resource>.go` owns schema constraint identifiers and other repository keys.
+`repository/<resource>/<resource>.go` contains the interface. `repository/constants/errors/<resource>.go` owns sentinel errors; `repository/helpers/errors/<resource>.go` owns PostgreSQL error translation; `repository/constants/keys/<resource>.go` owns schema constraint identifiers and other repository keys.
 
-`repository/impl/<resource>.go` owns:
+`repository/<resource>/impl/<resource>.go` owns:
 
 ```text
 GORM/PGX database access
@@ -695,7 +683,7 @@ Contacts are nested API values, not separately addressable public resources. `en
 
 Search remains a Person use case; do not create `person_search.go` merely because Person supports search.
 
-Foundation owns the Person/GID lifecycle event contract. Its current unified event is `foundation.person.changed.v1` on the stable `foundation_person_changed` topic. Its `data` contains `operation`, `old`, and `new` using complete `dto/response.Person` snapshots; supported operations are CREATED, UPDATED and DEACTIVATED. A successful deactivation publishes only DEACTIVATED, never a duplicate UPDATED event; no-op changes do not publish. Consumers can calculate a flat field-level diff with `libs/core/diff`, which never imports Foundation. See `EVENT_GUIDELINES.md` and `backend/services/foundation/events/persons/README.md` for contract and caveats.
+Foundation owns the Person/GID lifecycle event contract. Its current unified event is `foundation.person.changed.v1` on the stable `foundation_person_changed` topic. Its `data` contains `operation`, `old`, and `new` using complete `dto/person.Person` snapshots; supported operations are CREATED, UPDATED and DEACTIVATED. A successful deactivation publishes only DEACTIVATED, never a duplicate UPDATED event; no-op changes do not publish. Consumers can calculate a flat field-level diff with `libs/core/diff`, which never imports Foundation. See `EVENT_GUIDELINES.md` and `backend/services/foundation/events/person/person.go` for contract and caveats.
 
 ---
 

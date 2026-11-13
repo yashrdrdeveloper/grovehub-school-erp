@@ -41,7 +41,7 @@ backend/services/<service>/events/
 Examples:
 
 ```text
-backend/services/foundation/events/persons/
+backend/services/foundation/events/person/
 ├── person.go
 ├── impl/person.go
 └── helpers/person.go
@@ -52,7 +52,7 @@ backend/services/identity/events/accounts/
 └── helpers/account.go
 ```
 
-Foundation lifecycle operation names and the `Operation` type live at `backend/services/foundation/constants/events/operation.go` (Go package `events`), not in `libs/core/constants` or `events/persons/person.go`. Event contracts import this Foundation-owned type; producers and consumers use `foundationevents.Created`, `foundationevents.Updated`, and `foundationevents.Deactivated`. Other domains define their own operations only when required; do not impose a single global operation enum.
+Foundation lifecycle operation names and the `Operation` type live at `backend/services/foundation/constants/events/operation.go` (Go package `events`), not in `libs/core/constants` or `events/person/person.go`. Event contracts import this Foundation-owned type; producers and consumers use `foundationevents.Created`, `foundationevents.Updated`, and `foundationevents.Deactivated`. Other domains define their own operations only when required; do not impose a single global operation enum.
 
 Create only folders that have a current responsibility. A resource may contain an independently meaningful subresource: for example, `integration/events/connections/mailbox/changed.go` with `helpers/changed.go` and `impl/changed.go` underneath `mailbox/`, because mailbox-change notifications belong to provider connections. Avoid creating an unowned top-level `events/mailbox` aggregate when connectivity is the owner.
 

@@ -17,7 +17,7 @@
 
 | Area | Code moved or replaced | Annotation / API | Current limitation |
 | --- | --- | --- | --- |
-| Foundation HTTP routes | Moved Person controller contracts and implementation to `controller/protected/`; five endpoints now use `/foundation/protected/persons` | `// @Routes /foundation` on `routes.RegisterHTTP`; `// @Routes /persons` on protected PersonController | Route tiers are URL grouping only, without authentication enforcement; update clients and enforce gateway policy before production |
+| Foundation HTTP routes | Moved Person controller contracts and implementation to `controller/person/protected/`; five endpoints now use `/foundation/protected/persons` | `// @Routes /foundation` on `routes.RegisterHTTP`; `// @Routes /persons` on protected PersonController | Route tiers are URL grouping only, without authentication enforcement; update clients and enforce gateway policy before production |
 | Identity HTTP routes | Replaced manual registration for `POST /auth/register` | `@Routes`, `@POST` | CI compilation verified; auth registration HTTP regression pending |
 | Integration HTTP routes | Replaced 13 manual connection, webhook and provider route entries | `@Routes`, `@GET`, `@POST`, `@DELETE` on two controller interfaces | Needs OAuth callback, webhook, and ownership regression tests |
 | HTTP build tooling | New `generation/routes` tool, generalized overlay maps service-local generated package files | Go AST, `-overlay` | Gopls and standard direct Go invocations need explicit configuration |
@@ -31,8 +31,8 @@
 | Strict DTO projection | Identity registration response and Foundation Person error metadata generated; contact grouping remains custom | `@Mapper`, `@Mapping` | Explicit fields fail generation when destination gains unmapped fields |
 | GORM table-only entities | Removed manual `TableName()` methods for seven Identity/Integration models; no new credential setters | `@Entity ... mode=table` | CI compilation verified; DB schema unchanged |
 | Passive entity refactor | Removed generated entity builders and entity-owned New/Get/Set/helper methods in Foundation and Identity; replaced usage with service-owned constructors, copies and explicit updates | `@Entity` now maps tables only | Go 1.27 CI compilation and existing unit suites passed; live DB regression remains pending |
-| Annotated repository search | Concrete `repository/impl/PersonRepository.Search` delegates to a generated private `searchGenerated` helper using `core/search.Execute`; filters/sorts/cursor definitions remain in `repository/helpers/search/person.go` | `@Searchable config=search.PersonConfig alias=p` above the implementation method | The public `@Repository` interface has no search implementation annotation; optional `@Filterable`, `@Sortable`, `@Cursor` now belong on the concrete Search method |
-| Repository responsibility cleanup | Moved shared `UnitOfWork` to `libs/core/database/transaction`, sentinel errors to `repository/constants/errors/`, non-query error helpers to `repository/helpers/errors/`, named PostgreSQL constraint constants to `repository/constants/{person,contact}.go`, and Person search configuration plus its private contact filter helper to `repository/helpers/search/person.go` | Thin interfaces, resource-owned implementation details, JavaDoc-style comments above annotations | Full backend compilation and Foundation unit test gates; live PostgreSQL regression pending |
+| Annotated repository search | Concrete `repository/person/impl/PersonRepository.Search` delegates to a generated private `searchGenerated` helper using `core/search.Execute`; filters/sorts/cursor definitions remain in `repository/person/helpers/search/person.go` | `@Searchable config=search.PersonConfig alias=p` above the implementation method | The public `@Repository` interface has no search implementation annotation; optional `@Filterable`, `@Sortable`, `@Cursor` now belong on the concrete Search method |
+| Repository responsibility cleanup | Moved shared `UnitOfWork` to `libs/core/database/transaction`, sentinel errors to `repository/constants/errors/`, non-query error helpers to `repository/<resource>/helpers/errors/`, named PostgreSQL constraint constants to `repository/constants/{person,contact}.go`, and Person search configuration plus its private contact filter helper to `repository/person/helpers/search/person.go` | Thin interfaces, resource-owned implementation details, JavaDoc-style comments above annotations | Full backend compilation and Foundation unit test gates; live PostgreSQL regression pending |
 | Person/contact separation | Removed non-column `Person.Contacts`; repository and service pass child `[]Contact` explicitly, while mapper emits unchanged response DTO; renamed Go idempotency fields with old database column tags | GORM `@Entity` and existing `PersonRepository` | Go build/CI verification; live DB regression remains pending |
 | Event identity declarations | Foundation Person changed, Identity Account created, Integration Mailbox changed topics/types/versions generated | `@Event` | Event publication timing, after-commit, error policies unchanged |
 | CI regression gate | GitHub Actions Go 1.27.3 binary compilation, package resolution, core/launcher/Identity/Integration unit tests, and generated-output checks | `.github/workflows/backend-annotations.yml` | Live database/NATS integration regression remains separate |
@@ -74,11 +74,11 @@ backend/
       overlay/                        # expanded to all service-local generated packages
   services/
     foundation/
-      controller/protected/person.go  # protected Person HTTP contract
-      dto/request/person.go           # Person create/PATCH DTO, using @PatchRequestDto
-      dto/response/person.go          # Person response DTO
+      controller/person/protected/person.go  # protected Person HTTP contract
+      dto/person/request.go           # Person create/PATCH DTO, using @PatchRequestDto
+      dto/person/response.go          # Person response DTO
       # shared PATCH field: backend/libs/core/annotation/dto/patch.go
-      validators/impl/person.go       # application error mapping and contact checks
+      validators/person/impl/person.go       # application error mapping and contact checks
       routes/http.go                  # @Routes /foundation service prefix and generated registrations
       .generated/routes/zz_routes.gen.go
     identity/

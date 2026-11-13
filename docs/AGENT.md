@@ -62,10 +62,10 @@ backend/services/<service>/launcher/
 
 Foundation's `routes/http.go` declares `// @Routes /foundation` on the
 `RegisterHTTP` function. Controller interfaces live under
-`controller/public/`, `controller/protected/` or `controller/restricted/`,
+`controller/person/public/`, `controller/person/protected/` or `controller/person/restricted/`,
 with relative `// @Routes /<resource>` directives. The route generator
 composes `/<service>/<access-tier>/<resource>/...` automatically. Foundation
-Person handlers and helpers live under `controller/protected/`; their routes
+Person handlers and helpers live under `controller/person/protected/`; their routes
 are `/foundation/protected/persons`. Identity and Integration currently
 retain their old uncategorized paths.
 
@@ -182,7 +182,7 @@ All domain events use `backend/libs/core/events.Envelope[T any]` via `coreevents
 
 ### Foundation Person events and reusable diff
 
-Before editing or consuming Person events, read `docs/engineering/backend/EVENT_GUIDELINES.md` and `backend/services/foundation/events/persons/README.md`. The canonical event is `foundation.person.changed.v1` on the stable topic `foundation_person_changed`. It carries `data: { operation, old, new }`, where old/new are full `foundation/dto/person.Person` snapshots or null. Only `CREATED`, `UPDATED`, and `DEACTIVATED` are currently emitted, once per successful real state change. Their Go type and constants must live in `backend/services/foundation/constants/events/operation.go` (import as `foundationevents`), not inside the Person event contract or global `libs/core/constants`; this is the domain-owned pattern for future agent changes. Deactivation does not also emit UPDATED; no-op or idempotent operations do not publish.
+Before editing or consuming Person events, read `docs/engineering/backend/EVENT_GUIDELINES.md` and `backend/services/foundation/events/person/person.go`. The canonical event is `foundation.person.changed.v1` on the stable topic `foundation_person_changed`. It carries `data: { operation, old, new }`, where old/new are full `foundation/dto/person.Person` snapshots or null. Only `CREATED`, `UPDATED`, and `DEACTIVATED` are currently emitted, once per successful real state change. Their Go type and constants must live in `backend/services/foundation/constants/events/operation.go` (import as `foundationevents`), not inside the Person event contract or global `libs/core/constants`; this is the domain-owned pattern for future agent changes. Deactivation does not also emit UPDATED; no-op or idempotent operations do not publish.
 
 Consumers decode `coreevents.Envelope[persons.Changed]` and may call `diff.Compare(event.Data.Old, event.Data.New)` using `grovehub/libs/core/diff`. Diff is domain-neutral, accepts typed values, returns `([]diff.Change, error)`, and flattens JSON-named paths. It is *not* part of Foundation or Infrastructure, and the published event does *not* include a computed diff. Full snapshots include PII (names and contact details); restrict subscribers, retention, and logs. Publishing is post-write best-effort, not transactional delivery.
 
