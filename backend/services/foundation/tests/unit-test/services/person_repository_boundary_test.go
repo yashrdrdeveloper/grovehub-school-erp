@@ -14,8 +14,8 @@ import (
 	persondto "grovehub/services/foundation/dto/person"
 	"grovehub/services/foundation/entity"
 	repositoryerrors "grovehub/services/foundation/repository/constants/errors"
-	personservice "grovehub/services/foundation/services/impl"
-	foundationservices "grovehub/services/foundation/services"
+	personservice "grovehub/services/foundation/services/person/impl"
+	foundationservices "grovehub/services/foundation/services/person"
 )
 
 type transactionMarker struct{}

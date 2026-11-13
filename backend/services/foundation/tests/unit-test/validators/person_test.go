@@ -12,7 +12,7 @@ import (
 	coresearch "grovehub/libs/core/search"
 	personerror "grovehub/services/foundation/constants/error"
 	persondto "grovehub/services/foundation/dto/person"
-	personvalidator "grovehub/services/foundation/validators/impl"
+	personvalidator "grovehub/services/foundation/validators/person/impl"
 )
 
 var _ = Describe("Person validation rules", func() {

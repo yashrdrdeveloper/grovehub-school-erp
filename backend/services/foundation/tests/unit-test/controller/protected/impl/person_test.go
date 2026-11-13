@@ -13,13 +13,13 @@ import (
 	coreerrors "grovehub/libs/core/errors"
 	headercontext "grovehub/libs/core/headercontext"
 	annotationdto "grovehub/libs/core/annotation/dto"
-	foundationclientimpl "grovehub/services/foundation/client/impl"
+	foundationclientimpl "grovehub/services/foundation/client/person/impl"
 	coresearch "grovehub/libs/core/search"
 	personerror "grovehub/services/foundation/constants/error"
-	controllerimpl "grovehub/services/foundation/controller/protected/impl"
+	controllerimpl "grovehub/services/foundation/controller/person/protected/impl"
 	persondto "grovehub/services/foundation/dto/person"
 	foundationroutes "grovehub/services/foundation/routes"
-	validatorimpl "grovehub/services/foundation/validators/impl"
+	validatorimpl "grovehub/services/foundation/validators/person/impl"
 )
 
 const goodGID = "018f5d04-315c-75a9-b890-df0d02e787c1"

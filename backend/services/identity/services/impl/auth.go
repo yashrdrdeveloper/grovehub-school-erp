@@ -13,7 +13,7 @@ import (
 	coreidempotency "grovehub/libs/core/idempotency"
     headercontext "grovehub/libs/core/headercontext"
     coreevents "grovehub/libs/core/events"
-	foundationclient "grovehub/services/foundation/client"
+	foundationclient "grovehub/services/foundation/client/person"
 	persondto "grovehub/services/foundation/dto/person"
 	identityerror "grovehub/services/identity/constants/error"
 	identityrequest "grovehub/services/identity/dto/request"

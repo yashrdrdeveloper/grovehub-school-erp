@@ -12,8 +12,8 @@ import (
 	annotationvalidation "grovehub/libs/core/annotation/validation"
 	persondto "grovehub/services/foundation/dto/person"
 	"grovehub/services/foundation/entity"
-	personservice "grovehub/services/foundation/services/impl"
-	personvalidator "grovehub/services/foundation/validators/impl"
+	personservice "grovehub/services/foundation/services/person/impl"
+	personvalidator "grovehub/services/foundation/validators/person/impl"
 )
 
 const patchPersonGID = "01900000-0000-7000-8000-000000000000"
