@@ -113,10 +113,7 @@ func (service *PersonService) findPersonByIdempotencyKey(ctx context.Context, ke
 	return person, contacts, nil
 }
 
-func (service *PersonService) GetByGID(
-	ctx context.Context,
-	request corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, corerequest.Empty],
-) (foundationresponse.Person, error) {
+func (service *PersonService) GetByGID(ctx context.Context, request corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, corerequest.Empty]) (foundationresponse.Person, error) {
 	person, contacts, err := service.getPersonByGID(ctx, service.mapper.ToPersonGID(request.Path))
 	if err != nil {
 		return foundationresponse.Person{}, err
@@ -191,10 +188,7 @@ func (service *PersonService) Search(ctx context.Context, request corerequest.Re
 	}, nil
 }
 
-func (service *PersonService) Deactivate(
-	ctx context.Context,
-	request corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, corerequest.Empty],
-) (foundationresponse.Person, error) {
+func (service *PersonService) Deactivate(ctx context.Context, request corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, corerequest.Empty]) (foundationresponse.Person, error) {
 	gid := service.mapper.ToPersonGID(request.Path)
 	person, contacts, err := service.getPersonByGID(ctx, gid)
 	if err != nil {
