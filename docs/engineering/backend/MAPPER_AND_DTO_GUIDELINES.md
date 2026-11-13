@@ -17,8 +17,11 @@ docs/engineering/backend/NORMALIZATION_AND_DRY_GUIDELINES.md
 DTOs define request/response shapes. Mappers perform real representation changes only. Validators validate and canonicalize request/service-input payloads.
 
 ```text
-dto/request/<resource>.go
-dto/response/<resource>.go
+dto/<resource>/operations.go      # endpoint request envelope types
+dto/<resource>/request.go         # typed request bodies
+dto/<resource>/params.go          # typed route path parameters
+dto/<resource>/queryparams.go     # typed URL query parameters, when applicable
+dto/<resource>/response.go        # resource response types
 mappers/<resource>.go
 mappers/impl/<resource>.go
 validators/<resource>.go
@@ -46,7 +49,7 @@ Its mapping belongs to the Person mapper boundary.
 Do not create generic service-level files such as:
 
 ```text
-dto/response/error.go
+dto/<resource>/error.go
 mappers/error.go
 ```
 
@@ -62,9 +65,9 @@ The public mapper package contains the interface:
 
 ```go
 type PersonMapper interface {
-    ToPersonGID(request request.PersonByGID) string
-    ToPersonResponse(person entity.Person, contacts []entity.Contact) response.Person
-    ToPersonErrorMetadata(gid string) response.PersonErrorMetadata
+    ToPersonGID(request persondto.PersonByGID) string
+    ToPersonResponse(person entity.Person, contacts []entity.Contact) persondto.Person
+    ToPersonErrorMetadata(gid string) persondto.PersonErrorMetadata
 }
 ```
 
@@ -160,7 +163,7 @@ person_mapper.go   # solely for DB <-> entity copying
 A service mapper may still exist for a real boundary such as:
 
 ```text
-entity.Person -> dto/response.Person
+entity.Person -> dto/person.Person
 ```
 
 Persistence/query-derived behavior belongs in the repository implementation, not in a mapper or entity.

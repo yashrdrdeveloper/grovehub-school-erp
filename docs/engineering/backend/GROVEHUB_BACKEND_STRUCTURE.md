@@ -79,8 +79,12 @@ backend/services/<service>/
 │   └── events/
 │       └── operation.go
 ├── dto/
-│   ├── request/
-│   └── response/
+│   └── <resource>/
+│       ├── operations.go
+│       ├── request.go
+│       ├── params.go
+│       ├── queryparams.go
+│       └── response.go
 ├── entity/
 ├── events/
 │   └── <resource>/
@@ -123,6 +127,8 @@ backend/services/<service>/
 ├── migrations/
 └── tests/
 ```
+
+Resource DTO packages group endpoint operations, request bodies, route params, optional query params and responses by resource. Create only files that have a current responsibility; a missing query section is inferred automatically by the shared request contract. Existing services not yet migrated may retain legacy `dto/request` and `dto/response` packages until explicitly refactored.
 
 Create only folders/files that have a current responsibility. Do not create empty event, mapper, validator, helper, or implementation packages merely for symmetry.
 

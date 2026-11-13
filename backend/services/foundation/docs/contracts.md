@@ -181,15 +181,18 @@ Foundation repository
 
 ## DTO layout
 
-Foundation's request/response DTOs use flat, responsibility-owned packages:
+Foundation DTOs are resource-based and use a single Go package per resource:
 
 ```text
-dto/request/person.go                 # CreatePerson, UpdatePerson, Contacts, PersonByGID
-dto/response/person.go                # Person, Contacts, PersonErrorMetadata
+dto/person/operations.go              # CreatePersonRequest, UpdatePersonRequest, etc.
+dto/person/request.go                 # CreatePerson, UpdatePerson, PersonNames, Contacts
+dto/person/params.go                  # PersonByGID
+dto/person/queryparams.go             # Query DTOs when URL query endpoints are introduced
+dto/person/response.go                # Person, ResponseContacts, PersonErrorMetadata
 libs/core/annotation/dto/patch.go     # shared presence-aware Patch[T] type
 ```
 
-Go consumers import `dto/request` and `dto/response` (usually as `foundationrequest` and `foundationresponse`). `@PatchRequestDto` uses shared `annotationdto.Patch[T]`; absent, null and supplied JSON values remain distinct.
+Go consumers import `grovehub/services/foundation/dto/person` (typically `persondto`). All request, params, operation and response structs share the `person` package, so response-only contact types are named `ResponseContacts` and `ResponseContactValue`. `@PatchRequestDto` generates its JSON serializer under `.generated/dto/person` and preserves absent/null/supplied semantics.
 
 ## 5. Create Person
 
