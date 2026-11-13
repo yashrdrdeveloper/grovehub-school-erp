@@ -3,6 +3,7 @@ package rest
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
@@ -22,8 +23,30 @@ func bindPath[T any](request *http.Request) (T, error) {
 	})
 }
 
-func bindQuery[T any](request *http.Request) (T, error) {
-	values := request.URL.Query()
+func bindQuery[T any](request *http.Request, strict bool) (T, error) {
+	values, err := url.ParseQuery(request.URL.RawQuery)
+	if err != nil {
+		var zero T
+		return zero, BindError{Source: "query", Field: "query", Reason: "malformed"}
+	}
+	if strict {
+		allowed := make(map[string]struct{})
+		typ := reflect.TypeFor[T]()
+		if typ.Kind() != reflect.Struct {
+			var zero T
+			return zero, fmt.Errorf("query DTO must be a struct")
+		}
+		for i := 0; i < typ.NumField(); i++ {
+			tag := strings.Split(typ.Field(i).Tag.Get("query"), ",")[0]
+			if tag != "" && tag != "-" { allowed[tag] = struct{}{} }
+		}
+		for name := range values {
+			if _, ok := allowed[name]; !ok {
+				var zero T
+				return zero, BindError{Source: "query", Field: name, Reason: "unknown"}
+			}
+		}
+	}
 	return bindFields[T]("query", func(name string) ([]string, bool) {
 		raw, exists := values[name]
 		return raw, exists

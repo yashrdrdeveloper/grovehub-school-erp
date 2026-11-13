@@ -46,6 +46,7 @@ type Config[Path, Query, Body, Response any] struct {
 	Validate    func(Input[Path, Query, Body]) error
 	Service     func(context.Context, Input[Path, Query, Body]) (Result[Response], error)
 	Decode      func(*http.Request, any) error
+	StrictQuery bool
 	InvalidPath coreerrors.Definition
 	InvalidQuery coreerrors.Definition
 	InvalidBody coreerrors.Definition
@@ -86,7 +87,7 @@ func Run[Path, Query, Body, Response any](writer http.ResponseWriter, request *h
 		writeFailure(writer, request, config.Writer, err, config.InvalidPath, config.Fallback)
 		return
 	}
-	if input.Query, err = bindQuery[Query](request); err != nil {
+	if input.Query, err = bindQuery[Query](request, config.StrictQuery); err != nil {
 		writeFailure(writer, request, config.Writer, err, config.InvalidQuery, config.Fallback)
 		return
 	}
