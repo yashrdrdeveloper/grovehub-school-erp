@@ -301,8 +301,8 @@ func writeProxies(proxies []clientProxy,output string) error {
 				ep.resultType,strings.Split(m.arguments,", ")[0],ep.verb,ep.path,ep.pathArg,ep.bodyArg)
 			b.WriteString("return result, status == 201 && err == nil, err\n}\n\n")
 		} else {
-			fmt.Fprintf(&b,"result, _, err := httpendpoint.Call[%s](ctx, c.handler, %q, %q, %s, %s)\n",
-				ep.resultType,ep.verb,ep.path,ep.pathArg,ep.bodyArg)
+			fmt.Fprintf(&b,"result, _, err := httpendpoint.Call[%s](%s, c.handler, %q, %q, %s, %s)\n",
+				ep.resultType,strings.Split(m.arguments,", ")[0],ep.verb,ep.path,ep.pathArg,ep.bodyArg)
 			b.WriteString("return result, err\n}\n\n")
 		}
 	}
