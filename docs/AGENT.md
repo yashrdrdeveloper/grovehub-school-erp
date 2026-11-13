@@ -92,6 +92,23 @@ safe invalid-input/fallback error definitions, and optional `Writer`.
 Return no value from controller handlers; `rest.Run(w,r,config)` writes
 the response. Keep actual domain services independent of `net/http`.
 
+### Service-to-service client routing
+
+Foundation's public `client.Client` uses `// @RequestLine METHOD /protected/...`
+instead of direct `@Proxy personService.*` delegates. The client generator
+verifies the annotated endpoint against the generated controller HTTP routes
+and derives the service base prefix from `routes/http.go`, so the client does
+not duplicate `/foundation`. The injected internal `http.Handler` runs
+the Person controller's REST normalization/validation and response handling
+in-process (no socket), preserving `context.Context`, semantic error
+codes/statuses, and `created` (HTTP 201). Integration/Infrastructure clients
+continue using `@Proxy` until separately migrated.
+
+**Do not assume local client dispatch executes launcher/gateway middleware**.
+Only the registered service handler is invoked. URL tiers are not security
+boundaries; future IAM policy must be enforced explicitly for privileged
+internal and external requests.
+
 ### Backend layer responsibilities
 
 GroveHub uses a strict responsibility split:

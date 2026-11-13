@@ -21,7 +21,8 @@
 | Identity HTTP routes | Replaced manual registration for `POST /auth/register` | `@Routes`, `@POST` | CI compilation verified; auth registration HTTP regression pending |
 | Integration HTTP routes | Replaced 13 manual connection, webhook and provider route entries | `@Routes`, `@GET`, `@POST`, `@DELETE` on two controller interfaces | Needs OAuth callback, webhook, and ownership regression tests |
 | HTTP build tooling | New `generation/routes` tool, generalized overlay maps service-local generated package files | Go AST, `-overlay` | Gopls and standard direct Go invocations need explicit configuration |
-| Foundation, Integration and Infrastructure clients | Generated 15 typed in-process forwarding methods; maintained constructors and service contracts retained | `@Client`, `@Proxy` | CI compilation verified; runtime context and auth tests pending |
+| Foundation HTTP endpoint client | Replaced direct PersonService @Proxy methods with five generated @RequestLine endpoint methods; the Foundation client dispatches through registered PersonController routes in-process, preserving request validation, status 201/200, errors and context | `@Client`, `@RequestLine METHOD /protected/...`, `core/http/endpoint` | No TCP loopback. The internal router does not execute outer gateway middleware; IAM enforcement must be designed before security-sensitive use |
+| Integration and Infrastructure legacy clients | Existing typed in-process @Proxy service-forwarders remain unchanged | `@Client`, `@Proxy` | Migrate individually once controller route contracts and authorization boundaries are ready |
 | Integration config | Gmail and Outlook env parsing moved to typed tagged loader; preserved callback checks and error semantics | `@Configuration`, `env`, `required`, `default`, `secret` | `GmailPush` and encryption-key loaders remain explicit |
 | Shared PATCH DTO generation | Replaced Foundation Person-only PATCH helper and custom JSON serializer with `annotation/dto.Patch[T]` and `@PatchRequestDto` | `generation/patchdto` emits JSON serialization using service-local Go overlay | Omitted/null/value semantics preserved; validation of clearable fields stays in the service |
 | Foundation and Identity request validation | Shared typed HTTP executor now binds path/query/body inputs, runs canonicalization + DTO/custom validation, calls typed service adapters and writes uniform responses; Foundation Person and Identity Register controllers migrated | `rest.Run(w,r,Config[P,Q,B,R])`, `rest.Input`, `rest.Result`, `annotationvalidation.Rules[T]` | No authentication added; HTTP callback adapters retain existing service contracts; input binding supports common primitives, optional pointers and repeated query slices |
@@ -69,7 +70,7 @@ backend/
       search/                         # typed repository search and allowlist checker
       events/                         # versioned topic/type constant generator
       routes/                         # Go AST -> traced HTTP route generation
-      clients/                        # typed @Client/@Proxy delegation
+      clients/                        # typed @Client/@RequestLine or legacy @Proxy generation
       overlay/                        # expanded to all service-local generated packages
   services/
     foundation/
@@ -102,7 +103,7 @@ scripts/testing/sanity.sh              # overlay-aware sanity test
 
 Generated files are **not committed**; directories above show runtime outputs after the generation step.
 
-`generation/clients` adds `.generated/client/impl/zz_clients.gen.go` within Foundation, Integration and Infrastructure. The Go overlay scanner now supports nested generated package paths. `client/impl` retains only the constructor and injected service dependencies; generated forwarders are defined by `@Proxy` method bindings on each public client interface.
+`generation/clients` emits `.generated/client/impl/zz_clients.gen.go` for Foundation, Integration and Infrastructure. Foundation uses method-annotated `@RequestLine` bindings verified against the generated HTTP routes; its client constructor receives the private service router and no direct PersonService. `@RequestLine` paths omit the central `/foundation` service prefix, which the generator resolves from registered routes. Integration/Infrastructure retain direct service `@Proxy` delegation. Source overlays preserve developer-owned interfaces and constructors.
 
 ## 4. Development and verification commands
 
@@ -138,7 +139,7 @@ go test -vet=off -overlay=.generated/overlay.json ./...
 | Entity/GORM models | Identity and Integration tables now use `@Entity schema.table mode=table`; remaining work is parity and migration tooling verification | No accidental credential/PII setters; GORM schema/table parity |
 | Mapper/DTO | Strict `@Mapper` generator active for Identity registration and Foundation error metadata; complex mappings remain handwritten | No secret export, exhaustive destination fields, error DTO semantics |
 | Validators | Extend field tag rules for email/phone/UUID, cross-field rules, PATCH presence | Preserve existing resource errors and normalization |
-| Clients | Pilot applied to Foundation, Integration and Infrastructure; extend only after compile tests | No authorization bypass, no signature drift |
+| Clients | Foundation @RequestLine controller endpoint dispatch active; Integration/Infrastructure @Proxy remain | Confirm controller validation parity, application status/metadata, context propagation, and security policy across internal/edge routes |
 | Repositories | Opt-in CRUD, transaction and query contracts where safe | Preserve SQL/GORM, tenant boundaries, search, conflict mapping |
 | Events | `@Event` generates Foundation, Identity and Integration topic/type/version identifiers; event handlers and publishers remain explicit | Keep `Envelope[T]`, event topics, idempotent/no-op semantics |
 | Messaging | Producer/consumer registration descriptors | NATS/Watermill ack/retry/trace/backpressure semantics |

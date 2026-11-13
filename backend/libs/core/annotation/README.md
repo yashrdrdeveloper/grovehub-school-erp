@@ -103,6 +103,40 @@ type MessagingClient interface {
 
 This generates a signature-preserving delegation to an explicitly injected implementation. No service locator or network call is invented.
 
+Foundation now uses endpoint-based clients instead of direct service proxies:
+
+```go
+// @Client personClient
+type Client interface {
+    // @RequestLine POST /protected/persons
+    CreatePerson(ctx context.Context, request foundationrequest.CreatePerson) (foundationresponse.Person, bool, error)
+
+    // @RequestLine GET /protected/persons/{gid}
+    GetPersonByGID(ctx context.Context, request foundationrequest.PersonByGID) (foundationresponse.Person, error)
+}
+```
+
+`@RequestLine` syntax is `METHOD /tier/resource[/{pathVar}]`. The generator
+checks the method/path against actual generated controller registrations and
+resolves the service prefix from `routes/http.go` *via those registrations*.
+Changing `@Routes /foundation` changes both server and generated client paths,
+without duplicating that prefix in client interfaces. Request parameters with
+path placeholders use `path:"gid"` tags; when both path and JSON body DTOs
+are needed, the method signature takes `ctx, path, body`. GET/DELETE cannot
+declare a body. The optional `(Response, bool, error)` result is supported
+for POST and maps HTTP 201 to `created=true`.
+
+`client/impl` receives the service's registered HTTP handler and dispatches
+directly in process using `core/http/endpoint`: JSON DTO binding, normalization,
+validation, controller, business service, and response envelope all run, with
+no network hop. Result envelopes and application error status/metadata are
+decoded to the declared Go result type and `coreerrors.Error`. Legacy `@Proxy`
+clients remain supported for Integration/Infrastructure.
+
+**Security:** the local handler does not automatically run the external
+launcher/gateway middleware. URL access tiers are labels, not IAM enforcement
+yet; privileged endpoints require explicit shared access checks before use.
+
 ```go
 // @Mapper AuthMapper
 type AuthMapper interface {

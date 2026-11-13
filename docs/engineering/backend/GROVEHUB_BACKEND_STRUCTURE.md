@@ -41,7 +41,8 @@ These rules govern new services and refactors, not a particular Integration impl
 ### Provider strategy and internal clients
 - Separate provider-discovery service contracts (`services/providers.go`) from connection lifecycle contracts (`services/connections.go`); provide independent concrete service implementations.
 - For a multi-vendor capability, use `providers/<capability>/<capability>.go` for a stable strategy/factory contract, `providers/<capability>/impl/` for generic factory implementation, and `providers/<capability>/providers/<vendor>/` for each vendor adapter. Prefer provider-ID/capability lookups to vendor switches.
-- Every module consumed by sibling services should expose an in-process interface via `client/client.go` and a constructor with injected dependencies in `client/impl/client.go`. For supported simple forwarding, `@Client`/`@Proxy` generate the delegates into `.generated/client/impl/`; business rules must remain in their service layer. Do not loop back through HTTP inside the monolith.
+- Every module consumed by sibling services exposes a typed `client/` interface and a constructor in `client/impl/`. **Foundation uses `@RequestLine METHOD /protected/resource` on its client methods**; the generator derives the central service prefix from generated controller routes, verifies the endpoint exists, and emits typed in-process HTTP handler dispatch through the controller's REST normalization, validation and response envelope. It serializes JSON locally but opens **no TCP connection**. Legacy Integration/Infrastructure clients still use `@Proxy` service forwarding until their controller contracts are explicitly migrated. Do not bypass controller input validation from a generated Foundation client; business rules still belong in services.
+- **Access control:** In-process handler dispatch does not traverse outer launcher/gateway middleware. A controller route being `protected` or `restricted` does not enforce IAM yet. Enforce and test the final policy at a shared boundary before enabling remote or privileged clients; never interpret a route tier as a permission.
 
 ### Configuration
 - `config/config.go` declares the module's configuration structures and a `Loader` interface. `config/impl/config.go` loads the environment, normalizes and validates optional provider settings. Pure parsing helpers may live in `config/helpers/` when reused.
@@ -178,7 +179,8 @@ controller/<resource>.go and controller/impl/<resource>.go
 client/<resource>.go
     -> public in-process client interface
 client/impl/<resource>.go
-    -> adapter to provider service
+    -> client constructor; Foundation injects its generated HTTP controller router
+    -> Integration/Infrastructure retain injected service forwarding
 ```
 
 Consumers depend on public interfaces/contracts, not concrete `impl` packages. Concrete construction belongs in the owning module composition root.
@@ -214,18 +216,18 @@ Repository implementation
 Database
 ```
 
-In-process service-to-service flow:
+In-process Foundation client flow:
 
 ```text
 Consuming service
   ↓
-Provider client interface
+Foundation client interface (@RequestLine /protected/...)
   ↓
-Provider client implementation
+Generated client method → local HTTP handler (no network)
   ↓
-Provider service interface
+Registered controller route + REST input pipeline
   ↓
-Provider service implementation
+Foundation Person service (business orchestration)
   ↓
 Provider repository
 ```
@@ -449,17 +451,29 @@ Routes depend on the controller interface, not controller implementations.
 
 ## 10. Client Rule
 
-A service client is an in-process adapter to the provider's service interface.
+A service client is a typed, in-process capability boundary. Foundation
+routes through its **controller's HTTP request pipeline**, not directly through
+`PersonService`. Its `@RequestLine` annotations use service-prefix-free
+paths (for example, `POST /protected/persons`) verified against generated
+`@Routes` registrations; the generator resolves the actual service base path.
+The shared `core/http/endpoint` dispatcher runs the registered handler without
+a socket, preserves `context.Context`/trusted headers and decodes the standard
+JSON response/error envelope.
 
 It must:
 
 ```text
-forward context.Context
+forward context.Context and trusted request metadata
 reuse provider request/response contracts
-call provider service methods
-avoid duplicate business logic
-avoid internal HTTP when both modules are in-process
+preserve HTTP success semantics (201-created -> bool, 200-existing -> false)
+preserve error code, HTTP status and safe metadata
+reject missing/ambiguous routes at annotation generation
+avoid duplicate business logic or network loopback
 ```
+
+Legacy `@Proxy` clients may still forward directly to the owning service
+until deliberately migrated. **Important:** local handler dispatch skips
+outer gateway middleware; separate access policy enforcement is required.
 
 A consuming module imports only the provider's public `client` package.
 

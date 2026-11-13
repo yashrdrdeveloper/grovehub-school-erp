@@ -90,7 +90,8 @@ client/person.go
 
 client/impl/person.go
     -> concrete in-process implementation
-    -> delegates to Foundation Person service
+    -> stores an internal HTTP router registered with Foundation's controller
+    -> generated @RequestLine methods dispatch through the REST pipeline
 ```
 
 Consumers such as Identity import only:
@@ -119,7 +120,9 @@ SearchPersons(...)
 DeactivatePerson(...)
 ```
 
-The client implementation delegates to the same Foundation service used by the HTTP controller. It does **not** call Foundation over HTTP.
+The client uses `@RequestLine` to enter the same **controller HTTP pipeline** used by external Foundation requests. Routes are declared relative to the central service prefix, e.g. `@RequestLine POST /protected/persons`; generation verifies an actual `POST /foundation/protected/persons` route exists. Calls dispatch directly to the registered `http.Handler` in-process, with JSON encoding/decoding and no TCP or external HTTP request. Result status 201 maps to the existing `created=true` return; 200 maps to `false`. Service application error codes, status and safe response metadata survive decoding.
+
+The internal router does **not** run the launcher's outer IAM/gateway middleware; URL tiers are not access controls today. Revisit this trust boundary before enforcing protected/restricted policies or exposing the handler to untrusted callers.
 
 ## 4. Request lifecycle rule
 
@@ -385,7 +388,7 @@ DO NOT import foundation/repository/impl
 DO NOT import foundation/services directly
 DO NOT call Foundation tables directly
 DO NOT copy Person DTOs into Identity merely to avoid the client
-DO NOT make an internal HTTP request when the in-process client is available
+DO NOT create an external HTTP/TCP loopback request; use the generated in-process endpoint client
 DO NOT change Foundation contact data as a side effect of Identity login changes
 ```
 
