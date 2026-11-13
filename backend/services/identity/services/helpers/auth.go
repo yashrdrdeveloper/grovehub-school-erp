@@ -7,8 +7,7 @@ import (
 	annotationdto "grovehub/libs/core/annotation/dto"
 	coresearch "grovehub/libs/core/search"
 	personerror "grovehub/services/foundation/constants/error"
-	foundationrequest "grovehub/services/foundation/dto/request"
-	foundationresponse "grovehub/services/foundation/dto/response"
+	persondto "grovehub/services/foundation/dto/person"
 	identityerror "grovehub/services/identity/constants/error"
 	identityrequest "grovehub/services/identity/dto/request"
 )
@@ -41,31 +40,31 @@ func RegisterEmailSearch(email string) coresearch.Request {
 	}
 }
 
-func BuildRegisterPersonRequest(request identityrequest.Register) foundationrequest.CreatePerson {
-	contacts := foundationrequest.Contacts{
-		Emails: []foundationrequest.ContactValue{{Value: request.Email, IsPrimary: true}},
+func BuildRegisterPersonRequest(request identityrequest.Register) persondto.CreatePerson {
+	contacts := persondto.Contacts{
+		Emails: []persondto.ContactValue{{Value: request.Email, IsPrimary: true}},
 	}
 	if request.PhoneNumber != "" {
-		contacts.Phones = []foundationrequest.ContactValue{{Value: request.PhoneNumber, IsPrimary: true}}
+		contacts.Phones = []persondto.ContactValue{{Value: request.PhoneNumber, IsPrimary: true}}
 	}
-	return foundationrequest.CreatePerson{
-		Person: foundationrequest.Person{FirstName: request.FirstName, MiddleName: *request.MiddleName, LastName: request.LastName},
+	return persondto.CreatePerson{
+		PersonNames: persondto.PersonNames{FirstName: request.FirstName, MiddleName: *request.MiddleName, LastName: request.LastName},
 		Contacts: contacts,
 	}
 }
 
-func BuildRegisterPersonUpdate(request identityrequest.Register) foundationrequest.UpdatePerson {
+func BuildRegisterPersonUpdate(request identityrequest.Register) persondto.UpdatePerson {
 	firstName := request.FirstName
 	middleName := *request.MiddleName
 	lastName := request.LastName
-	return foundationrequest.UpdatePerson{
+	return persondto.UpdatePerson{
         FirstName: annotationdto.Patch[string]{Set: true, Value: &firstName},
         MiddleName: annotationdto.Patch[string]{Set: true, Value: &middleName},
         LastName: annotationdto.Patch[string]{Set: true, Value: &lastName},
     }
 }
 
-func PersonHasEmail(person foundationresponse.Person, email string) bool {
+func PersonHasEmail(person persondto.Person, email string) bool {
 	for _, contact := range person.Contacts.Emails {
 		if contact.Value == email {
 			return true
