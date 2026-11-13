@@ -164,7 +164,7 @@ func (recorder *responseBuffer) Write(payload []byte) (int,error) {
 // The values are URL-escaped by url.Values.Encode in call().
 func encodeQuery[Q any](input Q) (url.Values, error) {
 	values := make(url.Values)
-	if reflect.TypeFor[Q]() == reflect.TypeFor[rest.Empty]() { return values, nil }
+	if reflect.TypeFor[Q]() == reflect.TypeFor[corerequest.Empty]() { return values, nil }
 	value := reflect.ValueOf(input)
 	for value.Kind() == reflect.Pointer {
 		if value.IsNil() { return values, nil }
