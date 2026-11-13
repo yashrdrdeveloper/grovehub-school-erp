@@ -6,6 +6,5 @@ import (
 )
 
 type AuthValidator interface {
-	RegisterRules() annotationvalidation.Rules[identityrequest.Register]
-	ValidateRegister(request identityrequest.Register) (identityrequest.Register, error)
+	RegisterRules() annotationvalidation.Rules[identityrequest.RegisterRequest]
 }

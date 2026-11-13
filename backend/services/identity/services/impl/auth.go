@@ -9,6 +9,7 @@ import (
  coretransaction "grovehub/libs/core/database/transaction"
 
 	coreerrors "grovehub/libs/core/errors"
+	annotationvalidation "grovehub/libs/core/annotation/validation"
 	coreidempotency "grovehub/libs/core/idempotency"
     headercontext "grovehub/libs/core/headercontext"
     coreevents "grovehub/libs/core/events"
@@ -51,21 +52,18 @@ func NewAuthService(
 	}
 }
 
-func (service *AuthService) Register(
-	ctx context.Context,
-	request identityrequest.Register,
-) (identityresponse.Register, error) {
+func (service *AuthService) Register(ctx context.Context, request identityrequest.RegisterRequest) (identityresponse.Register, error) {
 	idempotencyKey, err := coreidempotency.ValidateKey(headercontext.IdempotencyKey(ctx))
 	if err != nil {
 		return identityresponse.Register{}, coreerrors.NewError(identityerror.InvalidRegistrationIdempotencyKey)
 	}
     ctx = coreevents.WithCausationID(ctx, idempotencyKey)
 
-	validated, err := service.validator.ValidateRegister(request)
+	validated, err := annotationvalidation.Process(request, service.validator.RegisterRules())
 	if err != nil {
 		return identityresponse.Register{}, err
 	}
-	requestHash, err := coreidempotency.Fingerprint(validated)
+	requestHash, err := coreidempotency.Fingerprint(validated.RequestBody)
 	if err != nil {
 		return identityresponse.Register{}, coreerrors.Wrap(identityerror.RegistrationFailed, err)
 	}
@@ -73,7 +71,7 @@ func (service *AuthService) Register(
     var registration identityresponse.Register
     err = coretransaction.Run(ctx, service.db, func(txCtx context.Context) error {
         var operationErr error
-        registration, operationErr = service.register(txCtx, validated, idempotencyKey, requestHash)
+        registration, operationErr = service.register(txCtx, validated.RequestBody, idempotencyKey, requestHash)
         return operationErr
     })
     if err != nil { return identityresponse.Register{}, err }

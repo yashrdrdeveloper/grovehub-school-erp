@@ -8,5 +8,5 @@ import (
 )
 
 type AuthService interface {
-	Register(ctx context.Context, request identityrequest.Register) (identityresponse.Register, error)
+	Register(ctx context.Context, request identityrequest.RegisterRequest) (identityresponse.Register, error)
 }

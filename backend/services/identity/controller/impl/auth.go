@@ -24,13 +24,13 @@ func NewAuthController(service identityservices.AuthService, validator identityv
 }
 
 func (controller *AuthController) Register(writer http.ResponseWriter, request *http.Request) {
-	rest.Run(writer, request, rest.Config[rest.Empty, rest.Empty, identityrequest.Register, identityresponse.Register]{
+	rest.RunStruct(writer, request, rest.StructConfig[identityrequest.RegisterRequest, identityresponse.Register]{
 		Decode: httprequest.DecodeStrictJSON,
-		Body: controller.validator.RegisterRules(),
-		InvalidBody: identityerror.InvalidRegistration,
+		Rules: controller.validator.RegisterRules(),
+		InvalidRequestBody: identityerror.InvalidRegistration,
 		Fallback: identityerror.RegistrationFailed,
-		Service: func(ctx context.Context, input rest.Input[rest.Empty, rest.Empty, identityrequest.Register]) (rest.Result[identityresponse.Register], error) {
-			registration, err := controller.service.Register(ctx, input.Body)
+		Service: func(ctx context.Context, input identityrequest.RegisterRequest) (rest.Result[identityresponse.Register], error) {
+			registration, err := controller.service.Register(ctx, input)
 			return rest.Created(registration), err
 		},
 	})
