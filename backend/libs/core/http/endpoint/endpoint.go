@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httptest"
 	"net/url"
 	"reflect"
 	"regexp"
@@ -57,21 +56,17 @@ func Call[T any](ctx context.Context, handler http.Handler, method, route string
 	if values.CorrelationID != "" { request.Header.Set(httpheaders.CorrelationID, values.CorrelationID) }
 	if values.RequestID != "" { request.Header.Set(httpheaders.RequestID, values.RequestID) }
 
-	recorder := httptest.NewRecorder()
+	recorder := &responseBuffer{header: make(http.Header)}
 	handler.ServeHTTP(recorder, request)
-	response := recorder.Result()
-	defer response.Body.Close()
-	status := response.StatusCode
+	if recorder.tooLarge { return zero, recorder.status, errors.New("endpoint response exceeds maximum size") }
+	status := recorder.status
+	if status == 0 { status = http.StatusOK }
 	if status == http.StatusNoContent { return zero, status, nil }
 	if status < 200 || status >= 600 {
 		return zero, status, fmt.Errorf("invalid endpoint response status %d", status)
 	}
 
-	data, err := io.ReadAll(io.LimitReader(response.Body, maxResponseBytes+1))
-	if err != nil { return zero, status, fmt.Errorf("read endpoint response: %w", err) }
-	if int64(len(data)) > maxResponseBytes {
-		return zero, status, errors.New("endpoint response exceeds maximum size")
-	}
+	data := recorder.body.Bytes()
 
 	var envelope struct {
 		Success       bool            `json:"success"`
@@ -110,6 +105,31 @@ func Call[T any](ctx context.Context, handler http.Handler, method, route string
 		return zero, status, fmt.Errorf("decode endpoint result: %w", err)
 	}
 	return result, status, nil
+}
+
+// responseBuffer is a bounded production ResponseWriter for an in-process
+// controller call. Unlike httptest.ResponseRecorder, it refuses to buffer
+// more than maxResponseBytes and allows the caller to detect truncated output.
+type responseBuffer struct {
+	header http.Header
+	body bytes.Buffer
+	status int
+	tooLarge bool
+}
+
+func (recorder *responseBuffer) Header() http.Header { return recorder.header }
+
+func (recorder *responseBuffer) WriteHeader(status int) {
+	if recorder.status == 0 { recorder.status = status }
+}
+
+func (recorder *responseBuffer) Write(payload []byte) (int,error) {
+	if recorder.status == 0 { recorder.status = http.StatusOK }
+	if int64(recorder.body.Len()) + int64(len(payload)) > maxResponseBytes {
+		recorder.tooLarge = true
+		return 0, errors.New("endpoint response exceeds maximum size")
+	}
+	return recorder.body.Write(payload)
 }
 
 // expandPath resolves route placeholders exclusively from tagged DTO fields.
