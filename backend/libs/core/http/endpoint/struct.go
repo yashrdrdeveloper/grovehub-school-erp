@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"reflect"
 )
 
@@ -33,7 +34,11 @@ func CallStruct[Response, Request any](ctx context.Context, handler http.Handler
 			return zero, 0, fmt.Errorf("unsupported endpoint request field %q", field.Name)
 		}
 	}
-	encodedQuery, err := encodeQuery(queryValues)
-	if err != nil { return zero, 0, err }
+	encodedQuery := make(url.Values)
+	if queryValues != nil {
+		var err error
+		encodedQuery, err = encodeQuery(queryValues)
+		if err != nil { return zero, 0, err }
+	}
 	return call[Response](ctx, handler, method, route, params, encodedQuery, body)
 }
