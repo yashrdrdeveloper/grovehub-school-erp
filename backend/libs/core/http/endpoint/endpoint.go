@@ -89,7 +89,8 @@ func Call[T any](ctx context.Context, handler http.Handler, method, route string
 			return zero, status, errors.New("invalid endpoint error envelope")
 		}
 		definition := coreerrors.NewDefinition(envelope.ErrorCode, envelope.ErrorMessage, status)
-		if len(envelope.ErrorMetaData) == 0 || bytes.Equal(bytes.TrimSpace(envelope.ErrorMetaData), []byte("null")) {
+		if len(envelope.ErrorMetaData) == 0 || bytes.Equal(bytes.TrimSpace(envelope.ErrorMetaData), []byte("null")) ||
+			bytes.Equal(bytes.TrimSpace(envelope.ErrorMetaData), []byte("{}")) {
 			return zero, status, coreerrors.NewError(definition)
 		}
 		var metadata any
