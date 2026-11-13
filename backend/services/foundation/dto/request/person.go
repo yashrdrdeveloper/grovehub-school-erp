@@ -35,6 +35,6 @@ type UpdatePerson struct {
 }
 
 type PersonByGID struct {
-	GID string `json:"gid"`
+	GID string `json:"gid" path:"gid" normalize:"trim,uuidv7" validate:"uuidv7"`
 }
 

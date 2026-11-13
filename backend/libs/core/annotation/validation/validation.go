@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"unicode/utf8"
+
+	corenormalize "grovehub/libs/core/normalize"
 )
 
 // Error describes the invalid field path/rule without disclosing its value.
@@ -132,13 +134,21 @@ func normalizeField(value reflect.Value, path, normalizer, rules string) error {
 	}
 	switch value.Kind() {
 	case reflect.String:
-		switch normalizer {
-		case "":
-		case "trim":
-			value.SetString(strings.TrimSpace(value.String()))
-		default:
-			return fmt.Errorf("%s: unsupported normalizer %q", path, normalizer)
+		text := value.String()
+		for _, operation := range strings.Split(normalizer, ",") {
+			switch operation {
+			case "":
+			case "trim":
+				text = strings.TrimSpace(text)
+			case "uuidv7":
+				normalized, err := corenormalize.UUIDv7(text)
+				if err != nil { return Error{Field: path, Rule: "uuidv7"} }
+				text = normalized
+			default:
+				return fmt.Errorf("%s: unsupported normalizer %q", path, operation)
+			}
 		}
+		value.SetString(text)
 	case reflect.Struct:
 		if normalizer != "" {
 			return fmt.Errorf("%s: unsupported normalize target", path)
@@ -214,6 +224,10 @@ func validateField(value reflect.Value, path, rules string) error {
 				if value.String() == "" {
 					return Error{Field: path, Rule: rule}
 				}
+			case rule == "uuidv7":
+				if _, err := corenormalize.UUIDv7(value.String()); err != nil {
+					return Error{Field: path, Rule: rule}
+				}
 			case strings.HasPrefix(rule, "maxrunes="):
 				maximum, err := strconv.Atoi(strings.TrimPrefix(rule, "maxrunes="))
 				if err != nil || maximum < 0 {
@@ -236,6 +250,10 @@ func validateField(value reflect.Value, path, rules string) error {
 				return Error{Field: path, Rule: rule}
 			}
 		default:
+			if strings.HasPrefix(rule, "min=") || strings.HasPrefix(rule, "max=") {
+				if err := validateNumber(value, path, rule); err != nil { return err }
+				continue
+			}
 			return fmt.Errorf("%s: unsupported validation rule %q", path, rule)
 		}
 	}
@@ -254,6 +272,26 @@ func validateField(value reflect.Value, path, rules string) error {
 	default:
 		return fmt.Errorf("%s: validate:valid requires a struct or slice", path)
 	}
+	return nil
+}
+
+func validateNumber(value reflect.Value, path, rule string) error {
+	parts := strings.SplitN(rule, "=", 2)
+	limit, err := strconv.ParseFloat(parts[1], 64)
+	if err != nil { return fmt.Errorf("%s: invalid numeric constraint %q", path, rule) }
+	var number float64
+	switch value.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		number = float64(value.Int())
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		number = float64(value.Uint())
+	case reflect.Float32, reflect.Float64:
+		number = value.Float()
+	default:
+		return fmt.Errorf("%s: numeric constraint on unsupported type", path)
+	}
+	if parts[0] == "min" && number < limit { return Error{Field: path, Rule: "min"} }
+	if parts[0] == "max" && number > limit { return Error{Field: path, Rule: "max"} }
 	return nil
 }
 
