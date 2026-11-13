@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 
-	validation "grovehub/libs/core/annotation/validation"
 	rest "grovehub/libs/core/pipeline/rest"
 	coresearch "grovehub/libs/core/search"
 	personerror "grovehub/services/foundation/constants/error"
@@ -62,12 +61,7 @@ func (controller *PersonController) Update(writer http.ResponseWriter, request *
 
 func (controller *PersonController) Search(writer http.ResponseWriter, request *http.Request) {
 	rest.Run(writer, request, rest.Config[rest.Empty, rest.Empty, coresearch.Request, coresearch.Result[foundationresponse.Person]]{
-		Body: validation.Rules[coresearch.Request]{
-			Validate: func(value coresearch.Request) error {
-				_, _, err := controller.validator.ValidateSearch(value)
-				return err
-			},
-		},
+		Body: controller.validator.SearchRules(),
 		InvalidBody: personerror.InvalidPersonSearch,
 		Fallback: personerror.PersonSearchFailed,
 		Service: func(ctx context.Context, input rest.Input[rest.Empty, rest.Empty, coresearch.Request]) (rest.Result[coresearch.Result[foundationresponse.Person]], error) {

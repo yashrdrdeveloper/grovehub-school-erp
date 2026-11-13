@@ -9,6 +9,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
+	annotationvalidation "grovehub/libs/core/annotation/validation"
 	foundationrequest "grovehub/services/foundation/dto/request"
 	"grovehub/services/foundation/entity"
 	personservice "grovehub/services/foundation/services/impl"
@@ -66,7 +67,7 @@ var _ = Describe("Person PATCH application", func() {
 		for _, payload := range []string{`{"firstName":null}`,`{"lastName":null}`,`{"firstName":"   "}`,`{"lastName":""}`} {
 			var request foundationrequest.UpdatePerson
 			Expect(json.Unmarshal([]byte(payload), &request)).To(Succeed())
-			_, err := validator.ValidateUpdate(request)
+			_, err := annotationvalidation.Process(request, validator.UpdateRules())
 			Expect(err).To(HaveOccurred(), payload)
 		}
 	})

@@ -58,12 +58,13 @@ func (validator *PersonValidator) UpdateRules() annotationvalidation.Rules[found
 	}
 }
 
-func (validator *PersonValidator) ValidateCreate(request foundationrequest.CreatePerson) (foundationrequest.CreatePerson, error) {
-	return annotationvalidation.Process(request, validator.CreateRules())
-}
-
-func (validator *PersonValidator) ValidateUpdate(request foundationrequest.UpdatePerson) (foundationrequest.UpdatePerson, error) {
-	return annotationvalidation.Process(request, validator.UpdateRules())
+func (validator *PersonValidator) SearchRules() annotationvalidation.Rules[coresearch.Request] {
+	return annotationvalidation.Rules[coresearch.Request]{
+		Validate: func(request coresearch.Request) error {
+			_, _, err := validatorhelpers.NormalizePersonSearchRequest(request)
+			return err
+		},
+	}
 }
 
 func mapPersonDTOError(err error) error {
@@ -77,10 +78,3 @@ func mapPersonDTOError(err error) error {
 	return coreerrors.NewError(personerror.InvalidPersonRequest)
 }
 
-func (validator *PersonValidator) ValidateGID(gid string) error {
-	return validatorhelpers.ValidateGID(gid)
-}
-
-func (validator *PersonValidator) ValidateSearch(request coresearch.Request) (coresearch.Query[string], coresearch.CursorPayload, error) {
-	return validatorhelpers.NormalizePersonSearchRequest(request)
-}

@@ -343,7 +343,7 @@ foundation/
     └── impl/person.go
 ```
 
-`PersonValidator` returns normalized request DTOs directly.
+`PersonValidator` exposes only three rule methods: `CreateRules()`, `UpdateRules()`, and `SearchRules()`. HTTP controllers pass these directly to `rest.Config.Body`; in-process Create and Update service methods use `annotationvalidation.Process(request, rules)`. Search services use the same resource-owned search helper to transform validated requests into `coresearch.Query[string]` and cursor payloads, while `SearchRules()` performs the check for REST callers.
 
 For search it returns:
 

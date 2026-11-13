@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	annotationvalidation "grovehub/libs/core/annotation/validation"
 	coreerrors "grovehub/libs/core/errors"
 	coreid "grovehub/libs/core/id"
 	coreidempotency "grovehub/libs/core/idempotency"
@@ -21,6 +22,7 @@ import (
 	foundationservices "grovehub/services/foundation/services"
 	servicehelpers "grovehub/services/foundation/services/helpers"
 	foundationvalidators "grovehub/services/foundation/validators"
+	validatorhelpers "grovehub/services/foundation/validators/helpers"
 )
 
 type PersonService struct {
@@ -49,7 +51,7 @@ func NewPersonService(
 
 
 func (service *PersonService) Create(ctx context.Context, request foundationrequest.CreatePerson) (foundationresponse.Person, bool, error) {
-	validatedRequest, err := service.validator.ValidateCreate(request)
+	validatedRequest, err := annotationvalidation.Process(request, service.validator.CreateRules())
 	if err != nil { return foundationresponse.Person{}, false, err }
 	contacts := servicehelpers.BuildContacts(validatedRequest.Contacts, nil)
 	idempotencyKey, requestHash := "", ""
@@ -127,7 +129,7 @@ func (service *PersonService) Update(ctx context.Context, personRequest foundati
 	gid := service.mapper.ToPersonGID(personRequest)
 	person, contacts, err := service.getPersonByGID(ctx, gid)
 	if err != nil { return foundationresponse.Person{}, err }
-	validatedRequest, err := service.validator.ValidateUpdate(request)
+	validatedRequest, err := annotationvalidation.Process(request, service.validator.UpdateRules())
 	if err != nil { return foundationresponse.Person{}, err }
 	updatedPerson, updatedContacts, changed, err := service.applyPersonUpdate(ctx, person, contacts, validatedRequest)
 	if err != nil { return foundationresponse.Person{}, err }
@@ -163,7 +165,7 @@ func (service *PersonService) Update(ctx context.Context, personRequest foundati
 
 
 func (service *PersonService) Search(ctx context.Context, request coresearch.Request) (coresearch.Result[foundationresponse.Person], error) {
-	query, cursorPayload, err := service.validator.ValidateSearch(request)
+	query, cursorPayload, err := validatorhelpers.NormalizePersonSearchRequest(request)
 	if err != nil { return coresearch.Result[foundationresponse.Person]{}, err }
 	result, err := service.personRepository.Search(ctx, query)
 	if err != nil {
@@ -268,7 +270,7 @@ func (service *PersonService) applyPersonUpdate(
 
 
 func (service *PersonService) getPersonByGID(ctx context.Context, gid string) (entity.Person, []entity.Contact, error) {
-	if err := service.validator.ValidateGID(gid); err != nil {
+	if err := validatorhelpers.ValidateGID(gid); err != nil {
 		return entity.Person{}, nil, coreerrors.NewErrorWithMetadata(personerror.InvalidPersonGID, service.mapper.ToPersonErrorMetadata(gid))
 	}
 	person, err := service.personRepository.FindByGID(ctx, gid)
