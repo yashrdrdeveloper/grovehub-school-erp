@@ -1,4 +1,4 @@
-package mappers
+package person
 
 import (
 	persondto "grovehub/services/foundation/dto/person"

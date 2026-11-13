@@ -1,4 +1,4 @@
-package validators
+package person
 
 import (
 	annotationvalidation "grovehub/libs/core/annotation/validation"
