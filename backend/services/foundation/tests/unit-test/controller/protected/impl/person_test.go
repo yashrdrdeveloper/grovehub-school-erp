@@ -11,9 +11,6 @@ import (
 	. "github.com/onsi/gomega"
 
 	coreerrors "grovehub/libs/core/errors"
-	corerequest "grovehub/libs/core/request"
-	httpendpoint "grovehub/libs/core/http/endpoint"
-	rest "grovehub/libs/core/pipeline/rest"
 	headercontext "grovehub/libs/core/headercontext"
 	annotationdto "grovehub/libs/core/annotation/dto"
 	foundationclientimpl "grovehub/services/foundation/client/impl"
@@ -38,31 +35,31 @@ type fakeService struct {
 	lastCtx context.Context
 }
 
-func (s *fakeService) Create(ctx context.Context, input corerequest.Request[corerequest.Empty, corerequest.Empty, foundationrequest.CreatePerson]) (foundationresponse.Person, bool, error) {
+func (s *fakeService) Create(ctx context.Context, input foundationrequest.CreatePersonRequest) (foundationresponse.Person, bool, error) {
 	s.calls++
-	s.lastCreate = input.Body
+	s.lastCreate = input.RequestBody
 	s.lastCtx = ctx
-	return foundationresponse.Person{GID: goodGID, FirstName: input.Body.FirstName}, s.created, s.failure
+	return foundationresponse.Person{GID: goodGID, FirstName: input.RequestBody.FirstName}, s.created, s.failure
 }
-func (s *fakeService) GetByGID(_ context.Context, input corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, corerequest.Empty]) (foundationresponse.Person, error) {
+func (s *fakeService) GetByGID(_ context.Context, input foundationrequest.GetPersonByGIDRequest) (foundationresponse.Person, error) {
 	s.calls++
-	s.lastPath = input.Path
-	return foundationresponse.Person{GID: input.Path.GID}, s.failure
+	s.lastPath = input.Params
+	return foundationresponse.Person{GID: input.Params.GID}, s.failure
 }
-func (s *fakeService) Update(_ context.Context, input corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, foundationrequest.UpdatePerson]) (foundationresponse.Person, error) {
+func (s *fakeService) Update(_ context.Context, input foundationrequest.UpdatePersonRequest) (foundationresponse.Person, error) {
 	s.calls++
-	s.lastPath = input.Path
-	s.lastUpdate = input.Body
-	return foundationresponse.Person{GID: input.Path.GID}, s.failure
+	s.lastPath = input.Params
+	s.lastUpdate = input.RequestBody
+	return foundationresponse.Person{GID: input.Params.GID}, s.failure
 }
-func (s *fakeService) Search(_ context.Context, _ corerequest.Request[corerequest.Empty, corerequest.Empty, coresearch.Request]) (coresearch.Result[foundationresponse.Person], error) {
+func (s *fakeService) Search(_ context.Context, _ foundationrequest.SearchPersonsRequest) (coresearch.Result[foundationresponse.Person], error) {
 	s.calls++
 	return coresearch.Result[foundationresponse.Person]{}, s.failure
 }
-func (s *fakeService) Deactivate(_ context.Context, input corerequest.Request[foundationrequest.PersonByGID, corerequest.Empty, corerequest.Empty]) (foundationresponse.Person, error) {
+func (s *fakeService) Deactivate(_ context.Context, input foundationrequest.DeactivatePersonRequest) (foundationresponse.Person, error) {
 	s.calls++
-	s.lastPath = input.Path
-	return foundationresponse.Person{GID: input.Path.GID}, s.failure
+	s.lastPath = input.Params
+	return foundationresponse.Person{GID: input.Params.GID}, s.failure
 }
 
 func fixtureMux(service *fakeService) *http.ServeMux {
@@ -122,8 +119,8 @@ var _ = Describe("typed Person controller pipeline", func() {
 			service := &fakeService{created: created}
 			client := foundationclientimpl.NewPersonClient(fixtureMux(service))
 			ctx := headercontext.WithValues(context.Background(), headercontext.Values{IdempotencyKey:"an-internal-key"})
-			person, wasCreated, err := client.CreatePerson(ctx, httpendpoint.Request[rest.Empty, rest.Empty, foundationrequest.CreatePerson]{
-				Body: foundationrequest.CreatePerson{Person: foundationrequest.Person{FirstName:"  Arun ", LastName:"  Kumar "}},
+			person, wasCreated, err := client.CreatePerson(ctx, foundationrequest.CreatePersonRequest{
+				RequestBody: foundationrequest.CreatePerson{Person: foundationrequest.Person{FirstName:"  Arun ", LastName:"  Kumar "}},
 			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(wasCreated).To(Equal(created))
@@ -137,24 +134,24 @@ var _ = Describe("typed Person controller pipeline", func() {
 		service := &fakeService{}
 		client := foundationclientimpl.NewPersonClient(fixtureMux(service))
 		path := foundationrequest.PersonByGID{GID: goodGID}
-		person, err := client.GetPersonByGID(context.Background(), httpendpoint.Request[foundationrequest.PersonByGID, rest.Empty, rest.Empty]{Path: path})
+		person, err := client.GetPersonByGID(context.Background(), foundationrequest.GetPersonByGIDRequest{Params: path})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(person.GID).To(Equal(goodGID))
 
 		firstName := "  Name  "
-		person, err = client.UpdatePerson(context.Background(), httpendpoint.Request[foundationrequest.PersonByGID, rest.Empty, foundationrequest.UpdatePerson]{
-			Path: path,
-			Body: foundationrequest.UpdatePerson{FirstName: annotationdto.Patch[string]{Set:true,Value:&firstName}},
+		person, err = client.UpdatePerson(context.Background(), foundationrequest.UpdatePersonRequest{
+			Params: path,
+			RequestBody: foundationrequest.UpdatePerson{FirstName: annotationdto.Patch[string]{Set:true,Value:&firstName}},
 		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(person.GID).To(Equal(goodGID))
 		Expect(*service.lastUpdate.FirstName.Value).To(Equal("Name"))
 		Expect(service.lastPath.GID).To(Equal(goodGID))
 
-		_, err = client.SearchPersons(context.Background(), httpendpoint.Request[rest.Empty, rest.Empty, coresearch.Request]{Body: coresearch.Request{}})
+		_, err = client.SearchPersons(context.Background(), foundationrequest.SearchPersonsRequest{RequestBody: coresearch.Request{}})
 		Expect(err).NotTo(HaveOccurred())
 
-		person, err = client.DeactivatePerson(context.Background(), httpendpoint.Request[foundationrequest.PersonByGID, rest.Empty, rest.Empty]{Path: path})
+		person, err = client.DeactivatePerson(context.Background(), foundationrequest.DeactivatePersonRequest{Params: path})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(person.GID).To(Equal(goodGID))
 		Expect(service.calls).To(Equal(4))
@@ -163,15 +160,15 @@ var _ = Describe("typed Person controller pipeline", func() {
 	It("propagates controller validation errors as typed client application errors", func() {
 		service := &fakeService{}
 		client := foundationclientimpl.NewPersonClient(fixtureMux(service))
-		_, err := client.GetPersonByGID(context.Background(), httpendpoint.Request[foundationrequest.PersonByGID, rest.Empty, rest.Empty]{Path: foundationrequest.PersonByGID{GID:"bad-id"}})
+		_, err := client.GetPersonByGID(context.Background(), foundationrequest.GetPersonByGIDRequest{Params: foundationrequest.PersonByGID{GID:"bad-id"}})
 		var applicationError *coreerrors.Error
 		Expect(errors.As(err, &applicationError)).To(BeTrue())
 		Expect(applicationError.Definition().Code()).To(Equal(personerror.InvalidPersonGID.Code()))
 		Expect(applicationError.Definition().HTTPStatus()).To(Equal(http.StatusBadRequest))
 		Expect(service.calls).To(BeZero())
 
-		_, _, err = client.CreatePerson(context.Background(), httpendpoint.Request[rest.Empty, rest.Empty, foundationrequest.CreatePerson]{
-			Body: foundationrequest.CreatePerson{Person: foundationrequest.Person{FirstName:"   ",LastName:"Valid"}},
+		_, _, err = client.CreatePerson(context.Background(), foundationrequest.CreatePersonRequest{
+			RequestBody: foundationrequest.CreatePerson{Person: foundationrequest.Person{FirstName:"   ",LastName:"Valid"}},
 		})
 		Expect(errors.As(err, &applicationError)).To(BeTrue())
 		Expect(applicationError.Definition().Code()).To(Equal(personerror.InvalidPersonRequest.Code()))
@@ -181,7 +178,7 @@ var _ = Describe("typed Person controller pipeline", func() {
 	It("round trips service error metadata through the generated HTTP client", func() {
 		service := &fakeService{failure:coreerrors.NewErrorWithMetadata(personerror.PersonContactConflict,map[string]string{"field":"email"})}
 		client := foundationclientimpl.NewPersonClient(fixtureMux(service))
-		_, err := client.GetPersonByGID(context.Background(), httpendpoint.Request[foundationrequest.PersonByGID, rest.Empty, rest.Empty]{Path: foundationrequest.PersonByGID{GID:goodGID}})
+		_, err := client.GetPersonByGID(context.Background(), foundationrequest.GetPersonByGIDRequest{Params: foundationrequest.PersonByGID{GID:goodGID}})
 		var applicationError *coreerrors.Error
 		Expect(errors.As(err,&applicationError)).To(BeTrue())
 		Expect(applicationError.Definition().Code()).To(Equal(personerror.PersonContactConflict.Code()))
