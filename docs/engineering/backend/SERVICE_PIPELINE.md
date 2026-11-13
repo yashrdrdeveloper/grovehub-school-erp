@@ -12,13 +12,15 @@ finish without a response.
 - backend/libs/core/pipeline/service/{chain,strategy,transaction}.go: runner, predicates, outcomes, transactional execution and post-rollback recovery
 - backend/libs/core/annotation/{chain,strategy}: directive metadata
 - backend/services/foundation/services/person/flows/create.go: typed per-request state
-- backend/services/foundation/services/person/strategies/create/: independently named business strategies
+- backend/services/foundation/services/person/strategies/strategy.go: CreateStrategy interface; service depends on this contract
+- backend/services/foundation/services/person/strategies/impl/: independently named business strategy implementations
+- backend/libs/core/helpers/string.go: generic nullable/optional string conversions
 - backend/services/foundation/services/person/impl/person.go: thin Create entry point
 
 ## Annotation semantics
 - @Service marks the service type; registration still occurs explicitly in foundation.New.
 - @ChainOfResponsibility marks the Create method; Run executes the chain explicitly.
-- @Strategy marks a typed strategy implementation; the constructor supplies repositories.
+- @Strategy marks the concrete CreateStrategy implementation; NewCreateStrategy injects repositories and returns the interface.
 - @Transactional marks the persistWrites method; the **actual** transaction is
   enforced by Transactional(unitOfWork, persistWrites), not by the comment.
 
@@ -36,3 +38,10 @@ verifying a code generator.
   database uniqueness constraints remain authoritative.
 - Other Foundation Person operations retain their existing behavior; this
   migration targets the Create workflow first.
+
+## Reusable helper ownership
+`OptionalString` and `NullableString` live in `libs/core/helpers`; the Person
+service, mapper and idempotency implementation all use these conversions.
+Person-specific mapping, contact ownership, and search projection remain in
+Foundation. Redundant pass-through cursor encoding has been removed in favor
+of direct `coresearch.EncodeCursor` calls.

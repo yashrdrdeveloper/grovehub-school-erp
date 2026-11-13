@@ -19,8 +19,10 @@ import (
 	repositoryerrors "grovehub/services/foundation/repository/constants/errors"
 	foundationservices "grovehub/services/foundation/services/person"
     personflow "grovehub/services/foundation/services/person/flows"
-    createstrategies "grovehub/services/foundation/services/person/strategies/create"
+    createstrategies "grovehub/services/foundation/services/person/strategies"
+    createimpl "grovehub/services/foundation/services/person/strategies/impl"
 	servicehelpers "grovehub/services/foundation/services/person/helpers"
+    corehelpers "grovehub/libs/core/helpers"
 	foundationvalidators "grovehub/services/foundation/validators/person"
 	validatorhelpers "grovehub/services/foundation/validators/person/helpers"
 )
@@ -32,7 +34,7 @@ type PersonService struct {
 	unitOfWork coretransaction.UnitOfWork
 	mapper foundationmappers.PersonMapper
 	validator foundationvalidators.PersonValidator
-	creator *createstrategies.Creator
+	creator createstrategies.CreateStrategy
 }
 
 func NewPersonService(
@@ -48,7 +50,7 @@ func NewPersonService(
 		unitOfWork: unitOfWork,
 		mapper: mapper,
 		validator: validator,
-        creator: createstrategies.New(personRepository, contactRepository, unitOfWork, mapper),
+        creator: createimpl.NewCreateStrategy(personRepository, contactRepository, unitOfWork, mapper),
 	}
 }
 
@@ -187,8 +189,8 @@ func (service *PersonService) applyPersonUpdate(
 				updatedPerson.MiddleName = nil
 				changed = true
 			}
-		} else if *request.MiddleName.Value != servicehelpers.NullableString(person.MiddleName) {
-			updatedPerson.MiddleName = servicehelpers.OptionalString(*request.MiddleName.Value)
+		} else if *request.MiddleName.Value != corehelpers.NullableString(person.MiddleName) {
+			updatedPerson.MiddleName = corehelpers.OptionalString(*request.MiddleName.Value)
 			changed = true
 		}
 	}
@@ -300,5 +302,5 @@ func buildNextCursor(
 	lastPerson := result.Items[len(result.Items)-1]
 	cursor.Value = servicehelpers.PersonCursorValue(lastPerson, query.Sort.Field)
 	cursor.CursorId = lastPerson.GID
-	return servicehelpers.EncodePersonSearchCursor(cursor)
+	return coresearch.EncodeCursor(cursor)
 }

@@ -1,12 +1,13 @@
 // Package create implements Person creation as independently testable strategies.
 // Validation belongs to the controller, not this execution chain.
-package create
+package impl
 
 import (
     "context"
 
     coreerrors "grovehub/libs/core/errors"
     coretransaction "grovehub/libs/core/database/transaction"
+    createstrategies "grovehub/services/foundation/services/person/strategies"
     servicepipeline "grovehub/libs/core/pipeline/service"
     personerror "grovehub/services/foundation/constants/error"
     persondto "grovehub/services/foundation/dto/person"
@@ -25,7 +26,9 @@ type Creator struct {
     mapper foundationmappers.PersonMapper
 }
 
-func New(persons personrepository.PersonRepository, contacts contactrepository.ContactRepository, unit coretransaction.UnitOfWork, mapper foundationmappers.PersonMapper) *Creator {
+var _ createstrategies.CreateStrategy = (*Creator)(nil)
+
+func NewCreateStrategy(persons personrepository.PersonRepository, contacts contactrepository.ContactRepository, unit coretransaction.UnitOfWork, mapper foundationmappers.PersonMapper) createstrategies.CreateStrategy {
     return &Creator{persons: persons, contacts: contacts, unitOfWork: unit, mapper: mapper}
 }
 

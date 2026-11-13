@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	coresearch "grovehub/libs/core/search"
+	corehelpers "grovehub/libs/core/helpers"
 	persondto "grovehub/services/foundation/dto/person"
 	"grovehub/services/foundation/entity"
 )
@@ -68,10 +68,6 @@ func PersonCursorValue(person entity.Person, field string) string {
 	return extract(person)
 }
 
-func EncodePersonSearchCursor(cursor coresearch.CursorPayload) (string, error) {
-	return coresearch.EncodeCursor(cursor)
-}
-
 func buildContactGroup(
 	contactType entity.ContactType,
 	values []persondto.ContactValue,
@@ -109,18 +105,6 @@ func AssociateContacts(person entity.Person, contacts []entity.Contact) []entity
 	return associated
 }
 
-// OptionalString maps an empty optional request string to NULL at the service layer.
-func OptionalString(value string) *string {
-	if value == "" { return nil }
-	return &value
-}
-
-// NullableString presents an optional persisted value as the empty string.
-func NullableString(value *string) string {
-	if value == nil { return "" }
-	return *value
-}
-
 // CopyContacts preserves the previous service API's defensive-copy semantics.
 func CopyContacts(contacts []entity.Contact) []entity.Contact {
 	if len(contacts) == 0 { return nil }
@@ -132,7 +116,7 @@ func NewPerson(gid string, input persondto.CreatePerson, now time.Time) entity.P
 	return entity.Person{
 		GID: gid,
 		FirstName: input.FirstName,
-		MiddleName: OptionalString(input.MiddleName),
+		MiddleName: corehelpers.OptionalString(input.MiddleName),
 		LastName: input.LastName,
 		Status: entity.PersonStatusActive,
 		Version: 1,

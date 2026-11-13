@@ -1,6 +1,7 @@
 package impl
 
 import (
+	corehelpers "grovehub/libs/core/helpers"
 	persondto "grovehub/services/foundation/dto/person"
 	"grovehub/services/foundation/entity"
 	foundationmappers "grovehub/services/foundation/mappers/person"
@@ -43,8 +44,7 @@ func (mapper *PersonMapper) ToPersonResponse(person entity.Person, personContact
 		})
 	}
 
-	middleName := ""
-	if person.MiddleName != nil { middleName = *person.MiddleName }
+	middleName := corehelpers.NullableString(person.MiddleName)
 	return persondto.Person{
 		GID:        person.GID,
 		FirstName:  person.FirstName,

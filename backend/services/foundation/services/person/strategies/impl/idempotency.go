@@ -1,4 +1,4 @@
-package create
+package impl
 
 import (
     "context"
@@ -10,7 +10,7 @@ import (
     "grovehub/services/foundation/entity"
     repositoryerrors "grovehub/services/foundation/repository/constants/errors"
     personflow "grovehub/services/foundation/services/person/flows"
-    servicehelpers "grovehub/services/foundation/services/person/helpers"
+    corehelpers "grovehub/libs/core/helpers"
 )
 
 func (strategy *Creator) Idempotency(ctx context.Context, state *personflow.Create) servicepipeline.Outcome[persondto.Person] {
@@ -29,7 +29,7 @@ func (strategy *Creator) readIdempotency(ctx context.Context, state *personflow.
         func(person entity.Person) servicepipeline.Outcome[persondto.Person] {
             return servicepipeline.Decide(ctx, state,
                 servicepipeline.When(
-                    func(*personflow.Create) bool { return servicehelpers.NullableString(person.RequestHash) != state.RequestHash },
+                    func(*personflow.Create) bool { return corehelpers.NullableString(person.RequestHash) != state.RequestHash },
                     func(context.Context, *personflow.Create) servicepipeline.Outcome[persondto.Person] {
                         return servicepipeline.Fail[persondto.Person](coreerrors.NewError(personerror.PersonIdempotencyConflict))
                     },
