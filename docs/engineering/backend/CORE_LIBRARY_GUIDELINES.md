@@ -517,9 +517,11 @@ normalizers while core owns iteration and primitive validation. See
 ## Private service implementations and shared client contracts
 
 Go service packages expose only their module entry point, public client
-interfaces, client DTOs, and API documentation where necessary. Place
+interfaces with re-exported client DTO aliases, and API documentation where necessary. Place
 resource repositories, validators, entities, mappers, events, bootstrap wiring,
 routes, and client implementations inside `services/<service>/internal/app/`.
-Consumers import typed DTOs from `services/<service>/client/<resource>/dto/`
-and do not import private `internal/app/` packages. The
+Consumers use typed aliases exposed from
+`services/<service>/client/<resource>/`; the owning DTO definitions can remain
+inside `internal/app/dto/<resource>/`. External services do not import the
+private `internal/app/` packages. The
 `core/module.Module` lifecycle remains shared and domain-neutral.

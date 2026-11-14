@@ -784,7 +784,7 @@ services/foundation/
   foundation.go                        # Public module, migration entry points
   client/person/person.go              # Public typed interface
   client/person/errors.go              # Public error contracts
-  client/person/dto/                   # Client request/response types, shared by controllers
+  internal/app/dto/person/             # Single source of request/response DTOs
   api/openapi/v1/openapi.yaml           # Public API contract
   docs/                                 # Human-readable documentation
   internal/app/bootstrap/{bootstrap.go,impl/}
@@ -797,14 +797,15 @@ services/foundation/
 ```
 
 Other services (including Identity) may import only `foundation` or the
-`foundation/client/person` public contract (plus its `dto` package), never
-`foundation/internal/`. Foundation internal components may reuse the public
-client DTOs; do not create duplicate private versions of them.
+`foundation/client/person` public contract, never `foundation/internal/`.
+Client-facing Go type aliases expose the DTOs declared inside
+`foundation/internal/app/dto/person/`; Foundation internal code imports those
+private DTO definitions directly. No duplicate DTO structures are maintained.
 
 The annotation generators locate private Foundation sources under
 `internal/app/` and place virtual sources in
 `foundation/.generated/internal/app/`, except the `@PatchRequestDto`
-serialization under `foundation/.generated/client/person/dto/`.
+serialization under `foundation/.generated/internal/app/dto/person/`.
 
 Development migrations run through the existing Goose script at
 `internal/resources/migrations/`. Production builds embed those SQL files:

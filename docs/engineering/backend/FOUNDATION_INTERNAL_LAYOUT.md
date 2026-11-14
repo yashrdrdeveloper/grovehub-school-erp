@@ -1,7 +1,8 @@
 # Foundation module: public API, private implementation, embedded migrations
 
-Public Go packages are `services/foundation` and
-`services/foundation/client/person`, including its `dto/` child package.
+The public Go packages are `services/foundation` and
+`services/foundation/client/person`. The client package exposes
+Go type aliases for DTO definitions stored privately under `internal/app/dto/person/`.
 The OpenAPI specification stays under `services/foundation/api/openapi/`.
 Documentation is a repository asset rather than an importable Go contract.
 
@@ -12,9 +13,9 @@ backend/services/foundation/
 ├── client/person/
 │   ├── person.go
 │   ├── errors.go
-│   └── dto/{operations,params,queryparams,request,response}.go
 ├── internal/
 │   ├── app/
+│   │   ├── dto/person/{operations,params,queryparams,request,response}.go
 │   │   ├── bootstrap/{bootstrap.go,impl/}
 │   │   ├── client/person/impl/
 │   │   ├── constants/
@@ -47,6 +48,27 @@ Integration continue using their existing migration scripts.
 
 Original source is nested under `internal/app`, while generated Go files are
 written under `.generated/internal/app` and applied with the existing Go
-overlay. Public Person DTO PATCH generation uses
-`.generated/client/person/dto`. Client and route annotations continue
+overlay. Private Person DTO PATCH generation uses
+`.generated/internal/app/dto/person`. Client and route annotations continue
 generating the same endpoints and in-process request pipeline.
+
+## Public client aliases, private DTO source
+
+`client/person/person.go` imports the private DTO package and re-exports
+client-facing types as Go aliases, for example:
+
+```go
+import persondto "grovehub/services/foundation/internal/app/dto/person"
+
+type UpdatePerson = persondto.UpdatePerson
+type CreatePersonRequest = persondto.CreatePersonRequest
+type Person = persondto.Person
+```
+
+The interface retains `@Client` and `@RequestLine` annotations and uses the
+same original concrete DTO types. Callers such as Identity import **only**
+`grovehub/services/foundation/client/person` and use aliases such as
+`person.CreatePersonRequest` and `person.Person`. All Foundation controllers,
+validators, services, events and mappers import the private DTO definitions
+inside the module; public aliases and private structs are the **same types**, not
+copies or duplicated transport models.
