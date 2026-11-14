@@ -161,7 +161,7 @@ func setup(t *testing.T) (*fakePersonRepository, *fakeContactRepository, *fakeUn
 	people := &fakePersonRepository{log: &writes}
 	contacts := &fakeContactRepository{byPerson: make(map[string][]entity.Contact), log: &writes}
 	work := &fakeUnitOfWork{}
-	service := personservice.NewPersonService(people, contacts, work, fakeMapper{}, fakeValidator{})
+	service := personservice.NewPersonService(people, contacts, work, fakeMapper{}, fakeValidator{}, &fakePersonChangeProducer{})
 	return people, contacts, work, service
 }
 

@@ -33,9 +33,8 @@ type PersonService struct {
 
 var _ foundationservices.PersonService = (*PersonService)(nil)
 
-func NewPersonService(personRepository personrepository.PersonRepository, contactRepository contactrepository.ContactRepository, unitOfWork coretransaction.UnitOfWork, mapper foundationmappers.PersonMapper, validator foundationvalidators.PersonValidator, publishers ...eventproducers.ChangedProducer) foundationservices.PersonService {
-    publisher := eventproducers.Noop()
-    if len(publishers) > 0 && publishers[0] != nil { publisher = publishers[0] }
+func NewPersonService(personRepository personrepository.PersonRepository, contactRepository contactrepository.ContactRepository, unitOfWork coretransaction.UnitOfWork, mapper foundationmappers.PersonMapper, validator foundationvalidators.PersonValidator, publisher eventproducers.ChangedProducer) foundationservices.PersonService {
+    if publisher == nil { panic("foundation PersonService requires an event producer") }
     return &PersonService{
         CreateOperation: createoperation.New(createimpl.NewCreateStrategy(personRepository, contactRepository, unitOfWork, mapper, publisher)),
         GetByGIDOperation: getoperation.New(getimpl.New(personRepository, contactRepository, mapper)),

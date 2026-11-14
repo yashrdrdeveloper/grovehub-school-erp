@@ -68,3 +68,7 @@ durable outbox entry into `foundation.event_outbox` alongside business writes.
 GetByGID and Search remain pure reads. The older Person event service decorator
 is removed; a Foundation-owned dispatcher publishes queued events to NATS with
 lease-based retries. See `EVENT_GUIDELINES.md` for the delivery model.
+
+PersonService requires an explicitly injected non-nil `ChangedProducer`. The
+composition root provides the transactional outbox producer; no production no-op
+or silent event suppression fallback is allowed.

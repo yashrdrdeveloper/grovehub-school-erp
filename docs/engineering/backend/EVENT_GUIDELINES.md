@@ -40,7 +40,6 @@ backend/
     └── producers/
         └── person/
             ├── person.go                    # ChangedProducer interface
-            ├── noop.go                      # Isolated-test implementation
             ├── impl/
             │   └── person.go                # Producer implementation
             └── operations/
@@ -59,6 +58,9 @@ backend/
                         ├── message.go       # BuildMessage
                         └── metadata.go      # Broker headers
 ```
+
+The production `PersonService` constructor requires a non-nil `ChangedProducer`;
+there is no no-op producer or missing-dependency fallback in production.
 
 The Foundation **consumers/** package does not exist yet: Foundation does not
 currently consume any inbound Person event. Add
