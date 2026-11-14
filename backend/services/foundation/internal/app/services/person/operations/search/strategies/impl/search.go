@@ -8,7 +8,7 @@ import (
     coresearch "grovehub/libs/core/search"
     servicepipeline "grovehub/libs/core/pipeline/service"
     personerror "grovehub/services/foundation/internal/app/constants/error"
-    persondto "grovehub/services/foundation/client/person/dto"
+    persondto "grovehub/services/foundation/internal/app/dto/person"
     foundationmappers "grovehub/services/foundation/internal/app/mappers/person"
     personrepository "grovehub/services/foundation/internal/app/repository/person"
     contactrepository "grovehub/services/foundation/internal/app/repository/contact"

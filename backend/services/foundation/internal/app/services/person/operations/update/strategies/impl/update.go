@@ -8,7 +8,7 @@ import (
     annotationvalidation "grovehub/libs/core/annotation/validation"
     servicepipeline "grovehub/libs/core/pipeline/service"
     coretransaction "grovehub/libs/core/database/transaction"
-    persondto "grovehub/services/foundation/client/person/dto"
+    persondto "grovehub/services/foundation/internal/app/dto/person"
     foundationevents "grovehub/services/foundation/internal/app/constants/events"
     eventproducers "grovehub/services/foundation/internal/app/events/producers/person"
     repositoryerrors "grovehub/services/foundation/internal/app/repository/constants/errors"

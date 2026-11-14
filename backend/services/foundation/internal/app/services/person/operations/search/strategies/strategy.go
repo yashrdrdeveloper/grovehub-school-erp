@@ -5,7 +5,7 @@ import (
 
     coresearch "grovehub/libs/core/search"
     servicepipeline "grovehub/libs/core/pipeline/service"
-    persondto "grovehub/services/foundation/client/person/dto"
+    persondto "grovehub/services/foundation/internal/app/dto/person"
     searchflow "grovehub/services/foundation/internal/app/services/person/operations/search/flows"
 )
 
