@@ -81,6 +81,7 @@ func TestPersonEventEnqueueFailureFailsBusinessTransaction(t *testing.T) {
     service:=personservice.NewPersonService(people,contacts,work,fakeMapper{},fakeValidator{},producer)
     _, created, err:=service.Create(context.Background(),persondto.CreatePersonRequest{RequestBody:persondto.CreatePerson{
         PersonNames:persondto.PersonNames{FirstName:"Anu",LastName:"Roy"},
+        Contacts:persondto.Contacts{Emails:[]persondto.ContactValue{{Value:"anu2@example.com",IsPrimary:true}}},
     }})
     if err==nil || created || work.runs!=1 {t.Fatalf("failure must propagate from transaction: created=%v err=%v runs=%d",created,err,work.runs)}
 }
