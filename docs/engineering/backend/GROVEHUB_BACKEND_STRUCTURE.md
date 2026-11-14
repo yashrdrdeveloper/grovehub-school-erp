@@ -783,7 +783,7 @@ The Foundation module uses Go's compiler-enforced `internal/` import rules:
 services/foundation/
   foundation.go                        # Public module, migration entry points
   client/person/person.go              # Public typed interface
-  client/person/errors.go              # Public error contracts
+  client/person/constants/error.go              # Public error contracts
   internal/app/dto/person/             # Single source of request/response DTOs
   api/openapi/v1/openapi.yaml           # Public API contract
   docs/                                 # Human-readable documentation

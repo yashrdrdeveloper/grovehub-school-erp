@@ -6,7 +6,7 @@ import (
 	coreerrors "grovehub/libs/core/errors"
 	annotationdto "grovehub/libs/core/annotation/dto"
 	coresearch "grovehub/libs/core/search"
-	personerror "grovehub/services/foundation/client/person"
+	personerror "grovehub/services/foundation/client/person/constants"
 	persondto "grovehub/services/foundation/client/person"
 	identityerror "grovehub/services/identity/constants/error"
 	identityrequest "grovehub/services/identity/dto/request"

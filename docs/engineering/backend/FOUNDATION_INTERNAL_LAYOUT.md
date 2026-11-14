@@ -12,7 +12,7 @@ backend/services/foundation/
 ├── api/openapi/v1/openapi.yaml
 ├── client/person/
 │   ├── person.go
-│   ├── errors.go
+│   └── constants/error.go
 ├── internal/
 │   ├── app/
 │   │   ├── dto/person/{operations,params,queryparams,request,response}.go
@@ -72,3 +72,10 @@ same original concrete DTO types. Callers such as Identity import **only**
 validators, services, events and mappers import the private DTO definitions
 inside the module; public aliases and private structs are the **same types**, not
 copies or duplicated transport models.
+
+## Public Person errors
+
+Person error definitions remain owned in `internal/app/constants/error/`. The
+client-facing aliases are grouped under `client/person/constants/error.go`,
+so consumers import `grovehub/services/foundation/client/person/constants`
+for error contracts, rather than mixing errors into the Person client interface.

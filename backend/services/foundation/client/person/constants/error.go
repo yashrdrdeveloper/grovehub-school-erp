@@ -1,8 +1,8 @@
-package person
+package constants
 
 import personerrors "grovehub/services/foundation/internal/app/constants/error"
 
-// Public client error contracts. The definitions remain owned by Foundation.
+// Public Person client error contracts. The definitions remain owned by Foundation.
 var (
     InvalidPersonGID = personerrors.InvalidPersonGID
     InvalidPersonRequest = personerrors.InvalidPersonRequest
