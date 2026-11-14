@@ -51,6 +51,13 @@ db-schema-init:
 db-schema-reset:
 	@bash ./scripts/database/migrate.sh reset "$(DB_SERVICE)"
 
+.PHONY: foundation-unit foundation-unit-coverage
+foundation-unit:
+	@bash ./scripts/testing/foundation-unit.sh --report-only
+
+foundation-unit-coverage:
+	@bash ./scripts/testing/foundation-unit.sh --strict
+
 .PHONY: nats-start nats-stop nats-status
 nats-start:
 	@bash ./scripts/infrastructure/nats/start.sh
