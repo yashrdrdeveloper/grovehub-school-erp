@@ -1,4 +1,4 @@
-// Command inventory enumerates every maintained Foundation app function and
+// Command inventory enumerates every maintained service or core function and
 // reports missing mirrored unit-test files. It never invents test coverage.
 package main
 
@@ -31,7 +31,7 @@ type Report struct {
 }
 
 func main() {
-    if len(os.Args)<2||len(os.Args)>3 {fmt.Fprintln(os.Stderr,"usage: inventory <foundation-service-directory> [--strict]");os.Exit(2)}
+    if len(os.Args)<2||len(os.Args)>3 {fmt.Fprintln(os.Stderr,"usage: inventory <package-owner-directory> [--strict]");os.Exit(2)}
     report,err:=inspect(os.Args[1])
     if err!=nil{fmt.Fprintln(os.Stderr,err);os.Exit(1)}
     output,err:=json.MarshalIndent(report,"","  ")
@@ -42,12 +42,19 @@ func main() {
 
 func inspect(owner string)(Report,error){
     root:=filepath.Join(owner,"internal","app")
+    if _,err:=os.Stat(root);os.IsNotExist(err){root=owner}
     testRoot:=filepath.Join(owner,"internal","tests","unit-test")
+    if _,err:=os.Stat(testRoot);os.IsNotExist(err){testRoot=filepath.Join(owner,"tests","unit-test")}
     var result Report
     tracked:=map[string]bool{}
     err:=filepath.WalkDir(root,func(path string,entry fs.DirEntry,err error)error{
         if err!=nil{return err}
-        if entry.IsDir(){return nil}
+        if entry.IsDir(){
+            if root==owner && (entry.Name()=="tests" || entry.Name()==".generated" || entry.Name()=="testdata") {
+                return filepath.SkipDir
+            }
+            return nil
+        }
         if !strings.HasSuffix(path,".go")||strings.HasSuffix(path,"_test.go"){return nil}
         relative,err:=filepath.Rel(root,path)
         if err!=nil{return err}
