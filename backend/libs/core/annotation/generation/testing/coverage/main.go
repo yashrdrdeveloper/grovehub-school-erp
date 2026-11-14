@@ -273,23 +273,77 @@ func testTarget(root, overlay, generated, reports string, item target, mode stri
     return nil
 }
 
+// score merges repeated coverage blocks from multiple go test binaries.
+// A statement counts as covered if any selected unit-test suite executed it.
+// Retaining duplicate zero-hit copies would make 100% unattainable even after
+// every production statement was exercised in at least one suite.
 func score(path string) (int64, int64, error) {
     file, err := os.Open(path)
     if err != nil { return 0, 0, err }
-    defer file.Close()
     scanner := bufio.NewScanner(file)
-    var total, covered int64
-    first := true
-    for scanner.Scan() {
-        if first { first = false; continue }
-        columns := strings.Fields(scanner.Text())
-        if len(columns) < 3 { return 0, 0, fmt.Errorf("invalid coverage record %q", scanner.Text()) }
-        count, err := strconv.ParseInt(columns[len(columns)-1], 10, 64)
-        if err != nil { return 0, 0, err }
-        statements, err := strconv.ParseInt(columns[len(columns)-2], 10, 64)
-        if err != nil { return 0, 0, err }
-        total += statements
-        if count > 0 { covered += statements }
+    if !scanner.Scan() {
+        _ = file.Close()
+        return 0, 0, fmt.Errorf("empty coverage profile: %s", path)
     }
-    return total, covered, scanner.Err()
+    mode := scanner.Text()
+    if !strings.HasPrefix(mode, "mode: ") {
+        _ = file.Close()
+        return 0, 0, fmt.Errorf("invalid coverage mode %q", mode)
+    }
+    type coverageBlock struct {
+        statements int64
+        hits int64
+    }
+    records := make(map[string]coverageBlock)
+    order := make([]string, 0)
+    for scanner.Scan() {
+        columns := strings.Fields(scanner.Text())
+        if len(columns) != 3 {
+            _ = file.Close()
+            return 0, 0, fmt.Errorf("invalid coverage record %q", scanner.Text())
+        }
+        statements, err := strconv.ParseInt(columns[1], 10, 64)
+        if err != nil { _ = file.Close(); return 0, 0, err }
+        hits, err := strconv.ParseInt(columns[2], 10, 64)
+        if err != nil { _ = file.Close(); return 0, 0, err }
+        if statements < 0 || hits < 0 {
+            _ = file.Close()
+            return 0, 0, fmt.Errorf("negative coverage values for %s", columns[0])
+        }
+        key := columns[0]
+        block, found := records[key]
+        if found && block.statements != statements {
+            _ = file.Close()
+            return 0, 0, fmt.Errorf("conflicting statement counts for %s", key)
+        }
+        if !found {
+            order = append(order, key)
+            block.statements = statements
+        }
+        block.hits += hits
+        records[key] = block
+    }
+    if err := scanner.Err(); err != nil { _ = file.Close(); return 0, 0, err }
+    if err := file.Close(); err != nil { return 0, 0, err }
+
+    // Keep the first-seen order to retain Go cover's source-block ordering.
+    // Rewrite the profile so HTML rendering and the strict gate use identical,
+    // deduplicated instrumentation rather than different coverage denominators.
+    var normalized strings.Builder
+    normalized.WriteString(mode)
+    normalized.WriteByte('\n')
+    var total, covered int64
+    for _, key := range order {
+        block := records[key]
+        total += block.statements
+        if block.hits > 0 { covered += block.statements }
+        fmt.Fprintf(&normalized, "%s %d %d\n", key, block.statements, block.hits)
+    }
+    temp, err := os.CreateTemp(filepath.Dir(path), "coverage-*.out")
+    if err != nil { return 0, 0, err }
+    defer os.Remove(temp.Name())
+    if _, err := temp.WriteString(normalized.String()); err != nil { _ = temp.Close(); return 0, 0, err }
+    if err := temp.Close(); err != nil { return 0, 0, err }
+    if err := os.Rename(temp.Name(), path); err != nil { return 0, 0, err }
+    return total, covered, nil
 }
