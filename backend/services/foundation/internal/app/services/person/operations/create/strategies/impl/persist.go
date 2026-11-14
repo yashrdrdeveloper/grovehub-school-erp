@@ -1,19 +1,19 @@
 package impl
 
 import (
-    createhelpers "grovehub/services/foundation/services/person/operations/create/helpers"
+    createhelpers "grovehub/services/foundation/internal/app/services/person/operations/create/helpers"
     "context"
     "time"
 
     coreerrors "grovehub/libs/core/errors"
     coreid "grovehub/libs/core/id"
     servicepipeline "grovehub/libs/core/pipeline/service"
-    personerror "grovehub/services/foundation/constants/error"
-    foundationevents "grovehub/services/foundation/constants/events"
-    persondto "grovehub/services/foundation/dto/person"
-    repositoryerrors "grovehub/services/foundation/repository/constants/errors"
-    personflow "grovehub/services/foundation/services/person/operations/create/flows"
-    servicehelpers "grovehub/services/foundation/services/person/helpers"
+    personerror "grovehub/services/foundation/internal/app/constants/error"
+    foundationevents "grovehub/services/foundation/internal/app/constants/events"
+    persondto "grovehub/services/foundation/client/person/dto"
+    repositoryerrors "grovehub/services/foundation/internal/app/repository/constants/errors"
+    personflow "grovehub/services/foundation/internal/app/services/person/operations/create/flows"
+    servicehelpers "grovehub/services/foundation/internal/app/services/person/helpers"
 )
 
 func (strategy *Creator) Persist(ctx context.Context, state *personflow.Create) servicepipeline.Outcome[persondto.Person] {

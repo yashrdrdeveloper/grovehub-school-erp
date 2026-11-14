@@ -1,17 +1,17 @@
 package impl
 
 import (
-    createhelpers "grovehub/services/foundation/services/person/operations/create/helpers"
+    createhelpers "grovehub/services/foundation/internal/app/services/person/operations/create/helpers"
     "context"
 
     coreerrors "grovehub/libs/core/errors"
     coreidempotency "grovehub/libs/core/idempotency"
     headercontext "grovehub/libs/core/headercontext"
     servicepipeline "grovehub/libs/core/pipeline/service"
-    personerror "grovehub/services/foundation/constants/error"
-    persondto "grovehub/services/foundation/dto/person"
-    personflow "grovehub/services/foundation/services/person/operations/create/flows"
-    servicehelpers "grovehub/services/foundation/services/person/helpers"
+    personerror "grovehub/services/foundation/internal/app/constants/error"
+    persondto "grovehub/services/foundation/client/person/dto"
+    personflow "grovehub/services/foundation/internal/app/services/person/operations/create/flows"
+    servicehelpers "grovehub/services/foundation/internal/app/services/person/helpers"
 )
 
 // Prepare builds domain contact values from an already validated request.

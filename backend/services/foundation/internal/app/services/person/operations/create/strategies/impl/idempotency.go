@@ -1,16 +1,16 @@
 package impl
 
 import (
-    createhelpers "grovehub/services/foundation/services/person/operations/create/helpers"
+    createhelpers "grovehub/services/foundation/internal/app/services/person/operations/create/helpers"
     "context"
 
     coreerrors "grovehub/libs/core/errors"
     servicepipeline "grovehub/libs/core/pipeline/service"
-    personerror "grovehub/services/foundation/constants/error"
-    persondto "grovehub/services/foundation/dto/person"
-    "grovehub/services/foundation/entity"
-    repositoryerrors "grovehub/services/foundation/repository/constants/errors"
-    personflow "grovehub/services/foundation/services/person/operations/create/flows"
+    personerror "grovehub/services/foundation/internal/app/constants/error"
+    persondto "grovehub/services/foundation/client/person/dto"
+    "grovehub/services/foundation/internal/app/entity"
+    repositoryerrors "grovehub/services/foundation/internal/app/repository/constants/errors"
+    personflow "grovehub/services/foundation/internal/app/services/person/operations/create/flows"
     corehelpers "grovehub/libs/core/helpers"
 )
 

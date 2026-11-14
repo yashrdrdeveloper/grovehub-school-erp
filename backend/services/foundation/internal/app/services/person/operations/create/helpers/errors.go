@@ -3,8 +3,8 @@ package helpers
 import (
     servicepipeline "grovehub/libs/core/pipeline/service"
     coreerrors "grovehub/libs/core/errors"
-    personerror "grovehub/services/foundation/constants/error"
-    persondto "grovehub/services/foundation/dto/person"
+    personerror "grovehub/services/foundation/internal/app/constants/error"
+    persondto "grovehub/services/foundation/client/person/dto"
 )
 
 // FailRead maps a repository read failure for the Person Create workflow.

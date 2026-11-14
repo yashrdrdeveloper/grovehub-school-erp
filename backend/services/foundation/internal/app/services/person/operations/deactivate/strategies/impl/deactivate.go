@@ -7,17 +7,17 @@ import (
 
     servicepipeline "grovehub/libs/core/pipeline/service"
     coretransaction "grovehub/libs/core/database/transaction"
-    foundationevents "grovehub/services/foundation/constants/events"
-    eventproducers "grovehub/services/foundation/events/producers/person"
-    persondto "grovehub/services/foundation/dto/person"
-    "grovehub/services/foundation/entity"
-    foundationmappers "grovehub/services/foundation/mappers/person"
-    personrepository "grovehub/services/foundation/repository/person"
-    contactrepository "grovehub/services/foundation/repository/contact"
-    repositoryerrors "grovehub/services/foundation/repository/constants/errors"
-    personhelpers "grovehub/services/foundation/services/person/helpers"
-    deactivateflow "grovehub/services/foundation/services/person/operations/deactivate/flows"
-    deactivatestrategies "grovehub/services/foundation/services/person/operations/deactivate/strategies"
+    foundationevents "grovehub/services/foundation/internal/app/constants/events"
+    eventproducers "grovehub/services/foundation/internal/app/events/producers/person"
+    persondto "grovehub/services/foundation/client/person/dto"
+    "grovehub/services/foundation/internal/app/entity"
+    foundationmappers "grovehub/services/foundation/internal/app/mappers/person"
+    personrepository "grovehub/services/foundation/internal/app/repository/person"
+    contactrepository "grovehub/services/foundation/internal/app/repository/contact"
+    repositoryerrors "grovehub/services/foundation/internal/app/repository/constants/errors"
+    personhelpers "grovehub/services/foundation/internal/app/services/person/helpers"
+    deactivateflow "grovehub/services/foundation/internal/app/services/person/operations/deactivate/flows"
+    deactivatestrategies "grovehub/services/foundation/internal/app/services/person/operations/deactivate/strategies"
 )
 
 // @Strategy

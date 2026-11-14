@@ -7,16 +7,16 @@ import (
 
     coreerrors "grovehub/libs/core/errors"
     coretransaction "grovehub/libs/core/database/transaction"
-    createstrategies "grovehub/services/foundation/services/person/operations/create/strategies"
+    createstrategies "grovehub/services/foundation/internal/app/services/person/operations/create/strategies"
     servicepipeline "grovehub/libs/core/pipeline/service"
-    personerror "grovehub/services/foundation/constants/error"
-    persondto "grovehub/services/foundation/dto/person"
-    "grovehub/services/foundation/entity"
-    foundationmappers "grovehub/services/foundation/mappers/person"
-    personrepository "grovehub/services/foundation/repository/person"
-    contactrepository "grovehub/services/foundation/repository/contact"
-    personflow "grovehub/services/foundation/services/person/operations/create/flows"
-    eventproducers "grovehub/services/foundation/events/producers/person"
+    personerror "grovehub/services/foundation/internal/app/constants/error"
+    persondto "grovehub/services/foundation/client/person/dto"
+    "grovehub/services/foundation/internal/app/entity"
+    foundationmappers "grovehub/services/foundation/internal/app/mappers/person"
+    personrepository "grovehub/services/foundation/internal/app/repository/person"
+    contactrepository "grovehub/services/foundation/internal/app/repository/contact"
+    personflow "grovehub/services/foundation/internal/app/services/person/operations/create/flows"
+    eventproducers "grovehub/services/foundation/internal/app/events/producers/person"
 )
 
 // @Strategy
