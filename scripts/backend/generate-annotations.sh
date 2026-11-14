@@ -14,7 +14,10 @@ require_command go
 log_info "Preparing pinned Go modules for generated source and unit tests"
 (
   cd -- "${BACKEND_DIR}"
+  # Go's lazy module loading may omit checksum entries for code-generation
+  # and isolated-test dependencies even when plain 'go mod download' succeeds.
   go mod download
+  go mod download go.uber.org/mock github.com/DATA-DOG/go-sqlmock
 )
 
 # Generation is a fresh snapshot, not an incremental accumulation. Removing
