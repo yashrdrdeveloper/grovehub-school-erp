@@ -66,21 +66,27 @@ For clarity, suites can spread multiple `@Testing` spec functions across
 ## Commands
 
 ```bash
-make backend-build              # Produces production and test overlays
-make foundation-unit            # Runs all mirrored tests and reports actual coverage
-make foundation-unit-coverage   # Fails unless 100% statement coverage is achieved
-make foundation-test-inventory  # Lists missing mirrored source functions
+make backend-build                                  # Regenerates all annotation sources and compiles
+make unit-test package=foundation                      # Report Foundation coverage, without strict gate
+make unit-coverage package=foundation                  # Requires exactly 100% statement coverage
+make unit-coverage packages='["foundation","identity"]' # Independently enforces 100% for each module
+make unit-coverage                                     # All services, core and launcher
+make test-inventory package=foundation                 # Lists missing mirrored source functions
 ```
 
-`foundation-unit.sh` executes all
-`internal/app/...` packages **and** mirrored suites so packages with no test
+`scripts/testing/unit-coverage.sh` delegates to one shared Go runner. It runs all
+selected production packages **and** mirrored suites so packages with no test
 coverage are counted as zero, rather than omitted. Go's cover instrumenter
-cannot read virtual generated production Go files; the script materializes
-the overlay temporarily and removes every file via a cleanup trap. Generated
-source remains ignored and non-maintained.
+cannot read virtual generated Go files; the runner materializes selected overlay
+files temporarily, records a cleanup manifest, and removes them on exit. On a
+subsequent run, interrupted materialization is detected and safely cleaned.
+The annotation generator clears stale ignored module-local `.generated/` output
+before every build and Air recompilation so deleted or renamed packages cannot
+remain in the overlay. Generated source remains ignored and non-maintained.
 
 Coverage uses Go's instrumented statement blocks, counted from the
-`.generated/foundation-unit-coverage.out` profile. A 100% statement score is
+`.generated/unit-coverage/<package>.out` profile, with an HTML report under
+`.runtime/reports/unit-coverage/<package>.html`. A 100% statement score is
 necessary but insufficient for true branch and behavioral coverage; branch,
 error and nil paths require independently authored cases. Do not generate
 fake "coverage" tests or exclude difficult packages from the denominator.
@@ -97,3 +103,21 @@ Outstanding until strict gate passes: test every service strategy/flow,
 repository persistence and search, controller error path, generated client,
 outbox and lifecycle, bootstrap and route registration, and remaining
 helpers/validators/DTOs. Never report 100% just because suite execution passes.
+
+## Shared runner and selectors
+
+All backend services use the same unit-test runner: `make unit-test`
+for an informational coverage report and `make unit-coverage` for the strict
+100% statement gate. `package=foundation` selects one service;
+`packages='["foundation","identity"]'` selects multiple services. The
+unquoted `packages=[foundation,identity]` form is also accepted. With no
+selector or an empty list, all services plus `core` and `launcher` are
+selected. Coverage and HTML files are separate per package, and no service is
+silently dropped from the denominator. Missing unit-test suites count as 0%.
+
+On every `make backend-build`, `make backend-test`, `make backend-dev`
+rebuild, or `make unit-coverage`, annotation generation starts with a fresh
+ignored output tree. Air watches Go and resource assets including SQL, YAML,
+JSON and template files; editing such assets also rebuilds the binary with
+fresh embedded resources. The code generators do not write maintained Go
+source files; generation paths stay isolated inside `.generated/`.

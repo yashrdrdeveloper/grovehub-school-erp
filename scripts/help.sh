@@ -31,6 +31,11 @@ Messaging / NATS JetStream
   make nats-status    Show NATS health, endpoints, and persistent volume
 
 Testing
+  make unit-test package=foundation                     Run isolated Foundation unit tests and report coverage
+  make unit-coverage package=foundation                 Require 100% statement coverage (fails below 100%)
+  make unit-coverage packages='["foundation","identity"]' Require 100% for each selected service
+  make unit-coverage                                    All services plus core and launcher
+  make test-inventory package=foundation                List missing mirrored test files/methods
   make sanity
       Start/verify NATS, run all backend sanity tests, generate an HTML report,
       and open .runtime/reports/sanity/index.html in the browser.
