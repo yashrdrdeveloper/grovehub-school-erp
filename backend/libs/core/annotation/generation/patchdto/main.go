@@ -41,15 +41,15 @@ func main() {
 	}
 }
 
-// Every DTO package is discovered independently under dto/, allowing
-// resource-owned DTOs (dto/person) and legacy request/ packages alike.
+// DTO packages can live in legacy dto/, client/, or the owning service's
+// internal/app/dto/. Generated code is overlaid into the original package.
 func generateAll(backend string) error {
 	services, err := os.ReadDir(filepath.Join(backend, "services"))
 	if err != nil { return err }
 	for _, entry := range services {
 		if !entry.IsDir() { continue }
 		owner := filepath.Join(backend, "services", entry.Name())
-		roots := []string{filepath.Join(owner, "dto"),filepath.Join(owner, "client")}
+		roots := []string{filepath.Join(owner, "dto"), filepath.Join(owner, "client"), filepath.Join(owner, "internal", "app", "dto")}
         for _,root := range roots {
             if _, err := os.Stat(root); os.IsNotExist(err) { continue } else if err != nil { return err }
             err = filepath.WalkDir(root, func(dir string, item os.DirEntry, walkErr error) error {
