@@ -2,7 +2,7 @@ package impl
 
 import (
     annotationvalidation "grovehub/libs/core/annotation/validation"
-    persondto "grovehub/services/foundation/client/person/dto"
+    persondto "grovehub/services/foundation/internal/app/dto/person"
     foundationvalidators "grovehub/services/foundation/internal/app/validators/person"
     validatorhelpers "grovehub/services/foundation/internal/app/validators/person/helpers"
 )

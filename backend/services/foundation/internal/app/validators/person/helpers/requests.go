@@ -1,7 +1,7 @@
 package helpers
 
 import (
-    persondto "grovehub/services/foundation/client/person/dto"
+    persondto "grovehub/services/foundation/internal/app/dto/person"
 )
 
 // NormalizeCreatePersonRequest canonicalizes contact values without changing the incoming request.
