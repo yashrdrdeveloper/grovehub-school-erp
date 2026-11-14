@@ -6,7 +6,7 @@ in place. The PersonService implementation contains only dependency composition.
 
 ## Folder ownership
 
-Under backend/services/foundation/services/person/operations/:
+Under backend/services/foundation/internal/app/services/person/operations/:
 
 - create/create.go: Create chain (Prepare -> Idempotency -> Contacts -> Persist), with flows, private helpers and strategy interface and implementation.
 - getbygid/getbygid.go: GetByGID entry point and a single @Strategy interface and implementation. No chain or flow is required.

@@ -513,3 +513,13 @@ an injected error; no Person fields, error codes or Foundation dependencies live
 inside `core/search`. Domain validators supply the allowlists and value
 normalizers while core owns iteration and primitive validation. See
 `SEARCH_API_GUIDELINES.md` for usage.
+
+## Private service implementations and shared client contracts
+
+Go service packages expose only their module entry point, public client
+interfaces, client DTOs, and API documentation where necessary. Place
+resource repositories, validators, entities, mappers, events, bootstrap wiring,
+routes, and client implementations inside `services/<service>/internal/app/`.
+Consumers import typed DTOs from `services/<service>/client/<resource>/dto/`
+and do not import private `internal/app/` packages. The
+`core/module.Module` lifecycle remains shared and domain-neutral.

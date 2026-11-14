@@ -36,7 +36,7 @@ backend/
 │   ├── pipeline/rules.go                     # ShouldEmit / Build / Enqueue
 │   ├── outbox/{store,dispatcher}.go          # Transactional delivery and retry
 │   └── messaging/{producer,consumer}.go      # Generic transport contracts
-└── services/foundation/events/
+└── services/foundation/internal/app/events/
     └── producers/
         └── person/
             ├── person.go                    # ChangedProducer interface
@@ -64,7 +64,7 @@ there is no no-op producer or missing-dependency fallback in production.
 
 The Foundation **consumers/** package does not exist yet: Foundation does not
 currently consume any inbound Person event. Add
-`services/foundation/events/consumers/<aggregate>/` only when a real inbound
+`services/foundation/internal/app/events/consumers/<aggregate>/` only when a real inbound
 subscription and handler exists; do not add empty directories merely for symmetry.
 
 The `Operation` type and lifecycle values remain owned by
@@ -224,7 +224,7 @@ stops the polling worker before Infrastructure and the DB are closed.
 
 ## 9. Current Delivery Model: Transactional Outbox
 
-Schema migration: `backend/services/foundation/migrations/000002_create_event_outbox.sql`.
+Schema migration: `backend/services/foundation/internal/resources/migrations/000002_create_event_outbox.sql`.
 
 ```text
 Person write + Contact write + event outbox insert

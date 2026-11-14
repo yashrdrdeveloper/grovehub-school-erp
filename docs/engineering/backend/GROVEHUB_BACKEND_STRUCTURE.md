@@ -26,7 +26,7 @@ These rules govern new services and refactors, not a particular Integration impl
 
 ### Public contracts and implementation boundaries
 - Expose stable **interfaces, DTOs, domain contracts and reusable types** at package roots (`providers/providers.go`, `services/connection.go`, `repository/watch.go`, `controller/connection.go`, `config/config.go`).
-- Put stateful/concrete implementations under the corresponding `impl/` folder. Provider adapters use `providers/<provider>/impl/` and an intentionally small public `providers/<provider>/` facade. Module wiring for newly migrated services belongs in `bootstrap/impl/`, not in public contracts; `<service>.go` is only the thin module entry point. Legacy services can migrate incrementally.
+- Put stateful/concrete implementations under the corresponding `impl/` folder. Provider adapters use `providers/<provider>/impl/` and an intentionally small public `providers/<provider>/` facade. Module wiring for migrated services belongs under `internal/app/bootstrap/impl/`; `<service>.go` stays a thin public module entry point. Public `client/<resource>/` interfaces and `client/<resource>/dto/` are the only cross-service imports. Legacy services can migrate incrementally.
 - A provider registry is itself an interface. Registry map/sort/dispatch, vendor routing and constructor logic belong under `providers/impl/`. Declare **only implemented capabilities**; use optional action or OAuth interfaces rather than forcing all providers to implement mail, webhook, send, or read functions.
 - Put pure reusable helpers in `helpers/` of the owning domain, grouped by resource where appropriate (e.g., `services/helpers/connections/`). Keep concrete `services/impl/connections.go` focused on orchestration and persistence decisions; move stable ID validation and entity-to-response transformations into `services/helpers/connections/`. Reuse `core/normalize` for shared UUID/email/phone normalization instead of reimplementing parsing. Do not add helpers solely to rearrange one-line calls. If a data structure is reused across multiple layers, put its stable public definition in the **owning package** or `types/` when there is no clearer owner; do not create duplicate copies in each layer.
 - All action/capability/provider keys and status literals should be defined once in capability-specific `constants/` subpackages (for example `constants/actions/gmail.go`, `constants/providers/providers.go`, `constants/connections/status.go`). Preserve type-safe aliases in a public contract only if needed for existing consumers. Keep typed error definitions/sentinels in `constants/error/`, with transport-agnostic errors mapped to HTTP only in controllers.
@@ -696,7 +696,7 @@ Contacts are nested API values, not separately addressable public resources. `en
 
 Search remains a Person use case; do not create `person_search.go` merely because Person supports search.
 
-Foundation owns the Person/GID lifecycle event contract. Its current unified event is `foundation.person.changed.v1` on the stable `foundation_person_changed` topic. Its `data` contains `operation`, `old`, and `new` using complete `dto/person.Person` snapshots; supported operations are CREATED, UPDATED and DEACTIVATED. A successful deactivation publishes only DEACTIVATED, never a duplicate UPDATED event; no-op changes do not publish. Consumers can calculate a flat field-level diff with `libs/core/diff`, which never imports Foundation. See `EVENT_GUIDELINES.md` and `backend/services/foundation/events/producers/person/operations/changed/changed.go` for contract and caveats.
+Foundation owns the Person/GID lifecycle event contract. Its current unified event is `foundation.person.changed.v1` on the stable `foundation_person_changed` topic. Its `data` contains `operation`, `old`, and `new` using complete `dto/person.Person` snapshots; supported operations are CREATED, UPDATED and DEACTIVATED. A successful deactivation publishes only DEACTIVATED, never a duplicate UPDATED event; no-op changes do not publish. Consumers can calculate a flat field-level diff with `libs/core/diff`, which never imports Foundation. See `EVENT_GUIDELINES.md` and `backend/services/foundation/internal/app/events/producers/person/operations/changed/changed.go` for contract and caveats.
 
 ---
 
@@ -774,3 +774,40 @@ surface to the launcher; the launcher closes Foundation before shutting down
 the shared Infrastructure messaging module and database. The same common
 lifecycle can be adopted by Identity, Integration, and future services without
 making their client contracts depend on one another.
+
+## Foundation internal package boundary (2026 refactor)
+
+The Foundation module uses Go's compiler-enforced `internal/` import rules:
+
+```text
+services/foundation/
+  foundation.go                        # Public module, migration entry points
+  client/person/person.go              # Public typed interface
+  client/person/errors.go              # Public error contracts
+  client/person/dto/                   # Client request/response types, shared by controllers
+  api/openapi/v1/openapi.yaml           # Public API contract
+  docs/                                 # Human-readable documentation
+  internal/app/bootstrap/{bootstrap.go,impl/}
+  internal/app/client/person/impl/      # Private in-process client
+  internal/app/{controller,routes,services,repository,entity}/
+  internal/app/{validators,mappers,events,constants}/
+  internal/resources/resources.go       # Embedded migration filesystem
+  internal/resources/migrate.go         # Goose execution against same version table
+  internal/resources/migrations/*.sql
+```
+
+Other services (including Identity) may import only `foundation` or the
+`foundation/client/person` public contract (plus its `dto` package), never
+`foundation/internal/`. Foundation internal components may reuse the public
+client DTOs; do not create duplicate private versions of them.
+
+The annotation generators locate private Foundation sources under
+`internal/app/` and place virtual sources in
+`foundation/.generated/internal/app/`, except the `@PatchRequestDto`
+serialization under `foundation/.generated/client/person/dto/`.
+
+Development migrations run through the existing Goose script at
+`internal/resources/migrations/`. Production builds embed those SQL files:
+run `./groovehub-platform migrate foundation` with `DATABASE_URL` before
+starting the platform; both paths use `foundation_schema_state` to track
+applied migrations. Do not modify or renumber applied Goose migrations.
