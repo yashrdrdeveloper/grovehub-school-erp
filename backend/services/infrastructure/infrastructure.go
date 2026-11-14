@@ -1,46 +1,31 @@
+// Package infrastructure exposes Infrastructure's lifecycle and shared
+// messaging contracts. All persistence, dispatch and provider code is private.
 package infrastructure
 
 import (
-	infrastructureclient "grovehub/services/infrastructure/client"
-	clientimpl "grovehub/services/infrastructure/client/impl"
-	infrastructureconfig "grovehub/services/infrastructure/config"
-	natsadapters "grovehub/services/infrastructure/externalService/nats/adapters"
-	serviceimpl "grovehub/services/infrastructure/services/impl"
-	"grovehub/services/infrastructure/services/strategy"
-	messagingstrategy "grovehub/services/infrastructure/services/strategy/messaging"
+    "context"
+    "errors"
+    "fmt"
+    "log/slog"
+
+    "gorm.io/gorm"
+
+    messagingclient "grovehub/services/infrastructure/client/messaging"
+    bootstrap "grovehub/services/infrastructure/internal/app/bootstrap"
+    bootstrapimpl "grovehub/services/infrastructure/internal/app/bootstrap/impl"
+    migrations "grovehub/services/infrastructure/internal/resources/migrations"
 )
 
-type Module interface {
-	MessagingClient() infrastructureclient.MessagingClient
-	Close() error
+type Module = bootstrap.Runtime
+
+func New(config messagingclient.Config, db *gorm.DB, logger *slog.Logger) (Module,error) {
+    return bootstrapimpl.New(config,db,logger)
 }
 
-type module struct {
-	messagingClient  infrastructureclient.MessagingClient
-	messagingService interface{ Close() error }
-}
-
-func New(messagingConfig infrastructureconfig.Messaging) (Module, error) {
-	natsAdapter, err := natsadapters.New(messagingConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	registry := strategy.NewRegistry[messagingstrategy.Strategy]()
-	registry.Register(infrastructureconfig.ProviderNATS, messagingstrategy.NewNATSStrategy(natsAdapter))
-
-	messagingService := serviceimpl.NewMessagingService(messagingConfig.Provider, registry)
-
-	return &module{
-		messagingClient:  clientimpl.NewMessagingClient(messagingService),
-		messagingService: messagingService,
-	}, nil
-}
-
-func (module *module) MessagingClient() infrastructureclient.MessagingClient {
-	return module.messagingClient
-}
-
-func (module *module) Close() error {
-	return module.messagingService.Close()
+// Migrate uses Infrastructure's independent, embedded Goose migration history.
+func Migrate(ctx context.Context,db *gorm.DB) error {
+    if db == nil {return errors.New("infrastructure migrations require a database")}
+    sqlDB,err:=db.DB()
+    if err!=nil{return fmt.Errorf("access infrastructure migration database: %w",err)}
+    return migrations.Migrate(ctx,sqlDB)
 }
