@@ -59,3 +59,12 @@ remains under person/helpers.
   cursor extractor, without depending on the shared Person helper package.
 - `services/person/helpers/read.go` and `errors.go`: shared across read/update/deactivate.
   The original catch-all `services/person/helpers/person.go` has been removed.
+
+## Event publication inside the operation transaction
+
+Create, Update and Deactivate call a typed `ChangedProducer` from their successful
+write transaction. It invokes the Person Changed event pipeline and inserts a
+durable outbox entry into `foundation.event_outbox` alongside business writes.
+GetByGID and Search remain pure reads. The older Person event service decorator
+is removed; a Foundation-owned dispatcher publishes queued events to NATS with
+lease-based retries. See `EVENT_GUIDELINES.md` for the delivery model.

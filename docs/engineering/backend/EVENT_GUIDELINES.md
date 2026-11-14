@@ -26,87 +26,67 @@ Infrastructure provides the generic `MessagingClient`; domain services decide wh
 
 ## 2. Canonical Event Structure
 
-Events are grouped by aggregate/resource under the owning service.
+Aggregate-owned events use an event contract, pipelines, producers, and optional consumers.
 
 ```text
-backend/services/<service>/events/
-└── <aggregate>/
-    ├── <aggregate>.go
-    ├── impl/
-    │   └── <aggregate>.go
+backend/
+├── libs/core/events/
+│   ├── envelope.go                     # Typed domain-independent envelope
+│   ├── pipeline/rules.go                # Generic ShouldEmit/Build/Enqueue rules
+│   ├── outbox/
+│   │   ├── store.go                     # Transactional enqueue and leased claims
+│   │   └── dispatcher.go                # Retry and broker delivery
+│   └── messaging/
+│       ├── producer.go                  # Transport-neutral publisher interface
+│       └── consumer.go                  # Transport-neutral handler contract
+└── services/foundation/events/person/
+    ├── person.go                        # @Event Changed payload and schema metadata
+    ├── pipelines/
+    │   ├── changed.go                   # Typed event rule composition
+    │   ├── flows/changed.go             # Change input state
+    │   └── strategies/
+    │       ├── strategy.go              # @Strategy contract
+    │       └── impl/changed.go          # Eligibility and payload building strategy
+    ├── producers/
+    │   ├── producer.go                  # ChangedProducer domain contract
+    │   ├── noop.go                      # Optional test-only producer
+    │   └── impl/person.go               # Enqueue through ChangedPipeline
+    ├── consumers/
+    │   ├── consumer.go                  # Optional subscription contract
+    │   └── impl/person.go               # MessagingClient.Consume integration
+    ├── handlers/changed.go              # Decode/validate inbound envelope
     └── helpers/
-        └── <aggregate>.go
+        ├── changed.go                   # HasChanged eligibility
+        ├── envelope.go                  # BuildChanged
+        ├── message.go                   # Marshal outbox payload
+        └── metadata.go                  # Broker headers
 ```
 
-Examples:
+The lifecycle `Operation` type remains at `foundation/constants/events/operation.go`.
+No consumer is registered automatically in Foundation: producer-side self-subscription
+would generate unnecessary load and risk loops. Consumers are explicitly registered
+by services that need incoming Person Changed events.
 
-```text
-backend/services/foundation/events/person/
-├── person.go
-├── impl/person.go
-└── helpers/person.go
-
-backend/services/identity/events/accounts/
-├── account.go
-├── impl/account.go
-└── helpers/account.go
-```
-
-Foundation lifecycle operation names and the `Operation` type live at `backend/services/foundation/constants/events/operation.go` (Go package `events`), not in `libs/core/constants` or `events/person/person.go`. Event contracts import this Foundation-owned type; producers and consumers use `foundationevents.Created`, `foundationevents.Updated`, and `foundationevents.Deactivated`. Other domains define their own operations only when required; do not impose a single global operation enum.
-
-Create only folders that have a current responsibility. A resource may contain an independently meaningful subresource: for example, `integration/events/connections/mailbox/changed.go` with `helpers/changed.go` and `impl/changed.go` underneath `mailbox/`, because mailbox-change notifications belong to provider connections. Avoid creating an unowned top-level `events/mailbox` aggregate when connectivity is the owner.
-
----
 
 ## 3. Responsibility Split
 
-### `<aggregate>.go`
+- `events/person/person.go`: stable domain event payload and annotation metadata.
+- `events/person/pipelines/`: typed event policy; `Rules()` composes `ShouldEmit`,
+  `Build`, and `Enqueue` as in the validator rule pattern.
+- `events/person/producers/`: domain-level producer contract; enqueue must happen
+  inside the successful aggregate write transaction, not after returning from the service.
+- `libs/core/events/outbox/`: durable storage, nonblocking row claims, leases,
+  retry scheduling, broker delivery, and published-state tracking.
+- `events/person/consumers/`: optional registration with Infrastructure MessagingClient.
+  `handlers/` decodes and validates the incoming typed envelope. Consumers must
+  deduplicate event IDs and protect contact details.
+- `services/person/operations/`: owns actual business state transitions and invokes
+  the producer only for newly committed Create, changed Update, or new Deactivate.
+  GetByGID and Search never enqueue events.
 
-Public event contracts and stable event identifiers only.
+Event construction helpers must remain pure. They do not call repositories,
+NATS adapters or HTTP. Infrastructure owns transport mechanics.
 
-Typical contents:
-
-```text
-topic/subject constant
-event-type/version constant
-source constant
-event payload struct
-```
-
-Consumers may import this package to deserialize the event contract.
-
-### `impl/<aggregate>.go`
-
-Event publishing orchestration.
-
-It may:
-
-```text
-decorate the owning domain service
-publish after a successful business operation
-generate event IDs
-marshal the event envelope
-call Infrastructure MessagingClient
-log publishing failures
-```
-
-It must not contain the core business operation itself.
-
-### `helpers/<aggregate>.go`
-
-Pure event construction helpers.
-
-Typical responsibilities:
-
-```text
-build the shared event envelope via `coreevents.NewEnvelope`
-map domain/service output into the public event payload
-build standard event metadata
-```
-
-Helpers should not call NATS, repositories, HTTP, or other services.
-
----
 
 ## 4. Event Envelope
 
@@ -212,47 +192,65 @@ Use `grovehub/libs/core/diff`, which is generic, typed via Go type inference, an
 
 ## 8. Composition
 
-The root launcher creates Infrastructure messaging once and injects its public `MessagingClient` into domain modules that publish events.
-
 ```text
-launcher
-  ↓
-Infrastructure Module
-  ↓ MessagingClient
-Foundation / Identity / future domain module
-  ↓
-events/<aggregate>/impl
-  ↓
-MessagingClient.Publish
-  ↓
-NATS JetStream
+Foundation.New
+    ├─ PersonService (composed use-case operations)
+    │  ├─ Create Persist    ┐
+    │  ├─ Update Persist    ├─ ChangedProducer.Enqueue inside UnitOfWork
+    │  └─ Deactivate Persist┘
+    │       ↓
+    │  ChangedPipeline.Rules() = ShouldEmit + Build + Enqueue
+    │       ↓
+    │  core outbox.Store.Enqueue (foundation.event_outbox)
+    └─ Dispatcher (lifecycle-owned polling worker)
+            ↓ pending / expired leases (SKIP LOCKED)
+       Infrastructure MessagingClient.Publish
+            ↓
+       NATS JetStream (foundation_person_changed)
 ```
 
-Domain event implementations depend only on the public Infrastructure client contract; they must not import NATS/Watermill adapters directly.
+Only outbound event data is stored in Foundation's outbox table. Other services can
+use the same core store with their own schema and migrations. `foundation.Module.Close`
+stops the polling worker before Infrastructure and the DB are closed.
 
----
 
-## 9. Current Delivery Model
+## 9. Current Delivery Model: Transactional Outbox
 
-GroveHub publishes after successful persistence; shared GORM transactions defer events through `core/database/transaction.AfterCommit`:
+Schema migration: `backend/services/foundation/migrations/000002_create_event_outbox.sql`.
 
 ```text
-shared transaction writes succeed
-  ↓
-commit succeeds
-  ↓
-publish events (best effort)
+Person write + Contact write + event outbox insert
+           ↓ (same PostgreSQL transaction)
+   Commit all or roll back all
+           ↓ asynchronous polling
+   Lock eligible messages with SKIP LOCKED
+           ↓
+   Publish with stable subject/metadata; mark SENT
+   On failure: mark PENDING with capped exponential delay
+   On worker crash: reclaim expired SENDING leases
 ```
 
-Rollback or failed commit discards registered event callbacks. Outside shared transactions, events publish after successful writes. A publish failure is logged and must not incorrectly report that an already-committed database write failed.
+This provides durable **at-least-once** delivery; it cannot guarantee exactly once
+between PostgreSQL and NATS. If a broker publish succeeds but marking SENT fails,
+the event may be delivered again. Consumers must persistently deduplicate by
+`eventId`. Events may be delivered later than the HTTP response, and subscribers
+must tolerate out-of-order events using aggregate version when needed.
 
-A transactional outbox may be introduced later when guaranteed database-to-event delivery becomes a production requirement. Do not add an outbox prematurely without that requirement.
+Unlike the previous best-effort post-commit publisher, an outbox insert failure
+now rolls back the Person mutation and surfaces an error to the business caller.
+An idempotent Create replay, no-op Update or already-deactivated Person does not
+enqueue a new event. Create/Update/Deactivate all record events in their existing
+write transactions, and Deactivate now explicitly uses UnitOfWork.
 
----
+Dispatcher lease and retry metadata must be monitored operationally. The
+migration keeps SENT rows for audit/reconciliation; add retention and dead-letter
+policy before production growth. This implementation does not invent an inbound
+Person side effect: the consumer adapter is available for explicit integration.
+
 
 ## 10. Testing
 
-Sanity tests must verify real Infrastructure messaging/NATS delivery using stable event topics.
+Sanity tests must verify transactionally enqueued delivery via the outbox dispatcher into real Infrastructure messaging/NATS using stable event topics.
 
 Current sanity coverage includes:
 
