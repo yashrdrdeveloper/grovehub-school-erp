@@ -54,9 +54,12 @@ log_info "Running isolated Foundation Ginkgo/Gomega unit tests with no real data
   go test -vet=off -overlay="${BACKEND_DIR}/.generated/overlay.json" \
     -covermode=atomic -coverpkg=./services/foundation/internal/app/... \
     -coverprofile="${coverage_file}" \
+    ./services/foundation/internal/app/... \
     ./services/foundation/internal/tests/unit-test/...
 )
 
+# Run every production package as an explicit target: this counts 0%-covered
+# packages too, not just the transitive dependencies of existing specs.
 # Calculate actual instrumented statement coverage directly from the profile.
 # Do not call go tool cover -func: its virtual overlay filenames are not present
 # on disk, even though the generated Go code was compiled and executed.
