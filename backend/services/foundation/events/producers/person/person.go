@@ -1,5 +1,5 @@
 // Package producers declares Person-owned outbound event contracts.
-package producers
+package person
 
 import (
     "context"

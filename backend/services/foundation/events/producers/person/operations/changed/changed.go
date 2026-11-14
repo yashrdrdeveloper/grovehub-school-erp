@@ -1,4 +1,4 @@
-package person
+package changed
 
 import (
     foundationevents "grovehub/services/foundation/constants/events"

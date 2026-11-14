@@ -5,9 +5,9 @@ import (
 
     foundationevents "grovehub/services/foundation/constants/events"
     persondto "grovehub/services/foundation/dto/person"
-    eventpipelines "grovehub/services/foundation/events/person/pipelines"
-    eventflows "grovehub/services/foundation/events/person/pipelines/flows"
-    eventproducers "grovehub/services/foundation/events/person/producers"
+    eventpipelines "grovehub/services/foundation/events/producers/person/operations/changed"
+    eventflows "grovehub/services/foundation/events/producers/person/operations/changed/flows"
+    eventproducers "grovehub/services/foundation/events/producers/person"
 )
 
 type PersonProducer struct {

@@ -1,13 +1,13 @@
 // Package pipelines executes Person change event rules inside the business transaction.
-package pipelines
+package changed
 
 import (
     "context"
 
     coreoutbox "grovehub/libs/core/events/outbox"
     eventpipeline "grovehub/libs/core/events/pipeline"
-    eventflows "grovehub/services/foundation/events/person/pipelines/flows"
-    changedstrategies "grovehub/services/foundation/events/person/pipelines/strategies"
+    eventflows "grovehub/services/foundation/events/producers/person/operations/changed/flows"
+    changedstrategies "grovehub/services/foundation/events/producers/person/operations/changed/strategies"
 )
 
 type ChangedPipeline struct {
