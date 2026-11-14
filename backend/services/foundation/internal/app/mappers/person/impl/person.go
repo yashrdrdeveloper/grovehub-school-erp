@@ -2,7 +2,7 @@ package impl
 
 import (
 	corehelpers "grovehub/libs/core/helpers"
-	persondto "grovehub/services/foundation/client/person/dto"
+	persondto "grovehub/services/foundation/internal/app/dto/person"
 	"grovehub/services/foundation/internal/app/entity"
 	foundationmappers "grovehub/services/foundation/internal/app/mappers/person"
 )

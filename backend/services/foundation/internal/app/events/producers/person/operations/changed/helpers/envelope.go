@@ -6,7 +6,7 @@ import (
 
     coreevents "grovehub/libs/core/events"
     foundationevents "grovehub/services/foundation/internal/app/constants/events"
-    persondto "grovehub/services/foundation/client/person/dto"
+    persondto "grovehub/services/foundation/internal/app/dto/person"
     personevents "grovehub/services/foundation/internal/app/events/producers/person/operations/changed"
 )
 

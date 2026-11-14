@@ -5,7 +5,7 @@ import (
     "context"
 
     foundationevents "grovehub/services/foundation/internal/app/constants/events"
-    persondto "grovehub/services/foundation/client/person/dto"
+    persondto "grovehub/services/foundation/internal/app/dto/person"
 )
 
 type ChangedProducer interface {

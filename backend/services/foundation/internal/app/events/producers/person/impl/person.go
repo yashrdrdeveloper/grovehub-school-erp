@@ -4,7 +4,7 @@ import (
     "context"
 
     foundationevents "grovehub/services/foundation/internal/app/constants/events"
-    persondto "grovehub/services/foundation/client/person/dto"
+    persondto "grovehub/services/foundation/internal/app/dto/person"
     eventpipelines "grovehub/services/foundation/internal/app/events/producers/person/operations/changed"
     eventflows "grovehub/services/foundation/internal/app/events/producers/person/operations/changed/flows"
     eventproducers "grovehub/services/foundation/internal/app/events/producers/person"

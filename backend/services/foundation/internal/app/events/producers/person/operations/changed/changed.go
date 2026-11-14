@@ -2,7 +2,7 @@ package changed
 
 import (
     foundationevents "grovehub/services/foundation/internal/app/constants/events"
-    persondto "grovehub/services/foundation/client/person/dto"
+    persondto "grovehub/services/foundation/internal/app/dto/person"
 )
 
 // Changed carries full public Person response snapshots. Nil Old means creation;
