@@ -3,7 +3,7 @@ package helpers
 import (
     coreerrors "grovehub/libs/core/errors"
     corenormalize "grovehub/libs/core/normalize"
-    personerror "grovehub/services/foundation/constants/error"
+    personerror "grovehub/services/foundation/internal/app/constants/error"
 )
 
 func ValidateGID(gid string) error {

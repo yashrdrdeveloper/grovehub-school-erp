@@ -3,9 +3,9 @@ package helpers
 import (
     coreerrors "grovehub/libs/core/errors"
     corenormalize "grovehub/libs/core/normalize"
-    personerror "grovehub/services/foundation/constants/error"
-    persondto "grovehub/services/foundation/dto/person"
-    "grovehub/services/foundation/entity"
+    personerror "grovehub/services/foundation/internal/app/constants/error"
+    persondto "grovehub/services/foundation/client/person/dto"
+    "grovehub/services/foundation/internal/app/entity"
 )
 
 const maxContactsPerType = 10

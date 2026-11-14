@@ -3,7 +3,7 @@ package helpers
 import (
     "testing"
 
-    "grovehub/services/foundation/entity"
+    "grovehub/services/foundation/internal/app/entity"
 )
 
 func TestContactsEqualUsesIdentityAndUserFacingFields(t *testing.T) {

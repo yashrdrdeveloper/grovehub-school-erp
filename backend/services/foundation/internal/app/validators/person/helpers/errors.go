@@ -6,7 +6,7 @@ import (
 
     annotationvalidation "grovehub/libs/core/annotation/validation"
     coreerrors "grovehub/libs/core/errors"
-    personerror "grovehub/services/foundation/constants/error"
+    personerror "grovehub/services/foundation/internal/app/constants/error"
 )
 
 func invalidPersonSearch() error {

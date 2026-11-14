@@ -6,12 +6,12 @@ import (
 
     coreerrors "grovehub/libs/core/errors"
     corehelpers "grovehub/libs/core/helpers"
-    personerror "grovehub/services/foundation/constants/error"
-    persondto "grovehub/services/foundation/dto/person"
-    "grovehub/services/foundation/entity"
-    foundationmappers "grovehub/services/foundation/mappers/person"
-    contactrepository "grovehub/services/foundation/repository/contact"
-    servicehelpers "grovehub/services/foundation/services/person/helpers"
+    personerror "grovehub/services/foundation/internal/app/constants/error"
+    persondto "grovehub/services/foundation/client/person/dto"
+    "grovehub/services/foundation/internal/app/entity"
+    foundationmappers "grovehub/services/foundation/internal/app/mappers/person"
+    contactrepository "grovehub/services/foundation/internal/app/repository/contact"
+    servicehelpers "grovehub/services/foundation/internal/app/services/person/helpers"
 )
 
 func ApplyPersonUpdate(ctx context.Context, person entity.Person, contacts []entity.Contact, request persondto.UpdatePerson, contactRepository contactrepository.ContactRepository, mapper foundationmappers.PersonMapper) (entity.Person, []entity.Contact, bool, error) {

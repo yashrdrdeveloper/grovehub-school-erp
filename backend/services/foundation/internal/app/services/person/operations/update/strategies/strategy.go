@@ -4,8 +4,8 @@ import (
     "context"
 
     servicepipeline "grovehub/libs/core/pipeline/service"
-    persondto "grovehub/services/foundation/dto/person"
-    updateflow "grovehub/services/foundation/services/person/operations/update/flows"
+    persondto "grovehub/services/foundation/client/person/dto"
+    updateflow "grovehub/services/foundation/internal/app/services/person/operations/update/flows"
 )
 
 // @Strategy

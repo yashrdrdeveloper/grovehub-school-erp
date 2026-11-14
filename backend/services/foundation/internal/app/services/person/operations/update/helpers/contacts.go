@@ -1,6 +1,6 @@
 package helpers
 
-import "grovehub/services/foundation/entity"
+import "grovehub/services/foundation/internal/app/entity"
 
 // contactIdentity compares normalized contact identities without audit fields.
 type contactIdentity struct {
