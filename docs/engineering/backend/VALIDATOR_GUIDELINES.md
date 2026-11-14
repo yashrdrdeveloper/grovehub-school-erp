@@ -108,18 +108,24 @@ A validator answers whether input is valid and what its canonical values are. A 
 
 ```text
 validators/
-├── <resource>.go
-├── impl/
-│   └── <resource>.go
-└── helpers/
-    └── <resource>.go
+└── person/
+    ├── person.go                  # validator contract
+    ├── impl/person.go             # composed normalization + validation rules
+    └── helpers/
+        ├── requests.go            # Create/Update/Search rule callbacks
+        ├── contacts.go            # contact constraints and canonicalization
+        ├── search.go              # query normalization + filter/sort/cursor flow
+        ├── search_fields.go       # searchable field/operator policies
+        ├── cursor.go              # sort cursor value validation
+        ├── gid.go                 # GID validation
+        └── errors.go              # domain error mapping
 ```
 
-`validators/<resource>.go` defines the interface.
+`validators/person/person.go` defines the interface.
 
-`validators/impl/<resource>.go` owns validation orchestration.
+`validators/person/impl/person.go` composes typed validation rules.
 
-`validators/helpers/<resource>.go` owns pure resource-specific validation/normalization policy.
+`validators/person/helpers/` groups reusable, resource-specific validation and normalization policies by responsibility.
 
 Concrete validator implementations are constructed only by the owning module composition root.
 
@@ -335,17 +341,17 @@ Do not import `core/search/contracts` directly from resource validators.
 
 ```text
 foundation/
-├── validators/
+├── validators/person/
 │   ├── person.go
 │   ├── impl/person.go
-│   └── helpers/person.go
-├── services/
+│   └── helpers/{requests,contacts,search,search_fields,cursor,gid,errors}.go
+├── services/person/
 │   ├── person.go
 │   ├── impl/person.go
-│   └── helpers/person.go
-└── mappers/
+│   └── operations/{create,update,search,getbygid,deactivate}/
+└── mappers/person/
     ├── person.go
-    └── impl/person.go
+    └── impl/
 ```
 
 `PersonValidator` exposes only three rule methods: `CreateRules()`, `UpdateRules()`, and `SearchRules()`. HTTP controllers pass these directly to `rest.Config.Body`; in-process Create and Update service methods use `annotationvalidation.Process(request, rules)`. Search services use the same resource-owned search helper to transform validated requests into `coresearch.Query[string]` and cursor payloads, while `SearchRules()` performs the check for REST callers.
@@ -393,3 +399,18 @@ YES services receive normalized existing contracts
 ```
 
 > **Guiding principle:** validate and canonicalize before business orchestration, reuse existing contracts, consume shared capabilities through their root façades, and create new validator result types only for genuinely new semantics.
+
+## Person validator composition and ownership
+
+The Person validator composes `annotationvalidation.Rules[T]` using method
+references from `validators/person/helpers/requests.go`; no inline closures
+are needed for Create, Update or Search. The core library still determines the
+order: DTO normalization -> custom normalization -> DTO tag validation -> custom
+validation. Create and Update reuse the same contact canonicalization and
+cross-field checks, while Update guards absent and explicit-null PATCH contacts.
+
+`helpers/errors.go` owns `MapPersonDTOError`, which maps tagged Contact
+failures to `InvalidPersonContact` and other tagged failures to
+`InvalidPersonRequest`. Search field/operator configuration remains strictly
+Person-specific and is split between `search_fields.go` and `cursor.go`.
+Search filtering and pagination retain their existing external error codes.
