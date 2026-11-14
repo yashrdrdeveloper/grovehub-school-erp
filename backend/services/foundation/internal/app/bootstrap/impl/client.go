@@ -4,7 +4,7 @@ import (
     "net/http"
 
     foundationclient "grovehub/services/foundation/client/person"
-    clientimpl "grovehub/services/foundation/client/person/impl"
+    clientimpl "grovehub/services/foundation/internal/app/client/person/impl"
     protected "grovehub/services/foundation/internal/app/controller/person/protected"
     "grovehub/services/foundation/internal/app/routes"
 )
