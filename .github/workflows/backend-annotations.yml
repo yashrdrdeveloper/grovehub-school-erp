@@ -30,6 +30,15 @@ jobs:
         run: make backend-lint
       - name: Compile the complete backend with generated annotations
         run: make backend-build
+      - name: Review resolved Go module files
+        working-directory: backend
+        run: |
+          echo "===GROOVEHUB_GO_MOD_BEGIN==="
+          cat go.mod
+          echo "===GROOVEHUB_GO_MOD_END==="
+          echo "===GROOVEHUB_GO_SUM_BEGIN==="
+          cat go.sum
+          echo "===GROOVEHUB_GO_SUM_END==="
       - name: Verify annotation packages resolve after folder refactor
         working-directory: backend
         run: go list -overlay=.generated/overlay.json ./libs/core/annotation/...
