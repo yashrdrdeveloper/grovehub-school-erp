@@ -23,7 +23,8 @@ func NewDispatcher(store Store, publisher coremessaging.Publisher, logger *slog.
 }
 
 func (dispatcher *Dispatcher) Dispatch(ctx context.Context) error {
-    entries, err := dispatcher.store.Claim(ctx, 32, 45*time.Second)
+    // Four sequential ten-second publish attempts fit inside the ninety-second lease.
+    entries, err := dispatcher.store.Claim(ctx, 4, 90*time.Second)
     if err != nil { return err }
     var failures []error
     for _, entry := range entries {
