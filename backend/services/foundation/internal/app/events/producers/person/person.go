@@ -4,8 +4,8 @@ package person
 import (
     "context"
 
-    foundationevents "grovehub/services/foundation/constants/events"
-    persondto "grovehub/services/foundation/dto/person"
+    foundationevents "grovehub/services/foundation/internal/app/constants/events"
+    persondto "grovehub/services/foundation/client/person/dto"
 )
 
 type ChangedProducer interface {

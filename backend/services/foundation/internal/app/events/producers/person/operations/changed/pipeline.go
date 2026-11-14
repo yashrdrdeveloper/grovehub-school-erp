@@ -6,8 +6,8 @@ import (
 
     coreoutbox "grovehub/libs/core/events/outbox"
     eventpipeline "grovehub/libs/core/events/pipeline"
-    eventflows "grovehub/services/foundation/events/producers/person/operations/changed/flows"
-    changedstrategies "grovehub/services/foundation/events/producers/person/operations/changed/strategies"
+    eventflows "grovehub/services/foundation/internal/app/events/producers/person/operations/changed/flows"
+    changedstrategies "grovehub/services/foundation/internal/app/events/producers/person/operations/changed/strategies"
 )
 
 type ChangedPipeline struct {

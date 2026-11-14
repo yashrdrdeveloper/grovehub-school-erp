@@ -4,7 +4,7 @@ import (
     "context"
 
     coreoutbox "grovehub/libs/core/events/outbox"
-    eventflows "grovehub/services/foundation/events/producers/person/operations/changed/flows"
+    eventflows "grovehub/services/foundation/internal/app/events/producers/person/operations/changed/flows"
 )
 
 // @Strategy

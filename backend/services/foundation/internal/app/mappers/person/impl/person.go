@@ -2,9 +2,9 @@ package impl
 
 import (
 	corehelpers "grovehub/libs/core/helpers"
-	persondto "grovehub/services/foundation/dto/person"
-	"grovehub/services/foundation/entity"
-	foundationmappers "grovehub/services/foundation/mappers/person"
+	persondto "grovehub/services/foundation/client/person/dto"
+	"grovehub/services/foundation/internal/app/entity"
+	foundationmappers "grovehub/services/foundation/internal/app/mappers/person"
 )
 
 type PersonMapper struct{}
