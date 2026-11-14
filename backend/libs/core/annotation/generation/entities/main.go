@@ -52,8 +52,13 @@ func generateAll(backend string) error {
 		if !service.IsDir(){continue}
 		owner:=filepath.Join(backend,"services",service.Name())
 		dir:=filepath.Join(owner,"entity")
+        if info,err:=os.Stat(filepath.Join(owner,"internal","app","entity"));err==nil&&info.IsDir(){
+            dir=filepath.Join(owner,"internal","app","entity")
+        }
 		if info,err:=os.Stat(dir);err!=nil||!info.IsDir(){continue}
-		if err:=generate(dir,filepath.Join(owner,".generated","entity"));err!=nil {
+        rel, err := filepath.Rel(owner, dir)
+        if err != nil { return err }
+		if err:=generate(dir,filepath.Join(owner,".generated",rel));err!=nil {
 			return fmt.Errorf("%s entities: %w",service.Name(),err)
 		}
 	}

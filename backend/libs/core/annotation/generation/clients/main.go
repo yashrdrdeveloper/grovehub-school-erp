@@ -65,12 +65,19 @@ func generateAll(backend string) error {
 			}
 		}
 		for _,dir:=range directories {
-			proxies,err:=discover(dir,filepath.Join(owner,".generated","routes","zz_routes.gen.go"))
+			generatedRoutes := filepath.Join(owner,".generated","routes","zz_routes.gen.go")
+            if _, err := os.Stat(filepath.Join(owner, "internal", "app", "routes")); err == nil {
+                generatedRoutes = filepath.Join(owner, ".generated", "internal", "app", "routes", "zz_routes.gen.go")
+            }
+            proxies,err:=discover(dir,generatedRoutes)
 			if err!=nil{return fmt.Errorf("%s %s: %w",service.Name(),dir,err)}
 			rel,err:=filepath.Rel(clientDir,dir)
 			if err!=nil{return err}
 			outDir:=filepath.Join(owner,".generated","client")
-			if rel!="." {outDir=filepath.Join(outDir,rel)}
+            if rel!="." {outDir=filepath.Join(outDir,rel)}
+            if _, err := os.Stat(filepath.Join(owner,"internal","app","client",rel,"impl")); err == nil {
+                outDir = filepath.Join(owner,".generated","internal","app","client",rel)
+            }
 			output:=filepath.Join(outDir,"impl","zz_clients.gen.go")
 			if len(proxies)==0 {
 				if err:=os.Remove(output);err!=nil&&!os.IsNotExist(err){return err}

@@ -62,6 +62,9 @@ func generateAll(backend string) error {
 		name := service.Name()
 		owner := filepath.Join(backend, "services", name)
 		controllerDir := filepath.Join(owner, "controller")
+        if info, err := os.Stat(filepath.Join(owner, "internal", "app", "controller")); err == nil && info.IsDir() {
+            controllerDir = filepath.Join(owner, "internal", "app", "controller")
+        }
 		if info, err := os.Stat(controllerDir); os.IsNotExist(err) {
 			continue
 		} else if err != nil {
@@ -70,7 +73,8 @@ func generateAll(backend string) error {
 			return fmt.Errorf("%s: controller must be a directory", name)
 		}
 
-		servicePath, configured, err := servicePrefix(filepath.Join(owner, "routes", "http.go"))
+		routesDir := filepath.Join(filepath.Dir(controllerDir), "routes")
+        servicePath, configured, err := servicePrefix(filepath.Join(routesDir, "http.go"))
 		if err != nil {
 			return fmt.Errorf("%s routes: %w", name, err)
 		}
@@ -78,7 +82,9 @@ func generateAll(backend string) error {
 		if err != nil {
 			return fmt.Errorf("%s routes: %w", name, err)
 		}
-		output := filepath.Join(owner, ".generated", "routes", "zz_routes.gen.go")
+		rel, err := filepath.Rel(owner, routesDir)
+        if err != nil { return err }
+        output := filepath.Join(owner, ".generated", rel, "zz_routes.gen.go")
 		if len(groups) == 0 {
 			if err := os.Remove(output); err != nil && !os.IsNotExist(err) {
 				return err
@@ -384,6 +390,9 @@ func writeRoutes(service string, groups []routeGroup, output string) error {
 	for _, group := range groups {
 		alias := groupImportAlias(group)
 		importPath := "grovehub/services/" + service + "/controller"
+        if strings.Contains(filepath.ToSlash(output), "/internal/app/routes/") {
+            importPath = "grovehub/services/" + service + "/internal/app/controller"
+        }
 		if group.resource != "" { importPath += "/" + group.resource }
 		if group.tier != "" { importPath += "/" + group.tier }
 		imports[alias] = importPath
