@@ -9,6 +9,7 @@ import (
     coreid "grovehub/libs/core/id"
     servicepipeline "grovehub/libs/core/pipeline/service"
     personerror "grovehub/services/foundation/constants/error"
+    foundationevents "grovehub/services/foundation/constants/events"
     persondto "grovehub/services/foundation/dto/person"
     repositoryerrors "grovehub/services/foundation/repository/constants/errors"
     personflow "grovehub/services/foundation/services/person/operations/create/flows"
@@ -58,6 +59,10 @@ func (strategy *Creator) persistWrites(ctx context.Context, state *personflow.Cr
     return servicepipeline.Sequence(ctx, strategy.mapper.ToPersonResponse(state.Person, state.Contacts), true,
         func(ctx context.Context) error { return strategy.persons.Create(ctx, state.Person) },
         func(ctx context.Context) error { return strategy.contacts.ReplaceForPerson(ctx, state.Person.GID, state.Contacts) },
+        func(ctx context.Context) error {
+            next := strategy.mapper.ToPersonResponse(state.Person, state.Contacts)
+            return strategy.events.Enqueue(ctx, foundationevents.Created, nil, &next)
+        },
     )
 }
 

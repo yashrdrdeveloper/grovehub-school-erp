@@ -54,6 +54,7 @@ func Run(logger *slog.Logger) error {
 		infrastructureModule.MessagingClient(),
 	)
 	foundationModule.RegisterHTTP(mux)
+    defer foundationModule.Close()
 
 	identityModule := identity.New(
 		logger,

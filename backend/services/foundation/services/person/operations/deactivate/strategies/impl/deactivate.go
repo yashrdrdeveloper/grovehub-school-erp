@@ -6,6 +6,9 @@ import (
     "time"
 
     servicepipeline "grovehub/libs/core/pipeline/service"
+    coretransaction "grovehub/libs/core/database/transaction"
+    foundationevents "grovehub/services/foundation/constants/events"
+    eventproducers "grovehub/services/foundation/events/person/producers"
     persondto "grovehub/services/foundation/dto/person"
     "grovehub/services/foundation/entity"
     foundationmappers "grovehub/services/foundation/mappers/person"
@@ -21,13 +24,15 @@ import (
 type Deactivator struct {
     persons personrepository.PersonRepository
     contacts contactrepository.ContactRepository
+    unitOfWork coretransaction.UnitOfWork
     mapper foundationmappers.PersonMapper
+    events eventproducers.ChangedProducer
 }
 
 var _ deactivatestrategies.DeactivateStrategy = (*Deactivator)(nil)
 
-func New(persons personrepository.PersonRepository, contacts contactrepository.ContactRepository, mapper foundationmappers.PersonMapper) deactivatestrategies.DeactivateStrategy {
-    return &Deactivator{persons: persons, contacts: contacts, mapper: mapper}
+func New(persons personrepository.PersonRepository, contacts contactrepository.ContactRepository, unit coretransaction.UnitOfWork, mapper foundationmappers.PersonMapper, events eventproducers.ChangedProducer) deactivatestrategies.DeactivateStrategy {
+    return &Deactivator{persons: persons, contacts: contacts, unitOfWork: unit, mapper: mapper, events: events}
 }
 
 func (strategy *Deactivator) Load(ctx context.Context, state *deactivateflow.Deactivate) servicepipeline.Outcome[persondto.Person] {
@@ -50,8 +55,15 @@ func (strategy *Deactivator) Prepare(ctx context.Context, state *deactivateflow.
     return servicepipeline.Next[persondto.Person]()
 }
 
+// @Transactional
 func (strategy *Deactivator) Persist(ctx context.Context, state *deactivateflow.Deactivate) servicepipeline.Outcome[persondto.Person] {
-    if err := strategy.persons.Update(ctx, state.UpdatedPerson); err != nil {
+    err := strategy.unitOfWork.Run(ctx, func(txCtx context.Context) error {
+        if err := strategy.persons.Update(txCtx, state.UpdatedPerson); err != nil { return err }
+        old := strategy.mapper.ToPersonResponse(state.Person, state.Contacts)
+        next := strategy.mapper.ToPersonResponse(state.UpdatedPerson, state.Contacts)
+        return strategy.events.Enqueue(txCtx, foundationevents.Deactivated, &old, &next)
+    })
+    if err != nil {
         if errors.Is(err, repositoryerrors.ErrPersonVersionConflict) {
             latest, contacts, readErr := personhelpers.ReadPerson(ctx, state.GID, strategy.persons, strategy.contacts, strategy.mapper)
             if readErr != nil { return servicepipeline.Fail[persondto.Person](readErr) }

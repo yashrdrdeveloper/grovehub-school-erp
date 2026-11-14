@@ -1,6 +1,8 @@
 package foundation
 
 import (
+    "context"
+    "time"
 	"log/slog"
 	"net/http"
 
@@ -8,11 +10,14 @@ import (
 
 	coretelemetry "grovehub/libs/core/telemetry"
 	coretransaction "grovehub/libs/core/database/transaction"
+    coreoutbox "grovehub/libs/core/events/outbox"
 	foundationclient "grovehub/services/foundation/client/person"
 	clientimpl "grovehub/services/foundation/client/person/impl"
 	protected "grovehub/services/foundation/controller/person/protected"
 	controllerimpl "grovehub/services/foundation/controller/person/protected/impl"
-	personeventimpl "grovehub/services/foundation/events/person/impl"
+    eventpipelines "grovehub/services/foundation/events/person/pipelines"
+    eventstrategyimpl "grovehub/services/foundation/events/person/pipelines/strategies/impl"
+    eventproducerimpl "grovehub/services/foundation/events/person/producers/impl"
 	mapperimpl "grovehub/services/foundation/mappers/person/impl"
 	personrepositoryimpl "grovehub/services/foundation/repository/person/impl"
 	contactrepositoryimpl "grovehub/services/foundation/repository/contact/impl"
@@ -23,14 +28,17 @@ import (
 )
 
 type Module interface {
-	RegisterHTTP(mux *http.ServeMux)
-	Client() foundationclient.Client
+    RegisterHTTP(mux *http.ServeMux)
+    Client() foundationclient.Client
+    Close()
 }
 
 type module struct {
 	logger           *slog.Logger
 	personController protected.PersonController
 	client           foundationclient.Client
+    stopDispatcher context.CancelFunc
+    dispatcherDone chan struct{}
 }
 
 func New(
@@ -43,8 +51,17 @@ func New(
 	unitOfWork := coretransaction.NewUnitOfWork(db)
 	personMapper := mapperimpl.NewPersonMapper()
 	personValidator := validatorimpl.NewPersonValidator()
-	personService := serviceimpl.NewPersonService(personRepository, contactRepository, unitOfWork, personMapper, personValidator)
-	personService = personeventimpl.NewPersonService(personService, messagingClient, logger)
+    outboxStore := coreoutbox.NewGormStore(db, "foundation.event_outbox")
+    eventPipeline := eventpipelines.NewChangedPipeline(eventstrategyimpl.New(), outboxStore)
+    eventProducer := eventproducerimpl.New(eventPipeline)
+    personService := serviceimpl.NewPersonService(personRepository, contactRepository, unitOfWork, personMapper, personValidator, eventProducer)
+    dispatchCtx, stopDispatcher := context.WithCancel(context.Background())
+    dispatcherDone := make(chan struct{})
+    dispatcher := coreoutbox.NewDispatcher(outboxStore, messagingClient, logger)
+    go func() {
+        defer close(dispatcherDone)
+        dispatcher.Run(dispatchCtx, time.Second)
+    }()
 	personController := controllerimpl.NewPersonController(personService, personValidator)
 
 	// The internal client uses the exact same generated routes and controller
@@ -56,6 +73,8 @@ func New(
 		logger:           logger,
 		personController: personController,
 		client:           clientimpl.NewPersonClient(internalMux),
+        stopDispatcher: stopDispatcher,
+        dispatcherDone: dispatcherDone,
 	}
 }
 
@@ -70,4 +89,11 @@ func (service *module) RegisterHTTP(mux *http.ServeMux) {
 
 func (service *module) Client() foundationclient.Client {
 	return service.client
+}
+
+// Close stops outbox delivery before messaging and database shutdown.
+func (service *module) Close() {
+    if service.stopDispatcher == nil { return }
+    service.stopDispatcher()
+    <-service.dispatcherDone
 }

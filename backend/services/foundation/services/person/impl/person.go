@@ -19,6 +19,7 @@ import (
     searchimpl "grovehub/services/foundation/services/person/operations/search/strategies/impl"
     deactivateoperation "grovehub/services/foundation/services/person/operations/deactivate"
     deactivateimpl "grovehub/services/foundation/services/person/operations/deactivate/strategies/impl"
+    eventproducers "grovehub/services/foundation/events/person/producers"
 )
 
 // @Service
@@ -32,12 +33,14 @@ type PersonService struct {
 
 var _ foundationservices.PersonService = (*PersonService)(nil)
 
-func NewPersonService(personRepository personrepository.PersonRepository, contactRepository contactrepository.ContactRepository, unitOfWork coretransaction.UnitOfWork, mapper foundationmappers.PersonMapper, validator foundationvalidators.PersonValidator) foundationservices.PersonService {
+func NewPersonService(personRepository personrepository.PersonRepository, contactRepository contactrepository.ContactRepository, unitOfWork coretransaction.UnitOfWork, mapper foundationmappers.PersonMapper, validator foundationvalidators.PersonValidator, publishers ...eventproducers.ChangedProducer) foundationservices.PersonService {
+    publisher := eventproducers.Noop()
+    if len(publishers) > 0 && publishers[0] != nil { publisher = publishers[0] }
     return &PersonService{
-        CreateOperation: createoperation.New(createimpl.NewCreateStrategy(personRepository, contactRepository, unitOfWork, mapper)),
+        CreateOperation: createoperation.New(createimpl.NewCreateStrategy(personRepository, contactRepository, unitOfWork, mapper, publisher)),
         GetByGIDOperation: getoperation.New(getimpl.New(personRepository, contactRepository, mapper)),
-        UpdateOperation: updateoperation.New(updateimpl.New(personRepository, contactRepository, unitOfWork, mapper, validator)),
+        UpdateOperation: updateoperation.New(updateimpl.New(personRepository, contactRepository, unitOfWork, mapper, validator, publisher)),
         SearchOperation: searchoperation.New(searchimpl.New(personRepository, contactRepository, mapper)),
-        DeactivateOperation: deactivateoperation.New(deactivateimpl.New(personRepository, contactRepository, mapper)),
+        DeactivateOperation: deactivateoperation.New(deactivateimpl.New(personRepository, contactRepository, unitOfWork, mapper, publisher)),
     }
 }

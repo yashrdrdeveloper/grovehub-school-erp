@@ -9,6 +9,8 @@ import (
     servicepipeline "grovehub/libs/core/pipeline/service"
     coretransaction "grovehub/libs/core/database/transaction"
     persondto "grovehub/services/foundation/dto/person"
+    foundationevents "grovehub/services/foundation/constants/events"
+    eventproducers "grovehub/services/foundation/events/person/producers"
     repositoryerrors "grovehub/services/foundation/repository/constants/errors"
     foundationmappers "grovehub/services/foundation/mappers/person"
     personrepository "grovehub/services/foundation/repository/person"
@@ -27,12 +29,13 @@ type Updater struct {
     unitOfWork coretransaction.UnitOfWork
     mapper foundationmappers.PersonMapper
     validator foundationvalidators.PersonValidator
+    events eventproducers.ChangedProducer
 }
 
 var _ updatestrategies.UpdateStrategy = (*Updater)(nil)
 
-func New(persons personrepository.PersonRepository, contacts contactrepository.ContactRepository, unit coretransaction.UnitOfWork, mapper foundationmappers.PersonMapper, validator foundationvalidators.PersonValidator) updatestrategies.UpdateStrategy {
-    return &Updater{persons: persons, contacts: contacts, unitOfWork: unit, mapper: mapper, validator: validator}
+func New(persons personrepository.PersonRepository, contacts contactrepository.ContactRepository, unit coretransaction.UnitOfWork, mapper foundationmappers.PersonMapper, validator foundationvalidators.PersonValidator, events eventproducers.ChangedProducer) updatestrategies.UpdateStrategy {
+    return &Updater{persons: persons, contacts: contacts, unitOfWork: unit, mapper: mapper, validator: validator, events: events}
 }
 
 func (strategy *Updater) Load(ctx context.Context, state *updateflow.Update) servicepipeline.Outcome[persondto.Person] {
@@ -63,8 +66,12 @@ func (strategy *Updater) Apply(ctx context.Context, state *updateflow.Update) se
 func (strategy *Updater) Persist(ctx context.Context, state *updateflow.Update) servicepipeline.Outcome[persondto.Person] {
     err := strategy.unitOfWork.Run(ctx, func(txCtx context.Context) error {
         if err := strategy.persons.Update(txCtx, state.UpdatedPerson); err != nil { return err }
-        if state.ContactsChanged { return strategy.contacts.ReplaceForPerson(txCtx, state.UpdatedPerson.GID, state.UpdatedContacts) }
-        return nil
+        if state.ContactsChanged {
+            if err := strategy.contacts.ReplaceForPerson(txCtx, state.UpdatedPerson.GID, state.UpdatedContacts); err != nil { return err }
+        }
+        old := strategy.mapper.ToPersonResponse(state.Person, state.Contacts)
+        next := strategy.mapper.ToPersonResponse(state.UpdatedPerson, state.UpdatedContacts)
+        return strategy.events.Enqueue(txCtx, foundationevents.Updated, &old, &next)
     })
     if err != nil {
         if errors.Is(err, repositoryerrors.ErrPersonVersionConflict) {

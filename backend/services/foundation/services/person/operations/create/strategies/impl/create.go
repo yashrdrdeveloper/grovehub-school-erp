@@ -16,6 +16,7 @@ import (
     personrepository "grovehub/services/foundation/repository/person"
     contactrepository "grovehub/services/foundation/repository/contact"
     personflow "grovehub/services/foundation/services/person/operations/create/flows"
+    eventproducers "grovehub/services/foundation/events/person/producers"
 )
 
 // @Strategy
@@ -24,12 +25,13 @@ type Creator struct {
     contacts contactrepository.ContactRepository
     unitOfWork coretransaction.UnitOfWork
     mapper foundationmappers.PersonMapper
+    events eventproducers.ChangedProducer
 }
 
 var _ createstrategies.CreateStrategy = (*Creator)(nil)
 
-func NewCreateStrategy(persons personrepository.PersonRepository, contacts contactrepository.ContactRepository, unit coretransaction.UnitOfWork, mapper foundationmappers.PersonMapper) createstrategies.CreateStrategy {
-    return &Creator{persons: persons, contacts: contacts, unitOfWork: unit, mapper: mapper}
+func NewCreateStrategy(persons personrepository.PersonRepository, contacts contactrepository.ContactRepository, unit coretransaction.UnitOfWork, mapper foundationmappers.PersonMapper, events eventproducers.ChangedProducer) createstrategies.CreateStrategy {
+    return &Creator{persons: persons, contacts: contacts, unitOfWork: unit, mapper: mapper, events: events}
 }
 
 func (strategy *Creator) returnExisting(ctx context.Context, person entity.Person) servicepipeline.Outcome[persondto.Person] {
