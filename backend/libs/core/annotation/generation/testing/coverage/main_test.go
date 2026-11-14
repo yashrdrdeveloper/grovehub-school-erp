@@ -75,7 +75,7 @@ func TestMaterializeAndCleanGeneratedSources(t *testing.T) {
     expect.Expect(err).NotTo(HaveOccurred())
     expect.Expect(os.WriteFile(overlay, serialized, 0644)).To(Succeed())
 
-    clean, err := materialize(overlay, manifest, []target{{name:"foundation",owner:owner}})
+    clean, err := materialize(overlay, manifest)
     expect.Expect(err).NotTo(HaveOccurred())
     bytes, err := os.ReadFile(logical)
     expect.Expect(err).NotTo(HaveOccurred())
@@ -97,4 +97,53 @@ func TestMaterializeAndCleanGeneratedSources(t *testing.T) {
     expect.Expect(recoverGenerated(manifest, backend)).To(HaveOccurred())
     _, err = os.Stat(logical)
     expect.Expect(err).NotTo(HaveOccurred())
+}
+
+func TestCoverageMaterializesGeneratedDependenciesWithoutOverlay(t *testing.T) {
+    expect := NewWithT(t)
+    backend := t.TempDir()
+    foundation := filepath.Join(backend, "services", "foundation")
+    core := filepath.Join(backend, "libs", "core")
+
+    foundationFile := filepath.Join(foundation, "internal", "tests", "unit-test", "person", "zz_suite_test.go")
+    coreFile := filepath.Join(core, "tests", "mocks", "zz_mocks.gen.go")
+    generatedFoundation := filepath.Join(foundation, ".generated", "internal", "tests", "unit-test", "person", "zz_suite_test.go")
+    generatedCore := filepath.Join(core, ".generated", "tests", "mocks", "zz_mocks.gen.go")
+    manifest := filepath.Join(backend, ".generated", "unit-coverage", ".materialized-files")
+    overlay := filepath.Join(backend, ".generated", "overlay.json")
+
+    for _, path := range []string{foundationFile, coreFile, generatedFoundation, generatedCore, manifest, overlay} {
+        expect.Expect(os.MkdirAll(filepath.Dir(path), 0755)).To(Succeed())
+    }
+    for _, path := range []string{generatedFoundation, generatedCore} {
+        expect.Expect(os.WriteFile(path, []byte("// Code generated. DO NOT EDIT.\npackage mock\n"), 0644)).To(Succeed())
+    }
+    data, err := json.Marshal(overlayConfig{Replace: map[string]string{
+        foundationFile:generatedFoundation,
+        coreFile:generatedCore,
+    }})
+    expect.Expect(err).NotTo(HaveOccurred())
+    expect.Expect(os.WriteFile(overlay, data, 0644)).To(Succeed())
+
+    clean, err := materialize(overlay, manifest)
+    expect.Expect(err).NotTo(HaveOccurred())
+    for _, path := range []string{foundationFile, coreFile} {
+        _, err := os.Stat(path)
+        expect.Expect(err).NotTo(HaveOccurred())
+    }
+    clean()
+    for _, path := range []string{foundationFile, coreFile} {
+        _, err := os.Stat(path)
+        expect.Expect(os.IsNotExist(err)).To(BeTrue())
+    }
+}
+
+func TestCoverageCommandUsesPhysicalPaths(t *testing.T) {
+    expect := NewWithT(t)
+    // Regression: overlay source paths must not reach go list or go test
+    // while physical generated files have already been materialized.
+    source, err := os.ReadFile("main.go")
+    expect.Expect(err).NotTo(HaveOccurred())
+    expect.Expect(string(source)).To(ContainSubstring("exec.Command(\"go\", \"list\", \"-f\""))
+    expect.Expect(string(source)).NotTo(ContainSubstring("\"test\", \"-count=1\", \"-vet=off\", \"-overlay=\""))
 }
