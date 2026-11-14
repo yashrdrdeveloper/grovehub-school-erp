@@ -25,7 +25,7 @@ func setupSQL() {
     var err error
     db,sql,closeConnection,err=database.NewPostgres()
     Expect(err).NotTo(HaveOccurred())
-    DeferCleanup(func(){Expect(sql.ExpectationsWereMet()).To(Succeed());Expect(closeConnection()).To(Succeed())})
+    DeferCleanup(func(){Expect(sql.ExpectationsWereMet()).To(Succeed());sql.ExpectClose();Expect(closeConnection()).To(Succeed())})
 }
 
 // @Testing suite=FoundationPersonRepository
