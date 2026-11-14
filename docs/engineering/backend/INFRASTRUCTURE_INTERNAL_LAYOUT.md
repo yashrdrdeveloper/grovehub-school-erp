@@ -17,7 +17,8 @@ backend/services/infrastructure/
     │   ├── client/messaging/impl/messaging.go
     │   ├── config/messaging.go
     │   ├── constants/error/messaging.go
-    │   ├── dto/messaging/message.go
+    │   ├── dto/messaging/{request,response}.go
+    │   ├── mappers/messaging/{messaging.go,impl/messaging.go}
     │   ├── entity/messaging.go  # @Entity infrastructure.messaging
     │   ├── externalService/nats/{nats.go,adapters/messaging.go}
     │   ├── repository/messaging/{messaging.go,impl/messaging.go}
@@ -61,3 +62,8 @@ introducing a separate HTTP controller and request DTO. We retain direct
 typed delegation for broker callbacks rather than inventing HTTP semantics.
 
 No new unit-test files are introduced by this structural refactor.
+
+The Messaging mapper converts public event commands into private durable
+entities; repository implementations are responsible only for persistence,
+leasing, retries and pruning. DTOs are resource-oriented `request.go` and
+`response.go`, consistent with Foundation's DTO layout.

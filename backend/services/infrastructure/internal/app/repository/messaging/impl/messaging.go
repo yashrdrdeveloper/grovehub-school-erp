@@ -3,7 +3,6 @@ package impl
 
 import (
     "context"
-    "encoding/json"
     "time"
 
     "gorm.io/gorm"
@@ -14,31 +13,28 @@ import (
     dto "grovehub/services/infrastructure/internal/app/dto/messaging"
     "grovehub/services/infrastructure/internal/app/entity"
     repository "grovehub/services/infrastructure/internal/app/repository/messaging"
+    mapper "grovehub/services/infrastructure/internal/app/mappers/messaging"
     validator "grovehub/services/infrastructure/internal/app/validators/messaging"
 )
 
 type messagingRepository struct {
     db *gorm.DB
     validator validator.Validator
+    mapper mapper.Mapper
 }
 
 var _ repository.Repository = (*messagingRepository)(nil)
 
-func New(db *gorm.DB, eventValidator validator.Validator) repository.Repository {
-    return &messagingRepository{db:db, validator:eventValidator}
+func New(db *gorm.DB, eventValidator validator.Validator, eventMapper mapper.Mapper) repository.Repository {
+    return &messagingRepository{db:db, validator:eventValidator, mapper:eventMapper}
 }
 
 // Enqueue participates in the caller's GORM transaction (same PostgreSQL DB).
 func (store *messagingRepository) Enqueue(ctx context.Context, event dto.Event) error {
-    if store.db == nil || store.validator == nil { return errorcode.ErrInvalidStore }
+    if store.db == nil || store.validator == nil || store.mapper == nil { return errorcode.ErrInvalidStore }
     if err := store.validator.ValidateEvent(event); err != nil { return err }
-    metadata,err := json.Marshal(event.Metadata)
-    if err != nil { return err }
-    entry := entity.Messaging{
-        EventID:event.EventID, Topic:event.Topic, Payload:event.Payload,
-        Metadata:json.RawMessage(metadata), Status:entity.MessagingPending,
-        NextAttemptAt:time.Now().UTC(),
-    }
+    entry,err:=store.mapper.ToEntity(event,time.Now().UTC())
+    if err!=nil{return err}
     return coretransaction.Database(ctx, store.db).Table(entry.TableName()).Create(&entry).Error
 }
 

@@ -16,6 +16,7 @@ import (
     config "grovehub/services/infrastructure/internal/app/config"
     natsadapters "grovehub/services/infrastructure/internal/app/externalService/nats/adapters"
     repository "grovehub/services/infrastructure/internal/app/repository/messaging/impl"
+    mappers "grovehub/services/infrastructure/internal/app/mappers/messaging/impl"
     service "grovehub/services/infrastructure/internal/app/services/messaging"
     serviceimpl "grovehub/services/infrastructure/internal/app/services/messaging/impl"
     "grovehub/services/infrastructure/internal/app/services/messaging/strategies"
@@ -41,7 +42,7 @@ func New(settings config.Messaging, db *gorm.DB, logger *slog.Logger) (bootstrap
     registry.Register(config.ProviderNATS,strategies.NewNATSStrategy(adapter))
     provider:=serviceimpl.NewMessagingService(settings.Provider,registry)
     client:=clientimpl.NewMessagingClient(provider)
-    store:=repository.New(db,validators.New())
+    store:=repository.New(db,validators.New(),mappers.New())
     dispatcher:=service.NewDispatcher(store,client,logger)
     ctx,cancel:=context.WithCancel(context.Background())
     done:=make(chan struct{})
