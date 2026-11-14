@@ -35,7 +35,7 @@ jobs:
         run: go list -overlay=.generated/overlay.json ./libs/core/annotation/...
       - name: Test annotation source generators
         working-directory: backend
-        run: go test ./libs/core/annotation/generation/patchdto ./libs/core/annotation/generation/search ./libs/core/annotation/generation/routes ./libs/core/annotation/generation/clients ./libs/core/annotation/generation/mappers
+        run: go test ./libs/core/annotation/generation/patchdto ./libs/core/annotation/generation/search ./libs/core/annotation/generation/routes ./libs/core/annotation/generation/clients ./libs/core/annotation/generation/mappers ./libs/core/annotation/generation/testing/coverage
       - name: Run available core, launcher and service unit suites
         working-directory: backend
         run: |
@@ -47,8 +47,8 @@ jobs:
           go test -vet=off -overlay=.generated/overlay.json "${suites[@]}"
       - name: List selected service functions and unmapped test files
         run: make test-inventory package=foundation
-      - name: Run service-agnostic Ginkgo unit coverage report
-        run: make unit-test package=foundation
+      - name: Verify multi-service unit coverage and report generation
+        run: make unit-test packages='["foundation","identity"]'
       - name: Validate generated source on a clean checkout
         shell: bash
         run: |
