@@ -1,6 +1,7 @@
 // Command coverage runs service-agnostic isolated Go unit coverage.
-// Generated source is temporarily materialized because Go's cover tool does
-// not read virtual-only files from the build overlay.
+// Generated source is temporarily materialized and tests run WITHOUT
+// -overlay. Go coverage can fail to resolve virtual replacement paths on macOS.
+// Every generated source file is removed after coverage has been recorded.
 package main
 
 import (
@@ -61,14 +62,14 @@ func run() error {
     if err := recoverGenerated(staleManifest, root); err != nil { return err }
     if err := command(context.Background(), root, "bash", filepath.Join(filepath.Dir(root), "scripts", "backend", "generate-annotations.sh")); err != nil { return err }
     overlay := filepath.Join(root, ".generated", "overlay.json")
-    cleanup, err := materialize(overlay, staleManifest, targets)
+    cleanup, err := materialize(overlay, staleManifest)
     if err != nil { return err }
     defer cleanup()
     reports := filepath.Join(filepath.Dir(root), ".runtime", "reports", "unit-coverage")
     if err := os.MkdirAll(reports, 0755); err != nil { return err }
     failed := false
     for _, item := range targets {
-        if err := testTarget(root, overlay, generated, reports, item, *mode); err != nil {
+        if err := testTarget(root, generated, reports, item, *mode); err != nil {
             fmt.Fprintf(os.Stderr, "[ERROR] %s: %v\n", item.name, err)
             failed = true
         }
@@ -169,7 +170,7 @@ func recoverGenerated(manifest, root string) error {
     return os.Remove(manifest)
 }
 
-func materialize(overlay, manifest string, targets []target) (func(), error) {
+func materialize(overlay, manifest string) (func(), error) {
     data, err := os.ReadFile(overlay)
     if err != nil { return nil, err }
     var configuration overlayConfig
@@ -184,11 +185,10 @@ func materialize(overlay, manifest string, targets []target) (func(), error) {
     }
     if err := os.WriteFile(manifest, []byte{}, 0600); err != nil { return nil, err }
     for _, logical := range logicals {
-        selected := false
-        for _, item := range targets {
-            if within(item.owner, logical) { selected = true; break }
-        }
-        if !selected { continue }
+        // Unit coverage runs without -overlay because the Go cover instrumenter
+        // can attempt to open replacement paths relative to a package directory
+        // (not the module root), especially on macOS. Materialize ALL generated
+        // packages so cross-service and core dependencies resolve normally.
         source := configuration.Replace[logical]
         if _, err := os.Stat(logical); err == nil {
             clean()
@@ -217,8 +217,8 @@ func materialize(overlay, manifest string, targets []target) (func(), error) {
     return clean, nil
 }
 
-func listProduction(root, overlay string, item target) ([]string, error) {
-    cmd := exec.Command("go", "list", "-overlay="+overlay, "-f", "{{.ImportPath}}", item.pattern)
+func listProduction(root string, item target) ([]string, error) {
+    cmd := exec.Command("go", "list", "-f", "{{.ImportPath}}", item.pattern)
     cmd.Dir, cmd.Stderr = root, os.Stderr
     data, err := cmd.Output()
     if err != nil { return nil, err }
@@ -231,8 +231,8 @@ func listProduction(root, overlay string, item target) ([]string, error) {
     return result, nil
 }
 
-func testTarget(root, overlay, generated, reports string, item target, mode string) error {
-    production, err := listProduction(root, overlay, item)
+func testTarget(root, generated, reports string, item target, mode string) error {
+    production, err := listProduction(root, item)
     if err != nil { return err }
     rel, err := filepath.Rel(root, item.owner)
     if err != nil { return err }
@@ -240,7 +240,10 @@ func testTarget(root, overlay, generated, reports string, item target, mode stri
         filepath.Join(item.owner, "internal", "tests", "unit-test"),
         filepath.Join(item.owner, "tests", "unit-test"),
     }
-    arguments := []string{"test", "-count=1", "-vet=off", "-overlay="+overlay, "-covermode=atomic", "-coverpkg="+strings.Join(production, ",")}
+    // The generated files now exist at their logical Go package paths. Mixing
+    // materialized files with -overlay causes source lookup failures in the
+    // coverage compiler on some Go/macOS installations.
+    arguments := []string{"test", "-count=1", "-vet=off", "-covermode=atomic", "-coverpkg="+strings.Join(production, ",")}
     profile := filepath.Join(generated, item.name+".out")
     arguments = append(arguments, "-coverprofile="+profile)
     arguments = append(arguments, production...)
