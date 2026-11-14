@@ -2,7 +2,7 @@ package person
 
 import (
 	annotationvalidation "grovehub/libs/core/annotation/validation"
-	persondto "grovehub/services/foundation/dto/person"
+	persondto "grovehub/services/foundation/client/person/dto"
 )
 
 type PersonValidator interface {

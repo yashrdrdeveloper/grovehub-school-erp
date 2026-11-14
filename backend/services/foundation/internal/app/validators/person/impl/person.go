@@ -2,9 +2,9 @@ package impl
 
 import (
     annotationvalidation "grovehub/libs/core/annotation/validation"
-    persondto "grovehub/services/foundation/dto/person"
-    foundationvalidators "grovehub/services/foundation/validators/person"
-    validatorhelpers "grovehub/services/foundation/validators/person/helpers"
+    persondto "grovehub/services/foundation/client/person/dto"
+    foundationvalidators "grovehub/services/foundation/internal/app/validators/person"
+    validatorhelpers "grovehub/services/foundation/internal/app/validators/person/helpers"
 )
 
 type PersonValidator struct{}

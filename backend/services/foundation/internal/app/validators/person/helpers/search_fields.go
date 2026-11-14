@@ -5,7 +5,7 @@ import (
 
     corenormalize "grovehub/libs/core/normalize"
     coresearch "grovehub/libs/core/search"
-    "grovehub/services/foundation/entity"
+    "grovehub/services/foundation/internal/app/entity"
 )
 
 // Person owns the allowed fields and their normalizers, not generic
