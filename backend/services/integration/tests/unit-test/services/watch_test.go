@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	messagingclient "grovehub/services/infrastructure/client"
+	messagingclient "grovehub/services/infrastructure/client/messaging"
  integrationconfig "grovehub/services/integration/config"
 	"grovehub/services/integration/entity"
 	mailboxevents "grovehub/services/integration/events/connections/mailbox"

@@ -1,19 +1,10 @@
 package messaging
 
-import (
-    "context"
+import coreevents "grovehub/libs/core/events"
+import coremessaging "grovehub/libs/core/events/messaging"
 
-    coreevents "grovehub/libs/core/events"
-)
-
-// Message is a broker-delivered message, not durable outbox storage.
-type Message struct {
-    ID string
-    Payload []byte
-    Metadata map[string]string
-}
-
-type MessageHandler func(ctx context.Context, message Message) error
-
-// Event is a transport-neutral, immutable pending event.
+// Internal DTOs reuse the shared transport-neutral event contracts without
+// duplicating payload types or leaking internal imports through public clients.
+type Message = coremessaging.Message
+type MessageHandler = coremessaging.Handler
 type Event = coreevents.Message

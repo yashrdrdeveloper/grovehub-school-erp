@@ -4,18 +4,18 @@ package messaging
 import (
     "context"
 
-    messagingdto "grovehub/services/infrastructure/internal/app/dto/messaging"
+    coremessaging "grovehub/libs/core/events/messaging"
 )
 
-type Message = messagingdto.Message
-type MessageHandler = messagingdto.MessageHandler
+type Message = coremessaging.Message
+type MessageHandler = coremessaging.Handler
 
 // @Client messagingClient
 type MessagingClient interface {
     // @Proxy service.Publish
     Publish(ctx context.Context, topic string, payload []byte, metadata map[string]string) error
     // @Proxy service.Consume
-    Consume(ctx context.Context, topic string, handler messagingdto.MessageHandler) error
+    Consume(ctx context.Context, topic string, handler coremessaging.Handler) error
     // @Proxy service.Health
     Health(ctx context.Context) error
 }

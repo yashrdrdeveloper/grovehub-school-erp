@@ -3,14 +3,13 @@ package messaging
 import (
     "context"
 
-    messagingdto "grovehub/services/infrastructure/internal/app/dto/messaging"
+    coreevents "grovehub/libs/core/events"
 )
 
-// Event is an immutable outbox command; it is not a broker delivery.
-type Event = messagingdto.Event
+// Event is a transport-neutral pending event; no private Infrastructure DTO
+// is part of the public signature, so other modules can generate typed mocks.
+type Event = coreevents.Message
 
-// EventStore participates in the same transaction as the calling service.
-// It is a narrow public contract; claim/retry/cleanup are Infrastructure-only.
 type EventStore interface {
-    Enqueue(ctx context.Context, event Event) error
+    Enqueue(ctx context.Context, event coreevents.Message) error
 }
