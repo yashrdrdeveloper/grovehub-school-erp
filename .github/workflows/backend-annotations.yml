@@ -45,6 +45,8 @@ jobs:
             suites+=(./services/foundation/tests/unit-test/...)
           fi
           go test -vet=off -overlay=.generated/overlay.json "${suites[@]}"
+      - name: List all Foundation functions and unmapped test files
+        run: make foundation-test-inventory
       - name: Run isolated Foundation Ginkgo unit tests and inspect coverage
         run: make foundation-unit
       - name: Validate generated source on a clean checkout

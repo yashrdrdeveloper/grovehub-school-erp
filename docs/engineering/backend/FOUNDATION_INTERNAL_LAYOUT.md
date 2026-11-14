@@ -92,3 +92,11 @@ The runtime migration implementation now lives in
 package. Foundation's OpenAPI specification lives in
 `internal/resources/api/openapi/v1/openapi.yaml` and Swagger uses the
 corresponding source path; the embedding also includes the YAML in production.
+
+## Mirrored isolated unit tests
+
+See `docs/engineering/backend/FOUNDATION_UNIT_TEST_GUIDELINES.md` for the
+annotation syntax, mock policy, mirror conventions, and strict coverage gate.
+Unit tests live under `internal/tests/unit-test/`, production source under
+`internal/app/`, and domain-only fixtures and mocks under `internal/tests/`.
+Shared core testing utilities are under `backend/libs/core/tests/`.

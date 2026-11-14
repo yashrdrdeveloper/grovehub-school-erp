@@ -51,6 +51,10 @@ db-schema-init:
 db-schema-reset:
 	@bash ./scripts/database/migrate.sh reset "$(DB_SERVICE)"
 
+.PHONY: foundation-test-inventory
+foundation-test-inventory:
+	@cd backend && go run ./libs/core/annotation/generation/testing/inventory ./services/foundation
+
 .PHONY: foundation-unit foundation-unit-coverage
 foundation-unit:
 	@bash ./scripts/testing/foundation-unit.sh --report-only
