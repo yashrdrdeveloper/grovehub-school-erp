@@ -3,11 +3,11 @@ package impl
 import (
     "context"
 
-    foundationevents "grovehub/services/foundation/constants/events"
-    persondto "grovehub/services/foundation/dto/person"
-    eventpipelines "grovehub/services/foundation/events/producers/person/operations/changed"
-    eventflows "grovehub/services/foundation/events/producers/person/operations/changed/flows"
-    eventproducers "grovehub/services/foundation/events/producers/person"
+    foundationevents "grovehub/services/foundation/internal/app/constants/events"
+    persondto "grovehub/services/foundation/client/person/dto"
+    eventpipelines "grovehub/services/foundation/internal/app/events/producers/person/operations/changed"
+    eventflows "grovehub/services/foundation/internal/app/events/producers/person/operations/changed/flows"
+    eventproducers "grovehub/services/foundation/internal/app/events/producers/person"
 )
 
 type PersonProducer struct {

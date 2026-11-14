@@ -1,8 +1,8 @@
 package helpers
 
 import (
-    foundationevents "grovehub/services/foundation/constants/events"
-    eventflows "grovehub/services/foundation/events/producers/person/operations/changed/flows"
+    foundationevents "grovehub/services/foundation/internal/app/constants/events"
+    eventflows "grovehub/services/foundation/internal/app/events/producers/person/operations/changed/flows"
 )
 
 // HasChanged makes eligibility explicit and suppresses replay, no-op and read events.

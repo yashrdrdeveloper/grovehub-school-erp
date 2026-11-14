@@ -7,8 +7,8 @@ import (
     "github.com/google/uuid"
 
     coreoutbox "grovehub/libs/core/events/outbox"
-    personevents "grovehub/services/foundation/events/producers/person/operations/changed"
-    eventflows "grovehub/services/foundation/events/producers/person/operations/changed/flows"
+    personevents "grovehub/services/foundation/internal/app/events/producers/person/operations/changed"
+    eventflows "grovehub/services/foundation/internal/app/events/producers/person/operations/changed/flows"
 )
 
 // BuildMessage creates the immutable bytes and metadata stored by the outbox.
