@@ -5,7 +5,7 @@ import (
     "context"
     "errors"
 
-    "grovehub/libs/core/events/outbox"
+    coreevents "grovehub/libs/core/events"
 )
 
 var ErrIncompleteRules = errors.New("event pipeline requires ShouldEmit, Build and Enqueue")
@@ -13,8 +13,8 @@ var ErrIncompleteRules = errors.New("event pipeline requires ShouldEmit, Build a
 // Rules separates domain eligibility, immutable event creation and durable enqueueing.
 type Rules[T any] struct {
     ShouldEmit func(T) bool
-    Build func(context.Context, T) (outbox.Message, error)
-    Enqueue func(context.Context, outbox.Message) error
+    Build func(context.Context, T) (coreevents.Message, error)
+    Enqueue func(context.Context, coreevents.Message) error
 }
 
 // Run is called inside the same transaction as the business write.
