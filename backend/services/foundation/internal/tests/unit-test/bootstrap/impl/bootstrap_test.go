@@ -19,10 +19,10 @@ func Specs(){
             _,err:=builder.Build()
             Expect(err).To(MatchError("foundation bootstrap requires a database"))
         })
-        It("refuses to construct without a messaging provider",func(){
+        It("refuses to construct without a durable event store",func(){
             builder:=bootstrap.New(nil,&gorm.DB{},nil)
             _,err:=builder.Build()
-            Expect(err).To(MatchError("foundation bootstrap requires a messaging client"))
+            Expect(err).To(MatchError("foundation bootstrap requires an event store"))
         })
     })
 }

@@ -6,18 +6,18 @@ import (
 
     "github.com/google/uuid"
 
-    coreoutbox "grovehub/libs/core/events/outbox"
+    messagingclient "grovehub/services/infrastructure/client/messaging"
     personevents "grovehub/services/foundation/internal/app/events/producers/person/operations/changed"
     eventflows "grovehub/services/foundation/internal/app/events/producers/person/operations/changed/flows"
 )
 
 // BuildMessage creates the immutable bytes and metadata stored by the outbox.
-func BuildMessage(ctx context.Context, change eventflows.Change) (coreoutbox.Message, error) {
+func BuildMessage(ctx context.Context, change eventflows.Change) (messagingclient.Event, error) {
     eventID := uuid.NewString()
     envelope := BuildChanged(ctx, eventID, change.Operation, change.Old, change.New)
     payload, err := json.Marshal(envelope)
-    if err != nil { return coreoutbox.Message{}, err }
-    return coreoutbox.Message{
+    if err != nil { return messagingclient.Event{}, err }
+    return messagingclient.Event{
         EventID: eventID,
         Topic: personevents.ChangedTopic,
         Payload: payload,

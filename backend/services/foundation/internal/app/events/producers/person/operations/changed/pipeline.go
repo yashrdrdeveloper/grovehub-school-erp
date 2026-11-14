@@ -4,7 +4,7 @@ package changed
 import (
     "context"
 
-    coreoutbox "grovehub/libs/core/events/outbox"
+    messagingclient "grovehub/services/infrastructure/client/messaging"
     eventpipeline "grovehub/libs/core/events/pipeline"
     eventflows "grovehub/services/foundation/internal/app/events/producers/person/operations/changed/flows"
     changedstrategies "grovehub/services/foundation/internal/app/events/producers/person/operations/changed/strategies"
@@ -12,10 +12,10 @@ import (
 
 type ChangedPipeline struct {
     strategy changedstrategies.ChangedStrategy
-    store coreoutbox.Store
+    store messagingclient.EventStore
 }
 
-func NewChangedPipeline(strategy changedstrategies.ChangedStrategy, store coreoutbox.Store) *ChangedPipeline {
+func NewChangedPipeline(strategy changedstrategies.ChangedStrategy, store messagingclient.EventStore) *ChangedPipeline {
     return &ChangedPipeline{strategy: strategy, store: store}
 }
 

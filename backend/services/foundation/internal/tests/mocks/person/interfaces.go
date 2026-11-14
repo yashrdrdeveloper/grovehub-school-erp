@@ -10,14 +10,13 @@ import (
     deactivate "grovehub/services/foundation/internal/app/services/person/operations/deactivate/strategies"
     protected "grovehub/services/foundation/internal/app/controller/person/protected"
     "grovehub/libs/core/database/transaction"
-    "grovehub/libs/core/events/outbox"
     eventperson "grovehub/services/foundation/internal/app/events/producers/person"
     mapperperson "grovehub/services/foundation/internal/app/mappers/person"
     "grovehub/services/foundation/internal/app/repository/contact"
     personrepository "grovehub/services/foundation/internal/app/repository/person"
     personservice "grovehub/services/foundation/internal/app/services/person"
     personvalidators "grovehub/services/foundation/internal/app/validators/person"
-    infrastructureclient "grovehub/services/infrastructure/client"
+    infrastructureclient "grovehub/services/infrastructure/client/messaging"
 )
 
 // @Mock
@@ -42,7 +41,7 @@ type ChangedProducer interface { eventperson.ChangedProducer }
 type UnitOfWork interface { transaction.UnitOfWork }
 
 // @Mock
-type OutboxStore interface { outbox.Store }
+type OutboxStore interface { infrastructureclient.EventStore }
 
 // @Mock
 type MessagingClient interface { infrastructureclient.MessagingClient }

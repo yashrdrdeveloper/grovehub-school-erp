@@ -12,14 +12,14 @@ import (
     foundationbootstrap "grovehub/services/foundation/internal/app/bootstrap"
     bootstrapimpl "grovehub/services/foundation/internal/app/bootstrap/impl"
     foundationmigrations "grovehub/services/foundation/internal/resources/migrations"
-    infrastructureclient "grovehub/services/infrastructure/client"
+    infrastructureclient "grovehub/services/infrastructure/client/messaging"
 )
 
 // Module provides Foundation's shared lifecycle and typed Person client.
 type Module = foundationbootstrap.Runtime
 
-func New(logger *slog.Logger, db *gorm.DB, messaging infrastructureclient.MessagingClient) (Module, error) {
-    return bootstrapimpl.New(logger, db, messaging).Build()
+func New(logger *slog.Logger, db *gorm.DB, events infrastructureclient.EventStore) (Module, error) {
+    return bootstrapimpl.New(logger, db, events).Build()
 }
 
 // Migrate applies embedded Foundation SQL migrations using the existing Goose history.

@@ -2,8 +2,7 @@
 package impl
 
 import (
-    "context"
-    "errors"
+        "errors"
     "log/slog"
     "net/http"
 
@@ -14,47 +13,42 @@ import (
     foundationclient "grovehub/services/foundation/client/person"
     protected "grovehub/services/foundation/internal/app/controller/person/protected"
     "grovehub/services/foundation/internal/app/routes"
-    infrastructureclient "grovehub/services/infrastructure/client"
+    infrastructureclient "grovehub/services/infrastructure/client/messaging"
 )
 
 type builder struct {
     logger *slog.Logger
     db *gorm.DB
-    messaging infrastructureclient.MessagingClient
+    events infrastructureclient.EventStore
 }
 
 var _ foundationbootstrap.Bootstrap = (*builder)(nil)
 
-func New(logger *slog.Logger, db *gorm.DB, messaging infrastructureclient.MessagingClient) foundationbootstrap.Bootstrap {
-    return &builder{logger: logger, db: db, messaging: messaging}
+func New(logger *slog.Logger, db *gorm.DB, events infrastructureclient.EventStore) foundationbootstrap.Bootstrap {
+    return &builder{logger: logger, db: db, events: events}
 }
 
 type runtime struct {
     logger *slog.Logger
     controller protected.PersonController
     client foundationclient.Client
-    stopDispatcher context.CancelFunc
-    dispatcherDone <-chan struct{}
 }
 
 var _ foundationbootstrap.Runtime = (*runtime)(nil)
 
 func (bootstrap *builder) Build() (foundationbootstrap.Runtime, error) {
     if bootstrap.db == nil { return nil, errors.New("foundation bootstrap requires a database") }
-    if bootstrap.messaging == nil { return nil, errors.New("foundation bootstrap requires a messaging client") }
+    if bootstrap.events == nil { return nil, errors.New("foundation bootstrap requires an event store") }
     if bootstrap.logger == nil { bootstrap.logger = slog.Default() }
 
-    events := bootstrap.newEvents()
-    controller := bootstrap.newRoutes(events.producer)
+    producer := bootstrap.newEvents()
+    controller := bootstrap.newRoutes(producer)
     client := bootstrap.newClient(controller)
-    cancel, done := events.start()
 
     return &runtime{
         logger: bootstrap.logger,
         controller: controller,
         client: client,
-        stopDispatcher: cancel,
-        dispatcherDone: done,
     }, nil
 }
 
@@ -69,8 +63,5 @@ func (service *runtime) RegisterHTTP(mux *http.ServeMux) {
 
 func (service *runtime) Client() foundationclient.Client { return service.client }
 
-// Close stops Foundation-owned delivery before the database and broker close.
-func (service *runtime) Close() {
-    service.stopDispatcher()
-    <-service.dispatcherDone
-}
+// Close remains part of the module contract; Infrastructure owns delivery.
+func (service *runtime) Close() {}
