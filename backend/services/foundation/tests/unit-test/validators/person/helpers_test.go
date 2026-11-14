@@ -16,14 +16,14 @@ func TestPersonDTOErrorMapping(t *testing.T) {
         field string
         code string
     }{
-        {"RequestBody.Contacts.Emails[0].Value", personerror.InvalidPersonContact.Code()},
-        {"RequestBody.Contacts", personerror.InvalidPersonContact.Code()},
-        {"RequestBody.FirstName", personerror.InvalidPersonRequest.Code()},
+        {"RequestBody.Contacts.Emails[0].Value", string(personerror.InvalidPersonContact.Code())},
+        {"RequestBody.Contacts", string(personerror.InvalidPersonContact.Code())},
+        {"RequestBody.FirstName", string(personerror.InvalidPersonRequest.Code())},
     }
     for _, tt := range cases {
         got := validatorhelpers.MapPersonDTOError(annotationvalidation.Error{Field: tt.field, Rule: "notblank"})
         var mapped *coreerrors.Error
-        if !errors.As(got, &mapped) || mapped.Definition().Code() != tt.code {
+        if !errors.As(got, &mapped) || string(mapped.Definition().Code()) != tt.code {
             t.Errorf("%q: unexpected mapping %v", tt.field, got)
         }
     }
