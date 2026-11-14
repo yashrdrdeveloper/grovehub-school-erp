@@ -4,7 +4,7 @@ package getbygid
 import (
     "context"
 
-    persondto "grovehub/services/foundation/client/person/dto"
+    persondto "grovehub/services/foundation/internal/app/dto/person"
     readstrategies "grovehub/services/foundation/internal/app/services/person/operations/getbygid/strategies"
 )
 

@@ -10,7 +10,7 @@ import (
     servicepipeline "grovehub/libs/core/pipeline/service"
     personerror "grovehub/services/foundation/internal/app/constants/error"
     foundationevents "grovehub/services/foundation/internal/app/constants/events"
-    persondto "grovehub/services/foundation/client/person/dto"
+    persondto "grovehub/services/foundation/internal/app/dto/person"
     repositoryerrors "grovehub/services/foundation/internal/app/repository/constants/errors"
     personflow "grovehub/services/foundation/internal/app/services/person/operations/create/flows"
     servicehelpers "grovehub/services/foundation/internal/app/services/person/helpers"

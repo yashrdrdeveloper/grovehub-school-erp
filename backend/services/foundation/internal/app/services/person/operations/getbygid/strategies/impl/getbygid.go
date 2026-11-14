@@ -3,7 +3,7 @@ package impl
 import (
     "context"
 
-    persondto "grovehub/services/foundation/client/person/dto"
+    persondto "grovehub/services/foundation/internal/app/dto/person"
     foundationmappers "grovehub/services/foundation/internal/app/mappers/person"
     personrepository "grovehub/services/foundation/internal/app/repository/person"
     contactrepository "grovehub/services/foundation/internal/app/repository/contact"

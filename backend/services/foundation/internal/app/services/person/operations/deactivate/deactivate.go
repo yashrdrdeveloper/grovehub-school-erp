@@ -5,7 +5,7 @@ import (
     "context"
 
     servicepipeline "grovehub/libs/core/pipeline/service"
-    persondto "grovehub/services/foundation/client/person/dto"
+    persondto "grovehub/services/foundation/internal/app/dto/person"
     deactivateflow "grovehub/services/foundation/internal/app/services/person/operations/deactivate/flows"
     deactivatestrategies "grovehub/services/foundation/internal/app/services/person/operations/deactivate/strategies"
 )

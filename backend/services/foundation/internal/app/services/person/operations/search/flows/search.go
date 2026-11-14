@@ -2,7 +2,7 @@ package flows
 
 import (
     coresearch "grovehub/libs/core/search"
-    persondto "grovehub/services/foundation/client/person/dto"
+    persondto "grovehub/services/foundation/internal/app/dto/person"
     "grovehub/services/foundation/internal/app/entity"
 )
 
