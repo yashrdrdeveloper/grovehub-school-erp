@@ -75,6 +75,14 @@ log_info "Generating domain-owned event schema identifiers"
   go run ./libs/core/annotation/generation/events "${BACKEND_DIR}"
 )
 
+# Only generate test suites and test-owned mocks in test directories.
+# These files are included by go test -overlay, not compiled into the production binary.
+log_info "Generating annotated Ginkgo suites and isolated GoMock implementations"
+(
+  cd -- "${BACKEND_DIR}"
+  go run ./libs/core/annotation/generation/testing "${BACKEND_DIR}"
+)
+
 log_info "Generating consolidated Go source overlay"
 (
   cd -- "${BACKEND_DIR}"

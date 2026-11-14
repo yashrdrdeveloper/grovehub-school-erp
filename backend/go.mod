@@ -8,6 +8,8 @@ require (
 	github.com/ThreeDotsLabs/watermill v1.5.3
 	github.com/ThreeDotsLabs/watermill-nats/v2 v2.2.0
 	github.com/google/uuid v1.6.0
+	github.com/DATA-DOG/go-sqlmock v1.5.2
+	go.uber.org/mock v0.6.0
 	github.com/jackc/pgx/v5 v5.11.0
 	github.com/onsi/ginkgo/v2 v2.33.1
 	github.com/onsi/gomega v1.42.1
