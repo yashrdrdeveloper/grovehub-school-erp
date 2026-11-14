@@ -19,7 +19,7 @@ case "${scope}" in
     path="${BACKEND_DIR}/services/foundation"
     ;;
   foundation-repository)
-    path="${BACKEND_DIR}/services/foundation/repository"
+    path="${BACKEND_DIR}/services/foundation/internal/app/repository"
     ;;
   *)
     die "Unsupported format scope: ${scope}. Expected all, foundation, foundation-repository, or integration."

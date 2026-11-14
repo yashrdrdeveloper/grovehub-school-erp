@@ -23,16 +23,20 @@ log_info "Generating annotated entity builders/accessors"
 )
 
 # GORM TableName() uses the same original @Entity declarations.
-for entity_dir in "${BACKEND_DIR}"/services/*/entity; do
-  [[ -d "${entity_dir}" ]] || continue
-  # Avoid creating empty generated folders for services without @Entity.
-  if grep -Eq '^[[:space:]]*//[[:space:]]*@Entity[[:space:]]+' "${entity_dir}"/*.go; then
-    output_dir="$(dirname "${entity_dir}")/.generated/entity"
-    (
-      cd -- "${BACKEND_DIR}"
-      go run ./libs/core/annotation/generation/gormtable "${entity_dir}" "${output_dir}/zz_tables.gen.go"
-    )
-  fi
+for service_dir in "${BACKEND_DIR}"/services/*; do
+  [[ -d "${service_dir}" ]] || continue
+  for entity_dir in "${service_dir}/entity" "${service_dir}/internal/app/entity"; do
+    [[ -d "${entity_dir}" ]] || continue
+    # The Go overlay mirrors the owning package relative to the service root.
+    if grep -Eq '^[[:space:]]*//[[:space:]]*@Entity[[:space:]]+' "${entity_dir}"/*.go; then
+      relative_dir="${entity_dir#${service_dir}/}"
+      output_dir="${service_dir}/.generated/${relative_dir}"
+      (
+        cd -- "${BACKEND_DIR}"
+        go run ./libs/core/annotation/generation/gormtable "${entity_dir}" "${output_dir}/zz_tables.gen.go"
+      )
+    fi
+  done
 done
 
 log_info "Generating annotated HTTP route registrations"
