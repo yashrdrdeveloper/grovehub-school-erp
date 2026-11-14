@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	annotationvalidation "grovehub/libs/core/annotation/validation"
-	persondto "grovehub/services/foundation/client/person/dto"
+	persondto "grovehub/services/foundation/client/person"
 )
 
 var _ = Describe("DTO tag stages", func() {

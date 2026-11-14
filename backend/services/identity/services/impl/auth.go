@@ -14,8 +14,7 @@ import (
     headercontext "grovehub/libs/core/headercontext"
     coreevents "grovehub/libs/core/events"
 	foundationclient "grovehub/services/foundation/client/person"
-	persondto "grovehub/services/foundation/client/person/dto"
-	identityerror "grovehub/services/identity/constants/error"
+		identityerror "grovehub/services/identity/constants/error"
 	identityrequest "grovehub/services/identity/dto/request"
 	identityresponse "grovehub/services/identity/dto/response"
 	identitymappers "grovehub/services/identity/mappers"
@@ -106,8 +105,8 @@ func (service *AuthService) register(
 		return identityresponse.Register{}, servicehelpers.MapAuthDependencyError(readErr)
 	}
 
-	person, err = service.foundationClient.UpdatePerson(ctx, persondto.UpdatePersonRequest{
-		Params: persondto.PersonByGID{GID: person.GID},
+	person, err = service.foundationClient.UpdatePerson(ctx, foundationclient.UpdatePersonRequest{
+		Params: foundationclient.PersonByGID{GID: person.GID},
 		RequestBody: servicehelpers.BuildRegisterPersonUpdate(validated),
 	})
 	if err != nil {
@@ -136,28 +135,28 @@ func (service *AuthService) register(
 func (service *AuthService) resolveRegisterPerson(
 	ctx context.Context,
 	request identityrequest.Register,
-) (persondto.Person, error) {
-	result, err := service.foundationClient.SearchPersons(ctx, persondto.SearchPersonsRequest{
+) (foundationclient.Person, error) {
+	result, err := service.foundationClient.SearchPersons(ctx, foundationclient.SearchPersonsRequest{
 		RequestBody: servicehelpers.RegisterEmailSearch(request.Email),
 	})
 	if err != nil {
-		return persondto.Person{}, servicehelpers.MapAuthDependencyError(err)
+		return foundationclient.Person{}, servicehelpers.MapAuthDependencyError(err)
 	}
 	if len(result.Items) > 1 {
-		return persondto.Person{}, coreerrors.NewError(identityerror.RegistrationFailed)
+		return foundationclient.Person{}, coreerrors.NewError(identityerror.RegistrationFailed)
 	}
 	if len(result.Items) == 1 {
 		return result.Items[0], nil
 	}
 
-	person, _, err := service.foundationClient.CreatePerson(headercontext.WithoutIdempotencyKey(ctx), persondto.CreatePersonRequest{
+	person, _, err := service.foundationClient.CreatePerson(headercontext.WithoutIdempotencyKey(ctx), foundationclient.CreatePersonRequest{
 		RequestBody: servicehelpers.BuildRegisterPersonRequest(request),
 	})
 	if err != nil {
-		return persondto.Person{}, servicehelpers.MapAuthDependencyError(err)
+		return foundationclient.Person{}, servicehelpers.MapAuthDependencyError(err)
 	}
 	if !servicehelpers.PersonHasEmail(person, request.Email) {
-		return persondto.Person{}, coreerrors.NewError(identityerror.RegistrationAlreadyExists)
+		return foundationclient.Person{}, coreerrors.NewError(identityerror.RegistrationAlreadyExists)
 	}
 	return person, nil
 }

@@ -7,7 +7,7 @@ import (
 	annotationdto "grovehub/libs/core/annotation/dto"
 	coresearch "grovehub/libs/core/search"
 	personerror "grovehub/services/foundation/client/person"
-	persondto "grovehub/services/foundation/client/person/dto"
+	persondto "grovehub/services/foundation/client/person"
 	identityerror "grovehub/services/identity/constants/error"
 	identityrequest "grovehub/services/identity/dto/request"
 )
