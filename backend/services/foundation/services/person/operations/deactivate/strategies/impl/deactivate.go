@@ -8,7 +8,7 @@ import (
     servicepipeline "grovehub/libs/core/pipeline/service"
     coretransaction "grovehub/libs/core/database/transaction"
     foundationevents "grovehub/services/foundation/constants/events"
-    eventproducers "grovehub/services/foundation/events/person/producers"
+    eventproducers "grovehub/services/foundation/events/producers/person"
     persondto "grovehub/services/foundation/dto/person"
     "grovehub/services/foundation/entity"
     foundationmappers "grovehub/services/foundation/mappers/person"

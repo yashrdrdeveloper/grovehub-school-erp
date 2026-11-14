@@ -19,7 +19,7 @@ import (
     searchimpl "grovehub/services/foundation/services/person/operations/search/strategies/impl"
     deactivateoperation "grovehub/services/foundation/services/person/operations/deactivate"
     deactivateimpl "grovehub/services/foundation/services/person/operations/deactivate/strategies/impl"
-    eventproducers "grovehub/services/foundation/events/person/producers"
+    eventproducers "grovehub/services/foundation/events/producers/person"
 )
 
 // @Service

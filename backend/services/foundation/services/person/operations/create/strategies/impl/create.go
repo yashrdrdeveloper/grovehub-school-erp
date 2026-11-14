@@ -16,7 +16,7 @@ import (
     personrepository "grovehub/services/foundation/repository/person"
     contactrepository "grovehub/services/foundation/repository/contact"
     personflow "grovehub/services/foundation/services/person/operations/create/flows"
-    eventproducers "grovehub/services/foundation/events/person/producers"
+    eventproducers "grovehub/services/foundation/events/producers/person"
 )
 
 // @Strategy

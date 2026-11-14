@@ -10,7 +10,7 @@ import (
     coretransaction "grovehub/libs/core/database/transaction"
     persondto "grovehub/services/foundation/dto/person"
     foundationevents "grovehub/services/foundation/constants/events"
-    eventproducers "grovehub/services/foundation/events/person/producers"
+    eventproducers "grovehub/services/foundation/events/producers/person"
     repositoryerrors "grovehub/services/foundation/repository/constants/errors"
     foundationmappers "grovehub/services/foundation/mappers/person"
     personrepository "grovehub/services/foundation/repository/person"
