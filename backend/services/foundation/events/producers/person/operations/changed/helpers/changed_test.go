@@ -5,7 +5,7 @@ import (
 
     foundationevents "grovehub/services/foundation/constants/events"
     persondto "grovehub/services/foundation/dto/person"
-    eventflows "grovehub/services/foundation/events/person/pipelines/flows"
+    eventflows "grovehub/services/foundation/events/producers/person/operations/changed/flows"
 )
 
 func TestChangeRules(t *testing.T) {

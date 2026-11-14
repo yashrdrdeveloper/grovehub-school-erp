@@ -7,7 +7,7 @@ import (
     coreevents "grovehub/libs/core/events"
     foundationevents "grovehub/services/foundation/constants/events"
     persondto "grovehub/services/foundation/dto/person"
-    personevents "grovehub/services/foundation/events/person"
+    personevents "grovehub/services/foundation/events/producers/person/operations/changed"
 )
 
 // BuildChanged uses the stable versioned Person Changed event envelope.

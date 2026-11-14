@@ -1,7 +1,7 @@
 package helpers
 
 import (
-    personevents "grovehub/services/foundation/events/person"
+    personevents "grovehub/services/foundation/events/producers/person/operations/changed"
 )
 
 func ChangedMetadata(eventID string) map[string]string {

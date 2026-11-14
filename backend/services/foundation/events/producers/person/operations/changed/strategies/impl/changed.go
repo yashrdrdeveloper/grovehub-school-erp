@@ -4,9 +4,9 @@ import (
     "context"
 
     coreoutbox "grovehub/libs/core/events/outbox"
-    eventhelpers "grovehub/services/foundation/events/person/helpers"
-    eventflows "grovehub/services/foundation/events/person/pipelines/flows"
-    changedstrategies "grovehub/services/foundation/events/person/pipelines/strategies"
+    eventhelpers "grovehub/services/foundation/events/producers/person/operations/changed/helpers"
+    eventflows "grovehub/services/foundation/events/producers/person/operations/changed/flows"
+    changedstrategies "grovehub/services/foundation/events/producers/person/operations/changed/strategies"
 )
 
 // @Strategy
