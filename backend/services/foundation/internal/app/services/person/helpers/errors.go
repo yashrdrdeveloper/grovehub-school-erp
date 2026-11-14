@@ -4,9 +4,9 @@ import (
     "errors"
 
     coreerrors "grovehub/libs/core/errors"
-    personerror "grovehub/services/foundation/constants/error"
-    foundationmappers "grovehub/services/foundation/mappers/person"
-    repositoryerrors "grovehub/services/foundation/repository/constants/errors"
+    personerror "grovehub/services/foundation/internal/app/constants/error"
+    foundationmappers "grovehub/services/foundation/internal/app/mappers/person"
+    repositoryerrors "grovehub/services/foundation/internal/app/repository/constants/errors"
 )
 
 // MapUpdateError preserves Person mutation error codes across operations.

@@ -4,7 +4,7 @@ import (
     "sort"
     "strings"
 
-    "grovehub/services/foundation/entity"
+    "grovehub/services/foundation/internal/app/entity"
 )
 
 // BuildPersonSearchDetails creates the aggregate search projection from Person

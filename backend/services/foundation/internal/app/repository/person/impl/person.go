@@ -8,10 +8,10 @@ import (
 
 	coretransaction "grovehub/libs/core/database/transaction"
 	coresearch "grovehub/libs/core/search"
-	"grovehub/services/foundation/entity"
-	personrepository "grovehub/services/foundation/repository/person"
-	repositoryerrors "grovehub/services/foundation/repository/constants/errors"
-	personerrorshelpers "grovehub/services/foundation/repository/person/helpers/errors"
+	"grovehub/services/foundation/internal/app/entity"
+	personrepository "grovehub/services/foundation/internal/app/repository/person"
+	repositoryerrors "grovehub/services/foundation/internal/app/repository/constants/errors"
+	personerrorshelpers "grovehub/services/foundation/internal/app/repository/person/helpers/errors"
 )
 
 type PersonRepository struct {

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	coresearch "grovehub/libs/core/search"
-	"grovehub/services/foundation/entity"
+	"grovehub/services/foundation/internal/app/entity"
 )
 
 /**

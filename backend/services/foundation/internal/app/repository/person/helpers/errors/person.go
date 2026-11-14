@@ -5,8 +5,8 @@ import (
 
 	"github.com/jackc/pgx/v5/pgconn"
 
-	repositorykeys "grovehub/services/foundation/repository/constants/keys"
-	repositoryerrors "grovehub/services/foundation/repository/constants/errors"
+	repositorykeys "grovehub/services/foundation/internal/app/repository/constants/keys"
+	repositoryerrors "grovehub/services/foundation/internal/app/repository/constants/errors"
 )
 
 /** MapPersonWriteError translates known PostgreSQL constraint failures. */

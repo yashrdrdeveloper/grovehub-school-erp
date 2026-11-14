@@ -8,9 +8,9 @@ import (
 	"gorm.io/gorm/clause"
 
 	coretransaction "grovehub/libs/core/database/transaction"
-	"grovehub/services/foundation/entity"
-	contactrepository "grovehub/services/foundation/repository/contact"
-	contacterrorshelpers "grovehub/services/foundation/repository/contact/helpers/errors"
+	"grovehub/services/foundation/internal/app/entity"
+	contactrepository "grovehub/services/foundation/internal/app/repository/contact"
+	contacterrorshelpers "grovehub/services/foundation/internal/app/repository/contact/helpers/errors"
 )
 
 type ContactRepository struct {
