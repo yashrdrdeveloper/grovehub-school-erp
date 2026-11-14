@@ -51,16 +51,16 @@ db-schema-init:
 db-schema-reset:
 	@bash ./scripts/database/migrate.sh reset "$(DB_SERVICE)"
 
-.PHONY: foundation-test-inventory
-foundation-test-inventory:
-	@cd backend && go run ./libs/core/annotation/generation/testing/inventory ./services/foundation
+# package=foundation or packages='["foundation","identity"]'; omitted = all.
+.PHONY: unit-test unit-coverage test-inventory
+unit-test:
+	@UNIT_PACKAGE='$(package)' UNIT_PACKAGES='$(packages)' bash ./scripts/testing/unit-coverage.sh --report-only
 
-.PHONY: foundation-unit foundation-unit-coverage
-foundation-unit:
-	@bash ./scripts/testing/foundation-unit.sh --report-only
+unit-coverage:
+	@UNIT_PACKAGE='$(package)' UNIT_PACKAGES='$(packages)' bash ./scripts/testing/unit-coverage.sh --strict
 
-foundation-unit-coverage:
-	@bash ./scripts/testing/foundation-unit.sh --strict
+test-inventory:
+	@UNIT_PACKAGE='$(package)' UNIT_PACKAGES='$(packages)' bash ./scripts/testing/unit-coverage.sh --inventory
 
 .PHONY: nats-start nats-stop nats-status
 nats-start:

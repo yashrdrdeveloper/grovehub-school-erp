@@ -7,6 +7,21 @@ source "${SCRIPT_DIR}/../lib/common.sh"
 
 require_command go
 
+# Generation is a fresh snapshot, not an incremental accumulation. Removing
+# ignored service-local output prevents orphaned virtual .go files from
+# referring to packages deleted by a refactor (e.g. client/person/dto/).
+# The overlay generator still fails closed on genuine output/source conflicts.
+log_info "Cleaning stale generated annotation outputs"
+for owner in "${BACKEND_DIR}"/services/* "${BACKEND_DIR}/libs/core"; do
+  [[ -d "${owner}" ]] || continue
+  generated="${owner}/.generated"
+  [[ ! -L "${generated}" ]] || die "Refusing to clean symlinked generated directory: ${generated}"
+  if [[ -d "${generated}" ]]; then
+    rm -rf -- "${generated}"
+  fi
+done
+rm -f -- "${BACKEND_DIR}/.generated/overlay.json"
+
 # Fail closed on unimplemented annotations, especially security policies.
 log_info "Validating annotation targets and rejecting metadata-only directives"
 (
