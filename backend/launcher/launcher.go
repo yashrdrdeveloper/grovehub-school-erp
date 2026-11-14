@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -115,14 +116,19 @@ func Run(logger *slog.Logger) error {
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
+	listener, err := net.Listen("tcp", httpAddress)
+	if err != nil {
+		return fmt.Errorf("bind HTTP listener %s: %w", httpAddress, err)
+	}
+
 	logger.Info(
 		"http server started",
 		"service", edgeService.Name,
 		"serviceKey", edgeService.Key,
-		"address", httpAddress,
+		"address", listener.Addr().String(),
 	)
 
-	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	if err := server.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return fmt.Errorf("serve http: %w", err)
 	}
 
