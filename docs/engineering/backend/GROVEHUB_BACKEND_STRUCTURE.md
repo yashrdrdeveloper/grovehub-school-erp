@@ -57,7 +57,7 @@ These rules govern new services and refactors, not a particular Integration impl
 
 ### Events
 - Define a **payload contract** alongside an alias of `coreevents.Envelope[Payload]` for each versioned service event. Use `core/events.NewEnvelope` via pure event helpers for event identity/correlation metadata.
-- Put publication/serialization in `events/<resource>/impl/`, rather than in normal business-service implementation. Delivery and acknowledgment semantics must be explicit; failure to publish a provider notification must not be reported as successful delivery.
+- Put publication/serialization under `events/producers/<resource>/operations/<event>/`, with a producer interface/implementation under `events/producers/<resource>/`, rather than in normal business-service implementation. Delivery and acknowledgment semantics must be explicit; failure to publish a provider notification must not be reported as successful delivery.
 - Provider notification events contain references/hints, not copied messages or secret data. Each consuming domain owns its own processing checkpoint and deduplication.
 
 ### Schema and development commands
@@ -84,10 +84,16 @@ backend/services/<service>/
 │   ├── queryparams.go
 │   └── response.go
 ├── entity/
-├── events/<resource>/
-│   ├── <resource>.go
-│   ├── impl/<resource>.go
-│   └── helpers/<resource>.go
+├── events/
+│   └── producers/<resource>/
+│       ├── <resource>.go
+│       ├── impl/<resource>.go
+│       └── operations/<event>/
+│           ├── <event>.go
+│           ├── pipeline.go
+│           ├── flows/
+│           ├── strategies/{strategy.go,impl/}
+│           └── helpers/
 ├── mappers/<resource>/
 │   ├── <resource>.go
 │   └── impl/<resource>.go
@@ -129,12 +135,14 @@ Interfaces and public contracts belong at the package boundary. Concrete impleme
 ```text
 constants/events/operation.go
     -> service-owned lifecycle operation type and constants (when needed)
-events/<resource>/<resource>.go
-    -> public domain-event contracts + stable topic/type/source identifiers
-events/<resource>/impl/<resource>.go
-    -> event publication/decorator implementation
-events/<resource>/helpers/<resource>.go
-    -> pure event envelope/payload/metadata construction
+events/producers/<resource>/<resource>.go
+    -> outbound event producer interface
+events/producers/<resource>/impl/<resource>.go
+    -> producer implementation
+events/producers/<resource>/operations/<event>/<event>.go
+    -> public domain-event contract + stable topic/type/source identifiers
+events/producers/<resource>/operations/<event>/pipeline.go
+    -> typed event rules; event-local flows, strategies and pure helpers
 
 mappers/<resource>/<resource>.go
     -> mapper interface
@@ -419,7 +427,7 @@ map repository errors to domain/application errors
 
 Services must not duplicate request normalization already owned by validators or generic query mechanics already owned by core capabilities.
 
-Domain-event publication orchestration belongs under the owning service's `events/<resource>/impl` package, not mixed into the normal `services/impl` implementation. For registration, Identity owns one `core/database/transaction.Run(ctx, db, operation)` transaction; all Foundation/Identity repositories use `transaction.Database(ctx, repository.db)` and events use `transaction.AfterCommit`. Domain contracts do not expose GORM.
+Domain-event publication orchestration belongs under the owning service's `events/producers/<resource>/operations/<event>/` package; its producer has a typed interface and concrete implementation under `events/producers/<resource>/`. Foundation enqueues lifecycle events inside its shared transaction through the transactional outbox. Identity still uses its existing transaction/AfterCommit registration flow until separately migrated. Domain contracts do not expose GORM.
 
 ---
 
@@ -484,23 +492,21 @@ Foundation -> Person/GID events
 Identity   -> Account/Credential/Session events
 ```
 
-Event contracts live under:
+Producer contracts and implementations live under:
 
 ```text
-services/<service>/events/<resource>/
+services/<service>/events/producers/<resource>/
+services/<service>/events/producers/<resource>/impl/
 ```
 
-Event publication implementations live under:
+Versioned event operations (contract, pipeline, flow, strategies and helpers) live under:
 
 ```text
-services/<service>/events/<resource>/impl/
+services/<service>/events/producers/<resource>/operations/<event>/
 ```
 
-Pure mapping/envelope helpers live under:
-
-```text
-services/<service>/events/<resource>/helpers/
-```
+Add `events/consumers/<resource>/` only for actual inbound subscriptions.
+Existing unmigrated services may retain their legacy event structure.
 
 Stable subjects/topics must be reused across message instances. Message/event IDs provide uniqueness; random subjects must not be created for every message or sanity-test run.
 
@@ -683,7 +689,7 @@ Contacts are nested API values, not separately addressable public resources. `en
 
 Search remains a Person use case; do not create `person_search.go` merely because Person supports search.
 
-Foundation owns the Person/GID lifecycle event contract. Its current unified event is `foundation.person.changed.v1` on the stable `foundation_person_changed` topic. Its `data` contains `operation`, `old`, and `new` using complete `dto/person.Person` snapshots; supported operations are CREATED, UPDATED and DEACTIVATED. A successful deactivation publishes only DEACTIVATED, never a duplicate UPDATED event; no-op changes do not publish. Consumers can calculate a flat field-level diff with `libs/core/diff`, which never imports Foundation. See `EVENT_GUIDELINES.md` and `backend/services/foundation/events/person/person.go` for contract and caveats.
+Foundation owns the Person/GID lifecycle event contract. Its current unified event is `foundation.person.changed.v1` on the stable `foundation_person_changed` topic. Its `data` contains `operation`, `old`, and `new` using complete `dto/person.Person` snapshots; supported operations are CREATED, UPDATED and DEACTIVATED. A successful deactivation publishes only DEACTIVATED, never a duplicate UPDATED event; no-op changes do not publish. Consumers can calculate a flat field-level diff with `libs/core/diff`, which never imports Foundation. See `EVENT_GUIDELINES.md` and `backend/services/foundation/events/producers/person/operations/changed/changed.go` for contract and caveats.
 
 ---
 
@@ -731,7 +737,7 @@ YES one stable façade per core capability
 YES resource policy stays outside generic core mechanics
 YES domain services own event meaning/contracts
 YES Infrastructure owns event transport mechanics
-YES events are grouped under events/<resource>/{impl,helpers}
+YES outbound events are grouped under events/producers/<resource>/operations/<event>/; only actual consumers get events/consumers/ packages
 ```
 
 > **Guiding principle:** services own use cases and domain-event meaning, repositories own persistence/query behavior, entities represent persisted resource state without workflow/persistence-query logic, Infrastructure owns transport mechanics, and shared core code is encapsulated by capability behind stable root packages.

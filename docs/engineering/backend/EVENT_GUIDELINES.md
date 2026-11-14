@@ -26,66 +26,72 @@ Infrastructure provides the generic `MessagingClient`; domain services decide wh
 
 ## 2. Canonical Event Structure
 
-Aggregate-owned events use an event contract, pipelines, producers, and optional consumers.
+Organize domain events first by **direction** (producers versus consumers), then
+by aggregate, then by operation. Create only the packages that are used.
 
 ```text
 backend/
 ├── libs/core/events/
-│   ├── envelope.go                     # Typed domain-independent envelope
-│   ├── pipeline/rules.go                # Generic ShouldEmit/Build/Enqueue rules
-│   ├── outbox/
-│   │   ├── store.go                     # Transactional enqueue and leased claims
-│   │   └── dispatcher.go                # Retry and broker delivery
-│   └── messaging/
-│       ├── producer.go                  # Transport-neutral publisher interface
-│       └── consumer.go                  # Transport-neutral handler contract
-└── services/foundation/events/person/
-    ├── person.go                        # @Event Changed payload and schema metadata
-    ├── pipelines/
-    │   ├── changed.go                   # Typed event rule composition
-    │   ├── flows/changed.go             # Change input state
-    │   └── strategies/
-    │       ├── strategy.go              # @Strategy contract
-    │       └── impl/changed.go          # Eligibility and payload building strategy
-    ├── producers/
-    │   ├── producer.go                  # ChangedProducer domain contract
-    │   ├── noop.go                      # Optional test-only producer
-    │   └── impl/person.go               # Enqueue through ChangedPipeline
-    ├── consumers/
-    │   ├── consumer.go                  # Optional subscription contract
-    │   └── impl/person.go               # MessagingClient.Consume integration
-    ├── handlers/changed.go              # Decode/validate inbound envelope
-    └── helpers/
-        ├── changed.go                   # HasChanged eligibility
-        ├── envelope.go                  # BuildChanged
-        ├── message.go                   # Marshal outbox payload
-        └── metadata.go                  # Broker headers
+│   ├── envelope.go                          # Generic typed event envelope
+│   ├── pipeline/rules.go                     # ShouldEmit / Build / Enqueue
+│   ├── outbox/{store,dispatcher}.go          # Transactional delivery and retry
+│   └── messaging/{producer,consumer}.go      # Generic transport contracts
+└── services/foundation/events/
+    └── producers/
+        └── person/
+            ├── person.go                    # ChangedProducer interface
+            ├── noop.go                      # Isolated-test implementation
+            ├── impl/
+            │   └── person.go                # Producer implementation
+            └── operations/
+                └── changed/
+                    ├── changed.go           # @Event payload and generated constants
+                    ├── pipeline.go          # ChangedPipeline / Rules / Enqueue
+                    ├── flows/
+                    │   └── changed.go       # Typed Change flow
+                    ├── strategies/
+                    │   ├── strategy.go      # @Strategy contract
+                    │   └── impl/
+                    │       └── changed.go   # Policy/serialization strategy
+                    └── helpers/
+                        ├── changed.go       # HasChanged
+                        ├── envelope.go      # BuildChanged
+                        ├── message.go       # BuildMessage
+                        └── metadata.go      # Broker headers
 ```
 
-The lifecycle `Operation` type remains at `foundation/constants/events/operation.go`.
-No consumer is registered automatically in Foundation: producer-side self-subscription
-would generate unnecessary load and risk loops. Consumers are explicitly registered
-by services that need incoming Person Changed events.
+The Foundation **consumers/** package does not exist yet: Foundation does not
+currently consume any inbound Person event. Add
+`services/foundation/events/consumers/<aggregate>/` only when a real inbound
+subscription and handler exists; do not add empty directories merely for symmetry.
+
+The `Operation` type and lifecycle values remain owned by
+`foundation/constants/events/operation.go`. The `@Event` generator emits the
+topic/type/source constants into the new Changed operation package, preserving
+existing message topic and wire payload. Other service event layouts may retain
+their current shape until separately migrated.
 
 
 ## 3. Responsibility Split
 
-- `events/person/person.go`: stable domain event payload and annotation metadata.
-- `events/person/pipelines/`: typed event policy; `Rules()` composes `ShouldEmit`,
-  `Build`, and `Enqueue` as in the validator rule pattern.
-- `events/person/producers/`: domain-level producer contract; enqueue must happen
-  inside the successful aggregate write transaction, not after returning from the service.
-- `libs/core/events/outbox/`: durable storage, nonblocking row claims, leases,
-  retry scheduling, broker delivery, and published-state tracking.
-- `events/person/consumers/`: optional registration with Infrastructure MessagingClient.
-  `handlers/` decodes and validates the incoming typed envelope. Consumers must
-  deduplicate event IDs and protect contact details.
-- `services/person/operations/`: owns actual business state transitions and invokes
-  the producer only for newly committed Create, changed Update, or new Deactivate.
-  GetByGID and Search never enqueue events.
+- `events/producers/person/person.go`: the domain producer interface used by
+  Person Create, Update and Deactivate. The concrete adapter lives in `impl/`.
+- `events/producers/person/operations/changed/changed.go`: stable Changed
+  event contract and `@Event` metadata. The `pipeline.go` composes
+  `ShouldEmit`, `Build` and `Enqueue` with core event pipeline rules.
+- `operations/changed/flows/`: the event-specific typed Change state.
+- `operations/changed/strategies/`: event eligibility and immutable envelope
+  creation; `helpers/` owns pure Person Changed logic.
+- `libs/core/events/outbox/`: durable transaction-bound inserts, leased claims,
+  retry scheduling, transport delivery and sent-state tracking.
+- `services/person/operations/`: owns business writes and calls the producer
+  within the same UnitOfWork as successful Create, changed Update and
+  Deactivate. GetByGID and Search never enqueue events.
+- `events/consumers/` (future): inbound subscription and handler ownership,
+  only when Foundation actually consumes another event.
 
-Event construction helpers must remain pure. They do not call repositories,
-NATS adapters or HTTP. Infrastructure owns transport mechanics.
+Domain event helpers must not call persistence, NATS adapters or HTTP.
+Infrastructure owns how messages travel, not what events mean.
 
 
 ## 4. Event Envelope
@@ -244,8 +250,8 @@ write transactions, and Deactivate now explicitly uses UnitOfWork.
 
 Dispatcher lease and retry metadata must be monitored operationally. The
 migration keeps SENT rows for audit/reconciliation; add retention and dead-letter
-policy before production growth. This implementation does not invent an inbound
-Person side effect: the consumer adapter is available for explicit integration.
+policy before production growth. Foundation currently implements **no inbound event consumer**. Add a consumer
+only when a real subscription and business handler are needed.
 
 
 ## 10. Testing
