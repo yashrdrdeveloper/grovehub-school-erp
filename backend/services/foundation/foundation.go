@@ -11,7 +11,7 @@ import (
 
     foundationbootstrap "grovehub/services/foundation/internal/app/bootstrap"
     bootstrapimpl "grovehub/services/foundation/internal/app/bootstrap/impl"
-    foundationresources "grovehub/services/foundation/internal/resources"
+    foundationmigrations "grovehub/services/foundation/internal/resources/migrations"
     infrastructureclient "grovehub/services/infrastructure/client"
 )
 
@@ -28,5 +28,5 @@ func Migrate(ctx context.Context, db *gorm.DB) error {
     if db == nil { return errors.New("foundation migrations require a database") }
     sqlDB, err := db.DB()
     if err != nil { return fmt.Errorf("access Foundation migration database: %w",err) }
-    return foundationresources.Migrate(ctx, sqlDB)
+    return foundationmigrations.Migrate(ctx, sqlDB)
 }

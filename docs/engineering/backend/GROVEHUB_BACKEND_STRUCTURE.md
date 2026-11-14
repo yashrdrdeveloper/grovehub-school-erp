@@ -785,14 +785,14 @@ services/foundation/
   client/person/person.go              # Public typed interface
   client/person/constants/error.go              # Public error contracts
   internal/app/dto/person/             # Single source of request/response DTOs
-  api/openapi/v1/openapi.yaml           # Public API contract
+  internal/resources/api/openapi/v1/openapi.yaml # OpenAPI source / embedded resource
   docs/                                 # Human-readable documentation
   internal/app/bootstrap/{bootstrap.go,impl/}
   internal/app/client/person/impl/      # Private in-process client
   internal/app/{controller,routes,services,repository,entity}/
   internal/app/{validators,mappers,events,constants}/
-  internal/resources/resources.go       # Embedded migration filesystem
-  internal/resources/migrate.go         # Goose execution against same version table
+  internal/resources/resources.go       # Embedded migration and OpenAPI files
+  internal/resources/migrations/migrate.go # Goose execution against same version table
   internal/resources/migrations/*.sql
 ```
 

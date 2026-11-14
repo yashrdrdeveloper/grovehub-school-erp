@@ -1,4 +1,4 @@
-package resources
+package migrations
 
 import (
     "context"
@@ -7,6 +7,8 @@ import (
     "fmt"
 
     "github.com/pressly/goose/v3"
+
+    foundationresources "grovehub/services/foundation/internal/resources"
 )
 
 // Migrate runs Foundation's embedded SQL migrations using the same Goose
@@ -15,7 +17,7 @@ import (
 func Migrate(ctx context.Context, db *sql.DB) error {
     if db == nil { return errors.New("foundation migrations require a database") }
     if err := goose.SetDialect("postgres"); err != nil { return fmt.Errorf("set Foundation migration dialect: %w", err) }
-    goose.SetBaseFS(Migrations)
+    goose.SetBaseFS(foundationresources.Migrations)
     defer goose.SetBaseFS(nil)
     goose.SetTableName("foundation_schema_state")
     if err := goose.UpContext(ctx, db, "migrations"); err != nil {

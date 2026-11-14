@@ -3,13 +3,12 @@
 The public Go packages are `services/foundation` and
 `services/foundation/client/person`. The client package exposes
 Go type aliases for DTO definitions stored privately under `internal/app/dto/person/`.
-The OpenAPI specification stays under `services/foundation/api/openapi/`.
+The OpenAPI specification is stored under `services/foundation/internal/resources/api/openapi/`.
 Documentation is a repository asset rather than an importable Go contract.
 
 ```text
 backend/services/foundation/
 ├── foundation.go
-├── api/openapi/v1/openapi.yaml
 ├── client/person/
 │   ├── person.go
 │   └── constants/error.go
@@ -29,14 +28,19 @@ backend/services/foundation/
 │   │   └── validators/
 │   └── resources/
 │       ├── resources.go
-│       ├── migrate.go
-│       └── migrations/{000001_create_foundation_schema.sql,000002_create_event_outbox.sql}
+│       ├── api/openapi/v1/openapi.yaml
+│       └── migrations/
+│           ├── migrate.go
+│           ├── 000001_create_foundation_schema.sql
+│           └── 000002_create_event_outbox.sql
 └── docs/
 ```
 
 ## Migration contract
 
 `resources.Migrations` uses Go's `//go:embed migrations/*.sql`.
+`resources.OpenAPI` embeds the YAML specification independently;
+Swagger development configuration reads the relocated YAML file directly.
 Run `groovehub-platform migrate foundation` in production after configuring
 `DATABASE_URL`, before the HTTP process starts. This invokes Goose on the
 embedded files, with the `foundation_schema_state` version table used by
@@ -79,3 +83,12 @@ Person error definitions remain owned in `internal/app/constants/error/`. The
 client-facing aliases are grouped under `client/person/constants/error.go`,
 so consumers import `grovehub/services/foundation/client/person/constants`
 for error contracts, rather than mixing errors into the Person client interface.
+
+## Resource ownership
+
+The runtime migration implementation now lives in
+`internal/resources/migrations/migrate.go` and accesses the SQL embedded by
+`internal/resources/resources.go`. `foundation.Migrate` delegates to that
+package. Foundation's OpenAPI specification lives in
+`internal/resources/api/openapi/v1/openapi.yaml` and Swagger uses the
+corresponding source path; the embedding also includes the YAML in production.
