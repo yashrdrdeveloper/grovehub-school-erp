@@ -12,7 +12,8 @@ import (
 )
 
 func main() {
-	os.Exit(run())
+	if len(os.Args) > 1 { os.Exit(runMigrationCommand()) }
+    os.Exit(run())
 }
 
 func run() int {
