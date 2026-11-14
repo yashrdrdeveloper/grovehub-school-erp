@@ -7,6 +7,16 @@ source "${SCRIPT_DIR}/../lib/common.sh"
 
 require_command go
 
+# A clean checkout needs module checksums for generated mocks and unit-only
+# dependencies (GoMock, sqlmock, etc.) before running annotation generators
+# or instrumentation. Go does not discover all generated source imports during
+# normal go mod tidy because those files live in a virtual overlay.
+log_info "Preparing pinned Go modules for generated source and unit tests"
+(
+  cd -- "${BACKEND_DIR}"
+  go mod download
+)
+
 # Generation is a fresh snapshot, not an incremental accumulation. Removing
 # ignored service-local output prevents orphaned virtual .go files from
 # referring to packages deleted by a refactor (e.g. client/person/dto/).
@@ -95,11 +105,6 @@ log_info "Generating domain-owned event schema identifiers"
 log_info "Generating annotated Ginkgo suites and isolated GoMock implementations"
 (
   cd -- "${BACKEND_DIR}"
-  # Fresh checkouts may have the mock module in go.mod but lack its checksum:
-  # mockgen is a code-generation binary, not a directly compiled app import.
-  # Download it explicitly before go run to work on macOS and Linux without
-  # requiring a prior make backend-build / go mod tidy.
-  go mod download go.uber.org/mock
   go run ./libs/core/annotation/generation/testing "${BACKEND_DIR}"
 )
 
