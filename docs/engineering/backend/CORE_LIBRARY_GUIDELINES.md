@@ -19,6 +19,7 @@ backend/libs/core/
 │   └── rest/
 ├── diff/
 ├── events/
+├── module/
 ├── telemetry/
 ├── logging/
 ├── errors/
@@ -492,3 +493,12 @@ The `annotation/contract/` package owns shared metadata types and has **no depen
 The annotation framework's own test cases were removed at request; other backend suites and the CI compile/package-loading checks remain. An unimplemented directive (e.g. `@Authorize`, `@Transactional` or `@Consumer`) remains metadata only and must not be treated as executing security, transactions or messaging policy. The build-time checker rejects such annotations in maintained service code.
 
 See [ANNOTATION_FRAMEWORK_MASTER_PLAN.md](ANNOTATION_FRAMEWORK_MASTER_PLAN.md) for the intended capability catalog and [ANNOTATION_PHASE2_MIGRATION.md](ANNOTATION_PHASE2_MIGRATION.md) for actually supported processors and remaining work.
+
+## Shared module lifecycle capability
+
+The minimal `libs/core/module.Module` interface has `RegisterHTTP(*http.ServeMux)`
+and `Close()`. Keep it domain-agnostic: do not add typed service clients,
+repositories, GORM databases, or messaging dependencies to this interface.
+Each service's `bootstrap/bootstrap.go` defines its own typed `Bootstrap`
+and `Runtime`; `bootstrap/impl` owns dependency wiring and worker lifecycle.
+Only create event/client/bootstrap implementation files with real responsibilities.

@@ -26,7 +26,7 @@ These rules govern new services and refactors, not a particular Integration impl
 
 ### Public contracts and implementation boundaries
 - Expose stable **interfaces, DTOs, domain contracts and reusable types** at package roots (`providers/providers.go`, `services/connection.go`, `repository/watch.go`, `controller/connection.go`, `config/config.go`).
-- Put stateful/concrete implementations under the corresponding `impl/` folder. Provider adapters use `providers/<provider>/impl/` and an intentionally small public `providers/<provider>/` facade. Module wiring belongs in `<service>.go`, not in public contracts.
+- Put stateful/concrete implementations under the corresponding `impl/` folder. Provider adapters use `providers/<provider>/impl/` and an intentionally small public `providers/<provider>/` facade. Module wiring for newly migrated services belongs in `bootstrap/impl/`, not in public contracts; `<service>.go` is only the thin module entry point. Legacy services can migrate incrementally.
 - A provider registry is itself an interface. Registry map/sort/dispatch, vendor routing and constructor logic belong under `providers/impl/`. Declare **only implemented capabilities**; use optional action or OAuth interfaces rather than forcing all providers to implement mail, webhook, send, or read functions.
 - Put pure reusable helpers in `helpers/` of the owning domain, grouped by resource where appropriate (e.g., `services/helpers/connections/`). Keep concrete `services/impl/connections.go` focused on orchestration and persistence decisions; move stable ID validation and entity-to-response transformations into `services/helpers/connections/`. Reuse `core/normalize` for shared UUID/email/phone normalization instead of reimplementing parsing. Do not add helpers solely to rearrange one-line calls. If a data structure is reused across multiple layers, put its stable public definition in the **owning package** or `types/` when there is no clearer owner; do not create duplicate copies in each layer.
 - All action/capability/provider keys and status literals should be defined once in capability-specific `constants/` subpackages (for example `constants/actions/gmail.go`, `constants/providers/providers.go`, `constants/connections/status.go`). Preserve type-safe aliases in a public contract only if needed for existing consumers. Keep typed error definitions/sentinels in `constants/error/`, with transport-agnostic errors mapped to HTTP only in controllers.
@@ -72,6 +72,13 @@ GroveHub uses flat service roots with **resource-first packages inside each laye
 ```text
 backend/services/<service>/
 ├── <service>.go
+├── bootstrap/
+│   ├── bootstrap.go
+│   └── impl/
+│       ├── bootstrap.go
+│       ├── events.go
+│       ├── routes.go
+│       └── client.go
 ├── api/
 ├── config/
 ├── constants/
@@ -741,3 +748,29 @@ YES outbound events are grouped under events/producers/<resource>/operations/<ev
 ```
 
 > **Guiding principle:** services own use cases and domain-event meaning, repositories own persistence/query behavior, entities represent persisted resource state without workflow/persistence-query logic, Infrastructure owns transport mechanics, and shared core code is encapsulated by capability behind stable root packages.
+
+## Service module bootstrap and lifecycle
+
+`libs/core/module.Module` defines only `RegisterHTTP(*http.ServeMux)` and `Close()`.
+It does not own typed client APIs, repositories, or database/messaging dependencies.
+Each service defines its own `bootstrap.Bootstrap` interface (with
+`Build() (Runtime, error)`) and `bootstrap.Runtime` that embeds
+`coremodule.Module` plus only that service's public capabilities.
+
+Foundation is the first migrated module:
+
+```text
+foundation/foundation.go               # New() delegates to Bootstrap.Build()
+foundation/bootstrap/bootstrap.go      # Bootstrap + Runtime interfaces
+foundation/bootstrap/impl/bootstrap.go # Dependency assembly + lifecycle
+foundation/bootstrap/impl/routes.go    # Person repositories / services / controller
+foundation/bootstrap/impl/events.go    # Person Changed outbox + dispatcher
+foundation/bootstrap/impl/client.go    # In-process client routes
+foundation/routes/http.go              # Generated HTTP route registration
+```
+
+`foundation.New` returns `(foundation.Module, error)` so startup failures
+surface to the launcher; the launcher closes Foundation before shutting down
+the shared Infrastructure messaging module and database. The same common
+lifecycle can be adopted by Identity, Integration, and future services without
+making their client contracts depend on one another.

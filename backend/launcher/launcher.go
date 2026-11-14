@@ -48,13 +48,14 @@ func Run(logger *slog.Logger) error {
 	mux := http.NewServeMux()
 	routing.RegisterHealth(mux)
 
-	foundationModule := foundation.New(
-		logger,
-		db,
-		infrastructureModule.MessagingClient(),
-	)
-	foundationModule.RegisterHTTP(mux)
+	foundationModule, err := foundation.New(
+        logger,
+        db,
+        infrastructureModule.MessagingClient(),
+    )
+    if err != nil { return fmt.Errorf("bootstrap foundation: %w", err) }
     defer foundationModule.Close()
+    foundationModule.RegisterHTTP(mux)
 
 	identityModule := identity.New(
 		logger,
