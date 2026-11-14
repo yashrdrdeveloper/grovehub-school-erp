@@ -4,7 +4,7 @@ import (
 	"context"
 
 	coresearch "grovehub/libs/core/search"
-	persondto "grovehub/services/foundation/dto/person"
+	persondto "grovehub/services/foundation/client/person/dto"
 )
 
 // @Client personClient

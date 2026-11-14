@@ -14,7 +14,7 @@ import (
     headercontext "grovehub/libs/core/headercontext"
     coreevents "grovehub/libs/core/events"
 	foundationclient "grovehub/services/foundation/client/person"
-	persondto "grovehub/services/foundation/dto/person"
+	persondto "grovehub/services/foundation/client/person/dto"
 	identityerror "grovehub/services/identity/constants/error"
 	identityrequest "grovehub/services/identity/dto/request"
 	identityresponse "grovehub/services/identity/dto/response"

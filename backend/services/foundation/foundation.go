@@ -6,8 +6,8 @@ import (
 
     "gorm.io/gorm"
 
-    foundationbootstrap "grovehub/services/foundation/bootstrap"
-    bootstrapimpl "grovehub/services/foundation/bootstrap/impl"
+    foundationbootstrap "grovehub/services/foundation/internal/app/bootstrap"
+    bootstrapimpl "grovehub/services/foundation/internal/app/bootstrap/impl"
     infrastructureclient "grovehub/services/infrastructure/client"
 )
 
