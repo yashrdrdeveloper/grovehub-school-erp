@@ -77,9 +77,13 @@ make test-inventory package=foundation                 # Lists missing mirrored 
 `scripts/testing/unit-coverage.sh` delegates to one shared Go runner. It runs all
 selected production packages **and** mirrored suites so packages with no test
 coverage are counted as zero, rather than omitted. Go's cover instrumenter
-cannot read virtual generated Go files; the runner materializes selected overlay
-files temporarily, records a cleanup manifest, and removes them on exit. On a
-subsequent run, interrupted materialization is detected and safely cleaned.
+cannot reliably resolve virtual generated Go files when coverage is
+instrumented (particularly on macOS). The runner materializes ALL generated
+Go packages referenced by the overlay, including transitive dependencies in
+`libs/core/` and sibling services. It then runs `go list` and `go test`
+WITHOUT `-overlay`, records the physical files in a cleanup manifest,
+generates reports, and removes the temporary files on exit. On a subsequent
+run, interrupted materialization is detected and safely cleaned.
 The annotation generator clears stale ignored module-local `.generated/` output
 before every build and Air recompilation so deleted or renamed packages cannot
 remain in the overlay. Generated source remains ignored and non-maintained.
@@ -121,3 +125,17 @@ ignored output tree. Air watches Go and resource assets including SQL, YAML,
 JSON and template files; editing such assets also rebuilds the binary with
 fresh embedded resources. The code generators do not write maintained Go
 source files; generation paths stay isolated inside `.generated/`.
+
+## macOS generated-source coverage troubleshooting
+
+The Go build overlay remains the default for normal `backend-build` and Air
+compilation. For **unit coverage only**, Go cover must read generated source
+from its original package directory. Running `go test -overlay` with coverage
+can produce errors such as `open services/.../.generated/.../zz_suite_test.go:
+no such file or directory` on macOS. The shared runner avoids that combination;
+it never leaves generated test or mock files in maintained directories after a
+completed invocation. CI exercises the same runner on both Linux and macOS.
+
+`make unit-coverage package=foundation` will still report a failure until
+all Foundation statements are genuinely covered. Do not confuse that expected
+100% threshold failure with a source-generation or compiler failure.

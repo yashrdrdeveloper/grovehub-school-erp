@@ -67,3 +67,22 @@ jobs:
           test -s backend/services/foundation/.generated/internal/app/events/producers/person/operations/changed/zz_events.gen.go
           test -s backend/services/identity/.generated/events/accounts/zz_events.gen.go
           test -s backend/services/integration/.generated/events/connections/mailbox/zz_events.gen.go
+
+  generated-coverage-macos:
+    name: Validate generated-source unit coverage on macOS
+    runs-on: macos-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Install Go toolchain
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.27.3"
+          cache-dependency-path: backend/go.sum
+      - name: Verify generated Foundation suites and mocks compile under macOS coverage
+        run: make unit-test package=foundation
+      - name: Verify the generated coverage report exists
+        run: |
+          test -s backend/.generated/unit-coverage/foundation.out
+          test -s .runtime/reports/unit-coverage/foundation.html
