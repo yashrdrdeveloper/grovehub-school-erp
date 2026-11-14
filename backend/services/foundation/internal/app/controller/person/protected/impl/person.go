@@ -6,11 +6,11 @@ import (
 
 	rest "grovehub/libs/core/pipeline/rest"
 	coresearch "grovehub/libs/core/search"
-	personerror "grovehub/services/foundation/constants/error"
-	protected "grovehub/services/foundation/controller/person/protected"
-	persondto "grovehub/services/foundation/dto/person"
-	foundationservices "grovehub/services/foundation/services/person"
-	foundationvalidators "grovehub/services/foundation/validators/person"
+	personerror "grovehub/services/foundation/internal/app/constants/error"
+	protected "grovehub/services/foundation/internal/app/controller/person/protected"
+	persondto "grovehub/services/foundation/client/person/dto"
+	foundationservices "grovehub/services/foundation/internal/app/services/person"
+	foundationvalidators "grovehub/services/foundation/internal/app/validators/person"
 )
 
 type PersonController struct {

@@ -2,14 +2,14 @@ package impl
 
 import (
     coretransaction "grovehub/libs/core/database/transaction"
-    protected "grovehub/services/foundation/controller/person/protected"
-    controllerimpl "grovehub/services/foundation/controller/person/protected/impl"
-    personproducer "grovehub/services/foundation/events/producers/person"
-    mapperimpl "grovehub/services/foundation/mappers/person/impl"
-    contactrepositoryimpl "grovehub/services/foundation/repository/contact/impl"
-    personrepositoryimpl "grovehub/services/foundation/repository/person/impl"
-    serviceimpl "grovehub/services/foundation/services/person/impl"
-    validatorimpl "grovehub/services/foundation/validators/person/impl"
+    protected "grovehub/services/foundation/internal/app/controller/person/protected"
+    controllerimpl "grovehub/services/foundation/internal/app/controller/person/protected/impl"
+    personproducer "grovehub/services/foundation/internal/app/events/producers/person"
+    mapperimpl "grovehub/services/foundation/internal/app/mappers/person/impl"
+    contactrepositoryimpl "grovehub/services/foundation/internal/app/repository/contact/impl"
+    personrepositoryimpl "grovehub/services/foundation/internal/app/repository/person/impl"
+    serviceimpl "grovehub/services/foundation/internal/app/services/person/impl"
+    validatorimpl "grovehub/services/foundation/internal/app/validators/person/impl"
 )
 
 // newRoutes composes Person dependencies for the Foundation HTTP routes.

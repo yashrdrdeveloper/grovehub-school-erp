@@ -10,10 +10,10 @@ import (
     "gorm.io/gorm"
 
     coretelemetry "grovehub/libs/core/telemetry"
-    foundationbootstrap "grovehub/services/foundation/bootstrap"
+    foundationbootstrap "grovehub/services/foundation/internal/app/bootstrap"
     foundationclient "grovehub/services/foundation/client/person"
-    protected "grovehub/services/foundation/controller/person/protected"
-    "grovehub/services/foundation/routes"
+    protected "grovehub/services/foundation/internal/app/controller/person/protected"
+    "grovehub/services/foundation/internal/app/routes"
     infrastructureclient "grovehub/services/infrastructure/client"
 )
 

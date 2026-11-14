@@ -5,8 +5,8 @@ import (
 
     foundationclient "grovehub/services/foundation/client/person"
     clientimpl "grovehub/services/foundation/client/person/impl"
-    protected "grovehub/services/foundation/controller/person/protected"
-    "grovehub/services/foundation/routes"
+    protected "grovehub/services/foundation/internal/app/controller/person/protected"
+    "grovehub/services/foundation/internal/app/routes"
 )
 
 // The in-process client uses the same generated HTTP routes and controller

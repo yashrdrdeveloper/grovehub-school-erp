@@ -5,10 +5,10 @@ import (
     "time"
 
     coreoutbox "grovehub/libs/core/events/outbox"
-    eventpipelines "grovehub/services/foundation/events/producers/person/operations/changed"
-    eventstrategyimpl "grovehub/services/foundation/events/producers/person/operations/changed/strategies/impl"
-    personproducer "grovehub/services/foundation/events/producers/person"
-    eventproducerimpl "grovehub/services/foundation/events/producers/person/impl"
+    eventpipelines "grovehub/services/foundation/internal/app/events/producers/person/operations/changed"
+    eventstrategyimpl "grovehub/services/foundation/internal/app/events/producers/person/operations/changed/strategies/impl"
+    personproducer "grovehub/services/foundation/internal/app/events/producers/person"
+    eventproducerimpl "grovehub/services/foundation/internal/app/events/producers/person/impl"
 )
 
 type eventRuntime struct {
