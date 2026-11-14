@@ -20,9 +20,10 @@ Database
   make db-schema-init                             Initialize all service schemas from the current baseline
   make db-schema-reset                            Destructively reset all service schemas to the current baseline
   make db-schema-reset DB_SERVICE=foundation      Reset only the Foundation schema
+  make db-schema-init DB_SERVICE=infrastructure         Apply Infrastructure messaging/outbox migration
   make db-schema-reset DB_SERVICE=integration     Reset only the Integration schema (dev data lost)
 
-  DB_SERVICE can be: all, foundation, identity, or integration.
+  DB_SERVICE can be: all, foundation, infrastructure, identity, or integration.
   Schema reset is development-only and deletes data in the selected service schema.
 
 Messaging / NATS JetStream

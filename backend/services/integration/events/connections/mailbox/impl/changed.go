@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	infrastructureclient "grovehub/services/infrastructure/client"
+	infrastructureclient "grovehub/services/infrastructure/client/messaging"
 	mailboxevents "grovehub/services/integration/events/connections/mailbox"
 	eventhelpers "grovehub/services/integration/events/connections/mailbox/helpers"
 )

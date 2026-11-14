@@ -23,7 +23,7 @@ import (
  "grovehub/services/integration"
  integrationconfig "grovehub/services/integration/config"
 	"grovehub/services/infrastructure"
-	infrastructureconfig "grovehub/services/infrastructure/config"
+	infrastructureconfig "grovehub/services/infrastructure/client/messaging"
 )
 
 func Run(logger *slog.Logger) error {
@@ -39,7 +39,7 @@ func Run(logger *slog.Logger) error {
 	}
 	defer func() { _ = sqlDB.Close() }()
 
-	infrastructureModule, err := infrastructure.New(infrastructureconfig.DefaultMessaging())
+	infrastructureModule, err := infrastructure.New(infrastructureconfig.DefaultMessaging(), db, logger)
 	if err != nil {
 		return fmt.Errorf("bootstrap infrastructure messaging: %w", err)
 	}
@@ -51,7 +51,7 @@ func Run(logger *slog.Logger) error {
 	foundationModule, err := foundation.New(
         logger,
         db,
-        infrastructureModule.MessagingClient(),
+        infrastructureModule.EventStore(),
     )
     if err != nil { return fmt.Errorf("bootstrap foundation: %w", err) }
     defer foundationModule.Close()

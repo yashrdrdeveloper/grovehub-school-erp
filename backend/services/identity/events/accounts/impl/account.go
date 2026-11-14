@@ -13,7 +13,7 @@ import (
 	accountevents "grovehub/services/identity/events/accounts"
 	eventhelpers "grovehub/services/identity/events/accounts/helpers"
 	identityservices "grovehub/services/identity/services"
-	infrastructureclient "grovehub/services/infrastructure/client"
+	infrastructureclient "grovehub/services/infrastructure/client/messaging"
 )
 
 type AccountService struct {

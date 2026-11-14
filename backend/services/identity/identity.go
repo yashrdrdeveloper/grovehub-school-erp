@@ -16,7 +16,7 @@ import (
 	"grovehub/services/identity/routes"
 	serviceimpl "grovehub/services/identity/services/impl"
 	validatorimpl "grovehub/services/identity/validators/impl"
-	infrastructureclient "grovehub/services/infrastructure/client"
+	infrastructureclient "grovehub/services/infrastructure/client/messaging"
 )
 
 type Module interface {

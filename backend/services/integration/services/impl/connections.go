@@ -6,7 +6,7 @@ import (
 	"time"
 
 	coreid "grovehub/libs/core/id"
-	infrastructureclient "grovehub/services/infrastructure/client"
+	infrastructureclient "grovehub/services/infrastructure/client/messaging"
 	integrationrequest "grovehub/services/integration/dto/request"
 	integrationresponse "grovehub/services/integration/dto/response"
 	"grovehub/services/integration/entity"

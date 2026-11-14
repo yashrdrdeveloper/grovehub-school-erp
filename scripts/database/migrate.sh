@@ -23,10 +23,10 @@ case "${command_name}" in
 esac
 
 case "${service_name}" in
-  all|foundation|identity|integration)
+  all|foundation|infrastructure|identity|integration)
     ;;
   *)
-    die "Unsupported database service: ${service_name}. Expected all, foundation, identity, or integration."
+    die "Unsupported database service: ${service_name}. Expected all, foundation, infrastructure, identity, or integration."
     ;;
 esac
 
@@ -49,8 +49,8 @@ run_service_schema() {
   local service="$1"
   local action="$2"
   local schema_dir="${BACKEND_DIR}/services/${service}/migrations"
-  if [[ "${service}" == "foundation" ]]; then
-    schema_dir="${BACKEND_DIR}/services/foundation/internal/resources/migrations"
+  if [[ "${service}" == "foundation" || "${service}" == "infrastructure" ]]; then
+    schema_dir="${BACKEND_DIR}/services/${service}/internal/resources/migrations"
   fi
   local state_table
   state_table="$(schema_state_table "${service}")"
@@ -105,12 +105,14 @@ fi
 case "${command_name}" in
   init)
     init_service foundation
+    init_service infrastructure
     init_service identity
     init_service integration
     ;;
   reset)
     run_service_schema integration reset
     run_service_schema identity reset
+    run_service_schema infrastructure reset
     run_service_schema foundation reset
     init_service foundation
     init_service identity
@@ -118,6 +120,7 @@ case "${command_name}" in
     ;;
   status)
     status_service foundation
+    status_service infrastructure
     status_service identity
     status_service integration
     ;;

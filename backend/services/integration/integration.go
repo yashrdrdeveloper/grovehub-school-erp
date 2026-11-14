@@ -9,7 +9,7 @@ import (
 
 	"gorm.io/gorm"
 
-	infrastructureclient "grovehub/services/infrastructure/client"
+	infrastructureclient "grovehub/services/infrastructure/client/messaging"
 	integrationclient "grovehub/services/integration/client"
 	clientimpl "grovehub/services/integration/client/impl"
 	configimpl "grovehub/services/integration/config/impl"
