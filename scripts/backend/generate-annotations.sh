@@ -95,6 +95,11 @@ log_info "Generating domain-owned event schema identifiers"
 log_info "Generating annotated Ginkgo suites and isolated GoMock implementations"
 (
   cd -- "${BACKEND_DIR}"
+  # Fresh checkouts may have the mock module in go.mod but lack its checksum:
+  # mockgen is a code-generation binary, not a directly compiled app import.
+  # Download it explicitly before go run to work on macOS and Linux without
+  # requiring a prior make backend-build / go mod tidy.
+  go mod download go.uber.org/mock
   go run ./libs/core/annotation/generation/testing "${BACKEND_DIR}"
 )
 
