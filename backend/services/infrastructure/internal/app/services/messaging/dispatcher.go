@@ -57,7 +57,7 @@ func (dispatcher *Dispatcher) Run(ctx context.Context,interval time.Duration) {
     if interval<=0 {interval=time.Second}
     ticker:=time.NewTicker(interval)
     defer ticker.Stop()
-    nextPrune:=time.Now().UTC()
+    nextPrune:=time.Now().UTC().Add(time.Minute)
     for {
         if err:=dispatcher.Dispatch(ctx);err!=nil && ctx.Err()==nil {
             dispatcher.logger.ErrorContext(ctx,"messaging delivery batch failed","error",err)
