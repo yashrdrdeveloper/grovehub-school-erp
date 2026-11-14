@@ -56,6 +56,9 @@ type FixedCondition = contracts.FixedCondition
 type RelationField = contracts.RelationField
 type SortField = contracts.SortField
 type Config = contracts.Config
+type CursorValueValidator = contracts.CursorValueValidator
+type ValueNormalizer = contracts.ValueNormalizer
+type FieldSpec = contracts.FieldSpec
 type QueryBuilder = helpers.QueryBuilder
 
 func Apply[TId any](db *gorm.DB, query Query[TId], config Config) (*gorm.DB, error) {
@@ -161,4 +164,35 @@ func BuildCursorCondition(
 
 func EscapeLike(value string) string {
 	return helpers.EscapeLike(value)
+}
+
+ 
+// Shared request-validation helpers use resource-supplied errors and policies.
+func OperatorSet(operators ...Operator) map[Operator]struct{} { return validators.OperatorSet(operators...) }
+func EqualityOperators() map[Operator]struct{} { return validators.EqualityOperators() }
+func TextOperators() map[Operator]struct{} { return validators.TextOperators() }
+func TimeOperators() map[Operator]struct{} { return validators.TimeOperators() }
+func IsPartialOperator(operator Operator) bool { return validators.IsPartialOperator(operator) }
+func ValidValueCount(operator Operator, count int) bool { return validators.ValidValueCount(operator, count) }
+
+func ValidateUUIDv7Cursor(value string, invalid error) error { return validators.ValidateUUIDv7Cursor(value, invalid) }
+func ValidateTimeCursor(value string, invalid error) error { return validators.ValidateTimeCursor(value, invalid) }
+func ValidateNonEmptyCursor(value string, invalid error) error { return validators.ValidateNonEmptyCursor(value, invalid) }
+
+func NormalizeSearchTerms(value string, maxLength, maxTerms int, invalid error) ([]string, error) {
+    return validators.NormalizeSearchTerms(value, maxLength, maxTerms, invalid)
+}
+
+func ResolveRows(rows int, invalid error) (int, error) { return validators.ResolveRows(rows, invalid) }
+
+func NormalizeSort(request []Sort, fallback QuerySort, allowed map[string]CursorValueValidator, invalid error) (QuerySort, error) {
+    return validators.NormalizeSort(request, fallback, allowed, invalid)
+}
+
+func NormalizeFilters(filters []Filter, fields map[string]FieldSpec, maxFilters, maxValues int, invalid error) ([]QueryFilter, error) {
+    return validators.NormalizeFilters(filters, fields, maxFilters, maxValues, invalid)
+}
+
+func NormalizeCursor(value string, sort QuerySort, validateValue CursorValueValidator, validateID CursorValueValidator, invalid error) (*Cursor[string], CursorPayload, error) {
+    return validators.NormalizeCursor(value, sort, validateValue, validateID, invalid)
 }

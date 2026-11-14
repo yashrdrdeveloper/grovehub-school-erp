@@ -27,13 +27,17 @@ The internal layout is:
 backend/libs/core/search/
 ├── search.go
 ├── contracts/
-│   └── search.go
+│   ├── search.go
+│   └── validation.go
 ├── helpers/
 │   └── query.go
 ├── mappers/
 │   └── cursor.go
 └── validators/
-    └── query.go
+    ├── query.go
+    ├── operators.go
+    ├── request.go
+    └── cursor.go
 ```
 
 `search/search.go` is the supported façade.
@@ -128,7 +132,7 @@ when they only duplicate the generic search capability.
 
 ### `search/contracts`
 
-Owns shared search types and configuration contracts.
+Owns shared search types, `FieldSpec`, `ValueNormalizer`, `CursorValueValidator` and configuration contracts.
 
 ### `search/helpers`
 
@@ -149,13 +153,45 @@ Owns generic representation conversion such as opaque cursor encode/decode.
 
 ### `search/validators`
 
-Owns domain-neutral query/config validation such as valid limit, sort mapping, and direction.
+Owns domain-neutral query/config validation plus reusable request parsing, cursor-value checks, operator allowlists, value counts, pagination and filter iteration. Field policies, limits, errors and value normalization are supplied by each resource through the `search` public façade.
 
 ### `search/search.go`
 
 Is the public façade and orchestration entry point. `Apply` composes validation and query-building behavior and is the only package path repositories need.
 
 The shared search capability must never know Foundation tables, Person fields, or service-specific business policy.
+
+### Reusable public validation API
+
+```go
+// Resource-owned field policy:
+fields := map[string]coresearch.FieldSpec{
+    "displayName": {
+        Operators: coresearch.TextOperators(),
+        Normalizer: normalizeDisplayName,
+    },
+}
+
+// Core handles generic normalization and validation, returning a resource error.
+terms, err := coresearch.NormalizeSearchTerms(text, maxTextLength, maxTerms, invalidSearch())
+rows, err := coresearch.ResolveRows(page.Rows, invalidSearch())
+sort, err := coresearch.NormalizeSort(inputSort, defaultSort, allowedSortFields, invalidSearch())
+filters, err := coresearch.NormalizeFilters(inputFilters, fields, maxFilters, maxValues, invalidSearch())
+cursor, payload, err := coresearch.NormalizeCursor(rawCursor, sort, allowedSortFields[sort.Field], coresearch.ValidateUUIDv7Cursor, invalidCursor())
+```
+
+Shared methods include `OperatorSet`, `EqualityOperators`, `TextOperators`,
+`TimeOperators`, `IsPartialOperator`, `ValidValueCount`,
+`ValidateUUIDv7Cursor`, `ValidateTimeCursor` and
+`ValidateNonEmptyCursor`. The three cursor validators accept
+`(value string, invalid error)`, so callers keep their own error code.
+`NormalizeCursor` receives the sort-value and cursor-ID validators
+separately; it does **not** hardcode Person or UUIDv7.
+
+**Foundation-specific code retained:** public field allowlists, Person status
+values, name/email/phone/GID normalization, cursor-ID selection, default sort,
+search limits, and Person error mapping. Reusable rules are never duplicated
+inside the Person helper package.
 
 ---
 
@@ -295,14 +331,18 @@ encoding/decoding
 keyset predicate construction
 ```
 
-The resource validator owns validation of:
+The resource validator **configures**:
 
 ```text
-requested sort field
-requested direction
-sort value type
-resource-specific cursor ID type
+allowed sort fields and default direction
+sort value type (core-provided or custom validator)
+cursor ID type and its validator
+resource-specific invalid-search and invalid-cursor errors
 ```
+
+Core search executes generic sort/direction checks, base64 cursor decoding,
+field/direction consistency, cursor value checks and ID checks from those
+supplied rules.
 
 The repository owns the actual stable cursor expression.
 

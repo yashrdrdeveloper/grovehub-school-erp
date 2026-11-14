@@ -502,3 +502,14 @@ repositories, GORM databases, or messaging dependencies to this interface.
 Each service's `bootstrap/bootstrap.go` defines its own typed `Bootstrap`
 and `Runtime`; `bootstrap/impl` owns dependency wiring and worker lifecycle.
 Only create event/client/bootstrap implementation files with real responsibilities.
+
+## Generic search validation reused by domain services
+
+The public `libs/core/search` façade exposes domain-neutral
+`FieldSpec`, `CursorValueValidator`, operator allowlist builders, value-count
+rules, search-term limits, pagination defaults, single-sort handling,
+filter normalization and cursor parsing. All accept resource policy/limits or
+an injected error; no Person fields, error codes or Foundation dependencies live
+inside `core/search`. Domain validators supply the allowlists and value
+normalizers while core owns iteration and primitive validation. See
+`SEARCH_API_GUIDELINES.md` for usage.
