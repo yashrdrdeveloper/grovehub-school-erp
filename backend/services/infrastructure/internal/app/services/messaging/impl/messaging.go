@@ -13,13 +13,13 @@ import (
 
 type messagingService struct {
 	provider string
-	registry *strategy.Registry[messagingstrategy.Strategy]
+	registry *strategies.Registry[strategies.Strategy]
 }
 
 func NewMessagingService(
 	provider string,
 	registry *strategy.Registry[messagingstrategy.Strategy],
-) infrastructureservices.MessagingService {
+) infrastructureservices.Service {
 	return &messagingService{provider: provider, registry: registry}
 }
 
