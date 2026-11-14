@@ -49,9 +49,10 @@ func generateAll(backend string) error {
 	for _, entry := range services {
 		if !entry.IsDir() { continue }
 		owner := filepath.Join(backend, "services", entry.Name())
-		root := filepath.Join(owner, "dto")
-		if _, err := os.Stat(root); os.IsNotExist(err) { continue } else if err != nil { return err }
-		err = filepath.WalkDir(root, func(dir string, item os.DirEntry, walkErr error) error {
+		roots := []string{filepath.Join(owner, "dto"),filepath.Join(owner, "client")}
+        for _,root := range roots {
+            if _, err := os.Stat(root); os.IsNotExist(err) { continue } else if err != nil { return err }
+            err = filepath.WalkDir(root, func(dir string, item os.DirEntry, walkErr error) error {
 			if walkErr != nil { return walkErr }
 			if !item.IsDir() { return nil }
 			if item.Name() == ".generated" || item.Name() == "vendor" { return filepath.SkipDir }
@@ -67,6 +68,7 @@ func generateAll(backend string) error {
 			return write(output, pkg, specs)
 		})
 		if err != nil { return err }
+        }
 	}
 	return nil
 }

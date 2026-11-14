@@ -38,12 +38,15 @@ func generateAll(backend string)error{
         if !service.IsDir(){continue}
         owner:=filepath.Join(backend,"services",service.Name())
         root:=filepath.Join(owner,"events")
+        if info,err:=os.Stat(filepath.Join(owner,"internal","app","events"));err==nil&&info.IsDir(){
+            root=filepath.Join(owner,"internal","app","events")
+        }
         if _,err:=os.Stat(root);os.IsNotExist(err){continue}else if err!=nil{return err}
         if err:=filepath.WalkDir(root,func(dir string,item fs.DirEntry,walkErr error)error{
             if walkErr!=nil{return walkErr}
             if !item.IsDir(){return nil}
-            rel,err:=filepath.Rel(root,dir);if err!=nil{return err}
-            out:=filepath.Join(owner,".generated","events",rel,"zz_events.gen.go")
+            rel,err:=filepath.Rel(owner,dir);if err!=nil{return err}
+            out:=filepath.Join(owner,".generated",rel,"zz_events.gen.go")
             defs,pkg,err:=discover(dir);if err!=nil{return fmt.Errorf("%s: %w",dir,err)}
             if len(defs)==0 {
                 if err:=os.Remove(out);err!=nil&&!os.IsNotExist(err){return err}

@@ -40,6 +40,9 @@ func generateAll(backend string) error {
 		if !entry.IsDir(){continue}
 		owner:=filepath.Join(backend,"services",entry.Name())
 		dir:=filepath.Join(owner,"mappers")
+        if stat,err:=os.Stat(filepath.Join(owner,"internal","app","mappers"));err==nil&&stat.IsDir(){
+            dir=filepath.Join(owner,"internal","app","mappers")
+        }
 		if stat,err:=os.Stat(dir);err!=nil||!stat.IsDir(){continue}
 		// Generate once per resource package, retaining legacy flat mappers.
 		entries,err:=os.ReadDir(dir)
@@ -55,7 +58,9 @@ func generateAll(backend string) error {
 			if err!=nil{return fmt.Errorf("%s mapper %s: %w",entry.Name(),resourceDir,err)}
 			rel,err:=filepath.Rel(dir,resourceDir)
 			if err!=nil{return err}
-			outDir:=filepath.Join(owner,".generated","mappers")
+			rootRel,err:=filepath.Rel(owner,dir)
+            if err!=nil{return err}
+            outDir:=filepath.Join(owner,".generated",rootRel)
 			if rel!="." {outDir=filepath.Join(outDir,rel)}
 			out:=filepath.Join(outDir,"impl","zz_mappers.gen.go")
 			if !found||len(group.methods)==0 {
