@@ -8,6 +8,7 @@ import (
     update "grovehub/services/foundation/internal/app/services/person/operations/update/strategies"
     search "grovehub/services/foundation/internal/app/services/person/operations/search/strategies"
     deactivate "grovehub/services/foundation/internal/app/services/person/operations/deactivate/strategies"
+    protected "grovehub/services/foundation/internal/app/controller/person/protected"
     "grovehub/libs/core/database/transaction"
     "grovehub/libs/core/events/outbox"
     eventperson "grovehub/services/foundation/internal/app/events/producers/person"
@@ -60,3 +61,6 @@ type GetByGIDStrategy interface { getbygid.GetByGIDStrategy }
 
 // @Mock
 type DeactivateStrategy interface { deactivate.DeactivateStrategy }
+
+// @Mock
+type PersonController interface { protected.PersonController }
