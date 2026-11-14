@@ -100,3 +100,19 @@ annotation syntax, mock policy, mirror conventions, and strict coverage gate.
 Unit tests live under `internal/tests/unit-test/`, production source under
 `internal/app/`, and domain-only fixtures and mocks under `internal/tests/`.
 Shared core testing utilities are under `backend/libs/core/tests/`.
+
+## Infrastructure-owned durable events
+
+Foundation only constructs Person events and calls the public
+`services/infrastructure/client/messaging.EventStore` from the same GORM
+transaction as the Person mutation. The durable table, SQL repository,
+dispatcher, NATS adapter, retries and 24-hour retention worker belong to
+`services/infrastructure/internal/app/`. Foundation does not independently
+start an outbox worker.
+
+The existing Foundation `000002_create_event_outbox.sql` migration is retained
+**only as historical Goose migration compatibility**. Infrastructure's
+`000001_create_messaging.sql` atomically copies any old queued records to
+`infrastructure.messaging` before dropping the legacy table. Never remove an
+applied migration from Goose history; deploy by running all migrations in
+service order (Foundation then Infrastructure) with messaging workers stopped.

@@ -812,3 +812,12 @@ Development migrations run through the existing Goose script at
 run `./groovehub-platform migrate foundation` with `DATABASE_URL` before
 starting the platform; both paths use `foundation_schema_state` to track
 applied migrations. Do not modify or renumber applied Goose migrations.
+
+## Infrastructure Messaging ownership
+
+Infrastructure uses the same public `client/messaging` and private
+`internal/app/<resource>` layout as Foundation. Durable event delivery is now
+owned by `infrastructure/internal/app/repository/messaging` and
+`services/messaging/dispatcher.go`. Foundation publishes through a public
+`EventStore` interface in the same transaction. See
+`INFRASTRUCTURE_INTERNAL_LAYOUT.md` for the complete tree and migration plan.

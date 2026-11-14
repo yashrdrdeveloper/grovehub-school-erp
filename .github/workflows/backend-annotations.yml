@@ -53,6 +53,8 @@ jobs:
         shell: bash
         run: |
           test -s backend/.generated/overlay.json
+          test -s backend/services/infrastructure/.generated/internal/app/entity/zz_tables.gen.go
+          test -s backend/services/infrastructure/.generated/internal/app/client/messaging/impl/zz_clients.gen.go
           test -s backend/services/foundation/.generated/internal/app/routes/zz_routes.gen.go
           test -s backend/services/foundation/.generated/internal/app/entity/zz_tables.gen.go
           test -s backend/services/foundation/.generated/internal/app/client/person/impl/zz_clients.gen.go
