@@ -5,7 +5,7 @@ import (
     "testing"
     "time"
 
-    "grovehub/services/foundation/entity"
+    "grovehub/services/foundation/internal/app/entity"
 )
 
 func TestPersonCursorValue(t *testing.T) {

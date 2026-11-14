@@ -4,7 +4,7 @@ import (
     "strings"
     "time"
 
-    "grovehub/services/foundation/entity"
+    "grovehub/services/foundation/internal/app/entity"
 )
 
 type cursorValueExtractor func(entity.Person) string

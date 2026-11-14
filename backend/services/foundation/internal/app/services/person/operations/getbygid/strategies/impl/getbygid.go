@@ -3,12 +3,12 @@ package impl
 import (
     "context"
 
-    persondto "grovehub/services/foundation/dto/person"
-    foundationmappers "grovehub/services/foundation/mappers/person"
-    personrepository "grovehub/services/foundation/repository/person"
-    contactrepository "grovehub/services/foundation/repository/contact"
-    personhelpers "grovehub/services/foundation/services/person/helpers"
-    readstrategies "grovehub/services/foundation/services/person/operations/getbygid/strategies"
+    persondto "grovehub/services/foundation/client/person/dto"
+    foundationmappers "grovehub/services/foundation/internal/app/mappers/person"
+    personrepository "grovehub/services/foundation/internal/app/repository/person"
+    contactrepository "grovehub/services/foundation/internal/app/repository/contact"
+    personhelpers "grovehub/services/foundation/internal/app/services/person/helpers"
+    readstrategies "grovehub/services/foundation/internal/app/services/person/operations/getbygid/strategies"
 )
 
 // @Strategy

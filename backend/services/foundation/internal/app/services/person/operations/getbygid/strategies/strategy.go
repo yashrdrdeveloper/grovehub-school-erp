@@ -3,7 +3,7 @@ package strategies
 import (
     "context"
 
-    persondto "grovehub/services/foundation/dto/person"
+    persondto "grovehub/services/foundation/client/person/dto"
 )
 
 // @Strategy

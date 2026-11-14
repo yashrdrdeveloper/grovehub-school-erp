@@ -3,7 +3,7 @@ package helpers
 
 import (
     coresearch "grovehub/libs/core/search"
-    "grovehub/services/foundation/entity"
+    "grovehub/services/foundation/internal/app/entity"
 )
 
 // BuildNextCursor encodes only the last item on a page with a successor.

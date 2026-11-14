@@ -2,8 +2,8 @@ package flows
 
 import (
     coresearch "grovehub/libs/core/search"
-    persondto "grovehub/services/foundation/dto/person"
-    "grovehub/services/foundation/entity"
+    persondto "grovehub/services/foundation/client/person/dto"
+    "grovehub/services/foundation/internal/app/entity"
 )
 
 type Search struct {

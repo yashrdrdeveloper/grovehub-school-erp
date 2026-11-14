@@ -6,9 +6,9 @@ import (
 
     coresearch "grovehub/libs/core/search"
     servicepipeline "grovehub/libs/core/pipeline/service"
-    persondto "grovehub/services/foundation/dto/person"
-    searchflow "grovehub/services/foundation/services/person/operations/search/flows"
-    searchstrategies "grovehub/services/foundation/services/person/operations/search/strategies"
+    persondto "grovehub/services/foundation/client/person/dto"
+    searchflow "grovehub/services/foundation/internal/app/services/person/operations/search/flows"
+    searchstrategies "grovehub/services/foundation/internal/app/services/person/operations/search/strategies"
 )
 
 type SearchOperation struct { strategy searchstrategies.SearchStrategy }
