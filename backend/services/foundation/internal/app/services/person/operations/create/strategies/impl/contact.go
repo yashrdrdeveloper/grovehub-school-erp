@@ -7,7 +7,7 @@ import (
     coreerrors "grovehub/libs/core/errors"
     servicepipeline "grovehub/libs/core/pipeline/service"
     personerror "grovehub/services/foundation/internal/app/constants/error"
-    persondto "grovehub/services/foundation/client/person/dto"
+    persondto "grovehub/services/foundation/internal/app/dto/person"
     "grovehub/services/foundation/internal/app/entity"
     personflow "grovehub/services/foundation/internal/app/services/person/operations/create/flows"
 )

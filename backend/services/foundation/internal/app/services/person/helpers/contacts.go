@@ -2,7 +2,7 @@
 package helpers
 
 import (
-    persondto "grovehub/services/foundation/client/person/dto"
+    persondto "grovehub/services/foundation/internal/app/dto/person"
     "grovehub/services/foundation/internal/app/entity"
 )
 

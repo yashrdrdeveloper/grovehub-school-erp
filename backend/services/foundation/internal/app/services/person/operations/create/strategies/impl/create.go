@@ -10,7 +10,7 @@ import (
     createstrategies "grovehub/services/foundation/internal/app/services/person/operations/create/strategies"
     servicepipeline "grovehub/libs/core/pipeline/service"
     personerror "grovehub/services/foundation/internal/app/constants/error"
-    persondto "grovehub/services/foundation/client/person/dto"
+    persondto "grovehub/services/foundation/internal/app/dto/person"
     "grovehub/services/foundation/internal/app/entity"
     foundationmappers "grovehub/services/foundation/internal/app/mappers/person"
     personrepository "grovehub/services/foundation/internal/app/repository/person"
