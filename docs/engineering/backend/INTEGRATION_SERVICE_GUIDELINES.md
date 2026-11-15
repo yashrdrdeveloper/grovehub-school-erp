@@ -49,7 +49,7 @@ services/integration/
     │   │   └── watch/{watch.go,impl/watch.go}
     │   ├── services/
     │   │   ├── connection/{connection.go,impl/,helpers/,operations/}
-    │   │   └── provider/{provider.go,impl/}
+    │   │   └── provider/{provider.go,impl/,operations/}
     │   └── routes/http.go
     ├── resources/
     │   ├── resources.go                  # embeds SQL and OpenAPI YAML
@@ -145,3 +145,14 @@ Test and Watch operations. Credential encryption uses the same AES-GCM
 behavior, key validation and nonce generation as before the refactor.
 The public controller error behavior remains compatible through canonical
 errors in `services/connection/helpers/errors.go`.
+
+## Provider discovery operations
+
+Provider discovery mirrors the same composition pattern without introducing
+vendor-specific behavior into the public service. The
+`services/provider/impl/ProviderService` embeds
+`list.ListOperation` and `get.GetOperation`, backed by separate typed
+`strategies/impl` implementations. List resolves registered provider
+descriptors. Get resolves a provider descriptor, configured action catalog,
+and OAuth readiness. The existing `Providers` and `Provider` signatures and
+public Integration client methods remain unchanged.
