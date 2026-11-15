@@ -6,7 +6,6 @@ import (
     "testing"
 
     inframessaging "grovehub/libs/infrastructure/messaging"
-    inframessaging "grovehub/libs/infrastructure/messaging"
     dto "grovehub/services/infrastructure/internal/app/dto/messaging"
 )
 
