@@ -4,7 +4,6 @@ package impl
 import (
     providercontracts "grovehub/services/integration/internal/app/providers/contracts"
     mailcontracts "grovehub/services/integration/internal/app/providers/mailprovider/contracts"
-    oauth "grovehub/services/integration/internal/app/providers/mailprovider/operations/oauth"
     eventproducer "grovehub/services/integration/internal/app/events/producers/connection"
     "grovehub/services/integration/internal/app/externalService/mail/gmail"
     "grovehub/services/integration/internal/app/externalService/mail/outlook"
