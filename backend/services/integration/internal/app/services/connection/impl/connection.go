@@ -2,7 +2,7 @@
 package impl
 
 import (
-    infrastructureclient "grovehub/services/infrastructure/client/messaging"
+    eventproducer "grovehub/services/integration/internal/app/events/producers/connection"
     "grovehub/services/integration/internal/app/providers"
     "grovehub/services/integration/internal/app/externalService/mail/gmail"
     "grovehub/services/integration/internal/app/externalService/mail/outlook"
@@ -54,7 +54,7 @@ type ConnectionService struct {
 
 var _ connectionservices.ConnectionService = (*ConnectionService)(nil)
 
-func NewConnectionService(repository connectionrepo.ConnectionRepository, watchRepository watchrepo.WatchRepository, registry providers.Registry, actions providers.ActionRegistry, oauthRegistry providers.OAuthRegistry, gmailClient *gmail.Client, outlookClient *outlook.Client, encryptionKey []byte, pushTopic string, messaging infrastructureclient.MessagingClient, validator connectionvalidator.ConnectionValidator, mapper connectionmapper.ConnectionMapper) (connectionservices.ConnectionService,error) {
+func NewConnectionService(repository connectionrepo.ConnectionRepository, watchRepository watchrepo.WatchRepository, registry providers.Registry, actions providers.ActionRegistry, oauthRegistry providers.OAuthRegistry, gmailClient *gmail.Client, outlookClient *outlook.Client, encryptionKey []byte, pushTopic string, producer eventproducer.ChangedProducer, validator connectionvalidator.ConnectionValidator, mapper connectionmapper.ConnectionMapper) (connectionservices.ConnectionService,error) {
     cipher,err:=helpers.NewTokenCipher(encryptionKey)
     if err!=nil && (gmailClient!=nil || outlookClient!=nil) {return nil,err}
 
@@ -67,6 +67,6 @@ func NewConnectionService(repository connectionrepo.ConnectionRepository, watchR
         OAuthOperation:oauthOperation,
         ActionOperation:action.New(actionimpl.New(repository,actions,oauthOperation)),
         TestOperation:test.New(testimpl.New(repository,actions,oauthOperation,mapper)),
-        WatchOperation:watch.New(watchimpl.New(repository,watchRepository,gmailClient,pushTopic,messaging,oauthOperation)),
+        WatchOperation:watch.New(watchimpl.New(repository,watchRepository,gmailClient,pushTopic,producer,oauthOperation)),
     },nil
 }

@@ -15,6 +15,9 @@ import (
 	providerimpl "grovehub/services/integration/internal/app/providers/impl"
 	"grovehub/services/integration/internal/app/externalService/mail/gmail"
 	integrationimpl "grovehub/services/integration/internal/app/services/connection/impl"
+    changed "grovehub/services/integration/internal/app/events/producers/connection/operations/mailbox"
+    changedimpl "grovehub/services/integration/internal/app/events/producers/connection/operations/mailbox/strategies/impl"
+    producerimpl "grovehub/services/integration/internal/app/events/producers/connection/impl"
     validatorimpl "grovehub/services/integration/internal/app/validators/connection/impl"
     mapperimpl "grovehub/services/integration/internal/app/mappers/connection/impl"
 )
@@ -87,9 +90,10 @@ var _ = Describe("Provider push event ownership", func() {
 		registry, err := providerimpl.NewRegistry(gmail.New())
 		Expect(err).NotTo(HaveOccurred())
 		messaging := &messagingFake{}
+        producer:=producerimpl.New(changed.NewChangedPipeline(changedimpl.New(),messaging))
 		service, err := integrationimpl.NewConnectionService(
 			&connectionRepositoryFake{}, &watchRepositoryFake{},
-			registry, providerimpl.NewActionRegistry(), providerimpl.NewOAuthRegistry(), gmail.NewClient(integrationconfig.Gmail{}), nil, []byte("01234567890123456789012345678901"), "projects/test/topics/gmail", messaging,validatorimpl.NewConnectionValidator(),mapperimpl.NewConnectionMapper(),
+			registry, providerimpl.NewActionRegistry(), providerimpl.NewOAuthRegistry(), gmail.NewClient(integrationconfig.Gmail{}), nil, []byte("01234567890123456789012345678901"), "projects/test/topics/gmail", producer,validatorimpl.NewConnectionValidator(),mapperimpl.NewConnectionMapper(),
 		)
 		Expect(err).NotTo(HaveOccurred())
 		err = service.ProcessPush(context.Background(), gmail.PushNotification{

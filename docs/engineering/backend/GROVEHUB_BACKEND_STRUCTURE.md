@@ -845,3 +845,12 @@ shared HTTP error helpers; existing `/integrations` routes remain unchanged.
 The renewal worker accepts module cancellation for clean shutdown. The
 Integration client retains typed `@Proxy` delegation because HTTP controller
 principal authorization must not be silently bypassed by an in-process route.
+
+
+Integration's ChangedProducer is composed from a dedicated Mailbox
+ChangedPipeline and Strategy in `bootstrap/impl/events.go`, matching the
+Foundation event-producer layering. External provider webhook hints still
+publish directly so an unavailable broker triggers upstream retry, rather
+than acknowledging delivery before a delayed database outbox dispatch.
+The six-hour Gmail renewal worker lives separately in
+`bootstrap/impl/workers.go`.

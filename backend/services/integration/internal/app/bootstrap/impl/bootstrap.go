@@ -48,11 +48,12 @@ func (b *builder) Build() (bootstrap.Runtime,error) {
     if b.devAuth.Enabled {b.logger.Warn("Integration development authentication bypass enabled for loopback clients only; never enable in production")}
     providers,err:=b.newProviders()
     if err!=nil{return nil,err}
-    connections,providerService,err:=b.newServices(providers)
+    eventProducer:=b.newEvents()
+    connections,providerService,err:=b.newServices(providers,eventProducer)
     if err!=nil{return nil,err}
     controller:=b.newRoutes(connections,providerService,providers.push)
     client:=b.newClient(connections,providerService)
-    stop,done:=b.newEvents(connections,providers.push.Enabled()&&providers.gmail!=nil)
+    stop,done:=b.newWatchRenewal(connections,providers.push.Enabled()&&providers.gmail!=nil)
     return &runtime{logger:b.logger,controller:controller,client:client,localOnly:b.devAuth.Enabled,stop:stop,done:done},nil
 }
 

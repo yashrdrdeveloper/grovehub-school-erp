@@ -9,11 +9,10 @@ import (
     connectiondto "grovehub/services/integration/internal/app/dto/connection"
     "grovehub/services/integration/internal/app/entity"
     mailboxevents "grovehub/services/integration/internal/app/events/producers/connection/operations/mailbox"
-    mailboximpl "grovehub/services/integration/internal/app/events/producers/connection/operations/mailbox/impl"
+    changedproducer "grovehub/services/integration/internal/app/events/producers/connection"
     "grovehub/services/integration/internal/app/externalService/mail/gmail"
     connectionrepo "grovehub/services/integration/internal/app/repository/connection"
     watchrepo "grovehub/services/integration/internal/app/repository/watch"
-    messaging "grovehub/services/infrastructure/client/messaging"
     connectionhelpers "grovehub/services/integration/internal/app/services/connection/helpers"
     oauth "grovehub/services/integration/internal/app/services/connection/operations/oauth"
     watchstrategies "grovehub/services/integration/internal/app/services/connection/operations/watch/strategies"
@@ -24,12 +23,12 @@ type watchStrategy struct {
     watchRepository watchrepo.WatchRepository
     gmail *gmail.Client
     pushTopic string
-    messaging messaging.MessagingClient
+    events changedproducer.ChangedProducer
     tokens oauth.TokenProvider
 }
 var _ watchstrategies.Strategy = (*watchStrategy)(nil)
-func New(repository connectionrepo.ConnectionRepository, watches watchrepo.WatchRepository, gmailClient *gmail.Client, topic string, events messaging.MessagingClient, tokens oauth.TokenProvider) watchstrategies.Strategy {
-    return &watchStrategy{repository:repository,watchRepository:watches,gmail:gmailClient,pushTopic:topic,messaging:events,tokens:tokens}
+func New(repository connectionrepo.ConnectionRepository, watches watchrepo.WatchRepository, gmailClient *gmail.Client, topic string, events changedproducer.ChangedProducer, tokens oauth.TokenProvider) watchstrategies.Strategy {
+    return &watchStrategy{repository:repository,watchRepository:watches,gmail:gmailClient,pushTopic:topic,events:events,tokens:tokens}
 }
 func (s *watchStrategy) Watch(ctx context.Context, tenantID, id string) (connectiondto.Watch, error) {
 	if s.gmail == nil || s.pushTopic == "" {
@@ -66,7 +65,7 @@ func (s *watchStrategy) ProcessPush(ctx context.Context, notification gmail.Push
 	// No message ingestion or cursor updates occur here. Communication will
 	// consume the event and call Integration provider capabilities.
 	for _, connection := range matches {
-		if s.messaging == nil {
+		if s.events == nil {
 			return errors.New("integration messaging is unavailable")
 		}
 		notificationData := mailboxevents.Payload{
@@ -77,7 +76,7 @@ func (s *watchStrategy) ProcessPush(ctx context.Context, notification gmail.Push
 			Mailbox:      notification.EmailAddress,
 			HistoryHint:  notification.HistoryID,
 		}
-		if err := mailboximpl.PublishChanged(ctx, s.messaging, notificationData); err != nil {
+		if err := s.events.PublishChanged(ctx, notificationData); err != nil {
 			return err
 		}
 	}

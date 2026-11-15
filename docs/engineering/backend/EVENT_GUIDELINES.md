@@ -303,3 +303,21 @@ Do not publish the same business event twice: Foundation's existing transactiona
 `EventStore.Enqueue` already writes to `infrastructure.messaging`. Application
 modules that choose `PublishWithOptions{Persist:true}` should do so once, inside
 the business transaction. Direct publishing does not write an outbox record.
+
+
+## Integration mailbox producer structure
+
+Integration follows Foundation's producer/operation pattern for outbound
+mailbox-change events. The `ChangedProducer` contract is in
+`integration/internal/app/events/producers/connection/connection.go`, its
+implementation is under `impl/`, and operation-specific flow, helper,
+strategy and pipeline are under `operations/mailbox/`.
+
+`bootstrap/impl/events.go` wires the typed producer into Connection Watch.
+The Watch service no longer calls `MessagingClient.Publish` directly.
+
+**This provider notification remains a direct publish** rather than a database
+outbox event. Gmail's push endpoint must return an error when the broker
+publish fails so Pub/Sub can retry. The event type
+`integration.mailbox.changed.v1`, topic `integration_mailbox_changed`,
+envelope fields and payload stay backward compatible.

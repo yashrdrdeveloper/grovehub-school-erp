@@ -29,3 +29,8 @@ type OAuthStart struct {
 type OAuthCompletion struct {
 	Status string `json:"status"`
 }
+
+type Watch struct {
+    ConnectionID string    `json:"connectionId"`
+    ExpiresAt    time.Time `json:"expiresAt"`
+}

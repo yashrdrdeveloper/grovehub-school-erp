@@ -1,6 +1,7 @@
 package impl
 
 import (
+    eventproducer "grovehub/services/integration/internal/app/events/producers/connection"
     validatorimpl "grovehub/services/integration/internal/app/validators/connection/impl"
     mapperimpl "grovehub/services/integration/internal/app/mappers/connection/impl"
     connectionservice "grovehub/services/integration/internal/app/services/connection"
@@ -9,13 +10,13 @@ import (
     providerimpl "grovehub/services/integration/internal/app/services/provider/impl"
 )
 
-func (b *builder) newServices(providers providerDependencies) (connectionservice.ConnectionService, providerservice.ProviderService, error) {
+func (b *builder) newServices(providers providerDependencies, producer eventproducer.ChangedProducer) (connectionservice.ConnectionService, providerservice.ProviderService, error) {
     connections,watches:=b.newRepository()
     service,err:=connectionimpl.NewConnectionService(
         connections,watches,
         providers.registry,providers.actions,providers.oauth,
         providers.gmail,providers.outlook,providers.key,
-        providers.push.Topic,b.messaging,validatorimpl.NewConnectionValidator(),mapperimpl.NewConnectionMapper(),
+        providers.push.Topic,producer,validatorimpl.NewConnectionValidator(),mapperimpl.NewConnectionMapper(),
     )
     if err!=nil{return nil,nil,err}
     providerService:=providerimpl.NewProviderService(providers.registry,providers.actions,providers.oauth)

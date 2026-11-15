@@ -22,7 +22,8 @@ services/integration/
     │   │       ├── services.go           # Connection + Provider services
     │   │       ├── routes.go             # Controller assembly
     │   │       ├── client.go             # generated client adapter
-    │   │       └── events.go             # Gmail watch renewal lifecycle
+    │   │       ├── events.go             # Connection ChangedProducer assembly
+    │   │       └── workers.go            # cancelable Gmail watch renewal lifecycle
     │   ├── client/connection/impl/client.go
     │   ├── config/impl/config.go         # typed environment configuration loader
     │   ├── constants/{actions,connections,error,providers}/
@@ -122,12 +123,12 @@ Gmail/Outlook OAuth values and Infrastructure NATS variables.
 
 ConnectionService is composed exactly like Foundation's PersonService:
 the public interface lives at `internal/app/services/connection/connection.go`,
-and `services/connection/impl/connections.go` embeds eight real operations:
+and `services/connection/impl/connection.go` embeds eight real operations:
 
 ```text
 services/connection/
 ├── connection.go                           # ConnectionService interface
-├── impl/connections.go                    # @Service composition only
+├── impl/connection.go                     # @Service composition only
 ├── helpers/{errors,credential,...}.go     # shared pure/error and crypto helpers
 └── operations/
     ├── create/{create.go,strategies/{strategy.go,impl/create.go}}
@@ -216,3 +217,45 @@ and joins its goroutine rather than waiting for an unrelated timeout.
 - No new direct dependencies on vendor implementations from unrelated services.
 - Infrastructure owns messaging transport; Integration emits only mailbox-change hints.
 - Existing authenticated Connection routes retain ownership checks; provider discovery remains public.
+
+## Domain event producer (Foundation pattern)
+
+Integration now owns a typed event producer for mailbox-change hints:
+
+```text
+events/producers/connection/
+├── connection.go                             # ChangedProducer interface
+├── impl/connection.go                        # event producer implementation
+└── operations/mailbox/
+    ├── changed.go                             # @Event schema, unchanged topic
+    ├── flows/changed.go                       # typed provider notification payload
+    ├── helpers/changed.go                     # envelope / metadata builder
+    ├── pipeline.go                            # Build then direct Publish
+    └── strategies/
+        ├── strategy.go                        # typed @Strategy
+        └── impl/changed.go                    # serialization strategy
+```
+
+`bootstrap/impl/events.go` builds the producer and injects it into the
+ConnectionService's Watch operation. The Watch strategy no longer serializes or
+publishes domain events itself; it only selects authorized matching
+connections and sends typed notification data to the producer.
+
+**Webhook semantics remain unchanged**: mailbox-change notifications publish
+directly to the configured message broker. A failure returns an error so Google
+Pub/Sub can retry the delivery. A transactional PostgreSQL outbox is not
+appropriate for acknowledging this external provider notification before
+NATS delivery. The original event type, subject and schema are preserved.
+
+The six-hour watch renewal worker now lives in
+`bootstrap/impl/workers.go`, separate from event-producer composition. Its
+context is canceled when the module closes.
+
+## Resource naming
+
+Resource implementation files use singular names:
+`controller/connection/impl/connection.go`,
+`services/connection/impl/connection.go`,
+`services/provider/impl/provider.go`.
+The Connection `Watch` response is grouped with its other response DTOs in
+`dto/connection/response.go` rather than an unrelated extra file.
