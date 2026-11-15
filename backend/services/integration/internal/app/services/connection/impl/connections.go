@@ -4,8 +4,8 @@ package impl
 import (
     infrastructureclient "grovehub/services/infrastructure/client/messaging"
     "grovehub/services/integration/internal/app/providers"
-    "grovehub/services/integration/internal/app/providers/mailprovider/providers/gmail"
-    "grovehub/services/integration/internal/app/providers/mailprovider/providers/outlook"
+    "grovehub/services/integration/internal/app/externalService/mail/gmail"
+    "grovehub/services/integration/internal/app/externalService/mail/outlook"
     connectionrepo "grovehub/services/integration/internal/app/repository/connection"
     watchrepo "grovehub/services/integration/internal/app/repository/watch"
     connectionservices "grovehub/services/integration/internal/app/services/connection"

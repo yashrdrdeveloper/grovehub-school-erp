@@ -3,7 +3,7 @@ package watch
 import (
     "context"
     connectiondto "grovehub/services/integration/internal/app/dto/connection"
-    "grovehub/services/integration/internal/app/providers/mailprovider/providers/gmail"
+    "grovehub/services/integration/internal/app/externalService/mail/gmail"
     "grovehub/services/integration/internal/app/services/connection/operations/watch/strategies"
 )
 

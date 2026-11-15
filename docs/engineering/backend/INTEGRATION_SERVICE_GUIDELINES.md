@@ -17,7 +17,7 @@ services/integration/
     │   │   ├── bootstrap.go              # Bootstrap + Runtime contracts
     │   │   └── impl/
     │   │       ├── bootstrap.go          # builder.Build + module Close
-    │   │       ├── providers.go          # Gmail/Outlook adapter composition
+    │   │       ├── external_services.go # Gmail/Outlook adapter composition
     │   │       ├── repository.go         # Connection + Watch repositories
     │   │       ├── services.go           # Connection + Provider services
     │   │       ├── routes.go             # Controller assembly
@@ -178,3 +178,41 @@ to `mappers/connection` and its `impl` package, through
 The mapper is injected into Create, Get, List, Disconnect and Test operations
 from `bootstrap/impl/services.go`. Shared service helpers no longer own
 entity-to-DTO conversion logic. Unit tests cover mapping and UUIDv7 validation.
+
+## Provider boundary and controller composition
+
+Integration's provider-neutral registries, action/OAuth contracts and mail
+factory stay under `internal/app/providers`. **Vendor-specific network,
+protocol and OAuth implementations** are isolated under
+`internal/app/externalService/mail/gmail` and
+`internal/app/externalService/mail/outlook`. The bootstrap's
+`impl/external_services.go` registers those adapters into provider-neutral
+registries. Connection services and controllers never import vendor HTTP SDKs
+other than the narrow integration points that require Gmail watch and push.
+
+The HTTP layer is split into `controller/connection/impl` and
+`controller/provider/impl` with a typed composite in
+`controller/impl`. Shared structured HTTP error mapping lives under
+`controller/helpers`; authentication and ownership checks remain exclusive
+to Connection endpoints. Both `@Routes` interfaces remain at the controller
+root because the current route generator requires this placement to preserve
+existing URLs *without adding* `/public` or `/protected` path segments.
+
+Foundation's generated `@RequestLine` client goes through an HTTP route
+because Foundation has in-process controller request DTO semantics. Integration
+keeps its existing `@Proxy` service client for trusted internal callers: its
+method contracts require tenant and owner IDs, whereas the HTTP API derives
+identity from **verified principal context**. Switching to HTTP dispatch without
+an explicit internal authorization boundary could bypass that protection.
+
+The OAuth webhook watch-renewal worker now derives its timeouts from the
+module's cancelable context. Closing Integration cancels in-flight renewal work
+and joins its goroutine rather than waiting for an unrelated timeout.
+
+### Refactor invariants
+
+- No changes to public Integration HTTP paths, response envelopes, or OAuth callbacks.
+- No changes to Integration SQL migration versions or table names.
+- No new direct dependencies on vendor implementations from unrelated services.
+- Infrastructure owns messaging transport; Integration emits only mailbox-change hints.
+- Existing authenticated Connection routes retain ownership checks; provider discovery remains public.

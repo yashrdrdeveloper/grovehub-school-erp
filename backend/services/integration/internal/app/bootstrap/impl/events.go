@@ -7,24 +7,25 @@ import (
     connections "grovehub/services/integration/internal/app/services/connection"
 )
 
-// Renewal belongs to the module lifecycle, not the public module constructor.
-func (b *builder) newEvents(service connections.ConnectionService, enabled bool) (chan struct{},chan struct{}) {
-    stop:=make(chan struct{})
+// Renewal follows module lifecycle cancellation; in-flight work can be canceled
+// instead of delaying shutdown until its five-minute deadline.
+func (b *builder) newEvents(service connections.ConnectionService, enabled bool) (context.CancelFunc,chan struct{}) {
+    ctx,cancel:=context.WithCancel(context.Background())
     done:=make(chan struct{})
-    if !enabled {close(done);return stop,done}
+    if !enabled {close(done);return cancel,done}
     go func(){
         defer close(done)
         ticker:=time.NewTicker(6*time.Hour)
         defer ticker.Stop()
         for {
             select {
-            case <-stop:return
+            case <-ctx.Done():return
             case <-ticker.C:
-                ctx,cancel:=context.WithTimeout(context.Background(),5*time.Minute)
-                if err:=service.RenewExpiring(ctx);err!=nil {b.logger.Warn("integration watch renewal failed","error",err)}
-                cancel()
+                renewalCtx,stopRenewal:=context.WithTimeout(ctx,5*time.Minute)
+                if err:=service.RenewExpiring(renewalCtx);err!=nil&&ctx.Err()==nil {b.logger.Warn("integration watch renewal failed","error",err)}
+                stopRenewal()
             }
         }
     }()
-    return stop,done
+    return cancel,done
 }

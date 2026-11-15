@@ -13,7 +13,7 @@ import (
 	"grovehub/services/integration/internal/app/entity"
 	mailboxevents "grovehub/services/integration/internal/app/events/producers/connection/operations/mailbox"
 	providerimpl "grovehub/services/integration/internal/app/providers/impl"
-	"grovehub/services/integration/internal/app/providers/mailprovider/providers/gmail"
+	"grovehub/services/integration/internal/app/externalService/mail/gmail"
 	integrationimpl "grovehub/services/integration/internal/app/services/connection/impl"
     validatorimpl "grovehub/services/integration/internal/app/validators/connection/impl"
     mapperimpl "grovehub/services/integration/internal/app/mappers/connection/impl"

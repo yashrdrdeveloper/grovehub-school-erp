@@ -1,30 +1,26 @@
 package impl
 
 import (
-    providerservice "grovehub/services/integration/internal/app/services/provider"
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
  "net"
 	"strings"
 
 	coreerrors "grovehub/libs/core/errors"
 	httprequest "grovehub/libs/core/http/request"
+    controllerhelpers "grovehub/services/integration/internal/app/controller/helpers"
 	httpresponse "grovehub/libs/core/http/response"
 	integrationconfig "grovehub/services/integration/config"
 	integrationerrors "grovehub/services/integration/internal/app/constants/error"
 	connectiondto "grovehub/services/integration/internal/app/dto/connection"
 	"grovehub/services/integration/internal/app/providers"
-	"grovehub/services/integration/internal/app/providers/mailprovider/providers/gmail"
-	integrationrepository "grovehub/services/integration/internal/app/repository/connection"
+	"grovehub/services/integration/internal/app/externalService/mail/gmail"
 	integrationservices "grovehub/services/integration/internal/app/services/connection"
-	serviceimpl "grovehub/services/integration/internal/app/services/connection/impl"
 )
 
 type ConnectionController struct {
 	service         integrationservices.ConnectionService
-	providerService providerservice.ProviderService
 	verifier        *gmail.PushVerifier
 	pushEnabled     bool
  devAuth integrationconfig.DevAuth
@@ -33,8 +29,8 @@ type ConnectionController struct {
 type VerifiedPrincipal struct{ TenantID, ActorGID string }
 type principalContextKey struct{}
 
-func NewConnectionController(s integrationservices.ConnectionService,p providerservice.ProviderService,push integrationconfig.GmailPush,devOptions ...integrationconfig.DevAuth)*ConnectionController{
- c:=&ConnectionController{service:s,providerService:p,verifier:gmail.NewPushVerifier(push.Audience,push.ServiceAccount),pushEnabled:push.Enabled()}
+func NewConnectionController(s integrationservices.ConnectionService,push integrationconfig.GmailPush,devOptions ...integrationconfig.DevAuth)*ConnectionController{
+ c:=&ConnectionController{service:s,verifier:gmail.NewPushVerifier(push.Audience,push.ServiceAccount),pushEnabled:push.Enabled()}
  if len(devOptions)>0{c.devAuth=devOptions[0]}
  return c
 }
@@ -62,51 +58,11 @@ func(c *ConnectionController)principalFromRequest(r *http.Request)(VerifiedPrinc
 }
 
 func (c *ConnectionController) writeServiceError(w http.ResponseWriter, r *http.Request, err error) {
-	if status := providers.HTTPStatus(err); status != 0 {
-		switch status {
-		case http.StatusBadRequest:
-			writeError(w, r, status, integrationerrors.Invalid)
-		case http.StatusUnauthorized, http.StatusForbidden:
-			writeError(w, r, status, integrationerrors.Forbidden)
-		case http.StatusNotFound:
-			writeError(w, r, status, integrationerrors.NotFound)
-		case http.StatusConflict:
-			writeError(w, r, status, integrationerrors.NotReady)
-		default:
-			writeError(w, r, status, integrationerrors.Failed)
-		}
-		return
-	}
-	switch {
-	case errors.Is(err, serviceimpl.ErrInvalidConnection), errors.Is(err, integrationrepository.ErrConnectionNotFound):
-		if errors.Is(err, integrationrepository.ErrConnectionNotFound) {
-			writeError(w, r, http.StatusNotFound, integrationerrors.NotFound)
-		} else {
-			writeError(w, r, http.StatusBadRequest, integrationerrors.Invalid)
-		}
-	case errors.Is(err, providers.ErrInvalidActionInput):
-		writeError(w, r, http.StatusBadRequest, integrationerrors.Invalid)
-	case errors.Is(err, providers.ErrUnsupportedAction):
-		writeError(w, r, http.StatusNotImplemented, integrationerrors.NotReady)
-	case errors.Is(err, providers.ErrProviderUnavailable):
-		writeError(w, r, http.StatusServiceUnavailable, integrationerrors.NotReady)
-	case errors.Is(err, providers.ErrUnknownProvider):
-		writeError(w, r, http.StatusBadRequest, integrationerrors.Invalid)
-	case errors.Is(err, serviceimpl.ErrOAuthInvalid):
-		writeError(w, r, http.StatusBadRequest, integrationerrors.Invalid)
-	case errors.Is(err, serviceimpl.ErrPushUnavailable):
-		writeError(w, r, http.StatusServiceUnavailable, integrationerrors.NotReady)
-	case errors.Is(err, serviceimpl.ErrConnectionInactive):
-		writeError(w, r, http.StatusConflict, integrationerrors.NotReady)
-	case errors.Is(err, serviceimpl.ErrOAuthUnavailable), errors.Is(err, serviceimpl.ErrConnectionNotReady):
-		writeError(w, r, http.StatusNotImplemented, integrationerrors.NotReady)
-	default:
-		writeError(w, r, http.StatusInternalServerError, integrationerrors.Failed)
-	}
+    controllerhelpers.WriteServiceError(w,r,err)
 }
 
 func writeError(w http.ResponseWriter, r *http.Request, status int, definition coreerrors.Definition) {
-	_ = httpresponse.WriteErrorContext(r.Context(), w, status, definition)
+    controllerhelpers.WriteError(w,r,status,definition)
 }
 
 func (c *ConnectionController) owned(w http.ResponseWriter, r *http.Request) (VerifiedPrincipal, bool) {

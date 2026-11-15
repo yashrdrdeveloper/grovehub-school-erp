@@ -10,7 +10,7 @@ import (
     "grovehub/services/integration/internal/app/entity"
     mailboxevents "grovehub/services/integration/internal/app/events/producers/connection/operations/mailbox"
     mailboximpl "grovehub/services/integration/internal/app/events/producers/connection/operations/mailbox/impl"
-    "grovehub/services/integration/internal/app/providers/mailprovider/providers/gmail"
+    "grovehub/services/integration/internal/app/externalService/mail/gmail"
     connectionrepo "grovehub/services/integration/internal/app/repository/connection"
     watchrepo "grovehub/services/integration/internal/app/repository/watch"
     messaging "grovehub/services/infrastructure/client/messaging"

@@ -832,3 +832,16 @@ Only generic event envelopes and generic event processing remain in
 `@Client` generated proxy. Private bootstrap/provider assembly is in
 `services/infrastructure/internal/app/bootstrap/impl/service.go`.
 NATS URL, queue and durable identifiers are sourced from environment variables.
+
+## Integration module resource and provider separation
+
+Integration follows Foundation's `bootstrap/{bootstrap.go,impl/}`, resource DTO,
+repository, mapper, validator, operation/strategy and typed-client conventions.
+Concrete mail API implementations live below
+`integration/internal/app/externalService/mail/{gmail,outlook}` while the
+provider-neutral registries remain in `integration/internal/app/providers`.
+The Connection and Provider HTTP controllers are composed independently with
+shared HTTP error helpers; existing `/integrations` routes remain unchanged.
+The renewal worker accepts module cancellation for clean shutdown. The
+Integration client retains typed `@Proxy` delegation because HTTP controller
+principal authorization must not be silently bypassed by an in-process route.

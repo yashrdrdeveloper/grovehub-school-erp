@@ -13,10 +13,12 @@ import (
 
 	integrationconfig "grovehub/services/integration/config"
 	integrationcontroller "grovehub/services/integration/internal/app/controller/connection/impl"
+    combinedcontroller "grovehub/services/integration/internal/app/controller/impl"
+    providercontroller "grovehub/services/integration/internal/app/controller/provider/impl"
 	connectiondto "grovehub/services/integration/internal/app/dto/connection"
 	
 	"grovehub/services/integration/internal/app/providers"
-	"grovehub/services/integration/internal/app/providers/mailprovider/providers/gmail"
+	"grovehub/services/integration/internal/app/externalService/mail/gmail"
 	integrationroutes "grovehub/services/integration/internal/app/routes"
 )
 
@@ -63,15 +65,15 @@ func (*serviceStub) Disconnect(context.Context, string, string) (connectiondto.C
 
 var _ = Describe("Integration HTTP authorization", func() {
 	It("allows public provider discovery", func() {
-		c := integrationcontroller.NewConnectionController(&serviceStub{}, &serviceStub{}, integrationconfig.GmailPush{})
+		c := integrationcontroller.NewConnectionController(&serviceStub{}, integrationconfig.GmailPush{})
 		recorder := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodGet, "/integrations/providers", nil)
-		c.Providers(recorder, req)
+		providercontroller.NewProviderController(&serviceStub{}).Providers(recorder, req)
 		Expect(recorder.Code).To(Equal(http.StatusOK))
 		Expect(recorder.Body.String()).To(ContainSubstring("GMAIL"))
 	})
 	It("denies unauthorized OAuth starts and mail tests", func() {
-		c := integrationcontroller.NewConnectionController(&serviceStub{}, &serviceStub{}, integrationconfig.GmailPush{})
+		c := integrationcontroller.NewConnectionController(&serviceStub{}, integrationconfig.GmailPush{})
 		for _, testCase := range []struct {
 			route   string
 			handler http.HandlerFunc
@@ -89,15 +91,15 @@ var _ = Describe("Integration HTTP authorization", func() {
 		}
 	})
 	It("rejects unauthenticated Gmail push", func() {
-		c := integrationcontroller.NewConnectionController(&serviceStub{}, &serviceStub{}, integrationconfig.GmailPush{Topic: "projects/test/topics/mail", Audience: "https://example.test/push", ServiceAccount: "push@example.test"})
+		c := integrationcontroller.NewConnectionController(&serviceStub{}, integrationconfig.GmailPush{Topic: "projects/test/topics/mail", Audience: "https://example.test/push", ServiceAccount: "push@example.test"})
 		response := httptest.NewRecorder()
 		c.GmailPush(response, httptest.NewRequest(http.MethodPost, "/integrations/webhooks/gmail", strings.NewReader("{}")))
 		Expect(response.Code).To(Equal(http.StatusUnauthorized))
 	})
 	It("registers all connection URLs in the connections resource group", func() {
-		c := integrationcontroller.NewConnectionController(&serviceStub{}, &serviceStub{}, integrationconfig.GmailPush{})
+		c := integrationcontroller.NewConnectionController(&serviceStub{}, integrationconfig.GmailPush{})
 		mux := http.NewServeMux()
-		integrationroutes.RegisterHTTP(mux, c)
+		integrationroutes.RegisterHTTP(mux, combinedcontroller.New(c,providercontroller.NewProviderController(&serviceStub{})))
 
 		for _, route := range []struct {
 			method, path string
@@ -123,7 +125,7 @@ var _ = Describe("Integration HTTP authorization", func() {
    TenantID:"018f5d04-315c-75a9-b890-df0d02e787c1",
    ActorGID:"01a1b210-402c-7622-a33c-f82ceba26c7d",
   }
-  c:=integrationcontroller.NewConnectionController(&serviceStub{},&serviceStub{},integrationconfig.GmailPush{},dev)
+  c:=integrationcontroller.NewConnectionController(&serviceStub{},integrationconfig.GmailPush{},dev)
   requestBody:=`{"provider":"GMAIL","ownerGid":"01a1b210-402c-7622-a33c-f82ceba26c7d"}`
 
   local:=httptest.NewRequest(http.MethodPost,"/integrations/connections",strings.NewReader(requestBody))
@@ -146,7 +148,7 @@ var _ = Describe("Integration HTTP authorization", func() {
   Expect(response.Code).To(Equal(http.StatusForbidden))
  })
  It("denies connection creation without a verified principal", func() {
-		c := integrationcontroller.NewConnectionController(&serviceStub{}, &serviceStub{}, integrationconfig.GmailPush{})
+		c := integrationcontroller.NewConnectionController(&serviceStub{}, integrationconfig.GmailPush{})
 		recorder := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPost, "/integrations/connections", strings.NewReader(`{"provider":"GMAIL","ownerGid":"a"}`))
 		req.Header.Set("X-Tenant-ID", "spoofed")

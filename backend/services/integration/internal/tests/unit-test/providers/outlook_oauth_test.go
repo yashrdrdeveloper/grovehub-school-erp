@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	integrationconfig "grovehub/services/integration/config"
-	"grovehub/services/integration/internal/app/providers/mailprovider/providers/outlook"
+	"grovehub/services/integration/internal/app/externalService/mail/outlook"
 )
 
 var _ = Describe("Outlook OAuth", func() {

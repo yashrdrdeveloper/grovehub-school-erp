@@ -2,6 +2,7 @@
 package impl
 
 import (
+    "context"
     "errors"
     "log/slog"
     "net/http"
@@ -34,7 +35,7 @@ type runtime struct {
     controller controller.Controller
     client integrationclient.Client
     localOnly bool
-    stop chan struct{}
+    stop context.CancelFunc
     done chan struct{}
 }
 
@@ -58,5 +59,5 @@ func (b *builder) Build() (bootstrap.Runtime,error) {
 func (module *runtime) RegisterHTTP(mux *http.ServeMux) {routes.RegisterHTTP(mux,module.controller)}
 func (module *runtime) Client() integrationclient.Client {return module.client}
 func (module *runtime) LocalOnly() bool {return module.localOnly}
-func (module *runtime) Close() {close(module.stop);<-module.done}
+func (module *runtime) Close() {module.stop();<-module.done}
 

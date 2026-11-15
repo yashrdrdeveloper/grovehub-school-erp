@@ -11,8 +11,8 @@ import (
 	integrationconfig "grovehub/services/integration/config"
 	"grovehub/services/integration/internal/app/providers"
 	providerimpl "grovehub/services/integration/internal/app/providers/impl"
-	"grovehub/services/integration/internal/app/providers/mailprovider/providers/gmail"
-	"grovehub/services/integration/internal/app/providers/mailprovider/providers/outlook"
+	"grovehub/services/integration/internal/app/externalService/mail/gmail"
+	"grovehub/services/integration/internal/app/externalService/mail/outlook"
 )
 
 type actionFake struct{}

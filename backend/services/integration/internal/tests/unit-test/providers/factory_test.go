@@ -6,8 +6,8 @@ import (
 
 	"grovehub/services/integration/internal/app/providers"
 	mailfactory "grovehub/services/integration/internal/app/providers/mailprovider/impl"
-	"grovehub/services/integration/internal/app/providers/mailprovider/providers/gmail"
-	"grovehub/services/integration/internal/app/providers/mailprovider/providers/outlook"
+	"grovehub/services/integration/internal/app/externalService/mail/gmail"
+	"grovehub/services/integration/internal/app/externalService/mail/outlook"
 )
 
 var _ = Describe("Mail provider factory", func() {

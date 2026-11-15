@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	integrationconfig "grovehub/services/integration/config"
-	"grovehub/services/integration/internal/app/providers/mailprovider/providers/gmail"
+	"grovehub/services/integration/internal/app/externalService/mail/gmail"
 )
 
 var _ = Describe("Gmail OAuth authorization URL", func() {
