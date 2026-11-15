@@ -2,7 +2,7 @@ package controller_test
 
 import (
     providerdto "grovehub/services/integration/internal/app/providers/dto"
-    providerdto "grovehub/services/integration/internal/app/dto/provider"
+    providerresponse "grovehub/services/integration/internal/app/dto/provider"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -28,8 +28,8 @@ func (*serviceStub) Providers(context.Context) []providerdto.Descriptor {
 	return []providerdto.Descriptor{{ID: "GMAIL"}}
 }
 
-func (*serviceStub) Provider(context.Context, string) (providerdto.ProviderDetails, error) {
-	return providerdto.ProviderDetails{}, nil
+func (*serviceStub) Provider(context.Context, string) (providerresponse.ProviderDetails, error) {
+	return providerresponse.ProviderDetails{}, nil
 }
 
 func (*serviceStub) Create(context.Context, string, connectiondto.CreateConnection) (connectiondto.Connection, error) {
