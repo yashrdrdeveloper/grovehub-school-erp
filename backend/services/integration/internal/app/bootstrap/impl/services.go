@@ -2,6 +2,7 @@ package impl
 
 import (
     validatorimpl "grovehub/services/integration/internal/app/validators/connection/impl"
+    mapperimpl "grovehub/services/integration/internal/app/mappers/connection/impl"
     connectionservice "grovehub/services/integration/internal/app/services/connection"
     connectionimpl "grovehub/services/integration/internal/app/services/connection/impl"
     providerservice "grovehub/services/integration/internal/app/services/provider"
@@ -14,7 +15,7 @@ func (b *builder) newServices(providers providerDependencies) (connectionservice
         connections,watches,
         providers.registry,providers.actions,providers.oauth,
         providers.gmail,providers.outlook,providers.key,
-        providers.push.Topic,b.messaging,validatorimpl.NewConnectionValidator(),
+        providers.push.Topic,b.messaging,validatorimpl.NewConnectionValidator(),mapperimpl.NewConnectionMapper(),
     )
     if err!=nil{return nil,nil,err}
     providerService:=providerimpl.NewProviderService(providers.registry,providers.actions,providers.oauth)

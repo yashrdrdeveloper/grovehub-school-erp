@@ -48,6 +48,7 @@ services/integration/
     │   │   ├── connection/{connection.go,impl/connection.go}
     │   │   └── watch/{watch.go,impl/watch.go}
     │   ├── validators/connection/{connection.go,helpers/gid.go,impl/connection.go}
+    │   ├── mappers/connection/{connection.go,impl/connection.go}
     │   ├── services/
     │   │   ├── connection/{connection.go,impl/,helpers/,operations/}
     │   │   └── provider/{provider.go,impl/,operations/}
@@ -168,3 +169,12 @@ It does not perform SQL lookups; those remain in the repositories and services.
 
 Repositories are annotated `@Repository entity=Connection` and
 `@Repository entity=WebhookSubscription` and remain GORM-only.
+
+## Connection DTO mapping
+
+Connection and connection-test entity-to-response mapping belongs exclusively
+to `mappers/connection` and its `impl` package, through
+`ConnectionMapper`, matching Foundation's typed `@Mapper` pattern.
+The mapper is injected into Create, Get, List, Disconnect and Test operations
+from `bootstrap/impl/services.go`. Shared service helpers no longer own
+entity-to-DTO conversion logic. Unit tests cover mapping and UUIDv7 validation.

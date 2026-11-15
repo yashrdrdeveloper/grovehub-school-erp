@@ -1,6 +1,7 @@
 package impl
 
 import (
+    mapper "grovehub/services/integration/internal/app/mappers/connection"
     "context"
     "encoding/json"
     "errors"
@@ -20,13 +21,14 @@ import (
 )
 
 type testStrategy struct {
+    mapper mapper.ConnectionMapper
     repository connectionrepo.ConnectionRepository
     actions providers.ActionRegistry
     tokens oauth.TokenProvider
 }
 var _ teststrategies.Strategy = (*testStrategy)(nil)
-func New(repository connectionrepo.ConnectionRepository, actions providers.ActionRegistry, tokens oauth.TokenProvider) teststrategies.Strategy {
-    return &testStrategy{repository:repository,actions:actions,tokens:tokens}
+func New(repository connectionrepo.ConnectionRepository, actions providers.ActionRegistry, tokens oauth.TokenProvider, eventMapper mapper.ConnectionMapper) teststrategies.Strategy {
+    return &testStrategy{repository:repository,actions:actions,tokens:tokens,mapper:eventMapper}
 }
 func (s *testStrategy) RunTest(ctx context.Context, tenantID, id, direction string) (connectiondto.ConnectionTest, error) {
 	connection, err := s.repository.Get(ctx, tenantID, id)
@@ -90,7 +92,7 @@ func (s *testStrategy) RunTest(ctx context.Context, tenantID, id, direction stri
 	if err := s.repository.SaveTest(ctx, test); err != nil {
 		return connectiondto.ConnectionTest{}, err
 	}
-	return connectionhelpers.TestToResponse(test), nil
+	return s.mapper.TestToResponse(test), nil
 }
 
 func (s *testStrategy) ListTests(ctx context.Context, tenantID, id string) ([]connectiondto.ConnectionTest, error) {
@@ -103,7 +105,7 @@ func (s *testStrategy) ListTests(ctx context.Context, tenantID, id string) ([]co
 	}
 	result := make([]connectiondto.ConnectionTest, 0, len(rows))
 	for _, test := range rows {
-		result = append(result, connectionhelpers.TestToResponse(test))
+		result = append(result, s.mapper.TestToResponse(test))
 	}
 	return result, nil
 }

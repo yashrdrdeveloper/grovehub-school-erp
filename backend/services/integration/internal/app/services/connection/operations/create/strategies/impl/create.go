@@ -1,6 +1,7 @@
 package impl
 
 import (
+    mapper "grovehub/services/integration/internal/app/mappers/connection"
     connectionvalidator "grovehub/services/integration/internal/app/validators/connection"
     "context"
     connectiondto "grovehub/services/integration/internal/app/dto/connection"
@@ -9,17 +10,17 @@ import (
     "grovehub/services/integration/internal/app/entity"
     "grovehub/services/integration/internal/app/providers"
     connectionrepo "grovehub/services/integration/internal/app/repository/connection"
-    connectionhelpers "grovehub/services/integration/internal/app/services/connection/helpers"
     strategies "grovehub/services/integration/internal/app/services/connection/operations/create/strategies"
 )
 
 type createStrategy struct{
+    mapper mapper.ConnectionMapper
     validator connectionvalidator.ConnectionValidator
     repository connectionrepo.ConnectionRepository
     registry providers.Registry
 }
 var _ strategies.Strategy = (*createStrategy)(nil)
-func New(repository connectionrepo.ConnectionRepository, registry providers.Registry, validator connectionvalidator.ConnectionValidator) strategies.Strategy {return &createStrategy{repository:repository,registry:registry,validator:validator}}
+func New(repository connectionrepo.ConnectionRepository, registry providers.Registry, validator connectionvalidator.ConnectionValidator, eventMapper mapper.ConnectionMapper) strategies.Strategy {return &createStrategy{repository:repository,registry:registry,validator:validator,mapper:eventMapper}}
 func (s *createStrategy) Execute(
 	ctx context.Context,
 	tenantID string,
@@ -54,7 +55,7 @@ func (s *createStrategy) Execute(
 		return connectiondto.Connection{}, err
 	}
 
-	return connectionhelpers.ToResponse(connection), nil
+	return s.mapper.ToResponse(connection), nil
 }
 
 

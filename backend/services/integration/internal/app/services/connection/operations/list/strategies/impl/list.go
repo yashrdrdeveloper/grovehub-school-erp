@@ -1,21 +1,22 @@
 package impl
 
 import (
+    mapper "grovehub/services/integration/internal/app/mappers/connection"
     connectionvalidator "grovehub/services/integration/internal/app/validators/connection"
     "context"
     connectiondto "grovehub/services/integration/internal/app/dto/connection"
     
     connectionrepo "grovehub/services/integration/internal/app/repository/connection"
-    connectionhelpers "grovehub/services/integration/internal/app/services/connection/helpers"
     strategies "grovehub/services/integration/internal/app/services/connection/operations/list/strategies"
 )
 
 type listStrategy struct{
+    mapper mapper.ConnectionMapper
     validator connectionvalidator.ConnectionValidator
     repository connectionrepo.ConnectionRepository
 }
 var _ strategies.Strategy = (*listStrategy)(nil)
-func New(repository connectionrepo.ConnectionRepository, validator connectionvalidator.ConnectionValidator) strategies.Strategy {return &listStrategy{repository:repository,validator:validator}}
+func New(repository connectionrepo.ConnectionRepository, validator connectionvalidator.ConnectionValidator, eventMapper mapper.ConnectionMapper) strategies.Strategy {return &listStrategy{repository:repository,validator:validator,mapper:eventMapper}}
 func (s *listStrategy) Execute(
 	ctx context.Context,
 	tenantID string,
@@ -32,7 +33,7 @@ func (s *listStrategy) Execute(
 
 	result := make([]connectiondto.Connection, 0, len(connections))
 	for _, connection := range connections {
-		result = append(result, connectionhelpers.ToResponse(connection))
+		result = append(result, s.mapper.ToResponse(connection))
 	}
 
 	return result, nil
