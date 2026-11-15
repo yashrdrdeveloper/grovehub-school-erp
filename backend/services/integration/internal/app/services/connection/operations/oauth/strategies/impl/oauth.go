@@ -60,7 +60,7 @@ func (s *oauthStrategy) FinishOAuth(ctx context.Context, provider, code, state s
 	}
 	oauthState, err := s.repository.ConsumeOAuthState(ctx, hashState(state), time.Now().UTC())
 	if err != nil {
-		if errors.Is(err, integrationrepository.ErrOAuthStateInvalid) {
+		if errors.Is(err, connectionrepo.ErrOAuthStateInvalid) {
 			return connectiondto.OAuthCompletion{}, connectionhelpers.ErrOAuthInvalid
 		}
 		return connectiondto.OAuthCompletion{}, err
