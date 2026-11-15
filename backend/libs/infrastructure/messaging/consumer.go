@@ -2,7 +2,7 @@ package messaging
 
 import "context"
 
-// Message is a transport-neutral delivery for an event handler.
+// Message represents a broker delivery, independent of NATS/Watermill types.
 type Message struct {
     ID string
     Payload []byte

@@ -9,6 +9,7 @@ import (
     "grovehub/services/infrastructure/internal/app/services/messaging/strategies"
 )
 
+// newMessaging assembles provider-neutral services, not an HTTP controller.
 func (b *builder) newMessaging(store client.EventStore) (messagingservice.Service, error) {
     adapter, err := natsadapter.New(b.settings)
     if err != nil { return nil, err }

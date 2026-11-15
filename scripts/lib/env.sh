@@ -3,17 +3,21 @@ set -Eeuo pipefail
 
 load_backend_runtime_env() {
   local env_file="${REPO_ROOT}/.env"
-  [[ -f "${env_file}" ]] || return 0
-
-  set +u
-  # shellcheck disable=SC1090
-  source "${env_file}"
-  set -u
+  if [[ -f "${env_file}" ]]; then
+    set +u
+    # shellcheck disable=SC1090
+    source "${env_file}"
+    set -u
+  fi
 
   local name
   for name in \
     DATABASE_URL \
-    GROVEHUB_LOG_LEVELS \
+    GROVEHUB_MESSAGING_PROVIDER \
+    GROVEHUB_NATS_URL \
+    GROVEHUB_NATS_QUEUE_GROUP_PREFIX \
+    GROVEHUB_NATS_DURABLE_PREFIX \
+    GROVEHUB_LOG_LEVELS \\
     GROVEHUB_TRACE_SAMPLE_RATIO \
     GROVEHUB_METRIC_EXPORT_INTERVAL \
     GROVEHUB_GMAIL_CLIENT_ID \
@@ -37,4 +41,10 @@ load_backend_runtime_env() {
       export "${name}"
     fi
   done
+
+  # Developer defaults belong to launcher scripts, not Go configuration.
+  export GROVEHUB_MESSAGING_PROVIDER="${GROVEHUB_MESSAGING_PROVIDER:-nats}"
+  export GROVEHUB_NATS_URL="${GROVEHUB_NATS_URL:-nats://127.0.0.1:${NATS_CLIENT_PORT:-4222}}"
+  export GROVEHUB_NATS_QUEUE_GROUP_PREFIX="${GROVEHUB_NATS_QUEUE_GROUP_PREFIX:-grovehub}"
+  export GROVEHUB_NATS_DURABLE_PREFIX="${GROVEHUB_NATS_DURABLE_PREFIX:-grovehub}"
 }

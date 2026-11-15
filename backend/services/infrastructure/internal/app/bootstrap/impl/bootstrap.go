@@ -38,6 +38,7 @@ var _ bootstrap.Runtime = (*runtime)(nil)
 
 func (b *builder) Build() (bootstrap.Runtime, error) {
     if b.db == nil { return nil, errors.New("infrastructure messaging requires the shared PostgreSQL database") }
+    if err := b.settings.Validate(); err != nil { return nil, err }
     if b.logger == nil { b.logger = slog.Default() }
     store := b.newRepository()
     service, err := b.newMessaging(store)

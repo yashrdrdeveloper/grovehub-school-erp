@@ -1,6 +1,6 @@
 package messaging
 
-import coreevents "grovehub/libs/core/events"
+import inframessaging "grovehub/libs/infrastructure/messaging"
 
 // Event is a transport-neutral, immutable pending event DTO.
-type Event = coreevents.Message
+type Event = inframessaging.Event

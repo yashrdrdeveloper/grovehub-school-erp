@@ -19,8 +19,8 @@ func NewChangedPipeline(strategy changedstrategies.ChangedStrategy, store messag
     return &ChangedPipeline{strategy: strategy, store: store}
 }
 
-func (pipeline *ChangedPipeline) Rules() eventpipeline.Rules[eventflows.Change] {
-    return eventpipeline.Rules[eventflows.Change]{
+func (pipeline *ChangedPipeline) Rules() eventpipeline.Rules[eventflows.Change,messagingclient.Event] {
+    return eventpipeline.Rules[eventflows.Change,messagingclient.Event]{
         ShouldEmit: pipeline.strategy.ShouldEmit,
         Build: pipeline.strategy.Build,
         Enqueue: pipeline.store.Enqueue,

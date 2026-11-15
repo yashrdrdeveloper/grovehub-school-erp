@@ -2,11 +2,11 @@ package strategies
 
 import (
     "context"
-    coremessaging "grovehub/libs/core/events/messaging"
+    inframessaging "grovehub/libs/infrastructure/messaging"
 )
 
 // @Strategy
 type Strategy interface {
     Publish(ctx context.Context, topic string, payload []byte, metadata map[string]string) error
-    PublishWithOptions(ctx context.Context, topic string, payload []byte, metadata map[string]string, options coremessaging.PublishOptions) error
+    PublishWithOptions(ctx context.Context, topic string, payload []byte, metadata map[string]string, options inframessaging.PublishOptions) error
 }

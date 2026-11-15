@@ -2,7 +2,7 @@ package publish
 
 import (
     "context"
-    coremessaging "grovehub/libs/core/events/messaging"
+    inframessaging "grovehub/libs/infrastructure/messaging"
     "grovehub/services/infrastructure/internal/app/services/messaging/operations/publish/strategies"
 )
 
@@ -11,6 +11,6 @@ func New(strategy strategies.Strategy) *PublishOperation { return &PublishOperat
 func (operation *PublishOperation) Publish(ctx context.Context, topic string, payload []byte, metadata map[string]string) error {
     return operation.strategy.Publish(ctx, topic, payload, metadata)
 }
-func (operation *PublishOperation) PublishWithOptions(ctx context.Context, topic string, payload []byte, metadata map[string]string, options coremessaging.PublishOptions) error {
+func (operation *PublishOperation) PublishWithOptions(ctx context.Context, topic string, payload []byte, metadata map[string]string, options inframessaging.PublishOptions) error {
     return operation.strategy.PublishWithOptions(ctx, topic, payload, metadata, options)
 }

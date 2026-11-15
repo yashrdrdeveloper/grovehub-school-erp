@@ -1,7 +1,7 @@
 package messaging
 
-import coremessaging "grovehub/libs/core/events/messaging"
+import inframessaging "grovehub/libs/infrastructure/messaging"
 
 // Broker-delivered message DTOs remain independent from persistence entities.
-type Message = coremessaging.Message
-type MessageHandler = coremessaging.Handler
+type Message = inframessaging.Message
+type MessageHandler = inframessaging.Handler
