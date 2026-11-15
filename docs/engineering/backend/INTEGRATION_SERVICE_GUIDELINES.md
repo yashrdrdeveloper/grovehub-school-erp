@@ -47,6 +47,7 @@ services/integration/
     │   ├── repository/
     │   │   ├── connection/{connection.go,impl/connection.go}
     │   │   └── watch/{watch.go,impl/watch.go}
+    │   ├── validators/connection/{connection.go,helpers/gid.go,impl/connection.go}
     │   ├── services/
     │   │   ├── connection/{connection.go,impl/,helpers/,operations/}
     │   │   └── provider/{provider.go,impl/,operations/}
@@ -156,3 +157,14 @@ vendor-specific behavior into the public service. The
 descriptors. Get resolves a provider descriptor, configured action catalog,
 and OAuth readiness. The existing `Providers` and `Provider` signatures and
 public Integration client methods remain unchanged.
+
+## Typed Connection validation
+
+Connection operations `Create`, `Get`, `List`, and `Disconnect` use
+`internal/app/validators/connection.ConnectionValidator`, injected through
+Integration bootstrap, as Foundation injects PersonValidator. The validator
+reuses the platform's existing UUIDv7 normalization/validation semantics.
+It does not perform SQL lookups; those remain in the repositories and services.
+
+Repositories are annotated `@Repository entity=Connection` and
+`@Repository entity=WebhookSubscription` and remain GORM-only.

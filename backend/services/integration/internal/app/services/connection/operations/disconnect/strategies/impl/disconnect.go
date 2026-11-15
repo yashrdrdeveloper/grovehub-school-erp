@@ -1,6 +1,7 @@
 package impl
 
 import (
+    connectionvalidator "grovehub/services/integration/internal/app/validators/connection"
     "context"
     connectiondto "grovehub/services/integration/internal/app/dto/connection"
     
@@ -10,17 +11,18 @@ import (
 )
 
 type disconnectStrategy struct{
+    validator connectionvalidator.ConnectionValidator
     repository connectionrepo.ConnectionRepository
 }
 var _ strategies.Strategy = (*disconnectStrategy)(nil)
-func New(repository connectionrepo.ConnectionRepository) strategies.Strategy {return &disconnectStrategy{repository:repository}}
+func New(repository connectionrepo.ConnectionRepository, validator connectionvalidator.ConnectionValidator) strategies.Strategy {return &disconnectStrategy{repository:repository,validator:validator}}
 func (s *disconnectStrategy) Execute(
 	ctx context.Context,
 	tenantID string,
 	id string,
 ) (connectiondto.Connection, error) {
-	if !connectionhelpers.ValidID(tenantID) || !connectionhelpers.ValidID(id) {
-		return connectiondto.Connection{}, connectionhelpers.ErrInvalidConnection
+	if err:= s.validator.ValidatePair(tenantID,id);err!=nil {
+		return connectiondto.Connection{}, err
 	}
 
 	connection, err := s.repository.Disconnect(ctx, tenantID, id)

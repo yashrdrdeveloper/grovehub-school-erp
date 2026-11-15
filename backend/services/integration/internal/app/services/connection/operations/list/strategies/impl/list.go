@@ -1,6 +1,7 @@
 package impl
 
 import (
+    connectionvalidator "grovehub/services/integration/internal/app/validators/connection"
     "context"
     connectiondto "grovehub/services/integration/internal/app/dto/connection"
     
@@ -10,17 +11,18 @@ import (
 )
 
 type listStrategy struct{
+    validator connectionvalidator.ConnectionValidator
     repository connectionrepo.ConnectionRepository
 }
 var _ strategies.Strategy = (*listStrategy)(nil)
-func New(repository connectionrepo.ConnectionRepository) strategies.Strategy {return &listStrategy{repository:repository}}
+func New(repository connectionrepo.ConnectionRepository, validator connectionvalidator.ConnectionValidator) strategies.Strategy {return &listStrategy{repository:repository,validator:validator}}
 func (s *listStrategy) Execute(
 	ctx context.Context,
 	tenantID string,
 	ownerGID string,
 ) ([]connectiondto.Connection, error) {
-	if !connectionhelpers.ValidID(tenantID) || !connectionhelpers.ValidID(ownerGID) {
-		return nil, connectionhelpers.ErrInvalidConnection
+	if err:= s.validator.ValidatePair(tenantID,ownerGID);err!=nil {
+		return nil, err
 	}
 
 	connections, err := s.repository.List(ctx, tenantID, ownerGID)

@@ -10,6 +10,7 @@ import (
     watchrepo "grovehub/services/integration/internal/app/repository/watch"
     connectionservices "grovehub/services/integration/internal/app/services/connection"
     helpers "grovehub/services/integration/internal/app/services/connection/helpers"
+    connectionvalidator "grovehub/services/integration/internal/app/validators/connection"
 
     action "grovehub/services/integration/internal/app/services/connection/operations/action"
     actionimpl "grovehub/services/integration/internal/app/services/connection/operations/action/strategies/impl"
@@ -52,16 +53,16 @@ type ConnectionService struct {
 
 var _ connectionservices.ConnectionService = (*ConnectionService)(nil)
 
-func NewConnectionService(repository connectionrepo.ConnectionRepository, watchRepository watchrepo.WatchRepository, registry providers.Registry, actions providers.ActionRegistry, oauthRegistry providers.OAuthRegistry, gmailClient *gmail.Client, outlookClient *outlook.Client, encryptionKey []byte, pushTopic string, messaging infrastructureclient.MessagingClient) (connectionservices.ConnectionService,error) {
+func NewConnectionService(repository connectionrepo.ConnectionRepository, watchRepository watchrepo.WatchRepository, registry providers.Registry, actions providers.ActionRegistry, oauthRegistry providers.OAuthRegistry, gmailClient *gmail.Client, outlookClient *outlook.Client, encryptionKey []byte, pushTopic string, messaging infrastructureclient.MessagingClient, validator connectionvalidator.ConnectionValidator) (connectionservices.ConnectionService,error) {
     cipher,err:=helpers.NewTokenCipher(encryptionKey)
     if err!=nil && (gmailClient!=nil || outlookClient!=nil) {return nil,err}
 
     oauthOperation:=oauth.New(oauthimpl.New(repository,oauthRegistry,cipher))
     return &ConnectionService{
-        CreateOperation:create.New(createimpl.New(repository,registry)),
-        GetOperation:get.New(getimpl.New(repository)),
-        ListOperation:list.New(listimpl.New(repository)),
-        DisconnectOperation:disconnect.New(disconnectimpl.New(repository)),
+        CreateOperation:create.New(createimpl.New(repository,registry,validator)),
+        GetOperation:get.New(getimpl.New(repository,validator)),
+        ListOperation:list.New(listimpl.New(repository,validator)),
+        DisconnectOperation:disconnect.New(disconnectimpl.New(repository,validator)),
         OAuthOperation:oauthOperation,
         ActionOperation:action.New(actionimpl.New(repository,actions,oauthOperation)),
         TestOperation:test.New(testimpl.New(repository,actions,oauthOperation)),

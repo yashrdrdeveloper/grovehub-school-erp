@@ -15,6 +15,7 @@ import (
 	providerimpl "grovehub/services/integration/internal/app/providers/impl"
 	"grovehub/services/integration/internal/app/providers/mailprovider/providers/gmail"
 	integrationimpl "grovehub/services/integration/internal/app/services/connection/impl"
+    validatorimpl "grovehub/services/integration/internal/app/validators/connection/impl"
 )
 
 type connectionRepositoryFake struct{}
@@ -87,7 +88,7 @@ var _ = Describe("Provider push event ownership", func() {
 		messaging := &messagingFake{}
 		service, err := integrationimpl.NewConnectionService(
 			&connectionRepositoryFake{}, &watchRepositoryFake{},
-			registry, providerimpl.NewActionRegistry(), providerimpl.NewOAuthRegistry(), gmail.NewClient(integrationconfig.Gmail{}), nil, []byte("01234567890123456789012345678901"), "projects/test/topics/gmail", messaging,
+			registry, providerimpl.NewActionRegistry(), providerimpl.NewOAuthRegistry(), gmail.NewClient(integrationconfig.Gmail{}), nil, []byte("01234567890123456789012345678901"), "projects/test/topics/gmail", messaging,validatorimpl.NewConnectionValidator(),
 		)
 		Expect(err).NotTo(HaveOccurred())
 		err = service.ProcessPush(context.Background(), gmail.PushNotification{

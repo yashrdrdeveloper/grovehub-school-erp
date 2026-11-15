@@ -1,6 +1,7 @@
 package impl
 
 import (
+    connectionvalidator "grovehub/services/integration/internal/app/validators/connection"
     "context"
     connectiondto "grovehub/services/integration/internal/app/dto/connection"
     "time"
@@ -13,18 +14,19 @@ import (
 )
 
 type createStrategy struct{
+    validator connectionvalidator.ConnectionValidator
     repository connectionrepo.ConnectionRepository
     registry providers.Registry
 }
 var _ strategies.Strategy = (*createStrategy)(nil)
-func New(repository connectionrepo.ConnectionRepository, registry providers.Registry) strategies.Strategy {return &createStrategy{repository:repository,registry:registry}}
+func New(repository connectionrepo.ConnectionRepository, registry providers.Registry, validator connectionvalidator.ConnectionValidator) strategies.Strategy {return &createStrategy{repository:repository,registry:registry,validator:validator}}
 func (s *createStrategy) Execute(
 	ctx context.Context,
 	tenantID string,
 	input connectiondto.CreateConnection,
 ) (connectiondto.Connection, error) {
-	if !connectionhelpers.ValidID(tenantID) || !connectionhelpers.ValidID(input.OwnerGID) {
-		return connectiondto.Connection{}, connectionhelpers.ErrInvalidConnection
+	if err:= s.validator.ValidateCreate(tenantID,input);err!=nil {
+		return connectiondto.Connection{}, err
 	}
 
 	provider, err := s.registry.Find(input.Provider)
