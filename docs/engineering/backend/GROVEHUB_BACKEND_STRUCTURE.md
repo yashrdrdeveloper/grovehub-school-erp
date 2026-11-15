@@ -818,6 +818,6 @@ applied migrations. Do not modify or renumber applied Goose migrations.
 Infrastructure uses the same public `client/messaging` and private
 `internal/app/<resource>` layout as Foundation. Durable event delivery is now
 owned by `infrastructure/internal/app/repository/messaging` and
-`services/messaging/dispatcher.go`. Foundation publishes through a public
+`services/messaging/operations/dispatch/dispatcher.go`. Foundation publishes through a public
 `EventStore` interface in the same transaction. See
 `INFRASTRUCTURE_INTERNAL_LAYOUT.md` for the complete tree and migration plan.

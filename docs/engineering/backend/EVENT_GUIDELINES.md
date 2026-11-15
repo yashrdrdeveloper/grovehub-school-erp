@@ -34,7 +34,7 @@ backend/
 ├── libs/core/events/
 │   ├── envelope.go                          # Generic typed event envelope
 │   ├── pipeline/rules.go                     # ShouldEmit / Build / Enqueue
-│   ├── outbox/{store,dispatcher}.go          # Transactional delivery and retry
+│   ├── message.go                            # Transport-neutral pending messages
 │   └── messaging/{producer,consumer}.go      # Generic transport contracts
 └── services/foundation/internal/app/events/
     └── producers/
@@ -84,8 +84,9 @@ their current shape until separately migrated.
 - `operations/changed/flows/`: the event-specific typed Change state.
 - `operations/changed/strategies/`: event eligibility and immutable envelope
   creation; `helpers/` owns pure Person Changed logic.
-- `libs/core/events/outbox/`: durable transaction-bound inserts, leased claims,
-  retry scheduling, transport delivery and sent-state tracking.
+- `services/infrastructure/internal/app/repository/messaging/`: transactional
+  outbox inserts and delivery-state persistence. The dispatcher lives under
+  `services/infrastructure/internal/app/services/messaging/operations/dispatch/`.
 - `services/person/operations/`: owns business writes and calls the producer
   within the same UnitOfWork as successful Create, changed Update and
   Deactivate. GetByGID and Search never enqueue events.
@@ -202,29 +203,31 @@ Use `grovehub/libs/core/diff`, which is generic, typed via Go type inference, an
 
 ```text
 Foundation.New
-    ├─ PersonService (composed use-case operations)
-    │  ├─ Create Persist    ┐
-    │  ├─ Update Persist    ├─ ChangedProducer.Enqueue inside UnitOfWork
-    │  └─ Deactivate Persist┘
-    │       ↓
-    │  ChangedPipeline.Rules() = ShouldEmit + Build + Enqueue
-    │       ↓
-    │  core outbox.Store.Enqueue (foundation.event_outbox)
-    └─ Dispatcher (lifecycle-owned polling worker)
+    └─ PersonService (composed use-case operations)
+       ├─ Create Persist    ┐
+       ├─ Update Persist    ├─ ChangedProducer.Enqueue inside UnitOfWork
+       └─ Deactivate Persist┘
+            ↓
+       ChangedPipeline.Rules() = ShouldEmit + Build + Enqueue
+            ↓
+       Infrastructure EventStore.Enqueue (infrastructure.messaging)
+            ↓ (committed atomically alongside Person and Contact)
+       Infrastructure operations/dispatch/dispatcher.go
             ↓ pending / expired leases (SKIP LOCKED)
        Infrastructure MessagingClient.Publish
             ↓
        NATS JetStream (foundation_person_changed)
 ```
 
-Only outbound event data is stored in Foundation's outbox table. Other services can
-use the same core store with their own schema and migrations. `foundation.Module.Close`
-stops the polling worker before Infrastructure and the DB are closed.
+The outbox belongs to Infrastructure and shares the business PostgreSQL
+database and transaction. Foundation no longer owns its dispatcher lifecycle;
+`Infrastructure.Module.Close` drains the dispatcher before closing the
+provider and shared database.
 
 
 ## 9. Current Delivery Model: Transactional Outbox
 
-Schema migration: `backend/services/foundation/internal/resources/migrations/000002_create_event_outbox.sql`.
+Current schema migration: `backend/services/infrastructure/internal/resources/migrations/000001_create_messaging.sql`. The historical Foundation migration is retained for Goose version tracking and legacy data transfer.
 
 ```text
 Person write + Contact write + event outbox insert
@@ -250,10 +253,10 @@ An idempotent Create replay, no-op Update or already-deactivated Person does not
 enqueue a new event. Create/Update/Deactivate all record events in their existing
 write transactions, and Deactivate now explicitly uses UnitOfWork.
 
-Dispatcher lease and retry metadata must be monitored operationally. The
-migration keeps SENT rows for audit/reconciliation; add retention and dead-letter
-policy before production growth. Foundation currently implements **no inbound event consumer**. Add a consumer
-only when a real subscription and business handler are needed.
+Dispatcher lease and retry metadata must be monitored operationally. Infrastructure
+prunes successfully published SENT rows after 24 hours, never pending rows.
+This is not permanent end-user audit history. Foundation currently implements
+**no inbound event consumer**; add one only for a real subscription.
 
 
 ## 9.1 Optional Infrastructure Publishing

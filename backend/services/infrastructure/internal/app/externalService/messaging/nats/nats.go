@@ -2,7 +2,6 @@ package nats
 
 import (
     "context"
-
     dto "grovehub/services/infrastructure/internal/app/dto/messaging"
 )
 

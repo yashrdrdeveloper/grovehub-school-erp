@@ -1,5 +1,3 @@
-// Package infrastructure exposes Infrastructure's lifecycle and shared
-// messaging contracts. All persistence, dispatch and provider code is private.
 package infrastructure
 
 import (
@@ -18,14 +16,13 @@ import (
 
 type Module = bootstrap.Runtime
 
-func New(config messagingclient.Config, db *gorm.DB, logger *slog.Logger) (Module,error) {
-    return bootstrapimpl.New(config,db,logger)
+func New(config messagingclient.Config, db *gorm.DB, logger *slog.Logger) (Module, error) {
+    return bootstrapimpl.New(config, db, logger).Build()
 }
 
-// Migrate uses Infrastructure's independent, embedded Goose migration history.
-func Migrate(ctx context.Context,db *gorm.DB) error {
-    if db == nil {return errors.New("infrastructure migrations require a database")}
-    sqlDB,err:=db.DB()
-    if err!=nil{return fmt.Errorf("access infrastructure migration database: %w",err)}
-    return migrations.Migrate(ctx,sqlDB)
+func Migrate(ctx context.Context, db *gorm.DB) error {
+    if db == nil { return errors.New("infrastructure migrations require a database") }
+    sqlDB, err := db.DB()
+    if err != nil { return fmt.Errorf("access infrastructure migration database: %w", err) }
+    return migrations.Migrate(ctx, sqlDB)
 }

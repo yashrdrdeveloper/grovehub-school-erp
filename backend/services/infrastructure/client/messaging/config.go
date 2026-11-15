@@ -1,6 +1,6 @@
 package messaging
 
-import config "grovehub/services/infrastructure/internal/app/config"
+import config "grovehub/services/infrastructure/internal/app/config/messaging"
 
 type Config = config.Messaging
 

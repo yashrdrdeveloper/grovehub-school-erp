@@ -14,9 +14,10 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 
-	infrastructureconfig "grovehub/services/infrastructure/internal/app/config"
+	infrastructureconfig "grovehub/services/infrastructure/internal/app/config/messaging"
 	messagingdto "grovehub/services/infrastructure/internal/app/dto/messaging"
-    natscontract "grovehub/services/infrastructure/internal/app/externalService/nats"
+    natscontract "grovehub/services/infrastructure/internal/app/externalService/messaging/nats"
+    messagingstrategies "grovehub/services/infrastructure/internal/app/services/messaging/strategies"
 )
 
 // The vendor adapter is verified against the annotated external service contract.
@@ -25,6 +26,7 @@ import (
 const traceIDMetadataKey = "X-Trace-ID"
 
 var _ natscontract.Service = (*Adapter)(nil)
+var _ messagingstrategies.Strategy = (*Adapter)(nil)
 
 type Adapter struct {
 	url        string
