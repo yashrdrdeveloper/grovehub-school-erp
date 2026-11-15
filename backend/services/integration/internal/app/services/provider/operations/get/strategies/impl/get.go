@@ -3,7 +3,6 @@ package impl
 import (
     providercontracts "grovehub/services/integration/internal/app/providers/contracts"
     mailcontracts "grovehub/services/integration/internal/app/providers/mailprovider/contracts"
-    oauth "grovehub/services/integration/internal/app/providers/mailprovider/operations/oauth"
     "context"
     dto "grovehub/services/integration/internal/app/dto/provider"
     strategies "grovehub/services/integration/internal/app/services/provider/operations/get/strategies"

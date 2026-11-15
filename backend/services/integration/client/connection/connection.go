@@ -2,13 +2,12 @@ package connection
 
 import (
     providerdto "grovehub/services/integration/internal/app/providers/dto"
-    providerdto "grovehub/services/integration/internal/app/dto/provider"
+    providerresponse "grovehub/services/integration/internal/app/dto/provider"
 	"context"
 	"encoding/json"
 
 	connectiondto "grovehub/services/integration/internal/app/dto/connection"
 	
-	"grovehub/services/integration/internal/app/providers"
 )
 
 // Client is the in-process service-to-service API, following Foundation's
@@ -18,7 +17,7 @@ type Client interface {
 	// @Proxy providers.Providers
 	Providers(ctx context.Context) []providerdto.Descriptor
 	// @Proxy providers.Provider
-	Provider(ctx context.Context, id string) (providerdto.ProviderDetails, error)
+	Provider(ctx context.Context, id string) (providerresponse.ProviderDetails, error)
 	// @Proxy connections.Create
 	CreateConnection(ctx context.Context, tenantID string, input connectiondto.CreateConnection) (connectiondto.Connection, error)
 	// @Proxy connections.Get
@@ -40,7 +39,7 @@ type (
     OAuthStart = connectiondto.OAuthStart
     OAuthCompletion = connectiondto.OAuthCompletion
     Watch = connectiondto.Watch
-    ProviderDetails = providerdto.ProviderDetails
+    ProviderDetails = providerresponse.ProviderDetails
     Action = providerdto.Action
     Descriptor = providerdto.Descriptor
 )
