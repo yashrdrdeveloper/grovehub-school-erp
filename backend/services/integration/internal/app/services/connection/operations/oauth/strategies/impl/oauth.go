@@ -3,7 +3,6 @@ package impl
 import (
     maildto "grovehub/services/integration/internal/app/providers/mailprovider/dto"
     mailcontracts "grovehub/services/integration/internal/app/providers/mailprovider/contracts"
-    oauth "grovehub/services/integration/internal/app/providers/mailprovider/operations/oauth"
     "context"
     "crypto/rand"
     "crypto/sha256"

@@ -4,7 +4,6 @@ import (
     providerdto "grovehub/services/integration/internal/app/providers/dto"
     providercontracts "grovehub/services/integration/internal/app/providers/contracts"
     providerhelpers "grovehub/services/integration/internal/app/providers/helpers"
-    oauth "grovehub/services/integration/internal/app/providers/mailprovider/operations/oauth"
     "context"
     "encoding/json"
     "errors"
