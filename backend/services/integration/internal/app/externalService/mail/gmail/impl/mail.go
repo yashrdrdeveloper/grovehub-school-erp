@@ -1,12 +1,12 @@
 package impl
 
 import (
+    providerhelpers "grovehub/services/integration/internal/app/providers/helpers"
 	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"grovehub/services/integration/internal/app/providers"
- "grovehub/services/integration/internal/app/providers/mailprovider/mailcontract"
+ maildto "grovehub/services/integration/internal/app/providers/mailprovider/dto"
 	"net/http"
 	"net/url"
  "strings"
@@ -106,7 +106,7 @@ func (c *Client) History(ctx context.Context, t Token, startID, page string) (Hi
 	path := "/history?" + query.Encode()
 	err := c.do(ctx, t, http.MethodGet, path, nil, &p)
 	if err != nil {
-		if providers.HTTPStatus(err) == http.StatusNotFound {
+		if providerhelpers.HTTPStatus(err) == http.StatusNotFound {
 			return p, ErrExpiredHistory
 		}
 		return p, err
@@ -116,11 +116,11 @@ func (c *Client) History(ctx context.Context, t Token, startID, page string) (Hi
 
 // Send builds RFC 5322/MIME on the server and translates it to Gmail's
 // base64url request format. The authenticated mailbox is the sender.
-func (c *Client) Send(ctx context.Context, t Token, request mailcontract.Send) (SentMessage, error) {
+func (c *Client) Send(ctx context.Context, t Token, request maildto.Send) (SentMessage, error) {
  profile, err := c.Profile(ctx, t)
  if err != nil { return SentMessage{}, err }
- raw, err := mailcontract.BuildMIME(profile.EmailAddress, request)
- if err != nil { return SentMessage{}, providers.ErrInvalidActionInput }
+ raw, err := maildto.BuildMIME(profile.EmailAddress, request)
+ if err != nil { return SentMessage{}, providerhelpers.ErrInvalidActionInput }
  return c.SendRaw(ctx, t, base64.RawURLEncoding.EncodeToString(raw))
 }
 
@@ -141,9 +141,9 @@ func (c *Client) SendRaw(ctx context.Context, t Token, raw string) (SentMessage,
 // Attachment converts Gmail's base64url response to standard base64.
 // Attachment returns Gmail's base64url-encoded attachment bytes without
 // creating any Integration-owned attachment record.
-func (c *Client) Attachment(ctx context.Context, t Token, messageID, attachmentID string) (mailcontract.AttachmentData, error) {
+func (c *Client) Attachment(ctx context.Context, t Token, messageID, attachmentID string) (maildto.AttachmentData, error) {
 	if messageID == "" || attachmentID == "" || len(messageID) > 512 || len(attachmentID) > 512 {
-		return mailcontract.AttachmentData{}, providers.ErrInvalidActionInput
+		return maildto.AttachmentData{}, providerhelpers.ErrInvalidActionInput
 	}
 	var result struct {
 		AttachmentID string `json:"attachmentId,omitempty"`
@@ -154,11 +154,11 @@ func (c *Client) Attachment(ctx context.Context, t Token, messageID, attachmentI
 		"/messages/"+url.PathEscape(messageID)+"/attachments/"+url.PathEscape(attachmentID),
 		nil, &result)
 	if err != nil {
-		return mailcontract.AttachmentData{}, err
+		return maildto.AttachmentData{}, err
  }
  data,err:=base64.RawURLEncoding.DecodeString(strings.TrimRight(result.Data,"="))
- if err!=nil{return mailcontract.AttachmentData{},providers.ErrProviderUnavailable}
- return mailcontract.AttachmentData{
+ if err!=nil{return maildto.AttachmentData{},providerhelpers.ErrProviderUnavailable}
+ return maildto.AttachmentData{
   AttachmentID:attachmentID,Size:int64(len(data)),
   ContentBase64:base64.StdEncoding.EncodeToString(data),
  },nil

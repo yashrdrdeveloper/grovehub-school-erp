@@ -1,26 +1,29 @@
 package mailprovider
 
-import "grovehub/services/integration/internal/app/providers"
+import (
+    providers "grovehub/services/integration/internal/app/providers"
+    contracts "grovehub/services/integration/internal/app/providers/contracts"
+    dto "grovehub/services/integration/internal/app/providers/dto"
+    mailcontracts "grovehub/services/integration/internal/app/providers/mailprovider/contracts"
+)
 
-// Strategy describes one mail provider plus optional executable actions/OAuth.
+// Strategy describes a mail capability adapter; provider discovery stays generic.
 type Strategy interface {
-	providers.Provider
-	Register(actions providers.ActionRegistry, oauth providers.OAuthRegistry) error
+    providers.Provider
+    Register(actions contracts.ActionRegistry, oauth mailcontracts.OAuthRegistry) error
 }
 
-// Resolver selects providers by identifier and declared capability.
-// Declared capability support does not imply that OAuth is configured.
 type Resolver interface {
-	Resolve(providerID string, capability providers.Capability) (Strategy, error)
+    Resolve(providerID string, capability dto.Capability) (Strategy,error)
 }
 
 type Runtime struct {
-	Registry providers.Registry
-	Actions  providers.ActionRegistry
-	OAuth    providers.OAuthRegistry
-	Resolver Resolver
+    Registry contracts.Registry
+    Actions contracts.ActionRegistry
+    OAuth mailcontracts.OAuthRegistry
+    Resolver Resolver
 }
 
 type Factory interface {
-	Build(strategies ...Strategy) (Runtime, error)
+    Build(strategies ...Strategy) (Runtime,error)
 }

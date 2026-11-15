@@ -1,15 +1,18 @@
 package impl
 
-import "grovehub/services/integration/internal/app/providers"
-
+import (
+    providerdto "grovehub/services/integration/internal/app/providers/dto"
+    mailconstants "grovehub/services/integration/internal/app/providers/mailprovider/constants"
+    "grovehub/services/integration/internal/app/providers"
+)
 // Outlook provider descriptor; supported action strategies are registered separately.
 type Provider struct{}
 
 func New() providers.Provider { return Provider{} }
 
-func (Provider) Descriptor() providers.Descriptor {
-	return providers.Descriptor{
+func (Provider) Descriptor() providerdto.Descriptor {
+	return providerdto.Descriptor{
 		ID: "OUTLOOK", DisplayName: "Outlook", AuthType: "OAUTH2",
-		Capabilities: []providers.Capability{providers.CapabilityMailSend, providers.CapabilityMailRead, providers.CapabilityMailDelta, providers.CapabilityMailAttachment}, // mail.history and watch still unsupported
+		Capabilities: []providerdto.Capability{mailconstants.CapabilityMailSend, mailconstants.CapabilityMailRead, mailconstants.CapabilityMailDelta, mailconstants.CapabilityMailAttachment}, // mail.history and watch still unsupported
 	}
 }

@@ -1,6 +1,9 @@
 package services_test
 
 import (
+    register "grovehub/services/integration/internal/app/providers/operations/register"
+    execute "grovehub/services/integration/internal/app/providers/operations/execute"
+    oauth "grovehub/services/integration/internal/app/providers/mailprovider/operations/oauth"
 	"context"
 	"encoding/json"
     "errors"
@@ -13,7 +16,7 @@ import (
  integrationconfig "grovehub/services/integration/internal/app/config"
 	"grovehub/services/integration/internal/app/entity"
 	mailboxevents "grovehub/services/integration/internal/app/events/producers/connection/operations/mailbox"
-	providerimpl "grovehub/services/integration/internal/app/providers/impl"
+	
 	"grovehub/services/integration/internal/app/externalService/mail/gmail"
 	integrationimpl "grovehub/services/integration/internal/app/services/connection/impl"
     changed "grovehub/services/integration/internal/app/events/producers/connection/operations/mailbox"
@@ -109,13 +112,13 @@ func (*messagingFake) Health(context.Context) error { return nil }
 
 var _ = Describe("Provider push event ownership", func() {
 	It("publishes one normalized event per connection without storing or syncing messages", func() {
-		registry, err := providerimpl.NewRegistry(gmail.New())
+		registry, err := register.NewRegistry(gmail.New())
 		Expect(err).NotTo(HaveOccurred())
 		messaging := &messagingFake{}
         producer:=producerimpl.New(changed.NewChangedPipeline(changedimpl.New(),messaging))
 		service, err := integrationimpl.NewConnectionService(
 			&connectionRepositoryFake{}, &watchRepositoryFake{},
-			registry, providerimpl.NewActionRegistry(), providerimpl.NewOAuthRegistry(), gmail.NewClient(integrationconfig.Gmail{}), nil, []byte("01234567890123456789012345678901"), "projects/test/topics/gmail", producer,validatorimpl.NewConnectionValidator(),mapperimpl.NewConnectionMapper(),
+			registry, execute.NewActionRegistry(), oauth.NewRegistry(), gmail.NewClient(integrationconfig.Gmail{}), nil, []byte("01234567890123456789012345678901"), "projects/test/topics/gmail", producer,validatorimpl.NewConnectionValidator(),mapperimpl.NewConnectionMapper(),
 		)
 		Expect(err).NotTo(HaveOccurred())
 		err = service.ProcessPush(context.Background(), gmail.PushNotification{
@@ -136,14 +139,14 @@ var _ = Describe("Provider push event ownership", func() {
 		Expect(ids).To(HaveKey("connection-2"))
 	})
     It("returns NATS delivery errors so the Gmail push endpoint can retry",func(){
-        registry,err:=providerimpl.NewRegistry(gmail.New())
+        registry,err:=register.NewRegistry(gmail.New())
         Expect(err).NotTo(HaveOccurred())
         sentinel:=errors.New("broker unavailable")
         transport:=&messagingFake{failure:sentinel}
         producer:=producerimpl.New(changed.NewChangedPipeline(changedimpl.New(),transport))
         service,err:=integrationimpl.NewConnectionService(
             &connectionRepositoryFake{},&watchRepositoryFake{},
-            registry,providerimpl.NewActionRegistry(),providerimpl.NewOAuthRegistry(),
+            registry,execute.NewActionRegistry(),oauth.NewRegistry(),
             gmail.NewClient(integrationconfig.Gmail{}),nil,
             []byte("01234567890123456789012345678901"),
             "projects/test/topics/gmail",producer,

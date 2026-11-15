@@ -28,6 +28,7 @@ func main(){
 
 func checkServices(backend string)error {
     services:=filepath.Join(backend,"services")
+    providerIDs:=make(map[string]string)
     return filepath.WalkDir(services,func(path string,entry fs.DirEntry,walkErr error)error{
         if walkErr!=nil{return walkErr}
         if entry.IsDir(){
@@ -36,7 +37,19 @@ func checkServices(backend string)error {
             return nil
         }
         if !strings.HasSuffix(path,".go")||strings.HasSuffix(path,"_test.go"){return nil}
-        return checkFile(path)
+        if err:=checkFile(path);err!=nil{return err}
+        occurrences,err:=sourceparser.ScanFile(path)
+        if err!=nil{return err}
+        for _,occurrence:=range occurrences {
+            if occurrence.Directive.Name!="Provider"{continue}
+            id,_,err:=parseProviderDirective(occurrence.Directive.Arguments)
+            if err!=nil{return fmt.Errorf("%s:%d: %w",path,occurrence.Line,err)}
+            if earlier,exists:=providerIDs[id];exists {
+                return fmt.Errorf("%s:%d: duplicate @Provider id=%s (first declared at %s)",path,occurrence.Line,id,earlier)
+            }
+            providerIDs[id]=fmt.Sprintf("%s:%d",path,occurrence.Line)
+        }
+        return nil
     })
 }
 
@@ -44,6 +57,11 @@ func checkFile(path string) error {
     occurrences,err:=sourceparser.ScanFile(path)
     if err!=nil{return err}
     for _,found:=range occurrences {
+        if found.Directive.Name=="Provider" {
+            if _,_,err:=parseProviderDirective(found.Directive.Arguments);err!=nil {
+                return fmt.Errorf("%s:%d: %w",found.File,found.Line,err)
+            }
+        }
         definition,exists:=annotation.Lookup(found.Directive.Name)
         if !exists {return fmt.Errorf("%s:%d: unknown annotation @%s",found.File,found.Line,found.Directive.Name)}
         allowed:=false
@@ -112,3 +130,23 @@ func checkValidationTags(path string) error {
 // annotation tooling and editor integrations without invoking the build.
 func CheckSource(path string) error {return checkFile(path)}
 
+
+// parseProviderDirective validates static provider identity declarations. It
+// deliberately does not create network clients or perform OAuth registration.
+func parseProviderDirective(args string) (string,string,error) {
+    fields:=strings.Fields(args)
+    if len(fields)!=2{return "","",fmt.Errorf("@Provider requires id=NAME category=name")}
+    values:=make(map[string]string,2)
+    for _,field:=range fields {
+        key,value,ok:=strings.Cut(field,"=")
+        if !ok || value=="" || (key!="id" && key!="category") || values[key]!="" {
+            return "","",fmt.Errorf("invalid @Provider argument %q",field)
+        }
+        values[key]=value
+    }
+    id,category:=values["id"],values["category"]
+    if id=="" || category=="" || id!=strings.ToUpper(id) {return "","",fmt.Errorf("@Provider requires uppercase id and lowercase category")}
+    for _,r:=range id {if !(r>='A'&&r<='Z') && !(r>='0'&&r<='9') && r!='_' {return "","",fmt.Errorf("invalid @Provider id %q",id)}}
+    for _,r:=range category {if !(r>='a'&&r<='z') && !(r>='0'&&r<='9') && r!='_' && r!='-' {return "","",fmt.Errorf("invalid @Provider category %q",category)}}
+    return id,category,nil
+}

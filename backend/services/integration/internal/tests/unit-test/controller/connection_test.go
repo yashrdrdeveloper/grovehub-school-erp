@@ -1,6 +1,7 @@
 package controller_test
 
 import (
+    providerdto "grovehub/services/integration/internal/app/providers/dto"
     providerdto "grovehub/services/integration/internal/app/dto/provider"
 	"context"
 	"encoding/json"
@@ -17,15 +18,14 @@ import (
     providercontroller "grovehub/services/integration/internal/app/controller/provider/impl"
 	connectiondto "grovehub/services/integration/internal/app/dto/connection"
 	
-	"grovehub/services/integration/internal/app/providers"
 	"grovehub/services/integration/internal/app/externalService/mail/gmail"
 	integrationroutes "grovehub/services/integration/internal/app/routes"
 )
 
 type serviceStub struct{}
 
-func (*serviceStub) Providers(context.Context) []providers.Descriptor {
-	return []providers.Descriptor{{ID: "GMAIL"}}
+func (*serviceStub) Providers(context.Context) []providerdto.Descriptor {
+	return []providerdto.Descriptor{{ID: "GMAIL"}}
 }
 
 func (*serviceStub) Provider(context.Context, string) (providerdto.ProviderDetails, error) {
@@ -68,7 +68,7 @@ func (*serviceStub) ListTests(context.Context, string, string) ([]connectiondto.
 	return nil, nil
 }
 
-func (*serviceStub) ExecuteAction(context.Context, string, string, providers.Action, json.RawMessage) (any, error) {
+func (*serviceStub) ExecuteAction(context.Context, string, string, providerdto.Action, json.RawMessage) (any, error) {
 	return nil, nil
 }
 

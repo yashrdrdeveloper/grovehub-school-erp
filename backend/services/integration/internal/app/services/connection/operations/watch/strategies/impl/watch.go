@@ -1,6 +1,7 @@
 package impl
 
 import (
+    oauth "grovehub/services/integration/internal/app/providers/mailprovider/operations/oauth"
     "context"
     "errors"
     "time"

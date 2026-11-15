@@ -291,3 +291,60 @@ func (cipher TokenCipher) Open(payload []byte) (providers.OAuthToken, error) {
     // ...
 }
 ```
+
+## Provider engine boundary and build-time validation
+
+`internal/app/providers/providers.go` contains only the generic `Provider`
+interface. Capability-neutral action and discovery DTOs are under
+`providers/dto/`, registries and action-handler interfaces under
+`providers/contracts/`, and normalized provider errors / strict action input
+decoding under `providers/helpers/`.
+
+```text
+providers/
+├── providers.go                         # provider-neutral Provider interface
+├── dto/provider.go                      # Action, Capability, Descriptor, Session
+├── contracts/{registry,executor}.go     # generic provider and action contracts
+├── helpers/{errors,input}.go            # normalized errors and strict decoding
+├── operations/
+│   ├── register/{register.go,strategies/impl/register.go}
+│   ├── resolve/resolve.go
+│   ├── catalog/catalog.go
+│   └── execute/{execute.go,strategies/impl/execute.go}
+└── mailprovider/
+    ├── mailprovider.go                   # Strategy, Resolver, Runtime, Factory
+    ├── constants/{actions,capabilities}.go
+    ├── dto/{oauth,mail}.go               # credentials, Send/Message/Attachments/MIME
+    ├── contracts/oauth.go                # OAuthStrategy + OAuthRegistry
+    └── operations/
+        ├── oauth/{oauth.go,strategies/impl/oauth.go}
+        └── build/{build.go,strategies/impl/build.go}
+```
+
+The generic registry and action engine can be reused by future payment, SMS,
+storage and custom providers; no generic provider file imports mail-specific
+packages. Mail owns OAuth and all `mail.*` actions and capabilities. The
+original `providers/impl`, `providers/oauth.go`, `providers/token.go`,
+`providers/errors.go`, `mailprovider/impl` and
+`constants/actions/gmail.go` have been replaced by resource-owned code.
+
+Concrete Gmail/Outlook adapters remain under `externalService/mail/` and
+do not enter the generic provider engine. Bootstrap still injects the chosen
+strategies explicitly; no source annotation instantiates network clients.
+
+### `@Provider` compile-time contract
+
+Declare the provider identity once on its concrete adapter strategy:
+
+```go
+// @Provider id=GMAIL category=mail
+type strategy struct { client *Client }
+```
+
+`libs/core/annotation/generation/check` validates the uppercase ID,
+lowercase category and uniqueness of IDs across all annotated services.
+Unknown or malformed provider declarations fail the annotation check.
+This directive is **compile-time metadata validation**, not automatic
+runtime registration, OAuth authorization, credential injection or webhooks.
+Existing provider registration remains explicit through
+`bootstrap/impl/external_services.go`.

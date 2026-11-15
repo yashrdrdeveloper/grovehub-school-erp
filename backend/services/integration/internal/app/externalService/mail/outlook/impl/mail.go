@@ -1,6 +1,7 @@
 package impl
 
 import (
+    providerhelpers "grovehub/services/integration/internal/app/providers/helpers"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -9,8 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	"grovehub/services/integration/internal/app/providers"
- "grovehub/services/integration/internal/app/providers/mailprovider/mailcontract"
+ maildto "grovehub/services/integration/internal/app/providers/mailprovider/dto"
 )
 
 type Message struct {
@@ -58,15 +58,15 @@ func safeNextLink(raw string) (string, error) {
 		return "/me/messages?$top=50&$select=id,subject,conversationId,internetMessageId,receivedDateTime,sentDateTime,from,toRecipients,ccRecipients,bccRecipients,replyTo,body,isRead", nil
 	}
 	if len(raw) > 4096 {
-		return "", providers.ErrInvalidActionInput
+		return "", providerhelpers.ErrInvalidActionInput
 	}
 	parsed, err := url.Parse(raw)
 	if err != nil {
-		return "", providers.ErrInvalidActionInput
+		return "", providerhelpers.ErrInvalidActionInput
 	}
 	if parsed.Scheme != "https" || parsed.Host != "graph.microsoft.com" || parsed.User != nil || parsed.Fragment != "" ||
 		parsed.Path != "/v1.0/me/messages" {
-		return "", providers.ErrInvalidActionInput
+		return "", providerhelpers.ErrInvalidActionInput
 	}
 	return "/me/messages?" + parsed.RawQuery, nil
 }
@@ -84,34 +84,34 @@ func (c *Client) Messages(ctx context.Context, accessToken, page string) (Messag
 func (c *Client) Message(ctx context.Context, accessToken, id string) (Message, error) {
 	var result Message
 	if id == "" || len(id) > 512 || strings.ContainsAny(id, "?#") {
-		return result, providers.ErrInvalidActionInput
+		return result, providerhelpers.ErrInvalidActionInput
 	}
 	err := c.graph(ctx, accessToken, http.MethodGet, "/me/messages/"+url.PathEscape(id), nil, "", &result)
 	return result, err
 }
 
 // Send converts provider-neutral mail into the Graph MIME sendMail request.
-func (c *Client) Send(ctx context.Context, accessToken string, request mailcontract.Send) (SendResult, error) {
+func (c *Client) Send(ctx context.Context, accessToken string, request maildto.Send) (SendResult, error) {
  identity, err := c.Profile(ctx, accessToken)
  if err != nil { return SendResult{}, err }
  me, ok := identity.(map[string]string)
- if !ok || me["emailAddress"] == "" { return SendResult{}, providers.ErrProviderUnavailable }
- raw, err := mailcontract.BuildMIME(me["emailAddress"], request)
- if err != nil { return SendResult{}, providers.ErrInvalidActionInput }
+ if !ok || me["emailAddress"] == "" { return SendResult{}, providerhelpers.ErrProviderUnavailable }
+ raw, err := maildto.BuildMIME(me["emailAddress"], request)
+ if err != nil { return SendResult{}, providerhelpers.ErrInvalidActionInput }
  return c.SendRaw(ctx, accessToken, base64.RawURLEncoding.EncodeToString(raw))
 }
 
 func (c *Client) SendRaw(ctx context.Context, accessToken, raw string) (SendResult, error) {
 	var result SendResult
 	if len(raw) == 0 || len(raw) > 8*1024*1024 {
-		return result, providers.ErrInvalidActionInput
+		return result, providerhelpers.ErrInvalidActionInput
 	}
 	decoded, err := base64.RawURLEncoding.DecodeString(raw)
 	if err != nil {
-		return result, providers.ErrInvalidActionInput
+		return result, providerhelpers.ErrInvalidActionInput
 	}
 	if len(decoded) == 0 || len(decoded) > 6*1024*1024 {
-		return result, providers.ErrInvalidActionInput
+		return result, providerhelpers.ErrInvalidActionInput
 	}
 	// Microsoft Graph's MIME form expects base64 (not Gmail's base64url)
 	// supplied as text/plain; response is HTTP 202 with no message identifier.
@@ -137,12 +137,12 @@ func (c *Client) Delta(ctx context.Context, accessToken, cursor string) (DeltaPa
 	path := "/me/mailFolders/inbox/messages/delta?$select=id,subject,conversationId,internetMessageId,receivedDateTime,sentDateTime,from,toRecipients,isRead"
 	if cursor != "" {
 		if len(cursor) > 4096 {
-			return result, providers.ErrInvalidActionInput
+			return result, providerhelpers.ErrInvalidActionInput
 		}
 		parsed, err := url.Parse(cursor)
 		if err != nil || parsed.Scheme != "https" || parsed.Host != "graph.microsoft.com" || parsed.User != nil ||
 			parsed.Fragment != "" || !allowedDeltaPath(parsed.Path) {
-			return result, providers.ErrInvalidActionInput
+			return result, providerhelpers.ErrInvalidActionInput
 		}
 		path = "/me/mailFolders/inbox/messages/delta?" + parsed.RawQuery
 	}
@@ -163,7 +163,7 @@ func allowedDeltaPath(path string) bool {
 func (c *Client) Attachment(ctx context.Context, accessToken, messageID, attachmentID string) (json.RawMessage, error) {
 	if messageID == "" || attachmentID == "" || len(messageID) > 512 || len(attachmentID) > 512 ||
 		strings.ContainsAny(messageID, "?#") || strings.ContainsAny(attachmentID, "?#") {
-		return nil, providers.ErrInvalidActionInput
+		return nil, providerhelpers.ErrInvalidActionInput
 	}
 	var attachment json.RawMessage
 	err := c.graph(ctx, accessToken, http.MethodGet,

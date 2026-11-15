@@ -1,6 +1,8 @@
 package impl
 
 import (
+    providerhelpers "grovehub/services/integration/internal/app/providers/helpers"
+    maildto "grovehub/services/integration/internal/app/providers/mailprovider/dto"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -13,7 +15,6 @@ import (
 	"time"
 
 	integrationconfig "grovehub/services/integration/internal/app/config"
-	"grovehub/services/integration/internal/app/providers"
 )
 
 const (
@@ -22,7 +23,7 @@ const (
 	gmailAPI = "https://gmail.googleapis.com/gmail/v1/users/me"
 )
 
-type Token = providers.OAuthToken
+type Token = maildto.OAuthToken
 
 type StatusError struct{ StatusCode int }
 
@@ -122,7 +123,7 @@ func (c *Client) do(ctx context.Context, token Token, method, path string, body 
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return providers.NormalizeStatus(resp.StatusCode)
+		return providerhelpers.NormalizeStatus(resp.StatusCode)
 	}
 	if out == nil {
 		return nil

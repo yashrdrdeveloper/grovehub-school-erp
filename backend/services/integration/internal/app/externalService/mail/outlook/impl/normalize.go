@@ -4,7 +4,7 @@ import (
  "encoding/json"
  "strings"
 
- "grovehub/services/integration/internal/app/providers/mailprovider/mailcontract"
+ maildto "grovehub/services/integration/internal/app/providers/mailprovider/dto"
 )
 
 type graphAddress struct {
@@ -25,8 +25,8 @@ func graphAddressList(raw json.RawMessage)[]string{
  return values
 }
 
-func normalizeOutlookMessage(m Message)mailcontract.Message{
- result:=mailcontract.Message{
+func normalizeOutlookMessage(m Message)maildto.Message{
+ result:=maildto.Message{
   ID:m.ID,ThreadID:m.ConversationID,Subject:m.Subject,From:graphAddressValue(m.From),
   To:graphAddressList(m.ToRecipients),Cc:graphAddressList(m.CcRecipients),
   Bcc:graphAddressList(m.BccRecipients),ReplyTo:graphAddressList(m.ReplyTo),
@@ -39,8 +39,8 @@ func normalizeOutlookMessage(m Message)mailcontract.Message{
  return result
 }
 
-func normalizeOutlookPage(page MessagePage)mailcontract.Page{
- result:=mailcontract.Page{NextPageToken:page.NextLink,Messages:make([]mailcontract.Message,0,len(page.Messages))}
+func normalizeOutlookPage(page MessagePage)maildto.Page{
+ result:=maildto.Page{NextPageToken:page.NextLink,Messages:make([]maildto.Message,0,len(page.Messages))}
  for _,message:=range page.Messages{result.Messages=append(result.Messages,normalizeOutlookMessage(message))}
  return result
 }

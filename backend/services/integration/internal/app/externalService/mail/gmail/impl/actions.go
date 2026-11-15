@@ -1,24 +1,26 @@
 package impl
 
 import (
+    providerdto "grovehub/services/integration/internal/app/providers/dto"
+    providercontracts "grovehub/services/integration/internal/app/providers/contracts"
+    mailconstants "grovehub/services/integration/internal/app/providers/mailprovider/constants"
 	"context"
  	"encoding/json"
 	"strings"
 
-	"grovehub/services/integration/internal/app/providers"
- "grovehub/services/integration/internal/app/providers/mailprovider/mailcontract"
+ maildto "grovehub/services/integration/internal/app/providers/mailprovider/dto"
 	providerhelpers "grovehub/services/integration/internal/app/providers/helpers"
 )
 
 type ActionHandler struct {
 	client *Client
-	action providers.Action
+	action providerdto.Action
 }
 
-func RegisterActions(registry providers.ActionRegistry, client *Client) error {
-	for _, action := range []providers.Action{
-		providers.ActionMailProfile, providers.ActionMailList, providers.ActionMailGet,
-		providers.ActionMailHistory, providers.ActionMailSend, providers.ActionMailAttachment,
+func RegisterActions(registry providercontracts.ActionRegistry, client *Client) error {
+	for _, action := range []providerdto.Action{
+		mailconstants.MailProfile, mailconstants.MailList, mailconstants.MailGet,
+		mailconstants.MailHistory, mailconstants.MailSend, mailconstants.MailAttachment,
 	} {
 		if err := registry.Register("GMAIL", action, &ActionHandler{client: client, action: action}); err != nil {
 			return err
@@ -27,15 +29,15 @@ func RegisterActions(registry providers.ActionRegistry, client *Client) error {
 	return nil
 }
 
-func (h *ActionHandler) Execute(ctx context.Context, session providers.Session, input json.RawMessage) (any, error) {
+func (h *ActionHandler) Execute(ctx context.Context, session providerdto.Session, input json.RawMessage) (any, error) {
 	token := Token{AccessToken: session.AccessToken}
 	switch h.action {
-	case providers.ActionMailProfile:
+	case mailconstants.MailProfile:
 		if len(input) != 0 && strings.TrimSpace(string(input)) != "{}" {
-			return nil, providers.ErrInvalidActionInput
+			return nil, providerhelpers.ErrInvalidActionInput
 		}
 		return h.client.Profile(ctx, token)
-	case providers.ActionMailList:
+	case mailconstants.MailList:
 		var request struct {
 			PageToken string `json:"pageToken"`
 		}
@@ -43,12 +45,12 @@ func (h *ActionHandler) Execute(ctx context.Context, session providers.Session, 
 			return nil, err
 		}
 		if len(request.PageToken) > 2048 {
-			return nil, providers.ErrInvalidActionInput
+			return nil, providerhelpers.ErrInvalidActionInput
 		}
 		page,err:=h.client.Messages(ctx,token,request.PageToken)
   if err!=nil{return nil,err}
   return normalizeGmailPage(page),nil
-	case providers.ActionMailGet:
+	case mailconstants.MailGet:
 		var request struct {
 			MessageID string `json:"messageId"`
 		}
@@ -56,12 +58,12 @@ func (h *ActionHandler) Execute(ctx context.Context, session providers.Session, 
 			return nil, err
 		}
 		if len(request.MessageID) == 0 || len(request.MessageID) > 512 {
-			return nil, providers.ErrInvalidActionInput
+			return nil, providerhelpers.ErrInvalidActionInput
 		}
 		message,err:=h.client.MessageMetadata(ctx,token,request.MessageID)
   if err!=nil{return nil,err}
   return normalizeGmailMessage(message),nil
-	case providers.ActionMailAttachment:
+	case mailconstants.MailAttachment:
 		var request struct {
 			MessageID    string `json:"messageId"`
 			AttachmentID string `json:"attachmentId"`
@@ -70,10 +72,10 @@ func (h *ActionHandler) Execute(ctx context.Context, session providers.Session, 
 			return nil, err
 		}
 		if request.MessageID == "" || request.AttachmentID == "" || len(request.MessageID) > 512 || len(request.AttachmentID) > 512 {
-			return nil, providers.ErrInvalidActionInput
+			return nil, providerhelpers.ErrInvalidActionInput
 		}
 		return h.client.Attachment(ctx, token, request.MessageID, request.AttachmentID)
-	case providers.ActionMailHistory:
+	case mailconstants.MailHistory:
 		var request struct {
 			StartHistoryID string `json:"startHistoryId"`
 			PageToken      string `json:"pageToken"`
@@ -82,19 +84,19 @@ func (h *ActionHandler) Execute(ctx context.Context, session providers.Session, 
 			return nil, err
 		}
 		if request.StartHistoryID == "" || len(request.StartHistoryID) > 128 || len(request.PageToken) > 2048 {
-			return nil, providers.ErrInvalidActionInput
+			return nil, providerhelpers.ErrInvalidActionInput
 		}
 		return h.client.History(ctx, token, request.StartHistoryID, request.PageToken)
-	case providers.ActionMailSend:
-		var request mailcontract.Send
+	case mailconstants.MailSend:
+		var request maildto.Send
 		if err := providerhelpers.DecodeStrictActionInput(input, &request); err != nil {
 			return nil, err
 		}
 		if err := request.Validate(); err != nil {
-			return nil, providers.ErrInvalidActionInput
+			return nil, providerhelpers.ErrInvalidActionInput
 		}
 		return h.client.Send(ctx, token, request)
 	default:
-		return nil, providers.ErrUnsupportedAction
+		return nil, providerhelpers.ErrUnsupportedAction
 	}
 }

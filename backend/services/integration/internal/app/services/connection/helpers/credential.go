@@ -1,13 +1,13 @@
 package helpers
 
 import (
+    maildto "grovehub/services/integration/internal/app/providers/mailprovider/dto"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/json"
 	"errors"
 
-	"grovehub/services/integration/internal/app/providers"
 )
 
 type TokenCipher struct{ key []byte }
@@ -19,7 +19,7 @@ func NewTokenCipher(key []byte) (TokenCipher, error) {
 	return TokenCipher{key: append([]byte(nil), key...)}, nil
 }
 
-func (c TokenCipher) Seal(token providers.OAuthToken) ([]byte, error) {
+func (c TokenCipher) Seal(token maildto.OAuthToken) ([]byte, error) {
 	block, err := aes.NewCipher(c.key)
 	if err != nil {
 		return nil, err
@@ -39,8 +39,8 @@ func (c TokenCipher) Seal(token providers.OAuthToken) ([]byte, error) {
 	return gcm.Seal(nonce, nonce, payload, nil), nil
 }
 
-func (c TokenCipher) Open(ciphertext []byte) (providers.OAuthToken, error) {
-	var token providers.OAuthToken
+func (c TokenCipher) Open(ciphertext []byte) (maildto.OAuthToken, error) {
+	var token maildto.OAuthToken
 	block, err := aes.NewCipher(c.key)
 	if err != nil {
 		return token, err

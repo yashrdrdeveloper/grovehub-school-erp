@@ -1,6 +1,7 @@
 package impl
 
 import (
+    providerdto "grovehub/services/integration/internal/app/providers/dto"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -14,7 +15,6 @@ import (
 	integrationconfig "grovehub/services/integration/internal/app/config"
 	integrationerrors "grovehub/services/integration/internal/app/constants/error"
 	connectiondto "grovehub/services/integration/internal/app/dto/connection"
-	"grovehub/services/integration/internal/app/providers"
 	"grovehub/services/integration/internal/app/externalService/mail/gmail"
 	integrationservices "grovehub/services/integration/internal/app/services/connection"
 )
@@ -262,7 +262,7 @@ func (c *ConnectionController) ExecuteAction(w http.ResponseWriter, r *http.Requ
 	if !ok {
 		return
 	}
-	action := providers.Action(strings.TrimSpace(r.PathValue("action")))
+	action := providerdto.Action(strings.TrimSpace(r.PathValue("action")))
 	if action == "" || len(action) > 100 {
 		writeError(w, r, http.StatusBadRequest, integrationerrors.Invalid)
 		return

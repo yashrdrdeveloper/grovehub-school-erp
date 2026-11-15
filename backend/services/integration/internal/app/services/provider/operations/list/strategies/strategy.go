@@ -1,11 +1,11 @@
 package strategies
 
 import (
+    providerdto "grovehub/services/integration/internal/app/providers/dto"
     "context"
-    "grovehub/services/integration/internal/app/providers"
 )
 
 // @Strategy
 type Strategy interface {
-    Execute(ctx context.Context) []providers.Descriptor
+    Execute(ctx context.Context) []providerdto.Descriptor
 }

@@ -1,9 +1,11 @@
 package provider
 
-import "grovehub/services/integration/internal/app/providers"
-
+import (
+    providerdto "grovehub/services/integration/internal/app/providers/dto"
+    "grovehub/services/integration/internal/app/providers"
+)
 type ProviderDetails struct {
-	Provider         providers.Descriptor `json:"provider"`
-	AvailableActions []providers.Action   `json:"availableActions"`
+	Provider         providerdto.Descriptor `json:"provider"`
+	AvailableActions []providerdto.Action   `json:"availableActions"`
 	OAuthConfigured  bool                 `json:"oauthConfigured"`
 }

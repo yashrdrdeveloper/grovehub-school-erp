@@ -1,13 +1,15 @@
 package helpers
 
 import (
+    providerdto "grovehub/services/integration/internal/app/providers/dto"
+    providerhelpers "grovehub/services/integration/internal/app/providers/helpers"
+    mailconstants "grovehub/services/integration/internal/app/providers/mailprovider/constants"
 	"encoding/base64"
 	"errors"
 	"fmt"
 	"net/mail"
 
 	connectionconstants "grovehub/services/integration/internal/app/constants/connections"
-	"grovehub/services/integration/internal/app/providers"
 )
 
 var ErrInvalidTestMailbox = errors.New("invalid test mailbox address")
@@ -26,13 +28,13 @@ func BuildSelfTestRaw(mailbox, testID string) (string, error) {
 }
 
 // ProbeAction identifies provider-neutral actions; adapters implement behavior.
-func ProbeAction(direction string) (providers.Action, error) {
+func ProbeAction(direction string) (providerdto.Action, error) {
 	switch direction {
 	case connectionconstants.DirectionInbound:
-		return providers.ActionMailList, nil
+		return mailconstants.MailList, nil
 	case connectionconstants.DirectionOutbound:
-		return providers.ActionMailSend, nil
+		return mailconstants.MailSend, nil
 	default:
-		return "", providers.ErrInvalidActionInput
+		return "", providerhelpers.ErrInvalidActionInput
 	}
 }

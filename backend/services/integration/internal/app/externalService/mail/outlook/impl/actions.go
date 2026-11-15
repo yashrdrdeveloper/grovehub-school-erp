@@ -1,24 +1,26 @@
 package impl
 
 import (
+    providerdto "grovehub/services/integration/internal/app/providers/dto"
+    providercontracts "grovehub/services/integration/internal/app/providers/contracts"
+    mailconstants "grovehub/services/integration/internal/app/providers/mailprovider/constants"
 	"context"
 	"encoding/json"
 	"strings"
 
-	"grovehub/services/integration/internal/app/providers"
- "grovehub/services/integration/internal/app/providers/mailprovider/mailcontract"
+ maildto "grovehub/services/integration/internal/app/providers/mailprovider/dto"
 	providerhelpers "grovehub/services/integration/internal/app/providers/helpers"
 )
 
 type ActionHandler struct {
 	client *Client
-	action providers.Action
+	action providerdto.Action
 }
 
-func RegisterActions(registry providers.ActionRegistry, client *Client) error {
-	for _, action := range []providers.Action{
-		providers.ActionMailProfile, providers.ActionMailList,
-		providers.ActionMailGet, providers.ActionMailSend, providers.ActionMailDelta, providers.ActionMailAttachment,
+func RegisterActions(registry providercontracts.ActionRegistry, client *Client) error {
+	for _, action := range []providerdto.Action{
+		mailconstants.MailProfile, mailconstants.MailList,
+		mailconstants.MailGet, mailconstants.MailSend, mailconstants.MailDelta, mailconstants.MailAttachment,
 	} {
 		if err := registry.Register("OUTLOOK", action, &ActionHandler{client: client, action: action}); err != nil {
 			return err
@@ -27,14 +29,14 @@ func RegisterActions(registry providers.ActionRegistry, client *Client) error {
 	return nil
 }
 
-func (h *ActionHandler) Execute(ctx context.Context, session providers.Session, input json.RawMessage) (any, error) {
+func (h *ActionHandler) Execute(ctx context.Context, session providerdto.Session, input json.RawMessage) (any, error) {
 	switch h.action {
-	case providers.ActionMailProfile:
+	case mailconstants.MailProfile:
 		if len(input) > 0 && strings.TrimSpace(string(input)) != "{}" {
-			return nil, providers.ErrInvalidActionInput
+			return nil, providerhelpers.ErrInvalidActionInput
 		}
 		return h.client.Profile(ctx, session.AccessToken)
-	case providers.ActionMailList:
+	case mailconstants.MailList:
 		var request struct {
 			PageToken string `json:"pageToken"`
 		}
@@ -44,7 +46,7 @@ func (h *ActionHandler) Execute(ctx context.Context, session providers.Session, 
 		page,err:=h.client.Messages(ctx,session.AccessToken,request.PageToken)
   if err!=nil{return nil,err}
   return normalizeOutlookPage(page),nil
-	case providers.ActionMailGet:
+	case mailconstants.MailGet:
 		var request struct {
 			MessageID string `json:"messageId"`
 		}
@@ -54,7 +56,7 @@ func (h *ActionHandler) Execute(ctx context.Context, session providers.Session, 
 		message,err:=h.client.Message(ctx,session.AccessToken,request.MessageID)
   if err!=nil{return nil,err}
   return normalizeOutlookMessage(message),nil
-	case providers.ActionMailAttachment:
+	case mailconstants.MailAttachment:
 		var request struct {
 			MessageID    string `json:"messageId"`
 			AttachmentID string `json:"attachmentId"`
@@ -71,13 +73,13 @@ func (h *ActionHandler) Execute(ctx context.Context, session providers.Session, 
    Size int64 `json:"size"`
    ContentBytes string `json:"contentBytes"`
   }
-  if json.Unmarshal(raw,&file)!=nil{return nil,providers.ErrProviderUnavailable}
-  if file.ContentBytes==""{return nil,providers.ErrUnsupportedAction}
-  return mailcontract.AttachmentData{
+  if json.Unmarshal(raw,&file)!=nil{return nil,providerhelpers.ErrProviderUnavailable}
+  if file.ContentBytes==""{return nil,providerhelpers.ErrUnsupportedAction}
+  return maildto.AttachmentData{
    AttachmentID:file.ID,Filename:file.Name,ContentType:file.ContentType,
    Size:file.Size,ContentBase64:file.ContentBytes,
   },nil
-	case providers.ActionMailDelta:
+	case mailconstants.MailDelta:
 		var request struct {
 			Cursor string `json:"cursor"`
 		}
@@ -85,16 +87,16 @@ func (h *ActionHandler) Execute(ctx context.Context, session providers.Session, 
 			return nil, err
 		}
 		return h.client.Delta(ctx, session.AccessToken, request.Cursor)
-	case providers.ActionMailSend:
-		var request mailcontract.Send
+	case mailconstants.MailSend:
+		var request maildto.Send
 		if err := providerhelpers.DecodeStrictActionInput(input, &request); err != nil {
 			return nil, err
 		}
 		if err := request.Validate(); err != nil {
-			return nil, providers.ErrInvalidActionInput
+			return nil, providerhelpers.ErrInvalidActionInput
 		}
 		return h.client.Send(ctx, session.AccessToken, request)
 	default:
-		return nil, providers.ErrUnsupportedAction
+		return nil, providerhelpers.ErrUnsupportedAction
 	}
 }

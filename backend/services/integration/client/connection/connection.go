@@ -1,6 +1,7 @@
 package connection
 
 import (
+    providerdto "grovehub/services/integration/internal/app/providers/dto"
     providerdto "grovehub/services/integration/internal/app/dto/provider"
 	"context"
 	"encoding/json"
@@ -15,7 +16,7 @@ import (
 // @Client integrationClient
 type Client interface {
 	// @Proxy providers.Providers
-	Providers(ctx context.Context) []providers.Descriptor
+	Providers(ctx context.Context) []providerdto.Descriptor
 	// @Proxy providers.Provider
 	Provider(ctx context.Context, id string) (providerdto.ProviderDetails, error)
 	// @Proxy connections.Create
@@ -27,7 +28,7 @@ type Client interface {
 	// @Proxy connections.Disconnect
 	DisconnectConnection(ctx context.Context, tenantID, id string) (connectiondto.Connection, error)
 	// @Proxy connections.ExecuteAction
-	ExecuteAction(ctx context.Context, tenantID, connectionID string, action providers.Action, input json.RawMessage) (any, error)
+	ExecuteAction(ctx context.Context, tenantID, connectionID string, action providerdto.Action, input json.RawMessage) (any, error)
 }
 
 // Client-facing aliases expose typed Integration contracts without exporting
@@ -40,6 +41,6 @@ type (
     OAuthCompletion = connectiondto.OAuthCompletion
     Watch = connectiondto.Watch
     ProviderDetails = providerdto.ProviderDetails
-    Action = providers.Action
-    Descriptor = providers.Descriptor
+    Action = providerdto.Action
+    Descriptor = providerdto.Descriptor
 )

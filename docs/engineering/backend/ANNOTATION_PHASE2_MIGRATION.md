@@ -170,3 +170,12 @@ These remain work items, **not implemented features**.
 ## Annotation folder refactor
 
 The 16 category definitions were moved from root-level `annotations_*.go` files into separate category packages under `libs/core/annotation/`, including `event/`, `utilities/`, and `patterns/`. Shared types live in `contract/`, and the original root package remains a compatibility facade. All annotation-framework `*_test.go` files and the former `libs/core/tests/unit-test/annotation/` suite were removed as requested. No Foundation/Identity/Infrastructure/Integration business logic, generators, or runtime imports were changed by this folder-only migration. CI still compiles the backend and runs unrelated existing unit suites.
+
+## Integration @Provider rollout
+
+The Integration provider engine now uses the checked `@Provider id=GMAIL
+category=mail` and `@Provider id=OUTLOOK category=mail` declarations on
+concrete adapter strategy types. The checker rejects duplicate or invalid
+provider identities during the annotation build; actual provider strategy
+creation and registration remain explicit in Integration bootstrap. Generic
+provider DTO/contracts/helpers no longer import mail capability contracts.

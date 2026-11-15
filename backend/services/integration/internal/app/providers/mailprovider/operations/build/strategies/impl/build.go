@@ -4,7 +4,11 @@ import (
 	"strings"
 
 	"grovehub/services/integration/internal/app/providers"
-	providerimpl "grovehub/services/integration/internal/app/providers/impl"
+	register "grovehub/services/integration/internal/app/providers/operations/register"
+    execute "grovehub/services/integration/internal/app/providers/operations/execute"
+    oauth "grovehub/services/integration/internal/app/providers/mailprovider/operations/oauth"
+    dto "grovehub/services/integration/internal/app/providers/dto"
+    helpers "grovehub/services/integration/internal/app/providers/helpers"
 	"grovehub/services/integration/internal/app/providers/mailprovider"
 )
 
@@ -18,17 +22,17 @@ type resolver struct {
 	strategies map[string]mailprovider.Strategy
 }
 
-func (r *resolver) Resolve(providerID string, capability providers.Capability) (mailprovider.Strategy, error) {
+func (r *resolver) Resolve(providerID string, capability dto.Capability) (mailprovider.Strategy, error) {
 	strategy, ok := r.strategies[strings.ToUpper(strings.TrimSpace(providerID))]
 	if !ok {
-		return nil, providers.ErrUnknownProvider
+		return nil, helpers.ErrUnknownProvider
 	}
 	for _, supported := range strategy.Descriptor().Capabilities {
 		if supported == capability {
 			return strategy, nil
 		}
 	}
-	return nil, providers.ErrUnsupportedAction
+	return nil, helpers.ErrUnsupportedAction
 }
 
 func (factory) Build(strategies ...mailprovider.Strategy) (mailprovider.Runtime, error) {
@@ -36,18 +40,18 @@ func (factory) Build(strategies ...mailprovider.Strategy) (mailprovider.Runtime,
 	selector := &resolver{strategies: make(map[string]mailprovider.Strategy, len(strategies))}
 	for _, strategy := range strategies {
 		if strategy == nil {
-			return mailprovider.Runtime{}, providers.ErrUnknownProvider
+			return mailprovider.Runtime{}, helpers.ErrUnknownProvider
 		}
 		descriptor := strategy.Descriptor()
 		catalog = append(catalog, strategy)
 		selector.strategies[strings.ToUpper(strings.TrimSpace(descriptor.ID))] = strategy
 	}
-	registry, err := providerimpl.NewRegistry(catalog...)
+	registry, err := register.NewRegistry(catalog...)
 	if err != nil {
 		return mailprovider.Runtime{}, err
 	}
-	actions := providerimpl.NewActionRegistry()
-	oauth := providerimpl.NewOAuthRegistry()
+	actions := execute.NewActionRegistry()
+	oauth := oauth.NewRegistry()
 	for _, strategy := range strategies {
 		if err := strategy.Register(actions, oauth); err != nil {
 			return mailprovider.Runtime{}, err

@@ -236,3 +236,15 @@ The complete remaining work and acceptance criteria are in the Phase 2 migration
 ## Ownership and dependency direction
 
 Each responsibility directory owns an exported `UseCases []contract.UseCase` catalog. The shared `contract/` package has no dependency on the registry, processors or services. The root `annotation` package imports the domain catalogs, exposes the unchanged `All`, `Lookup`, `Uses`, `Patterns`, `ParseComment` APIs and re-exports their contract types. The pattern catalog lives only in `patterns/`, split by the three GoF families. Build-time generators and their output directories remain unchanged.
+
+
+### Provider registry annotations
+
+`// @Provider id=GMAIL category=mail` is now a checked directive for concrete
+provider strategy **types**. The annotation checker validates required static
+arguments and detects duplicate provider IDs across services. Use uppercase IDs
+and lowercase categories. It does **not** generate network clients, register
+live providers, or perform OAuth; existing explicit bootstrap wiring remains
+the source of runtime registration. Keep provider-neutral contracts under
+`integration/internal/app/providers` and mail-only contracts under
+`providers/mailprovider`.

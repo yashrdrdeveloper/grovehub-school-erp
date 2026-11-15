@@ -1,18 +1,19 @@
 package impl
 
 import (
+    providercontracts "grovehub/services/integration/internal/app/providers/contracts"
+    mailcontracts "grovehub/services/integration/internal/app/providers/mailprovider/contracts"
     config "grovehub/services/integration/internal/app/config"
     configimpl "grovehub/services/integration/internal/app/config/impl"
-    "grovehub/services/integration/internal/app/providers"
-    mailfactory "grovehub/services/integration/internal/app/providers/mailprovider/impl"
+    mailfactory "grovehub/services/integration/internal/app/providers/mailprovider/operations/build"
     "grovehub/services/integration/internal/app/externalService/mail/gmail"
     "grovehub/services/integration/internal/app/externalService/mail/outlook"
 )
 
 type providerDependencies struct {
-    registry providers.Registry
-    actions providers.ActionRegistry
-    oauth providers.OAuthRegistry
+    registry providercontracts.Registry
+    actions providercontracts.ActionRegistry
+    oauth mailcontracts.OAuthRegistry
     gmail *gmail.Client
     outlook *outlook.Client
     key []byte

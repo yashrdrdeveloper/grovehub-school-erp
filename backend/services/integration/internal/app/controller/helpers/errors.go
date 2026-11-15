@@ -1,13 +1,13 @@
 package helpers
 
 import (
+    providerhelpers "grovehub/services/integration/internal/app/providers/helpers"
     "errors"
     "net/http"
 
     coreerrors "grovehub/libs/core/errors"
     httpresponse "grovehub/libs/core/http/response"
     integrationerrors "grovehub/services/integration/internal/app/constants/error"
-    "grovehub/services/integration/internal/app/providers"
     integrationrepository "grovehub/services/integration/internal/app/repository/connection"
     serviceimpl "grovehub/services/integration/internal/app/services/connection/impl"
 )
@@ -15,7 +15,7 @@ import (
 // WriteServiceError preserves Integration's existing structured HTTP error mapping
 // for both Connection and Provider controllers.
 func WriteServiceError(w http.ResponseWriter, r *http.Request, err error) {
-	if status := providers.HTTPStatus(err); status != 0 {
+	if status := providerhelpers.HTTPStatus(err); status != 0 {
 		switch status {
 		case http.StatusBadRequest:
 			WriteError(w, r, status, integrationerrors.Invalid)
@@ -37,13 +37,13 @@ func WriteServiceError(w http.ResponseWriter, r *http.Request, err error) {
 		} else {
 			WriteError(w, r, http.StatusBadRequest, integrationerrors.Invalid)
 		}
-	case errors.Is(err, providers.ErrInvalidActionInput):
+	case errors.Is(err, providerhelpers.ErrInvalidActionInput):
 		WriteError(w, r, http.StatusBadRequest, integrationerrors.Invalid)
-	case errors.Is(err, providers.ErrUnsupportedAction):
+	case errors.Is(err, providerhelpers.ErrUnsupportedAction):
 		WriteError(w, r, http.StatusNotImplemented, integrationerrors.NotReady)
-	case errors.Is(err, providers.ErrProviderUnavailable):
+	case errors.Is(err, providerhelpers.ErrProviderUnavailable):
 		WriteError(w, r, http.StatusServiceUnavailable, integrationerrors.NotReady)
-	case errors.Is(err, providers.ErrUnknownProvider):
+	case errors.Is(err, providerhelpers.ErrUnknownProvider):
 		WriteError(w, r, http.StatusBadRequest, integrationerrors.Invalid)
 	case errors.Is(err, serviceimpl.ErrOAuthInvalid):
 		WriteError(w, r, http.StatusBadRequest, integrationerrors.Invalid)

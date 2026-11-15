@@ -1,12 +1,12 @@
 package strategies
 
 import (
+    providerdto "grovehub/services/integration/internal/app/providers/dto"
     "context"
     "encoding/json"
-    "grovehub/services/integration/internal/app/providers"
 )
 
 // @Strategy
 type Strategy interface {
-    ExecuteAction(ctx context.Context, tenantID, connectionID string, action providers.Action, input json.RawMessage) (any,error)
+    ExecuteAction(ctx context.Context, tenantID, connectionID string, action providerdto.Action, input json.RawMessage) (any,error)
 }

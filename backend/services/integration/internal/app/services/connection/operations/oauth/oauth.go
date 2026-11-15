@@ -1,15 +1,15 @@
 package oauth
 
 import (
+    maildto "grovehub/services/integration/internal/app/providers/mailprovider/dto"
     "context"
 
     connectiondto "grovehub/services/integration/internal/app/dto/connection"
-    "grovehub/services/integration/internal/app/providers"
     strategies "grovehub/services/integration/internal/app/services/connection/operations/oauth/strategies"
 )
 
 type TokenProvider interface {
-    ValidProviderToken(ctx context.Context, connectionID, provider string) (providers.OAuthToken,error)
+    ValidProviderToken(ctx context.Context, connectionID, provider string) (maildto.OAuthToken,error)
 }
 
 type OAuthOperation struct {strategy strategies.Strategy}
@@ -20,4 +20,4 @@ func (operation *OAuthOperation) BeginOAuth(ctx context.Context, tenantID, id st
 
 func (operation *OAuthOperation) FinishOAuth(ctx context.Context, provider, code, state string) (connectiondto.OAuthCompletion,error) {return operation.strategy.FinishOAuth(ctx,provider,code,state)}
 
-func (operation *OAuthOperation) ValidProviderToken(ctx context.Context, connectionID, provider string) (providers.OAuthToken,error) {return operation.strategy.ValidProviderToken(ctx,connectionID,provider)}
+func (operation *OAuthOperation) ValidProviderToken(ctx context.Context, connectionID, provider string) (maildto.OAuthToken,error) {return operation.strategy.ValidProviderToken(ctx,connectionID,provider)}

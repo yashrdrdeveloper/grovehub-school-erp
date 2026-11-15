@@ -8,7 +8,7 @@ import (
  "time"
  "strings"
 
- "grovehub/services/integration/internal/app/providers/mailprovider/mailcontract"
+ maildto "grovehub/services/integration/internal/app/providers/mailprovider/dto"
 )
 
 type gmailPart struct {
@@ -26,7 +26,7 @@ func decodeGmailBody(raw string) string {
  return string(decoded)
 }
 
-func applyGmailPart(dst *mailcontract.Message,p gmailPart){
+func applyGmailPart(dst *maildto.Message,p gmailPart){
  if len(p.Headers)>0{
   for _,h:=range p.Headers {
    switch strings.ToLower(h.Name){
@@ -44,7 +44,7 @@ func applyGmailPart(dst *mailcontract.Message,p gmailPart){
  case "text/html":if dst.Body.HTML==""{dst.Body.HTML=decodeGmailBody(p.Body.Data)}
  }
  if p.Body.AttachmentID!=""{
-  dst.Attachments=append(dst.Attachments,mailcontract.AttachmentData{
+  dst.Attachments=append(dst.Attachments,maildto.AttachmentData{
    AttachmentID:p.Body.AttachmentID,Filename:p.Filename,ContentType:p.MIMEType,Size:p.Body.Size,
   })
  }
@@ -60,8 +60,8 @@ func splitGmailAddresses(raw string)[]string{
  return result
 }
 
-func normalizeGmailMessage(m Message)mailcontract.Message{
- out:=mailcontract.Message{ID:m.ID,ThreadID:m.ThreadID,Snippet:m.Snippet,Labels:m.LabelIDs}
+func normalizeGmailMessage(m Message)maildto.Message{
+ out:=maildto.Message{ID:m.ID,ThreadID:m.ThreadID,Snippet:m.Snippet,Labels:m.LabelIDs}
  if m.InternalDate!=""{
   if ms,err:=strconv.ParseInt(m.InternalDate,10,64);err==nil{
    out.ReceivedAt=time.UnixMilli(ms).UTC().Format(time.RFC3339)
@@ -74,8 +74,8 @@ func normalizeGmailMessage(m Message)mailcontract.Message{
  return out
 }
 
-func normalizeGmailPage(page MessagePage)mailcontract.Page{
- result:=mailcontract.Page{NextPageToken:page.NextPageToken,Messages:make([]mailcontract.Message,0,len(page.Messages))}
+func normalizeGmailPage(page MessagePage)maildto.Page{
+ result:=maildto.Page{NextPageToken:page.NextPageToken,Messages:make([]maildto.Message,0,len(page.Messages))}
  for _,msg:=range page.Messages{result.Messages=append(result.Messages,normalizeGmailMessage(msg))}
  return result
 }

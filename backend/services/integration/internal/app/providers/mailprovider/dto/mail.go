@@ -1,4 +1,4 @@
-package mailcontract
+package dto
 
 import (
  "bytes"

@@ -1,6 +1,9 @@
 package impl
 
 import (
+    maildto "grovehub/services/integration/internal/app/providers/mailprovider/dto"
+    mailcontracts "grovehub/services/integration/internal/app/providers/mailprovider/contracts"
+    oauth "grovehub/services/integration/internal/app/providers/mailprovider/operations/oauth"
     "context"
     "crypto/rand"
     "crypto/sha256"
@@ -11,7 +14,6 @@ import (
 
     connectiondto "grovehub/services/integration/internal/app/dto/connection"
     "grovehub/services/integration/internal/app/entity"
-    "grovehub/services/integration/internal/app/providers"
     connectionrepo "grovehub/services/integration/internal/app/repository/connection"
     connectionhelpers "grovehub/services/integration/internal/app/services/connection/helpers"
     strategies "grovehub/services/integration/internal/app/services/connection/operations/oauth/strategies"
@@ -19,13 +21,13 @@ import (
 
 type oauthStrategy struct {
     repository connectionrepo.ConnectionRepository
-    oauth providers.OAuthRegistry
+    oauth mailcontracts.OAuthRegistry
     cipher connectionhelpers.TokenCipher
 }
 
 var _ strategies.Strategy = (*oauthStrategy)(nil)
 
-func New(repository connectionrepo.ConnectionRepository, oauth providers.OAuthRegistry, cipher connectionhelpers.TokenCipher) strategies.Strategy {
+func New(repository connectionrepo.ConnectionRepository, oauth mailcontracts.OAuthRegistry, cipher connectionhelpers.TokenCipher) strategies.Strategy {
     return &oauthStrategy{repository:repository,oauth:oauth,cipher:cipher}
 }
 
@@ -107,8 +109,8 @@ func hashState(raw string) string {
 	return hex.EncodeToString(sum[:])
 }
 
-func (s *oauthStrategy) ValidProviderToken(ctx context.Context, connectionID, provider string) (providers.OAuthToken, error) {
-	var empty providers.OAuthToken
+func (s *oauthStrategy) ValidProviderToken(ctx context.Context, connectionID, provider string) (maildto.OAuthToken, error) {
+	var empty maildto.OAuthToken
 	encrypted, err := s.repository.Credential(ctx, connectionID)
 	if err != nil {
 		return empty, err

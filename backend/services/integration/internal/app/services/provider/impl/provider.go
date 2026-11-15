@@ -2,7 +2,8 @@
 package impl
 
 import (
-    "grovehub/services/integration/internal/app/providers"
+    providercontracts "grovehub/services/integration/internal/app/providers/contracts"
+    mailcontracts "grovehub/services/integration/internal/app/providers/mailprovider/contracts"
     services "grovehub/services/integration/internal/app/services/provider"
     get "grovehub/services/integration/internal/app/services/provider/operations/get"
     getimpl "grovehub/services/integration/internal/app/services/provider/operations/get/strategies/impl"
@@ -18,7 +19,7 @@ type ProviderService struct {
 
 var _ services.ProviderService = (*ProviderService)(nil)
 
-func NewProviderService(registry providers.Registry, actions providers.ActionRegistry, oauth providers.OAuthRegistry) services.ProviderService {
+func NewProviderService(registry providercontracts.Registry, actions providercontracts.ActionRegistry, oauth mailcontracts.OAuthRegistry) services.ProviderService {
     return &ProviderService{
         ListOperation:list.New(listimpl.New(registry)),
         GetOperation:get.New(getimpl.New(registry,actions,oauth)),

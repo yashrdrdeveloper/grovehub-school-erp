@@ -2,8 +2,10 @@
 package impl
 
 import (
+    providercontracts "grovehub/services/integration/internal/app/providers/contracts"
+    mailcontracts "grovehub/services/integration/internal/app/providers/mailprovider/contracts"
+    oauth "grovehub/services/integration/internal/app/providers/mailprovider/operations/oauth"
     eventproducer "grovehub/services/integration/internal/app/events/producers/connection"
-    "grovehub/services/integration/internal/app/providers"
     "grovehub/services/integration/internal/app/externalService/mail/gmail"
     "grovehub/services/integration/internal/app/externalService/mail/outlook"
     connectionrepo "grovehub/services/integration/internal/app/repository/connection"
@@ -54,7 +56,7 @@ type ConnectionService struct {
 
 var _ connectionservices.ConnectionService = (*ConnectionService)(nil)
 
-func NewConnectionService(repository connectionrepo.ConnectionRepository, watchRepository watchrepo.WatchRepository, registry providers.Registry, actions providers.ActionRegistry, oauthRegistry providers.OAuthRegistry, gmailClient *gmail.Client, outlookClient *outlook.Client, encryptionKey []byte, pushTopic string, producer eventproducer.ChangedProducer, validator connectionvalidator.ConnectionValidator, mapper connectionmapper.ConnectionMapper) (connectionservices.ConnectionService,error) {
+func NewConnectionService(repository connectionrepo.ConnectionRepository, watchRepository watchrepo.WatchRepository, registry providercontracts.Registry, actions providercontracts.ActionRegistry, oauthRegistry mailcontracts.OAuthRegistry, gmailClient *gmail.Client, outlookClient *outlook.Client, encryptionKey []byte, pushTopic string, producer eventproducer.ChangedProducer, validator connectionvalidator.ConnectionValidator, mapper connectionmapper.ConnectionMapper) (connectionservices.ConnectionService,error) {
     cipher,err:=helpers.NewTokenCipher(encryptionKey)
     if err!=nil && (gmailClient!=nil || outlookClient!=nil) {return nil,err}
 

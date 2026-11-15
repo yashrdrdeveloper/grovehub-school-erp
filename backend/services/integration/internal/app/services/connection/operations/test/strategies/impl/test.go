@@ -1,6 +1,10 @@
 package impl
 
 import (
+    providerdto "grovehub/services/integration/internal/app/providers/dto"
+    providercontracts "grovehub/services/integration/internal/app/providers/contracts"
+    providerhelpers "grovehub/services/integration/internal/app/providers/helpers"
+    oauth "grovehub/services/integration/internal/app/providers/mailprovider/operations/oauth"
     mapper "grovehub/services/integration/internal/app/mappers/connection"
     "context"
     "encoding/json"
@@ -12,8 +16,7 @@ import (
     connectionconstants "grovehub/services/integration/internal/app/constants/connections"
     connectiondto "grovehub/services/integration/internal/app/dto/connection"
     "grovehub/services/integration/internal/app/entity"
-    "grovehub/services/integration/internal/app/providers"
-    mailcontract "grovehub/services/integration/internal/app/providers/mailprovider/mailcontract"
+    maildto "grovehub/services/integration/internal/app/providers/mailprovider/dto"
     connectionrepo "grovehub/services/integration/internal/app/repository/connection"
     connectionhelpers "grovehub/services/integration/internal/app/services/connection/helpers"
     oauth "grovehub/services/integration/internal/app/services/connection/operations/oauth"
@@ -23,13 +26,13 @@ import (
 type testStrategy struct {
     mapper mapper.ConnectionMapper
     repository connectionrepo.ConnectionRepository
-    actions providers.ActionRegistry
+    actions providercontracts.ActionRegistry
     tokens oauth.TokenProvider
 }
 
 var _ teststrategies.Strategy = (*testStrategy)(nil)
 
-func New(repository connectionrepo.ConnectionRepository, actions providers.ActionRegistry, tokens oauth.TokenProvider, eventMapper mapper.ConnectionMapper) teststrategies.Strategy {
+func New(repository connectionrepo.ConnectionRepository, actions providercontracts.ActionRegistry, tokens oauth.TokenProvider, eventMapper mapper.ConnectionMapper) teststrategies.Strategy {
     return &testStrategy{repository:repository,actions:actions,tokens:tokens,mapper:eventMapper}
 }
 
@@ -59,22 +62,22 @@ func (s *testStrategy) RunTest(ctx context.Context, tenantID, id, direction stri
 	payload := json.RawMessage("{}")
 
 	if direction == connectionconstants.DirectionOutbound {
-  payload, err = json.Marshal(mailcontract.Send{
+  payload, err = json.Marshal(maildto.Send{
    To: []string{*connection.ExternalID},
    Subject: "GrooveHub Connection Test",
-   Body: mailcontract.Body{Text: "This email verifies that the connected provider accepts outgoing mail. Test ID: "+test.ID},
+   Body: maildto.Body{Text: "This email verifies that the connected provider accepts outgoing mail. Test ID: "+test.ID},
   })
  }
 	if err == nil {
-		var token providers.OAuthToken
+		var token maildto.OAuthToken
 		token, err = s.tokens.ValidProviderToken(ctx, id, connection.Provider)
 		if err == nil {
 			if s.actions == nil {
-				err = providers.ErrProviderUnavailable
+				err = providerhelpers.ErrProviderUnavailable
 			} else if token.AccessToken == "" {
 				err = errors.New("provider token missing")
 			} else {
-				_, err = s.actions.Execute(ctx, providers.Session{
+				_, err = s.actions.Execute(ctx, providerdto.Session{
 					ConnectionID: id,
 					ProviderID:   connection.Provider,
 					AccessToken:  token.AccessToken,

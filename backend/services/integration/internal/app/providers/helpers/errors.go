@@ -1,6 +1,7 @@
-package providers
+package helpers
 
 import (
+    errorcode "grovehub/services/integration/internal/app/constants/error"
 	"errors"
 	"net/http"
 )
@@ -44,3 +45,11 @@ func HTTPStatus(err error) int {
 	}
 	return 0
 }
+
+var (
+    ErrUnsupportedAction = errorcode.ErrUnsupportedAction
+    ErrInvalidActionInput = errorcode.ErrInvalidActionInput
+    ErrProviderUnavailable = errorcode.ErrProviderUnavailable
+    ErrUnknownProvider = errorcode.ErrUnknownProvider
+    ErrDuplicateProvider = errorcode.ErrDuplicateProvider
+)

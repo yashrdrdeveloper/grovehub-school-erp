@@ -11,24 +11,24 @@ import (
 
  . "github.com/onsi/ginkgo/v2"
  . "github.com/onsi/gomega"
- mailcontract "grovehub/services/integration/internal/app/providers/mailprovider/mailcontract"
+ maildto "grovehub/services/integration/internal/app/providers/mailprovider/dto"
 )
 
 var _=Describe("Provider-neutral mail MIME codec",func(){
  It("creates multipart mail with text HTML and attachments",func(){
-  payload:=mailcontract.Send{
+  payload:=maildto.Send{
    To:[]string{"yashrdrdeveloper@gmail.com"},
    Cc:[]string{"copy@example.com"},
    Bcc:[]string{"hidden@example.com"},
    ReplyTo:[]string{"reply@example.com"},
    Subject:"GrooveHub Test",
-   Body:mailcontract.Body{Text:"Hello plain",HTML:"<p>Hello HTML</p>"},
-   Attachments:[]mailcontract.Attachment{{
+   Body:maildto.Body{Text:"Hello plain",HTML:"<p>Hello HTML</p>"},
+   Attachments:[]maildto.Attachment{{
     Filename:"test.txt",ContentType:"text/plain",
     ContentBase64:base64.StdEncoding.EncodeToString([]byte("hello attachment")),
    }},
   }
-  raw,err:=mailcontract.BuildMIME("sender@gmail.com",payload)
+  raw,err:=maildto.BuildMIME("sender@gmail.com",payload)
   Expect(err).NotTo(HaveOccurred())
   msg,err:=mail.ReadMessage(bytes.NewReader(raw))
   Expect(err).NotTo(HaveOccurred())
@@ -59,11 +59,11 @@ var _=Describe("Provider-neutral mail MIME codec",func(){
   Expect(err).To(Equal(io.EOF))
  })
  It("rejects spoofed header injection, invalid addresses and bad attachment encoding",func(){
-  valid:=mailcontract.Send{
+  valid:=maildto.Send{
    To:[]string{"recipient@example.com"},Subject:"Test",
-   Body:mailcontract.Body{Text:"message"},
+   Body:maildto.Body{Text:"message"},
   }
-  _,err:=mailcontract.BuildMIME("sender@example.com",valid)
+  _,err:=maildto.BuildMIME("sender@example.com",valid)
   Expect(err).NotTo(HaveOccurred())
   invalid:=valid
   invalid.To=[]string{"a@example.com\r\nBcc:bad@example.com"}
@@ -72,14 +72,14 @@ var _=Describe("Provider-neutral mail MIME codec",func(){
   invalid.Subject="Hello\nBcc:bad@example.com"
   Expect(invalid.Validate()).To(HaveOccurred())
   invalid=valid
-  invalid.Attachments=[]mailcontract.Attachment{{Filename:"a.txt",ContentType:"text/plain",ContentBase64:"not-base64"}}
+  invalid.Attachments=[]maildto.Attachment{{Filename:"a.txt",ContentType:"text/plain",ContentBase64:"not-base64"}}
   Expect(invalid.Validate()).To(HaveOccurred())
-  _,err=mailcontract.BuildMIME("spoof@example.com\r\nBcc:bad@example.com",valid)
+  _,err=maildto.BuildMIME("spoof@example.com\r\nBcc:bad@example.com",valid)
   Expect(err).To(HaveOccurred())
  })
  It("serializes text-only messages without attachments",func(){
-  raw,err:=mailcontract.BuildMIME("sender@example.com",mailcontract.Send{
-   To:[]string{"recipient@example.com"},Subject:"Test",Body:mailcontract.Body{Text:"Hello"},
+  raw,err:=maildto.BuildMIME("sender@example.com",maildto.Send{
+   To:[]string{"recipient@example.com"},Subject:"Test",Body:maildto.Body{Text:"Hello"},
   })
   Expect(err).NotTo(HaveOccurred())
   msg,err:=mail.ReadMessage(bytes.NewReader(raw))

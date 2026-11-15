@@ -1,21 +1,23 @@
 package impl
 
 import (
+    providercontracts "grovehub/services/integration/internal/app/providers/contracts"
+    mailcontracts "grovehub/services/integration/internal/app/providers/mailprovider/contracts"
+    oauth "grovehub/services/integration/internal/app/providers/mailprovider/operations/oauth"
     "context"
     dto "grovehub/services/integration/internal/app/dto/provider"
-    "grovehub/services/integration/internal/app/providers"
     strategies "grovehub/services/integration/internal/app/services/provider/operations/get/strategies"
 )
 
 type getStrategy struct {
-    registry providers.Registry
-    actions providers.ActionRegistry
-    oauth providers.OAuthRegistry
+    registry providercontracts.Registry
+    actions providercontracts.ActionRegistry
+    oauth mailcontracts.OAuthRegistry
 }
 
 var _ strategies.Strategy = (*getStrategy)(nil)
 
-func New(registry providers.Registry, actions providers.ActionRegistry, oauth providers.OAuthRegistry) strategies.Strategy {
+func New(registry providercontracts.Registry, actions providercontracts.ActionRegistry, oauth mailcontracts.OAuthRegistry) strategies.Strategy {
     return &getStrategy{registry:registry,actions:actions,oauth:oauth}
 }
 

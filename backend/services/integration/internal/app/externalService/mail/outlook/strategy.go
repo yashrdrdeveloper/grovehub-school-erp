@@ -1,17 +1,21 @@
 package outlook
 
 import (
-	"grovehub/services/integration/internal/app/providers"
+    providerdto "grovehub/services/integration/internal/app/providers/dto"
+    providercontracts "grovehub/services/integration/internal/app/providers/contracts"
+    mailcontracts "grovehub/services/integration/internal/app/providers/mailprovider/contracts"
+    oauth "grovehub/services/integration/internal/app/providers/mailprovider/operations/oauth"
 	"grovehub/services/integration/internal/app/providers/mailprovider"
 )
 
+// @Provider id=OUTLOOK category=mail
 type strategy struct{ client *Client }
 
 func NewStrategy(client *Client) mailprovider.Strategy { return &strategy{client: client} }
 
-func (s *strategy) Descriptor() providers.Descriptor   { return New().Descriptor() }
+func (s *strategy) Descriptor() providerdto.Descriptor   { return New().Descriptor() }
 
-func (s *strategy) Register(actions providers.ActionRegistry, oauth providers.OAuthRegistry) error {
+func (s *strategy) Register(actions providercontracts.ActionRegistry, oauth mailcontracts.OAuthRegistry) error {
 	if s.client == nil {
 		return nil
 	}

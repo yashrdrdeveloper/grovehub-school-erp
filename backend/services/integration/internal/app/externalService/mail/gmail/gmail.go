@@ -1,6 +1,7 @@
 package gmail
 
 import (
+    providercontracts "grovehub/services/integration/internal/app/providers/contracts"
 	"io"
 
 	integrationconfig "grovehub/services/integration/internal/app/config"
@@ -40,7 +41,7 @@ func New() providers.Provider                       { return impl.New() }
 
 func NewClient(cfg integrationconfig.Gmail) *Client { return impl.NewClient(cfg) }
 
-func RegisterActions(registry providers.ActionRegistry, client *Client) error {
+func RegisterActions(registry providercontracts.ActionRegistry, client *Client) error {
 	return impl.RegisterActions(registry, client)
 }
 

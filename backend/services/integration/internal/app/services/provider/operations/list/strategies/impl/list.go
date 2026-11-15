@@ -1,15 +1,16 @@
 package impl
 
 import (
+    providerdto "grovehub/services/integration/internal/app/providers/dto"
+    providercontracts "grovehub/services/integration/internal/app/providers/contracts"
     "context"
-    "grovehub/services/integration/internal/app/providers"
     strategies "grovehub/services/integration/internal/app/services/provider/operations/list/strategies"
 )
 
-type listStrategy struct {registry providers.Registry}
+type listStrategy struct {registry providercontracts.Registry}
 
 var _ strategies.Strategy = (*listStrategy)(nil)
 
-func New(registry providers.Registry) strategies.Strategy {return &listStrategy{registry:registry}}
+func New(registry providercontracts.Registry) strategies.Strategy {return &listStrategy{registry:registry}}
 
-func (s *listStrategy) Execute(_ context.Context) []providers.Descriptor {return s.registry.List()}
+func (s *listStrategy) Execute(_ context.Context) []providerdto.Descriptor {return s.registry.List()}

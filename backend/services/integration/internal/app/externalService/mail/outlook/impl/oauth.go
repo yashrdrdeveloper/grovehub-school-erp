@@ -1,6 +1,8 @@
 package impl
 
 import (
+    providerhelpers "grovehub/services/integration/internal/app/providers/helpers"
+    maildto "grovehub/services/integration/internal/app/providers/mailprovider/dto"
 	"context"
 	"encoding/json"
 	"errors"
@@ -12,7 +14,6 @@ import (
 	"time"
 
 	integrationconfig "grovehub/services/integration/internal/app/config"
-	"grovehub/services/integration/internal/app/providers"
 )
 
 const graphBase = "https://graph.microsoft.com/v1.0"
@@ -42,7 +43,7 @@ func (c *Client) AuthorizationURL(state string) string {
 	return c.endpoint("authorize") + "?" + v.Encode()
 }
 
-func (c *Client) Exchange(ctx context.Context, code string) (providers.OAuthToken, error) {
+func (c *Client) Exchange(ctx context.Context, code string) (maildto.OAuthToken, error) {
 	return c.tokenRequest(ctx, url.Values{
 		"client_id":     {c.config.ClientID},
 		"client_secret": {c.config.ClientSecret},
@@ -53,7 +54,7 @@ func (c *Client) Exchange(ctx context.Context, code string) (providers.OAuthToke
 	})
 }
 
-func (c *Client) Refresh(ctx context.Context, t providers.OAuthToken) (providers.OAuthToken, error) {
+func (c *Client) Refresh(ctx context.Context, t maildto.OAuthToken) (maildto.OAuthToken, error) {
 	next, err := c.tokenRequest(ctx, url.Values{
 		"client_id":     {c.config.ClientID},
 		"client_secret": {c.config.ClientSecret},
@@ -70,8 +71,8 @@ func (c *Client) Refresh(ctx context.Context, t providers.OAuthToken) (providers
 	return next, nil
 }
 
-func (c *Client) tokenRequest(ctx context.Context, v url.Values) (providers.OAuthToken, error) {
-	var token providers.OAuthToken
+func (c *Client) tokenRequest(ctx context.Context, v url.Values) (maildto.OAuthToken, error) {
+	var token maildto.OAuthToken
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint("token"), strings.NewReader(v.Encode()))
 	if err != nil {
 		return token, err
@@ -113,7 +114,7 @@ func (c *Client) graph(ctx context.Context, accessToken, method, path string, bo
 	}
 	defer res.Body.Close()
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
-		return providers.NormalizeStatus(res.StatusCode)
+		return providerhelpers.NormalizeStatus(res.StatusCode)
 	}
 	if dst == nil {
 		return nil
@@ -127,7 +128,7 @@ func (e *StatusError) Error() string {
 	return fmt.Sprintf("Outlook Graph request failed (HTTP %d)", e.StatusCode)
 }
 
-func (c *Client) Mailbox(ctx context.Context, token providers.OAuthToken) (string, error) {
+func (c *Client) Mailbox(ctx context.Context, token maildto.OAuthToken) (string, error) {
 	var me struct {
 		Mail              string `json:"mail"`
 		UserPrincipalName string `json:"userPrincipalName"`
