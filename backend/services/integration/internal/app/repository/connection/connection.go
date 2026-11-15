@@ -12,6 +12,7 @@ var (
 	ErrOAuthStateInvalid  = errors.New("oauth state invalid or expired")
 )
 
+// @Repository entity=Connection
 type ConnectionRepository interface {
 	Create(ctx context.Context, connection entity.Connection) error
 	Get(ctx context.Context, tenantID, id string) (entity.Connection, error)
