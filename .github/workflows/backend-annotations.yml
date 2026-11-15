@@ -39,6 +39,9 @@ jobs:
       - name: Test Infrastructure messaging persistence options
         working-directory: backend
         run: go test -vet=off -overlay=.generated/overlay.json ./services/infrastructure/internal/app/services/messaging/...
+      - name: Verify Integration resource packages compile with generated overlays
+        working-directory: backend
+        run: go test -vet=off -overlay=.generated/overlay.json ./services/integration/internal/tests/unit-test/...
       - name: Run available core, launcher and service unit suites
         working-directory: backend
         run: |
@@ -63,7 +66,7 @@ jobs:
           test -s backend/services/foundation/.generated/internal/app/client/person/impl/zz_clients.gen.go
           test -s backend/services/identity/.generated/routes/zz_routes.gen.go
           test -s backend/services/integration/.generated/internal/app/routes/zz_routes.gen.go
-          test -s backend/services/integration/.generated/internal/app/client/connections/impl/zz_clients.gen.go
+          test -s backend/services/integration/.generated/internal/app/client/connection/impl/zz_clients.gen.go
           test -s backend/services/identity/.generated/mappers/impl/zz_mappers.gen.go
           test -s backend/services/foundation/.generated/internal/app/mappers/person/impl/zz_mappers.gen.go
           test -s backend/services/foundation/.generated/internal/app/repository/person/impl/zz_search.gen.go
@@ -72,7 +75,7 @@ jobs:
           test -s backend/services/integration/.generated/internal/app/entity/zz_tables.gen.go
           test -s backend/services/foundation/.generated/internal/app/events/producers/person/operations/changed/zz_events.gen.go
           test -s backend/services/identity/.generated/events/accounts/zz_events.gen.go
-          test -s backend/services/integration/.generated/internal/app/events/connections/mailbox/zz_events.gen.go
+          test -s backend/services/integration/.generated/internal/app/events/producers/connection/operations/mailbox/zz_events.gen.go
 
   generated-coverage-macos:
     name: Validate generated-source unit coverage on macOS

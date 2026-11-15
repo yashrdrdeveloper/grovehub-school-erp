@@ -1,10 +1,12 @@
 package impl
 
 import (
-    repository "grovehub/services/integration/internal/app/repository"
-    repositoryimpl "grovehub/services/integration/internal/app/repository/impl"
+    connectionrepo "grovehub/services/integration/internal/app/repository/connection"
+    connectionimpl "grovehub/services/integration/internal/app/repository/connection/impl"
+    watchrepo "grovehub/services/integration/internal/app/repository/watch"
+    watchimpl "grovehub/services/integration/internal/app/repository/watch/impl"
 )
 
-func (b *builder) newRepository() (repository.ConnectionRepository,repository.WatchRepository) {
-    return repositoryimpl.NewConnectionRepository(b.db),repositoryimpl.NewWatchRepository(b.db)
+func (b *builder) newRepository() (connectionrepo.ConnectionRepository, watchrepo.WatchRepository) {
+    return connectionimpl.NewConnectionRepository(b.db), watchimpl.NewWatchRepository(b.db)
 }

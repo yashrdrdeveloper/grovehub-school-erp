@@ -4,11 +4,11 @@ import (
     "context"
     "time"
 
-    services "grovehub/services/integration/internal/app/services"
+    connections "grovehub/services/integration/internal/app/services/connection"
 )
 
 // Renewal belongs to the module lifecycle, not the public module constructor.
-func (b *builder) newEvents(service services.ConnectionService, enabled bool) (chan struct{},chan struct{}) {
+func (b *builder) newEvents(service connections.ConnectionService, enabled bool) (chan struct{},chan struct{}) {
     stop:=make(chan struct{})
     done:=make(chan struct{})
     if !enabled {close(done);return stop,done}

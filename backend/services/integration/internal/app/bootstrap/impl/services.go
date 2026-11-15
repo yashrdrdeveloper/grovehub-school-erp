@@ -1,19 +1,21 @@
 package impl
 
 import (
-    services "grovehub/services/integration/internal/app/services"
-    serviceimpl "grovehub/services/integration/internal/app/services/impl"
+    connectionservice "grovehub/services/integration/internal/app/services/connection"
+    connectionimpl "grovehub/services/integration/internal/app/services/connection/impl"
+    providerservice "grovehub/services/integration/internal/app/services/provider"
+    providerimpl "grovehub/services/integration/internal/app/services/provider/impl"
 )
 
-func (b *builder) newServices(providers providerDependencies) (services.ConnectionService,services.ProviderService,error) {
+func (b *builder) newServices(providers providerDependencies) (connectionservice.ConnectionService, providerservice.ProviderService, error) {
     connections,watches:=b.newRepository()
-    service,err:=serviceimpl.NewConnectionService(
+    service,err:=connectionimpl.NewConnectionService(
         connections,watches,
         providers.registry,providers.actions,providers.oauth,
         providers.gmail,providers.outlook,providers.key,
         providers.push.Topic,b.messaging,
     )
     if err!=nil{return nil,nil,err}
-    providerService:=serviceimpl.NewProviderService(providers.registry,providers.actions,providers.oauth)
+    providerService:=providerimpl.NewProviderService(providers.registry,providers.actions,providers.oauth)
     return service,providerService,nil
 }

@@ -1,6 +1,7 @@
 package controller_test
 
 import (
+    providerdto "grovehub/services/integration/internal/app/dto/provider"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -11,9 +12,9 @@ import (
 	. "github.com/onsi/gomega"
 
 	integrationconfig "grovehub/services/integration/config"
-	integrationcontroller "grovehub/services/integration/internal/app/controller/impl"
-	integrationrequest "grovehub/services/integration/internal/app/dto/request"
-	integrationresponse "grovehub/services/integration/internal/app/dto/response"
+	integrationcontroller "grovehub/services/integration/internal/app/controller/connection/impl"
+	connectiondto "grovehub/services/integration/internal/app/dto/connection"
+	
 	"grovehub/services/integration/internal/app/providers"
 	"grovehub/services/integration/internal/app/providers/mailprovider/providers/gmail"
 	integrationroutes "grovehub/services/integration/internal/app/routes"
@@ -24,40 +25,40 @@ type serviceStub struct{}
 func (*serviceStub) Providers(context.Context) []providers.Descriptor {
 	return []providers.Descriptor{{ID: "GMAIL"}}
 }
-func (*serviceStub) Provider(context.Context, string) (integrationresponse.ProviderDetails, error) {
-	return integrationresponse.ProviderDetails{}, nil
+func (*serviceStub) Provider(context.Context, string) (providerdto.ProviderDetails, error) {
+	return providerdto.ProviderDetails{}, nil
 }
-func (*serviceStub) Create(context.Context, string, integrationrequest.CreateConnection) (integrationresponse.Connection, error) {
-	return integrationresponse.Connection{}, nil
+func (*serviceStub) Create(context.Context, string, connectiondto.CreateConnection) (connectiondto.Connection, error) {
+	return connectiondto.Connection{}, nil
 }
-func (*serviceStub) Get(context.Context, string, string) (integrationresponse.Connection, error) {
-	return integrationresponse.Connection{}, nil
+func (*serviceStub) Get(context.Context, string, string) (connectiondto.Connection, error) {
+	return connectiondto.Connection{}, nil
 }
-func (*serviceStub) List(context.Context, string, string) ([]integrationresponse.Connection, error) {
+func (*serviceStub) List(context.Context, string, string) ([]connectiondto.Connection, error) {
 	return nil, nil
 }
-func (*serviceStub) BeginOAuth(context.Context, string, string) (integrationresponse.OAuthStart, error) {
-	return integrationresponse.OAuthStart{}, nil
+func (*serviceStub) BeginOAuth(context.Context, string, string) (connectiondto.OAuthStart, error) {
+	return connectiondto.OAuthStart{}, nil
 }
-func (*serviceStub) FinishOAuth(context.Context, string, string, string) (integrationresponse.OAuthCompletion, error) {
-	return integrationresponse.OAuthCompletion{}, nil
+func (*serviceStub) FinishOAuth(context.Context, string, string, string) (connectiondto.OAuthCompletion, error) {
+	return connectiondto.OAuthCompletion{}, nil
 }
-func (*serviceStub) Watch(context.Context, string, string) (integrationresponse.Watch, error) {
-	return integrationresponse.Watch{}, nil
+func (*serviceStub) Watch(context.Context, string, string) (connectiondto.Watch, error) {
+	return connectiondto.Watch{}, nil
 }
 func (*serviceStub) ProcessPush(context.Context, gmail.PushNotification) error { return nil }
 func (*serviceStub) RenewExpiring(context.Context) error                       { return nil }
-func (*serviceStub) RunTest(context.Context, string, string, string) (integrationresponse.ConnectionTest, error) {
-	return integrationresponse.ConnectionTest{}, nil
+func (*serviceStub) RunTest(context.Context, string, string, string) (connectiondto.ConnectionTest, error) {
+	return connectiondto.ConnectionTest{}, nil
 }
-func (*serviceStub) ListTests(context.Context, string, string) ([]integrationresponse.ConnectionTest, error) {
+func (*serviceStub) ListTests(context.Context, string, string) ([]connectiondto.ConnectionTest, error) {
 	return nil, nil
 }
 func (*serviceStub) ExecuteAction(context.Context, string, string, providers.Action, json.RawMessage) (any, error) {
 	return nil, nil
 }
-func (*serviceStub) Disconnect(context.Context, string, string) (integrationresponse.Connection, error) {
-	return integrationresponse.Connection{}, nil
+func (*serviceStub) Disconnect(context.Context, string, string) (connectiondto.Connection, error) {
+	return connectiondto.Connection{}, nil
 }
 
 var _ = Describe("Integration HTTP authorization", func() {

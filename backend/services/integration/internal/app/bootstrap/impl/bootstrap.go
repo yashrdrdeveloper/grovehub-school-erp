@@ -13,7 +13,6 @@ import (
     bootstrap "grovehub/services/integration/internal/app/bootstrap"
     controller "grovehub/services/integration/internal/app/controller"
     "grovehub/services/integration/internal/app/routes"
-    connectionservices "grovehub/services/integration/internal/app/services"
     messaging "grovehub/services/infrastructure/client/messaging"
 )
 
@@ -61,5 +60,3 @@ func (module *runtime) Client() integrationclient.Client {return module.client}
 func (module *runtime) LocalOnly() bool {return module.localOnly}
 func (module *runtime) Close() {close(module.stop);<-module.done}
 
-// The connection service is intentionally referenced via its interface.
-var _ connectionservices.ConnectionService

@@ -11,10 +11,10 @@ import (
 	messagingclient "grovehub/services/infrastructure/client/messaging"
  integrationconfig "grovehub/services/integration/config"
 	"grovehub/services/integration/internal/app/entity"
-	mailboxevents "grovehub/services/integration/internal/app/events/connections/mailbox"
+	mailboxevents "grovehub/services/integration/internal/app/events/producers/connection/operations/mailbox"
 	providerimpl "grovehub/services/integration/internal/app/providers/impl"
 	"grovehub/services/integration/internal/app/providers/mailprovider/providers/gmail"
-	integrationimpl "grovehub/services/integration/internal/app/services/impl"
+	integrationimpl "grovehub/services/integration/internal/app/services/connection/impl"
 )
 
 type connectionRepositoryFake struct{}

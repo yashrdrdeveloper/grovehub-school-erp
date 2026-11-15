@@ -2,6 +2,6 @@
 // follows Foundation's client/<resource> layout.
 package client
 
-import connections "grovehub/services/integration/client/connections"
+import connections "grovehub/services/integration/client/connection"
 
 type Client = connections.Client
