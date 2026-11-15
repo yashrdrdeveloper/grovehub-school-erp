@@ -72,6 +72,9 @@ func (m *messagingFake) Publish(_ context.Context, topic string, payload []byte,
 	m.published = append(m.published, publishedEvent{topic: topic, data: payload})
 	return nil
 }
+func (m *messagingFake) PublishWithOptions(ctx context.Context, topic string, payload []byte, metadata map[string]string, options messagingclient.PublishOptions) error {
+    return m.Publish(ctx,topic,payload,metadata)
+}
 func (*messagingFake) Consume(context.Context, string, messagingclient.MessageHandler) error {
 	return nil
 }

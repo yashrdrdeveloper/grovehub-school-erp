@@ -36,6 +36,9 @@ jobs:
       - name: Test annotation source generators
         working-directory: backend
         run: go test ./libs/core/annotation/generation/patchdto ./libs/core/annotation/generation/search ./libs/core/annotation/generation/routes ./libs/core/annotation/generation/clients ./libs/core/annotation/generation/mappers ./libs/core/annotation/generation/testing/coverage
+      - name: Test Infrastructure messaging persistence options
+        working-directory: backend
+        run: go test -vet=off -overlay=.generated/overlay.json ./services/infrastructure/internal/app/services/messaging/impl
       - name: Run available core, launcher and service unit suites
         working-directory: backend
         run: |
