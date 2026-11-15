@@ -12,10 +12,13 @@ type getStrategy struct {
     actions providers.ActionRegistry
     oauth providers.OAuthRegistry
 }
+
 var _ strategies.Strategy = (*getStrategy)(nil)
+
 func New(registry providers.Registry, actions providers.ActionRegistry, oauth providers.OAuthRegistry) strategies.Strategy {
     return &getStrategy{registry:registry,actions:actions,oauth:oauth}
 }
+
 func (s *getStrategy) Execute(_ context.Context, id string) (dto.ProviderDetails,error) {
     provider,err:=s.registry.Find(id)
     if err!=nil{return dto.ProviderDetails{},err}

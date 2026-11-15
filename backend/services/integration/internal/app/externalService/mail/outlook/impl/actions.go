@@ -26,6 +26,7 @@ func RegisterActions(registry providers.ActionRegistry, client *Client) error {
 	}
 	return nil
 }
+
 func (h *ActionHandler) Execute(ctx context.Context, session providers.Session, input json.RawMessage) (any, error) {
 	switch h.action {
 	case providers.ActionMailProfile:

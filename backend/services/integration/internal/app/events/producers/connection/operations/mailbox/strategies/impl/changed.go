@@ -10,6 +10,7 @@ import (
 )
 
 type ChangedStrategy struct {}
+
 var _ strategies.ChangedStrategy = (*ChangedStrategy)(nil)
 
 func New() strategies.ChangedStrategy { return &ChangedStrategy{} }

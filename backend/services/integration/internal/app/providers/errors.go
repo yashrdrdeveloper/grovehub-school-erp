@@ -36,6 +36,7 @@ func NormalizeStatus(status int) error {
 		return &Error{Code: "UPSTREAM_REJECTED", HTTPStatus: http.StatusBadGateway}
 	}
 }
+
 func HTTPStatus(err error) int {
 	var e *Error
 	if errors.As(err, &e) {

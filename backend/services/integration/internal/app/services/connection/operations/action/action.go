@@ -8,5 +8,7 @@ import (
 )
 
 type ActionOperation struct{ strategy strategies.Strategy }
+
 func New(strategy strategies.Strategy) *ActionOperation {return &ActionOperation{strategy:strategy}}
+
 func (operation *ActionOperation) ExecuteAction(ctx context.Context, tenantID, connectionID string, action providers.Action, input json.RawMessage) (any,error) {return operation.strategy.ExecuteAction(ctx,tenantID,connectionID,action,input)}

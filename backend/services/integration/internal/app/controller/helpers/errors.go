@@ -61,4 +61,3 @@ func WriteServiceError(w http.ResponseWriter, r *http.Request, err error) {
 func WriteError(w http.ResponseWriter, r *http.Request, status int, definition coreerrors.Definition) {
 	_ = httpresponse.WriteErrorContext(r.Context(), w, status, definition)
 }
-

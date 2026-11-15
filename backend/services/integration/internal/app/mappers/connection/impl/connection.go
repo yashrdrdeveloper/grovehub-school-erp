@@ -7,7 +7,9 @@ import (
 )
 
 type connectionMapper struct{}
+
 var _ mapper.ConnectionMapper = (*connectionMapper)(nil)
+
 func NewConnectionMapper() mapper.ConnectionMapper {return &connectionMapper{}}
 
 func (m *connectionMapper) ToResponse(connection entity.Connection) connectiondto.Connection {
@@ -36,4 +38,3 @@ func (m *connectionMapper) TestToResponse(test entity.ConnectionTest) connection
 		CompletedAt:  test.CompletedAt,
 	}
 }
-

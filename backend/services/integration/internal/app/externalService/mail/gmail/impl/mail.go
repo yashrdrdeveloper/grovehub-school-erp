@@ -16,6 +16,7 @@ type MailProfile struct {
 	EmailAddress string `json:"emailAddress"`
 	HistoryID    string `json:"historyId"`
 }
+
 type SentMessage struct {
 	ID       string `json:"id"`
 	ThreadID string `json:"threadId"`
@@ -31,10 +32,12 @@ type Message struct {
  InternalDate string `json:"internalDate,omitempty"`
 	Payload      json.RawMessage `json:"payload,omitempty"`
 }
+
 type MessagePage struct {
 	Messages      []Message `json:"messages"`
 	NextPageToken string    `json:"nextPageToken"`
 }
+
 type HistoryChange struct {
 	MessagesAdded []struct {
 		Message Message `json:"message"`
@@ -49,6 +52,7 @@ type HistoryChange struct {
 		Message Message `json:"message"`
 	} `json:"labelsRemoved"`
 }
+
 type HistoryPage struct {
 	History       []HistoryChange `json:"history"`
 	NextPageToken string          `json:"nextPageToken"`
@@ -72,6 +76,7 @@ func (c *Client) HistoryID(ctx context.Context, t Token) (string, error) {
 	profile, err := c.Profile(ctx, t)
 	return profile.HistoryID, err
 }
+
 func (c *Client) Messages(ctx context.Context, t Token, page string) (MessagePage, error) {
 	var p MessagePage
 	query := url.Values{"maxResults": {"100"}}
@@ -81,12 +86,14 @@ func (c *Client) Messages(ctx context.Context, t Token, page string) (MessagePag
 	err := c.do(ctx, t, http.MethodGet, "/messages?"+query.Encode(), nil, &p)
 	return p, err
 }
+
 func (c *Client) MessageMetadata(ctx context.Context, t Token, id string) (Message, error) {
 	var m Message
 	// Full format is an ephemeral provider response, not an Integration record.
 	err := c.do(ctx, t, http.MethodGet, "/messages/"+url.PathEscape(id)+"?format=full", nil, &m)
 	return m, err
 }
+
 func (c *Client) History(ctx context.Context, t Token, startID, page string) (HistoryPage, error) {
 	var p HistoryPage
 	if startID == "" {

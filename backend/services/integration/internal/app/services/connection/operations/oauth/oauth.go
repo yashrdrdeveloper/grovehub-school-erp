@@ -13,7 +13,11 @@ type TokenProvider interface {
 }
 
 type OAuthOperation struct {strategy strategies.Strategy}
+
 func New(strategy strategies.Strategy) *OAuthOperation {return &OAuthOperation{strategy:strategy}}
+
 func (operation *OAuthOperation) BeginOAuth(ctx context.Context, tenantID, id string) (connectiondto.OAuthStart,error) {return operation.strategy.BeginOAuth(ctx,tenantID,id)}
+
 func (operation *OAuthOperation) FinishOAuth(ctx context.Context, provider, code, state string) (connectiondto.OAuthCompletion,error) {return operation.strategy.FinishOAuth(ctx,provider,code,state)}
+
 func (operation *OAuthOperation) ValidProviderToken(ctx context.Context, connectionID, provider string) (providers.OAuthToken,error) {return operation.strategy.ValidProviderToken(ctx,connectionID,provider)}

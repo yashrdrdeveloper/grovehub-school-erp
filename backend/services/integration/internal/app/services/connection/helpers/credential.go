@@ -18,6 +18,7 @@ func NewTokenCipher(key []byte) (TokenCipher, error) {
 	}
 	return TokenCipher{key: append([]byte(nil), key...)}, nil
 }
+
 func (c TokenCipher) Seal(token providers.OAuthToken) ([]byte, error) {
 	block, err := aes.NewCipher(c.key)
 	if err != nil {
@@ -37,6 +38,7 @@ func (c TokenCipher) Seal(token providers.OAuthToken) ([]byte, error) {
 	}
 	return gcm.Seal(nonce, nonce, payload, nil), nil
 }
+
 func (c TokenCipher) Open(ciphertext []byte) (providers.OAuthToken, error) {
 	var token providers.OAuthToken
 	block, err := aes.NewCipher(c.key)

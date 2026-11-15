@@ -1,7 +1,7 @@
 package impl
 
 import (
-    config "grovehub/services/integration/config"
+    config "grovehub/services/integration/internal/app/config"
     configimpl "grovehub/services/integration/internal/app/config/impl"
     "grovehub/services/integration/internal/app/providers"
     mailfactory "grovehub/services/integration/internal/app/providers/mailprovider/impl"

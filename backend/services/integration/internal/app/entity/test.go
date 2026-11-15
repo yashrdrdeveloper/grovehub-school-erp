@@ -12,4 +12,3 @@ type ConnectionTest struct {
 	StartedAt    time.Time `gorm:"column:started_at;not null"`
 	CompletedAt  time.Time `gorm:"column:completed_at;not null"`
 }
-

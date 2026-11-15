@@ -19,8 +19,11 @@ type createStrategy struct{
     repository connectionrepo.ConnectionRepository
     registry providers.Registry
 }
+
 var _ strategies.Strategy = (*createStrategy)(nil)
+
 func New(repository connectionrepo.ConnectionRepository, registry providers.Registry, validator connectionvalidator.ConnectionValidator, eventMapper mapper.ConnectionMapper) strategies.Strategy {return &createStrategy{repository:repository,registry:registry,validator:validator,mapper:eventMapper}}
+
 func (s *createStrategy) Execute(
 	ctx context.Context,
 	tenantID string,
@@ -57,5 +60,3 @@ func (s *createStrategy) Execute(
 
 	return s.mapper.ToResponse(connection), nil
 }
-
-

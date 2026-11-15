@@ -26,10 +26,13 @@ type watchStrategy struct {
     events changedproducer.ChangedProducer
     tokens oauth.TokenProvider
 }
+
 var _ watchstrategies.Strategy = (*watchStrategy)(nil)
+
 func New(repository connectionrepo.ConnectionRepository, watches watchrepo.WatchRepository, gmailClient *gmail.Client, topic string, events changedproducer.ChangedProducer, tokens oauth.TokenProvider) watchstrategies.Strategy {
     return &watchStrategy{repository:repository,watchRepository:watches,gmail:gmailClient,pushTopic:topic,events:events,tokens:tokens}
 }
+
 func (s *watchStrategy) Watch(ctx context.Context, tenantID, id string) (connectiondto.Watch, error) {
 	if s.gmail == nil || s.pushTopic == "" {
 		return connectiondto.Watch{}, connectionhelpers.ErrPushUnavailable
@@ -54,6 +57,7 @@ func (s *watchStrategy) Watch(ctx context.Context, tenantID, id string) (connect
 	}
 	return connectiondto.Watch{ConnectionID: id, ExpiresAt: expiration}, nil
 }
+
 func (s *watchStrategy) ProcessPush(ctx context.Context, notification gmail.PushNotification) error {
 	if s.gmail == nil || s.pushTopic == "" {
 		return connectionhelpers.ErrPushUnavailable
@@ -82,6 +86,7 @@ func (s *watchStrategy) ProcessPush(ctx context.Context, notification gmail.Push
 	}
 	return nil
 }
+
 func (s *watchStrategy) RenewExpiring(ctx context.Context) error {
 	if s.gmail == nil || s.pushTopic == "" {
 		return nil
@@ -97,4 +102,3 @@ func (s *watchStrategy) RenewExpiring(ctx context.Context) error {
 	}
 	return nil
 }
-

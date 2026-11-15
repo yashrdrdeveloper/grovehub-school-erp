@@ -6,14 +6,17 @@ import (
 
  "grovehub/services/integration/internal/app/providers/mailprovider/mailcontract"
 )
+
 type graphAddress struct {
  EmailAddress struct {Address string `json:"address"`; Name string `json:"name"`} `json:"emailAddress"`
 }
+
 func graphAddressValue(raw json.RawMessage)string{
  var address graphAddress
  if json.Unmarshal(raw,&address)!=nil{return ""}
  return address.EmailAddress.Address
 }
+
 func graphAddressList(raw json.RawMessage)[]string{
  var addresses []graphAddress
  if json.Unmarshal(raw,&addresses)!=nil{return nil}
@@ -21,6 +24,7 @@ func graphAddressList(raw json.RawMessage)[]string{
  for _,a:=range addresses{if a.EmailAddress.Address!=""{values=append(values,a.EmailAddress.Address)}}
  return values
 }
+
 func normalizeOutlookMessage(m Message)mailcontract.Message{
  result:=mailcontract.Message{
   ID:m.ID,ThreadID:m.ConversationID,Subject:m.Subject,From:graphAddressValue(m.From),
@@ -34,6 +38,7 @@ func normalizeOutlookMessage(m Message)mailcontract.Message{
  }
  return result
 }
+
 func normalizeOutlookPage(page MessagePage)mailcontract.Page{
  result:=mailcontract.Page{NextPageToken:page.NextLink,Messages:make([]mailcontract.Message,0,len(page.Messages))}
  for _,message:=range page.Messages{result.Messages=append(result.Messages,normalizeOutlookMessage(message))}

@@ -22,7 +22,9 @@ type oauthStrategy struct {
     oauth providers.OAuthRegistry
     cipher connectionhelpers.TokenCipher
 }
+
 var _ strategies.Strategy = (*oauthStrategy)(nil)
+
 func New(repository connectionrepo.ConnectionRepository, oauth providers.OAuthRegistry, cipher connectionhelpers.TokenCipher) strategies.Strategy {
     return &oauthStrategy{repository:repository,oauth:oauth,cipher:cipher}
 }
@@ -135,5 +137,3 @@ func (s *oauthStrategy) ValidProviderToken(ctx context.Context, connectionID, pr
 	}
 	return token, nil
 }
-
-

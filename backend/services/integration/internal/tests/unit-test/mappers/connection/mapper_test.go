@@ -18,6 +18,7 @@ func TestConnectionMapperPreservesPublicFields(t *testing.T) {
         t.Fatalf("unexpected connection DTO: %+v",result)
     }
 }
+
 func TestConnectionTestMapperPreservesExecutionResult(t *testing.T) {
     mapper:=impl.NewConnectionMapper()
     now:=time.Date(2026,time.November,15,0,0,0,0,time.UTC)

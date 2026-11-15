@@ -23,6 +23,7 @@ func NewRegistry(items ...providers.Provider) (providers.Registry, error) {
 	}
 	return r, nil
 }
+
 func (r *registry) Find(id string) (providers.Provider, error) {
 	p, ok := r.items[strings.ToUpper(strings.TrimSpace(id))]
 	if !ok {
@@ -30,6 +31,7 @@ func (r *registry) Find(id string) (providers.Provider, error) {
 	}
 	return p, nil
 }
+
 func (r *registry) List() []providers.Descriptor {
 	result := make([]providers.Descriptor, 0, len(r.items))
 	for _, p := range r.items {

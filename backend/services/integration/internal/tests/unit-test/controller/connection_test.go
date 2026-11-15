@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	integrationconfig "grovehub/services/integration/config"
+	integrationconfig "grovehub/services/integration/internal/app/config"
 	integrationcontroller "grovehub/services/integration/internal/app/controller/connection/impl"
     combinedcontroller "grovehub/services/integration/internal/app/controller/impl"
     providercontroller "grovehub/services/integration/internal/app/controller/provider/impl"
@@ -27,38 +27,51 @@ type serviceStub struct{}
 func (*serviceStub) Providers(context.Context) []providers.Descriptor {
 	return []providers.Descriptor{{ID: "GMAIL"}}
 }
+
 func (*serviceStub) Provider(context.Context, string) (providerdto.ProviderDetails, error) {
 	return providerdto.ProviderDetails{}, nil
 }
+
 func (*serviceStub) Create(context.Context, string, connectiondto.CreateConnection) (connectiondto.Connection, error) {
 	return connectiondto.Connection{}, nil
 }
+
 func (*serviceStub) Get(context.Context, string, string) (connectiondto.Connection, error) {
 	return connectiondto.Connection{}, nil
 }
+
 func (*serviceStub) List(context.Context, string, string) ([]connectiondto.Connection, error) {
 	return nil, nil
 }
+
 func (*serviceStub) BeginOAuth(context.Context, string, string) (connectiondto.OAuthStart, error) {
 	return connectiondto.OAuthStart{}, nil
 }
+
 func (*serviceStub) FinishOAuth(context.Context, string, string, string) (connectiondto.OAuthCompletion, error) {
 	return connectiondto.OAuthCompletion{}, nil
 }
+
 func (*serviceStub) Watch(context.Context, string, string) (connectiondto.Watch, error) {
 	return connectiondto.Watch{}, nil
 }
+
 func (*serviceStub) ProcessPush(context.Context, gmail.PushNotification) error { return nil }
+
 func (*serviceStub) RenewExpiring(context.Context) error                       { return nil }
+
 func (*serviceStub) RunTest(context.Context, string, string, string) (connectiondto.ConnectionTest, error) {
 	return connectiondto.ConnectionTest{}, nil
 }
+
 func (*serviceStub) ListTests(context.Context, string, string) ([]connectiondto.ConnectionTest, error) {
 	return nil, nil
 }
+
 func (*serviceStub) ExecuteAction(context.Context, string, string, providers.Action, json.RawMessage) (any, error) {
 	return nil, nil
 }
+
 func (*serviceStub) Disconnect(context.Context, string, string) (connectiondto.Connection, error) {
 	return connectiondto.Connection{}, nil
 }

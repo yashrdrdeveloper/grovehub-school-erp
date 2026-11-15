@@ -28,10 +28,12 @@ type Message struct {
 	Body              json.RawMessage `json:"body,omitempty"`
 	IsRead            bool            `json:"isRead"`
 }
+
 type MessagePage struct {
 	Messages []Message `json:"value"`
 	NextLink string    `json:"@odata.nextLink,omitempty"`
 }
+
 type SendResult struct {
 	Accepted bool `json:"accepted"`
 }
@@ -50,6 +52,7 @@ func (c *Client) Profile(ctx context.Context, accessToken string) (any, error) {
 	}
 	return map[string]string{"emailAddress": strings.ToLower(result.Mail)}, nil
 }
+
 func safeNextLink(raw string) (string, error) {
 	if raw == "" {
 		return "/me/messages?$top=50&$select=id,subject,conversationId,internetMessageId,receivedDateTime,sentDateTime,from,toRecipients,ccRecipients,bccRecipients,replyTo,body,isRead", nil
@@ -67,6 +70,7 @@ func safeNextLink(raw string) (string, error) {
 	}
 	return "/me/messages?" + parsed.RawQuery, nil
 }
+
 func (c *Client) Messages(ctx context.Context, accessToken, page string) (MessagePage, error) {
 	var result MessagePage
 	path, err := safeNextLink(page)
@@ -76,6 +80,7 @@ func (c *Client) Messages(ctx context.Context, accessToken, page string) (Messag
 	err = c.graph(ctx, accessToken, http.MethodGet, path, nil, "", &result)
 	return result, err
 }
+
 func (c *Client) Message(ctx context.Context, accessToken, id string) (Message, error) {
 	var result Message
 	if id == "" || len(id) > 512 || strings.ContainsAny(id, "?#") {
@@ -84,6 +89,7 @@ func (c *Client) Message(ctx context.Context, accessToken, id string) (Message, 
 	err := c.graph(ctx, accessToken, http.MethodGet, "/me/messages/"+url.PathEscape(id), nil, "", &result)
 	return result, err
 }
+
 // Send converts provider-neutral mail into the Graph MIME sendMail request.
 func (c *Client) Send(ctx context.Context, accessToken string, request mailcontract.Send) (SendResult, error) {
  identity, err := c.Profile(ctx, accessToken)

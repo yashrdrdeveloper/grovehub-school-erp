@@ -49,4 +49,3 @@ var _ = Describe("OAuth callback validation", func() {
 		})
 	}
 })
-

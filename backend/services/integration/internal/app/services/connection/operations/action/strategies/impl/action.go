@@ -18,10 +18,13 @@ type actionStrategy struct {
     actions providers.ActionRegistry
     tokens oauth.TokenProvider
 }
+
 var _ actionstrategy.Strategy = (*actionStrategy)(nil)
+
 func New(repository connectionrepo.ConnectionRepository, actions providers.ActionRegistry, tokens oauth.TokenProvider) actionstrategy.Strategy {
     return &actionStrategy{repository:repository,actions:actions,tokens:tokens}
 }
+
 func (s *actionStrategy) ExecuteAction(ctx context.Context, tenantID, connectionID string, action providers.Action, input json.RawMessage) (any, error) {
 	c, err := s.repository.Get(ctx, tenantID, connectionID)
 	if err != nil {
@@ -47,4 +50,3 @@ func (s *actionStrategy) ExecuteAction(ctx context.Context, tenantID, connection
 		ConnectionID: connectionID, ProviderID: c.Provider, AccessToken: token.AccessToken,
 	}, action, input)
 }
-

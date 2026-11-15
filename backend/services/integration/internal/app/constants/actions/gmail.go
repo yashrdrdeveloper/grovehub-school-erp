@@ -2,6 +2,7 @@ package actions
 
 // Mail actions are provider-neutral identifiers exposed by mail providers.
 type Action string
+
 type Capability string
 
 const (

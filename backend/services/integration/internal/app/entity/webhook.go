@@ -13,4 +13,3 @@ type WebhookSubscription struct {
 	ExpiresAt    *time.Time `gorm:"column:expires_at"`
 	Connection   Connection `gorm:"foreignKey:ConnectionID;references:ID"`
 }
-

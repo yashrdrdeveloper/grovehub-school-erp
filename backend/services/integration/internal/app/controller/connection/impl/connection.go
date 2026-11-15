@@ -11,7 +11,7 @@ import (
 	httprequest "grovehub/libs/core/http/request"
     controllerhelpers "grovehub/services/integration/internal/app/controller/helpers"
 	httpresponse "grovehub/libs/core/http/response"
-	integrationconfig "grovehub/services/integration/config"
+	integrationconfig "grovehub/services/integration/internal/app/config"
 	integrationerrors "grovehub/services/integration/internal/app/constants/error"
 	connectiondto "grovehub/services/integration/internal/app/dto/connection"
 	"grovehub/services/integration/internal/app/providers"
@@ -27,6 +27,7 @@ type ConnectionController struct {
 }
 
 type VerifiedPrincipal struct{ TenantID, ActorGID string }
+
 type principalContextKey struct{}
 
 func NewConnectionController(s integrationservices.ConnectionService,push integrationconfig.GmailPush,devOptions ...integrationconfig.DevAuth)*ConnectionController{

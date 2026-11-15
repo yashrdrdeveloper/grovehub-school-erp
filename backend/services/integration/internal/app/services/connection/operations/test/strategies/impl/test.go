@@ -26,10 +26,13 @@ type testStrategy struct {
     actions providers.ActionRegistry
     tokens oauth.TokenProvider
 }
+
 var _ teststrategies.Strategy = (*testStrategy)(nil)
+
 func New(repository connectionrepo.ConnectionRepository, actions providers.ActionRegistry, tokens oauth.TokenProvider, eventMapper mapper.ConnectionMapper) teststrategies.Strategy {
     return &testStrategy{repository:repository,actions:actions,tokens:tokens,mapper:eventMapper}
 }
+
 func (s *testStrategy) RunTest(ctx context.Context, tenantID, id, direction string) (connectiondto.ConnectionTest, error) {
 	connection, err := s.repository.Get(ctx, tenantID, id)
 	if err != nil {
@@ -109,4 +112,3 @@ func (s *testStrategy) ListTests(ctx context.Context, tenantID, id string) ([]co
 	}
 	return result, nil
 }
-

@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	integrationconfig "grovehub/services/integration/config"
+	integrationconfig "grovehub/services/integration/internal/app/config"
 	"grovehub/services/integration/internal/app/providers"
 	providerimpl "grovehub/services/integration/internal/app/providers/impl"
 	"grovehub/services/integration/internal/app/externalService/mail/gmail"

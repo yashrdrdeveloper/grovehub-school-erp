@@ -7,5 +7,7 @@ import (
 )
 
 type ListOperation struct{strategy strategies.Strategy}
+
 func New(strategy strategies.Strategy) *ListOperation {return &ListOperation{strategy:strategy}}
+
 func (operation *ListOperation) List(ctx context.Context, tenantID, ownerGID string) ([]connectiondto.Connection,error) {return operation.strategy.Execute(ctx,tenantID,ownerGID)}

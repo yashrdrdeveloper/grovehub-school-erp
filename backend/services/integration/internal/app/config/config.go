@@ -24,6 +24,7 @@ type GmailPush struct {
     Audience       string `env:"GROVEHUB_GMAIL_PUBSUB_AUDIENCE"`
     ServiceAccount string `env:"GROVEHUB_GMAIL_PUBSUB_SERVICE_ACCOUNT"`
 }
+
 func (c GmailPush) Enabled() bool {
     return c.Topic != "" && c.Audience != "" && c.ServiceAccount != ""
 }

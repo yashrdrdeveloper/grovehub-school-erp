@@ -1,7 +1,7 @@
 package impl
 
 import (
-    config "grovehub/services/integration/config"
+    config "grovehub/services/integration/internal/app/config"
     controller "grovehub/services/integration/internal/app/controller"
     controllerimpl "grovehub/services/integration/internal/app/controller/impl"
     connectionimpl "grovehub/services/integration/internal/app/controller/connection/impl"

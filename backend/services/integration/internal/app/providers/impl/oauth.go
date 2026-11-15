@@ -12,6 +12,7 @@ type oauthRegistry struct {
 func NewOAuthRegistry() providers.OAuthRegistry {
 	return &oauthRegistry{strategies: make(map[string]providers.OAuthStrategy)}
 }
+
 func (r *oauthRegistry) Register(provider string, strategy providers.OAuthStrategy) error {
 	provider = strings.ToUpper(strings.TrimSpace(provider))
 	if provider == "" || strategy == nil {
@@ -23,6 +24,7 @@ func (r *oauthRegistry) Register(provider string, strategy providers.OAuthStrate
 	r.strategies[provider] = strategy
 	return nil
 }
+
 func (r *oauthRegistry) Find(provider string) (providers.OAuthStrategy, error) {
 	strategy, ok := r.strategies[strings.ToUpper(strings.TrimSpace(provider))]
 	if !ok {

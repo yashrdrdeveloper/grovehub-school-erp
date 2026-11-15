@@ -15,8 +15,11 @@ type getStrategy struct{
     validator connectionvalidator.ConnectionValidator
     repository connectionrepo.ConnectionRepository
 }
+
 var _ strategies.Strategy = (*getStrategy)(nil)
+
 func New(repository connectionrepo.ConnectionRepository, validator connectionvalidator.ConnectionValidator, eventMapper mapper.ConnectionMapper) strategies.Strategy {return &getStrategy{repository:repository,validator:validator,mapper:eventMapper}}
+
 func (s *getStrategy) Execute(
 	ctx context.Context,
 	tenantID string,
@@ -33,5 +36,3 @@ func (s *getStrategy) Execute(
 
 	return s.mapper.ToResponse(connection), nil
 }
-
-

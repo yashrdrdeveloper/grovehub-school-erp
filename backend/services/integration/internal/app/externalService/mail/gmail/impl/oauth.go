@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	integrationconfig "grovehub/services/integration/config"
+	integrationconfig "grovehub/services/integration/internal/app/config"
 	"grovehub/services/integration/internal/app/providers"
 )
 
@@ -23,6 +23,7 @@ const (
 )
 
 type Token = providers.OAuthToken
+
 type StatusError struct{ StatusCode int }
 
 func (e *StatusError) Error() string {
@@ -37,6 +38,7 @@ type Client struct {
 func NewClient(config integrationconfig.Gmail) *Client {
 	return &Client{config: config, http: &http.Client{Timeout: 20 * time.Second}}
 }
+
 func (c *Client) AuthorizationURL(state string) string {
 	query := url.Values{
 		"client_id":     {c.config.ClientID},
@@ -49,6 +51,7 @@ func (c *Client) AuthorizationURL(state string) string {
 	}
 	return authURL + "?" + query.Encode()
 }
+
 func (c *Client) Exchange(ctx context.Context, code string) (Token, error) {
 	return c.tokenRequest(ctx, url.Values{
 		"code": {code}, "client_id": {c.config.ClientID},
@@ -56,6 +59,7 @@ func (c *Client) Exchange(ctx context.Context, code string) (Token, error) {
 		"grant_type": {"authorization_code"},
 	})
 }
+
 func (c *Client) Refresh(ctx context.Context, token Token) (Token, error) {
 	next, err := c.tokenRequest(ctx, url.Values{
 		"refresh_token": {token.RefreshToken}, "client_id": {c.config.ClientID},
@@ -69,6 +73,7 @@ func (c *Client) Refresh(ctx context.Context, token Token) (Token, error) {
 	}
 	return next, nil
 }
+
 func (c *Client) tokenRequest(ctx context.Context, v url.Values) (Token, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, tokenURL, strings.NewReader(v.Encode()))
 	if err != nil {
@@ -93,6 +98,7 @@ func (c *Client) tokenRequest(ctx context.Context, v url.Values) (Token, error) 
 	token.Expiry = time.Now().Add(time.Duration(token.ExpiresIn) * time.Second)
 	return token, nil
 }
+
 func (c *Client) do(ctx context.Context, token Token, method, path string, body any, out any) error {
 	var reader io.Reader
 	if body != nil {
@@ -123,6 +129,7 @@ func (c *Client) do(ctx context.Context, token Token, method, path string, body 
 	}
 	return json.NewDecoder(io.LimitReader(resp.Body, 12<<20)).Decode(out)
 }
+
 func (c *Client) Mailbox(ctx context.Context, token Token) (string, error) {
 	var response struct {
 		EmailAddress string `json:"emailAddress"`
@@ -136,6 +143,7 @@ func (c *Client) Mailbox(ctx context.Context, token Token) (string, error) {
 	}
 	return strings.ToLower(response.EmailAddress), nil
 }
+
 func (c *Client) InboundAccess(ctx context.Context, token Token) error {
 	var result struct {
 		ResultSizeEstimate int `json:"resultSizeEstimate"`
@@ -143,6 +151,7 @@ func (c *Client) InboundAccess(ctx context.Context, token Token) error {
 	// A mailbox list probe confirms Gmail read permission, not delivery of an email.
 	return c.do(ctx, token, http.MethodGet, "/messages?maxResults=1", nil, &result)
 }
+
 func (c *Client) Outbound(ctx context.Context, token Token, raw string) error {
 	return c.do(ctx, token, http.MethodPost, "/messages/send", map[string]string{"raw": raw}, nil)
 }

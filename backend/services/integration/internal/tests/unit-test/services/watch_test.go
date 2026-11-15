@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	messagingclient "grovehub/services/infrastructure/client/messaging"
- integrationconfig "grovehub/services/integration/config"
+ integrationconfig "grovehub/services/integration/internal/app/config"
 	"grovehub/services/integration/internal/app/entity"
 	mailboxevents "grovehub/services/integration/internal/app/events/producers/connection/operations/mailbox"
 	providerimpl "grovehub/services/integration/internal/app/providers/impl"
@@ -26,28 +26,39 @@ import (
 type connectionRepositoryFake struct{}
 
 func (*connectionRepositoryFake) Create(context.Context, entity.Connection) error { return nil }
+
 func (*connectionRepositoryFake) Get(context.Context, string, string) (entity.Connection, error) {
 	return entity.Connection{}, nil
 }
+
 func (*connectionRepositoryFake) GetByID(context.Context, string) (entity.Connection, error) {
 	return entity.Connection{}, nil
 }
+
 func (*connectionRepositoryFake) List(context.Context, string, string) ([]entity.Connection, error) {
 	return nil, nil
 }
+
 func (*connectionRepositoryFake) Disconnect(context.Context, string, string) (entity.Connection, error) {
 	return entity.Connection{}, nil
 }
+
 func (*connectionRepositoryFake) SaveOAuthState(context.Context, entity.OAuthState) error { return nil }
+
 func (*connectionRepositoryFake) ConsumeOAuthState(context.Context, string, time.Time) (entity.OAuthState, error) {
 	return entity.OAuthState{}, nil
 }
+
 func (*connectionRepositoryFake) Activate(context.Context, string, string, string, []byte) error {
 	return nil
 }
+
 func (*connectionRepositoryFake) Credential(context.Context, string) ([]byte, error)     { return nil, nil }
+
 func (*connectionRepositoryFake) UpdateCredential(context.Context, string, []byte) error { return nil }
+
 func (*connectionRepositoryFake) SaveTest(context.Context, entity.ConnectionTest) error  { return nil }
+
 func (*connectionRepositoryFake) ListTests(context.Context, string) ([]entity.ConnectionTest, error) {
 	return nil, nil
 }
@@ -55,6 +66,7 @@ func (*connectionRepositoryFake) ListTests(context.Context, string) ([]entity.Co
 type watchRepositoryFake struct{}
 
 func (*watchRepositoryFake) SaveWatch(context.Context, string, string, time.Time) error { return nil }
+
 func (*watchRepositoryFake) GetGmailByMailbox(_ context.Context, email string) ([]entity.Connection, error) {
 	if email != "one@gmail.com" {
 		return nil, nil
@@ -64,6 +76,7 @@ func (*watchRepositoryFake) GetGmailByMailbox(_ context.Context, email string) (
 		{ID: "connection-2", TenantID: "tenant-2", OwnerGID: "person-2", Provider: "GMAIL", Status: entity.StatusActive},
 	}, nil
 }
+
 func (*watchRepositoryFake) ExpiringWatches(context.Context, time.Time) ([]entity.Connection, error) {
 	return nil, nil
 }
@@ -72,6 +85,7 @@ type publishedEvent struct {
 	topic string
 	data  []byte
 }
+
 type messagingFake struct{
     published []publishedEvent
     failure error
@@ -82,12 +96,15 @@ func (m *messagingFake) Publish(_ context.Context, topic string, payload []byte,
 	m.published = append(m.published, publishedEvent{topic: topic, data: payload})
 	return nil
 }
+
 func (m *messagingFake) PublishWithOptions(ctx context.Context, topic string, payload []byte, metadata map[string]string, options messagingclient.PublishOptions) error {
     return m.Publish(ctx,topic,payload,metadata)
 }
+
 func (*messagingFake) Consume(context.Context, string, messagingclient.MessageHandler) error {
 	return nil
 }
+
 func (*messagingFake) Health(context.Context) error { return nil }
 
 var _ = Describe("Provider push event ownership", func() {

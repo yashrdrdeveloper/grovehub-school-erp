@@ -65,6 +65,7 @@ func DecodePush(body io.Reader) (PushNotification, error) {
 	}
 	return data, nil
 }
+
 func (v *PushVerifier) Verify(ctx context.Context, authorization string) error {
 	if v == nil || v.audience == "" || v.email == "" || !strings.HasPrefix(authorization, "Bearer ") {
 		return errors.New("push token unavailable")
@@ -127,6 +128,7 @@ func (v *PushVerifier) Verify(ctx context.Context, authorization string) error {
 	}
 	return nil
 }
+
 func (v *PushVerifier) publicKeys(ctx context.Context) (map[string]*rsa.PublicKey, error) {
 	v.mu.Lock()
 	defer v.mu.Unlock()

@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	annotationconfig "grovehub/libs/core/annotation/configuration"
-	"grovehub/services/integration/config"
+	"grovehub/services/integration/internal/app/config"
 )
 
 type environmentLoader struct{}
@@ -25,6 +25,7 @@ func (environmentLoader) Gmail() (config.Gmail, error) {
     }
     return value,nil
 }
+
 func (environmentLoader) Outlook() (config.Outlook, error) {
     value, err := annotationconfig.FromEnv[config.Outlook]()
     if err != nil {
@@ -38,6 +39,7 @@ func (environmentLoader) Outlook() (config.Outlook, error) {
     }
     return value,nil
 }
+
 func (environmentLoader) GmailPush() config.GmailPush {
 	return config.GmailPush{
 		Topic:          strings.TrimSpace(os.Getenv("GROVEHUB_GMAIL_PUBSUB_TOPIC")),
@@ -45,6 +47,7 @@ func (environmentLoader) GmailPush() config.GmailPush {
 		ServiceAccount: strings.TrimSpace(os.Getenv("GROVEHUB_GMAIL_PUBSUB_SERVICE_ACCOUNT")),
 	}
 }
+
 func (environmentLoader) CredentialKey() ([]byte, error) {
 	key, err := base64.StdEncoding.DecodeString(os.Getenv("GROVEHUB_INTEGRATION_ENCRYPTION_KEY"))
 	if err != nil || len(key) != 32 {
@@ -52,6 +55,7 @@ func (environmentLoader) CredentialKey() ([]byte, error) {
 	}
 	return key, nil
 }
+
 func secureRedirect(uri string) bool {
 	return strings.HasPrefix(uri, "https://") || strings.HasPrefix(uri, "http://localhost:")
 }
@@ -68,5 +72,3 @@ func validCallback(raw, provider string) bool {
 	}
 	return uri.Path == "/integrations/connections/oauth/"+provider+"/callback"
 }
-
-

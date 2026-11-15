@@ -16,4 +16,3 @@ type OAuthCredential struct {
 	Ciphertext   []byte    `gorm:"column:ciphertext;not null"`
 	UpdatedAt    time.Time `gorm:"column:updated_at;not null"`
 }
-

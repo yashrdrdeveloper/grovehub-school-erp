@@ -854,3 +854,14 @@ publish directly so an unavailable broker triggers upstream retry, rather
 than acknowledging delivery before a delayed database outbox dispatch.
 The six-hour Gmail renewal worker lives separately in
 `bootstrap/impl/workers.go`.
+
+## Private Integration configuration and Go declaration formatting
+
+All provider and environment configuration contracts were relocated from
+`services/integration/config` to
+`services/integration/internal/app/config`. The public module exports only
+`integration.DevAuth` for the temporary, loopback-only developer principal;
+launcher no longer imports provider configuration types. Integration
+repositories, services, controllers, adapters, and tests keep a blank line
+between top-level functions and types, including comments attached to the
+following declaration.

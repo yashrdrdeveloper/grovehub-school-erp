@@ -15,8 +15,11 @@ type disconnectStrategy struct{
     validator connectionvalidator.ConnectionValidator
     repository connectionrepo.ConnectionRepository
 }
+
 var _ strategies.Strategy = (*disconnectStrategy)(nil)
+
 func New(repository connectionrepo.ConnectionRepository, validator connectionvalidator.ConnectionValidator, eventMapper mapper.ConnectionMapper) strategies.Strategy {return &disconnectStrategy{repository:repository,validator:validator,mapper:eventMapper}}
+
 func (s *disconnectStrategy) Execute(
 	ctx context.Context,
 	tenantID string,
@@ -33,4 +36,3 @@ func (s *disconnectStrategy) Execute(
 
 	return s.mapper.ToResponse(connection), nil
 }
-

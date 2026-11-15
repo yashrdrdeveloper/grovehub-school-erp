@@ -9,7 +9,7 @@ import (
 
     "gorm.io/gorm"
 
-    integrationconfig "grovehub/services/integration/config"
+    integrationconfig "grovehub/services/integration/internal/app/config"
     bootstrap "grovehub/services/integration/internal/app/bootstrap"
     bootstrapimpl "grovehub/services/integration/internal/app/bootstrap/impl"
     migrations "grovehub/services/integration/internal/resources/migrations"
@@ -18,7 +18,11 @@ import (
 
 type Module = bootstrap.Runtime
 
-func New(logger *slog.Logger, db *gorm.DB, events messaging.MessagingClient, developmentAuth ...integrationconfig.DevAuth) (Module, error) {
+// DevAuth is the minimal public bootstrap option for explicitly enabled,
+// loopback-only development authentication; provider configuration stays private.
+type DevAuth = integrationconfig.DevAuth
+
+func New(logger *slog.Logger, db *gorm.DB, events messaging.MessagingClient, developmentAuth ...DevAuth) (Module, error) {
     settings:=integrationconfig.DevAuth{}
     if len(developmentAuth)>0 {settings=developmentAuth[0]}
     return bootstrapimpl.New(logger,db,events,settings).Build()

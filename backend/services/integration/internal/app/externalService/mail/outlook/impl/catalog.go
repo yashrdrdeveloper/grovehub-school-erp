@@ -6,6 +6,7 @@ import "grovehub/services/integration/internal/app/providers"
 type Provider struct{}
 
 func New() providers.Provider { return Provider{} }
+
 func (Provider) Descriptor() providers.Descriptor {
 	return providers.Descriptor{
 		ID: "OUTLOOK", DisplayName: "Outlook", AuthType: "OAUTH2",

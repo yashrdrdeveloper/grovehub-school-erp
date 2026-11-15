@@ -15,8 +15,11 @@ type listStrategy struct{
     validator connectionvalidator.ConnectionValidator
     repository connectionrepo.ConnectionRepository
 }
+
 var _ strategies.Strategy = (*listStrategy)(nil)
+
 func New(repository connectionrepo.ConnectionRepository, validator connectionvalidator.ConnectionValidator, eventMapper mapper.ConnectionMapper) strategies.Strategy {return &listStrategy{repository:repository,validator:validator,mapper:eventMapper}}
+
 func (s *listStrategy) Execute(
 	ctx context.Context,
 	tenantID string,
@@ -38,5 +41,3 @@ func (s *listStrategy) Execute(
 
 	return result, nil
 }
-
-

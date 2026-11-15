@@ -26,10 +26,12 @@ type Send struct {
  Body Body `json:"body"`
  Attachments []Attachment `json:"attachments,omitempty"`
 }
+
 type Body struct {
  Text string `json:"text,omitempty"`
  HTML string `json:"html,omitempty"`
 }
+
 type Attachment struct {
  Filename string `json:"filename"`
  ContentType string `json:"contentType"`
@@ -37,6 +39,7 @@ type Attachment struct {
  ContentID string `json:"contentId,omitempty"`
  Inline bool `json:"inline,omitempty"`
 }
+
 type AttachmentData struct {
  AttachmentID string `json:"attachmentId,omitempty"`
  Filename string `json:"filename,omitempty"`
@@ -44,6 +47,7 @@ type AttachmentData struct {
  Size int64 `json:"size"`
  ContentBase64 string `json:"contentBase64"`
 }
+
 type Message struct {
  ID string `json:"id"`
  ThreadID string `json:"threadId,omitempty"`
@@ -60,10 +64,12 @@ type Message struct {
  Labels []string `json:"labels,omitempty"`
  Attachments []AttachmentData `json:"attachments,omitempty"`
 }
+
 type Page struct {
  Messages []Message `json:"messages"`
  NextPageToken string `json:"nextPageToken,omitempty"`
 }
+
 var ErrInvalidMail = errors.New("invalid mail input")
 
 func checkAddresses(values []string,required bool) error {
@@ -76,6 +82,7 @@ func checkAddresses(values []string,required bool) error {
  }
  return nil
 }
+
 func (s Send) Validate()error{
  for _,values:=range [][]string{s.To,s.Cc,s.Bcc,s.ReplyTo}{
   if err:=checkAddresses(values,false);err!=nil{return err}
@@ -98,11 +105,13 @@ func (s Send) Validate()error{
  }
  return nil
 }
+
 func checkSender(sender string)error {
  parsed,err:=mail.ParseAddress(sender)
  if err!=nil||parsed.Address!=sender||strings.ContainsAny(sender,"\r\n"){return ErrInvalidMail}
  return nil
 }
+
 func encodeBodyPart(w *multipart.Writer, contentType, content string) error {
  header:=make(textproto.MIMEHeader)
  header.Set("Content-Type",contentType+"; charset=UTF-8")
@@ -111,6 +120,7 @@ func encodeBodyPart(w *multipart.Writer, contentType, content string) error {
  if err!=nil{return err}
  return writeEncoded(part,[]byte(content))
 }
+
 func writeEncoded(dst io.Writer,source []byte)error{
  // RFC 2045 base64 body lines have at most 76 characters, separated by CRLF.
  encoded:=base64.StdEncoding.EncodeToString(source)
@@ -121,6 +131,7 @@ func writeEncoded(dst io.Writer,source []byte)error{
  _,err:=io.WriteString(dst,encoded+"\r\n")
  return err
 }
+
 func mimeBody(s Send)(string,[]byte,error){
  if s.Body.Text!=""&&s.Body.HTML!=""{
   var output bytes.Buffer
@@ -135,6 +146,7 @@ func mimeBody(s Send)(string,[]byte,error){
  if s.Body.HTML!=""{content=s.Body.HTML;mediaType="text/html"}
  return mediaType+"; charset=UTF-8",[]byte(content),nil
 }
+
 // BuildMIME serializes a structured mail request to RFC 5322/MIME bytes.
 // Providers encode the resulting bytes according to their own API protocols.
 func BuildMIME(sender string,s Send)([]byte,error){

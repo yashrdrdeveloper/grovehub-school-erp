@@ -7,5 +7,7 @@ import (
 )
 
 type GetOperation struct {strategy strategies.Strategy}
+
 func New(strategy strategies.Strategy) *GetOperation {return &GetOperation{strategy:strategy}}
+
 func (service *GetOperation) Provider(ctx context.Context, id string) (dto.ProviderDetails,error) {return service.strategy.Execute(ctx,id)}

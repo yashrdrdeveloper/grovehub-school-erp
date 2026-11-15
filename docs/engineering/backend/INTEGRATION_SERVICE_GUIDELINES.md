@@ -2,12 +2,11 @@
 
 > Applies to `backend/services/integration`. Public HTTP contracts and OAuth/webhook URLs are unchanged.
 
-Integration follows Foundation's **resource-first internal/app** boundaries. The public package exposes only module lifecycle and typed clients; configuration contracts required by the launcher remain public.
+Integration follows Foundation's **resource-first internal/app** boundaries. The public package exposes module lifecycle, typed clients, and only the small `integration.DevAuth` bootstrap alias. Gmail, Outlook, push, and loader configuration types are private.
 
 ```text
 services/integration/
 ├── integration.go                         # New + Migrate delegates to bootstrap
-├── config/config.go                      # public configuration contracts
 ├── client/
 │   ├── client.go                         # backwards-compatible Client alias
 │   └── connection/connection.go          # @Client + public DTO aliases
@@ -25,7 +24,9 @@ services/integration/
     │   │       ├── events.go             # Connection ChangedProducer assembly
     │   │       └── workers.go            # cancelable Gmail watch renewal lifecycle
     │   ├── client/connection/impl/client.go
-    │   ├── config/impl/config.go         # typed environment configuration loader
+    │   ├── config/
+    │   │   ├── config.go                # private Gmail, Outlook, Push, DevAuth, Loader
+    │   │   └── impl/config.go           # typed environment configuration loader
     │   ├── constants/{actions,connections,error,providers}/
     │   ├── controller/
     │   │   ├── connections.go            # @Routes contract (unchanged URL)
@@ -69,8 +70,11 @@ The stable `integration.New(logger, db, messaging, optionalDevAuth...)` entry po
 `internal/app`. The generated `@Client` proxy forwards to Integration services;
 it does not make a network call.
 
-Configuration contracts for Gmail, Outlook and opt-in loopback-only DevAuth
-remain in public `config/config.go`; parsing/validation is private.
+Configuration contracts for Gmail, Outlook, GmailPush and the loader now live
+in `internal/app/config/config.go`, and the private environment loader remains
+in `internal/app/config/impl/config.go`. The launcher uses only
+`integration.DevAuth`, a minimal public alias of the private bootstrap
+option; no provider credential configuration is exported through `integration/config`.
 The dev auth bypass must never be enabled on a production listener or trusted
 based on arbitrary forwarded HTTP headers.
 
@@ -259,3 +263,31 @@ Resource implementation files use singular names:
 `services/provider/impl/provider.go`.
 The Connection `Watch` response is grouped with its other response DTOs in
 `dto/connection/response.go` rather than an unrelated extra file.
+
+## Declaration spacing standard
+
+Every Integration Go source file separates top-level `type`, `func`, `var`,
+and `const` declarations with one blank line. Keep GoDoc and annotation
+comments immediately attached to the declaration they describe, but add a
+blank line before that comment block when it follows another declaration.
+This includes methods in external mail adapters, repositories, validators,
+operations, and tests. The rule changes only whitespace, not method
+signatures or behavior. Run `gofmt` to normalize indentation when editing.
+
+Example:
+
+```go
+type TokenCipher struct{ key []byte }
+
+func NewTokenCipher(key []byte) (TokenCipher, error) {
+    // ...
+}
+
+func (cipher TokenCipher) Seal(token providers.OAuthToken) ([]byte, error) {
+    // ...
+}
+
+func (cipher TokenCipher) Open(payload []byte) (providers.OAuthToken, error) {
+    // ...
+}
+```

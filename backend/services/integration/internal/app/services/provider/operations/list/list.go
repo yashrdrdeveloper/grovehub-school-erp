@@ -7,5 +7,7 @@ import (
 )
 
 type ListOperation struct {strategy strategies.Strategy}
+
 func New(strategy strategies.Strategy) *ListOperation {return &ListOperation{strategy:strategy}}
+
 func (service *ListOperation) Providers(ctx context.Context) []providers.Descriptor {return service.strategy.Execute(ctx)}

@@ -10,7 +10,7 @@ import (
     "gorm.io/gorm"
 
     integrationclient "grovehub/services/integration/client"
-    integrationconfig "grovehub/services/integration/config"
+    integrationconfig "grovehub/services/integration/internal/app/config"
     bootstrap "grovehub/services/integration/internal/app/bootstrap"
     controller "grovehub/services/integration/internal/app/controller"
     "grovehub/services/integration/internal/app/routes"
@@ -58,7 +58,9 @@ func (b *builder) Build() (bootstrap.Runtime,error) {
 }
 
 func (module *runtime) RegisterHTTP(mux *http.ServeMux) {routes.RegisterHTTP(mux,module.controller)}
-func (module *runtime) Client() integrationclient.Client {return module.client}
-func (module *runtime) LocalOnly() bool {return module.localOnly}
-func (module *runtime) Close() {module.stop();<-module.done}
 
+func (module *runtime) Client() integrationclient.Client {return module.client}
+
+func (module *runtime) LocalOnly() bool {return module.localOnly}
+
+func (module *runtime) Close() {module.stop();<-module.done}

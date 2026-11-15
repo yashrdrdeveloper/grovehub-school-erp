@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	integrationconfig "grovehub/services/integration/config"
+	integrationconfig "grovehub/services/integration/internal/app/config"
 	"grovehub/services/integration/internal/app/providers"
 )
 
@@ -25,9 +25,11 @@ type Client struct {
 func NewClient(config integrationconfig.Outlook) *Client {
 	return &Client{config: config, http: &http.Client{Timeout: 20 * time.Second}}
 }
+
 func (c *Client) endpoint(path string) string {
 	return "https://login.microsoftonline.com/" + c.config.Tenant + "/oauth2/v2.0/" + path
 }
+
 func (c *Client) AuthorizationURL(state string) string {
 	v := url.Values{
 		"client_id":     {c.config.ClientID},
@@ -39,6 +41,7 @@ func (c *Client) AuthorizationURL(state string) string {
 	}
 	return c.endpoint("authorize") + "?" + v.Encode()
 }
+
 func (c *Client) Exchange(ctx context.Context, code string) (providers.OAuthToken, error) {
 	return c.tokenRequest(ctx, url.Values{
 		"client_id":     {c.config.ClientID},
@@ -49,6 +52,7 @@ func (c *Client) Exchange(ctx context.Context, code string) (providers.OAuthToke
 		"scope":         {"offline_access User.Read Mail.Read Mail.Send"},
 	})
 }
+
 func (c *Client) Refresh(ctx context.Context, t providers.OAuthToken) (providers.OAuthToken, error) {
 	next, err := c.tokenRequest(ctx, url.Values{
 		"client_id":     {c.config.ClientID},
@@ -65,6 +69,7 @@ func (c *Client) Refresh(ctx context.Context, t providers.OAuthToken) (providers
 	}
 	return next, nil
 }
+
 func (c *Client) tokenRequest(ctx context.Context, v url.Values) (providers.OAuthToken, error) {
 	var token providers.OAuthToken
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint("token"), strings.NewReader(v.Encode()))
@@ -89,6 +94,7 @@ func (c *Client) tokenRequest(ctx context.Context, v url.Values) (providers.OAut
 	token.Expiry = time.Now().Add(time.Duration(token.ExpiresIn) * time.Second)
 	return token, nil
 }
+
 func (c *Client) graph(ctx context.Context, accessToken, method, path string, body io.Reader, contentType string, dst any) error {
 	if !strings.HasPrefix(path, "/") {
 		return errors.New("invalid Graph path")
@@ -120,6 +126,7 @@ type StatusError struct{ StatusCode int }
 func (e *StatusError) Error() string {
 	return fmt.Sprintf("Outlook Graph request failed (HTTP %d)", e.StatusCode)
 }
+
 func (c *Client) Mailbox(ctx context.Context, token providers.OAuthToken) (string, error) {
 	var me struct {
 		Mail              string `json:"mail"`

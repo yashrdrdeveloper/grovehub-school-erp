@@ -18,12 +18,14 @@ type gmailPart struct {
  Body struct {Data string `json:"data"`; AttachmentID string `json:"attachmentId"`; Size int64 `json:"size"`} `json:"body"`
  Parts []gmailPart `json:"parts"`
 }
+
 func decodeGmailBody(raw string) string {
  if raw==""{return ""}
  decoded,err:=base64.RawURLEncoding.DecodeString(strings.TrimRight(raw,"="))
  if err!=nil||len(decoded)>2<<20{return ""}
  return string(decoded)
 }
+
 func applyGmailPart(dst *mailcontract.Message,p gmailPart){
  if len(p.Headers)>0{
   for _,h:=range p.Headers {
@@ -48,6 +50,7 @@ func applyGmailPart(dst *mailcontract.Message,p gmailPart){
  }
  for _,child:=range p.Parts{applyGmailPart(dst,child)}
 }
+
 func splitGmailAddresses(raw string)[]string{
  // Preserve display-name forms and quoted commas using net/mail.
  list,err:=mail.ParseAddressList(raw)
@@ -56,6 +59,7 @@ func splitGmailAddresses(raw string)[]string{
  for _,address:=range list{result=append(result,address.Address)}
  return result
 }
+
 func normalizeGmailMessage(m Message)mailcontract.Message{
  out:=mailcontract.Message{ID:m.ID,ThreadID:m.ThreadID,Snippet:m.Snippet,Labels:m.LabelIDs}
  if m.InternalDate!=""{
@@ -69,6 +73,7 @@ func normalizeGmailMessage(m Message)mailcontract.Message{
  }
  return out
 }
+
 func normalizeGmailPage(page MessagePage)mailcontract.Page{
  result:=mailcontract.Page{NextPageToken:page.NextPageToken,Messages:make([]mailcontract.Message,0,len(page.Messages))}
  for _,msg:=range page.Messages{result.Messages=append(result.Messages,normalizeGmailMessage(msg))}

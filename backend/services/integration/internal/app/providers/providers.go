@@ -9,6 +9,7 @@ import (
 
 // Public provider contracts; implementation and registration belong in impl.
 type Action = actionconstants.Action
+
 type Capability = actionconstants.Capability
 
 const (
@@ -41,20 +42,25 @@ type Descriptor struct {
 	Capabilities []Capability `json:"capabilities"`
 	AuthType     string       `json:"authType"`
 }
+
 type Provider interface{ Descriptor() Descriptor }
+
 type Session struct {
 	ConnectionID string
 	ProviderID   string
 	AccessToken  string
 }
+
 type ActionHandler interface {
 	Execute(ctx context.Context, session Session, input json.RawMessage) (any, error)
 }
+
 type ActionRegistry interface {
 	Register(provider string, action Action, handler ActionHandler) error
 	Execute(ctx context.Context, session Session, action Action, input json.RawMessage) (any, error)
 	Actions(provider string) []Action
 }
+
 type Registry interface {
 	Find(id string) (Provider, error)
 	List() []Descriptor
