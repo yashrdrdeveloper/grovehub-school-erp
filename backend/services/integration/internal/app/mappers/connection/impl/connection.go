@@ -1,7 +1,7 @@
 package impl
 
 import (
-    dto "grovehub/services/integration/internal/app/dto/connection"
+    connectiondto "grovehub/services/integration/internal/app/dto/connection"
     "grovehub/services/integration/internal/app/entity"
     mapper "grovehub/services/integration/internal/app/mappers/connection"
 )
