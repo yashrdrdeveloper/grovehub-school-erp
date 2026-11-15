@@ -3,6 +3,7 @@ package services_test
 import (
 	"context"
 	"encoding/json"
+    "errors"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -71,9 +72,13 @@ type publishedEvent struct {
 	topic string
 	data  []byte
 }
-type messagingFake struct{ published []publishedEvent }
+type messagingFake struct{
+    published []publishedEvent
+    failure error
+}
 
 func (m *messagingFake) Publish(_ context.Context, topic string, payload []byte, _ map[string]string) error {
+    if m.failure!=nil {return m.failure}
 	m.published = append(m.published, publishedEvent{topic: topic, data: payload})
 	return nil
 }
@@ -113,4 +118,26 @@ var _ = Describe("Provider push event ownership", func() {
 		Expect(ids).To(HaveKey("connection-1"))
 		Expect(ids).To(HaveKey("connection-2"))
 	})
+    It("returns NATS delivery errors so the Gmail push endpoint can retry",func(){
+        registry,err:=providerimpl.NewRegistry(gmail.New())
+        Expect(err).NotTo(HaveOccurred())
+        sentinel:=errors.New("broker unavailable")
+        transport:=&messagingFake{failure:sentinel}
+        producer:=producerimpl.New(changed.NewChangedPipeline(changedimpl.New(),transport))
+        service,err:=integrationimpl.NewConnectionService(
+            &connectionRepositoryFake{},&watchRepositoryFake{},
+            registry,providerimpl.NewActionRegistry(),providerimpl.NewOAuthRegistry(),
+            gmail.NewClient(integrationconfig.Gmail{}),nil,
+            []byte("01234567890123456789012345678901"),
+            "projects/test/topics/gmail",producer,
+            validatorimpl.NewConnectionValidator(),mapperimpl.NewConnectionMapper(),
+        )
+        Expect(err).NotTo(HaveOccurred())
+        err=service.ProcessPush(context.Background(),gmail.PushNotification{
+            EmailAddress:"one@gmail.com",HistoryID:"10001",
+        })
+        Expect(err).To(MatchError(sentinel))
+        Expect(transport.published).To(BeEmpty())
+    })
+
 })
