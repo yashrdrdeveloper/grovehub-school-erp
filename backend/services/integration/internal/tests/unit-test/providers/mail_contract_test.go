@@ -1,6 +1,7 @@
 package providers_test
 
 import (
+    mailhelpers "grovehub/services/integration/internal/app/providers/mailprovider/helpers"
  "bytes"
  "encoding/base64"
  "io"
@@ -28,7 +29,7 @@ var _=Describe("Provider-neutral mail MIME codec",func(){
     ContentBase64:base64.StdEncoding.EncodeToString([]byte("hello attachment")),
    }},
   }
-  raw,err:=maildto.BuildMIME("sender@gmail.com",payload)
+  raw,err:=mailhelpers.BuildMIME("sender@gmail.com",payload)
   Expect(err).NotTo(HaveOccurred())
   msg,err:=mail.ReadMessage(bytes.NewReader(raw))
   Expect(err).NotTo(HaveOccurred())
@@ -63,7 +64,7 @@ var _=Describe("Provider-neutral mail MIME codec",func(){
    To:[]string{"recipient@example.com"},Subject:"Test",
    Body:maildto.Body{Text:"message"},
   }
-  _,err:=maildto.BuildMIME("sender@example.com",valid)
+  _,err:=mailhelpers.BuildMIME("sender@example.com",valid)
   Expect(err).NotTo(HaveOccurred())
   invalid:=valid
   invalid.To=[]string{"a@example.com\r\nBcc:bad@example.com"}
@@ -74,11 +75,11 @@ var _=Describe("Provider-neutral mail MIME codec",func(){
   invalid=valid
   invalid.Attachments=[]maildto.Attachment{{Filename:"a.txt",ContentType:"text/plain",ContentBase64:"not-base64"}}
   Expect(invalid.Validate()).To(HaveOccurred())
-  _,err=maildto.BuildMIME("spoof@example.com\r\nBcc:bad@example.com",valid)
+  _,err=mailhelpers.BuildMIME("spoof@example.com\r\nBcc:bad@example.com",valid)
   Expect(err).To(HaveOccurred())
  })
  It("serializes text-only messages without attachments",func(){
-  raw,err:=maildto.BuildMIME("sender@example.com",maildto.Send{
+  raw,err:=mailhelpers.BuildMIME("sender@example.com",maildto.Send{
    To:[]string{"recipient@example.com"},Subject:"Test",Body:maildto.Body{Text:"Hello"},
   })
   Expect(err).NotTo(HaveOccurred())

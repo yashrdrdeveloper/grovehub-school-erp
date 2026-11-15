@@ -314,7 +314,8 @@ providers/
 └── mailprovider/
     ├── mailprovider.go                   # Strategy, Resolver, Runtime, Factory
     ├── constants/{actions,capabilities}.go
-    ├── dto/{oauth,mail}.go               # credentials, Send/Message/Attachments/MIME
+    ├── dto/{oauth,mail}.go               # credentials, Send/Message/Attachments
+    ├── helpers/mime.go                 # MIME encoding independent of data structures
     ├── contracts/oauth.go                # OAuthStrategy + OAuthRegistry
     └── operations/
         ├── oauth/{oauth.go,strategies/impl/oauth.go}

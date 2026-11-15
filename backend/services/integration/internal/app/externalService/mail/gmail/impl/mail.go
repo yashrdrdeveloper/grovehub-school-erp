@@ -1,6 +1,7 @@
 package impl
 
 import (
+    mailhelpers "grovehub/services/integration/internal/app/providers/mailprovider/helpers"
     providerhelpers "grovehub/services/integration/internal/app/providers/helpers"
 	"context"
 	"encoding/base64"
@@ -119,7 +120,7 @@ func (c *Client) History(ctx context.Context, t Token, startID, page string) (Hi
 func (c *Client) Send(ctx context.Context, t Token, request maildto.Send) (SentMessage, error) {
  profile, err := c.Profile(ctx, t)
  if err != nil { return SentMessage{}, err }
- raw, err := maildto.BuildMIME(profile.EmailAddress, request)
+ raw, err := mailhelpers.BuildMIME(profile.EmailAddress, request)
  if err != nil { return SentMessage{}, providerhelpers.ErrInvalidActionInput }
  return c.SendRaw(ctx, t, base64.RawURLEncoding.EncodeToString(raw))
 }
