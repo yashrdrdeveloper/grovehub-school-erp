@@ -4,7 +4,7 @@ import (
 	"io"
 
 	integrationconfig "grovehub/services/integration/config"
-	"grovehub/services/integration/providers"
+	"grovehub/services/integration/internal/app/providers"
 	impl "grovehub/services/integration/internal/app/providers/mailprovider/providers/gmail/impl"
 )
 

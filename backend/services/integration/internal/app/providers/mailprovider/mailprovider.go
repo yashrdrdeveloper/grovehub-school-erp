@@ -1,6 +1,6 @@
 package mailprovider
 
-import "grovehub/services/integration/providers"
+import "grovehub/services/integration/internal/app/providers"
 
 // Strategy describes one mail provider plus optional executable actions/OAuth.
 type Strategy interface {

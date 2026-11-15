@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 
-	"grovehub/services/integration/entity"
-	"grovehub/services/integration/providers"
+	"grovehub/services/integration/internal/app/entity"
+	"grovehub/services/integration/internal/app/providers"
 )
 
 // ExecuteAction resolves the tenant-scoped provider binding before dispatching

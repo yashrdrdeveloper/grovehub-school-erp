@@ -1,6 +1,6 @@
 package impl
 
-import "grovehub/services/integration/providers"
+import "grovehub/services/integration/internal/app/providers"
 
 // Outlook provider descriptor; supported action strategies are registered separately.
 type Provider struct{}

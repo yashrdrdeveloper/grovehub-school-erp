@@ -8,8 +8,8 @@ import (
 	"time"
 
 	coretransaction "grovehub/libs/core/database/transaction"
-	"grovehub/services/integration/entity"
-	integrationrepository "grovehub/services/integration/repository"
+	"grovehub/services/integration/internal/app/entity"
+	integrationrepository "grovehub/services/integration/internal/app/repository"
 )
 
 type ConnectionRepository struct{ db *gorm.DB }

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	integrationresponse "grovehub/services/integration/internal/app/dto/response"
-	"grovehub/services/integration/providers"
+	"grovehub/services/integration/internal/app/providers"
 )
 
 type ProviderService interface {

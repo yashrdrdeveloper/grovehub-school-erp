@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	integrationconfig "grovehub/services/integration/config"
-	"grovehub/services/integration/providers"
+	"grovehub/services/integration/internal/app/providers"
 	providerimpl "grovehub/services/integration/internal/app/providers/impl"
 	"grovehub/services/integration/internal/app/providers/mailprovider/providers/gmail"
 	"grovehub/services/integration/internal/app/providers/mailprovider/providers/outlook"

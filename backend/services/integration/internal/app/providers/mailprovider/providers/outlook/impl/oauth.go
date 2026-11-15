@@ -12,7 +12,7 @@ import (
 	"time"
 
 	integrationconfig "grovehub/services/integration/config"
-	"grovehub/services/integration/providers"
+	"grovehub/services/integration/internal/app/providers"
 )
 
 const graphBase = "https://graph.microsoft.com/v1.0"

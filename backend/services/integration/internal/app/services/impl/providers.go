@@ -4,8 +4,8 @@ import (
 	"context"
 
 	integrationresponse "grovehub/services/integration/internal/app/dto/response"
-	"grovehub/services/integration/providers"
-	services "grovehub/services/integration/services"
+	"grovehub/services/integration/internal/app/providers"
+	services "grovehub/services/integration/internal/app/services"
 )
 
 type providerService struct {

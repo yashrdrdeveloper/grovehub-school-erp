@@ -10,9 +10,9 @@ import (
 	"time"
 
 	integrationresponse "grovehub/services/integration/internal/app/dto/response"
-	"grovehub/services/integration/entity"
-	"grovehub/services/integration/providers"
-	integrationrepository "grovehub/services/integration/repository"
+	"grovehub/services/integration/internal/app/entity"
+	"grovehub/services/integration/internal/app/providers"
+	integrationrepository "grovehub/services/integration/internal/app/repository"
 )
 
 var (

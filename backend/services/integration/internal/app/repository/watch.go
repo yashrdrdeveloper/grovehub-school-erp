@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"grovehub/services/integration/entity"
+	"grovehub/services/integration/internal/app/entity"
 	"time"
 )
 

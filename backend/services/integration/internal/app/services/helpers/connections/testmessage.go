@@ -7,7 +7,7 @@ import (
 	"net/mail"
 
 	connectionconstants "grovehub/services/integration/internal/app/constants/connections"
-	"grovehub/services/integration/providers"
+	"grovehub/services/integration/internal/app/providers"
 )
 
 var ErrInvalidTestMailbox = errors.New("invalid test mailbox address")

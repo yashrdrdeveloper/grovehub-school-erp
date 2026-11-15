@@ -6,7 +6,7 @@ import (
 
 	integrationrequest "grovehub/services/integration/internal/app/dto/request"
 	integrationresponse "grovehub/services/integration/internal/app/dto/response"
-	"grovehub/services/integration/providers"
+	"grovehub/services/integration/internal/app/providers"
 )
 
 // Client is the in-process service-to-service API, following Foundation's

@@ -14,10 +14,10 @@ import (
 	integrationconfig "grovehub/services/integration/config"
 	integrationerrors "grovehub/services/integration/internal/app/constants/error"
 	integrationrequest "grovehub/services/integration/internal/app/dto/request"
-	"grovehub/services/integration/providers"
+	"grovehub/services/integration/internal/app/providers"
 	"grovehub/services/integration/internal/app/providers/mailprovider/providers/gmail"
-	integrationrepository "grovehub/services/integration/repository"
-	integrationservices "grovehub/services/integration/services"
+	integrationrepository "grovehub/services/integration/internal/app/repository"
+	integrationservices "grovehub/services/integration/internal/app/services"
 	serviceimpl "grovehub/services/integration/internal/app/services/impl"
 )
 

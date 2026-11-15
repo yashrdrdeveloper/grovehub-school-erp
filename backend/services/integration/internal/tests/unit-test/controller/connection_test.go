@@ -14,9 +14,9 @@ import (
 	integrationcontroller "grovehub/services/integration/internal/app/controller/impl"
 	integrationrequest "grovehub/services/integration/internal/app/dto/request"
 	integrationresponse "grovehub/services/integration/internal/app/dto/response"
-	"grovehub/services/integration/providers"
+	"grovehub/services/integration/internal/app/providers"
 	"grovehub/services/integration/internal/app/providers/mailprovider/providers/gmail"
-	integrationroutes "grovehub/services/integration/routes"
+	integrationroutes "grovehub/services/integration/internal/app/routes"
 )
 
 type serviceStub struct{}

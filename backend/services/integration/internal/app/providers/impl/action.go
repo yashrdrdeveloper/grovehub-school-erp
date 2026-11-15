@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"grovehub/services/integration/providers"
+	"grovehub/services/integration/internal/app/providers"
 	"sort"
 	"strings"
 )

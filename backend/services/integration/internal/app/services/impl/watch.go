@@ -9,7 +9,7 @@ import (
 
 	providerconstants "grovehub/services/integration/internal/app/constants/providers"
 	integrationresponse "grovehub/services/integration/internal/app/dto/response"
-	"grovehub/services/integration/entity"
+	"grovehub/services/integration/internal/app/entity"
 	"grovehub/services/integration/internal/app/providers/mailprovider/providers/gmail"
 )
 

@@ -1,7 +1,7 @@
 package gmail
 
 import (
-	"grovehub/services/integration/providers"
+	"grovehub/services/integration/internal/app/providers"
 	"grovehub/services/integration/internal/app/providers/mailprovider"
 )
 

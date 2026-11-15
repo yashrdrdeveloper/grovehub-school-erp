@@ -9,12 +9,12 @@ import (
 	infrastructureclient "grovehub/services/infrastructure/client/messaging"
 	integrationrequest "grovehub/services/integration/internal/app/dto/request"
 	integrationresponse "grovehub/services/integration/internal/app/dto/response"
-	"grovehub/services/integration/entity"
-	"grovehub/services/integration/providers"
+	"grovehub/services/integration/internal/app/entity"
+	"grovehub/services/integration/internal/app/providers"
 	"grovehub/services/integration/internal/app/providers/mailprovider/providers/gmail"
 	"grovehub/services/integration/internal/app/providers/mailprovider/providers/outlook"
-	integrationrepository "grovehub/services/integration/repository"
-	integrationservices "grovehub/services/integration/services"
+	integrationrepository "grovehub/services/integration/internal/app/repository"
+	integrationservices "grovehub/services/integration/internal/app/services"
 	connectionhelpers "grovehub/services/integration/internal/app/services/helpers/connections"
 )
 

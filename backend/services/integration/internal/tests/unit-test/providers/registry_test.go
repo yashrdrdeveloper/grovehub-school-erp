@@ -3,7 +3,7 @@ package providers_test
 import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"grovehub/services/integration/providers"
+	"grovehub/services/integration/internal/app/providers"
 	providerimpl "grovehub/services/integration/internal/app/providers/impl"
 	"grovehub/services/integration/internal/app/providers/mailprovider/providers/gmail"
 	"grovehub/services/integration/internal/app/providers/mailprovider/providers/outlook"

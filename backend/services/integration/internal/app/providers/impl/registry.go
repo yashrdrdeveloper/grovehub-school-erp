@@ -1,7 +1,7 @@
 package impl
 
 import (
-	"grovehub/services/integration/providers"
+	"grovehub/services/integration/internal/app/providers"
 	"sort"
 	"strings"
 )

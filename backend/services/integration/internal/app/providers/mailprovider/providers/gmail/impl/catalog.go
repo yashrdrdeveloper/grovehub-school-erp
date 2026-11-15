@@ -1,6 +1,6 @@
 package impl
 
-import "grovehub/services/integration/providers"
+import "grovehub/services/integration/internal/app/providers"
 
 // Gmail provider capabilities are implemented through the connected OAuth client.
 type Provider struct{}

@@ -11,7 +11,7 @@ import (
 
 	connectionconstants "grovehub/services/integration/internal/app/constants/connections"
 	providerconstants "grovehub/services/integration/internal/app/constants/providers"
-	"grovehub/services/integration/entity"
+	"grovehub/services/integration/internal/app/entity"
 )
 
 // WatchRepository uses GORM's model, association, and upsert APIs.

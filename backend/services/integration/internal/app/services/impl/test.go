@@ -11,8 +11,8 @@ import (
 
 	connectionconstants "grovehub/services/integration/internal/app/constants/connections"
 	integrationresponse "grovehub/services/integration/internal/app/dto/response"
-	"grovehub/services/integration/entity"
-	"grovehub/services/integration/providers"
+	"grovehub/services/integration/internal/app/entity"
+	"grovehub/services/integration/internal/app/providers"
 	connectionhelpers "grovehub/services/integration/internal/app/services/helpers/connections"
  mailcontract "grovehub/services/integration/internal/app/providers/mailprovider/mailcontract"
 )

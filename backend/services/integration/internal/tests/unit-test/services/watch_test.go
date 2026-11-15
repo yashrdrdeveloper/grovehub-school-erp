@@ -10,7 +10,7 @@ import (
 
 	messagingclient "grovehub/services/infrastructure/client/messaging"
  integrationconfig "grovehub/services/integration/config"
-	"grovehub/services/integration/entity"
+	"grovehub/services/integration/internal/app/entity"
 	mailboxevents "grovehub/services/integration/internal/app/events/connections/mailbox"
 	providerimpl "grovehub/services/integration/internal/app/providers/impl"
 	"grovehub/services/integration/internal/app/providers/mailprovider/providers/gmail"

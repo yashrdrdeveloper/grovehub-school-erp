@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"grovehub/services/integration/providers"
+	"grovehub/services/integration/internal/app/providers"
 	mailfactory "grovehub/services/integration/internal/app/providers/mailprovider/impl"
 	"grovehub/services/integration/internal/app/providers/mailprovider/providers/gmail"
 	"grovehub/services/integration/internal/app/providers/mailprovider/providers/outlook"

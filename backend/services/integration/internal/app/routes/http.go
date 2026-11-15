@@ -3,7 +3,7 @@ package routes
 import (
 	"net/http"
 
-	"grovehub/services/integration/controller"
+	"grovehub/services/integration/internal/app/controller"
 )
 
 // RegisterHTTP composes routes by URL resource, not internal capability.

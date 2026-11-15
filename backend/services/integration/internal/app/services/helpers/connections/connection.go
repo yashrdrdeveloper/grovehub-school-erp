@@ -3,7 +3,7 @@ package connections
 import (
 	corenormalize "grovehub/libs/core/normalize"
 	integrationresponse "grovehub/services/integration/internal/app/dto/response"
-	"grovehub/services/integration/entity"
+	"grovehub/services/integration/internal/app/entity"
 )
 
 // ValidID reuses the platform's canonical UUIDv7 validator.

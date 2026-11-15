@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"grovehub/services/integration/providers"
+	"grovehub/services/integration/internal/app/providers"
 )
 
 type tokenCipher struct{ key []byte }

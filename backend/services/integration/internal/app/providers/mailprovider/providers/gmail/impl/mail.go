@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"grovehub/services/integration/providers"
+	"grovehub/services/integration/internal/app/providers"
  "grovehub/services/integration/internal/app/providers/mailprovider/mailcontract"
 	"net/http"
 	"net/url"

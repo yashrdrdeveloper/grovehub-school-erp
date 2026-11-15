@@ -2,7 +2,7 @@ package impl
 
 import (
     integrationclient "grovehub/services/integration/client/connections"
-    integrationservices "grovehub/services/integration/services"
+    integrationservices "grovehub/services/integration/internal/app/services"
 )
 
 // integrationClient preserves explicit service boundaries.
