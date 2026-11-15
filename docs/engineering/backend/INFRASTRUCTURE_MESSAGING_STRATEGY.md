@@ -24,7 +24,7 @@ internal/app/services/messaging/impl
                                               Watermill / NATS JetStream
 ```
 
-`bootstrap/impl/messaging.go` registers the concrete NATS adapter directly
+`bootstrap/impl/service.go` registers the concrete NATS adapter directly
 against the provider-neutral `services/messaging/strategies.Strategy`
 interface. There must be **no** `services/messaging/strategies/nats.go`:
 the NATS-specific implementation belongs entirely under
@@ -35,10 +35,9 @@ or messaging operations.
 
 ## Config and bootstrap
 
-Configuration lives at `internal/app/config/messaging/messaging.go` with a
-stable public alias at `client/messaging/config.go`. The Foundation-style
+The Infrastructure-owned public message DTOs, EventStore event type, config\ncontract and publish options live under `libs/infrastructure/messaging`.\n`internal/app/config/messaging/messaging.go` references those types.\nThe stable public facade consolidates all three prior files into\n`client/messaging/messaging.go`. The Foundation-style
 bootstrap builder owns `bootstrap.go`, `messaging.go`, `repository.go`,
-`client.go` and `events.go`. Infrastructure exposes `New` and `Runtime`;
+`client.go` and `events.go` (with `service.go` for provider assembly). Infrastructure exposes `New` and `Runtime`;
 the dispatcher is started and stopped by the runtime.
 
 ## Per-event persistence
@@ -86,3 +85,27 @@ through public clients.
 - Do not add a vendor-specific service strategy file.
 - Never assume `Persist:false` guarantees delivery across a process crash.
 - Never use Infrastructure's transactional outbox as permanent end-user audit history.
+
+## Runtime environment
+
+Set the following variables for a directly executed backend:
+
+```dotenv
+GROVEHUB_MESSAGING_PROVIDER=nats
+GROVEHUB_NATS_URL=nats://127.0.0.1:4222
+GROVEHUB_NATS_QUEUE_GROUP_PREFIX=grovehub
+GROVEHUB_NATS_DURABLE_PREFIX=grovehub
+```
+
+These are example **configuration values**, not hardcoded Go defaults.
+`make dev-start` sources `.env` and provides development fallbacks in
+`scripts/lib/env.sh`; direct production execution should explicitly supply
+these environment variables. Missing required NATS settings produce startup
+validation errors rather than silently selecting a wrong broker.
+
+## No artificial HTTP controller
+
+Messaging does not expose HTTP APIs. The generated in-process `@Client` proxy
+is the boundary; separate Publish, Consume and Health operations call the
+provider-neutral strategy implemented by the external adapter. HTTP controllers
+and routes should only be added when real infrastructure HTTP endpoints exist.

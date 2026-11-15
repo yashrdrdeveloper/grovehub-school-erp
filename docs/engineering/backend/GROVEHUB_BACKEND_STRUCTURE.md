@@ -821,3 +821,14 @@ owned by `infrastructure/internal/app/repository/messaging` and
 `services/messaging/operations/dispatch/dispatcher.go`. Foundation publishes through a public
 `EventStore` interface in the same transaction. See
 `INFRASTRUCTURE_INTERNAL_LAYOUT.md` for the complete tree and migration plan.
+
+## Infrastructure messaging library ownership (November 2026)
+
+Only generic event envelopes and generic event processing remain in
+`libs/core/events`. Infrastructure-managed messaging transport types
+(`Event`, `Message`, `Handler`, `PublishOptions`, `Config`) live in
+`libs/infrastructure/messaging`. The public Infrastructure client is one file,
+`services/infrastructure/client/messaging/messaging.go`, preserving the
+`@Client` generated proxy. Private bootstrap/provider assembly is in
+`services/infrastructure/internal/app/bootstrap/impl/service.go`.
+NATS URL, queue and durable identifiers are sourced from environment variables.

@@ -27,9 +27,9 @@ Resource-based modules follow Foundation's internal/app layout. See
 
 ```text
 internal/app/
-  bootstrap/{bootstrap.go,impl/{bootstrap,client,messaging,repository,events}.go}
+  bootstrap/{bootstrap.go,impl/{bootstrap,client,service,repository,events}.go}
   client/<capability>/impl/
-  config/<capability>/
+  config/<capability>/  # environment-driven; public types in libs/infrastructure/
   entity/
   dto/<resource>/
   repository/<resource>/impl/
@@ -230,3 +230,16 @@ NO database/network/filesystem work inside services/helpers
 NO vendor SDK types in generic client/service contracts
 NO outbox record for a non-persistent Publish
 ```
+
+### Infrastructure contracts and configuration ownership
+
+Infrastructure-owned transport DTOs, handler interfaces, event publish options
+and provider configuration are defined in `backend/libs/infrastructure/messaging`.
+The single public `backend/services/infrastructure/client/messaging/messaging.go`
+exposes stable aliases and the generated `@Client` facade. Core retains only
+transport-agnostic events/envelope processing; core's event pipeline uses two
+type parameters to avoid depending on Infrastructure types.
+
+NATS runtime URL, queue-group prefix, and durable prefix must be supplied
+through environment variables. Local shell scripts may set development defaults.
+Do not introduce HTTP controllers or routes for broker-only operations.

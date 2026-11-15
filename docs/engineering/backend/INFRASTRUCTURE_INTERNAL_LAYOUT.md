@@ -1,16 +1,13 @@
 # Infrastructure service — resource-based internal layout
 
-Infrastructure follows the same resource-based composition used by Foundation.
+Infrastructure follows the same resource-based composition used by Foundation.\nAll public messaging contracts and DTOs are exposed via\n`libs/infrastructure/messaging`, not `libs/core/events/messaging`.\nReplace the three separate public client files with one `client/messaging/messaging.go`.\n
 Messaging is a capability; NATS is only one implementation and appears **only**
 under the Messaging external-service provider folder.
 
 ```text
 backend/services/infrastructure/
 ├── infrastructure.go
-├── client/messaging/
-│   ├── messaging.go                  # @Client public contract; generated proxies
-│   ├── outbox.go                     # EventStore used by Foundation and other modules
-│   └── config.go                     # public configuration alias
+├── client/messaging/messaging.go      # @Client, EventStore, Config, DTO aliases
 └── internal/
     ├── app/
     │   ├── bootstrap/
@@ -18,7 +15,7 @@ backend/services/infrastructure/
     │   │   └── impl/
     │   │       ├── bootstrap.go      # builder.Build, runtime.Close
     │   │       ├── client.go         # generated messaging client composition
-    │   │       ├── messaging.go      # provider registration and service composition
+    │   │       ├── service.go        # provider registration and service composition
     │   │       ├── repository.go     # repository, mapper and validator assembly
     │   │       └── events.go         # background dispatcher lifecycle
     │   ├── client/messaging/impl/messaging.go
@@ -71,4 +68,23 @@ uses generated in-process HTTP `@RequestLine` calls for its actual HTTP routes.
 NATS-specific types and Watermill APIs cannot appear in the generic
 `services/messaging`, `client/messaging`, or business modules. Add additional
 providers under `externalService/messaging/<provider>/`; register them in
-`bootstrap/impl/messaging.go` without creating vendor-named service strategies.
+`bootstrap/impl/service.go` without creating vendor-named service strategies.
+
+### Environment-driven broker configuration
+
+`libs/infrastructure/messaging.FromEnv` reads
+`GROVEHUB_MESSAGING_PROVIDER`, `GROVEHUB_NATS_URL`,
+`GROVEHUB_NATS_QUEUE_GROUP_PREFIX` and
+`GROVEHUB_NATS_DURABLE_PREFIX`. Application startup validates these values.
+There is no hardcoded NATS endpoint or queue/durable name in Go.
+`scripts/lib/env.sh` supplies developer defaults, and `.env.example`
+documents the settings for deployments and direct binary execution.
+
+### Why there is no Messaging HTTP controller
+
+The public `@Client` interface is the application boundary for Publish,
+PublishWithOptions, Consume and Health; its generated proxy forwards to the
+operation-based Messaging service, which delegates to the selected
+`externalService/messaging/<provider>` adapter. There is no
+HTTP endpoint to register, so a controller or routes folder would have no
+actual work. Domain event consumer handlers belong to their owning services.

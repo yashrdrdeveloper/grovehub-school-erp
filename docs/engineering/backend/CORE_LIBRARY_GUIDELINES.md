@@ -525,3 +525,12 @@ Consumers use typed aliases exposed from
 inside `internal/app/dto/<resource>/`. External services do not import the
 private `internal/app/` packages. The
 `core/module.Module` lifecycle remains shared and domain-neutral.
+
+## Infrastructure-owned contracts
+
+Transport-specific capability contracts are not core utilities. Shared
+message delivery DTOs, event-store records, publish options, handler signatures
+and broker configuration are now located in `libs/infrastructure/messaging`.
+Do not reintroduce `libs/core/events/messaging`. Core provides typed domain
+event envelopes and a generic `pipeline.Rules[T,M]` abstraction with no
+dependency on Infrastructure's message types.

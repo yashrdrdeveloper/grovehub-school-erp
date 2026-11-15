@@ -287,3 +287,19 @@ Whenever event structure, event naming, envelope shape, event ownership, or publ
 If the change also affects generic backend placement/layering, update `GROVEHUB_BACKEND_STRUCTURE.md` as well.
 
 > **Guiding principle:** the domain owns what happened; Infrastructure owns how the message travels.
+
+
+## Infrastructure-owned event transport types
+
+The canonical versioned domain envelope `libs/core/events.Envelope[T]` remains
+generic. The broker-delivery DTOs and pending event-store record types live in
+`libs/infrastructure/messaging`, not `libs/core/events/messaging`.
+The generic `libs/core/events/pipeline.Rules[T,M]` does not import any
+Infrastructure-owned contract. Foundation specializes its message type to
+`infrastructure/client/messaging.Event` while keeping the old/new full-snapshot
+event format intact.
+
+Do not publish the same business event twice: Foundation's existing transactional
+`EventStore.Enqueue` already writes to `infrastructure.messaging`. Application
+modules that choose `PublishWithOptions{Persist:true}` should do so once, inside
+the business transaction. Direct publishing does not write an outbox record.
