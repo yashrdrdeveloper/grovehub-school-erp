@@ -65,7 +65,6 @@ func (*serviceStub) Disconnect(context.Context, string, string) (connectiondto.C
 
 var _ = Describe("Integration HTTP authorization", func() {
 	It("allows public provider discovery", func() {
-		c := integrationcontroller.NewConnectionController(&serviceStub{}, integrationconfig.GmailPush{})
 		recorder := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodGet, "/integrations/providers", nil)
 		providercontroller.NewProviderController(&serviceStub{}).Providers(recorder, req)
