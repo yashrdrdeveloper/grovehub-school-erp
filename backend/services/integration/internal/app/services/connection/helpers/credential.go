@@ -1,4 +1,4 @@
-package impl
+package helpers
 
 import (
 	"crypto/aes"
@@ -10,15 +10,15 @@ import (
 	"grovehub/services/integration/internal/app/providers"
 )
 
-type tokenCipher struct{ key []byte }
+type TokenCipher struct{ key []byte }
 
-func newTokenCipher(key []byte) (tokenCipher, error) {
+func NewTokenCipher(key []byte) (TokenCipher, error) {
 	if len(key) != 32 {
-		return tokenCipher{}, errors.New("integration encryption key must have 32 bytes")
+		return TokenCipher{}, errors.New("integration encryption key must have 32 bytes")
 	}
-	return tokenCipher{key: append([]byte(nil), key...)}, nil
+	return TokenCipher{key: append([]byte(nil), key...)}, nil
 }
-func (c tokenCipher) Seal(token providers.OAuthToken) ([]byte, error) {
+func (c TokenCipher) Seal(token providers.OAuthToken) ([]byte, error) {
 	block, err := aes.NewCipher(c.key)
 	if err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func (c tokenCipher) Seal(token providers.OAuthToken) ([]byte, error) {
 	}
 	return gcm.Seal(nonce, nonce, payload, nil), nil
 }
-func (c tokenCipher) Open(ciphertext []byte) (providers.OAuthToken, error) {
+func (c TokenCipher) Open(ciphertext []byte) (providers.OAuthToken, error) {
 	var token providers.OAuthToken
 	block, err := aes.NewCipher(c.key)
 	if err != nil {

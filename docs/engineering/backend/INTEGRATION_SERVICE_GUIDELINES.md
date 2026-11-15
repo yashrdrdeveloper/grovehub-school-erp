@@ -48,7 +48,7 @@ services/integration/
     │   │   ├── connection/{connection.go,impl/connection.go}
     │   │   └── watch/{watch.go,impl/watch.go}
     │   ├── services/
-    │   │   ├── connection/{connection.go,impl/,helpers/}
+    │   │   ├── connection/{connection.go,impl/,helpers/,operations/}
     │   │   └── provider/{provider.go,impl/}
     │   └── routes/http.go
     ├── resources/
@@ -115,3 +115,33 @@ go test -vet=off -overlay=.generated/overlay.json ./services/integration/interna
 
 Run `make dev-start` for an end-to-end development start after setting your
 Gmail/Outlook OAuth values and Infrastructure NATS variables.
+
+## Connection operation pattern
+
+ConnectionService is composed exactly like Foundation's PersonService:
+the public interface lives at `internal/app/services/connection/connection.go`,
+and `services/connection/impl/connections.go` embeds eight real operations:
+
+```text
+services/connection/
+├── connection.go                           # ConnectionService interface
+├── impl/connections.go                    # @Service composition only
+├── helpers/{errors,credential,...}.go     # shared pure/error and crypto helpers
+└── operations/
+    ├── create/{create.go,strategies/{strategy.go,impl/create.go}}
+    ├── get/{get.go,strategies/{strategy.go,impl/get.go}}
+    ├── list/{list.go,strategies/{strategy.go,impl/list.go}}
+    ├── disconnect/{disconnect.go,strategies/{strategy.go,impl/disconnect.go}}
+    ├── oauth/{oauth.go,strategies/{strategy.go,impl/oauth.go}}
+    ├── action/{action.go,strategies/{strategy.go,impl/action.go}}
+    ├── test/{test.go,strategies/{strategy.go,impl/test.go}}
+    └── watch/{watch.go,strategies/{strategy.go,impl/watch.go}}
+```
+
+Each strategy owns its operation logic; the composed service does not
+duplicate methods or switch on Gmail/Outlook. Shared OAuth token refresh is
+exposed through the typed `oauth.TokenProvider` interface to the Action,
+Test and Watch operations. Credential encryption uses the same AES-GCM
+behavior, key validation and nonce generation as before the refactor.
+The public controller error behavior remains compatible through canonical
+errors in `services/connection/helpers/errors.go`.

@@ -1,37 +1,43 @@
 package impl
 
 import (
-	"context"
-	"crypto/rand"
-	"crypto/sha256"
-	"encoding/base64"
-	"encoding/hex"
-	"errors"
-	"time"
+    "context"
+    "crypto/rand"
+    "crypto/sha256"
+    "encoding/base64"
+    "encoding/hex"
+    "errors"
+    "time"
 
-	connectiondto "grovehub/services/integration/internal/app/dto/connection"
-	"grovehub/services/integration/internal/app/entity"
-	"grovehub/services/integration/internal/app/providers"
-	integrationrepository "grovehub/services/integration/internal/app/repository/connection"
+    connectiondto "grovehub/services/integration/internal/app/dto/connection"
+    "grovehub/services/integration/internal/app/entity"
+    "grovehub/services/integration/internal/app/providers"
+    connectionrepo "grovehub/services/integration/internal/app/repository/connection"
+    connectionhelpers "grovehub/services/integration/internal/app/services/connection/helpers"
+    strategies "grovehub/services/integration/internal/app/services/connection/operations/oauth/strategies"
 )
 
-var (
-	ErrOAuthUnavailable   = errors.New("provider OAuth is not configured")
-	ErrOAuthInvalid       = errors.New("invalid OAuth callback")
-	ErrConnectionInactive = errors.New("connection not active")
-)
+type oauthStrategy struct {
+    repository connectionrepo.ConnectionRepository
+    oauth providers.OAuthRegistry
+    cipher connectionhelpers.TokenCipher
+}
+var _ strategies.Strategy = (*oauthStrategy)(nil)
+func New(repository connectionrepo.ConnectionRepository, oauth providers.OAuthRegistry, cipher connectionhelpers.TokenCipher) strategies.Strategy {
+    return &oauthStrategy{repository:repository,oauth:oauth,cipher:cipher}
+}
 
-func (s *ConnectionService) BeginOAuth(ctx context.Context, tenantID, id string) (connectiondto.OAuthStart, error) {
+func (s *oauthStrategy) BeginOAuth(ctx context.Context, tenantID, id string) (connectiondto.OAuthStart, error) {
 	c, err := s.repository.Get(ctx, tenantID, id)
 	if err != nil {
 		return connectiondto.OAuthStart{}, err
 	}
 	if c.Status != entity.StatusPendingSetup {
-		return connectiondto.OAuthStart{}, ErrInvalidConnection
+		return connectiondto.OAuthStart{}, connectionhelpers.ErrInvalidConnection
 	}
 	strategy, err := s.oauth.Find(c.Provider)
 	if err != nil {
-		return connectiondto.OAuthStart{}, ErrOAuthUnavailable
+		return connectiondto.OAuthStart{}, connectionhelpers.ErrOAuthUnavailable
 	}
 	nonce := make([]byte, 32)
 	if _, err = rand.Read(nonce); err != nil {
@@ -48,14 +54,14 @@ func (s *ConnectionService) BeginOAuth(ctx context.Context, tenantID, id string)
 	return connectiondto.OAuthStart{AuthorizationURL: strategy.AuthorizationURL(state)}, nil
 }
 
-func (s *ConnectionService) FinishOAuth(ctx context.Context, provider, code, state string) (connectiondto.OAuthCompletion, error) {
+func (s *oauthStrategy) FinishOAuth(ctx context.Context, provider, code, state string) (connectiondto.OAuthCompletion, error) {
 	if code == "" || len(state) < 40 {
-		return connectiondto.OAuthCompletion{}, ErrOAuthInvalid
+		return connectiondto.OAuthCompletion{}, connectionhelpers.ErrOAuthInvalid
 	}
 	oauthState, err := s.repository.ConsumeOAuthState(ctx, hashState(state), time.Now().UTC())
 	if err != nil {
 		if errors.Is(err, integrationrepository.ErrOAuthStateInvalid) {
-			return connectiondto.OAuthCompletion{}, ErrOAuthInvalid
+			return connectiondto.OAuthCompletion{}, connectionhelpers.ErrOAuthInvalid
 		}
 		return connectiondto.OAuthCompletion{}, err
 	}
@@ -64,25 +70,25 @@ func (s *ConnectionService) FinishOAuth(ctx context.Context, provider, code, sta
 		return connectiondto.OAuthCompletion{}, err
 	}
 	if connection.Provider != provider || connection.Status != entity.StatusPendingSetup {
-		return connectiondto.OAuthCompletion{}, ErrOAuthInvalid
+		return connectiondto.OAuthCompletion{}, connectionhelpers.ErrOAuthInvalid
 	}
 	strategy, err := s.oauth.Find(provider)
 	if err != nil {
-		return connectiondto.OAuthCompletion{}, ErrOAuthUnavailable
+		return connectiondto.OAuthCompletion{}, connectionhelpers.ErrOAuthUnavailable
 	}
 	token, err := strategy.Exchange(ctx, code)
 	if err != nil {
 		return connectiondto.OAuthCompletion{}, err
 	}
 	if token.RefreshToken == "" {
-		return connectiondto.OAuthCompletion{}, ErrOAuthInvalid
+		return connectiondto.OAuthCompletion{}, connectionhelpers.ErrOAuthInvalid
 	}
 	mailbox, err := strategy.Mailbox(ctx, token)
 	if err != nil {
 		return connectiondto.OAuthCompletion{}, err
 	}
 	if mailbox == "" || token.RefreshToken == "" {
-		return connectiondto.OAuthCompletion{}, ErrOAuthInvalid
+		return connectiondto.OAuthCompletion{}, connectionhelpers.ErrOAuthInvalid
 	}
 	encrypted, err := s.cipher.Seal(token)
 	if err != nil {
@@ -99,7 +105,7 @@ func hashState(raw string) string {
 	return hex.EncodeToString(sum[:])
 }
 
-func (s *ConnectionService) validProviderToken(ctx context.Context, connectionID, provider string) (providers.OAuthToken, error) {
+func (s *oauthStrategy) ValidProviderToken(ctx context.Context, connectionID, provider string) (providers.OAuthToken, error) {
 	var empty providers.OAuthToken
 	encrypted, err := s.repository.Credential(ctx, connectionID)
 	if err != nil {
@@ -114,7 +120,7 @@ func (s *ConnectionService) validProviderToken(ctx context.Context, connectionID
 	}
 	strategy, findErr := s.oauth.Find(provider)
 	if findErr != nil {
-		return empty, ErrOAuthUnavailable
+		return empty, connectionhelpers.ErrOAuthUnavailable
 	}
 	token, err = strategy.Refresh(ctx, token)
 	if err != nil {
@@ -130,8 +136,4 @@ func (s *ConnectionService) validProviderToken(ctx context.Context, connectionID
 	return token, nil
 }
 
-// Existing Gmail watch/connection probes use this compatibility method.
-// Provider dispatch for normal actions goes through validProviderToken.
-func (s *ConnectionService) validToken(ctx context.Context, connectionID string) (providers.OAuthToken, error) {
-	return s.validProviderToken(ctx, connectionID, "GMAIL")
-}
+
