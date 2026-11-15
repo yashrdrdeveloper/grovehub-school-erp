@@ -256,6 +256,12 @@ policy before production growth. Foundation currently implements **no inbound ev
 only when a real subscription and business handler are needed.
 
 
+## 9.1 Optional Infrastructure Publishing
+
+Infrastructure exposes `MessagingClient.PublishWithOptions` with a `PublishOptions{Persist: true}` switch. It records a pending outbox message in the same shared PostgreSQL transaction when called from `UnitOfWork.Run`; the dispatcher then publishes and retries. `Persist: false` publishes directly to NATS, as does the original `Publish` method. Existing Foundation Person `ChangedProducer.Enqueue` already persists events and must not also invoke the new method for the same message.
+
+The outbox does **not** maintain permanent user-facing audit history. It prunes successfully published records after 24 hours; unpublished records stay until delivered. Consumers remain responsible for event-ID deduplication.
+
 ## 10. Testing
 
 Sanity tests must verify transactionally enqueued delivery via the outbox dispatcher into real Infrastructure messaging/NATS using stable event topics.

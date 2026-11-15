@@ -40,9 +40,9 @@ func New(settings config.Messaging, db *gorm.DB, logger *slog.Logger) (bootstrap
     if err!=nil{return nil,err}
     registry:=strategies.NewRegistry[strategies.Strategy]()
     registry.Register(config.ProviderNATS,strategies.NewNATSStrategy(adapter))
-    provider:=serviceimpl.NewMessagingService(settings.Provider,registry)
-    client:=clientimpl.NewMessagingClient(provider)
     store:=repository.New(db,validators.New(),mappers.New())
+    provider:=serviceimpl.NewMessagingService(settings.Provider,registry,store)
+    client:=clientimpl.NewMessagingClient(provider)
     dispatcher:=service.NewDispatcher(store,client,logger)
     ctx,cancel:=context.WithCancel(context.Background())
     done:=make(chan struct{})
