@@ -1,111 +1,32 @@
+// Package integration exposes the module bootstrap entry point, like Foundation.
 package integration
 
 import (
-	"context"
-	integrationservices "grovehub/services/integration/services"
-	"log/slog"
-	"net/http"
-	"time"
+    "context"
+    "errors"
+    "fmt"
+    "log/slog"
 
-	"gorm.io/gorm"
+    "gorm.io/gorm"
 
-	infrastructureclient "grovehub/services/infrastructure/client/messaging"
-	integrationclient "grovehub/services/integration/client"
-	clientimpl "grovehub/services/integration/client/impl"
-	configimpl "grovehub/services/integration/config/impl"
- integrationconfig "grovehub/services/integration/config"
-	"grovehub/services/integration/controller"
-	controllerimpl "grovehub/services/integration/controller/impl"
-	mailfactory "grovehub/services/integration/providers/mailprovider/impl"
-	"grovehub/services/integration/providers/mailprovider/providers/gmail"
-	"grovehub/services/integration/providers/mailprovider/providers/outlook"
-	repositoryimpl "grovehub/services/integration/repository/impl"
-	"grovehub/services/integration/routes"
-	serviceimpl "grovehub/services/integration/services/impl"
+    integrationconfig "grovehub/services/integration/config"
+    bootstrap "grovehub/services/integration/internal/app/bootstrap"
+    bootstrapimpl "grovehub/services/integration/internal/app/bootstrap/impl"
+    migrations "grovehub/services/integration/internal/resources/migrations"
+    messaging "grovehub/services/infrastructure/client/messaging"
 )
 
-type Module interface {
-	RegisterHTTP(*http.ServeMux)
-	Client() integrationclient.Client
- LocalOnly() bool
-	Close()
-}
-type module struct {
-	controller controller.Controller
-	client     integrationclient.Client
-	stop       chan struct{}
- localOnly bool
+type Module = bootstrap.Runtime
+
+func New(logger *slog.Logger, db *gorm.DB, events messaging.MessagingClient, developmentAuth ...integrationconfig.DevAuth) (Module, error) {
+    settings:=integrationconfig.DevAuth{}
+    if len(developmentAuth)>0 {settings=developmentAuth[0]}
+    return bootstrapimpl.New(logger,db,events,settings).Build()
 }
 
-func New(logger *slog.Logger, db *gorm.DB, messaging infrastructureclient.MessagingClient, developmentAuth ...integrationconfig.DevAuth) (Module, error) {
- devAuth := integrationconfig.DevAuth{}
- if len(developmentAuth)>0 {devAuth=developmentAuth[0]}
- if devAuth.Enabled{
-  logger.Warn("Integration development authentication bypass enabled for loopback clients only; never enable in production")
- }
- repository := repositoryimpl.NewConnectionRepository(db)
-	loader := configimpl.NewEnvironmentLoader()
-	gmailConfig, configErr := loader.Gmail()
-	var client *gmail.Client
-	key, keyErr := loader.CredentialKey()
-	if keyErr != nil {
-		logger.Warn("integration encryption key not configured; OAuth providers disabled")
-	}
-	if configErr == nil && keyErr == nil {
-		client = gmail.NewClient(gmailConfig)
-	} else {
-		logger.Warn("gmail provider not configured; OAuth and tests disabled")
-	}
-	outlookConfig, outlookErr := loader.Outlook()
-	var outlookClient *outlook.Client
-	if outlookErr == nil && keyErr == nil {
-		outlookClient = outlook.NewClient(outlookConfig)
-	} else {
-		logger.Warn("Outlook OAuth not configured; Outlook actions disabled")
-	}
-	runtime, err := mailfactory.NewFactory().Build(
-		gmail.NewStrategy(client),
-		outlook.NewStrategy(outlookClient),
-	)
-	if err != nil {
-		return nil, err
-	}
-	registry, actions, oauth := runtime.Registry, runtime.Actions, runtime.OAuth
-	service, err := serviceimpl.NewConnectionService(repository, repositoryimpl.NewWatchRepository(db), registry, actions, oauth, client, outlookClient, key, loader.GmailPush().Topic, messaging)
-	if err != nil {
-		return nil, err
-	}
-	push := loader.GmailPush()
-	providerService := serviceimpl.NewProviderService(registry, actions, oauth)
-	mod := &module{
-		controller: controllerimpl.NewConnectionController(service, providerService, push, devAuth),
-		client:     clientimpl.NewClient(service, providerService),
-		stop:       make(chan struct{}),
-  localOnly:devAuth.Enabled,
-	}
-	if push.Enabled() && client != nil {
-		go mod.watchRenewal(service)
-	}
-	return mod, nil
-}
-func (m *module) RegisterHTTP(mux *http.ServeMux)  { routes.RegisterHTTP(mux, m.controller) }
-func (m *module) Client() integrationclient.Client { return m.client }
-func (m *module) LocalOnly() bool { return m.localOnly }
-
-func (m *module) Close() { close(m.stop) }
-func (m *module) watchRenewal(service integrationservices.ConnectionService) {
-	// Distributed duplicate renewal is safe: Gmail watch registration is
-	// idempotent and the DB upsert keeps only the latest expiration.
-	ticker := time.NewTicker(6 * time.Hour)
-	defer ticker.Stop()
-	for {
-		select {
-		case <-m.stop:
-			return
-		case <-ticker.C:
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-			_ = service.RenewExpiring(ctx)
-			cancel()
-		}
-	}
+func Migrate(ctx context.Context, db *gorm.DB) error {
+    if db==nil {return errors.New("integration migrations require a database")}
+    sqlDB,err:=db.DB()
+    if err!=nil {return fmt.Errorf("access integration migration database: %w",err)}
+    return migrations.Migrate(ctx,sqlDB)
 }

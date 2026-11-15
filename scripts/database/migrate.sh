@@ -49,7 +49,7 @@ run_service_schema() {
   local service="$1"
   local action="$2"
   local schema_dir="${BACKEND_DIR}/services/${service}/migrations"
-  if [[ "${service}" == "foundation" || "${service}" == "infrastructure" ]]; then
+  if [[ "${service}" == "foundation" || "${service}" == "infrastructure" || "${service}" == "integration" ]]; then
     schema_dir="${BACKEND_DIR}/services/${service}/internal/resources/migrations"
   fi
   local state_table
