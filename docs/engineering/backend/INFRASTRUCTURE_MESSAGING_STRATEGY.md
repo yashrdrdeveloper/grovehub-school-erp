@@ -35,7 +35,11 @@ or messaging operations.
 
 ## Config and bootstrap
 
-The Infrastructure-owned public message DTOs, EventStore event type, config\ncontract and publish options live under `libs/infrastructure/messaging`.\n`internal/app/config/messaging/messaging.go` references those types.\nThe stable public facade consolidates all three prior files into\n`client/messaging/messaging.go`. The Foundation-style
+The Infrastructure-owned public message DTOs, EventStore event type, config
+contract and publish options live under `libs/infrastructure/messaging`.
+`internal/app/config/messaging/messaging.go` references those types.
+The stable public facade consolidates all three prior files into
+`client/messaging/messaging.go`. The Foundation-style
 bootstrap builder owns `bootstrap.go`, `messaging.go`, `repository.go`,
 `client.go` and `events.go` (with `service.go` for provider assembly). Infrastructure exposes `New` and `Runtime`;
 the dispatcher is started and stopped by the runtime.

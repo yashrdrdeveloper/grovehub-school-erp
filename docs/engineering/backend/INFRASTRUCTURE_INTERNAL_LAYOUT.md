@@ -1,6 +1,10 @@
 # Infrastructure service — resource-based internal layout
 
-Infrastructure follows the same resource-based composition used by Foundation.\nAll public messaging contracts and DTOs are exposed via\n`libs/infrastructure/messaging`, not `libs/core/events/messaging`.\nReplace the three separate public client files with one `client/messaging/messaging.go`.\n
+Infrastructure follows the same resource-based composition used by Foundation.
+All public messaging contracts and DTOs are exposed via
+`libs/infrastructure/messaging`, not `libs/core/events/messaging`.
+Replace the three separate public client files with one `client/messaging/messaging.go`.
+
 Messaging is a capability; NATS is only one implementation and appears **only**
 under the Messaging external-service provider folder.
 
