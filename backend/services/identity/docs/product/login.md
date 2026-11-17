@@ -23,9 +23,9 @@ The JSON payload is `{"email":string,"password":string}`. Success is HTTP 200 wi
 }
 ```
 
-Only password hashes and token digests are stored in the database; raw credentials must not be logged or included in telemetry. Access tokens expire after 15 minutes. Refresh-token expiry is 30 days, but **refresh and logout routes are not implemented in this change**, so the refresh-token lifecycle is not complete.
+Only password hashes and token digests are stored in the database; raw credentials must not be logged or included in telemetry. Access tokens expire after 15 minutes. Refresh-token expiry is 30 days, and the refresh endpoint rotates both tokens atomically. `POST /identity/public/auth/refresh` accepts `{"refreshToken":"<opaque-refresh-secret>"}`. `POST /identity/protected/auth/logout` requires `Authorization: Bearer <access-token>` and revokes the current session.
 
-A wrong email, password, or non-ACTIVE account returns a generic invalid-credentials error to avoid disclosing account existence. Protected endpoints validate access-token hashes and the current account status. A deployment needs DB migrations and explicit rate limiting, anti-enumeration measures, lockout and refresh/revocation coverage before production release.
+A wrong email, password, or non-ACTIVE account returns a generic invalid-credentials error to avoid disclosing account existence. Protected endpoints validate access-token hashes and the current account status. A deployment needs DB migrations and explicit rate limiting, anti-enumeration measures, lockout and rate limiting and comprehensive refresh/revocation integration tests before production release.
 
 ## Admin-only endpoint
 
