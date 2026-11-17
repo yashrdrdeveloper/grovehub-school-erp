@@ -2,11 +2,15 @@ package routes
 
 import (
     "net/http"
-
-    "grovehub/services/identity/controller"
+    protectedcontroller "grovehub/services/identity/controller"
+    publiccontroller "grovehub/services/identity/controller/public"
 )
 
-// RegisterHTTP composes Identity's generated, traced route registrations.
-func RegisterHTTP(mux *http.ServeMux, authController controller.AuthController) {
-    registerAuthRoutes(mux, authController)
+// RegisterHTTP keeps public authentication and protected admin registration
+// on explicit, non-overlapping routes. Registration authorization is also
+// enforced inside the service; a route name alone is not an access control.
+func RegisterHTTP(mux *http.ServeMux, protected protectedcontroller.AuthController, public publiccontroller.AuthController) {
+    mux.HandleFunc("POST /identity/public/auth/login", public.Login)
+    mux.HandleFunc("POST /identity/public/auth/set-password", public.SetPassword)
+    mux.HandleFunc("POST /identity/protected/auth/register", protected.Register)
 }
