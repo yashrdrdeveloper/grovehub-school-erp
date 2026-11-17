@@ -1,18 +1,35 @@
 package impl
-import(
- tx "grovehub/libs/core/database/transaction"
- accountrepo "grovehub/services/identity/internal/app/repository/account"
- accountimpl "grovehub/services/identity/internal/app/repository/account/impl"
- credentialrepo "grovehub/services/identity/internal/app/repository/credential"
- credentialimpl "grovehub/services/identity/internal/app/repository/credential/impl"
- sessionrepo "grovehub/services/identity/internal/app/repository/session"
- sessionimpl "grovehub/services/identity/internal/app/repository/session/impl"
- tokenrepo "grovehub/services/identity/internal/app/repository/passwordtoken"
- tokenimpl "grovehub/services/identity/internal/app/repository/passwordtoken/impl"
- mailrepo "grovehub/services/identity/internal/app/repository/invitation"
- mailimpl "grovehub/services/identity/internal/app/repository/invitation/impl"
+
+import (
+	transaction "grovehub/libs/core/database/transaction"
+	accountrepo "grovehub/services/identity/internal/app/repository/account"
+	accountimpl "grovehub/services/identity/internal/app/repository/account/impl"
+	credentialrepo "grovehub/services/identity/internal/app/repository/credential"
+	credentialimpl "grovehub/services/identity/internal/app/repository/credential/impl"
+	invitationrepo "grovehub/services/identity/internal/app/repository/invitation"
+	invitationimpl "grovehub/services/identity/internal/app/repository/invitation/impl"
+	passwordtokenrepo "grovehub/services/identity/internal/app/repository/passwordtoken"
+	passwordtokenimpl "grovehub/services/identity/internal/app/repository/passwordtoken/impl"
+	sessionrepo "grovehub/services/identity/internal/app/repository/session"
+	sessionimpl "grovehub/services/identity/internal/app/repository/session/impl"
 )
-type repositories struct{accounts accountrepo.Repository;credentials credentialrepo.Repository;sessions sessionrepo.Repository;tokens tokenrepo.Repository;mail mailrepo.Repository;unit tx.UnitOfWork}
-func(b *builder)newRepository()repositories{return repositories{
- accounts:accountimpl.New(b.db),credentials:credentialimpl.New(b.db),sessions:sessionimpl.New(b.db),tokens:tokenimpl.New(b.db),mail:mailimpl.New(b.db),unit:tx.NewUnitOfWork(b.db),
-}}
+
+type repositories struct {
+	accounts accountrepo.Repository
+	credentials credentialrepo.Repository
+	sessions sessionrepo.Repository
+	tokens passwordtokenrepo.Repository
+	mail invitationrepo.Repository
+	unit transaction.UnitOfWork
+}
+
+func (b *builder) newRepository() repositories {
+	return repositories{
+		accounts: accountimpl.New(b.db),
+		credentials: credentialimpl.New(b.db),
+		sessions: sessionimpl.New(b.db),
+		tokens: passwordtokenimpl.New(b.db),
+		mail: invitationimpl.New(b.db),
+		unit: transaction.NewUnitOfWork(b.db),
+	}
+}

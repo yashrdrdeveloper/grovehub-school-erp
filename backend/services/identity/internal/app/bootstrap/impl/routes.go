@@ -1,14 +1,19 @@
 package impl
-import(
- ap "grovehub/services/identity/internal/app/controller/account/protected"
- api "grovehub/services/identity/internal/app/controller/account/protected/impl"
- au "grovehub/services/identity/internal/app/controller/account/public"
- aui "grovehub/services/identity/internal/app/controller/account/public/impl"
- hp "grovehub/services/identity/internal/app/controller/authentication/protected"
- hpi "grovehub/services/identity/internal/app/controller/authentication/protected/impl"
- hu "grovehub/services/identity/internal/app/controller/authentication/public"
- hui "grovehub/services/identity/internal/app/controller/authentication/public/impl"
+
+import (
+	accountprotected "grovehub/services/identity/internal/app/controller/account/protected"
+	accountprotectedimpl "grovehub/services/identity/internal/app/controller/account/protected/impl"
+	accountpublic "grovehub/services/identity/internal/app/controller/account/public"
+	accountpublicimpl "grovehub/services/identity/internal/app/controller/account/public/impl"
+	authprotected "grovehub/services/identity/internal/app/controller/authentication/protected"
+	authprotectedimpl "grovehub/services/identity/internal/app/controller/authentication/protected/impl"
+	authpublic "grovehub/services/identity/internal/app/controller/authentication/public"
+	authpublicimpl "grovehub/services/identity/internal/app/controller/authentication/public/impl"
 )
-func(b *builder)newControllers(s serviceGraph)(hu.AuthenticationController,hp.AuthenticationController,au.AccountController,ap.AccountController){
- return hui.New(s.auth),hpi.New(s.auth),aui.New(s.account),api.New(s.account)
+
+func (b *builder) newControllers(services serviceGraph) (authpublic.AuthenticationController, authprotected.AuthenticationController, accountpublic.AccountController, accountprotected.AccountController) {
+	return authpublicimpl.New(services.auth),
+		authprotectedimpl.New(services.auth),
+		accountpublicimpl.New(services.account),
+		accountprotectedimpl.New(services.account)
 }
