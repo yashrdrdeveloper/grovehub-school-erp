@@ -18,11 +18,12 @@ import(
  secrets "grovehub/services/identity/internal/app/services/authentication/helpers"
  credential "grovehub/services/identity/internal/app/services/credential"
  invitation "grovehub/services/identity/internal/app/services/registration/operations/invitation"
- loginop "grovehub/services/identity/internal/app/services/authentication/operations/login"
+ loginstrategy "grovehub/services/identity/internal/app/services/authentication/strategies"
+ normal "grovehub/services/identity/internal/app/services/authentication/strategies/normal"
  refreshop "grovehub/services/identity/internal/app/services/authentication/operations/refresh"
 )
-type Service struct{accounts accountrepo.Repository;sessions sessionrepo.Repository;tokens tokenrepo.Repository;credential credential.Service;invitation *invitation.Service;mapper accountmapper.Mapper;unit tx.UnitOfWork;login *loginop.Operation;refresh *refreshop.Operation}
-func New(a accountrepo.Repository,s sessionrepo.Repository,t tokenrepo.Repository,c credential.Service,i *invitation.Service,m accountmapper.Mapper,u tx.UnitOfWork)contract.Service{return &Service{accounts:a,sessions:s,tokens:t,credential:c,invitation:i,mapper:m,unit:u,login:loginop.New(a,s,c),refresh:refreshop.New(a,s)}}
+type Service struct{accounts accountrepo.Repository;sessions sessionrepo.Repository;tokens tokenrepo.Repository;credential credential.Service;invitation *invitation.Service;mapper accountmapper.Mapper;unit tx.UnitOfWork;login loginstrategy.LoginStrategy;refresh *refreshop.Operation}
+func New(a accountrepo.Repository,s sessionrepo.Repository,t tokenrepo.Repository,c credential.Service,i *invitation.Service,m accountmapper.Mapper,u tx.UnitOfWork)contract.Service{return &Service{accounts:a,sessions:s,tokens:t,credential:c,invitation:i,mapper:m,unit:u,login:normal.New(a,s,c),refresh:refreshop.New(a,s)}}
 
 func truncate(s string,n int)string{if len(s)>n{return s[:n]};return s}
 
@@ -94,5 +95,5 @@ func(s *Service)Me(ctx context.Context)(accountdto.Account,error){
  return s.mapper.ToResponse(a),nil
 }
 
-func(s *Service)Login(ctx context.Context,input authdto.Login,agent string)(contract.SessionResult,error){return s.login.Execute(ctx,input,agent)}
+func(s *Service)Login(ctx context.Context,input authdto.Login,agent string)(contract.SessionResult,error){return s.login.Login(ctx,input,agent)}
 func(s *Service)Refresh(ctx context.Context,token string)(contract.RefreshResult,error){return s.refresh.Execute(ctx,token)}
