@@ -26,6 +26,7 @@ type AccountService interface {
 	GetByEmail(ctx context.Context, email string) (entity.Account, error)
 	GetByRegistrationIdempotencyKey(ctx context.Context, key string) (entity.Account, error)
 	Update(ctx context.Context, accountId string, input UpdateAccountInput) (entity.Account, error)
+	Activate(ctx context.Context, accountId string) (entity.Account, error)
 	Deactivate(ctx context.Context, accountId string) (entity.Account, error)
 	PermanentlyDelete(ctx context.Context, accountId string) error
 }
