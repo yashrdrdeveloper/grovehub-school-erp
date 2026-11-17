@@ -2,7 +2,6 @@ package impl
 
 import (
     "context"
-    "errors"
     "time"
 
     "gorm.io/gorm"
@@ -31,6 +30,3 @@ func (repository *PasswordSetupTokenRepository) Consume(ctx context.Context, tok
     if row.AccountID == "" { return "", identityrepository.ErrPasswordSetupTokenInvalid }
     return entity.AccountId(row.AccountID), nil
 }
-
-// Keep this marker to avoid accidental use of a non-transactional scan for consumption.
-var _ = errors.Is
