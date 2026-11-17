@@ -144,3 +144,9 @@ Before adding a directive, answer:
 - Are the master annotation guide and the owning library's engineering docs updated?
 
 **Never use an annotation as a substitute for a business invariant or a security control.**
+
+## 8. @RouteLimit implementation
+
+Add `// @RouteLimit 30` on an annotated controller interface method (not in Launcher code), beside `@GET`, `@POST`, etc. Its numeric argument is the maximum number of requests per minute from the same remote IP address to that exact method+registered route pattern, and must be in the range **1–100000**. Missing annotation means no *route-specific* limit, not unlimited platform protection.
+
+The route generator parses the method's comments, validates the argument and emits `routes.RouteLimits() map[string]int` in the generated private routes package. Service bootstrap provides this map to the generic Launcher gateway limiter. No endpoint-specific switch belongs in shared gateway code. This generated declaration is configuration, not authorization: the gateway continues to validate route tiers, sessions, Origin, CSRF and provider/workload credentials. The in-memory limiter is not distributed and must not be represented as production multi-replica abuse prevention.

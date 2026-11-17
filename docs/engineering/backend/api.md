@@ -64,3 +64,7 @@ OpenAPI, route annotations, client method signature, DTO shape and product walkt
 ## 9. HTTP test matrix
 
 Test malformed/unknown JSON properties, absent vs null PATCH, invalid IDs, unauthorized/forbidden actors, resource isolation across tenants, correct status+body envelope, idempotent retries, conflict, large body, cancellation, and generated `@RequestLine` compatibility with actual routes. A route test that bypasses IAM is not a security test.
+
+## 10. Annotated route limits
+
+Route-specific HTTP throttling is owned by the controller contract, for example `@POST /login` followed by `@RouteLimit 12`. The shared generator validates and translates that declaration into an exact method-and-route policy; each service exposes it from bootstrap to Launcher. Hardcoded endpoint switches in the Launcher gateway are prohibited. An absent annotation does not override other applicable platform security controls. See `annotation.md` and `gateway.md`.
