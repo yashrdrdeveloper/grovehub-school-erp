@@ -54,6 +54,7 @@ func (service *AccountService) Create(
 
 	now := time.Now().UTC()
 	account := servicehelpers.NewAccount(entity.AccountId(accountIdValue), validatedInput, now)
+	account.Status = entity.AccountStatusPendingSetup
 
 	if err := service.repository.Create(ctx, account); err != nil {
 		if errors.Is(err, identityrepository.ErrAccountPersonAlreadyExists) {
@@ -220,7 +221,7 @@ func accountMatchesCreateInput(account entity.Account, input identityservices.Cr
 		servicehelpers.NullableString(account.Phone) == input.Phone &&
 		servicehelpers.NullableString(account.RegistrationIdempotencyKey) == input.RegistrationIdempotencyKey &&
 		servicehelpers.NullableString(account.RegistrationRequestHash) == input.RegistrationRequestHash &&
-		account.Status == entity.AccountStatusActive
+		account.Status == entity.AccountStatusPendingSetup
 }
 
 func mapAccountWriteError(err error, fallback coreerrors.Definition) error {
