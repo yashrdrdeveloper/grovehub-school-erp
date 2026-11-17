@@ -11,4 +11,3 @@ type PasswordToken struct {
  UsedAt *time.Time `gorm:"column:used_at"`
  CreatedAt time.Time `gorm:"column:created_at"`
 }
-func (PasswordToken) TableName() string {return "identity.password_tokens"}

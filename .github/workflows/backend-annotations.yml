@@ -36,6 +36,9 @@ jobs:
       - name: Test annotation source generators
         working-directory: backend
         run: go test ./libs/core/annotation/generation/patchdto ./libs/core/annotation/generation/search ./libs/core/annotation/generation/routes ./libs/core/annotation/generation/clients ./libs/core/annotation/generation/mappers ./libs/core/annotation/generation/testing/coverage
+      - name: Verify canonical Identity resource packages compile
+        working-directory: backend
+        run: go test -vet=off -overlay=.generated/overlay.json ./services/identity/internal/tests/unit-test/...
       - name: Test Infrastructure messaging persistence options
         working-directory: backend
         run: go test -vet=off -overlay=.generated/overlay.json ./services/infrastructure/internal/app/services/messaging/...
@@ -45,7 +48,7 @@ jobs:
       - name: Run available core, launcher and service unit suites
         working-directory: backend
         run: |
-          suites=(./libs/core/tests/unit-test/... ./launcher/tests/unit-test/... ./services/identity/tests/unit-test/... ./services/integration/internal/tests/unit-test/...)
+          suites=(./libs/core/tests/unit-test/... ./launcher/tests/unit-test/... ./services/identity/internal/tests/unit-test/... ./services/integration/internal/tests/unit-test/...)
           # Some services intentionally have no unit-test directory.
           if [[ -d services/foundation/tests/unit-test ]]; then
             suites+=(./services/foundation/tests/unit-test/...)
@@ -64,17 +67,13 @@ jobs:
           test -s backend/services/foundation/.generated/internal/app/routes/zz_routes.gen.go
           test -s backend/services/foundation/.generated/internal/app/entity/zz_tables.gen.go
           test -s backend/services/foundation/.generated/internal/app/client/person/impl/zz_clients.gen.go
-          test -s backend/services/identity/.generated/routes/zz_routes.gen.go
           test -s backend/services/integration/.generated/internal/app/routes/zz_routes.gen.go
           test -s backend/services/integration/.generated/internal/app/client/connection/impl/zz_clients.gen.go
-          test -s backend/services/identity/.generated/mappers/impl/zz_mappers.gen.go
           test -s backend/services/foundation/.generated/internal/app/mappers/person/impl/zz_mappers.gen.go
           test -s backend/services/foundation/.generated/internal/app/repository/person/impl/zz_search.gen.go
           test -s backend/services/foundation/.generated/internal/app/dto/person/zz_patchdto.gen.go
-          test -s backend/services/identity/.generated/entity/zz_tables.gen.go
           test -s backend/services/integration/.generated/internal/app/entity/zz_tables.gen.go
           test -s backend/services/foundation/.generated/internal/app/events/producers/person/operations/changed/zz_events.gen.go
-          test -s backend/services/identity/.generated/events/accounts/zz_events.gen.go
           test -s backend/services/integration/.generated/internal/app/events/producers/connection/operations/mailbox/zz_events.gen.go
 
   generated-coverage-macos:

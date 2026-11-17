@@ -18,4 +18,3 @@ type Account struct {
  CreatedAt time.Time `gorm:"column:created_at" json:"createdAt"`
  UpdatedAt time.Time `gorm:"column:updated_at" json:"updatedAt"`
 }
-func (Account) TableName() string {return "identity.accounts"}

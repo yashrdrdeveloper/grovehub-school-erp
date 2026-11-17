@@ -30,7 +30,7 @@ func (r *Repository) Update(ctx context.Context,a entity.Account)error{
  Updates(map[string]any{"username":a.Username,"email":a.Email,"status":a.Status,"version":a.Version,"search_details":a.SearchDetails,"updated_at":a.UpdatedAt})
  if result.Error!=nil{return result.Error};if result.RowsAffected!=1{return accountrepository.ErrVersionConflict};return nil
 }
-// @Searchable config=search.AccountConfig alias=a
+// Search uses the trusted AccountConfig with a mandatory tenant predicate.
 func (r *Repository) Search(ctx context.Context,tenantID string,q coresearch.Query[string])(coresearch.QueryResult[entity.Account],error){
  if tenantID==""{return coresearch.QueryResult[entity.Account]{},errors.New("account search requires tenant scope")}
  return coresearch.Execute[string,entity.Account](r.dbFor(ctx).Model(&entity.Account{}).Table("identity.accounts AS a").Where("a.tenant_id = ?",tenantID),q,searchconfig.AccountConfig)

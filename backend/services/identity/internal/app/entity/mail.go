@@ -14,4 +14,3 @@ type InvitationMail struct {
  SentAt *time.Time `gorm:"column:sent_at"`
  CreatedAt time.Time `gorm:"column:created_at"`
 }
-func (InvitationMail) TableName() string {return "identity.invitation_mail"}
