@@ -3,6 +3,7 @@ package identity
 import (
 	"log/slog"
 	"net/http"
+    "os"
 
 	"gorm.io/gorm"
 
@@ -30,6 +31,7 @@ type module struct {
 	logger         *slog.Logger
 	authController controller.AuthController
     publicAuthController publiccontroller.AuthController
+    protectedMiddleware func(http.Handler) http.Handler
 }
 
 func New(
@@ -50,7 +52,8 @@ func New(
 		passwordCredentialValidator,
 	)
 
-	authMapper := mapperimpl.NewAuthMapper()
+	sessionAuthenticator := serviceimpl.NewSessionAuthenticator(db)
+    authMapper := mapperimpl.NewAuthMapper()
 	authValidator := validatorimpl.NewAuthValidator()
 	authService := serviceimpl.NewAuthService(
 		foundationClient,
@@ -60,6 +63,7 @@ func New(
 		authValidator,
         db,
         identityservices.AuthDependencies{
+            RegistrationAuthorizer: serviceimpl.NewAdminRegistrationAuthorizer(os.Getenv("IDENTITY_ADMIN_ACCOUNT_IDS")),
             SessionIssuer: serviceimpl.NewSessionIssuer(db),
             PasswordSetupTokens: repositoryimpl.NewPasswordSetupTokenRepository(db),
         },
@@ -69,11 +73,12 @@ func New(
 		logger:         logger,
 		authController: controllerimpl.NewAuthController(authService, authValidator),
         publicAuthController: publiccontrollerimpl.NewAuthController(authService),
+        protectedMiddleware: sessionAuthenticator.Middleware,
 	}
 }
 
 func (service *module) RegisterHTTP(mux *http.ServeMux) {
-	routes.RegisterHTTP(mux, service.authController, service.publicAuthController)
+	routes.RegisterHTTP(mux, service.authController, service.publicAuthController, service.protectedMiddleware)
 	service.logger.Info(
 		"identity service registered",
 		"service", coretelemetry.ServiceIdentity.Name,
