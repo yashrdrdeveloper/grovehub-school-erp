@@ -64,6 +64,9 @@ func Run(logger *slog.Logger) error {
 		infrastructureModule.MessagingClient(),
 	)
 	identityModule.RegisterHTTP(mux)
+    identityWorkerCtx, stopIdentityWorkers := context.WithCancel(context.Background())
+    defer stopIdentityWorkers()
+    identityModule.Start(identityWorkerCtx)
 
  // TEMPORARY: local-only Integration identity until IAM middleware exists.
  // All protected Integration routes use this fixed development principal.
