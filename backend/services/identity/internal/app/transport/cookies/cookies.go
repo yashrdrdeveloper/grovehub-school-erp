@@ -1,3 +1,5 @@
+// Package cookies owns HTTP cookie encoding only. Authentication, rate limits,
+// Origin checks, and CSRF enforcement are implemented in Launcher gateway.
 package cookies
 
 import (
@@ -15,23 +17,99 @@ const (
 	SetupCookie = coregateway.SetupCookie
 )
 
-func IssueCookies(w http.ResponseWriter,access,refresh,csrf string){
- http.SetCookie(w,&http.Cookie{Name:AccessCookie,Value:access,Path:"/",MaxAge:900,Secure:true,HttpOnly:true,SameSite:http.SameSiteLaxMode})
- http.SetCookie(w,&http.Cookie{Name:RefreshCookie,Value:refresh,Path:"/identity/public/auth/refresh",MaxAge:2592000,Secure:true,HttpOnly:true,SameSite:http.SameSiteStrictMode})
- if csrf!=""{http.SetCookie(w,&http.Cookie{Name:CSRFName,Value:csrf,Path:"/",MaxAge:2592000,Secure:true,HttpOnly:false,SameSite:http.SameSiteStrictMode})}
- w.Header().Set("Cache-Control","no-store")
+const refreshPath = "/identity/public/auth/refresh"
+
+func IssueCookies(writer http.ResponseWriter, access string, refresh string, csrf string) {
+	http.SetCookie(writer, &http.Cookie{
+		Name: AccessCookie,
+		Value: access,
+		Path: "/",
+		MaxAge: 900,
+		Secure: true,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	})
+	http.SetCookie(writer, &http.Cookie{
+		Name: RefreshCookie,
+		Value: refresh,
+		Path: refreshPath,
+		MaxAge: 30 * 24 * 60 * 60,
+		Secure: true,
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+	})
+	if csrf != "" {
+		http.SetCookie(writer, &http.Cookie{
+			Name: CSRFName,
+			Value: csrf,
+			Path: "/",
+			MaxAge: 30 * 24 * 60 * 60,
+			Secure: true,
+			SameSite: http.SameSiteStrictMode,
+		})
+	}
+	writer.Header().Set("Cache-Control", "no-store")
 }
-func ClearSessionCookies(w http.ResponseWriter){
- for _,c:=range []struct{name,path string}{{AccessCookie,"/"},{RefreshCookie,"/identity/public/auth/refresh"},{CSRFName,"/"}}{
-  http.SetCookie(w,&http.Cookie{Name:c.name,Path:c.path,MaxAge:-1,Secure:true,HttpOnly:c.name!=CSRFName,SameSite:http.SameSiteStrictMode})
- }
- w.Header().Set("Cache-Control","no-store")
+
+func ClearSessionCookies(writer http.ResponseWriter) {
+	paths := []struct {
+		name string
+		path string
+	}{
+		{AccessCookie, "/"},
+		{RefreshCookie, refreshPath},
+		{CSRFName, "/"},
+	}
+	for _, cookie := range paths {
+		http.SetCookie(writer, &http.Cookie{
+			Name: cookie.name,
+			Path: cookie.path,
+			MaxAge: -1,
+			Secure: true,
+			HttpOnly: cookie.name != CSRFName,
+			SameSite: http.SameSiteStrictMode,
+		})
+	}
+	writer.Header().Set("Cache-Control", "no-store")
 }
-func ReadCookie(r *http.Request,name string)string{c,err:=r.Cookie(name);if err!=nil{return ""};return c.Value}
-func SetGrant(w http.ResponseWriter,name,path,value string){http.SetCookie(w,&http.Cookie{Name:name,Path:path,Value:value,MaxAge:600,Secure:true,HttpOnly:true,SameSite:http.SameSiteStrictMode});w.Header().Set("Cache-Control","no-store")}
-func ClearGrant(w http.ResponseWriter,name,path string){SetGrant(w,name,path,"");http.SetCookie(w,&http.Cookie{Name:name,Path:path,MaxAge:-1,Secure:true,HttpOnly:true,SameSite:http.SameSiteStrictMode})}
-func Proof(r *http.Request,prefix string)string{
- auth:=r.Header.Get("Authorization")
- if !strings.HasPrefix(auth,prefix+" "){return ""}
- return strings.TrimPrefix(auth,prefix+" ")
+
+func ReadCookie(request *http.Request, name string) string {
+	cookie, err := request.Cookie(name)
+	if err != nil {
+		return ""
+	}
+	return cookie.Value
+}
+
+func SetGrant(writer http.ResponseWriter, name string, path string, value string) {
+	http.SetCookie(writer, &http.Cookie{
+		Name: name,
+		Path: path,
+		Value: value,
+		MaxAge: 600,
+		Secure: true,
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+	})
+	writer.Header().Set("Cache-Control", "no-store")
+}
+
+func ClearGrant(writer http.ResponseWriter, name string, path string) {
+	http.SetCookie(writer, &http.Cookie{
+		Name: name,
+		Path: path,
+		MaxAge: -1,
+		Secure: true,
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+	})
+	writer.Header().Set("Cache-Control", "no-store")
+}
+
+func Proof(request *http.Request, prefix string) string {
+	authorization := request.Header.Get("Authorization")
+	if !strings.HasPrefix(authorization, prefix+" ") {
+		return ""
+	}
+	return strings.TrimPrefix(authorization, prefix+" ")
 }
