@@ -16,6 +16,7 @@ import(
  accountrepo "grovehub/services/identity/internal/app/repository/account"
  "grovehub/services/identity/internal/app/security/principal"
  invitation "grovehub/services/identity/internal/app/services/registration/operations/invitation"
+ producer "grovehub/services/identity/internal/app/events/producers/account"
  validators "grovehub/services/identity/internal/app/validators/account"
  "grovehub/services/identity/internal/app/services/account/operations/create/flows"
 )
@@ -25,8 +26,9 @@ type Operation struct{
  validator validators.Validator
  invitation *invitation.Service
  unit tx.UnitOfWork
+ events producer.ChangedProducer
 }
-func New(a accountrepo.Repository,f foundation.Client,v validators.Validator,i *invitation.Service,u tx.UnitOfWork)*Operation{return &Operation{accounts:a,foundation:f,validator:v,invitation:i,unit:u}}
+func New(a accountrepo.Repository,f foundation.Client,v validators.Validator,i *invitation.Service,u tx.UnitOfWork,events producer.ChangedProducer)*Operation{return &Operation{accounts:a,foundation:f,validator:v,invitation:i,unit:u,events:events}}
 // @ChainOfResponsibility
 func(o *Operation)Execute(ctx context.Context,request dto.Create,key string)(dto.CreateResult,error){
  flow:=&flows.Create{Request:request,IdempotencyKey:key}
@@ -100,6 +102,7 @@ func(o *Operation)persist(ctx context.Context,f *flows.Create)error{
  a.SearchDetails=strings.ToLower(a.Email)
  if err=o.accounts.Create(ctx,a);err!=nil{return err}
  if err=o.invitation.Queue(ctx,a,entity.AccountSetup,f.Request.Person.FirstName);err!=nil{return err}
+ if err=o.events.Enqueue(ctx,"CREATED",nil,&a);err!=nil{return err}
  f.Account=a;f.Response=mapCreated(a);return nil
 }
 func mapCreated(a entity.Account)dto.CreateResult{

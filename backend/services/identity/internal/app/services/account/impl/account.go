@@ -20,10 +20,11 @@ import(
  validators "grovehub/services/identity/internal/app/validators/account"
  authhelpers "grovehub/services/identity/internal/app/services/authentication/helpers"
  createop "grovehub/services/identity/internal/app/services/account/operations/create"
+ producer "grovehub/services/identity/internal/app/events/producers/account"
  searchop "grovehub/services/identity/internal/app/services/account/operations/search"
 )
-type Service struct{accounts accountrepo.Repository;tokens tokenrepo.Repository;sessions sessionrepo.Repository;foundation foundation.Client;credential cred.Service;invitation *invitation.Service;mapper mapper.Mapper;validator validators.Validator;unit tx.UnitOfWork;create *createop.Operation;search *searchop.Operation}
-func New(a accountrepo.Repository,t tokenrepo.Repository,sessions sessionrepo.Repository,f foundation.Client,c cred.Service,i *invitation.Service,m mapper.Mapper,v validators.Validator,u tx.UnitOfWork)contract.Service{return &Service{accounts:a,tokens:t,sessions:sessions,foundation:f,credential:c,invitation:i,mapper:m,validator:v,unit:u,create:createop.New(a,f,v,i,u),search:searchop.New(a,m,v)}}
+type Service struct{accounts accountrepo.Repository;tokens tokenrepo.Repository;sessions sessionrepo.Repository;foundation foundation.Client;credential cred.Service;invitation *invitation.Service;mapper mapper.Mapper;validator validators.Validator;unit tx.UnitOfWork;create *createop.Operation;search *searchop.Operation;events producer.ChangedProducer}
+func New(a accountrepo.Repository,t tokenrepo.Repository,sessions sessionrepo.Repository,f foundation.Client,c cred.Service,i *invitation.Service,m mapper.Mapper,v validators.Validator,u tx.UnitOfWork,events producer.ChangedProducer)contract.Service{return &Service{accounts:a,tokens:t,sessions:sessions,foundation:f,credential:c,invitation:i,mapper:m,validator:v,unit:u,create:createop.New(a,f,v,i,u,events),search:searchop.New(a,m,v),events:events}}
 func normalizeEmail(s string)string{return strings.ToLower(strings.TrimSpace(s))}
 func projection(a entity.Account)string{u:="";if a.Username!=nil{u=*a.Username};return strings.ToLower(strings.Join([]string{a.Email,u}," "))}
 
@@ -60,9 +61,11 @@ func(s *Service)Transition(ctx context.Context,id,action string)(dto.Account,err
   case "deactivate":if a.Status==entity.Deactivated{return errors.New("already deactivated")};a.Status=entity.Deactivated
   default:return errors.New("unknown account transition")
   }
+  before:=a
   a.Version++;a.UpdatedAt=time.Now().UTC()
   if e=s.accounts.Update(inside,a);e!=nil{return e}
   if a.Status==entity.Suspended||a.Status==entity.Deactivated{if _,e=s.sessions.RevokeAll(inside,a.AccountID);e!=nil{return e}}
+  if e=s.events.Enqueue(inside,strings.ToUpper(action)+"D",&before,&a);e!=nil{return e}
   out=a;return nil
  })
  return s.mapper.ToResponse(out),err
@@ -87,6 +90,7 @@ func(s *Service)Setup(ctx context.Context,grant string,input dto.Setup)(dto.Setu
   a.Username=&name;a.Status=entity.Active;a.Version++;a.UpdatedAt=time.Now().UTC();a.SearchDetails=projection(a)
   if e=s.credential.Set(inside,id,input.Password);e!=nil{return e}
   if e=s.accounts.Update(inside,a);e!=nil{return e}
+  if e=s.events.Enqueue(inside,"ACTIVATED",nil,&a);e!=nil{return e}
   out=dto.SetupResult{AccountID:id,PersonGID:a.PersonGID,Username:name,Status:string(a.Status),SetupCompleted:true}
   return nil
  })

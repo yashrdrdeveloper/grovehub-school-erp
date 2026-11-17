@@ -14,7 +14,8 @@ type serviceGraph struct{account account.Service;auth auth.Service;worker *invit
 func(b *builder)newServices(r repositories,c config.Config)serviceGraph{
  credentials:=credentialimpl.New(r.credentials)
  invite:=invitation.New(r.tokens,r.mail,c)
- accounts:=accountimpl.New(r.accounts,r.tokens,r.sessions,b.foundation,credentials,invite,mapper.New(),validator.New(),r.unit)
+ events:=b.newEvents()
+ accounts:=accountimpl.New(r.accounts,r.tokens,r.sessions,b.foundation,credentials,invite,mapper.New(),validator.New(),r.unit,events)
  authentication:=authimpl.New(r.accounts,r.sessions,r.tokens,credentials,invite,mapper.New(),r.unit)
  var worker *invitation.Worker
  if b.integration!=nil&&len(c.EncryptionKey)==32&&c.MailTenantID!=""&&c.MailConnectionID!=""{worker=invitation.NewWorker(r.mail,b.integration,c)}

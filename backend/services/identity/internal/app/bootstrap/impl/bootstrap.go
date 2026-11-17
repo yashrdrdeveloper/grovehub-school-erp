@@ -22,9 +22,10 @@ import(
  "grovehub/services/identity/internal/app/routes"
  foundationclient "grovehub/services/foundation/client/person"
  integrationclient "grovehub/services/integration/client/connection"
+ infrastructure "grovehub/services/infrastructure/client/messaging"
 )
-type builder struct{logger *slog.Logger;db *gorm.DB;foundation foundationclient.Client;integration integrationclient.Client}
-func New(logger *slog.Logger,db *gorm.DB,foundation foundationclient.Client,integration integrationclient.Client)bootstrap.Bootstrap{return &builder{logger:logger,db:db,foundation:foundation,integration:integration}}
+type builder struct{logger *slog.Logger;db *gorm.DB;foundation foundationclient.Client;integration integrationclient.Client;events infrastructure.EventStore}
+func New(logger *slog.Logger,db *gorm.DB,foundation foundationclient.Client,integration integrationclient.Client,events infrastructure.EventStore)bootstrap.Bootstrap{return &builder{logger:logger,db:db,foundation:foundation,integration:integration,events:events}}
 type runtime struct{
  logger *slog.Logger
  accountPublic accountpublic.AccountController
@@ -41,7 +42,7 @@ type runtime struct{
 }
 var _ bootstrap.Runtime=(*runtime)(nil)
 func(b *builder)Build()(bootstrap.Runtime,error){
- if b.db==nil||b.foundation==nil{return nil,errors.New("identity requires PostgreSQL and Foundation client")}
+ if b.db==nil||b.foundation==nil||b.events==nil{return nil,errors.New("identity requires PostgreSQL and Foundation client")}
  if b.logger==nil{b.logger=slog.Default()}
  c,err:=configimpl.Load();if err!=nil{return nil,err}
  reps:=b.newRepository()

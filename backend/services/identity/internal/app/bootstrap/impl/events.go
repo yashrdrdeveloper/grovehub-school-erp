@@ -1,3 +1,6 @@
 package impl
-// Identity event producers belong to events/producers/account; no producer
-// is registered here until its Infrastructure outbox contract is implemented.
+import(
+ producer "grovehub/services/identity/internal/app/events/producers/account"
+ impl "grovehub/services/identity/internal/app/events/producers/account/impl"
+)
+func(b *builder)newEvents()producer.ChangedProducer{return impl.New(b.events)}

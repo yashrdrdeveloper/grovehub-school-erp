@@ -11,10 +11,11 @@ import(
  migrations "grovehub/services/identity/internal/resources/migrations"
  foundationclient "grovehub/services/foundation/client/person"
  integrationclient "grovehub/services/integration/client/connection"
+ infrastructure "grovehub/services/infrastructure/client/messaging"
 )
 type Module=bootstrap.Runtime
-func New(logger *slog.Logger,db *gorm.DB,foundation foundationclient.Client,integration integrationclient.Client)(Module,error){
- return bootstrapimpl.New(logger,db,foundation,integration).Build()
+func New(logger *slog.Logger,db *gorm.DB,foundation foundationclient.Client,integration integrationclient.Client,events infrastructure.EventStore)(Module,error){
+ return bootstrapimpl.New(logger,db,foundation,integration,events).Build()
 }
 func Migrate(ctx context.Context,db *gorm.DB)error{
  if db==nil{return errors.New("identity migration requires database")}

@@ -70,7 +70,7 @@ func Run(logger *slog.Logger) error {
  integrationModule.RegisterHTTP(mux)
  defer integrationModule.Close()
 
- identityModule,err:=identity.New(logger,db,foundationModule.Client(),integrationModule.Client())
+ identityModule,err:=identity.New(logger,db,foundationModule.Client(),integrationModule.Client(),infrastructureModule.EventStore())
  if err!=nil{return fmt.Errorf("initialize identity module: %w",err)}
  identityModule.RegisterHTTP(mux)
  defer identityModule.Close()
