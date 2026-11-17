@@ -1,0 +1,170 @@
+// Package external owns the internet-facing gateway bridge. Access policy
+// is selected from the ServeMux-registered route pattern, not URL substrings.
+package external
+
+import (
+	"context"
+	"crypto/subtle"
+	"net/http"
+	"regexp"
+	"strings"
+
+	coregateway "grovehub/libs/core/gateway"
+	httpresponse "grovehub/libs/core/http/response"
+	integrationprincipal "grovehub/services/integration/client/principal"
+)
+
+var tierPattern = regexp.MustCompile(`^/[a-z][a-z0-9-]*/(public|protected|restricted)(?:/|$)`)
+
+type Operation struct {
+	mux *http.ServeMux
+	access coregateway.AccessVerifier
+	workloads coregateway.WorkloadVerifier
+	origin string
+	limiter *Limiter
+}
+
+func New(mux *http.ServeMux, access coregateway.AccessVerifier, workload coregateway.WorkloadVerifier, allowedOrigin string) *Operation {
+	return &Operation{
+		mux: mux,
+		access: access,
+		workloads: workload,
+		origin: allowedOrigin,
+		limiter: NewLimiter(),
+	}
+}
+
+func (operation *Operation) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	handler, pattern := operation.mux.Handler(request)
+	request.Pattern = pattern
+
+	// Only explicitly registered health endpoints may live outside an access tier.
+	if pattern == "GET /health" {
+		handler.ServeHTTP(writer, request)
+		return
+	}
+
+	route := pattern
+	if strings.HasPrefix(route, request.Method+" ") {
+		route = strings.TrimPrefix(route, request.Method+" ")
+	}
+	matches := tierPattern.FindStringSubmatch(route)
+	if len(matches) != 2 {
+		operation.reject(writer, request, http.StatusForbidden)
+		return
+	}
+
+	if !operation.validateOrigin(request) {
+		operation.reject(writer, request, http.StatusForbidden)
+		return
+	}
+
+	if !operation.limiter.Allow(route, request) {
+		writer.Header().Set("Retry-After", "60")
+		operation.reject(writer, request, http.StatusTooManyRequests)
+		return
+	}
+
+	switch coregateway.Tier(matches[1]) {
+	case coregateway.Public:
+		if requiresCSRF(request) && !validCSRF(request) {
+			operation.reject(writer, request, http.StatusForbidden)
+			return
+		}
+		handler.ServeHTTP(writer, request)
+
+	case coregateway.Protected:
+		if operation.access == nil {
+			operation.reject(writer, request, http.StatusUnauthorized)
+			return
+		}
+		token, err := request.Cookie(coregateway.AccessCookie)
+		if err != nil {
+			operation.reject(writer, request, http.StatusUnauthorized)
+			return
+		}
+		principal, err := operation.access.VerifyAccess(request.Context(), token.Value)
+		if err != nil || principal.AccountID == "" {
+			operation.reject(writer, request, http.StatusUnauthorized)
+			return
+		}
+		if requiresCSRF(request) && !validCSRF(request) {
+			operation.reject(writer, request, http.StatusForbidden)
+			return
+		}
+
+		ctx := coregateway.WithPrincipal(request.Context(), principal)
+		if principal.TenantID != "" && principal.PersonGID != "" {
+			ctx = integrationprincipal.WithVerifiedPrincipal(ctx, integrationprincipal.VerifiedPrincipal{
+				TenantID: principal.TenantID,
+				ActorGID: principal.PersonGID,
+			})
+		}
+		handler.ServeHTTP(writer, request.WithContext(ctx))
+
+	case coregateway.Restricted:
+		// Restricted endpoints must never inherit a browser session.
+		if operation.workloads == nil {
+			operation.reject(writer, request, http.StatusForbidden)
+			return
+		}
+		ctx, err := operation.workloads.VerifyWorkload(request.Context(), request)
+		if err != nil || ctx == nil {
+			operation.reject(writer, request, http.StatusForbidden)
+			return
+		}
+		handler.ServeHTTP(writer, request.WithContext(ctx))
+
+	default:
+		operation.reject(writer, request, http.StatusForbidden)
+	}
+}
+
+func (operation *Operation) validateOrigin(request *http.Request) bool {
+	if request.Method == http.MethodGet || request.Method == http.MethodHead {
+		return true
+	}
+	// An empty Origin is not treated as proof of a same-origin browser request.
+	return operation.origin != "" && request.Header.Get("Origin") == operation.origin
+}
+
+func requiresCSRF(request *http.Request) bool {
+	if request.Method == http.MethodGet || request.Method == http.MethodHead {
+		return false
+	}
+	route := strings.TrimPrefix(request.Pattern, request.Method+" ")
+	if strings.Contains(route, "/protected/") {
+		return true
+	}
+	switch route {
+	case "/identity/public/auth/refresh",
+		"/identity/public/auth/reset-password",
+		"/identity/public/accounts/setup":
+		return true
+	default:
+		return false
+	}
+}
+
+func validCSRF(request *http.Request) bool {
+	cookie, err := request.Cookie(coregateway.CSRFName)
+	if err != nil {
+		return false
+	}
+	value := request.Header.Get("X-CSRF-Token")
+	if len(value) == 0 || len(value) > 256 || len(cookie.Value) == 0 {
+		return false
+	}
+	return subtle.ConstantTimeCompare([]byte(cookie.Value), []byte(value)) == 1
+}
+
+func (operation *Operation) reject(writer http.ResponseWriter, request *http.Request, status int) {
+	writer.Header().Set("Cache-Control", "no-store")
+	// Gateway denies before reaching service controllers. Use the same core
+	// writer so the error envelope stays consistent across services.
+	_ = httpresponse.WriteErrorContext(request.Context(), writer, status, gatewayDefinition(status))
+}
+
+func (operation *Operation) Authenticate(ctx context.Context, accessToken string) (coregateway.Principal, error) {
+	return operation.access.VerifyAccess(ctx, accessToken)
+}
