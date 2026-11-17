@@ -16,13 +16,14 @@ import (
 )
 
 type Controller struct {
+	cookies cookies.Manager
 	service auth.Service
 }
 
 var _ protected.AuthenticationController = (*Controller)(nil)
 
-func New(service auth.Service) protected.AuthenticationController {
-	return &Controller{service: service}
+func New(service auth.Service, manager cookies.Manager) protected.AuthenticationController {
+	return &Controller{service: service, cookies: manager}
 }
 
 func (controller *Controller) Logout(writer http.ResponseWriter, request *http.Request) {
@@ -32,7 +33,7 @@ func (controller *Controller) Logout(writer http.ResponseWriter, request *http.R
 			if err := controller.service.Logout(ctx); err != nil {
 				return rest.Result[authdto.StatusResult]{}, helpers.Map(err)
 			}
-			cookies.ClearSessionCookies(writer)
+			controller.cookies.ClearSession(writer)
 			return rest.OK(authdto.StatusResult{Status: "LOGGED_OUT"}), nil
 		},
 	})
@@ -46,7 +47,7 @@ func (controller *Controller) LogoutAll(writer http.ResponseWriter, request *htt
 			if err != nil {
 				return rest.Result[authdto.RevocationResult]{}, helpers.Map(err)
 			}
-			cookies.ClearSessionCookies(writer)
+			controller.cookies.ClearSession(writer)
 			return rest.OK(authdto.RevocationResult{
 				Status: "ALL_SESSIONS_REVOKED",
 				RevokedCount: count,
@@ -64,7 +65,7 @@ func (controller *Controller) ChangePassword(writer http.ResponseWriter, request
 			if err := controller.service.ChangePassword(ctx, input.RequestBody.NewPassword); err != nil {
 				return rest.Result[authdto.StatusResult]{}, helpers.Map(err)
 			}
-			cookies.ClearSessionCookies(writer)
+			controller.cookies.ClearSession(writer)
 			return rest.OK(authdto.StatusResult{
 				Status: "PASSWORD_CHANGED",
 				SessionsRevoked: true,

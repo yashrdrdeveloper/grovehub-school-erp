@@ -1,6 +1,7 @@
 package impl
 
 import (
+	cookieimpl "grovehub/services/identity/internal/app/transport/cookies/impl"
 	accountprotected "grovehub/services/identity/internal/app/controller/account/protected"
 	accountprotectedimpl "grovehub/services/identity/internal/app/controller/account/protected/impl"
 	accountpublic "grovehub/services/identity/internal/app/controller/account/public"
@@ -12,8 +13,9 @@ import (
 )
 
 func (b *builder) newControllers(services serviceGraph) (authpublic.AuthenticationController, authprotected.AuthenticationController, accountpublic.AccountController, accountprotected.AccountController) {
-	return authpublicimpl.New(services.auth),
-		authprotectedimpl.New(services.auth),
-		accountpublicimpl.New(services.account),
+	manager := cookieimpl.New()
+	return authpublicimpl.New(services.auth, manager),
+		authprotectedimpl.New(services.auth, manager),
+		accountpublicimpl.New(services.account, manager),
 		accountprotectedimpl.New(services.account)
 }

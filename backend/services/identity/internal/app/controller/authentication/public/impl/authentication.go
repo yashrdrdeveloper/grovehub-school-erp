@@ -16,13 +16,14 @@ import (
 )
 
 type Controller struct {
+	cookies cookies.Manager
 	service auth.Service
 }
 
 var _ public.AuthenticationController = (*Controller)(nil)
 
-func New(service auth.Service) public.AuthenticationController {
-	return &Controller{service: service}
+func New(service auth.Service, manager cookies.Manager) public.AuthenticationController {
+	return &Controller{service: service, cookies: manager}
 }
 
 func (controller *Controller) Login(writer http.ResponseWriter, request *http.Request) {
@@ -39,7 +40,7 @@ func (controller *Controller) Login(writer http.ResponseWriter, request *http.Re
 			if err != nil {
 				return rest.Result[dto.LoginResult]{}, helpers.Map(err)
 			}
-			cookies.IssueCookies(writer, result.Cookies.Access, result.Cookies.Refresh, csrf)
+			controller.cookies.Issue(writer, result.Cookies.Access, result.Cookies.Refresh, csrf)
 			return rest.OK(result.Data), nil
 		},
 	})
@@ -49,11 +50,11 @@ func (controller *Controller) Refresh(writer http.ResponseWriter, request *http.
 	rest.RunStruct(writer, request, rest.StructConfig[dto.EmptyRequest, dto.RefreshResult]{
 		Fallback: definitions.Internal,
 		Service: func(ctx context.Context, _ dto.EmptyRequest) (rest.Result[dto.RefreshResult], error) {
-			result, err := controller.service.Refresh(ctx, cookies.ReadCookie(request, cookies.RefreshCookie))
+			result, err := controller.service.Refresh(ctx, controller.cookies.Read(request, cookies.RefreshCookie))
 			if err != nil {
 				return rest.Result[dto.RefreshResult]{}, helpers.Map(err)
 			}
-			cookies.IssueCookies(writer, result.Cookies.Access, result.Cookies.Refresh, "")
+			controller.cookies.Issue(writer, result.Cookies.Access, result.Cookies.Refresh, "")
 			return rest.OK(result.Data), nil
 		},
 	})
@@ -79,7 +80,7 @@ func (controller *Controller) exchange(writer http.ResponseWriter, request *http
 	rest.RunStruct(writer, request, rest.StructConfig[dto.EmptyRequest, dto.GrantResult]{
 		Fallback: definitions.Internal,
 		Service: func(ctx context.Context, _ dto.EmptyRequest) (rest.Result[dto.GrantResult], error) {
-			grant, err := controller.service.Exchange(ctx, cookies.Proof(request, prefix), purpose)
+			grant, err := controller.service.Exchange(ctx, controller.cookies.Proof(request, prefix), purpose)
 			if err != nil {
 				return rest.Result[dto.GrantResult]{}, helpers.Map(err)
 			}
@@ -87,7 +88,7 @@ func (controller *Controller) exchange(writer http.ResponseWriter, request *http
 			if err != nil {
 				return rest.Result[dto.GrantResult]{}, helpers.Map(err)
 			}
-			cookies.SetGrant(writer, cookie, path, grant.Secret)
+			controller.cookies.SetGrant(writer, cookie, path, grant.Secret)
 			http.SetCookie(writer, &http.Cookie{
 				Name: cookies.CSRFName,
 				Value: csrf,
@@ -115,10 +116,10 @@ func (controller *Controller) ResetPassword(writer http.ResponseWriter, request 
 		InvalidRequestBody: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
 		Service: func(ctx context.Context, input dto.ResetPasswordRequest) (rest.Result[dto.StatusResult], error) {
-			if err := controller.service.ResetPassword(ctx, cookies.ReadCookie(request, cookies.ResetCookie), input.RequestBody.NewPassword); err != nil {
+			if err := controller.service.ResetPassword(ctx, controller.cookies.Read(request, cookies.ResetCookie), input.RequestBody.NewPassword); err != nil {
 				return rest.Result[dto.StatusResult]{}, helpers.Map(err)
 			}
-			cookies.ClearGrant(writer, cookies.ResetCookie, "/identity/public/auth/reset-password")
+			controller.cookies.ClearGrant(writer, cookies.ResetCookie, "/identity/public/auth/reset-password")
 			return rest.OK(dto.StatusResult{Status: "PASSWORD_RESET", SessionsRevoked: true}), nil
 		},
 	})

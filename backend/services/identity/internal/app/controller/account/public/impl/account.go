@@ -15,13 +15,14 @@ import (
 )
 
 type Controller struct {
+	cookies cookies.Manager
 	service account.Service
 }
 
 var _ public.AccountController = (*Controller)(nil)
 
-func New(service account.Service) public.AccountController {
-	return &Controller{service: service}
+func New(service account.Service, manager cookies.Manager) public.AccountController {
+	return &Controller{service: service, cookies: manager}
 }
 
 func (controller *Controller) Setup(writer http.ResponseWriter, request *http.Request) {
@@ -30,11 +31,11 @@ func (controller *Controller) Setup(writer http.ResponseWriter, request *http.Re
 		InvalidRequestBody: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
 		Service: func(ctx context.Context, input dto.SetupRequest) (rest.Result[dto.SetupResult], error) {
-			result, err := controller.service.Setup(ctx, cookies.ReadCookie(request, cookies.SetupCookie), input.RequestBody)
+			result, err := controller.service.Setup(ctx, controller.cookies.Read(request, cookies.SetupCookie), input.RequestBody)
 			if err != nil {
 				return rest.Result[dto.SetupResult]{}, helpers.Map(err)
 			}
-			cookies.ClearGrant(writer, cookies.SetupCookie, "/identity/public/accounts/setup")
+			controller.cookies.ClearGrant(writer, cookies.SetupCookie, "/identity/public/accounts/setup")
 			return rest.OK(result), nil
 		},
 	})
