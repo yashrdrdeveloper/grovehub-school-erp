@@ -37,3 +37,7 @@ The Invitation entity is in `entity/invitation.go` and maps to `identity.invitat
 ## Gateway limitations
 
 The launcher supplies a verified Identity Principal to protected requests, plus an authorized tenant/PersonGID context to Integration. Restricted Gmail Pub/Sub push is verified through Integration's workload verifier. Unknown restricted calls are denied. Privileged internal gateway dispatch denies requests until a typed authorizer is configured; direct existing public service clients retain their own service invariants. OAuth sign-in for accounts is a future capability and is not represented as working by the strategy interface alone.
+
+## Rate limit and operation contracts
+
+Controller method `@RouteLimit N` metadata is validated by the shared generator and emitted as exact HTTP method+path policy. The `Identity` module's bootstrap returns generated rate limits to Launcher; no Identity route strings are maintained inside the generic limiter. Individual domain methods remain `services/authentication/operations/<action>` and `services/account/operations/<action>` contracts with `impl/` packages; `services/registration/registration.go` and `security/security.go` are their own upfront interfaces. HTTP cookies are exposed as `transport/cookies.Manager` with `transport/cookies/impl` owned by the transport boundary.
