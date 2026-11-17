@@ -2,7 +2,6 @@ package impl
 import(
  "errors"
  "strings"
- "unicode"
  "github.com/google/uuid"
  corenormalize "grovehub/libs/core/normalize"
  "grovehub/libs/core/search"
@@ -12,16 +11,16 @@ import(
 type Validator struct{}
 func New()contract.Validator{return Validator{}}
 func (Validator)NormalizeCreate(r dto.Create)(dto.Create,error){
- r.Email=strings.ToLower(strings.TrimSpace(r.Email))
- r.PhoneNumber=strings.TrimSpace(r.PhoneNumber)
+ email,err:=corenormalize.Email(r.Email);if err!=nil{return r,errors.New("invalid email")};r.Email=email
+ if strings.TrimSpace(r.PhoneNumber)!=""{phone,e:=corenormalize.Phone(r.PhoneNumber);if e!=nil{return r,errors.New("invalid phone")};r.PhoneNumber=phone}
  r.Person.FirstName=strings.TrimSpace(r.Person.FirstName);r.Person.LastName=strings.TrimSpace(r.Person.LastName)
  if r.Person.MiddleName!=nil{v:=strings.TrimSpace(*r.Person.MiddleName);r.Person.MiddleName=&v}
- if !strings.Contains(r.Email,"@")||len(r.Email)>254||r.Person.FirstName==""||r.Person.LastName==""{return r,errors.New("invalid registration")}
+ if r.Person.FirstName==""||r.Person.LastName==""||len(r.Person.FirstName)>100||len(r.Person.LastName)>100{return r,errors.New("invalid registration")}
  return r,nil
 }
 func (Validator)NormalizeUsername(s string)(string,error){
  s=strings.ToLower(strings.TrimSpace(s));if len(s)<3||len(s)>40{return "",errors.New("invalid username")}
- for _,c:=range s{if !(unicode.IsLower(c)||unicode.IsDigit(c)||c=='.'||c=='_'||c=='-'){return "",errors.New("invalid username")}}
+ for _,c:=range s{if !((c>='a'&&c<='z')||(c>='0'&&c<='9')||c=='.'||c=='_'||c=='-'){return "",errors.New("invalid username")}}
  return s,nil
 }
 func (Validator)Search(q search.Request)(search.Query[string],error){
