@@ -39,5 +39,5 @@ func(s *Service)Queue(ctx context.Context,account entity.Account,purpose entity.
  nonce:=make([]byte,gcm.NonceSize());if _,err=rand.Read(nonce);err!=nil{return err}
  id:=uuid.NewString()
  data:=gcm.Seal(nil,nonce,plain,[]byte(account.AccountID))
- return s.Mail.Queue(ctx,entity.InvitationMail{ID:id,AccountID:account.AccountID,Email:account.Email,Purpose:string(purpose),Nonce:nonce,Ciphertext:data,NextAttemptAt:now,CreatedAt:now})
+ return s.Mail.Queue(ctx,entity.Invitation{ID:id,AccountID:account.AccountID,Email:account.Email,Purpose:string(purpose),Nonce:nonce,Ciphertext:data,NextAttemptAt:now,CreatedAt:now})
 }

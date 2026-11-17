@@ -1,8 +1,8 @@
 package invitation
 import ("context";"time";"grovehub/services/identity/internal/app/entity")
 type Repository interface {
- Queue(context.Context,entity.InvitationMail)error
- Claim(context.Context,time.Time)(entity.InvitationMail,bool,error)
+ Queue(context.Context,entity.Invitation)error
+ Claim(context.Context,time.Time)(entity.Invitation,bool,error)
  Delivered(context.Context,string)error
  Retry(context.Context,string,time.Time)error
 }

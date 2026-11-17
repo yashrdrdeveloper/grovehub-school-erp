@@ -1,7 +1,7 @@
 package entity
 import "time"
 // @Entity identity.invitation_mail
-type InvitationMail struct {
+type Invitation struct {
  ID string `gorm:"column:id;primaryKey;type:uuid"`
  AccountID string `gorm:"column:account_id;type:uuid"`
  Email string `gorm:"column:email"`
