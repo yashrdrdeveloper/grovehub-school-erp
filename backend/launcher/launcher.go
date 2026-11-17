@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -17,6 +18,7 @@ import (
 	"grovehub/launcher/bootstrap"
 	"grovehub/launcher/middleware"
 	"grovehub/launcher/routing"
+	"grovehub/launcher/services/gateway"
 	coretelemetry "grovehub/libs/core/telemetry"
 	headercontext "grovehub/libs/core/headercontext"
 	"grovehub/services/foundation"
@@ -57,37 +59,55 @@ func Run(logger *slog.Logger) error {
     defer foundationModule.Close()
     foundationModule.RegisterHTTP(mux)
 
- // Integration client is constructed before Identity so Identity sends
- // password invitations through the existing typed Integration boundary.
- // TEMPORARY Integration dev auth is loopback only and must be disabled in production.
- integrationDevAuth := integration.DevAuth{
-  Enabled:true,
-  TenantID:"018f5d04-315c-75a9-b890-df0d02e787c1",
-  ActorGID:"01a1b210-402c-7622-a33c-f82ceba26c7d",
- }
- integrationModule,err:=integration.New(logger,db,infrastructureModule.MessagingClient(),integrationDevAuth)
- if err!=nil{return fmt.Errorf("initialize integration module: %w",err)}
- integrationModule.RegisterHTTP(mux)
- defer integrationModule.Close()
 
- identityModule,err:=identity.New(logger,db,foundationModule.Client(),integrationModule.Client(),infrastructureModule.EventStore())
- if err!=nil{return fmt.Errorf("initialize identity module: %w",err)}
- identityModule.RegisterHTTP(mux)
- defer identityModule.Close()
+	// Integration is constructed first because Identity sends mail using its
+	// public typed client. Development authentication bypass is disabled.
+	integrationModule, err := integration.New(
+		logger,
+		db,
+		infrastructureModule.MessagingClient(),
+		integration.DevAuth{},
+	)
+	if err != nil {
+		return fmt.Errorf("initialize integration module: %w", err)
+	}
+	defer integrationModule.Close()
+	integrationModule.RegisterHTTP(mux)
 
- // A development principal must never expose the HTTP listener to the LAN.
- // Bind to loopback even if the default platform listener binds all interfaces.
- httpAddress := ":8080"
- if integrationModule.LocalOnly(){
-  httpAddress="127.0.0.1:8080"
- }
+	identityModule, err := identity.New(
+		logger,
+		db,
+		foundationModule.Client(),
+		integrationModule.Client(),
+		infrastructureModule.EventStore(),
+	)
+	if err != nil {
+		return fmt.Errorf("initialize identity module: %w", err)
+	}
+	defer identityModule.Close()
+	identityModule.RegisterHTTP(mux)
+
+	// Default to loopback. External deployment must deliberately configure
+	// the listener and the trusted browser Origin.
+	httpAddress := os.Getenv("GROOVEHUB_HTTP_ADDR")
+	if httpAddress == "" {
+		httpAddress = "127.0.0.1:8080"
+	}
+
+	gatewayRuntime := gateway.New(
+		mux,
+		identityModule,
+		nil, // Restricted external workload authentication fails closed.
+		os.Getenv("IDENTITY_ALLOWED_ORIGIN"),
+		nil, // Internal privileged actions fail closed until authorized.
+	)
 
 
 	routing.RegisterFallback(mux)
 
 	edgeService := coretelemetry.ServiceLauncherEdge
 	edgeHandler := otelhttp.NewHandler(
-		middleware.RequestObservability(logger, headercontext.Middleware(mux)),
+		middleware.RequestObservability(logger, headercontext.Middleware(gatewayRuntime.External)),
 		"grovehub.edge",
 		otelhttp.WithTracerProvider(coretelemetry.TracerProvider(edgeService.Key)),
 		otelhttp.WithMeterProvider(coretelemetry.MeterProvider(edgeService.Key)),
