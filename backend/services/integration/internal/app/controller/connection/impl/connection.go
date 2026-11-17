@@ -11,6 +11,7 @@ import (
 	coreerrors "grovehub/libs/core/errors"
 	httprequest "grovehub/libs/core/http/request"
     controllerhelpers "grovehub/services/integration/internal/app/controller/helpers"
+    clientprincipal "grovehub/services/integration/client/principal"
 	httpresponse "grovehub/libs/core/http/response"
 	integrationconfig "grovehub/services/integration/internal/app/config"
 	integrationerrors "grovehub/services/integration/internal/app/constants/error"
@@ -26,23 +27,14 @@ type ConnectionController struct {
  devAuth integrationconfig.DevAuth
 }
 
-type VerifiedPrincipal struct{ TenantID, ActorGID string }
+type VerifiedPrincipal = clientprincipal.VerifiedPrincipal
 
-type principalContextKey struct{}
-
-func NewConnectionController(s integrationservices.ConnectionService,push integrationconfig.GmailPush,devOptions ...integrationconfig.DevAuth)*ConnectionController{
- c:=&ConnectionController{service:s,verifier:gmail.NewPushVerifier(push.Audience,push.ServiceAccount),pushEnabled:push.Enabled()}
- if len(devOptions)>0{c.devAuth=devOptions[0]}
- return c
-}
-
-func WithVerifiedPrincipal(ctx context.Context, principal VerifiedPrincipal) context.Context {
-	return context.WithValue(ctx, principalContextKey{}, principal)
+func WithVerifiedPrincipal(ctx context.Context, value VerifiedPrincipal) context.Context {
+	return clientprincipal.WithVerifiedPrincipal(ctx, value)
 }
 
 func principalFrom(ctx context.Context) (VerifiedPrincipal, bool) {
-	p, ok := ctx.Value(principalContextKey{}).(VerifiedPrincipal)
-	return p, ok && p.TenantID != "" && p.ActorGID != ""
+	return clientprincipal.From(ctx)
 }
 
 // principalFromRequest trusts verified IAM context first; when explicitly
