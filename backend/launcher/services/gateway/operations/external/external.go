@@ -34,12 +34,12 @@ func New(mux *http.ServeMux, access coregateway.AccessVerifier, workload coregat
 }
 
 func (operation *Operation) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	handler, pattern := operation.mux.Handler(request)
+	_, pattern := operation.mux.Handler(request)
 	request.Pattern = pattern
 
 	// Only explicitly registered health endpoints may live outside an access tier.
 	if pattern == "GET /health" {
-		handler.ServeHTTP(writer, request)
+		operation.mux.ServeHTTP(writer, request)
 		return
 	}
 
@@ -70,7 +70,7 @@ func (operation *Operation) ServeHTTP(writer http.ResponseWriter, request *http.
 			operation.reject(writer, request, http.StatusForbidden)
 			return
 		}
-		handler.ServeHTTP(writer, request)
+		operation.mux.ServeHTTP(writer, request)
 
 	case coregateway.Protected:
 		if operation.access == nil {
@@ -99,7 +99,7 @@ func (operation *Operation) ServeHTTP(writer http.ResponseWriter, request *http.
 				ActorGID: principal.PersonGID,
 			})
 		}
-		handler.ServeHTTP(writer, request.WithContext(ctx))
+		operation.mux.ServeHTTP(writer, request.WithContext(ctx))
 
 	case coregateway.Restricted:
 		// Restricted endpoints must never inherit a browser session.
@@ -112,7 +112,7 @@ func (operation *Operation) ServeHTTP(writer http.ResponseWriter, request *http.
 			operation.reject(writer, request, http.StatusForbidden)
 			return
 		}
-		handler.ServeHTTP(writer, request.WithContext(ctx))
+		operation.mux.ServeHTTP(writer, request.WithContext(ctx))
 
 	default:
 		operation.reject(writer, request, http.StatusForbidden)
