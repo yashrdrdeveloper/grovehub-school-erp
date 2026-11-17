@@ -26,12 +26,7 @@ func NormalizeRegisterFields(request identityrequest.Register) (identityrequest.
 }
 
 // ValidateRegisterCustom checks domain rules that are not expressed by DTO tags.
-func ValidateRegisterCustom(request identityrequest.Register) error {
-	if err := ValidatePassword(request.Password); err != nil {
-		return invalidRegistration()
-	}
-	return nil
-}
+func ValidateRegisterCustom(request identityrequest.Register) error { return nil }
 
 func MapRegisterDTOError(err error) error {
 	var fieldError annotationvalidation.Error
