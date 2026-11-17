@@ -150,6 +150,21 @@ func (service *AccountService) Update(
 	return updatedAccount, nil
 }
 
+// Activate transitions an invited account only after a valid, consumed setup token.
+// Must participate in the same database transaction as password credential creation.
+func (service *AccountService) Activate(ctx context.Context, accountId string) (entity.Account, error) {
+    account, err := service.GetById(ctx, accountId)
+    if err != nil { return entity.Account{}, err }
+    if account.Status != entity.AccountStatusPendingSetup { return entity.Account{}, coreerrors.NewError(identityerror.InvalidAccount) }
+    account.Status = entity.AccountStatusActive
+    account.Version++
+    account.UpdatedAt = time.Now().UTC()
+    if err := service.repository.Update(ctx, account); err != nil {
+        return entity.Account{}, mapAccountWriteError(err, identityerror.AccountUpdateFailed)
+    }
+    return account, nil
+}
+
 func (service *AccountService) Deactivate(ctx context.Context, accountId string) (entity.Account, error) {
 	account, err := service.GetById(ctx, accountId)
 	if err != nil {
