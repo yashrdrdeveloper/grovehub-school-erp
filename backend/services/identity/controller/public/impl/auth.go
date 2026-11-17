@@ -40,3 +40,15 @@ func (controller *AuthController) SetPassword(writer http.ResponseWriter, reques
         },
     })
 }
+
+func (controller *AuthController) Refresh(writer http.ResponseWriter, request *http.Request) {
+    rest.RunStruct(writer, request, rest.StructConfig[identityrequest.RefreshRequest, identityresponse.Login]{
+        Decode: httprequest.DecodeStrictJSON,
+        InvalidRequestBody: identityerror.InvalidLogin,
+        Fallback: identityerror.AuthenticationUnavailable,
+        Service: func(ctx context.Context, input identityrequest.RefreshRequest) (rest.Result[identityresponse.Login], error) {
+            result, err := controller.service.Refresh(ctx, input)
+            return rest.OK(result), err
+        },
+    })
+}
