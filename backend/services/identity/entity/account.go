@@ -7,6 +7,7 @@ type PersonGid string
 type AccountStatus string
 
 const (
+	AccountStatusPendingSetup AccountStatus = "PENDING_SETUP"
 	AccountStatusActive      AccountStatus = "ACTIVE"
 	AccountStatusSuspended   AccountStatus = "SUSPENDED"
 	AccountStatusDeactivated AccountStatus = "DEACTIVATED"
