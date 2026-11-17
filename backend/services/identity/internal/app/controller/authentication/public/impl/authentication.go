@@ -7,7 +7,7 @@ import(
  dto "grovehub/services/identity/internal/app/dto/authentication"
  definitions "grovehub/services/identity/internal/app/constants/error"
  helpers "grovehub/services/identity/internal/app/controller/helpers"
- "grovehub/services/identity/internal/app/middleware"
+ cookies "grovehub/services/identity/internal/app/transport/cookies"
  public "grovehub/services/identity/internal/app/controller/authentication/public"
  auth "grovehub/services/identity/internal/app/services/authentication"
  secrets "grovehub/services/identity/internal/app/services/authentication/helpers"
@@ -20,7 +20,7 @@ func(c *Controller)Login(w http.ResponseWriter,r *http.Request){
  Service:func(ctx context.Context,in dto.LoginRequest)(rest.Result[dto.LoginResult],error){
   result,err:=c.service.Login(ctx,in.RequestBody,r.UserAgent());if err!=nil{return rest.Result[dto.LoginResult]{},helpers.Map(err)}
   csrf,err:=secrets.NewSecret(32);if err!=nil{return rest.Result[dto.LoginResult]{},helpers.Map(err)}
-  middleware.IssueCookies(w,result.Cookies.Access,result.Cookies.Refresh,csrf)
+  cookies.IssueCookies(w,result.Cookies.Access,result.Cookies.Refresh,csrf)
   return rest.OK(result.Data),nil
  },
  })
@@ -29,8 +29,8 @@ func(c *Controller)Refresh(w http.ResponseWriter,r *http.Request){
  rest.RunStruct(w,r,rest.StructConfig[dto.EmptyRequest,dto.RefreshResult]{
  Fallback:definitions.Internal,
  Service:func(ctx context.Context,_ dto.EmptyRequest)(rest.Result[dto.RefreshResult],error){
-  result,err:=c.service.Refresh(ctx,middleware.ReadCookie(r,middleware.RefreshCookie));if err!=nil{return rest.Result[dto.RefreshResult]{},helpers.Map(err)}
-  middleware.IssueCookies(w,result.Cookies.Access,result.Cookies.Refresh,"")
+  result,err:=c.service.Refresh(ctx,cookies.ReadCookie(r,cookies.RefreshCookie));if err!=nil{return rest.Result[dto.RefreshResult]{},helpers.Map(err)}
+  cookies.IssueCookies(w,result.Cookies.Access,result.Cookies.Refresh,"")
   return rest.OK(result.Data),nil
  },
  })
@@ -49,24 +49,24 @@ func(c *Controller)exchange(w http.ResponseWriter,r *http.Request,prefix,purpose
  rest.RunStruct(w,r,rest.StructConfig[dto.EmptyRequest,dto.GrantResult]{
  Fallback:definitions.Internal,
  Service:func(ctx context.Context,_ dto.EmptyRequest)(rest.Result[dto.GrantResult],error){
-  grant,err:=c.service.Exchange(ctx,middleware.Proof(r,prefix),purpose);if err!=nil{return rest.Result[dto.GrantResult]{},helpers.Map(err)}
+  grant,err:=c.service.Exchange(ctx,cookies.Proof(r,prefix),purpose);if err!=nil{return rest.Result[dto.GrantResult]{},helpers.Map(err)}
   csrf,tokenErr:=secrets.NewSecret(32)
   if tokenErr!=nil{return rest.Result[dto.GrantResult]{},helpers.Map(tokenErr)}
-  middleware.SetGrant(w,cookie,path,grant.Secret)
-  http.SetCookie(w,&http.Cookie{Name:middleware.CSRFName,Value:csrf,Path:"/",MaxAge:600,Secure:true,SameSite:http.SameSiteStrictMode})
+  cookies.SetGrant(w,cookie,path,grant.Secret)
+  http.SetCookie(w,&http.Cookie{Name:cookies.CSRFName,Value:csrf,Path:"/",MaxAge:600,Secure:true,SameSite:http.SameSiteStrictMode})
   return rest.OK(grant.Data),nil
  },
  })
 }
-func(c *Controller)RecoveryExchange(w http.ResponseWriter,r *http.Request){c.exchange(w,r,"Recovery","recovery",middleware.ResetCookie,"/identity/public/auth/reset-password")}
-func(c *Controller)InvitationExchange(w http.ResponseWriter,r *http.Request){c.exchange(w,r,"Invitation","invitation",middleware.SetupCookie,"/identity/public/accounts/setup")}
+func(c *Controller)RecoveryExchange(w http.ResponseWriter,r *http.Request){c.exchange(w,r,"Recovery","recovery",cookies.ResetCookie,"/identity/public/auth/reset-password")}
+func(c *Controller)InvitationExchange(w http.ResponseWriter,r *http.Request){c.exchange(w,r,"Invitation","invitation",cookies.SetupCookie,"/identity/public/accounts/setup")}
 func(c *Controller)ResetPassword(w http.ResponseWriter,r *http.Request){
  rest.RunStruct(w,r,rest.StructConfig[dto.ResetPasswordRequest,dto.StatusResult]{
  Decode:request.DecodeStrictJSON,InvalidRequestBody:definitions.InvalidRequest,Fallback:definitions.Internal,
  Service:func(ctx context.Context,in dto.ResetPasswordRequest)(rest.Result[dto.StatusResult],error){
-  err:=c.service.ResetPassword(ctx,middleware.ReadCookie(r,middleware.ResetCookie),in.RequestBody.NewPassword)
+  err:=c.service.ResetPassword(ctx,cookies.ReadCookie(r,cookies.ResetCookie),in.RequestBody.NewPassword)
   if err!=nil{return rest.Result[dto.StatusResult]{},helpers.Map(err)}
-  middleware.ClearGrant(w,middleware.ResetCookie,"/identity/public/auth/reset-password")
+  cookies.ClearGrant(w,cookies.ResetCookie,"/identity/public/auth/reset-password")
   return rest.OK(dto.StatusResult{Status:"PASSWORD_RESET",SessionsRevoked:true}),nil
  },
  })

@@ -16,7 +16,8 @@ import(
  accountpublic "grovehub/services/identity/internal/app/controller/account/public"
  authprotected "grovehub/services/identity/internal/app/controller/authentication/protected"
  authpublic "grovehub/services/identity/internal/app/controller/authentication/public"
- "grovehub/services/identity/internal/app/middleware"
+ coregateway "grovehub/libs/core/gateway"
+ verification "grovehub/services/identity/internal/app/security/verification"
  accountservice "grovehub/services/identity/internal/app/services/account"
  invitation "grovehub/services/identity/internal/app/services/registration/operations/invitation"
  "grovehub/services/identity/internal/app/routes"
@@ -32,7 +33,7 @@ type runtime struct{
  accountProtected accountprotected.AccountController
  authPublic authpublic.AuthenticationController
  authProtected authprotected.AuthenticationController
- middleware middleware.Authentication
+ verifier *verification.Verifier
  accountService accountservice.Service
  worker *invitation.Worker
  workerConfig config.Config
@@ -48,13 +49,13 @@ func(b *builder)Build()(bootstrap.Runtime,error){
  reps:=b.newRepository()
  services:=b.newServices(reps,c)
  authpub,authpriv,accpub,accpriv:=b.newControllers(services)
- m:=middleware.Authentication{Accounts:reps.accounts,Sessions:reps.sessions,AdminIDs:c.AdminIDs,AllowedOrigin:c.AllowedOrigin}
+ verifier:=verification.New(reps.accounts,reps.sessions,c.AdminIDs)
  stopCtx,stop:=context.WithCancel(context.Background())
- r:=&runtime{logger:b.logger,accountPublic:accpub,accountProtected:accpriv,authPublic:authpub,authProtected:authpriv,middleware:m,accountService:services.account,worker:services.worker,workerConfig:c,stop:stop,done:make(chan struct{})}
+ r:=&runtime{logger:b.logger,accountPublic:accpub,accountProtected:accpriv,authPublic:authpub,authProtected:authpriv,verifier:verifier,accountService:services.account,worker:services.worker,workerConfig:c,stop:stop,done:make(chan struct{})}
  go r.runWorker(stopCtx)
  return r,nil
 }
-func(r *runtime)RegisterHTTP(mux *http.ServeMux){routes.RegisterHTTP(mux,r.authPublic,r.authProtected,r.accountPublic,r.accountProtected,r.middleware)}
+func(r *runtime)RegisterHTTP(mux *http.ServeMux){routes.RegisterHTTP(mux,r.authPublic,r.authProtected,r.accountPublic,r.accountProtected)}
 func(r *runtime)AccountClient()accountclient.Client{return r}
 func(r *runtime)Get(ctx context.Context,id string)(accountclient.Account,error){return r.accountService.Get(ctx,id)}
 func(r *runtime)Search(ctx context.Context,q coresearch.Request)(coresearch.Result[accountclient.Account],error){return r.accountService.Search(ctx,q)}
@@ -70,4 +71,8 @@ func(r *runtime)runWorker(ctx context.Context){
    if err!=nil{r.logger.Warn("identity mail delivery retry scheduled")}
   }
  }
+}
+
+func (r *runtime) VerifyAccess(ctx context.Context, accessSecret string) (coregateway.Principal, error) {
+	return r.verifier.VerifyAccess(ctx, accessSecret)
 }

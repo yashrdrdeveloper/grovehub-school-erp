@@ -8,7 +8,7 @@ import(
  dto "grovehub/services/identity/internal/app/dto/authentication"
  accountdto "grovehub/services/identity/internal/app/dto/account"
  helpers "grovehub/services/identity/internal/app/controller/helpers"
- "grovehub/services/identity/internal/app/middleware"
+ cookies "grovehub/services/identity/internal/app/transport/cookies"
  protected "grovehub/services/identity/internal/app/controller/authentication/protected"
  auth "grovehub/services/identity/internal/app/services/authentication"
 )
@@ -18,21 +18,21 @@ func(c *Controller)Logout(w http.ResponseWriter,r *http.Request){
  rest.RunStruct(w,r,rest.StructConfig[dto.EmptyRequest,dto.StatusResult]{Fallback:definitions.Internal,
  Service:func(ctx context.Context,_ dto.EmptyRequest)(rest.Result[dto.StatusResult],error){
   if err:=c.service.Logout(ctx);err!=nil{return rest.Result[dto.StatusResult]{},helpers.Map(err)}
-  middleware.ClearSessionCookies(w);return rest.OK(dto.StatusResult{Status:"LOGGED_OUT"}),nil
+  cookies.ClearSessionCookies(w);return rest.OK(dto.StatusResult{Status:"LOGGED_OUT"}),nil
  }})
 }
 func(c *Controller)LogoutAll(w http.ResponseWriter,r *http.Request){
  rest.RunStruct(w,r,rest.StructConfig[dto.EmptyRequest,map[string]any]{Fallback:definitions.Internal,
  Service:func(ctx context.Context,_ dto.EmptyRequest)(rest.Result[map[string]any],error){
   count,err:=c.service.LogoutAll(ctx);if err!=nil{return rest.Result[map[string]any]{},helpers.Map(err)}
-  middleware.ClearSessionCookies(w);return rest.OK(map[string]any{"status":"ALL_SESSIONS_REVOKED","revokedCount":count}),nil
+  cookies.ClearSessionCookies(w);return rest.OK(map[string]any{"status":"ALL_SESSIONS_REVOKED","revokedCount":count}),nil
  }})
 }
 func(c *Controller)ChangePassword(w http.ResponseWriter,r *http.Request){
  rest.RunStruct(w,r,rest.StructConfig[dto.ChangePasswordRequest,map[string]any]{Decode:request.DecodeStrictJSON,InvalidRequestBody:definitions.InvalidRequest,Fallback:definitions.Internal,
  Service:func(ctx context.Context,in dto.ChangePasswordRequest)(rest.Result[map[string]any],error){
   if err:=c.service.ChangePassword(ctx,in.RequestBody.NewPassword);err!=nil{return rest.Result[map[string]any]{},helpers.Map(err)}
-  middleware.ClearSessionCookies(w);return rest.OK(map[string]any{"status":"PASSWORD_CHANGED","sessionsRevoked":true}),nil
+  cookies.ClearSessionCookies(w);return rest.OK(map[string]any{"status":"PASSWORD_CHANGED","sessionsRevoked":true}),nil
  }})
 }
 func(c *Controller)Reauthenticate(w http.ResponseWriter,r *http.Request){

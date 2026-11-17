@@ -1,9 +1,49 @@
 package principal
-import ("context";"errors";"time")
-type key struct{}
-type Principal struct{AccountID,PersonGID,TenantID,SessionID string;Admin bool;AuthenticatedAt time.Time}
-func With(ctx context.Context,p Principal)context.Context{return context.WithValue(ctx,key{},p)}
-func From(ctx context.Context)(Principal,bool){p,ok:=ctx.Value(key{}).(Principal);return p,ok&&p.AccountID!=""}
-func Require(ctx context.Context)(Principal,error){p,ok:=From(ctx);if !ok{return p,errors.New("authentication required")};return p,nil}
-func RequireAdmin(ctx context.Context)(Principal,error){p,err:=Require(ctx);if err!=nil{return p,err};if !p.Admin||p.TenantID==""{return p,errors.New("admin access forbidden")};return p,nil}
-func Recent(ctx context.Context,maxAge time.Duration)error{p,err:=Require(ctx);if err!=nil{return err};if p.AuthenticatedAt.IsZero()||time.Since(p.AuthenticatedAt)>maxAge{return errors.New("recent authentication required")};return nil}
+
+import (
+	"context"
+	"errors"
+	"time"
+
+	coregateway "grovehub/libs/core/gateway"
+)
+
+type Principal = coregateway.Principal
+
+func With(ctx context.Context, principal Principal) context.Context {
+	return coregateway.WithPrincipal(ctx, principal)
+}
+
+func From(ctx context.Context) (Principal, bool) {
+	return coregateway.PrincipalFrom(ctx)
+}
+
+func Require(ctx context.Context) (Principal, error) {
+	principal, ok := From(ctx)
+	if !ok {
+		return Principal{}, errors.New("authentication required")
+	}
+	return principal, nil
+}
+
+func RequireAdmin(ctx context.Context) (Principal, error) {
+	principal, err := Require(ctx)
+	if err != nil {
+		return Principal{}, err
+	}
+	if !principal.Admin || principal.TenantID == "" {
+		return Principal{}, errors.New("admin access forbidden")
+	}
+	return principal, nil
+}
+
+func Recent(ctx context.Context, maxAge time.Duration) error {
+	principal, err := Require(ctx)
+	if err != nil {
+		return err
+	}
+	if principal.AuthenticatedAt.IsZero() || time.Since(principal.AuthenticatedAt) > maxAge {
+		return errors.New("recent authentication required")
+	}
+	return nil
+}
