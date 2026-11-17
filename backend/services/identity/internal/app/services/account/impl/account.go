@@ -4,11 +4,8 @@ import(
  "errors"
  "strings"
  "time"
- coreid "grovehub/libs/core/id"
  coresearch "grovehub/libs/core/search"
  tx "grovehub/libs/core/database/transaction"
- coreidempotency "grovehub/libs/core/idempotency"
- headercontext "grovehub/libs/core/headercontext"
  foundation "grovehub/services/foundation/client/person"
  dto "grovehub/services/identity/internal/app/dto/account"
  "grovehub/services/identity/internal/app/entity"
@@ -21,60 +18,14 @@ import(
  invitation "grovehub/services/identity/internal/app/services/registration/operations/invitation"
  validators "grovehub/services/identity/internal/app/validators/account"
  authhelpers "grovehub/services/identity/internal/app/services/authentication/helpers"
+ createop "grovehub/services/identity/internal/app/services/account/operations/create"
 )
-type Service struct{accounts accountrepo.Repository;tokens tokenrepo.Repository;foundation foundation.Client;credential cred.Service;invitation *invitation.Service;mapper mapper.Mapper;validator validators.Validator;unit tx.UnitOfWork}
-func New(a accountrepo.Repository,t tokenrepo.Repository,f foundation.Client,c cred.Service,i *invitation.Service,m mapper.Mapper,v validators.Validator,u tx.UnitOfWork)contract.Service{return &Service{accounts:a,tokens:t,foundation:f,credential:c,invitation:i,mapper:m,validator:v,unit:u}}
+type Service struct{accounts accountrepo.Repository;tokens tokenrepo.Repository;foundation foundation.Client;credential cred.Service;invitation *invitation.Service;mapper mapper.Mapper;validator validators.Validator;unit tx.UnitOfWork;create *createop.Operation}
+func New(a accountrepo.Repository,t tokenrepo.Repository,f foundation.Client,c cred.Service,i *invitation.Service,m mapper.Mapper,v validators.Validator,u tx.UnitOfWork)contract.Service{return &Service{accounts:a,tokens:t,foundation:f,credential:c,invitation:i,mapper:m,validator:v,unit:u,create:createop.New(a,f,v,i,u)}}
 func normalizeEmail(s string)string{return strings.ToLower(strings.TrimSpace(s))}
 func projection(a entity.Account)string{u:="";if a.Username!=nil{u=*a.Username};return strings.ToLower(strings.Join([]string{a.Email,u}," "))}
-func(s *Service)Create(ctx context.Context,input dto.Create,idempotencyKey string)(dto.CreateResult,error){
- p,err:=principal.RequireAdmin(ctx);if err!=nil{return dto.CreateResult{},err}
- if s.invitation==nil{return dto.CreateResult{},errors.New("invitation sender unavailable")}
- input,err=s.validator.NormalizeCreate(input);if err!=nil{return dto.CreateResult{},err}
- if _,err=coreidempotency.ValidateKey(idempotencyKey);err!=nil{return dto.CreateResult{},err}
- fingerprint,err:=coreidempotency.Fingerprint(input);if err!=nil{return dto.CreateResult{},err}
- var result dto.CreateResult
- err=s.unit.Run(ctx,func(inside context.Context)error{
-  current,lookup:=s.accounts.FindByIdempotencyKey(inside,idempotencyKey)
-  if lookup==nil{
-   if current.RegistrationRequestHash==nil||*current.RegistrationRequestHash!=fingerprint{return errors.New("idempotency key conflict")}
-   if current.TenantID==nil||*current.TenantID!=p.TenantID{return errors.New("unauthorized tenant")}
-   result=convertCreate(current);return nil
-  }
-  if !errors.Is(lookup,accountrepo.ErrNotFound){return lookup}
-  person,personErr:=s.resolvePerson(inside,input);if personErr!=nil{return personErr}
-  _,existingErr:=s.accounts.FindByPersonGID(inside,person.GID)
-  if existingErr==nil{return accountrepo.ErrConflict}
-  if !errors.Is(existingErr,accountrepo.ErrNotFound){return existingErr}
-  id,e:=coreid.NewUUIDv7();if e!=nil{return e}
-  now:=time.Now().UTC()
-  a:=entity.Account{AccountID:id,PersonGID:person.GID,TenantID:&p.TenantID,Email:input.Email,Status:entity.PendingSetup,Version:1,CreatedAt:now,UpdatedAt:now,RegistrationIdempotencyKey:&idempotencyKey,RegistrationRequestHash:&fingerprint}
-  if input.PhoneNumber!=""{a.Phone=&input.PhoneNumber}
-  a.SearchDetails=projection(a)
-  if e=s.accounts.Create(inside,a);e!=nil{return e}
-  if e=s.invitation.Queue(inside,a,entity.AccountSetup,input.Person.FirstName);e!=nil{return e}
-  result=convertCreate(a);return nil
- })
- return result,err
-}
-func convertCreate(a entity.Account)dto.CreateResult{
- r:=dto.CreateResult{AccountID:a.AccountID,PersonGID:a.PersonGID,Email:a.Email,Status:string(a.Status)}
- r.Invitation.Status="QUEUED";return r
-}
-func(s *Service)resolvePerson(ctx context.Context,input dto.Create)(foundation.Person,error){
- query:=coresearch.Request{Filters:[]coresearch.Filter{{Field:"contacts.email",Operator:coresearch.OperatorEquals,Values:[]string{input.Email}}},PageInfo:coresearch.PageRequest{Rows:2}}
- result,err:=s.foundation.SearchPersons(ctx,foundation.SearchPersonsRequest{RequestBody:query})
- if err!=nil{return foundation.Person{},err}
- if len(result.Items)>1{return foundation.Person{},errors.New("ambiguous Foundation person")}
- if len(result.Items)==1{
-  for _,e:=range result.Items[0].Contacts.Emails{if normalizeEmail(e.Value)==input.Email{return result.Items[0],nil}}
-  return foundation.Person{},errors.New("Foundation email mismatch")
- }
- middle:="";if input.Person.MiddleName!=nil{middle=*input.Person.MiddleName}
- newPerson:=foundation.CreatePerson{PersonNames:foundation.PersonNames{FirstName:input.Person.FirstName,MiddleName:middle,LastName:input.Person.LastName},Contacts:foundation.Contacts{Emails:[]foundation.ContactValue{{Value:input.Email,IsPrimary:true}}}}
- if input.PhoneNumber!=""{newPerson.Contacts.Phones=[]foundation.ContactValue{{Value:input.PhoneNumber,IsPrimary:true}}}
- created,_,err:=s.foundation.CreatePerson(headercontext.WithoutIdempotencyKey(ctx),foundation.CreatePersonRequest{RequestBody:newPerson})
- return created,err
-}
+
+
 func(s *Service)Get(ctx context.Context,id string)(dto.Account,error){
  p,err:=principal.RequireAdmin(ctx);if err!=nil{return dto.Account{},err}
  a,err:=s.accounts.FindByID(ctx,id);if err!=nil{return dto.Account{},err}
@@ -150,3 +101,5 @@ func(s *Service)Setup(ctx context.Context,grant string,input dto.Setup)(dto.Setu
  })
  return out,err
 }
+
+func(s *Service)Create(ctx context.Context,input dto.Create,key string)(dto.CreateResult,error){return s.create.Execute(ctx,input,key)}
