@@ -20,6 +20,8 @@ import (
 	identitymappers "grovehub/services/identity/mappers"
 	identityservices "grovehub/services/identity/services"
 	servicehelpers "grovehub/services/identity/services/helpers"
+    "grovehub/services/identity/entity"
+    validatorhelpers "grovehub/services/identity/validators/helpers"
 	identityvalidators "grovehub/services/identity/validators"
 )
 
@@ -30,6 +32,7 @@ type AuthService struct {
 	mapper                    identitymappers.AuthMapper
 	validator                 identityvalidators.AuthValidator
  db *gorm.DB
+    dependencies identityservices.AuthDependencies
 }
 
 func NewAuthService(
@@ -39,8 +42,12 @@ func NewAuthService(
 	mapper identitymappers.AuthMapper,
 	validator identityvalidators.AuthValidator,
  db *gorm.DB,
+    dependencies ...identityservices.AuthDependencies,
 ) identityservices.AuthService {
+	var configured identityservices.AuthDependencies
+    if len(dependencies) > 0 { configured = dependencies[0] }
 	return &AuthService{
+        dependencies: configured,
 		foundationClient:          foundationClient,
 		accountService:            accountService,
 		passwordCredentialService: passwordCredentialService,
@@ -51,6 +58,9 @@ func NewAuthService(
 }
 
 func (service *AuthService) Register(ctx context.Context, request identityrequest.RegisterRequest) (identityresponse.Register, error) {
+    if service.dependencies.RegistrationAuthorizer == nil { return identityresponse.Register{}, coreerrors.NewError(identityerror.RegistrationUnauthorized) }
+    if err := service.dependencies.RegistrationAuthorizer.AuthorizeRegistration(ctx); err != nil { return identityresponse.Register{}, coreerrors.NewError(identityerror.RegistrationUnauthorized) }
+    if service.dependencies.InvitationQueue == nil { return identityresponse.Register{}, coreerrors.NewError(identityerror.RegistrationUnavailable) }
 	idempotencyKey, err := coreidempotency.ValidateKey(headercontext.IdempotencyKey(ctx))
 	if err != nil {
 		return identityresponse.Register{}, coreerrors.NewError(identityerror.InvalidRegistrationIdempotencyKey)
@@ -86,9 +96,7 @@ func (service *AuthService) register(
 		if servicehelpers.NullableString(account.RegistrationRequestHash) != requestHash {
 			return identityresponse.Register{}, coreerrors.NewError(identityerror.RegistrationIdempotencyConflict)
 		}
-		if err := service.passwordCredentialService.Set(ctx, string(account.AccountId), validated.Password); err != nil {
-			return identityresponse.Register{}, servicehelpers.MapAuthDependencyError(err)
-		}
+        if err := service.dependencies.InvitationQueue.QueuePasswordSetup(ctx, account); err != nil { return identityresponse.Register{}, coreerrors.Wrap(identityerror.RegistrationFailed, err) }
 		return service.mapper.ToRegisterResponse(account), nil
 	} else if !isAccountNotFound(readErr) {
 		return identityresponse.Register{}, servicehelpers.MapAuthDependencyError(readErr)
@@ -124,10 +132,7 @@ func (service *AuthService) register(
 		return identityresponse.Register{}, servicehelpers.MapAuthDependencyError(err)
 	}
 
-	accountId := string(account.AccountId)
-	if err := service.passwordCredentialService.Set(ctx, accountId, validated.Password); err != nil {
-		return identityresponse.Register{}, servicehelpers.MapAuthDependencyError(err)
-	}
+    if err := service.dependencies.InvitationQueue.QueuePasswordSetup(ctx, account); err != nil { return identityresponse.Register{}, coreerrors.Wrap(identityerror.RegistrationFailed, err) }
 
 	return service.mapper.ToRegisterResponse(account), nil
 }
@@ -165,4 +170,21 @@ func isAccountNotFound(err error) bool {
 	var applicationError *coreerrors.Error
 	return errors.As(err, &applicationError) &&
 		applicationError.Definition().Code() == identityerror.AccountNotFound.Code()
+}
+
+
+// Login performs credential verification and delegates token/session issuance to an
+// explicitly configured, revocable session issuer. Missing dependencies fail closed.
+func (service *AuthService) Login(ctx context.Context, request identityrequest.LoginRequest) (identityresponse.Login, error) {
+    if service.dependencies.SessionIssuer == nil { return identityresponse.Login{}, coreerrors.NewError(identityerror.AuthenticationUnavailable) }
+    email, err := validatorhelpers.NormalizeEmail(request.RequestBody.Email)
+    if err != nil || request.RequestBody.Password == "" { return identityresponse.Login{}, coreerrors.NewError(identityerror.InvalidCredentials) }
+    account, err := service.accountService.GetByEmail(ctx, email)
+    if err != nil { return identityresponse.Login{}, coreerrors.NewError(identityerror.InvalidCredentials) }
+    if account.Status != entity.AccountStatusActive { return identityresponse.Login{}, coreerrors.NewError(identityerror.InvalidCredentials) }
+    valid, err := service.passwordCredentialService.Verify(ctx, string(account.AccountId), request.RequestBody.Password)
+    if err != nil || !valid { return identityresponse.Login{}, coreerrors.NewError(identityerror.InvalidCredentials) }
+    result, err := service.dependencies.SessionIssuer.IssueLogin(ctx, account)
+    if err != nil { return identityresponse.Login{}, coreerrors.Wrap(identityerror.AuthenticationUnavailable, err) }
+    return result, nil
 }
