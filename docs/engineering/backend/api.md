@@ -18,7 +18,8 @@ Create only DTO category files that contain real types. Group DTOs by **resource
 ## 2. HTTP responsibilities
 
 - **Routes:** compose the generated registration functions; HTTP method and relative path are declared once on the controller interface with annotations.
-- **Launcher gateway:** classify matched route, verify principal/tenant/workload, check Origin/CSRF and rate limits. Domain modules must not implement duplicate copies of these generic controls.\n- **Shared middleware:** request/correlation/trace IDs, body limits and recovery.
+- **Launcher gateway:** classify matched route, verify principal/tenant/workload, check Origin/CSRF and rate limits. Domain modules must not implement duplicate copies of these generic controls.
+- **Shared middleware:** request/correlation/trace IDs, body limits and recovery.
 - **Controller:** binding/structured HTTP result, invoke validator and use-case, verify authorization context, translate stable errors.
 - **Validator:** pure technical checks and canonicalization, not DB lookups or response writing.
 - **Service:** ownership/business invariant and change orchestration.
