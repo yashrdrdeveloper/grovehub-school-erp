@@ -1,25 +1,34 @@
 package outlook
 
 import (
-    providerdto "grovehub/services/integration/internal/app/providers/dto"
-    providercontracts "grovehub/services/integration/internal/app/providers/contracts"
-    mailcontracts "grovehub/services/integration/internal/app/providers/mailprovider/contracts"
+	providercontracts "grovehub/services/integration/internal/app/providers/contracts"
+	providerdto "grovehub/services/integration/internal/app/providers/dto"
 	"grovehub/services/integration/internal/app/providers/mailprovider"
+	mailcontracts "grovehub/services/integration/internal/app/providers/mailprovider/contracts"
 )
 
 // @Provider id=OUTLOOK category=mail
-type strategy struct{ client *Client }
+// @Strategy
+type strategy struct {
+	client *Client
+}
 
-func NewStrategy(client *Client) mailprovider.Strategy { return &strategy{client: client} }
+var _ mailprovider.Strategy = (*strategy)(nil)
 
-func (s *strategy) Descriptor() providerdto.Descriptor   { return New().Descriptor() }
+func NewStrategy(client *Client) mailprovider.Strategy {
+	return &strategy{client: client}
+}
 
-func (s *strategy) Register(actions providercontracts.ActionRegistry, oauth mailcontracts.OAuthRegistry) error {
-	if s.client == nil {
+func (provider *strategy) Descriptor() providerdto.Descriptor {
+	return New().Descriptor()
+}
+
+func (provider *strategy) Register(actions providercontracts.ActionRegistry, oauth mailcontracts.OAuthRegistry) error {
+	if provider.client == nil {
 		return nil
 	}
-	if err := RegisterActions(actions, s.client); err != nil {
+	if err := RegisterActions(actions, provider.client); err != nil {
 		return err
 	}
-	return oauth.Register("OUTLOOK", s.client)
+	return oauth.Register("OUTLOOK", provider.client)
 }
