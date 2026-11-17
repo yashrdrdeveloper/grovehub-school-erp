@@ -50,7 +50,10 @@ func(c *Controller)exchange(w http.ResponseWriter,r *http.Request,prefix,purpose
  Fallback:definitions.Internal,
  Service:func(ctx context.Context,_ dto.EmptyRequest)(rest.Result[dto.GrantResult],error){
   grant,err:=c.service.Exchange(ctx,middleware.Proof(r,prefix),purpose);if err!=nil{return rest.Result[dto.GrantResult]{},helpers.Map(err)}
+  csrf,tokenErr:=secrets.NewSecret(32)
+  if tokenErr!=nil{return rest.Result[dto.GrantResult]{},helpers.Map(tokenErr)}
   middleware.SetGrant(w,cookie,path,grant.Secret)
+  http.SetCookie(w,&http.Cookie{Name:middleware.CSRFName,Value:csrf,Path:"/",MaxAge:600,Secure:true,SameSite:http.SameSiteStrictMode})
   return rest.OK(grant.Data),nil
  },
  })

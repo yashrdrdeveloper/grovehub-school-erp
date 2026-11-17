@@ -57,29 +57,23 @@ func Run(logger *slog.Logger) error {
     defer foundationModule.Close()
     foundationModule.RegisterHTTP(mux)
 
-	identityModule := identity.New(
-		logger,
-		db,
-		foundationModule.Client(),
-		infrastructureModule.MessagingClient(),
-	)
-	identityModule.RegisterHTTP(mux)
-    identityWorkerCtx, stopIdentityWorkers := context.WithCancel(context.Background())
-    defer stopIdentityWorkers()
-    identityModule.Start(identityWorkerCtx)
-
- // TEMPORARY: local-only Integration identity until IAM middleware exists.
- // All protected Integration routes use this fixed development principal.
- // Remove when Identity provides a verified principal; never deploy this mode.
+ // Integration client is constructed before Identity so Identity sends
+ // password invitations through the existing typed Integration boundary.
+ // TEMPORARY Integration dev auth is loopback only and must be disabled in production.
  integrationDevAuth := integration.DevAuth{
-  Enabled: true,
-  TenantID: "018f5d04-315c-75a9-b890-df0d02e787c1",
-  ActorGID: "01a1b210-402c-7622-a33c-f82ceba26c7d",
+  Enabled:true,
+  TenantID:"018f5d04-315c-75a9-b890-df0d02e787c1",
+  ActorGID:"01a1b210-402c-7622-a33c-f82ceba26c7d",
  }
- integrationModule, err := integration.New(logger,db,infrastructureModule.MessagingClient(),integrationDevAuth)
- if err != nil { return fmt.Errorf("initialize integration module: %w",err) }
+ integrationModule,err:=integration.New(logger,db,infrastructureModule.MessagingClient(),integrationDevAuth)
+ if err!=nil{return fmt.Errorf("initialize integration module: %w",err)}
  integrationModule.RegisterHTTP(mux)
  defer integrationModule.Close()
+
+ identityModule,err:=identity.New(logger,db,foundationModule.Client(),integrationModule.Client())
+ if err!=nil{return fmt.Errorf("initialize identity module: %w",err)}
+ identityModule.RegisterHTTP(mux)
+ defer identityModule.Close()
 
  // A development principal must never expose the HTTP listener to the LAN.
  // Bind to loopback even if the default platform listener binds all interfaces.

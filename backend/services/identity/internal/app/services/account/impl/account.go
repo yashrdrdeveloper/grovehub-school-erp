@@ -2,10 +2,8 @@ package impl
 import(
  "context"
  "errors"
- "fmt"
  "strings"
  "time"
- "github.com/google/uuid"
  coreid "grovehub/libs/core/id"
  coresearch "grovehub/libs/core/search"
  tx "grovehub/libs/core/database/transaction"
@@ -152,5 +150,3 @@ func(s *Service)Setup(ctx context.Context,grant string,input dto.Setup)(dto.Setu
  })
  return out,err
 }
-var _=uuid.NewString
-var _=fmt.Sprint

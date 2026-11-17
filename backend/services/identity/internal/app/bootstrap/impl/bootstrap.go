@@ -7,6 +7,7 @@ import(
  "sync"
  "time"
  "gorm.io/gorm"
+    coresearch "grovehub/libs/core/search"
  "grovehub/services/identity/internal/app/config"
  configimpl "grovehub/services/identity/internal/app/config/impl"
  bootstrap "grovehub/services/identity/internal/app/bootstrap"
@@ -17,7 +18,6 @@ import(
  authpublic "grovehub/services/identity/internal/app/controller/authentication/public"
  "grovehub/services/identity/internal/app/middleware"
  accountservice "grovehub/services/identity/internal/app/services/account"
- authservice "grovehub/services/identity/internal/app/services/authentication"
  invitation "grovehub/services/identity/internal/app/services/registration/operations/invitation"
  "grovehub/services/identity/internal/app/routes"
  foundationclient "grovehub/services/foundation/client/person"
@@ -70,4 +70,3 @@ func(r *runtime)runWorker(ctx context.Context){
   }
  }
 }
-var _=authservice.Service(nil)

@@ -3,6 +3,8 @@ import(
  "errors"
  "strings"
  "unicode"
+ "github.com/google/uuid"
+ corenormalize "grovehub/libs/core/normalize"
  "grovehub/libs/core/search"
  dto "grovehub/services/identity/internal/app/dto/account"
  contract "grovehub/services/identity/internal/app/validators/account"
@@ -28,13 +30,17 @@ func (Validator)Search(q search.Request)(search.Query[string],error){
  rows,err:=search.ResolveRows(q.PageInfo.Rows,bad);if err!=nil{return search.Query[string]{},err}
  sortFields:=map[string]search.CursorValueValidator{"createdAt":func(v string)error{return search.ValidateTimeCursor(v,bad)},"updatedAt":func(v string)error{return search.ValidateTimeCursor(v,bad)},"accountId":func(v string)error{return search.ValidateUUIDv7Cursor(v,bad)},"status":func(v string)error{return search.ValidateNonEmptyCursor(v,bad)},"username":func(v string)error{return search.ValidateNonEmptyCursor(v,bad)}}
  sort,err:=search.NormalizeSort(q.Sort,search.QuerySort{Field:"createdAt",Direction:search.DirectionDescending},sortFields,bad);if err!=nil{return search.Query[string]{},err}
- fields:=map[string]search.FieldSpec{}
- _=fields
- // Validate untrusted filter expressions against the resource-owned allowlist.
- allowed:=map[string]bool{"accountId":true,"personGid":true,"username":true,"email":true,"status":true,"createdAt":true,"updatedAt":true}
- for _,f:=range q.Filters{if !allowed[f.Field]||len(f.Values)>50||len(f.Values)==0{return search.Query[string]{},bad}}
- filters:=make([]search.QueryFilter,0,len(q.Filters))
- for _,f:=range q.Filters{filters=append(filters,search.QueryFilter{Field:f.Field,Operator:f.Operator,Values:f.Values})}
+ fields:=map[string]search.FieldSpec{
+  "accountId":{Operators:search.EqualityOperators(),Normalizer:func(_ search.Operator,v string)(string,error){if _,err:=uuid.Parse(v);err!=nil{return "",bad};return v,nil}},
+  "personGid":{Operators:search.EqualityOperators(),Normalizer:func(_ search.Operator,v string)(string,error){if _,err:=uuid.Parse(v);err!=nil{return "",bad};return v,nil}},
+  "username":{Operators:search.TextOperators(),Normalizer:func(_ search.Operator,v string)(string,error){v=strings.ToLower(strings.TrimSpace(v));if v==""{return "",bad};return v,nil}},
+  "email":{Operators:search.TextOperators(),Normalizer:func(_ search.Operator,v string)(string,error){v=strings.ToLower(strings.TrimSpace(v));if v==""{return "",bad};return v,nil}},
+  "status":{Operators:search.EqualityOperators(),Normalizer:func(_ search.Operator,v string)(string,error){v=strings.ToUpper(strings.TrimSpace(v));switch v{case "ACTIVE","PENDING_SETUP","SUSPENDED","DEACTIVATED":return v,nil};return "",bad}},
+  "createdAt":{Operators:search.TimeOperators(),Normalizer:func(_ search.Operator,v string)(string,error){v,e:=corenormalize.RFC3339UTC(v);if e!=nil{return "",bad};return v,nil}},
+  "updatedAt":{Operators:search.TimeOperators(),Normalizer:func(_ search.Operator,v string)(string,error){v,e:=corenormalize.RFC3339UTC(v);if e!=nil{return "",bad};return v,nil}},
+ }
+ filters,err:=search.NormalizeFilters(q.Filters,fields,20,50,bad)
+ if err!=nil{return search.Query[string]{},err}
  cursor,_,err:=search.NormalizeCursor(q.PageInfo.Cursor,sort,sortFields[sort.Field],search.ValidateUUIDv7Cursor,bad)
  if err!=nil{return search.Query[string]{},err}
  return search.Query[string]{SearchTerms:terms,Filters:filters,Sort:sort,Cursor:cursor,Limit:rows},nil

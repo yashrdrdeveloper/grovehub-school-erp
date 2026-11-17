@@ -8,6 +8,7 @@ import (
 
     "grovehub/launcher/bootstrap"
     "grovehub/services/foundation"
+    "grovehub/services/identity"
     "grovehub/services/infrastructure"
     "grovehub/services/integration"
 )
@@ -15,11 +16,11 @@ import (
 // runMigrationCommand applies embedded service migrations before app startup.
 func runMigrationCommand() int {
     if len(os.Args)!=3 || os.Args[1]!="migrate" {
-        _,_=fmt.Fprintln(os.Stderr,"usage: groovehub-platform migrate foundation|infrastructure|integration|all")
+        _,_=fmt.Fprintln(os.Stderr,"usage: groovehub-platform migrate foundation|infrastructure|integration|identity|all")
         return 2
     }
     service:=os.Args[2]
-    if service!="foundation" && service!="infrastructure" && service!="integration" && service!="all" {
+    if service!="foundation" && service!="infrastructure" && service!="integration" && service!="identity" && service!="all" {
         _,_=fmt.Fprintln(os.Stderr,"usage: groovehub-platform migrate foundation|infrastructure|all")
         return 2
     }
@@ -45,6 +46,12 @@ func runMigrationCommand() int {
     if service=="integration" || service=="all" {
         if err:=integration.Migrate(ctx,db);err!=nil{
             _,_=fmt.Fprintf(os.Stderr,"migrate integration: %v\n",err)
+            return 1
+        }
+    }
+    if service=="identity" || service=="all" {
+        if err:=identity.Migrate(ctx,db);err!=nil{
+            _,_=fmt.Fprintf(os.Stderr,"migrate identity: %v\n",err)
             return 1
         }
     }
