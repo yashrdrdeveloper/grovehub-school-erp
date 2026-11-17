@@ -6,7 +6,6 @@ import (
 	publicimpl "grovehub/services/integration/internal/app/controller/connection/public/impl"
 	connectionprotected "grovehub/services/integration/internal/app/controller/connection/protected"
 	protectedimpl "grovehub/services/integration/internal/app/controller/connection/protected/impl"
-	connectionimpl "grovehub/services/integration/internal/app/controller/connection/impl"
 	providerpublic "grovehub/services/integration/internal/app/controller/provider/public"
 	providerimpl "grovehub/services/integration/internal/app/controller/provider/public/impl"
 	webhookrestricted "grovehub/services/integration/internal/app/controller/webhook/restricted"
@@ -17,10 +16,8 @@ import (
 
 // One underlying connection controller is projected into distinct tier interfaces.
 func (b *builder) newRoutes(connectionService connections.ConnectionService, providerService providers.ProviderService, push config.GmailPush) (connectionpublic.ConnectionController, connectionprotected.ConnectionController, providerpublic.ProviderController, webhookrestricted.WebhookController) {
-	connection := connectionimpl.NewConnectionController(connectionService, push, b.devAuth)
-
-	return publicimpl.New(connection),
-		protectedimpl.New(connection),
+	return publicimpl.New(connectionService),
+		protectedimpl.New(connectionService),
 		providerimpl.NewProviderController(providerService),
-		webhookimpl.New(connection)
+		webhookimpl.New(connectionService, push)
 }
