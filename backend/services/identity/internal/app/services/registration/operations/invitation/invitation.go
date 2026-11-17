@@ -14,6 +14,7 @@ import (
 
 	"grovehub/services/identity/internal/app/config"
 	"grovehub/services/identity/internal/app/entity"
+	registration "grovehub/services/identity/internal/app/services/registration"
 	invitationrepo "grovehub/services/identity/internal/app/repository/invitation"
 	passwordtokenrepo "grovehub/services/identity/internal/app/repository/passwordtoken"
 	secrets "grovehub/services/identity/internal/app/services/authentication/helpers"
@@ -34,7 +35,9 @@ type Encrypted struct {
 	Minutes int
 }
 
-func New(tokens passwordtokenrepo.Repository, mail invitationrepo.Repository, config config.Config) *Service {
+var _ registration.Service = (*Service)(nil)
+
+func New(tokens passwordtokenrepo.Repository, mail invitationrepo.Repository, config config.Config) registration.Service {
 	return &Service{Tokens: tokens, Mail: mail, Config: config}
 }
 

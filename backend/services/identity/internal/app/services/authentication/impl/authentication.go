@@ -23,7 +23,7 @@ import (
 	strategies "grovehub/services/identity/internal/app/services/authentication/strategies"
 	normal "grovehub/services/identity/internal/app/services/authentication/strategies/normal"
 	credential "grovehub/services/identity/internal/app/services/credential"
-	invitation "grovehub/services/identity/internal/app/services/registration/operations/invitation"
+	registration "grovehub/services/identity/internal/app/services/registration"
 )
 
 // @Service
@@ -32,7 +32,7 @@ type Service struct {
 	sessions sessionrepo.Repository
 	tokens tokenrepo.Repository
 	credential credential.Service
-	invitation *invitation.Service
+	invitation registration.Service
 	mapper accountmapper.Mapper
 	unit transaction.UnitOfWork
 	login strategies.LoginStrategy
@@ -41,7 +41,7 @@ type Service struct {
 
 var _ auth.Service = (*Service)(nil)
 
-func New(accounts accountrepo.Repository, sessions sessionrepo.Repository, tokens tokenrepo.Repository, credentials credential.Service, invitations *invitation.Service, mapper accountmapper.Mapper, unit transaction.UnitOfWork) auth.Service {
+func New(accounts accountrepo.Repository, sessions sessionrepo.Repository, tokens tokenrepo.Repository, credentials credential.Service, invitations registration.Service, mapper accountmapper.Mapper, unit transaction.UnitOfWork) auth.Service {
 	return &Service{
 		accounts: accounts,
 		sessions: sessions,

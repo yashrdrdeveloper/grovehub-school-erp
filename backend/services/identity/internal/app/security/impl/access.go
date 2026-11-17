@@ -1,4 +1,4 @@
-package verification
+package impl
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"time"
 
 	coregateway "grovehub/libs/core/gateway"
+	security "grovehub/services/identity/internal/app/security"
 	"grovehub/services/identity/internal/app/entity"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"
@@ -18,9 +19,9 @@ type Verifier struct {
 	adminIDs map[string]bool
 }
 
-var _ coregateway.AccessVerifier = (*Verifier)(nil)
+var _ security.AccessVerifier = (*Verifier)(nil)
 
-func New(accounts accountrepo.Repository, sessions sessionrepo.Repository, adminIDs map[string]bool) *Verifier {
+func New(accounts accountrepo.Repository, sessions sessionrepo.Repository, adminIDs map[string]bool) security.AccessVerifier {
 	return &Verifier{accounts: accounts, sessions: sessions, adminIDs: adminIDs}
 }
 

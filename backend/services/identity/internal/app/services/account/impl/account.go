@@ -23,7 +23,7 @@ import (
 	search "grovehub/services/identity/internal/app/services/account/operations/search"
 	secrets "grovehub/services/identity/internal/app/services/authentication/helpers"
 	credential "grovehub/services/identity/internal/app/services/credential"
-	invitation "grovehub/services/identity/internal/app/services/registration/operations/invitation"
+	registration "grovehub/services/identity/internal/app/services/registration"
 	accountvalidator "grovehub/services/identity/internal/app/validators/account"
 )
 
@@ -33,7 +33,7 @@ type Service struct {
 	tokens tokenrepo.Repository
 	sessions sessionrepo.Repository
 	credentials credential.Service
-	invitations *invitation.Service
+	invitations registration.Service
 	mapper accountmapper.Mapper
 	validator accountvalidator.Validator
 	unit transaction.UnitOfWork
@@ -44,7 +44,7 @@ type Service struct {
 
 var _ account.Service = (*Service)(nil)
 
-func New(accounts accountrepo.Repository, tokens tokenrepo.Repository, sessions sessionrepo.Repository, foundationClient foundation.Client, credentials credential.Service, invitations *invitation.Service, mapper accountmapper.Mapper, validator accountvalidator.Validator, unit transaction.UnitOfWork, events accountproducer.ChangedProducer) account.Service {
+func New(accounts accountrepo.Repository, tokens tokenrepo.Repository, sessions sessionrepo.Repository, foundationClient foundation.Client, credentials credential.Service, invitations registration.Service, mapper accountmapper.Mapper, validator accountvalidator.Validator, unit transaction.UnitOfWork, events accountproducer.ChangedProducer) account.Service {
 	return &Service{
 		accounts: accounts,
 		tokens: tokens,

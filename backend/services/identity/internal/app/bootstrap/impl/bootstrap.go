@@ -21,7 +21,8 @@ import (
 	authprotected "grovehub/services/identity/internal/app/controller/authentication/protected"
 	authpublic "grovehub/services/identity/internal/app/controller/authentication/public"
 	"grovehub/services/identity/internal/app/routes"
-	"grovehub/services/identity/internal/app/security/verification"
+	security "grovehub/services/identity/internal/app/security"
+	securityimpl "grovehub/services/identity/internal/app/security/impl"
 	accountservice "grovehub/services/identity/internal/app/services/account"
 	invitation "grovehub/services/identity/internal/app/services/registration/operations/invitation"
 	integrationclient "grovehub/services/integration/client/connection"
@@ -52,7 +53,7 @@ type runtime struct {
 	accountProtected accountprotected.AccountController
 	authPublic authpublic.AuthenticationController
 	authProtected authprotected.AuthenticationController
-	verifier *verification.Verifier
+	verifier security.AccessVerifier
 	accountService accountservice.Service
 	worker *invitation.Worker
 	stop context.CancelFunc
@@ -78,7 +79,7 @@ func (b *builder) Build() (bootstrap.Runtime, error) {
 	repositories := b.newRepository()
 	services := b.newServices(repositories, config)
 	publicAuth, protectedAuth, publicAccount, protectedAccount := b.newControllers(services)
-	verifier := verification.New(repositories.accounts, repositories.sessions, config.AdminIDs)
+	verifier := securityimpl.New(repositories.accounts, repositories.sessions, config.AdminIDs)
 
 	ctx, stop := context.WithCancel(context.Background())
 	module := &runtime{

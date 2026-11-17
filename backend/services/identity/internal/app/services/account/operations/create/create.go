@@ -19,7 +19,7 @@ import (
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	"grovehub/services/identity/internal/app/security/principal"
 	"grovehub/services/identity/internal/app/services/account/operations/create/flows"
-	invitation "grovehub/services/identity/internal/app/services/registration/operations/invitation"
+	registration "grovehub/services/identity/internal/app/services/registration"
 	validator "grovehub/services/identity/internal/app/validators/account"
 )
 
@@ -27,12 +27,12 @@ type Operation struct {
 	accounts accountrepo.Repository
 	foundation foundation.Client
 	validator validator.Validator
-	invitations *invitation.Service
+	invitations registration.Service
 	unit transaction.UnitOfWork
 	events accountproducer.ChangedProducer
 }
 
-func New(accounts accountrepo.Repository, foundationClient foundation.Client, validator validator.Validator, invitations *invitation.Service, unit transaction.UnitOfWork, events accountproducer.ChangedProducer) *Operation {
+func New(accounts accountrepo.Repository, foundationClient foundation.Client, validator validator.Validator, invitations registration.Service, unit transaction.UnitOfWork, events accountproducer.ChangedProducer) *Operation {
 	return &Operation{
 		accounts: accounts,
 		foundation: foundationClient,
