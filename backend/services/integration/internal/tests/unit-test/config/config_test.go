@@ -26,9 +26,9 @@ var _ = Describe("OAuth callback validation", func() {
 		provider, envName, uri string
 		valid                  bool
 	}{
-		{"gmail", "GROVEHUB_GMAIL_REDIRECT_URI", "https://example.test/integrations/connections/oauth/gmail/callback", true},
-		{"gmail", "GROVEHUB_GMAIL_REDIRECT_URI", "https://example.test/integrations/oauth/gmail/callback", false},
-		{"outlook", "GROVEHUB_OUTLOOK_REDIRECT_URI", "https://example.test/integrations/connections/oauth/outlook/callback", true},
+		{"gmail", "GROVEHUB_GMAIL_REDIRECT_URI", "https://example.test/integrations/public/connections/oauth/gmail/callback", true},
+		{"gmail", "GROVEHUB_GMAIL_REDIRECT_URI", "https://example.test/integrations/connections/oauth/gmail/callback", false},
+		{"outlook", "GROVEHUB_OUTLOOK_REDIRECT_URI", "https://example.test/integrations/public/connections/oauth/outlook/callback", true},
 		{"outlook", "GROVEHUB_OUTLOOK_REDIRECT_URI", "http://example.test/integrations/connections/oauth/outlook/callback", false},
 	}
 	for _, testCase := range cases {
