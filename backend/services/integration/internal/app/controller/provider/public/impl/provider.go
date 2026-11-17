@@ -4,7 +4,7 @@ import (
     "net/http"
 
     httpresponse "grovehub/libs/core/http/response"
-    controller controller "grovehub/services/integration/internal/app/controller/provider/public"
+    controller "grovehub/services/integration/internal/app/controller/provider/public"
     controllerhelpers "grovehub/services/integration/internal/app/controller/helpers"
     providerservice "grovehub/services/integration/internal/app/services/provider"
 )
