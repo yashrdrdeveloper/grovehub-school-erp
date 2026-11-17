@@ -24,6 +24,7 @@ type InvitationQueue interface {
 // rotate refresh credentials and prevent issuance for inactive accounts.
 type SessionIssuer interface {
     IssueLogin(ctx context.Context, account entity.Account) (identityresponse.Login, error)
+    Refresh(ctx context.Context, token string) (identityresponse.Login, error)
 }
 
 // AuthDependencies are mandatory for the corresponding live operations.
