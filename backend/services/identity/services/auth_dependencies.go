@@ -25,6 +25,7 @@ type InvitationQueue interface {
 type SessionIssuer interface {
     IssueLogin(ctx context.Context, account entity.Account) (identityresponse.Login, error)
     Refresh(ctx context.Context, token string) (identityresponse.Login, error)
+    RevokeAccess(ctx context.Context, accountID entity.AccountId, token string) error
 }
 
 // AuthDependencies are mandatory for the corresponding live operations.
