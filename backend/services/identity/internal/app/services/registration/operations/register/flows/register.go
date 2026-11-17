@@ -5,7 +5,7 @@ import(
  "grovehub/services/identity/internal/app/security/principal"
  foundation "grovehub/services/foundation/client/person"
 )
-type Create struct{
+type Register struct{
  Request dto.Create
  IdempotencyKey string
  RequestHash string

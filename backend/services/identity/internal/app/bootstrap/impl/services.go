@@ -10,6 +10,7 @@ import (
 	authimpl "grovehub/services/identity/internal/app/services/authentication/impl"
 	credentialimpl "grovehub/services/identity/internal/app/services/credential/impl"
 	invitation "grovehub/services/identity/internal/app/services/registration/operations/invitation"
+	registrationimpl "grovehub/services/identity/internal/app/services/registration/impl"
 )
 
 type serviceGraph struct {
@@ -22,14 +23,14 @@ func (b *builder) newServices(repositories repositories, cfg config.Config) serv
 	credentials := credentialimpl.New(repositories.credentials)
 	invitations := invitation.New(repositories.tokens, repositories.mail, cfg)
 	accountEvents := b.newEvents()
+	registrations := registrationimpl.New(repositories.accounts, b.foundation, validator.New(), invitations, repositories.unit, accountEvents)
 
 	accounts := accountimpl.New(
 		repositories.accounts,
 		repositories.tokens,
 		repositories.sessions,
-		b.foundation,
 		credentials,
-		invitations,
+		registrations,
 		mapper.New(),
 		validator.New(),
 		repositories.unit,

@@ -1,4 +1,4 @@
-package create
+package register
 
 import (
 	"context"
@@ -18,7 +18,7 @@ import (
 	accountproducer "grovehub/services/identity/internal/app/events/producers/account"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	"grovehub/services/identity/internal/app/security/principal"
-	"grovehub/services/identity/internal/app/services/account/operations/create/flows"
+	"grovehub/services/identity/internal/app/services/registration/operations/register/flows"
 	registration "grovehub/services/identity/internal/app/services/registration"
 	validator "grovehub/services/identity/internal/app/validators/account"
 )
@@ -27,17 +27,17 @@ type Operation interface {
 	Execute(ctx context.Context, request accountdto.Create, key string) (accountdto.CreateResult, error)
 }
 
-type CreateOperation struct {
+type RegisterOperation struct {
 	accounts accountrepo.Repository
 	foundation foundation.Client
 	validator validator.Validator
-	invitations registration.Service
+	invitations registration.InvitationSender
 	unit transaction.UnitOfWork
 	events accountproducer.ChangedProducer
 }
 
-func New(accounts accountrepo.Repository, foundationClient foundation.Client, validator validator.Validator, invitations registration.Service, unit transaction.UnitOfWork, events accountproducer.ChangedProducer) Operation {
-	return &CreateOperation{
+func New(accounts accountrepo.Repository, foundationClient foundation.Client, validator validator.Validator, invitations registration.InvitationSender, unit transaction.UnitOfWork, events accountproducer.ChangedProducer) Operation {
+	return &RegisterOperation{
 		accounts: accounts,
 		foundation: foundationClient,
 		validator: validator,
@@ -48,11 +48,11 @@ func New(accounts accountrepo.Repository, foundationClient foundation.Client, va
 }
 
 // @ChainOfResponsibility
-func (operation *CreateOperation) Execute(ctx context.Context, request accountdto.Create, key string) (accountdto.CreateResult, error) {
-	flow := &flows.Create{Request: request, IdempotencyKey: key}
+func (operation *RegisterOperation) Execute(ctx context.Context, request accountdto.Create, key string) (accountdto.CreateResult, error) {
+	flow := &flows.Register{Request: request, IdempotencyKey: key}
 
-	wrap := func(step func(context.Context, *flows.Create) error) chain.Handler[flows.Create, accountdto.CreateResult] {
-		return func(ctx context.Context, flow *flows.Create) chain.Outcome[accountdto.CreateResult] {
+	wrap := func(step func(context.Context, *flows.Register) error) chain.Handler[flows.Register, accountdto.CreateResult] {
+		return func(ctx context.Context, flow *flows.Register) chain.Outcome[accountdto.CreateResult] {
 			if err := step(ctx, flow); err != nil {
 				return chain.Fail[accountdto.CreateResult](err)
 			}
@@ -68,7 +68,7 @@ func (operation *CreateOperation) Execute(ctx context.Context, request accountdt
 			flow,
 			wrap(operation.authorize),
 			wrap(operation.validate),
-			func(ctx context.Context, flow *flows.Create) chain.Outcome[accountdto.CreateResult] {
+			func(ctx context.Context, flow *flows.Register) chain.Outcome[accountdto.CreateResult] {
 				if err := operation.replay(ctx, flow); err != nil {
 					return chain.Fail[accountdto.CreateResult](err)
 				}
@@ -78,7 +78,7 @@ func (operation *CreateOperation) Execute(ctx context.Context, request accountdt
 				return chain.Next[accountdto.CreateResult]()
 			},
 			wrap(operation.resolve),
-			func(ctx context.Context, flow *flows.Create) chain.Outcome[accountdto.CreateResult] {
+			func(ctx context.Context, flow *flows.Register) chain.Outcome[accountdto.CreateResult] {
 				if err := operation.persist(ctx, flow); err != nil {
 					return chain.Fail[accountdto.CreateResult](err)
 				}
@@ -90,7 +90,7 @@ func (operation *CreateOperation) Execute(ctx context.Context, request accountdt
 	return response, err
 }
 
-func (operation *CreateOperation) authorize(ctx context.Context, flow *flows.Create) error {
+func (operation *RegisterOperation) authorize(ctx context.Context, flow *flows.Register) error {
 	actor, err := principal.RequireAdmin(ctx)
 	if err != nil {
 		return err
@@ -102,7 +102,7 @@ func (operation *CreateOperation) authorize(ctx context.Context, flow *flows.Cre
 	return nil
 }
 
-func (operation *CreateOperation) validate(ctx context.Context, flow *flows.Create) error {
+func (operation *RegisterOperation) validate(ctx context.Context, flow *flows.Register) error {
 	request, err := operation.validator.NormalizeCreate(flow.Request)
 	if err != nil {
 		return err
@@ -116,7 +116,7 @@ func (operation *CreateOperation) validate(ctx context.Context, flow *flows.Crea
 	return err
 }
 
-func (operation *CreateOperation) replay(ctx context.Context, flow *flows.Create) error {
+func (operation *RegisterOperation) replay(ctx context.Context, flow *flows.Register) error {
 	current, err := operation.accounts.FindByIdempotencyKey(ctx, flow.IdempotencyKey)
 	if errors.Is(err, accountrepo.ErrNotFound) {
 		return nil
@@ -139,7 +139,7 @@ func (operation *CreateOperation) replay(ctx context.Context, flow *flows.Create
 	return nil
 }
 
-func (operation *CreateOperation) resolve(ctx context.Context, flow *flows.Create) error {
+func (operation *RegisterOperation) resolve(ctx context.Context, flow *flows.Register) error {
 	request := flow.Request
 	searchRequest := coresearch.Request{
 		Filters: []coresearch.Filter{
@@ -205,7 +205,7 @@ func (operation *CreateOperation) resolve(ctx context.Context, flow *flows.Creat
 	return err
 }
 
-func (operation *CreateOperation) persist(ctx context.Context, flow *flows.Create) error {
+func (operation *RegisterOperation) persist(ctx context.Context, flow *flows.Register) error {
 	_, err := operation.accounts.FindByPersonGID(ctx, flow.Person.GID)
 	if err == nil {
 		return accountrepo.ErrConflict

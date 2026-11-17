@@ -35,9 +35,9 @@ type Encrypted struct {
 	Minutes int
 }
 
-var _ registration.Service = (*Service)(nil)
+var _ registration.InvitationSender = (*Service)(nil)
 
-func New(tokens passwordtokenrepo.Repository, mail invitationrepo.Repository, config config.Config) registration.Service {
+func New(tokens passwordtokenrepo.Repository, mail invitationrepo.Repository, config config.Config) registration.InvitationSender {
 	return &Service{Tokens: tokens, Mail: mail, Config: config}
 }
 

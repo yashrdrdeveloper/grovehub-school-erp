@@ -56,7 +56,7 @@ type Service struct {
 
 var _ auth.Service = (*Service)(nil)
 
-func New(accounts accountrepo.Repository, sessions sessionrepo.Repository, tokens tokenrepo.Repository, credentials credential.Service, invitations registration.Service, mapper accountmapper.Mapper, unit transaction.UnitOfWork) auth.Service {
+func New(accounts accountrepo.Repository, sessions sessionrepo.Repository, tokens tokenrepo.Repository, credentials credential.Service, invitations registration.InvitationSender, mapper accountmapper.Mapper, unit transaction.UnitOfWork) auth.Service {
 	return &Service{
 		login: normal.New(accounts, sessions, credentials),
 		refresh: refresh.New(accounts, sessions),

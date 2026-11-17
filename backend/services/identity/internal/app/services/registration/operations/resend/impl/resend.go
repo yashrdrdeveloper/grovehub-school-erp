@@ -8,18 +8,18 @@ import (
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	registration "grovehub/services/identity/internal/app/services/registration"
 	transaction "grovehub/libs/core/database/transaction"
-	resend "grovehub/services/identity/internal/app/services/account/operations/resend"
+	resend "grovehub/services/identity/internal/app/services/registration/operations/resend"
 )
 
 type Service struct {
 	accounts accountrepo.Repository
-	invitations registration.Service
+	invitations registration.InvitationSender
 	unit transaction.UnitOfWork
 }
 
 var _ resend.Operation = (*Service)(nil)
 
-func New(accounts accountrepo.Repository, invitations registration.Service, unit transaction.UnitOfWork) resend.Operation {
+func New(accounts accountrepo.Repository, invitations registration.InvitationSender, unit transaction.UnitOfWork) resend.Operation {
 	return &Service{accounts: accounts, invitations: invitations, unit: unit}
 }
 

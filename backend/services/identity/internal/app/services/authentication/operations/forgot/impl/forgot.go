@@ -13,7 +13,7 @@ import (
 
 type Service struct {
 	accounts accountrepo.Repository
-	invitation registration.Service
+	invitation registration.InvitationSender
 	unit transaction.UnitOfWork
 }
 
