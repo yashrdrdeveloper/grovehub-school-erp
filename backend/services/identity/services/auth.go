@@ -9,4 +9,5 @@ import (
 
 type AuthService interface {
 	Register(ctx context.Context, request identityrequest.RegisterRequest) (identityresponse.Register, error)
+	Login(ctx context.Context, request identityrequest.LoginRequest) (identityresponse.Login, error)
 }
