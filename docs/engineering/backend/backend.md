@@ -26,7 +26,7 @@ Use a **resource-first layout inside a stable technical layer**. Place only fold
 
 ```text
 backend/
-├── launcher/                                 # process composition / HTTP server boundary
+├── launcher/                                 # process composition + gateway access policy
 ├── libs/
 │   ├── core/                                 # domain-neutral reusable capabilities
 │   └── <technical-library>/                  # separately owned capability contracts
@@ -60,7 +60,7 @@ backend/
         │   │   ├── controller/<resource>/
         │   │   │   ├── <access>/<resource>.go # @Routes / method contract
         │   │   │   └── <access>/impl/<resource>.go
-        │   │   ├── routes/http.go            # HTTP method registration, if present
+        │   │   ├── routes/http.go            # compose GENERATED annotated route groups
         │   │   ├── validators/<resource>/
         │   │   │   ├── <resource>.go          # typed rule interface
         │   │   │   ├── impl/<resource>.go
@@ -335,3 +335,15 @@ A change is complete only when a reviewer can answer **yes** to all applicable q
 | Core and technical library design | [libraries.md](libraries.md) |
 
 A service's or library's `docs/engineering/README.md` must link here and list its **actual deviations/implementations**. A service's `docs/product/README.md` must map user-visible use cases to reproducible API steps. There is no reason to put product examples in this generic master.
+
+## Gateway boundary and route annotations
+
+The process launcher owns one access-policy gateway. Controller packages declare `@GET`, `@POST`, `@PATCH`, and other method/path annotations. Each service's `routes/http.go` MUST compose generated typed registrations, not duplicate the controller's paths using handwritten `mux.Handle` calls. The route generator determines its tier from `controller/<resource>/{public,protected,restricted}`.
+
+The external gateway classifies the **matched ServeMux route pattern**, then enforces the public/protected/restricted policy before asking ServeMux to dispatch. Raw request paths, untrusted forwarding headers, and directory names are NOT authentication evidence. Paths missing a recognized tier fail closed, aside from explicitly allowlisted health endpoints. The service must still enforce resource permissions and tenant ownership inside operations.
+
+The in-process gateway has a separate typed invocation interface. A direct `@Proxy` service client does not pass through HTTP middleware and therefore MUST enforce authorization at its own boundary. Restricted external routes require a workload credential verifier, not a user/browser cookie. Maintain independent verifiers for external providers such as signed webhooks.
+
+Gateway implementation folders follow the same SRP convention: `launcher/services/gateway/operations/{external,internal}`. Shared principal contracts belong in `libs/core/gateway`; domain-specific credential verification remains owned by the authentication service.
+
+Use `gofmt` on all changed Go source files before a change is merged. Keep imports grouped, consistent tab indentation, one-line function signatures, and multiline bodies for control flow. Do not accept dense semicolon-separated statements as a coding convention.

@@ -19,12 +19,12 @@ services/integration/
     │   │   └── workers.go                  # watch renewal lifecycle
     │   ├── config/{config.go,impl/config.go}
     │   ├── controller/
-    │   │   ├── connection.go               # @Routes /integrations
-    │   │   ├── provider.go                 # @Routes /integrations
-    │   │   ├── connection/impl/
-    │   │   ├── provider/impl/
-    │   │   ├── helpers/errors.go
-    │   │   └── impl/controller.go
+    │   │   ├── connection/{public,protected}/
+    │   │   │   └── impl/                  # tier-specific adapters
+    │   │   ├── connection/impl/           # shared Connection logic
+    │   │   ├── provider/public/impl/     # public catalog
+    │   │   ├── webhook/restricted/impl/  # verified Gmail push
+    │   │   └── helpers/errors.go
     │   ├── dto/{connection,provider}/
     │   ├── entity/                         # connection, webhook and test records
     │   ├── repository/{connection,watch}/
@@ -57,7 +57,7 @@ Only real folders are included; a public `config/` is not permitted. Public cons
 
 ## 3. API and authorization
 
-Routes remain under `/integrations`. The generated typed client currently delegates through an in-process service `@Proxy`; this is a trusted internal call and **does not automatically execute the external HTTP middleware**. Connection HTTP routes expect a verified principal/owner; provider discovery can be public where policy permits. A loopback-only developer principal is a temporary development mode, never production authorization.
+Routes are generated from annotated resource controller contracts and now use `/integrations/public/...`, `/integrations/protected/...`, and `/integrations/restricted/...` tiers. This is a **breaking URL change**: update clients, callback allowlists, webhook subscriptions, API references and reverse-proxy rules before deployment. OAuth redirect URI validation expects `/integrations/public/connections/oauth/{provider}/callback`. The generated typed client currently delegates through an in-process service `@Proxy`; this is a trusted internal call and **does not automatically execute the external HTTP middleware**. Connection HTTP routes expect a verified principal/owner; provider discovery can be public where policy permits. The launcher now starts Integration with its developer-authentication bypass disabled. Protected routes receive a verified actor GID and tenant from the gateway; restricted Gmail webhook routes require a validated Pub/Sub workload token.
 
 ## 4. Database ownership and migrations
 
@@ -70,3 +70,7 @@ Bootstrap loads validated private config, constructs provider adapters/registrie
 ## 6. Verification
 
 Tests under `internal/tests/unit-test` validate provider factory/registry, controller auth, action/test/watch behavior, OAuth and remote failures, credential encryption, and change-producer error propagation. Updating an external adapter must preserve the public Integration OpenAPI and test each provider independently.
+
+## External-provider Strategy
+
+Gmail and Outlook remain independently owned adapters under `externalService/mail/{gmail,outlook}`. Each registers a concrete `@Provider` and `@Strategy` implementation of the existing `mailprovider.Strategy` contract. The provider registry, OAuth credential handling and action DTOs remain Integration-owned; Identity must only call its typed public Integration client.
