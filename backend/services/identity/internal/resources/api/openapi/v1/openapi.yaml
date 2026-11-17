@@ -1,0 +1,91 @@
+openapi: 3.1.0
+info:
+  title: GrooveHub Identity API
+  version: 1.0.0
+  description: Account lifecycle, password recovery and cookie-session authentication.
+servers:
+  - url: /
+paths:
+  /identity/public/auth/login:
+    post:
+      operationId: identityLogin
+      responses: {'200': {description: Access and refresh cookies issued}}
+  /identity/public/auth/refresh:
+    post:
+      operationId: identityRefresh
+      responses: {'200': {description: Refresh cookies rotated}}
+  /identity/public/auth/forgot-password:
+    post:
+      operationId: identityForgotPassword
+      responses: {'202': {description: Accepted without account enumeration}}
+  /identity/public/auth/recovery/exchange:
+    post:
+      operationId: identityRecoveryExchange
+      responses: {'200': {description: One-time recovery grant cookie issued}}
+  /identity/public/auth/reset-password:
+    post:
+      operationId: identityResetPassword
+      responses: {'200': {description: Password reset and sessions revoked}}
+  /identity/public/auth/invitations/exchange:
+    post:
+      operationId: identityInvitationExchange
+      responses: {'200': {description: One-time setup grant cookie issued}}
+  /identity/public/accounts/setup:
+    post:
+      operationId: identitySetupAccount
+      responses: {'200': {description: Account setup completed}}
+  /identity/protected/auth/logout:
+    post:
+      operationId: identityLogout
+      responses: {'200': {description: Current session revoked}}
+  /identity/protected/auth/logout-all:
+    post:
+      operationId: identityLogoutAll
+      responses: {'200': {description: All sessions revoked}}
+  /identity/protected/auth/change-password:
+    post:
+      operationId: identityChangePassword
+      responses: {'200': {description: Password changed}}
+  /identity/protected/auth/sessions:
+    get:
+      operationId: identityListSessions
+      responses: {'200': {description: Active sessions}}
+  /identity/protected/auth/sessions/{sessionId}:
+    delete:
+      operationId: identityRevokeSession
+      responses: {'200': {description: Session revoked}}
+  /identity/protected/auth/me:
+    get:
+      operationId: identityMe
+      responses: {'200': {description: Current account}}
+  /identity/protected/accounts:
+    post:
+      operationId: identityCreateAccount
+      responses: {'201': {description: Pending account invited}}
+  /identity/protected/accounts/search:
+    post:
+      operationId: identitySearchAccounts
+      responses: {'200': {description: Cursor-paginated accounts}}
+  /identity/protected/accounts/{accountId}:
+    get:
+      operationId: identityGetAccount
+      responses: {'200': {description: Account}}
+    patch:
+      operationId: identityUpdateAccount
+      responses: {'200': {description: Account updated}}
+  /identity/protected/accounts/{accountId}/suspend:
+    patch:
+      operationId: identitySuspendAccount
+      responses: {'200': {description: Account suspended}}
+  /identity/protected/accounts/{accountId}/activate:
+    patch:
+      operationId: identityActivateAccount
+      responses: {'200': {description: Suspended account activated}}
+  /identity/protected/accounts/{accountId}/deactivate:
+    patch:
+      operationId: identityDeactivateAccount
+      responses: {'200': {description: Account deactivated}}
+  /identity/protected/accounts/{accountId}/resend-invitation:
+    post:
+      operationId: identityResendInvitation
+      responses: {'202': {description: Setup mail queued}}

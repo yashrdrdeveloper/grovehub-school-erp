@@ -1,0 +1,8 @@
+package account
+type Create struct {
+ Person struct {FirstName string `json:"firstName"`; MiddleName *string `json:"middleName"`;LastName string `json:"lastName"`} `json:"person"`
+ Email string `json:"email"`
+ PhoneNumber string `json:"phoneNumber,omitempty"`
+}
+type Update struct {Username *string `json:"username"`}
+type Setup struct {Username string `json:"username"`;Password string `json:"password"`}
