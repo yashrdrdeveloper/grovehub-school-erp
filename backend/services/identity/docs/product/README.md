@@ -1,23 +1,5 @@
-# Identity — Product and API Workflows
+# Identity — Product API workflows
 
-Identity currently documents an **admin-invited registration flow** and **public credential authentication**.
+The canonical Identity API matrix and example payloads are in [api_workflows.md](api_workflows.md).
 
-- [Protected registration and activation](registration.md)
-- [Invitation delivery, token redemption and password setup](password_setup.md)
-- [Public login and session tokens](login.md)
-
-## API surface
-
-| Method | Path | Actor |
-|---|---|---|
-| POST | `/identity/protected/auth/register` | Verified and explicitly authorized administrator |
-| POST | `/identity/public/auth/set-password` | Holder of valid single-use setup token |
-| POST | `/identity/public/auth/login` | Anonymous user submitting email and password |
-| POST | `/identity/public/auth/refresh` | Holder of valid, unexpired refresh credential |
-| POST | `/identity/protected/auth/logout` | Verified ACTIVE session |
-
-All external responses use the existing REST envelope; examples show data payloads rather than a captured wire response.
-
-## Not yet available
-
-Logout-all, admin resend invitation, password reset, MFA, OAuth2/OIDC, SAML and complete RBAC are not yet exposed as supported endpoints. Production rollout requires migration, mail-sandbox and concurrency verification.
+This service supports admin-invited accounts linked to Foundation PersonGID, secure first-time setup, public login and recovery, session revocation, and tenant-scoped Account search using the same cursor/search contract as Foundation. Use the API contract for exact endpoint names; no public self-registration is available.
