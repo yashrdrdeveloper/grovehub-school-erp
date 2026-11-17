@@ -1,6 +1,7 @@
 package routes
 import(
  "net/http"
+ "time"
  protectedAuth "grovehub/services/identity/internal/app/controller/authentication/protected"
  publicAuth "grovehub/services/identity/internal/app/controller/authentication/public"
  protectedAccount "grovehub/services/identity/internal/app/controller/account/protected"
@@ -8,14 +9,15 @@ import(
  "grovehub/services/identity/internal/app/middleware"
 )
 func RegisterHTTP(mux *http.ServeMux,authPublic publicAuth.Controller,authProtected protectedAuth.Controller,accountPublic publicAccount.Controller,accountProtected protectedAccount.Controller,m middleware.Authentication){
+ limiter:=middleware.NewLimiter()
  public:=m.Origin
  tokenProtected:=func(h http.Handler)http.Handler{return m.Origin(m.CSRF(h))}
  protected:=m.Protected
- mux.Handle("POST /identity/public/auth/login",public(http.HandlerFunc(authPublic.Login)))
- mux.Handle("POST /identity/public/auth/forgot-password",public(http.HandlerFunc(authPublic.ForgotPassword)))
- mux.Handle("POST /identity/public/auth/recovery/exchange",public(http.HandlerFunc(authPublic.RecoveryExchange)))
- mux.Handle("POST /identity/public/auth/invitations/exchange",public(http.HandlerFunc(authPublic.InvitationExchange)))
- mux.Handle("POST /identity/public/auth/refresh",tokenProtected(http.HandlerFunc(authPublic.Refresh)))
+ mux.Handle("POST /identity/public/auth/login",public(limiter.Guard("Login",12,time.Minute,http.HandlerFunc(authPublic.Login))))
+ mux.Handle("POST /identity/public/auth/forgot-password",public(limiter.Guard("ForgotPassword",5,time.Minute,http.HandlerFunc(authPublic.ForgotPassword))))
+ mux.Handle("POST /identity/public/auth/recovery/exchange",public(limiter.Guard("RecoveryExchange",8,time.Minute,http.HandlerFunc(authPublic.RecoveryExchange))))
+ mux.Handle("POST /identity/public/auth/invitations/exchange",public(limiter.Guard("InvitationExchange",8,time.Minute,http.HandlerFunc(authPublic.InvitationExchange))))
+ mux.Handle("POST /identity/public/auth/refresh",tokenProtected(limiter.Guard("Refresh",30,time.Minute,http.HandlerFunc(authPublic.Refresh))))
  mux.Handle("POST /identity/public/auth/reset-password",tokenProtected(http.HandlerFunc(authPublic.ResetPassword)))
  mux.Handle("POST /identity/public/accounts/setup",tokenProtected(http.HandlerFunc(accountPublic.Setup)))
  mux.Handle("POST /identity/protected/auth/logout",protected(http.HandlerFunc(authProtected.Logout)))
