@@ -16,3 +16,5 @@ type PasswordSetupMail struct {
     SentAt *time.Time `gorm:"column:sent_at"`
     CreatedAt time.Time `gorm:"column:created_at;not null"`
 }
+
+func (PasswordSetupMail) TableName() string { return "identity.password_setup_mail" }
