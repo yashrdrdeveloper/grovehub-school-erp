@@ -90,3 +90,16 @@ func (issuer *SessionIssuer) Refresh(ctx context.Context, rawToken string) (iden
         ExpiresIn: 900,
     }, nil
 }
+
+func (issuer *SessionIssuer) RevokeAccess(ctx context.Context, accountID entity.AccountId, rawToken string) error {
+    secret, err := base64.RawURLEncoding.DecodeString(rawToken)
+    if err != nil || len(secret) != 32 { return errors.New("invalid access credential") }
+    digest := sha256.Sum256(secret)
+    now := time.Now().UTC()
+    result := issuer.db.WithContext(ctx).Model(&entity.Session{}).
+        Where("account_id = ? AND access_hash = ? AND revoked_at IS NULL", accountID, hex.EncodeToString(digest[:])).
+        Updates(map[string]any{"revoked_at": now, "updated_at": now})
+    if result.Error != nil { return result.Error }
+    if result.RowsAffected == 0 { return errors.New("session is not active") }
+    return nil
+}
