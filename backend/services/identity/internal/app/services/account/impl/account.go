@@ -33,7 +33,7 @@ import (
 
 // @Service
 type Service struct {
-	create *create.Operation
+	create create.Operation
 	search search.Operation
 	get get.Operation
 	update update.Operation

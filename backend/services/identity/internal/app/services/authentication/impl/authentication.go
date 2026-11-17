@@ -41,7 +41,7 @@ import (
 // @Service
 type Service struct {
 	login strategies.LoginStrategy
-	refresh *refresh.Operation
+	refresh refresh.Operation
 	forgot forgot.Operation
 	exchange exchange.Operation
 	resetpassword resetpassword.Operation

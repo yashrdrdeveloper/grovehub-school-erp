@@ -14,7 +14,7 @@ import (
 
 // @Strategy
 type Strategy struct {
-	login *login.Operation
+	login login.Operation
 }
 
 var _ strategies.LoginStrategy = (*Strategy)(nil)

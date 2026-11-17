@@ -13,16 +13,20 @@ import (
 	secrets "grovehub/services/identity/internal/app/services/authentication/helpers"
 )
 
-type Operation struct {
+type Operation interface {
+	Execute(ctx context.Context, token string) (auth.RefreshResult, error)
+}
+
+type RefreshOperation struct {
 	accounts accountrepo.Repository
 	sessions sessionrepo.Repository
 }
 
-func New(accounts accountrepo.Repository, sessions sessionrepo.Repository) *Operation {
-	return &Operation{accounts: accounts, sessions: sessions}
+func New(accounts accountrepo.Repository, sessions sessionrepo.Repository) Operation {
+	return &RefreshOperation{accounts: accounts, sessions: sessions}
 }
 
-func (operation *Operation) Execute(ctx context.Context, token string) (auth.RefreshResult, error) {
+func (operation *RefreshOperation) Execute(ctx context.Context, token string) (auth.RefreshResult, error) {
 	hash, err := secrets.Digest(token, 48)
 	if err != nil {
 		return auth.RefreshResult{}, errors.New("invalid refresh token")

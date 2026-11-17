@@ -16,17 +16,21 @@ import (
 	credential "grovehub/services/identity/internal/app/services/credential"
 )
 
-type Operation struct {
+type Operation interface {
+	Execute(ctx context.Context, input authdto.Login, userAgent string) (auth.SessionResult, error)
+}
+
+type LoginOperation struct {
 	accounts accountrepo.Repository
 	sessions sessionrepo.Repository
 	credentials credential.Service
 }
 
-func New(accounts accountrepo.Repository, sessions sessionrepo.Repository, credentials credential.Service) *Operation {
-	return &Operation{accounts: accounts, sessions: sessions, credentials: credentials}
+func New(accounts accountrepo.Repository, sessions sessionrepo.Repository, credentials credential.Service) Operation {
+	return &LoginOperation{accounts: accounts, sessions: sessions, credentials: credentials}
 }
 
-func (operation *Operation) Execute(ctx context.Context, input authdto.Login, userAgent string) (auth.SessionResult, error) {
+func (operation *LoginOperation) Execute(ctx context.Context, input authdto.Login, userAgent string) (auth.SessionResult, error) {
 	identifier := strings.ToLower(strings.TrimSpace(input.Identifier))
 	if identifier == "" || input.Password == "" || !strings.Contains(identifier, "@") {
 		return auth.SessionResult{}, errors.New("invalid credentials")
