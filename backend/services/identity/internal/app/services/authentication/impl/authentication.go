@@ -5,7 +5,6 @@ import(
  "strings"
  "time"
  "github.com/google/uuid"
- coreid "grovehub/libs/core/id"
  tx "grovehub/libs/core/database/transaction"
  accountdto "grovehub/services/identity/internal/app/dto/account"
  authdto "grovehub/services/identity/internal/app/dto/authentication"
@@ -19,38 +18,14 @@ import(
  secrets "grovehub/services/identity/internal/app/services/authentication/helpers"
  credential "grovehub/services/identity/internal/app/services/credential"
  invitation "grovehub/services/identity/internal/app/services/registration/operations/invitation"
+ loginop "grovehub/services/identity/internal/app/services/authentication/operations/login"
+ refreshop "grovehub/services/identity/internal/app/services/authentication/operations/refresh"
 )
-type Service struct{accounts accountrepo.Repository;sessions sessionrepo.Repository;tokens tokenrepo.Repository;credential credential.Service;invitation *invitation.Service;mapper accountmapper.Mapper;unit tx.UnitOfWork}
-func New(a accountrepo.Repository,s sessionrepo.Repository,t tokenrepo.Repository,c credential.Service,i *invitation.Service,m accountmapper.Mapper,u tx.UnitOfWork)contract.Service{return &Service{accounts:a,sessions:s,tokens:t,credential:c,invitation:i,mapper:m,unit:u}}
-func(s *Service)Login(ctx context.Context,input authdto.Login,userAgent string)(contract.SessionResult,error){
- identifier:=strings.ToLower(strings.TrimSpace(input.Identifier))
- if identifier==""||input.Password==""{return contract.SessionResult{},errors.New("invalid credentials")}
- var a entity.Account
- var err error
- if strings.Contains(identifier,"@"){a,err=s.accounts.FindByEmail(ctx,identifier)}else{a,err=s.accounts.FindByUsername(ctx,identifier)}
- if err!=nil||a.Status!=entity.Active{return contract.SessionResult{},errors.New("invalid credentials")}
- ok,err:=s.credential.Verify(ctx,a.AccountID,input.Password);if err!=nil||!ok{return contract.SessionResult{},errors.New("invalid credentials")}
- access,err:=secrets.NewSecret(32);if err!=nil{return contract.SessionResult{},err}
- refresh,err:=secrets.NewSecret(48);if err!=nil{return contract.SessionResult{},err}
- ah,_:=secrets.Digest(access,32);rh,_:=secrets.Digest(refresh,48)
- id,err:=coreid.NewUUIDv7();if err!=nil{return contract.SessionResult{},err}
- now:=time.Now().UTC()
- session:=entity.Session{SessionID:id,AccountID:a.AccountID,AccessHash:ah,RefreshHash:rh,AccessExpiresAt:now.Add(15*time.Minute),RefreshExpiresAt:now.Add(30*24*time.Hour),ReauthenticatedAt:&now,UserAgent:truncate(userAgent,255),CreatedAt:now,UpdatedAt:now}
- if err=s.sessions.Create(ctx,session);err!=nil{return contract.SessionResult{},err}
- return contract.SessionResult{Data:authdto.LoginResult{AccountID:a.AccountID,PersonGID:a.PersonGID,SessionID:id,ExpiresIn:900,RequiresSetup:false},Cookies:contract.Cookies{Access:access,Refresh:refresh}},nil
-}
+type Service struct{accounts accountrepo.Repository;sessions sessionrepo.Repository;tokens tokenrepo.Repository;credential credential.Service;invitation *invitation.Service;mapper accountmapper.Mapper;unit tx.UnitOfWork;login *loginop.Operation;refresh *refreshop.Operation}
+func New(a accountrepo.Repository,s sessionrepo.Repository,t tokenrepo.Repository,c credential.Service,i *invitation.Service,m accountmapper.Mapper,u tx.UnitOfWork)contract.Service{return &Service{accounts:a,sessions:s,tokens:t,credential:c,invitation:i,mapper:m,unit:u,login:loginop.New(a,s,c),refresh:refreshop.New(a,s)}}
+
 func truncate(s string,n int)string{if len(s)>n{return s[:n]};return s}
-func(s *Service)Refresh(ctx context.Context,old string)(contract.RefreshResult,error){
- hash,err:=secrets.Digest(old,48);if err!=nil{return contract.RefreshResult{},errors.New("invalid refresh token")}
- existing,err:=s.sessions.FindRefresh(ctx,hash,time.Now().UTC());if err!=nil{return contract.RefreshResult{},errors.New("invalid refresh token")}
- account,err:=s.accounts.FindByID(ctx,existing.AccountID);if err!=nil||account.Status!=entity.Active{return contract.RefreshResult{},errors.New("invalid refresh token")}
- access,err:=secrets.NewSecret(32);if err!=nil{return contract.RefreshResult{},err}
- refresh,err:=secrets.NewSecret(48);if err!=nil{return contract.RefreshResult{},err}
- now:=time.Now().UTC();ah,_:=secrets.Digest(access,32);rh,_:=secrets.Digest(refresh,48)
- updated:=existing;updated.AccessHash=ah;updated.RefreshHash=rh;updated.AccessExpiresAt=now.Add(15*time.Minute);updated.UpdatedAt=now
- if err=s.sessions.Rotate(ctx,updated,hash);err!=nil{return contract.RefreshResult{},errors.New("invalid refresh token")}
- return contract.RefreshResult{Data:authdto.RefreshResult{SessionID:existing.SessionID,ExpiresIn:900,Refreshed:true},Cookies:contract.Cookies{Access:access,Refresh:refresh}},nil
-}
+
 func(s *Service)Forgot(ctx context.Context,email string)error{
  email=strings.ToLower(strings.TrimSpace(email));if !strings.Contains(email,"@"){return nil}
  a,err:=s.accounts.FindByEmail(ctx,email);if err!=nil||a.Status!=entity.Active{return nil}
@@ -118,3 +93,6 @@ func(s *Service)Me(ctx context.Context)(accountdto.Account,error){
  a,err:=s.accounts.FindByID(ctx,p.AccountID);if err!=nil{return accountdto.Account{},err}
  return s.mapper.ToResponse(a),nil
 }
+
+func(s *Service)Login(ctx context.Context,input authdto.Login,agent string)(contract.SessionResult,error){return s.login.Execute(ctx,input,agent)}
+func(s *Service)Refresh(ctx context.Context,token string)(contract.RefreshResult,error){return s.refresh.Execute(ctx,token)}

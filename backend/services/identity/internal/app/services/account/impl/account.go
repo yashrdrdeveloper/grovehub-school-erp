@@ -20,9 +20,10 @@ import(
  validators "grovehub/services/identity/internal/app/validators/account"
  authhelpers "grovehub/services/identity/internal/app/services/authentication/helpers"
  createop "grovehub/services/identity/internal/app/services/account/operations/create"
+ searchop "grovehub/services/identity/internal/app/services/account/operations/search"
 )
-type Service struct{accounts accountrepo.Repository;tokens tokenrepo.Repository;sessions sessionrepo.Repository;foundation foundation.Client;credential cred.Service;invitation *invitation.Service;mapper mapper.Mapper;validator validators.Validator;unit tx.UnitOfWork;create *createop.Operation}
-func New(a accountrepo.Repository,t tokenrepo.Repository,sessions sessionrepo.Repository,f foundation.Client,c cred.Service,i *invitation.Service,m mapper.Mapper,v validators.Validator,u tx.UnitOfWork)contract.Service{return &Service{accounts:a,tokens:t,sessions:sessions,foundation:f,credential:c,invitation:i,mapper:m,validator:v,unit:u,create:createop.New(a,f,v,i,u)}}
+type Service struct{accounts accountrepo.Repository;tokens tokenrepo.Repository;sessions sessionrepo.Repository;foundation foundation.Client;credential cred.Service;invitation *invitation.Service;mapper mapper.Mapper;validator validators.Validator;unit tx.UnitOfWork;create *createop.Operation;search *searchop.Operation}
+func New(a accountrepo.Repository,t tokenrepo.Repository,sessions sessionrepo.Repository,f foundation.Client,c cred.Service,i *invitation.Service,m mapper.Mapper,v validators.Validator,u tx.UnitOfWork)contract.Service{return &Service{accounts:a,tokens:t,sessions:sessions,foundation:f,credential:c,invitation:i,mapper:m,validator:v,unit:u,create:createop.New(a,f,v,i,u),search:searchop.New(a,m,v)}}
 func normalizeEmail(s string)string{return strings.ToLower(strings.TrimSpace(s))}
 func projection(a entity.Account)string{u:="";if a.Username!=nil{u=*a.Username};return strings.ToLower(strings.Join([]string{a.Email,u}," "))}
 
@@ -33,20 +34,7 @@ func(s *Service)Get(ctx context.Context,id string)(dto.Account,error){
  if a.TenantID==nil||*a.TenantID!=p.TenantID{return dto.Account{},accountrepo.ErrNotFound}
  return s.mapper.ToResponse(a),nil
 }
-func(s *Service)Search(ctx context.Context,request coresearch.Request)(coresearch.Result[dto.Account],error){
- p,err:=principal.RequireAdmin(ctx);if err!=nil{return coresearch.Result[dto.Account]{},err}
- q,err:=s.validator.Search(request);if err!=nil{return coresearch.Result[dto.Account]{},err}
- dbResult,err:=s.accounts.Search(ctx,p.TenantID,q);if err!=nil{return coresearch.Result[dto.Account]{},err}
- out:=coresearch.Result[dto.Account]{Items:make([]dto.Account,0,len(dbResult.Items))}
- for _,a:=range dbResult.Items{out.Items=append(out.Items,s.mapper.ToResponse(a))}
- out.PageInfo=coresearch.PageResponse{Rows:len(out.Items),HasNext:dbResult.HasNext}
- if dbResult.HasNext&&len(dbResult.Items)>0{
-  last:=dbResult.Items[len(dbResult.Items)-1];value:=last.CreatedAt.UTC().Format(time.RFC3339Nano)
-  switch q.Sort.Field{case "accountId":value=last.AccountID;case "updatedAt":value=last.UpdatedAt.UTC().Format(time.RFC3339Nano);case "status":value=string(last.Status);case "username":if last.Username!=nil{value=*last.Username}else{value=""}}
-  out.PageInfo.NextCursor,err=coresearch.EncodeCursor(coresearch.CursorPayload{Field:q.Sort.Field,Direction:q.Sort.Direction,Value:value,CursorId:last.AccountID})
- }
- return out,err
-}
+
 func(s *Service)Update(ctx context.Context,id string,request dto.Update)(dto.Account,error){
  p,err:=principal.RequireAdmin(ctx);if err!=nil{return dto.Account{},err}
  if request.Username==nil{return dto.Account{},errors.New("username must be supplied")}
@@ -106,3 +94,5 @@ func(s *Service)Setup(ctx context.Context,grant string,input dto.Setup)(dto.Setu
 }
 
 func(s *Service)Create(ctx context.Context,input dto.Create,key string)(dto.CreateResult,error){return s.create.Execute(ctx,input,key)}
+
+func(s *Service)Search(ctx context.Context,request coresearch.Request)(coresearch.Result[dto.Account],error){return s.search.Execute(ctx,request)}
