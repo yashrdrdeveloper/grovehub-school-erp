@@ -28,3 +28,15 @@ func (controller *AuthController) Login(writer http.ResponseWriter, request *htt
         },
     })
 }
+
+func (controller *AuthController) SetPassword(writer http.ResponseWriter, request *http.Request) {
+    rest.RunStruct(writer, request, rest.StructConfig[identityrequest.SetPasswordRequest, identityresponse.SetPassword]{
+        Decode: httprequest.DecodeStrictJSON,
+        InvalidRequestBody: identityerror.InvalidPasswordSetup,
+        Fallback: identityerror.PasswordSetupFailed,
+        Service: func(ctx context.Context, input identityrequest.SetPasswordRequest) (rest.Result[identityresponse.SetPassword], error) {
+            result, err := controller.service.SetPassword(ctx, input)
+            return rest.OK(result), err
+        },
+    })
+}
