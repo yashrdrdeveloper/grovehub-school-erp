@@ -27,10 +27,10 @@ type builder struct{logger *slog.Logger;db *gorm.DB;foundation foundationclient.
 func New(logger *slog.Logger,db *gorm.DB,foundation foundationclient.Client,integration integrationclient.Client)bootstrap.Bootstrap{return &builder{logger:logger,db:db,foundation:foundation,integration:integration}}
 type runtime struct{
  logger *slog.Logger
- accountPublic accountpublic.Controller
- accountProtected accountprotected.Controller
- authPublic authpublic.Controller
- authProtected authprotected.Controller
+ accountPublic accountpublic.AccountController
+ accountProtected accountprotected.AccountController
+ authPublic authpublic.AuthenticationController
+ authProtected authprotected.AuthenticationController
  middleware middleware.Authentication
  accountService accountservice.Service
  worker *invitation.Worker

@@ -13,7 +13,7 @@ import(
  service "grovehub/services/identity/internal/app/services/account"
 )
 type Controller struct{service service.Service}
-func New(s service.Service)protected.Controller{return &Controller{service:s}}
+func New(s service.Service)protected.AccountController{return &Controller{service:s}}
 func(c *Controller)Create(w http.ResponseWriter,r *http.Request){
  rest.RunStruct(w,r,rest.StructConfig[dto.CreateRequest,dto.CreateResult]{
   Decode:httprequest.DecodeStrictJSON,InvalidRequestBody:definitions.InvalidRequest,Fallback:definitions.Internal,

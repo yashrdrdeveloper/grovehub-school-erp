@@ -13,7 +13,7 @@ import(
  auth "grovehub/services/identity/internal/app/services/authentication"
 )
 type Controller struct{service auth.Service}
-func New(s auth.Service)protected.Controller{return &Controller{service:s}}
+func New(s auth.Service)protected.AuthenticationController{return &Controller{service:s}}
 func(c *Controller)Logout(w http.ResponseWriter,r *http.Request){
  rest.RunStruct(w,r,rest.StructConfig[dto.EmptyRequest,dto.StatusResult]{Fallback:definitions.Internal,
  Service:func(ctx context.Context,_ dto.EmptyRequest)(rest.Result[dto.StatusResult],error){

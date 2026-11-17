@@ -8,7 +8,8 @@ import(
  publicAccount "grovehub/services/identity/internal/app/controller/account/public"
  "grovehub/services/identity/internal/app/middleware"
 )
-func RegisterHTTP(mux *http.ServeMux,authPublic publicAuth.Controller,authProtected protectedAuth.Controller,accountPublic publicAccount.Controller,accountProtected protectedAccount.Controller,m middleware.Authentication){
+// @Routes /identity
+func RegisterHTTP(mux *http.ServeMux,authPublic publicAuth.AuthenticationController,authProtected protectedAuth.AuthenticationController,accountPublic publicAccount.AccountController,accountProtected protectedAccount.AccountController,m middleware.Authentication){
  limiter:=middleware.NewLimiter()
  public:=m.Origin
  tokenProtected:=func(h http.Handler)http.Handler{return m.Origin(m.CSRF(h))}

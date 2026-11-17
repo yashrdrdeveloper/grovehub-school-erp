@@ -13,7 +13,7 @@ import(
  secrets "grovehub/services/identity/internal/app/services/authentication/helpers"
 )
 type Controller struct{service auth.Service}
-func New(s auth.Service)public.Controller{return &Controller{service:s}}
+func New(s auth.Service)public.AuthenticationController{return &Controller{service:s}}
 func(c *Controller)Login(w http.ResponseWriter,r *http.Request){
  rest.RunStruct(w,r,rest.StructConfig[dto.LoginRequest,dto.LoginResult]{
  Decode:request.DecodeStrictJSON,InvalidRequestBody:definitions.InvalidRequest,Fallback:definitions.Internal,

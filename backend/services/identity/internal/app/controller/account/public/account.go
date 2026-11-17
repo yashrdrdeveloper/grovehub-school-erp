@@ -1,4 +1,5 @@
 package public
 import "net/http"
-// @Routes /identity/public/accounts
-type Controller interface{Setup(http.ResponseWriter,*http.Request)}
+// @Routes /accounts
+type AccountController interface{// @POST /setup
+Setup(http.ResponseWriter,*http.Request)}

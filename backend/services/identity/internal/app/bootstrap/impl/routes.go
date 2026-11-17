@@ -9,6 +9,6 @@ import(
  hu "grovehub/services/identity/internal/app/controller/authentication/public"
  hui "grovehub/services/identity/internal/app/controller/authentication/public/impl"
 )
-func(b *builder)newControllers(s serviceGraph)(hu.Controller,hp.Controller,au.Controller,ap.Controller){
+func(b *builder)newControllers(s serviceGraph)(hu.AuthenticationController,hp.AuthenticationController,au.AccountController,ap.AccountController){
  return hui.New(s.auth),hpi.New(s.auth),aui.New(s.account),api.New(s.account)
 }
