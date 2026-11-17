@@ -4,6 +4,7 @@ import (
  "errors"
  "strings"
  "gorm.io/gorm"
+ "github.com/jackc/pgx/v5/pgconn"
  coretransaction "grovehub/libs/core/database/transaction"
  coresearch "grovehub/libs/core/search"
  "grovehub/services/identity/internal/app/entity"
@@ -12,7 +13,7 @@ import (
 )
 type Repository struct{db *gorm.DB}
 func New(db *gorm.DB)accountrepository.Repository{return &Repository{db:db}}
-func (r *Repository) Create(ctx context.Context,a entity.Account)error{return r.dbFor(ctx).Create(&a).Error}
+func (r *Repository) Create(ctx context.Context,a entity.Account)error{return mapWriteError(r.dbFor(ctx).Create(&a).Error)}
 func (r *Repository) dbFor(ctx context.Context)*gorm.DB{return coretransaction.Database(ctx,r.db)}
 func (r *Repository) find(ctx context.Context,field string,value any)(entity.Account,error){
  var a entity.Account
@@ -28,10 +29,17 @@ func (r *Repository) FindByIdempotencyKey(ctx context.Context,key string)(entity
 func (r *Repository) Update(ctx context.Context,a entity.Account)error{
  result:=r.dbFor(ctx).Model(&entity.Account{}).Where("account_id = ? AND version = ?",a.AccountID,a.Version-1).
  Updates(map[string]any{"username":a.Username,"email":a.Email,"status":a.Status,"version":a.Version,"search_details":a.SearchDetails,"updated_at":a.UpdatedAt})
- if result.Error!=nil{return result.Error};if result.RowsAffected!=1{return accountrepository.ErrVersionConflict};return nil
+ if result.Error!=nil{return mapWriteError(result.Error)};if result.RowsAffected!=1{return accountrepository.ErrVersionConflict};return nil
 }
 // Search uses the trusted AccountConfig with a mandatory tenant predicate.
 func (r *Repository) Search(ctx context.Context,tenantID string,q coresearch.Query[string])(coresearch.QueryResult[entity.Account],error){
  if tenantID==""{return coresearch.QueryResult[entity.Account]{},errors.New("account search requires tenant scope")}
  return coresearch.Execute[string,entity.Account](r.dbFor(ctx).Model(&entity.Account{}).Table("identity.accounts AS a").Where("a.tenant_id = ?",tenantID),q,searchconfig.AccountConfig)
+}
+
+func mapWriteError(err error)error{
+ if err==nil{return nil}
+ var pg *pgconn.PgError
+ if errors.As(err,&pg)&&pg.Code=="23505"{return accountrepository.ErrConflict}
+ return err
 }
