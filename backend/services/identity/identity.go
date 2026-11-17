@@ -12,11 +12,11 @@ import (
 
 	coretelemetry "grovehub/libs/core/telemetry"
 	foundationclient "grovehub/services/foundation/client/person"
-	"grovehub/services/identity/controller"
+	protectedcontroller "grovehub/services/identity/controller/protected"
+    protectedcontrollerimpl "grovehub/services/identity/controller/protected/impl"
     publiccontroller "grovehub/services/identity/controller/public"
     publiccontrollerimpl "grovehub/services/identity/controller/public/impl"
     identityservices "grovehub/services/identity/services"
-	controllerimpl "grovehub/services/identity/controller/impl"
 	accounteventimpl "grovehub/services/identity/events/accounts/impl"
 	mapperimpl "grovehub/services/identity/mappers/impl"
 	repositoryimpl "grovehub/services/identity/repository/impl"
@@ -33,7 +33,7 @@ type Module interface {
 
 type module struct {
 	logger         *slog.Logger
-	authController controller.AuthController
+	authController protectedcontroller.AuthController
     publicAuthController publiccontroller.AuthController
     protectedMiddleware func(http.Handler) http.Handler
     invitationWorker *serviceimpl.PasswordSetupMailWorker
@@ -87,7 +87,7 @@ func New(
 
 	return &module{
 		logger:         logger,
-		authController: controllerimpl.NewAuthController(authService, authValidator),
+		authController: protectedcontrollerimpl.NewAuthController(authService, authValidator),
         publicAuthController: publiccontrollerimpl.NewAuthController(authService),
         protectedMiddleware: sessionAuthenticator.Middleware,
         invitationWorker: invitationWorker,
