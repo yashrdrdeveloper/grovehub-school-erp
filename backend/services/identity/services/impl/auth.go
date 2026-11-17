@@ -230,3 +230,13 @@ func (service *AuthService) Refresh(ctx context.Context, request identityrequest
     if err != nil { return identityresponse.Login{}, coreerrors.NewError(identityerror.InvalidCredentials) }
     return result, nil
 }
+
+func (service *AuthService) Logout(ctx context.Context, accessToken string) error {
+    if service.dependencies.SessionIssuer == nil { return coreerrors.NewError(identityerror.AuthenticationUnavailable) }
+    accountID, ok := AccountIDFromContext(ctx)
+    if !ok { return coreerrors.NewError(identityerror.InvalidCredentials) }
+    if err := service.dependencies.SessionIssuer.RevokeAccess(ctx, accountID, accessToken); err != nil {
+        return coreerrors.NewError(identityerror.InvalidCredentials)
+    }
+    return nil
+}
