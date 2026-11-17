@@ -1,99 +1,270 @@
 package impl
-import(
- "context"
- "errors"
- "strings"
- "time"
- "github.com/google/uuid"
- tx "grovehub/libs/core/database/transaction"
- accountdto "grovehub/services/identity/internal/app/dto/account"
- authdto "grovehub/services/identity/internal/app/dto/authentication"
- "grovehub/services/identity/internal/app/entity"
- accountrepo "grovehub/services/identity/internal/app/repository/account"
- tokenrepo "grovehub/services/identity/internal/app/repository/passwordtoken"
- sessionrepo "grovehub/services/identity/internal/app/repository/session"
- accountmapper "grovehub/services/identity/internal/app/mappers/account"
- "grovehub/services/identity/internal/app/security/principal"
- contract "grovehub/services/identity/internal/app/services/authentication"
- secrets "grovehub/services/identity/internal/app/services/authentication/helpers"
- credential "grovehub/services/identity/internal/app/services/credential"
- invitation "grovehub/services/identity/internal/app/services/registration/operations/invitation"
- loginstrategy "grovehub/services/identity/internal/app/services/authentication/strategies"
- normal "grovehub/services/identity/internal/app/services/authentication/strategies/normal"
- refreshop "grovehub/services/identity/internal/app/services/authentication/operations/refresh"
+
+import (
+	"context"
+	"errors"
+	"strings"
+	"time"
+
+	"github.com/google/uuid"
+
+	transaction "grovehub/libs/core/database/transaction"
+	accountdto "grovehub/services/identity/internal/app/dto/account"
+	authdto "grovehub/services/identity/internal/app/dto/authentication"
+	"grovehub/services/identity/internal/app/entity"
+	accountmapper "grovehub/services/identity/internal/app/mappers/account"
+	accountrepo "grovehub/services/identity/internal/app/repository/account"
+	tokenrepo "grovehub/services/identity/internal/app/repository/passwordtoken"
+	sessionrepo "grovehub/services/identity/internal/app/repository/session"
+	"grovehub/services/identity/internal/app/security/principal"
+	auth "grovehub/services/identity/internal/app/services/authentication"
+	secrets "grovehub/services/identity/internal/app/services/authentication/helpers"
+	refresh "grovehub/services/identity/internal/app/services/authentication/operations/refresh"
+	strategies "grovehub/services/identity/internal/app/services/authentication/strategies"
+	normal "grovehub/services/identity/internal/app/services/authentication/strategies/normal"
+	credential "grovehub/services/identity/internal/app/services/credential"
+	invitation "grovehub/services/identity/internal/app/services/registration/operations/invitation"
 )
-type Service struct{accounts accountrepo.Repository;sessions sessionrepo.Repository;tokens tokenrepo.Repository;credential credential.Service;invitation *invitation.Service;mapper accountmapper.Mapper;unit tx.UnitOfWork;login loginstrategy.LoginStrategy;refresh *refreshop.Operation}
-func New(a accountrepo.Repository,s sessionrepo.Repository,t tokenrepo.Repository,c credential.Service,i *invitation.Service,m accountmapper.Mapper,u tx.UnitOfWork)contract.Service{return &Service{accounts:a,sessions:s,tokens:t,credential:c,invitation:i,mapper:m,unit:u,login:normal.New(a,s,c),refresh:refreshop.New(a,s)}}
 
-func truncate(s string,n int)string{if len(s)>n{return s[:n]};return s}
-
-func(s *Service)Forgot(ctx context.Context,email string)error{
- email=strings.ToLower(strings.TrimSpace(email));if !strings.Contains(email,"@"){return nil}
- a,err:=s.accounts.FindByEmail(ctx,email);if err!=nil||a.Status!=entity.Active{return nil}
- if s.invitation==nil{return errors.New("mail unavailable")}
- return s.unit.Run(ctx,func(inside context.Context)error{return s.invitation.Queue(inside,a,entity.PasswordReset,"there")})
-}
-func(s *Service)Exchange(ctx context.Context,raw,purpose string)(contract.Grant,error){
- var original,grant entity.TokenPurpose
- switch purpose{case "recovery":original=entity.PasswordReset;grant=entity.ResetGrant;case "invitation":original=entity.AccountSetup;grant=entity.SetupGrant;default:return contract.Grant{},errors.New("invalid proof purpose")}
- digest,err:=secrets.Digest(raw,32);if err!=nil{return contract.Grant{},errors.New("invalid proof")}
- newSecret,err:=secrets.NewSecret(32);if err!=nil{return contract.Grant{},err}
- grantHash,_:=secrets.Digest(newSecret,32)
- err=s.unit.Run(ctx,func(inside context.Context)error{
-  id,e:=s.tokens.Consume(inside,digest,original,time.Now().UTC());if e!=nil{return e}
-  a,e:=s.accounts.FindByID(inside,id);if e!=nil{return e}
-  if (original==entity.AccountSetup&&a.Status!=entity.PendingSetup)||(original==entity.PasswordReset&&a.Status!=entity.Active){return errors.New("invalid account state")}
-  now:=time.Now().UTC()
-  return s.tokens.Issue(inside,entity.PasswordToken{TokenHash:grantHash,AccountID:id,Purpose:grant,ExpiresAt:now.Add(10*time.Minute),CreatedAt:now})
- })
- if err!=nil{return contract.Grant{},errors.New("invalid or expired proof")}
- return contract.Grant{Secret:newSecret,Data:authdto.GrantResult{Verified:true,Purpose:string(original),ExpiresIn:600}},nil
-}
-func(s *Service)ResetPassword(ctx context.Context,grant,password string)error{
- hash,err:=secrets.Digest(grant,32);if err!=nil{return errors.New("invalid reset grant")}
- return s.unit.Run(ctx,func(inside context.Context)error{
-  id,e:=s.tokens.Consume(inside,hash,entity.ResetGrant,time.Now().UTC());if e!=nil{return e}
-  a,e:=s.accounts.FindByID(inside,id);if e!=nil{return e};if a.Status!=entity.Active{return errors.New("invalid account status")}
-  if e=s.credential.Replace(inside,id,password);e!=nil{return e}
-  _,e=s.sessions.RevokeAll(inside,id);return e
- })
-}
-func(s *Service)Reauthenticate(ctx context.Context,password string)error{
- p,err:=principal.Require(ctx);if err!=nil{return err}
- valid,err:=s.credential.Verify(ctx,p.AccountID,password);if err!=nil||!valid{return errors.New("invalid credentials")}
- return s.sessions.Reauthenticate(ctx,p.SessionID,time.Now().UTC())
-}
-func(s *Service)ChangePassword(ctx context.Context,password string)error{
- p,err:=principal.Require(ctx);if err!=nil{return err}
- if err=principal.Recent(ctx,5*time.Minute);err!=nil{return err}
- return s.unit.Run(ctx,func(inside context.Context)error{
-  if e:=s.credential.Replace(inside,p.AccountID,password);e!=nil{return e}
-  _,e:=s.sessions.RevokeAll(inside,p.AccountID);return e
- })
-}
-func(s *Service)Logout(ctx context.Context)error{p,err:=principal.Require(ctx);if err!=nil{return err};return s.sessions.Revoke(ctx,p.AccountID,p.SessionID)}
-func(s *Service)LogoutAll(ctx context.Context)(int64,error){
- p,err:=principal.Require(ctx);if err!=nil{return 0,err}
- if err=principal.Recent(ctx,5*time.Minute);err!=nil{return 0,err}
- return s.sessions.RevokeAll(ctx,p.AccountID)
-}
-func(s *Service)ListSessions(ctx context.Context)([]map[string]any,error){
- p,err:=principal.Require(ctx);if err!=nil{return nil,err}
- sessions,err:=s.sessions.List(ctx,p.AccountID);if err!=nil{return nil,err}
- out:=make([]map[string]any,0,len(sessions))
- for _,item:=range sessions{out=append(out,map[string]any{"sessionId":item.SessionID,"current":item.SessionID==p.SessionID,"createdAt":item.CreatedAt,"lastActiveAt":item.LastActiveAt,"expiresAt":item.RefreshExpiresAt})}
- return out,nil
-}
-func(s *Service)RevokeSession(ctx context.Context,id string)error{
- p,err:=principal.Require(ctx);if err!=nil{return err}
- if _,e:=uuid.Parse(id);e!=nil{return errors.New("invalid session ID")}
- return s.sessions.Revoke(ctx,p.AccountID,id)
-}
-func(s *Service)Me(ctx context.Context)(accountdto.Account,error){
- p,err:=principal.Require(ctx);if err!=nil{return accountdto.Account{},err}
- a,err:=s.accounts.FindByID(ctx,p.AccountID);if err!=nil{return accountdto.Account{},err}
- return s.mapper.ToResponse(a),nil
+// @Service
+type Service struct {
+	accounts accountrepo.Repository
+	sessions sessionrepo.Repository
+	tokens tokenrepo.Repository
+	credential credential.Service
+	invitation *invitation.Service
+	mapper accountmapper.Mapper
+	unit transaction.UnitOfWork
+	login strategies.LoginStrategy
+	refresh *refresh.Operation
 }
 
-func(s *Service)Login(ctx context.Context,input authdto.Login,agent string)(contract.SessionResult,error){return s.login.Login(ctx,input,agent)}
-func(s *Service)Refresh(ctx context.Context,token string)(contract.RefreshResult,error){return s.refresh.Execute(ctx,token)}
+var _ auth.Service = (*Service)(nil)
+
+func New(accounts accountrepo.Repository, sessions sessionrepo.Repository, tokens tokenrepo.Repository, credentials credential.Service, invitations *invitation.Service, mapper accountmapper.Mapper, unit transaction.UnitOfWork) auth.Service {
+	return &Service{
+		accounts: accounts,
+		sessions: sessions,
+		tokens: tokens,
+		credential: credentials,
+		invitation: invitations,
+		mapper: mapper,
+		unit: unit,
+		login: normal.New(accounts, sessions, credentials),
+		refresh: refresh.New(accounts, sessions),
+	}
+}
+
+func (service *Service) Login(ctx context.Context, input authdto.Login, userAgent string) (auth.SessionResult, error) {
+	return service.login.Login(ctx, input, userAgent)
+}
+
+func (service *Service) Refresh(ctx context.Context, token string) (auth.RefreshResult, error) {
+	return service.refresh.Execute(ctx, token)
+}
+
+func (service *Service) Forgot(ctx context.Context, email string) error {
+	email = strings.ToLower(strings.TrimSpace(email))
+	if !strings.Contains(email, "@") {
+		return nil
+	}
+
+	account, err := service.accounts.FindByEmail(ctx, email)
+	if err != nil || account.Status != entity.Active {
+		return nil
+	}
+	if service.invitation == nil {
+		return errors.New("mail unavailable")
+	}
+
+	return service.unit.Run(ctx, func(transactionCtx context.Context) error {
+		return service.invitation.Queue(transactionCtx, account, entity.PasswordReset, "there")
+	})
+}
+
+func (service *Service) Exchange(ctx context.Context, secret string, purpose string) (auth.Grant, error) {
+	var tokenPurpose entity.TokenPurpose
+	var grantPurpose entity.TokenPurpose
+	switch purpose {
+	case "recovery":
+		tokenPurpose = entity.PasswordReset
+		grantPurpose = entity.ResetGrant
+	case "invitation":
+		tokenPurpose = entity.AccountSetup
+		grantPurpose = entity.SetupGrant
+	default:
+		return auth.Grant{}, errors.New("invalid proof purpose")
+	}
+
+	digest, err := secrets.Digest(secret, 32)
+	if err != nil {
+		return auth.Grant{}, errors.New("invalid proof")
+	}
+	grantSecret, err := secrets.NewSecret(32)
+	if err != nil {
+		return auth.Grant{}, err
+	}
+	grantDigest, err := secrets.Digest(grantSecret, 32)
+	if err != nil {
+		return auth.Grant{}, err
+	}
+
+	err = service.unit.Run(ctx, func(transactionCtx context.Context) error {
+		accountID, err := service.tokens.Consume(transactionCtx, digest, tokenPurpose, time.Now().UTC())
+		if err != nil {
+			return err
+		}
+		account, err := service.accounts.FindByID(transactionCtx, accountID)
+		if err != nil {
+			return err
+		}
+		if tokenPurpose == entity.AccountSetup && account.Status != entity.PendingSetup {
+			return errors.New("account setup no longer available")
+		}
+		if tokenPurpose == entity.PasswordReset && account.Status != entity.Active {
+			return errors.New("password reset no longer available")
+		}
+
+		now := time.Now().UTC()
+		return service.tokens.Issue(transactionCtx, entity.PasswordToken{
+			TokenHash: grantDigest,
+			AccountID: accountID,
+			Purpose: grantPurpose,
+			ExpiresAt: now.Add(10 * time.Minute),
+			CreatedAt: now,
+		})
+	})
+	if err != nil {
+		return auth.Grant{}, errors.New("invalid or expired proof")
+	}
+
+	return auth.Grant{
+		Secret: grantSecret,
+		Data: authdto.GrantResult{
+			Verified: true,
+			Purpose: string(tokenPurpose),
+			ExpiresIn: 600,
+		},
+	}, nil
+}
+
+func (service *Service) ResetPassword(ctx context.Context, grant string, password string) error {
+	digest, err := secrets.Digest(grant, 32)
+	if err != nil {
+		return errors.New("invalid reset grant")
+	}
+
+	return service.unit.Run(ctx, func(transactionCtx context.Context) error {
+		accountID, err := service.tokens.Consume(transactionCtx, digest, entity.ResetGrant, time.Now().UTC())
+		if err != nil {
+			return err
+		}
+		account, err := service.accounts.FindByID(transactionCtx, accountID)
+		if err != nil {
+			return err
+		}
+		if account.Status != entity.Active {
+			return errors.New("invalid account status")
+		}
+		if err := service.credential.Replace(transactionCtx, accountID, password); err != nil {
+			return err
+		}
+		_, err = service.sessions.RevokeAll(transactionCtx, accountID)
+		return err
+	})
+}
+
+func (service *Service) Reauthenticate(ctx context.Context, password string) error {
+	actor, err := principal.Require(ctx)
+	if err != nil {
+		return err
+	}
+	valid, err := service.credential.Verify(ctx, actor.AccountID, password)
+	if err != nil || !valid {
+		return errors.New("invalid credentials")
+	}
+	return service.sessions.Reauthenticate(ctx, actor.SessionID, time.Now().UTC())
+}
+
+func (service *Service) ChangePassword(ctx context.Context, password string) error {
+	actor, err := principal.Require(ctx)
+	if err != nil {
+		return err
+	}
+	if err := principal.Recent(ctx, 5*time.Minute); err != nil {
+		return err
+	}
+
+	return service.unit.Run(ctx, func(transactionCtx context.Context) error {
+		if err := service.credential.Replace(transactionCtx, actor.AccountID, password); err != nil {
+			return err
+		}
+		_, err := service.sessions.RevokeAll(transactionCtx, actor.AccountID)
+		return err
+	})
+}
+
+func (service *Service) Logout(ctx context.Context) error {
+	actor, err := principal.Require(ctx)
+	if err != nil {
+		return err
+	}
+	return service.sessions.Revoke(ctx, actor.AccountID, actor.SessionID)
+}
+
+func (service *Service) LogoutAll(ctx context.Context) (int64, error) {
+	actor, err := principal.Require(ctx)
+	if err != nil {
+		return 0, err
+	}
+	if err := principal.Recent(ctx, 5*time.Minute); err != nil {
+		return 0, err
+	}
+	return service.sessions.RevokeAll(ctx, actor.AccountID)
+}
+
+func (service *Service) ListSessions(ctx context.Context) ([]map[string]any, error) {
+	actor, err := principal.Require(ctx)
+	if err != nil {
+		return nil, err
+	}
+	sessions, err := service.sessions.List(ctx, actor.AccountID)
+	if err != nil {
+		return nil, err
+	}
+
+	items := make([]map[string]any, 0, len(sessions))
+	for _, session := range sessions {
+		items = append(items, map[string]any{
+			"sessionId": session.SessionID,
+			"current": session.SessionID == actor.SessionID,
+			"createdAt": session.CreatedAt,
+			"lastActiveAt": session.LastActiveAt,
+			"expiresAt": session.RefreshExpiresAt,
+		})
+	}
+	return items, nil
+}
+
+func (service *Service) RevokeSession(ctx context.Context, sessionID string) error {
+	actor, err := principal.Require(ctx)
+	if err != nil {
+		return err
+	}
+	if _, err := uuid.Parse(sessionID); err != nil {
+		return errors.New("invalid session ID")
+	}
+	return service.sessions.Revoke(ctx, actor.AccountID, sessionID)
+}
+
+func (service *Service) Me(ctx context.Context) (accountdto.Account, error) {
+	actor, err := principal.Require(ctx)
+	if err != nil {
+		return accountdto.Account{}, err
+	}
+	account, err := service.accounts.FindByID(ctx, actor.AccountID)
+	if err != nil {
+		return accountdto.Account{}, err
+	}
+	return service.mapper.ToResponse(account), nil
+}
