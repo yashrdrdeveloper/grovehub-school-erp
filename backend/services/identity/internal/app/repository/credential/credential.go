@@ -1,8 +1,17 @@
 package credential
-import ("context";"errors";"grovehub/services/identity/internal/app/entity")
-var ErrNotFound=errors.New("credential not found")
+
+import (
+	"context"
+	"errors"
+
+	"grovehub/services/identity/internal/app/entity"
+)
+
+var ErrNotFound = errors.New("credential not found")
+
+// Repository persists password credentials. It never exposes hashes to DTOs.
 type Repository interface {
- Find(context.Context,string)(entity.PasswordCredential,error)
- Create(context.Context,entity.PasswordCredential)error
- Update(context.Context,entity.PasswordCredential)error
+	Find(ctx context.Context, accountID string) (entity.PasswordCredential, error)
+	Create(ctx context.Context, credential entity.PasswordCredential) error
+	Update(ctx context.Context, credential entity.PasswordCredential) error
 }
