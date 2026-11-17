@@ -1,19 +1,22 @@
-# Identity — Product Documentation
+# Identity — Product and API Workflows
 
-**Scope:** verified or source-supported Identity use cases on branch `phase-2.1-identity-account`. General engineering rules are in `../engineering/README.md`.
+Identity currently documents an **admin-invited registration flow** and **public credential authentication**.
 
-## Available documented workflow
+- [Protected registration and activation](registration.md)
+- [Invitation delivery, token redemption and password setup](password_setup.md)
+- [Public login and session tokens](login.md)
 
-- [Registration API workflow](registration.md) — registration request structure, account/person interaction, expected result, retries, conflicts and reproduction template.
+## API surface
 
-## Documentation policy
+| Method | Path | Actor |
+|---|---|---|
+| POST | `/identity/protected/auth/register` | Verified and explicitly authorized administrator |
+| POST | `/identity/public/auth/set-password` | Holder of valid single-use setup token |
+| POST | `/identity/public/auth/login` | Anonymous user submitting email and password |
+| POST | `/identity/public/auth/refresh` | Holder of valid, unexpired refresh credential |
 
-Each public API gets: actor, permissions, prerequisites, method and route, authentication, headers, exact request and response schema, idempotency, validation, success and error cases, side effects and executable verification steps. Only use paths and responses verified from route wiring/OpenAPI and tests; label uncertainty clearly.
+All external responses use the existing REST envelope; examples show data payloads rather than a captured wire response.
 
-## Planned capability areas, not verified in this document
+## Not yet available
 
-Login, access/refresh-token lifecycle, logout, token revocation, account recovery, password reset, MFA, OIDC, OAuth2, SAML, session management, RBAC and policy evaluation require independent implementation verification. Their presence on a roadmap is not evidence they are exposed by this branch.
-
-## Engineering separation
-
-Business behavior and API reproduction live here. Class diagrams, GORM internals, transaction propagation, data modeling, annotations, design patterns and ownership decisions live in `../engineering/`.
+Logout, logout-all, admin resend invitation, password reset, MFA, OAuth2/OIDC, SAML and complete RBAC are not yet exposed as supported endpoints. Production rollout requires migration, mail-sandbox and concurrency verification.
