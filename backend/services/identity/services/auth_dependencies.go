@@ -4,6 +4,7 @@ import (
     "context"
     identityresponse "grovehub/services/identity/dto/response"
     "grovehub/services/identity/entity"
+    identityrepository "grovehub/services/identity/repository"
 )
 
 // RegistrationAuthorizer must authenticate the actor and enforce the register permission.
@@ -31,4 +32,5 @@ type AuthDependencies struct {
     RegistrationAuthorizer RegistrationAuthorizer
     InvitationQueue InvitationQueue
     SessionIssuer SessionIssuer
+    PasswordSetupTokens identityrepository.PasswordSetupTokenRepository
 }
