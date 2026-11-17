@@ -21,7 +21,6 @@ services/integration/
     │   ├── controller/
     │   │   ├── connection/{public,protected}/
     │   │   │   └── impl/                  # tier-specific adapters
-    │   │   ├── connection/impl/           # shared Connection logic
     │   │   ├── provider/public/impl/     # public catalog
     │   │   ├── webhook/restricted/impl/  # verified Gmail push
     │   │   └── helpers/errors.go
@@ -49,7 +48,7 @@ Only real folders are included; a public `config/` is not permitted. Public cons
 
 **Provider discovery**: read-only catalog from the generic provider registry, available actions and OAuth readiness; no credential persistence inside discovery.
 
-**Controller**: provider discovery routes are separate from authenticated connection routes. `controller/helpers/errors.go` normalizes errors for HTTP, not business policy.
+**Controller**: provider discovery, protected connection operations, public OAuth callbacks, and restricted Gmail push each own a tier-specific implementation. There is no shared `controller/connection/impl` package. `controller/helpers/errors.go` normalizes errors for HTTP, not business policy.
 
 **Operations**: `services/connection/impl/connection.go` composes eight typed operations, while `services/provider/impl/provider.go` composes list/get. Complex provider calls are in operation strategies. Service code must not switch across Gmail/Outlook implementations.
 
