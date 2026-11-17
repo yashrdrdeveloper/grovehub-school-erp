@@ -12,6 +12,7 @@ import(
  mapper "grovehub/services/identity/internal/app/mappers/account"
  accountrepo "grovehub/services/identity/internal/app/repository/account"
  tokenrepo "grovehub/services/identity/internal/app/repository/passwordtoken"
+ sessionrepo "grovehub/services/identity/internal/app/repository/session"
  "grovehub/services/identity/internal/app/security/principal"
  contract "grovehub/services/identity/internal/app/services/account"
  cred "grovehub/services/identity/internal/app/services/credential"
@@ -20,8 +21,8 @@ import(
  authhelpers "grovehub/services/identity/internal/app/services/authentication/helpers"
  createop "grovehub/services/identity/internal/app/services/account/operations/create"
 )
-type Service struct{accounts accountrepo.Repository;tokens tokenrepo.Repository;foundation foundation.Client;credential cred.Service;invitation *invitation.Service;mapper mapper.Mapper;validator validators.Validator;unit tx.UnitOfWork;create *createop.Operation}
-func New(a accountrepo.Repository,t tokenrepo.Repository,f foundation.Client,c cred.Service,i *invitation.Service,m mapper.Mapper,v validators.Validator,u tx.UnitOfWork)contract.Service{return &Service{accounts:a,tokens:t,foundation:f,credential:c,invitation:i,mapper:m,validator:v,unit:u,create:createop.New(a,f,v,i,u)}}
+type Service struct{accounts accountrepo.Repository;tokens tokenrepo.Repository;sessions sessionrepo.Repository;foundation foundation.Client;credential cred.Service;invitation *invitation.Service;mapper mapper.Mapper;validator validators.Validator;unit tx.UnitOfWork;create *createop.Operation}
+func New(a accountrepo.Repository,t tokenrepo.Repository,sessions sessionrepo.Repository,f foundation.Client,c cred.Service,i *invitation.Service,m mapper.Mapper,v validators.Validator,u tx.UnitOfWork)contract.Service{return &Service{accounts:a,tokens:t,sessions:sessions,foundation:f,credential:c,invitation:i,mapper:m,validator:v,unit:u,create:createop.New(a,f,v,i,u)}}
 func normalizeEmail(s string)string{return strings.ToLower(strings.TrimSpace(s))}
 func projection(a entity.Account)string{u:="";if a.Username!=nil{u=*a.Username};return strings.ToLower(strings.Join([]string{a.Email,u}," "))}
 
@@ -72,7 +73,9 @@ func(s *Service)Transition(ctx context.Context,id,action string)(dto.Account,err
   default:return errors.New("unknown account transition")
   }
   a.Version++;a.UpdatedAt=time.Now().UTC()
-  if e=s.accounts.Update(inside,a);e!=nil{return e};out=a;return nil
+  if e=s.accounts.Update(inside,a);e!=nil{return e}
+  if a.Status==entity.Suspended||a.Status==entity.Deactivated{if _,e=s.sessions.RevokeAll(inside,a.AccountID);e!=nil{return e}}
+  out=a;return nil
  })
  return s.mapper.ToResponse(out),err
 }
