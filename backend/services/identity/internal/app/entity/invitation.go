@@ -1,16 +1,18 @@
 package entity
+
 import "time"
-// @Entity identity.invitation_mail
+
+// @Entity identity.invitations
 type Invitation struct {
- ID string `gorm:"column:id;primaryKey;type:uuid"`
- AccountID string `gorm:"column:account_id;type:uuid"`
- Email string `gorm:"column:email"`
- Purpose string `gorm:"column:purpose"`
- Ciphertext []byte `gorm:"column:ciphertext"`
- Nonce []byte `gorm:"column:nonce"`
- Attempts int `gorm:"column:attempts"`
- NextAttemptAt time.Time `gorm:"column:next_attempt_at"`
- LeaseUntil *time.Time `gorm:"column:lease_until"`
- SentAt *time.Time `gorm:"column:sent_at"`
- CreatedAt time.Time `gorm:"column:created_at"`
+	ID            string     `gorm:"column:id;primaryKey;type:uuid"`
+	AccountID     string     `gorm:"column:account_id;type:uuid"`
+	Email         string     `gorm:"column:email"`
+	Purpose       string     `gorm:"column:purpose"`
+	Ciphertext    []byte     `gorm:"column:ciphertext"`
+	Nonce         []byte     `gorm:"column:nonce"`
+	Attempts      int        `gorm:"column:attempts"`
+	NextAttemptAt time.Time  `gorm:"column:next_attempt_at"`
+	LeaseUntil    *time.Time `gorm:"column:lease_until"`
+	SentAt        *time.Time `gorm:"column:sent_at"`
+	CreatedAt     time.Time  `gorm:"column:created_at"`
 }
