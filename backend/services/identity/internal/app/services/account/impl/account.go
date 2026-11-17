@@ -15,6 +15,7 @@ import (
 	account "grovehub/services/identity/internal/app/services/account"
 	create "grovehub/services/identity/internal/app/services/account/operations/create"
 	search "grovehub/services/identity/internal/app/services/account/operations/search"
+	searchimpl "grovehub/services/identity/internal/app/services/account/operations/search/strategies/impl"
 	credential "grovehub/services/identity/internal/app/services/credential"
 	registration "grovehub/services/identity/internal/app/services/registration"
 	accountvalidator "grovehub/services/identity/internal/app/validators/account"
@@ -33,7 +34,7 @@ import (
 // @Service
 type Service struct {
 	create *create.Operation
-	search *search.Operation
+	search search.Operation
 	get get.Operation
 	update update.Operation
 	transition transition.Operation
@@ -46,7 +47,7 @@ var _ account.Service = (*Service)(nil)
 func New(accounts accountrepo.Repository, tokens tokenrepo.Repository, sessions sessionrepo.Repository, foundationClient foundation.Client, credentials credential.Service, invitations registration.Service, mapper accountmapper.Mapper, validator accountvalidator.Validator, unit transaction.UnitOfWork, events accountproducer.ChangedProducer) account.Service {
 	return &Service{
 		create: create.New(accounts, foundationClient, validator, invitations, unit, events),
-		search: search.New(accounts, mapper, validator),
+		search: search.New(searchimpl.New(accounts, mapper, validator)),
 		get: getimpl.New(accounts, mapper),
 		update: updateimpl.New(accounts, mapper, validator, unit, events),
 		transition: transitionimpl.New(accounts, sessions, mapper, unit, events),

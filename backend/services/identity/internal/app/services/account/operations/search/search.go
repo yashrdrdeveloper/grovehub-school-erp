@@ -1,79 +1,37 @@
+// Package search runs tenant-scoped Account Search as an explicit typed chain.
 package search
 
 import (
 	"context"
-	"time"
 
+	chain "grovehub/libs/core/pipeline/service"
 	coresearch "grovehub/libs/core/search"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
-	mapper "grovehub/services/identity/internal/app/mappers/account"
-	accountrepo "grovehub/services/identity/internal/app/repository/account"
-	"grovehub/services/identity/internal/app/security/principal"
-	validator "grovehub/services/identity/internal/app/validators/account"
+	"grovehub/services/identity/internal/app/services/account/operations/search/flows"
+	strategies "grovehub/services/identity/internal/app/services/account/operations/search/strategies"
 )
 
-type Operation struct {
-	accounts accountrepo.Repository
-	mapper mapper.Mapper
-	validator validator.Validator
+// Operation is the stable Account Search contract.
+type Operation interface {
+	Execute(ctx context.Context, request coresearch.Request) (coresearch.Result[accountdto.Account], error)
 }
 
-func New(accounts accountrepo.Repository, accountMapper mapper.Mapper, accountValidator validator.Validator) *Operation {
-	return &Operation{
-		accounts: accounts,
-		mapper: accountMapper,
-		validator: accountValidator,
-	}
+type SearchOperation struct {
+	strategy strategies.SearchStrategy
 }
 
-func (operation *Operation) Execute(ctx context.Context, request coresearch.Request) (coresearch.Result[accountdto.Account], error) {
-	actor, err := principal.RequireAdmin(ctx)
-	if err != nil {
-		return coresearch.Result[accountdto.Account]{}, err
-	}
-	query, err := operation.validator.Search(request)
-	if err != nil {
-		return coresearch.Result[accountdto.Account]{}, err
-	}
-	result, err := operation.accounts.Search(ctx, actor.TenantID, query)
-	if err != nil {
-		return coresearch.Result[accountdto.Account]{}, err
-	}
+var _ Operation = (*SearchOperation)(nil)
 
-	response := coresearch.Result[accountdto.Account]{
-		Items: make([]accountdto.Account, 0, len(result.Items)),
-	}
-	for _, account := range result.Items {
-		response.Items = append(response.Items, operation.mapper.ToResponse(account))
-	}
-	response.PageInfo = coresearch.PageResponse{
-		Rows: len(response.Items),
-		HasNext: result.HasNext,
-	}
+func New(strategy strategies.SearchStrategy) Operation {
+	return &SearchOperation{strategy: strategy}
+}
 
-	if result.HasNext && len(result.Items) != 0 {
-		last := result.Items[len(result.Items)-1]
-		value := last.CreatedAt.UTC().Format(time.RFC3339Nano)
-		switch query.Sort.Field {
-		case "accountId":
-			value = last.AccountID
-		case "updatedAt":
-			value = last.UpdatedAt.UTC().Format(time.RFC3339Nano)
-		case "status":
-			value = string(last.Status)
-		case "username":
-			if last.Username != nil {
-				value = *last.Username
-			} else {
-				value = ""
-			}
-		}
-		response.PageInfo.NextCursor, err = coresearch.EncodeCursor(coresearch.CursorPayload{
-			Field: query.Sort.Field,
-			Direction: query.Sort.Direction,
-			Value: value,
-			CursorId: last.AccountID,
-		})
-	}
-	return response, err
+// @ChainOfResponsibility
+func (operation *SearchOperation) Execute(ctx context.Context, request coresearch.Request) (coresearch.Result[accountdto.Account], error) {
+	result, _, err := chain.Run(ctx, &flows.Search{Request: request},
+		operation.strategy.Prepare,
+		operation.strategy.Query,
+		operation.strategy.Hydrate,
+	)
+	return result, err
 }
