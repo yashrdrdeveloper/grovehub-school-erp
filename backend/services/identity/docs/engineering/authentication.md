@@ -24,9 +24,9 @@ The Foundation client may represent another transactional boundary; the local Id
 
 ## Sessions
 
-Login validates email and password against the existing password credential service, requires ACTIVE status, and generates independent opaque access (32 random bytes) and refresh (48 random bytes) secrets. Only SHA-256 digests live in `identity.sessions`. The access-secret digest is checked on protected requests along with expiry, revocation and current account state. Token format is not JWT.
+Login validates email and password against the existing password credential service, requires ACTIVE status, and generates independent opaque access (32 random bytes) and refresh (48 random bytes) secrets. Refresh rotates both credentials and logout revokes the session. Only SHA-256 digests live in `identity.sessions`. The access-secret digest is checked on protected requests along with expiry, revocation and current account state. Token format is not JWT.
 
-**Pending work:** refresh-token rotation, logout/revocation endpoints, throttling, anomaly detection, access-token replay hardening, sessions invalidation after password reset and formal IAM/RBAC integration.
+**Pending work:** logout-all, throttling, anomaly detection, access-token replay hardening, sessions invalidation after password reset and formal IAM/RBAC integration.
 
 ## Mail integration
 
