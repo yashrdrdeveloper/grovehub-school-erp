@@ -2,7 +2,7 @@ package routes
 
 import (
     "net/http"
-    protectedcontroller "grovehub/services/identity/controller"
+    protectedcontroller "grovehub/services/identity/controller/protected"
     publiccontroller "grovehub/services/identity/controller/public"
 )
 
