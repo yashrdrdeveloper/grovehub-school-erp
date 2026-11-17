@@ -8,6 +8,7 @@ import(
  coreidempotency "grovehub/libs/core/idempotency"
  headercontext "grovehub/libs/core/headercontext"
  tx "grovehub/libs/core/database/transaction"
+ corepipeline "grovehub/libs/core/pipeline/service"
  coresearch "grovehub/libs/core/search"
  foundation "grovehub/services/foundation/client/person"
  dto "grovehub/services/identity/internal/app/dto/account"
@@ -18,11 +19,6 @@ import(
  validators "grovehub/services/identity/internal/app/validators/account"
  "grovehub/services/identity/internal/app/services/account/operations/create/flows"
 )
-// Step is an ordered, typed registration stage. It can stop a replay without
-// executing downstream persistence or sending duplicate email.
-type Step interface{Run(context.Context,*flows.Create)error}
-type stepFunc func(context.Context,*flows.Create)error
-func(f stepFunc)Run(ctx context.Context,flow *flows.Create)error{return f(ctx,flow)}
 type Operation struct{
  accounts accountrepo.Repository
  foundation foundation.Client
@@ -34,15 +30,32 @@ func New(a accountrepo.Repository,f foundation.Client,v validators.Validator,i *
 // @ChainOfResponsibility
 func(o *Operation)Execute(ctx context.Context,request dto.Create,key string)(dto.CreateResult,error){
  flow:=&flows.Create{Request:request,IdempotencyKey:key}
- steps:=[]Step{stepFunc(o.authorize),stepFunc(o.validate),stepFunc(o.replay),stepFunc(o.resolve),stepFunc(o.persist)}
- err:=o.unit.Run(ctx,func(inside context.Context)error{
-  for _,step:=range steps{
-   if flow.Done{return nil}
-   if err:=step.Run(inside,flow);err!=nil{return err}
+ wrap:=func(step func(context.Context,*flows.Create)error)corepipeline.Handler[flows.Create,dto.CreateResult]{
+  return func(ctx context.Context,f *flows.Create)corepipeline.Outcome[dto.CreateResult]{
+   if err:=step(ctx,f);err!=nil{return corepipeline.Fail[dto.CreateResult](err)}
+   return corepipeline.Next[dto.CreateResult]()
   }
-  return nil
+ }
+ var result dto.CreateResult
+ err:=o.unit.Run(ctx,func(inside context.Context)error{
+  var runErr error
+  result,_,runErr=corepipeline.Run(inside,flow,
+   wrap(o.authorize),
+   wrap(o.validate),
+   func(ctx context.Context,f *flows.Create)corepipeline.Outcome[dto.CreateResult]{
+    if err:=o.replay(ctx,f);err!=nil{return corepipeline.Fail[dto.CreateResult](err)}
+    if f.Done{return corepipeline.Return(f.Response,false)}
+    return corepipeline.Next[dto.CreateResult]()
+   },
+   wrap(o.resolve),
+   func(ctx context.Context,f *flows.Create)corepipeline.Outcome[dto.CreateResult]{
+    if err:=o.persist(ctx,f);err!=nil{return corepipeline.Fail[dto.CreateResult](err)}
+    return corepipeline.Return(f.Response,true)
+   },
+  )
+  return runErr
  })
- return flow.Response,err
+ return result,err
 }
 func(o *Operation)authorize(ctx context.Context,f *flows.Create)error{
  p,err:=principal.RequireAdmin(ctx);if err!=nil{return err}
