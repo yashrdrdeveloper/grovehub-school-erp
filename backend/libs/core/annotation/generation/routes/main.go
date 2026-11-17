@@ -16,13 +16,15 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 )
 
 type route struct {
 	method string
-	verb   string
-	path   string
+	verb string
+	path string
+	limit int
 }
 
 type routeGroup struct {
@@ -236,6 +238,11 @@ func discover(dir, servicePath string, configured bool) ([]routeGroup, error) {
 						if item.verb == "" {
 							return nil, fmt.Errorf("%s.%s missing @GET/@POST/etc", group.name, member.Names[0].Name)
 						}
+						limit, err := routeLimitFor(member.Doc)
+						if err != nil {
+							return nil, fmt.Errorf("%s.%s: %w", group.name, member.Names[0].Name, err)
+						}
+						item.limit = limit
 						item.method = member.Names[0].Name
 						if err := validatePath(item.path); err != nil {
 							return nil, fmt.Errorf("%s.%s: %w", group.name, item.method, err)
@@ -335,6 +342,36 @@ func methodFor(doc *ast.CommentGroup) (route, error) {
 	return result, nil
 }
 
+// routeLimitFor validates a limit of N requests per minute. Missing annotation
+// means no route-specific limiter; it must never create a zero/negative limit.
+func routeLimitFor(doc *ast.CommentGroup) (int, error) {
+	if doc == nil {
+		return 0, nil
+	}
+	found := false
+	limit := 0
+	for _, comment := range doc.List {
+		line := strings.TrimSpace(strings.TrimPrefix(comment.Text, "//"))
+		if line != "@RouteLimit" && !strings.HasPrefix(line, "@RouteLimit ") {
+			continue
+		}
+		if found {
+			return 0, fmt.Errorf("duplicate @RouteLimit annotation")
+		}
+		found = true
+		fields := strings.Fields(line)
+		if len(fields) != 2 {
+			return 0, fmt.Errorf("@RouteLimit requires positive requests per minute")
+		}
+		count, err := strconv.Atoi(fields[1])
+		if err != nil || count < 1 || count > 100000 {
+			return 0, fmt.Errorf("@RouteLimit must be 1..100000 requests per minute")
+		}
+		limit = count
+	}
+	return limit, nil
+}
+
 func validSignature(expr ast.Expr) bool {
 	fn, ok := expr.(*ast.FuncType)
 	if !ok || fn.Results != nil || fn.Params == nil || len(fn.Params.List) != 2 {
@@ -416,6 +453,18 @@ func writeRoutes(service string, groups []routeGroup, output string) error {
 		}
 		b.WriteString("}\n\n")
 	}
+	// Annotations produce service-owned policies; the gateway has no knowledge
+	// of service endpoint strings, and registration is deterministic.
+	b.WriteString("func RouteLimits() map[string]int {\\nreturn map[string]int{\\n")
+	for _, group := range groups {
+		for _, item := range group.routes {
+			if item.limit == 0 {
+				continue
+			}
+			fmt.Fprintf(&b, "%q: %d,\\n", item.verb+" "+item.path, item.limit)
+		}
+	}
+	b.WriteString("}\\n}\\n\\n")
 	source, err := format.Source([]byte(b.String()))
 	if err != nil {
 		return fmt.Errorf("format generated routes: %w", err)

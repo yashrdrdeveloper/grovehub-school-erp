@@ -228,3 +228,31 @@ func TestResourceFirstControllerPackage(t *testing.T) {
 		if !strings.Contains(content,required){t.Errorf("missing resource route %q:\n%s",required,content)}
 	}
 }
+
+func TestRouteLimitGeneratesExactMethodAndPattern(t *testing.T) {
+	backend, output := testBackend(t)
+	controller := filepath.Join(backend, "services", "foundation", "controller", "protected", "person.go")
+	writeTestFile(t, controller, strings.Replace(personController,
+		"// @POST /search",
+		"// @POST /search\n\t// @RouteLimit 30", 1))
+	content := generatedRoutes(t, backend, output)
+	if !strings.Contains(content, "`POST /foundation/protected/persons/search`") &&
+		!strings.Contains(content, "\"POST /foundation/protected/persons/search\": 30") {
+		t.Fatal("annotated method policy missing from generated routes")
+	}
+}
+
+func TestRouteLimitRejectsMalformedLimits(t *testing.T) {
+	for _, value := range []string{"0", "-2", "abc", "100001"} {
+		t.Run(value, func(t *testing.T) {
+			backend, _ := testBackend(t)
+			controller := filepath.Join(backend, "services", "foundation", "controller", "protected", "person.go")
+			writeTestFile(t, controller, strings.Replace(personController,
+				"// @POST /search",
+				"// @POST /search\n\t// @RouteLimit "+value, 1))
+			if err := generateAll(backend); err == nil || !strings.Contains(err.Error(), "@RouteLimit") {
+				t.Fatalf("expected invalid limit rejection; got %v", err)
+			}
+		})
+	}
+}
