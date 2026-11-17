@@ -7,324 +7,34 @@
 
 ---
 
-## 0. GroveHub Current Mandatory Overrides
+## 0. Current Backend Standard and Priority
 
-These GroveHub-specific rules are newer than older generic examples in this document and the long-form engineering standards. **When there is a conflict, these rules and the dedicated GroveHub standards below win.**
+**This section supersedes all historical backend structure examples elsewhere in this document.** The canonical backend architecture is [`docs/engineering/backend/backend.md`](engineering/backend/backend.md). It is deliberately generic. Topic-level guidance lives alongside it:
 
-Mandatory current standards:
+- [annotations](engineering/backend/annotation.md)
+- [searchDetails](engineering/backend/searchDetails.md)
+- [events](engineering/backend/events.md)
+- [persistence and ACID](engineering/backend/persistence.md)
+- [API / DTO / validator / mapper](engineering/backend/api.md)
+- [providers](engineering/backend/providers.md)
+- [patterns and operations](engineering/backend/patterns.md)
+- [testing](engineering/backend/testing.md)
+- [libraries](engineering/backend/libraries.md)
 
-```text
-docs/engineering/backend/GROVEHUB_BACKEND_STRUCTURE.md
-docs/engineering/backend/EVENT_GUIDELINES.md
-docs/engineering/backend/CORE_LIBRARY_GUIDELINES.md
-docs/engineering/backend/INFRASTRUCTURE_MESSAGING_STRATEGY.md
-docs/engineering/testing/BACKEND_UNIT_TEST_STRUCTURE.md
-docs/engineering/observability/TRACE_CONTEXT_GUIDELINES.md
-docs/engineering/observability/GROVEHUB_OBSERVABILITY.md
-docs/engineering/scripts/GROVEHUB_LOCAL_DEVELOPMENT.md
-```
+**Documentation scopes:**
 
-### Backend structure
+- `docs/engineering/backend/`: generic master and generic topic guides only. No module-specific examples, endpoints, tables, vendors, or event types.
+- `backend/services/<module>/docs/engineering/`: actual module folder tree, module contracts, implemented patterns and operational details.
+- `backend/services/<module>/docs/product/`: actual product use cases, API execution, prerequisites, expected results, negative cases.
+- `backend/libs/<library>/docs/engineering/`: reusable technical capability contracts and SRP.
 
-The root `backend/launcher/` is the platform edge/composition boundary.
+**Currently maintained module owner references:** `backend/services/foundation/docs/engineering/README.md`, `backend/services/integration/docs/engineering/README.md`, `backend/services/infrastructure/docs/engineering/README.md`. Identity is **not changed by this documentation reorganization**; consult its existing code, OpenAPI and documentation before working on it.
 
-Backend services do **not** have service-local `launcher/` folders and do **not** use a `src/` wrapper. Current GroveHub services use flat responsibility folders directly under the service root.
+**Current backend layout:** one public module facade, deliberate public `client/`, private `internal/app/` resource-first layers, `internal/resources/` SQL and OpenAPI, owner-local `internal/tests/`, module-local `docs/`, shared launcher, and technical `libs/`. No new module-local `src/`, launcher, global test buckets, duplicate DTOs, empty scaffolding or core dependency on business/provider code.
 
-```text
-backend/services/<service>/
-├── <service>.go
-├── api/
-├── config/
-├── constants/
-├── entity/
-├── repository/
-│   └── postgres/
-├── services/
-├── controller/
-├── routes/
-├── dto/
-├── client/
-├── migrations/
-└── tests/
-    └── unit-test/
-```
+**Mandatory functional boundaries:** real auth/tenant policy (never route-folder security); explicit UnitOfWork transactions and idempotency; event producers domain-owned, broker/outbox Infrastructure-owned; generic core does not own transport; provider-specific external SDKs under `externalService/<capability>/<provider>`; all generated annotation effects must be verified against the actual processor and Go overlay. Never claim a cataloged annotation enforces runtime policy.
 
-Create only folders with a current responsibility.
-
-Do not recreate either of these older patterns:
-
-```text
-backend/services/<service>/src/
-backend/services/<service>/launcher/
-```
-
-### Route prefix and access-tier conventions (Foundation)
-
-Foundation's `routes/http.go` declares `// @Routes /foundation` on the
-`RegisterHTTP` function. Controller interfaces live under
-`controller/person/public/`, `controller/person/protected/` or `controller/person/restricted/`,
-with relative `// @Routes /<resource>` directives. The route generator
-composes `/<service>/<access-tier>/<resource>/...` automatically. Foundation
-Person handlers and helpers live under `controller/person/protected/`; their routes
-are `/foundation/protected/persons`. Identity and Integration currently
-retain their old uncategorized paths.
-
-These tiers are **not active authentication or authorization policies**.
-Never assume that protected/restricted URLs enforce any gate today. Before
-deployment, add and test verified Identity gateway policy and ensure internal
-maintenance APIs cannot be accessed through the external listener.
-
-### Common endpoint Request contract
-
-All typed HTTP, in-process client, and service requests share
-`libs/core/request.Request`. Every endpoint DTO **embeds this common
-contract** and declares **only the applicable** `Params`, `Query`, and
-`RequestBody` fields, with exactly those names:
-
-```go
-type UpdatePersonRequest struct {
-    corerequest.Request
-    Params PersonByGID `validate:"valid"`
-    RequestBody UpdatePerson `validate:"valid"`
-}
-```
-
-The missing `Query` field is **automatically absent**. Never add
-`rest.Empty`, `corerequest.Empty`, or
-`Request[Path,Query,Body]` type arguments to new interfaces/DTOs.
-This is a reusable structural contract, not an untyped `any` map:
-`Params` and `RequestBody` keep their concrete Go types.
-
-The same concrete DTO appears in the generated `@RequestLine` client,
-`rest.RunStruct(w,r,rest.StructConfig[Request,Response])` controller
-callback, `PersonService` interface and implementation, and event decorators.
-The core request inspector automatically discovers which sections exist.
-`Params` fields use `path:"..."` tags, `Query` fields use `query:"..."`,
-and `RequestBody` is encoded/decoded as the endpoint's JSON body.
-Normalizers and resource validators execute over the common request with
-`validate:"valid"` on nested sections; the service reuses its rules to
-protect direct in-process calls.
-
-HTTP controllers must not return values or perform business logic.
-Configure `StructConfig` with resource-owned `Rules`, semantic
-`InvalidParams` / `InvalidQuery` / `InvalidRequestBody`, a safe
-`Fallback`, and a typed `Service(ctx, input)` callback. The callback
-forwards the same `input` directly into the business service.
-Identity Register uses the same convention.
-
-### Service-to-service client routing
-
-Foundation `client.Client` uses `// @RequestLine METHOD /protected/...`
-to address registered controller routes rather than direct `@Proxy`
-service delegates. Every client method accepts `context.Context`
-plus one operation-specific request struct embedding the common Request.
-The generator resolves the service prefix from the actual registered routes
-and invokes the same controller pipeline **in-process** (no socket),
-preserving context, application error status/metadata and HTTP 201 created.
-Integration/Infrastructure legacy `@Proxy` clients remain service-forwarders
-until separately migrated.
-
-**Internal router dispatch does not execute outer gateway/IAM middleware**.
-URL tiers are not security boundaries; explicitly enforce IAM policy before
-using these handlers for protected/restricted operations.
-
-### Backend layer responsibilities
-
-GroveHub uses a strict responsibility split:
-
-```text
-Route
-  ↓
-Controller
-  ↓
-Service
-  ↓
-Repository interface
-  ↓
-PostgreSQL repository
-  ↓
-PostgreSQL
-```
-
-`entity/` is passive data used by the service and repository layers. It is not a business-logic layer.
-
-Mandatory rules:
-
-```text
-entity/              -> data only: structs, types, aliases, entity-owned constants
-repository/          -> persistence contracts only
-repository/postgres/ -> SQL, row scanning, persistence models, DB error handling
-services/            -> ALL business rules/use cases/orchestration
-controller/          -> request/response transport mapping + service invocation only
-routes/              -> route registration only
-migrations/          -> service-owned schema evolution
-```
-
-Entities must not contain business-rule constructors, validation workflows, lifecycle transitions, ID generation, clocks, repository access, persistence mapping, or transport behavior.
-
-Repositories must not contain business decisions, lifecycle transitions, authorization rules, business validation, workflow orchestration, or ID generation. Technical database branching such as `ErrNoRows`/constraint mapping is allowed because it is persistence handling.
-
-Controllers must not query repositories/databases directly and must not contain business rules.
-
-Business logic belongs in the owning `services/` package.
-
-PostgreSQL-specific persistence row models may live under:
-
-```text
-repository/postgres/entity.go
-```
-
-These are persistence models and are distinct from domain data under `entity/`.
-
-### Shared generic event envelope
-
-All domain events use `backend/libs/core/events.Envelope[T any]` via `coreevents.NewEnvelope(ctx, metadata, data)`. The JSON envelope carries `eventId`, `eventType`, `version`, `aggregateId`, `occurredAt`, optional `correlationId` and `causationId`, and typed `data`. `version` is the schema version, distinct from domain record version. `source` exists only in broker metadata. Domain code supplies aggregate ID and payload; generic fields live exclusively in core. See `docs/engineering/backend/EVENT_GUIDELINES.md`.
-
-### Foundation Person events and reusable diff
-
-Before editing or consuming Person events, read `docs/engineering/backend/EVENT_GUIDELINES.md` and `backend/services/foundation/events/person/person.go`. The canonical event is `foundation.person.changed.v1` on the stable topic `foundation_person_changed`. It carries `data: { operation, old, new }`, where old/new are full `foundation/dto/person.Person` snapshots or null. Only `CREATED`, `UPDATED`, and `DEACTIVATED` are currently emitted, once per successful real state change. Their Go type and constants must live in `backend/services/foundation/constants/events/operation.go` (import as `foundationevents`), not inside the Person event contract or global `libs/core/constants`; this is the domain-owned pattern for future agent changes. Deactivation does not also emit UPDATED; no-op or idempotent operations do not publish.
-
-Consumers decode `coreevents.Envelope[persons.Changed]` and may call `diff.Compare(event.Data.Old, event.Data.New)` using `grovehub/libs/core/diff`. Diff is domain-neutral, accepts typed values, returns `([]diff.Change, error)`, and flattens JSON-named paths. It is *not* part of Foundation or Infrastructure, and the published event does *not* include a computed diff. Full snapshots include PII (names and contact details); restrict subscribers, retention, and logs. Publishing is post-write best-effort, not transactional delivery.
-
-### Identity registration Person lookup
-
-`POST /auth/register` accepts no `gid` in the request. It matches an existing Foundation Person using the validated, normalized email; otherwise creates one, reuses the existing Person GID, and returns `gid` and `personGid` with the same identifier. Never accept caller-supplied GID through this route; unknown request properties are rejected. Consult `backend/services/identity/api/openapi/v1/openapi.yaml` and `services/identity/services/impl/auth.go` before editing. Identity registration uses `core/database/transaction.Run` and context-aware repositories for atomic Foundation Person, Identity Account, and credential writes. Event decorators use `AfterCommit` to prevent publishing rolled-back changes. Password-setup email and reliable database-to-broker delivery are not yet implemented.
-
-### Generic backend module conventions
-
-Follow `docs/engineering/backend/GROVEHUB_BACKEND_STRUCTURE.md` for every service, including public interfaces/DTOs, corresponding `impl/` packages, `constants/`, `config/config.go` plus environment `config/impl/`, ORM-first GORM repositories, generic core event envelopes, split route/controller files, and developer startup integration.
-
-### Integration service
-
-Read `docs/engineering/backend/INTEGRATION_SERVICE_GUIDELINES.md` and its OpenAPI spec. Integration owns provider connectivity, OAuth, webhooks, tests and stateless provider actions; Communication owns messages and synchronization. Never add Integration-owned message ledgers or cursor storage. Protected connection endpoints normally require verified principal middleware. An exceptional, temporary **local loopback-only** fixed development principal is wired in the launcher while IAM is absent; it must reject remote peers and spoofed identity headers, and the HTTP listener must bind loopback. Remove this bypass before any deployed/tunneled service; IAM must supply a verified principal. Gmail and Outlook provider implementations are under `providers/mailprovider/providers/<vendor>/impl`, composed with the `providers/mailprovider` strategy factory. The provider discovery service is separate from the connection service, and sibling modules use the `client.Client` in-process contract. The public connection controller and routes are resource-grouped in `connections.go`. Only one fresh-development baseline migration exists; do not apply the squashed baseline to an already migrated database without a forward-only data-safe upgrade.
-
-### Backend unit tests
-
-The old centralized path `backend/testing/unit-test/` is superseded and must not be recreated.
-
-Unit tests live with their owner:
-
-```text
-backend/launcher/tests/unit-test/...
-backend/services/<service>/tests/unit-test/...
-backend/libs/core/tests/unit-test/...
-backend/providers/<provider>/tests/unit-test/...
-```
-
-Inside `tests/unit-test/`, mirror the flat production responsibility.
-
-Examples:
-
-```text
-services/      -> tests/unit-test/services/
-controller/    -> tests/unit-test/controller/
-repository/    -> tests/unit-test/repository/
-```
-
-Pure data-only entities do not require meaningless unit tests merely to assert struct fields or type aliases.
-
-Every backend unit-test package folder that exists must contain `suite_test.go` and use Ginkgo v2 + Gomega:
-
-```go
-import (
-    . "github.com/onsi/ginkgo/v2"
-    . "github.com/onsi/gomega"
-)
-```
-
-`suite_test.go` owns suite registration plus shared constants, fixtures, builders, fakes/stubs, setup/cleanup, and reusable helper functions for that test package. Other `_test.go` files should stay focused on behavior specs and use the suite support.
-
-Repository-wide `testing/sanity/` and `testing/regression/` remain repository-wide and are not moved into one backend owner.
-
-### Trace context and API-to-API propagation
-
-OpenTelemetry trace context is mandatory across the GroveHub backend ecosystem.
-
-The launcher/edge starts or continues the inbound trace. Every nested service/business/dependency operation must receive the existing `context.Context` and create child spans rather than a disconnected trace.
-
-GroveHub HTTP responses expose the active trace identifier in:
-
-```text
-X-Trace-ID
-```
-
-Outbound HTTP calls also forward `X-Trace-ID` for support/debug correlation. W3C `traceparent` remains the authoritative OpenTelemetry propagation header because parent/child relationships require both trace and span context. `X-Trace-ID` is never added to the JSON response envelope.
-
-Request/execution logs inside a trace include:
-
-```text
-traceId
-spanId
-traceFlags
-```
-
-On failures, spans/logs capture safe request/response metadata such as method, route/path, status, request size, response size, duration, service/component, traceId, and spanId. Generic middleware must not dump raw request/response bodies, Authorization headers, cookies, passwords, tokens, credentials, or arbitrary sensitive query data.
-
-Before adding an HTTP client, service call, worker, messaging boundary, provider call, or middleware, verify that trace context crosses that boundary.
-
-### GroveHub observability identity, metrics, and Grafana
-
-The canonical logical telemetry services are defined centrally. Current identities are:
-
-```text
-service.namespace = grovehub
-
-service.name = LAUNCHER (EDGE)
-grovehub.service.key = launcher-edge
-
-service.name = IDENTITY
-grovehub.service.key = identity
-```
-
-Do not emit ad-hoc variants such as `edge`, `launcher`, `platform`, `identity-service`, or differently cased service names. Future logical services must be registered centrally before service-owned telemetry is emitted.
-
-Metrics, traces, and logs must agree on logical service identity. The same trace ID continues across `LAUNCHER (EDGE) -> IDENTITY -> real dependency` boundaries while each child span has its own span ID.
-
-HTTP latency uses OpenTelemetry histogram metrics so Grafana computes P50/P95/P99. Do not calculate request percentiles inside application code. Metric dimensions must be bounded; use route templates and never use trace IDs, request IDs, user/student IDs, emails, or raw resource URLs as metric labels.
-
-The initial GroveHub observability surface includes:
-
-```text
-RPS / request count
-5xx error rate
-active requests
-P50 / P95 / P99 HTTP latency
-service-operation latency/errors
-service availability
-Go runtime metrics
-WARN/ERROR logs
-trace waterfall/correlation
-Grafana overview dashboard + filters
-bootstrap alert rules
-```
-
-When canonical telemetry names, resources, labels, or dashboard query assumptions change, update the Grafana/dashboard contract and `GROVEHUB_OBSERVABILITY.md` in the same task.
-
-### Local developer hot reload
-
-GroveHub development commands have fixed semantics:
-
-```text
-make backend-start
-    -> one-time backend binary
-    -> no hot reload
-
-make backend-dev
-    -> Air in foreground
-    -> hot reload
-
-make dev-start
-    -> Air-backed backend in background + Swagger
-    -> hot reload
-
-make dev-start-with-logs
-    -> Air-backed backend in background + Swagger + local OTel collector
-    -> hot reload
-```
-
-Do not route `dev-start` or `dev-start-with-logs` through a one-time backend binary.
-
-Air watches backend `.go`, `go.mod`, and `go.sum` changes. After a developer runs `git pull`, watched file changes must trigger dependency refresh, rebuild, and backend restart automatically. Air does not perform `git pull` itself.
+**Precedence:** deployed public contract and applied SQL history > this generic master > actual owner-local engineering/product docs > historical examples in this agent document. When later sections mention obsolete flat service paths or old backend guideline filenames, follow the newer linked guide instead.
 
 ---
 
@@ -361,8 +71,8 @@ docs/
 └── engineering/
     ├── README.md
     ├── backend/
-    │   ├── BACKEND_CODE_GUIDELINES.md
-    │   └── GROVEHUB_BACKEND_STRUCTURE.md
+    │   ├── backend.md
+    │   └── backend.md
     ├── frontend/
     │   └── FRONTEND_CODE_GUIDELINES.md
     ├── testing/
@@ -466,8 +176,8 @@ Always:
 
 ```text
 docs/AGENT.md
-docs/engineering/backend/BACKEND_CODE_GUIDELINES.md
-docs/engineering/backend/GROVEHUB_BACKEND_STRUCTURE.md
+docs/engineering/backend/backend.md
+docs/engineering/backend/backend.md
 docs/engineering/testing/TESTING_GUIDELINES.md
 docs/engineering/testing/BACKEND_UNIT_TEST_STRUCTURE.md
 ```
@@ -511,8 +221,8 @@ Read:
 
 ```text
 docs/engineering/api/API_CONTRACT_GUIDELINES.md
-docs/engineering/backend/BACKEND_CODE_GUIDELINES.md
-docs/engineering/backend/GROVEHUB_BACKEND_STRUCTURE.md
+docs/engineering/backend/backend.md
+docs/engineering/backend/backend.md
 docs/engineering/testing/TESTING_GUIDELINES.md
 docs/engineering/testing/BACKEND_UNIT_TEST_STRUCTURE.md
 ```
@@ -538,8 +248,8 @@ Read:
 
 ```text
 docs/engineering/database/DATABASE_GUIDELINES.md
-docs/engineering/backend/BACKEND_CODE_GUIDELINES.md
-docs/engineering/backend/GROVEHUB_BACKEND_STRUCTURE.md
+docs/engineering/backend/backend.md
+docs/engineering/backend/backend.md
 docs/engineering/testing/TESTING_GUIDELINES.md
 docs/engineering/testing/BACKEND_UNIT_TEST_STRUCTURE.md
 ```
@@ -569,8 +279,8 @@ Read:
 
 ```text
 docs/engineering/providers/PROVIDER_SDK_GUIDELINES.md
-docs/engineering/backend/BACKEND_CODE_GUIDELINES.md
-docs/engineering/backend/GROVEHUB_BACKEND_STRUCTURE.md
+docs/engineering/backend/backend.md
+docs/engineering/backend/backend.md
 docs/engineering/testing/TESTING_GUIDELINES.md
 docs/engineering/testing/BACKEND_UNIT_TEST_STRUCTURE.md
 docs/engineering/security/SECURITY_GUIDELINES.md
@@ -1161,7 +871,7 @@ Repository/PostgreSQL Adapter
 
 Do not bypass layers because code is in one process.
 
-Use `GROVEHUB_BACKEND_STRUCTURE.md` for current service folder placement and layer ownership.
+Use `backend.md` for current service folder placement and layer ownership.
 
 ---
 

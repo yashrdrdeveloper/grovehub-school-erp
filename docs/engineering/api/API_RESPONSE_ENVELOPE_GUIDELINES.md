@@ -2,7 +2,7 @@
 
 > **Status:** Mandatory engineering standard  
 > **Applies to:** GroveHub REST/JSON APIs across all backend services.  
-> **Relationship:** Additive to `API_CONTRACT_GUIDELINES.md` and `BACKEND_CODE_GUIDELINES.md`.
+> **Relationship:** Additive to `API_CONTRACT_GUIDELINES.md` and `backend.md`.
 
 ## 1. Organization-wide response contract
 
