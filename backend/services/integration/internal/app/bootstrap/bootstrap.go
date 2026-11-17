@@ -2,19 +2,21 @@
 package bootstrap
 
 import (
-    "net/http"
+	"net/http"
 
-    integrationclient "grovehub/services/integration/client"
+	coregateway "grovehub/libs/core/gateway"
+	integrationclient "grovehub/services/integration/client"
 )
 
-// Runtime owns the Integration HTTP controller, internal client and workers.
+// Runtime owns Integration's controllers, typed client, verifier, and workers.
 type Runtime interface {
-    RegisterHTTP(*http.ServeMux)
-    Client() integrationclient.Client
-    LocalOnly() bool
-    Close()
+	RegisterHTTP(*http.ServeMux)
+	Client() integrationclient.Client
+	coregateway.WorkloadVerifier
+	LocalOnly() bool
+	Close()
 }
 
 type Bootstrap interface {
-    Build() (Runtime,error)
+	Build() (Runtime, error)
 }
