@@ -1,8 +1,6 @@
 package controller_test
 
 import (
-    providerdto "grovehub/services/integration/internal/app/providers/dto"
-    providerresponse "grovehub/services/integration/internal/app/dto/provider"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -12,20 +10,23 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
+	clientprincipal "grovehub/services/integration/client/principal"
 	integrationconfig "grovehub/services/integration/internal/app/config"
-	integrationcontroller "grovehub/services/integration/internal/app/controller/connection/impl"
-    combinedcontroller "grovehub/services/integration/internal/app/controller/impl"
-    providercontroller "grovehub/services/integration/internal/app/controller/provider/impl"
+	publicconnections "grovehub/services/integration/internal/app/controller/connection/public/impl"
+	protectedconnections "grovehub/services/integration/internal/app/controller/connection/protected/impl"
+	providerscontroller "grovehub/services/integration/internal/app/controller/provider/public/impl"
+	restrictedwebhooks "grovehub/services/integration/internal/app/controller/webhook/restricted/impl"
 	connectiondto "grovehub/services/integration/internal/app/dto/connection"
-	
+	providerresponse "grovehub/services/integration/internal/app/dto/provider"
 	"grovehub/services/integration/internal/app/externalService/mail/gmail"
-	integrationroutes "grovehub/services/integration/internal/app/routes"
+	providerdescriptor "grovehub/services/integration/internal/app/providers/dto"
+	"grovehub/services/integration/internal/app/routes"
 )
 
 type serviceStub struct{}
 
-func (*serviceStub) Providers(context.Context) []providerdto.Descriptor {
-	return []providerdto.Descriptor{{ID: "GMAIL"}}
+func (*serviceStub) Providers(context.Context) []providerdescriptor.Descriptor {
+	return []providerdescriptor.Descriptor{{ID: "GMAIL"}}
 }
 
 func (*serviceStub) Provider(context.Context, string) (providerresponse.ProviderDetails, error) {
@@ -56,9 +57,13 @@ func (*serviceStub) Watch(context.Context, string, string) (connectiondto.Watch,
 	return connectiondto.Watch{}, nil
 }
 
-func (*serviceStub) ProcessPush(context.Context, gmail.PushNotification) error { return nil }
+func (*serviceStub) ProcessPush(context.Context, gmail.PushNotification) error {
+	return nil
+}
 
-func (*serviceStub) RenewExpiring(context.Context) error                       { return nil }
+func (*serviceStub) RenewExpiring(context.Context) error {
+	return nil
+}
 
 func (*serviceStub) RunTest(context.Context, string, string, string) (connectiondto.ConnectionTest, error) {
 	return connectiondto.ConnectionTest{}, nil
@@ -68,7 +73,7 @@ func (*serviceStub) ListTests(context.Context, string, string) ([]connectiondto.
 	return nil, nil
 }
 
-func (*serviceStub) ExecuteAction(context.Context, string, string, providerdto.Action, json.RawMessage) (any, error) {
+func (*serviceStub) ExecuteAction(context.Context, string, string, providerdescriptor.Action, json.RawMessage) (any, error) {
 	return nil, nil
 }
 
@@ -76,95 +81,118 @@ func (*serviceStub) Disconnect(context.Context, string, string) (connectiondto.C
 	return connectiondto.Connection{}, nil
 }
 
-var _ = Describe("Integration HTTP authorization", func() {
-	It("allows public provider discovery", func() {
+var _ = Describe("Integration access-tier controllers", func() {
+	var service *serviceStub
+
+	BeforeEach(func() {
+		service = &serviceStub{}
+	})
+
+	It("serves public provider discovery independently of connection ownership", func() {
 		recorder := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodGet, "/integrations/providers", nil)
-		providercontroller.NewProviderController(&serviceStub{}).Providers(recorder, req)
+		request := httptest.NewRequest(http.MethodGet, "/integrations/public/providers", nil)
+
+		providerscontroller.NewProviderController(service).Providers(recorder, request)
+
 		Expect(recorder.Code).To(Equal(http.StatusOK))
 		Expect(recorder.Body.String()).To(ContainSubstring("GMAIL"))
 	})
-	It("denies unauthorized OAuth starts and mail tests", func() {
-		c := integrationcontroller.NewConnectionController(&serviceStub{}, integrationconfig.GmailPush{})
+
+	It("denies protected operations without a gateway-verified principal", func() {
+		controller := protectedconnections.New(service)
 		for _, testCase := range []struct {
-			route   string
+			path string
 			handler http.HandlerFunc
 		}{
-			{"/integrations/connections/abc/oauth/start", c.BeginOAuth},
-			{"/integrations/connections/abc/test", c.RunTest},
-			{"/integrations/connections/abc/tests", c.ListTests},
-			{"/integrations/connections/abc/actions/mail.send", c.ExecuteAction},
-			{"/integrations/connections/abc/watch", c.Watch},
+			{"/integrations/protected/connections/abc/oauth/start", controller.BeginOAuth},
+			{"/integrations/protected/connections/abc/test", controller.RunTest},
+			{"/integrations/protected/connections/abc/tests", controller.ListTests},
+			{"/integrations/protected/connections/abc/actions/mail.send", controller.ExecuteAction},
+			{"/integrations/protected/connections/abc/watch", controller.Watch},
 		} {
 			recorder := httptest.NewRecorder()
-			request := httptest.NewRequest(http.MethodPost, testCase.route, nil)
+			request := httptest.NewRequest(http.MethodPost, testCase.path, nil)
+			request.Header.Set("X-Tenant-ID", "forged")
+
 			testCase.handler(recorder, request)
-			Expect(recorder.Code).To(Equal(http.StatusForbidden))
+
+			Expect(recorder.Code).To(Equal(http.StatusForbidden), testCase.path)
 		}
 	})
-	It("rejects unauthenticated Gmail push", func() {
-		c := integrationcontroller.NewConnectionController(&serviceStub{}, integrationconfig.GmailPush{Topic: "projects/test/topics/mail", Audience: "https://example.test/push", ServiceAccount: "push@example.test"})
-		response := httptest.NewRecorder()
-		c.GmailPush(response, httptest.NewRequest(http.MethodPost, "/integrations/webhooks/gmail", strings.NewReader("{}")))
-		Expect(response.Code).To(Equal(http.StatusUnauthorized))
-	})
-	It("registers all connection URLs in the connections resource group", func() {
-		c := integrationcontroller.NewConnectionController(&serviceStub{}, integrationconfig.GmailPush{})
-		mux := http.NewServeMux()
-		integrationroutes.RegisterHTTP(mux, combinedcontroller.New(c,providercontroller.NewProviderController(&serviceStub{})))
 
-		for _, route := range []struct {
-			method, path string
-			want         int
-		}{
-			{http.MethodGet, "/integrations/providers", http.StatusOK},
-			{http.MethodGet, "/integrations/connections/oauth/gmail/callback", http.StatusOK},
-			{http.MethodGet, "/integrations/connections/oauth/outlook/callback", http.StatusOK},
-			{http.MethodPost, "/integrations/connections/example/oauth/start", http.StatusForbidden},
-			{http.MethodPost, "/integrations/connections/example/actions/mail.send", http.StatusForbidden},
-			{http.MethodPost, "/integrations/connections/example/test", http.StatusForbidden},
-			{http.MethodPost, "/integrations/connections/example/watch", http.StatusForbidden},
-			{http.MethodGet, "/integrations/oauth/gmail/callback", http.StatusNotFound},
-		} {
-			response := httptest.NewRecorder()
-			mux.ServeHTTP(response, httptest.NewRequest(route.method, route.path, nil))
-			Expect(response.Code).To(Equal(route.want), route.path)
+	It("rejects a Gmail webhook without valid signed workload authorization", func() {
+		configuration := integrationconfig.GmailPush{
+			Topic: "projects/test/topics/mail",
+			Audience: "https://example.test/push",
+			ServiceAccount: "push@example.test",
 		}
-	})
-	It("permits a matching development actor on loopback only when explicitly enabled",func(){
-  dev:=integrationconfig.DevAuth{
-   Enabled:true,
-   TenantID:"018f5d04-315c-75a9-b890-df0d02e787c1",
-   ActorGID:"01a1b210-402c-7622-a33c-f82ceba26c7d",
-  }
-  c:=integrationcontroller.NewConnectionController(&serviceStub{},integrationconfig.GmailPush{},dev)
-  requestBody:=`{"provider":"GMAIL","ownerGid":"01a1b210-402c-7622-a33c-f82ceba26c7d"}`
-
-  local:=httptest.NewRequest(http.MethodPost,"/integrations/connections",strings.NewReader(requestBody))
-  local.RemoteAddr="127.0.0.1:50231"
-  response:=httptest.NewRecorder()
-  c.Create(response,local)
-  Expect(response.Code).To(Equal(http.StatusCreated))
-
-  remote:=httptest.NewRequest(http.MethodPost,"/integrations/connections",strings.NewReader(requestBody))
-  remote.RemoteAddr="198.51.100.10:50231"
-  remote.Header.Set("X-Forwarded-For","127.0.0.1")
-  response=httptest.NewRecorder()
-  c.Create(response,remote)
-  Expect(response.Code).To(Equal(http.StatusForbidden))
-
-  forged:=httptest.NewRequest(http.MethodPost,"/integrations/connections",strings.NewReader(`{"provider":"GMAIL","ownerGid":"018f5d04-315c-75a9-b890-df0d02e787c1"}`))
-  forged.RemoteAddr="[::1]:50231"
-  response=httptest.NewRecorder()
-  c.Create(response,forged)
-  Expect(response.Code).To(Equal(http.StatusForbidden))
- })
- It("denies connection creation without a verified principal", func() {
-		c := integrationcontroller.NewConnectionController(&serviceStub{}, integrationconfig.GmailPush{})
+		controller := restrictedwebhooks.New(service, configuration)
 		recorder := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodPost, "/integrations/connections", strings.NewReader(`{"provider":"GMAIL","ownerGid":"a"}`))
-		req.Header.Set("X-Tenant-ID", "spoofed")
-		c.Create(recorder, req)
+		request := httptest.NewRequest(http.MethodPost, "/integrations/restricted/webhooks/gmail", strings.NewReader("{}"))
+
+		controller.GmailPush(recorder, request)
+
+		Expect(recorder.Code).To(Equal(http.StatusUnauthorized))
+	})
+
+	It("registers only the annotated public, protected, and restricted endpoints", func() {
+		mux := http.NewServeMux()
+		routes.RegisterHTTP(
+			mux,
+			publicconnections.New(service),
+			protectedconnections.New(service),
+			providerscontroller.NewProviderController(service),
+			restrictedwebhooks.New(service, integrationconfig.GmailPush{}),
+		)
+		for _, testCase := range []struct {
+			method string
+			path string
+			status int
+		}{
+			{http.MethodGet, "/integrations/public/providers", http.StatusOK},
+			{http.MethodGet, "/integrations/public/connections/oauth/gmail/callback", http.StatusOK},
+			{http.MethodGet, "/integrations/public/connections/oauth/outlook/callback", http.StatusOK},
+			{http.MethodPost, "/integrations/protected/connections/example/oauth/start", http.StatusForbidden},
+			{http.MethodPost, "/integrations/protected/connections/example/actions/mail.send", http.StatusForbidden},
+			{http.MethodPost, "/integrations/protected/connections/example/test", http.StatusForbidden},
+			{http.MethodPost, "/integrations/protected/connections/example/watch", http.StatusForbidden},
+			{http.MethodGet, "/integrations/connections/oauth/gmail/callback", http.StatusNotFound},
+		} {
+			recorder := httptest.NewRecorder()
+			mux.ServeHTTP(recorder, httptest.NewRequest(testCase.method, testCase.path, nil))
+			Expect(recorder.Code).To(Equal(testCase.status), testCase.path)
+		}
+	})
+
+	It("uses the verified caller context and never trusts a forged tenant header", func() {
+		controller := protectedconnections.New(service)
+		requestBody := `{"provider":"GMAIL","ownerGid":"01a1b210-402c-7622-a33c-f82ceba26c7d"}`
+
+		verified := httptest.NewRequest(
+			http.MethodPost,
+			"/integrations/protected/connections",
+			strings.NewReader(requestBody),
+		)
+		verified = verified.WithContext(clientprincipal.WithVerifiedPrincipal(
+			verified.Context(),
+			clientprincipal.VerifiedPrincipal{
+				TenantID: "018f5d04-315c-75a9-b890-df0d02e787c1",
+				ActorGID: "01a1b210-402c-7622-a33c-f82ceba26c7d",
+			},
+		))
+		recorder := httptest.NewRecorder()
+		controller.Create(recorder, verified)
+		Expect(recorder.Code).To(Equal(http.StatusCreated))
+
+		forged := httptest.NewRequest(
+			http.MethodPost,
+			"/integrations/protected/connections",
+			strings.NewReader(requestBody),
+		)
+		forged.Header.Set("X-Tenant-ID", "018f5d04-315c-75a9-b890-df0d02e787c1")
+		forged.Header.Set("X-Forwarded-For", "127.0.0.1")
+		recorder = httptest.NewRecorder()
+		controller.Create(recorder, forged)
 		Expect(recorder.Code).To(Equal(http.StatusForbidden))
 	})
 })
