@@ -18,9 +18,8 @@ func New(a accountrepo.Repository,s sessionrepo.Repository,c credential.Service)
 func(o *Operation)Execute(ctx context.Context,input dto.Login,userAgent string)(auth.SessionResult,error){
  identifier:=strings.ToLower(strings.TrimSpace(input.Identifier))
  if identifier==""||input.Password==""{return auth.SessionResult{},errors.New("invalid credentials")}
- var account entity.Account
- var err error
- if strings.Contains(identifier,"@"){account,err=o.accounts.FindByEmail(ctx,identifier)}else{account,err=o.accounts.FindByUsername(ctx,identifier)}
+ if !strings.Contains(identifier,"@"){return auth.SessionResult{},errors.New("invalid credentials")}
+ account,err:=o.accounts.FindByEmail(ctx,identifier)
  if err!=nil||account.Status!=entity.Active{return auth.SessionResult{},errors.New("invalid credentials")}
  ok,err:=o.credential.Verify(ctx,account.AccountID,input.Password);if err!=nil||!ok{return auth.SessionResult{},errors.New("invalid credentials")}
  access,err:=helpers.NewSecret(32);if err!=nil{return auth.SessionResult{},err}
