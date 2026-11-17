@@ -12,7 +12,10 @@ import (
     integrationclient "grovehub/services/integration/client"
     integrationconfig "grovehub/services/integration/internal/app/config"
     bootstrap "grovehub/services/integration/internal/app/bootstrap"
-    controller "grovehub/services/integration/internal/app/controller"
+    connectionpublic "grovehub/services/integration/internal/app/controller/connection/public"
+    connectionprotected "grovehub/services/integration/internal/app/controller/connection/protected"
+    providerpublic "grovehub/services/integration/internal/app/controller/provider/public"
+    webhookrestricted "grovehub/services/integration/internal/app/controller/webhook/restricted"
     "grovehub/services/integration/internal/app/routes"
     messaging "grovehub/services/infrastructure/client/messaging"
 )
@@ -32,7 +35,10 @@ func New(logger *slog.Logger, db *gorm.DB, events messaging.MessagingClient, aut
 
 type runtime struct {
     logger *slog.Logger
-    controller controller.Controller
+    connectionPublic connectionpublic.ConnectionController
+    connectionProtected connectionprotected.ConnectionController
+    providerPublic providerpublic.ProviderController
+    webhookRestricted webhookrestricted.WebhookController
     client integrationclient.Client
     localOnly bool
     stop context.CancelFunc
@@ -51,13 +57,13 @@ func (b *builder) Build() (bootstrap.Runtime,error) {
     eventProducer:=b.newEvents()
     connections,providerService,err:=b.newServices(providers,eventProducer)
     if err!=nil{return nil,err}
-    controller:=b.newRoutes(connections,providerService,providers.push)
+    connectionsPublic, connectionsProtected, providersPublic, webhooksRestricted := b.newRoutes(connections, providerService, providers.push)
     client:=b.newClient(connections,providerService)
     stop,done:=b.newWatchRenewal(connections,providers.push.Enabled()&&providers.gmail!=nil)
-    return &runtime{logger:b.logger,controller:controller,client:client,localOnly:b.devAuth.Enabled,stop:stop,done:done},nil
+    return &runtime{logger:b.logger,connectionPublic:connectionsPublic, connectionProtected:connectionsProtected, providerPublic:providersPublic, webhookRestricted:webhooksRestricted,client:client,localOnly:b.devAuth.Enabled,stop:stop,done:done},nil
 }
 
-func (module *runtime) RegisterHTTP(mux *http.ServeMux) {routes.RegisterHTTP(mux,module.controller)}
+func (module *runtime) RegisterHTTP(mux *http.ServeMux) {routes.RegisterHTTP(mux,module.connectionPublic,module.connectionProtected,module.providerPublic,module.webhookRestricted)}
 
 func (module *runtime) Client() integrationclient.Client {return module.client}
 
