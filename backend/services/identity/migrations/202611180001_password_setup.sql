@@ -1,4 +1,7 @@
 -- +goose Up
+ALTER TABLE identity.accounts DROP CONSTRAINT chk_accounts_status;
+ALTER TABLE identity.accounts ADD CONSTRAINT chk_accounts_status CHECK (status IN ('PENDING_SETUP', 'ACTIVE', 'SUSPENDED', 'DEACTIVATED'));
+
 CREATE TABLE IF NOT EXISTS identity.password_setup_tokens (
     token_hash CHAR(64) PRIMARY KEY,
     account_id UUID NOT NULL REFERENCES identity.accounts(account_id) ON DELETE CASCADE,
@@ -22,10 +25,9 @@ CREATE TABLE IF NOT EXISTS identity.password_setup_mail (
 );
 CREATE INDEX IF NOT EXISTS idx_password_setup_mail_pending ON identity.password_setup_mail (next_attempt_at) WHERE sent_at IS NULL;
 
--- IMPORTANT: Existing account status CHECK/ENUM constraints must be inspected
--- and updated explicitly to permit PENDING_SETUP before rollout. Do not drop
--- unknown constraints blindly; migration verification is required.
 
 -- +goose Down
 DROP TABLE IF EXISTS identity.password_setup_mail;
 DROP TABLE IF EXISTS identity.password_setup_tokens;
+ALTER TABLE identity.accounts DROP CONSTRAINT chk_accounts_status;
+ALTER TABLE identity.accounts ADD CONSTRAINT chk_accounts_status CHECK (status IN ('ACTIVE', 'SUSPENDED', 'DEACTIVATED'));
