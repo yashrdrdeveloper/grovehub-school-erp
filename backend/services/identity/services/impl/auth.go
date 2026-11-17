@@ -220,3 +220,13 @@ func (service *AuthService) SetPassword(ctx context.Context, request identityreq
     if err != nil { return identityresponse.SetPassword{}, err }
     return identityresponse.SetPassword{Status: string(entity.AccountStatusActive)}, nil
 }
+
+
+// Refresh rotates a valid refresh credential. Failure responses do not disclose
+// whether a particular token ever existed.
+func (service *AuthService) Refresh(ctx context.Context, request identityrequest.RefreshRequest) (identityresponse.Login, error) {
+    if service.dependencies.SessionIssuer == nil { return identityresponse.Login{}, coreerrors.NewError(identityerror.AuthenticationUnavailable) }
+    result, err := service.dependencies.SessionIssuer.Refresh(ctx, request.RequestBody.RefreshToken)
+    if err != nil { return identityresponse.Login{}, coreerrors.NewError(identityerror.InvalidCredentials) }
+    return result, nil
+}
