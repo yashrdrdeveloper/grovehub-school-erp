@@ -455,16 +455,16 @@ func writeRoutes(service string, groups []routeGroup, output string) error {
 	}
 	// Annotations produce service-owned policies; the gateway has no knowledge
 	// of service endpoint strings, and registration is deterministic.
-	b.WriteString("func RouteLimits() map[string]int {\\nreturn map[string]int{\\n")
+	b.WriteString("func RouteLimits() map[string]int {\nreturn map[string]int{\n")
 	for _, group := range groups {
 		for _, item := range group.routes {
 			if item.limit == 0 {
 				continue
 			}
-			fmt.Fprintf(&b, "%q: %d,\\n", item.verb+" "+item.path, item.limit)
+			fmt.Fprintf(&b, "%q: %d,\n", item.verb+" "+item.path, item.limit)
 		}
 	}
-	b.WriteString("}\\n}\\n\\n")
+	b.WriteString("}\n}\n\n")
 	source, err := format.Source([]byte(b.String()))
 	if err != nil {
 		return fmt.Errorf("format generated routes: %w", err)
