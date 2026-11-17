@@ -85,3 +85,25 @@ func TestPublicUnsafeRequestsRequireTrustedOrigin(t *testing.T) {
 		t.Fatalf("cross-origin login allowed: %d", recorder.Code)
 	}
 }
+
+func TestRateLimitUsesProvidedExactMethodAndRoute(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST /identity/public/auth/login", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+	limits := map[string]int{"POST /identity/public/auth/login": 2}
+	gateway := external.New(mux, accessVerifier{}, nil, "https://app.example.test", limits)
+	for attempt := 0; attempt < 3; attempt++ {
+		request := httptest.NewRequest(http.MethodPost, "/identity/public/auth/login", nil)
+		request.Header.Set("Origin", "https://app.example.test")
+		recorder := httptest.NewRecorder()
+		gateway.ServeHTTP(recorder, request)
+		want := http.StatusOK
+		if attempt == 2 {
+			want = http.StatusTooManyRequests
+		}
+		if recorder.Code != want {
+			t.Fatalf("attempt %d: expected %d, got %d", attempt+1, want, recorder.Code)
+		}
+	}
+}
