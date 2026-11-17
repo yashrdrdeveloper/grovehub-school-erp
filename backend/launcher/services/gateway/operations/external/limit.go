@@ -12,6 +12,7 @@ import (
 type Limiter struct {
 	mu sync.Mutex
 	entries map[string]attempt
+	limits map[string]int
 }
 
 type attempt struct {
@@ -19,23 +20,19 @@ type attempt struct {
 	until time.Time
 }
 
-func NewLimiter() *Limiter {
-	return &Limiter{entries: make(map[string]attempt)}
+func NewLimiter(limits map[string]int) *Limiter {
+	configured := make(map[string]int, len(limits))
+	for pattern, count := range limits {
+		if count > 0 {
+			configured[pattern] = count
+		}
+	}
+	return &Limiter{entries: make(map[string]attempt), limits: configured}
 }
 
 func (limiter *Limiter) Allow(pattern string, request *http.Request) bool {
-	limit := 0
-	switch pattern {
-	case "/identity/public/auth/login":
-		limit = 12
-	case "/identity/public/auth/forgot-password":
-		limit = 5
-	case "/identity/public/auth/recovery/exchange",
-		"/identity/public/auth/invitations/exchange":
-		limit = 8
-	case "/identity/public/auth/refresh":
-		limit = 30
-	default:
+	limit, configured := limiter.limits[request.Method+" "+pattern]
+	if !configured || limit < 1 {
 		return true
 	}
 

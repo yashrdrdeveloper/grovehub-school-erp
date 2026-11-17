@@ -149,3 +149,8 @@ func (module *runtime) runWorker(ctx context.Context) {
 		}
 	}
 }
+
+// RouteLimits exposes generated, exact method+path policy to Launcher.
+func (module *runtime) RouteLimits() map[string]int {
+	return routes.RouteLimits()
+}

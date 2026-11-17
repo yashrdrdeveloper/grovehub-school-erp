@@ -99,6 +99,7 @@ func Run(logger *slog.Logger) error {
 		integrationModule,
 		os.Getenv("IDENTITY_ALLOWED_ORIGIN"),
 		nil, // Unconfigured privileged internal invocation fails closed.
+		identityModule.RouteLimits(),
 	)
 
 	edgeService := coretelemetry.ServiceLauncherEdge

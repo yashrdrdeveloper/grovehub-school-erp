@@ -14,9 +14,9 @@ type Gateway struct {
 	Internal *inner.Operation
 }
 
-func New(mux *http.ServeMux, access coregateway.AccessVerifier, workload coregateway.WorkloadVerifier, origin string, authorizer inner.Authorizer) Gateway {
+func New(mux *http.ServeMux, access coregateway.AccessVerifier, workload coregateway.WorkloadVerifier, origin string, authorizer inner.Authorizer, limits ...map[string]int) Gateway {
 	return Gateway{
-		External: external.New(mux, access, workload, origin),
+		External: external.New(mux, access, workload, origin, limits...),
 		Internal: inner.New(authorizer),
 	}
 }

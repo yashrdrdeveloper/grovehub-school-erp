@@ -10,6 +10,7 @@ type Runtime interface {
 	module.Module
 	coregateway.AccessVerifier
 	AccountClient() accountclient.Client
+	RouteLimits() map[string]int
 }
 
 type Bootstrap interface {

@@ -23,13 +23,17 @@ type Operation struct {
 	limiter *Limiter
 }
 
-func New(mux *http.ServeMux, access coregateway.AccessVerifier, workload coregateway.WorkloadVerifier, allowedOrigin string) *Operation {
+func New(mux *http.ServeMux, access coregateway.AccessVerifier, workload coregateway.WorkloadVerifier, allowedOrigin string, limits ...map[string]int) *Operation {
+	configured := map[string]int{}
+	if len(limits) > 0 {
+		configured = limits[0]
+	}
 	return &Operation{
 		mux: mux,
 		access: access,
 		workloads: workload,
 		origin: allowedOrigin,
-		limiter: NewLimiter(),
+		limiter: NewLimiter(configured),
 	}
 }
 
