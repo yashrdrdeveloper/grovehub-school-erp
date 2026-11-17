@@ -7,6 +7,7 @@ import (
     "errors"
     "fmt"
     "net/http"
+    "net"
     "net/url"
     "strings"
     "time"
@@ -23,7 +24,11 @@ type IntegrationMailSender struct {
 
 func NewIntegrationMailSender(rawBaseURL string, connectionID string, serviceToken string) (*IntegrationMailSender, error) {
     base, err := url.Parse(strings.TrimRight(rawBaseURL, "/"))
-    if err != nil || base.Scheme != "https" || base.Host == "" || connectionID == "" || serviceToken == "" {
+    host := base.Hostname()
+    ip := net.ParseIP(host)
+    isLoopback := host == "localhost" || (ip != nil && ip.IsLoopback())
+    transportAllowed := base.Scheme == "https" || (base.Scheme == "http" && isLoopback)
+    if err != nil || !transportAllowed || base.Host == "" || connectionID == "" || serviceToken == "" {
         return nil, errors.New("system mail requires HTTPS, an authorized connection and a service token")
     }
     endpoint := strings.TrimRight(base.String(), "/") + "/integrations/connections/" +
