@@ -7,7 +7,7 @@ Identity is rebuilt to the same module topology as Foundation, Integration and I
 - Foundation owns Person and contacts; Identity stores an immutable PersonGID reference and does not modify Foundation tables directly.
 - Identity owns accounts, tenant scope, username, credential hashes, session credentials, one-time proofs and queued invitation intent.
 - Integration owns provider connections, Gmail/Outlook sends and OAuth credentials. Identity calls its public typed client from the registration delivery helper.
-- Infrastructure owns event publication; account domain event producer work is still pending and must use the shared outbox.
+- Identity owns the `identity.account.changed.v1` producer; Infrastructure `EventStore.Enqueue` stores account events in the same local transaction as account creation, setup, updates, suspension and deactivation. Consumer deduplication remains required.
 - The Account search operation shares `libs/core/search` request, query, cursor and field allowlisting conventions with Foundation, plus a resource-owned `AccountConfig`.
 
 ## Module SRP
@@ -24,8 +24,8 @@ Admin actions are restricted to the verified current account, explicit admin all
 
 Account create is an explicit ordered flow: authorize -> normalize -> idempotency -> Foundation person resolution -> persist tenant account and encrypted invitation in one Identity UnitOfWork. Foundation may have an independent transaction; compensate or reconcile partial remote writes rather than claiming cross-module ACID. Invitation delivery occurs after commit in an at-least-once worker, using the Integration action interface.
 
-The backend annotation processor checks `@ChainOfResponsibility` but does not provide business authorization or execute a chain automatically. Typed flow steps must remain explicit.
+The backend annotation processor checks `@ChainOfResponsibility`, while the Create operation explicitly executes ordered stages with the shared `libs/core/pipeline/service.Run` runner. The annotation itself provides no authorization or transactional guarantee.
 
 ## Deployment and verification limitations
 
-The current schema history contains a destructive initial identity migration that MUST NOT be rerun against an existing schema; only apply pending additive migrations using the existing `identity_schema_state` history. Set `IDENTITY_ALLOWED_ORIGIN`, `IDENTITY_ADMIN_ACCOUNT_IDS`, `IDENTITY_INVITATION_KEY_B64`, `IDENTITY_SETUP_URL`, `IDENTITY_RESET_URL`, `IDENTITY_SYSTEM_MAIL_TENANT_ID`, and `IDENTITY_SYSTEM_MAIL_CONNECTION_ID` using managed secrets/configuration. Password recovery is deliberately non-enumerating. Pending production release requirements include distributed rate limits, refresh-token replay family detection, admin bootstrap, data backfill/rollback, end-to-end Integration sandbox sends and PostgreSQL-backed concurrency tests.
+The current schema history contains a destructive initial identity migration that MUST NOT be rerun against an existing schema; only apply pending additive migrations using the existing `identity_schema_state` history. Set `IDENTITY_ALLOWED_ORIGIN`, `IDENTITY_ADMIN_ACCOUNT_IDS`, `IDENTITY_INVITATION_KEY_B64`, `IDENTITY_SETUP_URL`, `IDENTITY_RESET_URL`, `IDENTITY_SYSTEM_MAIL_TENANT_ID`, and `IDENTITY_SYSTEM_MAIL_CONNECTION_ID` using managed secrets/configuration. Password recovery is deliberately non-enumerating. Pending production release requirements include distributed rate limits (the local HTTP limiter is only per-instance), refresh-token replay family detection, admin bootstrap, tenant data backfill/rollback, end-to-end Integration sandbox sends and PostgreSQL-backed concurrency tests. Email-only login is enforced until a tenant-aware username-login contract is designed.
