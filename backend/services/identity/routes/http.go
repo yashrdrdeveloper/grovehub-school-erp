@@ -14,4 +14,5 @@ func RegisterHTTP(mux *http.ServeMux, protected protectedcontroller.AuthControll
     mux.HandleFunc("POST /identity/public/auth/set-password", public.SetPassword)
     mux.HandleFunc("POST /identity/public/auth/refresh", public.Refresh)
     mux.Handle("POST /identity/protected/auth/register", protectedMiddleware(http.HandlerFunc(protected.Register)))
+    mux.Handle("POST /identity/protected/auth/logout", protectedMiddleware(http.HandlerFunc(protected.Logout)))
 }
