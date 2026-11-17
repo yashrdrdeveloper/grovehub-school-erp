@@ -12,6 +12,7 @@ import (
 	accountvalidator "grovehub/services/identity/internal/app/validators/account"
 )
 
+// @Validator
 type Validator struct{}
 
 var _ accountvalidator.Validator = Validator{}

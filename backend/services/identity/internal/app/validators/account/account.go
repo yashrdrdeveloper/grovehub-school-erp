@@ -1,3 +1,14 @@
 package account
-import ("grovehub/libs/core/search";"grovehub/services/identity/internal/app/dto/account")
-type Validator interface{NormalizeCreate(account.Create)(account.Create,error);NormalizeUsername(string)(string,error);Search(search.Request)(search.Query[string],error)}
+
+import (
+	coresearch "grovehub/libs/core/search"
+	accountdto "grovehub/services/identity/internal/app/dto/account"
+)
+
+// Validator exposes pure normalization and trusted SearchDetails query rules.
+// Resource authorization remains in its owning service operation.
+type Validator interface {
+	NormalizeCreate(request accountdto.Create) (accountdto.Create, error)
+	NormalizeUsername(username string) (string, error)
+	Search(request coresearch.Request) (coresearch.Query[string], error)
+}

@@ -1,5 +1,28 @@
 package impl
-import ("grovehub/services/identity/internal/app/dto/account";"grovehub/services/identity/internal/app/entity";contract "grovehub/services/identity/internal/app/mappers/account")
+
+import (
+	accountdto "grovehub/services/identity/internal/app/dto/account"
+	"grovehub/services/identity/internal/app/entity"
+	accountmapper "grovehub/services/identity/internal/app/mappers/account"
+)
+
 type Mapper struct{}
-func New()contract.Mapper{return Mapper{}}
-func(Mapper)ToResponse(a entity.Account)account.Account{return account.Account{AccountID:a.AccountID,PersonGID:a.PersonGID,Username:a.Username,Email:a.Email,Status:string(a.Status),Version:a.Version,CreatedAt:a.CreatedAt,UpdatedAt:a.UpdatedAt}}
+
+var _ accountmapper.Mapper = (*Mapper)(nil)
+
+func New() accountmapper.Mapper {
+	return &Mapper{}
+}
+
+func (mapper *Mapper) ToResponse(account entity.Account) accountdto.Account {
+	return accountdto.Account{
+		AccountID: account.AccountID,
+		PersonGID: account.PersonGID,
+		Username: account.Username,
+		Email: account.Email,
+		Status: string(account.Status),
+		Version: account.Version,
+		CreatedAt: account.CreatedAt,
+		UpdatedAt: account.UpdatedAt,
+	}
+}
