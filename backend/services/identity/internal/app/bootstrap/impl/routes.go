@@ -1,6 +1,7 @@
 package impl
 
 import (
+	"grovehub/services/identity/internal/app/routes"
 	cookieimpl "grovehub/services/identity/internal/app/transport/cookies/impl"
 	accountprotected "grovehub/services/identity/internal/app/controller/account/protected"
 	accountprotectedimpl "grovehub/services/identity/internal/app/controller/account/protected/impl"
@@ -18,4 +19,9 @@ func (b *builder) newControllers(services serviceGraph) (authpublic.Authenticati
 		authprotectedimpl.New(services.auth, manager),
 		accountpublicimpl.New(services.account, manager),
 		accountprotectedimpl.New(services.account)
+}
+
+// RouteLimits exposes generated, exact method+path policy to Launcher.
+func (module *runtime) RouteLimits() map[string]int {
+	return routes.RouteLimits()
 }

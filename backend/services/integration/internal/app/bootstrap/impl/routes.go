@@ -14,7 +14,7 @@ import (
 	providers "grovehub/services/integration/internal/app/services/provider"
 )
 
-// One underlying connection controller is projected into distinct tier interfaces.
+// Each HTTP access tier owns a controller implementation; no cross-tier shared controller.
 func (b *builder) newRoutes(connectionService connections.ConnectionService, providerService providers.ProviderService, push config.GmailPush) (connectionpublic.ConnectionController, connectionprotected.ConnectionController, providerpublic.ProviderController, webhookrestricted.WebhookController) {
 	return publicimpl.New(connectionService),
 		protectedimpl.New(connectionService),
