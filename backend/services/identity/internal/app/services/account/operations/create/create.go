@@ -20,7 +20,6 @@ import(
 )
 // Step is an ordered, typed registration stage. It can stop a replay without
 // executing downstream persistence or sending duplicate email.
-// @ChainOfResponsibility
 type Step interface{Run(context.Context,*flows.Create)error}
 type stepFunc func(context.Context,*flows.Create)error
 func(f stepFunc)Run(ctx context.Context,flow *flows.Create)error{return f(ctx,flow)}
@@ -32,6 +31,7 @@ type Operation struct{
  unit tx.UnitOfWork
 }
 func New(a accountrepo.Repository,f foundation.Client,v validators.Validator,i *invitation.Service,u tx.UnitOfWork)*Operation{return &Operation{accounts:a,foundation:f,validator:v,invitation:i,unit:u}}
+// @ChainOfResponsibility
 func(o *Operation)Execute(ctx context.Context,request dto.Create,key string)(dto.CreateResult,error){
  flow:=&flows.Create{Request:request,IdempotencyKey:key}
  steps:=[]Step{stepFunc(o.authorize),stepFunc(o.validate),stepFunc(o.replay),stepFunc(o.resolve),stepFunc(o.persist)}
