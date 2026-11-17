@@ -223,27 +223,27 @@ func (service *Service) LogoutAll(ctx context.Context) (int64, error) {
 	return service.sessions.RevokeAll(ctx, actor.AccountID)
 }
 
-func (service *Service) ListSessions(ctx context.Context) ([]map[string]any, error) {
+func (service *Service) ListSessions(ctx context.Context) (authdto.SessionsResult, error) {
 	actor, err := principal.Require(ctx)
 	if err != nil {
-		return nil, err
+		return authdto.SessionsResult{}, err
 	}
 	sessions, err := service.sessions.List(ctx, actor.AccountID)
 	if err != nil {
-		return nil, err
+		return authdto.SessionsResult{}, err
 	}
 
-	items := make([]map[string]any, 0, len(sessions))
+	items := make([]authdto.SessionSummary, 0, len(sessions))
 	for _, session := range sessions {
-		items = append(items, map[string]any{
-			"sessionId": session.SessionID,
-			"current": session.SessionID == actor.SessionID,
-			"createdAt": session.CreatedAt,
-			"lastActiveAt": session.LastActiveAt,
-			"expiresAt": session.RefreshExpiresAt,
+		items = append(items, authdto.SessionSummary{
+			SessionID: session.SessionID,
+			Current: session.SessionID == actor.SessionID,
+			CreatedAt: session.CreatedAt,
+			LastActiveAt: session.LastActiveAt,
+			ExpiresAt: session.RefreshExpiresAt,
 		})
 	}
-	return items, nil
+	return authdto.SessionsResult{Items: items}, nil
 }
 
 func (service *Service) RevokeSession(ctx context.Context, sessionID string) error {

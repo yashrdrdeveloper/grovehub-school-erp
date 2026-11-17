@@ -14,7 +14,7 @@ type Service interface{
  ChangePassword(context.Context,string)error
  Logout(context.Context)error
  LogoutAll(context.Context)(int64,error)
- ListSessions(context.Context)([]map[string]any,error)
+ ListSessions(context.Context)(authentication.SessionsResult,error)
  RevokeSession(context.Context,string)error
  Me(context.Context)(account.Account,error)
 }
