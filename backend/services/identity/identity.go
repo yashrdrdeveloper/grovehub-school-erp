@@ -9,6 +9,9 @@ import (
 	coretelemetry "grovehub/libs/core/telemetry"
 	foundationclient "grovehub/services/foundation/client/person"
 	"grovehub/services/identity/controller"
+    publiccontroller "grovehub/services/identity/controller/public"
+    publiccontrollerimpl "grovehub/services/identity/controller/public/impl"
+    identityservices "grovehub/services/identity/services"
 	controllerimpl "grovehub/services/identity/controller/impl"
 	accounteventimpl "grovehub/services/identity/events/accounts/impl"
 	mapperimpl "grovehub/services/identity/mappers/impl"
@@ -26,6 +29,7 @@ type Module interface {
 type module struct {
 	logger         *slog.Logger
 	authController controller.AuthController
+    publicAuthController publiccontroller.AuthController
 }
 
 func New(
@@ -55,16 +59,21 @@ func New(
 		authMapper,
 		authValidator,
         db,
+        identityservices.AuthDependencies{
+            SessionIssuer: serviceimpl.NewSessionIssuer(db),
+            PasswordSetupTokens: repositoryimpl.NewPasswordSetupTokenRepository(db),
+        },
 	)
 
 	return &module{
 		logger:         logger,
 		authController: controllerimpl.NewAuthController(authService, authValidator),
+        publicAuthController: publiccontrollerimpl.NewAuthController(authService),
 	}
 }
 
 func (service *module) RegisterHTTP(mux *http.ServeMux) {
-	routes.RegisterHTTP(mux, service.authController)
+	routes.RegisterHTTP(mux, service.authController, service.publicAuthController)
 	service.logger.Info(
 		"identity service registered",
 		"service", coretelemetry.ServiceIdentity.Name,
