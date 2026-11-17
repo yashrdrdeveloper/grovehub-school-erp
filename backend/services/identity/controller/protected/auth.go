@@ -6,4 +6,6 @@ import "net/http"
 type AuthController interface {
     // @POST /register
     Register(writer http.ResponseWriter, request *http.Request)
+    // @POST /logout
+    Logout(writer http.ResponseWriter, request *http.Request)
 }
