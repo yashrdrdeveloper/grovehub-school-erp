@@ -70,5 +70,5 @@ func validCallback(raw, provider string) bool {
 	if err != nil || uri.User != nil || uri.Hostname() == "" || uri.RawQuery != "" || uri.Fragment != "" {
 		return false
 	}
-	return uri.Path == "/integrations/connections/oauth/"+provider+"/callback"
+	return uri.Path == "/integrations/public/connections/oauth/"+provider+"/callback"
 }
