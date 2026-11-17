@@ -1,6 +1,10 @@
 package impl
 
 import (
+    "crypto/sha256"
+    "encoding/base64"
+    "encoding/hex"
+    "time"
 	"context"
 	"errors"
 
@@ -187,4 +191,32 @@ func (service *AuthService) Login(ctx context.Context, request identityrequest.L
     result, err := service.dependencies.SessionIssuer.IssueLogin(ctx, account)
     if err != nil { return identityresponse.Login{}, coreerrors.Wrap(identityerror.AuthenticationUnavailable, err) }
     return result, nil
+}
+
+
+// SetPassword redeems an emailed, single-use setup token. Consuming the token,
+// inserting the credential and activating the account are one Identity transaction.
+func (service *AuthService) SetPassword(ctx context.Context, request identityrequest.SetPasswordRequest) (identityresponse.SetPassword, error) {
+    if service.dependencies.PasswordSetupTokens == nil { return identityresponse.SetPassword{}, coreerrors.NewError(identityerror.AuthenticationUnavailable) }
+    if err := validatorhelpers.ValidatePassword(request.RequestBody.Password); err != nil {
+        return identityresponse.SetPassword{}, coreerrors.NewError(identityerror.InvalidPasswordSetup)
+    }
+    tokenBytes, err := base64.RawURLEncoding.DecodeString(request.RequestBody.Token)
+    if err != nil || len(tokenBytes) != 32 {
+        return identityresponse.SetPassword{}, coreerrors.NewError(identityerror.InvalidPasswordSetupToken)
+    }
+    digest := sha256.Sum256(tokenBytes)
+    tokenHash := hex.EncodeToString(digest[:])
+    err = coretransaction.Run(ctx, service.db, func(txCtx context.Context) error {
+        accountID, consumeErr := service.dependencies.PasswordSetupTokens.Consume(txCtx, tokenHash, time.Now().UTC())
+        if consumeErr != nil { return coreerrors.NewError(identityerror.InvalidPasswordSetupToken) }
+        if credentialErr := service.passwordCredentialService.Set(txCtx, string(accountID), request.RequestBody.Password); credentialErr != nil {
+            return coreerrors.Wrap(identityerror.PasswordSetupFailed, credentialErr)
+        }
+        _, activateErr := service.accountService.Activate(txCtx, string(accountID))
+        if activateErr != nil { return coreerrors.Wrap(identityerror.PasswordSetupFailed, activateErr) }
+        return nil
+    })
+    if err != nil { return identityresponse.SetPassword{}, err }
+    return identityresponse.SetPassword{Status: string(entity.AccountStatusActive)}, nil
 }
