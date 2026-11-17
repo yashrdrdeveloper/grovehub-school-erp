@@ -3,8 +3,7 @@
 package external
 
 import (
-	"context"
-	"crypto/subtle"
+		"crypto/subtle"
 	"net/http"
 	"regexp"
 	"strings"
@@ -14,7 +13,7 @@ import (
 	integrationprincipal "grovehub/services/integration/client/principal"
 )
 
-var tierPattern = regexp.MustCompile(`^/[a-z][a-z0-9-]*/(public|protected|restricted)(?:/|$)`)
+var tierPattern = regexp.MustCompile(`^/[a-z][a-z0-9-]*/(public|protected|restricted)(/|$)`)
 
 type Operation struct {
 	mux *http.ServeMux
@@ -49,7 +48,7 @@ func (operation *Operation) ServeHTTP(writer http.ResponseWriter, request *http.
 		route = strings.TrimPrefix(route, request.Method+" ")
 	}
 	matches := tierPattern.FindStringSubmatch(route)
-	if len(matches) != 2 {
+	if len(matches) != 3 {
 		operation.reject(writer, request, http.StatusForbidden)
 		return
 	}
@@ -165,6 +164,3 @@ func (operation *Operation) reject(writer http.ResponseWriter, request *http.Req
 	_ = httpresponse.WriteErrorContext(request.Context(), writer, status, gatewayDefinition(status))
 }
 
-func (operation *Operation) Authenticate(ctx context.Context, accessToken string) (coregateway.Principal, error) {
-	return operation.access.VerifyAccess(ctx, accessToken)
-}
