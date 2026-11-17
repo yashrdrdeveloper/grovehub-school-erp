@@ -12,5 +12,6 @@ import (
 func RegisterHTTP(mux *http.ServeMux, protected protectedcontroller.AuthController, public publiccontroller.AuthController, protectedMiddleware func(http.Handler) http.Handler) {
     mux.HandleFunc("POST /identity/public/auth/login", public.Login)
     mux.HandleFunc("POST /identity/public/auth/set-password", public.SetPassword)
+    mux.HandleFunc("POST /identity/public/auth/refresh", public.Refresh)
     mux.Handle("POST /identity/protected/auth/register", protectedMiddleware(http.HandlerFunc(protected.Register)))
 }
