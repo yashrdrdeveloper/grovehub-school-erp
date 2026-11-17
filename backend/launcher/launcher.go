@@ -97,7 +97,7 @@ func Run(logger *slog.Logger) error {
 	gatewayRuntime := gateway.New(
 		mux,
 		identityModule,
-		nil, // Restricted external workload authentication fails closed.
+		integrationModule, // Verify Gmail Pub/Sub workload tokens; unknown workloads fail closed.
 		os.Getenv("IDENTITY_ALLOWED_ORIGIN"),
 		nil, // Internal privileged actions fail closed until authorized.
 	)

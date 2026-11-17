@@ -54,7 +54,7 @@ func (operation *Operation) ServeHTTP(writer http.ResponseWriter, request *http.
 		return
 	}
 
-	if !operation.validateOrigin(request) {
+	if coregateway.Tier(matches[1]) != coregateway.Restricted && !operation.validateOrigin(request) {
 		operation.reject(writer, request, http.StatusForbidden)
 		return
 	}

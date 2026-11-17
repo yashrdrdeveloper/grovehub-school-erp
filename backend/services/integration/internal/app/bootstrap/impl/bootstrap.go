@@ -9,6 +9,9 @@ import (
 
     "gorm.io/gorm"
 
+    coregateway "grovehub/libs/core/gateway"
+    gmail "grovehub/services/integration/internal/app/externalService/mail/gmail"
+
     integrationclient "grovehub/services/integration/client"
     integrationconfig "grovehub/services/integration/internal/app/config"
     bootstrap "grovehub/services/integration/internal/app/bootstrap"
@@ -41,6 +44,8 @@ type runtime struct {
     webhookRestricted webhookrestricted.WebhookController
     client integrationclient.Client
     localOnly bool
+    webhookVerifier *gmail.PushVerifier
+    webhookEnabled bool
     stop context.CancelFunc
     done chan struct{}
 }
@@ -60,7 +65,7 @@ func (b *builder) Build() (bootstrap.Runtime,error) {
     connectionsPublic, connectionsProtected, providersPublic, webhooksRestricted := b.newRoutes(connections, providerService, providers.push)
     client:=b.newClient(connections,providerService)
     stop,done:=b.newWatchRenewal(connections,providers.push.Enabled()&&providers.gmail!=nil)
-    return &runtime{logger:b.logger,connectionPublic:connectionsPublic, connectionProtected:connectionsProtected, providerPublic:providersPublic, webhookRestricted:webhooksRestricted,client:client,localOnly:b.devAuth.Enabled,stop:stop,done:done},nil
+    return &runtime{logger:b.logger,connectionPublic:connectionsPublic, connectionProtected:connectionsProtected, providerPublic:providersPublic, webhookRestricted:webhooksRestricted,client:client,localOnly:b.devAuth.Enabled,webhookVerifier:gmail.NewPushVerifier(providers.push.Audience,providers.push.ServiceAccount),webhookEnabled:providers.push.Enabled(),stop:stop,done:done},nil
 }
 
 func (module *runtime) RegisterHTTP(mux *http.ServeMux) {routes.RegisterHTTP(mux,module.connectionPublic,module.connectionProtected,module.providerPublic,module.webhookRestricted)}
@@ -70,3 +75,19 @@ func (module *runtime) Client() integrationclient.Client {return module.client}
 func (module *runtime) LocalOnly() bool {return module.localOnly}
 
 func (module *runtime) Close() {module.stop();<-module.done}
+
+var _ coregateway.WorkloadVerifier = (*runtime)(nil)
+
+// VerifyWorkload authenticates the configured Gmail Pub/Sub push caller.
+// Other restricted paths fail closed until an explicit workload strategy exists.
+func (module *runtime) VerifyWorkload(ctx context.Context, request *http.Request) (context.Context, error) {
+	if !module.webhookEnabled || module.webhookVerifier == nil ||
+		request.Method != http.MethodPost ||
+		request.URL.Path != "/integrations/restricted/webhooks/gmail" {
+		return nil, errors.New("unrecognized restricted workload")
+	}
+	if err := module.webhookVerifier.Verify(ctx, request.Header.Get("Authorization")); err != nil {
+		return nil, err
+	}
+	return ctx, nil
+}
