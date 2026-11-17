@@ -12,3 +12,5 @@ type PasswordSetupToken struct {
     UsedAt *time.Time `gorm:"column:used_at"`
     CreatedAt time.Time `gorm:"column:created_at;not null"`
 }
+
+func (PasswordSetupToken) TableName() string { return "identity.password_setup_tokens" }
