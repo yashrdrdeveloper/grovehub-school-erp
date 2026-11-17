@@ -24,7 +24,7 @@ func (controller *AuthController) Login(writer http.ResponseWriter, request *htt
         Fallback: identityerror.AuthenticationUnavailable,
         Service: func(ctx context.Context, input identityrequest.LoginRequest) (rest.Result[identityresponse.Login], error) {
             result, err := controller.service.Login(ctx, input)
-            return rest.Result[identityresponse.Login]{Data: result}, err
+            return rest.OK(result), err
         },
     })
 }
