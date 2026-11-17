@@ -24,6 +24,7 @@ type IntegrationMailSender struct {
 
 func NewIntegrationMailSender(rawBaseURL string, connectionID string, serviceToken string) (*IntegrationMailSender, error) {
     base, err := url.Parse(strings.TrimRight(rawBaseURL, "/"))
+    if err != nil || base == nil { return nil, errors.New("invalid system mail URL") }
     host := base.Hostname()
     ip := net.ParseIP(host)
     isLoopback := host == "localhost" || (ip != nil && ip.IsLoopback())
