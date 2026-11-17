@@ -1,64 +1,124 @@
 package impl
-import(
- "context"
- "net/http"
- request "grovehub/libs/core/http/request"
- rest "grovehub/libs/core/pipeline/rest"
- definitions "grovehub/services/identity/internal/app/constants/error"
- dto "grovehub/services/identity/internal/app/dto/authentication"
- accountdto "grovehub/services/identity/internal/app/dto/account"
- helpers "grovehub/services/identity/internal/app/controller/helpers"
- cookies "grovehub/services/identity/internal/app/transport/cookies"
- protected "grovehub/services/identity/internal/app/controller/authentication/protected"
- auth "grovehub/services/identity/internal/app/services/authentication"
+
+import (
+	"context"
+	"net/http"
+
+	httprequest "grovehub/libs/core/http/request"
+	rest "grovehub/libs/core/pipeline/rest"
+	errorcode "grovehub/services/identity/internal/app/constants/error"
+	accountdto "grovehub/services/identity/internal/app/dto/account"
+	authdto "grovehub/services/identity/internal/app/dto/authentication"
+	protected "grovehub/services/identity/internal/app/controller/authentication/protected"
+	"grovehub/services/identity/internal/app/controller/helpers"
+	auth "grovehub/services/identity/internal/app/services/authentication"
+	"grovehub/services/identity/internal/app/transport/cookies"
 )
-type Controller struct{service auth.Service}
-func New(s auth.Service)protected.AuthenticationController{return &Controller{service:s}}
-func(c *Controller)Logout(w http.ResponseWriter,r *http.Request){
- rest.RunStruct(w,r,rest.StructConfig[dto.EmptyRequest,dto.StatusResult]{Fallback:definitions.Internal,
- Service:func(ctx context.Context,_ dto.EmptyRequest)(rest.Result[dto.StatusResult],error){
-  if err:=c.service.Logout(ctx);err!=nil{return rest.Result[dto.StatusResult]{},helpers.Map(err)}
-  cookies.ClearSessionCookies(w);return rest.OK(dto.StatusResult{Status:"LOGGED_OUT"}),nil
- }})
+
+type Controller struct {
+	service auth.Service
 }
-func(c *Controller)LogoutAll(w http.ResponseWriter,r *http.Request){
- rest.RunStruct(w,r,rest.StructConfig[dto.EmptyRequest,map[string]any]{Fallback:definitions.Internal,
- Service:func(ctx context.Context,_ dto.EmptyRequest)(rest.Result[map[string]any],error){
-  count,err:=c.service.LogoutAll(ctx);if err!=nil{return rest.Result[map[string]any]{},helpers.Map(err)}
-  cookies.ClearSessionCookies(w);return rest.OK(map[string]any{"status":"ALL_SESSIONS_REVOKED","revokedCount":count}),nil
- }})
+
+var _ protected.AuthenticationController = (*Controller)(nil)
+
+func New(service auth.Service) protected.AuthenticationController {
+	return &Controller{service: service}
 }
-func(c *Controller)ChangePassword(w http.ResponseWriter,r *http.Request){
- rest.RunStruct(w,r,rest.StructConfig[dto.ChangePasswordRequest,map[string]any]{Decode:request.DecodeStrictJSON,InvalidRequestBody:definitions.InvalidRequest,Fallback:definitions.Internal,
- Service:func(ctx context.Context,in dto.ChangePasswordRequest)(rest.Result[map[string]any],error){
-  if err:=c.service.ChangePassword(ctx,in.RequestBody.NewPassword);err!=nil{return rest.Result[map[string]any]{},helpers.Map(err)}
-  cookies.ClearSessionCookies(w);return rest.OK(map[string]any{"status":"PASSWORD_CHANGED","sessionsRevoked":true}),nil
- }})
+
+func (controller *Controller) Logout(writer http.ResponseWriter, request *http.Request) {
+	rest.RunStruct(writer, request, rest.StructConfig[authdto.EmptyRequest, authdto.StatusResult]{
+		Fallback: errorcode.Internal,
+		Service: func(ctx context.Context, _ authdto.EmptyRequest) (rest.Result[authdto.StatusResult], error) {
+			if err := controller.service.Logout(ctx); err != nil {
+				return rest.Result[authdto.StatusResult]{}, helpers.Map(err)
+			}
+			cookies.ClearSessionCookies(writer)
+			return rest.OK(authdto.StatusResult{Status: "LOGGED_OUT"}), nil
+		},
+	})
 }
-func(c *Controller)Reauthenticate(w http.ResponseWriter,r *http.Request){
- rest.RunStruct(w,r,rest.StructConfig[dto.ReauthenticateRequest,dto.StatusResult]{Decode:request.DecodeStrictJSON,InvalidRequestBody:definitions.InvalidRequest,Fallback:definitions.Internal,
- Service:func(ctx context.Context,in dto.ReauthenticateRequest)(rest.Result[dto.StatusResult],error){
-  if err:=c.service.Reauthenticate(ctx,in.RequestBody.Password);err!=nil{return rest.Result[dto.StatusResult]{},helpers.Map(err)}
-  return rest.OK(dto.StatusResult{Status:"REAUTHENTICATED"}),nil
- }})
+
+func (controller *Controller) LogoutAll(writer http.ResponseWriter, request *http.Request) {
+	rest.RunStruct(writer, request, rest.StructConfig[authdto.EmptyRequest, authdto.RevocationResult]{
+		Fallback: errorcode.Internal,
+		Service: func(ctx context.Context, _ authdto.EmptyRequest) (rest.Result[authdto.RevocationResult], error) {
+			count, err := controller.service.LogoutAll(ctx)
+			if err != nil {
+				return rest.Result[authdto.RevocationResult]{}, helpers.Map(err)
+			}
+			cookies.ClearSessionCookies(writer)
+			return rest.OK(authdto.RevocationResult{
+				Status: "ALL_SESSIONS_REVOKED",
+				RevokedCount: count,
+			}), nil
+		},
+	})
 }
-func(c *Controller)Sessions(w http.ResponseWriter,r *http.Request){
- rest.RunStruct(w,r,rest.StructConfig[dto.EmptyRequest,map[string]any]{Fallback:definitions.Internal,
- Service:func(ctx context.Context,_ dto.EmptyRequest)(rest.Result[map[string]any],error){
-  items,err:=c.service.ListSessions(ctx);if err!=nil{return rest.Result[map[string]any]{},helpers.Map(err)}
-  return rest.OK(map[string]any{"items":items}),nil
- }})
+
+func (controller *Controller) ChangePassword(writer http.ResponseWriter, request *http.Request) {
+	rest.RunStruct(writer, request, rest.StructConfig[authdto.ChangePasswordRequest, authdto.StatusResult]{
+		Decode: httprequest.DecodeStrictJSON,
+		InvalidRequestBody: errorcode.InvalidRequest,
+		Fallback: errorcode.Internal,
+		Service: func(ctx context.Context, input authdto.ChangePasswordRequest) (rest.Result[authdto.StatusResult], error) {
+			if err := controller.service.ChangePassword(ctx, input.RequestBody.NewPassword); err != nil {
+				return rest.Result[authdto.StatusResult]{}, helpers.Map(err)
+			}
+			cookies.ClearSessionCookies(writer)
+			return rest.OK(authdto.StatusResult{
+				Status: "PASSWORD_CHANGED",
+				SessionsRevoked: true,
+			}), nil
+		},
+	})
 }
-func(c *Controller)RevokeSession(w http.ResponseWriter,r *http.Request){
- rest.RunStruct(w,r,rest.StructConfig[dto.EmptyRequest,map[string]any]{Fallback:definitions.Internal,
- Service:func(ctx context.Context,_ dto.EmptyRequest)(rest.Result[map[string]any],error){
-  id:=r.PathValue("sessionId");if err:=c.service.RevokeSession(ctx,id);err!=nil{return rest.Result[map[string]any]{},helpers.Map(err)}
-  return rest.OK(map[string]any{"sessionId":id,"status":"REVOKED"}),nil
- }})
+
+func (controller *Controller) Reauthenticate(writer http.ResponseWriter, request *http.Request) {
+	rest.RunStruct(writer, request, rest.StructConfig[authdto.ReauthenticateRequest, authdto.StatusResult]{
+		Decode: httprequest.DecodeStrictJSON,
+		InvalidRequestBody: errorcode.InvalidRequest,
+		Fallback: errorcode.Internal,
+		Service: func(ctx context.Context, input authdto.ReauthenticateRequest) (rest.Result[authdto.StatusResult], error) {
+			if err := controller.service.Reauthenticate(ctx, input.RequestBody.Password); err != nil {
+				return rest.Result[authdto.StatusResult]{}, helpers.Map(err)
+			}
+			return rest.OK(authdto.StatusResult{Status: "REAUTHENTICATED"}), nil
+		},
+	})
 }
-func(c *Controller)Me(w http.ResponseWriter,r *http.Request){
- rest.RunStruct(w,r,rest.StructConfig[dto.EmptyRequest,accountdto.Account]{Fallback:definitions.Internal,
- Service:func(ctx context.Context,_ dto.EmptyRequest)(rest.Result[accountdto.Account],error){
-  v,err:=c.service.Me(ctx);return rest.OK(v),helpers.Map(err)
- }})
+
+func (controller *Controller) Sessions(writer http.ResponseWriter, request *http.Request) {
+	rest.RunStruct(writer, request, rest.StructConfig[authdto.EmptyRequest, authdto.SessionsResult]{
+		Fallback: errorcode.Internal,
+		Service: func(ctx context.Context, _ authdto.EmptyRequest) (rest.Result[authdto.SessionsResult], error) {
+			result, err := controller.service.ListSessions(ctx)
+			return rest.OK(result), helpers.Map(err)
+		},
+	})
+}
+
+func (controller *Controller) RevokeSession(writer http.ResponseWriter, request *http.Request) {
+	rest.RunStruct(writer, request, rest.StructConfig[authdto.EmptyRequest, authdto.SessionRevokedResult]{
+		Fallback: errorcode.Internal,
+		Service: func(ctx context.Context, _ authdto.EmptyRequest) (rest.Result[authdto.SessionRevokedResult], error) {
+			sessionID := request.PathValue("sessionId")
+			if err := controller.service.RevokeSession(ctx, sessionID); err != nil {
+				return rest.Result[authdto.SessionRevokedResult]{}, helpers.Map(err)
+			}
+			return rest.OK(authdto.SessionRevokedResult{
+				SessionID: sessionID,
+				Status: "REVOKED",
+			}), nil
+		},
+	})
+}
+
+func (controller *Controller) Me(writer http.ResponseWriter, request *http.Request) {
+	rest.RunStruct(writer, request, rest.StructConfig[authdto.EmptyRequest, accountdto.Account]{
+		Fallback: errorcode.Internal,
+		Service: func(ctx context.Context, _ authdto.EmptyRequest) (rest.Result[accountdto.Account], error) {
+			account, err := controller.service.Me(ctx)
+			return rest.OK(account), helpers.Map(err)
+		},
+	})
 }
