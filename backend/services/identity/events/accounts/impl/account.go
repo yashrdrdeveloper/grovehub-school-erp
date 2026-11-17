@@ -74,6 +74,10 @@ func (service *AccountService) Update(
 	return service.delegate.Update(ctx, accountId, input)
 }
 
+func (service *AccountService) Activate(ctx context.Context, accountId string) (entity.Account, error) {
+    return service.delegate.Activate(ctx, accountId)
+}
+
 func (service *AccountService) Deactivate(ctx context.Context, accountId string) (entity.Account, error) {
 	return service.delegate.Deactivate(ctx, accountId)
 }
