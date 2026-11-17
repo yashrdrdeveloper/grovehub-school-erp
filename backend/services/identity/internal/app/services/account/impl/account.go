@@ -44,8 +44,11 @@ func(s *Service)Update(ctx context.Context,id string,request dto.Update)(dto.Acc
  err=s.unit.Run(ctx,func(inside context.Context)error{
   a,e:=s.accounts.FindByID(inside,id);if e!=nil{return e}
   if a.TenantID==nil||*a.TenantID!=p.TenantID{return accountrepo.ErrNotFound}
+  before:=a
   a.Username=&name;a.Version++;a.UpdatedAt=time.Now().UTC();a.SearchDetails=projection(a)
-  if e=s.accounts.Update(inside,a);e!=nil{return e};updated=a;return nil
+  if e=s.accounts.Update(inside,a);e!=nil{return e}
+  if e=s.events.Enqueue(inside,"UPDATED",&before,&a);e!=nil{return e}
+  updated=a;return nil
  })
  return s.mapper.ToResponse(updated),err
 }
@@ -55,17 +58,18 @@ func(s *Service)Transition(ctx context.Context,id,action string)(dto.Account,err
  err=s.unit.Run(ctx,func(inside context.Context)error{
   a,e:=s.accounts.FindByID(inside,id);if e!=nil{return e}
   if a.TenantID==nil||*a.TenantID!=p.TenantID{return accountrepo.ErrNotFound}
+  before:=a
   switch action{
   case "suspend":if a.Status!=entity.Active{return errors.New("invalid status transition")};a.Status=entity.Suspended
   case "activate":if a.Status!=entity.Suspended{return errors.New("invalid status transition")};a.Status=entity.Active
   case "deactivate":if a.Status==entity.Deactivated{return errors.New("already deactivated")};a.Status=entity.Deactivated
   default:return errors.New("unknown account transition")
   }
-  before:=a
   a.Version++;a.UpdatedAt=time.Now().UTC()
   if e=s.accounts.Update(inside,a);e!=nil{return e}
   if a.Status==entity.Suspended||a.Status==entity.Deactivated{if _,e=s.sessions.RevokeAll(inside,a.AccountID);e!=nil{return e}}
-  if e=s.events.Enqueue(inside,strings.ToUpper(action)+"D",&before,&a);e!=nil{return e}
+  operation:=map[string]string{"suspend":"SUSPENDED","activate":"ACTIVATED","deactivate":"DEACTIVATED"}[action]
+  if e=s.events.Enqueue(inside,operation,&before,&a);e!=nil{return e}
   out=a;return nil
  })
  return s.mapper.ToResponse(out),err
@@ -87,10 +91,11 @@ func(s *Service)Setup(ctx context.Context,grant string,input dto.Setup)(dto.Setu
   id,e:=s.tokens.Consume(inside,digest,entity.SetupGrant,time.Now().UTC());if e!=nil{return e}
   a,e:=s.accounts.FindByID(inside,id);if e!=nil{return e}
   if a.Status!=entity.PendingSetup{return errors.New("account not pending")}
+  before:=a
   a.Username=&name;a.Status=entity.Active;a.Version++;a.UpdatedAt=time.Now().UTC();a.SearchDetails=projection(a)
   if e=s.credential.Set(inside,id,input.Password);e!=nil{return e}
   if e=s.accounts.Update(inside,a);e!=nil{return e}
-  if e=s.events.Enqueue(inside,"ACTIVATED",nil,&a);e!=nil{return e}
+  if e=s.events.Enqueue(inside,"ACTIVATED",&before,&a);e!=nil{return e)
   out=dto.SetupResult{AccountID:id,PersonGID:a.PersonGID,Username:name,Status:string(a.Status),SetupCompleted:true}
   return nil
  })
