@@ -29,6 +29,18 @@ type ConnectionController struct {
 
 type VerifiedPrincipal = clientprincipal.VerifiedPrincipal
 
+func NewConnectionController(service integrationservices.ConnectionService, push integrationconfig.GmailPush, devOptions ...integrationconfig.DevAuth) *ConnectionController {
+	controller := &ConnectionController{
+		service: service,
+		verifier: gmail.NewPushVerifier(push.Audience, push.ServiceAccount),
+		pushEnabled: push.Enabled(),
+	}
+	if len(devOptions) > 0 {
+		controller.devAuth = devOptions[0]
+	}
+	return controller
+}
+
 func WithVerifiedPrincipal(ctx context.Context, value VerifiedPrincipal) context.Context {
 	return clientprincipal.WithVerifiedPrincipal(ctx, value)
 }
