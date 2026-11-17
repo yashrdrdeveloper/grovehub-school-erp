@@ -2,90 +2,1382 @@ openapi: 3.1.0
 info:
   title: GrooveHub Identity API
   version: 1.0.0
-  description: Account lifecycle, password recovery and cookie-session authentication.
+  description: |
+    Resource-first Identity API. Server-side opaque access and refresh cookies
+    are never exposed as JSON secrets. Success/error envelopes are provided by
+    the platform libs/core/http response writer; no separate Identity envelope.
 servers:
   - url: /
 paths:
   /identity/public/auth/login:
     post:
-      operationId: identityLogin
-      responses: {'200': {description: Access and refresh cookies issued}}
+      operationId: login
+      summary: "Login with email and password"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginBody'
+      security:
+        []
+      responses:
+        '200':
+          description: "Login with email and password"
+          headers:
+            Cache-Control:
+              schema: {type: string, example: no-store}
+            Set-Cookie:
+              description: Opaque HttpOnly session or purpose-bound grant cookie
+              schema: {type: string}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginDataSuccess'
+        '400':
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthenticated or invalid grant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: "Authorization or scope denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: "Rate limited"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /identity/public/auth/refresh:
     post:
-      operationId: identityRefresh
-      responses: {'200': {description: Refresh cookies rotated}}
+      operationId: refresh
+      summary: "Rotate the HttpOnly refresh cookie"
+      security:
+        - refreshCookie: []
+      responses:
+        '200':
+          description: "Rotate the HttpOnly refresh cookie"
+          headers:
+            Cache-Control:
+              schema: {type: string, example: no-store}
+            Set-Cookie:
+              description: Opaque HttpOnly session or purpose-bound grant cookie
+              schema: {type: string}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshDataSuccess'
+        '400':
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthenticated or invalid grant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: "Authorization or scope denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: "Rate limited"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /identity/public/auth/forgot-password:
     post:
-      operationId: identityForgotPassword
-      responses: {'202': {description: Accepted without account enumeration}}
+      operationId: forgotPassword
+      summary: "Accept an account recovery request without enumeration"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotBody'
+      security:
+        []
+      responses:
+        '202':
+          description: "Accept an account recovery request without enumeration"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedDataSuccess'
+        '400':
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthenticated or invalid grant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: "Authorization or scope denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: "Rate limited"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /identity/public/auth/recovery/exchange:
     post:
-      operationId: identityRecoveryExchange
-      responses: {'200': {description: One-time recovery grant cookie issued}}
+      operationId: exchangeRecovery
+      summary: "Exchange a one-time Recovery Authorization proof"
+      security:
+        - recoveryProof: []
+      responses:
+        '200':
+          description: "Exchange a one-time Recovery Authorization proof"
+          headers:
+            Cache-Control:
+              schema: {type: string, example: no-store}
+            Set-Cookie:
+              description: Opaque HttpOnly session or purpose-bound grant cookie
+              schema: {type: string}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrantDataSuccess'
+        '400':
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthenticated or invalid grant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: "Authorization or scope denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: "Rate limited"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /identity/public/auth/reset-password:
     post:
-      operationId: identityResetPassword
-      responses: {'200': {description: Password reset and sessions revoked}}
+      operationId: resetPassword
+      summary: "Reset password using a short-lived reset grant cookie"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetBody'
+      security:
+        - resetGrantCookie: []
+      responses:
+        '200':
+          description: "Reset password using a short-lived reset grant cookie"
+          headers:
+            Cache-Control:
+              schema: {type: string, example: no-store}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusDataSuccess'
+        '400':
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthenticated or invalid grant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: "Authorization or scope denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: "Rate limited"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /identity/public/auth/invitations/exchange:
     post:
-      operationId: identityInvitationExchange
-      responses: {'200': {description: One-time setup grant cookie issued}}
+      operationId: exchangeInvitation
+      summary: "Exchange an Invitation Authorization proof"
+      security:
+        - invitationProof: []
+      responses:
+        '200':
+          description: "Exchange an Invitation Authorization proof"
+          headers:
+            Cache-Control:
+              schema: {type: string, example: no-store}
+            Set-Cookie:
+              description: Opaque HttpOnly session or purpose-bound grant cookie
+              schema: {type: string}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrantDataSuccess'
+        '400':
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthenticated or invalid grant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: "Authorization or scope denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: "Rate limited"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /identity/public/accounts/setup:
     post:
-      operationId: identitySetupAccount
-      responses: {'200': {description: Account setup completed}}
+      operationId: setupAccount
+      summary: "Finish account onboarding with a one-time setup grant"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetupBody'
+      security:
+        - setupGrantCookie: []
+      responses:
+        '200':
+          description: "Finish account onboarding with a one-time setup grant"
+          headers:
+            Cache-Control:
+              schema: {type: string, example: no-store}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetupDataSuccess'
+        '400':
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthenticated or invalid grant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: "Authorization or scope denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: "Rate limited"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /identity/protected/auth/logout:
     post:
-      operationId: identityLogout
-      responses: {'200': {description: Current session revoked}}
+      operationId: logout
+      summary: "Revoke the current session"
+      security:
+        - accessCookie: []
+      responses:
+        '200':
+          description: "Revoke the current session"
+          headers:
+            Cache-Control:
+              schema: {type: string, example: no-store}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusDataSuccess'
+        '400':
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthenticated or invalid grant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: "Authorization or scope denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: "Rate limited"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /identity/protected/auth/logout-all:
     post:
-      operationId: identityLogoutAll
-      responses: {'200': {description: All sessions revoked}}
+      operationId: logoutAll
+      summary: "Revoke all sessions after recent authentication"
+      security:
+        - accessCookie: []
+      responses:
+        '200':
+          description: "Revoke all sessions after recent authentication"
+          headers:
+            Cache-Control:
+              schema: {type: string, example: no-store}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RevocationDataSuccess'
+        '400':
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthenticated or invalid grant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: "Authorization or scope denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: "Rate limited"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /identity/protected/auth/change-password:
     post:
-      operationId: identityChangePassword
-      responses: {'200': {description: Password changed}}
+      operationId: changePassword
+      summary: "Change password after recent authentication"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordBody'
+      security:
+        - accessCookie: []
+      responses:
+        '200':
+          description: "Change password after recent authentication"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusDataSuccess'
+        '400':
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthenticated or invalid grant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: "Authorization or scope denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: "Rate limited"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /identity/protected/auth/reauthenticate:
+    post:
+      operationId: reauthenticate
+      summary: "Complete a fresh password reauthentication"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReauthenticationBody'
+      security:
+        - accessCookie: []
+      responses:
+        '200':
+          description: "Complete a fresh password reauthentication"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusDataSuccess'
+        '400':
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthenticated or invalid grant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: "Authorization or scope denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: "Rate limited"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /identity/protected/auth/sessions:
     get:
-      operationId: identityListSessions
-      responses: {'200': {description: Active sessions}}
+      operationId: listSessions
+      summary: "List the current account sessions"
+      security:
+        - accessCookie: []
+      responses:
+        '200':
+          description: "List the current account sessions"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionsDataSuccess'
+        '400':
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthenticated or invalid grant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: "Authorization or scope denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: "Rate limited"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /identity/protected/auth/sessions/{sessionId}:
     delete:
-      operationId: identityRevokeSession
-      responses: {'200': {description: Session revoked}}
+      operationId: revokeSession
+      summary: "Revoke one owned session"
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      security:
+        - accessCookie: []
+      responses:
+        '200':
+          description: "Revoke one owned session"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusDataSuccess'
+        '400':
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthenticated or invalid grant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: "Authorization or scope denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: "Rate limited"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /identity/protected/auth/me:
     get:
-      operationId: identityMe
-      responses: {'200': {description: Current account}}
+      operationId: me
+      summary: "Read the authenticated account"
+      security:
+        - accessCookie: []
+      responses:
+        '200':
+          description: "Read the authenticated account"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountSuccess'
+        '400':
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthenticated or invalid grant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: "Authorization or scope denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: "Rate limited"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /identity/protected/accounts:
     post:
-      operationId: identityCreateAccount
-      responses: {'201': {description: Pending account invited}}
+      operationId: createAccount
+      summary: "Admin-only account invitation linked to Foundation PersonGID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccountBody'
+      security:
+        - accessCookie: []
+      responses:
+        '201':
+          description: "Admin-only account invitation linked to Foundation PersonGID"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedAccountSuccess'
+        '400':
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthenticated or invalid grant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: "Authorization or scope denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: "Rate limited"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /identity/protected/accounts/search:
     post:
-      operationId: identitySearchAccounts
-      responses: {'200': {description: Cursor-paginated accounts}}
+      operationId: searchAccounts
+      summary: "Tenant-scoped SearchDetails with coresearch cursor pagination"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchBody'
+      security:
+        - accessCookie: []
+      responses:
+        '200':
+          description: "Tenant-scoped SearchDetails with coresearch cursor pagination"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchDataSuccess'
+        '400':
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthenticated or invalid grant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: "Authorization or scope denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: "Rate limited"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /identity/protected/accounts/{accountId}:
     get:
-      operationId: identityGetAccount
-      responses: {'200': {description: Account}}
+      operationId: getAccount
+      summary: "Get account by ID in authorized tenant"
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      security:
+        - accessCookie: []
+      responses:
+        '200':
+          description: "Get account by ID in authorized tenant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountSuccess'
+        '400':
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthenticated or invalid grant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: "Authorization or scope denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: "Rate limited"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     patch:
-      operationId: identityUpdateAccount
-      responses: {'200': {description: Account updated}}
+      operationId: updateAccount
+      summary: "Update a scoped account with optimistic concurrency"
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAccountBody'
+      security:
+        - accessCookie: []
+      responses:
+        '200':
+          description: "Update a scoped account with optimistic concurrency"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountSuccess'
+        '400':
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthenticated or invalid grant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: "Authorization or scope denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: "Rate limited"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /identity/protected/accounts/{accountId}/suspend:
     patch:
-      operationId: identitySuspendAccount
-      responses: {'200': {description: Account suspended}}
+      operationId: suspendAccount
+      summary: "Suspend account and revoke sessions"
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      security:
+        - accessCookie: []
+      responses:
+        '200':
+          description: "Suspend account and revoke sessions"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountSuccess'
+        '400':
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthenticated or invalid grant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: "Authorization or scope denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: "Rate limited"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /identity/protected/accounts/{accountId}/activate:
     patch:
-      operationId: identityActivateAccount
-      responses: {'200': {description: Suspended account activated}}
+      operationId: activateAccount
+      summary: "Reactivate a suspended account"
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      security:
+        - accessCookie: []
+      responses:
+        '200':
+          description: "Reactivate a suspended account"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountSuccess'
+        '400':
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthenticated or invalid grant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: "Authorization or scope denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: "Rate limited"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /identity/protected/accounts/{accountId}/deactivate:
     patch:
-      operationId: identityDeactivateAccount
-      responses: {'200': {description: Account deactivated}}
+      operationId: deactivateAccount
+      summary: "Deactivate account and revoke sessions"
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      security:
+        - accessCookie: []
+      responses:
+        '200':
+          description: "Deactivate account and revoke sessions"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountSuccess'
+        '400':
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthenticated or invalid grant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: "Authorization or scope denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: "Rate limited"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /identity/protected/accounts/{accountId}/resend-invitation:
     post:
-      operationId: identityResendInvitation
-      responses: {'202': {description: Setup mail queued}}
+      operationId: resendInvitation
+      summary: "Queue a new password setup link for a pending account"
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      security:
+        - accessCookie: []
+      responses:
+        '202':
+          description: "Queue a new password setup link for a pending account"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationDataSuccess'
+        '400':
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthenticated or invalid grant"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: "Authorization or scope denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: "Rate limited"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  securitySchemes:
+    accessCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-gh_access
+    refreshCookie:
+      type: apiKey
+      in: cookie
+      name: __Secure-gh_refresh
+    resetGrantCookie:
+      type: apiKey
+      in: cookie
+      name: __Secure-gh_reset
+    setupGrantCookie:
+      type: apiKey
+      in: cookie
+      name: __Secure-gh_setup
+    recoveryProof:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: 'Authorization: Recovery <one-time-proof>'
+    invitationProof:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: 'Authorization: Invitation <one-time-proof>'
+  schemas:
+    LoginBody:
+      type: object
+      additionalProperties: false
+      required: [identifier, password]
+      properties:
+        identifier: {type: string, description: Canonical email address}
+        password: {type: string, format: password}
+    ForgotBody:
+      type: object
+      additionalProperties: false
+      required: [email]
+      properties:
+        email: {type: string, format: email}
+    ResetBody:
+      type: object
+      additionalProperties: false
+      required: [newPassword]
+      properties:
+        newPassword: {type: string, format: password}
+    ChangePasswordBody:
+      $ref: '#/components/schemas/ResetBody'
+    ReauthenticationBody:
+      type: object
+      additionalProperties: false
+      required: [password]
+      properties:
+        password: {type: string, format: password}
+    SetupBody:
+      type: object
+      additionalProperties: false
+      required: [username, password]
+      properties:
+        username: {type: string}
+        password: {type: string, format: password}
+    PersonNames:
+      type: object
+      additionalProperties: false
+      required: [firstName, lastName]
+      properties:
+        firstName: {type: string}
+        middleName: {type: [string, 'null']}
+        lastName: {type: string}
+    CreateAccountBody:
+      type: object
+      additionalProperties: false
+      required: [person, email]
+      properties:
+        person:
+          $ref: '#/components/schemas/PersonNames'
+        email: {type: string, format: email}
+        phoneNumber: {type: string}
+    UpdateAccountBody:
+      type: object
+      additionalProperties: false
+      properties:
+        username: {type: string}
+    SearchBody:
+      type: object
+      description: "The shared coresearch.Request; unknown filter fields/operators are rejected."
+      additionalProperties: false
+      properties:
+        searchText: {type: string}
+        filters:
+          type: array
+          items:
+            type: object
+            required: [field, operator]
+            properties:
+              field: {type: string}
+              operator: {type: string}
+              values:
+                type: array
+                items: {type: string}
+        sort:
+          type: array
+          items:
+            type: object
+            properties:
+              field: {type: string}
+              direction: {type: string, enum: [ASC, DESC]}
+        pageInfo:
+          type: object
+          properties:
+            rows: {type: integer, minimum: 1, maximum: 100}
+            cursor: {type: string}
+    Account:
+      type: object
+      properties:
+        accountId: {type: string, format: uuid}
+        personGid: {type: string, format: uuid}
+        username: {type: [string, 'null']}
+        email: {type: string, format: email}
+        status: {type: string, enum: [PENDING_SETUP, ACTIVE, SUSPENDED, DEACTIVATED]}
+        version: {type: integer}
+        createdAt: {type: string, format: date-time}
+        updatedAt: {type: string, format: date-time}
+    CreatedAccount:
+      type: object
+      properties:
+        accountId: {type: string, format: uuid}
+        personGid: {type: string, format: uuid}
+        email: {type: string, format: email}
+        status: {type: string}
+        invitation:
+          type: object
+          properties:
+            status: {type: string, enum: [QUEUED]}
+    LoginData:
+      type: object
+      properties:
+        accountId: {type: string, format: uuid}
+        personGid: {type: string, format: uuid}
+        sessionId: {type: string, format: uuid}
+        expiresIn: {type: integer, example: 900}
+        requiresSetup: {type: boolean}
+    RefreshData:
+      type: object
+      properties:
+        sessionId: {type: string, format: uuid}
+        expiresIn: {type: integer}
+        refreshed: {type: boolean}
+    AcceptedData:
+      type: object
+      properties:
+        accepted: {type: boolean}
+        delivery: {type: string, enum: [EMAIL]}
+    StatusData:
+      type: object
+      properties:
+        status: {type: string}
+        sessionsRevoked: {type: boolean}
+    RevocationData:
+      type: object
+      properties:
+        status: {type: string}
+        revokedCount: {type: integer}
+    GrantData:
+      type: object
+      properties:
+        verified: {type: boolean}
+        purpose: {type: string, enum: [PASSWORD_RESET, ACCOUNT_SETUP]}
+        expiresIn: {type: integer}
+    SetupData:
+      type: object
+      properties:
+        accountId: {type: string, format: uuid}
+        personGid: {type: string, format: uuid}
+        username: {type: string}
+        status: {type: string}
+        setupCompleted: {type: boolean}
+    InvitationData:
+      type: object
+      properties:
+        accountId: {type: string, format: uuid}
+        invitationStatus: {type: string}
+    SessionsData:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              sessionId: {type: string, format: uuid}
+              current: {type: boolean}
+              createdAt: {type: string, format: date-time}
+              lastActiveAt: {type: [string, 'null'], format: date-time}
+              expiresAt: {type: string, format: date-time}
+    SearchData:
+      type: object
+      properties:
+        items:
+          type: array
+          items: {$ref: '#/components/schemas/Account'}
+        pageInfo:
+          type: object
+          properties:
+            rows: {type: integer}
+            hasNext: {type: boolean}
+            nextCursor: {type: string}
+    ErrorResponse:
+      type: object
+      required: [success, errorCode, errorMessage, httpErrorCode, errorMetaData]
+      properties:
+        success: {type: boolean, const: false}
+        errorCode: {type: string}
+        errorMessage: {type: string}
+        httpErrorCode: {type: integer}
+        errorMetaData: {type: object}
+    LoginDataSuccess:
+      type: object
+      required: [success, data]
+      properties:
+        success: {type: boolean, const: true}
+        data:
+          $ref: '#/components/schemas/LoginData'
+    RefreshDataSuccess:
+      type: object
+      required: [success, data]
+      properties:
+        success: {type: boolean, const: true}
+        data:
+          $ref: '#/components/schemas/RefreshData'
+    AcceptedDataSuccess:
+      type: object
+      required: [success, data]
+      properties:
+        success: {type: boolean, const: true}
+        data:
+          $ref: '#/components/schemas/AcceptedData'
+    GrantDataSuccess:
+      type: object
+      required: [success, data]
+      properties:
+        success: {type: boolean, const: true}
+        data:
+          $ref: '#/components/schemas/GrantData'
+    StatusDataSuccess:
+      type: object
+      required: [success, data]
+      properties:
+        success: {type: boolean, const: true}
+        data:
+          $ref: '#/components/schemas/StatusData'
+    SetupDataSuccess:
+      type: object
+      required: [success, data]
+      properties:
+        success: {type: boolean, const: true}
+        data:
+          $ref: '#/components/schemas/SetupData'
+    RevocationDataSuccess:
+      type: object
+      required: [success, data]
+      properties:
+        success: {type: boolean, const: true}
+        data:
+          $ref: '#/components/schemas/RevocationData'
+    SessionsDataSuccess:
+      type: object
+      required: [success, data]
+      properties:
+        success: {type: boolean, const: true}
+        data:
+          $ref: '#/components/schemas/SessionsData'
+    AccountSuccess:
+      type: object
+      required: [success, data]
+      properties:
+        success: {type: boolean, const: true}
+        data:
+          $ref: '#/components/schemas/Account'
+    CreatedAccountSuccess:
+      type: object
+      required: [success, data]
+      properties:
+        success: {type: boolean, const: true}
+        data:
+          $ref: '#/components/schemas/CreatedAccount'
+    SearchDataSuccess:
+      type: object
+      required: [success, data]
+      properties:
+        success: {type: boolean, const: true}
+        data:
+          $ref: '#/components/schemas/SearchData'
+    InvitationDataSuccess:
+      type: object
+      required: [success, data]
+      properties:
+        success: {type: boolean, const: true}
+        data:
+          $ref: '#/components/schemas/InvitationData'
