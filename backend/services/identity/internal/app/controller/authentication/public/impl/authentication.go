@@ -67,7 +67,7 @@ func(c *Controller)ResetPassword(w http.ResponseWriter,r *http.Request){
   err:=c.service.ResetPassword(ctx,middleware.ReadCookie(r,middleware.ResetCookie),in.RequestBody.NewPassword)
   if err!=nil{return rest.Result[dto.StatusResult]{},helpers.Map(err)}
   middleware.ClearGrant(w,middleware.ResetCookie,"/identity/public/auth/reset-password")
-  return rest.OK(dto.StatusResult{Status:"PASSWORD_RESET"}),nil
+  return rest.OK(dto.StatusResult{Status:"PASSWORD_RESET",SessionsRevoked:true}),nil
  },
  })
 }
