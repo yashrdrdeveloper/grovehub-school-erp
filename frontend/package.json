@@ -6,7 +6,7 @@
   "packageManager": "pnpm@10.14.0",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 4173",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build && node scripts/prerender-public-pages.mjs",
     "preview": "vite preview --host 127.0.0.1 --port 4173",
     "typecheck": "tsc --noEmit",
     "test": "jest --passWithNoTests",
