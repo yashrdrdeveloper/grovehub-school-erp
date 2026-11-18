@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 're
 import { Link, useLocation } from 'react-router-dom';
 import {
   ArrowRight, ArrowUpRight, BookOpen, Bus, CalendarDays,
-  Check, Computer, Download, ExternalLink, FileCheck2, FlaskConical,
+  Check, Clock3, Computer, Download, ExternalLink, FileCheck2, FlaskConical,
   GraduationCap, HeartPulse, Mail, MapPin, Menu, Phone, Presentation,
   School, ShieldCheck, Sparkles, Trophy, X,
 } from 'lucide-react';
@@ -266,6 +266,14 @@ const AboutPage = () => (
     <section className="rdr-section rdr-section--wash"><div className="rdr-container rdr-values">
       {[{number:'01',title:'Learning',description:'Encouraging curiosity, creativity and independent thinking.'},{number:'02',title:'Character',description:'Building a foundation of responsibility, kindness and integrity.'},{number:'03',title:'Community',description:'Strengthening partnerships between families, teachers and students.'}].map(x=><div key={x.number}><span>{x.number}</span><h3>{x.title}</h3><p>{x.description}</p></div>)}
     </div></section>
+    <section className="rdr-section rdr-container">
+      <Heading eyebrow="LEADERSHIP & PHILOSOPHY" title="Guided by people who care." description="The school's historical leadership messages speak about holistic learning, kindness and preparing children for life beyond the classroom."/>
+      <div className="rdr-values rdr-values--leadership">
+        <div><span>FOUNDER & DIRECTOR · HISTORICAL PROFILE</span><h3>Shri Lal Singh Yadav</h3><p>The original site credits Shri Lal Singh Yadav (Retired HES-II) with founding the school in April 2006. His published message emphasizes students' all-round development.</p><a className="rdr-inline-link" href="https://rdrschool.com/director-message.html" target="_blank" rel="noreferrer">Original director's message <ExternalLink size={16}/></a></div>
+        <div><span>PRINCIPAL · 2023 DISCLOSURE</span><h3>Arvind Yadav</h3><p>Named as principal in the school's 2023 CBSE Appendix IX. Current office holder and leadership portrait must be verified before publication.</p><a className="rdr-inline-link" href="https://rdrschool.com/Principal-message.html" target="_blank" rel="noreferrer">Original principal's message <ExternalLink size={16}/></a></div>
+        <div><span>EDUCATIONAL PHILOSOPHY</span><h3>Be a lamp unto yourself</h3><p>The legacy school describes its emblem as a lamp symbolizing personal understanding and responsibility. We retain that original identity alongside the RDR digital wordmark.</p><a className="rdr-inline-link" href="https://rdrschool.com/our-philosophy.html" target="_blank" rel="noreferrer">School philosophy <ExternalLink size={16}/></a></div>
+      </div>
+    </section>
   </>
 );
 
@@ -350,7 +358,9 @@ const ResourcesPage = () => (
       {title:'Fee information',icon:FileCheck2,detail:'Archived structure; confirm current fees',href:'https://rdrschool.com/pdf/Fees.pdf'},
       {title:'Board examination results',icon:GraduationCap,detail:'Historical result document',href:'https://rdrschool.com/pdf/Results.pdf'},
       {title:'School brochure',icon:BookOpen,detail:'Legacy brochure — historical material',href:'https://rdrschool.com/pdf/Brochure.pdf'},
-    ].map(item=><a href={item.href} target="_blank" rel="noreferrer" className="rdr-feature rdr-feature--link" key={item.title}><item.icon size={26}/><h3>{item.title}</h3><p>{item.detail}</p><ExternalLink size={16}/></a>)}</div></section>
+    ].map(item=><a href={item.href} target="_blank" rel="noreferrer" className="rdr-feature rdr-feature--link" key={item.title}><item.icon size={26}/><h3>{item.title}</h3><p>{item.detail}</p><ExternalLink size={16}/></a>)}</div>
+      <div className="rdr-historic-hours"><div><Clock3 size={24}/><h2>School timings — legacy information</h2><p>Published on the previous school website. Please confirm current term hours and holidays with the school office.</p></div><div><strong>Summer</strong><span>Nursery · 8:00 AM–12:00 noon</span><span>Classes I–XII · 8:00 AM–3:00 PM</span></div><div><strong>Winter</strong><span>Nursery · 8:30 AM–12:30 PM</span><span>Classes I–XII · 8:30 AM–3:30 PM</span></div></div>
+    </section>
   </>
 );
 
