@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 
 import { SchoolMonogram } from '@Components';
+
+import { selectAuthIllustrationQuote } from './authIllustrationQuotes';
 import { useWorkspaceTheme, type ThemePreference } from '@Shell/theme';
 
 import {
@@ -25,16 +27,18 @@ const artworkIds: ArtId[] = [
   'crm', 'student', 'tasks', 'finance', 'ai', 'audit', 'growth',
   'automation', 'communication', 'admissions', 'hr', 'library',
   'quote', 'calendar', 'book', 'pencil', 'bell', 'trophy', 'school',
-  'squiggle', 'motto',
+  'squiggle', 'plane', 'motto',
 ];
 
 /** Decorative objects are packed into unused measured space, never on the form. */
 const FloatingSchoolArtwork = ({
   register,
   placements,
+  quote,
 }: {
   register: (id: ArtId, node: HTMLDivElement | null) => void;
   placements: Partial<Record<ArtId, ArtPlacement>>;
+  quote: string;
 }) => {
   const item = (id: ArtId, extraClass: string, children: ReactNode) => {
     const placement = placements[id];
@@ -109,7 +113,7 @@ const FloatingSchoolArtwork = ({
         <><LibraryBig size={17}/><span><strong>School Library</strong><small>Knowledge organized</small></span></>,
       )}
       {item('quote', 'auth-float-quote',
-        <>“Everything your school needs, in one calm workspace.”</>,
+        <>{'“'}{quote}{'”'}</>,
       )}
       {item('calendar', 'auth-float-doodle',
         <CalendarDays size={24} strokeWidth={1.35}/>,
@@ -132,6 +136,11 @@ const FloatingSchoolArtwork = ({
       {item('squiggle', 'auth-float-doodle auth-float-doodle--line',
         <svg viewBox="0 0 140 45" fill="none"><path d="M2 30c16 25 28-30 44-11 12 16 0 29 19 22 22-10 22-43 42-24 12 13 18 19 31 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
       )}
+      {item('plane', 'auth-float-doodle auth-float-doodle--plane',
+        <svg viewBox="0 0 56 44" fill="none" aria-hidden="true">
+          <path d="M4 19 50 5 36 38 27 25 4 19Zm23 6L50 5M18 27l5 6 4-8" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round"/>
+        </svg>,
+      )}
       {item('motto', 'auth-float-motto',
         <>LEARN <span>·</span> ORGANIZE <span>·</span> GROW</>,
       )}
@@ -141,7 +150,11 @@ const FloatingSchoolArtwork = ({
 
 /** Fixed mobile artwork: low-contrast school linework behind the form,
  * never boxes, labels, or content competing with authentication controls. */
-const MobileSchoolBackdrop = () => (
+const MobileSchoolBackdrop = ({ quote, module, submodule }: {
+  quote: string;
+  module: string;
+  submodule: string;
+}) => (
   <div className="auth-mobile-backdrop" aria-hidden="true">
     <svg className="auth-mobile-backdrop__top" viewBox="0 0 360 148" preserveAspectRatio="xMidYMin slice" fill="none">
       <path d="M8 83c27-39 48-4 71-30s41 19 68-6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
@@ -160,6 +173,10 @@ const MobileSchoolBackdrop = () => (
       <circle cx="190" cy="93" r="2.7" stroke="currentColor"/>
       <path d="m195 23 4 10m-9-4 9-3" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
     </svg>
+    <div className="auth-mobile-backdrop__story">{'“'}{quote}{'”'}</div>
+    <div className="auth-mobile-backdrop__modules">
+      <span>{module}</span><i>·</i><span>{submodule}</span>
+    </div>
   </div>
 );
 
@@ -169,6 +186,10 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
   const panelRef = useRef<HTMLElement>(null);
   const itemRefs = useRef<Partial<Record<ArtId, HTMLDivElement>>>({});
   const seedRef = useRef(Math.floor(Math.random() * 4294967295));
+  const quote = selectAuthIllustrationQuote(seedRef.current);
+  const mobileModule = seedRef.current % 2 === 0 ? 'Lead CRM' : 'Student 360° · UCV';
+  const mobileSubmodules = ['Tasks', 'Finance & Fees', 'AI Assistance', 'Audit & Compliance', 'Learn & Grow', 'Automation'];
+  const mobileSubmodule = mobileSubmodules[(seedRef.current >>> 3) % mobileSubmodules.length];
   const [placements, setPlacements] = useState<Partial<Record<ArtId, ArtPlacement>>>({});
 
   const register = (id: ArtId, node: HTMLDivElement | null) => {
@@ -246,8 +267,8 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
         </div>
       </header>
       <div ref={stageRef} className="auth-stage">
-        <MobileSchoolBackdrop/>
-        <FloatingSchoolArtwork register={register} placements={placements}/>
+        <MobileSchoolBackdrop quote={quote} module={mobileModule} submodule={mobileSubmodule}/>
+        <FloatingSchoolArtwork register={register} placements={placements} quote={quote}/>
         <section ref={panelRef} className="auth-panel" aria-label={title}>{children}</section>
       </div>
       <footer className="auth-footer"><span>© {new Date().getFullYear()} GrooveHub</span></footer>
