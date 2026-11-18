@@ -5,7 +5,7 @@ import {
 } from '@Domain/auth';
 import { AccountDetailsPage, AccountsPage } from '@Domain/accounts';
 import { DashboardPage } from '@Domain/dashboard';
-import { IntegrationsPage } from '@Domain/integrations';
+import { ConnectionDetailsPage, IntegrationsPage } from '@Domain/integrations';
 import { SecurityPage } from '@Domain/settings';
 
 // The shell imports only domain public entrypoints.
@@ -22,5 +22,6 @@ export const workspaceRoutes = [
   { path: '/accounts', element: <AccountsPage /> },
   { path: '/accounts/:accountId', element: <AccountDetailsPage /> },
   { path: '/integrations', element: <IntegrationsPage /> },
+  { path: '/integrations/:connectionId', element: <ConnectionDetailsPage /> },
   { path: '/settings/security', element: <SecurityPage /> },
 ] as const;

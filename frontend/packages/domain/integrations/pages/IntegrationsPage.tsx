@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Cable, ExternalLink, RefreshCw, Unplug } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -74,7 +75,7 @@ export const IntegrationsPage = () => {
           ) : connections.data.map((connection) => (
             <div className="session-item" key={connection.id}>
               <Cable size={20} />
-              <div><strong>{connection.provider}</strong><small><StatusPill value={connection.status} /></small></div>
+              <div><strong><Link to={`/integrations/${connection.id}`}>{connection.provider}</Link></strong><small><StatusPill value={connection.status} /></small></div>
               <Button variant="ghost" onClick={() => void disconnect(connection.id)}><Unplug size={17} /></Button>
             </div>
           ))}

@@ -233,3 +233,5 @@ p { line-height: 1.55; }
 .details-list dd { margin: 0; font-size: 12px; max-width: 65%; overflow-wrap: anywhere; text-align: right; }
 .action-stack { display: flex; flex-direction: column; gap: 12px; align-items: stretch; }
 .action-stack .button { justify-content: flex-start; }
+
+.action-json { min-height: 145px; resize: vertical; font-family: ui-monospace, SFMono-Regular, monospace; font-size: 12px; }
