@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Megaphone, Monitor, Moon, Sparkles, Sun, WalletCards, Workflow, ListTodo } from 'lucide-react';
+import { BookOpenCheck, GraduationCap, Megaphone, Monitor, Moon, School, Sparkles, Sun, WalletCards, Workflow, ListTodo } from 'lucide-react';
 
 import { SchoolMonogram } from '@Components';
 import { useWorkspaceTheme, type ThemePreference } from '@Shell/theme';
@@ -18,6 +18,15 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
   <main className="auth-page auth-page--consistent">
     <div className="auth-scene" aria-hidden="true">
       <div className="auth-scene__ground"/>
+      <div className="auth-scene__prelude">
+        <div className="auth-scene__prelude-illustration">
+          <span className="auth-scene__prelude-trace"/>
+          <span className="auth-scene__prelude-icon auth-scene__prelude-icon--one"><BookOpenCheck size={19} strokeWidth={1.6}/></span>
+          <span className="auth-scene__prelude-icon auth-scene__prelude-icon--main"><School size={23} strokeWidth={1.55}/></span>
+          <span className="auth-scene__prelude-icon auth-scene__prelude-icon--three"><GraduationCap size={20} strokeWidth={1.6}/></span>
+        </div>
+        <p>One connected workspace for every school day.</p>
+      </div>
       <div className="auth-scene__sheet auth-scene__sheet--left">
         <div className="auth-scene__sheet-head">
           <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3.5" width="16" height="17" rx="2.5" stroke="currentColor" strokeWidth="1.5"/><path d="M8 8h8M8 12h3M8 16h3m2-4 1.5 1.5L17 11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
