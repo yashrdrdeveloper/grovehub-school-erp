@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import {
-  Bell, ChevronDown, ChevronsLeft, ChevronsRight, Grid2X2, LayoutDashboard,
-  Menu, Monitor, Moon, PinOff, Search, Settings2, ShieldCheck, Sun, UsersRound, X,
+  ChevronDown, ChevronsLeft, ChevronsRight, Grid2X2, LayoutDashboard,
+  Menu, Monitor, Moon, PinOff, Settings2, Sun, X,
 } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router-dom';
-
-import { Button } from '@Components';
 
 import { AppLauncher, appCatalog, defaultPinnedApps } from './layout/AppLauncher';
 import { useWorkspaceTheme, type ThemePreference } from './theme';
@@ -129,17 +127,13 @@ export const Shell = ({ accountLabel, schoolLabel, onLogout }: ShellProps) => {
             <span className="topbar__breadcrumb">{schoolLabel}</span><span className="topbar__separator">/</span><span className="topbar__muted">Workspace</span>
           </div>
           <div className="topbar__right">
-            <button type="button" className="topbar__search" aria-label="Global search not available yet" disabled><Search size={17}/><span>Search</span><kbd>⌘ K</kbd></button>
-            <button type="button" className="icon-button" aria-label="Notifications not available yet" disabled><Bell size={19}/></button>
-            <Button variant="ghost" className="topbar__quick" onClick={() => { setQuickSettings(true); setSidebarOpen(true); }}><span className="profile-avatar profile-avatar--small">{accountLabel.charAt(0).toUpperCase()}</span><ChevronDown size={14}/></Button>
+            <button type="button" className="icon-button topbar__quick" onClick={() => { setQuickSettings(true); setSidebarOpen(true); }} aria-label="Open account preferences"><span className="profile-avatar profile-avatar--small">{accountLabel.charAt(0).toUpperCase()}</span><ChevronDown size={14}/></button>
           </div>
         </header>
         <main className="shell__main"><Outlet /></main>
         <nav className="mobile-nav" aria-label="Mobile navigation">
           <NavLink to="/dashboard" className={({isActive}) => `nav-item${isActive ? ' nav-item--active' : ''}`}><LayoutDashboard size={19}/><span>Home</span></NavLink>
-          <NavLink to="/people" className={({isActive}) => `nav-item${isActive ? ' nav-item--active' : ''}`}><UsersRound size={19}/><span>People</span></NavLink>
           <button type="button" className="nav-item" onClick={() => setLauncherOpen(true)}><Grid2X2 size={19}/><span>Apps</span></button>
-          <NavLink to="/accounts" className={({isActive}) => `nav-item${isActive ? ' nav-item--active' : ''}`}><ShieldCheck size={19}/><span>Accounts</span></NavLink>
           <button type="button" className="nav-item" onClick={() => setSidebarOpen(true)}><Menu size={19}/><span>Menu</span></button>
         </nav>
       </div>
