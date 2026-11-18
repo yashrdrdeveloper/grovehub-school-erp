@@ -5,6 +5,7 @@ package external
 import (
 		"crypto/subtle"
 	"net/http"
+	"log/slog"
 	"regexp"
 	"strings"
 
@@ -53,12 +54,12 @@ func (operation *Operation) ServeHTTP(writer http.ResponseWriter, request *http.
 	}
 	matches := tierPattern.FindStringSubmatch(route)
 	if len(matches) != 3 {
-		operation.reject(writer, request, http.StatusForbidden)
+		operation.rejectForbidden(writer, request, "route_not_registered_or_unclassified")
 		return
 	}
 
 	if coregateway.Tier(matches[1]) != coregateway.Restricted && !operation.validateOrigin(request) {
-		operation.reject(writer, request, http.StatusForbidden)
+		operation.rejectForbidden(writer, request, "origin_mismatch")
 		return
 	}
 
@@ -71,7 +72,7 @@ func (operation *Operation) ServeHTTP(writer http.ResponseWriter, request *http.
 	switch coregateway.Tier(matches[1]) {
 	case coregateway.Public:
 		if requiresCSRF(request) && !validCSRF(request) {
-			operation.reject(writer, request, http.StatusForbidden)
+			operation.rejectForbidden(writer, request, "csrf_invalid_or_missing")
 			return
 		}
 		operation.mux.ServeHTTP(writer, request)
@@ -92,7 +93,7 @@ func (operation *Operation) ServeHTTP(writer http.ResponseWriter, request *http.
 			return
 		}
 		if requiresCSRF(request) && !validCSRF(request) {
-			operation.reject(writer, request, http.StatusForbidden)
+			operation.rejectForbidden(writer, request, "csrf_invalid_or_missing")
 			return
 		}
 
@@ -108,18 +109,18 @@ func (operation *Operation) ServeHTTP(writer http.ResponseWriter, request *http.
 	case coregateway.Restricted:
 		// Restricted endpoints must never inherit a browser session.
 		if operation.workloads == nil {
-			operation.reject(writer, request, http.StatusForbidden)
+			operation.rejectForbidden(writer, request, "workload_verifier_unavailable")
 			return
 		}
 		ctx, err := operation.workloads.VerifyWorkload(request.Context(), request)
 		if err != nil || ctx == nil {
-			operation.reject(writer, request, http.StatusForbidden)
+			operation.rejectForbidden(writer, request, "workload_verification_failed")
 			return
 		}
 		operation.mux.ServeHTTP(writer, request.WithContext(ctx))
 
 	default:
-		operation.reject(writer, request, http.StatusForbidden)
+		operation.rejectForbidden(writer, request, "unsupported_access_tier")
 	}
 }
 
@@ -168,3 +169,14 @@ func (operation *Operation) reject(writer http.ResponseWriter, request *http.Req
 	_ = httpresponse.WriteErrorContext(request.Context(), writer, status, gatewayDefinition(status))
 }
 
+
+// rejectForbidden records a diagnostic reason only in backend logs. The HTTP
+// response remains intentionally generic and never reveals policy internals.
+func (operation *Operation) rejectForbidden(writer http.ResponseWriter, request *http.Request, reason string) {
+	slog.WarnContext(request.Context(), "gateway request denied",
+		"reason", reason,
+		"method", request.Method,
+		"registered_pattern", request.Pattern,
+	)
+	operation.reject(writer, request, http.StatusForbidden)
+}
