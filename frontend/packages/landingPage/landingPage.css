@@ -282,3 +282,116 @@
 .rdr-historic-hours strong{font-size:13px;color:#253249}
 .rdr-historic-hours p,.rdr-historic-hours span{font-size:11px;line-height:1.7;color:#707982}
 @media(max-width:700px){.rdr-values--leadership,.rdr-historic-hours{grid-template-columns:1fr}.rdr-historic-hours{gap:19px}.rdr-values--leadership>div{gap:6px}}
+
+/* Marketing refinement: closer first content, natural gallery rhythm and
+   safely displayed real-school photographs. */
+.rdr-site{overflow-x:clip}
+.rdr-site .rdr-page-banner{min-height:245px;padding-block:43px 35px;gap:35px}
+.rdr-site .rdr-page-banner:has(.rdr-page-banner__image){min-height:295px;padding-block:42px}
+.rdr-site .rdr-page-banner h1{font-size:clamp(35px,4vw,61px);line-height:1.1;margin:12px 0 12px}
+.rdr-site .rdr-page-banner p{margin:0;font-size:13px;line-height:1.7}
+.rdr-site .rdr-page-banner__image{height:235px}
+.rdr-site .rdr-page-banner+.rdr-section{padding-top:31px}
+.rdr-site .rdr-gallery-section{padding-top:12px!important}
+.rdr-site .rdr-gallery-grid{grid-auto-flow:dense}
+.rdr-site .rdr-gallery-grid .rdr-photo{height:260px}
+.rdr-site .rdr-gallery-grid .rdr-gallery-grid__wide .rdr-photo{height:260px}
+.rdr-photo--unavailable{background:#e8ede8;display:flex;align-items:center;justify-content:center}
+.rdr-photo--unavailable:after{content:"RDR School · moments worth remembering";font-size:11px;text-align:center;letter-spacing:.03em;color:#66727d;max-width:180px;padding:20px}
+.rdr-gallery__archive-note{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:#7b8790;font-size:11px;margin:20px 0 0}
+.rdr-gallery__archive-note a{display:inline-flex;align-items:center;gap:5px;color:#243750;text-decoration:underline}
+.rdr-site .rdr-footer{background:#171f30!important;color:#f7f8f9!important}
+.rdr-site .rdr-footer .rdr-logo strong,.rdr-site .rdr-footer h3{color:#f7f8f9!important}
+.rdr-site .rdr-footer .rdr-logo small{color:#b7c4d1!important}
+.rdr-site .rdr-footer a{color:#c0cedc}
+.rdr-site .rdr-footer__bottom{color:#bac4d0}
+.rdr-achievements{background:#f7f5ef;border-block:1px solid #e6e2d7}
+.rdr-achievements__inner{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0}
+.rdr-achievements__inner>div{display:flex;flex-direction:column;gap:5px;padding:31px 33px;border-right:1px solid #e5dfd4}
+.rdr-achievements__inner>div:first-child{padding-left:0}
+.rdr-achievements__inner>div:last-child{border-right:0}
+.rdr-achievements__inner strong{color:#25324a;font-family:Georgia,serif;font-size:37px;line-height:1.1;font-weight:500}
+.rdr-achievements__inner span{font-size:12px;font-weight:800;color:#324151}
+.rdr-achievements__inner small{font-size:11px;line-height:1.5;color:#7b7f82}
+.rdr-stories .rdr-section-heading{margin-bottom:28px}
+.rdr-stories__grid{display:grid;grid-template-columns:1.2fr 1fr;gap:15px;min-height:465px}
+.rdr-stories__featured{position:relative;overflow:hidden;border-radius:15px;min-height:465px;background:#e7e9e4}
+.rdr-stories__featured>.rdr-photo{position:absolute;inset:0;border-radius:inherit}
+.rdr-stories__featured:after{content:"";pointer-events:none;position:absolute;inset:30% 0 0;background:linear-gradient(transparent,rgba(13,24,34,.85))}
+.rdr-stories__featured-caption{position:absolute;bottom:0;left:0;right:0;z-index:1;padding:31px;color:white}
+.rdr-stories__featured-caption span{font-size:10px;font-weight:800;letter-spacing:.13em;color:#e2ccad}
+.rdr-stories__featured-caption h3{font-size:32px;line-height:1.12;margin:11px 0}
+.rdr-stories__featured-caption p{font-size:13px;line-height:1.65;max-width:410px;color:#e1e5e8}
+.rdr-stories__side{display:grid;grid-template-rows:minmax(0,1fr) auto;gap:14px}
+.rdr-stories__upcoming{background:#f7f5ef;border:1px solid #eeebe4;border-radius:15px;padding:24px 27px}
+.rdr-stories__upcoming h3{font-size:25px;margin:13px 0 14px}
+.rdr-event-empty{display:flex;flex-direction:column;align-items:flex-start;gap:10px;color:#727c80}
+.rdr-event-empty svg{color:#aa9372}
+.rdr-event-empty strong{font-size:15px;color:#344050}
+.rdr-event-empty p{font-size:12px;line-height:1.55;margin:0;max-width:350px}
+.rdr-event-empty a{display:inline-flex;align-items:center;gap:6px;color:#27394d;font-size:11px;font-weight:800}
+.rdr-event{display:flex;gap:10px;font-size:12px;border-top:1px solid #e5e2d9;padding:12px 0}
+.rdr-stories__admission{display:grid;grid-template-columns:1fr auto;background:#1f2a44;color:white!important;border-radius:14px;padding:22px 27px;gap:6px}
+.rdr-stories__admission span{grid-column:1/3;display:flex;align-items:center;gap:8px;color:#dbc6a3;font-size:10px;letter-spacing:.07em;font-weight:800}
+.rdr-stories__admission strong{font-size:19px;line-height:1.2}
+.rdr-stories__admission small{grid-column:1;max-width:350px;font-size:11px;line-height:1.6;color:#c6cdd6}
+.rdr-stories__admission>svg{grid-column:2;grid-row:2/4;align-self:center}
+.rdr-voices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.rdr-voices blockquote{margin:0;display:flex;flex-direction:column;align-items:flex-start;min-height:224px;background:white;border:1px solid #e8e6e2;border-radius:14px;padding:25px}
+.rdr-voices svg{color:#b49b73}
+.rdr-voices p{font-family:Georgia,serif;font-style:italic;font-size:19px;line-height:1.5;color:#263247;flex:1;margin:15px 0}
+.rdr-voices footer{font-size:12px;font-weight:800;color:#64717d}
+.rdr-newsletter-wrap{background:#eaf0eb}
+.rdr-newsletter{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:45px;align-items:center;padding-block:54px}
+.rdr-newsletter h2{font-size:clamp(29px,3.8vw,49px);margin:14px 0 7px}
+.rdr-newsletter p{font-size:13px;color:#64756a;line-height:1.65;max-width:430px}
+.rdr-newsletter__ornament{position:absolute;right:1%;top:10px;color:#b3c7b4;display:flex;gap:12px;pointer-events:none;opacity:.5}
+.rdr-newsletter form{position:relative;z-index:1}
+.rdr-newsletter__field{display:flex;align-items:center;gap:10px;background:white;border:1px solid #d7e0d8;border-radius:10px;padding:7px 8px 7px 16px;box-shadow:0 8px 24px #32473510}
+.rdr-newsletter__field>svg{color:#87958d;flex-shrink:0}
+.rdr-newsletter__field input{flex:1;min-width:0;border:0;outline:0;font-size:13px;color:#213443;background:transparent}
+.rdr-newsletter__field button{display:flex;align-items:center;gap:8px;justify-content:center;white-space:nowrap;background:#1f2a44;color:white;border:0;border-radius:7px;font-size:12px;font-weight:800;padding:14px 16px}
+.rdr-newsletter form>small{font-size:10px;line-height:1.6;color:#7c8a7d;display:block;margin-top:10px}
+.rdr-newsletter__error{font-size:11px;color:#ab3d4c;margin-top:8px;display:block}
+.rdr-newsletter__prepared{margin-top:11px;font-size:11px;color:#425d49;line-height:1.6}
+.rdr-newsletter__prepared a{display:inline-flex;gap:5px;align-items:center;text-decoration:underline;font-weight:800}
+.rdr-admissions__highlight{margin-top:25px;display:flex;align-items:flex-start;gap:12px;border-radius:12px;background:#f5f3eb;padding:19px 20px;color:#334453;font-size:13px;line-height:1.6}
+.rdr-admissions__highlight svg{flex-shrink:0;color:#ab9270}
+.rdr-campus-spotlight{margin-top:48px;display:grid;grid-template-columns:1fr 1fr;align-items:center;overflow:hidden;border-radius:15px;background:#f7f5ef}
+.rdr-campus-spotlight .rdr-photo{height:315px;border-radius:0}
+.rdr-campus-spotlight>div:last-child{padding:40px}
+.rdr-campus-spotlight h3{font-size:clamp(25px,3vw,39px);line-height:1.17;margin:16px 0}
+.rdr-campus-spotlight p{font-size:13px;line-height:1.7;color:#63717b;margin-bottom:21px}
+@media(max-width:950px){
+.rdr-site .rdr-page-banner:has(.rdr-page-banner__image){min-height:280px}
+.rdr-stories__grid{grid-template-columns:1fr 1fr}
+.rdr-stories__featured{min-height:415px}
+.rdr-newsletter{gap:25px}
+}
+@media(max-width:700px){
+.rdr-site .rdr-page-banner,.rdr-site .rdr-page-banner:has(.rdr-page-banner__image){min-height:0;padding-block:30px 24px;gap:19px}
+.rdr-site .rdr-page-banner__image{height:190px}
+.rdr-site .rdr-page-banner+.rdr-section{padding-top:15px}
+.rdr-site .rdr-gallery-grid .rdr-photo{height:180px}
+.rdr-achievements__inner{grid-template-columns:1fr;gap:0}
+.rdr-achievements__inner>div,.rdr-achievements__inner>div:first-child{padding:20px 0;border-right:0;border-bottom:1px solid #e5dfd4}
+.rdr-achievements__inner>div:last-child{border-bottom:0}
+.rdr-achievements__inner strong{font-size:30px}
+.rdr-stories__grid{grid-template-columns:1fr}
+.rdr-stories__featured{min-height:325px}
+.rdr-stories__featured-caption{padding:22px}
+.rdr-stories__featured-caption h3{font-size:25px}
+.rdr-stories__side{grid-template-rows:auto auto}
+.rdr-stories__upcoming{padding:23px}
+.rdr-voices{grid-template-columns:1fr}
+.rdr-voices blockquote{min-height:170px}
+.rdr-voices p{font-size:18px}
+.rdr-newsletter{grid-template-columns:1fr;gap:22px;padding-block:43px}
+.rdr-campus-spotlight{grid-template-columns:1fr}
+.rdr-campus-spotlight .rdr-photo{height:235px}
+.rdr-campus-spotlight>div:last-child{padding:24px}
+}
+@media(max-width:375px){
+.rdr-newsletter__field button{font-size:0;padding:12px}
+.rdr-newsletter__field button svg{width:19px;height:19px}
+}
