@@ -5,6 +5,8 @@ import {
 } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router-dom';
 
+import { SchoolMonogram } from '@Components';
+
 import { AppLauncher, appCatalog, defaultPinnedApps } from './layout/AppLauncher';
 import { useWorkspaceTheme, type ThemePreference } from './theme';
 
@@ -84,7 +86,7 @@ export const Shell = ({ accountLabel, schoolLabel, onLogout }: ShellProps) => {
           <button type="button" className="icon-button sidebar__close" aria-label="Close navigation" onClick={() => setSidebarOpen(false)}><X size={20}/></button>
         </div>
         <div className="sidebar__school" title={schoolLabel}>
-          <div className="school-emblem">R</div>
+          <SchoolMonogram />
           <span className="sidebar__school-details"><strong>{schoolLabel}</strong><small>School operating system</small></span>
         </div>
         <div className="sidebar__section-label">PINNED APPS</div>
