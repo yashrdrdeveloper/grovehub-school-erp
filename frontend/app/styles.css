@@ -1559,3 +1559,148 @@ body { background: var(--canvas); }
 @media(max-width:800px) { .school-home__stats { grid-template-columns:repeat(2,minmax(0,1fr)); } .school-home__stat:nth-child(2) { border-right:0; } .school-home__stat:nth-child(-n+2) { border-bottom:1px solid var(--border); } }
 @media(max-width:650px) { .school-home { gap:23px; } .school-home__header { flex-direction:column; align-items:start; gap:14px; } .school-home__header h1 { font-size:35px; } .school-home__date { padding:8px 10px; } .school-home__notice { align-items:start; } .school-home__notice-state { display:none; } .school-home__stats { border-radius:11px; } .school-home__stat { padding:16px; } .school-home__stat strong { font-size:30px; } .school-home__side-column { display:flex; flex-direction:column; } .school-home__side-column > .school-home__section { width:100%; } .school-home__focus-content { min-height:245px; } .school-home__focus-count { display:none; } }
 @media(prefers-reduced-motion:reduce) { .school-home__operation,.school-home__calendar-tabs button { transition:none; } }
+
+
+/* Shared authentication surface — identical desktop card and logo across
+   login, forgot password, reset password and invitation setup. */
+.auth-page--consistent {
+  min-height: 100dvh;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 42px 20px 22px;
+  background: var(--canvas);
+}
+.auth-page--consistent .auth-brand {
+  flex: 0 0 auto;
+  margin: 0 auto auto;
+  gap: 11px;
+  font-size: 19px;
+}
+.auth-page--consistent .auth-brand .brand-mark {
+  flex: 0 0 37px;
+  width: 37px;
+  height: 37px;
+  font-size: 23px;
+  border-radius: 11px;
+}
+.auth-page--consistent .auth-panel {
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 414px;
+  padding: 36px 38px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 19px;
+  box-shadow: 0 10px 32px rgba(19,19,35,.035);
+}
+.auth-page--consistent .auth-panel__school {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 24px;
+  color: var(--ink);
+  font-size: 12px;
+}
+.auth-page--consistent .auth-panel__school .school-emblem {
+  width: 26px;
+  height: 26px;
+  font-size: 14px;
+  color: var(--ink-strong);
+  background: var(--surface-subtle);
+  border: 1px solid var(--border);
+}
+.auth-page--consistent .auth-panel__icon {
+  width: 38px;
+  height: 38px;
+  margin-bottom: 18px;
+  border-radius: 10px;
+}
+.auth-page--consistent .auth-panel h1 {
+  font-size: 26px;
+  line-height: 1.25;
+  letter-spacing: -.05em;
+  margin: 0 0 8px;
+}
+.auth-page--consistent .auth-panel > .muted {
+  line-height: 1.6;
+  margin-bottom: 25px;
+  font-size: 12px;
+}
+.auth-page--consistent .auth-form { gap: 17px; }
+.auth-page--consistent .field { gap: 7px; }
+.auth-page--consistent .field__label { font-size: 12px; color: var(--ink); }
+.auth-page--consistent .field__input {
+  min-height: 44px;
+  height: 44px;
+  width: 100%;
+  font-size: 16px;
+  border-radius: 9px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  color: var(--ink-strong);
+  background: var(--surface);
+  outline: none;
+  box-shadow: none;
+}
+.auth-page--consistent .field__input:hover:not(:disabled) { border-color: var(--muted); }
+.auth-page--consistent .field__input:focus,
+.auth-page--consistent .field__input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb,var(--accent),transparent 84%);
+}
+.auth-page--consistent .field__input--error { border-color: #db6477; }
+.auth-page--consistent .password-field .field__input { padding-right: 50px; }
+.auth-page--consistent .password-toggle {
+  top: 28px;
+  right: 3px;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  color: var(--muted);
+}
+.auth-page--consistent .password-toggle:hover { color: var(--ink-strong); }
+.auth-page--consistent .form-row a,
+.auth-page--consistent .back-link { color: var(--accent); font-size: 12px; }
+.auth-page--consistent .auth-form .button--full { min-height: 44px; margin-top: 2px; }
+.auth-page--consistent .auth-security { margin-top: 25px; }
+.auth-page--consistent .auth-footer {
+  width: min(100%,900px);
+  margin: auto 0 0;
+  padding-top: 44px;
+  font-size: 11px;
+  color: var(--muted);
+}
+:root[data-theme='dark'] .auth-page--consistent .auth-panel {
+  box-shadow: 0 16px 38px rgba(0,0,0,.13);
+}
+@media(max-width:600px) {
+  .auth-page--consistent {
+    min-height: 100dvh;
+    padding: 24px 16px max(20px,env(safe-area-inset-bottom));
+  }
+  .auth-page--consistent .auth-brand {
+    margin: 8px auto 32px;
+    font-size: 19px;
+  }
+  .auth-page--consistent .auth-panel {
+    max-width: 414px;
+    padding: 28px 24px;
+    border-radius: 17px;
+  }
+  .auth-page--consistent .auth-panel__school { margin-bottom: 22px; }
+  .auth-page--consistent .auth-panel h1 { font-size: 25px; }
+  .auth-page--consistent .auth-panel > .muted { margin-bottom: 24px; }
+  .auth-page--consistent .auth-footer { padding-top: 38px; text-align: center; justify-content: center; }
+}
+@media(max-width:360px) {
+  .auth-page--consistent { padding-inline: 12px; }
+  .auth-page--consistent .auth-panel { padding-inline: 19px; }
+}
+@media(max-height:690px) and (min-width:601px) {
+  .auth-page--consistent { padding-top: 20px; padding-bottom: 16px; }
+  .auth-page--consistent .auth-brand { margin-bottom: 24px; }
+  .auth-page--consistent .auth-footer { padding-top: 24px; }
+}
