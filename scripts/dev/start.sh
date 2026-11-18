@@ -14,6 +14,8 @@ source "${SCRIPT_DIR}/../lib/env.sh"
 # Provider connections stay disabled when the optional OAuth credentials
 # are not configured, rather than failing the entire developer startup.
 load_backend_runtime_env
+# Development Vite proxy has an explicit loopback-only origin policy.
+export IDENTITY_ALLOWED_ORIGIN="${IDENTITY_ALLOWED_ORIGIN:-http://127.0.0.1:4173}"
 
 # init all already includes the Integration schema.
 bash "${SCRIPT_DIR}/../database/migrate.sh" init all

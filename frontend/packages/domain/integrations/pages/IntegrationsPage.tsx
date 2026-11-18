@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Cable, ExternalLink, RefreshCw, Unplug } from 'lucide-react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { integrationApi } from '@Business/integrations';
 import { Button, Card, EmptyState, PageHeading, StatusPill } from '@Components';
@@ -30,15 +30,10 @@ export const IntegrationsPage = () => {
     queryKey: ['integrationProviders'],
     queryFn: () => integrationApi.providers() as Promise<Provider[]>,
   });
-  const create = useMutation({
-    mutationFn: (provider: string) => integrationApi.create({
-      provider,
-      ownerGid: account?.personGid,
-    }),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['integrations'] }),
-  });
+  const [connecting, setConnecting] = useState(false);
 
   const connect = async (provider: string) => {
+    setConnecting(true);
     try {
       const response = await integrationApi.create({ provider, ownerGid: account?.personGid }) as Connection;
       const details = await integrationApi.beginOAuth(response.id) as { authorizationUrl?: string };
@@ -50,6 +45,8 @@ export const IntegrationsPage = () => {
       }
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : 'Could not connect provider.');
+    } finally {
+      setConnecting(false);
     }
   };
 
@@ -92,7 +89,7 @@ export const IntegrationsPage = () => {
             <div className="session-item" key={provider.id}>
               <Cable size={20} />
               <div><strong>{provider.name ?? provider.id}</strong><small>OAuth authorization</small></div>
-              <Button variant="secondary" disabled={create.isPending} onClick={() => void connect(provider.id)}>Connect <ExternalLink size={15} /></Button>
+              <Button variant="secondary" disabled={connecting} onClick={() => void connect(provider.id)}>Connect <ExternalLink size={15} /></Button>
             </div>
           ))}
         </Card>

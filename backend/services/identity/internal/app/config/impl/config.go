@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"net/url"
+	"net"
 	"os"
 	"strings"
 
@@ -36,7 +37,7 @@ func Load() (config.Config, error) {
 
 	if settings.AllowedOrigin != "" {
 		origin, err := url.Parse(settings.AllowedOrigin)
-		if err != nil || origin.Scheme != "https" || origin.Host == "" ||
+		if err != nil || !trustedOriginScheme(origin) || origin.Host == "" ||
 			origin.Path != "" || origin.RawQuery != "" || origin.Fragment != "" ||
 			origin.User != nil {
 			return config.Config{}, errors.New("identity allowed origin must be an HTTPS origin")
@@ -44,4 +45,21 @@ func Load() (config.Config, error) {
 	}
 
 	return settings, nil
+}
+
+// Local Vite development may use HTTP only on a genuine loopback host.
+// Public hosts must always use HTTPS.
+func trustedOriginScheme(origin *url.URL) bool {
+	if origin.Scheme == "https" {
+		return true
+	}
+	if origin.Scheme != "http" {
+		return false
+	}
+	host := origin.Hostname()
+	if host == "localhost" {
+		return true
+	}
+	address := net.ParseIP(host)
+	return address != nil && address.IsLoopback()
 }
