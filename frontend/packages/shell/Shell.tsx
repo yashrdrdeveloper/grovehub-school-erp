@@ -81,7 +81,7 @@ export const Shell = ({ accountLabel, schoolLabel, onLogout }: ShellProps) => {
           <div className="topbar__right">
             <button type="button" className="topbar__search" aria-label="Global search not available yet" disabled><Search size={17}/><span>Search</span><kbd>⌘ K</kbd></button>
             <button type="button" className="icon-button" aria-label="Notifications not available yet" disabled><Bell size={19}/></button>
-            <Button variant="ghost" className="topbar__quick" onClick={() => setQuickSettings(!quickSettings)}><span className="profile-avatar profile-avatar--small">{accountLabel.charAt(0).toUpperCase()}</span><ChevronDown size={14}/></Button>
+            <Button variant="ghost" className="topbar__quick" onClick={() => { setQuickSettings(true); setSidebarOpen(true); }}><span className="profile-avatar profile-avatar--small">{accountLabel.charAt(0).toUpperCase()}</span><ChevronDown size={14}/></Button>
           </div>
         </header>
         <main className="shell__main"><Outlet /></main>
