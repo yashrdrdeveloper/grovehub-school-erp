@@ -2034,3 +2034,86 @@ body { background: var(--canvas); }
     width: 44px;
   }
 }
+
+
+/* Illustrated school identity — vector campus and learning motifs on desktop.
+   Keep artwork away from form and remove it entirely on compact/mobile screens. */
+.auth-page--consistent .auth-school-art { display: none; }
+@media (min-width: 1100px) {
+  .auth-page--consistent {
+    background: #f6f3eb;
+    isolation: isolate;
+    position: relative;
+    overflow: hidden;
+  }
+  :root[data-theme='dark'] .auth-page--consistent { background: #12131b; }
+  .auth-page--consistent .auth-school-art {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    display: block;
+    overflow: hidden;
+  }
+  .auth-school-art__halo {
+    position: absolute;
+    width: 380px;
+    height: 380px;
+    border-radius: 50%;
+    opacity: .55;
+    filter: blur(28px);
+  }
+  .auth-school-art__halo--left { left: -40px; top: 24%; background: #f8ddbd; }
+  .auth-school-art__halo--right { right: -30px; top: 23%; background: #d6e5da; }
+  .auth-school-art__campus,
+  .auth-school-art__learning {
+    position: absolute;
+    width: clamp(255px, 26vw, 365px);
+    height: auto;
+    max-height: 60vh;
+    top: 47%;
+    transform: translateY(-50%);
+    filter: drop-shadow(0 18px 12px rgba(31,33,42,.045));
+  }
+  .auth-school-art__campus { left: clamp(16px, 3.4vw, 95px); }
+  .auth-school-art__learning { right: clamp(16px, 3.4vw, 95px); }
+  .auth-school-art__caption {
+    position: absolute;
+    top: calc(47% + min(25vw, 190px));
+    color: #77736e;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .05em;
+    text-align: center;
+    width: clamp(255px,26vw,365px);
+  }
+  .auth-school-art__caption--left { left: clamp(16px, 3.4vw, 95px); }
+  .auth-school-art__caption--right { right: clamp(16px, 3.4vw, 95px); }
+  .auth-page--consistent .auth-brand,
+  .auth-page--consistent .auth-panel,
+  .auth-page--consistent .auth-footer { position: relative; z-index: 1; }
+  .auth-page--consistent .auth-panel {
+    background: #fffefd;
+    border-color: rgba(52,52,62,.085);
+    box-shadow: 0 25px 65px rgba(33,29,35,.09);
+  }
+  :root[data-theme='dark'] .auth-page--consistent .auth-panel {
+    background: var(--surface);
+    border-color: var(--border);
+    box-shadow: 0 25px 65px rgba(0,0,0,.35);
+  }
+  :root[data-theme='dark'] .auth-school-art__campus,
+  :root[data-theme='dark'] .auth-school-art__learning { opacity: .78; }
+  :root[data-theme='dark'] .auth-school-art__halo { opacity: .16; }
+  :root[data-theme='dark'] .auth-school-art__caption { color: #a6a3b5; }
+}
+@media (min-width: 1100px) and (max-width: 1380px) {
+  .auth-school-art__campus,
+  .auth-school-art__learning { width: clamp(220px, 24vw, 315px); }
+  .auth-school-art__caption { width: clamp(220px,24vw,315px); }
+}
+@media (max-height: 670px) and (min-width: 1100px) {
+  .auth-school-art__campus,
+  .auth-school-art__learning { max-height: 44vh; }
+  .auth-school-art__caption { display: none; }
+}
