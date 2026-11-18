@@ -3,7 +3,7 @@ import { ArrowLeft, MailCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { authenticationApi } from '@Business/auth';
-import { Button, Input, SchoolMonogram } from '@Components';
+import { Button, Input } from '@Components';
 
 import { AuthFrame } from './AuthFrame';
 
@@ -29,8 +29,7 @@ export const ForgotPasswordPage = () => {
 
   return (
     <AuthFrame title="Forgot password">
-        <div className="auth-panel__school"><SchoolMonogram /> <span>RDR School</span></div>
-        <div className="auth-panel__icon"><MailCheck size={23} /></div>
+                <div className="auth-panel__icon"><MailCheck size={23} /></div>
         <h1>Reset your password</h1>
         <p className="muted">We’ll email a recovery link if this address belongs to an eligible account.</p>
         {accepted ? (
