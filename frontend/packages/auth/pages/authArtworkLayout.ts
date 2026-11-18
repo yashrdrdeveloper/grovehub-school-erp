@@ -35,7 +35,11 @@ const shuffle = <T,>(items: T[], rng: Rng): T[] => {
   const result = [...items];
   for (let i = result.length - 1; i > 0; i -= 1) {
     const j = Math.floor(rng() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
+    const current = result[i];
+    const selected = result[j];
+    if (current === undefined || selected === undefined) continue;
+    result[i] = selected;
+    result[j] = current;
   }
   return result;
 };
@@ -115,8 +119,8 @@ export const packAuthIllustrations = (
     const height = box.height + overhang;
     let spaces = shuffle(allSpaces, rng);
     if (id === 'crm' || id === 'student') {
-      const preferredSide = (id === 'crm') !== flip ? sideGutters[0] : sideGutters[1];
-      spaces = [preferredSide, ...spaces.filter(space => space !== preferredSide)];
+      const preferredSide = ((id === 'crm') !== flip ? sideGutters[0] : sideGutters[1]) ?? sideGutters[0];
+      if (preferredSide) spaces = [preferredSide, ...spaces.filter(space => space !== preferredSide)];
     } else if (['tasks', 'admissions', 'communication'].includes(id) && placed.crm) {
       const center = placed.crm.x + (sizes.get('crm')?.width ?? 0) / 2;
       spaces.sort((a, b) => Math.abs(a.x + a.width / 2 - center) - Math.abs(b.x + b.width / 2 - center));
