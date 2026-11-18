@@ -2210,7 +2210,7 @@ body { background: var(--canvas); }
 .auth-page--consistent .password-field .field__input { padding-right: 53px; }
 .auth-page--consistent .password-toggle {
   position: absolute;
-  top: 32px;
+  top: 25px;
   right: 4px;
   height: 48px;
   width: 44px;
