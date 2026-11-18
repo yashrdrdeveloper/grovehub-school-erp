@@ -786,3 +786,45 @@
 @media(prefers-reduced-motion:reduce){
   .rdr-sheet[data-state],.rdr-sheet-backdrop[data-state],.rdr-mobile-nav{animation:none!important}
 }
+
+
+/* Leadership is more useful than fabricated event calendars or inactive
+   newsletters. Short visual previews open the actual historical messages. */
+.rdr-school-message-links{display:grid;gap:8px}
+.rdr-school-message-links a{display:flex;align-items:center;gap:13px;padding:13px;background:white;border:1px solid #e6e2d9;border-radius:10px;color:#344356}
+.rdr-school-message-links>a>svg:first-child{color:#a48e68;flex:none}
+.rdr-school-message-links>a>svg:last-child{margin-left:auto;flex:none}
+.rdr-school-message-links a span{display:flex;flex-direction:column;gap:2px}
+.rdr-school-message-links a strong{font-size:12px}
+.rdr-school-message-links a small{font-size:10px;color:#838c91}
+.rdr-home-leaders__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.rdr-home-leaders__grid a{position:relative;display:flex;flex-direction:column;align-items:flex-start;min-height:245px;gap:9px;border:1px solid #e8e7e1;border-radius:15px;background:white;padding:26px}
+.rdr-home-leaders__grid a>span{font-size:10px;color:#9d8666;font-weight:850;letter-spacing:.08em}
+.rdr-home-leaders__grid a>svg:nth-child(2){color:#6a7989;margin:4px 0}
+.rdr-home-leaders__grid h3{font-size:21px;line-height:1.2;margin:5px 0 0}
+.rdr-home-leaders__grid p{font-size:12px;line-height:1.7;color:#79848e;margin:0}
+.rdr-home-leaders__grid a>svg:last-child{position:absolute;right:22px;top:24px;color:#a4afb9}
+.rdr-about-leaders__links{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+.rdr-about-leaders__links a{position:relative;border:1px solid #e3e6e7;padding:20px;border-radius:12px;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.rdr-about-leaders__links a>svg:first-child{color:#a9906b}
+.rdr-about-leaders__links a>svg:last-child{position:absolute;right:14px;top:14px;color:#8b98a4}
+.rdr-about-leaders__links strong{font-size:13px;color:#27344a}
+.rdr-about-leaders__links small{font-size:11px;color:#788490}
+.rdr-enquiry-section--short{display:flex;justify-content:space-between;align-items:center;gap:40px;border-top:1px solid #e5e4e0}
+.rdr-enquiry-section--short .rdr-section-heading{margin:0}
+.rdr-enquiry-section--short .rdr-section-heading h2{font-size:clamp(30px,3vw,45px)}
+.rdr-enquiry-section--short .rdr-btn{flex:none}
+@media(max-width:950px){
+.rdr-home-leaders__grid{grid-template-columns:1fr 1fr}
+.rdr-home-leaders__grid a:last-child{grid-column:1/-1;min-height:180px}
+.rdr-about-leaders__links{grid-template-columns:1fr 1fr}
+.rdr-enquiry-section--short{flex-direction:column;align-items:flex-start}
+}
+@media(max-width:700px){
+.rdr-site .rdr-about-leaders{padding-block:25px}
+.rdr-about-leaders__links{gap:8px}
+.rdr-about-leaders__links a{padding:14px;gap:5px}
+.rdr-about-leaders__links a>svg:first-child{width:19px}
+.rdr-about-leaders__links strong{font-size:12px}
+.rdr-about-leaders__links small{font-size:10px}
+}
