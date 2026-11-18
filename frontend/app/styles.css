@@ -1925,7 +1925,7 @@ body { background: var(--canvas); }
   flex-shrink:0;
   display:flex;
   flex-direction:column;
-  justify-content:center;
+  justify-content:safe center;
 }
 .auth-page--consistent .auth-panel > .auth-form,
 .auth-page--consistent .auth-panel > .notice {
@@ -1937,6 +1937,6 @@ body { background: var(--canvas); }
     width:min(440px,100%);
     height:520px;
     max-height:100%;
-    justify-content:center;
+    justify-content:safe center;
   }
 }
