@@ -27,7 +27,7 @@ const WorkspaceFrame = () => {
 
 const AppRoutes = () => (
   <Routes>
-    {['/', '/about', '/academics', '/campus', '/admissions', '/gallery', '/mandatory-public-disclosure', '/resources', '/contact'].map(path => (
+    {['/', '/about', '/about/history', '/about/director', '/about/principal', '/about/philosophy', '/academics', '/campus', '/admissions', '/gallery', '/mandatory-public-disclosure', '/resources', '/contact'].map(path => (
       <Route key={path} path={path} element={<LandingPage />} />
     ))}
     <Route element={<PublicOnly />}>
