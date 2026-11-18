@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { CheckCircle2, Eye, EyeOff } from 'lucide-react';
+import { CheckCircle2, Eye, EyeOff, KeyRound, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { authenticationApi } from '@Business/auth';
@@ -69,7 +69,8 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
 
   return (
     <AuthFrame title={settingUp ? "Set password" : "Reset password"}>
-                <h1>{settingUp ? 'Set up your account' : 'Choose a new password'}</h1>
+        <div className="auth-panel__icon">{settingUp ? <ShieldCheck size={23}/> : <KeyRound size={23}/>}</div>
+        <h1>{settingUp ? 'Set up your account' : 'Choose a new password'}</h1>
         <p className="muted">
           {settingUp ? 'Complete the invitation to activate your school account.' : 'Your new password will replace the previous one.'}
         </p>
