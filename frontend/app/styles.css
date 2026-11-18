@@ -479,3 +479,68 @@ body { background: var(--canvas); }
 }
 @media(max-width:520px) { .dashboard-panels { grid-template-columns: 1fr; } .dashboard-panel { min-height: 225px; } .dashboard-welcome h1 { font-size: 27px; } }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+
+/* shadcn-inspired Zinc + Orange palette. Shared across all workspace surfaces.
+   Theme resolution remains system-first through packages/shell/theme.ts. */
+:root {
+  --canvas: #fafafa;
+  --surface: #ffffff;
+  --surface-subtle: #f4f4f5;
+  --ink: #3f3f46;
+  --ink-strong: #18181b;
+  --muted: #71717a;
+  --border: #e4e4e7;
+  --accent: #ea580c;
+  --accent-hover: #c2410c;
+  --accent-pale: #fff7ed;
+  --hero-start: #27272a;
+  --hero-end: #3f3f46;
+  --shadow: 0 1px 3px rgba(24,24,27,.045);
+}
+:root[data-theme='dark'] {
+  --canvas: #09090b;
+  --surface: #18181b;
+  --surface-subtle: #27272a;
+  --ink: #d4d4d8;
+  --ink-strong: #fafafa;
+  --muted: #a1a1aa;
+  --border: #3f3f46;
+  --accent: #fb923c;
+  --accent-hover: #fdba74;
+  --accent-pale: #431d0a;
+  --hero-start: #27272a;
+  --hero-end: #18181b;
+  --shadow: 0 1px 6px rgba(0,0,0,.16);
+}
+.brand-mark, .button--primary { background: #ea580c; color: #fff; }
+.button--primary:hover { background: #c2410c; color: #fff; }
+.brand-period { color: #fb923c; }
+.dashboard-welcome h1 span { color: #f97316; }
+.dashboard-banner {
+  background: linear-gradient(115deg, #27272a, #3f3f46);
+  border-color: #52525b;
+  box-shadow: 0 8px 24px rgba(24,24,27,.09);
+}
+.dashboard-banner__copy span { color: #e4e4e7; }
+.dashboard-banner__symbol { color: #fed7aa; }
+.dashboard-banner > a { background: rgba(255,255,255,.07); }
+.dashboard-tone--violet { --tone: #ea580c; --tone-bg: #fff7ed; }
+.dashboard-tone--amber { --tone: #ca8a04; --tone-bg: #fefce8; }
+.dashboard-tone--rose { --tone: #e11d48; --tone-bg: #fff1f2; }
+.dashboard-tone--blue { --tone: #2563eb; --tone-bg: #eff6ff; }
+.dashboard-tone--cyan { --tone: #0891b2; --tone-bg: #ecfeff; }
+.dashboard-tone--emerald { --tone: #059669; --tone-bg: #ecfdf5; }
+:root[data-theme='dark'] .dashboard-tone { --tone-bg: var(--surface-subtle); }
+.card, .dashboard-quick-link, .app-launcher-item { box-shadow: var(--shadow); }
+.sidebar__school, .dashboard-panel, .metric-card, .dashboard-quick-link, .app-launcher-item { border-radius: 12px; }
+.nav-item--active { color: var(--accent); background: var(--accent-pale); }
+.theme-choice--active, .catalog-tab--active { color: var(--accent) !important; background: var(--accent-pale) !important; border-color: var(--accent) !important; }
+.field__input:focus, .catalog-search:focus-within, .search-control:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(234,88,12,.12);
+}
+.auth-page { background: var(--canvas); }
+.auth-panel { background: var(--surface); border-color: var(--border); }
+.dialog-overlay { background: rgba(9,9,11,.66); }
+.sidebar-backdrop { background: rgba(9,9,11,.54); }
