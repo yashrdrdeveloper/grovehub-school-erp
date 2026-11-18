@@ -572,7 +572,7 @@ export const LandingPage = () => {
   const handleInternalLink=(event:MouseEvent<HTMLDivElement>)=>{
     if(event.defaultPrevented || event.button!==0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)return;
     if(!(event.target instanceof Element))return;
-    const anchor=event.target.closest('a[href]');
+    const anchor=event.target.closest<HTMLAnchorElement>('a[href]');
     if(!anchor || anchor.hasAttribute('download') || (anchor.target&&anchor.target!=='_self'))return;
     const url=new URL(anchor.href,window.location.href);
     if(url.origin!==window.location.origin)return;
