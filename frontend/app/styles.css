@@ -1704,3 +1704,11 @@ body { background: var(--canvas); }
   .auth-page--consistent .auth-brand { margin-bottom: 24px; }
   .auth-page--consistent .auth-footer { padding-top: 24px; }
 }
+
+
+/* All authentication flows share the same base card dimensions; long forms
+   can grow without clipping or creating an internal scrolling form. */
+.auth-page--consistent .auth-panel { min-height: 430px; }
+@media(max-width:600px) {
+  .auth-page--consistent .auth-panel { min-height: 0; }
+}
