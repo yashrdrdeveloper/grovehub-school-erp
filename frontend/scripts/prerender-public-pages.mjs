@@ -48,7 +48,7 @@ for(const route of routes){
     <meta name="twitter:card" content="summary" />
     <script type="application/ld+json">${JSON.stringify(schema).replace(/</g,'\\u003c')}</script>`;
   let html=base
-    .replace(/<title>[\\s\\S]*?<\\/title>/,`<title>${escapeHtml(route.title)}</title>`)
+    .replace(/<title>[\s\S]*?<\/title>/,`<title>${escapeHtml(route.title)}</title>`)
     .replace(/<meta name="description"[^>]*>/,`<meta name="description" content="${escapeHtml(route.description)}" />`)
     .replace('</head>',`    ${head}\n  </head>`)
     .replace('<div id="root"></div>',snapshot);
