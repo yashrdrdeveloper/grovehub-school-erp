@@ -2036,84 +2036,57 @@ body { background: var(--canvas); }
 }
 
 
-/* Illustrated school identity — vector campus and learning motifs on desktop.
-   Keep artwork away from form and remove it entirely on compact/mobile screens. */
-.auth-page--consistent .auth-school-art { display: none; }
+/* Enriched editorial doodles: small academic motifs inside the existing
+   illustration language. Protect the centered authentication panel. */
+.auth-scene__badge, .auth-scene__micro { display: none; }
 @media (min-width: 1100px) {
-  .auth-page--consistent {
-    background: #f6f3eb;
-    isolation: isolate;
-    position: relative;
-    overflow: hidden;
-  }
-  :root[data-theme='dark'] .auth-page--consistent { background: #12131b; }
-  .auth-page--consistent .auth-school-art {
+  .auth-scene__badge {
     position: absolute;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
+    display: grid;
+    place-items: center;
+    width: 74px;
+    height: 74px;
+    border: 1px solid rgba(43,39,40,.28);
+    border-radius: 15px;
+    background: rgba(255,253,247,.73);
+    color: #38343c;
+    box-shadow: 5px 6px 0 rgba(242,206,149,.28);
+  }
+  .auth-scene__badge svg { width: 47px; height: 47px; }
+  .auth-scene__badge--calendar { left: 12%; top: 17%; transform: rotate(-9deg); }
+  .auth-scene__badge--book { right: 10%; top: 19%; transform: rotate(8deg); }
+  .auth-scene__badge--cap { left: 25%; top: 74%; transform: rotate(7deg); width: 65px; height: 65px; }
+  .auth-scene__badge--pencil { right: 24%; top: 73%; transform: rotate(-12deg); width: 62px; height: 62px; }
+  .auth-scene__micro {
+    position: absolute;
     display: block;
-    overflow: hidden;
+    color: #766e6a;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .16em;
   }
-  .auth-school-art__halo {
-    position: absolute;
-    width: 380px;
-    height: 380px;
-    border-radius: 50%;
-    opacity: .55;
-    filter: blur(28px);
+  .auth-scene__micro span { color: #c19a67; padding: 0 5px; }
+  .auth-scene__micro--left { left: 12%; bottom: 11%; }
+  .auth-scene__micro--right { right: 11%; bottom: 11%; }
+  :root[data-theme='dark'] .auth-scene__badge {
+    color: #ddd6df;
+    background: rgba(33,30,41,.84);
+    border-color: rgba(221,214,223,.26);
+    box-shadow: 5px 6px 0 rgba(169,127,153,.12);
   }
-  .auth-school-art__halo--left { left: -40px; top: 24%; background: #f8ddbd; }
-  .auth-school-art__halo--right { right: -30px; top: 23%; background: #d6e5da; }
-  .auth-school-art__campus,
-  .auth-school-art__learning {
-    position: absolute;
-    width: clamp(255px, 26vw, 365px);
-    height: auto;
-    max-height: 60vh;
-    top: 47%;
-    transform: translateY(-50%);
-    filter: drop-shadow(0 18px 12px rgba(31,33,42,.045));
-  }
-  .auth-school-art__campus { left: clamp(16px, 3.4vw, 95px); }
-  .auth-school-art__learning { right: clamp(16px, 3.4vw, 95px); }
-  .auth-school-art__caption {
-    position: absolute;
-    top: calc(47% + min(25vw, 190px));
-    color: #77736e;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: .05em;
-    text-align: center;
-    width: clamp(255px,26vw,365px);
-  }
-  .auth-school-art__caption--left { left: clamp(16px, 3.4vw, 95px); }
-  .auth-school-art__caption--right { right: clamp(16px, 3.4vw, 95px); }
-  .auth-page--consistent .auth-brand,
-  .auth-page--consistent .auth-panel,
-  .auth-page--consistent .auth-footer { position: relative; z-index: 1; }
-  .auth-page--consistent .auth-panel {
-    background: #fffefd;
-    border-color: rgba(52,52,62,.085);
-    box-shadow: 0 25px 65px rgba(33,29,35,.09);
-  }
-  :root[data-theme='dark'] .auth-page--consistent .auth-panel {
-    background: var(--surface);
-    border-color: var(--border);
-    box-shadow: 0 25px 65px rgba(0,0,0,.35);
-  }
-  :root[data-theme='dark'] .auth-school-art__campus,
-  :root[data-theme='dark'] .auth-school-art__learning { opacity: .78; }
-  :root[data-theme='dark'] .auth-school-art__halo { opacity: .16; }
-  :root[data-theme='dark'] .auth-school-art__caption { color: #a6a3b5; }
+  :root[data-theme='dark'] .auth-scene__micro { color: #aaa0b1; }
 }
-@media (min-width: 1100px) and (max-width: 1380px) {
-  .auth-school-art__campus,
-  .auth-school-art__learning { width: clamp(220px, 24vw, 315px); }
-  .auth-school-art__caption { width: clamp(220px,24vw,315px); }
+@media (min-width: 1100px) and (max-width: 1399px) {
+  .auth-scene__badge--calendar { left: 7%; }
+  .auth-scene__badge--book { right: 6%; }
+  .auth-scene__badge--cap { left: 12%; }
+  .auth-scene__badge--pencil { right: 12%; }
+  .auth-scene__micro--left { left: 7%; }
+  .auth-scene__micro--right { right: 7%; }
 }
-@media (max-height: 670px) and (min-width: 1100px) {
-  .auth-school-art__campus,
-  .auth-school-art__learning { max-height: 44vh; }
-  .auth-school-art__caption { display: none; }
+@media (min-width: 1024px) and (max-width: 1099px) {
+  .auth-scene__badge, .auth-scene__micro { display: none; }
+}
+@media (max-height: 760px) {
+  .auth-scene__badge--cap, .auth-scene__badge--pencil, .auth-scene__micro { display: none; }
 }
