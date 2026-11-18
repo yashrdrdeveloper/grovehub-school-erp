@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, ChevronDown, Grid2X2, Menu, Monitor, Moon, Search, Settings2, Sun, X } from 'lucide-react';
+import { Bell, ChevronDown, Grid2X2, LayoutDashboard, Menu, Monitor, Moon, Search, Settings2, ShieldCheck, Sun, UsersRound, X } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router-dom';
 
 import { Button } from '@Components';
@@ -86,10 +86,10 @@ export const Shell = ({ accountLabel, schoolLabel, onLogout }: ShellProps) => {
         </header>
         <main className="shell__main"><Outlet /></main>
         <nav className="mobile-nav" aria-label="Mobile navigation">
-          <NavLink to="/dashboard" className={({isActive}) => `nav-item${isActive ? ' nav-item--active' : ''}`}><span className="mobile-nav__icon">⌂</span><span>Home</span></NavLink>
-          <NavLink to="/people" className={({isActive}) => `nav-item${isActive ? ' nav-item--active' : ''}`}><span className="mobile-nav__icon">♙</span><span>People</span></NavLink>
+          <NavLink to="/dashboard" className={({isActive}) => `nav-item${isActive ? ' nav-item--active' : ''}`}><LayoutDashboard size={19}/><span>Home</span></NavLink>
+          <NavLink to="/people" className={({isActive}) => `nav-item${isActive ? ' nav-item--active' : ''}`}><UsersRound size={19}/><span>People</span></NavLink>
           <button type="button" className="nav-item" onClick={() => setLauncherOpen(true)}><Grid2X2 size={19}/><span>Apps</span></button>
-          <NavLink to="/accounts" className={({isActive}) => `nav-item${isActive ? ' nav-item--active' : ''}`}><span className="mobile-nav__icon">◎</span><span>Accounts</span></NavLink>
+          <NavLink to="/accounts" className={({isActive}) => `nav-item${isActive ? ' nav-item--active' : ''}`}><ShieldCheck size={19}/><span>Accounts</span></NavLink>
           <button type="button" className="nav-item" onClick={() => setSidebarOpen(true)}><Menu size={19}/><span>Menu</span></button>
         </nav>
       </div>
