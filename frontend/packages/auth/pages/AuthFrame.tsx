@@ -28,15 +28,17 @@ const artworkIds: ArtId[] = [
 const FloatingSchoolArtwork = ({
   register,
   placements,
+  editorial,
 }: {
   register: (id: ArtId, node: HTMLDivElement | null) => void;
   placements: Partial<Record<ArtId, ArtPlacement>>;
+  editorial: boolean;
 }) => {
   const item = (id: ArtId, extraClass: string, children: ReactNode) => {
     const placement = placements[id];
-    const style: CSSProperties | undefined = placement
-      ? { left: placement.x, top: placement.y, visibility: 'visible' }
-      : undefined;
+    const style: CSSProperties | undefined = editorial
+      ? { visibility: 'visible' }
+      : placement ? { left: placement.x, top: placement.y, visibility: 'visible' } : undefined;
     return (
       <div
         key={id}
@@ -106,6 +108,7 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
   const itemRefs = useRef<Partial<Record<ArtId, HTMLDivElement>>>({});
   const seedRef = useRef(Math.floor(Math.random() * 4294967295));
   const [placements, setPlacements] = useState<Partial<Record<ArtId, ArtPlacement>>>({});
+  const [editorial, setEditorial] = useState(false);
 
   const register = (id: ArtId, node: HTMLDivElement | null) => {
     if (node) itemRefs.current[id] = node;
@@ -123,6 +126,9 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
       frame = window.requestAnimationFrame(() => {
         const stageBounds = stage.getBoundingClientRect();
         const formBounds = panel.getBoundingClientRect();
+        const isEditorial = stageBounds.width >= 1220 && stageBounds.height >= 650;
+        setEditorial(previous => previous === isEditorial ? previous : isEditorial);
+        if (isEditorial) return;
         const boxes = artworkIds.flatMap(id => {
           const node = itemRefs.current[id];
           return node ? [{ id, width: node.offsetWidth, height: node.offsetHeight }] : [];
@@ -175,8 +181,8 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
           ))}
         </div>
       </header>
-      <div ref={stageRef} className="auth-stage">
-        <FloatingSchoolArtwork register={register} placements={placements}/>
+      <div ref={stageRef} className={editorial ? 'auth-stage auth-stage--editorial' : 'auth-stage'}>
+        <FloatingSchoolArtwork register={register} placements={placements} editorial={editorial}/>
         <section ref={panelRef} className="auth-panel" aria-label={title}>{children}</section>
       </div>
       <footer className="auth-footer"><span>© {new Date().getFullYear()} GrooveHub</span></footer>
