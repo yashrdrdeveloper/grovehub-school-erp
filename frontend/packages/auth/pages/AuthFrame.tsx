@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Monitor, Moon, Sun } from 'lucide-react';
+import { CalendarDays, CheckCheck, ListTodo, Monitor, Moon, Sparkles, Sun, Workflow } from 'lucide-react';
 
 import { SchoolMonogram } from '@Components';
 import { useWorkspaceTheme, type ThemePreference } from '@Shell/theme';
@@ -64,6 +64,24 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
       </svg>
       <div className="auth-scene__spark auth-scene__spark--left">✳</div>
       <div className="auth-scene__spark auth-scene__spark--right">✧</div>
+      <div className="auth-scene__near auth-scene__near--left">
+        <div className="auth-scene__near-icon"><CheckCheck size={17}/></div>
+        <div><strong>Attendance</strong><span>Every school day, organized.</span></div>
+      </div>
+      <div className="auth-scene__near auth-scene__near--right">
+        <div className="auth-scene__near-icon"><CalendarDays size={17}/></div>
+        <div><strong>School calendar</strong><span>Plan what matters next.</span></div>
+      </div>
+      <div className="auth-scene__quote">
+        <span className="auth-scene__quote-mark">“</span>
+        <p>Everything your school needs, in one calm workspace.</p>
+        <span className="auth-scene__quote-rule"/>
+      </div>
+      <div className="auth-scene__features">
+        <span><ListTodo size={14}/> Tasks</span>
+        <span><Workflow size={14}/> Automation</span>
+        <span><Sparkles size={14}/> AI-assisted workflows</span>
+      </div>
       <div className="auth-scene__micro auth-scene__micro--left">LEARN <span>·</span> ORGANIZE <span>·</span> GROW</div>
       <div className="auth-scene__micro auth-scene__micro--right">RDR SCHOOL <span> / </span> GROOVEHUB</div>
     </div>
