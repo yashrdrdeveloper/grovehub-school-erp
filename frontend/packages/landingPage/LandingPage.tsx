@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
-  ArrowDownRight, ArrowRight, ArrowUpRight, BookOpen, Bus, CalendarDays,
-  Check, ChevronDown, ClipboardCheck, Clock3, Computer, Download, ExternalLink,
-  FileCheck2, FlaskConical, GraduationCap, HeartPulse, Image, Mail, MapPin, Menu,
-  Phone, Presentation, School, ShieldCheck, Sparkles, Trophy, Users, X,
+  ArrowRight, ArrowUpRight, BookOpen, Bus, CalendarDays,
+  Check, Computer, Download, ExternalLink, FileCheck2, FlaskConical,
+  GraduationCap, HeartPulse, Mail, MapPin, Menu, Phone, Presentation,
+  School, ShieldCheck, Sparkles, Trophy, X,
 } from 'lucide-react';
 
 import { SchoolMonogram } from '@Components';
