@@ -1,19 +1,27 @@
 package protected
+
 import "net/http"
+
 // @Routes /auth
-type AuthenticationController interface{
- // @POST /logout
- Logout(http.ResponseWriter,*http.Request)
- // @POST /logout-all
- LogoutAll(http.ResponseWriter,*http.Request)
- // @POST /change-password
- ChangePassword(http.ResponseWriter,*http.Request)
- // @POST /reauthenticate
- Reauthenticate(http.ResponseWriter,*http.Request)
- // @GET /sessions
- Sessions(http.ResponseWriter,*http.Request)
- // @DELETE /sessions/{sessionId}
- RevokeSession(http.ResponseWriter,*http.Request)
- // @GET /me
- Me(http.ResponseWriter,*http.Request)
+type AuthenticationController interface {
+	// @POST /logout
+	Logout(writer http.ResponseWriter, request *http.Request)
+
+	// @POST /logout-all
+	LogoutAll(writer http.ResponseWriter, request *http.Request)
+
+	// @POST /change-password
+	ChangePassword(writer http.ResponseWriter, request *http.Request)
+
+	// @POST /reauthenticate
+	Reauthenticate(writer http.ResponseWriter, request *http.Request)
+
+	// @GET /sessions
+	Sessions(writer http.ResponseWriter, request *http.Request)
+
+	// @DELETE /sessions/{sessionId}
+	RevokeSession(writer http.ResponseWriter, request *http.Request)
+
+	// @GET /me
+	Me(writer http.ResponseWriter, request *http.Request)
 }
