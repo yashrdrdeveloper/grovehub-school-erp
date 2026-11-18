@@ -43,6 +43,24 @@
       ],
       "@Shell/*": [
         "packages/shell/*"
+      ],
+      "@Base": [
+        "packages/base/index.ts"
+      ],
+      "@Business": [
+        "packages/business/index.ts"
+      ],
+      "@Components": [
+        "packages/components/index.ts"
+      ],
+      "@Domain": [
+        "packages/domain/index.ts"
+      ],
+      "@Auth": [
+        "packages/auth/index.ts"
+      ],
+      "@Shell": [
+        "packages/shell/index.ts"
       ]
     }
   },
