@@ -4,7 +4,7 @@ import {
   ArrowRight, ArrowUpRight, BookOpen, Bus, CalendarDays,
   Check, Clock3, Computer, Download, ExternalLink, FileCheck2, FlaskConical,
   GraduationCap, HeartPulse, Mail, MapPin, Menu, Phone, Presentation,
-  School, ShieldCheck, Sparkles, Trophy, Megaphone, Newspaper, Send, CalendarClock, Quote, X,
+  School, ShieldCheck, Sparkles, Trophy, Megaphone, Send, CalendarClock, Quote, X,
 } from 'lucide-react';
 
 import { SchoolMonogram } from '@Components';
