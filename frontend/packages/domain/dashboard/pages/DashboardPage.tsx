@@ -53,7 +53,6 @@ export const DashboardPage = () => {
               <div className="school-home__stat-label"><span>{name}</span><Icon size={18}/></div>
               <strong aria-label={`${name} not available`}>—</strong>
               <small>{description}</small>
-              <div className="school-home__stat-track"><span/></div>
             </div>
           ))}
         </div>
