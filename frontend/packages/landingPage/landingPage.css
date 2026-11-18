@@ -269,3 +269,16 @@
  .rdr-logo small{display:none}
 }
 @media(prefers-reduced-motion:reduce){.rdr-site *, .rdr-site *::before, .rdr-site *::after{scroll-behavior:auto!important;transition:none!important}}
+
+
+.rdr-values--leadership{grid-template-columns:repeat(3,minmax(0,1fr))}
+.rdr-values--leadership>div{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.rdr-values--leadership .rdr-inline-link{margin-top:auto;font-size:11px}
+.rdr-values--leadership h3{margin:4px 0 0}
+.rdr-historic-hours{margin-top:43px;border:1px solid #e5e5e2;border-radius:14px;background:#f7f5ef;padding:25px;display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:25px}
+.rdr-historic-hours>div{display:flex;flex-direction:column;gap:8px}
+.rdr-historic-hours svg{color:#b29a6b}
+.rdr-historic-hours h2{font-size:20px;margin:0}
+.rdr-historic-hours strong{font-size:13px;color:#253249}
+.rdr-historic-hours p,.rdr-historic-hours span{font-size:11px;line-height:1.7;color:#707982}
+@media(max-width:700px){.rdr-values--leadership,.rdr-historic-hours{grid-template-columns:1fr}.rdr-historic-hours{gap:19px}.rdr-values--leadership>div{gap:6px}}
