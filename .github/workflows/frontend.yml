@@ -1,0 +1,40 @@
+name: Frontend
+
+on:
+  push:
+    paths:
+      - 'frontend/**'
+      - 'scripts/frontend/**'
+      - '.github/workflows/frontend.yml'
+  pull_request:
+    paths:
+      - 'frontend/**'
+      - 'scripts/frontend/**'
+      - '.github/workflows/frontend.yml'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: frontend/package.json
+      - name: Install
+        run: pnpm install --no-frozen-lockfile
+      - name: Check architecture
+        run: pnpm check:architecture
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Test
+        run: pnpm exec jest --runInBand
+      - name: Build
+        run: pnpm exec vite build

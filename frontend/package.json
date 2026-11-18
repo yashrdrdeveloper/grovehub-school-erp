@@ -10,7 +10,8 @@
     "preview": "vite preview --host 127.0.0.1 --port 4173",
     "typecheck": "tsc --noEmit",
     "test": "jest --passWithNoTests",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "check:architecture": "node scripts/check-boundaries.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
