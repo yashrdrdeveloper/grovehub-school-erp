@@ -2419,16 +2419,26 @@ body { background: var(--canvas); }
   color: #f1f1f6;
 }
 :root[data-theme='dark'] .auth-page--consistent .auth-form .button--primary {
-  color: #f7f7f9;
-  background: #08090d;
-  border: 1px solid #4a4d5c;
-  box-shadow: 0 4px 15px rgba(0,0,0,.22);
+  color: #ffffff;
+  background: #3c4050;
+  border: 1px solid #636879;
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 7px 20px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.08);
 }
 :root[data-theme='dark'] .auth-page--consistent .auth-form .button--primary:hover:not(:disabled) {
-  color: #fff;
-  background: #1d1e26;
-  border-color: #858794;
-  box-shadow: 0 6px 20px rgba(0,0,0,.28);
+  color: #ffffff;
+  background: #505568;
+  border-color: #7b8194;
+  box-shadow: 0 9px 24px rgba(0,0,0,.3);
+}
+:root[data-theme='dark'] .auth-page--consistent .auth-form .button--primary:active:not(:disabled) {
+  background: #353946;
+}
+:root[data-theme='dark'] .auth-page--consistent .auth-form .button--primary:disabled {
+  color: #e3e5eb;
+  background: #343744;
+  opacity: .75;
 }
 :root[data-theme='dark'] .auth-page--consistent .auth-form .button--primary:focus-visible {
   outline: 2px solid #dedee6;
