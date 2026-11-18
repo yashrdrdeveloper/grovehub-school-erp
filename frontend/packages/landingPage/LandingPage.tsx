@@ -4,7 +4,7 @@ import {
   ArrowRight, ArrowUpRight, BookOpen, Bus, CalendarDays,
   Check, Clock3, Computer, Download, ExternalLink, FileCheck2, FlaskConical,
   GraduationCap, HeartPulse, Mail, MapPin, Menu, Phone, Presentation,
-  School, ShieldCheck, Sparkles, Trophy, Megaphone, Send, CalendarClock, Quote, X,
+  School, ShieldCheck, Sparkles, Trophy, Megaphone, Send, CalendarClock, Quote, Pencil, Star, X,
 } from 'lucide-react';
 
 import { SchoolMonogram } from '@Components';
@@ -126,11 +126,29 @@ const Heading = ({eyebrow,title,description}:{eyebrow:string;title:string;descri
   <div className="rdr-section-heading"><span className="rdr-eyebrow">{eyebrow}</span><h2>{title}</h2>{description&&<p>{description}</p>}</div>
 );
 
+/** Purely decorative school motifs. Keep them outside important photo faces
+ * and out of the accessibility tree; the original photographs remain intact. */
+const PhotoMotifs = ({variant='hero'}:{variant?:'hero'|'gallery'|'banner'}) => (
+  <div className={`rdr-photo-motifs rdr-photo-motifs--${variant}`} aria-hidden="true">
+    <svg className="rdr-photo-motifs__flight" viewBox="0 0 170 76" fill="none">
+      <path d="M4 59C34 26 48 83 83 44c20-21 25-38 51-36" stroke="currentColor" strokeWidth="1.6" strokeDasharray="4 7" strokeLinecap="round"/>
+      <path d="m131 8 32-5-18 24-5-12-9-7Zm9 7 23-12" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/>
+    </svg>
+    <span className="rdr-photo-motifs__spark"><Sparkles size={27} strokeWidth={1.4}/></span>
+    <span className="rdr-photo-motifs__star"><Star size={18} strokeWidth={1.5}/></span>
+    <span className="rdr-photo-motifs__book"><BookOpen size={25} strokeWidth={1.4}/></span>
+    <span className="rdr-photo-motifs__pencil"><Pencil size={23} strokeWidth={1.5}/></span>
+  </div>
+);
+
 const PhotoCollage = () => (
-  <div className="rdr-collage" aria-label="Authentic photographs from RDR School events">
-    <ImageCard className="rdr-collage__large" src={photographs[0].src} alt={photographs[0].alt} position={photographs[0].position} loading="eager"/>
+  <div className="rdr-collage rdr-collage--editorial" aria-label="Authentic photographs from RDR School events">
+    <ImageCard className="rdr-collage__large" src={photographs[0].src} alt={photographs[0].alt} position={photographs[0].position} loading="eager">
+      <span className="rdr-collage__image-label">ACHIEVEMENTS <span>✳</span> RDR SCHOOL</span>
+    </ImageCard>
     <ImageCard className="rdr-collage__top" src={photographs[1].src} alt={photographs[1].alt} position={photographs[1].position} loading="eager"/>
     <ImageCard className="rdr-collage__bottom" src={photographs[2].src} alt={photographs[2].alt} position={photographs[2].position} loading="eager"/>
+    <PhotoMotifs/>
     <div className="rdr-collage__stamp"><Sparkles size={17}/> Every child, every possibility.</div>
   </div>
 );
@@ -347,7 +365,7 @@ const HomePage = () => (
 );
 
 const IntroPage = ({eyebrow,title,description,image}:{eyebrow:string;title:string;description:string;image?:string}) => (
-  <section className="rdr-page-banner rdr-container"><div><span className="rdr-eyebrow">{eyebrow}</span><h1>{title}</h1><p>{description}</p></div>{image&&<ImageCard className="rdr-page-banner__image" src={image} alt="Photograph of students and school activities at RDR School"/>}</section>
+  <section className="rdr-page-banner rdr-container"><div><span className="rdr-eyebrow">{eyebrow}</span><h1>{title}</h1><p>{description}</p></div>{image&&<div className="rdr-page-banner__art"><ImageCard className="rdr-page-banner__image" src={image} alt="Photograph of students and school activities at RDR School"/><PhotoMotifs variant="banner"/></div>}</section>
 );
 
 const AboutPage = () => (
@@ -400,7 +418,7 @@ const GalleryPage = () => (
   <>
     <IntroPage eyebrow="GALLERY" title="Life at RDR, in moments." description="A photo story of school celebrations, student life and achievements — captured at RDR School."/>
     <section className="rdr-section rdr-container">
-      <div className="rdr-gallery-grid">{photographs.map((photo,i)=><figure className={i%5===0?'rdr-gallery-grid__wide':''} key={photo.src}><ImageCard src={photo.src} alt={photo.alt} position={photo.position}/><figcaption><span>{photo.category}</span><strong>{photo.title}</strong></figcaption></figure>)}</div>
+      <div className="rdr-gallery-grid">{photographs.map((photo,i)=><figure className={i%5===0?'rdr-gallery-grid__wide':''} key={photo.src}><div className="rdr-gallery-grid__art"><ImageCard src={photo.src} alt={photo.alt} position={photo.position}/>{i%3===0&&<PhotoMotifs variant="gallery"/>}</div><figcaption><span>{photo.category}</span><strong>{photo.title}</strong></figcaption></figure>)}</div>
       <p className="rdr-gallery__archive-note">From the RDR School photo archives. <a href="https://rdrschool.com/gallery.html" target="_blank" rel="noreferrer">See the original gallery <ExternalLink size={13}/></a></p>
     </section>
   </>
