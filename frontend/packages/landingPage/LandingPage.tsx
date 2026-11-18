@@ -4,13 +4,13 @@ import {
   ArrowRight, ArrowUpRight, BookOpen, Bus, CalendarDays,
   Check, Clock3, Computer, Download, ExternalLink, FileCheck2, FlaskConical,
   GraduationCap, HeartPulse, Mail, MapPin, Menu, Phone, Presentation,
-  School, ShieldCheck, Sparkles, Trophy, Megaphone, Send, CalendarClock, Quote, Pencil, Star, X,
+  School, ShieldCheck, Sparkles, Trophy, Megaphone, CalendarClock, Pencil, Star, X,
   Landmark, HeartHandshake, Images,
 } from 'lucide-react';
 
 import { SchoolMonogram } from '@Components';
 
-import { achievements, disclosedDocuments, enquiryTypes, facilities, historicDisclosure, photographs, school, testimonials, upcomingEvents } from './content';
+import { achievements, disclosedDocuments, enquiryTypes, facilities, historicDisclosure, photographs, school, upcomingEvents } from './content';
 import { PublicSheet, type SchoolPanel } from './PublicSheet';
 
 import './landingPage.css';
@@ -261,16 +261,15 @@ const StoriesAndUpdates = () => (
       </article>
       <div className="rdr-stories__side">
         <div className="rdr-stories__upcoming">
-          <span className="rdr-eyebrow"><CalendarClock size={16}/> SCHOOL CALENDAR</span>
-          <h3>Upcoming events</h3>
+          <span className="rdr-eyebrow"><CalendarClock size={16}/> {upcomingEvents.length?'SCHOOL CALENDAR':'MEET RDR SCHOOL'}</span>
+          <h3>{upcomingEvents.length?'Upcoming events':'The story behind our school'}</h3>
           {upcomingEvents.length ? upcomingEvents.map(event => (
             <div className="rdr-event" key={event.id}><strong>{event.date}</strong><span>{event.title}</span></div>
           )) : (
-            <div className="rdr-event-empty">
-              <CalendarDays size={26} strokeWidth={1.5}/>
-              <strong>Good things are on the horizon.</strong>
-              <p>School events and important dates will appear here when the new calendar is announced.</p>
-              <Link to="/resources">School resources <ArrowRight size={15}/></Link>
+            <div className="rdr-school-message-links">
+              <Link to="/about/history"><Landmark size={19}/><span><strong>Our school story</strong><small>Haluhera, since 2006</small></span><ArrowRight size={16}/></Link>
+              <Link to="/about/director"><HeartHandshake size={19}/><span><strong>Director's message</strong><small>Care and all-round learning</small></span><ArrowRight size={16}/></Link>
+              <Link to="/about/principal"><GraduationCap size={19}/><span><strong>Principal's message</strong><small>Education with character</small></span><ArrowRight size={16}/></Link>
             </div>
           )}
         </div>
@@ -285,42 +284,14 @@ const StoriesAndUpdates = () => (
   </section>
 );
 
-const Newsletter = () => {
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
-  const [prepared, setPrepared] = useState(false);
-  const address = `mailto:${school.email}?subject=${encodeURIComponent('School news & updates request')}&body=${encodeURIComponent('Please contact me about receiving RDR School news and announcements.\\nEmail: ' + email)}`;
-  const prepare = (event:FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email.trim())) {
-      setError('Enter a valid email address.');
-      setPrepared(false);
-      return;
-    }
-    setError('');
-    setPrepared(true);
-  };
-  return (
-    <section className="rdr-newsletter-wrap">
-      <div className="rdr-container rdr-newsletter">
-        <div className="rdr-newsletter__ornament" aria-hidden="true"><BookOpen size={52} strokeWidth={1}/><Sparkles size={28}/></div>
-        <div><span className="rdr-eyebrow">NOTES FROM OUR SCHOOL</span><h2>Stay in the school loop.</h2><p>School news, celebrations, announcements and helpful updates, all in one place.</p></div>
-        <form onSubmit={prepare} noValidate>
-          <div className="rdr-newsletter__field"><Mail size={20}/><input aria-label="Email for school updates" type="email" autoComplete="email" placeholder="Your email address" value={email} onChange={event=>{setEmail(event.target.value);setPrepared(false);}}/><button type="submit">Continue <ArrowRight size={16}/></button></div>
-          {error && <span className="rdr-newsletter__error" role="alert">{error}</span>}
-          {prepared ? <div className="rdr-newsletter__prepared">Your request is ready, but you're not subscribed yet. <a href={address}>Send an email to RDR <Send size={13}/></a></div> : <small>Updates will be announced by the school. No mailing list subscription is activated yet.</small>}
-        </form>
-      </div>
-    </section>
-  );
-};
-
-const CommunityVoices = () => (
-  <section className="rdr-section rdr-section--wash">
+const SchoolMessages = () => (
+  <section className="rdr-section rdr-section--wash rdr-home-leaders">
     <div className="rdr-container">
-      <Heading eyebrow="WORDS FROM OUR COMMUNITY" title="A school that feels like family." description="Reflections shared on RDR School's earlier website."/>
-      <div className="rdr-voices">
-        {testimonials.map(item => <blockquote key={item.author}><Quote size={24}/><p>{item.quote}</p><footer>— {item.author}</footer></blockquote>)}
+      <Heading eyebrow="THE PEOPLE BEHIND OUR SCHOOL" title="A vision carried forward." description="Explore the school's history and messages from its leadership as published on the original RDR website."/>
+      <div className="rdr-home-leaders__grid">
+        <Link to="/about/history"><span>EST. 2006</span><Landmark size={28}/><h3>A school rooted in Haluhera.</h3><p>Discover where RDR began and the community it serves.</p><ArrowUpRight size={20}/></Link>
+        <Link to="/about/director"><span>DIRECTOR'S MESSAGE</span><HeartHandshake size={28}/><h3>Education for every possibility.</h3><p>Shri Lal Singh Yadav on developing the whole child.</p><ArrowUpRight size={20}/></Link>
+        <Link to="/about/principal"><span>PRINCIPAL'S MESSAGE</span><GraduationCap size={28}/><h3>Learning with character.</h3><p>Shri Arvind Yadav on education, discipline and growth.</p><ArrowUpRight size={20}/></Link>
       </div>
     </div>
   </section>
@@ -365,11 +336,6 @@ const HomePage = () => (
       <PhotoCollage/>
     </section>
     <MobileQuickHome/>
-    <nav className="rdr-mobile-shortcuts rdr-container" aria-label="Popular school links">
-      <Link to="/admissions#enquiry"><GraduationCap size={18}/> Admissions <ArrowUpRight size={14}/></Link>
-      <Link to="/campus"><School size={18}/> Campus <ArrowUpRight size={14}/></Link>
-      <Link to="/mandatory-public-disclosure"><ShieldCheck size={18}/> CBSE <ArrowUpRight size={14}/></Link>
-    </nav>
     <section className="rdr-ribbon"><div className="rdr-container rdr-ribbon__inner"><span>ROOTED IN VALUES</span><i>✳</i><span>GROWING THROUGH LEARNING</span><i>✳</i><span>TOGETHER AS A COMMUNITY</span></div></section>
     <section className="rdr-section rdr-container rdr-intro rdr-home-extended">
       <div className="rdr-intro__text"><Heading eyebrow="WELCOME TO RDR" title="A place to belong. A chance to become." description="Established in 2006 in Haluhera, our school has long served families from Rewari and surrounding villages. We aim to nurture students academically, morally and socially."/><Link to="/about" className="rdr-inline-link">Discover our story <ArrowUpRight size={18}/></Link></div>
@@ -399,15 +365,11 @@ const HomePage = () => (
       </div>
     </section>
     <div className="rdr-home-updates"><StoriesAndUpdates/></div>
-    <div className="rdr-home-extended"><CommunityVoices/><Newsletter/></div>
+    <div className="rdr-home-extended"><SchoolMessages/></div>
     <section className="rdr-section rdr-section--navy rdr-home-extended"><div className="rdr-container rdr-manifesto"><span className="rdr-eyebrow">OUR PURPOSE</span><h2>More than lessons.<br/><em>Learning for life.</em></h2><p>We believe education should help young people think critically, care for others and meet challenges with confidence.</p><Link className="rdr-btn rdr-btn--light" to="/academics">Explore academics <ArrowUpRight size={17}/></Link><span className="rdr-manifesto__ornament">✳</span></div></section>
-    <section className="rdr-mobile-admissions rdr-container">
-      <div><span className="rdr-eyebrow">YOUR NEXT STEP</span><h2>Discover a school where they can thrive.</h2><p>Admissions, campus visits, fees or transport—our team can help.</p></div>
-      <Link className="rdr-btn rdr-btn--solid" to="/admissions#enquiry">Start an enquiry <ArrowRight size={17}/></Link>
-    </section>
-    <section className="rdr-section rdr-container rdr-enquiry-section">
-      <div><Heading eyebrow="ADMISSIONS & ENQUIRIES" title="A new chapter starts with a conversation." description="Considering RDR School for your child? Share a few details and take the first step. We'll help you understand the next steps."/><div className="rdr-enquiry-section__illustration"><ImageCard src={photographs[2].src} alt={photographs[2].alt}/></div></div>
-      <EnquiryForm compact/>
+    <section className="rdr-section rdr-container rdr-enquiry-section rdr-enquiry-section--short">
+      <div><Heading eyebrow="ADMISSIONS & ENQUIRIES" title="A new chapter starts with a conversation." description="Ask about admissions, classes, transport or visiting RDR. Our team is here to help."/></div>
+      <Link className="rdr-btn rdr-btn--solid" to="/admissions#enquiry">Open quick enquiry <ArrowUpRight size={17}/></Link>
     </section>
     <section className="rdr-section rdr-container rdr-disclosure-teaser"><div><span className="rdr-eyebrow">SCHOOL TRANSPARENCY</span><h2>Mandatory Public Disclosure</h2><p>Explore the school's CBSE affiliation reference, archived documents, and disclosure information.</p></div><Link to="/mandatory-public-disclosure" className="rdr-btn rdr-btn--outline">View disclosure <FileCheck2 size={18}/></Link></section>
   </>
