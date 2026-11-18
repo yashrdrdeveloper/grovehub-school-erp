@@ -90,10 +90,10 @@ export const packAuthIllustrations = (
   const extraModules = stage.width >= 1250 ? 7 : stage.width >= 850 ? 5 : 2;
   const extraIcons = stage.width >= 1250 ? 5 : stage.width >= 850 ? 3 : 1;
   const optionalGroups: ArtId[][] = [
-    firstHero.slice(1),
-    shuffledSubModules.slice(1, extraModules),
-    shuffledIcons.slice(1, extraIcons),
-    shuffledLines.slice(1),
+    firstHero,
+    shuffledSubModules.slice(0, extraModules),
+    shuffledIcons.slice(0, extraIcons),
+    shuffledLines,
     optionalAccents,
   ];
   // Each required category attempts alternatives until one item fits.
@@ -101,8 +101,8 @@ export const packAuthIllustrations = (
   for (const group of lineup) {
     let categoryPlaced = false;
     for (const id of group) {
-    if (categoryPlaced || placed[id]) continue;
-    const box = sizes.get(id);
+      if (categoryPlaced || placed[id]) continue;
+      const box = sizes.get(id);
     if (!box || box.width < 1 || box.height < 1) continue;
     // Rotations must fit, including their extended corners.
     const rotate = id === 'crm' || id === 'student' || id === 'tasks' || id === 'finance'
