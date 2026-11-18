@@ -120,3 +120,8 @@ frontend-test:
 
 frontend-dev:
 	@cd frontend && node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 4173 --strictPort
+
+# Operator-only, one-time first account bootstrap. Prompts for password securely.
+.PHONY: identity-bootstrap-admin
+identity-bootstrap-admin:
+	@bash ./scripts/identity/bootstrap-admin.sh "$(EMAIL)" "$(FIRST_NAME)" "$(LAST_NAME)" "$(TENANT_ID)" $(if $(PERSON_GID),"$(PERSON_GID)")
