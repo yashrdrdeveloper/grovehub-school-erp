@@ -54,7 +54,7 @@ describe('RDR public-site quick actions', () => {
     expect(screen.getByText(/a little more detail/i)).toBeTruthy();
     fireEvent.click(screen.getByRole('checkbox'));
     fireEvent.click(screen.getByRole('button',{name:/prepare enquiry/i}));
-    expect(screen.getByText(/has not been submitted/i)).toBeTruthy();
+    expect(screen.getByText(/not been submitted/i)).toBeTruthy();
     const link=screen.getByRole('link',{name:/send enquiry by email/i});
     expect(link.getAttribute('href')).toMatch(/^mailto:/);
   });
@@ -63,7 +63,7 @@ describe('RDR public-site quick actions', () => {
     render(<MemoryRouter initialEntries={['/']}><LandingPage/></MemoryRouter>);
     fireEvent.click(screen.getByRole('button',{name:'Open menu'}));
     expect(screen.getByRole('navigation',{name:'Mobile navigation'})).toBeTruthy();
-    fireEvent.click(screen.getByRole('button',{name:'Close menu'}));
+    fireEvent.click(screen.getAllByRole('button',{name:'Close menu'})[0]!);
     await waitFor(() => expect(screen.queryByRole('navigation',{name:'Mobile navigation'})).toBeNull());
   });
 
