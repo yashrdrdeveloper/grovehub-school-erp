@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
@@ -15,14 +14,7 @@ const client = new QueryClient({
 
 const WorkspaceFrame = () => {
   const { account, signOut } = useAuth();
-  const schoolLabel = useMemo(() => {
-    const hostname = window.location.hostname;
-    if (hostname.endsWith('.prod.groovehub.com')) {
-      const first = hostname.split('.')[0] ?? 'school';
-      return first.charAt(0).toUpperCase() + first.slice(1);
-    }
-    return 'Your school';
-  }, []);
+  const schoolLabel = 'RDR School';
   return (
     <Shell
       accountLabel={account?.email ?? 'Account'}
