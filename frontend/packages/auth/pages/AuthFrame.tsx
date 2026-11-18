@@ -114,14 +114,41 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
       </div>
     </header>
     <div className="auth-compact-art" aria-hidden="true">
-      <div className="auth-compact-art__item">
-        <span className="auth-compact-art__icon"><UsersRound size={19} strokeWidth={1.7}/></span>
-        <span className="auth-compact-art__copy"><strong>Lead CRM</strong><small>Enquiry → Admission</small></span>
+      <svg className="auth-compact-art__sketch" viewBox="0 0 480 250" preserveAspectRatio="none" fill="none">
+        <path d="M16 72c19 31 35-29 54-10 15 15 12 31 27 17M378 57c24-25 27 24 48 8 13-11 22-17 38-9"
+          stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <path d="M65 194c42-23 82-17 129-6 52 12 73 13 122-2 38-11 69-7 100 7"
+          stroke="currentColor" strokeWidth="1.2" strokeDasharray="4 7" strokeLinecap="round" opacity=".65"/>
+        <circle cx="29" cy="148" r="4" stroke="currentColor"/>
+        <circle cx="443" cy="129" r="4" stroke="currentColor"/>
+      </svg>
+      <div className="auth-compact-art__spark auth-compact-art__spark--left">✳</div>
+      <div className="auth-compact-art__spark auth-compact-art__spark--right">✦</div>
+      <div className="auth-compact-art__item auth-compact-art__item--crm">
+        <div className="auth-compact-art__card-top">
+          <span className="auth-compact-art__icon"><UsersRound size={17} strokeWidth={1.7}/></span>
+          <span className="auth-compact-art__copy"><strong>Lead CRM</strong><small>Admissions journey</small></span>
+        </div>
+        <div className="auth-compact-art__journey"><span>Enquiry</span><ArrowRight size={12}/><span>Admission</span></div>
+        <div className="auth-compact-art__lines"><i/><i/></div>
       </div>
-      <div className="auth-compact-art__item">
-        <span className="auth-compact-art__icon"><GraduationCap size={20} strokeWidth={1.7}/></span>
-        <span className="auth-compact-art__copy"><strong>Student Lifecycle 360°</strong><small>Unified student view · UCV</small></span>
+      <div className="auth-compact-art__item auth-compact-art__item--student">
+        <div className="auth-compact-art__card-top">
+          <span className="auth-compact-art__icon"><GraduationCap size={18} strokeWidth={1.7}/></span>
+          <span className="auth-compact-art__copy"><strong>Student 360°</strong><small>Lifecycle · UCV</small></span>
+        </div>
+        <div className="auth-compact-art__student-preview">
+          <span className="auth-compact-art__avatar"/>
+          <span className="auth-compact-art__lines"><i/><i/></span>
+          <span className="auth-compact-art__progress"/>
+        </div>
       </div>
+      <div className="auth-compact-art__story">
+        <span>“</span>
+        <p>From first enquiry to every milestone.</p>
+        <small>LEARN <b>·</b> ORGANIZE <b>·</b> GROW</small>
+      </div>
+      <div className="auth-compact-art__baseline"/>
     </div>
     <section className="auth-panel" aria-label={title}>
       {children}
