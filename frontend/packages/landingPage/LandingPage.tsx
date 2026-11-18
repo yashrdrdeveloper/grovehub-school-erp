@@ -409,6 +409,61 @@ const AboutPage = () => (
   </>
 );
 
+/** Direct-addressable, crawlable pages for school leadership and history.
+ * In-app navigation opens the visual panel instead of loading these pages. */
+const legacySchoolStories = {
+  history:{
+    eyebrow:'ESTABLISHED · APRIL 2006',
+    title:'Our school story.',
+    lead:'A school rooted in the community of Haluhera and built around the promise of better learning opportunities.',
+    detail:'Rao Deena Ram Vidya Vihar was named in memory of Late Shri Rao Deena Ram Ji. According to the original school history, Shri Lal Singh Yadav (Retired HES-II) founded the school in April 2006. Its identity reflects a continuing relationship between families, teachers and the local community.',
+    highlights:['A school founded in 2006','Haluhera, District Rewari','Education and community partnership'],
+    src:'https://rdrschool.com/our-school.html',
+    image:4,
+  },
+  director:{
+    eyebrow:'A MESSAGE FROM OUR DIRECTOR · LEGACY SCHOOL SITE',
+    title:"Director's message.",
+    lead:'Every child deserves opportunities to learn, express themselves and grow as a person.',
+    detail:"In his original school message, Shri Lal Singh Yadav describes a vision of all-round development. The school's commitment includes academics, sports, arts, drama and co-curricular activities, alongside strong values and preparation for each child's future.",
+    highlights:['All-round development','Values and education','Arts, sports and academics'],
+    src:'https://rdrschool.com/director-message.html',
+    image:0,
+  },
+  principal:{
+    eyebrow:'A MESSAGE FROM OUR PRINCIPAL · LEGACY SCHOOL SITE',
+    title:"Principal's message.",
+    lead:'Confidence, discipline and character are as important as academic progress.',
+    detail:"The principal's historical message, attributed to Shri Arvind Yadav, recounts the school's beginnings and growth. It highlights laboratories, experienced teachers, co-curricular opportunities and character-building education. The current office-holder should be reconfirmed before official publication.",
+    highlights:['Learning with discipline','Experienced teaching','Character and responsibility'],
+    src:'https://rdrschool.com/Principal-message.html',
+    image:0,
+  },
+  philosophy:{
+    eyebrow:'OUR VISION · BROADENING MINDS',
+    title:'Our philosophy.',
+    lead:'Be a lamp unto yourself.',
+    detail:"RDR School's original philosophy emphasizes a creative and caring environment. It seeks to nurture students intellectually, physically, socially and emotionally, encouraging independence, compassion, honesty and critical thinking alongside academic learning.",
+    highlights:['Independent thinking','Care and compassion','Learning for life'],
+    src:'https://rdrschool.com/our-philosophy.html',
+    image:2,
+  },
+} as const;
+
+const StoryPage = ({topic}:{topic:keyof typeof legacySchoolStories}) => {
+  const story=legacySchoolStories[topic];
+  const image=photographs[story.image];
+  return <>
+    <IntroPage eyebrow={story.eyebrow} title={story.title} description={story.lead} image={image?.src}/>
+    <section className="rdr-section rdr-container rdr-story-page">
+      <div><span className="rdr-eyebrow">A CLOSER LOOK</span><h2>Inside the RDR community.</h2><p>{story.detail}</p>
+        <div className="rdr-story-page__actions"><Link className="rdr-btn rdr-btn--solid" to="/admissions#enquiry">Ask the school <ArrowUpRight size={16}/></Link><a href={story.src} target="_blank" rel="noreferrer" className="rdr-inline-link">Original school message <ExternalLink size={16}/></a></div>
+      </div>
+      <div className="rdr-story-page__notes">{story.highlights.map((line,i)=><div key={line}><span>0{i+1}</span><strong>{line}</strong><Check size={16}/></div>)}</div>
+    </section>
+  </>;
+};
+
 const AcademicsPage = () => (
   <>
     <IntroPage eyebrow="ACADEMICS" title="Learning that shapes a lifetime." description="A broad educational experience focused on understanding, confidence, creativity and practical learning." image={photographs[0].src}/>
@@ -512,10 +567,10 @@ const ContactPage = () => (
 const pageContent: Record<string,()=>ReactNode> = {
   '/':HomePage,
   '/about':AboutPage,
-  '/about/history':AboutPage,
-  '/about/director':AboutPage,
-  '/about/principal':AboutPage,
-  '/about/philosophy':AboutPage,
+  '/about/history':()=> <StoryPage topic="history"/>,
+  '/about/director':()=> <StoryPage topic="director"/>,
+  '/about/principal':()=> <StoryPage topic="principal"/>,
+  '/about/philosophy':()=> <StoryPage topic="philosophy"/>,
   '/academics':AcademicsPage,
   '/campus':CampusPage,
   '/admissions':AdmissionsPage,
@@ -542,6 +597,10 @@ const pathPanel: Record<string,SchoolPanel> = {
 const pageMetadata: Record<string,{title:string;description:string}> = {
   '/':{title:'RDR School | Rao Deena Ram Vidya Vihar, Haluhera',description:'Discover Rao Deena Ram Vidya Vihar School in Haluhera, Rewari. Learn about school life, academic programmes, facilities and admissions.'},
   '/about':{title:'About RDR School | History, Vision & Leadership',description:'Explore RDR School history since 2006, its philosophy, director and principal messages in Haluhera, Rewari.'},
+  '/about/history':{title:'School History | RDR School Haluhera',description:'Discover how RDR School was founded in April 2006 in Haluhera, Rewari, by Shri Lal Singh Yadav.'},
+  '/about/director':{title:"Director's Message | RDR School",description:"Discover Shri Lal Singh Yadav's published message about all-round student development at RDR School."},
+  '/about/principal':{title:"Principal's Message | RDR School",description:"Read the historical RDR School principal's message about academic learning, character and school values."},
+  '/about/philosophy':{title:'School Vision & Philosophy | RDR School',description:"Learn about RDR School's vision of broadening minds, independent thinking, compassion and growth."},
   '/academics':{title:'Academics | RDR School Haluhera',description:'Explore learning stages, academics and school activities at Rao Deena Ram Vidya Vihar in Rewari.'},
   '/campus':{title:'Campus & Facilities | RDR School',description:'Explore the school campus, science labs, computer lab, smart classrooms, sports and student facilities.'},
   '/admissions':{title:'Admissions & Enquiry | RDR School',description:'Contact RDR School about admissions, classes, fees, transport and visits. Submit a quick enquiry to the school office.'},
