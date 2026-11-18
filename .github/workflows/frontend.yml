@@ -36,5 +36,13 @@ jobs:
         run: pnpm typecheck
       - name: Test
         run: pnpm exec jest --runInBand
-      - name: Build
-        run: pnpm exec vite build
+      - name: Build and prerender SEO pages
+        run: pnpm build
+      - name: Verify public SEO artifacts
+        run: |
+          test -f dist/sitemap.xml
+          test -f dist/robots.txt
+          test -f dist/about/director/index.html
+          test -f dist/mandatory-public-disclosure/index.html
+          grep -q 'application/ld+json' dist/index.html
+          grep -q 'RDR School' dist/about/director/index.html
