@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Eye, EyeOff, LockKeyhole } from 'lucide-react';
+import { Eye, EyeOff, LockKeyhole, LogIn } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { ApiError } from '@Business/api';
@@ -44,6 +44,7 @@ export const LoginPage = () => {
 
   return (
     <AuthFrame title="Sign in">
+      <div className="auth-panel__icon"><LogIn size={23}/></div>
       <h1>Sign in</h1>
       <p className="muted">Enter your school account credentials.</p>
       <form noValidate onSubmit={(event) => void submit(event)} className="auth-form">
