@@ -2375,3 +2375,113 @@ body { background: var(--canvas); }
     font-size: 14px;
   }
 }
+
+
+/* Auth night mode — monochrome controls and quieter academic decorations.
+   Scoped to the authentication view; the dashboard theme is unchanged. */
+:root[data-theme='dark'] .auth-page--consistent {
+  background: #0f1015;
+}
+:root[data-theme='dark'] .auth-page--consistent .auth-panel {
+  background: #15161d;
+  border-color: #2c2e39;
+  box-shadow: 0 26px 70px rgba(0,0,0,.38), 0 4px 18px rgba(0,0,0,.18);
+}
+:root[data-theme='dark'] .auth-page--consistent .auth-panel h1 {
+  color: #f6f6f8;
+  font-weight: 780;
+  letter-spacing: -.048em;
+}
+:root[data-theme='dark'] .auth-page--consistent .auth-panel > .muted,
+:root[data-theme='dark'] .auth-page--consistent .auth-security {
+  color: #a2a4b1;
+}
+:root[data-theme='dark'] .auth-page--consistent .field__label {
+  color: #e2e2e9;
+}
+:root[data-theme='dark'] .auth-page--consistent .field__input {
+  background: #111218;
+  color: #f5f5f7;
+  border-color: #383a48;
+}
+:root[data-theme='dark'] .auth-page--consistent .field__input:hover {
+  border-color: #626575;
+}
+:root[data-theme='dark'] .auth-page--consistent .field__input:focus,
+:root[data-theme='dark'] .auth-page--consistent .field__input:focus-visible {
+  border-color: #aaadbb;
+  box-shadow: 0 0 0 3px rgba(215,217,226,.09);
+}
+:root[data-theme='dark'] .auth-page--consistent .password-toggle {
+  color: #a9aab6;
+}
+:root[data-theme='dark'] .auth-page--consistent .password-toggle:hover {
+  color: #f1f1f6;
+}
+:root[data-theme='dark'] .auth-page--consistent .auth-form .button--primary {
+  color: #f7f7f9;
+  background: #08090d;
+  border: 1px solid #4a4d5c;
+  box-shadow: 0 4px 15px rgba(0,0,0,.22);
+}
+:root[data-theme='dark'] .auth-page--consistent .auth-form .button--primary:hover:not(:disabled) {
+  color: #fff;
+  background: #1d1e26;
+  border-color: #858794;
+  box-shadow: 0 6px 20px rgba(0,0,0,.28);
+}
+:root[data-theme='dark'] .auth-page--consistent .auth-form .button--primary:focus-visible {
+  outline: 2px solid #dedee6;
+  outline-offset: 3px;
+}
+.auth-page--consistent .form-row--end { margin: -2px 0 0; }
+.auth-page--consistent .form-row--end a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  font-weight: 650;
+  font-size: 12px;
+  transition: color .15s ease;
+}
+.auth-page--consistent .form-row--end a:hover { color: var(--ink-strong); }
+:root[data-theme='dark'] .auth-page--consistent .form-row--end a,
+:root[data-theme='dark'] .auth-page--consistent .back-link {
+  color: #c5c6d0;
+}
+:root[data-theme='dark'] .auth-page--consistent .form-row--end a:hover,
+:root[data-theme='dark'] .auth-page--consistent .back-link:hover {
+  color: #ffffff;
+}
+@media (min-width: 1024px) {
+  :root[data-theme='dark'] .auth-page--consistent .auth-scene__dots {
+    background-color: #242631;
+    background-image: radial-gradient(circle,#85899b 1.7px,transparent 2.4px);
+    background-size: 20px 20px;
+    border: 1px solid #363844;
+    border-radius: 3px;
+    opacity: .72;
+    box-shadow: 0 15px 26px rgba(0,0,0,.18);
+  }
+  :root[data-theme='dark'] .auth-page--consistent .auth-scene__dots--right {
+    background-color: #292a33;
+    background-image: radial-gradient(circle,#a09fa5 1.7px,transparent 2.4px);
+  }
+  :root[data-theme='dark'] .auth-page--consistent .auth-scene__badge {
+    color: #c9cbd5;
+    background: #20212b;
+    border-color: #454651;
+    box-shadow: 5px 6px 0 rgba(120,123,137,.13),0 14px 26px rgba(0,0,0,.18);
+  }
+  :root[data-theme='dark'] .auth-page--consistent .auth-scene__note,
+  :root[data-theme='dark'] .auth-page--consistent .auth-scene__squiggle {
+    color: #80818d;
+    opacity: .65;
+  }
+  :root[data-theme='dark'] .auth-page--consistent .auth-scene__micro span {
+    color: #a1a3b0;
+  }
+}
