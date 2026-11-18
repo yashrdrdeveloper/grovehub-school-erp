@@ -39,4 +39,32 @@ describe('RDR public-site quick actions', () => {
     await waitFor(() => expect(screen.getByRole('heading',{name:/mandatory public disclosure/i})).toBeTruthy());
     expect(screen.queryByRole('dialog')).toBeNull();
   });
+
+  it('validates guardian details within the enquiry sheet and never claims a CRM submission', async () => {
+    render(<MemoryRouter initialEntries={['/']}><LandingPage/></MemoryRouter>);
+    fireEvent.click(screen.getByRole('link',{name:/enquire now/i}));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy());
+    fireEvent.click(screen.getByRole('button',{name:/continue/i}));
+    expect(screen.getByRole('alert').textContent).toMatch(/guardian.*first name/i);
+    fireEvent.change(screen.getByRole('textbox',{name:'Guardian first name'}),{target:{value:'Parent'}});
+    fireEvent.click(screen.getByRole('button',{name:/continue/i}));
+    expect(screen.getByRole('alert').textContent).toMatch(/phone number or email/i);
+    fireEvent.change(screen.getByRole('textbox',{name:'Phone number'}),{target:{value:'9876543210'}});
+    fireEvent.click(screen.getByRole('button',{name:/continue/i}));
+    expect(screen.getByText(/a little more detail/i)).toBeTruthy();
+    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('button',{name:/prepare enquiry/i}));
+    expect(screen.getByText(/has not been submitted/i)).toBeTruthy();
+    const link=screen.getByRole('link',{name:/send enquiry by email/i});
+    expect(link.getAttribute('href')).toMatch(/^mailto:/);
+  });
+
+  it('offers an accessible close control in the mobile navigation drawer', async () => {
+    render(<MemoryRouter initialEntries={['/']}><LandingPage/></MemoryRouter>);
+    fireEvent.click(screen.getByRole('button',{name:'Open menu'}));
+    expect(screen.getByRole('navigation',{name:'Mobile navigation'})).toBeTruthy();
+    fireEvent.click(screen.getByRole('button',{name:'Close menu'}));
+    await waitFor(() => expect(screen.queryByRole('navigation',{name:'Mobile navigation'})).toBeNull());
+  });
+
 });
