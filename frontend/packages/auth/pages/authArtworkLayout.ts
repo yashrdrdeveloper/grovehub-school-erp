@@ -13,11 +13,8 @@ type Space = ArtRect;
 type Rng = () => number;
 const margin = 12;
 const padding = 18;
-const priority: ArtId[] = [
-  'crm', 'student', 'tasks', 'finance', 'ai', 'audit', 'growth', 'automation',
-  'communication', 'admissions', 'hr', 'library', 'quote',
-  'calendar', 'book', 'pencil', 'bell', 'trophy', 'school', 'squiggle', 'motto',
-];
+const mainFeatures: ArtId[] = ['tasks', 'finance', 'ai', 'audit', 'growth', 'automation', 'communication', 'admissions', 'hr', 'library'];
+const accents: ArtId[] = ['quote', 'calendar', 'book', 'pencil', 'bell', 'trophy', 'school', 'squiggle', 'motto'];
 const makeRandom = (seed: number): Rng => {
   let value = seed >>> 0;
   return () => {
@@ -71,8 +68,17 @@ export const packAuthIllustrations = (
   const allSpaces = [...sideGutters, ...horizontalGutters];
   const sizes = new Map(boxes.map(box => [box.id, box]));
   const flip = rng() < .5;
+  // Different modules are featured per refresh. The two core journey cards
+  // lead, the smaller school modules are a new seeded selection each visit.
+  const moduleLimit = stage.width >= 1250 ? 7 : stage.width >= 850 ? 5 : 3;
+  const accentLimit = stage.width >= 1250 ? 6 : stage.width >= 850 ? 4 : 3;
+  const lineup: ArtId[] = [
+    'crm', 'student',
+    ...shuffle(mainFeatures, rng).slice(0, moduleLimit),
+    ...shuffle(accents, rng).slice(0, accentLimit),
+  ];
 
-  for (const id of priority) {
+  for (const id of lineup) {
     const box = sizes.get(id);
     if (!box || box.width < 1 || box.height < 1) continue;
     // Rotations must fit, including their extended corners.
@@ -85,6 +91,12 @@ export const packAuthIllustrations = (
     if (id === 'crm' || id === 'student') {
       const preferredSide = (id === 'crm') !== flip ? sideGutters[0] : sideGutters[1];
       spaces = [preferredSide, ...spaces.filter(space => space !== preferredSide)];
+    } else if (['tasks', 'admissions', 'communication'].includes(id) && placed.crm) {
+      const center = placed.crm.x + (sizes.get('crm')?.width ?? 0) / 2;
+      spaces.sort((a, b) => Math.abs(a.x + a.width / 2 - center) - Math.abs(b.x + b.width / 2 - center));
+    } else if (['finance', 'ai', 'growth', 'audit'].includes(id) && placed.student) {
+      const center = placed.student.x + (sizes.get('student')?.width ?? 0) / 2;
+      spaces.sort((a, b) => Math.abs(a.x + a.width / 2 - center) - Math.abs(b.x + b.width / 2 - center));
     }
 
     let accepted: ArtRect | undefined;
