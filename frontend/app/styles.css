@@ -2288,3 +2288,47 @@ body { background: var(--canvas); }
   }
   .auth-page--consistent .auth-form .button--full { min-height: 46px; }
 }
+
+
+/* Approved RDR brand mark: true interlocking silhouette, not tracked typography.
+   The monogram itself remains dark navy in both appearance modes. */
+.school-monogram {
+  width: 45px;
+  height: 34px;
+  flex: 0 0 45px;
+  padding: 7px 5px;
+  border-radius: 9px;
+  background: #EEF2F7;
+  border: 1px solid #D7DDE7;
+  color: #1F2A44;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+.school-monogram__symbol {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+  overflow: visible;
+  color: #1F2A44;
+}
+.auth-panel__school .school-monogram {
+  width: 43px;
+  height: 29px;
+  flex-basis: 43px;
+  padding: 6px 5px;
+}
+.sidebar__school > .school-monogram {
+  width: 45px;
+  height: 34px;
+  flex: 0 0 45px;
+}
+.shell--collapsed .sidebar__school > .school-monogram { width: 45px; flex-basis: 45px; }
+:root[data-theme='dark'] .school-monogram {
+  background: #EEF2F7;
+  border-color: #D7DDE7;
+  color: #1F2A44;
+}
+:root[data-theme='dark'] .school-monogram__symbol { color: #1F2A44; }
