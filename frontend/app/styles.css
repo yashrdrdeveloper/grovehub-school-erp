@@ -2576,3 +2576,115 @@ body { background: var(--canvas); }
 @media (max-height:720px) {
   .auth-scene__paperplane,.auth-scene__spark { display:none !important; }
 }
+
+
+/* Auth product story: supporting visuals frame the desktop card, never overlap
+   the form, and remain intentionally hidden on narrow and touch layouts. */
+.auth-scene__near,.auth-scene__quote,.auth-scene__features { display:none; }
+.auth-page--consistent .field__hint--error {
+  display:block;
+  color:#c13d55;
+  font-size:11px;
+  line-height:1.45;
+  font-weight:650;
+  margin-top:1px;
+}
+.auth-page--consistent .field__input--error,
+.auth-page--consistent .field__input--error:focus,
+.auth-page--consistent .field__input--error:focus-visible {
+  border-color:#cb4d63;
+  box-shadow:0 0 0 3px rgba(203,77,99,.1);
+}
+:root[data-theme='dark'] .auth-page--consistent .field__hint--error { color:#ff9cab; }
+:root[data-theme='dark'] .auth-page--consistent .field__input--error,
+:root[data-theme='dark'] .auth-page--consistent .field__input--error:focus,
+:root[data-theme='dark'] .auth-page--consistent .field__input--error:focus-visible {
+  border-color:#f18a9e;
+  box-shadow:0 0 0 3px rgba(241,138,158,.13);
+}
+@media(min-width:1450px) and (min-height:750px) {
+  .auth-page--consistent .auth-scene__near {
+    position:absolute;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    width:202px;
+    padding:12px;
+    border:1px solid #ddd6ca;
+    border-radius:12px;
+    color:#343743;
+    background:rgba(255,253,249,.96);
+    box-shadow:0 12px 24px rgba(46,39,35,.1),4px 5px 0 rgba(236,206,160,.2);
+  }
+  .auth-scene__near--left { right:calc(50% + 255px); top:46%; transform:rotate(-3deg); }
+  .auth-scene__near--right { left:calc(50% + 255px); top:45%; transform:rotate(3deg); }
+  .auth-scene__near-icon {
+    flex:0 0 34px;
+    display:grid;
+    place-items:center;
+    height:34px;
+    width:34px;
+    background:#e9edf1;
+    border-radius:10px;
+    color:#49596d;
+  }
+  .auth-scene__near > div:last-child { display:flex; flex-direction:column; gap:4px; }
+  .auth-scene__near strong { font-size:11px; font-weight:800; }
+  .auth-scene__near span { font-size:9px; line-height:1.35; color:#797c85; }
+  .auth-page--consistent .auth-scene__quote {
+    position:absolute;
+    display:block;
+    width:235px;
+    left:calc(50% - 535px);
+    top:32%;
+    color:#56525b;
+  }
+  .auth-scene__quote-mark { display:block; font-size:37px; line-height:1; color:#b99379; font-family:Georgia,serif; }
+  .auth-scene__quote p { font-family:Georgia,serif; margin:0; font-size:17px; line-height:1.44; font-weight:400; font-style:italic; }
+  .auth-scene__quote-rule { display:block; margin-top:14px; width:45px; height:2px; background:#c8a27e; }
+  .auth-page--consistent .auth-scene__features {
+    position:absolute;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    flex-wrap:wrap;
+    width:450px;
+    left:50%;
+    transform:translateX(-50%);
+    bottom:14%;
+  }
+  .auth-scene__features span {
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    border-radius:30px;
+    padding:8px 10px;
+    background:rgba(255,254,250,.9);
+    border:1px solid #ddd7ce;
+    color:#5c5c65;
+    font-size:10px;
+    font-weight:700;
+    box-shadow:0 4px 12px rgba(30,26,23,.045);
+  }
+  :root[data-theme='dark'] .auth-page--consistent .auth-scene__near {
+    background:#23242f;
+    color:#f1f1f6;
+    border-color:#4a4b59;
+    box-shadow:0 12px 25px rgba(0,0,0,.25),4px 5px 0 rgba(100,103,121,.14);
+  }
+  :root[data-theme='dark'] .auth-scene__near-icon { color:#d3d7e3; background:#363949; }
+  :root[data-theme='dark'] .auth-scene__near span { color:#afb0c0; }
+  :root[data-theme='dark'] .auth-page--consistent .auth-scene__quote { color:#c0bfcd; }
+  :root[data-theme='dark'] .auth-scene__quote-mark { color:#a8a5b5; }
+  :root[data-theme='dark'] .auth-scene__quote-rule { background:#777988; }
+  :root[data-theme='dark'] .auth-scene__features span {
+    background:#24252f;
+    border-color:#474957;
+    color:#d6d6df;
+    box-shadow:0 6px 16px rgba(0,0,0,.15);
+  }
+}
+@media(max-width:600px) {
+  .auth-page--consistent .field__hint--error { font-size:11px; }
+}
