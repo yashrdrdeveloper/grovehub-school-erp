@@ -8,7 +8,7 @@ The workspace displays **RDR School**; this is the requested school demo identit
 
 ### Visual system
 
-Use a neutral SaaS canvas (`#F8FAFC`), ink (`#0B1220`), operational blue (`#2563EB`), soft borders (`#E2E8F0`), and semantic success/warning/danger tokens. Do not reintroduce the previous olive/green theme as the brand default. Shared visual tokens are in `app/styles.css`. Follow components-first composition, accessible focus states, and clear contrast.
+Use screenshot-inspired neutral colors: clean white and pale-gray surfaces for light mode; near-black indigo-charcoal surfaces with hairline dividers for dark mode. Use bright pink, blue, and green sparingly as information accents, not large page backgrounds. Avoid oversized colorful hero gradients, fake charts, or fabricated metrics. Shared visual tokens are in `app/styles.css`. Follow components-first composition, accessible focus states, and clear contrast.
 
 ### Appearance
 
@@ -35,4 +35,9 @@ At smaller widths, sidebar becomes a dismissible drawer, app catalog a bottom sh
 - The desktop sidebar collapses to an icon rail. Its expanded/collapsed preference and pinned routes are stored in local browser storage (`groovehub.workspace.sidebar.collapsed.v1` and `groovehub.workspace.pinned.v1`).
 - The mobile sidebar remains a drawer even if the desktop collapse preference is on. The mobile Apps entry opens the full-screen catalog.
 - Navigation and catalog application metadata live in `layout/AppLauncher.tsx`. Shell reads the same catalog, so app labels/icons/links must remain consistent. Pinning is currently per-browser, not server-synchronized.
-- Appearance remains **System** by default, with user-selected Light and Dark modes. The visual palette uses warm porcelain, charcoal and a restrained iris accent; the dark version uses deep aubergine surfaces.
+- Appearance remains **System** by default, with user-selected Light and Dark modes. The visual palette follows the November 18 clean-analytics screenshots: minimal white light mode, near-black dark mode, hairline borders, and restrained vivid status/chart accents. Light and dark share one layout; the visual theme follows System by default.
+
+
+### Reference-driven theme (November 18)
+
+Dashboard remains a layout preview, never invented analytics. KPI cards form a compact hairline-divided row on desktop; sections stay readable on mobile. The mobile shell uses a compact floating bottom navigation; collapse, pin/unpin and catalog overlay behavior remain unchanged. The reference screenshots inform styling only and do not authorize adding operational screens, chart metrics or routes.
