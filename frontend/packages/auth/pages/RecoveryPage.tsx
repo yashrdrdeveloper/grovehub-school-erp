@@ -19,6 +19,7 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
   const [complete, setComplete] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{ username?: string; password?: string; confirmation?: string }>({});
 
   useEffect(() => {
     // URL fragments are never sent in an HTTP request or referrer.
@@ -41,10 +42,14 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     setError('');
-    if (password !== confirmation) {
-      setError('Passwords do not match.');
-      return;
-    }
+    const next: typeof fieldErrors = {};
+    if (purpose === 'invitation' && !username.trim()) next.username = 'Choose a username.';
+    if (!password) next.password = 'Enter a new password.';
+    else if (password.length < 12) next.password = 'Use at least 12 characters.';
+    if (!confirmation) next.confirmation = 'Confirm your new password.';
+    else if (password !== confirmation) next.confirmation = 'Passwords do not match.';
+    setFieldErrors(next);
+    if (Object.keys(next).length) return;
     setBusy(true);
     try {
       if (purpose === 'recovery') {
@@ -71,13 +76,13 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
         {complete ? (
           <div className="notice"><CheckCircle2 size={20} /> All set. <Link to="/login">Go to sign in</Link></div>
         ) : verified ? (
-          <form className="auth-form" onSubmit={(event) => void submit(event)}>
-            {settingUp ? <Input id="username" label="Username" placeholder="Choose a username" autoComplete="username" value={username} onChange={(event) => setUsername(event.target.value)} required /> : null}
+          <form className="auth-form" noValidate onSubmit={(event) => void submit(event)}>
+            {settingUp ? <Input id="username" label="Username" placeholder="Choose a username" autoComplete="username" value={username} error={fieldErrors.username} onChange={(event) => { setUsername(event.target.value); if (fieldErrors.username) setFieldErrors(current => ({ ...current, username: undefined })); }} required /> : null}
             <div className="password-field">
-              <Input id="newPassword" label="New password" placeholder="Create a secure password" type={showPassword ? 'text' : 'password'} value={password} minLength={12} autoComplete="new-password" onChange={(event) => setPassword(event.target.value)} required hint="At least 12 characters." />
+              <Input id="newPassword" label="New password" placeholder="Create a secure password" type={showPassword ? 'text' : 'password'} value={password} minLength={12} autoComplete="new-password" error={fieldErrors.password} onChange={(event) => { setPassword(event.target.value); if (fieldErrors.password) setFieldErrors(current => ({ ...current, password: undefined })); }} required hint="At least 12 characters." />
               <button type="button" className="password-toggle" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? 'Hide passwords' : 'Show passwords'}>{showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}</button>
             </div>
-            <Input id="confirmPassword" label="Confirm new password" placeholder="Re-enter your new password" type={showPassword ? 'text' : 'password'} value={confirmation} minLength={12} autoComplete="new-password" onChange={event => setConfirmation(event.target.value)} required />
+            <Input id="confirmPassword" label="Confirm new password" placeholder="Re-enter your new password" type={showPassword ? 'text' : 'password'} value={confirmation} minLength={12} autoComplete="new-password" error={fieldErrors.confirmation} onChange={event => { setConfirmation(event.target.value); if (fieldErrors.confirmation) setFieldErrors(current => ({ ...current, confirmation: undefined })); }} required />
             {error ? <p className="form-error" role="alert">{error}</p> : null}
             <Button type="submit" loading={busy} className="button--full">{settingUp ? 'Activate account' : 'Reset password'}</Button>
           </form>
