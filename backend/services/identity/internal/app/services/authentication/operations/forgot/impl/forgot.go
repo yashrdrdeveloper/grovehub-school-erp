@@ -19,7 +19,7 @@ type Service struct {
 
 var _ forgot.Operation = (*Service)(nil)
 
-func New(accounts accountrepo.Repository, invitations registration.Service, unit transaction.UnitOfWork) forgot.Operation {
+func New(accounts accountrepo.Repository, invitations registration.InvitationSender, unit transaction.UnitOfWork) forgot.Operation {
 	return &Service{accounts: accounts, invitation: invitations, unit: unit}
 }
 

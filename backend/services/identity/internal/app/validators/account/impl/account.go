@@ -78,22 +78,12 @@ func (Validator) Search(request coresearch.Request) (coresearch.Query[string], e
 		return coresearch.Query[string]{}, err
 	}
 
-	uuidCursor := func(value string) error {
-		return coresearch.ValidateUUIDv7Cursor(value, invalid)
-	}
-	timeCursor := func(value string) error {
-		return coresearch.ValidateTimeCursor(value, invalid)
-	}
-	textCursor := func(value string) error {
-		return coresearch.ValidateNonEmptyCursor(value, invalid)
-	}
-
 	sortFields := map[string]coresearch.CursorValueValidator{
-		"createdAt": timeCursor,
-		"updatedAt": timeCursor,
-		"accountId": uuidCursor,
-		"status": textCursor,
-		"username": textCursor,
+		"createdAt": coresearch.ValidateTimeCursor,
+		"updatedAt": coresearch.ValidateTimeCursor,
+		"accountId": coresearch.ValidateUUIDv7Cursor,
+		"status": coresearch.ValidateNonEmptyCursor,
+		"username": coresearch.ValidateNonEmptyCursor,
 	}
 
 	sort, err := coresearch.NormalizeSort(request.Sort, coresearch.QuerySort{
