@@ -10,14 +10,14 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
 const images = [
-  ['slide3.jpg', 'https://www.rdrschool.com/images/slide3.jpg'],
-  ['gallery-13.jpg', 'https://www.rdrschool.com/images/gallery/13.jpg'],
-  ['gallery-6.jpg', 'https://www.rdrschool.com/images/gallery/6.jpg'],
-  ['gallery-10.jpg', 'https://www.rdrschool.com/images/gallery/10.jpg'],
-  ['gallery-2.jpg', 'https://rdrschool.com/images/gallery/2.jpg'],
-  ['slide2.jpg', 'https://www.rdrschool.com/images/slide2.jpg'],
-  ['gallery-14.jpg', 'https://www.rdrschool.com/images/gallery/14.jpg'],
-  ['gallery-7.jpg', 'https://www.rdrschool.com/images/gallery/7.jpg'],
+  ['slide3.jpg', 'https://rdrschool.com/images/slide3.jpg'],
+  ['gallery-13.jpg', 'https://rdrschool.com/images/gallery/13.jpg'],
+  ['gallery-6.jpg', 'https://rdrschool.com/images/gallery/6.jpg'],
+  ['gallery-10.jpg', 'https://rdrschool.com/images/gallery/10.jpg'],
+  ['slide5.jpg', 'https://rdrschool.com/images/slide5.jpg'],
+  ['gallery-11.jpg', 'https://rdrschool.com/images/gallery/11.jpg'],
+  ['gallery-4.jpg', 'https://rdrschool.com/images/gallery/4.jpg'],
+  ['gallery-7.jpg', 'https://rdrschool.com/images/gallery/7.jpg'],
 ];
 
 const folder = resolve(process.cwd(), 'public/school-images');
