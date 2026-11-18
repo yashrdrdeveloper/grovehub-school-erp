@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent, type MouseEvent, type ReactNode } from 'react';
+import { useEffect, useId, useMemo, useState, type FormEvent, type MouseEvent, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ArrowRight, ArrowUpRight, BookOpen, Bus, CalendarDays,
@@ -168,6 +168,7 @@ const PhotoCollage = () => (
 );
 
 const EnquiryForm = ({compact=false}:{compact?:boolean}) => {
+  const fieldId=useId();
   const [data,setData] = useState<EnquiryFormData>(emptyEnquiry);
   const [step,setStep] = useState(0);
   const [error,setError] = useState('');
@@ -200,7 +201,7 @@ const EnquiryForm = ({compact=false}:{compact?:boolean}) => {
     `Message: ${data.message || '—'}`,
   ].join('\n'));
   return (
-    <div className={`rdr-enquiry ${compact?'rdr-enquiry--compact':''}`} id="enquiry">
+    <div className={`rdr-enquiry ${compact?'rdr-enquiry--compact':''}`} id={compact?undefined:'enquiry'}>
       <div className="rdr-enquiry__head"><span className="rdr-eyebrow">LET’S BEGIN</span><h3>{ready?'Your enquiry is ready': 'Have a question? We’re here.'}</h3><p>{ready?'Open your email application to send the enquiry to the school.': 'A quick conversation is the first step. We’ll help you find the answers.'}</p></div>
       {ready ? (
         <div className="rdr-enquiry__ready" role="status">
@@ -219,22 +220,22 @@ const EnquiryForm = ({compact=false}:{compact?:boolean}) => {
               <input aria-label="Guardian middle name" placeholder="Middle" value={data.middleName} onChange={e=>patch('middleName',e.target.value)}/>
               <input aria-label="Guardian last name" placeholder="Last name" autoComplete="family-name" value={data.lastName} onChange={e=>patch('lastName',e.target.value)}/>
             </div>
-            <label htmlFor="rdr-enquiry-phone">Phone number</label>
-            <input id="rdr-enquiry-phone" type="tel" placeholder="+91 98765 43210" autoComplete="tel" value={data.phone} onChange={e=>patch('phone',e.target.value)}/>
-            <label htmlFor="rdr-enquiry-email">Email address</label>
-            <input id="rdr-enquiry-email" type="email" placeholder="parent@example.com" autoComplete="email" value={data.email} onChange={e=>patch('email',e.target.value)}/>
+            <label htmlFor={`${fieldId}-phone`}>Phone number</label>
+            <input id={`${fieldId}-phone`} type="tel" placeholder="+91 98765 43210" autoComplete="tel" value={data.phone} onChange={e=>patch('phone',e.target.value)}/>
+            <label htmlFor={`${fieldId}-email`}>Email address</label>
+            <input id={`${fieldId}-email`} type="email" placeholder="parent@example.com" autoComplete="email" value={data.email} onChange={e=>patch('email',e.target.value)}/>
             <small className="rdr-enquiry__hint">Please provide at least one: phone number or email.</small>
-            <label htmlFor="rdr-enquiry-type">I'm enquiring about <span>*</span></label>
-            <select id="rdr-enquiry-type" value={data.type} onChange={e=>patch('type',e.target.value)}>
+            <label htmlFor={`${fieldId}-type`}>I'm enquiring about <span>*</span></label>
+            <select id={`${fieldId}-type`} value={data.type} onChange={e=>patch('type',e.target.value)}>
               {enquiryTypes.map(type=><option key={type.value} value={type.value}>{type.label}</option>)}
             </select>
           </>:<>
-            {data.type==='ADMISSION' && <><label htmlFor="rdr-enquiry-class">Class interested in</label><select id="rdr-enquiry-class" value={data.interestedClass} onChange={e=>patch('interestedClass',e.target.value)}>
+            {data.type==='ADMISSION' && <><label htmlFor={`${fieldId}-class`}>Class interested in</label><select id={`${fieldId}-class`} value={data.interestedClass} onChange={e=>patch('interestedClass',e.target.value)}>
               <option value="">Select a class (optional)</option>
               {['Nursery','KG','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'].map(value=><option key={value} value={value}>{value}</option>)}
             </select></>}
-            <label htmlFor="rdr-enquiry-message">Anything you'd like us to know?</label>
-            <textarea id="rdr-enquiry-message" rows={4} placeholder="Tell us a little about your enquiry..." value={data.message} onChange={e=>patch('message',e.target.value)}/>
+            <label htmlFor={`${fieldId}-message`}>Anything you'd like us to know?</label>
+            <textarea id={`${fieldId}-message`} rows={4} placeholder="Tell us a little about your enquiry..." value={data.message} onChange={e=>patch('message',e.target.value)}/>
             <label className="rdr-enquiry__consent"><input type="checkbox" checked={data.privacy} onChange={e=>patch('privacy',e.target.checked)}/><span>I agree to share these details with RDR School to receive a response to my enquiry.</span></label>
           </>}
           {error && <p className="rdr-enquiry__error" role="alert">{error}</p>}
