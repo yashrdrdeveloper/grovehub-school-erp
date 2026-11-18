@@ -9,7 +9,7 @@ import {
 import { SchoolMonogram } from '@Components';
 
 import { selectAuthIllustrationQuote } from './authIllustrationQuotes';
-import { useWorkspaceTheme, type ThemePreference } from '@Shell/theme';
+import { useWorkspaceTheme, type ThemePreference } from '@Components/hooks/theme';
 
 import {
   packAuthIllustrations,
