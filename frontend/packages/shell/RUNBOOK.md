@@ -25,3 +25,14 @@ The Dashboard domain shows four compact metrics and six at-a-glance cards: Pendi
 ### Mobile usability
 
 At smaller widths, sidebar becomes a dismissible drawer, app catalog a bottom sheet, KPI cards become two columns and operational panels become a single column on phones. Keep top-level tasks discoverable without horizontal page scrolling; individual data tables can scroll within their own containers.
+
+
+## Workspace navigation and app catalog
+
+- The top-left four-square button opens a **full-workspace catalog**. On desktop it fills the area to the right of the persistent sidebar; on mobile it uses the entire viewport. Escape or the close button dismisses it.
+- **Pinned apps** are shown as the first catalog section and populate the sidebar in saved order. Use the pin/unpin control on any available application tile or hover over a pinned sidebar item to unpin it.
+- Planned applications are visible for discovery but cannot be opened or pinned until their routes are implemented. Never simulate functional navigation to unimplemented modules.
+- The desktop sidebar collapses to an icon rail. Its expanded/collapsed preference and pinned routes are stored in local browser storage (`groovehub.workspace.sidebar.collapsed.v1` and `groovehub.workspace.pinned.v1`).
+- The mobile sidebar remains a drawer even if the desktop collapse preference is on. The mobile Apps entry opens the full-screen catalog.
+- Navigation and catalog application metadata live in `layout/AppLauncher.tsx`. Shell reads the same catalog, so app labels/icons/links must remain consistent. Pinning is currently per-browser, not server-synchronized.
+- Appearance remains **System** by default, with user-selected Light and Dark modes. The visual palette uses warm porcelain, charcoal and a restrained iris accent; the dark version uses deep aubergine surfaces.
