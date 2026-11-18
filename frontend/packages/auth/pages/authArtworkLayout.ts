@@ -89,12 +89,15 @@ export const packAuthIllustrations = (
   ];
   const extraModules = stage.width >= 1250 ? 7 : stage.width >= 850 ? 5 : 2;
   const extraIcons = stage.width >= 1250 ? 5 : stage.width >= 850 ? 3 : 1;
+  // Unlike the mandatory groups, each optional item gets its own attempt.
+  // This fills all remaining usable space, rather than stopping after a
+  // single extra submodule or a single extra school icon.
   const optionalGroups: ArtId[][] = [
-    firstHero,
-    shuffledSubModules.slice(0, extraModules),
-    shuffledIcons.slice(0, extraIcons),
-    shuffledLines,
-    optionalAccents,
+    ...firstHero.map(id => [id]),
+    ...shuffledSubModules.slice(0, extraModules).map(id => [id]),
+    ...shuffledIcons.slice(0, extraIcons).map(id => [id]),
+    ...shuffledLines.map(id => [id]),
+    ...optionalAccents.map(id => [id]),
   ];
   // Each required category attempts alternatives until one item fits.
   const lineup = [...requiredGroups, ...optionalGroups];
