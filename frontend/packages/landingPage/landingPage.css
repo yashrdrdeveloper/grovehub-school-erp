@@ -395,3 +395,92 @@
 .rdr-newsletter__field button{font-size:0;padding:12px}
 .rdr-newsletter__field button svg{width:19px;height:19px}
 }
+
+
+/* RDR editorial photo treatment: preserve real images, bring the approved
+   illustrated-school mood through framing, soft colour and margin motifs. */
+.rdr-site .rdr-collage--editorial{isolation:isolate;overflow:visible}
+.rdr-site .rdr-collage--editorial .rdr-photo{
+  border:3px solid #fff;
+  box-shadow:0 14px 36px rgba(31,42,68,.13),0 3px 10px rgba(31,42,68,.06);
+  background:linear-gradient(135deg,#d9e1de,#e9dfca);
+}
+.rdr-site .rdr-collage--editorial img,
+.rdr-site .rdr-page-banner__art img,
+.rdr-site .rdr-gallery-grid__art img{
+  filter:saturate(1.07) contrast(1.045) brightness(1.015);
+}
+.rdr-site .rdr-collage__large::after{
+  content:"";position:absolute;inset:55% 0 0;pointer-events:none;
+  background:linear-gradient(to bottom,transparent,rgba(16,26,43,.3));
+}
+.rdr-site .rdr-collage__image-label{
+  position:absolute;z-index:2;left:15px;bottom:16px;
+  color:#fff;font-size:9px;font-weight:850;letter-spacing:.13em;
+  text-shadow:0 2px 12px rgba(0,0,0,.45);
+}
+.rdr-collage__image-label span{padding-inline:7px;color:#e5c999}
+.rdr-site .rdr-collage__stamp{z-index:5;right:-11px;bottom:26px;border:1px solid #eee5d7}
+.rdr-site .rdr-collage--editorial::before{
+  content:"";position:absolute;z-index:-1;inset:-12px -10px 10px 10px;
+  border-radius:24px;border:1px solid #e9dfce;transform:rotate(1.6deg);
+  background:#fbf7ee;
+}
+.rdr-photo-motifs{position:absolute;inset:0;pointer-events:none;z-index:4;color:#c1a578}
+.rdr-photo-motifs__flight{position:absolute;left:-91px;top:4%;width:140px;transform:rotate(-11deg);filter:drop-shadow(0 3px 5px rgba(141,116,82,.11))}
+.rdr-photo-motifs__spark{
+  position:absolute;left:-21px;bottom:7%;display:grid;place-items:center;
+  width:46px;height:46px;border-radius:14px;
+  background:#fff9ed;border:1px solid #e9dac2;
+  box-shadow:4px 7px 0 #efe4d1,0 12px 25px #26334b1c;
+  transform:rotate(-12deg)
+}
+.rdr-photo-motifs__star{position:absolute;right:-20px;top:13%;transform:rotate(14deg)}
+.rdr-photo-motifs__book{position:absolute;right:-27px;top:-21px;display:grid;place-items:center;width:52px;height:52px;background:#fff9f0;border:1px solid #e8dbc7;border-radius:13px;transform:rotate(11deg);box-shadow:5px 6px 0 #f0e6d7}
+.rdr-photo-motifs__pencil{position:absolute;right:18%;bottom:-24px;display:grid;place-items:center;width:45px;height:45px;background:#fff;border:1px solid #eadfcd;border-radius:12px;transform:rotate(-15deg);box-shadow:3px 5px 0 #eae2d4}
+.rdr-page-banner__art{position:relative;min-width:0;height:235px}
+.rdr-site .rdr-page-banner__art .rdr-photo{height:100%;border:3px solid #fff;border-radius:16px;box-shadow:0 15px 34px #1f2a441b}
+.rdr-page-banner__art::before{content:"";position:absolute;inset:-9px -9px 9px 9px;border:1px solid #e4d6bf;border-radius:19px;transform:rotate(3deg)}
+.rdr-photo-motifs--banner .rdr-photo-motifs__flight{left:-43px;top:8%;width:90px}
+.rdr-photo-motifs--banner .rdr-photo-motifs__book{width:41px;height:41px;right:-14px;top:-16px}
+.rdr-photo-motifs--banner .rdr-photo-motifs__book svg{width:20px}
+.rdr-photo-motifs--banner .rdr-photo-motifs__spark{left:-12px;bottom:-14px;width:36px;height:36px}
+.rdr-photo-motifs--banner .rdr-photo-motifs__spark svg{width:20px}
+.rdr-photo-motifs--banner .rdr-photo-motifs__pencil{display:none}
+.rdr-gallery-grid__art{position:relative;isolation:isolate;height:260px}
+.rdr-site .rdr-gallery-grid__art .rdr-photo{height:100%;border-radius:0;box-shadow:none}
+.rdr-gallery-grid__art::after{content:"";pointer-events:none;position:absolute;inset:0;border:5px solid rgba(255,255,255,.24)}
+.rdr-gallery-grid__art .rdr-photo-motifs__flight{display:none}
+.rdr-gallery-grid__art .rdr-photo-motifs__book{right:10px;top:10px;width:37px;height:37px;border-radius:10px;box-shadow:2px 3px 0 #e4d6bf}
+.rdr-gallery-grid__art .rdr-photo-motifs__book svg{width:18px}
+.rdr-gallery-grid__art .rdr-photo-motifs__spark{left:12px;bottom:12px;width:32px;height:32px;box-shadow:none}
+.rdr-gallery-grid__art .rdr-photo-motifs__spark svg{width:18px}
+.rdr-gallery-grid__art .rdr-photo-motifs__star,.rdr-gallery-grid__art .rdr-photo-motifs__pencil{display:none}
+@media(max-width:950px){
+  .rdr-photo-motifs--hero .rdr-photo-motifs__flight{width:85px;left:-34px;top:0}
+  .rdr-photo-motifs--hero .rdr-photo-motifs__book{width:38px;height:38px;right:-9px}
+  .rdr-photo-motifs--hero .rdr-photo-motifs__book svg{width:21px}
+  .rdr-photo-motifs--hero .rdr-photo-motifs__spark{width:35px;height:35px;left:-12px}
+  .rdr-photo-motifs--hero .rdr-photo-motifs__spark svg{width:21px}
+  .rdr-photo-motifs--hero .rdr-photo-motifs__pencil{display:none}
+}
+@media(max-width:700px){
+  .rdr-site .rdr-collage--editorial::before{inset:-6px -6px 6px 6px}
+  .rdr-site .rdr-collage--editorial .rdr-photo{border-width:2px}
+  .rdr-photo-motifs--hero .rdr-photo-motifs__flight{left:-12px;top:-27px;width:72px}
+  .rdr-photo-motifs--hero .rdr-photo-motifs__book{right:-7px;top:-13px;width:33px;height:33px;border-radius:9px}
+  .rdr-photo-motifs--hero .rdr-photo-motifs__book svg{width:17px}
+  .rdr-photo-motifs--hero .rdr-photo-motifs__spark{left:-6px;bottom:9%;width:27px;height:27px;border-radius:8px}
+  .rdr-photo-motifs--hero .rdr-photo-motifs__spark svg{width:16px}
+  .rdr-photo-motifs--hero .rdr-photo-motifs__star{display:none}
+  .rdr-site .rdr-collage__image-label{font-size:7px;left:9px;bottom:10px}
+  .rdr-site .rdr-collage__stamp{right:-6px;bottom:15px}
+  .rdr-page-banner__art{height:190px}
+  .rdr-photo-motifs--banner .rdr-photo-motifs__flight{display:none}
+  .rdr-gallery-grid__art{height:180px}
+  .rdr-photo-motifs--gallery .rdr-photo-motifs__book{width:28px;height:28px;right:7px;top:7px}
+  .rdr-photo-motifs--gallery .rdr-photo-motifs__spark{width:26px;height:26px;left:7px;bottom:7px}
+}
+@media(prefers-reduced-motion:reduce){
+  .rdr-site .rdr-photo img{transition:none}
+}
