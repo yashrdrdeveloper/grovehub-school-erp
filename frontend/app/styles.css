@@ -2014,3 +2014,81 @@ body { background: var(--canvas); }
   .auth-page--consistent .auth-form {gap:10px;}
   .auth-page--consistent .auth-security {margin-top:12px;}
 }
+
+
+/* Required story categories: a line / paper-plane, a small school icon, and
+   exactly one selected quote are scheduled before decorative extras. */
+.auth-float--plane {
+  width:65px;
+  height:48px;
+  padding:6px;
+  border:0;
+  background:transparent;
+  box-shadow:none;
+  color:#aaa49c;
+  rotate:-9deg;
+}
+.auth-float--plane svg {display:block;width:100%;height:100%;}
+:root[data-theme='dark'] .auth-float--plane {color:#9594a8;}
+
+/* Phone story is intentionally fixed: quiet line-and-plane motifs, one main
+   school module, one submodule and one short quote, no floating boxes. */
+@media (max-width:640px) {
+  .auth-mobile-backdrop {
+    opacity:1;
+    -webkit-mask-image:none;
+    mask-image:none;
+  }
+  .auth-mobile-backdrop__top,
+  .auth-mobile-backdrop__bottom {
+    color:#bfae9d;
+    opacity:.42;
+    -webkit-mask-image:linear-gradient(to bottom,#000,transparent);
+    mask-image:linear-gradient(to bottom,#000,transparent);
+  }
+  .auth-mobile-backdrop__bottom {
+    -webkit-mask-image:linear-gradient(to top,#000,transparent);
+    mask-image:linear-gradient(to top,#000,transparent);
+  }
+  .auth-mobile-backdrop__story,
+  .auth-mobile-backdrop__modules {
+    position:absolute;
+    left:12px;
+    right:12px;
+    text-align:center;
+    color:var(--art-muted);
+    pointer-events:none;
+  }
+  .auth-mobile-backdrop__story {
+    bottom:43px;
+    font:italic 11px/1.35 Georgia,serif;
+    text-wrap:balance;
+    max-width:340px;
+    margin-inline:auto;
+  }
+  .auth-mobile-backdrop__modules {
+    bottom:16px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+    white-space:nowrap;
+    font-size:9px;
+    font-weight:750;
+    letter-spacing:.025em;
+  }
+  .auth-mobile-backdrop__modules i {
+    color:#b79b80;
+    font-style:normal;
+  }
+  :root[data-theme='dark'] .auth-mobile-backdrop__top,
+  :root[data-theme='dark'] .auth-mobile-backdrop__bottom {
+    color:#9b99aa;
+    opacity:.38;
+  }
+}
+@media (max-width:640px) and (max-height:700px) {
+  .auth-mobile-backdrop__story {bottom:27px;font-size:10px;}
+  .auth-mobile-backdrop__modules {bottom:7px;font-size:8px;}
+  .auth-mobile-backdrop__bottom {opacity:.2;}
+}
