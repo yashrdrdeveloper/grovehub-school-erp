@@ -12,11 +12,16 @@ export const ForgotPasswordPage = () => {
   const [accepted, setAccepted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    setBusy(true);
     setError('');
+    const value = email.trim();
+    if (!value) { setEmailError('Enter your email address.'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) { setEmailError('Enter a valid email address.'); return; }
+    setEmailError('');
+    setBusy(true);
     try {
       await authenticationApi.forgotPassword(email.trim());
       setAccepted(true);
@@ -35,8 +40,8 @@ export const ForgotPasswordPage = () => {
         {accepted ? (
           <div className="notice">If the account is eligible, recovery instructions are on their way.</div>
         ) : (
-          <form className="auth-form" onSubmit={(event) => void submit(event)}>
-            <Input id="email" label="Email" placeholder="you@school.edu" type="email" inputMode="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+          <form className="auth-form" noValidate onSubmit={(event) => void submit(event)}>
+            <Input id="email" label="Email" placeholder="you@school.edu" type="email" inputMode="email" autoComplete="email" value={email} error={emailError} onChange={(event) => { setEmail(event.target.value); if (emailError) setEmailError(''); }} required />
             {error ? <p className="form-error" role="alert">{error}</p> : null}
             <Button type="submit" loading={busy} className="button--full">Send reset link</Button>
           </form>
