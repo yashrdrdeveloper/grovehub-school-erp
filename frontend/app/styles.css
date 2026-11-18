@@ -1161,3 +1161,14 @@ body { background: var(--canvas); }
   border-color: #6ce3ca;
   box-shadow: 0 0 0 3px rgba(108,227,202,.15);
 }
+
+
+/* Phase 0.2 shell: Home / Apps / Menu are the only mobile destinations. */
+@media (max-width: 720px) {
+  .mobile-nav { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .mobile-nav .nav-item { min-height: 49px; }
+}
+/* A layout preview should read as a preview, not as missing live records. */
+.school-dashboard .dashboard-panel__chevron { opacity: .35; }
+.school-dashboard .dashboard-panel__empty { min-height: 90px; }
+.school-dashboard .dashboard-panel__footer { font-style: normal; }
