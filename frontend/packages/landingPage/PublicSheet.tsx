@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import {
-  ArrowRight, ArrowUpRight, BookOpen, BookOpenText, CalendarDays, Check,
+  ArrowRight, ArrowUpRight, BookOpenText, CalendarDays, Check,
   ExternalLink, FileText, GraduationCap, HeartHandshake,
   Landmark, Mail, MapPin, Phone, ShieldCheck, Sparkles, X,
 } from 'lucide-react';
