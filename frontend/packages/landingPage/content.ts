@@ -21,62 +21,62 @@ export const school = {
   cbseSaras: 'https://saras.cbse.gov.in/SARAS/AffiliatedList/AfflicationDetails/531923',
 } as const;
 
-/** Verified image URL paths from the original RDR site, not stock photos.
- * Keep the original aspect ratio and subject; use CSS object-fit to crop.
- * Images are linked remotely pending rights and original-file migration.
+/** Original RDR photo references, not stock images. Run `pnpm assets:school`
+ * to copy the school's originals into public/school-images. If an image
+ * has not been copied yet, the UI falls back to the verified legacy URL.
  */
 export const photographs = [
   {
-    src: 'https://www.rdrschool.com/images/slide3.jpg',
+    src: '/school-images/slide3.jpg', originalSrc: 'https://www.rdrschool.com/images/slide3.jpg',
     title: 'Learning through achievement',
     alt: 'RDR School students with awards and teachers at a school event',
     category: 'Achievements',
     position: 'center 42%',
   },
   {
-    src: 'https://www.rdrschool.com/images/gallery/13.jpg',
+    src: '/school-images/gallery-13.jpg', originalSrc: 'https://www.rdrschool.com/images/gallery/13.jpg',
     title: 'The joy of performing',
     alt: 'RDR School students performing a group cultural dance at a school celebration',
     category: 'Culture',
     position: 'center 38%',
   },
   {
-    src: 'https://www.rdrschool.com/images/gallery/6.jpg',
+    src: '/school-images/gallery-6.jpg', originalSrc: 'https://www.rdrschool.com/images/gallery/6.jpg',
     title: 'Everyday moments of discovery',
     alt: 'Young RDR School children playing outside at school',
     category: 'Campus Life',
     position: 'center center',
   },
   {
-    src: 'https://www.rdrschool.com/images/gallery/10.jpg',
+    src: '/school-images/gallery-10.jpg', originalSrc: 'https://www.rdrschool.com/images/gallery/10.jpg',
     title: 'Confidence in every move',
     alt: 'Students participating in a taekwondo demonstration at an RDR School event',
     category: 'Sports & Activities',
     position: 'center 35%',
   },
   {
-    src: 'https://rdrschool.com/images/gallery/2.jpg',
+    src: '/school-images/gallery-2.jpg', originalSrc: 'https://rdrschool.com/images/gallery/2.jpg',
     title: 'Growing together',
     alt: 'RDR School students smiling together in their school uniforms',
     category: 'Student Life',
     position: 'center center',
   },
   {
-    src: 'https://www.rdrschool.com/images/slide2.jpg',
+    src: '/school-images/slide2.jpg', originalSrc: 'https://www.rdrschool.com/images/slide2.jpg',
     title: 'Celebrating our traditions',
     alt: 'RDR School students celebrating cultural traditions in costume',
     category: 'Culture',
     position: 'center center',
   },
   {
-    src: 'https://www.rdrschool.com/images/gallery/14.jpg',
+    src: '/school-images/gallery-14.jpg', originalSrc: 'https://www.rdrschool.com/images/gallery/14.jpg',
     title: 'A stage for every talent',
     alt: 'Children dancing during an RDR School cultural event',
     category: 'Events',
     position: 'center center',
   },
   {
-    src: 'https://www.rdrschool.com/images/gallery/7.jpg',
+    src: '/school-images/gallery-7.jpg', originalSrc: 'https://www.rdrschool.com/images/gallery/7.jpg',
     title: 'Little moments, big milestones',
     alt: 'Students receiving awards on stage at an RDR School ceremony',
     category: 'Achievements',
