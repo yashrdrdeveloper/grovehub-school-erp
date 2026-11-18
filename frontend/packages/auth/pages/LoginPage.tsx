@@ -6,6 +6,7 @@ import { ApiError } from '@Business/api';
 import { Button, Input } from '@Components';
 
 import { useAuth } from '../core/providers/AuthProvider';
+import { AuthFrame } from './AuthFrame';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -31,18 +32,15 @@ export const LoginPage = () => {
   };
 
   return (
-    <main className="auth-page">
-      <div className="auth-brand">
-        <div className="brand-mark">G</div>
-        <strong>groovehub<span className="brand-period">.</span></strong>
-      </div>
-      <section className="auth-panel" aria-label="Sign in">
+    <AuthFrame title="Sign in">
         <div className="auth-panel__school"><span className="school-emblem">✦</span> RDR School</div>
         <h1>Sign in</h1>
         <p className="muted">Enter your school account credentials.</p>
         <form onSubmit={(event) => void submit(event)} className="auth-form">
           <Input
             id="identifier"
+            type="email"
+            inputMode="email"
             label="Email"
             value={identifier}
             autoComplete="username"
@@ -74,11 +72,6 @@ export const LoginPage = () => {
           <Button type="submit" loading={busy} className="button--full">Continue</Button>
         </form>
         <p className="auth-security"><LockKeyhole size={14} /> Protected school workspace</p>
-      </section>
-      <footer className="auth-footer">
-        <span>© {new Date().getFullYear()} GrooveHub</span>
-        
-      </footer>
-    </main>
+    </AuthFrame>
   );
 };
