@@ -2495,3 +2495,84 @@ body { background: var(--canvas); }
     color: #a1a3b0;
   }
 }
+
+
+/* Desktop school illustration v2: designed stationery, not fake ERP metrics.
+   The central auth card remains clear, with no illustrated elements on mobile. */
+.auth-scene__sheet,.auth-scene__paperplane,.auth-scene__spark { display:none; }
+@media (min-width:1100px) {
+  .auth-page--consistent .auth-scene__note { display:none; }
+  .auth-page--consistent .auth-scene__sheet {
+    position:absolute;
+    display:block;
+    width:174px;
+    padding:14px 15px 15px;
+    border-radius:12px;
+    border:1px solid #d7d0c5;
+    background:#fffcf7;
+    box-shadow:7px 9px 0 rgba(231,202,159,.32),0 18px 30px rgba(41,35,29,.08);
+    color:#363b47;
+  }
+  .auth-scene__sheet--left { left:16%; top:43%; transform:rotate(-5deg); }
+  .auth-scene__sheet--right { right:15%; top:41%; transform:rotate(5deg); }
+  .auth-scene__sheet-head { display:flex; align-items:center; gap:8px; font-size:11px; font-weight:800; letter-spacing:-.01em; white-space:nowrap; }
+  .auth-scene__sheet-head svg { width:23px; height:23px; flex-shrink:0; color:#6f788b; }
+  .auth-scene__sheet-rule { width:100%; height:1px; margin:11px 0 10px; background:#eae4da; }
+  .auth-scene__sheet-entry { display:flex; align-items:center; gap:9px; margin-top:10px; }
+  .auth-scene__sheet-avatar { height:17px; width:17px; border-radius:6px; background:#e6e9ed; }
+  .auth-scene__sheet-entry:nth-of-type(4) .auth-scene__sheet-avatar { background:#eee1d3; }
+  .auth-scene__sheet-line { flex:1; height:5px; border-radius:3px; background:#d9dce2; }
+  .auth-scene__sheet-line--short { flex:0 0 48%; }
+  .auth-scene__sheet-check { width:17px; height:17px; border-radius:50%; display:grid; place-items:center; font-size:11px; font-weight:800; color:#356e60; background:#e1f0e7; margin-left:auto; }
+  .auth-scene__calendar-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:8px 7px; padding:1px 2px 2px; }
+  .auth-scene__calendar-day { width:100%; aspect-ratio:1; border:1px solid #e8e4df; border-radius:4px; background:#f6f4f0; }
+  .auth-scene__calendar-day:nth-child(3n) { background:#e7e9ed; }
+  .auth-scene__calendar-day--marked { background:#f1c991 !important; border-color:#d4ab73; }
+  .auth-page--consistent .auth-scene__paperplane {
+    position:absolute; display:block; width:75px; right:25%; top:22%;
+    color:#a09b94; transform:rotate(12deg); opacity:.85;
+  }
+  .auth-page--consistent .auth-scene__spark {
+    position:absolute; display:block; font-size:26px; font-weight:300; color:#b7a18a;
+  }
+  .auth-scene__spark--left { left:31%; top:29%; }
+  .auth-scene__spark--right { right:29%; top:64%; }
+  .auth-page--consistent .auth-scene__dots {
+    background-color:#eed9b4;
+    background-image:radial-gradient(circle,#84705b 2px,transparent 2.8px);
+    background-size:22px 22px;
+    border:1px solid rgba(142,119,90,.16);
+    border-radius:4px;
+    opacity:.76;
+  }
+  :root[data-theme='dark'] .auth-page--consistent .auth-scene__sheet {
+    background:#20222b; border-color:#424551; color:#e5e5ec;
+    box-shadow:7px 9px 0 rgba(105,108,124,.13),0 16px 32px rgba(0,0,0,.24);
+  }
+  :root[data-theme='dark'] .auth-scene__sheet-head svg { color:#aeb4c4; }
+  :root[data-theme='dark'] .auth-scene__sheet-rule { background:#3c3d49; }
+  :root[data-theme='dark'] .auth-scene__sheet-avatar { background:#3d4352; }
+  :root[data-theme='dark'] .auth-scene__sheet-line { background:#4b4e5e; }
+  :root[data-theme='dark'] .auth-scene__sheet-check { background:#304b43; color:#a1dcc0; }
+  :root[data-theme='dark'] .auth-scene__calendar-day { background:#292b35; border-color:#444653; }
+  :root[data-theme='dark'] .auth-scene__calendar-day:nth-child(3n) { background:#373a47; }
+  :root[data-theme='dark'] .auth-scene__calendar-day--marked { background:#656274 !important; border-color:#888397; }
+  :root[data-theme='dark'] .auth-page--consistent .auth-scene__paperplane,
+  :root[data-theme='dark'] .auth-page--consistent .auth-scene__spark { color:#8d8e9f; }
+  :root[data-theme='dark'] .auth-page--consistent .auth-scene__dots {
+    background-color:#262831;
+    background-image:radial-gradient(circle,#818798 1.8px,transparent 2.5px);
+    border-color:#3d414f;
+    opacity:.72;
+  }
+}
+@media (min-width:1100px) and (max-width:1399px) {
+  .auth-scene__sheet--left { left:5%; }
+  .auth-scene__sheet--right { right:5%; }
+  .auth-page--consistent .auth-scene__paperplane { right:18%; }
+  .auth-scene__spark--left { left:24%; }
+  .auth-scene__spark--right { right:23%; }
+}
+@media (max-height:720px) {
+  .auth-scene__paperplane,.auth-scene__spark { display:none !important; }
+}
