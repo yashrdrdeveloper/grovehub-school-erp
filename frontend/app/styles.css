@@ -2839,3 +2839,146 @@ body { background: var(--canvas); }
 @media (max-width: 1099px) {
   .auth-page--consistent .auth-scene__prelude { display:none; }
 }
+
+
+/* Auth product illustration — deliberately restrained.
+   Only two conceptual panels: Lead CRM and Student Lifecycle 360 / UCV.
+   No pretend statistics, decorative confetti, or duplicated feature tags. */
+.auth-product-scene { display:none; }
+@media (min-width:1280px) and (min-height:700px) {
+  .auth-page--consistent .auth-product-scene {
+    position:absolute;
+    display:block;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    overflow:hidden;
+    --auth-art-surface:#fffdf9;
+    --auth-art-border:#dbd9d4;
+    --auth-art-muted:#777987;
+    --auth-art-ink:#303440;
+    --auth-art-soft:#e9ebef;
+  }
+  .auth-product-scene__headline {
+    position:absolute;
+    width:440px;
+    top:17.5%;
+    left:50%;
+    transform:translateX(-50%);
+    text-align:center;
+  }
+  .auth-product-scene__eyebrow {
+    color:var(--auth-art-muted);
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:.2em;
+  }
+  .auth-product-scene__headline p {
+    color:var(--auth-art-ink);
+    font-size:14px;
+    line-height:1.5;
+    font-weight:650;
+    letter-spacing:-.02em;
+    margin:7px 0 0;
+  }
+  .auth-page--consistent .auth-product-card {
+    position:absolute;
+    width:226px;
+    padding:17px;
+    border:1px solid var(--auth-art-border);
+    border-radius:16px;
+    background:var(--auth-art-surface);
+    box-shadow:0 16px 39px rgba(32,29,36,.075),0 3px 11px rgba(32,29,36,.03);
+    color:var(--auth-art-ink);
+  }
+  .auth-product-card--crm {
+    right:calc(50% + 267px);
+    top:43%;
+    transform:rotate(-3deg);
+  }
+  .auth-product-card--student {
+    left:calc(50% + 267px);
+    top:42%;
+    transform:rotate(3deg);
+    width:240px !important;
+  }
+  .auth-product-card__header {
+    display:flex;
+    gap:10px;
+    align-items:center;
+    margin-bottom:17px;
+  }
+  .auth-product-card__symbol {
+    display:grid;
+    place-items:center;
+    flex:0 0 35px;
+    width:35px;
+    height:35px;
+    border:1px solid var(--auth-art-border);
+    border-radius:11px;
+    background:var(--auth-art-soft);
+    font-size:20px;
+    font-weight:750;
+  }
+  .auth-product-card__header > div { display:flex; flex-direction:column; gap:4px; min-width:0; }
+  .auth-product-card__header strong {font-size:11px;white-space:nowrap;letter-spacing:-.025em;}
+  .auth-product-card__header small {font-size:9px;color:var(--auth-art-muted);}
+  .auth-product-card__flow {display:flex;align-items:center;gap:5px;color:var(--auth-art-muted);font-size:9px;}
+  .auth-product-card__flow span {
+    padding:7px 9px;
+    border:1px solid var(--auth-art-border);
+    border-radius:7px;
+    background:var(--auth-art-soft);
+    color:var(--auth-art-ink);
+    font-weight:700;
+  }
+  .auth-product-card__line {height:5px;border-radius:99px;background:var(--auth-art-soft);margin-top:12px;}
+  .auth-product-card__line--long {width:90%;}
+  .auth-product-card__line--short {width:55%;margin-top:7px;}
+  .auth-product-card__profile {display:flex;align-items:center;gap:12px;margin:0 0 18px;}
+  .auth-product-card__avatar {
+    flex:0 0 39px;width:39px;height:39px;border-radius:50%;
+    background:radial-gradient(circle at 50% 37%,#bec3cf 0 7px,transparent 8px),
+      radial-gradient(ellipse at 50% 95%,#bec3cf 0 15px,transparent 16px),
+      var(--auth-art-soft);
+    border:1px solid var(--auth-art-border);
+  }
+  .auth-product-card__profile-lines {flex:1;display:flex;flex-direction:column;gap:8px;}
+  .auth-product-card__profile-lines i {display:block;background:var(--auth-art-soft);height:6px;border-radius:9px;width:94%;}
+  .auth-product-card__profile-lines i:last-child {width:61%;}
+  .auth-product-card__profile-ring {
+    height:29px;width:29px;flex:0 0 29px;border-radius:50%;
+    border:4px solid #b4bdca;border-left-color:var(--auth-art-soft);
+  }
+  .auth-product-card__stages {display:flex;gap:5px;}
+  .auth-product-card__stages span {
+    border-radius:6px;background:var(--auth-art-soft);
+    color:var(--auth-art-muted);font-weight:700;font-size:8px;padding:6px 7px;
+  }
+  .auth-page--consistent .auth-panel,
+  .auth-page--consistent .auth-topbar,
+  .auth-page--consistent .auth-footer { position:relative;z-index:1; }
+  :root[data-theme='dark'] .auth-page--consistent .auth-product-scene {
+    --auth-art-surface:#20212b;
+    --auth-art-border:#40434f;
+    --auth-art-muted:#abaebf;
+    --auth-art-ink:#f0f0f4;
+    --auth-art-soft:#30323f;
+  }
+  :root[data-theme='dark'] .auth-page--consistent .auth-product-card {
+    box-shadow:0 17px 39px rgba(0,0,0,.27),0 3px 11px rgba(0,0,0,.14);
+  }
+  :root[data-theme='dark'] .auth-product-card__profile-ring {
+    border-color:#777e92;border-left-color:#30323f;
+  }
+  :root[data-theme='dark'] .auth-product-card__avatar {
+    background:radial-gradient(circle at 50% 37%,#7d8396 0 7px,transparent 8px),
+      radial-gradient(ellipse at 50% 95%,#7d8396 0 15px,transparent 16px),#30323f;
+  }
+}
+@media (min-width:1280px) and (max-width:1499px) {
+  .auth-page--consistent .auth-product-card {width:188px;padding:13px;}
+  .auth-product-card--crm {right:calc(50% + 245px);}
+  .auth-product-card--student {left:calc(50% + 245px);width:205px !important;}
+  .auth-product-card__stages span {font-size:7px;padding:6px 5px;}
+}
