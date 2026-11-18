@@ -17,10 +17,10 @@ export type CatalogApp = {
 
 export const appCatalog: CatalogApp[] = [
   { name: 'Dashboard', description: 'Overview of your school', path: '/dashboard', icon: Building2, category: 'Workspace' },
-  { name: 'People', description: 'School community directory', path: '/people', icon: UsersRound, category: 'Workspace' },
-  { name: 'Accounts', description: 'Accounts and access', path: '/accounts', icon: ShieldCheck, category: 'Administration' },
-  { name: 'Integrations', description: 'Connected services', path: '/integrations', icon: Cable, category: 'Administration' },
-  { name: 'Security', description: 'Sessions and account security', path: '/settings/security', icon: Settings2, category: 'Administration' },
+  { name: 'People', description: 'School community directory', icon: UsersRound, category: 'Workspace' },
+  { name: 'Accounts', description: 'Accounts and access', icon: ShieldCheck, category: 'Administration' },
+  { name: 'Integrations', description: 'Connected services', icon: Cable, category: 'Administration' },
+  { name: 'Security', description: 'Sessions and account security', icon: Settings2, category: 'Administration' },
   { name: 'Admissions', description: 'Applications and enrollment', icon: GraduationCap, category: 'Student life' },
   { name: 'Student lifecycle', description: 'Student journey and records', icon: BookOpen, category: 'Student life' },
   { name: 'Attendance', description: 'Student and staff attendance', icon: ClipboardCheck, category: 'Student life' },
@@ -31,7 +31,7 @@ export const appCatalog: CatalogApp[] = [
   { name: 'HR', description: 'People operations and leave', icon: BriefcaseBusiness, category: 'Operations' },
 ];
 
-export const defaultPinnedApps = ['/dashboard', '/people', '/accounts', '/integrations', '/settings/security'];
+export const defaultPinnedApps = ['/dashboard'];
 
 const categories = ['All', 'Workspace', 'Student life', 'Operations', 'Administration'];
 
