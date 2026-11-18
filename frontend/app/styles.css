@@ -1712,3 +1712,90 @@ body { background: var(--canvas); }
 @media(max-width:600px) {
   .auth-page--consistent .auth-panel { min-height: 0; }
 }
+
+
+/* Auth mobile: use the screen as the form surface, not a card inside a page.
+   Keep touch targets >= 44px and inputs at 16px to avoid iOS Safari focus zoom. */
+.auth-page--consistent .field__input::placeholder {
+  color: var(--muted);
+  opacity: .72;
+  font-weight: 400;
+}
+.auth-page--consistent .field__input:focus::placeholder { opacity: .5; }
+@media (max-width: 600px) {
+  .auth-page--consistent {
+    width: 100%;
+    padding: 24px 20px max(20px,env(safe-area-inset-bottom));
+    align-items: stretch;
+    background: var(--canvas);
+  }
+  .auth-page--consistent .auth-brand {
+    align-self: center;
+    margin: 14px auto 34px;
+    gap: 9px;
+    font-size: 17px;
+  }
+  .auth-page--consistent .auth-brand .brand-mark {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+    font-size: 21px;
+  }
+  .auth-page--consistent .auth-panel,
+  :root[data-theme='dark'] .auth-page--consistent .auth-panel {
+    align-self: stretch;
+    max-width: none;
+    width: 100%;
+    min-height: 0;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .auth-page--consistent .auth-panel__school {
+    font-size: 11px;
+    margin-bottom: 21px;
+  }
+  .auth-page--consistent .auth-panel h1 {
+    font-size: 24px;
+    margin-bottom: 6px;
+  }
+  .auth-page--consistent .auth-panel > .muted {
+    font-size: 11px;
+    line-height: 1.5;
+    margin-bottom: 22px;
+  }
+  .auth-page--consistent .auth-form { gap: 14px; }
+  .auth-page--consistent .field { gap: 6px; }
+  .auth-page--consistent .field__label { font-size: 11px; }
+  .auth-page--consistent .field__input {
+    height: 42px;
+    min-height: 42px;
+    font-size: 16px;
+    line-height: 20px;
+    padding: 9px 11px;
+    border-radius: 9px;
+    background: var(--surface);
+  }
+  .auth-page--consistent .password-field .field__input { padding-right: 48px; }
+  .auth-page--consistent .password-toggle { top: 23px; height: 44px; width: 44px; right: 1px; }
+  .auth-page--consistent .form-row a,
+  .auth-page--consistent .back-link { font-size: 11px; }
+  .auth-page--consistent .auth-form .button--full { min-height: 44px; font-size: 12px; }
+  .auth-page--consistent .auth-security { font-size: 10px; margin-top: 23px; }
+  .auth-page--consistent .field__hint,
+  .auth-page--consistent .form-error { font-size: 10px; }
+  .auth-page--consistent .auth-footer {
+    width: 100%;
+    padding-top: 42px;
+    font-size: 10px;
+    justify-content: center;
+    text-align: center;
+  }
+}
+@media (max-width: 360px) {
+  .auth-page--consistent { padding-inline: 16px; }
+  .auth-page--consistent .auth-panel { padding: 0; }
+}
