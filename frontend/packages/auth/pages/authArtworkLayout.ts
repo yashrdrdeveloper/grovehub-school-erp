@@ -1,21 +1,23 @@
 export type ArtId =
-  | 'crm' | 'student' | 'tasks' | 'finance' | 'quote'
-  | 'calendar' | 'book' | 'squiggle' | 'motto';
+  | 'crm' | 'student' | 'tasks' | 'finance' | 'ai' | 'audit' | 'growth'
+  | 'automation' | 'communication' | 'admissions' | 'hr' | 'library'
+  | 'calendar' | 'book' | 'pencil' | 'bell' | 'trophy' | 'school'
+  | 'quote' | 'squiggle' | 'motto';
 
 export type ArtPlacement = { x: number; y: number };
 export type ArtBounds = { width: number; height: number };
 export type ArtRect = ArtBounds & { x: number; y: number };
 export type ArtBox = { id: ArtId; width: number; height: number };
 
-type Space = { x: number; y: number; width: number; height: number };
+type Space = ArtRect;
 type Rng = () => number;
-
-const gap = 14;
-const margin = 7;
+const margin = 12;
+const padding = 18;
 const priority: ArtId[] = [
-  'crm', 'student', 'tasks', 'finance', 'quote', 'calendar', 'book', 'squiggle', 'motto',
+  'crm', 'student', 'tasks', 'finance', 'ai', 'audit', 'growth', 'automation',
+  'communication', 'admissions', 'hr', 'library', 'quote',
+  'calendar', 'book', 'pencil', 'bell', 'trophy', 'school', 'squiggle', 'motto',
 ];
-
 const makeRandom = (seed: number): Rng => {
   let value = seed >>> 0;
   return () => {
@@ -23,92 +25,101 @@ const makeRandom = (seed: number): Rng => {
     return value / 4294967296;
   };
 };
+const overlaps = (a: ArtRect, b: ArtRect) =>
+  a.x < b.x + b.width + padding &&
+  a.x + a.width + padding > b.x &&
+  a.y < b.y + b.height + padding &&
+  a.y + a.height + padding > b.y;
 
-const collides = (a: ArtRect, b: ArtRect) =>
-  a.x < b.x + b.width + gap &&
-  a.x + a.width + gap > b.x &&
-  a.y < b.y + b.height + gap &&
-  a.y + a.height + gap > b.y;
-
-/** Break the free canvas into actual rectangles around the protected login card.
- * Every entity is measured independently; a failed fit simply is not rendered.
- */
-const availableSpaces = (stage: ArtBounds, panel: ArtRect): Space[] => {
-  const left = Math.max(margin, panel.x - gap);
-  const right = Math.min(stage.width - margin, panel.x + panel.width + gap);
-  const top = Math.max(margin, panel.y - gap);
-  const bottom = Math.min(stage.height - margin, panel.y + panel.height + gap);
-
-  return [
-    { x: margin, y: margin, width: left - margin, height: stage.height - margin * 2 },
-    { x: right, y: margin, width: stage.width - right - margin, height: stage.height - margin * 2 },
-    { x: left, y: margin, width: right - left, height: top - margin },
-    { x: left, y: bottom, width: right - left, height: stage.height - bottom - margin },
-  ].filter(space => space.width > 0 && space.height > 0);
+const shuffle = <T,>(items: T[], rng: Rng): T[] => {
+  const result = [...items];
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(rng() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
 };
 
+/** The sign-in panel is a protected region. Free-space candidates cover the
+ * entire available viewport, with four gutters around the panel. Each entity
+ * either receives a non-overlapping rectangle or is omitted. A stable seed
+ * makes each refresh unique but avoids random jitter during resizing.
+ */
 export const packAuthIllustrations = (
-  stage: ArtBounds,
-  panel: ArtRect,
-  boxes: ArtBox[],
-  seed: number,
+  stage: ArtBounds, panel: ArtRect, boxes: ArtBox[], seed: number,
 ): Partial<Record<ArtId, ArtPlacement>> => {
-  const result: Partial<Record<ArtId, ArtPlacement>> = {};
-  const occupied: ArtRect[] = [panel];
-  const random = makeRandom(seed);
-  const spaces = availableSpaces(stage, panel);
-  const byId = new Map(boxes.map(box => [box.id, box]));
-
-  // The primary CRM / UCV illustrations start on opposite sides where there
-  // is room. Their actual positions and the positions of all other objects
-  // vary by seed and by measured available space.
-  const leftFirst = random() > .5;
-  const heroPreference = {
-    crm: leftFirst ? 0 : 1,
-    student: leftFirst ? 1 : 0,
+  const placed: Partial<Record<ArtId, ArtPlacement>> = {};
+  if (stage.width <= 0 || stage.height <= 0) return placed;
+  const rng = makeRandom(seed);
+  const safePanel: ArtRect = {
+    x: panel.x - padding, y: panel.y - padding,
+    width: panel.width + padding * 2, height: panel.height + padding * 2,
   };
+  const occupied: ArtRect[] = [safePanel];
+
+  const sideGutters: Space[] = [
+    { x: margin, y: margin, width: Math.max(0, safePanel.x - margin), height: stage.height - margin * 2 },
+    { x: safePanel.x + safePanel.width, y: margin,
+      width: Math.max(0, stage.width - safePanel.x - safePanel.width - margin), height: stage.height - margin * 2 },
+  ];
+  const horizontalGutters: Space[] = [
+    { x: margin, y: margin, width: stage.width - margin * 2, height: Math.max(0, safePanel.y - margin) },
+    { x: margin, y: safePanel.y + safePanel.height,
+      width: stage.width - margin * 2,
+      height: Math.max(0, stage.height - safePanel.y - safePanel.height - margin) },
+  ];
+  const allSpaces = [...sideGutters, ...horizontalGutters];
+  const sizes = new Map(boxes.map(box => [box.id, box]));
+  const flip = rng() < .5;
 
   for (const id of priority) {
-    const box = byId.get(id);
-    if (!box) continue;
-    // Rotated card artwork has a slightly larger visual footprint.
-    const paddedWidth = box.width + (id === 'crm' || id === 'student' ? 14 : 2);
-    const paddedHeight = box.height + (id === 'crm' || id === 'student' ? 12 : 2);
-    const candidates = spaces
-      .map((space, index) => ({ space, index }))
-      .filter(({ space }) => space.width >= paddedWidth && space.height >= paddedHeight);
-    if (!candidates.length) continue;
-
+    const box = sizes.get(id);
+    if (!box || box.width < 1 || box.height < 1) continue;
+    // Rotations must fit, including their extended corners.
+    const rotate = id === 'crm' || id === 'student' || id === 'tasks' || id === 'finance'
+      || id === 'ai' || id === 'audit' || id === 'growth' || id === 'automation';
+    const overhang = rotate ? 16 : 6;
+    const width = box.width + overhang;
+    const height = box.height + overhang;
+    let spaces = shuffle(allSpaces, rng);
     if (id === 'crm' || id === 'student') {
-      candidates.sort((a, b) =>
-        Number(b.index === heroPreference[id]) - Number(a.index === heroPreference[id]));
-    } else {
-      // A different stable order each page load, without jitter on resize.
-      candidates.sort(() => random() - .5);
+      const preferredSide = (id === 'crm') !== flip ? sideGutters[0] : sideGutters[1];
+      spaces = [preferredSide, ...spaces.filter(space => space !== preferredSide)];
     }
 
-    let chosen: ArtRect | undefined;
-    for (const { space } of candidates) {
-      const availableX = space.width - paddedWidth;
-      const availableY = space.height - paddedHeight;
-      for (let attempt = 0; attempt < 80; attempt += 1) {
-        const x = space.x + (attempt === 0 ? availableX / 2 : random() * availableX);
-        const y = space.y + (attempt === 0 ? availableY / 2 : random() * availableY);
-        const rect = { x, y, width: paddedWidth, height: paddedHeight };
-        if (!occupied.some(other => collides(rect, other))) {
-          chosen = rect;
+    let accepted: ArtRect | undefined;
+    for (const space of spaces) {
+      if (space.width < width || space.height < height) continue;
+      const maxX = space.width - width;
+      const maxY = space.height - height;
+      // Try distinct centers, corners and seeded locations. The first large
+      // cards establish the composition; smaller cards fill remaining gaps.
+      const candidates = [
+        { x: maxX / 2, y: maxY / 2 },
+        { x: maxX * .16, y: maxY * .22 },
+        { x: maxX * .84, y: maxY * .78 },
+        ...Array.from({ length: 100 }, () => ({ x: rng() * maxX, y: rng() * maxY })),
+      ];
+      for (const candidate of candidates) {
+        const rect = {
+          x: space.x + candidate.x,
+          y: space.y + candidate.y,
+          width,
+          height,
+        };
+        if (!occupied.some(other => overlaps(rect, other))) {
+          accepted = rect;
           break;
         }
       }
-      if (chosen) break;
+      if (accepted) break;
     }
-    if (!chosen) continue;
-    occupied.push(chosen);
-    result[id] = {
-      x: Math.round(chosen.x + (chosen.width - box.width) / 2),
-      y: Math.round(chosen.y + (chosen.height - box.height) / 2),
+    if (!accepted) continue;
+    occupied.push(accepted);
+    placed[id] = {
+      x: Math.round(accepted.x + overhang / 2),
+      y: Math.round(accepted.y + overhang / 2),
     };
   }
-
-  return result;
+  return placed;
 };
