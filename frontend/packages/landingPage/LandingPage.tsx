@@ -48,7 +48,11 @@ const ImageCard = ({
 }) => (
   <div className={`rdr-photo ${className}`}>
     <img src={src} alt={alt} loading={loading} decoding="async"
-      style={{objectPosition:position ?? 'center'}} referrerPolicy="no-referrer" />
+      style={{objectPosition:position ?? 'center'}} referrerPolicy="no-referrer"
+      onError={event => {
+        const original = photographs.find(photo => photo.src === src)?.originalSrc;
+        if(original && event.currentTarget.src !== original) event.currentTarget.src = original;
+      }} />
     {children}
   </div>
 );
