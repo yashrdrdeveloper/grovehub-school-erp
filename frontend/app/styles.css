@@ -1911,3 +1911,106 @@ body { background: var(--canvas); }
 .auth-float--school {rotate:5deg;}
 /* Art is decorative: never block the form, controls or keyboard focus. */
 .auth-floating-art,.auth-float {pointer-events:none;user-select:none;}
+
+
+/* Authentication content alignment: consistent typography and a predictable
+   top inset inside the same 440 × 520 card on tablet and desktop.
+   Reserve the remaining empty space below the form, never above the icon. */
+.auth-page--consistent .auth-panel {
+  justify-content:flex-start;
+  padding-top:30px;
+}
+.auth-page--consistent .auth-panel__icon {
+  flex:0 0 42px;
+  margin:0 auto 13px;
+}
+.auth-page--consistent .auth-panel h1 {
+  font-size:27px;
+  line-height:1.25;
+  margin-bottom:8px;
+  flex-shrink:0;
+}
+.auth-page--consistent .auth-panel > .muted {
+  font-size:12px;
+  line-height:1.5;
+  margin-bottom:22px;
+  flex-shrink:0;
+}
+.auth-page--consistent .auth-form {gap:15px;flex-shrink:0;}
+.auth-page--consistent .field__label {font-size:12px;}
+.auth-page--consistent .field__input {height:46px;min-height:46px;font-size:15px;}
+.auth-page--consistent .field__input::placeholder {font-size:13px;}
+.auth-page--consistent .auth-security {margin-top:20px;flex-shrink:0;}
+@media (max-height:760px) {
+  .auth-page--consistent .auth-panel {padding-top:clamp(15px,3vh,25px);}
+  .auth-page--consistent .auth-panel__icon {margin-bottom:9px;}
+  .auth-page--consistent .auth-panel > .muted {margin-bottom:14px;}
+  .auth-page--consistent .auth-form {gap:11px;}
+  .auth-page--consistent .auth-security {margin-top:13px;}
+}
+
+/* A fixed, hand-drawn school scene for phones only. The illustration lives
+   behind the card in its own compositing layer, with a soft clear center. */
+.auth-mobile-backdrop {display:none;}
+@media (max-width:640px) {
+  .auth-page--consistent .auth-floating-art {display:none;}
+  .auth-page--consistent .auth-panel,
+  :root[data-theme='dark'] .auth-page--consistent .auth-panel {
+    padding:22px 0 0;
+    justify-content:flex-start;
+    position:relative;
+    z-index:2;
+    background:transparent;
+    overflow-y:auto;
+  }
+  .auth-page--consistent .auth-panel h1 {font-size:27px;line-height:1.23;}
+  .auth-page--consistent .auth-panel__icon {
+    width:38px;height:38px;
+    flex-basis:38px;
+    margin-bottom:13px;
+  }
+  .auth-page--consistent .auth-panel > .muted {
+    font-size:12px;
+    margin-bottom:20px;
+  }
+  .auth-page--consistent .field__input {font-size:16px;}
+  .auth-page--consistent .field__input::placeholder {font-size:13px;}
+  .auth-page--consistent .auth-form {gap:15px;}
+  .auth-page--consistent .auth-security {margin-top:18px;}
+  .auth-mobile-backdrop {
+    display:block;
+    position:absolute;
+    z-index:0;
+    inset:0;
+    overflow:hidden;
+    pointer-events:none;
+    color:#c5b8a8;
+    opacity:.52;
+    /* Keep the illustrations away from the center containing the form. */
+    -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 13%,transparent 27%,transparent 75%,#000 89%,#000 100%);
+    mask-image:linear-gradient(to bottom,#000 0%,#000 13%,transparent 27%,transparent 75%,#000 89%,#000 100%);
+  }
+  .auth-mobile-backdrop__top,
+  .auth-mobile-backdrop__bottom {
+    position:absolute;
+    width:100%;
+    height:min(24%,130px);
+    left:0;
+  }
+  .auth-mobile-backdrop__top {top:0;}
+  .auth-mobile-backdrop__bottom {bottom:0;}
+  :root[data-theme='dark'] .auth-mobile-backdrop {
+    color:#86879a;
+    opacity:.4;
+  }
+}
+@media (max-width:640px) and (max-height:720px) {
+  .auth-page--consistent .auth-panel,
+  :root[data-theme='dark'] .auth-page--consistent .auth-panel {
+    padding-top:10px;
+  }
+  .auth-page--consistent .auth-panel__icon {margin-bottom:9px;}
+  .auth-page--consistent .auth-panel > .muted {margin-bottom:12px;}
+  .auth-page--consistent .auth-form {gap:10px;}
+  .auth-page--consistent .auth-security {margin-top:12px;}
+}
