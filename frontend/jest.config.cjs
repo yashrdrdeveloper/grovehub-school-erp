@@ -1,5 +1,6 @@
 module.exports = {
   testEnvironment: 'jsdom',
+  setupFiles: ['<rootDir>/scripts/test/polyfills.cjs'],
   testMatch: [
     '<rootDir>/packages/**/*.test.ts',
     '<rootDir>/packages/**/*.test.tsx',
