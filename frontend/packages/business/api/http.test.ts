@@ -1,25 +1,32 @@
-import { ApiError } from './types';
 import { apiRequest } from './http';
 
 describe('shared HTTP envelope', () => {
-  afterEach(() => jest.restoreAllMocks());
+  const originalFetch = globalThis.fetch;
 
-  it('reads successful responses without leaking authentication tokens', async () => {
-    const spy = jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+    jest.clearAllMocks();
+  });
+
+  it('reads successful responses using credentialed requests', async () => {
+    const request = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => ({ success: true, data: { status: 'ACTIVE' } }),
-    } as Response);
+    });
+    globalThis.fetch = request as typeof fetch;
 
-    await expect(apiRequest<{ status: string }>('/identity/protected/auth/me')).resolves.toEqual({ status: 'ACTIVE' });
-    expect(spy).toHaveBeenCalledWith(
+    await expect(apiRequest<{ status: string }>('/identity/protected/auth/me')).resolves.toEqual({
+      status: 'ACTIVE',
+    });
+    expect(request).toHaveBeenCalledWith(
       '/identity/protected/auth/me',
       expect.objectContaining({ credentials: 'include', cache: 'no-store' }),
     );
   });
 
-  it('maps backend errorCode and errorMessage into a typed error', async () => {
-    jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+  it('maps the backend errorCode and errorMessage to a useful error', async () => {
+    const request = jest.fn().mockResolvedValue({
       ok: false,
       status: 403,
       json: async () => ({
@@ -29,10 +36,11 @@ describe('shared HTTP envelope', () => {
         httpErrorCode: 403,
         errorMetaData: {},
       }),
-    } as Response);
+    });
+    globalThis.fetch = request as typeof fetch;
 
     await expect(apiRequest('/identity/protected/accounts')).rejects.toEqual(
-      expect.objectContaining<ApiError>({
+      expect.objectContaining({
         code: 'IDENTITY_FORBIDDEN',
         message: 'Access denied',
         status: 403,

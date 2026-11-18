@@ -40,7 +40,7 @@ func Load() (config.Config, error) {
 		if err != nil || !trustedOriginScheme(origin) || origin.Host == "" ||
 			origin.Path != "" || origin.RawQuery != "" || origin.Fragment != "" ||
 			origin.User != nil {
-			return config.Config{}, errors.New("identity allowed origin must be an HTTPS origin")
+			return config.Config{}, errors.New("identity allowed origin must be HTTPS, or HTTP on loopback")
 		}
 	}
 

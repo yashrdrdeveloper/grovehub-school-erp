@@ -22,7 +22,8 @@
     "noFallthroughCasesInSwitch": true,
     "esModuleInterop": true,
     "types": [
-      "vite/client"
+      "vite/client",
+      "jest"
     ],
     "baseUrl": ".",
     "paths": {
