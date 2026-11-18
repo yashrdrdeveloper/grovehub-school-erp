@@ -1799,3 +1799,111 @@ body { background: var(--canvas); }
   .auth-page--consistent { padding-inline: 16px; }
   .auth-page--consistent .auth-panel { padding: 0; }
 }
+
+
+/* Mobile sign-in refinement — compact editorial rhythm, no nested card.
+   Keep the established GrooveHub logo artwork and size intact. */
+@media (max-width: 600px) {
+  .auth-page--consistent {
+    padding: max(18px,env(safe-area-inset-top)) 22px max(18px,env(safe-area-inset-bottom));
+    min-height: 100dvh;
+    gap: 0;
+    background: var(--canvas);
+  }
+  .auth-page--consistent .auth-brand {
+    align-self: flex-start;
+    justify-content: flex-start;
+    margin: 0 0 0;
+    padding-bottom: 18px;
+    width: 100%;
+    border-bottom: 1px solid var(--border);
+    font-size: 17px;
+    gap: 9px;
+  }
+  .auth-page--consistent .auth-panel,
+  :root[data-theme='dark'] .auth-page--consistent .auth-panel {
+    padding: 0;
+    margin: 0;
+    border: 0;
+    box-shadow: none;
+    background: transparent;
+    width: 100%;
+    max-width: 100%;
+  }
+  .auth-page--consistent .auth-panel__school {
+    margin-top: 32px;
+    margin-bottom: 16px;
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: .015em;
+  }
+  .auth-page--consistent .auth-panel__school .school-emblem {
+    height: 26px;
+    width: 26px;
+    border-radius: 8px;
+  }
+  .auth-page--consistent .auth-panel__icon {
+    margin-bottom: 13px;
+    width: 35px;
+    height: 35px;
+  }
+  .auth-page--consistent .auth-panel h1 {
+    font-size: 27px;
+    line-height: 1.18;
+    letter-spacing: -.055em;
+    margin-bottom: 7px;
+  }
+  .auth-page--consistent .auth-panel > .muted {
+    margin-bottom: 26px;
+    max-width: 340px;
+    line-height: 1.55;
+    font-size: 12px;
+  }
+  .auth-page--consistent .auth-form { gap: 15px; }
+  .auth-page--consistent .field { gap: 7px; }
+  .auth-page--consistent .field__label { font-size: 11px; font-weight: 750; }
+  .auth-page--consistent .field__input {
+    height: 44px;
+    min-height: 44px;
+    padding: 10px 13px;
+    border-radius: 10px;
+    font-size: 16px;
+    background: var(--surface);
+    border-color: color-mix(in srgb,var(--border),var(--muted) 15%);
+  }
+  .auth-page--consistent .field__input::placeholder { opacity: .58; }
+  .auth-page--consistent .password-field .field__input { padding-right: 49px; }
+  .auth-page--consistent .password-toggle { top: 26px; right: 2px; width: 44px; height: 44px; }
+  .auth-page--consistent .form-row--end { margin-top: -3px; }
+  .auth-page--consistent .form-row a, .auth-page--consistent .back-link {
+    font-size: 11px;
+    font-weight: 750;
+  }
+  .auth-page--consistent .auth-form .button--full {
+    min-height: 46px;
+    font-size: 12px;
+    border-radius: 10px;
+    margin-top: 1px;
+  }
+  .auth-page--consistent .auth-security {
+    color: var(--muted);
+    font-size: 10px;
+    margin-top: 19px;
+    opacity: .85;
+  }
+  .auth-page--consistent .auth-footer {
+    margin-top: auto;
+    padding-top: 42px;
+    text-align: center;
+    font-size: 10px;
+  }
+}
+@media (max-width: 360px) {
+  .auth-page--consistent { padding-left: 18px; padding-right: 18px; }
+  .auth-page--consistent .auth-panel { padding: 0; }
+}
+@media (max-width:600px) and (max-height:700px) {
+  .auth-page--consistent .auth-panel__school { margin-top: 22px; }
+  .auth-page--consistent .auth-panel > .muted { margin-bottom: 20px; }
+  .auth-page--consistent .auth-footer { padding-top: 24px; }
+}
