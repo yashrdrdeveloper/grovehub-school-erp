@@ -1,23 +1,14 @@
 import { useState, type FormEvent } from 'react';
 import { Eye, EyeOff, LockKeyhole } from 'lucide-react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { ApiError } from '@Business/api';
 import { Button, Input } from '@Components';
 
 import { useAuth } from '../core/providers/AuthProvider';
 
-const organizationName = (): string => {
-  const host = window.location.hostname;
-  const subdomain = host.split('.')[0];
-  return host.endsWith('.prod.groovehub.com') && subdomain
-    ? subdomain.charAt(0).toUpperCase() + subdomain.slice(1)
-    : 'Your school';
-};
-
 export const LoginPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { signIn } = useAuth();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -31,10 +22,7 @@ export const LoginPage = () => {
     setBusy(true);
     try {
       await signIn(identifier.trim(), password);
-      const destination = (location.state as { from?: string } | null)?.from;
-      navigate(destination?.startsWith('/') && !destination.startsWith('//') ? destination : '/dashboard', {
-        replace: true,
-      });
+      navigate('/dashboard', { replace: true });
     } catch (failure) {
       setError(failure instanceof ApiError ? failure.message : 'Unable to sign in. Please try again.');
     } finally {
@@ -49,13 +37,13 @@ export const LoginPage = () => {
         <strong>groovehub<span className="brand-period">.</span></strong>
       </div>
       <section className="auth-panel" aria-label="Sign in">
-        <div className="auth-panel__school"><span className="school-emblem">✦</span> {organizationName()}</div>
+        <div className="auth-panel__school"><span className="school-emblem">✦</span> RDR School</div>
         <h1>Sign in</h1>
         <p className="muted">Enter your school account credentials.</p>
         <form onSubmit={(event) => void submit(event)} className="auth-form">
           <Input
             id="identifier"
-            label="Email or username"
+            label="Email"
             value={identifier}
             autoComplete="username"
             onChange={(event) => setIdentifier(event.target.value)}
@@ -89,7 +77,7 @@ export const LoginPage = () => {
       </section>
       <footer className="auth-footer">
         <span>© {new Date().getFullYear()} GrooveHub</span>
-        <span><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:support@groovehub.com">Help</a></span>
+        
       </footer>
     </main>
   );
