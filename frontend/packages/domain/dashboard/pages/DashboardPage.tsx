@@ -1,97 +1,124 @@
+import { useState } from 'react';
 import {
-  ArrowUpRight, BellRing, CalendarDays, Check, ChevronRight,
-  ClipboardList, Clock3, CreditCard, FileCheck2, GraduationCap,
-  Layers3, MessageSquareText, School, Sparkles,
+  ArrowUpRight, Bell, CalendarDays, CheckCircle2, ChevronRight, CircleDashed,
+  ClipboardCheck, Clock3, CreditCard, GraduationCap, Inbox, Layers2,
+  MessageCircle, School, ShieldCheck, Sparkles,
 } from 'lucide-react';
 
-const stats = [
-  { label: 'My tasks', description: 'Assigned to you', icon: ClipboardList, tone: 'violet' },
-  { label: 'Due today', description: 'Needs attention', icon: Clock3, tone: 'amber' },
-  { label: 'Overdue', description: 'Past due', icon: BellRing, tone: 'rose' },
-  { label: 'Students', description: 'School records', icon: GraduationCap, tone: 'blue' },
+// Layout-only preview: no pretend counts, trends, events, people or services.
+const metrics = [
+  { name: 'Tasks for you', description: 'Your work queue', icon: ClipboardCheck, tone: 'pink' },
+  { name: 'Due today', description: 'Deadlines & follow-ups', icon: Clock3, tone: 'blue' },
+  { name: 'Overdue', description: 'Needs your attention', icon: Bell, tone: 'amber' },
+  { name: 'Students', description: 'School community', icon: GraduationCap, tone: 'green' },
 ] as const;
 
-const sections = [
-  { title: 'Pending for you', description: 'Your assigned work', icon: ClipboardList, tone: 'violet', note: 'Tasks and assignments will appear here.' },
-  { title: 'Admissions & dues', description: 'Due today and overdue', icon: CreditCard, tone: 'amber', note: 'Application and payment follow-ups will appear here.' },
-  { title: 'Today & upcoming', description: 'Holidays, events and time off', icon: CalendarDays, tone: 'blue', note: 'Your school calendar will appear here.' },
-  { title: 'Reminders', description: 'Your follow-ups', icon: BellRing, tone: 'rose', note: 'Personal reminders will appear here.' },
-  { title: 'Complaints & requests', description: 'Items needing review', icon: MessageSquareText, tone: 'cyan', note: 'Requests and conversations will appear here.' },
-  { title: 'Audit & compliance', description: 'Checks and reviews', icon: FileCheck2, tone: 'emerald', note: 'Reviews and compliance tasks will appear here.' },
+const workspaces = [
+  { title: 'Admissions & dues', hint: 'Applications, payments and follow-ups', icon: CreditCard, tone: 'blue' },
+  { title: 'Complaints & requests', hint: 'Conversations that need a response', icon: MessageCircle, tone: 'pink' },
+  { title: 'Audit & compliance', hint: 'Checks, reviews and approvals', icon: ShieldCheck, tone: 'green' },
 ] as const;
 
 export const DashboardPage = () => {
-  const date = new Intl.DateTimeFormat(undefined, { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
+  const [calendarView, setCalendarView] = useState<'today' | 'upcoming'>('today');
+  const date = new Date();
+  const dayName = new Intl.DateTimeFormat(undefined, { weekday: 'long' }).format(date);
+  const dateLabel = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).format(date);
 
   return (
-    <div className="school-dashboard dashboard-v2">
-      <header className="dashboard-v2__heading">
+    <div className="school-home">
+      <header className="school-home__header">
         <div>
-          <div className="dashboard-v2__eyebrow"><School size={14}/> RDR SCHOOL <span className="dashboard-v2__eyebrow-divider"/> WORKSPACE</div>
-          <h1>School overview<span className="dashboard-v2__heading-spark">✳</span></h1>
-          <p>Everything important, organized for your school day.</p>
+          <div className="school-home__breadcrumb"><School size={14}/> RDR SCHOOL <ChevronRight size={13}/> OVERVIEW</div>
+          <h1>Good {date.getHours() < 12 ? 'morning' : date.getHours() < 17 ? 'afternoon' : 'evening'}<span className="school-home__spark">✳</span></h1>
+          <p>Your school day, in one clear view.</p>
         </div>
-        <div className="dashboard-v2__date"><CalendarDays size={16}/>{date}</div>
+        <div className="school-home__date"><CalendarDays size={17}/><span><strong>{dayName}</strong><small>{dateLabel}</small></span></div>
       </header>
 
-      <section className="dashboard-v2__overview" aria-label="Overview">
-        <div className="dashboard-v2__section-title">
-          <div><span className="dashboard-v2__overline">01 / OVERVIEW</span><h2>At a glance</h2></div>
-          <span className="dashboard-v2__preview"><span/> Layout preview</span>
+      <div className="school-home__notice" role="status">
+        <div className="school-home__notice-mark"><Sparkles size={17}/></div>
+        <div><strong>Your workspace is taking shape</strong><span>This is a preview of the dashboard layout. Your school's activity will appear as services are connected.</span></div>
+        <span className="school-home__notice-state"><CircleDashed size={14}/> PREVIEW</span>
+      </div>
+
+      <section className="school-home__section" aria-labelledby="home-priorities">
+        <div className="school-home__section-heading">
+          <div><span className="school-home__eyebrow">YOUR DAY / 01</span><h2 id="home-priorities">At a glance</h2></div>
+          <span className="school-home__hint">No live data yet</span>
         </div>
-        <div className="dashboard-v2__metrics">
-          {stats.map(({ label, description, icon: Icon, tone }) => (
-            <div key={label} className={`dashboard-v2__metric dashboard-tone--${tone}`}>
-              <div className="dashboard-v2__metric-top"><span>{label}</span><Icon size={17}/></div>
-              <div className="dashboard-v2__metric-value" aria-label={`${label} not yet available`}>—</div>
-              <div className="dashboard-v2__metric-bottom">{description}<ArrowUpRight size={13}/></div>
+        <div className="school-home__stats">
+          {metrics.map(({name,description,icon: Icon,tone}) => (
+            <div className={`school-home__stat school-home__tone--${tone}`} key={name}>
+              <div className="school-home__stat-label"><span>{name}</span><Icon size={18}/></div>
+              <strong aria-label={`${name} not available`}>—</strong>
+              <small>{description}</small>
+              <div className="school-home__stat-track"><span/></div>
             </div>
           ))}
         </div>
       </section>
 
-      <div className="dashboard-v2__content-grid">
-        <section className="dashboard-v2__work" aria-label="School workspaces">
-          <div className="dashboard-v2__section-title">
-            <div><span className="dashboard-v2__overline">02 / WORKSPACE</span><h2>Work that matters</h2></div>
-            <span className="dashboard-v2__section-count">06 sections</span>
-          </div>
-          <div className="dashboard-v2__panel-grid">
-            {sections.map(({ title, description, icon: Icon, tone, note }, index) => (
-              <article key={title} className={`dashboard-v2__panel dashboard-tone--${tone}`}>
-                <div className="dashboard-v2__panel-head">
-                  <span className="dashboard-v2__panel-icon"><Icon size={18} strokeWidth={1.85}/></span>
-                  <span className="dashboard-v2__panel-index">{String(index + 1).padStart(2, '0')}</span>
+      <div className="school-home__layout">
+        <div className="school-home__main-column">
+          <section className="school-home__section" aria-labelledby="home-queue">
+            <div className="school-home__section-heading">
+              <div><span className="school-home__eyebrow">FOCUS / 02</span><h2 id="home-queue">What needs attention</h2></div>
+              <span className="school-home__hint">Your personal workspace</span>
+            </div>
+            <div className="school-home__focus">
+              <div className="school-home__focus-heading"><div className="school-home__focus-icon"><Inbox size={19}/></div><div><h3>Pending for you</h3><p>Tasks, approvals and follow-ups assigned to you</p></div><span className="school-home__focus-count">Not connected</span></div>
+              <div className="school-home__focus-content">
+                <div className="school-home__empty-art" aria-hidden="true"><span/><span/><span/><CheckCircle2 size={24}/></div>
+                <strong>A clear place to start your day</strong>
+                <p>Once Tasks is connected, your priorities will appear here, organized by what needs your attention first.</p>
+              </div>
+              <div className="school-home__focus-footer"><span><CircleDashed size={13}/> Waiting for Tasks service</span><span>Workspace preview</span></div>
+            </div>
+          </section>
+          <section className="school-home__section" aria-labelledby="home-operations">
+            <div className="school-home__section-heading">
+              <div><span className="school-home__eyebrow">OPERATIONS / 03</span><h2 id="home-operations">Around your school</h2></div>
+              <span className="school-home__hint">Three work areas</span>
+            </div>
+            <div className="school-home__operations">
+              {workspaces.map(({title,hint,icon: Icon,tone}) => (
+                <div className={`school-home__operation school-home__tone--${tone}`} key={title}>
+                  <div className="school-home__operation-icon"><Icon size={18}/></div>
+                  <div><h3>{title}</h3><p>{hint}</p><small>Ready for future service data</small></div>
+                  <ArrowUpRight size={16} className="school-home__operation-arrow"/>
                 </div>
-                <h3>{title}</h3>
-                <p className="dashboard-v2__panel-description">{description}</p>
-                <div className="dashboard-v2__panel-placeholder">
-                  <span className="dashboard-v2__placeholder-line dashboard-v2__placeholder-line--wide"/>
-                  <span className="dashboard-v2__placeholder-line"/>
-                  <span className="dashboard-v2__placeholder-line dashboard-v2__placeholder-line--short"/>
-                </div>
-                <div className="dashboard-v2__panel-footer"><span>{note}</span><ChevronRight size={16}/></div>
-              </article>
-            ))}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        </div>
 
-        <aside className="dashboard-v2__aside" aria-label="Workspace status">
-          <div className="dashboard-v2__section-title">
-            <div><span className="dashboard-v2__overline">03 / STATUS</span><h2>Getting started</h2></div>
-          </div>
-          <div className="dashboard-v2__spotlight">
-            <div className="dashboard-v2__spotlight-top"><div className="dashboard-v2__spotlight-icon"><Sparkles size={19}/></div><span>YOUR WORKSPACE</span></div>
-            <h3>A better way to run your school.</h3>
-            <p>The foundation is in place. This dashboard will become your daily command center as school modules are connected.</p>
-            <div className="dashboard-v2__spotlight-bottom"><Check size={15}/> Layout ready for real data</div>
-          </div>
-          <div className="dashboard-v2__roadmap">
-            <div className="dashboard-v2__roadmap-heading"><Layers3 size={17}/><strong>Workspace roadmap</strong></div>
-            <div className="dashboard-v2__roadmap-item"><span className="dashboard-v2__roadmap-dot dashboard-v2__roadmap-dot--ready"/><div><strong>Identity & access</strong><small>Authentication foundation</small></div><span>01</span></div>
-            <div className="dashboard-v2__roadmap-item"><span className="dashboard-v2__roadmap-dot"/><div><strong>School operations</strong><small>Tasks, schedules and records</small></div><span>02</span></div>
-            <div className="dashboard-v2__roadmap-item"><span className="dashboard-v2__roadmap-dot"/><div><strong>Insights & reporting</strong><small>Connected operational data</small></div><span>03</span></div>
-          </div>
+        <aside className="school-home__side-column">
+          <section className="school-home__section" aria-labelledby="home-calendar">
+            <div className="school-home__section-heading">
+              <div><span className="school-home__eyebrow">CALENDAR / 04</span><h2 id="home-calendar">School calendar</h2></div>
+            </div>
+            <div className="school-home__calendar">
+              <div className="school-home__calendar-tabs" role="group" aria-label="Calendar view">
+                <button type="button" aria-pressed={calendarView === 'today'} className={calendarView === 'today' ? 'is-active' : ''} onClick={()=>setCalendarView('today')}>Today</button>
+                <button type="button" aria-pressed={calendarView === 'upcoming'} className={calendarView === 'upcoming' ? 'is-active' : ''} onClick={()=>setCalendarView('upcoming')}>Upcoming</button>
+              </div>
+              <div className="school-home__calendar-content">
+                <div className="school-home__calendar-date"><strong>{calendarView === 'today' ? date.getDate() : '→'}</strong><span>{calendarView === 'today' ? dayName : 'Next on your calendar'}<small>{calendarView === 'today' ? dateLabel : 'Calendar preview'}</small></span></div>
+                <div className="school-home__calendar-line"/>
+                <div className="school-home__calendar-empty"><CalendarDays size={22}/><strong>{calendarView === 'today' ? 'Today’s schedule' : 'Upcoming events'}</strong><span>Holidays, school events and time off will appear here when Calendar is connected.</span></div>
+              </div>
+              <div className="school-home__calendar-footer"><CircleDashed size={13}/> Calendar integration planned</div>
+            </div>
+          </section>
+          <section className="school-home__section" aria-labelledby="home-reminders">
+            <div className="school-home__section-heading"><div><span className="school-home__eyebrow">FOLLOW-UPS / 05</span><h2 id="home-reminders">Reminders</h2></div></div>
+            <div className="school-home__reminders">
+              <div className="school-home__reminders-head"><span className="school-home__reminders-icon"><Bell size={18}/></span><strong>Keep the important things close.</strong></div>
+              <p>Your reminders and personal follow-ups will live here—right beside your school calendar.</p>
+              <div className="school-home__reminders-foot"><Layers2 size={14}/> Coming with Tasks</div>
+            </div>
+          </section>
         </aside>
       </div>
     </div>
