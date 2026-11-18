@@ -1623,7 +1623,7 @@ body { background: var(--canvas); }
    panel and either illustration, regardless of browser width or zoom. */
 .auth-stage {
   --center-width:440px;
-  width:min(100%,1360px);
+  width:100%;
   height:100%;
   min-height:0;min-width:0;
   display:grid;
@@ -1864,57 +1864,6 @@ body { background: var(--canvas); }
 }
 
 
-/* Approved editorial composition on large desktop only. All positions are
-   curated as a group, not randomized, and stay outside the center 440px panel. */
-.auth-stage--editorial .auth-float--crm {
-  left:10%;top:46%;
-}
-.auth-stage--editorial .auth-float--student {
-  left:auto;right:10%;top:46%;
-}
-.auth-stage--editorial .auth-float--tasks {
-  left:20%;top:76%;
-}
-.auth-stage--editorial .auth-float--finance {
-  left:auto;right:20%;top:76%;
-}
-.auth-stage--editorial .auth-float--quote {
-  left:12%;top:25%;
-}
-.auth-stage--editorial .auth-float--calendar {
-  left:7%;top:11%;
-}
-.auth-stage--editorial .auth-float--book {
-  left:auto;right:7%;top:12%;
-}
-.auth-stage--editorial .auth-float--squiggle {
-  left:auto;right:10%;top:28%;
-}
-.auth-stage--editorial .auth-float--motto {
-  left:12%;top:auto;bottom:5%;
-}
-.auth-stage--editorial .auth-float-card--hero {
-  width:220px;
-  min-height:140px;
-}
-.auth-stage--editorial .auth-float-card--small {
-  width:154px;
-}
-.auth-stage--editorial .auth-float-card__title strong {
-  font-size:11px;
-  white-space:nowrap;
-}
-.auth-stage--editorial .auth-float-card__contact {
-  display:flex;
-}
-.auth-stage--editorial .auth-float-card__tags {
-  display:flex;
-}
-.auth-stage--editorial .auth-float--quote {
-  font-size:16px;
-  width:205px;
-}
-
 /* Identical outer dimensions for Login, Forgot, Reset and Set Password.
    A narrow or very short screen limits the physical box to the available
    viewport; overflow remains inside the card so the outer page never scrolls. */
@@ -1940,3 +1889,25 @@ body { background: var(--canvas); }
     justify-content:safe center;
   }
 }
+
+/* Responsive, full-width illustration canvas. The user-facing artwork
+   placement is controlled by measured geometry, never static left/right.
+   Tiny entities can fill leftover pockets; large ones are skipped if unsafe. */
+.auth-page--consistent .auth-stage {width:100%;max-width:none;}
+.auth-page--consistent .auth-floating-art {width:100%;height:100%;contain:layout;}
+.auth-float-card--ai {border-color:#c9c5d8;}
+:root[data-theme='dark'] .auth-float-card--ai {border-color:#626073;}
+.auth-float--ai {rotate:-3deg;}
+.auth-float--audit {rotate:2deg;}
+.auth-float--growth {rotate:3deg;}
+.auth-float--automation {rotate:-2deg;}
+.auth-float--communication {rotate:2deg;}
+.auth-float--admissions {rotate:-3deg;}
+.auth-float--hr {rotate:3deg;}
+.auth-float--library {rotate:-2deg;}
+.auth-float--pencil {rotate:-8deg;}
+.auth-float--bell {rotate:7deg;}
+.auth-float--trophy {rotate:-6deg;}
+.auth-float--school {rotate:5deg;}
+/* Art is decorative: never block the form, controls or keyboard focus. */
+.auth-floating-art,.auth-float {pointer-events:none;user-select:none;}
