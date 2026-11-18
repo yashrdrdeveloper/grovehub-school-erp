@@ -42,6 +42,7 @@ export const LoginPage = () => {
             type="email"
             inputMode="email"
             label="Email"
+            placeholder="you@school.edu"
             value={identifier}
             autoComplete="username"
             onChange={(event) => setIdentifier(event.target.value)}
@@ -51,6 +52,7 @@ export const LoginPage = () => {
             <Input
               id="password"
               label="Password"
+              placeholder="Enter your password"
               type={visible ? 'text' : 'password'}
               value={password}
               autoComplete="current-password"
