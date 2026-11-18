@@ -8,7 +8,7 @@ import { Button, Input } from '@Components';
 import { useAuth } from '../core/providers/AuthProvider';
 import { AuthFrame } from './AuthFrame';
 
-const emailPattern = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const LoginPage = () => {
   const navigate = useNavigate();
