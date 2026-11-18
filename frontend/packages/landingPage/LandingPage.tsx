@@ -4,12 +4,12 @@ import {
   ArrowRight, ArrowUpRight, BookOpen, Bus, CalendarDays,
   Check, Clock3, Computer, Download, ExternalLink, FileCheck2, FlaskConical,
   GraduationCap, HeartPulse, Mail, MapPin, Menu, Phone, Presentation,
-  School, ShieldCheck, Sparkles, Trophy, X,
+  School, ShieldCheck, Sparkles, Trophy, Megaphone, Newspaper, Send, CalendarClock, Quote, X,
 } from 'lucide-react';
 
 import { SchoolMonogram } from '@Components';
 
-import { disclosedDocuments, enquiryTypes, facilities, historicDisclosure, photographs, school } from './content';
+import { achievements, disclosedDocuments, enquiryTypes, facilities, historicDisclosure, photographs, school, testimonials, upcomingEvents } from './content';
 
 import './landingPage.css';
 
@@ -50,8 +50,16 @@ const ImageCard = ({
     <img src={src} alt={alt} loading={loading} decoding="async"
       style={{objectPosition:position ?? 'center'}} referrerPolicy="no-referrer"
       onError={event => {
+        const image = event.currentTarget;
         const original = photographs.find(photo => photo.src === src)?.originalSrc;
-        if(original && event.currentTarget.src !== original) event.currentTarget.src = original;
+        if (original && !image.dataset.fallbackAttempted) {
+          image.dataset.fallbackAttempted = 'true';
+          image.src = original;
+          return;
+        }
+        // Avoid infinite onError loops and broken-image alt text on cards.
+        image.style.display = 'none';
+        image.parentElement?.classList.add('rdr-photo--unavailable');
       }} />
     {children}
   </div>
@@ -208,6 +216,84 @@ const EnquiryForm = ({compact=false}:{compact?:boolean}) => {
   );
 };
 
+const StoriesAndUpdates = () => (
+  <section className="rdr-section rdr-container rdr-stories">
+    <div className="rdr-section__split">
+      <Heading eyebrow="STAY CONNECTED" title="What's happening at RDR." description="Celebrating school life, memorable moments and the next opportunities for our community."/>
+      <Link className="rdr-inline-link" to="/gallery">Explore our gallery <ArrowUpRight size={18}/></Link>
+    </div>
+    <div className="rdr-stories__grid">
+      <article className="rdr-stories__featured">
+        <ImageCard src={photographs[1].src} alt={photographs[1].alt} position={photographs[1].position}/>
+        <div className="rdr-stories__featured-caption"><span>FROM OUR ARCHIVES · SCHOOL LIFE</span><h3>Learning beyond the classroom</h3><p>Celebrating expression, confidence and togetherness through school programmes.</p></div>
+      </article>
+      <div className="rdr-stories__side">
+        <div className="rdr-stories__upcoming">
+          <span className="rdr-eyebrow"><CalendarClock size={16}/> SCHOOL CALENDAR</span>
+          <h3>Upcoming events</h3>
+          {upcomingEvents.length ? upcomingEvents.map(event => (
+            <div className="rdr-event" key={event.id}><strong>{event.date}</strong><span>{event.title}</span></div>
+          )) : (
+            <div className="rdr-event-empty">
+              <CalendarDays size={26} strokeWidth={1.5}/>
+              <strong>Good things are on the horizon.</strong>
+              <p>School events and important dates will appear here when the new calendar is announced.</p>
+              <Link to="/resources">School resources <ArrowRight size={15}/></Link>
+            </div>
+          )}
+        </div>
+        <Link className="rdr-stories__admission" to="/admissions#enquiry">
+          <span><Megaphone size={18}/> ADMISSIONS & VISITS</span>
+          <strong>Ready to discover RDR School?</strong>
+          <small>Ask about admissions, classes, transport and visiting the campus.</small>
+          <ArrowUpRight size={21}/>
+        </Link>
+      </div>
+    </div>
+  </section>
+);
+
+const Newsletter = () => {
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+  const [prepared, setPrepared] = useState(false);
+  const address = `mailto:${school.email}?subject=${encodeURIComponent('School news & updates request')}&body=${encodeURIComponent('Please contact me about receiving RDR School news and announcements.\\nEmail: ' + email)}`;
+  const prepare = (event:FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email.trim())) {
+      setError('Enter a valid email address.');
+      setPrepared(false);
+      return;
+    }
+    setError('');
+    setPrepared(true);
+  };
+  return (
+    <section className="rdr-newsletter-wrap">
+      <div className="rdr-container rdr-newsletter">
+        <div className="rdr-newsletter__ornament" aria-hidden="true"><BookOpen size={52} strokeWidth={1}/><Sparkles size={28}/></div>
+        <div><span className="rdr-eyebrow">NOTES FROM OUR SCHOOL</span><h2>Stay in the school loop.</h2><p>School news, celebrations, announcements and helpful updates, all in one place.</p></div>
+        <form onSubmit={prepare} noValidate>
+          <div className="rdr-newsletter__field"><Mail size={20}/><input aria-label="Email for school updates" type="email" autoComplete="email" placeholder="Your email address" value={email} onChange={event=>{setEmail(event.target.value);setPrepared(false);}}/><button type="submit">Continue <ArrowRight size={16}/></button></div>
+          {error && <span className="rdr-newsletter__error" role="alert">{error}</span>}
+          {prepared ? <div className="rdr-newsletter__prepared">Your request is ready, but you're not subscribed yet. <a href={address}>Send an email to RDR <Send size={13}/></a></div> : <small>Updates will be announced by the school. No mailing list subscription is activated yet.</small>}
+        </form>
+      </div>
+    </section>
+  );
+};
+
+const CommunityVoices = () => (
+  <section className="rdr-section rdr-section--wash">
+    <div className="rdr-container">
+      <Heading eyebrow="WORDS FROM OUR COMMUNITY" title="A school that feels like family." description="Reflections shared on RDR School's earlier website."/>
+      <div className="rdr-voices">
+        {testimonials.map(item => <blockquote key={item.author}><Quote size={24}/><p>{item.quote}</p><footer>— {item.author}</footer></blockquote>)}
+      </div>
+    </div>
+  </section>
+);
+
 const HomePage = () => (
   <>
     <section className="rdr-hero rdr-container">
@@ -243,6 +329,14 @@ const HomePage = () => (
         {photographs.slice(1,5).map((photo,index)=><ImageCard key={photo.src} src={photo.src} alt={photo.alt} className={index===0?'rdr-gallery-preview__lead':''}>{<span>{photo.category}</span>}</ImageCard>)}
       </div>
     </section>
+    <section className="rdr-achievements">
+      <div className="rdr-container rdr-achievements__inner">
+        {achievements.map(item => <div key={item.label}><strong>{item.value}</strong><span>{item.label}</span><small>{item.detail}</small></div>)}
+      </div>
+    </section>
+    <StoriesAndUpdates/>
+    <CommunityVoices/>
+    <Newsletter/>
     <section className="rdr-section rdr-section--navy"><div className="rdr-container rdr-manifesto"><span className="rdr-eyebrow">OUR PURPOSE</span><h2>More than lessons.<br/><em>Learning for life.</em></h2><p>We believe education should help young people think critically, care for others and meet challenges with confidence.</p><Link className="rdr-btn rdr-btn--light" to="/academics">Explore academics <ArrowUpRight size={17}/></Link><span className="rdr-manifesto__ornament">✳</span></div></section>
     <section className="rdr-section rdr-container rdr-enquiry-section">
       <div><Heading eyebrow="ADMISSIONS & ENQUIRIES" title="A new chapter starts with a conversation." description="Considering RDR School for your child? Share a few details and take the first step. We'll help you understand the next steps."/><div className="rdr-enquiry-section__illustration"><ImageCard src={photographs[2].src} alt={photographs[2].alt}/></div></div>
@@ -297,17 +391,17 @@ const CampusPage = () => (
     <IntroPage eyebrow="CAMPUS & FACILITIES" title="Spaces for discovery and belonging." description="From learning laboratories to playful outdoor moments, explore the facilities described on the school's original website." image={photographs[2].src}/>
     <section className="rdr-section rdr-container"><Heading eyebrow="FACILITIES" title="Designed for a fuller school day."/>
       <div className="rdr-feature-grid">{facilities.map((x,i)=>{const Icon=facilityIcons[i];return <div className="rdr-feature" key={x.title}>{Icon&&<Icon size={29} strokeWidth={1.5}/>}<h3>{x.title}</h3><p>{x.description}</p></div>;})}</div>
-      <p className="rdr-source-note">Descriptions are adapted from RDR's historical website. Please confirm current facilities and certification validity before publication.</p>
+      <div className="rdr-campus-spotlight"><ImageCard src={photographs[2].src} alt={photographs[2].alt}/><div><span className="rdr-eyebrow">CAMPUS LIFE</span><h3>Spaces to explore, memories to make.</h3><p>From early experiences to senior school, each day brings moments of curiosity, teamwork and discovery.</p><Link className="rdr-inline-link" to="/gallery">See school life <ArrowUpRight size={17}/></Link></div></div>
     </section>
   </>
 );
 
 const GalleryPage = () => (
   <>
-    <IntroPage eyebrow="GALLERY" title="Life at RDR, in moments." description="A curated selection of photographs from the school's original gallery, highlighting student life, celebrations and achievements."/>
+    <IntroPage eyebrow="GALLERY" title="Life at RDR, in moments." description="A photo story of school celebrations, student life and achievements — captured at RDR School."/>
     <section className="rdr-section rdr-container">
       <div className="rdr-gallery-grid">{photographs.map((photo,i)=><figure className={i%5===0?'rdr-gallery-grid__wide':''} key={photo.src}><ImageCard src={photo.src} alt={photo.alt} position={photo.position}/><figcaption><span>{photo.category}</span><strong>{photo.title}</strong></figcaption></figure>)}</div>
-      <p className="rdr-source-note">These photographs are from the legacy RDR School website and may depict past school years. Obtain school permission and image releases as needed before republishing.</p>
+      <p className="rdr-gallery__archive-note">From the RDR School photo archives. <a href="https://rdrschool.com/gallery.html" target="_blank" rel="noreferrer">See the original gallery <ExternalLink size={13}/></a></p>
     </section>
   </>
 );
@@ -318,7 +412,7 @@ const AdmissionsPage = () => (
     <section className="rdr-section rdr-container rdr-admissions-layout">
       <div><Heading eyebrow="HOW TO BEGIN" title="An easier first step." description="The school's historical admission procedure asks families to contact the school office and collect an application. Current eligibility, seat availability and the academic-year schedule should be verified directly."/>
         <div className="rdr-steps">{[['01','Share an enquiry','Tell us what you would like to know.'],['02','Talk to the school','Discuss class availability, visits and requirements.'],['03','Follow the admission process','Get current forms and guidance directly from the school.']].map(([n,t,d])=><div key={n}><span>{n}</span><div><h3>{t}</h3><p>{d}</p></div></div>)}</div>
-        <p className="rdr-source-note">The previous site references older HBSE-based admission rules. This page deliberately does not present them as current CBSE/Haryana requirements.</p>
+        <div className="rdr-admissions__highlight"><Sparkles size={20}/><span>Every great school journey starts with a conversation. Our team is here to guide you through the next step.</span></div>
       </div>
       <EnquiryForm/>
     </section>
