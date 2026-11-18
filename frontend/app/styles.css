@@ -2688,3 +2688,61 @@ body { background: var(--canvas); }
 @media(max-width:600px) {
   .auth-page--consistent .field__hint--error { font-size:11px; }
 }
+
+
+/* Auth illustration composition: six distinct school operations, no repeats.
+   Wide screens get a compact, staggered composition around the clear login card. */
+@media (min-width: 1450px) and (min-height: 750px) {
+  .auth-page--consistent .auth-scene__sheet--left {
+    left: 16%;
+    top: 44%;
+    transform: rotate(-4deg);
+  }
+  .auth-page--consistent .auth-scene__sheet--right {
+    right: 15%;
+    top: 43%;
+    transform: rotate(4deg);
+  }
+  .auth-page--consistent .auth-scene__near {
+    width: 178px;
+    padding: 10px 11px;
+    gap: 9px;
+    border-radius: 11px;
+  }
+  .auth-page--consistent .auth-scene__near--left {
+    right: calc(50% + 263px);
+    top: 56%;
+    transform: rotate(2deg);
+  }
+  .auth-page--consistent .auth-scene__near--right {
+    left: calc(50% + 263px);
+    top: 55%;
+    transform: rotate(-2deg);
+  }
+  .auth-page--consistent .auth-scene__quote {
+    top: 30%;
+    width: 223px;
+  }
+  .auth-page--consistent .auth-scene__features {
+    bottom: 14%;
+    gap: 7px;
+  }
+  .auth-page--consistent .auth-scene__features span {
+    padding: 7px 10px;
+  }
+}
+@media (min-width: 1100px) {
+  .auth-page--consistent .auth-scene__dots {
+    width: 62px;
+    height: 110px;
+    background-size: 18px 18px;
+    opacity: .56;
+  }
+  .auth-page--consistent .auth-scene__squiggle { opacity: .45; }
+  :root[data-theme='dark'] .auth-page--consistent .auth-scene__dots {
+    width: 62px;
+    height: 110px;
+    background-size: 18px 18px;
+    opacity: .52;
+  }
+}
