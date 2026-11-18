@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Cable, ExternalLink, RefreshCw, Unplug } from 'lucide-react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@Components/hooks/query';
 
 import { integrationApi } from '@Business/integrations';
 import { Button, Card, EmptyState, PageHeading, StatusPill } from '@Components';

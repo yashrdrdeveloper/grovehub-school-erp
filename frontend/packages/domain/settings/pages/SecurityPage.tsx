@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { KeyRound, Lock, MonitorSmartphone, ShieldCheck, Trash2 } from 'lucide-react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@Components/hooks/query';
 
 import { authenticationApi } from '@Business/auth';
 import { Button, Card, Input, PageHeading } from '@Components';

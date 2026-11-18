@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { ArrowLeft, FlaskConical, RadioTower, Send } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@Components/hooks/query';
 
 import { integrationApi } from '@Business/integrations';
 import { Button, Card, PageHeading, StatusPill } from '@Components';

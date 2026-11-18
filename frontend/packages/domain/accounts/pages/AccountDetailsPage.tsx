@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { ArrowLeft, MailPlus, ShieldCheck, ShieldOff, UserRoundX } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@Components/hooks/query';
 
 import { accountsApi } from '@Business/accounts';
 import { Button, Card, Input, PageHeading, StatusPill } from '@Components';

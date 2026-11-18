@@ -235,3 +235,5 @@ p { line-height: 1.55; }
 .action-stack .button { justify-content: flex-start; }
 
 .action-json { min-height: 145px; resize: vertical; font-family: ui-monospace, SFMono-Regular, monospace; font-size: 12px; }
+
+@media (max-width: 720px) { .mobile-nav { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
