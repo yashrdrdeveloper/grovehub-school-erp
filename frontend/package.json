@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "test": "jest --passWithNoTests",
     "lint": "eslint .",
-    "check:architecture": "node scripts/check-boundaries.mjs"
+    "check:architecture": "node scripts/check-boundaries.mjs",
+    "assets:school": "node scripts/download-school-images.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
