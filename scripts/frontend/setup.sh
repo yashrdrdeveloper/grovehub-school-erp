@@ -25,5 +25,5 @@ run_pnpm() {
 ensure_tool_dirs
 cd -- "${FRONTEND_DIR}"
 log_info "Installing frontend dependencies with pinned pnpm"
-run_pnpm install --no-frozen-lockfile
+run_pnpm install --frozen-lockfile
 log_info "Frontend dependencies installed"

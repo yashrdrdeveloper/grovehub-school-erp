@@ -39,3 +39,5 @@ Production rollout requires a configured trusted origin, secure cookies over HTT
 ## Design
 
 Login: tenant inferred from `*.prod.groovehub.com`, no organization-code field, compact GrooveHub branding and a single credential form. Workspace: understated green/off-white, small chrome, navigation sidebar on desktop and bottom bar on mobile, user information inside Quick Settings rather than the global header.
+
+Dependencies are pinned in `pnpm-lock.yaml`; setup and CI use `pnpm install --frozen-lockfile`.
