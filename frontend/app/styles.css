@@ -2746,3 +2746,96 @@ body { background: var(--canvas); }
     opacity: .52;
   }
 }
+
+
+/* School auth story v4 — bridge the unused top area with one intentional
+   academic motif. Keep the form prominent and all decorative content inert. */
+.auth-scene__prelude { display:none; }
+@media (min-width: 1100px) and (min-height: 750px) {
+  .auth-page--consistent .auth-scene__prelude {
+    position:absolute;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    top:16%;
+    left:50%;
+    width:360px;
+    transform:translateX(-50%);
+    color:#3d414b;
+  }
+  .auth-scene__prelude-illustration {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:20px;
+    width:300px;
+    height:51px;
+    position:relative;
+  }
+  .auth-scene__prelude-trace {
+    position:absolute;
+    width:185px;
+    border-top:1px dashed #c7b9a5;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    opacity:.8;
+  }
+  .auth-scene__prelude-icon {
+    position:relative;
+    z-index:1;
+    flex:0 0 41px;
+    display:grid;
+    place-items:center;
+    height:41px;
+    width:41px;
+    border:1px solid #dcd4c7;
+    background:#fbfaf7;
+    color:#666a77;
+    border-radius:13px;
+    box-shadow:0 7px 17px rgba(45,40,35,.075), 3px 3px 0 rgba(223,206,182,.4);
+  }
+  .auth-scene__prelude-icon--one { transform:rotate(-8deg) translateY(4px); }
+  .auth-scene__prelude-icon--main {
+    width:52px;
+    height:52px;
+    flex-basis:52px;
+    color:#30415a;
+    background:#eff1f4;
+    border-color:#c9cfd8;
+    box-shadow:0 10px 24px rgba(45,40,35,.1), 4px 4px 0 rgba(231,202,159,.4);
+    border-radius:16px;
+  }
+  .auth-scene__prelude-icon--three { transform:rotate(8deg) translateY(4px); }
+  .auth-scene__prelude p {
+    color:#65656f;
+    margin:1px 0 0;
+    font-size:11px;
+    font-weight:700;
+    line-height:1.5;
+    letter-spacing:.065em;
+    white-space:nowrap;
+  }
+  :root[data-theme='dark'] .auth-page--consistent .auth-scene__prelude { color:#c2c2ce; }
+  :root[data-theme='dark'] .auth-scene__prelude-trace { border-color:#656575; }
+  :root[data-theme='dark'] .auth-scene__prelude-icon {
+    background:#22242e;
+    color:#c2c5d0;
+    border-color:#444756;
+    box-shadow:0 8px 17px rgba(0,0,0,.24),3px 3px 0 rgba(101,103,121,.15);
+  }
+  :root[data-theme='dark'] .auth-scene__prelude-icon--main {
+    background:#303342;
+    color:#e5e6ed;
+    border-color:#5b5f70;
+  }
+  :root[data-theme='dark'] .auth-scene__prelude p { color:#a5a6b7; }
+}
+@media (min-width: 1100px) and (max-height: 749px) {
+  .auth-page--consistent .auth-scene__prelude { display:none; }
+}
+@media (max-width: 1099px) {
+  .auth-page--consistent .auth-scene__prelude { display:none; }
+}
