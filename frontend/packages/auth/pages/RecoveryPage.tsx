@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 import { authenticationApi } from '@Business/auth';
 import { accountsApi } from '@Business/accounts';
-import { Button, Input, SchoolMonogram } from '@Components';
+import { Button, Input } from '@Components';
 
 import { AuthFrame } from './AuthFrame';
 
@@ -64,8 +64,7 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
 
   return (
     <AuthFrame title={settingUp ? "Set password" : "Reset password"}>
-        <div className="auth-panel__school"><SchoolMonogram /> <span>RDR School</span></div>
-        <h1>{settingUp ? 'Set up your account' : 'Choose a new password'}</h1>
+                <h1>{settingUp ? 'Set up your account' : 'Choose a new password'}</h1>
         <p className="muted">
           {settingUp ? 'Complete the invitation to activate your school account.' : 'Your new password will replace the previous one.'}
         </p>
