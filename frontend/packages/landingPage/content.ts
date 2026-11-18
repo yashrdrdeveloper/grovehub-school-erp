@@ -12,7 +12,7 @@ export const school = {
   shortName: 'RDR School',
   address: 'Village Haluhera, P.O. Musepur, District Rewari, Haryana 123401',
   phone: '+91 90500 77550', // Existing website; verify before launch.
-  email: 'rdrvvsshaluhera@gmail.com', // 2023 SARAS document; website differs.
+  email: 'rdrvvssshaluhera@gmail.com', // 2023 SARAS document; website differs.
   affiliation: '531923',
   schoolCode: '41925',
   founded: '2006',
@@ -27,56 +27,56 @@ export const school = {
  */
 export const photographs = [
   {
-    src: '/school-images/slide3.jpg', originalSrc: 'https://www.rdrschool.com/images/slide3.jpg',
+    src: '/school-images/slide3.jpg', originalSrc: 'https://rdrschool.com/images/slide3.jpg',
     title: 'Learning through achievement',
     alt: 'RDR School students with awards and teachers at a school event',
     category: 'Achievements',
     position: 'center 42%',
   },
   {
-    src: '/school-images/gallery-13.jpg', originalSrc: 'https://www.rdrschool.com/images/gallery/13.jpg',
+    src: '/school-images/gallery-13.jpg', originalSrc: 'https://rdrschool.com/images/gallery/13.jpg',
     title: 'The joy of performing',
     alt: 'RDR School students performing a group cultural dance at a school celebration',
     category: 'Culture',
     position: 'center 38%',
   },
   {
-    src: '/school-images/gallery-6.jpg', originalSrc: 'https://www.rdrschool.com/images/gallery/6.jpg',
+    src: '/school-images/gallery-6.jpg', originalSrc: 'https://rdrschool.com/images/gallery/6.jpg',
     title: 'Everyday moments of discovery',
     alt: 'Young RDR School children playing outside at school',
     category: 'Campus Life',
     position: 'center center',
   },
   {
-    src: '/school-images/gallery-10.jpg', originalSrc: 'https://www.rdrschool.com/images/gallery/10.jpg',
+    src: '/school-images/gallery-10.jpg', originalSrc: 'https://rdrschool.com/images/gallery/10.jpg',
     title: 'Confidence in every move',
     alt: 'Students participating in a taekwondo demonstration at an RDR School event',
     category: 'Sports & Activities',
     position: 'center 35%',
   },
   {
-    src: '/school-images/gallery-2.jpg', originalSrc: 'https://rdrschool.com/images/gallery/2.jpg',
+    src: '/school-images/slide5.jpg', originalSrc: 'https://rdrschool.com/images/slide5.jpg',
     title: 'Growing together',
     alt: 'RDR School students smiling together in their school uniforms',
     category: 'Student Life',
     position: 'center center',
   },
   {
-    src: '/school-images/slide2.jpg', originalSrc: 'https://www.rdrschool.com/images/slide2.jpg',
+    src: '/school-images/gallery-11.jpg', originalSrc: 'https://rdrschool.com/images/gallery/11.jpg',
     title: 'Celebrating our traditions',
     alt: 'RDR School students celebrating cultural traditions in costume',
     category: 'Culture',
     position: 'center center',
   },
   {
-    src: '/school-images/gallery-14.jpg', originalSrc: 'https://www.rdrschool.com/images/gallery/14.jpg',
+    src: '/school-images/gallery-4.jpg', originalSrc: 'https://rdrschool.com/images/gallery/4.jpg',
     title: 'A stage for every talent',
     alt: 'Children dancing during an RDR School cultural event',
     category: 'Events',
     position: 'center center',
   },
   {
-    src: '/school-images/gallery-7.jpg', originalSrc: 'https://www.rdrschool.com/images/gallery/7.jpg',
+    src: '/school-images/gallery-7.jpg', originalSrc: 'https://rdrschool.com/images/gallery/7.jpg',
     title: 'Little moments, big milestones',
     alt: 'Students receiving awards on stage at an RDR School ceremony',
     category: 'Achievements',
@@ -137,3 +137,24 @@ export const historicDisclosure = {
   boysToilets: 20,
   inspectionVideo: 'https://youtu.be/pJrIfB_zZPo',
 } as const;
+
+/** Verified on the legacy site; keep historical achievements clearly dated or
+ * qualified until the school provides current records. */
+export const achievements = [
+  { label: 'International Mathematical Olympiad', value: '24', detail: 'Students qualified, reported on the original website' },
+  { label: 'Beyond the classroom', value: 'Sports', detail: 'State-level tennis achievement mentioned on the legacy site' },
+  { label: 'Learning with purpose', value: '2006', detail: 'Year RDR School began serving its community' },
+] as const;
+
+/** Past, approved legacy testimonials. Treat them as archival until the school
+ * obtains current consent and confirms these can be republished. */
+export const testimonials = [
+  { quote: 'RDR gives individual care and attention to each child.', author: 'Devendra Khanna' },
+  { quote: 'My child has shown overall development in all walks of life.', author: 'Mahendra Sharma' },
+  { quote: 'RDR has good infrastructure and sporting facilities.', author: 'Virendra Sharma' },
+] as const;
+
+/** Only publish confirmed future events here. Intentionally empty because
+ * the old site does not provide a verified current school event calendar. */
+export type SchoolEvent = { id:string; title:string; date:string; category:string; description:string };
+export const upcomingEvents: SchoolEvent[] = [];
