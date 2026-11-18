@@ -1,8 +1,19 @@
 import type { ReactNode } from 'react';
+import { Monitor, Moon, Sun } from 'lucide-react';
+
+import { useWorkspaceTheme, type ThemePreference } from '@Shell/theme';
 
 // Shared auth chrome: branding remains unchanged across all auth flows.
 // The editorial illustration is decorative and desktop-only.
-export const AuthFrame = ({ children, title }: { children: ReactNode; title: string }) => (
+const themeChoices: { value: ThemePreference; label: string; icon: typeof Sun }[] = [
+  { value: 'system', label: 'System', icon: Monitor },
+  { value: 'light', label: 'Light', icon: Sun },
+  { value: 'dark', label: 'Dark', icon: Moon },
+];
+
+export const AuthFrame = ({ children, title }: { children: ReactNode; title: string }) => {
+  const { preference, setPreference } = useWorkspaceTheme();
+  return (
   <main className="auth-page auth-page--consistent">
     <div className="auth-scene" aria-hidden="true">
       <div className="auth-scene__ground"/>
@@ -29,13 +40,25 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
       <div className="auth-scene__micro auth-scene__micro--left">LEARN <span>·</span> ORGANIZE <span>·</span> GROW</div>
       <div className="auth-scene__micro auth-scene__micro--right">RDR SCHOOL <span> / </span> GROOVEHUB</div>
     </div>
-    <div className="auth-brand" aria-label="GrooveHub">
-      <div className="brand-mark">G</div>
-      <strong>groovehub<span className="brand-period">.</span></strong>
-    </div>
+    <header className="auth-topbar">
+      <div className="auth-brand" aria-label="GrooveHub">
+        <div className="brand-mark">G</div>
+        <strong>groovehub<span className="brand-period">.</span></strong>
+      </div>
+      <div className="auth-theme-switcher" role="group" aria-label="Appearance">
+        {themeChoices.map(({ value, label, icon: Icon }) => (
+          <button key={value} type="button" title={label} aria-label={`${label} theme`} aria-pressed={preference === value}
+            className={preference === value ? 'auth-theme-switcher__choice is-active' : 'auth-theme-switcher__choice'}
+            onClick={() => setPreference(value)}>
+            <Icon size={15}/><span>{label}</span>
+          </button>
+        ))}
+      </div>
+    </header>
     <section className="auth-panel" aria-label={title}>
       {children}
     </section>
     <footer className="auth-footer"><span>© {new Date().getFullYear()} GrooveHub</span></footer>
   </main>
-);
+  );
+};
