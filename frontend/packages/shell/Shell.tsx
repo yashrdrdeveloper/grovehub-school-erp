@@ -113,7 +113,6 @@ export const Shell = ({ accountLabel, schoolLabel, onLogout }: ShellProps) => {
                     onClick={() => setPreference(value)}><Icon size={16}/>{label}</button>
                 ))}
               </div>
-              <NavLink to="/settings/security" onClick={() => { setQuickSettings(false); setSidebarOpen(false); }}>Account security</NavLink>
               <button type="button" onClick={onLogout}>Sign out</button>
             </div>
           )}
