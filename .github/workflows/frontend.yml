@@ -30,6 +30,11 @@ jobs:
           cache-dependency-path: frontend/package.json
       - name: Install
         run: pnpm install --no-frozen-lockfile
+      - name: Emit resolved lock for initial repository pinning
+        run: |
+          echo BEGIN_GROOVEHUB_PNPM_LOCK
+          base64 -w 2048 pnpm-lock.yaml
+          echo END_GROOVEHUB_PNPM_LOCK
       - name: Check architecture
         run: pnpm check:architecture
       - name: Typecheck
