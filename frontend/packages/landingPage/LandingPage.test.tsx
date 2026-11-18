@@ -11,12 +11,12 @@ describe('RDR public-site quick actions', () => {
   it('opens the admission enquiry in a full-page dialog without losing the homepage', async () => {
     render(<MemoryRouter initialEntries={['/']}><LandingPage/></MemoryRouter>);
     fireEvent.click(screen.getByRole('link',{name:/enquire now/i}));
-    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
-    expect(screen.getByRole('heading',{name:'Enquire at RDR School'})).toBeInTheDocument();
-    expect(screen.getByRole('textbox',{name:'Guardian first name'})).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy());
+    expect(screen.getByRole('heading',{name:'Enquire at RDR School'})).toBeTruthy();
+    expect(screen.getByRole('textbox',{name:'Guardian first name'})).toBeTruthy();
     fireEvent.click(screen.getByRole('button',{name:/close and return to the page/i}));
-    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    expect(screen.getByRole('heading',{name:/where curious minds/i})).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.getByRole('heading',{name:/where curious minds/i})).toBeTruthy();
   });
 
   it('opens historical school leadership information without redirecting to the legacy site', async () => {
@@ -24,15 +24,15 @@ describe('RDR public-site quick actions', () => {
     const director = screen.getAllByRole('link',{name:/director.s message/i})[0];
     expect(director).toBeDefined();
     fireEvent.click(director!);
-    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
-    expect(screen.getByRole('heading',{name:"Director's message"})).toBeInTheDocument();
-    expect(screen.getByText(/education for the whole child/i)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy());
+    expect(screen.getByRole('heading',{name:"Director's message"})).toBeTruthy();
+    expect(screen.getByText(/education for the whole child/i)).toBeTruthy();
   });
 
   it('keeps CBSE public disclosure as a proper route, not a modal', async () => {
     render(<MemoryRouter initialEntries={['/']}><LandingPage/></MemoryRouter>);
     fireEvent.click(screen.getAllByRole('link',{name:/cbse disclosure/i})[0]!);
-    await waitFor(() => expect(screen.getByRole('heading',{name:/mandatory public disclosure/i})).toBeInTheDocument());
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('heading',{name:/mandatory public disclosure/i})).toBeTruthy());
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 });
