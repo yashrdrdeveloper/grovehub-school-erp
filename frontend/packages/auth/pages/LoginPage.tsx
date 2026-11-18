@@ -46,7 +46,6 @@ export const LoginPage = () => {
             autoComplete="username"
             onChange={(event) => setIdentifier(event.target.value)}
             required
-            autoFocus
           />
           <div className="password-field">
             <Input
