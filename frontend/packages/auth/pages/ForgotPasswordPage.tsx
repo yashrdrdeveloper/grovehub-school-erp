@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom';
 import { authenticationApi } from '@Business/auth';
 import { Button, Input } from '@Components';
 
+import { AuthFrame } from './AuthFrame';
+
 export const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
   const [accepted, setAccepted] = useState(false);
@@ -26,8 +28,8 @@ export const ForgotPasswordPage = () => {
   };
 
   return (
-    <main className="auth-page">
-      <section className="auth-panel">
+    <AuthFrame title="Forgot password">
+        <div className="auth-panel__school"><span className="school-emblem">✦</span> RDR School</div>
         <div className="auth-panel__icon"><MailCheck size={23} /></div>
         <h1>Reset your password</h1>
         <p className="muted">We’ll email a recovery link if this address belongs to an eligible account.</p>
@@ -35,13 +37,12 @@ export const ForgotPasswordPage = () => {
           <div className="notice">If the account is eligible, recovery instructions are on their way.</div>
         ) : (
           <form className="auth-form" onSubmit={(event) => void submit(event)}>
-            <Input id="email" label="Work email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+            <Input id="email" label="Email" type="email" inputMode="email" autoComplete="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
             {error ? <p className="form-error" role="alert">{error}</p> : null}
             <Button type="submit" loading={busy} className="button--full">Send reset link</Button>
           </form>
         )}
         <Link className="back-link" to="/login"><ArrowLeft size={16} /> Back to sign in</Link>
-      </section>
-    </main>
+    </AuthFrame>
   );
 };
