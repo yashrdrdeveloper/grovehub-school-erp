@@ -73,12 +73,12 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
           <div className="notice"><CheckCircle2 size={20} /> All set. <Link to="/login">Go to sign in</Link></div>
         ) : verified ? (
           <form className="auth-form" onSubmit={(event) => void submit(event)}>
-            {settingUp ? <Input id="username" label="Username" value={username} onChange={(event) => setUsername(event.target.value)} required /> : null}
+            {settingUp ? <Input id="username" label="Username" placeholder="Choose a username" autoComplete="username" value={username} onChange={(event) => setUsername(event.target.value)} required /> : null}
             <div className="password-field">
-              <Input id="newPassword" label="New password" type={showPassword ? 'text' : 'password'} value={password} minLength={12} autoComplete="new-password" onChange={(event) => setPassword(event.target.value)} required hint="At least 12 characters." />
+              <Input id="newPassword" label="New password" placeholder="Create a secure password" type={showPassword ? 'text' : 'password'} value={password} minLength={12} autoComplete="new-password" onChange={(event) => setPassword(event.target.value)} required hint="At least 12 characters." />
               <button type="button" className="password-toggle" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? 'Hide passwords' : 'Show passwords'}>{showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}</button>
             </div>
-            <Input id="confirmPassword" label="Confirm new password" type={showPassword ? 'text' : 'password'} value={confirmation} minLength={12} autoComplete="new-password" onChange={event => setConfirmation(event.target.value)} required />
+            <Input id="confirmPassword" label="Confirm new password" placeholder="Re-enter your new password" type={showPassword ? 'text' : 'password'} value={confirmation} minLength={12} autoComplete="new-password" onChange={event => setConfirmation(event.target.value)} required />
             {error ? <p className="form-error" role="alert">{error}</p> : null}
             <Button type="submit" loading={busy} className="button--full">{settingUp ? 'Activate account' : 'Reset password'}</Button>
           </form>
