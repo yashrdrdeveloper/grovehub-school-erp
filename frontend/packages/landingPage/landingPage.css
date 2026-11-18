@@ -828,3 +828,18 @@
 .rdr-about-leaders__links strong{font-size:12px}
 .rdr-about-leaders__links small{font-size:10px}
 }
+
+
+/* Direct URLs have meaningful indexable detail, while in-site clicks display
+   short panels without leaving the homepage. */
+.rdr-story-page{display:grid;grid-template-columns:1.2fr .8fr;align-items:start;gap:clamp(30px,7vw,110px)}
+.rdr-story-page h2{font-size:clamp(30px,4vw,54px);line-height:1.15;margin:16px 0}
+.rdr-story-page p{color:#6d7681;font-size:15px;line-height:1.85}
+.rdr-story-page__actions{display:flex;align-items:center;flex-wrap:wrap;gap:22px;margin-top:25px}
+.rdr-story-page__notes{border:1px solid #e9e7de;background:#f9f8f4;border-radius:15px;padding:20px}
+.rdr-story-page__notes>div{display:flex;align-items:center;gap:15px;padding:16px 4px;border-bottom:1px solid #e5e6e2}
+.rdr-story-page__notes>div:last-child{border:0}
+.rdr-story-page__notes span{color:#b19b76;font-size:11px;font-weight:900}
+.rdr-story-page__notes strong{flex:1;font-size:14px}
+.rdr-story-page__notes svg{color:#5e846f}
+@media(max-width:700px){.rdr-story-page{grid-template-columns:1fr;gap:20px}.rdr-story-page h2{font-size:29px}.rdr-story-page p{font-size:13px}}
