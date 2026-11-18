@@ -9,6 +9,7 @@ import (
     "flag"
     "fmt"
     "net/mail"
+    "io"
     "os"
     "strings"
     "time"
@@ -68,7 +69,7 @@ func run() error {
 
     reader := bufio.NewReaderSize(os.Stdin, 512)
     password, err := reader.ReadString('\n')
-    if err != nil && !errors.Is(err, os.ErrClosed) && len(password) == 0 {
+    if err != nil && !errors.Is(err, io.EOF) {
         return errors.New("could not read password from stdin")
     }
     password = strings.TrimSuffix(strings.TrimSuffix(password, "\n"), "\r")
