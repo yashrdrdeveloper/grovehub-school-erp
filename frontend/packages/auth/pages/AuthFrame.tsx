@@ -1,118 +1,76 @@
 import type { ReactNode } from 'react';
-import { BookOpenCheck, GraduationCap, Megaphone, Monitor, Moon, School, Sparkles, Sun, WalletCards, Workflow, ListTodo } from 'lucide-react';
+import { ArrowRight, Monitor, Moon, Sun } from 'lucide-react';
 
 import { SchoolMonogram } from '@Components';
 import { useWorkspaceTheme, type ThemePreference } from '@Shell/theme';
 
-// Shared auth chrome: branding remains unchanged across all auth flows.
-// The editorial illustration is decorative and desktop-only.
 const themeChoices: { value: ThemePreference; label: string; icon: typeof Sun }[] = [
   { value: 'system', label: 'System', icon: Monitor },
   { value: 'light', label: 'Light', icon: Sun },
   { value: 'dark', label: 'Dark', icon: Moon },
 ];
 
+/** The illustrations are decorative product concepts, not live school data. */
+const SchoolProductScene = () => (
+  <div className="auth-product-scene" aria-hidden="true">
+    <div className="auth-product-scene__headline">
+      <span className="auth-product-scene__eyebrow">ONE CONNECTED SCHOOL</span>
+      <p>From first enquiry to every milestone.</p>
+    </div>
+
+    <div className="auth-product-card auth-product-card--crm">
+      <div className="auth-product-card__header">
+        <span className="auth-product-card__symbol">◎</span>
+        <div><strong>Lead CRM</strong><small>Admissions journey</small></div>
+      </div>
+      <div className="auth-product-card__flow">
+        <span>Enquiry</span><ArrowRight size={13}/><span>Admission</span>
+      </div>
+      <div className="auth-product-card__line auth-product-card__line--long"/>
+      <div className="auth-product-card__line auth-product-card__line--short"/>
+    </div>
+
+    <div className="auth-product-card auth-product-card--student">
+      <div className="auth-product-card__header">
+        <span className="auth-product-card__symbol">◉</span>
+        <div><strong>Student Lifecycle 360°</strong><small>Unified student view · UCV</small></div>
+      </div>
+      <div className="auth-product-card__profile">
+        <div className="auth-product-card__avatar"/>
+        <div className="auth-product-card__profile-lines"><i/><i/></div>
+        <span className="auth-product-card__profile-ring"/>
+      </div>
+      <div className="auth-product-card__stages"><span>Academics</span><span>Wellbeing</span><span>Growth</span></div>
+    </div>
+  </div>
+);
+
 export const AuthFrame = ({ children, title }: { children: ReactNode; title: string }) => {
   const { preference, setPreference } = useWorkspaceTheme();
+
   return (
-  <main className="auth-page auth-page--consistent">
-    <div className="auth-scene" aria-hidden="true">
-      <div className="auth-scene__ground"/>
-      <div className="auth-scene__prelude">
-        <div className="auth-scene__prelude-illustration">
-          <span className="auth-scene__prelude-trace"/>
-          <span className="auth-scene__prelude-icon auth-scene__prelude-icon--one"><BookOpenCheck size={19} strokeWidth={1.6}/></span>
-          <span className="auth-scene__prelude-icon auth-scene__prelude-icon--main"><School size={23} strokeWidth={1.55}/></span>
-          <span className="auth-scene__prelude-icon auth-scene__prelude-icon--three"><GraduationCap size={20} strokeWidth={1.6}/></span>
+    <main className="auth-page auth-page--consistent">
+      <SchoolProductScene />
+      <header className="auth-topbar">
+        <div className="auth-brand auth-brand--school" aria-label="RDR School">
+          <SchoolMonogram />
+          <strong>RDR School</strong>
         </div>
-        <p>One connected workspace for every school day.</p>
-      </div>
-      <div className="auth-scene__sheet auth-scene__sheet--left">
-        <div className="auth-scene__sheet-head">
-          <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3.5" width="16" height="17" rx="2.5" stroke="currentColor" strokeWidth="1.5"/><path d="M8 8h8M8 12h3M8 16h3m2-4 1.5 1.5L17 11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          <span>Attendance</span>
-        </div>
-        <div className="auth-scene__sheet-rule"/>
-        <div className="auth-scene__sheet-entry"><span className="auth-scene__sheet-avatar"/><span className="auth-scene__sheet-line"/><span className="auth-scene__sheet-check">✓</span></div>
-        <div className="auth-scene__sheet-entry"><span className="auth-scene__sheet-avatar"/><span className="auth-scene__sheet-line auth-scene__sheet-line--short"/><span className="auth-scene__sheet-check">✓</span></div>
-        <div className="auth-scene__sheet-entry"><span className="auth-scene__sheet-avatar"/><span className="auth-scene__sheet-line"/><span className="auth-scene__sheet-check">✓</span></div>
-      </div>
-      <div className="auth-scene__sheet auth-scene__sheet--right">
-        <div className="auth-scene__sheet-head">
-          <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.5"/><path d="M7 3v4M17 3v4M3 10h18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-          <span>School calendar</span>
-        </div>
-        <div className="auth-scene__sheet-rule"/>
-        <div className="auth-scene__calendar-grid">
-          {Array.from({length: 14}, (_, index) => (
-            <span key={index} className={index === 9 ? 'auth-scene__calendar-day auth-scene__calendar-day--marked' : 'auth-scene__calendar-day'}/>
+        <div className="auth-theme-switcher" role="group" aria-label="Appearance">
+          {themeChoices.map(({ value, label, icon: Icon }) => (
+            <button key={value} type="button" title={label} aria-label={`${label} theme`}
+              aria-pressed={preference === value}
+              className={preference === value ? 'auth-theme-switcher__choice is-active' : 'auth-theme-switcher__choice'}
+              onClick={() => setPreference(value)}>
+              <Icon size={15}/><span>{label}</span>
+            </button>
           ))}
         </div>
-      </div>
-      <div className="auth-scene__dots auth-scene__dots--left"/>
-      <div className="auth-scene__dots auth-scene__dots--right"/>
-      <svg className="auth-scene__squiggle auth-scene__squiggle--left" viewBox="0 0 190 74" fill="none"><path d="M3 49c20 36 39-36 50-22 15 18-16 40 6 36 22-5 22-51 43-42 19 9 17 47 42 29 19-13 26-16 43-12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
-      <svg className="auth-scene__squiggle auth-scene__squiggle--right" viewBox="0 0 170 64" fill="none"><path d="M3 40c19 27 32-24 49-21 15 3-1 31 15 31 20 0 25-46 47-38 16 6 9 41 29 32 8-4 16-9 24-6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
-      <div className="auth-scene__orbit auth-scene__orbit--one"/>
-      <div className="auth-scene__orbit auth-scene__orbit--two"/>
-      <div className="auth-scene__badge auth-scene__badge--calendar">
-        <svg viewBox="0 0 50 50" fill="none" aria-hidden="true"><rect x="8" y="11" width="34" height="31" rx="4" stroke="currentColor" strokeWidth="1.6"/><path d="M8 20h34M17 7v9M33 7v9M17 28h5M28 28h5M17 35h5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
-      </div>
-      <div className="auth-scene__badge auth-scene__badge--book">
-        <svg viewBox="0 0 58 48" fill="none" aria-hidden="true"><path d="M29 40c-8-6-17-7-25-5V8c9-2 18 0 25 6 8-6 17-8 25-6v27c-8-2-17-1-25 5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/><path d="M29 14v26M11 16c5-1 9 0 13 2M35 18c5-2 9-3 13-2M11 23c5-1 9 0 13 2M35 25c5-2 9-3 13-2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
-      </div>
-      <div className="auth-scene__badge auth-scene__badge--cap">
-        <svg viewBox="0 0 58 50" fill="none" aria-hidden="true"><path d="M5 21 29 10l24 11-24 11L5 21Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/><path d="M15 26v11c10 8 20 8 29 0V26M53 21v19" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/><circle cx="53" cy="43" r="3" fill="currentColor"/></svg>
-      </div>
-      <div className="auth-scene__badge auth-scene__badge--pencil">
-        <svg viewBox="0 0 60 60" fill="none" aria-hidden="true"><path d="m12 44 4-14L42 4l14 14-26 26-14 4-4-4Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/><path d="m35 11 14 14M16 30l14 14M12 44l4 4" stroke="currentColor" strokeWidth="1.5"/></svg>
-      </div>
-      <svg className="auth-scene__paperplane" viewBox="0 0 120 75" fill="none" aria-hidden="true">
-        <path d="m6 31 101-27-36 61-17-23L6 31Zm48 11 53-38-34 43" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-        <path d="M5 62c15-11 24-6 35-11" stroke="currentColor" strokeWidth="1.3" strokeDasharray="3 6" strokeLinecap="round"/>
-      </svg>
-      <div className="auth-scene__spark auth-scene__spark--left">✳</div>
-      <div className="auth-scene__spark auth-scene__spark--right">✧</div>
-      <div className="auth-scene__near auth-scene__near--left">
-        <div className="auth-scene__near-icon"><ListTodo size={17}/></div>
-        <div><strong>Tasks</strong><span>Stay on top of daily work.</span></div>
-      </div>
-      <div className="auth-scene__near auth-scene__near--right">
-        <div className="auth-scene__near-icon"><WalletCards size={17}/></div>
-        <div><strong>Finance & fees</strong><span>Keep finances organized.</span></div>
-      </div>
-      <div className="auth-scene__quote">
-        <span className="auth-scene__quote-mark">“</span>
-        <p>Everything your school needs, in one calm workspace.</p>
-        <span className="auth-scene__quote-rule"/>
-      </div>
-      <div className="auth-scene__features">
-        <span><Megaphone size={14}/> Campaigns</span>
-        <span><Workflow size={14}/> Automation</span>
-        <span><Sparkles size={14}/> AI assistance</span>
-      </div>
-      <div className="auth-scene__micro auth-scene__micro--left">LEARN <span>·</span> ORGANIZE <span>·</span> GROW</div>
-      <div className="auth-scene__micro auth-scene__micro--right">RDR SCHOOL <span> / </span> GROOVEHUB</div>
-    </div>
-    <header className="auth-topbar">
-      <div className="auth-brand auth-brand--school" aria-label="RDR School">
-        <SchoolMonogram />
-        <strong>RDR School</strong>
-      </div>
-      <div className="auth-theme-switcher" role="group" aria-label="Appearance">
-        {themeChoices.map(({ value, label, icon: Icon }) => (
-          <button key={value} type="button" title={label} aria-label={`${label} theme`} aria-pressed={preference === value}
-            className={preference === value ? 'auth-theme-switcher__choice is-active' : 'auth-theme-switcher__choice'}
-            onClick={() => setPreference(value)}>
-            <Icon size={15}/><span>{label}</span>
-          </button>
-        ))}
-      </div>
-    </header>
-    <section className="auth-panel" aria-label={title}>
-      {children}
-    </section>
-    <footer className="auth-footer"><span>© {new Date().getFullYear()} GrooveHub</span></footer>
-  </main>
+      </header>
+      <section className="auth-panel" aria-label={title}>
+        {children}
+      </section>
+      <footer className="auth-footer"><span>© {new Date().getFullYear()} GrooveHub</span></footer>
+    </main>
   );
 };
