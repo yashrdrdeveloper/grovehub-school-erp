@@ -3078,3 +3078,60 @@ body { background: var(--canvas); }
   .auth-page--consistent .auth-scene__sheet--left {left:4%;}
   .auth-page--consistent .auth-scene__sheet--right {right:4%;}
 }
+
+
+/* Responsive auth artwork: progressive disclosure, not scaled desktop clutter.
+   1400–1799px (MacBook Air): only CRM and Student 360 cards.
+   1024–1399px (iPad/laptop): focused login without floating artwork.
+   <=600px: existing unboxed phone form. */
+.auth-page--consistent .auth-scene__prelude { display:none; }
+@media (min-width:1400px) and (max-width:1799px) {
+  .auth-page--consistent .auth-scene__badge,
+  .auth-page--consistent .auth-scene__near,
+  .auth-page--consistent .auth-scene__quote,
+  .auth-page--consistent .auth-scene__features,
+  .auth-page--consistent .auth-scene__micro,
+  .auth-page--consistent .auth-scene__dots,
+  .auth-page--consistent .auth-scene__squiggle,
+  .auth-page--consistent .auth-scene__orbit,
+  .auth-page--consistent .auth-scene__paperplane,
+  .auth-page--consistent .auth-scene__spark,
+  .auth-page--consistent .auth-scene__ground { display:none; }
+
+  .auth-page--consistent .auth-scene__sheet--left {
+    left:max(32px,calc(50% - 495px));
+    right:auto;
+    top:45%;
+    transform:rotate(-3deg);
+  }
+  .auth-page--consistent .auth-scene__sheet--right {
+    right:max(32px,calc(50% - 495px));
+    left:auto;
+    top:45%;
+    transform:rotate(3deg);
+  }
+  .auth-page--consistent .auth-scene__sheet {
+    opacity:.95;
+    box-shadow:0 13px 32px rgba(30,30,35,.09);
+  }
+  :root[data-theme='dark'] .auth-page--consistent .auth-scene__sheet {
+    box-shadow:0 14px 34px rgba(0,0,0,.24);
+  }
+}
+@media (min-width:601px) and (max-width:1399px) {
+  .auth-page--consistent .auth-scene,
+  .auth-page--consistent .auth-product-scene { display:none; }
+  .auth-page--consistent .auth-panel { transform:none; }
+  .auth-page--consistent { overflow-x:hidden; }
+}
+/* On short windows, prioritize the actual form over secondary cards. */
+@media (max-height:700px) {
+  .auth-page--consistent .auth-scene,
+  .auth-page--consistent .auth-product-scene { display:none; }
+  .auth-page--consistent .auth-panel { transform:none; }
+}
+/* Prevent any illustration from appearing when phone width overrides apply. */
+@media (max-width:600px) {
+  .auth-page--consistent .auth-scene,
+  .auth-page--consistent .auth-product-scene { display:none; }
+}
