@@ -87,3 +87,53 @@ pnpm dev
 
 Known limitation: source website imagery has not been independently approved
 for republishing; current disclosure documents and Lead CRM API are not available.
+
+## Responsive navigation and accessibility
+
+- The homepage prioritizes enquiry, telephone, directions, CBSE information,
+  history, leadership, academics, campus and gallery.
+- On mobile, long marketing sections are omitted **from the homepage view**.
+  Public information remains available via dedicated URLs or information sheets.
+- Clicking a public navigation destination intercepts the same-origin link and
+  opens a full-screen `PublicSheet` (Radix Dialog, focus-trapped, Escape and X
+  close, background scroll locked, bottom-up motion).
+- The URL retains the target path and browser Back dismisses the sheet. Opening
+  the same URL directly renders a standalone public page for sharing and SEO.
+- `/mandatory-public-disclosure` intentionally remains a standalone HTML
+  disclosure route; it does not open in a marketing panel.
+- Director, principal, history and philosophy each have dedicated accessible
+  URLs; in-site links open visual summaries. The legacy leadership titles
+  are not treated as verified current office holders.
+- No published future events = no fabricated upcoming-event date block.
+  Automatic newsletter opt-in is hidden until a real service exists.
+- Enquiry form fields use unique IDs so a sheet and background page never share
+  label targets. The page behind the sheet is not scrollable; the modal body
+  can scroll on small viewports to keep fields usable.
+
+## SEO
+
+After Vite builds, `scripts/prerender-public-pages.mjs` creates static,
+crawlable HTML entries for all thirteen public URLs, including metadata,
+canonical links, OpenGraph, Twitter cards, schema.org JSON-LD, a sitemap and
+robots rules excluding the private dashboard/auth paths.
+
+```bash
+cd frontend
+pnpm build
+ls dist/about/director/index.html
+ls dist/mandatory-public-disclosure/index.html
+ls dist/sitemap.xml dist/robots.txt
+```
+
+This generates HTML snapshots and runs a client-side SPA over them. It is
+**not full server-side React rendering**; it does however provide route-specific
+metadata and informative HTML for direct links. Verify production hosting
+serves the generated HTML paths instead of rewriting every request to the
+single generic `dist/index.html`.
+
+## Verification
+
+GitHub CI runs dependency-boundary checks, TypeScript, Jest interaction tests,
+a production build, and assertions that SEO files exist. The tests cover
+navigation, enquiry-field validation, honest email handoff, and closing the
+mobile navigation sheet.
