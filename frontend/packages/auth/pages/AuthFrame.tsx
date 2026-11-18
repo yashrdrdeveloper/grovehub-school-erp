@@ -1,7 +1,9 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import {
   ArrowRight, BookOpen, CalendarDays, GraduationCap, ListTodo, Monitor,
-  Moon, Sparkles, Sun, UsersRound, WalletCards,
+  Moon, Sparkles, Sun, UsersRound, WalletCards, BrainCircuit, ClipboardCheck,
+  TrendingUp, Workflow, MessageSquareText, UserRoundPlus, Users, LibraryBig,
+  Pencil, BellRing, Trophy, School,
 } from 'lucide-react';
 
 import { SchoolMonogram } from '@Components';
@@ -20,25 +22,25 @@ const themeChoices: { value: ThemePreference; label: string; icon: typeof Sun }[
 ];
 
 const artworkIds: ArtId[] = [
-  'crm', 'student', 'tasks', 'finance', 'quote',
-  'calendar', 'book', 'squiggle', 'motto',
+  'crm', 'student', 'tasks', 'finance', 'ai', 'audit', 'growth',
+  'automation', 'communication', 'admissions', 'hr', 'library',
+  'quote', 'calendar', 'book', 'pencil', 'bell', 'trophy', 'school',
+  'squiggle', 'motto',
 ];
 
 /** Decorative objects are packed into unused measured space, never on the form. */
 const FloatingSchoolArtwork = ({
   register,
   placements,
-  editorial,
 }: {
   register: (id: ArtId, node: HTMLDivElement | null) => void;
   placements: Partial<Record<ArtId, ArtPlacement>>;
-  editorial: boolean;
 }) => {
   const item = (id: ArtId, extraClass: string, children: ReactNode) => {
     const placement = placements[id];
-    const style: CSSProperties | undefined = editorial
-      ? { visibility: 'visible' }
-      : placement ? { left: placement.x, top: placement.y, visibility: 'visible' } : undefined;
+    const style: CSSProperties | undefined = placement
+      ? { left: placement.x, top: placement.y, visibility: 'visible' }
+      : undefined;
     return (
       <div
         key={id}
@@ -82,6 +84,30 @@ const FloatingSchoolArtwork = ({
       {item('finance', 'auth-float-card auth-float-card--small',
         <><WalletCards size={17}/><span><strong>Finance &amp; Fees</strong><small>School finances</small></span></>,
       )}
+      {item('ai', 'auth-float-card auth-float-card--small auth-float-card--ai',
+        <><BrainCircuit size={17}/><span><strong>AI Assistance</strong><small>Smarter school workflows</small></span></>,
+      )}
+      {item('audit', 'auth-float-card auth-float-card--small',
+        <><ClipboardCheck size={17}/><span><strong>Audit & Compliance</strong><small>Always ready</small></span></>,
+      )}
+      {item('growth', 'auth-float-card auth-float-card--small',
+        <><TrendingUp size={17}/><span><strong>Learn & Grow</strong><small>Student progress</small></span></>,
+      )}
+      {item('automation', 'auth-float-card auth-float-card--small',
+        <><Workflow size={17}/><span><strong>Automation</strong><small>Less repetitive work</small></span></>,
+      )}
+      {item('communication', 'auth-float-card auth-float-card--small',
+        <><MessageSquareText size={17}/><span><strong>Communication</strong><small>School connections</small></span></>,
+      )}
+      {item('admissions', 'auth-float-card auth-float-card--small',
+        <><UserRoundPlus size={17}/><span><strong>Admissions</strong><small>Every first step</small></span></>,
+      )}
+      {item('hr', 'auth-float-card auth-float-card--small',
+        <><Users size={17}/><span><strong>People & HR</strong><small>Teams together</small></span></>,
+      )}
+      {item('library', 'auth-float-card auth-float-card--small',
+        <><LibraryBig size={17}/><span><strong>School Library</strong><small>Knowledge organized</small></span></>,
+      )}
       {item('quote', 'auth-float-quote',
         <>“Everything your school needs, in one calm workspace.”</>,
       )}
@@ -90,6 +116,18 @@ const FloatingSchoolArtwork = ({
       )}
       {item('book', 'auth-float-doodle',
         <BookOpen size={24} strokeWidth={1.35}/>,
+      )}
+      {item('pencil', 'auth-float-doodle',
+        <Pencil size={24} strokeWidth={1.35}/>,
+      )}
+      {item('bell', 'auth-float-doodle',
+        <BellRing size={24} strokeWidth={1.35}/>,
+      )}
+      {item('trophy', 'auth-float-doodle',
+        <Trophy size={24} strokeWidth={1.35}/>,
+      )}
+      {item('school', 'auth-float-doodle',
+        <School size={24} strokeWidth={1.35}/>,
       )}
       {item('squiggle', 'auth-float-doodle auth-float-doodle--line',
         <svg viewBox="0 0 140 45" fill="none"><path d="M2 30c16 25 28-30 44-11 12 16 0 29 19 22 22-10 22-43 42-24 12 13 18 19 31 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
@@ -108,7 +146,6 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
   const itemRefs = useRef<Partial<Record<ArtId, HTMLDivElement>>>({});
   const seedRef = useRef(Math.floor(Math.random() * 4294967295));
   const [placements, setPlacements] = useState<Partial<Record<ArtId, ArtPlacement>>>({});
-  const [editorial, setEditorial] = useState(false);
 
   const register = (id: ArtId, node: HTMLDivElement | null) => {
     if (node) itemRefs.current[id] = node;
@@ -126,9 +163,6 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
       frame = window.requestAnimationFrame(() => {
         const stageBounds = stage.getBoundingClientRect();
         const formBounds = panel.getBoundingClientRect();
-        const isEditorial = stageBounds.width >= 1220 && stageBounds.height >= 650;
-        setEditorial(previous => previous === isEditorial ? previous : isEditorial);
-        if (isEditorial) return;
         const boxes = artworkIds.flatMap(id => {
           const node = itemRefs.current[id];
           return node ? [{ id, width: node.offsetWidth, height: node.offsetHeight }] : [];
@@ -181,8 +215,8 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
           ))}
         </div>
       </header>
-      <div ref={stageRef} className={editorial ? 'auth-stage auth-stage--editorial' : 'auth-stage'}>
-        <FloatingSchoolArtwork register={register} placements={placements} editorial={editorial}/>
+      <div ref={stageRef} className="auth-stage">
+        <FloatingSchoolArtwork register={register} placements={placements}/>
         <section ref={panelRef} className="auth-panel" aria-label={title}>{children}</section>
       </div>
       <footer className="auth-footer"><span>© {new Date().getFullYear()} GrooveHub</span></footer>
