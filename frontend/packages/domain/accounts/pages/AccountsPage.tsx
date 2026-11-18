@@ -1,7 +1,8 @@
 import { useMemo, useState, type FormEvent } from 'react';
-import { Plus, RefreshCw, Search, UserRound } from 'lucide-react';
+import { ArrowUpRight, Plus, RefreshCw, Search, UserRound } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
+import { Link } from 'react-router-dom';
 
 import { accountsApi, type CreateAccount } from '@Business/accounts';
 import type { Account } from '@Business/auth';
@@ -20,7 +21,7 @@ export const AccountsPage = () => {
   const accounts = useQuery({
     queryKey: ['accounts', text],
     queryFn: () => accountsApi.search({
-      ...(text.trim() ? { searchTerms: [text.trim()] } : {}),
+      ...(text.trim() ? { searchText: text.trim() } : {}),
       pageInfo: { rows: 50 },
     }),
   });
@@ -43,7 +44,7 @@ export const AccountsPage = () => {
       cell: ({ row }) => (
         <div className="member-cell">
           <span className="member-avatar"><UserRound size={16} /></span>
-          <span><strong>{row.original.username ?? row.original.email.split('@')[0]}</strong><small>{row.original.email}</small></span>
+          <span><strong><Link to={`/accounts/${row.original.accountId}`}>{row.original.username ?? row.original.email.split('@')[0]}</Link></strong><small>{row.original.email}</small></span>
         </div>
       ),
     },

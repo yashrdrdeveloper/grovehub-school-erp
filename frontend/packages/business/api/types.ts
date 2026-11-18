@@ -1,22 +1,14 @@
-export interface ApiMeta {
-  requestId?: string;
-  [key: string]: unknown;
-}
-
 export interface ApiSuccess<T> {
   success: true;
   data: T;
-  meta?: ApiMeta;
 }
 
 export interface ApiErrorBody {
   success: false;
-  error: {
-    code: string;
-    message: string;
-    metadata?: Record<string, unknown>;
-  };
-  meta?: ApiMeta;
+  errorCode: string;
+  errorMessage: string;
+  httpErrorCode: number;
+  errorMetaData?: Record<string, unknown>;
 }
 
 export class ApiError extends Error {

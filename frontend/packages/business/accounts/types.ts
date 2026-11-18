@@ -13,9 +13,9 @@ export interface CreateAccount {
 }
 
 export interface SearchRequest {
-  searchTerms?: string[];
+  searchText?: string;
   filters?: Array<{ field: string; operator: string; values: string[] }>;
-  sort?: { field: string; direction: 'ASC' | 'DESC' };
+  sort?: Array<{ field: string; direction: 'ASC' | 'DESC' }>;
   pageInfo?: { rows: number; cursor?: string };
 }
 

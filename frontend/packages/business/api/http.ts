@@ -38,9 +38,9 @@ export const apiRequest = async <T>(
     const failure = payload as ApiErrorBody | undefined;
     throw new ApiError(
       response.status,
-      failure?.error?.code ?? 'HTTP_ERROR',
-      failure?.error?.message ?? `Request failed (${response.status})`,
-      failure?.error?.metadata,
+      failure?.errorCode ?? 'HTTP_ERROR',
+      failure?.errorMessage ?? `Request failed (${response.status})`,
+      failure?.errorMetaData,
     );
   }
 
