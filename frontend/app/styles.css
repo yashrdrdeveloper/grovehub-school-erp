@@ -225,3 +225,11 @@ p { line-height: 1.55; }
   .card { padding: 17px; }
   .metric-card { padding: 13px; }
 }
+
+.back-link--left { justify-content: flex-start; margin-top: 0; }
+.details-list { margin: 0; }
+.details-list > div { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.details-list dt { font-size: 11px; color: var(--muted); }
+.details-list dd { margin: 0; font-size: 12px; max-width: 65%; overflow-wrap: anywhere; text-align: right; }
+.action-stack { display: flex; flex-direction: column; gap: 12px; align-items: stretch; }
+.action-stack .button { justify-content: flex-start; }

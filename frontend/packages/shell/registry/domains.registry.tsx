@@ -3,7 +3,7 @@ import {
   LoginPage,
   RecoveryPage,
 } from '@Domain/auth';
-import { AccountsPage } from '@Domain/accounts';
+import { AccountDetailsPage, AccountsPage } from '@Domain/accounts';
 import { DashboardPage } from '@Domain/dashboard';
 import { IntegrationsPage } from '@Domain/integrations';
 import { SecurityPage } from '@Domain/settings';
@@ -20,6 +20,7 @@ export const publicRoutes = [
 export const workspaceRoutes = [
   { path: '/dashboard', element: <DashboardPage /> },
   { path: '/accounts', element: <AccountsPage /> },
+  { path: '/accounts/:accountId', element: <AccountDetailsPage /> },
   { path: '/integrations', element: <IntegrationsPage /> },
   { path: '/settings/security', element: <SecurityPage /> },
 ] as const;
