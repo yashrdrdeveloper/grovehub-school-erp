@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Monitor, Moon, Sun } from 'lucide-react';
 
+import { SchoolMonogram } from '@Components';
 import { useWorkspaceTheme, type ThemePreference } from '@Shell/theme';
 
 // Shared auth chrome: branding remains unchanged across all auth flows.
@@ -41,9 +42,9 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
       <div className="auth-scene__micro auth-scene__micro--right">RDR SCHOOL <span> / </span> GROOVEHUB</div>
     </div>
     <header className="auth-topbar">
-      <div className="auth-brand" aria-label="GrooveHub">
-        <div className="brand-mark">G</div>
-        <strong>groovehub<span className="brand-period">.</span></strong>
+      <div className="auth-brand auth-brand--school" aria-label="RDR School">
+        <SchoolMonogram />
+        <strong>RDR School</strong>
       </div>
       <div className="auth-theme-switcher" role="group" aria-label="Appearance">
         {themeChoices.map(({ value, label, icon: Icon }) => (
