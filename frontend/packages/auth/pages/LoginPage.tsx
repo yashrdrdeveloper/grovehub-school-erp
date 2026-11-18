@@ -3,7 +3,7 @@ import { Eye, EyeOff, LockKeyhole } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { ApiError } from '@Business/api';
-import { Button, Input } from '@Components';
+import { Button, Input, SchoolMonogram } from '@Components';
 
 import { useAuth } from '../core/providers/AuthProvider';
 import { AuthFrame } from './AuthFrame';
@@ -33,7 +33,7 @@ export const LoginPage = () => {
 
   return (
     <AuthFrame title="Sign in">
-        <div className="auth-panel__school"><span className="school-emblem">✦</span> RDR School</div>
+        <div className="auth-panel__school"><SchoolMonogram /> <span>RDR School</span></div>
         <h1>Sign in</h1>
         <p className="muted">Enter your school account credentials.</p>
         <form onSubmit={(event) => void submit(event)} className="auth-form">
