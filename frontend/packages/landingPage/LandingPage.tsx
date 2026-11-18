@@ -324,12 +324,17 @@ const HomePage = () => (
       </div>
       <PhotoCollage/>
     </section>
+    <nav className="rdr-mobile-shortcuts rdr-container" aria-label="Popular school links">
+      <Link to="/admissions#enquiry"><GraduationCap size={18}/> Admissions <ArrowUpRight size={14}/></Link>
+      <Link to="/campus"><School size={18}/> Campus <ArrowUpRight size={14}/></Link>
+      <Link to="/mandatory-public-disclosure"><ShieldCheck size={18}/> CBSE <ArrowUpRight size={14}/></Link>
+    </nav>
     <section className="rdr-ribbon"><div className="rdr-container rdr-ribbon__inner"><span>ROOTED IN VALUES</span><i>✳</i><span>GROWING THROUGH LEARNING</span><i>✳</i><span>TOGETHER AS A COMMUNITY</span></div></section>
-    <section className="rdr-section rdr-container rdr-intro">
+    <section className="rdr-section rdr-container rdr-intro rdr-home-extended">
       <div className="rdr-intro__text"><Heading eyebrow="WELCOME TO RDR" title="A place to belong. A chance to become." description="Established in 2006 in Haluhera, our school has long served families from Rewari and surrounding villages. We aim to nurture students academically, morally and socially."/><Link to="/about" className="rdr-inline-link">Discover our story <ArrowUpRight size={18}/></Link></div>
       <div className="rdr-intro__photo"><ImageCard src={photographs[4].src} alt={photographs[4].alt}/><div className="rdr-intro__badge"><span>Since</span><strong>2006</strong><small>Committed to learning</small></div></div>
     </section>
-    <section className="rdr-section rdr-section--wash">
+    <section className="rdr-section rdr-section--wash rdr-home-facilities">
       <div className="rdr-container">
         <Heading eyebrow="EXPERIENCE RDR" title="Every day offers something new." description="The spaces, experiences and guidance that help young people learn, explore and grow."/>
         <div className="rdr-feature-grid">
@@ -341,21 +346,24 @@ const HomePage = () => (
         <Link className="rdr-inline-link" to="/campus">Explore the campus <ArrowUpRight size={18}/></Link>
       </div>
     </section>
-    <section className="rdr-section rdr-container">
+    <section className="rdr-section rdr-container rdr-home-gallery">
       <div className="rdr-section__split"><Heading eyebrow="A SCHOOL FULL OF LIFE" title="The moments that make us." description="Real snapshots from the original RDR School photo gallery — celebrating creativity, achievements and friendship."/><Link to="/gallery" className="rdr-inline-link">See the gallery <ArrowUpRight size={18}/></Link></div>
       <div className="rdr-gallery-preview">
         {photographs.slice(1,5).map((photo,index)=><ImageCard key={photo.src} src={photo.src} alt={photo.alt} className={index===0?'rdr-gallery-preview__lead':''}>{<span>{photo.category}</span>}</ImageCard>)}
       </div>
     </section>
-    <section className="rdr-achievements">
+    <section className="rdr-achievements rdr-home-extended">
       <div className="rdr-container rdr-achievements__inner">
         {achievements.map(item => <div key={item.label}><strong>{item.value}</strong><span>{item.label}</span><small>{item.detail}</small></div>)}
       </div>
     </section>
-    <StoriesAndUpdates/>
-    <CommunityVoices/>
-    <Newsletter/>
-    <section className="rdr-section rdr-section--navy"><div className="rdr-container rdr-manifesto"><span className="rdr-eyebrow">OUR PURPOSE</span><h2>More than lessons.<br/><em>Learning for life.</em></h2><p>We believe education should help young people think critically, care for others and meet challenges with confidence.</p><Link className="rdr-btn rdr-btn--light" to="/academics">Explore academics <ArrowUpRight size={17}/></Link><span className="rdr-manifesto__ornament">✳</span></div></section>
+    <div className="rdr-home-updates"><StoriesAndUpdates/></div>
+    <div className="rdr-home-extended"><CommunityVoices/><Newsletter/></div>
+    <section className="rdr-section rdr-section--navy rdr-home-extended"><div className="rdr-container rdr-manifesto"><span className="rdr-eyebrow">OUR PURPOSE</span><h2>More than lessons.<br/><em>Learning for life.</em></h2><p>We believe education should help young people think critically, care for others and meet challenges with confidence.</p><Link className="rdr-btn rdr-btn--light" to="/academics">Explore academics <ArrowUpRight size={17}/></Link><span className="rdr-manifesto__ornament">✳</span></div></section>
+    <section className="rdr-mobile-admissions rdr-container">
+      <div><span className="rdr-eyebrow">YOUR NEXT STEP</span><h2>Discover a school where they can thrive.</h2><p>Admissions, campus visits, fees or transport—our team can help.</p></div>
+      <Link className="rdr-btn rdr-btn--solid" to="/admissions#enquiry">Start an enquiry <ArrowRight size={17}/></Link>
+    </section>
     <section className="rdr-section rdr-container rdr-enquiry-section">
       <div><Heading eyebrow="ADMISSIONS & ENQUIRIES" title="A new chapter starts with a conversation." description="Considering RDR School for your child? Share a few details and take the first step. We'll help you understand the next steps."/><div className="rdr-enquiry-section__illustration"><ImageCard src={photographs[2].src} alt={photographs[2].alt}/></div></div>
       <EnquiryForm compact/>
