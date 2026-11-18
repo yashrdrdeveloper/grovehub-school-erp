@@ -1172,3 +1172,170 @@ body { background: var(--canvas); }
 .school-dashboard .dashboard-panel__chevron { opacity: .35; }
 .school-dashboard .dashboard-panel__empty { min-height: 90px; }
 .school-dashboard .dashboard-panel__footer { font-style: normal; }
+
+
+
+/* Reference-inspired workspace palette (Nov 18 screenshots): monochrome UI,
+   deliberate separation, with restrained chart-like accent colors. */
+:root {
+  --canvas: #fafafa;
+  --surface: #ffffff;
+  --surface-subtle: #f5f5f7;
+  --ink: #3e4050;
+  --ink-strong: #11111c;
+  --muted: #737584;
+  --border: #e9e9ed;
+  --accent: #494b72;
+  --accent-hover: #343652;
+  --accent-pale: #efeff5;
+  --hero-start: #f7f7fa;
+  --hero-end: #ffffff;
+  --shadow: 0 2px 12px rgba(19,19,35,.025);
+}
+:root[data-theme='dark'] {
+  --canvas: #0e0e16;
+  --surface: #12121c;
+  --surface-subtle: #1a1a27;
+  --ink: #d0d0dc;
+  --ink-strong: #fbfbff;
+  --muted: #9697ac;
+  --border: #252534;
+  --accent: #a0a9ff;
+  --accent-hover: #c4caff;
+  --accent-pale: #26263d;
+  --hero-start: #161622;
+  --hero-end: #1a1a28;
+  --shadow: none;
+}
+:root .shell, :root .shell__content { background: var(--canvas); }
+:root .sidebar { background: var(--surface); border-right: 1px solid var(--border); }
+:root .topbar { background: var(--surface); border-bottom: 1px solid var(--border); box-shadow: none; }
+:root .sidebar__school { background: var(--surface-subtle); border-color: var(--border); }
+:root .school-emblem { background: var(--surface); color: var(--ink-strong); border-color: var(--border); }
+:root .nav-item--active { color: var(--ink-strong); background: var(--surface-subtle); }
+:root .brand-mark, :root .button--primary { background: #171720; color: #fff; }
+:root .button--primary:hover { background: #323244; color: #fff; }
+:root .brand-period { color: #ed399d; }
+:root[data-theme='dark'] .brand-mark,
+:root[data-theme='dark'] .button--primary { background: #f5f5fa; color: #12121c; }
+:root[data-theme='dark'] .button--primary:hover { background: #d8d9ee; color: #12121c; }
+:root .dashboard-welcome h1 span { color: #ef399d; }
+:root .dashboard-kicker { color: var(--muted); }
+:root .dashboard-banner {
+  min-height: 0;
+  padding: 18px 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  box-shadow: none;
+  border-radius: 12px;
+}
+:root .dashboard-banner::before, :root .dashboard-banner::after { content: none; }
+:root .dashboard-banner__symbol {
+  flex-basis: 36px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  color: #e23899;
+  background: #fcebf5;
+  border: none;
+}
+:root[data-theme='dark'] .dashboard-banner__symbol { color: #ff67b8; background: #39243d; }
+:root .dashboard-banner__copy strong { color: var(--ink-strong); font-size: 14px; letter-spacing: -.02em; }
+:root .dashboard-banner__copy span { color: var(--muted); font-size: 12px; }
+:root .school-dashboard { gap: 24px; }
+:root .metric-grid { gap: 0; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--surface); }
+:root .metric-card {
+  min-height: 129px;
+  border: 0;
+  border-right: 1px solid var(--border);
+  border-radius: 0;
+  background: var(--surface);
+  box-shadow: none;
+  padding: 18px 21px;
+}
+:root .metric-card:last-child { border-right: none; }
+:root .metric-card::before { content: none; }
+:root .metric-card:hover { transform: none; background: var(--surface-subtle); box-shadow: none; }
+:root .metric-card__top { color: var(--muted); }
+:root .metric-card__icon { width: 30px; height: 30px; margin: -3px -5px 0 0; border-radius: 8px; background: transparent; }
+:root .metric-card > strong { font-size: 30px; }
+:root .dashboard-tone--violet { --tone: #a879eb; --tone-bg: #f1ecfa; }
+:root .dashboard-tone--amber { --tone: #e3a44b; --tone-bg: #fef4e6; }
+:root .dashboard-tone--rose { --tone: #f03d96; --tone-bg: #fff0f8; }
+:root .dashboard-tone--blue { --tone: #5588ea; --tone-bg: #edf3ff; }
+:root .dashboard-tone--cyan { --tone: #28aabc; --tone-bg: #e9f8fa; }
+:root .dashboard-tone--emerald { --tone: #22b778; --tone-bg: #eafaf1; }
+:root[data-theme='dark'] .dashboard-tone--violet { --tone: #c5a4ff; --tone-bg: #292037; }
+:root[data-theme='dark'] .dashboard-tone--amber { --tone: #e9ba79; --tone-bg: #322819; }
+:root[data-theme='dark'] .dashboard-tone--rose { --tone: #ff57ac; --tone-bg: #3a2035; }
+:root[data-theme='dark'] .dashboard-tone--blue { --tone: #78a8ff; --tone-bg: #1c2944; }
+:root[data-theme='dark'] .dashboard-tone--cyan { --tone: #68d5de; --tone-bg: #1b343a; }
+:root[data-theme='dark'] .dashboard-tone--emerald { --tone: #49dca0; --tone-bg: #18352d; }
+:root[data-theme='dark'] .dashboard-tone .metric-card__icon { background: transparent; color: var(--tone); }
+:root .dashboard-panels { gap: 12px; }
+:root .dashboard-panel { min-height: 210px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: none; padding: 15px; }
+:root .dashboard-panel:hover { border-color: var(--border); box-shadow: none; background: var(--surface); }
+:root .dashboard-panel__icon { background: var(--tone-bg); color: var(--tone); width: 34px; height: 34px; flex-basis: 34px; }
+:root .dashboard-panel__body { min-height: 90px; }
+:root .dashboard-panel__empty-symbol { opacity: .7; }
+:root .dashboard-panel__footer { color: var(--muted); }
+:root .dashboard-quick-link, :root .catalog-app {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+:root .dashboard-quick-link:hover, :root .catalog-app:not(.catalog-app--planned):hover {
+  border-color: var(--muted);
+  background: var(--surface-subtle);
+  box-shadow: none;
+}
+:root .dashboard-quick-link__icon, :root .catalog-app__icon {
+  background: var(--accent-pale);
+  color: var(--accent);
+}
+:root .catalog-content { background: var(--canvas); border-color: var(--border); box-shadow: none; }
+:root .catalog-content__header { background: var(--surface); border-bottom-color: var(--border); }
+:root .catalog-app__pin--active { background: var(--accent-pale); color: var(--accent); }
+:root .catalog-tab--active, :root .theme-choice--active {
+  color: var(--ink-strong) !important;
+  background: var(--surface-subtle) !important;
+  border-color: var(--border) !important;
+}
+:root .auth-page { background: var(--canvas); }
+:root .auth-panel { background: var(--surface); border-color: var(--border); box-shadow: var(--shadow); }
+:root .field__input:focus, :root .catalog-search:focus-within,
+:root .search-control:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(115,122,210,.12); }
+:root .status-pill--positive { background: #e7f8ec; color: #167c43; }
+:root .status-pill--notice { background: #fff6e8; color: #996319; }
+:root .status-pill--warning { background: #fff0f4; color: #ad3261; }
+:root[data-theme='dark'] .status-pill--positive { background: #19352a; color: #66de9b; }
+:root[data-theme='dark'] .status-pill--notice { background: #31291f; color: #eac489; }
+:root[data-theme='dark'] .status-pill--warning { background: #3c2030; color: #f39ac1; }
+:root .mobile-nav { background: var(--surface); border-top-color: var(--border); }
+:root .mobile-nav .nav-item--active { color: var(--ink-strong); background: var(--surface-subtle); }
+:root .sidebar__catalog:hover, :root .sidebar__collapse:hover { background: var(--surface-subtle); }
+@media (max-width: 1050px) {
+  :root .metric-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  :root .metric-card:nth-child(2) { border-right: 0; }
+  :root .metric-card:nth-child(-n+2) { border-bottom: 1px solid var(--border); }
+}
+@media (max-width: 720px) {
+  :root .mobile-nav {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    width: auto;
+    padding: 6px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: 0 12px 36px rgba(0,0,0,.14);
+    backdrop-filter: blur(14px);
+    z-index: 30;
+  }
+  :root .dashboard-welcome h1 { font-size: 26px; }
+  :root .metric-card { padding: 14px; min-height: 112px; }
+  :root .dashboard-panel { min-height: 185px; }
+  :root .dashboard-banner { padding: 14px; }
+}
