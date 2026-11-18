@@ -237,3 +237,20 @@ p { line-height: 1.55; }
 .action-json { min-height: 145px; resize: vertical; font-family: ui-monospace, SFMono-Regular, monospace; font-size: 12px; }
 
 @media (max-width: 720px) { .mobile-nav { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+
+/* Application switcher uses the shared Radix Dialog primitive. */
+.sidebar__header { gap: 10px; }
+.sidebar__header .sidebar__brand { flex: 1; }
+.app-switcher-button { background: var(--surface-subtle); border: 1px solid var(--border); flex-shrink: 0; }
+.dialog-overlay { position: fixed; inset: 0; z-index: 100; background: #15221889; animation: appear .16s ease; }
+.dialog-content { position: fixed; z-index: 101; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(92vw, 510px); max-height: min(85dvh, 680px); overflow-y: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 17px; box-shadow: 0 20px 90px #08150936; padding: 23px; }
+.dialog-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 22px; }
+.dialog-heading h2 { margin: 0; }
+.dialog-heading [data-radix-dialog-title] { font-family: 'Manrope', sans-serif; font-size: 19px; font-weight: 800; color: var(--ink-strong); }
+.dialog-heading [data-radix-dialog-description] { display: block; margin-top: 5px; color: var(--muted); font-size: 12px; }
+.app-launcher-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.app-launcher-item { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; padding: 17px; border: 1px solid var(--border); background: var(--canvas); border-radius: 12px; font-size: 12px; }
+.app-launcher-item:hover { border-color: #a8bba6; background: var(--accent-pale); }
+.app-launcher-item > span { display: grid; place-items: center; height: 42px; width: 42px; border-radius: 10px; background: var(--accent-pale); color: var(--accent); }
+@keyframes appear { from { opacity: 0; } to { opacity: 1; } }
+@media (max-width: 460px) { .app-launcher-grid { grid-template-columns: repeat(2, 1fr); } }

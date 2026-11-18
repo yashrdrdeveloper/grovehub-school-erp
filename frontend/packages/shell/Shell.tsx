@@ -5,6 +5,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { Button } from '@Components';
 
 import { workspaceNavigation } from './registry';
+import { AppLauncher } from './layout/AppLauncher';
 
 export interface ShellProps {
   accountLabel: string;
@@ -39,6 +40,7 @@ export const Shell = ({ accountLabel, schoolLabel, onLogout }: ShellProps) => {
     <div className="shell">
       <aside className={`sidebar${sidebarOpen ? ' sidebar--open' : ''}`}>
         <div className="sidebar__header">
+          <AppLauncher />
           <NavLink to="/dashboard" className="sidebar__brand">
             <span className="brand-mark brand-mark--small">G</span>
             <span>groovehub<span className="brand-period">.</span></span>
