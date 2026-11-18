@@ -139,6 +139,30 @@ const FloatingSchoolArtwork = ({
   );
 };
 
+/** Fixed mobile artwork: low-contrast school linework behind the form,
+ * never boxes, labels, or content competing with authentication controls. */
+const MobileSchoolBackdrop = () => (
+  <div className="auth-mobile-backdrop" aria-hidden="true">
+    <svg className="auth-mobile-backdrop__top" viewBox="0 0 360 148" preserveAspectRatio="xMidYMin slice" fill="none">
+      <path d="M8 83c27-39 48-4 71-30s41 19 68-6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+      <path d="M242 59c24-34 38 18 55-4 13-18 32-12 55-34" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+      <path d="m26 111 14-7-4 16-5-7-5-2Zm293-12 17-8-8 19-4-9-5-2Z" stroke="currentColor" strokeWidth="1.15" strokeLinejoin="round"/>
+      <path d="m155 10 3 8m-7-3 8-2m37 18 5 5m1-9-6 6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+      <circle cx="79" cy="120" r="3" stroke="currentColor"/>
+    </svg>
+    <svg className="auth-mobile-backdrop__bottom" viewBox="0 0 360 142" preserveAspectRatio="xMidYMax slice" fill="none">
+      <path d="M11 98c19-20 28 13 50-9 16-16 32 7 49-6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+      <path d="M249 94c22-16 30 8 49-12 17-18 32 10 54-17" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+      <rect x="30" y="21" width="42" height="42" rx="10" transform="rotate(-8 30 21)" stroke="currentColor" strokeWidth="1.1"/>
+      <path d="m40 39 11-7 11 3-11 8-11-4Zm3 5v6c5 4 13 4 17-1v-7" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+      <rect x="288" y="18" width="42" height="42" rx="10" transform="rotate(8 288 18)" stroke="currentColor" strokeWidth="1.1"/>
+      <path d="M297 34c6-3 12-2 15 1v16c-5-4-10-4-15-2V34Zm15 1c5-4 10-4 15-2v16c-5-2-10-2-15 2" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+      <circle cx="190" cy="93" r="2.7" stroke="currentColor"/>
+      <path d="m195 23 4 10m-9-4 9-3" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+    </svg>
+  </div>
+);
+
 export const AuthFrame = ({ children, title }: { children: ReactNode; title: string }) => {
   const { preference, setPreference } = useWorkspaceTheme();
   const stageRef = useRef<HTMLDivElement>(null);
@@ -163,6 +187,12 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
       frame = window.requestAnimationFrame(() => {
         const stageBounds = stage.getBoundingClientRect();
         const formBounds = panel.getBoundingClientRect();
+        // Phones use a fixed, intentionally sparse illustration background.
+        // Do not run the randomized packing engine beneath the mobile form.
+        if (window.matchMedia('(max-width: 640px)').matches) {
+          setPlacements(current => Object.keys(current).length ? {} : current);
+          return;
+        }
         const boxes = artworkIds.flatMap(id => {
           const node = itemRefs.current[id];
           return node ? [{ id, width: node.offsetWidth, height: node.offsetHeight }] : [];
@@ -216,6 +246,7 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
         </div>
       </header>
       <div ref={stageRef} className="auth-stage">
+        <MobileSchoolBackdrop/>
         <FloatingSchoolArtwork register={register} placements={placements}/>
         <section ref={panelRef} className="auth-panel" aria-label={title}>{children}</section>
       </div>
