@@ -2,7 +2,7 @@ export type ArtId =
   | 'crm' | 'student' | 'tasks' | 'finance' | 'ai' | 'audit' | 'growth'
   | 'automation' | 'communication' | 'admissions' | 'hr' | 'library'
   | 'calendar' | 'book' | 'pencil' | 'bell' | 'trophy' | 'school'
-  | 'quote' | 'squiggle' | 'motto';
+  | 'quote' | 'squiggle' | 'plane' | 'motto';
 
 export type ArtPlacement = { x: number; y: number };
 export type ArtBounds = { width: number; height: number };
@@ -13,8 +13,11 @@ type Space = ArtRect;
 type Rng = () => number;
 const margin = 12;
 const padding = 18;
-const mainFeatures: ArtId[] = ['tasks', 'finance', 'ai', 'audit', 'growth', 'automation', 'communication', 'admissions', 'hr', 'library'];
-const accents: ArtId[] = ['quote', 'calendar', 'book', 'pencil', 'bell', 'trophy', 'school', 'squiggle', 'motto'];
+const heroModules: ArtId[] = ['crm', 'student'];
+const subModules: ArtId[] = ['tasks', 'finance', 'ai', 'audit', 'growth', 'automation', 'communication', 'admissions', 'hr', 'library'];
+const lineArt: ArtId[] = ['plane', 'squiggle'];
+const smallIcons: ArtId[] = ['calendar', 'book', 'pencil', 'bell', 'trophy', 'school'];
+const optionalAccents: ArtId[] = ['motto'];
 const makeRandom = (seed: number): Rng => {
   let value = seed >>> 0;
   return () => {
@@ -68,17 +71,37 @@ export const packAuthIllustrations = (
   const allSpaces = [...sideGutters, ...horizontalGutters];
   const sizes = new Map(boxes.map(box => [box.id, box]));
   const flip = rng() < .5;
-  // Different modules are featured per refresh. The two core journey cards
-  // lead, the smaller school modules are a new seeded selection each visit.
-  const moduleLimit = stage.width >= 1250 ? 7 : stage.width >= 850 ? 5 : 3;
-  const accentLimit = stage.width >= 1250 ? 6 : stage.width >= 850 ? 4 : 3;
-  const lineup: ArtId[] = [
-    'crm', 'student',
-    ...shuffle(mainFeatures, rng).slice(0, moduleLimit),
-    ...shuffle(accents, rng).slice(0, accentLimit),
-  ];
+  const firstHero = shuffle(heroModules, rng);
+  const shuffledSubModules = shuffle(subModules, rng);
+  const shuffledLines = shuffle(lineArt, rng);
+  const shuffledIcons = shuffle(smallIcons, rng);
 
-  for (const id of lineup) {
+  // Reserve one opportunity from each category before any optional extras.
+  // Trying alternates within each category avoids a large item consuming the
+  // space that should be used by the quote or a smaller school illustration.
+  // The sign-in form always takes precedence: impossible fits are omitted.
+  const requiredGroups: ArtId[][] = [
+    firstHero,
+    ['quote'],
+    shuffledSubModules,
+    shuffledLines,
+    shuffledIcons,
+  ];
+  const extraModules = stage.width >= 1250 ? 7 : stage.width >= 850 ? 5 : 2;
+  const extraIcons = stage.width >= 1250 ? 5 : stage.width >= 850 ? 3 : 1;
+  const optionalGroups: ArtId[][] = [
+    firstHero.slice(1),
+    shuffledSubModules.slice(1, extraModules),
+    shuffledIcons.slice(1, extraIcons),
+    shuffledLines.slice(1),
+    optionalAccents,
+  ];
+  // Each required category attempts alternatives until one item fits.
+  const lineup = [...requiredGroups, ...optionalGroups];
+  for (const group of lineup) {
+    let categoryPlaced = false;
+    for (const id of group) {
+    if (categoryPlaced || placed[id]) continue;
     const box = sizes.get(id);
     if (!box || box.width < 1 || box.height < 1) continue;
     // Rotations must fit, including their extended corners.
@@ -132,6 +155,8 @@ export const packAuthIllustrations = (
       x: Math.round(accepted.x + overhang / 2),
       y: Math.round(accepted.y + overhang / 2),
     };
+    categoryPlaced = true;
+    }
   }
   return placed;
 };
