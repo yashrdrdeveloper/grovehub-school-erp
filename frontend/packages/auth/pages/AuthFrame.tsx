@@ -113,6 +113,16 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
         ))}
       </div>
     </header>
+    <div className="auth-compact-art" aria-hidden="true">
+      <div className="auth-compact-art__item">
+        <span className="auth-compact-art__icon"><UsersRound size={19} strokeWidth={1.7}/></span>
+        <span className="auth-compact-art__copy"><strong>Lead CRM</strong><small>Enquiry → Admission</small></span>
+      </div>
+      <div className="auth-compact-art__item">
+        <span className="auth-compact-art__icon"><GraduationCap size={20} strokeWidth={1.7}/></span>
+        <span className="auth-compact-art__copy"><strong>Student Lifecycle 360°</strong><small>Unified student view · UCV</small></span>
+      </div>
+    </div>
     <section className="auth-panel" aria-label={title}>
       {children}
     </section>
