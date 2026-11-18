@@ -2332,3 +2332,46 @@ body { background: var(--canvas); }
   color: #1F2A44;
 }
 :root[data-theme='dark'] .school-monogram__symbol { color: #1F2A44; }
+
+
+/* RDR-auth header: one school identity at the top, centered form heading. */
+.auth-page--consistent .auth-brand--school {
+  gap: 11px;
+  letter-spacing: -.035em;
+  font-size: 18px;
+}
+.auth-page--consistent .auth-brand--school .school-monogram {
+  width: 66px;
+  height: 43px;
+  flex: 0 0 66px;
+  padding: 8px 7px;
+  border-radius: 10px;
+}
+.auth-page--consistent .auth-brand--school strong {
+  font-size: 17px;
+  letter-spacing: -.025em;
+  white-space: nowrap;
+}
+.auth-page--consistent .auth-panel h1,
+.auth-page--consistent .auth-panel > .muted {
+  text-align: center;
+}
+.auth-page--consistent .auth-panel > .muted {
+  max-width: none;
+}
+.auth-page--consistent .auth-panel__icon {
+  margin-left: auto;
+  margin-right: auto;
+}
+@media (max-width: 600px) {
+  .auth-page--consistent .auth-brand--school { gap: 8px; }
+  .auth-page--consistent .auth-brand--school .school-monogram {
+    width: 49px;
+    height: 34px;
+    flex-basis: 49px;
+    padding: 6px 5px;
+  }
+  .auth-page--consistent .auth-brand--school strong {
+    font-size: 14px;
+  }
+}
