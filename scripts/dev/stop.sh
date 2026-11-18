@@ -8,6 +8,7 @@ SCRIPT_DIR="$(
 
 source "${SCRIPT_DIR}/../lib/container.sh"
 
+bash "${SCRIPT_DIR}/../frontend/stop.sh"
 bash "${SCRIPT_DIR}/../swagger/stop.sh"
 bash "${SCRIPT_DIR}/../backend/stop.sh"
 bash "${SCRIPT_DIR}/../infrastructure/nats/stop.sh"

@@ -98,3 +98,25 @@ dev-stop:
 
 dev-status:
 	@bash ./scripts/dev/status.sh
+
+.PHONY: frontend-setup frontend-start frontend-stop frontend-status frontend-build frontend-test frontend-dev
+frontend-setup:
+	@bash ./scripts/frontend/setup.sh
+
+frontend-start:
+	@bash ./scripts/frontend/start.sh
+
+frontend-stop:
+	@bash ./scripts/frontend/stop.sh
+
+frontend-status:
+	@bash ./scripts/frontend/status.sh
+
+frontend-build:
+	@bash ./scripts/frontend/build.sh
+
+frontend-test:
+	@cd frontend && node node_modules/jest/bin/jest.js --passWithNoTests
+
+frontend-dev:
+	@cd frontend && node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 4173 --strictPort

@@ -50,10 +50,10 @@ Swagger
   make swagger-status   Show Swagger UI status
 
 Development
-  make dev-start            Start NATS, initialize all schemas (including Integration), start Air backend, and Swagger
+  make dev-start            Start NATS, initialize all schemas (including Integration), start Air backend, Swagger, and Vite frontend
   make dev-start-with-logs  Same as dev-start plus the local OTEL collector
-  make dev-stop             Stop Swagger UI, backend, NATS, and optional OTEL collector
-  make dev-status           Show NATS, backend, and Swagger UI status
+  make dev-stop             Stop frontend, Swagger UI, backend, NATS, and optional OTEL collector
+  make dev-status           Show NATS, backend, frontend, and Swagger UI status
 
 Container runtime used by dev-start
   macOS    Colima (installed/started automatically; Docker CLI/Compose via Homebrew)

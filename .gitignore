@@ -5,3 +5,10 @@
 
 # Module-local generated Go files and overlay manifest
 .generated/
+
+# Frontend local dependencies, cache and build output
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
+frontend/.env.local
