@@ -3,6 +3,10 @@ import { MemoryRouter } from 'react-router-dom';
 
 import { LandingPage } from './LandingPage';
 
+// Isolate public-site navigation from the unrelated component barrel's
+// ESM-only Lodash implementation under Jest's CommonJS test runner.
+jest.mock('@Components', () => ({ SchoolMonogram: () => 'RDR' }));
+
 describe('RDR public-site quick actions', () => {
   beforeEach(() => {
     window.scrollTo = jest.fn();
