@@ -113,6 +113,9 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
         ))}
       </div>
     </header>
+    <section className="auth-panel" aria-label={title}>
+      {children}
+    </section>
     <div className="auth-compact-art" aria-hidden="true">
       <svg className="auth-compact-art__sketch" viewBox="0 0 480 250" preserveAspectRatio="none" fill="none">
         <path d="M16 72c19 31 35-29 54-10 15 15 12 31 27 17M378 57c24-25 27 24 48 8 13-11 22-17 38-9"
@@ -150,9 +153,6 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
       </div>
       <div className="auth-compact-art__baseline"/>
     </div>
-    <section className="auth-panel" aria-label={title}>
-      {children}
-    </section>
     <footer className="auth-footer"><span>© {new Date().getFullYear()} GrooveHub</span></footer>
   </main>
   );
