@@ -2,9 +2,8 @@ import { useState, type ReactNode } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import {
   ArrowRight, ArrowUpRight, BookOpen, BookOpenText, CalendarDays, Check,
-  Clock3, ExternalLink, FileText, GraduationCap, HeartHandshake, Images,
-  Landmark, LibraryBig, Mail, MapPin, Phone, Presentation, ScrollText,
-  ShieldCheck, Sparkles, UsersRound, X,
+  ExternalLink, FileText, GraduationCap, HeartHandshake,
+  Landmark, Mail, MapPin, Phone, ShieldCheck, Sparkles, X,
 } from 'lucide-react';
 
 import { disclosedDocuments, facilities, photographs, school } from './content';
@@ -211,9 +210,8 @@ export const PublicSheet = ({
   onNavigate:(panel:SchoolPanel)=>void;
   enquiry:ReactNode;
 }) => {
-  const [directStory,setDirectStory]=useState<StoryKey>('history');
   const selectedStory:StoryKey = panel==='director'||panel==='principal'||panel==='philosophy'||panel==='history'
-    ?panel:directStory;
+    ?panel:'history';
   const story=panel==='about'||panel==='history'||panel==='director'||panel==='principal'||panel==='philosophy';
   const onEnquire=()=>onNavigate('enquiry');
   const title=panel?panelTitles[panel]:'RDR School information';
