@@ -37,7 +37,7 @@ export const ForgotPasswordPage = () => {
           <div className="notice">If the account is eligible, recovery instructions are on their way.</div>
         ) : (
           <form className="auth-form" onSubmit={(event) => void submit(event)}>
-            <Input id="email" label="Email" type="email" inputMode="email" autoComplete="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+            <Input id="email" label="Email" type="email" inputMode="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
             {error ? <p className="form-error" role="alert">{error}</p> : null}
             <Button type="submit" loading={busy} className="button--full">Send reset link</Button>
           </form>
