@@ -23,4 +23,4 @@ export const authIllustrationQuotes = [
 ] as const;
 
 export const selectAuthIllustrationQuote = (seed: number): string =>
-  authIllustrationQuotes[(seed >>> 0) % authIllustrationQuotes.length];
+  authIllustrationQuotes[(seed >>> 0) % authIllustrationQuotes.length] ?? authIllustrationQuotes[0];
