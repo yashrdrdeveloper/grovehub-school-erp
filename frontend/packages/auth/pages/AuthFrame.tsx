@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import {
   ArrowRight, BookOpen, CalendarDays, GraduationCap, ListTodo, Monitor,
-  Moon, Sparkles, Sun, UsersRound, WalletCards, BrainCircuit, ClipboardCheck,
+  Moon, Sun, UsersRound, WalletCards, BrainCircuit, ClipboardCheck,
   TrendingUp, Workflow, MessageSquareText, UserRoundPlus, Users, LibraryBig,
   Pencil, BellRing, Trophy, School,
 } from 'lucide-react';
@@ -189,7 +189,7 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
   const quote = selectAuthIllustrationQuote(seedRef.current);
   const mobileModule = seedRef.current % 2 === 0 ? 'Lead CRM' : 'Student 360° · UCV';
   const mobileSubmodules = ['Tasks', 'Finance & Fees', 'AI Assistance', 'Audit & Compliance', 'Learn & Grow', 'Automation'];
-  const mobileSubmodule = mobileSubmodules[(seedRef.current >>> 3) % mobileSubmodules.length];
+  const mobileSubmodule = mobileSubmodules[(seedRef.current >>> 3) % mobileSubmodules.length] ?? 'Tasks';
   const [placements, setPlacements] = useState<Partial<Record<ArtId, ArtPlacement>>>({});
 
   const register = (id: ArtId, node: HTMLDivElement | null) => {
