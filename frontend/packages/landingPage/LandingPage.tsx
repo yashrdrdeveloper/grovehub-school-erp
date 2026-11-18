@@ -1,15 +1,17 @@
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useEffect, useMemo, useState, type FormEvent, type MouseEvent, type ReactNode } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ArrowRight, ArrowUpRight, BookOpen, Bus, CalendarDays,
   Check, Clock3, Computer, Download, ExternalLink, FileCheck2, FlaskConical,
   GraduationCap, HeartPulse, Mail, MapPin, Menu, Phone, Presentation,
   School, ShieldCheck, Sparkles, Trophy, Megaphone, Send, CalendarClock, Quote, Pencil, Star, X,
+  Landmark, HeartHandshake, Images,
 } from 'lucide-react';
 
 import { SchoolMonogram } from '@Components';
 
 import { achievements, disclosedDocuments, enquiryTypes, facilities, historicDisclosure, photographs, school, testimonials, upcomingEvents } from './content';
+import { PublicSheet, type SchoolPanel } from './PublicSheet';
 
 import './landingPage.css';
 
@@ -69,6 +71,12 @@ const SiteHeader = () => {
   const [open,setOpen] = useState(false);
   const { pathname } = useLocation();
   useEffect(() => setOpen(false),[pathname]);
+  useEffect(() => {
+    if (!open) return;
+    const previous=document.body.style.overflow;
+    document.body.style.overflow='hidden';
+    return () => { document.body.style.overflow=previous; };
+  },[open]);
   return (
     <>
       <div className="rdr-topline">
@@ -95,11 +103,17 @@ const SiteHeader = () => {
           </div>
         </div>
       </header>
-      {open && <nav className="rdr-mobile-nav" id="rdr-mobile-navigation" aria-label="Mobile navigation">
-        {navItems.map(item=><Link key={item.to} to={item.to}>{item.label}<ArrowUpRight size={16}/></Link>)}
-        <Link to="/contact">Contact us <ArrowUpRight size={16}/></Link>
-        <Link className="rdr-mobile-nav__action" to="/admissions#enquiry">Start an enquiry <ArrowRight size={16}/></Link>
-      </nav>}
+      {open && <>
+        <button className="rdr-mobile-nav__scrim" type="button" aria-label="Close menu" onClick={()=>setOpen(false)}/>
+        <nav className="rdr-mobile-nav" id="rdr-mobile-navigation" aria-label="Mobile navigation">
+          <div className="rdr-mobile-nav__top"><strong>Explore RDR School</strong><button type="button" onClick={()=>setOpen(false)} aria-label="Close menu"><X size={21}/></button></div>
+          {navItems.map(item=><Link key={item.to} to={item.to}>{item.label}<ArrowUpRight size={16}/></Link>)}
+          <Link to="/about/director">Director's message <ArrowUpRight size={16}/></Link>
+          <Link to="/about/principal">Principal's message <ArrowUpRight size={16}/></Link>
+          <Link to="/contact">Contact & directions <ArrowUpRight size={16}/></Link>
+          <Link className="rdr-mobile-nav__action" to="/admissions#enquiry">Start an enquiry <ArrowRight size={16}/></Link>
+        </nav>
+      </>}
     </>
   );
 };
@@ -312,6 +326,32 @@ const CommunityVoices = () => (
   </section>
 );
 
+const MobileQuickHome = () => (
+  <section className="rdr-quick-home rdr-container" aria-label="Quick school information and actions">
+    <div className="rdr-quick-home__actions">
+      <Link to="/admissions#enquiry" className="rdr-quick-home__primary"><GraduationCap size={19}/><span>Admission enquiry</span><ArrowUpRight size={16}/></Link>
+      <a href="tel:+919050077550"><Phone size={19}/><span>Call school</span><ArrowUpRight size={16}/></a>
+      <a href="https://www.google.com/maps/search/?api=1&query=Rao+Deena+Ram+Vidya+Vihar+Haluhera" target="_blank" rel="noreferrer"><MapPin size={19}/><span>Directions</span><ArrowUpRight size={16}/></a>
+      <Link to="/mandatory-public-disclosure"><ShieldCheck size={19}/><span>CBSE details</span><ArrowUpRight size={16}/></Link>
+    </div>
+    <div className="rdr-quick-home__heading"><span className="rdr-eyebrow">DISCOVER OUR SCHOOL</span><h2>Everything important, a tap away.</h2></div>
+    <div className="rdr-quick-home__tiles">
+      {[
+        {to:'/about/history',icon:Landmark,title:'Our story',desc:'Since 2006'},
+        {to:'/about/director',icon:HeartHandshake,title:"Director's message",desc:'Growing every child'},
+        {to:'/about/principal',icon:GraduationCap,title:"Principal's message",desc:'Learning with values'},
+        {to:'/academics',icon:BookOpen,title:'Academics',desc:'Learning journey'},
+        {to:'/campus',icon:School,title:'Campus',desc:'Spaces to explore'},
+        {to:'/gallery',icon:Images,title:'School life',desc:'Moments in pictures'},
+      ].map(item=>{
+        const Icon=item.icon;
+        return <Link to={item.to} key={item.to}><span className="rdr-quick-home__tile-icon"><Icon size={21}/></span><span><strong>{item.title}</strong><small>{item.desc}</small></span><ArrowUpRight size={15}/></Link>;
+      })}
+    </div>
+    <div className="rdr-quick-home__bottom"><span><Sparkles size={16}/> A place to learn, belong and grow.</span><Link to="/admissions#enquiry">Talk to us <ArrowRight size={15}/></Link></div>
+  </section>
+);
+
 const HomePage = () => (
   <>
     <section className="rdr-hero rdr-container">
@@ -324,6 +364,7 @@ const HomePage = () => (
       </div>
       <PhotoCollage/>
     </section>
+    <MobileQuickHome/>
     <nav className="rdr-mobile-shortcuts rdr-container" aria-label="Popular school links">
       <Link to="/admissions#enquiry"><GraduationCap size={18}/> Admissions <ArrowUpRight size={14}/></Link>
       <Link to="/campus"><School size={18}/> Campus <ArrowUpRight size={14}/></Link>
@@ -386,6 +427,15 @@ const AboutPage = () => (
     <section className="rdr-section rdr-section--wash"><div className="rdr-container rdr-values">
       {[{number:'01',title:'Learning',description:'Encouraging curiosity, creativity and independent thinking.'},{number:'02',title:'Character',description:'Building a foundation of responsibility, kindness and integrity.'},{number:'03',title:'Community',description:'Strengthening partnerships between families, teachers and students.'}].map(x=><div key={x.number}><span>{x.number}</span><h3>{x.title}</h3><p>{x.description}</p></div>)}
     </div></section>
+    <section className="rdr-section rdr-container rdr-about-leaders">
+      <Heading eyebrow="WORDS THAT GUIDE US" title="Meet the people and values behind RDR."/>
+      <div className="rdr-about-leaders__links">
+        <Link to="/about/history"><Landmark size={22}/><strong>Our history</strong><small>From Haluhera, since 2006</small><ArrowUpRight size={16}/></Link>
+        <Link to="/about/director"><HeartHandshake size={22}/><strong>Director's message</strong><small>All-round development</small><ArrowUpRight size={16}/></Link>
+        <Link to="/about/principal"><GraduationCap size={22}/><strong>Principal's message</strong><small>Learning with character</small><ArrowUpRight size={16}/></Link>
+        <Link to="/about/philosophy"><Sparkles size={22}/><strong>Our philosophy</strong><small>Broadening minds</small><ArrowUpRight size={16}/></Link>
+      </div>
+    </section>
     <section className="rdr-section rdr-container">
       <Heading eyebrow="LEADERSHIP & PHILOSOPHY" title="Guided by people who care." description="The school's historical leadership messages speak about holistic learning, kindness and preparing children for life beyond the classroom."/>
       <div className="rdr-values rdr-values--leadership">
@@ -500,6 +550,10 @@ const ContactPage = () => (
 const pageContent: Record<string,()=>ReactNode> = {
   '/':HomePage,
   '/about':AboutPage,
+  '/about/history':AboutPage,
+  '/about/director':AboutPage,
+  '/about/principal':AboutPage,
+  '/about/philosophy':AboutPage,
   '/academics':AcademicsPage,
   '/campus':CampusPage,
   '/admissions':AdmissionsPage,
@@ -509,13 +563,87 @@ const pageContent: Record<string,()=>ReactNode> = {
   '/contact':ContactPage,
 };
 
+const pathPanel: Record<string,SchoolPanel> = {
+  '/about':'about',
+  '/about/history':'history',
+  '/about/director':'director',
+  '/about/principal':'principal',
+  '/about/philosophy':'philosophy',
+  '/academics':'academics',
+  '/campus':'campus',
+  '/admissions':'enquiry',
+  '/gallery':'gallery',
+  '/resources':'resources',
+  '/contact':'contact',
+};
+
+const pageMetadata: Record<string,{title:string;description:string}> = {
+  '/':{title:'RDR School | Rao Deena Ram Vidya Vihar, Haluhera',description:'Discover Rao Deena Ram Vidya Vihar School in Haluhera, Rewari. Learn about school life, academic programmes, facilities and admissions.'},
+  '/about':{title:'About RDR School | History, Vision & Leadership',description:'Explore RDR School history since 2006, its philosophy, director and principal messages in Haluhera, Rewari.'},
+  '/academics':{title:'Academics | RDR School Haluhera',description:'Explore learning stages, academics and school activities at Rao Deena Ram Vidya Vihar in Rewari.'},
+  '/campus':{title:'Campus & Facilities | RDR School',description:'Explore the school campus, science labs, computer lab, smart classrooms, sports and student facilities.'},
+  '/admissions':{title:'Admissions & Enquiry | RDR School',description:'Contact RDR School about admissions, classes, fees, transport and visits. Submit a quick enquiry to the school office.'},
+  '/gallery':{title:'School Life & Gallery | RDR School',description:'See moments of student life, culture, sports and school achievements from the RDR School gallery.'},
+  '/mandatory-public-disclosure':{title:'CBSE Mandatory Public Disclosure | RDR School',description:'Find RDR School CBSE affiliation details, historic Appendix IX disclosures and school documents.'},
+  '/resources':{title:'School Resources | RDR School',description:'Find school academic information, the calendar and available documents from RDR School.'},
+  '/contact':{title:'Contact RDR School | Haluhera, Rewari',description:'Contact Rao Deena Ram Vidya Vihar School in Haluhera, Rewari, Haryana. Phone, email, directions and enquiries.'},
+};
+
 export const LandingPage = () => {
-  const {pathname,hash}=useLocation();
-  const CurrentPage=useMemo(()=>pageContent[pathname] ?? HomePage,[pathname]);
+  const location=useLocation();
+  const navigate=useNavigate();
+  const state=location.state as {background?:string;panel?:SchoolPanel}|null;
+  const panel=state?.background && state.panel ? state.panel : null;
+  const backgroundPath=panel?(state?.background??'/'):location.pathname;
+  const CurrentPage=useMemo(()=>pageContent[backgroundPath] ?? HomePage,[backgroundPath]);
+
+  const closePanel=()=>navigate(state?.background??'/',{replace:true});
+  const selectPanel=(next:SchoolPanel)=>{
+    const path=next==='enquiry'?'/admissions#enquiry':
+      Object.entries(pathPanel).find(([,value])=>value===next)?.[0]??'/about';
+    navigate(path,{replace:true,state:{background:backgroundPath,panel:next}});
+  };
+
+  // A real URL is always retained for navigation, direct links and SEO.
+  // Clicking around the public site opens a sheet without leaving the
+  // visible landing page; loading a URL directly renders its full HTML page.
+  const handleInternalLink=(event:MouseEvent<HTMLDivElement>)=>{
+    if(event.defaultPrevented || event.button!==0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)return;
+    if(!(event.target instanceof Element))return;
+    const anchor=event.target.closest('a[href]');
+    if(!anchor || anchor.hasAttribute('download') || (anchor.target&&anchor.target!=='_self'))return;
+    const url=new URL(anchor.href,window.location.href);
+    if(url.origin!==window.location.origin)return;
+    const requested=pathPanel[url.pathname];
+    if(!requested)return; // CBSE disclosures stay on their public HTML URL.
+    event.preventDefault();
+    navigate(url.pathname+url.search+url.hash,{
+      state:{background:backgroundPath,panel:requested},
+    });
+  };
   useEffect(()=>{
-    if(hash){window.requestAnimationFrame(()=>document.getElementById(hash.slice(1))?.scrollIntoView({behavior:'smooth',block:'center'}));}
-    else window.scrollTo({top:0,behavior:'instant'});
-    document.title = pathname==='/'?`${school.shortName} | Rao Deena Ram Vidya Vihar`:`${pathname.split('/').filter(Boolean).join(' ').replace(/-/g,' ')} | ${school.shortName}`;
-  },[pathname,hash]);
-  return <div className="rdr-site"><SiteHeader/><main id="main-content"><CurrentPage/></main><SiteFooter/></div>;
+    if(panel)return;
+    if(location.hash){
+      window.requestAnimationFrame(()=>document.getElementById(location.hash.slice(1))?.scrollIntoView({behavior:'smooth',block:'start'}));
+    } else window.scrollTo({top:0,behavior:'instant'});
+  },[backgroundPath,location.hash,panel]);
+  useEffect(()=>{
+    const details=pageMetadata[location.pathname] ?? (
+      location.pathname.startsWith('/about/')?pageMetadata['/about']:pageMetadata['/']
+    );
+    if(!details)return;
+    document.title=details.title;
+    const description=document.querySelector<HTMLMetaElement>('meta[name="description"]');
+    if(description)description.content=details.description;
+    let canonical=document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    if(!canonical){canonical=document.createElement('link');canonical.rel='canonical';document.head.appendChild(canonical);}
+    canonical.href=`https://rdrschool.com${location.pathname}`;
+  },[location.pathname]);
+
+  return <div className="rdr-site" onClickCapture={handleInternalLink}>
+    <SiteHeader/>
+    <main id="main-content"><CurrentPage/></main>
+    <SiteFooter/>
+    <PublicSheet panel={panel} onClose={closePanel} onNavigate={selectPanel} enquiry={<EnquiryForm compact/>}/>
+  </div>;
 };
