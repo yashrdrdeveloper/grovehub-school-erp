@@ -18,8 +18,28 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
   <main className="auth-page auth-page--consistent">
     <div className="auth-scene" aria-hidden="true">
       <div className="auth-scene__ground"/>
-      <div className="auth-scene__note auth-scene__note--left"><i/><i/><i/></div>
-      <div className="auth-scene__note auth-scene__note--right"><i/><i/></div>
+      <div className="auth-scene__sheet auth-scene__sheet--left">
+        <div className="auth-scene__sheet-head">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3.5" width="16" height="17" rx="2.5" stroke="currentColor" strokeWidth="1.5"/><path d="M8 8h8M8 12h3M8 16h3m2-4 1.5 1.5L17 11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          <span>Attendance</span>
+        </div>
+        <div className="auth-scene__sheet-rule"/>
+        <div className="auth-scene__sheet-entry"><span className="auth-scene__sheet-avatar"/><span className="auth-scene__sheet-line"/><span className="auth-scene__sheet-check">✓</span></div>
+        <div className="auth-scene__sheet-entry"><span className="auth-scene__sheet-avatar"/><span className="auth-scene__sheet-line auth-scene__sheet-line--short"/><span className="auth-scene__sheet-check">✓</span></div>
+        <div className="auth-scene__sheet-entry"><span className="auth-scene__sheet-avatar"/><span className="auth-scene__sheet-line"/><span className="auth-scene__sheet-check">✓</span></div>
+      </div>
+      <div className="auth-scene__sheet auth-scene__sheet--right">
+        <div className="auth-scene__sheet-head">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.5"/><path d="M7 3v4M17 3v4M3 10h18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          <span>School calendar</span>
+        </div>
+        <div className="auth-scene__sheet-rule"/>
+        <div className="auth-scene__calendar-grid">
+          {Array.from({length: 14}, (_, index) => (
+            <span key={index} className={index === 9 ? 'auth-scene__calendar-day auth-scene__calendar-day--marked' : 'auth-scene__calendar-day'}/>
+          ))}
+        </div>
+      </div>
       <div className="auth-scene__dots auth-scene__dots--left"/>
       <div className="auth-scene__dots auth-scene__dots--right"/>
       <svg className="auth-scene__squiggle auth-scene__squiggle--left" viewBox="0 0 190 74" fill="none"><path d="M3 49c20 36 39-36 50-22 15 18-16 40 6 36 22-5 22-51 43-42 19 9 17 47 42 29 19-13 26-16 43-12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
@@ -38,6 +58,12 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
       <div className="auth-scene__badge auth-scene__badge--pencil">
         <svg viewBox="0 0 60 60" fill="none" aria-hidden="true"><path d="m12 44 4-14L42 4l14 14-26 26-14 4-4-4Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/><path d="m35 11 14 14M16 30l14 14M12 44l4 4" stroke="currentColor" strokeWidth="1.5"/></svg>
       </div>
+      <svg className="auth-scene__paperplane" viewBox="0 0 120 75" fill="none" aria-hidden="true">
+        <path d="m6 31 101-27-36 61-17-23L6 31Zm48 11 53-38-34 43" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+        <path d="M5 62c15-11 24-6 35-11" stroke="currentColor" strokeWidth="1.3" strokeDasharray="3 6" strokeLinecap="round"/>
+      </svg>
+      <div className="auth-scene__spark auth-scene__spark--left">✳</div>
+      <div className="auth-scene__spark auth-scene__spark--right">✧</div>
       <div className="auth-scene__micro auth-scene__micro--left">LEARN <span>·</span> ORGANIZE <span>·</span> GROW</div>
       <div className="auth-scene__micro auth-scene__micro--right">RDR SCHOOL <span> / </span> GROOVEHUB</div>
     </div>
