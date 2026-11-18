@@ -1,6 +1,6 @@
-// Package internal owns the typed in-process gateway bridge.
+// Package inprocess owns the typed in-process gateway bridge.
 // It never constructs identities from untrusted client-supplied data.
-package internal
+package inprocess
 
 import (
 	"context"
