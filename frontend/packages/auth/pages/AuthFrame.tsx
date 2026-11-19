@@ -148,6 +148,37 @@ const FloatingSchoolArtwork = ({
   );
 };
 
+/** The mobile sign-in artwork uses the school's original photo collection.
+ * Missing archived images degrade to a school icon, not a broken image.
+ * No social-login actions or misleading UI are attached to the pictures. */
+const mobileLoginPhotos = [
+  { local: '/school-images/gallery-6.jpg', original: 'https://rdrschool.com/images/gallery/6.jpg', Icon: BookOpen, position: 'center' },
+  { local: '/school-images/slide3.jpg', original: 'https://rdrschool.com/images/slide3.jpg', Icon: GraduationCap, position: 'center 42%' },
+  { local: '/school-images/gallery-13.jpg', original: 'https://rdrschool.com/images/gallery/13.jpg', Icon: School, position: 'center 38%' },
+  { local: '/school-images/gallery-10.jpg', original: 'https://rdrschool.com/images/gallery/10.jpg', Icon: Trophy, position: 'center 35%' },
+] as const;
+
+const MobileLoginGallery = () => (
+  <div className="auth-login-gallery" aria-hidden="true">
+    {mobileLoginPhotos.map(({local,original,Icon,position},index) => (
+      <div className="auth-login-gallery__tile" key={local}>
+        <Icon className="auth-login-gallery__fallback" size={29} strokeWidth={1.4}/>
+        <img src={local} alt="" loading={index < 2 ? 'eager' : 'lazy'} decoding="async"
+          style={{objectPosition:position}}
+          onError={event => {
+            const image=event.currentTarget;
+            if(image.dataset.retried === 'true') {
+              image.style.display='none';
+              return;
+            }
+            image.dataset.retried='true';
+            image.src=original;
+          }}/>
+      </div>
+    ))}
+  </div>
+);
+
 /** Fixed mobile artwork: low-contrast school linework behind the form,
  * never boxes, labels, or content competing with authentication controls. */
 const MobileSchoolBackdrop = ({ quote, module, submodule }: {
@@ -249,7 +280,7 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
   }, [title]);
 
   return (
-    <main className="auth-page auth-page--consistent">
+    <main className={`auth-page auth-page--consistent${title === 'Sign in' ? ' auth-page--login' : ''}`}>
       <header className="auth-topbar">
         <div className="auth-brand auth-brand--school" aria-label="RDR School">
           <SchoolMonogram/>
@@ -267,6 +298,7 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
         </div>
       </header>
       <div ref={stageRef} className="auth-stage">
+        {title === 'Sign in' && <MobileLoginGallery/>}
         <MobileSchoolBackdrop quote={quote} module={mobileModule} submodule={mobileSubmodule}/>
         <FloatingSchoolArtwork register={register} placements={placements} quote={quote}/>
         <section ref={panelRef} className="auth-panel" aria-label={title}>{children}</section>
