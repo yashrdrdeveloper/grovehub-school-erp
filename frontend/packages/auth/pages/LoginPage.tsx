@@ -94,7 +94,6 @@ export const LoginPage = () => {
         <Button type="submit" loading={busy} className="button--full">Continue</Button>
       </form>
       <p className="auth-security"><LockKeyhole size={14} /> Protected school workspace</p>
-      <p className="auth-login__contact">Need an account? <Link to="/contact">Contact school</Link></p>
     </AuthFrame>
   );
 };
