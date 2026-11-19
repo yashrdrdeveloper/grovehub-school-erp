@@ -298,10 +298,12 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
         </div>
       </header>
       <div ref={stageRef} className="auth-stage">
-        {title === 'Sign in' && <MobileLoginGallery/>}
         <MobileSchoolBackdrop quote={quote} module={mobileModule} submodule={mobileSubmodule}/>
         <FloatingSchoolArtwork register={register} placements={placements} quote={quote}/>
-        <section ref={panelRef} className="auth-panel" aria-label={title}>{children}</section>
+        <div className={title === 'Sign in' ? 'auth-login-scene auth-login-scene--enabled' : 'auth-login-scene'}>
+          {title === 'Sign in' && <MobileLoginGallery/>}
+          <section ref={panelRef} className="auth-panel" aria-label={title}>{children}</section>
+        </div>
       </div>
       <footer className="auth-footer"><span>© {new Date().getFullYear()} GrooveHub</span></footer>
     </main>
