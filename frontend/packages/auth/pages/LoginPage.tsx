@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Eye, EyeOff, LockKeyhole, LogIn } from 'lucide-react';
+import { Eye, EyeOff, LockKeyhole, LogIn, Mail } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { ApiError } from '@Business/api';
@@ -46,14 +46,15 @@ export const LoginPage = () => {
     <AuthFrame title="Sign in">
       <div className="auth-panel__icon"><LogIn size={23}/></div>
       <h1>Sign in</h1>
-      <p className="muted">Enter your school account credentials.</p>
+      <p className="muted"><span className="auth-login__desktop-copy">Enter your school account credentials.</span><span className="auth-login__mobile-copy">Welcome back. Sign in to your school workspace.</span></p>
       <form noValidate onSubmit={(event) => void submit(event)} className="auth-form">
+        <div className="auth-login__input-wrap">
         <Input
           id="identifier"
           type="email"
           inputMode="email"
           label="Email"
-          placeholder="you@school.edu"
+          placeholder="Enter your email"
           value={identifier}
           autoComplete="username"
           error={fieldErrors.identifier}
@@ -64,6 +65,8 @@ export const LoginPage = () => {
           }}
           required
         />
+          <Mail className="auth-login__input-icon" size={18} aria-hidden="true"/>
+        </div>
         <div className="password-field">
           <Input
             id="password"
@@ -80,6 +83,7 @@ export const LoginPage = () => {
             }}
             required
           />
+          <LockKeyhole className="auth-login__input-icon" size={18} aria-hidden="true"/>
           <button type="button" aria-label={visible ? 'Hide password' : 'Show password'}
             onClick={() => setVisible(current => !current)} className="password-toggle">
             {visible ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -90,6 +94,7 @@ export const LoginPage = () => {
         <Button type="submit" loading={busy} className="button--full">Continue</Button>
       </form>
       <p className="auth-security"><LockKeyhole size={14} /> Protected school workspace</p>
+      <p className="auth-login__contact">Need an account? <Link to="/contact">Contact school</Link></p>
     </AuthFrame>
   );
 };
