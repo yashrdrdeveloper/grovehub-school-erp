@@ -925,3 +925,8 @@
   .rdr-login-v2__main > .rdr-login-v2__form .rdr-login-v2__input-shell {height:44px;}
   .rdr-login-v2__main > .rdr-login-v2__form .rdr-login-v2__submit {min-height:44px;}
 }
+
+/* Add exactly 4px between login email and password fields. */
+.rdr-login-v2__main > .rdr-login-v2__form > .rdr-login-v2__field:first-child {
+  margin-bottom:4px;
+}
