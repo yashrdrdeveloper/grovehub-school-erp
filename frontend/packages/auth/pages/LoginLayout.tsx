@@ -17,12 +17,13 @@ const appearanceOptions: { value: ThemePreference; label: string; Icon: typeof S
 ];
 
 /** Shared, card-free shell for sign-in and every recovery step. */
-export const LoginLayout = ({ children, title, description, mobileDescription, minimalMobile = false, eyebrow = 'YOUR SCHOOL WORKSPACE' }: {
+export const LoginLayout = ({ children, title, description, mobileDescription, minimalMobile = false, mobileTitle = 'Sign in', eyebrow = 'YOUR SCHOOL WORKSPACE' }: {
   children: ReactNode;
   title: string;
   description: string;
   mobileDescription?: string;
   minimalMobile?: boolean;
+  mobileTitle?: string;
   eyebrow?: string;
 }) => {
   const { preference, setPreference } = useWorkspaceTheme();
@@ -79,7 +80,7 @@ export const LoginLayout = ({ children, title, description, mobileDescription, m
               <p className="rdr-login-v2__description-desktop">{description}</p>
               <p className="rdr-login-v2__description-mobile">{mobileDescription ?? description}</p>
             </div>
-            {minimalMobile && <h2 className="rdr-login-v2__mobile-signin-title">Sign in</h2>}
+            {minimalMobile && <h2 className="rdr-login-v2__mobile-signin-title">{mobileTitle}</h2>}
             {children}
             <div className="rdr-login-v2__closing">
               <span className="rdr-login-v2__closing-rule"/>
