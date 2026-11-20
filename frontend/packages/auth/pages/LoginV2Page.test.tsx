@@ -20,10 +20,12 @@ describe('RDR Login V2',()=>{
     setPreference.mockReset();
   });
 
-  it('renders a separate school-photo sign-in layout without fake social login or registration',()=>{
+  it('renders gradient light-trail school artwork without photographs, social login or registration',()=>{
     render(<MemoryRouter><LoginV2Page/></MemoryRouter>);
     expect(screen.getByRole('heading',{name:'Welcome back.'})).toBeTruthy();
-    expect(screen.getByRole('img',{name:/RDR School students together/i})).toBeTruthy();
+    expect(document.querySelector('.rdr-login-v2__light-art')).not.toBeNull();
+    expect(document.querySelector('.rdr-login-v2__book-art')).not.toBeNull();
+    expect(document.querySelectorAll('.rdr-login-v2 img')).toHaveLength(0);
     expect(screen.getByRole('button',{name:/sign in to workspace/i})).toBeTruthy();
     expect(screen.queryByRole('button',{name:/continue with google/i})).toBeNull();
     expect(screen.queryByRole('button',{name:/create account/i})).toBeNull();
@@ -49,14 +51,13 @@ describe('RDR Login V2',()=>{
     await waitFor(()=>expect(signIn).toHaveBeenCalledWith('parent@example.com','school-password'));
   });
 
-  it('falls back to original RDR photo URL if local assets are missing',()=>{
+  it('uses only local CSS and SVG for the hero, with no external visual dependencies',()=>{
     render(<MemoryRouter><LoginV2Page/></MemoryRouter>);
-    const image=screen.getByRole('img',{name:/RDR School students together/i}) as HTMLImageElement;
-    expect(image.getAttribute('src')).toBe('/school-images/slide5.jpg');
-    fireEvent.error(image);
-    expect(image.getAttribute('src')).toBe('https://rdrschool.com/images/slide5.jpg');
-    fireEvent.error(image);
-    expect(screen.queryByRole('img',{name:/RDR School students together/i})).toBeNull();
+    const visual=document.querySelector('.rdr-login-v2__visual');
+    expect(visual).not.toBeNull();
+    expect(visual?.querySelectorAll('img,picture,video,source')).toHaveLength(0);
+    expect(visual?.querySelectorAll('svg.rdr-login-v2__light-art')).toHaveLength(1);
+    expect(visual?.textContent).toContain('RDR School');
   });
 
   it('keeps system, light, and dark theme choices accessible',()=>{
