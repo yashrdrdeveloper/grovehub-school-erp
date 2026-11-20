@@ -16,4 +16,5 @@ type Service interface {
 	Transition(context.Context, string, string) (accountdto.Account, error)
 	Resend(context.Context, string) error
 	Setup(context.Context, string, accountdto.Setup) (accountdto.SetupResult, error)
+	SetupStatus(context.Context, string) (accountdto.SetupStatusResult, error)
 }
