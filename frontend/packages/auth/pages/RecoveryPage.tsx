@@ -1,16 +1,16 @@
-import { useEffect, useState, type FormEvent } from 'react';
-import { CheckCircle2, Eye, EyeOff, KeyRound, ShieldCheck } from 'lucide-react';
+import { useEffect, useId, useState, type FormEvent } from 'react';
+import { ArrowLeft, ArrowRight, CheckCircle2, Eye, EyeOff, KeyRound, LockKeyhole, ShieldCheck, UserRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { authenticationApi } from '@Business/auth';
 import { accountsApi } from '@Business/accounts';
-import { Button, Input } from '@Components';
 
-import { AuthFrame } from './AuthFrame';
+import { LoginLayout } from './LoginLayout';
 
 type Purpose = 'recovery' | 'invitation';
 
 export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
+  const id = useId();
   const [verified, setVerified] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
@@ -22,25 +22,28 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
   const [fieldErrors, setFieldErrors] = useState<{ username?: string; password?: string; confirmation?: string }>({});
 
   useEffect(() => {
-    // URL fragments are never sent in an HTTP request or referrer.
+    // Keep the proof in the URL fragment only until exchange; do not send it in a request URL.
     const params = new URLSearchParams(window.location.hash.slice(1));
     const proof = params.get('proof');
     window.history.replaceState(null, '', window.location.pathname);
     if (!proof) {
-      setError('The link is missing its one-time proof. Request a new email.');
+      setError('This link is missing its one-time proof. Request a fresh link.');
       return;
     }
+    let active = true;
     const action = purpose === 'recovery'
       ? authenticationApi.exchangeRecovery(proof)
       : authenticationApi.exchangeInvitation(proof);
     void action.then(
-      () => setVerified(true),
-      () => setError('This link is expired or already used. Request a fresh one.'),
+      () => { if (active) setVerified(true); },
+      () => { if (active) setError('This link is expired or already used. Request a fresh one.'); },
     );
+    return () => { active = false; };
   }, [purpose]);
 
-  const submit = async (event: FormEvent) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (busy || !verified || complete) return;
     setError('');
     const next: typeof fieldErrors = {};
     if (purpose === 'invitation' && !username.trim()) next.username = 'Choose a username.';
@@ -52,42 +55,89 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
     if (Object.keys(next).length) return;
     setBusy(true);
     try {
-      if (purpose === 'recovery') {
-        await authenticationApi.resetPassword(password);
-      } else {
-        await accountsApi.setup(username.trim(), password);
-      }
+      if (purpose === 'recovery') await authenticationApi.resetPassword(password);
+      else await accountsApi.setup(username.trim(), password);
       setComplete(true);
+      setPassword('');
+      setConfirmation('');
     } catch (failure) {
-      setError(failure instanceof Error ? failure.message : 'Unable to complete setup.');
+      setError(failure instanceof Error ? failure.message : 'Unable to complete setup. Try again.');
     } finally {
       setBusy(false);
     }
   };
 
   const settingUp = purpose === 'invitation';
+  const title = settingUp ? 'Set your password.' : 'Create a new password.';
+  const description = settingUp
+    ? 'Complete your school invitation and secure your account.'
+    : 'Choose a strong password to get back into your school workspace.';
 
-  return (
-    <AuthFrame title={settingUp ? "Set password" : "Reset password"}>
-        <div className="auth-panel__icon">{settingUp ? <ShieldCheck size={23}/> : <KeyRound size={23}/>}</div>
-        <h1>{settingUp ? 'Set up your account' : 'Choose a new password'}</h1>
-        <p className="muted">
-          {settingUp ? 'Complete the invitation to activate your school account.' : 'Your new password will replace the previous one.'}
-        </p>
-        {complete ? (
-          <div className="notice"><CheckCircle2 size={20} /> All set. <Link to="/login">Go to sign in</Link></div>
-        ) : verified ? (
-          <form className="auth-form" noValidate onSubmit={(event) => void submit(event)}>
-            {settingUp ? <Input id="username" label="Username" placeholder="Choose a username" autoComplete="username" value={username} error={fieldErrors.username} onChange={(event) => { setUsername(event.target.value); if (fieldErrors.username) setFieldErrors(current => ({ ...current, username: undefined })); }} required /> : null}
-            <div className="password-field">
-              <Input id="newPassword" label="New password" placeholder="Create a secure password" type={showPassword ? 'text' : 'password'} value={password} minLength={12} autoComplete="new-password" error={fieldErrors.password} onChange={(event) => { setPassword(event.target.value); if (fieldErrors.password) setFieldErrors(current => ({ ...current, password: undefined })); }} required hint="At least 12 characters." />
-              <button type="button" className="password-toggle" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? 'Hide passwords' : 'Show passwords'}>{showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}</button>
+  return <LoginLayout title={title} description={description} eyebrow={settingUp ? 'WELCOME TO RDR SCHOOL' : 'SECURE ACCOUNT RECOVERY'}>
+    <div className="rdr-auth-flow">
+      <form className="rdr-login-v2__form rdr-auth-flow__form" onSubmit={event => void submit(event)} noValidate>
+        <div className="rdr-auth-flow__fields">
+          {settingUp && <div className="rdr-login-v2__field">
+            <label htmlFor={`${id}-username`}>Username</label>
+            <div className="rdr-login-v2__input-shell">
+              <UserRound size={18} aria-hidden="true"/>
+              <input id={`${id}-username`} autoComplete="username" placeholder="Choose a username"
+                disabled={!verified || complete} value={username}
+                aria-invalid={Boolean(fieldErrors.username)}
+                onChange={event => {setUsername(event.target.value);setFieldErrors(current => ({...current,username:undefined}));}} required/>
             </div>
-            <Input id="confirmPassword" label="Confirm new password" placeholder="Re-enter your new password" type={showPassword ? 'text' : 'password'} value={confirmation} minLength={12} autoComplete="new-password" error={fieldErrors.confirmation} onChange={event => { setConfirmation(event.target.value); if (fieldErrors.confirmation) setFieldErrors(current => ({ ...current, confirmation: undefined })); }} required />
-            {error ? <p className="form-error" role="alert">{error}</p> : null}
-            <Button type="submit" loading={busy} className="button--full">{settingUp ? 'Activate account' : 'Reset password'}</Button>
-          </form>
-        ) : <div className="notice" role="status">{error || 'Verifying your secure link…'}</div>}
-    </AuthFrame>
-  );
+            <small className="rdr-login-v2__field-error rdr-login-v2__field-error--reserved">{fieldErrors.username || '\u00a0'}</small>
+          </div>}
+          <div className="rdr-login-v2__field">
+            <label htmlFor={`${id}-password`}>New password</label>
+            <div className="rdr-login-v2__input-shell">
+              <LockKeyhole size={18} aria-hidden="true"/>
+              <input id={`${id}-password`} type={showPassword ? 'text' : 'password'}
+                autoComplete="new-password" placeholder="At least 12 characters"
+                disabled={!verified || complete} value={password} minLength={12}
+                aria-invalid={Boolean(fieldErrors.password)}
+                onChange={event => {setPassword(event.target.value);setFieldErrors(current => ({...current,password:undefined}));}} required/>
+              <button type="button" className="rdr-login-v2__visibility"
+                aria-label={showPassword ? 'Hide passwords' : 'Show passwords'}
+                onClick={() => setShowPassword(value => !value)}>
+                {showPassword ? <EyeOff size={19}/> : <Eye size={19}/>}
+              </button>
+            </div>
+            <small className="rdr-login-v2__field-error rdr-login-v2__field-error--reserved">{fieldErrors.password || '\u00a0'}</small>
+          </div>
+          <div className="rdr-login-v2__field">
+            <label htmlFor={`${id}-confirmation`}>Confirm new password</label>
+            <div className="rdr-login-v2__input-shell">
+              <KeyRound size={18} aria-hidden="true"/>
+              <input id={`${id}-confirmation`} type={showPassword ? 'text' : 'password'}
+                autoComplete="new-password" placeholder="Re-enter your password"
+                disabled={!verified || complete} value={confirmation}
+                aria-invalid={Boolean(fieldErrors.confirmation)}
+                onChange={event => {setConfirmation(event.target.value);setFieldErrors(current => ({...current,confirmation:undefined}));}} required/>
+            </div>
+            <small className="rdr-login-v2__field-error rdr-login-v2__field-error--reserved">{fieldErrors.confirmation || '\u00a0'}</small>
+          </div>
+          <div className="rdr-auth-flow__message" role="status" aria-live="polite">
+            {complete
+              ? <><CheckCircle2 size={19}/> {settingUp ? 'Your school account is ready.' : 'Your password has been reset.'}</>
+              : !verified
+                ? <><ShieldCheck size={19}/> {error || 'Verifying your secure link…'}</>
+                : <><ShieldCheck size={19}/> Use 12 or more characters for your new password.</>}
+          </div>
+        </div>
+        <div className="rdr-auth-flow__actions">
+          <div className="rdr-login-v2__feedback-slot" aria-live="polite">
+            {verified && error && <p className="rdr-login-v2__error" role="alert">{error}</p>}
+          </div>
+          {complete
+            ? <Link className="rdr-login-v2__submit rdr-auth-flow__submit-link" to="/login"><span>Continue to sign in</span><ArrowRight size={19}/></Link>
+            : <button className="rdr-login-v2__submit" type="submit" disabled={busy || !verified}>
+                <span>{busy ? 'Saving securely…' : settingUp ? 'Activate account' : 'Reset password'}</span>
+                <ArrowRight size={19}/>
+              </button>}
+          <Link className="rdr-auth-flow__back" to="/login"><ArrowLeft size={16}/> Back to sign in</Link>
+        </div>
+      </form>
+    </div>
+  </LoginLayout>;
 };
