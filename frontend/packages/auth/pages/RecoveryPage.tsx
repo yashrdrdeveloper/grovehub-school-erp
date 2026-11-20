@@ -82,7 +82,21 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
     // Keep one-time secrets in component memory; remove the fragment from browser history.
     window.history.replaceState(window.history.state, '', url.pathname + url.search);
     if (!proofRef.current) {
-      setView('missing');
+      // A prior successful exchange may have left a valid HttpOnly grant cookie.
+      // Resuming it must not require restoring the original proof to the URL.
+      requestRef.current = (async () => {
+        try {
+          if (invitation) await accountsApi.setupStatus();
+          else await authenticationApi.resetGrantStatus();
+          setView('ready');
+        } catch (failure) {
+          if (failure instanceof ApiError && failure.code === 'IDENTITY_SETUP_ATTEMPTS_EXCEEDED') {
+            setView('attempts-exhausted');
+          } else {
+            setView(failure instanceof ApiError && [401,403,404,410].includes(failure.status) ? 'missing' : 'unavailable');
+          }
+        }
+      })();
       return;
     }
     requestRef.current = verify(proofRef.current);
@@ -188,7 +202,7 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
         {view === 'checking' && <p className="rdr-recovery__slow" role="status">{slow ? 'Still checking. This may take a moment…' : 'Verifying your invitation securely…'}</p>}
         {view === 'success' && <Link className="rdr-login-v2__submit rdr-recovery__state-button" to="/login">Go to login <ArrowRight size={18}/></Link>}
         {view === 'unavailable' && <button className="rdr-login-v2__submit rdr-recovery__state-button" type="button"
-          onClick={() => { if (proofRef.current) void verify(proofRef.current); }}>Try checking again <ArrowRight size={18}/></button>}
+          onClick={() => { if (proofRef.current) void verify(proofRef.current); else void (async()=>{setView('checking');try{if(invitation)await accountsApi.setupStatus();else await authenticationApi.resetGrantStatus();setView('ready');}catch{setView('unavailable');}})(); }}>Try checking again <ArrowRight size={18}/></button>}
         {(view === 'missing' || view === 'expired' || view === 'attempts-exhausted') && <Link className="rdr-recovery__back" to="/login">
           <ArrowLeft size={16}/> Return to login
         </Link>}
