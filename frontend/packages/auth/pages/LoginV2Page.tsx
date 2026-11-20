@@ -45,7 +45,7 @@ export const LoginV2Page = () => {
     }
   };
 
-  return <LoginLayout title="Welcome back." description="Sign in to continue to your RDR School workspace.">
+  return <LoginLayout title="Welcome back." description="Sign in to continue to your RDR School workspace." mobileDescription="Sign in to your workspace.">
           <form className="rdr-login-v2__form rdr-login-v2__form--signin" onSubmit={event=>void submit(event)} noValidate>
             <div className="rdr-login-v2__field">
               <label htmlFor={`${fieldId}-email`}>Email address</label>
