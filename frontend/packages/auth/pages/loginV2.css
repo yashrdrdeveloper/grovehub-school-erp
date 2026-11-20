@@ -149,14 +149,14 @@
 }
 .rdr-login-v2__visual-brand>span:last-child{display:flex;flex-direction:column;gap:4px;min-width:0}
 .rdr-login-v2__visual-brand strong{
-  font-size:18px;
+  font-size:1.125rem;
   font-weight:850;
   line-height:1.1;
   letter-spacing:-.05em;
   color:var(--v2-art-ink);
 }
 .rdr-login-v2__visual-brand small{
-  font-size:10px;
+  font-size:0.625rem;
   font-weight:650;
   letter-spacing:.02em;
   color:var(--v2-art-muted);
@@ -171,7 +171,7 @@
   align-items:center;
   gap:10px;
   color:var(--v2-art-accent);
-  font-size:10px;
+  font-size:0.625rem;
   font-weight:900;
   letter-spacing:.15em;
 }
@@ -182,7 +182,7 @@
 }
 .rdr-login-v2__visual-copy h2{
   color:var(--v2-art-ink);
-  font-size:clamp(36px,4.35vw,67px);
+  font-size:clamp(2.25rem,4.35vw,4.1875rem);
   line-height:1.08;
   font-weight:800;
   letter-spacing:-.065em;
@@ -192,7 +192,7 @@
 .rdr-login-v2__visual-copy p{
   max-width:385px;
   color:var(--v2-art-muted);
-  font-size:clamp(12px,1.15vw,15px);
+  font-size:clamp(0.75rem,1.15vw,0.9375rem);
   line-height:1.75;
   margin:0;
 }
@@ -202,7 +202,7 @@
   margin-top:38px;
   padding-top:18px;
   color:var(--v2-art-muted);
-  font-size:10px;
+  font-size:0.625rem;
   font-weight:800;
   letter-spacing:.15em;
 }
@@ -223,7 +223,7 @@
 .rdr-login-v2__back{
   display:inline-flex;align-items:center;gap:9px;
   min-height:42px;color:var(--v2-muted)!important;
-  font-size:11px;font-weight:800;
+  font-size:0.6875rem;font-weight:800;
 }
 .rdr-login-v2__back svg{color:var(--v2-ink)}
 .rdr-login-v2__back:hover{color:var(--v2-ink)!important}
@@ -250,24 +250,24 @@
 }
 .rdr-login-v2__eyebrow{
   display:inline-flex;align-items:center;gap:8px;
-  color:#997a62;font-size:10px;letter-spacing:.11em;font-weight:850;
+  color:#997a62;font-size:0.625rem;letter-spacing:.11em;font-weight:850;
 }
 .rdr-login-v2__heading h1{
   color:var(--v2-ink);
-  font-size:clamp(34px,3.6vw,54px);
+  font-size:clamp(2.125rem,3.6vw,3.375rem);
   font-weight:850;line-height:1.11;
   letter-spacing:-.065em;margin:15px 0 11px;
 }
 .rdr-login-v2__heading p{
   color:var(--v2-muted);
-  font-size:13px;line-height:1.7;margin:0 0 31px;
+  font-size:0.8125rem;line-height:1.7;margin:0 0 31px;
 }
 .rdr-login-v2__form{display:flex;flex-direction:column;gap:21px;min-width:0}
 .rdr-login-v2__field{display:flex;flex-direction:column;gap:9px;min-width:0}
-.rdr-login-v2__field label{display:block;font-size:12px;font-weight:800;color:var(--v2-ink)}
+.rdr-login-v2__field label{display:block;font-size:0.75rem;font-weight:800;color:var(--v2-ink)}
 .rdr-login-v2__password-label{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
 .rdr-login-v2__password-label>a{
-  color:var(--v2-ink);font-size:11px;font-weight:750;
+  color:var(--v2-ink);font-size:0.6875rem;font-weight:750;
   text-decoration:underline;text-underline-offset:3px;
 }
 .rdr-login-v2__input-shell{
@@ -282,9 +282,9 @@
   flex:1;width:100%;min-width:0;height:100%;
   padding:0 12px 0 0;border:0!important;outline:0!important;
   box-shadow:none!important;background:transparent!important;
-  color:var(--v2-ink);font-size:16px;
+  color:var(--v2-ink);font-size:1rem;
 }
-.rdr-login-v2__input-shell input::placeholder{color:#99a4b1;opacity:1;font-size:12px}
+.rdr-login-v2__input-shell input::placeholder{color:#99a4b1;opacity:1;font-size:0.75rem}
 .rdr-login-v2__input-shell:has(input[aria-invalid="true"]){border-color:#b95165}
 .rdr-login-v2__visibility{
   display:grid;place-items:center;
@@ -293,9 +293,9 @@
   cursor:pointer;background:transparent;color:var(--v2-muted);
 }
 .rdr-login-v2__visibility:hover{background:var(--v2-tint);color:var(--v2-ink)}
-.rdr-login-v2__field-error{font-size:11px;color:#b54863;line-height:1.5}
+.rdr-login-v2__field-error{font-size:0.6875rem;color:#b54863;line-height:1.5}
 .rdr-login-v2__error{
-  font-size:12px;color:#b54863;line-height:1.6;margin:0;
+  font-size:0.75rem;color:#b54863;line-height:1.6;margin:0;
   border:1px solid #e9c5cc;border-radius:9px;
   background:#fff2f3;padding:10px 12px;
 }
@@ -304,7 +304,7 @@
   min-height:52px;width:100%;padding:12px 15px;
   border:0;border-radius:13px;
   background:var(--v2-navy);color:#fff;
-  font-size:13px;font-weight:850;cursor:pointer;
+  font-size:0.8125rem;font-weight:850;cursor:pointer;
   margin-top:6px;box-shadow:0 10px 23px rgba(31,42,68,.16);
   transition:transform .15s ease,background .15s ease;
 }
@@ -313,7 +313,7 @@
 .rdr-login-v2__closing{
   display:flex;align-items:center;gap:13px;
   margin-top:31px;color:var(--v2-muted);opacity:.75;
-  font-size:10px;font-weight:750;letter-spacing:.12em;white-space:nowrap;
+  font-size:0.625rem;font-weight:750;letter-spacing:.12em;white-space:nowrap;
 }
 .rdr-login-v2__closing-rule{height:1px;background:var(--v2-border);flex:1}
 .rdr-login-v2 :is(a,button,input):focus-visible{outline:3px solid #92a6cc;outline-offset:3px}
@@ -369,8 +369,8 @@
   .rdr-login-v2__visual-brand{padding:clamp(18px,3vw,33px)}
   .rdr-login-v2__visual-brand small{white-space:normal}
   .rdr-login-v2__visual-copy{padding:0 clamp(19px,3vw,36px) 32px}
-  .rdr-login-v2__visual-copy h2{font-size:clamp(30px,4vw,48px)}
-  .rdr-login-v2__heading h1{font-size:clamp(32px,4vw,44px)}
+  .rdr-login-v2__visual-copy h2{font-size:clamp(1.875rem,4vw,3rem)}
+  .rdr-login-v2__heading h1{font-size:clamp(2rem,4vw,2.75rem)}
   .rdr-login-v2__heading p{margin-bottom:23px}
   .rdr-login-v2__form{gap:17px}
 }
@@ -399,12 +399,12 @@
   .rdr-login-v2__light-art{opacity:.73;transform:translateY(-17%) scale(1.1)}
   .rdr-login-v2__visual-brand{padding:16px 19px}
   .rdr-login-v2__visual-brand .school-monogram{width:48px;height:37px;border-radius:9px;padding:6px}
-  .rdr-login-v2__visual-brand strong{font-size:14px}
-  .rdr-login-v2__visual-brand small{font-size:9px}
+  .rdr-login-v2__visual-brand strong{font-size:0.875rem}
+  .rdr-login-v2__visual-brand small{font-size:0.5625rem}
   .rdr-login-v2__visual-copy{padding:0 21px 18px}
-  .rdr-login-v2__visual-kicker{font-size:9px;letter-spacing:.1em}
+  .rdr-login-v2__visual-kicker{font-size:0.5625rem;letter-spacing:.1em}
   .rdr-login-v2__visual-kicker>span{width:6px;height:6px}
-  .rdr-login-v2__visual-copy h2{font-size:clamp(21px,5.9vw,28px);line-height:1.14;margin:7px 0 0}
+  .rdr-login-v2__visual-copy h2{font-size:clamp(1.3125rem,5.9vw,1.75rem);line-height:1.14;margin:7px 0 0}
   .rdr-login-v2__visual-copy p,.rdr-login-v2__visual-footer{display:none}
   .rdr-login-v2__content{
     flex:1 1 0;min-height:0;min-width:0;width:100%;
@@ -413,19 +413,19 @@
     -webkit-overflow-scrolling:touch;
   }
   .rdr-login-v2__toolbar{flex:none}
-  .rdr-login-v2__back{min-height:36px;font-size:11px}
+  .rdr-login-v2__back{min-height:36px;font-size:0.6875rem}
   .rdr-login-v2__appearance{padding:2px}
   .rdr-login-v2__appearance button{width:34px;height:34px;min-width:34px}
   .rdr-login-v2__main{max-width:500px;margin:auto;padding:9px 0 6px}
-  .rdr-login-v2__eyebrow{font-size:9px}
-  .rdr-login-v2__heading h1{font-size:31px;margin:9px 0 7px}
-  .rdr-login-v2__heading p{font-size:12px;margin-bottom:18px}
+  .rdr-login-v2__eyebrow{font-size:0.5625rem}
+  .rdr-login-v2__heading h1{font-size:1.9375rem;margin:9px 0 7px}
+  .rdr-login-v2__heading p{font-size:0.75rem;margin-bottom:18px}
   .rdr-login-v2__form{gap:14px}
   .rdr-login-v2__field{gap:7px}
   .rdr-login-v2__input-shell{height:48px;border-radius:12px}
   .rdr-login-v2__input-shell>svg{margin-left:15px}
   .rdr-login-v2__submit{min-height:49px;margin-top:3px;border-radius:11px}
-  .rdr-login-v2__closing{margin-top:18px;font-size:9px}
+  .rdr-login-v2__closing{margin-top:18px;font-size:0.5625rem}
 }
 @media(max-width:720px) and (max-height:700px){
   .rdr-login-v2__visual{flex-basis:clamp(105px,18dvh,140px)}
@@ -433,7 +433,7 @@
   .rdr-login-v2__visual-copy{padding:0 19px 10px}
   .rdr-login-v2__content{padding-top:7px}
   .rdr-login-v2__main{padding:4px 0}
-  .rdr-login-v2__heading h1{font-size:26px}
+  .rdr-login-v2__heading h1{font-size:1.625rem}
   .rdr-login-v2__heading p{margin-bottom:12px}
   .rdr-login-v2__form{gap:10px}
   .rdr-login-v2__input-shell{height:44px}
@@ -445,7 +445,7 @@
   .rdr-login-v2__visual-brand{padding:7px 12px}
   .rdr-login-v2__visual-brand .school-monogram{width:40px;height:32px}
   .rdr-login-v2__content{padding-top:5px}
-  .rdr-login-v2__heading h1{font-size:23px}
+  .rdr-login-v2__heading h1{font-size:1.4375rem}
   .rdr-login-v2__eyebrow{display:none}
 }
 @media(prefers-reduced-motion:reduce){
@@ -733,7 +733,7 @@
   display:block;
   min-height:15px;
   line-height:15px;
-  font-size:11px;
+  font-size:0.6875rem;
 }
 .rdr-login-v2__feedback-slot {
   height:44px;
@@ -746,7 +746,7 @@
   padding:0;
   border:0;
   background:none;
-  font-size:11px;
+  font-size:0.6875rem;
   line-height:1.5;
 }
 .rdr-auth-flow {width:100%;min-width:0}
@@ -773,7 +773,7 @@
   display:flex;
   align-items:flex-start;
   gap:10px;
-  font-size:12px;
+  font-size:0.75rem;
   line-height:1.6;
   color:var(--v2-muted);
 }
@@ -785,7 +785,7 @@
   justify-content:center;
   gap:8px;
   min-height:36px;
-  font-size:12px;
+  font-size:0.75rem;
   font-weight:750;
   color:var(--v2-muted)!important;
 }
@@ -825,7 +825,7 @@
 }
 .rdr-login-v2__main .rdr-login-v2__heading h1 {
   margin:10px 0 6px;
-  font-size:clamp(34px,3.2vw,46px);
+  font-size:clamp(2.125rem,3.2vw,2.875rem);
   line-height:1.12;
 }
 .rdr-login-v2__main .rdr-login-v2__heading p {
@@ -882,7 +882,7 @@
   white-space:nowrap;
   text-overflow:ellipsis;
   pointer-events:none;
-  font-size:11px;
+  font-size:0.6875rem;
 }
 /* Fixed feedback region: error visibility never moves the sign-in button. */
 .rdr-login-v2__form--signin > .rdr-login-v2__feedback-slot--signin {
@@ -909,7 +909,7 @@
   border:0;
   background:transparent;
   color:#bd3553;
-  font-size:12px;
+  font-size:0.75rem;
   font-weight:500;
   line-height:1.45;
 }
@@ -938,7 +938,7 @@
   :root[data-theme="dark"] .rdr-login-v2__main {padding:6px 0}
   .rdr-login-v2__main .rdr-login-v2__heading h1 {
     margin:7px 0;
-    font-size:clamp(28px,7vw,35px);
+    font-size:clamp(1.75rem,7vw,2.1875rem);
   }
   .rdr-login-v2__main .rdr-login-v2__heading p {margin-bottom:16px}
   .rdr-login-v2__form--signin > .rdr-login-v2__field + .rdr-login-v2__field {
@@ -996,7 +996,7 @@
 
 /* Recovery flow: info first, editable email second, one stable button and back link. */
 .rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading h1 {
-  font-size:clamp(34px,3.2vw,46px);
+  font-size:clamp(2.125rem,3.2vw,2.875rem);
   line-height:1.12;
   margin:10px 0 6px;
 }
@@ -1052,12 +1052,12 @@
   min-width:0;
 }
 .rdr-auth-flow--forgot .rdr-auth-flow__notice-copy strong {
-  font-size:12px;
+  font-size:0.75rem;
   font-weight:800;
   line-height:17px;
 }
 .rdr-auth-flow--forgot .rdr-auth-flow__notice-copy small {
-  font-size:11px;
+  font-size:0.6875rem;
   line-height:17px;
 }
 .rdr-auth-flow--forgot .rdr-auth-flow__email-field {
@@ -1106,7 +1106,7 @@
   background:transparent;
   padding:0;
   color:#ba3551;
-  font-size:11px;
+  font-size:0.6875rem;
   line-height:1.4;
 }
 .rdr-auth-flow--forgot .rdr-login-v2__submit {
@@ -1139,7 +1139,7 @@
   border:0;
   border-radius:7px;
   background:transparent;
-  font-size:12px;
+  font-size:0.75rem;
   font-weight:700;
   text-decoration:none;
   color:var(--v2-ink)!important;
@@ -1168,7 +1168,7 @@
 @media(max-width:720px) {
   .rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading h1 {
     margin:7px 0;
-    font-size:clamp(28px,7vw,35px);
+    font-size:clamp(1.75rem,7vw,2.1875rem);
   }
   .rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading p {
     margin-bottom:16px;
@@ -1186,14 +1186,14 @@
     min-height:94px;
     padding:10px;
   }
-  .rdr-auth-flow--forgot .rdr-auth-flow__notice-copy small {font-size:10px;line-height:16px;}
+  .rdr-auth-flow--forgot .rdr-auth-flow__notice-copy small {font-size:0.625rem;line-height:16px;}
 }
 
 
 /* Recovery states: illustration and password form occupy an identical stage. */
 .rdr-login-v2__main:has(.rdr-recovery) .rdr-login-v2__heading h1 {
   margin:10px 0 6px;
-  font-size:clamp(34px,3.2vw,46px);
+  font-size:clamp(2.125rem,3.2vw,2.875rem);
   line-height:1.12;
 }
 .rdr-login-v2__main:has(.rdr-recovery) .rdr-login-v2__heading p {
@@ -1244,7 +1244,7 @@
   align-items:center;
   gap:8px;
   color:var(--v2-muted);
-  font-size:11px;
+  font-size:0.6875rem;
   line-height:1.5;
   margin:0;
 }
@@ -1267,7 +1267,7 @@
   gap:7px;
   margin:0;
   color:#bd3553;
-  font-size:11px;
+  font-size:0.6875rem;
   line-height:1.4;
 }
 .rdr-recovery__inline-error svg {flex:none}
@@ -1283,7 +1283,7 @@
   min-height:22px;
   margin-top:5px;
   color:var(--v2-muted);
-  font-size:11px;
+  font-size:0.6875rem;
 }
 .rdr-recovery__state {
   align-items:center;
@@ -1345,7 +1345,7 @@
 }
 .rdr-recovery__art-title {
   display:block;
-  font-size:clamp(17px,2vw,21px);
+  font-size:clamp(1.0625rem,2vw,1.3125rem);
   font-weight:850;
   line-height:1.2;
   letter-spacing:-.03em;
@@ -1354,7 +1354,7 @@
   max-width:345px;
   margin:0;
   color:var(--v2-muted);
-  font-size:12px;
+  font-size:0.75rem;
   line-height:1.65;
 }
 .rdr-recovery__state .rdr-recovery__state-button {
@@ -1372,7 +1372,7 @@
   gap:8px;
   width:100%;
   height:48px;
-  font-size:12px;
+  font-size:0.75rem;
   font-weight:750;
   color:var(--v2-ink)!important;
 }
@@ -1383,7 +1383,7 @@
   place-items:center;
   margin:0;
   color:var(--v2-muted);
-  font-size:11px;
+  font-size:0.6875rem;
 }
 :root[data-theme="dark"] .rdr-recovery__art-icon {
   color:#acc6ed;
@@ -1400,7 +1400,7 @@
 @media(max-width:720px) {
   .rdr-login-v2__main:has(.rdr-recovery) .rdr-login-v2__heading h1 {
     margin:7px 0;
-    font-size:clamp(28px,7vw,35px);
+    font-size:clamp(1.75rem,7vw,2.1875rem);
   }
   .rdr-login-v2__main:has(.rdr-recovery) .rdr-login-v2__heading p {margin-bottom:16px}
   .rdr-recovery {min-height:312px}
@@ -1475,11 +1475,11 @@
     border-radius:12px;
   }
   .rdr-login-v2__visual-brand strong {
-    font-size:clamp(16px,4.7vw,21px);
+    font-size:clamp(1rem,4.7vw,1.3125rem);
     line-height:1.1;
   }
   .rdr-login-v2__visual-brand small {
-    font-size:clamp(9px,2.6vw,11px);
+    font-size:clamp(0.5625rem,2.6vw,0.6875rem);
     line-height:1.25;
     overflow-wrap:anywhere;
   }
@@ -1510,7 +1510,7 @@
   .rdr-login-v2__back {
     flex:0 1 auto;
     min-width:0;
-    font-size:12px;
+    font-size:0.75rem;
     gap:7px;
     white-space:nowrap;
   }
@@ -1536,7 +1536,7 @@
   .rdr-login-v2__heading {width:100%;min-width:0}
   .rdr-login-v2__eyebrow {
     max-width:100%;
-    font-size:10px;
+    font-size:0.625rem;
     letter-spacing:.08em;
     line-height:1.35;
     white-space:normal;
@@ -1546,7 +1546,7 @@
   .rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading h1 {
     max-width:100%;
     margin:12px 0 8px;
-    font-size:clamp(26px,7.2vw,34px);
+    font-size:clamp(1.625rem,7.2vw,2.125rem);
     line-height:1.16;
     letter-spacing:-.045em;
     overflow-wrap:break-word;
@@ -1555,7 +1555,7 @@
   .rdr-login-v2__main:has(.rdr-recovery) .rdr-login-v2__heading p,
   .rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading p {
     max-width:100%;
-    font-size:13px;
+    font-size:0.8125rem;
     line-height:1.5;
     margin:0 0 clamp(16px,3svh,24px);
     overflow-wrap:anywhere;
@@ -1572,7 +1572,7 @@
   }
   .rdr-login-v2__input-shell input {
     min-width:0;
-    font-size:16px; /* prevents automatic zoom when focusing on iPhone */
+    font-size:1rem; /* prevents automatic zoom when focusing on iPhone */
   }
   .rdr-login-v2__password-label {min-width:0}
   .rdr-login-v2__password-label>a {white-space:nowrap}
@@ -1610,14 +1610,14 @@
   .rdr-recovery__art-title {
     width:100%;
     max-width:100%;
-    font-size:clamp(18px,5vw,22px);
+    font-size:clamp(1.125rem,5vw,1.375rem);
     line-height:1.26;
     overflow-wrap:break-word;
   }
   .rdr-recovery__art-message {
     width:100%;
     max-width:340px;
-    font-size:12px;
+    font-size:0.75rem;
     line-height:1.6;
     overflow-wrap:anywhere;
   }
@@ -1638,7 +1638,7 @@
   }
 }
 @media (max-width:380px) {
-  .rdr-login-v2__back {font-size:11px}
+  .rdr-login-v2__back {font-size:0.6875rem}
   .rdr-login-v2__appearance button {
     width:30px;
     min-width:30px;
@@ -1648,7 +1648,7 @@
   .rdr-login-v2__main .rdr-login-v2__heading h1,
   .rdr-login-v2__main:has(.rdr-recovery) .rdr-login-v2__heading h1,
   .rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading h1 {
-    font-size:clamp(25px,7.1vw,29px);
+    font-size:clamp(1.5625rem,7.1vw,1.8125rem);
   }
   .rdr-auth-flow--forgot .rdr-auth-flow__notice {height:auto;min-height:72px}
 }
