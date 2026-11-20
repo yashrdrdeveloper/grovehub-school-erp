@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
-import { AuthProvider, PublicOnly, RequireSession, useAuth } from '@Domain/auth';
+import { AuthProvider, PublicOnly, RequireSession, RecoveryFlowBoundary, useAuth } from '@Domain/auth';
 import { LandingPage } from '@LandingPage';
 
 import { Shell } from './Shell';
@@ -46,6 +46,7 @@ export const ShellContainer = () => (
   <QueryClientProvider client={client}>
     <BrowserRouter>
       <AuthProvider>
+        <RecoveryFlowBoundary />
         <AppRoutes />
       </AuthProvider>
     </BrowserRouter>
