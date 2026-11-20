@@ -106,6 +106,8 @@ func (service *Service) InspectProof(ctx context.Context, proof string, purpose 
     tokenPurpose, expected = entity.PasswordReset, entity.Active
   case "invitation":
     tokenPurpose, expected = entity.AccountSetup, entity.PendingSetup
+  case "reset-grant":
+    tokenPurpose, expected = entity.ResetGrant, entity.Active
   default:
     return authdto.GrantResult{}, tokenrepo.ErrInvalidToken
   }
