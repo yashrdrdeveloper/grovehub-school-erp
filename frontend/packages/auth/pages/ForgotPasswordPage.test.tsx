@@ -48,6 +48,7 @@ describe('forgot password recovery',()=>{
       await Promise.resolve();
     });
     expect(screen.getByText('Request received!')).toBeTruthy();
+    expect(screen.getByText('If eligible, a password reset link will be sent to first@example.com.')).toBeTruthy();
     expect(mockForgotPassword).toHaveBeenCalledWith('first@example.com');
     expect(screen.getByRole('link',{name:'Back to sign in'})).toBeTruthy();
 
@@ -68,6 +69,7 @@ describe('forgot password recovery',()=>{
     expect(mockForgotPassword).toHaveBeenCalledTimes(2);
     expect(mockForgotPassword).toHaveBeenLastCalledWith('corrected@example.com');
     expect(screen.getByText('Request received!')).toBeTruthy();
+    expect(screen.getByText('If eligible, a password reset link will be sent to corrected@example.com.')).toBeTruthy();
     expect((screen.getByRole('button',{name:'Resend in 30s'}) as HTMLButtonElement).disabled).toBe(true);
   });
 
