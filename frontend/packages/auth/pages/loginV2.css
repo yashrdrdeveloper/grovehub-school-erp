@@ -1,0 +1,200 @@
+/* Independent RDR School Login V2. The original /login design is untouched.
+   Inspired by a split editorial sign-in composition, grounded in real RDR
+   photography and the existing approved connected-letter monogram. */
+.rdr-login-v2 {
+  --v2-ink:#19263b;
+  --v2-muted:#727e8e;
+  --v2-surface:#ffffff;
+  --v2-border:#e2e5ea;
+  --v2-input:#fbfcfd;
+  --v2-navy:#1f2a44;
+  --v2-tint:#f4f5f7;
+  box-sizing:border-box;
+  display:grid;place-items:center;
+  width:100%;min-height:100dvh;
+  padding:clamp(14px,3vw,38px);
+  background:
+    radial-gradient(ellipse 49% 67% at 80% 46%,#8498ad 0%,transparent 88%),
+    radial-gradient(ellipse 60% 70% at 12% 89%,#102d54 0%,transparent 85%),
+    linear-gradient(135deg,#183452,#244b73 58%,#1a355a);
+  font-family:Manrope,Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  color:var(--v2-ink);letter-spacing:-.012em;
+}
+.rdr-login-v2 *, .rdr-login-v2 *::before, .rdr-login-v2 *::after{box-sizing:border-box}
+.rdr-login-v2 button,.rdr-login-v2 input{font:inherit}
+.rdr-login-v2 a{text-decoration:none;color:inherit}
+.rdr-login-v2__frame{
+  display:grid;
+  grid-template-columns:minmax(0,1.04fr) minmax(0,1fr);
+  gap:0;
+  width:min(1320px,100%);
+  min-height:650px;
+  height:min(810px,calc(100dvh - 58px));
+  border:9px solid rgba(255,255,255,.95);
+  border-radius:42px;
+  overflow:hidden;
+  background:var(--v2-surface);
+  box-shadow:0 32px 100px rgba(6,20,40,.28),0 4px 15px rgba(6,20,40,.09);
+}
+.rdr-login-v2__visual{
+  position:relative;display:flex;flex-direction:column;justify-content:space-between;
+  isolation:isolate;min-width:0;min-height:0;overflow:hidden;
+  border-radius:32px;
+  background:
+    radial-gradient(ellipse at 62% 28%,rgba(157,191,217,.5),transparent 65%),
+    linear-gradient(150deg,#1b395c 0%,#27476a 49%,#0d1b34 100%);
+  color:#fff;
+}
+.rdr-login-v2__photo{
+  position:absolute;inset:0;z-index:-2;
+  width:100%;height:100%;object-fit:cover;object-position:center 36%;
+  filter:saturate(1.09) contrast(1.04) brightness(.86);
+}
+.rdr-login-v2__photo-tint{
+  position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:
+    linear-gradient(180deg,rgba(8,22,42,.46),rgba(17,36,60,.04) 32%,rgba(7,17,33,.34) 59%,rgba(9,21,42,.93) 100%),
+    linear-gradient(110deg,rgba(18,43,75,.37),transparent 78%);
+}
+.rdr-login-v2__visual-brand{
+  display:flex;align-items:center;gap:12px;min-width:0;
+  padding:clamp(19px,3.3vw,42px);
+}
+.rdr-login-v2__visual-brand .school-monogram{
+  display:inline-flex;align-items:center;justify-content:center;
+  flex:none;width:70px;height:49px;padding:8px 9px;
+  border-radius:12px;color:#1f2a44;background:#f6f9fc;
+  box-shadow:0 9px 20px rgba(0,0,0,.13);
+}
+.rdr-login-v2__visual-brand .school-monogram__symbol{display:block;width:100%;max-height:100%;color:#1f2a44}
+.rdr-login-v2__visual-brand>span:last-child{display:flex;flex-direction:column;gap:4px;min-width:0}
+.rdr-login-v2__visual-brand strong{font-size:18px;font-weight:850;line-height:1.1;letter-spacing:-.05em;white-space:nowrap}
+.rdr-login-v2__visual-brand small{font-size:10px;font-weight:650;letter-spacing:.02em;color:#e8ebf0;white-space:nowrap}
+.rdr-login-v2__visual-copy{position:relative;z-index:1;padding:0 clamp(25px,4.4vw,60px) clamp(32px,4.4vw,60px)}
+.rdr-login-v2__visual-kicker{display:flex;align-items:center;gap:9px;color:#e5d2b7;font-size:11px;font-weight:900;letter-spacing:.16em}
+.rdr-login-v2__visual-kicker>span{width:8px;height:8px;border-radius:50%;background:#e7c99c;box-shadow:0 0 0 5px #e7c99c24}
+.rdr-login-v2__visual-copy h2{font-size:clamp(37px,4.3vw,62px);line-height:1.08;font-weight:800;letter-spacing:-.065em;margin:19px 0 15px;color:#fff}
+.rdr-login-v2__visual-copy h2 em{font-style:normal;color:#e6cda6}
+.rdr-login-v2__visual-copy p{font-size:clamp(12px,1.2vw,15px);line-height:1.7;max-width:355px;color:#e4eaf0;margin:0}
+.rdr-login-v2__visual-footer{display:flex;gap:11px;align-items:center;border-top:1px solid #ffffff4c;margin-top:40px;padding-top:19px;font-size:10px;font-weight:800;letter-spacing:.16em;color:#dee6f0}
+.rdr-login-v2__visual-footer i{width:4px;height:4px;border-radius:50%;background:#e1c29a}
+.rdr-login-v2__doodle{position:absolute;top:23%;right:1%;width:30%;height:auto;z-index:0;color:#f0d4a1;opacity:.85;filter:drop-shadow(0 4px 12px #0003);pointer-events:none}
+.rdr-login-v2__content{min-width:0;min-height:0;display:flex;flex-direction:column;padding:clamp(25px,4vw,52px) clamp(29px,5vw,76px);background:var(--v2-surface)}
+.rdr-login-v2__toolbar{display:flex;align-items:center;justify-content:space-between;gap:13px;width:100%;min-width:0}
+.rdr-login-v2__back{display:inline-flex;align-items:center;gap:9px;font-size:11px;font-weight:800;color:var(--v2-muted)!important;min-height:42px}
+.rdr-login-v2__back svg{color:var(--v2-ink)}
+.rdr-login-v2__back:hover{color:var(--v2-ink)!important}
+.rdr-login-v2__appearance{display:inline-flex;align-items:center;gap:2px;flex:none;padding:3px;border-radius:99px;border:1px solid var(--v2-border);background:var(--v2-tint)}
+.rdr-login-v2__appearance button{display:grid;place-items:center;width:35px;height:35px;min-width:35px;border:0;border-radius:50%;padding:0;background:transparent;color:var(--v2-muted);cursor:pointer}
+.rdr-login-v2__appearance button.is-active{background:var(--v2-surface);color:var(--v2-ink);box-shadow:0 2px 9px #26314917}
+.rdr-login-v2__main{width:100%;max-width:480px;margin:auto;min-width:0;padding:15px 0}
+.rdr-login-v2__eyebrow{display:inline-flex;align-items:center;gap:8px;color:#9a8060;font-size:10px;letter-spacing:.11em;font-weight:850}
+.rdr-login-v2__eyebrow svg{color:#a88d65}
+.rdr-login-v2__heading h1{font-size:clamp(34px,3.9vw,54px);line-height:1.1;letter-spacing:-.065em;font-weight:850;margin:16px 0 12px;color:var(--v2-ink)}
+.rdr-login-v2__heading p{font-size:13px;line-height:1.7;color:var(--v2-muted);margin:0 0 35px}
+.rdr-login-v2__form{display:flex;flex-direction:column;gap:23px;min-width:0}
+.rdr-login-v2__field{display:flex;flex-direction:column;gap:9px;min-width:0}
+.rdr-login-v2__field label{display:block;font-size:12px;font-weight:800;color:var(--v2-ink)}
+.rdr-login-v2__password-label{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.rdr-login-v2__password-label>a{color:var(--v2-ink);font-size:11px;font-weight:750;text-decoration:underline;text-underline-offset:3px}
+.rdr-login-v2__input-shell{position:relative;display:flex;align-items:center;gap:10px;height:54px;min-width:0;border:1px solid var(--v2-border);border-radius:15px;background:var(--v2-input);transition:border-color .15s ease,box-shadow .15s ease}
+.rdr-login-v2__input-shell:focus-within{border-color:#8294b7;box-shadow:0 0 0 3px #8397b622}
+.rdr-login-v2__input-shell>svg{flex:none;margin-left:18px;color:#8290a3}
+.rdr-login-v2__input-shell input{flex:1;width:100%;min-width:0;height:100%;padding:0 12px 0 0;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:var(--v2-ink);font-size:16px}
+.rdr-login-v2__input-shell input::placeholder{color:#9ca5b0;opacity:1;font-size:12px}
+.rdr-login-v2__input-shell:has(input[aria-invalid="true"]){border-color:#b95165}
+.rdr-login-v2__visibility{display:grid;place-items:center;width:42px;height:42px;min-width:42px;padding:0;margin-right:6px;border:0;border-radius:9px;cursor:pointer;background:transparent;color:#6a7587}
+.rdr-login-v2__visibility:hover{background:var(--v2-tint);color:var(--v2-ink)}
+.rdr-login-v2__field-error{font-size:11px;color:#b54863;line-height:1.5}
+.rdr-login-v2__error{font-size:12px;color:#b54863;line-height:1.6;margin:0;border:1px solid #e9c5cc;border-radius:9px;background:#fff2f3;padding:10px 12px}
+.rdr-login-v2__submit{display:flex;align-items:center;justify-content:center;gap:15px;min-height:53px;width:100%;border:0;border-radius:14px;background:var(--v2-navy);color:white;font-size:13px;font-weight:850;cursor:pointer;margin-top:7px;box-shadow:0 11px 22px #1f2a4424;transition:transform .15s ease,background .15s ease}
+.rdr-login-v2__submit:hover:not(:disabled){background:#334768;transform:translateY(-1px)}
+.rdr-login-v2__submit:disabled{opacity:.62;cursor:wait}
+.rdr-login-v2__closing{display:flex;align-items:center;gap:14px;margin-top:33px;color:#99a1ad;font-size:10px;font-weight:750;letter-spacing:.15em;white-space:nowrap}
+.rdr-login-v2__closing-rule{height:1px;background:var(--v2-border);flex:1}
+.rdr-login-v2 :is(a,button,input):focus-visible{outline:3px solid #92a6cc;outline-offset:3px}
+:root[data-theme="dark"] .rdr-login-v2{
+  --v2-ink:#f0f3fa;--v2-muted:#b3bfd0;--v2-surface:#1b2230;
+  --v2-border:#48536a;--v2-input:#222c3e;--v2-tint:#293449;--v2-navy:#3e5278;
+}
+:root[data-theme="dark"] .rdr-login-v2__photo-tint{background:linear-gradient(180deg,#09172f9c,transparent 34%,#07152eb3 75%,#071529)}
+:root[data-theme="dark"] .rdr-login-v2__error{background:#4c2834;color:#ffe1e6;border-color:#704452}
+
+/* Tablet: preserve the split composition while making both sides usable. */
+@media(max-width:1000px){
+  .rdr-login-v2{padding:18px}
+  .rdr-login-v2__frame{height:min(770px,calc(100dvh - 36px));min-height:600px;border-width:7px;grid-template-columns:minmax(0,.92fr) minmax(0,1fr);border-radius:30px}
+  .rdr-login-v2__visual{border-radius:23px}
+  .rdr-login-v2__content{padding:28px 30px}
+  .rdr-login-v2__visual-brand{padding:25px}
+  .rdr-login-v2__visual-brand small{white-space:normal}
+  .rdr-login-v2__visual-copy{padding:0 28px 35px}
+  .rdr-login-v2__visual-copy h2{font-size:36px}
+  .rdr-login-v2__heading h1{font-size:38px}
+  .rdr-login-v2__heading p{margin-bottom:25px}
+  .rdr-login-v2__form{gap:18px}
+}
+/* Phone: the photograph becomes a short school-life hero, not a huge block.
+   The form stays available, with no horizontal overflow. */
+@media(max-width:720px){
+  .rdr-login-v2{display:block;padding:0;background:var(--v2-surface);min-height:100dvh}
+  .rdr-login-v2__frame{
+    display:flex;flex-direction:column;gap:0;
+    width:100%;min-width:0;height:100dvh;min-height:0;
+    overflow:hidden;border:0;border-radius:0;box-shadow:none;
+  }
+  .rdr-login-v2__visual{
+    flex:0 0 clamp(155px,24dvh,220px);
+    min-height:0;border-radius:0 0 25px 25px;
+  }
+  .rdr-login-v2__photo{object-position:center 30%}
+  .rdr-login-v2__visual-brand{padding:17px 20px}
+  .rdr-login-v2__visual-brand .school-monogram{width:48px;height:37px;border-radius:9px;padding:6px}
+  .rdr-login-v2__visual-brand strong{font-size:14px}
+  .rdr-login-v2__visual-brand small{font-size:9px}
+  .rdr-login-v2__visual-copy{padding:0 23px 19px}
+  .rdr-login-v2__visual-kicker{font-size:9px;letter-spacing:.1em}
+  .rdr-login-v2__visual-kicker>span{width:6px;height:6px}
+  .rdr-login-v2__visual-copy h2{font-size:clamp(21px,6.3vw,28px);line-height:1.12;margin:8px 0 0}
+  .rdr-login-v2__visual-copy p,.rdr-login-v2__visual-footer,.rdr-login-v2__doodle{display:none}
+  .rdr-login-v2__content{flex:1 1 0;min-height:0;min-width:0;width:100%;padding:13px clamp(19px,5.7vw,30px) max(15px,env(safe-area-inset-bottom));overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain}
+  .rdr-login-v2__toolbar{flex:none}
+  .rdr-login-v2__back{min-height:37px;font-size:11px}
+  .rdr-login-v2__appearance{padding:2px}
+  .rdr-login-v2__appearance button{width:33px;height:33px;min-width:33px}
+  .rdr-login-v2__main{max-width:500px;margin:auto;padding:13px 0 6px}
+  .rdr-login-v2__heading h1{font-size:31px;margin:8px 0 7px}
+  .rdr-login-v2__heading p{font-size:12px;margin-bottom:19px}
+  .rdr-login-v2__form{gap:15px}
+  .rdr-login-v2__field{gap:7px}
+  .rdr-login-v2__input-shell{height:49px;border-radius:12px}
+  .rdr-login-v2__input-shell>svg{margin-left:15px}
+  .rdr-login-v2__submit{min-height:49px;margin-top:4px;border-radius:12px}
+  .rdr-login-v2__closing{margin-top:22px;font-size:9px}
+}
+/* Prioritize usable fields and the primary button on short phones. */
+@media(max-width:720px) and (max-height:720px){
+  .rdr-login-v2__visual{flex-basis:clamp(115px,19dvh,145px)}
+  .rdr-login-v2__visual-brand{padding:9px 15px}
+  .rdr-login-v2__visual-copy{padding:0 19px 11px}
+  .rdr-login-v2__content{padding-top:8px}
+  .rdr-login-v2__main{padding:5px 0 3px}
+  .rdr-login-v2__heading h1{font-size:27px}
+  .rdr-login-v2__heading p{margin-bottom:12px}
+  .rdr-login-v2__form{gap:11px}
+  .rdr-login-v2__input-shell{height:44px}
+  .rdr-login-v2__closing{display:none}
+}
+/* Avoid crop/scroll traps when keyboard opens or user enlarges text. */
+@media(max-width:720px) and (max-height:510px){
+  .rdr-login-v2__visual{flex-basis:60px;border-radius:0}
+  .rdr-login-v2__visual-copy{display:none}
+  .rdr-login-v2__visual-brand{padding:8px 14px}
+  .rdr-login-v2__visual-brand .school-monogram{width:40px;height:32px}
+  .rdr-login-v2__content{padding-top:5px}
+  .rdr-login-v2__heading h1{font-size:23px}
+  .rdr-login-v2__eyebrow{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .rdr-login-v2__input-shell,.rdr-login-v2__submit{transition:none}
+}
