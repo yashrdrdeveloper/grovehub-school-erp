@@ -26,7 +26,7 @@ describe('RDR Login V2',()=>{
     expect(screen.getByRole('heading',{name:'Welcome back.'})).toBeTruthy();
     expect(document.querySelector('.rdr-login-v2__visual .lv2-gradient')).not.toBeNull();
     expect(document.querySelectorAll('.rdr-login-v2 img')).toHaveLength(0);
-    expect(screen.getByRole('button',{name:/sign in to workspace/i})).toBeTruthy();
+    expect(screen.getByRole('button',{name:/^sign in$/i})).toBeTruthy();
     expect(screen.queryByRole('button',{name:/continue with google/i})).toBeNull();
     expect(screen.queryByRole('button',{name:/create account/i})).toBeNull();
     expect(screen.getByRole('link',{name:'Forgot password?'}).getAttribute('href')).toBe('/forgot-password');
@@ -34,11 +34,11 @@ describe('RDR Login V2',()=>{
 
   it('shows field validation and lets users toggle password visibility',async()=>{
     render(<MemoryRouter><LoginV2Page/></MemoryRouter>);
-    fireEvent.click(screen.getByRole('button',{name:/sign in to workspace/i}));
+    fireEvent.click(screen.getByRole('button',{name:/^sign in$/i}));
     expect(screen.getByText('Please enter your email address.')).toBeTruthy();
     expect(screen.getByText('Please enter your password.')).toBeTruthy();
     fireEvent.change(screen.getByRole('textbox',{name:'Email address'}),{target:{value:'bad-email'}});
-    fireEvent.click(screen.getByRole('button',{name:/sign in to workspace/i}));
+    fireEvent.click(screen.getByRole('button',{name:/^sign in$/i}));
     expect(screen.getByText('Enter a valid email address.')).toBeTruthy();
     const password=screen.getByLabelText('Password') as HTMLInputElement;
     expect(password.type).toBe('password');
@@ -47,8 +47,20 @@ describe('RDR Login V2',()=>{
     fireEvent.change(screen.getByRole('textbox',{name:'Email address'}),{target:{value:'parent@example.com'}});
     fireEvent.change(password,{target:{value:'school-password'}});
     signIn.mockResolvedValueOnce();
-    fireEvent.click(screen.getByRole('button',{name:/sign in to workspace/i}));
+    fireEvent.click(screen.getByRole('button',{name:/^sign in$/i}));
     await waitFor(()=>expect(signIn).toHaveBeenCalledWith('parent@example.com','school-password'));
+  });
+
+  it('keeps one feedback region, with a clear authentication error and the same CTA',async()=>{
+    signIn.mockRejectedValueOnce(new Error('Invalid credentials'));
+    render(<MemoryRouter><LoginV2Page/></MemoryRouter>);
+    fireEvent.change(screen.getByRole('textbox',{name:'Email address'}),{target:{value:'parent@example.com'}});
+    fireEvent.change(screen.getByLabelText('Password'),{target:{value:'wrong-password'}});
+    fireEvent.click(screen.getByRole('button',{name:/^sign in$/i}));
+    expect(await screen.findByText('Unable to sign in')).toBeTruthy();
+    expect(screen.getByText(/email or password is incorrect/i)).toBeTruthy();
+    expect(document.querySelectorAll('.rdr-login-v2__feedback-slot--signin')).toHaveLength(1);
+    expect(screen.getByRole('button',{name:/^sign in$/i})).toBeTruthy();
   });
 
   it('uses a local WebGL canvas for the hero, with no external media dependencies',()=>{
