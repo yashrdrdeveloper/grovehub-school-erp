@@ -433,3 +433,63 @@
     margin-bottom:.8rem;font-size:1.25rem;
   }
 }
+
+/* Balanced mobile form hierarchy. Light-weight labels, helpful text, and
+   comfortable spacing without enlarging the overall form or clipping errors. */
+@media (max-width:720px) {
+  .rdr-login-v2 .rdr-login-v2__field label,
+  .rdr-login-v2 .rdr-login-v2__password-label label,
+  .rdr-login-v2 .rdr-login-v2__password-label > a {
+    font-size:.78rem;
+    font-weight:500;
+    letter-spacing:0;
+    line-height:1.4;
+  }
+  .rdr-login-v2 .rdr-login-v2__password-label > a {
+    font-weight:500;
+    text-decoration:underline;
+    text-decoration-thickness:1px;
+    text-underline-offset:.2rem;
+  }
+  .rdr-login-v2 .rdr-login-v2__input-shell input {
+    font-weight:400;
+    letter-spacing:0;
+  }
+  .rdr-login-v2 .rdr-login-v2__input-shell input::placeholder {
+    font-weight:400;
+    font-size:.8rem;
+  }
+  .rdr-login-v2 .rdr-login-v2__back {font-weight:500}
+  .rdr-login-v2 .rdr-login-v2__mobile-signin-title{
+    font-weight:650;
+    font-size:1.35rem;
+    letter-spacing:-.025em;
+  }
+  .rdr-login-v2 .rdr-login-v2__submit,
+  .rdr-login-v2 .rdr-login-v2__form--signin > .rdr-login-v2__submit {
+    font-weight:600;
+    font-size:.875rem;
+    box-shadow:0 .35rem .9rem #1f2a4415;
+  }
+  .rdr-login-v2--mobile-minimal .rdr-login-v2__main{
+    flex:1 0 auto;
+    justify-content:center;
+    padding-bottom:clamp(1rem,5dvh,2.75rem);
+  }
+  .rdr-login-v2--mobile-minimal .rdr-login-v2__mobile-signin-title{
+    margin-bottom:clamp(1.125rem,2.5dvh,1.5rem);
+  }
+  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__field + .rdr-login-v2__field{
+    margin-top:clamp(.55rem,1.4dvh,.85rem)!important;
+  }
+  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__submit {
+    margin-top:clamp(.75rem,2dvh,1rem);
+  }
+}
+@media (max-width:720px) and (max-height:700px){
+  .rdr-login-v2--mobile-minimal .rdr-login-v2__main{
+    flex:0 0 auto;
+    justify-content:flex-start;
+    padding-bottom:.5rem;
+  }
+}
