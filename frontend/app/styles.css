@@ -2434,3 +2434,9 @@ body {min-width:0;overflow-x:clip}
 @media(max-width:380px) {
   .metric-grid {grid-template-columns:minmax(0,1fr)}
 }
+
+/* Scale rem typography slightly with the available phone width, while
+   preserving user/browser font-size preferences on larger viewports. */
+@media(max-width:720px) {
+  :root {font-size:clamp(.9375rem,4vw,1rem)}
+}
