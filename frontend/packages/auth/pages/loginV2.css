@@ -638,3 +638,34 @@
     padding:12px 14px;
   }
 }
+
+/* LoginV2 flat layout — no form card */
+.rdr-login-v2__main,
+:root[data-theme="dark"] .rdr-login-v2__main {
+  position:relative;
+  width:100%;
+  max-width:490px;
+  margin:auto;
+  padding:24px 0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  backdrop-filter:none;
+}
+@media(max-width:1050px) {
+  .rdr-login-v2__main,
+  :root[data-theme="dark"] .rdr-login-v2__main {padding:18px 0;}
+}
+@media(max-width:720px) {
+  .rdr-login-v2__main,
+  :root[data-theme="dark"] .rdr-login-v2__main {
+    max-width:500px;
+    margin:auto;
+    padding:9px 0 6px;
+  }
+}
+@media(max-width:720px) and (max-height:700px) {
+  .rdr-login-v2__main,
+  :root[data-theme="dark"] .rdr-login-v2__main {padding:4px 0;}
+}
