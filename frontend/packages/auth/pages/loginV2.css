@@ -1188,3 +1188,232 @@
   }
   .rdr-auth-flow--forgot .rdr-auth-flow__notice-copy small {font-size:10px;line-height:16px;}
 }
+
+
+/* Recovery states: illustration and password form occupy an identical stage. */
+.rdr-login-v2__main:has(.rdr-recovery) .rdr-login-v2__heading h1 {
+  margin:10px 0 6px;
+  font-size:clamp(34px,3.2vw,46px);
+  line-height:1.12;
+}
+.rdr-login-v2__main:has(.rdr-recovery) .rdr-login-v2__heading p {
+  margin:0 0 20px;
+  line-height:1.5;
+}
+.rdr-recovery {
+  width:100%;
+  min-width:0;
+  min-height:330px;
+}
+.rdr-recovery__form, .rdr-recovery__state {
+  width:100%;
+  height:330px;
+  min-height:330px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+.rdr-recovery__form {gap:0}
+.rdr-recovery__fields {
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.rdr-recovery__form .rdr-login-v2__field {
+  display:grid;
+  grid-template-rows:18px 48px 16px;
+  row-gap:6px;
+  gap:6px;
+}
+.rdr-recovery__form .rdr-login-v2__field label {
+  height:18px;
+  line-height:18px;
+}
+.rdr-recovery__form .rdr-login-v2__input-shell {
+  height:48px;
+  min-height:48px;
+}
+.rdr-recovery__form .rdr-login-v2__field-error--reserved {
+  min-height:16px;
+  height:16px;
+  line-height:16px;
+  margin:0;
+}
+.rdr-recovery__requirement {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:var(--v2-muted);
+  font-size:11px;
+  line-height:1.5;
+  margin:0;
+}
+.rdr-recovery__requirement svg {flex:none;color:#587697}
+.rdr-recovery__actions {
+  display:flex;
+  flex-direction:column;
+  gap:0;
+}
+.rdr-recovery__error-slot {
+  display:flex;
+  align-items:center;
+  height:25px;
+  min-height:25px;
+  overflow:hidden;
+}
+.rdr-recovery__inline-error {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin:0;
+  color:#bd3553;
+  font-size:11px;
+  line-height:1.4;
+}
+.rdr-recovery__inline-error svg {flex:none}
+.rdr-recovery__actions .rdr-login-v2__submit {
+  height:48px;
+  min-height:48px;
+  margin:0;
+}
+.rdr-recovery__remaining {
+  display:grid;
+  place-items:center;
+  height:22px;
+  min-height:22px;
+  margin-top:5px;
+  color:var(--v2-muted);
+  font-size:11px;
+}
+.rdr-recovery__state {
+  align-items:center;
+  justify-content:space-between;
+  text-align:center;
+  gap:0;
+}
+.rdr-recovery__art {
+  display:flex;
+  flex:1;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:9px;
+  width:100%;
+  min-width:0;
+  text-align:center;
+  color:var(--v2-ink);
+}
+.rdr-recovery__art-visual {
+  position:relative;
+  display:grid;
+  place-items:center;
+  flex:none;
+  height:136px;
+  width:180px;
+}
+.rdr-recovery__art-orbit {
+  position:absolute;
+  border:1px solid color-mix(in srgb,var(--v2-navy) 20%,transparent);
+  border-radius:50%;
+}
+.rdr-recovery__art-orbit--one {width:132px;height:104px;transform:rotate(-23deg)}
+.rdr-recovery__art-orbit--two {width:164px;height:88px;transform:rotate(28deg)}
+.rdr-recovery__art-icon {
+  display:grid;
+  place-items:center;
+  width:86px;
+  height:86px;
+  border:1px solid #c9d5e7;
+  border-radius:26px;
+  color:#4b678a;
+  background:linear-gradient(145deg,#f3f7fe,#e5eefa);
+  box-shadow:0 15px 42px rgba(33,68,111,.12);
+}
+.rdr-recovery__art--success .rdr-recovery__art-icon {
+  color:#267252;
+  border-color:#b8dfca;
+  background:linear-gradient(145deg,#e8faee,#d7f2e4);
+}
+.rdr-recovery__art--success .rdr-recovery__art-orbit {
+  border-color:#b8ddcb;
+}
+.rdr-recovery__sparkle {
+  position:absolute;
+  top:17px;
+  right:20px;
+  color:#b8852e;
+}
+.rdr-recovery__art-title {
+  display:block;
+  font-size:clamp(17px,2vw,21px);
+  font-weight:850;
+  line-height:1.2;
+  letter-spacing:-.03em;
+}
+.rdr-recovery__art-message {
+  max-width:345px;
+  margin:0;
+  color:var(--v2-muted);
+  font-size:12px;
+  line-height:1.65;
+}
+.rdr-recovery__state .rdr-recovery__state-button {
+  flex:none;
+  min-height:48px;
+  height:48px;
+  margin:0;
+}
+.rdr-recovery__state-button {text-decoration:none!important}
+.rdr-recovery__state-button:hover {color:white}
+.rdr-recovery__back {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  width:100%;
+  height:48px;
+  font-size:12px;
+  font-weight:750;
+  color:var(--v2-ink)!important;
+}
+.rdr-recovery__slow {
+  height:48px;
+  min-height:48px;
+  display:grid;
+  place-items:center;
+  margin:0;
+  color:var(--v2-muted);
+  font-size:11px;
+}
+:root[data-theme="dark"] .rdr-recovery__art-icon {
+  color:#acc6ed;
+  border-color:#374960;
+  background:linear-gradient(145deg,#192a3e,#1a2333);
+  box-shadow:0 12px 38px rgba(0,0,0,.25);
+}
+:root[data-theme="dark"] .rdr-recovery__art--success .rdr-recovery__art-icon {
+  color:#9ee7c0;
+  border-color:#315f4b;
+  background:linear-gradient(145deg,#1c3b2d,#1b3228);
+}
+:root[data-theme="dark"] .rdr-recovery__inline-error {color:#ffa3b3}
+@media(max-width:720px) {
+  .rdr-login-v2__main:has(.rdr-recovery) .rdr-login-v2__heading h1 {
+    margin:7px 0;
+    font-size:clamp(28px,7vw,35px);
+  }
+  .rdr-login-v2__main:has(.rdr-recovery) .rdr-login-v2__heading p {margin-bottom:16px}
+  .rdr-recovery {min-height:312px}
+  .rdr-recovery__form,.rdr-recovery__state {height:312px;min-height:312px}
+  .rdr-recovery__fields {gap:8px}
+  .rdr-recovery__form .rdr-login-v2__field {grid-template-rows:18px 46px 16px}
+  .rdr-recovery__form .rdr-login-v2__input-shell {height:46px;min-height:46px}
+  .rdr-recovery__art-visual {height:116px}
+  .rdr-recovery__state .rdr-recovery__state-button,
+  .rdr-recovery__actions .rdr-login-v2__submit {height:46px;min-height:46px}
+}
+@media(max-width:720px) and (max-height:600px) {
+  .rdr-recovery,.rdr-recovery__form,.rdr-recovery__state {min-height:290px}
+  .rdr-recovery__form,.rdr-recovery__state {height:290px}
+  .rdr-recovery__art-visual {height:100px}
+}
