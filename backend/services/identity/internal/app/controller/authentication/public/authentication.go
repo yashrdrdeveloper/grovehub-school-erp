@@ -16,6 +16,12 @@ type AuthenticationController interface {
 	// @RouteLimit 5
 	ForgotPassword(writer http.ResponseWriter, request *http.Request)
 
+	// @GET /recovery/validate
+	RecoveryValidate(writer http.ResponseWriter, request *http.Request)
+
+	// @GET /invitations/validate
+	InvitationValidate(writer http.ResponseWriter, request *http.Request)
+
 	// @POST /recovery/exchange
 	// @RouteLimit 8
 	RecoveryExchange(writer http.ResponseWriter, request *http.Request)
