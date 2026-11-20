@@ -265,6 +265,13 @@ export const AuthFrame = ({ children, title }: { children: ReactNode; title: str
             </button>
           ))}
         </div>
+        {title === 'Sign in' && (
+          <div className="auth-mobile-intro" aria-hidden="true">
+            <span className="auth-mobile-intro__symbol"><BookOpen size={27} strokeWidth={1.5}/></span>
+            <strong>Your school day, connected.</strong>
+            <span className="auth-mobile-intro__tagline">Learn <i/> Organize <i/> Grow</span>
+          </div>
+        )}
       </header>
       <div ref={stageRef} className="auth-stage">
         <MobileSchoolBackdrop quote={quote} module={mobileModule} submodule={mobileSubmodule}/>
