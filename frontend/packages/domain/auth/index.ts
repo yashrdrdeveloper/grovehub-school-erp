@@ -5,7 +5,6 @@ export {
   useAuth,
   RequireSession,
   PublicOnly,
-  LoginPage,
   LoginV2Page,
   ForgotPasswordPage,
   RecoveryPage,
