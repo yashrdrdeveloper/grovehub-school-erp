@@ -1124,3 +1124,14 @@
   }
   .rdr-auth-flow--forgot .rdr-auth-flow__actions {margin-top:.85rem}
 }
+
+/* Keep the mobile forgot-password view as concise as sign-in: one heading,
+   one field, one informative helper line, then the actions. */
+@media (max-width:720px) {
+  .rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading p {
+    display:none!important;
+  }
+  .rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading h1 {
+    margin-bottom:clamp(1.35rem,3.2dvh,1.8rem);
+  }
+}
