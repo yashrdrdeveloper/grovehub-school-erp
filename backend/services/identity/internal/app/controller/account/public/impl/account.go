@@ -10,6 +10,7 @@ import (
 	"grovehub/services/identity/internal/app/controller/helpers"
 	public "grovehub/services/identity/internal/app/controller/account/public"
 	dto "grovehub/services/identity/internal/app/dto/account"
+	authdto "grovehub/services/identity/internal/app/dto/authentication"
 	account "grovehub/services/identity/internal/app/services/account"
 	"grovehub/services/identity/internal/app/transport/cookies"
 )
@@ -28,9 +29,9 @@ func New(service account.Service, manager cookies.Manager) public.AccountControl
 
 func (controller *Controller) SetupStatus(writer http.ResponseWriter, request *http.Request) {
   writer.Header().Set("Cache-Control", "no-store")
-  rest.RunStruct(writer, request, rest.StructConfig[struct{}, dto.SetupStatusResult]{
+  rest.RunStruct(writer, request, rest.StructConfig[authdto.EmptyRequest, dto.SetupStatusResult]{
     Fallback: definitions.Internal,
-    Service: func(ctx context.Context, _ struct{}) (rest.Result[dto.SetupStatusResult], error) {
+    Service: func(ctx context.Context, _ authdto.EmptyRequest) (rest.Result[dto.SetupStatusResult], error) {
       result, err := controller.service.SetupStatus(ctx, controller.cookies.Read(request, cookies.SetupCookie))
       if err != nil { return rest.Result[dto.SetupStatusResult]{}, helpers.Map(err) }
       return rest.OK(result), nil
