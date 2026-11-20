@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
+import { ApiError } from '@Business/api';
+
 import { RecoveryPage } from './RecoveryPage';
 
 const validateInvitation = jest.fn<Promise<{verified:boolean;purpose:string;expiresIn:number}>,[string]>();
@@ -87,12 +89,9 @@ describe('password link flows',()=>{
   });
 
   it('shows an expired-link illustration on a rejected validation',async()=>{
-    validateInvitation.mockRejectedValue(Object.assign(new Error('Token is invalid or expired'),{
-      status:401,code:'IDENTITY_TOKEN_INVALID',name:'ApiError',
-    }));
+    validateInvitation.mockRejectedValue(new ApiError(401,'IDENTITY_TOKEN_INVALID','Token is invalid or expired'));
     renderPage('invitation','expired');
-    // Non-ApiError failures are shown as a connectivity problem with retry.
-    expect(await screen.findByText('We couldn’t check your link')).toBeTruthy();
+    expect(await screen.findByText('This link is no longer valid')).toBeTruthy();
     expect(screen.queryByLabelText('New password')).toBeNull();
   });
 });
