@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ArrowLeft, GraduationCap, Monitor, Moon, ShieldCheck, Sun } from 'lucide-react';
+import { ArrowLeft, BookOpen, CheckCircle2, GraduationCap, Monitor, Moon, ShieldCheck, Sparkles, Sun } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { SchoolMonogram } from '@Components';
@@ -33,9 +33,17 @@ export const LoginLayout = ({ children, title, description, eyebrow = 'YOUR SCHO
           <div className="rdr-login-v2__mobile-header">
             <div className="rdr-login-v2__mobile-identity">
               <SchoolMonogram />
-              <span><strong>RDR School</strong><small>School workspace</small></span>
+              <span><strong>RDR School</strong><small>Learn · Grow · Belong</small></span>
             </div>
             <span className="rdr-login-v2__mobile-security" aria-label="Secure authentication"><ShieldCheck size={18}/></span>
+          </div>
+          <div className="rdr-login-v2__mobile-illustration" aria-hidden="true">
+            <div className="rdr-login-v2__mobile-glow"/>
+            <div className="rdr-login-v2__mobile-art-card rdr-login-v2__mobile-art-card--back"><Sparkles size={21}/><span className="rdr-login-v2__mobile-art-lines"><i/><i/><i/></span></div>
+            <div className="rdr-login-v2__mobile-art-card rdr-login-v2__mobile-art-card--front"><BookOpen size={30}/><span><i/><i/></span></div>
+            <div className="rdr-login-v2__mobile-art-check"><CheckCircle2 size={23}/></div>
+            <span className="rdr-login-v2__mobile-art-dot rdr-login-v2__mobile-art-dot--one"/>
+            <span className="rdr-login-v2__mobile-art-dot rdr-login-v2__mobile-art-dot--two"/>
           </div>
           <div className="rdr-login-v2__visual-brand">
             <SchoolMonogram/>
