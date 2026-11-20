@@ -7,6 +7,7 @@ import { accountsApi } from '@Business/accounts';
 import { ApiError } from '@Business/api';
 
 import { LoginLayout } from './LoginLayout';
+import { clearRecoveryFlow, readRecoveryFlow, saveRecoveryGrant, saveRecoveryProof } from './recoveryFlowSession';
 
 type Purpose = 'recovery' | 'invitation';
 type ViewState = 'missing' | 'checking' | 'expired' | 'unavailable' | 'ready' | 'saving' | 'success' | 'attempts-exhausted';
@@ -47,7 +48,7 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
   const id = useId();
   // Fragment is read before the first paint and then scrubbed immediately.
   const proofRef = useRef<string | null>(null);
-  const requestRef = useRef<Promise<void> | null>(null);
+  const flowSequence = useRef(0);
   const attemptRef = useRef(0);
   const submittingRef = useRef(false);
   const [view, setView] = useState<ViewState>('checking');
@@ -59,36 +60,97 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
   const [fieldErrors, setFieldErrors] = useState<{ password?: string; confirmation?: string }>({});
   const [attempts, setAttempts] = useState(0);
 
-  const verify = async (proof: string) => {
+  const verify = async (proof: string, sequence: number) => {
     setView('checking');
     try {
       if (invitation) await authenticationApi.validateInvitation(proof);
       else await authenticationApi.validateRecovery(proof);
-      if (invitation) await authenticationApi.exchangeInvitation(proof);
-      else await authenticationApi.exchangeRecovery(proof);
+      if (sequence !== flowSequence.current) return;
+      const grant = invitation
+        ? await authenticationApi.exchangeInvitation(proof)
+        : await authenticationApi.exchangeRecovery(proof);
+      if (sequence !== flowSequence.current) return;
+      // The proof is single-use. Persist only a marker for the HttpOnly
+      // setup/reset grant cookie so a page reload can resume via status.
+      saveRecoveryGrant(purpose, grant.expiresIn);
       proofRef.current = null;
       setView('ready');
     } catch (failure) {
+      if (sequence !== flowSequence.current) return;
       const expired = failure instanceof ApiError &&
         (failure.code === 'IDENTITY_TOKEN_INVALID' || [401, 403, 404, 410].includes(failure.status));
+      if (expired) { clearRecoveryFlow(); proofRef.current = null; }
       setView(expired ? 'expired' : 'unavailable');
     }
   };
 
   useEffect(() => {
-    if (requestRef.current) return;
-    const url = new URL(window.location.href);
-    proofRef.current = new URLSearchParams(url.hash.slice(1)).get('proof');
-    // Keep one-time secrets in component memory; remove the fragment from browser history.
-    window.history.replaceState(window.history.state, '', url.pathname + url.search);
-    if (!proofRef.current?.trim()) {
-      // Without a link proof there is nothing to validate or exchange.
-      // Do not call setup/reset grant-status APIs on an incomplete URL.
-      setView('missing');
-      return;
-    }
-    requestRef.current = verify(proofRef.current);
-  }, [invitation]);
+    const handleLink = () => {
+      const url = new URL(window.location.href);
+      const incoming = new URLSearchParams(url.hash.slice(1)).get('proof')?.trim();
+      if (incoming) {
+        // A newly pasted fragment always takes precedence over a saved flow.
+        // Reset the form and invalidate older in-flight validation results.
+        const sequence = ++flowSequence.current;
+        saveRecoveryProof(purpose, incoming);
+        proofRef.current = incoming;
+        attemptRef.current = 0;
+        setAttempts(0);
+        setPassword('');
+        setConfirmation('');
+        setError('');
+        setFieldErrors({});
+        window.history.replaceState(window.history.state, '', url.pathname + url.search);
+        void verify(incoming, sequence);
+        return;
+      }
+
+      // Do not scrub unrelated URL fragments. An absent proof on its own
+      // must never contact the backend.
+      const saved = readRecoveryFlow(purpose);
+      if (!saved) {
+        setView('missing');
+        return;
+      }
+      const sequence = ++flowSequence.current;
+      if (saved.stage === 'proof') {
+        proofRef.current = saved.proof;
+        void verify(saved.proof, sequence);
+        return;
+      }
+
+      // Only an earlier successful one-time exchange may check grant status.
+      // Without a saved marker, the page makes zero requests.
+      proofRef.current = null;
+      setView('checking');
+      void (async () => {
+        try {
+          if (invitation) await accountsApi.setupStatus();
+          else await authenticationApi.resetGrantStatus();
+          if (sequence === flowSequence.current) setView('ready');
+        } catch (failure) {
+          if (sequence !== flowSequence.current) return;
+          if (failure instanceof ApiError && failure.code === 'IDENTITY_SETUP_ATTEMPTS_EXCEEDED') {
+            clearRecoveryFlow();
+            setView('attempts-exhausted');
+          } else if (failure instanceof ApiError && [401, 403, 404, 410].includes(failure.status)) {
+            clearRecoveryFlow();
+            setView('expired');
+          } else {
+            setView('unavailable');
+          }
+        }
+      })();
+    };
+
+    handleLink();
+    // Changing #proof=... without a page reload must start a fresh flow.
+    window.addEventListener('hashchange', handleLink);
+    return () => {
+      ++flowSequence.current;
+      window.removeEventListener('hashchange', handleLink);
+    };
+  }, [purpose, invitation]);
 
   useEffect(() => {
     if (view !== 'checking') { setSlow(false); return; }
@@ -114,6 +176,7 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
       else await authenticationApi.resetPassword(password);
       setPassword('');
       setConfirmation('');
+      clearRecoveryFlow();
       setView('success');
     } catch (failure) {
       const apiError = failure instanceof ApiError ? failure : null;
@@ -124,9 +187,9 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
       setAttempts(nextAttempts);
       setPassword('');
       setConfirmation('');
-      if (attemptsExceeded) setView('attempts-exhausted');
-      else if (invalid) setView('expired');
-      else if (invitation && nextAttempts >= MAX_SETUP_ATTEMPTS) setView('attempts-exhausted');
+      if (attemptsExceeded) { clearRecoveryFlow(); setView('attempts-exhausted'); }
+      else if (invalid) { clearRecoveryFlow(); setView('expired'); }
+      else if (invitation && nextAttempts >= MAX_SETUP_ATTEMPTS) { clearRecoveryFlow(); setView('attempts-exhausted'); }
       else {
         setError(invitation ? 'Activation failed. You have one more attempt.' : 'Unable to reset your password. Please try again.');
         setView('ready');
@@ -190,7 +253,25 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
         {view === 'checking' && <p className="rdr-recovery__slow" role="status">{slow ? 'Still checking. This may take a moment…' : 'Verifying your invitation securely…'}</p>}
         {view === 'success' && <Link className="rdr-login-v2__submit rdr-recovery__state-button" to="/login">Go to login <ArrowRight size={18}/></Link>}
         {view === 'unavailable' && <button className="rdr-login-v2__submit rdr-recovery__state-button" type="button"
-          onClick={() => { if (proofRef.current) void verify(proofRef.current); }}>Try checking again <ArrowRight size={18}/></button>}
+          onClick={() => {
+            const sequence = ++flowSequence.current;
+            if (proofRef.current) void verify(proofRef.current, sequence);
+            else {
+              const saved = readRecoveryFlow(purpose);
+              if (saved?.stage === 'grant') {
+                setView('checking');
+                void (async () => {
+                  try {
+                    if (invitation) await accountsApi.setupStatus();
+                    else await authenticationApi.resetGrantStatus();
+                    if (sequence === flowSequence.current) setView('ready');
+                  } catch {
+                    if (sequence === flowSequence.current) setView('unavailable');
+                  }
+                })();
+              }
+            }
+          }}>Try checking again <ArrowRight size={18}/></button>}
         {(view === 'missing' || view === 'expired' || view === 'attempts-exhausted') && <Link className="rdr-recovery__back" to="/login">
           <ArrowLeft size={16}/> Return to login
         </Link>}
