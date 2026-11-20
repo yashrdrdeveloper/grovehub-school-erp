@@ -38,14 +38,17 @@ describe('forgot password recovery',()=>{
 
   it('keeps Back to sign in active and makes resend available after 30 seconds',async()=>{
     mockForgotPassword.mockResolvedValue({accepted:true,delivery:'email'});
+    jest.useFakeTimers();
     renderRecovery();
     fireEvent.change(screen.getByRole('textbox',{name:'Email address'}),{target:{value:'parent@example.com'}});
-    fireEvent.click(screen.getByRole('button',{name:'Send reset link'}));
-    expect(await screen.findByText('You’re one step closer!')).toBeTruthy();
+    await act(async()=>{
+      fireEvent.click(screen.getByRole('button',{name:'Send reset link'}));
+      await Promise.resolve();
+    });
+    expect(screen.getByText('You’re one step closer!')).toBeTruthy();
     expect(mockForgotPassword).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('button',{name:'Back to sign in'})).toBeTruthy();
     expect((screen.getByRole('button',{name:/Resend reset link in/}) as HTMLButtonElement).disabled).toBe(true);
-    jest.useFakeTimers();
     act(()=>{jest.advanceTimersByTime(30_100);});
     const resend=screen.getByRole('button',{name:'Resend reset link'});
     expect((resend as HTMLButtonElement).disabled).toBe(false);
