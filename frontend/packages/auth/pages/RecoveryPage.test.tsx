@@ -40,6 +40,7 @@ const renderPage = (purpose:'invitation'|'recovery',proof?:string) => {
 
 describe('password link flows',()=>{
   beforeEach(()=>{
+    window.sessionStorage.clear();
     for(const mock of [validateInvitation,exchangeInvitation,setup,setupStatus,validateRecovery,exchangeRecovery,resetPassword,resetGrantStatus]) mock.mockReset();
     validateInvitation.mockResolvedValue(ok);
     exchangeInvitation.mockResolvedValue(ok);
@@ -65,20 +66,55 @@ describe('password link flows',()=>{
     expect(window.location.hash).toBe('');
   });
 
-  it('does not resume an old setup grant on an incomplete invitation URL', async () => {
+  it('does not request grant status without an existing session marker', async () => {
     setupStatus.mockResolvedValue({verified:true,expiresIn:480});
     renderPage('invitation');
     expect(await screen.findByText('This link looks incomplete')).toBeTruthy();
     expect(setupStatus).not.toHaveBeenCalled();
-    expect(screen.queryByLabelText('New password')).toBeNull();
   });
 
-  it('does not resume an old reset grant on an incomplete recovery URL', async () => {
+  it('resumes an exchanged invitation after refresh using the setup grant cookie', async () => {
+    setupStatus.mockResolvedValue({verified:true,expiresIn:480});
+    const initial = renderPage('invitation','first-secret');
+    await screen.findByLabelText('New password');
+    expect(window.location.hash).toBe('');
+    initial.unmount();
+    renderPage('invitation');
+    expect(await screen.findByLabelText('New password')).toBeTruthy();
+    expect(setupStatus).toHaveBeenCalledTimes(1);
+    expect(validateInvitation).toHaveBeenCalledTimes(1);
+    expect(exchangeInvitation).toHaveBeenCalledTimes(1);
+  });
+
+  it('resumes a reset-password grant after refresh without replaying the proof', async () => {
     resetGrantStatus.mockResolvedValue({...ok,purpose:'PASSWORD_RESET'});
+    const initial = renderPage('recovery','reset-secret');
+    await screen.findByLabelText('New password');
+    initial.unmount();
     renderPage('recovery');
+    expect(await screen.findByLabelText('New password')).toBeTruthy();
+    expect(resetGrantStatus).toHaveBeenCalledTimes(1);
+    expect(validateRecovery).toHaveBeenCalledTimes(1);
+  });
+
+  it('accepts a newly pasted proof in the same mounted set-password page', async () => {
+    renderPage('invitation','original');
+    await screen.findByLabelText('New password');
+    window.history.replaceState({}, '', '/set-password#proof=replaced');
+    window.dispatchEvent(new Event('hashchange'));
+    await waitFor(() => expect(validateInvitation).toHaveBeenCalledWith('replaced'));
+    await waitFor(() => expect(exchangeInvitation).toHaveBeenCalledWith('replaced'));
+    expect(window.location.hash).toBe('');
+  });
+
+  it('rejects expired session markers without contacting the backend', async () => {
+    window.sessionStorage.setItem('groovehub.identity.password-flow.v1',JSON.stringify({
+      purpose:'invitation', stage:'grant', expiresAt:Date.now()-1000,
+    }));
+    renderPage('invitation');
     expect(await screen.findByText('This link looks incomplete')).toBeTruthy();
-    expect(resetGrantStatus).not.toHaveBeenCalled();
-    expect(screen.queryByLabelText('New password')).toBeNull();
+    expect(setupStatus).not.toHaveBeenCalled();
+    expect(window.sessionStorage.length).toBe(0);
   });
 
   it('verifies the proof, strips it from the URL and asks for passwords only',async()=>{
