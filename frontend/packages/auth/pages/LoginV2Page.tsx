@@ -34,8 +34,12 @@ export const LoginV2Page = () => {
     try{
       await signIn(normalizedEmail,password);
       navigate('/dashboard',{replace:true});
-    }catch{
-      setError('The email or password is incorrect. Please check your details and try again.');
+    }catch(failure){
+      const message=failure instanceof Error?failure.message:'';
+      const invalidCredentials=/invalid creden|incorrect|unauthoriz|invalid login|wrong password|\b401\b/i.test(message);
+      setError(invalidCredentials
+        ? 'The email or password is incorrect. Please check your details and try again.'
+        : 'We couldn’t sign you in right now. Please try again.');
     }finally{
       setBusy(false);
     }
