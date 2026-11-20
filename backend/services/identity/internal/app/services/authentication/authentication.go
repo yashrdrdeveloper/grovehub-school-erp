@@ -35,6 +35,7 @@ type Service interface {
 	Refresh(context.Context, string) (RefreshResult, error)
 	Forgot(context.Context, string) error
 	Exchange(context.Context, string, string) (Grant, error)
+	InspectProof(context.Context, string, string) (authdto.GrantResult, error)
 	ResetPassword(context.Context, string, string) error
 	Reauthenticate(context.Context, string) error
 	ChangePassword(context.Context, string) error
