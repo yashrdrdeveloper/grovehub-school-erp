@@ -43,6 +43,8 @@ export const authenticationApi = {
       method: 'POST',
       headers: { Authorization: `Invitation ${proof}` },
     }),
+  resetGrantStatus: () =>
+    apiRequest<GrantResult>(`${PUBLIC}/reset-password/status`),
   resetPassword: (newPassword: string) =>
     apiRequest<StatusResult>(`${PUBLIC}/reset-password`, {
       method: 'POST',
