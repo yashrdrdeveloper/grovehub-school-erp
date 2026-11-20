@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
-import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Clock3, Eye, EyeOff, KeyRound, Link2Off, LoaderCircle, LockKeyhole, PartyPopper, ShieldCheck, Sparkles } from 'lucide-react';
+import { AlertCircle, ArrowLeft, ArrowRight, Clock3, Eye, EyeOff, KeyRound, Link2Off, LoaderCircle, LockKeyhole, PartyPopper, ShieldCheck, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { authenticationApi } from '@Business/auth';
@@ -132,7 +132,6 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
   };
 
   const formVisible = view === 'ready' || view === 'saving';
-  const missing = view === 'missing';
   const title = invitation ? 'Set your password.' : 'Reset your password.';
   return <LoginLayout title={title} description={invitation
     ? 'Secure your new RDR School account.'
