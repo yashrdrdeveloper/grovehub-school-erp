@@ -63,6 +63,20 @@ describe('RDR Login V2',()=>{
     await waitFor(()=>expect(signIn).toHaveBeenCalledWith('parent@example.com','school-password'));
   });
 
+  it('shows field errors only when present without changing the form structure',()=>{
+    const {container}=render(<MemoryRouter><LoginV2Page/></MemoryRouter>);
+    const errors=()=>Array.from(container.querySelectorAll('.rdr-login-v2__field-error--reserved'));
+    expect(errors()).toHaveLength(2);
+    expect(errors().every(node=>node.classList.contains('is-empty'))).toBe(true);
+    fireEvent.click(screen.getByRole('button',{name:/^sign in$/i}));
+    expect(errors().every(node=>!node.classList.contains('is-empty'))).toBe(true);
+    fireEvent.change(screen.getByRole('textbox',{name:'Email address'}),{target:{value:'student@example.edu'}});
+    expect(errors()[0].classList.contains('is-empty')).toBe(true);
+    expect(errors()[1].classList.contains('is-empty')).toBe(false);
+    expect(container.querySelector('.rdr-login-v2__mobile-signin-title')?.textContent).toBe('Sign in');
+    expect(container.querySelector('.rdr-login-v2__mobile-appearance')).not.toBeNull();
+  });
+
   it('keeps one feedback region, with a clear authentication error and the same CTA',async()=>{
     signIn.mockRejectedValueOnce(new Error('Invalid credentials'));
     render(<MemoryRouter><LoginV2Page/></MemoryRouter>);
