@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle2, Eye, EyeOff, KeyRound, LockKeyhole, ShieldCheck, UserRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -11,6 +11,8 @@ type Purpose = 'recovery' | 'invitation';
 
 export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
   const id = useId();
+  const proofRef = useRef<string | null>(new URLSearchParams(window.location.hash.slice(1)).get('proof'));
+  const verificationRef = useRef<Promise<unknown> | null>(null);
   const [verified, setVerified] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
@@ -23,18 +25,19 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
 
   useEffect(() => {
     // Keep the proof in the URL fragment only until exchange; do not send it in a request URL.
-    const params = new URLSearchParams(window.location.hash.slice(1));
-    const proof = params.get('proof');
+    const proof = proofRef.current;
     window.history.replaceState(null, '', window.location.pathname);
     if (!proof) {
       setError('This link is missing its one-time proof. Request a fresh link.');
       return;
     }
     let active = true;
-    const action = purpose === 'recovery'
-      ? authenticationApi.exchangeRecovery(proof)
-      : authenticationApi.exchangeInvitation(proof);
-    void action.then(
+    if (!verificationRef.current) {
+      verificationRef.current = purpose === 'recovery'
+        ? authenticationApi.exchangeRecovery(proof)
+        : authenticationApi.exchangeInvitation(proof);
+    }
+    void verificationRef.current.then(
       () => { if (active) setVerified(true); },
       () => { if (active) setError('This link is expired or already used. Request a fresh one.'); },
     );
