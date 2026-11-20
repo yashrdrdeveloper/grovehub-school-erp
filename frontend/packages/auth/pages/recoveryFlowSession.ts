@@ -25,7 +25,7 @@ export const readRecoveryFlow = (purpose: RecoveryPurpose): RecoveryFlow | null 
     if (!raw) return null;
     const item: unknown = JSON.parse(raw);
     if (!item || typeof item !== 'object') { clearRecoveryFlow(); return null; }
-    const flow = item as Partial<RecoveryFlow>;
+    const flow = item as { purpose?: RecoveryPurpose; stage?: string; proof?: unknown; expiresAt?: number };
     if (flow.purpose !== purpose || !Number.isFinite(flow.expiresAt) || !flow.expiresAt ||
         flow.expiresAt <= Date.now() || flow.expiresAt > Date.now() + MAX_LIFETIME_MS ||
         (flow.stage !== 'grant' && (flow.stage !== 'proof' || typeof flow.proof !== 'string' || !flow.proof.trim()))) {
