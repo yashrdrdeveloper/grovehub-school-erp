@@ -2380,3 +2380,57 @@ body { background: var(--canvas); }
 @media(prefers-reduced-motion:reduce){
   .auth-page--login *{scroll-behavior:auto}
 }
+
+
+/* Shared responsive sizing foundation. rem/em are used for scalable UI metrics;
+   viewport media breakpoints remain in px because they depend on device width.
+   Avoid page-level horizontal scrolling caused by long labels, grid contents,
+   buttons or older minimum-width rules. */
+:root {
+  --ui-space-1:.25rem;
+  --ui-space-2:.5rem;
+  --ui-space-3:.75rem;
+  --ui-space-4:1rem;
+  --ui-space-5:1.25rem;
+  --ui-space-6:1.5rem;
+  --ui-touch-min:2.75rem;
+  --ui-field-height:3.125rem;
+  --ui-radius-md:.75rem;
+  --ui-radius-lg:1rem;
+  --ui-page-gutter:clamp(1rem,4vw,2.25rem);
+  font-size:100%;
+}
+html,body,#root {
+  width:100%;
+  max-width:100%;
+  min-width:0;
+}
+html {overflow-x:clip}
+body {min-width:0;overflow-x:clip}
+#root {min-height:100svh;overflow-x:clip}
+:where(.shell,.shell__content,.shell__main,.page,.page-heading,.card,.rdr-site,.rdr-sheet,.rdr-login-v2) {
+  min-width:0;
+  max-width:100%;
+}
+:where(.shell,.shell__content,.shell__main,.page,.card) :where(h1,h2,h3,h4,p,span,strong,small,a) {
+  overflow-wrap:break-word;
+}
+:where(.page,.shell__main,.rdr-sheet,.rdr-site) :where(img,video,canvas) {
+  max-width:100%;
+}
+:where(.page,.shell__main) :where(input,textarea,select) {
+  max-width:100%;
+  min-width:0;
+}
+@media(max-width:720px) {
+  :root {--ui-page-gutter:1rem}
+  .shell__content {max-width:100%;min-width:0}
+  .shell__main {min-width:0;max-width:100%;padding-inline:var(--ui-page-gutter)}
+  .page-heading {flex-wrap:wrap}
+  .page-heading > * {min-width:0;max-width:100%}
+  .metric-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+  .metric-card {min-width:0;padding:var(--ui-space-4)}
+}
+@media(max-width:380px) {
+  .metric-grid {grid-template-columns:minmax(0,1fr)}
+}
