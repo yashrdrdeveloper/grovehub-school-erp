@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Info, LoaderCircle, Mail, MailCheck, RotateCw } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Info, LoaderCircle, Mail, RotateCw } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { authenticationApi } from '@Business/auth';
@@ -22,14 +22,15 @@ export const ForgotPasswordPage = () => {
   const [error, setError] = useState('');
   const [emailError, setEmailError] = useState('');
 
+  const countdownActive = secondsLeft > 0;
   // Calculate from the wall-clock deadline so background tabs do not slow the countdown.
   useEffect(() => {
-    if (!accepted || secondsLeft === 0) return;
+    if (!accepted || !countdownActive) return;
     const interval = window.setInterval(() => {
       setSecondsLeft(Math.max(0, Math.ceil((deadlineRef.current - Date.now()) / 1000)));
     }, 250);
     return () => window.clearInterval(interval);
-  }, [accepted, secondsLeft > 0]);
+  }, [accepted, countdownActive]);
 
   const requestLink = async () => {
     if (requestInFlightRef.current || (accepted && Date.now() < deadlineRef.current)) return;
