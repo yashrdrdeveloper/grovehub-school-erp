@@ -67,7 +67,7 @@ export const ForgotPasswordPage = () => {
         ? 'Resend reset link'
         : 'Send reset link';
 
-  return <LoginLayout title="Forgot password?" description="We’ll help you get back into your school workspace." mobileDescription="Reset your password securely." eyebrow="ACCOUNT RECOVERY">
+  return <LoginLayout title="Forgot password?" description="We’ll help you get back into your school workspace." mobileDescription="Reset your password securely." minimalMobile mobileTitle="Forgot password?" eyebrow="ACCOUNT RECOVERY">
     <div className="rdr-auth-flow rdr-auth-flow--forgot">
       <form className="rdr-login-v2__form rdr-auth-flow__form" onSubmit={event => void submit(event)} noValidate>
         <div className="rdr-auth-flow__fields">
