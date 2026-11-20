@@ -32,3 +32,8 @@ type SetupResult struct {
 	Status         string `json:"status"`
 	SetupCompleted bool   `json:"setupCompleted"`
 }
+
+type SetupStatusResult struct {
+	Verified bool `json:"verified"`
+	ExpiresIn int `json:"expiresIn"`
+}
