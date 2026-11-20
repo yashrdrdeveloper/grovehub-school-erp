@@ -39,7 +39,7 @@ export const LoginLayout = ({ children, title, description, mobileDescription, m
             <div className="rdr-login-v2__mobile-appearance" role="group" aria-label="Appearance">
               {appearanceOptions.map(({ value, label, Icon }) => (
                 <button key={value} type="button" className={preference === value ? 'is-active' : ''}
-                  aria-label={`${label} theme`} aria-pressed={preference === value}
+                  aria-label={`${label} mobile theme`} aria-pressed={preference === value}
                   title={`${label} theme`} onClick={() => setPreference(value)}>
                   <Icon size={16}/>
                 </button>
