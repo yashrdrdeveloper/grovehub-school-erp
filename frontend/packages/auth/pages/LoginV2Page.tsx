@@ -1,29 +1,18 @@
 import { useId, useState, type FormEvent } from 'react';
-import { ArrowLeft, ArrowRight, Eye, EyeOff, GraduationCap, LockKeyhole, Mail, Monitor, Moon, Sun } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { ApiError } from '@Business/api';
-import { SchoolMonogram } from '@Components';
-import { useWorkspaceTheme, type ThemePreference } from '@Components/hooks/theme';
 
 import { useAuth } from '../core/providers/AuthProvider';
 
-import SoffitGradient from './loginv2/SoffitGradient';
-
-import './loginV2.css';
+import { LoginLayout } from './LoginLayout';
 
 const emailPattern=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const appearanceOptions:{value:ThemePreference;label:string;Icon:typeof Sun}[]=[
-  {value:'system',label:'System',Icon:Monitor},
-  {value:'light',label:'Light',Icon:Sun},
-  {value:'dark',label:'Dark',Icon:Moon},
-];
-
 export const LoginV2Page = () => {
   const fieldId=useId();
   const navigate=useNavigate();
   const {signIn}=useAuth();
-  const {preference,setPreference}=useWorkspaceTheme();
 
   const [email,setEmail]=useState('');
   const [password,setPassword]=useState('');
@@ -54,45 +43,7 @@ export const LoginV2Page = () => {
     }
   };
 
-  return <main className="rdr-login-v2">
-    <div className="rdr-login-v2__frame">
-      <section className="rdr-login-v2__visual" aria-label="RDR School abstract light and learning artwork">
-        <SoffitGradient/>
-        <div className="rdr-login-v2__visual-brand">
-          <SchoolMonogram/>
-          <span><strong>RDR School</strong><small>Rao Deena Ram Vidya Vihar</small></span>
-        </div>
-        <div className="rdr-login-v2__visual-copy">
-          <span className="rdr-login-v2__visual-kicker"><span/> A PLACE TO BELONG</span>
-          <h2>Growing minds.<br/><em>Brighter futures.</em></h2>
-          <p>Learning, character and community — together at RDR School.</p>
-          <div className="rdr-login-v2__visual-footer"><span>HALUHERA</span><i aria-hidden="true"/><span>REWARI, HARYANA</span></div>
-        </div>
-      </section>
-
-      <section className="rdr-login-v2__content" aria-labelledby="rdr-login-v2-title">
-        <div className="rdr-login-v2__toolbar">
-          <Link to="/" className="rdr-login-v2__back" aria-label="Back to RDR School homepage">
-            <ArrowLeft size={19}/><span>Back to school</span>
-          </Link>
-          <div className="rdr-login-v2__appearance" role="group" aria-label="Appearance">
-            {appearanceOptions.map(({value,label,Icon})=>
-              <button key={value} type="button" className={preference===value?'is-active':''}
-                aria-label={`${label} theme`} aria-pressed={preference===value}
-                title={`${label} theme`} onClick={()=>setPreference(value)}>
-                <Icon size={16}/>
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className="rdr-login-v2__main">
-          <div className="rdr-login-v2__heading">
-            <span className="rdr-login-v2__eyebrow"><GraduationCap size={15}/> YOUR SCHOOL WORKSPACE</span>
-            <h1 id="rdr-login-v2-title">Welcome back.</h1>
-            <p>Sign in to continue to your RDR School workspace.</p>
-          </div>
-
+  return <LoginLayout title="Welcome back." description="Sign in to continue to your RDR School workspace.">
           <form className="rdr-login-v2__form" onSubmit={event=>void submit(event)} noValidate>
             <div className="rdr-login-v2__field">
               <label htmlFor={`${fieldId}-email`}>Email address</label>
@@ -108,7 +59,7 @@ export const LoginV2Page = () => {
                     if(error)setError('');
                   }} required/>
               </div>
-              {fieldErrors.email&&<small className="rdr-login-v2__field-error" id={`${fieldId}-email-error`}>{fieldErrors.email}</small>}
+              <small className="rdr-login-v2__field-error rdr-login-v2__field-error--reserved" id={`${fieldId}-email-error`}>{fieldErrors.email || '\u00a0'}</small>
             </div>
 
             <div className="rdr-login-v2__field">
@@ -133,17 +84,13 @@ export const LoginV2Page = () => {
                   {visible?<EyeOff size={19}/>:<Eye size={19}/>}
                 </button>
               </div>
-              {fieldErrors.password&&<small className="rdr-login-v2__field-error" id={`${fieldId}-password-error`}>{fieldErrors.password}</small>}
+              <small className="rdr-login-v2__field-error rdr-login-v2__field-error--reserved" id={`${fieldId}-password-error`}>{fieldErrors.password || '\u00a0'}</small>
             </div>
 
-            {error&&<p className="rdr-login-v2__error" role="alert">{error}</p>}
+            <div className="rdr-login-v2__feedback-slot" aria-live="polite">{error&&<p className="rdr-login-v2__error" role="alert">{error}</p>}</div>
             <button type="submit" className="rdr-login-v2__submit" disabled={busy}>
               <span>{busy?'Signing in…':'Sign in to workspace'}</span><ArrowRight size={19}/>
             </button>
           </form>
-          <div className="rdr-login-v2__closing"><span className="rdr-login-v2__closing-rule"/><span>RDR SCHOOL · REWARI</span><span className="rdr-login-v2__closing-rule"/></div>
-        </div>
-      </section>
-    </div>
-  </main>;
+  </LoginLayout>;
 };
