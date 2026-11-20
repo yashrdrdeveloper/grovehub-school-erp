@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 
 import { authenticationApi } from '@Business/auth';
 import { accountsApi } from '@Business/accounts';
+import { ApiError } from '@Business/api';
 
 import { LoginLayout } from './LoginLayout';
 
@@ -58,33 +59,33 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
   const [fieldErrors, setFieldErrors] = useState<{ password?: string; confirmation?: string }>({});
   const [attempts, setAttempts] = useState(0);
 
-  useEffect(() => {
-    if (!requestRef.current) {
-      const url = new URL(window.location.href);
-      proofRef.current = new URLSearchParams(url.hash.slice(1)).get('proof');
-      // The proof should never appear in copied URLs, browser history or referrers.
-      url.hash = '';
-      window.history.replaceState(window.history.state, '', url.pathname + url.search);
-      if (!proofRef.current) {
-        setView('missing');
-      } else {
-        requestRef.current = (async () => {
-          const proof = proofRef.current!;
-          try {
-            if (invitation) await authenticationApi.validateInvitation(proof);
-            else await authenticationApi.validateRecovery(proof);
-            if (invitation) await authenticationApi.exchangeInvitation(proof);
-            else await authenticationApi.exchangeRecovery(proof);
-            proofRef.current = null;
-            setView('ready');
-          } catch (failure) {
-            const message = failure instanceof Error ? failure.message : '';
-            const invalid = /invalid|expired|used|401|403|404|410|token/i.test(message);
-            setView(invalid ? 'expired' : 'unavailable');
-          }
-        })();
-      }
+  const verify = async (proof: string) => {
+    setView('checking');
+    try {
+      if (invitation) await authenticationApi.validateInvitation(proof);
+      else await authenticationApi.validateRecovery(proof);
+      if (invitation) await authenticationApi.exchangeInvitation(proof);
+      else await authenticationApi.exchangeRecovery(proof);
+      proofRef.current = null;
+      setView('ready');
+    } catch (failure) {
+      const expired = failure instanceof ApiError &&
+        (failure.code === 'IDENTITY_TOKEN_INVALID' || [401, 403, 404, 410].includes(failure.status));
+      setView(expired ? 'expired' : 'unavailable');
     }
+  };
+
+  useEffect(() => {
+    if (requestRef.current) return;
+    const url = new URL(window.location.href);
+    proofRef.current = new URLSearchParams(url.hash.slice(1)).get('proof');
+    // Keep one-time secrets in component memory; remove the fragment from browser history.
+    window.history.replaceState(window.history.state, '', url.pathname + url.search);
+    if (!proofRef.current) {
+      setView('missing');
+      return;
+    }
+    requestRef.current = verify(proofRef.current);
   }, [invitation]);
 
   useEffect(() => {
@@ -113,14 +114,16 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
       setConfirmation('');
       setView('success');
     } catch (failure) {
-      const message = failure instanceof Error ? failure.message : '';
-      const invalid = /invalid.*token|expired|grant|401|403|410/i.test(message);
+      const apiError = failure instanceof ApiError ? failure : null;
+      const attemptsExceeded = apiError?.code === 'IDENTITY_SETUP_ATTEMPTS_EXCEEDED';
+      const invalid = apiError?.code === 'IDENTITY_TOKEN_INVALID' || [401, 403, 410].includes(apiError?.status ?? 0);
       const nextAttempts = attemptRef.current + 1;
       attemptRef.current = nextAttempts;
       setAttempts(nextAttempts);
       setPassword('');
       setConfirmation('');
-      if (invalid) setView('expired');
+      if (attemptsExceeded) setView('attempts-exhausted');
+      else if (invalid) setView('expired');
       else if (invitation && nextAttempts >= MAX_SETUP_ATTEMPTS) setView('attempts-exhausted');
       else {
         setError(invitation ? 'Activation failed. You have one more attempt.' : 'Unable to reset your password. Please try again.');
@@ -185,7 +188,7 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
         {view === 'checking' && <p className="rdr-recovery__slow" role="status">{slow ? 'Still checking. This may take a moment…' : 'Verifying your invitation securely…'}</p>}
         {view === 'success' && <Link className="rdr-login-v2__submit rdr-recovery__state-button" to="/login">Go to login <ArrowRight size={18}/></Link>}
         {view === 'unavailable' && <button className="rdr-login-v2__submit rdr-recovery__state-button" type="button"
-          onClick={() => window.location.reload()}>Try checking again <ArrowRight size={18}/></button>}
+          onClick={() => { if (proofRef.current) void verify(proofRef.current); }}>Try checking again <ArrowRight size={18}/></button>}
         {(view === 'missing' || view === 'expired' || view === 'attempts-exhausted') && <Link className="rdr-recovery__back" to="/login">
           <ArrowLeft size={16}/> Return to login
         </Link>}
