@@ -10,7 +10,7 @@
     --app-surface:#fff;--app-ink:#212638;--app-muted:#858b98;
     --app-input:#f6f7f9;--app-stroke:#edf0f4;--app-action:#10aeb5;
     display:block;width:100%;max-width:100%;height:100dvh;min-height:0;
-    margin:0;background:#0a9eac;color:var(--app-ink);overflow:hidden;
+    margin:0;background:#062334;color:var(--app-ink);overflow:hidden;
   }
   .rdr-login-v2__frame {
     display:flex;flex-direction:column;width:100%;max-width:100%;
@@ -20,13 +20,11 @@
   .rdr-login-v2__visual,:root[data-theme="dark"] .rdr-login-v2__visual {
     position:relative;isolation:isolate;display:block;flex:0 0 clamp(11.5rem,34dvh,18rem);
     width:100%;min-width:0;height:auto;min-height:0;overflow:hidden;
-    border-radius:0;background:
-      radial-gradient(ellipse 65% 80% at 90% 60%,#7be3d0 0%,transparent 75%),
-      linear-gradient(132deg,#0ca6bd 0%,#18b2b4 53%,#5bd0bd 100%);
+    border-radius:0;background:#062334;
   }
-  .rdr-login-v2__visual>.lv2-gradient {opacity:.23;mix-blend-mode:screen}
+  .rdr-login-v2__visual>.lv2-gradient {opacity:1;mix-blend-mode:normal}
   .rdr-login-v2__visual::after,:root[data-theme="dark"] .rdr-login-v2__visual::after {
-    background:linear-gradient(90deg,rgba(1,96,119,.11),transparent);
+    background:linear-gradient(90deg,rgba(2,20,34,.28),transparent);
   }
   .rdr-login-v2__visual-brand,.rdr-login-v2__visual-copy{display:none}
   .rdr-login-v2__mobile-header{
@@ -55,40 +53,40 @@
   }
   .rdr-login-v2__mobile-glow{
     position:absolute;inset:15% 5% -20%;
-    border-radius:50%;background:#b6fff37d;filter:blur(2.5rem);
+    border-radius:50%;background:#5fd2da55;filter:blur(2.5rem);
   }
   .rdr-login-v2__mobile-art-card{
     position:absolute;display:flex;align-items:center;justify-content:center;
-    background:#efffffeb;border:1px solid #fff9;
-    box-shadow:0 .65rem 1.7rem #047d8b2b;
+    background:#f0f8fceb;border:1px solid #fff9;
+    box-shadow:0 .65rem 1.7rem #051c352b;
   }
   .rdr-login-v2__mobile-art-card--back{
     left:11%;top:2%;width:7.5rem;height:5.7rem;padding:.75rem;
-    border-radius:1rem;transform:rotate(-11deg);color:#0f9baa;
+    border-radius:1rem;transform:rotate(-11deg);color:#344f78;
   }
   .rdr-login-v2__mobile-art-card--back svg{align-self:flex-start;flex:none}
   .rdr-login-v2__mobile-art-lines{
     display:flex;flex-direction:column;gap:.48rem;flex:1;padding-left:.45rem;
   }
   .rdr-login-v2__mobile-art-lines i{
-    display:block;height:.42rem;border-radius:1rem;background:#b4e8e8;
+    display:block;height:.42rem;border-radius:1rem;background:#b8cde1;
   }
   .rdr-login-v2__mobile-art-lines i:nth-child(2){width:75%}
   .rdr-login-v2__mobile-art-lines i:nth-child(3){width:88%}
   .rdr-login-v2__mobile-art-card--front{
     right:10%;top:19%;width:8.7rem;height:6.3rem;border-radius:1.15rem;
-    transform:rotate(9deg);flex-direction:column;gap:.5rem;color:#079da9;
+    transform:rotate(9deg);flex-direction:column;gap:.5rem;color:#344f78;
   }
   .rdr-login-v2__mobile-art-card--front svg{width:2.3rem;height:2.3rem}
   .rdr-login-v2__mobile-art-card--front span{display:flex;flex-direction:column;gap:.3rem;align-items:center}
-  .rdr-login-v2__mobile-art-card--front i{width:3.7rem;height:.35rem;background:#bee9e9;border-radius:1rem}
+  .rdr-login-v2__mobile-art-card--front i{width:3.7rem;height:.35rem;background:#c3d4e6;border-radius:1rem}
   .rdr-login-v2__mobile-art-card--front i+ i{width:2.7rem}
   .rdr-login-v2__mobile-art-check{
     position:absolute;right:1%;top:0;display:grid;place-items:center;
     width:2.5rem;height:2.5rem;border-radius:50%;background:#fff;
-    color:#16b7a7;box-shadow:0 .5rem 1.1rem #05798840;
+    color:#28466d;box-shadow:0 .5rem 1.1rem #041d3840;
   }
-  .rdr-login-v2__mobile-art-dot{position:absolute;border-radius:50%;background:#e9fffb9a}
+  .rdr-login-v2__mobile-art-dot{position:absolute;border-radius:50%;background:#d8f3ffaa}
   .rdr-login-v2__mobile-art-dot--one{width:.6rem;height:.6rem;left:2%;bottom:20%}
   .rdr-login-v2__mobile-art-dot--two{width:.35rem;height:.35rem;right:4%;bottom:10%}
   .rdr-login-v2__content,:root[data-theme="dark"] .rdr-login-v2__content{
@@ -120,7 +118,7 @@
     padding:0;border-radius:.8rem;
   }
   .rdr-login-v2__appearance button svg{width:.9rem;height:.9rem}
-  .rdr-login-v2__appearance button.is-active{background:white;color:#129cab;box-shadow:0 .15rem .5rem #122b3e0e}
+  .rdr-login-v2__appearance button.is-active{background:white;color:#1f2a44;box-shadow:0 .15rem .5rem #122b3e0e}
   .rdr-login-v2__main,:root[data-theme="dark"] .rdr-login-v2__main{
     display:flex;flex:1 1 auto;flex-direction:column;align-items:stretch;
     width:100%;max-width:26rem;min-width:0;min-height:0;
@@ -150,7 +148,7 @@
     font-size:.72rem;line-height:1.3;color:var(--app-ink);
   }
   .rdr-login-v2__password-label{min-width:0;gap:.45rem;flex-wrap:nowrap}
-  .rdr-login-v2__password-label>a{font-size:.67rem;color:#119da5;text-underline-offset:.18rem;white-space:nowrap}
+  .rdr-login-v2__password-label>a{font-size:.67rem;color:var(--v2-navy);text-underline-offset:.18rem;white-space:nowrap}
   .rdr-login-v2__input-shell,
   .rdr-login-v2__form--signin>.rdr-login-v2__field .rdr-login-v2__input-shell,
   .rdr-auth-flow--forgot .rdr-auth-flow__email-field .rdr-login-v2__input-shell,
@@ -182,8 +180,8 @@
     display:flex;align-items:center;justify-content:center;flex:none;gap:.6rem;
     width:100%;min-height:2.85rem;height:2.85rem;
     padding:.55rem .9rem;margin:0;border:0;border-radius:1.3rem;
-    background:#13afb5;color:white;font-size:.8rem;font-weight:850;
-    box-shadow:0 .45rem 1.1rem #14a0aa24;
+    background:linear-gradient(135deg,#181b23,#2c3241);color:white;font-size:.8rem;font-weight:850;
+    box-shadow:0 .45rem 1.1rem #1f2a4424;
   }
   .rdr-login-v2__form--signin>.rdr-login-v2__submit{margin-top:auto}
   .rdr-login-v2__closing{display:none}
@@ -244,12 +242,12 @@
 }
 :root[data-theme="dark"] .rdr-login-v2{
   --app-surface:#171f2a;--app-ink:#f3f6fb;--app-muted:#acb6c6;
-  --app-input:#222c39;--app-stroke:#344153;--app-action:#2ac4c5;
+  --app-input:#1a1d24;--app-stroke:#343946;--app-action:#3c5177;
 }
 @media (max-width:720px) {
   :root[data-theme="dark"] .rdr-login-v2__content{background:var(--app-surface)}
   :root[data-theme="dark"] .rdr-login-v2__appearance{background:var(--app-input);border-color:var(--app-stroke)}
-  :root[data-theme="dark"] .rdr-login-v2__appearance button.is-active{background:#344352;color:#95f1e8}
+  :root[data-theme="dark"] .rdr-login-v2__appearance button.is-active{background:#343f54;color:#d9e6fc}
   :root[data-theme="dark"] .rdr-login-v2__input-shell,
   :root[data-theme="dark"] .rdr-login-v2__form--signin>.rdr-login-v2__field .rdr-login-v2__input-shell,
   :root[data-theme="dark"] .rdr-auth-flow--forgot .rdr-auth-flow__email-field .rdr-login-v2__input-shell,
@@ -260,12 +258,64 @@
   :root[data-theme="dark"] .rdr-login-v2__form--signin>.rdr-login-v2__submit,
   :root[data-theme="dark"] .rdr-auth-flow--forgot .rdr-login-v2__submit,
   :root[data-theme="dark"] .rdr-recovery__actions .rdr-login-v2__submit{
-    background:#22b9bc;color:#fff;
+    background:linear-gradient(135deg,#363d51,#505b79);color:#fff;
   }
   :root[data-theme="dark"] .rdr-auth-flow--forgot .rdr-auth-flow__notice{
-    background:#1c3542;color:#b7e9ee;border-color:#335461;
+    background:#14283a;color:#a8d7f3;border-color:#35556e;
   }
   :root[data-theme="dark"] .rdr-auth-flow--forgot .rdr-auth-flow__notice--success{
-    background:#183a34;color:#b9f4da;border-color:#3b6856;
+    background:#142e24;color:#a0e7c2;border-color:#37664f;
+  }
+}
+
+/* Error messages must be laid out in document flow, never absolutely
+   over the next field. Applies to mobile sign-in validation states. */
+@media(max-width:720px) {
+  .rdr-login-v2__form--signin>.rdr-login-v2__field {
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:auto 2.7rem auto;
+    align-content:start;
+    row-gap:.32rem;
+  }
+  .rdr-login-v2__form--signin>.rdr-login-v2__field>.rdr-login-v2__field-error--reserved {
+    position:static;
+    inset:auto;
+    display:block;
+    height:auto;
+    min-height:1rem;
+    max-height:none;
+    line-height:1.35;
+    margin:0;
+    padding:0 .2rem;
+    white-space:normal;
+    text-overflow:clip;
+    overflow-wrap:break-word;
+    overflow:visible;
+    font-size:.7rem;
+  }
+  .rdr-login-v2__form--signin>.rdr-login-v2__field+.rdr-login-v2__field {
+    margin-top:clamp(.35rem,1dvh,.75rem)!important;
+  }
+  .rdr-login-v2__form--signin>.rdr-login-v2__feedback-slot--signin {
+    margin:.1rem 0 .4rem;
+    min-height:1.2rem;
+  }
+  .rdr-login-v2__form--signin>.rdr-login-v2__submit {
+    margin-top:clamp(.5rem,2dvh,1.25rem);
+  }
+  .rdr-login-v2__form--signin {
+    flex:0 0 auto;
+  }
+  .rdr-login-v2__content {
+    padding-bottom:max(1rem,env(safe-area-inset-bottom));
+  }
+  .rdr-login-v2__input-shell:focus-within {
+    border-color:#1f2a44;
+    box-shadow:0 0 0 .17rem #1f2a441f;
+  }
+  :root[data-theme="dark"] .rdr-login-v2__input-shell:focus-within {
+    border-color:#61769e;
+    box-shadow:0 0 0 .17rem #61769e33;
   }
 }
