@@ -1,6 +1,7 @@
 import {
   ForgotPasswordPage,
   LoginPage,
+  LoginV2Page,
   RecoveryPage,
 } from '@Domain/auth';
 import { DashboardPage } from '@Domain/dashboard';
