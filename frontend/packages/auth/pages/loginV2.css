@@ -993,3 +993,211 @@
   border-radius:inherit;
   transition:background-color 9999s ease-out 0s;
 }
+
+
+/* Forgot password: login-aligned actions, informative status and resend control */
+.rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading h1 {
+  font-size:clamp(34px,3.2vw,46px);
+  line-height:1.12;
+  margin:10px 0 6px;
+}
+.rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading p {
+  line-height:1.5;
+  margin:0 0 20px;
+}
+.rdr-auth-flow--forgot .rdr-auth-flow__form {
+  min-height:0;
+  gap:0;
+  justify-content:flex-start;
+}
+.rdr-auth-flow--forgot .rdr-auth-flow__fields {
+  display:grid;
+  gap:0;
+  grid-template-columns:minmax(0,1fr);
+}
+.rdr-auth-flow--forgot .rdr-auth-flow__email-field {
+  display:grid;
+  grid-template-rows:18px 48px 18px;
+  row-gap:6px;
+  gap:6px;
+  min-width:0;
+}
+.rdr-auth-flow--forgot .rdr-auth-flow__email-field > label {
+  line-height:18px;
+  margin:0;
+}
+.rdr-auth-flow--forgot .rdr-auth-flow__email-field .rdr-login-v2__input-shell {
+  height:48px;
+  margin:0;
+}
+.rdr-auth-flow--forgot .rdr-auth-flow__email-field .rdr-login-v2__field-error--reserved {
+  height:18px;
+  min-height:18px;
+  max-height:18px;
+  line-height:18px;
+  margin:0;
+  padding:0 2px;
+}
+.rdr-auth-flow--forgot .rdr-auth-flow__notice {
+  display:flex;
+  align-items:flex-start;
+  gap:11px;
+  height:78px;
+  min-height:78px;
+  margin:4px 0 0;
+  padding:11px 12px;
+  border:1px solid #d4e4f1;
+  border-radius:12px;
+  color:#264b70;
+  background:#eef6fc;
+  overflow:hidden;
+}
+.rdr-auth-flow--forgot .rdr-auth-flow__notice--success {
+  border-color:#bddfcf;
+  background:#eaf8f0;
+  color:#22644b;
+}
+.rdr-auth-flow--forgot .rdr-auth-flow__notice-icon {
+  display:grid;
+  place-items:center;
+  flex:0 0 20px;
+  margin-top:1px;
+}
+.rdr-auth-flow--forgot .rdr-auth-flow__notice-copy {
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:0;
+}
+.rdr-auth-flow--forgot .rdr-auth-flow__notice-copy strong {
+  font-size:12px;
+  font-weight:800;
+  line-height:16px;
+}
+.rdr-auth-flow--forgot .rdr-auth-flow__notice-copy small {
+  font-size:11px;
+  line-height:16px;
+}
+.rdr-auth-flow--forgot .rdr-auth-flow__hint {
+  display:flex;
+  align-items:center;
+  height:24px;
+  min-height:24px;
+  margin:0;
+  color:var(--v2-muted);
+  font-size:11px;
+  line-height:1.4;
+}
+.rdr-auth-flow--forgot .rdr-auth-flow__actions {
+  display:flex;
+  flex-direction:column;
+  gap:0;
+  margin:0;
+}
+.rdr-auth-flow--forgot .rdr-auth-flow__error-slot {
+  display:flex;
+  align-items:center;
+  min-height:12px;
+  height:12px;
+  margin:0;
+  padding:0;
+}
+.rdr-auth-flow--forgot .rdr-auth-flow__error-slot .rdr-login-v2__error {
+  margin:0;
+  border:0;
+  background:transparent;
+  padding:0;
+  color:#bb3953;
+  font-size:11px;
+  line-height:1.3;
+}
+.rdr-auth-flow--forgot .rdr-login-v2__submit {
+  min-height:48px;
+  height:48px;
+  margin:0;
+  flex:none;
+}
+.rdr-auth-flow--forgot .rdr-auth-flow__secondary-slot {
+  display:grid;
+  place-items:center;
+  height:42px;
+  margin-top:4px;
+}
+.rdr-auth-flow--forgot .rdr-auth-flow__back {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:36px;
+  padding:0 8px;
+  border:0;
+  border-radius:7px;
+  background:transparent;
+  text-decoration:none;
+  font-weight:700;
+  font-size:12px;
+  color:var(--v2-ink)!important;
+  cursor:pointer;
+}
+.rdr-auth-flow--forgot .rdr-auth-flow__back:focus-visible {
+  outline:2px solid var(--v2-navy);
+  outline-offset:2px;
+}
+.rdr-auth-flow--forgot .rdr-auth-flow__resend:disabled {
+  opacity:1;
+  color:var(--v2-muted)!important;
+  cursor:default;
+}
+:root[data-theme="dark"] .rdr-auth-flow--forgot .rdr-auth-flow__notice {
+  background:#142738;
+  border-color:#36536b;
+  color:#a8d7f3;
+}
+:root[data-theme="dark"] .rdr-auth-flow--forgot .rdr-auth-flow__notice--success {
+  background:#142a22;
+  border-color:#2d5948;
+  color:#a0e7c2;
+}
+:root[data-theme="dark"] .rdr-auth-flow--forgot .rdr-auth-flow__back {
+  color:#e8edf8!important;
+}
+:root[data-theme="dark"] .rdr-auth-flow--forgot .rdr-auth-flow__resend:disabled {
+  color:#a7b0c0!important;
+}
+@media(max-width:720px) {
+  .rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading h1 {
+    margin:7px 0;
+    font-size:clamp(28px,7vw,35px);
+  }
+  .rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading p {
+    margin-bottom:16px;
+  }
+  .rdr-auth-flow--forgot .rdr-auth-flow__email-field {
+    grid-template-rows:18px 46px 18px;
+  }
+  .rdr-auth-flow--forgot .rdr-auth-flow__email-field .rdr-login-v2__input-shell {
+    height:46px;
+  }
+  .rdr-auth-flow--forgot .rdr-login-v2__submit {
+    height:46px;
+    min-height:46px;
+  }
+  .rdr-auth-flow--forgot .rdr-auth-flow__notice {
+    height:82px;
+    min-height:82px;
+    padding:9px 10px;
+  }
+  .rdr-auth-flow--forgot .rdr-auth-flow__hint {
+    min-height:32px;
+    height:32px;
+  }
+}
+@media(max-width:380px) {
+  .rdr-auth-flow--forgot .rdr-auth-flow__notice {
+    height:94px;
+    min-height:94px;
+  }
+  .rdr-auth-flow--forgot .rdr-auth-flow__notice-copy small {
+    font-size:10px;
+  }
+}
