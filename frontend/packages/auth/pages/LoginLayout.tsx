@@ -17,10 +17,11 @@ const appearanceOptions: { value: ThemePreference; label: string; Icon: typeof S
 ];
 
 /** Shared, card-free shell for sign-in and every recovery step. */
-export const LoginLayout = ({ children, title, description, eyebrow = 'YOUR SCHOOL WORKSPACE' }: {
+export const LoginLayout = ({ children, title, description, mobileDescription, eyebrow = 'YOUR SCHOOL WORKSPACE' }: {
   children: ReactNode;
   title: string;
   description: string;
+  mobileDescription?: string;
   eyebrow?: string;
 }) => {
   const { preference, setPreference } = useWorkspaceTheme();
@@ -31,9 +32,8 @@ export const LoginLayout = ({ children, title, description, eyebrow = 'YOUR SCHO
         <section className="rdr-login-v2__visual" aria-label="RDR School abstract gradient artwork">
           <SoffitGradient/>
           <div className="rdr-login-v2__mobile-header">
-            <div className="rdr-login-v2__mobile-identity">
+            <div className="rdr-login-v2__mobile-identity" aria-label="RDR School">
               <SchoolMonogram />
-              <span><strong>RDR School</strong><small>Learn · Grow · Belong</small></span>
             </div>
           </div>
           <div className="rdr-login-v2__visual-brand">
@@ -66,7 +66,8 @@ export const LoginLayout = ({ children, title, description, eyebrow = 'YOUR SCHO
             <div className="rdr-login-v2__heading">
               <span className="rdr-login-v2__eyebrow"><GraduationCap size={15}/>{eyebrow}</span>
               <h1 id="rdr-auth-title">{title}</h1>
-              <p>{description}</p>
+              <p className="rdr-login-v2__description-desktop">{description}</p>
+              <p className="rdr-login-v2__description-mobile">{mobileDescription ?? description}</p>
             </div>
             {children}
             <div className="rdr-login-v2__closing">
