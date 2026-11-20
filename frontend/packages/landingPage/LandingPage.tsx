@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useState, type FormEvent, type MouseEvent, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useId, useMemo, useState, type FormEvent, type MouseEvent, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ArrowRight, ArrowUpRight, BookOpen, Bus, CalendarDays,
@@ -14,6 +14,25 @@ import { achievements, disclosedDocuments, enquiryTypes, facilities, historicDis
 import { PublicSheet, type SchoolPanel } from './PublicSheet';
 
 import './landingPage.css';
+
+/** Explicit enquiry actions do not depend on catching React Router links
+ * at the page root. Their href remains useful for opening a new tab or
+ * loading the fully accessible admissions page without JavaScript. */
+const EnquiryActionContext = createContext<(() => void) | null>(null);
+
+const EnquiryLink = ({className,children,onClick}:{
+  className?:string;children:ReactNode;onClick?:()=>void;
+}) => {
+  const openEnquiry=useContext(EnquiryActionContext);
+  return <EnquiryLink className={className} data-rdr-enquiry-action="true"
+    onClick={event=>{
+      onClick?.();
+      if(event.defaultPrevented || event.button!==0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)return;
+      if(!openEnquiry)return;
+      event.preventDefault();
+      openEnquiry();
+    }}>{children}</Link>;
+};
 
 const navItems = [
   { label:'About', to:'/about' },
@@ -95,7 +114,7 @@ const SiteHeader = () => {
             {navItems.map(item => <Link className={pathname===item.to?'active':''} to={item.to} key={item.to}>{item.label}</Link>)}
           </nav>
           <div className="rdr-header__actions">
-            <Link className="rdr-btn rdr-btn--solid rdr-header__enquire" to="/admissions#enquiry">Enquire now <ArrowUpRight size={16}/></Link>
+            <EnquiryLink className="rdr-btn rdr-btn--solid rdr-header__enquire">Enquire now <ArrowUpRight size={16}/></EnquiryLink>
             <button type="button" className="rdr-menu-button" aria-label={open?'Close menu':'Open menu'}
               aria-expanded={open} aria-controls="rdr-mobile-navigation" onClick={()=>setOpen(v=>!v)}>
               {open?<X size={22}/>:<Menu size={22}/>}
@@ -111,7 +130,7 @@ const SiteHeader = () => {
           <Link to="/about/director">Director's message <ArrowUpRight size={16}/></Link>
           <Link to="/about/principal">Principal's message <ArrowUpRight size={16}/></Link>
           <Link to="/contact">Contact & directions <ArrowUpRight size={16}/></Link>
-          <Link className="rdr-mobile-nav__action" to="/admissions#enquiry">Start an enquiry <ArrowRight size={16}/></Link>
+          <EnquiryLink className="rdr-mobile-nav__action" onClick={()=>setOpen(false)}>Start an enquiry <ArrowRight size={16}/></EnquiryLink>
         </nav>
       </>}
     </>
@@ -274,7 +293,7 @@ const StoriesAndUpdates = () => (
             </div>
           )}
         </div>
-        <Link className="rdr-stories__admission" to="/admissions#enquiry">
+        <EnquiryLink className="rdr-stories__admission">
           <span><Megaphone size={18}/> ADMISSIONS & VISITS</span>
           <strong>Ready to discover RDR School?</strong>
           <small>Ask about admissions, classes, transport and visiting the campus.</small>
@@ -301,7 +320,7 @@ const SchoolMessages = () => (
 const MobileQuickHome = () => (
   <section className="rdr-quick-home rdr-container" aria-label="Quick school information and actions">
     <div className="rdr-quick-home__actions">
-      <Link to="/admissions#enquiry" className="rdr-quick-home__primary"><GraduationCap size={19}/><span>Admission enquiry</span><ArrowUpRight size={16}/></Link>
+      <EnquiryLink className="rdr-quick-home__primary"><GraduationCap size={19}/><span>Admission enquiry</span><ArrowUpRight size={16}/></EnquiryLink>
       <a href="tel:+919050077550"><Phone size={19}/><span>Call school</span><ArrowUpRight size={16}/></a>
       <a href="https://www.google.com/maps/search/?api=1&query=Rao+Deena+Ram+Vidya+Vihar+Haluhera" target="_blank" rel="noreferrer"><MapPin size={19}/><span>Directions</span><ArrowUpRight size={16}/></a>
       <Link to="/mandatory-public-disclosure"><ShieldCheck size={19}/><span>CBSE details</span><ArrowUpRight size={16}/></Link>
@@ -320,7 +339,7 @@ const MobileQuickHome = () => (
         return <Link to={item.to} key={item.to}><span className="rdr-quick-home__tile-icon"><Icon size={21}/></span><span><strong>{item.title}</strong><small>{item.desc}</small></span><ArrowUpRight size={15}/></Link>;
       })}
     </div>
-    <div className="rdr-quick-home__bottom"><span><Sparkles size={16}/> A place to learn, belong and grow.</span><Link to="/admissions#enquiry">Talk to us <ArrowRight size={15}/></Link></div>
+    <div className="rdr-quick-home__bottom"><span><Sparkles size={16}/> A place to learn, belong and grow.</span><EnquiryLink>Talk to us <ArrowRight size={15}/></EnquiryLink></div>
   </section>
 );
 
@@ -331,7 +350,7 @@ const HomePage = () => (
         <span className="rdr-eyebrow"><span className="rdr-eyebrow__dot"/> EST. 2006 · HALUHERA, REWARI</span>
         <h1>Where curious minds <em>find their way.</em></h1>
         <p>Welcome to Rao Deena Ram Vidya Vihar — a school community that believes in thoughtful learning, strong values and the potential of every child.</p>
-        <div className="rdr-hero__actions"><Link className="rdr-btn rdr-btn--solid" to="/admissions#enquiry">Enquire for admissions <ArrowUpRight size={17}/></Link><Link className="rdr-btn rdr-btn--text" to="/about">Get to know us <ArrowRight size={17}/></Link></div>
+        <div className="rdr-hero__actions"><EnquiryLink className="rdr-btn rdr-btn--solid">Enquire for admissions <ArrowUpRight size={17}/></EnquiryLink><EnquiryLink className="rdr-btn rdr-btn--text" to="/about">Get to know us <ArrowRight size={17}/></EnquiryLink></div>
         <div className="rdr-hero__meta"><span><School size={17}/> CBSE affiliated</span><span><GraduationCap size={17}/> Senior Secondary</span><span><MapPin size={17}/> Rewari, Haryana</span></div>
       </div>
       <PhotoCollage/>
@@ -370,7 +389,7 @@ const HomePage = () => (
     <section className="rdr-section rdr-section--navy rdr-home-extended"><div className="rdr-container rdr-manifesto"><span className="rdr-eyebrow">OUR PURPOSE</span><h2>More than lessons.<br/><em>Learning for life.</em></h2><p>We believe education should help young people think critically, care for others and meet challenges with confidence.</p><Link className="rdr-btn rdr-btn--light" to="/academics">Explore academics <ArrowUpRight size={17}/></Link><span className="rdr-manifesto__ornament">✳</span></div></section>
     <section className="rdr-section rdr-container rdr-enquiry-section rdr-enquiry-section--short">
       <div><Heading eyebrow="ADMISSIONS & ENQUIRIES" title="A new chapter starts with a conversation." description="Ask about admissions, classes, transport or visiting RDR. Our team is here to help."/></div>
-      <Link className="rdr-btn rdr-btn--solid" to="/admissions#enquiry">Open quick enquiry <ArrowUpRight size={17}/></Link>
+      <EnquiryLink className="rdr-btn rdr-btn--solid">Open quick enquiry <ArrowUpRight size={17}/></EnquiryLink>
     </section>
     <section className="rdr-section rdr-container rdr-disclosure-teaser"><div><span className="rdr-eyebrow">SCHOOL TRANSPARENCY</span><h2>Mandatory Public Disclosure</h2><p>Explore the school's CBSE affiliation reference, archived documents, and disclosure information.</p></div><Link to="/mandatory-public-disclosure" className="rdr-btn rdr-btn--outline">View disclosure <FileCheck2 size={18}/></Link></section>
   </>
@@ -458,7 +477,7 @@ const StoryPage = ({topic}:{topic:keyof typeof legacySchoolStories}) => {
     <IntroPage eyebrow={story.eyebrow} title={story.title} description={story.lead} image={image?.src}/>
     <section className="rdr-section rdr-container rdr-story-page">
       <div><span className="rdr-eyebrow">A CLOSER LOOK</span><h2>Inside the RDR community.</h2><p>{story.detail}</p>
-        <div className="rdr-story-page__actions"><Link className="rdr-btn rdr-btn--solid" to="/admissions#enquiry">Ask the school <ArrowUpRight size={16}/></Link><a href={story.src} target="_blank" rel="noreferrer" className="rdr-inline-link">Original school message <ExternalLink size={16}/></a></div>
+        <div className="rdr-story-page__actions"><EnquiryLink className="rdr-btn rdr-btn--solid">Ask the school <ArrowUpRight size={16}/></EnquiryLink><a href={story.src} target="_blank" rel="noreferrer" className="rdr-inline-link">Original school message <ExternalLink size={16}/></a></div>
       </div>
       <div className="rdr-story-page__notes">{story.highlights.map((line,i)=><div key={line}><span>0{i+1}</span><strong>{line}</strong><Check size={16}/></div>)}</div>
     </section>
@@ -614,15 +633,21 @@ const pageMetadata: Record<string,{title:string;description:string}> = {
 export const LandingPage = () => {
   const location=useLocation();
   const navigate=useNavigate();
+  const [enquiryOpen,setEnquiryOpen]=useState(false);
   const state=location.state as {background?:string;panel?:SchoolPanel}|null;
-  const panel=state?.background && state.panel ? state.panel : null;
-  const backgroundPath=panel?(state?.background??'/'):location.pathname;
+  const routedPanel=state?.background && state.panel ? state.panel : null;
+  const panel:SchoolPanel|null=enquiryOpen?'enquiry':routedPanel;
+  const backgroundPath=routedPanel?(state?.background??'/'):location.pathname;
   const CurrentPage=useMemo(()=>pageContent[backgroundPath] ?? HomePage,[backgroundPath]);
 
-  const closePanel=()=>navigate(state?.background??'/',{replace:true});
+  const closePanel=()=>{
+    if(enquiryOpen){setEnquiryOpen(false);return;}
+    navigate(state?.background??'/',{replace:true});
+  };
   const selectPanel=(next:SchoolPanel)=>{
-    const path=next==='enquiry'?'/admissions#enquiry':
-      Object.entries(pathPanel).find(([,value])=>value===next)?.[0]??'/about';
+    if(next==='enquiry'){setEnquiryOpen(true);return;}
+    setEnquiryOpen(false);
+    const path=Object.entries(pathPanel).find(([,value])=>value===next)?.[0]??'/about';
     navigate(path,{replace:true,state:{background:backgroundPath,panel:next}});
   };
 
@@ -634,8 +659,16 @@ export const LandingPage = () => {
     if(!(event.target instanceof Element))return;
     const anchor=event.target.closest<HTMLAnchorElement>('a[href]');
     if(!anchor || anchor.hasAttribute('download') || (anchor.target&&anchor.target!=='_self'))return;
+    // Purpose-built enquiry links handle themselves. For generic Admissions
+    // links (header menu/footer) preserve the same working enquiry behavior.
+    if(anchor.dataset.rdrEnquiryAction==='true')return;
     const url=new URL(anchor.href,window.location.href);
     if(url.origin!==window.location.origin)return;
+    if(url.pathname==='/admissions'){
+      event.preventDefault();
+      setEnquiryOpen(true);
+      return;
+    }
     const requested=pathPanel[url.pathname];
     if(!requested)return; // CBSE disclosures stay on their public HTML URL.
     event.preventDefault();
@@ -662,10 +695,12 @@ export const LandingPage = () => {
     canonical.href=`https://rdrschool.com${location.pathname}`;
   },[location.pathname]);
 
-  return <div className="rdr-site" onClickCapture={handleInternalLink}>
-    <SiteHeader/>
-    <main id="main-content"><CurrentPage/></main>
-    <SiteFooter/>
-    <PublicSheet panel={panel} onClose={closePanel} onNavigate={selectPanel} enquiry={<EnquiryForm compact/>}/>
-  </div>;
+  return <EnquiryActionContext.Provider value={()=>setEnquiryOpen(true)}>
+    <div className="rdr-site" onClickCapture={handleInternalLink}>
+      <SiteHeader/>
+      <main id="main-content"><CurrentPage/></main>
+      <SiteFooter/>
+      <PublicSheet panel={panel} onClose={closePanel} onNavigate={selectPanel} enquiry={<EnquiryForm compact/>}/>
+    </div>
+  </EnquiryActionContext.Provider>;
 };
