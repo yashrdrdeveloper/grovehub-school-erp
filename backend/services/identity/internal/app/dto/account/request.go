@@ -17,6 +17,5 @@ type Update struct {
 }
 
 type Setup struct {
-	Username string `json:"username"`
 	Password string `json:"password"`
 }
