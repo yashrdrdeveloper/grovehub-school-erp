@@ -204,6 +204,7 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
   return <LoginLayout title={title} description={invitation
     ? 'Secure your new RDR School account.'
     : 'Choose a new password for your school workspace.'}
+    mobileDescription={invitation ? 'Create a secure password.' : 'Choose a new password.'}
     eyebrow={invitation ? 'WELCOME TO RDR SCHOOL' : 'SECURE ACCOUNT RECOVERY'}>
     <div className="rdr-recovery">
       {formVisible ? <form className="rdr-login-v2__form rdr-recovery__form" onSubmit={event => void submit(event)} noValidate>
@@ -222,7 +223,7 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
                 {visible ? <EyeOff size={19}/> : <Eye size={19}/>}
               </button>
             </div>
-            <small id={`${id}-password-error`} className="rdr-login-v2__field-error rdr-login-v2__field-error--reserved">{fieldErrors.password || '\u00a0'}</small>
+            <small id={`${id}-password-error`} className={`rdr-login-v2__field-error rdr-login-v2__field-error--reserved${fieldErrors.password ? "" : " is-empty"}`}>{fieldErrors.password || '\u00a0'}</small>
           </div>
           <div className="rdr-login-v2__field">
             <label htmlFor={`${id}-confirmation`}>Confirm password</label>
@@ -234,7 +235,7 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
                 aria-describedby={fieldErrors.confirmation ? `${id}-confirmation-error` : undefined}
                 onChange={event => { setConfirmation(event.target.value);setFieldErrors(e => ({...e,confirmation:undefined})); }} required/>
             </div>
-            <small id={`${id}-confirmation-error`} className="rdr-login-v2__field-error rdr-login-v2__field-error--reserved">{fieldErrors.confirmation || '\u00a0'}</small>
+            <small id={`${id}-confirmation-error`} className={`rdr-login-v2__field-error rdr-login-v2__field-error--reserved${fieldErrors.confirmation ? "" : " is-empty"}`}>{fieldErrors.confirmation || '\u00a0'}</small>
           </div>
           <p className="rdr-recovery__requirement"><ShieldCheck size={17}/> Use at least 12 characters to keep your account secure.</p>
         </div>
