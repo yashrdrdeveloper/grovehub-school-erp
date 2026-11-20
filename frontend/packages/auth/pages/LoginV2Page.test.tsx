@@ -57,8 +57,8 @@ describe('RDR Login V2',()=>{
     fireEvent.change(screen.getByRole('textbox',{name:'Email address'}),{target:{value:'parent@example.com'}});
     fireEvent.change(screen.getByLabelText('Password'),{target:{value:'wrong-password'}});
     fireEvent.click(screen.getByRole('button',{name:/^sign in$/i}));
-    expect(await screen.findByText('Unable to sign in')).toBeTruthy();
-    expect(screen.getByText(/email or password is incorrect/i)).toBeTruthy();
+    expect(await screen.findByText('Incorrect email or password. Please try again.')).toBeTruthy();
+    expect(screen.getAllByRole('alert')).toHaveLength(1);
     expect(document.querySelectorAll('.rdr-login-v2__feedback-slot--signin')).toHaveLength(1);
     expect(screen.getByRole('button',{name:/^sign in$/i})).toBeTruthy();
   });
