@@ -6,6 +6,7 @@ export {
   RequireSession,
   PublicOnly,
   LoginPage,
+  LoginV2Page,
   ForgotPasswordPage,
   RecoveryPage,
 } from '@Auth';
