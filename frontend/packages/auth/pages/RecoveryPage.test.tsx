@@ -49,20 +49,36 @@ describe('password link flows',()=>{
     resetGrantStatus.mockRejectedValue(new ApiError(401,'IDENTITY_TOKEN_INVALID','Invalid grant'));
   });
 
-  it('shows a missing-link illustration instead of a disabled password form',async()=>{
-    renderPage('invitation');
+  it.each([
+    ['invitation', 'contact your RDR School administrator'],
+    ['recovery', 'request another password reset link'],
+  ] as const)('shows missing-link state without calling APIs for %s', async (purpose, helpText) => {
+    renderPage(purpose);
     expect(await screen.findByText('This link looks incomplete')).toBeTruthy();
     expect(screen.queryByLabelText('New password')).toBeNull();
-    expect(screen.getByText(/contact your RDR School administrator/i)).toBeTruthy();
+    expect(screen.getByText(new RegExp(helpText, 'i'))).toBeTruthy();
+    for (const mock of [
+      validateInvitation, exchangeInvitation, setupStatus,
+      validateRecovery, exchangeRecovery, resetGrantStatus,
+      setup, resetPassword,
+    ]) expect(mock).not.toHaveBeenCalled();
+    expect(window.location.hash).toBe('');
   });
 
-  it('restores a previously exchanged setup grant after the proof is cleared',async()=>{
+  it('does not resume an old setup grant on an incomplete invitation URL', async () => {
     setupStatus.mockResolvedValue({verified:true,expiresIn:480});
     renderPage('invitation');
-    expect(await screen.findByLabelText('New password')).toBeTruthy();
-    expect(setupStatus).toHaveBeenCalledTimes(1);
-    expect(validateInvitation).not.toHaveBeenCalled();
-    expect(window.location.hash).toBe('');
+    expect(await screen.findByText('This link looks incomplete')).toBeTruthy();
+    expect(setupStatus).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText('New password')).toBeNull();
+  });
+
+  it('does not resume an old reset grant on an incomplete recovery URL', async () => {
+    resetGrantStatus.mockResolvedValue({...ok,purpose:'PASSWORD_RESET'});
+    renderPage('recovery');
+    expect(await screen.findByText('This link looks incomplete')).toBeTruthy();
+    expect(resetGrantStatus).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText('New password')).toBeNull();
   });
 
   it('verifies the proof, strips it from the URL and asks for passwords only',async()=>{
