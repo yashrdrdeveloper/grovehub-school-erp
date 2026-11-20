@@ -25,6 +25,19 @@ func New(service account.Service, manager cookies.Manager) public.AccountControl
 	return &Controller{service: service, cookies: manager}
 }
 
+
+func (controller *Controller) SetupStatus(writer http.ResponseWriter, request *http.Request) {
+  writer.Header().Set("Cache-Control", "no-store")
+  rest.RunStruct(writer, request, rest.StructConfig[struct{}, dto.SetupStatusResult]{
+    Fallback: definitions.Internal,
+    Service: func(ctx context.Context, _ struct{}) (rest.Result[dto.SetupStatusResult], error) {
+      result, err := controller.service.SetupStatus(ctx, controller.cookies.Read(request, cookies.SetupCookie))
+      if err != nil { return rest.Result[dto.SetupStatusResult]{}, helpers.Map(err) }
+      return rest.OK(result), nil
+    },
+  })
+}
+
 func (controller *Controller) Setup(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.SetupRequest, dto.SetupResult]{
 		Decode: httprequest.DecodeStrictJSON,
