@@ -53,7 +53,7 @@ func New(accounts accountrepo.Repository, tokens tokenrepo.Repository, sessions 
 		get: getimpl.New(accounts, mapper),
 		update: updateimpl.New(accounts, mapper, validator, unit, events),
 		transition: transitionimpl.New(accounts, sessions, mapper, unit, events),
-		setup: setupimpl.New(accounts, tokens, credentials, validator, unit, events),
+		setup: setupimpl.New(accounts, tokens, credentials, unit, events),
 	}
 }
 
