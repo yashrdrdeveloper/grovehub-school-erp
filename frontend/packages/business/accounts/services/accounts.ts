@@ -41,9 +41,9 @@ export const accountsApi = {
       `${PROTECTED}/${encodeURIComponent(accountId)}/resend-invitation`,
       { method: 'POST' },
     ),
-  setup: (username: string, password: string) =>
+  setup: (password: string) =>
     apiRequest<SetupResult>('/identity/public/accounts/setup', {
       method: 'POST',
-      body: { username, password },
+      body: { password },
     }),
 };
