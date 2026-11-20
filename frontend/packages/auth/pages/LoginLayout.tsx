@@ -17,23 +17,33 @@ const appearanceOptions: { value: ThemePreference; label: string; Icon: typeof S
 ];
 
 /** Shared, card-free shell for sign-in and every recovery step. */
-export const LoginLayout = ({ children, title, description, mobileDescription, eyebrow = 'YOUR SCHOOL WORKSPACE' }: {
+export const LoginLayout = ({ children, title, description, mobileDescription, minimalMobile = false, eyebrow = 'YOUR SCHOOL WORKSPACE' }: {
   children: ReactNode;
   title: string;
   description: string;
   mobileDescription?: string;
+  minimalMobile?: boolean;
   eyebrow?: string;
 }) => {
   const { preference, setPreference } = useWorkspaceTheme();
 
   return (
-    <main className="rdr-login-v2">
+    <main className={`rdr-login-v2${minimalMobile ? ' rdr-login-v2--mobile-minimal' : ''}`}>
       <div className="rdr-login-v2__frame">
         <section className="rdr-login-v2__visual" aria-label="RDR School abstract gradient artwork">
           <SoffitGradient/>
           <div className="rdr-login-v2__mobile-header">
             <div className="rdr-login-v2__mobile-identity" aria-label="RDR School">
               <SchoolMonogram />
+            </div>
+            <div className="rdr-login-v2__mobile-appearance" role="group" aria-label="Appearance">
+              {appearanceOptions.map(({ value, label, Icon }) => (
+                <button key={value} type="button" className={preference === value ? 'is-active' : ''}
+                  aria-label={`${label} theme`} aria-pressed={preference === value}
+                  title={`${label} theme`} onClick={() => setPreference(value)}>
+                  <Icon size={16}/>
+                </button>
+              ))}
             </div>
           </div>
           <div className="rdr-login-v2__visual-brand">
