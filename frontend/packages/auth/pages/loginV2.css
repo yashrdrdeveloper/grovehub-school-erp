@@ -930,3 +930,14 @@
 .rdr-login-v2__main > .rdr-login-v2__form > .rdr-login-v2__field:first-child {
   margin-bottom:4px;
 }
+
+/* Password visibility: equal hover padding and right inset */
+.rdr-login-v2__input-shell .rdr-login-v2__visibility {
+  flex:0 0 36px;
+  width:36px;
+  min-width:36px;
+  height:36px;
+  margin:0 8px 0 0;
+  padding:0;
+  border-radius:9px;
+}
