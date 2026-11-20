@@ -812,8 +812,9 @@
   .rdr-auth-flow__actions {gap:5px}
 }
 
-/* Canonical sign-in layout: one predictable rhythm, no absolute-positioned
-   validation text, no card, and a fixed feedback row shared by password/auth errors. */
+/* Consistent sign-in field geometry. Both groups are identical:
+   label (18px), gap (8px), input (50px), gap (4px), helper (18px).
+   Validation replaces helper text rather than shifting subsequent controls. */
 .rdr-login-v2__main,
 :root[data-theme="dark"] .rdr-login-v2__main {
   max-width:440px;
@@ -825,8 +826,8 @@
 }
 .rdr-login-v2__main .rdr-login-v2__heading h1 {
   margin:12px 0 8px;
-  line-height:1.12;
   font-size:clamp(34px,3.2vw,46px);
+  line-height:1.12;
 }
 .rdr-login-v2__main .rdr-login-v2__heading p {
   margin:0 0 24px;
@@ -838,58 +839,65 @@
   gap:0;
 }
 .rdr-login-v2__form--signin > .rdr-login-v2__field {
-  display:flex;
-  flex-direction:column;
-  gap:8px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  grid-template-rows:18px 50px 18px;
+  row-gap:8px;
   min-width:0;
+  margin:0!important;
 }
-.rdr-login-v2__form--signin > .rdr-login-v2__field:first-child {
-  margin:0 0 8px;
+.rdr-login-v2__form--signin > .rdr-login-v2__field + .rdr-login-v2__field {
+  margin-top:12px!important;
 }
-.rdr-login-v2__form--signin > .rdr-login-v2__field .rdr-login-v2__field-error--reserved {
-  position:static;
-  display:block;
-  flex:none;
-  height:16px;
-  min-height:16px;
-  max-height:16px;
-  line-height:16px;
-  margin:-4px 0 0;
-  overflow:visible;
-  white-space:normal;
-  font-size:11px;
+.rdr-login-v2__form--signin > .rdr-login-v2__field > label,
+.rdr-login-v2__form--signin > .rdr-login-v2__field > .rdr-login-v2__password-label {
+  min-height:18px;
+  height:18px;
+  line-height:18px;
+  margin:0;
+  align-self:center;
+}
+.rdr-login-v2__form--signin > .rdr-login-v2__field .rdr-login-v2__password-label label {
+  line-height:18px;
 }
 .rdr-login-v2__form--signin > .rdr-login-v2__field .rdr-login-v2__input-shell {
+  width:100%;
   height:50px;
-  flex:none;
+  min-height:50px;
+  margin:0;
+}
+.rdr-login-v2__form--signin > .rdr-login-v2__field > .rdr-login-v2__field-error--reserved {
+  position:static;
+  display:block;
+  height:18px;
+  min-height:18px;
+  max-height:18px;
+  line-height:18px;
+  margin:0;
+  padding:0 2px;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+  font-size:11px;
 }
 .rdr-login-v2__form--signin > .rdr-login-v2__feedback-slot--signin {
   position:static;
   display:flex;
   align-items:center;
-  justify-content:flex-start;
-  height:52px;
-  min-height:52px;
-  max-height:52px;
-  padding:4px 0;
+  height:48px;
+  min-height:48px;
+  max-height:48px;
   margin:0;
-  overflow:visible;
-}
-.rdr-login-v2__form--signin .rdr-login-v2__feedback-slot--signin > .rdr-login-v2__field-error {
-  position:static;
-  display:block;
-  margin:0;
-  padding:0;
-  font-size:11px;
-  line-height:16px;
-  white-space:normal;
+  padding:3px 0;
+  overflow:hidden;
 }
 .rdr-login-v2__form--signin .rdr-login-v2__auth-error {
   position:static;
   display:flex;
   align-items:flex-start;
   gap:8px;
-  max-width:100%;
+  width:100%;
+  min-width:0;
   color:#c43b55;
 }
 .rdr-login-v2__form--signin .rdr-login-v2__auth-error > svg {
@@ -899,8 +907,8 @@
 .rdr-login-v2__form--signin .rdr-login-v2__auth-error > span {
   display:flex;
   flex-direction:column;
-  min-width:0;
   gap:2px;
+  min-width:0;
 }
 .rdr-login-v2__form--signin .rdr-login-v2__auth-error strong {
   font-size:11px;
@@ -911,47 +919,42 @@
   font-size:11px;
   line-height:15px;
 }
-:root[data-theme="dark"] .rdr-login-v2__form--signin .rdr-login-v2__auth-error {
-  color:#ffa3b3;
-}
+:root[data-theme="dark"] .rdr-login-v2__form--signin .rdr-login-v2__auth-error {color:#ffa3b3}
 .rdr-login-v2__form--signin > .rdr-login-v2__submit {
   height:50px;
   min-height:50px;
   margin:0;
 }
-.rdr-login-v2__form--signin .rdr-login-v2__spinner {
-  animation:rdr-login-v2-spin 1s linear infinite;
-}
-@keyframes rdr-login-v2-spin {
-  to { transform:rotate(360deg); }
-}
-.rdr-login-v2__main:has(> .rdr-login-v2__form--signin) .rdr-login-v2__closing {
-  margin-top:24px;
-}
+.rdr-login-v2__form--signin .rdr-login-v2__spinner {animation:rdr-login-v2-spin 1s linear infinite}
+@keyframes rdr-login-v2-spin {to {transform:rotate(360deg)}}
+.rdr-login-v2__main:has(> .rdr-login-v2__form--signin) .rdr-login-v2__closing {margin-top:24px}
 @media(max-width:720px) {
   .rdr-login-v2__main,
-  :root[data-theme="dark"] .rdr-login-v2__main {
-    padding:8px 0;
-  }
+  :root[data-theme="dark"] .rdr-login-v2__main {padding:8px 0}
   .rdr-login-v2__main .rdr-login-v2__heading h1 {
     margin:8px 0;
     font-size:clamp(28px,7vw,35px);
   }
-  .rdr-login-v2__main .rdr-login-v2__heading p { margin-bottom:16px; }
-  .rdr-login-v2__form--signin > .rdr-login-v2__field:first-child { margin-bottom:8px; }
-  .rdr-login-v2__form--signin > .rdr-login-v2__field .rdr-login-v2__input-shell { height:48px; }
-  .rdr-login-v2__form--signin > .rdr-login-v2__submit { min-height:48px; height:48px; }
-  .rdr-login-v2__main:has(> .rdr-login-v2__form--signin) .rdr-login-v2__closing {margin-top:16px;}
+  .rdr-login-v2__main .rdr-login-v2__heading p {margin-bottom:16px}
+  .rdr-login-v2__form--signin > .rdr-login-v2__field {grid-template-rows:18px 48px 18px}
+  .rdr-login-v2__form--signin > .rdr-login-v2__field .rdr-login-v2__input-shell {
+    height:48px;min-height:48px
+  }
+  .rdr-login-v2__form--signin > .rdr-login-v2__submit {height:48px;min-height:48px}
+  .rdr-login-v2__main:has(> .rdr-login-v2__form--signin) .rdr-login-v2__closing {margin-top:16px}
 }
 @media(max-width:720px) and (max-height:700px) {
-  .rdr-login-v2__main .rdr-login-v2__heading p {margin-bottom:12px;}
-  .rdr-login-v2__form--signin > .rdr-login-v2__field:first-child { margin-bottom:6px; }
+  .rdr-login-v2__main .rdr-login-v2__heading p {margin-bottom:12px}
+  .rdr-login-v2__form--signin > .rdr-login-v2__field {grid-template-rows:18px 44px 18px}
+  .rdr-login-v2__form--signin > .rdr-login-v2__field .rdr-login-v2__input-shell {
+    height:44px;min-height:44px
+  }
   .rdr-login-v2__form--signin > .rdr-login-v2__feedback-slot--signin {
-    height:48px;min-height:48px;max-height:48px;
+    height:44px;min-height:44px;max-height:44px
   }
 }
 @media(prefers-reduced-motion:reduce) {
-  .rdr-login-v2__form--signin .rdr-login-v2__spinner { animation:none; }
+  .rdr-login-v2__form--signin .rdr-login-v2__spinner {animation:none}
 }
 
 /* Password visibility: equal hover padding and right inset */
