@@ -736,7 +736,8 @@
   font-size:11px;
 }
 .rdr-login-v2__feedback-slot {
-  min-height:18px;
+  height:44px;
+  min-height:44px;
   display:flex;
   align-items:center;
 }
@@ -745,6 +746,8 @@
   padding:0;
   border:0;
   background:none;
+  font-size:11px;
+  line-height:1.5;
 }
 .rdr-auth-flow {width:100%;min-width:0}
 .rdr-auth-flow__form {
