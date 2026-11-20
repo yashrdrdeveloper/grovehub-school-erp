@@ -33,12 +33,13 @@ func New(accounts accountrepo.Repository, tokens tokenrepo.Repository, credentia
 }
 
 func (op *Service) Execute(ctx context.Context, grant string, input accountdto.Setup) (accountdto.SetupResult, error) {
-	username, err := op.validator.NormalizeUsername(input.Username)
+	digest, err := secrets.Digest(grant, 32)
 	if err != nil {
 		return accountdto.SetupResult{}, err
 	}
-	digest, err := secrets.Digest(grant, 32)
-	if err != nil {
+
+	// The attempt is committed independently so transaction rollback cannot refund it.
+	if err := op.tokens.ReserveSetupAttempt(ctx, digest, time.Now().UTC()); err != nil {
 		return accountdto.SetupResult{}, err
 	}
 
@@ -57,7 +58,6 @@ func (op *Service) Execute(ctx context.Context, grant string, input accountdto.S
 		}
 
 		before := accountEntity
-		accountEntity.Username = &username
 		accountEntity.Status = entity.Active
 		accountEntity.Version++
 		accountEntity.UpdatedAt = time.Now().UTC()
@@ -76,7 +76,7 @@ func (op *Service) Execute(ctx context.Context, grant string, input accountdto.S
 		result = accountdto.SetupResult{
 			AccountID: accountID,
 			PersonGID: accountEntity.PersonGID,
-			Username: username,
+			Username: accountEntity.Username,
 			Status: string(accountEntity.Status),
 			SetupCompleted: true,
 		}
