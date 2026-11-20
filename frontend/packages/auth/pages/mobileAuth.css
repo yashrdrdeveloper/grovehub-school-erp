@@ -1,3 +1,4 @@
+.rdr-login-v2__description-mobile {display:none}
 /* Auth phone UI — compact, minimal app design. Keep desktop styles intact.
  * Desktop color tokens and the original Soffit animation remain the source of truth.
  * Mobile never depends on fixed text widths or clipped field-error overlays. */
@@ -21,7 +22,7 @@
   }
   .rdr-login-v2__visual,
   :root[data-theme="dark"] .rdr-login-v2__visual {
-    display:block;position:relative;isolation:isolate;flex:0 0 clamp(7rem,19dvh,9.5rem);
+    display:block;position:relative;isolation:isolate;flex:0 0 clamp(5.5rem,12dvh,7rem);
     width:100%;min-width:0;min-height:0;height:auto;overflow:hidden;
     border-radius:0;background:#062334;
   }
@@ -34,14 +35,14 @@
   .rdr-login-v2__mobile-header {
     display:flex;align-items:center;justify-content:space-between;
     position:relative;z-index:3;width:100%;height:100%;
-    gap:.75rem;padding:calc(env(safe-area-inset-top) + .85rem) 1.4rem 1.65rem;
+    gap:.75rem;padding:calc(env(safe-area-inset-top) + .6rem) 1.25rem 1rem;
   }
   .rdr-login-v2__mobile-identity{
     display:flex;align-items:center;gap:.75rem;min-width:0;
   }
   .rdr-login-v2__mobile-identity .school-monogram{
-    flex:0 0 2.85rem;display:grid;place-items:center;
-    width:2.85rem;height:2.85rem;padding:.4rem;
+    flex:0 0 2.5rem;display:grid;place-items:center;
+    width:2.5rem;height:2.5rem;padding:.35rem;
     border-radius:.75rem;background:#fff;color:#1f2a44;
     box-shadow:0 .3rem 1rem #06132324;
   }
@@ -64,11 +65,11 @@
     display:flex;position:relative;z-index:4;
     flex:1 1 0;flex-direction:column;justify-content:flex-start;
     width:100%;max-width:100%;min-width:0;min-height:0;
-    margin-top:-1.375rem;
+    margin-top:-.625rem;
     padding:clamp(.8rem,2dvh,1rem) clamp(1.125rem,5.2vw,1.5rem)
       max(1.25rem,env(safe-area-inset-bottom));
     overflow-x:hidden;overflow-y:auto;
-    border-radius:1.375rem 1.375rem 0 0;
+    border-radius:.875rem .875rem 0 0;
     background:var(--app-surface);
     overscroll-behavior:contain;scrollbar-width:none;
     box-shadow:0 -.3rem 1rem #00000009;
@@ -77,7 +78,7 @@
   .rdr-login-v2__toolbar{
     display:flex;justify-content:space-between;align-items:center;
     gap:.5rem;flex:none;width:100%;min-width:0;
-    margin-bottom:clamp(.65rem,2.1dvh,1.2rem);
+    margin-bottom:clamp(.35rem,1dvh,.7rem);
   }
   .rdr-login-v2__back{
     display:inline-flex;align-items:center;gap:.45rem;min-width:0;
@@ -113,7 +114,7 @@
   }
   .rdr-login-v2__eyebrow{
     display:inline-flex;align-items:center;gap:.45rem;
-    margin-bottom:.45rem;
+    margin-bottom:.3rem;
     color:#96794f;font-size:.64rem;line-height:1.3;
     letter-spacing:.07em;font-weight:800;
     white-space:normal;
@@ -124,7 +125,7 @@
   .rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading h1{
     display:block;width:100%;max-width:100%;
     margin:.15rem 0 .35rem;
-    font-size:clamp(1.65rem,7vw,2rem);
+    font-size:clamp(1.35rem,5.7vw,1.65rem);
     line-height:1.16;letter-spacing:-.055em;font-weight:850;
     color:var(--app-text);white-space:normal;overflow-wrap:break-word;
   }
@@ -132,8 +133,8 @@
   .rdr-login-v2__main:has(.rdr-recovery) .rdr-login-v2__heading p,
   .rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading p{
     display:block;width:100%;max-width:100%;
-    margin:0 0 clamp(1.1rem,3dvh,1.7rem);
-    color:var(--app-secondary);font-size:.8rem;line-height:1.5;
+    margin:0 0 clamp(.75rem,1.8dvh,1.1rem);
+    color:var(--app-secondary);font-size:.72rem;line-height:1.45;
     overflow-wrap:anywhere;
   }
   .rdr-login-v2__form,.rdr-auth-flow,.rdr-recovery,
@@ -143,7 +144,7 @@
   }
   .rdr-login-v2__field{min-width:0}
   .rdr-login-v2__field label,.rdr-login-v2__password-label>a{
-    color:var(--app-text);font-size:.78rem;line-height:1.35;font-weight:750;
+    color:var(--app-text);font-size:.73rem;line-height:1.35;font-weight:750;
   }
   .rdr-login-v2__password-label{
     display:flex;align-items:center;justify-content:space-between;
@@ -151,7 +152,7 @@
   }
   .rdr-login-v2__password-label>a{
     flex:none;white-space:nowrap;color:var(--v2-navy);
-    font-size:.72rem;text-underline-offset:.18rem;
+    font-size:.68rem;text-underline-offset:.18rem;
   }
   .rdr-login-v2__input-shell,
   .rdr-login-v2__form--signin>.rdr-login-v2__field .rdr-login-v2__input-shell,
@@ -171,7 +172,7 @@
     font-size:1rem;color:var(--app-text);background:transparent;
   }
   .rdr-login-v2__input-shell input::placeholder{
-    color:#9ca5b3;font-size:.78rem;
+    color:#9ca5b3;font-size:.72rem;
   }
   .rdr-login-v2__input-shell .rdr-login-v2__visibility{
     flex:0 0 2.25rem;width:2.25rem;min-width:2.25rem;
@@ -215,7 +216,7 @@
     padding:.65rem 1rem;margin:0;
     background:linear-gradient(135deg,#181b23,#2c3241);
     border:0;border-radius:.75rem;
-    color:#fff;font-size:.85rem;font-weight:800;
+    color:#fff;font-size:.78rem;font-weight:800;
     box-shadow:0 .5rem 1.125rem #1f2a4422;
   }
   .rdr-login-v2__form--signin>.rdr-login-v2__submit{
@@ -285,7 +286,7 @@
   .rdr-login-v2__main .rdr-login-v2__heading h1,
   .rdr-login-v2__main:has(.rdr-recovery) .rdr-login-v2__heading h1,
   .rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading h1{
-    font-size:1.5rem;margin:0 0 .3rem;
+    font-size:1.35rem;margin:0 0 .25rem;
   }
   .rdr-login-v2__main .rdr-login-v2__heading p,
   .rdr-login-v2__main:has(.rdr-recovery) .rdr-login-v2__heading p,
@@ -299,7 +300,7 @@
 @media(max-width:350px) {
   .rdr-login-v2__content,:root[data-theme="dark"] .rdr-login-v2__content{padding-inline:1rem}
   .rdr-login-v2__appearance button{width:1.8rem;min-width:1.8rem}
-  .rdr-login-v2__main .rdr-login-v2__heading h1{font-size:1.5rem}
+  .rdr-login-v2__main .rdr-login-v2__heading h1{font-size:1.3rem}
 }
 :root[data-theme="dark"] .rdr-login-v2 {
   --app-surface:#10151e;--app-input:#1a1d24;
@@ -328,5 +329,19 @@
   :root[data-theme="dark"] .rdr-auth-flow--forgot .rdr-login-v2__submit,
   :root[data-theme="dark"] .rdr-recovery__actions .rdr-login-v2__submit{
     background:linear-gradient(135deg,#363d51,#505b79);color:#fff;
+  }
+}
+
+/* Phone copy is intentionally shorter; desktop remains unchanged. */
+@media(max-width:720px) {
+  .rdr-login-v2__description-desktop {display:none!important}
+  .rdr-login-v2__description-mobile {display:block!important}
+  .rdr-login-v2__mobile-identity {gap:0}
+  .rdr-login-v2__mobile-header {justify-content:flex-start}
+  .rdr-login-v2__back {font-size:.68rem}
+  .rdr-login-v2__appearance button {width:1.8rem;min-width:1.8rem;height:1.8rem}
+  .rdr-login-v2__input-shell input {font-size:1rem}
+  .rdr-login-v2__form--signin>.rdr-login-v2__field>.rdr-login-v2__field-error--reserved {
+    font-size:.64rem;line-height:1.35;min-height:.6rem;
   }
 }
