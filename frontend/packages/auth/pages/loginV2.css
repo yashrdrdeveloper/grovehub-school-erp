@@ -669,3 +669,14 @@
   .rdr-login-v2__main,
   :root[data-theme="dark"] .rdr-login-v2__main {padding:4px 0;}
 }
+
+/* LoginV2 input focus uses the navy button palette */
+.rdr-login-v2__input-shell:focus-within,
+:root[data-theme="dark"] .rdr-login-v2__input-shell:focus-within {
+  border-color:var(--v2-navy);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--v2-navy) 17%,transparent);
+}
+.rdr-login-v2 :is(a,button,input):focus-visible {
+  outline:2px solid var(--v2-navy);
+  outline-offset:3px;
+}
