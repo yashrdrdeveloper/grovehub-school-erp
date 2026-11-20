@@ -26,6 +26,9 @@ type AuthenticationController interface {
 	// @RouteLimit 8
 	RecoveryExchange(writer http.ResponseWriter, request *http.Request)
 
+	// @GET /reset-password/status
+	ResetGrantStatus(writer http.ResponseWriter, request *http.Request)
+
 	// @POST /reset-password
 	ResetPassword(writer http.ResponseWriter, request *http.Request)
 
