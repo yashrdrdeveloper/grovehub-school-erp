@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
@@ -9,7 +10,7 @@ jest.mock('@Business/auth',()=>({
   authenticationApi:{forgotPassword:(email:string)=>mockForgotPassword(email)},
 }));
 jest.mock('./LoginLayout',()=>({
-  LoginLayout:({children,title}:{children:React.ReactNode;title:string})=><div><h1>{title}</h1>{children}</div>,
+  LoginLayout:({children,title}:{children:ReactNode;title:string})=><div><h1>{title}</h1>{children}</div>,
 }));
 
 const renderRecovery=()=>render(<MemoryRouter initialEntries={['/forgot-password']}>
