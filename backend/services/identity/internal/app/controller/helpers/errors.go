@@ -15,7 +15,7 @@ func Map(err error)error{
  switch{
  case errors.Is(err,accountrepo.ErrNotFound):return coreerrors.NewError(definitions.NotFound)
  case errors.Is(err,accountrepo.ErrConflict),errors.Is(err,accountrepo.ErrVersionConflict):return coreerrors.NewErrorWithMetadata(definitions.Conflict,map[string]any{"resource":"account"})
- case errors.Is(err,sessionrepo.ErrInvalidSession),errors.Is(err,tokenrepo.ErrInvalidToken):return coreerrors.NewError(definitions.InvalidToken)
+ case errors.Is(err,sessionrepo.ErrInvalidSession),errors.Is(err,tokenrepo.ErrInvalidToken),errors.Is(err,tokenrepo.ErrAttemptsExceeded):return coreerrors.NewError(definitions.InvalidToken)
  }
  t:=err.Error()
  switch{
