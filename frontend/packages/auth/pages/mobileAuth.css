@@ -1,3 +1,4 @@
+.rdr-login-v2__mobile-appearance{display:none}
 .rdr-login-v2__description-mobile {display:none}
 /* Auth phone UI — compact, minimal app design. Keep desktop styles intact.
  * Desktop color tokens and the original Soffit animation remain the source of truth.
@@ -344,4 +345,62 @@
   .rdr-login-v2__form--signin>.rdr-login-v2__field>.rdr-login-v2__field-error--reserved {
     font-size:.64rem;line-height:1.35;min-height:.6rem;
   }
+}
+
+/* Only the sign-in page uses the logo-first ultra-minimal treatment.
+   Password recovery pages keep their explanatory titles and instructions. */
+@media(max-width:720px) {
+  .rdr-login-v2__mobile-header{
+    align-items:center;justify-content:space-between;gap:.75rem;
+    padding:calc(env(safe-area-inset-top) + .5rem) 1.25rem .65rem;
+  }
+  .rdr-login-v2__mobile-identity .school-monogram{
+    width:3.1rem;height:3.1rem;flex-basis:3.1rem;
+    padding:.45rem;border-radius:.8rem;
+  }
+  .rdr-login-v2__mobile-appearance{
+    display:inline-flex;align-items:center;flex:none;gap:.125rem;
+    padding:.17rem;border:1px solid #ffffff4d;border-radius:.7rem;
+    background:#ffffff22;backdrop-filter:blur(8px);
+  }
+  .rdr-login-v2__mobile-appearance button{
+    display:grid;place-items:center;flex:none;
+    width:2rem;height:2rem;min-width:2rem;padding:0;border:0;
+    border-radius:.5rem;background:transparent;color:#f1f5fa;
+  }
+  .rdr-login-v2__mobile-appearance button.is-active{
+    background:#ffffffeb;color:#1f2a44;
+  }
+  .rdr-login-v2__toolbar{display:none}
+  .rdr-login-v2--mobile-minimal .rdr-login-v2__heading{display:none}
+  .rdr-login-v2--mobile-minimal .rdr-login-v2__visual,
+  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal .rdr-login-v2__visual {
+    flex-basis:clamp(7.5rem,18dvh,9rem);
+  }
+  .rdr-login-v2--mobile-minimal .rdr-login-v2__content,
+  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal .rdr-login-v2__content{
+    padding-top:clamp(1.1rem,3dvh,1.65rem);
+  }
+  .rdr-login-v2--mobile-minimal .rdr-login-v2__main{
+    padding:0;margin:0 auto;
+  }
+  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin{
+    gap:0;
+  }
+  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin>.rdr-login-v2__field+.rdr-login-v2__field{
+    margin-top:clamp(.75rem,2dvh,1.15rem)!important;
+  }
+  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin>.rdr-login-v2__submit{
+    margin-top:clamp(1rem,2.5dvh,1.5rem);
+  }
+  :root[data-theme="dark"] .rdr-login-v2__mobile-appearance button.is-active{
+    background:#d8e5f4;color:#1f2a44;
+  }
+}
+@media(max-width:720px) and (max-height:700px) {
+  .rdr-login-v2--mobile-minimal .rdr-login-v2__visual,
+  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal .rdr-login-v2__visual{
+    flex-basis:6.5rem;
+  }
+  .rdr-login-v2--mobile-minimal .rdr-login-v2__content{padding-top:.85rem}
 }
