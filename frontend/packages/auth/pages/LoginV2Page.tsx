@@ -11,14 +11,81 @@ import { useAuth } from '../core/providers/AuthProvider';
 import './loginV2.css';
 
 const emailPattern=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const schoolPhoto='/school-images/slide5.jpg';
-const originalSchoolPhoto='https://rdrschool.com/images/slide5.jpg';
-
 const appearanceOptions:{value:ThemePreference;label:string;Icon:typeof Sun}[]=[
   {value:'system',label:'System',Icon:Monitor},
   {value:'light',label:'Light',Icon:Sun},
   {value:'dark',label:'Dark',Icon:Moon},
 ];
+
+/** Self-contained gradient and vector artwork: no school/stock photographs,
+ * external image URLs, or background network requests. */
+const GradientArtwork = () => (
+  <div className="rdr-login-v2__art" aria-hidden="true">
+    <span className="rdr-login-v2__aurora rdr-login-v2__aurora--azure"/>
+    <span className="rdr-login-v2__aurora rdr-login-v2__aurora--amber"/>
+    <svg className="rdr-login-v2__light-art" viewBox="0 0 640 850" fill="none" preserveAspectRatio="xMidYMid slice" focusable="false">
+      <defs>
+        <linearGradient id="rdr-v2-neon" x1="54" y1="310" x2="597" y2="516" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#4368DB" stopOpacity=".05"/>
+          <stop offset=".22" stopColor="#73C5F8"/>
+          <stop offset=".43" stopColor="#E7F6FF"/>
+          <stop offset=".62" stopColor="#E39BA4"/>
+          <stop offset=".78" stopColor="#FF9B4C"/>
+          <stop offset="1" stopColor="#FFE9B5" stopOpacity=".04"/>
+        </linearGradient>
+        <linearGradient id="rdr-v2-ribbon" x1="133" y1="616" x2="497" y2="276" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#2974B9" stopOpacity=".1"/>
+          <stop offset=".35" stopColor="#65B9F3" stopOpacity=".72"/>
+          <stop offset=".67" stopColor="#F6C9A4" stopOpacity=".8"/>
+          <stop offset="1" stopColor="#FE7135" stopOpacity=".05"/>
+        </linearGradient>
+        <linearGradient id="rdr-v2-pages" x1="187" y1="409" x2="486" y2="619" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#5CA7F3" stopOpacity=".13"/>
+          <stop offset=".49" stopColor="#CFDDFF" stopOpacity=".23"/>
+          <stop offset=".92" stopColor="#FFAA65" stopOpacity=".34"/>
+        </linearGradient>
+        <radialGradient id="rdr-v2-sun" cx="0" cy="0" r="1" gradientTransform="translate(347 411) rotate(90) scale(145 135)" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#FFF3C6" stopOpacity=".96"/>
+          <stop offset=".14" stopColor="#FFB46A" stopOpacity=".78"/>
+          <stop offset=".52" stopColor="#F46D42" stopOpacity=".34"/>
+          <stop offset="1" stopColor="#D9555A" stopOpacity="0"/>
+        </radialGradient>
+        <filter id="rdr-v2-blur" x="-50%" y="-80%" width="200%" height="260%">
+          <feGaussianBlur stdDeviation="11"/>
+        </filter>
+        <filter id="rdr-v2-soft-blur" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="30"/>
+        </filter>
+      </defs>
+      <ellipse cx="334" cy="430" rx="178" ry="159" fill="url(#rdr-v2-sun)" filter="url(#rdr-v2-soft-blur)" opacity=".8"/>
+      <path d="M161 616C219 515 249 469 335 407C386 369 433 312 445 243" stroke="url(#rdr-v2-ribbon)" strokeWidth="72" opacity=".47" filter="url(#rdr-v2-soft-blur)"/>
+      <path d="M154 565C173 472 234 390 341 374C402 364 446 384 476 433" stroke="url(#rdr-v2-ribbon)" strokeWidth="40" opacity=".49" filter="url(#rdr-v2-blur)"/>
+      <g className="rdr-login-v2__orbit">
+        <ellipse cx="322" cy="413" rx="246" ry="113" transform="rotate(-23 322 413)" stroke="url(#rdr-v2-neon)" strokeWidth="26" filter="url(#rdr-v2-blur)" opacity=".9"/>
+        <ellipse cx="322" cy="413" rx="246" ry="113" transform="rotate(-23 322 413)" stroke="url(#rdr-v2-neon)" strokeWidth="3.6" opacity=".92"/>
+        <ellipse cx="322" cy="413" rx="230" ry="100" transform="rotate(-24 322 413)" stroke="url(#rdr-v2-neon)" strokeWidth="1.1" opacity=".65"/>
+        <path d="M78 463C182 340 354 335 540 415" stroke="#E5F4FF" strokeWidth="1.5" opacity=".4"/>
+        <path d="M110 505C234 352 418 334 551 372" stroke="#83CBFF" strokeWidth="1.5" opacity=".42"/>
+      </g>
+      <g className="rdr-login-v2__book-art">
+        <path d="M317 481C273 445 220 439 168 462L163 575C225 551 275 568 318 597Z" fill="url(#rdr-v2-pages)" stroke="#8BD0F7" strokeOpacity=".66" strokeWidth="2.6"/>
+        <path d="M322 481C371 444 428 443 478 468L478 575C413 554 364 570 322 597Z" fill="url(#rdr-v2-pages)" stroke="#FFD3A0" strokeOpacity=".75" strokeWidth="2.6"/>
+        <path d="M319 481L320 597" stroke="#F2F7FF" strokeWidth="2.5" strokeOpacity=".88"/>
+        <path d="M185 482C236 469 271 479 306 503M181 504C230 491 268 503 304 522M182 526C237 515 267 525 302 544" stroke="#BDE5FF" strokeOpacity=".25" strokeWidth="1.5"/>
+        <path d="M337 503C379 480 420 476 462 489M337 523C379 498 420 500 460 507M337 545C383 521 424 527 460 530" stroke="#FFE1BE" strokeOpacity=".28" strokeWidth="1.5"/>
+        <path d="M319 481C321 453 335 441 344 417" stroke="#F9D4B9" strokeWidth="2" strokeOpacity=".65"/>
+      </g>
+      <g fill="#E6EFFF">
+        <circle cx="142" cy="357" r="2.4" opacity=".75"/>
+        <circle cx="525" cy="328" r="1.9" opacity=".72"/>
+        <circle cx="456" cy="258" r="1.3" opacity=".7"/>
+        <circle cx="191" cy="301" r="1.3" opacity=".7"/>
+        <circle cx="483" cy="578" r="1.6" opacity=".5"/>
+      </g>
+      <path d="M201 271V294M189.5 282.5H212.5M494 273V288M486.5 280.5H501.5" stroke="#F9E8CF" strokeWidth="1.4" strokeLinecap="round" opacity=".66"/>
+    </svg>
+  </div>
+);
 
 export const LoginV2Page = () => {
   const fieldId=useId();
@@ -32,8 +99,6 @@ export const LoginV2Page = () => {
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState('');
   const [fieldErrors,setFieldErrors]=useState<{email?:string;password?:string}>({});
-  const [photoSrc,setPhotoSrc]=useState(schoolPhoto);
-  const [photoUnavailable,setPhotoUnavailable]=useState(false);
 
   const submit=async(event:FormEvent<HTMLFormElement>)=>{
     event.preventDefault();
@@ -59,15 +124,8 @@ export const LoginV2Page = () => {
 
   return <main className="rdr-login-v2">
     <div className="rdr-login-v2__frame">
-      <section className="rdr-login-v2__visual" aria-label="RDR School student life">
-        {!photoUnavailable&&<img className="rdr-login-v2__photo" src={photoSrc}
-          alt="RDR School students together in school uniforms"
-          loading="eager" decoding="async"
-          onError={()=>{
-            if(photoSrc===schoolPhoto)setPhotoSrc(originalSchoolPhoto);
-            else setPhotoUnavailable(true);
-          }}/>}
-        <div className="rdr-login-v2__photo-tint" aria-hidden="true"/>
+      <section className="rdr-login-v2__visual" aria-label="RDR School abstract light and learning artwork">
+        <GradientArtwork/>
         <div className="rdr-login-v2__visual-brand">
           <SchoolMonogram/>
           <span><strong>RDR School</strong><small>Rao Deena Ram Vidya Vihar</small></span>
@@ -78,11 +136,6 @@ export const LoginV2Page = () => {
           <p>Learning, character and community — together at RDR School.</p>
           <div className="rdr-login-v2__visual-footer"><span>HALUHERA</span><i aria-hidden="true"/><span>REWARI, HARYANA</span></div>
         </div>
-        <svg className="rdr-login-v2__doodle" aria-hidden="true" viewBox="0 0 190 110" fill="none">
-          <path d="M5 83c37-40 51 18 91-27S159 29 183 17" stroke="currentColor" strokeWidth="1.4" strokeDasharray="4 7" strokeLinecap="round"/>
-          <path d="m158 18 25-1-13 21-4-11-8-9Zm8 9 17-10" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
-          <path d="M24 19v12M18 25h12M44 6v9M40 10.5h9" stroke="currentColor" strokeLinecap="round" strokeWidth="1.3"/>
-        </svg>
       </section>
 
       <section className="rdr-login-v2__content" aria-labelledby="rdr-login-v2-title">
