@@ -38,8 +38,8 @@ export const LoginV2Page = () => {
       const message=failure instanceof Error?failure.message:'';
       const invalidCredentials=/invalid creden|incorrect|unauthoriz|invalid login|wrong password|\b401\b/i.test(message);
       setError(invalidCredentials
-        ? 'The email or password is incorrect. Please try again.'
-        : 'We couldn’t sign you in right now. Please try again.');
+        ? 'Incorrect email or password. Please try again.'
+        : 'Unable to sign in right now. Please try again.');
     }finally{
       setBusy(false);
     }
@@ -90,10 +90,10 @@ export const LoginV2Page = () => {
             </div>
 
             <div className="rdr-login-v2__feedback-slot rdr-login-v2__feedback-slot--signin" aria-live="polite">
-              {error && <div className="rdr-login-v2__auth-error" role="alert">
+              {error && <p className="rdr-login-v2__auth-error" role="alert">
                 <AlertCircle size={16} aria-hidden="true"/>
-                <span><strong>Unable to sign in</strong><small>{error}</small></span>
-              </div>}
+                <span>{error}</span>
+              </p>}
             </div>
             <button type="submit" className="rdr-login-v2__submit" disabled={busy}>
               <span>{busy?'Signing in…':'Sign in'}</span>
