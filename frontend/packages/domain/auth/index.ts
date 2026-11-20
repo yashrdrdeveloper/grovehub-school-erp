@@ -8,4 +8,5 @@ export {
   LoginV2Page,
   ForgotPasswordPage,
   RecoveryPage,
+  RecoveryFlowBoundary,
 } from '@Auth';
