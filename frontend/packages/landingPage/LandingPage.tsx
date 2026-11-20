@@ -298,7 +298,7 @@ const StoriesAndUpdates = () => (
           <strong>Ready to discover RDR School?</strong>
           <small>Ask about admissions, classes, transport and visiting the campus.</small>
           <ArrowUpRight size={21}/>
-        </Link>
+        </EnquiryLink>
       </div>
     </div>
   </section>
