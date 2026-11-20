@@ -9,6 +9,8 @@ import { RecoveryPage } from './RecoveryPage';
 const validateInvitation = jest.fn<Promise<{verified:boolean;purpose:string;expiresIn:number}>,[string]>();
 const exchangeInvitation = jest.fn<Promise<{verified:boolean;purpose:string;expiresIn:number}>,[string]>();
 const setup = jest.fn<Promise<unknown>,[string]>();
+const setupStatus = jest.fn<Promise<{verified:boolean;expiresIn:number}>,[]>();
+const resetGrantStatus = jest.fn<Promise<{verified:boolean;purpose:string;expiresIn:number}>,[]>();
 const validateRecovery = jest.fn<Promise<{verified:boolean;purpose:string;expiresIn:number}>,[string]>();
 const exchangeRecovery = jest.fn<Promise<{verified:boolean;purpose:string;expiresIn:number}>,[string]>();
 const resetPassword = jest.fn<Promise<unknown>,[string]>();
@@ -21,10 +23,11 @@ jest.mock('@Business/auth',()=>({
     validateRecovery:(proof:string)=>validateRecovery(proof),
     exchangeRecovery:(proof:string)=>exchangeRecovery(proof),
     resetPassword:(password:string)=>resetPassword(password),
+    resetGrantStatus:()=>resetGrantStatus(),
   },
 }));
 jest.mock('@Business/accounts',()=>({
-  accountsApi:{setup:(password:string)=>setup(password)},
+  accountsApi:{setup:(password:string)=>setup(password),setupStatus:()=>setupStatus()},
 }));
 jest.mock('./LoginLayout',()=>({
   LoginLayout:({children,title}:{children:ReactNode;title:string})=><main><h1>{title}</h1>{children}</main>,
@@ -37,11 +40,13 @@ const renderPage = (purpose:'invitation'|'recovery',proof?:string) => {
 
 describe('password link flows',()=>{
   beforeEach(()=>{
-    for(const mock of [validateInvitation,exchangeInvitation,setup,validateRecovery,exchangeRecovery,resetPassword]) mock.mockReset();
+    for(const mock of [validateInvitation,exchangeInvitation,setup,setupStatus,validateRecovery,exchangeRecovery,resetPassword,resetGrantStatus]) mock.mockReset();
     validateInvitation.mockResolvedValue(ok);
     exchangeInvitation.mockResolvedValue(ok);
     validateRecovery.mockResolvedValue({...ok,purpose:'PASSWORD_RESET'});
     exchangeRecovery.mockResolvedValue({...ok,purpose:'PASSWORD_RESET'});
+    setupStatus.mockRejectedValue(new ApiError(401,'IDENTITY_TOKEN_INVALID','Invalid grant'));
+    resetGrantStatus.mockRejectedValue(new ApiError(401,'IDENTITY_TOKEN_INVALID','Invalid grant'));
   });
 
   it('shows a missing-link illustration instead of a disabled password form',async()=>{
@@ -49,6 +54,15 @@ describe('password link flows',()=>{
     expect(await screen.findByText('This link looks incomplete')).toBeTruthy();
     expect(screen.queryByLabelText('New password')).toBeNull();
     expect(screen.getByText(/contact your RDR School administrator/i)).toBeTruthy();
+  });
+
+  it('restores a previously exchanged setup grant after the proof is cleared',async()=>{
+    setupStatus.mockResolvedValue({verified:true,expiresIn:480});
+    renderPage('invitation');
+    expect(await screen.findByLabelText('New password')).toBeTruthy();
+    expect(setupStatus).toHaveBeenCalledTimes(1);
+    expect(validateInvitation).not.toHaveBeenCalled();
+    expect(window.location.hash).toBe('');
   });
 
   it('verifies the proof, strips it from the URL and asks for passwords only',async()=>{
