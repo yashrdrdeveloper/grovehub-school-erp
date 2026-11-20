@@ -1,6 +1,6 @@
-/* Independent RDR School Login V2. The original /login design is untouched.
-   Inspired by a split editorial sign-in composition, grounded in real RDR
-   photography and the existing approved connected-letter monogram. */
+/* Independent RDR School Login V2. The original /login is untouched.
+   Inspired by the reference's cinematic navy, blue and amber gradient light
+   trails. Artwork is pure CSS and SVG — no photographs or image requests. */
 .rdr-login-v2 {
   --v2-ink:#19263b;
   --v2-muted:#727e8e;
@@ -41,22 +41,50 @@
   isolation:isolate;min-width:0;min-height:0;overflow:hidden;
   border-radius:32px;
   background:
-    radial-gradient(ellipse at 62% 28%,rgba(157,191,217,.5),transparent 65%),
-    linear-gradient(150deg,#1b395c 0%,#27476a 49%,#0d1b34 100%);
+    radial-gradient(ellipse 58% 53% at 57% 48%,rgba(40,115,168,.72),transparent 84%),
+    radial-gradient(ellipse 48% 41% at 78% 45%,rgba(232,104,63,.34),transparent 80%),
+    linear-gradient(145deg,#080e22 5%,#0d2143 42%,#123660 67%,#070e20 100%);
   color:#fff;
 }
-.rdr-login-v2__photo{
-  position:absolute;inset:0;z-index:-2;
-  width:100%;height:100%;object-fit:cover;object-position:center 36%;
-  filter:saturate(1.09) contrast(1.04) brightness(.86);
+.rdr-login-v2__visual::after{
+  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(7,13,32,.24) 0%,transparent 23%,transparent 56%,rgba(5,13,29,.86) 100%);
 }
-.rdr-login-v2__photo-tint{
-  position:absolute;inset:0;z-index:-1;pointer-events:none;
+.rdr-login-v2__art{
+  position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;
   background:
-    linear-gradient(180deg,rgba(8,22,42,.46),rgba(17,36,60,.04) 32%,rgba(7,17,33,.34) 59%,rgba(9,21,42,.93) 100%),
-    linear-gradient(110deg,rgba(18,43,75,.37),transparent 78%);
+    radial-gradient(ellipse 80% 63% at 68% 48%,rgba(226,103,63,.17),transparent 77%),
+    radial-gradient(ellipse 76% 49% at 26% 56%,rgba(63,132,218,.32),transparent 82%);
+}
+.rdr-login-v2__aurora{
+  position:absolute;display:block;pointer-events:none;
+  filter:blur(38px);opacity:.83;border-radius:50%;
+}
+.rdr-login-v2__aurora--azure{
+  width:73%;height:49%;left:0;top:32%;
+  background:radial-gradient(ellipse,#388ccc9c,#3870bd5e 45%,transparent 75%);
+}
+.rdr-login-v2__aurora--amber{
+  width:53%;height:48%;right:4%;top:22%;
+  background:radial-gradient(ellipse,#fa884f8a,#de6f5759 40%,transparent 78%);
+}
+.rdr-login-v2__light-art{
+  position:absolute;inset:0;width:100%;height:100%;
+  opacity:.96;filter:drop-shadow(0 10px 16px rgba(9,20,50,.17));
+}
+.rdr-login-v2__orbit{
+  transform-box:fill-box;transform-origin:center;
+  animation:rdr-v2-orbit-breathe 12s ease-in-out infinite alternate;
+}
+.rdr-login-v2__book-art{
+  filter:drop-shadow(0 8px 20px rgba(10,35,66,.36));
+}
+@keyframes rdr-v2-orbit-breathe{
+  from{opacity:.79;transform:scale(.985) rotate(-1.5deg)}
+  to{opacity:1;transform:scale(1.015) rotate(1.5deg)}
 }
 .rdr-login-v2__visual-brand{
+  position:relative;z-index:2;
   display:flex;align-items:center;gap:12px;min-width:0;
   padding:clamp(19px,3.3vw,42px);
 }
@@ -70,7 +98,7 @@
 .rdr-login-v2__visual-brand>span:last-child{display:flex;flex-direction:column;gap:4px;min-width:0}
 .rdr-login-v2__visual-brand strong{font-size:18px;font-weight:850;line-height:1.1;letter-spacing:-.05em;white-space:nowrap}
 .rdr-login-v2__visual-brand small{font-size:10px;font-weight:650;letter-spacing:.02em;color:#e8ebf0;white-space:nowrap}
-.rdr-login-v2__visual-copy{position:relative;z-index:1;padding:0 clamp(25px,4.4vw,60px) clamp(32px,4.4vw,60px)}
+ .rdr-login-v2__visual-copy{position:relative;z-index:2;padding:0 clamp(25px,4.4vw,60px) clamp(32px,4.4vw,60px)}
 .rdr-login-v2__visual-kicker{display:flex;align-items:center;gap:9px;color:#e5d2b7;font-size:11px;font-weight:900;letter-spacing:.16em}
 .rdr-login-v2__visual-kicker>span{width:8px;height:8px;border-radius:50%;background:#e7c99c;box-shadow:0 0 0 5px #e7c99c24}
 .rdr-login-v2__visual-copy h2{font-size:clamp(37px,4.3vw,62px);line-height:1.08;font-weight:800;letter-spacing:-.065em;margin:19px 0 15px;color:#fff}
@@ -78,7 +106,6 @@
 .rdr-login-v2__visual-copy p{font-size:clamp(12px,1.2vw,15px);line-height:1.7;max-width:355px;color:#e4eaf0;margin:0}
 .rdr-login-v2__visual-footer{display:flex;gap:11px;align-items:center;border-top:1px solid #ffffff4c;margin-top:40px;padding-top:19px;font-size:10px;font-weight:800;letter-spacing:.16em;color:#dee6f0}
 .rdr-login-v2__visual-footer i{width:4px;height:4px;border-radius:50%;background:#e1c29a}
-.rdr-login-v2__doodle{position:absolute;top:23%;right:1%;width:30%;height:auto;z-index:0;color:#f0d4a1;opacity:.85;filter:drop-shadow(0 4px 12px #0003);pointer-events:none}
 .rdr-login-v2__content{min-width:0;min-height:0;display:flex;flex-direction:column;padding:clamp(25px,4vw,52px) clamp(29px,5vw,76px);background:var(--v2-surface)}
 .rdr-login-v2__toolbar{display:flex;align-items:center;justify-content:space-between;gap:13px;width:100%;min-width:0}
 .rdr-login-v2__back{display:inline-flex;align-items:center;gap:9px;font-size:11px;font-weight:800;color:var(--v2-muted)!important;min-height:42px}
@@ -117,7 +144,6 @@
   --v2-ink:#f0f3fa;--v2-muted:#b3bfd0;--v2-surface:#1b2230;
   --v2-border:#48536a;--v2-input:#222c3e;--v2-tint:#293449;--v2-navy:#3e5278;
 }
-:root[data-theme="dark"] .rdr-login-v2__photo-tint{background:linear-gradient(180deg,#09172f9c,transparent 34%,#07152eb3 75%,#071529)}
 :root[data-theme="dark"] .rdr-login-v2__error{background:#4c2834;color:#ffe1e6;border-color:#704452}
 
 /* Tablet: preserve the split composition while making both sides usable. */
@@ -134,8 +160,8 @@
   .rdr-login-v2__heading p{margin-bottom:25px}
   .rdr-login-v2__form{gap:18px}
 }
-/* Phone: the photograph becomes a short school-life hero, not a huge block.
-   The form stays available, with no horizontal overflow. */
+/* Phone: a compact gradient school hero replaces the full-height artwork.
+   No photography or image assets; the accessible sign-in form stays primary. */
 @media(max-width:720px){
   .rdr-login-v2{display:block;padding:0;background:var(--v2-surface);min-height:100dvh}
   .rdr-login-v2__frame{
@@ -147,7 +173,10 @@
     flex:0 0 clamp(155px,24dvh,220px);
     min-height:0;border-radius:0 0 25px 25px;
   }
-  .rdr-login-v2__photo{object-position:center 30%}
+  .rdr-login-v2__light-art{opacity:.73;transform:translateY(-18%) scale(1.13)}
+  .rdr-login-v2__art{background:
+    radial-gradient(ellipse 70% 80% at 72% 33%,rgba(243,127,80,.24),transparent 70%),
+    linear-gradient(110deg,#0b2144,#143b65 60%,#0a1732)}
   .rdr-login-v2__visual-brand{padding:17px 20px}
   .rdr-login-v2__visual-brand .school-monogram{width:48px;height:37px;border-radius:9px;padding:6px}
   .rdr-login-v2__visual-brand strong{font-size:14px}
@@ -156,7 +185,7 @@
   .rdr-login-v2__visual-kicker{font-size:9px;letter-spacing:.1em}
   .rdr-login-v2__visual-kicker>span{width:6px;height:6px}
   .rdr-login-v2__visual-copy h2{font-size:clamp(21px,6.3vw,28px);line-height:1.12;margin:8px 0 0}
-  .rdr-login-v2__visual-copy p,.rdr-login-v2__visual-footer,.rdr-login-v2__doodle{display:none}
+  .rdr-login-v2__visual-copy p,.rdr-login-v2__visual-footer{display:none}
   .rdr-login-v2__content{flex:1 1 0;min-height:0;min-width:0;width:100%;padding:13px clamp(19px,5.7vw,30px) max(15px,env(safe-area-inset-bottom));overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain}
   .rdr-login-v2__toolbar{flex:none}
   .rdr-login-v2__back{min-height:37px;font-size:11px}
@@ -188,6 +217,7 @@
 /* Avoid crop/scroll traps when keyboard opens or user enlarges text. */
 @media(max-width:720px) and (max-height:510px){
   .rdr-login-v2__visual{flex-basis:60px;border-radius:0}
+  .rdr-login-v2__light-art{display:none}
   .rdr-login-v2__visual-copy{display:none}
   .rdr-login-v2__visual-brand{padding:8px 14px}
   .rdr-login-v2__visual-brand .school-monogram{width:40px;height:32px}
@@ -197,4 +227,5 @@
 }
 @media(prefers-reduced-motion:reduce){
   .rdr-login-v2__input-shell,.rdr-login-v2__submit{transition:none}
+  .rdr-login-v2__orbit{animation:none}
 }
