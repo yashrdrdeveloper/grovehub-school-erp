@@ -107,3 +107,29 @@ func TestRateLimitUsesProvidedExactMethodAndRoute(t *testing.T) {
 		}
 	}
 }
+
+func TestLocalViteLoopbackOriginsShareSamePort(t *testing.T) {
+  mux := http.NewServeMux()
+  mux.HandleFunc("POST /identity/public/auth/invitations/exchange", func(w http.ResponseWriter, _ *http.Request) {
+    w.WriteHeader(http.StatusOK)
+  })
+  gateway := external.New(mux, accessVerifier{}, nil, "http://127.0.0.1:4173")
+  cases := []struct {
+    origin string
+    status int
+  }{
+    {"http://localhost:4173", http.StatusOK},
+    {"http://127.0.0.1:4173", http.StatusOK},
+    {"http://localhost:4174", http.StatusForbidden},
+    {"https://localhost:4173", http.StatusForbidden},
+    {"http://evil.example:4173", http.StatusForbidden},
+    {"", http.StatusForbidden},
+  }
+  for _, tc := range cases {
+    request := httptest.NewRequest(http.MethodPost, "/identity/public/auth/invitations/exchange", nil)
+    if tc.origin != "" { request.Header.Set("Origin", tc.origin) }
+    recorder := httptest.NewRecorder()
+    gateway.ServeHTTP(recorder, request)
+    if recorder.Code != tc.status { t.Errorf("origin %q: expected %d, got %d", tc.origin, tc.status, recorder.Code) }
+  }
+}
