@@ -45,7 +45,7 @@ export interface GrantResult {
 export interface SetupResult {
   accountId: string;
   personGid: string;
-  username: string;
+  username: string | null;
   status: string;
   setupCompleted: boolean;
 }
