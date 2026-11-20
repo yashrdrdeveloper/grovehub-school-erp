@@ -1672,3 +1672,129 @@
   .rdr-recovery__state {gap:10px}
   .rdr-login-v2__closing {display:none}
 }
+
+/* Desktop auth viewport containment.
+   The split screen fills the available viewport; only its content pane may
+   scroll on unusually short displays. Never clip fields or error messages. */
+@media (min-width:721px) {
+  .rdr-login-v2 {
+    width:100%;max-width:100%;min-width:0;
+    height:100dvh;min-height:0;
+    overflow:hidden;
+  }
+  .rdr-login-v2__frame {
+    display:grid;
+    grid-template-rows:minmax(0,1fr);
+    width:100%;max-width:100%;min-width:0;
+    height:100%;min-height:0;
+    overflow:hidden;
+  }
+  .rdr-login-v2__visual {
+    min-width:0;min-height:0;
+    overflow:hidden;
+  }
+  .rdr-login-v2__visual-brand {
+    flex:0 0 auto;min-width:0;max-width:100%;
+  }
+  .rdr-login-v2__visual-brand>span:last-child,
+  .rdr-login-v2__visual-copy,
+  .rdr-login-v2__visual-copy h2,
+  .rdr-login-v2__visual-copy p {
+    min-width:0;max-width:100%;
+    overflow-wrap:break-word;
+  }
+  .rdr-login-v2__content,
+  :root[data-theme="dark"] .rdr-login-v2__content {
+    width:100%;min-width:0;min-height:0;max-height:100%;
+    overflow-x:hidden;overflow-y:auto;
+    overscroll-behavior:contain;
+    scrollbar-gutter:stable;
+    padding:clamp(1rem,3.2vh,2.5rem) clamp(1.25rem,5vw,5.25rem);
+  }
+  .rdr-login-v2__toolbar {
+    flex:0 0 auto;min-width:0;
+  }
+  .rdr-login-v2__back {
+    min-width:0;overflow-wrap:anywhere;
+  }
+  .rdr-login-v2__main,
+  :root[data-theme="dark"] .rdr-login-v2__main {
+    width:100%;max-width:30.625rem;min-width:0;
+    margin:auto;
+    padding:clamp(.65rem,2.5vh,1.5rem) 0;
+  }
+  .rdr-login-v2__main :is(h1,h2,h3,p,span,small) {
+    max-width:100%;
+    overflow-wrap:break-word;
+  }
+  .rdr-login-v2__form,
+  .rdr-login-v2__field,
+  .rdr-login-v2__password-label,
+  .rdr-login-v2__input-shell,
+  .rdr-auth-flow,
+  .rdr-recovery,
+  .rdr-recovery__form,
+  .rdr-recovery__state {
+    min-width:0;max-width:100%;
+  }
+  .rdr-login-v2__input-shell input {
+    min-width:0;width:0;flex:1 1 0;
+  }
+  .rdr-login-v2__password-label>a {max-width:100%}
+  .rdr-recovery__art-message {max-width:100%;overflow-wrap:anywhere}
+}
+/* Smaller desktop windows keep the split composition while scaling its text
+   and side gutters; decorative hero text must never exceed the column. */
+@media (min-width:721px) and (max-width:1100px) {
+  .rdr-login-v2__frame {
+    grid-template-columns:minmax(0,38%) minmax(0,62%);
+  }
+  .rdr-login-v2__content,
+  :root[data-theme="dark"] .rdr-login-v2__content {
+    padding-inline:clamp(1.25rem,3vw,2.25rem);
+  }
+  .rdr-login-v2__visual-brand {
+    gap:.55rem;padding:clamp(1rem,2.6vw,1.75rem);
+  }
+  .rdr-login-v2__visual-brand .school-monogram {
+    width:3.25rem;height:2.75rem;
+  }
+  .rdr-login-v2__visual-copy {
+    padding:0 clamp(1rem,2.5vw,1.75rem) clamp(1rem,3vh,2rem);
+  }
+  .rdr-login-v2__visual-copy h2 {
+    font-size:clamp(1.5rem,3vw,2.4rem);
+    line-height:1.13;
+  }
+  .rdr-login-v2__visual-footer {
+    flex-wrap:wrap;gap:.5rem;
+    margin-top:1.1rem;padding-top:.75rem;
+  }
+  .rdr-login-v2__heading h1 {
+    font-size:clamp(1.85rem,3.4vw,2.65rem);
+  }
+}
+@media (min-width:721px) and (max-height:760px) {
+  .rdr-login-v2__visual-brand {
+    padding-block:clamp(.85rem,2.5vh,1.4rem);
+  }
+  .rdr-login-v2__visual-copy h2 {
+    margin:.6rem 0;
+    font-size:clamp(1.5rem,3.2vw,2.85rem);
+  }
+  .rdr-login-v2__visual-copy p {line-height:1.4}
+  .rdr-login-v2__visual-footer {
+    margin-top:.8rem;padding-top:.6rem;
+  }
+  .rdr-login-v2__heading h1 {margin:.5rem 0;font-size:clamp(1.8rem,3.1vw,2.6rem)}
+  .rdr-login-v2__heading p {margin-bottom:clamp(.75rem,1.8vh,1.3rem)}
+  .rdr-login-v2__main,
+  :root[data-theme="dark"] .rdr-login-v2__main {padding-block:.65rem}
+}
+/* The animation and the form should stay useful even at high browser zoom. */
+@media (min-width:721px) and (max-height:560px) {
+  .rdr-login-v2__visual-copy h2 {font-size:clamp(1.35rem,2.4vw,2rem)}
+  .rdr-login-v2__visual-copy p {font-size:.72rem}
+  .rdr-login-v2__content,
+  :root[data-theme="dark"] .rdr-login-v2__content {padding-block:.75rem}
+}
