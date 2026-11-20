@@ -1135,3 +1135,54 @@
     margin-bottom:clamp(1.35rem,3.2dvh,1.8rem);
   }
 }
+
+/* Forgot password shares the sign-in screen's header and optical center.
+   Keep error/confirmation content in flow; short screens scroll safely. */
+@media (max-width:720px) {
+  .rdr-login-v2:has(.rdr-auth-flow--forgot) .rdr-login-v2__visual,
+  :root[data-theme="dark"] .rdr-login-v2:has(.rdr-auth-flow--forgot) .rdr-login-v2__visual {
+    flex:0 0 clamp(6.75rem,15dvh,8rem);
+    height:auto;min-height:0;
+  }
+  .rdr-login-v2:has(.rdr-auth-flow--forgot) .rdr-login-v2__mobile-header {
+    padding:calc(env(safe-area-inset-top) + .45rem) 1.25rem 1rem;
+  }
+  .rdr-login-v2:has(.rdr-auth-flow--forgot) .rdr-login-v2__mobile-identity .school-monogram {
+    width:2.75rem;height:2.75rem;flex-basis:2.75rem;
+    padding:.39rem;border-radius:.8rem;
+  }
+  .rdr-login-v2:has(.rdr-auth-flow--forgot) .rdr-login-v2__mobile-appearance {
+    gap:0;padding:.125rem;border-radius:.7rem;
+    background:rgba(8,28,47,.2);
+    border-color:rgba(255,255,255,.23);
+    box-shadow:none;
+  }
+  .rdr-login-v2:has(.rdr-auth-flow--forgot) .rdr-login-v2__mobile-appearance button {
+    width:1.85rem;min-width:1.85rem;height:1.85rem;
+    border-radius:.47rem;
+  }
+  .rdr-login-v2:has(.rdr-auth-flow--forgot) .rdr-login-v2__content,
+  :root[data-theme="dark"] .rdr-login-v2:has(.rdr-auth-flow--forgot) .rdr-login-v2__content {
+    margin-top:-.9rem;
+    padding:1rem clamp(1.2rem,5.3vw,1.6rem)
+      max(1.25rem,env(safe-area-inset-bottom));
+    border-radius:1.15rem 1.15rem 0 0;
+  }
+  .rdr-login-v2:has(.rdr-auth-flow--forgot) .rdr-login-v2__main,
+  :root[data-theme="dark"] .rdr-login-v2:has(.rdr-auth-flow--forgot) .rdr-login-v2__main {
+    flex:1 0 auto;justify-content:center;align-items:stretch;
+    width:100%;max-width:24rem;min-height:0;
+    margin:0 auto;
+    padding:0 0 clamp(1rem,5dvh,2.75rem);
+  }
+}
+@media (max-width:720px) and (max-height:700px) {
+  .rdr-login-v2:has(.rdr-auth-flow--forgot) .rdr-login-v2__visual,
+  :root[data-theme="dark"] .rdr-login-v2:has(.rdr-auth-flow--forgot) .rdr-login-v2__visual {
+    flex-basis:5.75rem;
+  }
+  .rdr-login-v2:has(.rdr-auth-flow--forgot) .rdr-login-v2__main,
+  :root[data-theme="dark"] .rdr-login-v2:has(.rdr-auth-flow--forgot) .rdr-login-v2__main {
+    flex:0 0 auto;justify-content:flex-start;padding:.6rem 0 .75rem;
+  }
+}
