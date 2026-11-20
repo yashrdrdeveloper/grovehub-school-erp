@@ -884,46 +884,47 @@
   pointer-events:none;
   font-size:11px;
 }
+/* Fixed feedback region: error visibility never moves the sign-in button. */
 .rdr-login-v2__form--signin > .rdr-login-v2__feedback-slot--signin {
   position:relative;
   display:flex;
   align-items:center;
-  height:38px;
-  min-height:38px;
-  max-height:38px;
-  margin:0;
-  padding:2px 0 0;
+  height:40px;
+  min-height:40px;
+  max-height:40px;
+  margin:0 0 10px;
+  padding:6px 0 0;
   overflow:visible;
 }
 .rdr-login-v2__form--signin .rdr-login-v2__auth-error {
   position:static;
   display:flex;
-  align-items:flex-start;
+  flex-direction:row;
+  align-items:center;
   gap:8px;
   width:100%;
   min-width:0;
-  color:#c43b55;
+  margin:0;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#bd3553;
+  font-size:12px;
+  font-weight:500;
+  line-height:1.45;
 }
 .rdr-login-v2__form--signin .rdr-login-v2__auth-error > svg {
   flex:none;
-  margin-top:2px;
+  margin:0;
 }
 .rdr-login-v2__form--signin .rdr-login-v2__auth-error > span {
-  display:flex;
-  flex-direction:column;
-  gap:1px;
+  display:block;
+  flex:1;
   min-width:0;
 }
-.rdr-login-v2__form--signin .rdr-login-v2__auth-error strong {
-  font-size:11px;
-  line-height:14px;
-  font-weight:800;
+:root[data-theme="dark"] .rdr-login-v2__form--signin .rdr-login-v2__auth-error {
+  color:#ffa3b3;
 }
-.rdr-login-v2__form--signin .rdr-login-v2__auth-error small {
-  font-size:11px;
-  line-height:15px;
-}
-:root[data-theme="dark"] .rdr-login-v2__form--signin .rdr-login-v2__auth-error {color:#ffa3b3}
 .rdr-login-v2__form--signin > .rdr-login-v2__submit {
   height:48px;
   min-height:48px;
@@ -952,7 +953,7 @@
   .rdr-login-v2__main .rdr-login-v2__heading p {margin-bottom:12px}
   .rdr-login-v2__form--signin > .rdr-login-v2__field {grid-template-rows:18px 44px}
   .rdr-login-v2__form--signin > .rdr-login-v2__field .rdr-login-v2__input-shell {height:44px;min-height:44px}
-  .rdr-login-v2__form--signin > .rdr-login-v2__feedback-slot--signin {height:38px;min-height:38px;max-height:38px}
+  .rdr-login-v2__form--signin > .rdr-login-v2__feedback-slot--signin {height:40px;min-height:40px;max-height:40px}
 }
 @media(prefers-reduced-motion:reduce) {
   .rdr-login-v2__form--signin .rdr-login-v2__spinner {animation:none}
