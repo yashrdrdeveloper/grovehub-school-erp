@@ -10,6 +10,7 @@ import { DashboardPage } from '@Domain/dashboard';
 // Business modules are deliberately not routable until implemented.
 export const publicRoutes = [
   { path: '/login', element: <LoginPage /> },
+  { path: '/loginv2', element: <LoginV2Page /> },
   { path: '/forgot-password', element: <ForgotPasswordPage /> },
   { path: '/reset-password', element: <RecoveryPage purpose="recovery" /> },
   { path: '/set-password', element: <RecoveryPage purpose="invitation" /> },
