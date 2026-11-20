@@ -3,6 +3,9 @@ package impl
 
 import (
 	"context"
+	"time"
+	"grovehub/services/identity/internal/app/entity"
+	secrets "grovehub/services/identity/internal/app/services/authentication/helpers"
 	transaction "grovehub/libs/core/database/transaction"
 	coresearch "grovehub/libs/core/search"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
@@ -29,6 +32,8 @@ import (
 
 // @Service
 type Service struct {
+	accounts accountrepo.Repository
+	tokens tokenrepo.Repository
 	registrations registration.Service
 	search search.Operation
 	get get.Operation
@@ -41,6 +46,8 @@ var _ account.Service = (*Service)(nil)
 
 func New(accounts accountrepo.Repository, tokens tokenrepo.Repository, sessions sessionrepo.Repository, credentials credential.Service, registrations registration.Service, mapper accountmapper.Mapper, validator accountvalidator.Validator, unit transaction.UnitOfWork, events accountproducer.ChangedProducer) account.Service {
 	return &Service{
+		accounts: accounts,
+		tokens: tokens,
 		registrations: registrations,
 		search: search.New(searchimpl.New(accounts, mapper, validator)),
 		get: getimpl.New(accounts, mapper),
@@ -76,4 +83,18 @@ func (service *Service) Resend(ctx context.Context, accountID string) error {
 
 func (service *Service) Setup(ctx context.Context, grant string, input accountdto.Setup) (accountdto.SetupResult, error) {
 	return service.setup.Execute(ctx, grant, input)
+}
+
+func (service *Service) SetupStatus(ctx context.Context, grant string) (accountdto.SetupStatusResult, error) {
+  digest, err := secrets.Digest(grant, 32)
+  if err != nil { return accountdto.SetupStatusResult{}, tokenrepo.ErrInvalidToken }
+  now := time.Now().UTC()
+  token, err := service.tokens.Inspect(ctx, digest, entity.SetupGrant, now)
+  if err != nil { return accountdto.SetupStatusResult{}, err }
+  if token.Attempts >= 2 { return accountdto.SetupStatusResult{}, tokenrepo.ErrAttemptsExceeded }
+  account, err := service.accounts.FindByID(ctx, token.AccountID)
+  if err != nil || account.Status != entity.PendingSetup { return accountdto.SetupStatusResult{}, tokenrepo.ErrInvalidToken }
+  remaining := int(time.Until(token.ExpiresAt).Seconds())
+  if remaining < 1 { return accountdto.SetupStatusResult{}, tokenrepo.ErrInvalidToken }
+  return accountdto.SetupStatusResult{Verified:true, ExpiresIn:remaining}, nil
 }
