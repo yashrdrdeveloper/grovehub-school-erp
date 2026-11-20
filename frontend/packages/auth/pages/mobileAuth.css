@@ -486,3 +486,42 @@
     color:#b8edd0;
   }
 }
+
+/* Final viewport containment: no min-content sizing may widen a phone page. */
+@media (max-width:720px) {
+  .rdr-login-v2,
+  .rdr-login-v2__frame,
+  .rdr-login-v2__content,
+  .rdr-login-v2__main,
+  .rdr-login-v2__form,
+  .rdr-login-v2__heading,
+  .rdr-recovery,
+  .rdr-recovery__art,
+  .rdr-auth-flow {
+    box-sizing:border-box;
+    min-width:0;
+    max-width:100%;
+    overflow-wrap:anywhere;
+  }
+  .rdr-login-v2__toolbar > *,
+  .rdr-login-v2__password-label > *,
+  .rdr-login-v2__mobile-header > * {min-width:0}
+  .rdr-login-v2__heading h1 {
+    width:100%;
+    max-width:100%;
+    text-wrap:balance;
+    hyphens:auto;
+  }
+  .rdr-login-v2__heading p,
+  .rdr-recovery__art-title,
+  .rdr-recovery__art-message {
+    width:100%;
+    max-width:100%;
+    white-space:normal;
+    overflow-wrap:anywhere;
+  }
+  .rdr-login-v2__input-shell {width:100%}
+  .rdr-login-v2__input-shell input {width:0;flex:1 1 0}
+  .rdr-recovery__art-orbit {max-width:80vw}
+  .rdr-login-v2__mobile-header {max-width:100%}
+}
