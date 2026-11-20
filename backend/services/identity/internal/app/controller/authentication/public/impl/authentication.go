@@ -131,6 +131,18 @@ func (controller *Controller) InvitationExchange(writer http.ResponseWriter, req
 	controller.exchange(writer, request, "Invitation", "invitation", cookies.SetupCookie, "/identity/public/accounts/setup")
 }
 
+func (controller *Controller) ResetGrantStatus(writer http.ResponseWriter, request *http.Request) {
+  writer.Header().Set("Cache-Control", "no-store")
+  rest.RunStruct(writer, request, rest.StructConfig[dto.EmptyRequest, dto.GrantResult]{
+    Fallback: definitions.Internal,
+    Service: func(ctx context.Context, _ dto.EmptyRequest) (rest.Result[dto.GrantResult], error) {
+      result, err := controller.service.InspectProof(ctx, controller.cookies.Read(request, cookies.ResetCookie), "reset-grant")
+      if err != nil { return rest.Result[dto.GrantResult]{}, helpers.Map(err) }
+      return rest.OK(result), nil
+    },
+  })
+}
+
 func (controller *Controller) ResetPassword(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.ResetPasswordRequest, dto.StatusResult]{
 		Decode: httprequest.DecodeStrictJSON,
