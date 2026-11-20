@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ArrowLeft, GraduationCap, Monitor, Moon, Sun } from 'lucide-react';
+import { ArrowLeft, GraduationCap, Monitor, Moon, ShieldCheck, Sun } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { SchoolMonogram } from '@Components';
@@ -8,6 +8,7 @@ import { useWorkspaceTheme, type ThemePreference } from '@Components/hooks/theme
 import SoffitGradient from './loginv2/SoffitGradient';
 
 import './loginV2.css';
+import './mobileAuth.css';
 
 const appearanceOptions: { value: ThemePreference; label: string; Icon: typeof Sun }[] = [
   { value: 'system', label: 'System', Icon: Monitor },
@@ -29,6 +30,13 @@ export const LoginLayout = ({ children, title, description, eyebrow = 'YOUR SCHO
       <div className="rdr-login-v2__frame">
         <section className="rdr-login-v2__visual" aria-label="RDR School abstract gradient artwork">
           <SoffitGradient/>
+          <div className="rdr-login-v2__mobile-header">
+            <div className="rdr-login-v2__mobile-identity">
+              <SchoolMonogram />
+              <span><strong>RDR School</strong><small>School workspace</small></span>
+            </div>
+            <span className="rdr-login-v2__mobile-security" aria-label="Secure authentication"><ShieldCheck size={18}/></span>
+          </div>
           <div className="rdr-login-v2__visual-brand">
             <SchoolMonogram/>
             <span><strong>RDR School</strong><small>Rao Deena Ram Vidya Vihar</small></span>
