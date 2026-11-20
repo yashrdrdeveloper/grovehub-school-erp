@@ -967,3 +967,27 @@
   padding:0;
   border-radius:9px;
 }
+
+/* Preserve input theme colors during browser autofill. */
+.rdr-login-v2__input-shell {
+  --auth-autofill-bg:#fdfdfe;
+  --auth-autofill-text:#17191f;
+}
+:root[data-theme="dark"] .rdr-login-v2__input-shell {
+  --auth-autofill-bg:#1a1d24;
+  --auth-autofill-text:#f5f7fa;
+}
+:root[data-theme="dark"] .rdr-login-v2__input-shell:focus-within {
+  --auth-autofill-bg:#1d222c;
+}
+.rdr-login-v2__input-shell input:-webkit-autofill,
+.rdr-login-v2__input-shell input:-webkit-autofill:hover,
+.rdr-login-v2__input-shell input:-webkit-autofill:focus,
+.rdr-login-v2__input-shell input:autofill {
+  -webkit-text-fill-color:var(--auth-autofill-text)!important;
+  caret-color:var(--auth-autofill-text);
+  -webkit-box-shadow:0 0 0 1000px var(--auth-autofill-bg) inset!important;
+  box-shadow:0 0 0 1000px var(--auth-autofill-bg) inset!important;
+  border-radius:inherit;
+  transition:background-color 9999s ease-out 0s;
+}
