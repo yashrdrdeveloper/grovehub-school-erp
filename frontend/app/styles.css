@@ -2212,8 +2212,12 @@ body { background: var(--canvas); }
     box-sizing:border-box;width:100%;max-width:100%;min-width:0;
     height:auto;min-height:0;max-height:calc(100dvh - 70px);
     margin:0;padding:17px clamp(16px,5vw,26px)
-      max(20px,env(safe-area-inset-bottom));
+      max(clamp(38px,calc(25dvh - 100px),110px),env(safe-area-inset-bottom) + 24px);
+    /* Move Continue into a comfortable thumb zone, well above the bottom
+       home-gesture area. The extra padding is INSIDE the bottom sheet, so
+       the card still ends flush at the screen edge and never grows the page. */
     overflow-x:hidden;overflow-y:auto;
+    scroll-padding-bottom:24px;
     scrollbar-width:none;overscroll-behavior:contain;
     border:1px solid var(--border);border-bottom:0;
     border-radius:25px 25px 0 0;background:var(--surface);
@@ -2333,7 +2337,8 @@ body { background: var(--canvas); }
   .auth-page--login .auth-mobile-intro__tagline{font-size:9px}
   .auth-page--consistent.auth-page--login .auth-panel,
   :root[data-theme='dark'] .auth-page--consistent.auth-page--login .auth-panel{
-    padding-top:13px;padding-bottom:max(15px,env(safe-area-inset-bottom));
+    padding-top:13px;
+    padding-bottom:max(38px,env(safe-area-inset-bottom) + 20px);
   }
   .auth-page--login .auth-panel__icon{display:none}
   .auth-page--consistent.auth-page--login .auth-panel h1{font-size:23px}
@@ -2352,7 +2357,8 @@ body { background: var(--canvas); }
   }
   .auth-page--consistent.auth-page--login .auth-panel,
   :root[data-theme='dark'] .auth-page--consistent.auth-page--login .auth-panel{
-    padding-top:10px;padding-bottom:max(12px,env(safe-area-inset-bottom));
+    padding-top:10px;
+    padding-bottom:max(20px,env(safe-area-inset-bottom) + 12px);
   }
   .auth-page--consistent.auth-page--login .auth-panel>.muted{margin-bottom:8px}
   .auth-page--consistent.auth-page--login .auth-form{gap:7px}
