@@ -61,7 +61,7 @@ export const LoginV2Page = () => {
                     if(error)setError('');
                   }} required/>
               </div>
-              <small className="rdr-login-v2__field-error rdr-login-v2__field-error--reserved" id={`${fieldId}-email-error`}>{fieldErrors.email || '\u00a0'}</small>
+              <small className={`rdr-login-v2__field-error rdr-login-v2__field-error--reserved${fieldErrors.email ? "" : " is-empty"}`} id={`${fieldId}-email-error`}>{fieldErrors.email || '\u00a0'}</small>
             </div>
 
             <div className="rdr-login-v2__field">
@@ -86,7 +86,7 @@ export const LoginV2Page = () => {
                   {visible?<EyeOff size={19}/>:<Eye size={19}/>}
                 </button>
               </div>
-              <small className="rdr-login-v2__field-error rdr-login-v2__field-error--reserved" id={`${fieldId}-password-error`}>{fieldErrors.password || '\u00a0'}</small>
+              <small className={`rdr-login-v2__field-error rdr-login-v2__field-error--reserved${fieldErrors.password ? "" : " is-empty"}`} id={`${fieldId}-password-error`}>{fieldErrors.password || '\u00a0'}</small>
             </div>
 
             <div className="rdr-login-v2__feedback-slot rdr-login-v2__feedback-slot--signin" aria-live="polite">
