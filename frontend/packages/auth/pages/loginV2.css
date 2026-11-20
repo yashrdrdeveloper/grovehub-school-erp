@@ -517,3 +517,124 @@
 @media(prefers-reduced-motion:reduce) {
   .rdr-login-v2__visual > .lv2-gradient { transition:none; }
 }
+
+/* Premium LoginV2 dashboard-inspired theme: light and dark */
+.rdr-login-v2 {
+  --v2-ink:#17191f;
+  --v2-muted:#757986;
+  --v2-surface:#f6f6f7;
+  --v2-border:#e1e2e6;
+  --v2-input:#fff;
+  --v2-tint:#f0f1f3;
+  --v2-navy:#1d2230;
+}
+.rdr-login-v2__content {
+  background:
+    radial-gradient(ellipse at 100% 0%,rgba(200,202,245,.13),transparent 42%),
+    radial-gradient(ellipse at 0% 100%,rgba(187,223,222,.11),transparent 39%),
+    var(--v2-surface);
+}
+.rdr-login-v2__main {
+  position:relative;
+  padding:clamp(26px,3vw,38px);
+  border:1px solid rgba(220,221,226,.9);
+  border-radius:26px;
+  background:rgba(255,255,255,.78);
+  box-shadow:0 22px 64px rgba(24,28,40,.055),0 2px 8px rgba(24,28,40,.025);
+}
+.rdr-login-v2__heading h1 {letter-spacing:-.072em}
+.rdr-login-v2__eyebrow {color:#906f45}
+.rdr-login-v2__heading p {color:var(--v2-muted)}
+.rdr-login-v2__appearance {
+  background:rgba(255,255,255,.8);
+  border-color:#e0e1e5;
+  box-shadow:0 4px 16px rgba(20,20,26,.04);
+}
+.rdr-login-v2__appearance button.is-active {
+  background:#fff;
+  box-shadow:0 3px 12px rgba(20,22,28,.1);
+}
+.rdr-login-v2__field label,.rdr-login-v2__password-label>a {color:var(--v2-ink)}
+.rdr-login-v2__input-shell {
+  background:#fdfdfe;
+  border-color:#dcdee5;
+  box-shadow:inset 0 1px 0 #fff,0 3px 14px rgba(19,24,32,.025);
+}
+.rdr-login-v2__input-shell:focus-within {
+  border-color:#8174da;
+  box-shadow:0 0 0 3px rgba(129,116,218,.14);
+}
+.rdr-login-v2__submit {
+  background:linear-gradient(135deg,#181b23,#2c3241);
+  box-shadow:0 12px 25px rgba(21,24,33,.17);
+}
+.rdr-login-v2__submit:hover:not(:disabled) {background:linear-gradient(135deg,#151923,#363f51)}
+.rdr-login-v2__closing {color:#9296a1}
+.rdr-login-v2__closing-rule {background:#e4e5e8}
+:root[data-theme="dark"] .rdr-login-v2 {
+  --v2-ink:#f6f6f7;
+  --v2-muted:#9ca0ae;
+  --v2-surface:#090a0d;
+  --v2-border:#282a32;
+  --v2-input:#15171c;
+  --v2-tint:#17191e;
+  --v2-navy:#333b50;
+}
+:root[data-theme="dark"] .rdr-login-v2__content {
+  background:
+    radial-gradient(ellipse at 100% 0%,rgba(80,68,130,.13),transparent 44%),
+    radial-gradient(ellipse at 0% 100%,rgba(19,90,84,.075),transparent 38%),
+    #090a0d;
+}
+:root[data-theme="dark"] .rdr-login-v2__main {
+  background:linear-gradient(155deg,rgba(25,25,28,.95),rgba(17,18,21,.96));
+  border-color:#2b2c31;
+  box-shadow:0 20px 65px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.035);
+}
+:root[data-theme="dark"] .rdr-login-v2__heading p {color:var(--v2-muted)}
+:root[data-theme="dark"] .rdr-login-v2__eyebrow {color:#c6a36e}
+:root[data-theme="dark"] .rdr-login-v2__appearance {
+  background:#14161b;
+  border-color:#30313a;
+  box-shadow:0 8px 26px rgba(0,0,0,.18);
+}
+:root[data-theme="dark"] .rdr-login-v2__appearance button.is-active {
+  background:#282a32;
+  color:#f6f6f7;
+  box-shadow:0 4px 12px rgba(0,0,0,.24);
+}
+:root[data-theme="dark"] .rdr-login-v2__field label,
+:root[data-theme="dark"] .rdr-login-v2__password-label>a {color:var(--v2-ink)}
+:root[data-theme="dark"] .rdr-login-v2__input-shell {
+  background:#111318;
+  border-color:#30323b;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 6px 20px rgba(0,0,0,.1);
+}
+:root[data-theme="dark"] .rdr-login-v2__input-shell input {color:#f5f5f7}
+:root[data-theme="dark"] .rdr-login-v2__input-shell input::placeholder {color:#7f8592}
+:root[data-theme="dark"] .rdr-login-v2__input-shell:focus-within {
+  border-color:#8c85df;
+  box-shadow:0 0 0 3px rgba(140,133,223,.18);
+}
+:root[data-theme="dark"] .rdr-login-v2__submit {
+  background:linear-gradient(135deg,#363d51,#505b79);
+  box-shadow:0 12px 26px rgba(0,0,0,.28);
+}
+:root[data-theme="dark"] .rdr-login-v2__submit:hover:not(:disabled) {background:linear-gradient(135deg,#45506b,#5a688b)}
+:root[data-theme="dark"] .rdr-login-v2__closing {color:#8c909d}
+:root[data-theme="dark"] .rdr-login-v2__closing-rule {background:#34363f}
+@media(max-width:720px) {
+  .rdr-login-v2__main,
+  :root[data-theme="dark"] .rdr-login-v2__main {
+    padding:clamp(14px,3.5vw,22px);
+    border-radius:18px;
+    box-shadow:none;
+  }
+  .rdr-login-v2__content {padding-bottom:max(16px,env(safe-area-inset-bottom))}
+}
+@media(max-width:720px) and (max-height:700px) {
+  .rdr-login-v2__main,
+  :root[data-theme="dark"] .rdr-login-v2__main {
+    padding:12px 14px;
+  }
+}
