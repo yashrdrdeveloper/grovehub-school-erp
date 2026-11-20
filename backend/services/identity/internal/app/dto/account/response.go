@@ -28,7 +28,7 @@ type CreateResult struct {
 type SetupResult struct {
 	AccountID      string `json:"accountId"`
 	PersonGID      string `json:"personGid"`
-	Username       string `json:"username"`
+	Username       *string `json:"username,omitempty"`
 	Status         string `json:"status"`
 	SetupCompleted bool   `json:"setupCompleted"`
 }
