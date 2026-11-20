@@ -11,7 +11,6 @@ import (
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	tokenrepo "grovehub/services/identity/internal/app/repository/passwordtoken"
 	credential "grovehub/services/identity/internal/app/services/credential"
-	accountvalidator "grovehub/services/identity/internal/app/validators/account"
 	transaction "grovehub/libs/core/database/transaction"
 	accountproducer "grovehub/services/identity/internal/app/events/producers/account"
 	setup "grovehub/services/identity/internal/app/services/account/operations/setup"
@@ -21,15 +20,14 @@ type Service struct {
 	accounts accountrepo.Repository
 	tokens tokenrepo.Repository
 	credentials credential.Service
-	validator accountvalidator.Validator
 	unit transaction.UnitOfWork
 	events accountproducer.ChangedProducer
 }
 
 var _ setup.Operation = (*Service)(nil)
 
-func New(accounts accountrepo.Repository, tokens tokenrepo.Repository, credentials credential.Service, validator accountvalidator.Validator, unit transaction.UnitOfWork, events accountproducer.ChangedProducer) setup.Operation {
-	return &Service{accounts: accounts, tokens: tokens, credentials: credentials, validator: validator, unit: unit, events: events}
+func New(accounts accountrepo.Repository, tokens tokenrepo.Repository, credentials credential.Service, unit transaction.UnitOfWork, events accountproducer.ChangedProducer) setup.Operation {
+	return &Service{accounts: accounts, tokens: tokens, credentials: credentials, unit: unit, events: events}
 }
 
 func (op *Service) Execute(ctx context.Context, grant string, input accountdto.Setup) (accountdto.SetupResult, error) {
@@ -76,7 +74,6 @@ func (op *Service) Execute(ctx context.Context, grant string, input accountdto.S
 		result = accountdto.SetupResult{
 			AccountID: accountID,
 			PersonGID: accountEntity.PersonGID,
-			Username: accountEntity.Username,
 			Status: string(accountEntity.Status),
 			SetupCompleted: true,
 		}
