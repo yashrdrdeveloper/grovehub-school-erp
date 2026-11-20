@@ -2094,142 +2094,171 @@ body { background: var(--canvas); }
 }
 
 
-/* Mobile login follows the SAME desktop design tokens.
-   The sheet wraps its contents and stays flush to the bottom with square
-   lower corners; the logo occupies the upper space rather than leaving
-   an empty banner. On short screens / when the keyboard opens, the page
-   scrolls naturally instead of clipping the focused input or submit. */
+/* RDR mobile auth: viewport-tight layout; original monogram and same
+   surface/ink/paper/accent tokens as desktop. Normal phone viewports never
+   scroll horizontally or vertically. Only the card can scroll if validation,
+   accessibility text enlargement or a software keyboard requires it. */
 .auth-login-scene{display:contents}
-.auth-login__input-icon,.auth-login__mobile-copy,.auth-login__contact{display:none}
+.auth-mobile-intro,.auth-login__input-icon,.auth-login__mobile-copy,
+.auth-login__contact{display:none}
 
 @media(max-width:640px){
+  /* The viewport must not become wider/taller from descendants. */
+  html:has(.auth-page--login),
+  body:has(.auth-page--login),
+  #root:has(.auth-page--login){
+    width:100%;max-width:100%;height:100%;overflow:hidden;
+  }
   .auth-page--consistent.auth-page--login{
     display:flex;flex-direction:column;align-items:stretch;
-    width:100%;height:100dvh;min-height:0;min-width:320px;
-    padding:env(safe-area-inset-top) 0 0;
-    overflow-x:hidden;overflow-y:auto;
-    overscroll-behavior-y:contain;
-    -webkit-overflow-scrolling:touch;
-    background:
-      radial-gradient(ellipse 72% 44% at 50% 24%,rgba(222,218,211,.17),transparent 85%),
-      var(--paper);
-    color:var(--ink);
+    box-sizing:border-box;isolation:isolate;
+    width:100%;max-width:100%;height:100dvh;min-height:0;min-width:0;
+    margin:0;padding:env(safe-area-inset-top) 0 0;
+    overflow:hidden;overscroll-behavior:none;
+    background:var(--paper);color:var(--ink);
   }
+  /* Top header owns the available height; the card owns only its content.
+     This prevents the former 520px fixed sheet plus header from overflowing. */
   .auth-page--login .auth-topbar{
-    position:relative;z-index:3;
-    width:100%;max-width:none;min-width:0;
-    min-height:clamp(116px,22dvh,200px);
-    flex:1 0 auto;
-    display:flex;align-items:center;justify-content:center;
-    padding:48px 16px 18px;
-    gap:0;
+    display:grid;grid-template-columns:minmax(0,1fr) auto;
+    grid-template-rows:auto minmax(0,1fr);
+    align-content:stretch;align-items:center;
+    flex:1 1 auto;min-height:0;min-width:0;
+    width:100%;max-width:100%;
+    padding:clamp(10px,2dvh,19px) 15px 6px;
+    margin:0;gap:0 8px;position:relative;z-index:3;
   }
   .auth-page--login .auth-brand{
-    display:flex;flex:none;align-items:center;justify-content:center;
-    gap:11px;min-width:0;margin:0;
+    grid-column:1;grid-row:1;min-width:0;
+    display:flex;gap:8px;align-items:center;margin:0;
   }
   .auth-page--login .auth-brand strong{
-    color:var(--ink);font-size:clamp(18px,5vw,22px);
+    min-width:0;overflow:hidden;text-overflow:ellipsis;
+    color:var(--ink);font-size:clamp(13px,3.8vw,16px);
     font-weight:800;letter-spacing:-.04em;white-space:nowrap;
   }
-  /* Original merged RDR logo asset is unchanged. */
   .auth-page--login .school-monogram{
-    width:63px;height:47px;flex:none;
-    padding:6px 7px;border:1px solid #d7dde7;
-    border-radius:11px;background:#eef2f7;color:#1f2a44;
+    width:48px;height:37px;flex:none;
+    padding:5px 6px;border-radius:10px;
+    background:#eef2f7;border:1px solid #d7dde7;color:#1f2a44;
   }
-  /* Put a quieter, unscaled theme switcher at the top right.
-     It is vertically separated from the centered RDR mark. */
   .auth-page--login .auth-theme-switcher{
-    position:absolute;right:15px;top:13px;z-index:4;
-    display:grid;grid-template-columns:repeat(3,34px);gap:1px;
-    flex:none;width:auto;min-width:0;margin:0;
-    padding:3px;transform:none;
-    border-radius:999px;border:1px solid var(--art-border);
-    background:var(--art-bg);box-shadow:none;
+    grid-column:2;grid-row:1;position:static;
+    display:grid;grid-template-columns:repeat(3,33px);
+    align-items:center;justify-items:center;
+    gap:1px;flex:none;transform:none;min-width:0;width:auto;
+    margin:0;padding:3px;
+    border:1px solid var(--art-border);
+    border-radius:999px;background:var(--art-bg);box-shadow:none;
   }
   .auth-page--login .auth-theme-switcher__choice{
     display:grid;place-items:center;
-    width:34px;height:34px;min-width:0;min-height:34px;
-    padding:0;margin:0;gap:0;flex:none;
+    width:33px;height:35px;min-width:0;min-height:35px;
+    margin:0;padding:0;gap:0;flex:none;
   }
   .auth-page--login .auth-theme-switcher__choice span{display:none}
   .auth-page--login .auth-theme-switcher__choice svg{width:16px;height:16px;flex:none}
   .auth-page--login .auth-theme-switcher__choice.is-active{
     background:var(--paper);color:var(--ink);
-    box-shadow:0 1px 6px rgba(31,29,39,.06);
+    box-shadow:0 1px 7px rgba(31,29,39,.08);
+  }
+  /* A school-themed message with vector icon only; no downloaded images. */
+  .auth-page--login .auth-mobile-intro{
+    grid-column:1/-1;grid-row:2;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    align-self:stretch;justify-self:stretch;
+    min-height:0;min-width:0;gap:9px;
+    padding:8px 12px;text-align:center;pointer-events:none;
+  }
+  .auth-page--login .auth-mobile-intro__symbol{
+    display:grid;place-items:center;
+    width:48px;height:48px;flex:none;border-radius:15px;
+    border:1px solid var(--art-border);
+    background:var(--art-bg);color:var(--art-ink);
+    box-shadow:0 7px 19px rgba(31,28,36,.04);
+  }
+  .auth-page--login .auth-mobile-intro strong{
+    display:block;max-width:100%;
+    font-family:Manrope,system-ui,sans-serif;
+    font-size:clamp(16px,4.4vw,19px);
+    font-weight:800;line-height:1.3;letter-spacing:-.035em;color:var(--ink);
+  }
+  .auth-page--login .auth-mobile-intro__tagline{
+    display:flex;align-items:center;justify-content:center;gap:11px;
+    font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--art-muted);
+  }
+  .auth-page--login .auth-mobile-intro__tagline i{
+    width:3px;height:3px;border-radius:50%;background:var(--art-muted);
   }
   .auth-page--login .auth-stage{
     display:block;flex:0 0 auto;position:relative;
-    width:100%;height:auto;min-height:0;min-width:0;
-    overflow:visible;padding:0;
+    width:100%;max-width:100%;min-width:0;
+    height:auto;min-height:0;max-height:100dvh;
+    padding:0;margin:0;overflow:hidden;
   }
-  .auth-page--login .auth-mobile-backdrop,
-  .auth-page--login .auth-floating-art{display:none}
+  .auth-page--login .auth-floating-art,
+  .auth-page--login .auth-mobile-backdrop{display:none}
   .auth-page--login .auth-login-scene--enabled{
-    position:relative;z-index:2;display:block;
-    width:100%;height:auto;min-height:0;
+    display:block;position:relative;
+    width:100%;max-width:100%;min-width:0;
+    height:auto;min-height:0;margin:0;padding:0;
   }
   .auth-page--login .auth-login-scene--enabled::before,
   .auth-page--login .auth-login-scene--enabled::after{display:none}
-  /* No fixed 520px sheet: the card ends just after the last action.
-     The bottom edge is square, flush with the viewport. */
   .auth-page--consistent.auth-page--login .auth-panel,
   :root[data-theme='dark'] .auth-page--consistent.auth-page--login .auth-panel{
-    position:relative;z-index:2;display:flex;flex-direction:column;
-    justify-content:flex-start;align-self:stretch;
-    width:100%;max-width:none;
-    height:auto;min-height:0;max-height:none;
-    flex:none;margin:0;
-    padding:25px clamp(23px,6vw,35px)
-      max(27px,env(safe-area-inset-bottom));
-    overflow:visible;
+    display:flex;flex-direction:column;justify-content:flex-start;
+    position:relative;z-index:2;align-self:stretch;
+    box-sizing:border-box;width:100%;max-width:100%;min-width:0;
+    height:auto;min-height:0;max-height:calc(100dvh - 70px);
+    margin:0;padding:17px clamp(16px,5vw,26px)
+      max(20px,env(safe-area-inset-bottom));
+    overflow-x:hidden;overflow-y:auto;
+    scrollbar-width:none;overscroll-behavior:contain;
     border:1px solid var(--border);border-bottom:0;
-    border-radius:26px 26px 0 0;
-    background:var(--surface);color:var(--ink);
-    box-shadow:0 -12px 37px rgba(31,28,36,.095);
+    border-radius:25px 25px 0 0;background:var(--surface);
+    box-shadow:0 -10px 32px rgba(31,28,36,.09);color:var(--ink);
   }
+  .auth-page--login .auth-panel::-webkit-scrollbar{display:none}
   .auth-page--login .auth-panel__icon{
     display:grid;place-items:center;
-    width:36px;height:36px;flex:0 0 36px;
-    margin:0 auto 10px;
-    border-radius:10px;background:var(--art-surface);color:var(--art-ink);
+    width:34px;height:34px;flex:0 0 34px;
+    margin:0 auto 9px;border-radius:10px;
+    background:var(--art-surface);color:var(--art-ink);
   }
-  .auth-page--login .auth-panel__icon svg{width:20px;height:20px}
+  .auth-page--login .auth-panel__icon svg{width:18px;height:18px}
   .auth-page--consistent.auth-page--login .auth-panel h1{
-    flex:none;margin:0 0 6px;
-    font-size:26px;line-height:1.2;letter-spacing:-.045em;
-    text-align:center;color:var(--ink);
+    margin:0 0 5px;flex:none;
+    font-size:25px;font-weight:800;line-height:1.19;
+    letter-spacing:-.045em;text-align:center;color:var(--ink);
   }
   .auth-page--consistent.auth-page--login .auth-panel>.muted{
-    flex:none;width:100%;max-width:none;
-    margin:0 0 20px;
-    font-size:12px;line-height:1.5;text-align:center;
-    color:var(--art-muted);
+    margin:0 0 17px;flex:none;
+    font-size:11px;line-height:1.5;text-align:center;color:var(--art-muted);
   }
   .auth-page--login .auth-login__desktop-copy{display:inline}
   .auth-page--login .auth-login__mobile-copy{display:none}
   .auth-page--consistent.auth-page--login .auth-form{
-    display:flex;flex-direction:column;gap:12px;flex:none;
+    display:flex;flex-direction:column;gap:11px;flex:none;min-width:0;
   }
   .auth-page--login .auth-login__input-wrap,
-  .auth-page--login .password-field{position:relative}
+  .auth-page--login .password-field{position:relative;min-width:0}
   .auth-page--consistent.auth-page--login .field{
-    display:flex;flex-direction:column;gap:6px;position:relative;
+    display:flex;flex-direction:column;gap:5px;position:relative;min-width:0;
   }
   .auth-page--consistent.auth-page--login .field__label{
-    position:static;display:block;
-    width:auto;height:auto;margin:0;padding:0;border:0;
-    clip-path:none;overflow:visible;white-space:normal;
-    font-size:12px;line-height:18px;font-weight:700;
-    color:var(--ink-strong);
+    display:block;position:static;width:auto;height:auto;
+    padding:0;margin:0;border:0;overflow:visible;white-space:normal;
+    clip-path:none;
+    font-size:12px;font-weight:700;line-height:17px;color:var(--ink-strong);
   }
   .auth-page--consistent.auth-page--login .field__input{
-    display:block;width:100%;height:48px;min-height:48px;
-    padding:0 44px;
-    border:1px solid #d1d4dd;border-radius:10px;
+    box-sizing:border-box;display:block;width:100%;max-width:100%;min-width:0;
+    height:45px;min-height:45px;
+    padding:0 13px 0 43px;
     background:var(--surface);color:var(--ink-strong);
-    font-size:16px;box-shadow:none;
+    border:1px solid #d1d4dd;border-radius:9px;
+    outline:0;box-shadow:none;font-size:16px;
   }
   .auth-page--consistent.auth-page--login .field__input::placeholder{
     font-size:12px;color:#969aa8;opacity:1;
@@ -2242,48 +2271,43 @@ body { background: var(--canvas); }
     border-color:#cb5167;box-shadow:0 0 0 3px rgba(203,81,103,.1);
   }
   .auth-page--login .auth-login__input-icon{
-    display:block;position:absolute;left:14px;top:48px;
+    display:block;position:absolute;top:44px;left:14px;
     transform:translateY(-50%);pointer-events:none;color:var(--art-muted);
   }
   .auth-page--consistent.auth-page--login .password-field .field__input{
     padding-right:52px;
   }
   .auth-page--consistent.auth-page--login .password-toggle{
-    position:absolute;right:3px;top:24px;
     display:grid;place-items:center;
-    width:44px;height:48px;padding:0;
-    border:0;border-radius:9px;
-    background:transparent;color:var(--art-muted);
+    position:absolute;top:22px;right:3px;
+    width:43px;height:45px;padding:0;
+    border:0;border-radius:8px;background:transparent;color:var(--art-muted);
   }
   .auth-page--consistent.auth-page--login .form-row--end{
     justify-content:flex-end;margin:0;
   }
   .auth-page--consistent.auth-page--login .form-row--end a{
-    font-size:12px;font-weight:700;color:var(--ink);
+    font-size:11px;font-weight:700;color:var(--ink);
     text-decoration:underline;text-underline-offset:3px;
   }
   .auth-page--consistent.auth-page--login .auth-form .button--primary{
-    min-height:48px;flex:none;
-    margin-top:3px;
-    border-radius:10px;border:1px solid transparent;
-    background:#181923;color:#fff;
-    font-size:13px;font-weight:800;
+    min-height:46px;flex:none;margin-top:2px;
+    border:1px solid transparent;border-radius:9px;
+    background:#181923;color:#fff;font-size:13px;font-weight:800;
   }
   .auth-page--consistent.auth-page--login .auth-form .button--primary:hover:not(:disabled){
     background:#2b2e3c;
   }
-  /* Hide non-actionable reassurance on small screens. */
   .auth-page--consistent.auth-page--login .auth-security,
   .auth-page--login .auth-login__contact,
   .auth-page--login .auth-footer{display:none}
 
-  /* Mirror desktop dark tokens rather than introducing a mobile-only palette. */
   :root[data-theme='dark'] .auth-page--consistent.auth-page--login{
     background:var(--paper);color:var(--ink);
   }
   :root[data-theme='dark'] .auth-page--consistent.auth-page--login .auth-panel{
     background:#171821;border:1px solid #313340;border-bottom:0;
-    box-shadow:0 -12px 35px rgba(0,0,0,.29);
+    box-shadow:0 -10px 32px rgba(0,0,0,.27);
   }
   :root[data-theme='dark'] .auth-page--consistent.auth-page--login .field__input{
     background:#12131b;color:#f3f3f7;border-color:#414352;
@@ -2292,44 +2316,60 @@ body { background: var(--canvas); }
     color:#969aa8;
   }
   :root[data-theme='dark'] .auth-page--consistent.auth-page--login .auth-form .button--primary{
-    background:#3c4050;border:1px solid #626779;color:#fff;
+    background:#3c4050;border-color:#626779;color:#fff;
   }
   :root[data-theme='dark'] .auth-page--consistent.auth-page--login .auth-form .button--primary:hover:not(:disabled){
     background:#505568;
   }
-  :root[data-theme='dark'] .auth-page--consistent.auth-page--login .form-row--end a{
-    color:var(--ink);
-  }
 }
-@media(max-width:640px) and (max-height:680px){
-  .auth-page--login .auth-topbar{
-    min-height:105px;padding-bottom:10px;
+@media(max-width:640px) and (max-height:650px){
+  /* Compact on short phones; do not let decorative messaging displace form. */
+  .auth-page--login .auth-mobile-intro{gap:5px;padding:4px}
+  .auth-page--login .auth-mobile-intro__symbol{
+    width:35px;height:35px;border-radius:10px;
+  }
+  .auth-page--login .auth-mobile-intro__symbol svg{width:20px;height:20px}
+  .auth-page--login .auth-mobile-intro strong{font-size:15px}
+  .auth-page--login .auth-mobile-intro__tagline{font-size:9px}
+  .auth-page--consistent.auth-page--login .auth-panel,
+  :root[data-theme='dark'] .auth-page--consistent.auth-page--login .auth-panel{
+    padding-top:13px;padding-bottom:max(15px,env(safe-area-inset-bottom));
+  }
+  .auth-page--login .auth-panel__icon{display:none}
+  .auth-page--consistent.auth-page--login .auth-panel h1{font-size:23px}
+  .auth-page--consistent.auth-page--login .auth-panel>.muted{margin-bottom:12px}
+  .auth-page--consistent.auth-page--login .auth-form{gap:9px}
+}
+@media(max-width:640px) and (max-height:500px){
+  .auth-page--login .auth-mobile-intro{display:none}
+  .auth-page--login .auth-topbar{padding:5px 10px;grid-template-rows:auto}
+  .auth-page--login .school-monogram{width:43px;height:34px}
+  .auth-page--login .auth-theme-switcher{
+    grid-template-columns:repeat(3,30px);padding:2px;gap:0;
+  }
+  .auth-page--login .auth-theme-switcher__choice{
+    width:30px;height:32px;min-height:32px;
   }
   .auth-page--consistent.auth-page--login .auth-panel,
   :root[data-theme='dark'] .auth-page--consistent.auth-page--login .auth-panel{
-    padding-top:18px;padding-bottom:max(18px,env(safe-area-inset-bottom));
+    padding-top:10px;padding-bottom:max(12px,env(safe-area-inset-bottom));
   }
-  .auth-page--login .auth-panel__icon{margin-bottom:7px}
-  .auth-page--consistent.auth-page--login .auth-panel>.muted{margin-bottom:13px}
-  .auth-page--consistent.auth-page--login .auth-form{gap:10px}
-}
-/* When the software keyboard reduces the visual viewport, allow scrolling
-   the header away; inputs and the submit button stay in document flow. */
-@media(max-width:640px) and (max-height:480px){
-  /* Keyboard-open and landscape phones can scroll the header away.
-     A separate upper row prevents brand/theme overlap even at 320px. */
-  .auth-page--login .auth-topbar{
-    min-height:112px;
-    padding:59px 16px 8px;
-  }
-  .auth-page--login .auth-brand strong{font-size:16px}
-  .auth-page--login .school-monogram{width:46px;height:35px}
+  .auth-page--consistent.auth-page--login .auth-panel>.muted{margin-bottom:8px}
+  .auth-page--consistent.auth-page--login .auth-form{gap:7px}
+  .auth-page--consistent.auth-page--login .field__input{height:42px;min-height:42px}
+  .auth-page--login .auth-login__input-icon{top:42px}
+  .auth-page--consistent.auth-page--login .password-toggle{height:42px}
+  .auth-page--consistent.auth-page--login .auth-form .button--primary{min-height:42px}
 }
 @media(max-width:340px){
-  .auth-page--login .auth-theme-switcher{right:9px;grid-template-columns:repeat(3,31px)}
-  .auth-page--login .auth-theme-switcher__choice{
-    width:31px;height:33px;min-height:33px;
+  .auth-page--login .auth-topbar{padding-inline:9px}
+  .auth-page--login .auth-brand{gap:6px}
+  .auth-page--login .auth-brand strong{font-size:13px}
+  .auth-page--login .school-monogram{width:43px}
+  .auth-page--login .auth-theme-switcher{
+    grid-template-columns:repeat(3,30px);padding:2px;gap:0;
   }
+  .auth-page--login .auth-theme-switcher__choice{width:30px;height:33px;min-height:33px}
 }
 @media(prefers-reduced-motion:reduce){
   .auth-page--login *{scroll-behavior:auto}
