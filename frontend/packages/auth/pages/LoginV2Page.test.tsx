@@ -32,6 +32,18 @@ describe('RDR Login V2',()=>{
     expect(screen.getByRole('link',{name:'Forgot password?'}).getAttribute('href')).toBe('/forgot-password');
   });
 
+  it('uses minimal phone structure without extra mobile headings or decorative imagery',()=>{
+    const {container}=render(<MemoryRouter><LoginV2Page/></MemoryRouter>);
+    const layout=container.querySelector('.rdr-login-v2');
+    expect(layout?.classList.contains('rdr-login-v2--mobile-minimal')).toBe(true);
+    expect(container.querySelector('.rdr-login-v2__mobile-signin-title')?.textContent).toBe('Sign in');
+    expect(container.querySelector('.rdr-login-v2__mobile-header .school-monogram')).not.toBeNull();
+    expect(container.querySelector('.rdr-login-v2__mobile-illustration')).toBeNull();
+    expect(container.querySelector('.rdr-login-v2__mobile-security')).toBeNull();
+    expect(container.querySelector('.rdr-login-v2__mobile-appearance')).not.toBeNull();
+    expect(screen.getByRole('button',{name:'Light mobile theme'})).toBeTruthy();
+  });
+
   it('shows field validation and lets users toggle password visibility',async()=>{
     render(<MemoryRouter><LoginV2Page/></MemoryRouter>);
     fireEvent.click(screen.getByRole('button',{name:/^sign in$/i}));
