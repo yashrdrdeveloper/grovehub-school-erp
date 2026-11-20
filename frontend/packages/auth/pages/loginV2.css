@@ -727,3 +727,84 @@
 @media(prefers-reduced-motion:reduce) {
   :root[data-theme="dark"] .rdr-login-v2__input-shell {transition:none;}
 }
+
+/* Shared recovery flow: stable vertical slots avoid moving the primary action. */
+.rdr-login-v2__field-error--reserved {
+  display:block;
+  min-height:15px;
+  line-height:15px;
+  font-size:11px;
+}
+.rdr-login-v2__feedback-slot {
+  min-height:18px;
+  display:flex;
+  align-items:center;
+}
+.rdr-login-v2__feedback-slot .rdr-login-v2__error {
+  margin:0;
+  padding:0;
+  border:0;
+  background:none;
+}
+.rdr-auth-flow {width:100%;min-width:0}
+.rdr-auth-flow__form {
+  min-height:365px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  gap:12px;
+}
+.rdr-auth-flow__fields {
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.rdr-auth-flow__actions {
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:auto;
+}
+.rdr-auth-flow__message {
+  min-height:44px;
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  font-size:12px;
+  line-height:1.6;
+  color:var(--v2-muted);
+}
+.rdr-auth-flow__message svg {flex:none;color:var(--v2-navy);margin-top:1px}
+.rdr-auth-flow__back {
+  display:inline-flex;
+  align-self:center;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:36px;
+  font-size:12px;
+  font-weight:750;
+  color:var(--v2-muted)!important;
+}
+.rdr-auth-flow__back:hover {color:var(--v2-ink)!important}
+.rdr-auth-flow__submit-link {text-decoration:none!important}
+.rdr-auth-flow__submit-link:hover {color:#fff}
+.rdr-auth-flow .rdr-login-v2__submit {margin-top:0;flex:none}
+.rdr-auth-flow input:disabled {opacity:.75;cursor:not-allowed}
+.rdr-login-v2__input-shell:focus-within {
+  border-color:var(--v2-navy);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--v2-navy) 17%,transparent);
+}
+:root[data-theme="dark"] .rdr-auth-flow__message svg {color:#9cafd7}
+:root[data-theme="dark"] .rdr-auth-flow__back {color:#acb4c5!important}
+@media(max-width:720px){
+  .rdr-auth-flow__form {min-height:330px;gap:8px}
+  .rdr-auth-flow__fields {gap:9px}
+  .rdr-auth-flow__message {min-height:40px}
+}
+@media(max-width:720px) and (max-height:700px){
+  .rdr-auth-flow__form {min-height:0}
+  .rdr-auth-flow__fields {gap:6px}
+  .rdr-auth-flow__message {min-height:36px}
+  .rdr-auth-flow__actions {gap:5px}
+}
