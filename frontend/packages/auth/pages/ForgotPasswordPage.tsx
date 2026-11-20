@@ -77,7 +77,7 @@ export const ForgotPasswordPage = () => {
               {noticeSuccess ? <CheckCircle2 size={20}/> : <Info size={20}/>}
             </span>
             <span className="rdr-auth-flow__notice-copy">
-              <strong>{noticeSuccess ? 'Request received!' : emailChanged ? 'Email address updated' : 'Check your inbox'}</strong>
+              <strong>{noticeSuccess ? 'Request received!' : emailChanged ? 'Email address updated' : 'Secure password reset'}</strong>
               <small>{noticeSuccess
                 ? 'If this address is eligible, your reset link is on its way.'
                 : emailChanged
