@@ -67,7 +67,7 @@ export const ForgotPasswordPage = () => {
         ? 'Resend reset link'
         : 'Send reset link';
 
-  return <LoginLayout title="Forgot password?" description="We’ll help you get back into your school workspace." eyebrow="ACCOUNT RECOVERY">
+  return <LoginLayout title="Forgot password?" description="We’ll help you get back into your school workspace." mobileDescription="Reset your password securely." eyebrow="ACCOUNT RECOVERY">
     <div className="rdr-auth-flow rdr-auth-flow--forgot">
       <form className="rdr-login-v2__form rdr-auth-flow__form" onSubmit={event => void submit(event)} noValidate>
         <div className="rdr-auth-flow__fields">
@@ -95,7 +95,7 @@ export const ForgotPasswordPage = () => {
                 aria-describedby={emailError ? `${id}-error` : undefined}
                 onChange={event => { setEmail(event.target.value); setEmailError(''); setError(''); }} required/>
             </div>
-            <small className="rdr-login-v2__field-error rdr-login-v2__field-error--reserved"
+            <small className={`rdr-login-v2__field-error rdr-login-v2__field-error--reserved${emailError ? "" : " is-empty"}`}
               id={`${id}-error`}>{emailError || '\u00a0'}</small>
           </div>
         </div>
