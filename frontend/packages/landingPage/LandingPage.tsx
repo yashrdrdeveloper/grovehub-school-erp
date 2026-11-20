@@ -24,7 +24,7 @@ const EnquiryLink = ({className,children,onClick}:{
   className?:string;children:ReactNode;onClick?:()=>void;
 }) => {
   const openEnquiry=useContext(EnquiryActionContext);
-  return <EnquiryLink className={className} data-rdr-enquiry-action="true"
+  return <Link to="/admissions#enquiry" className={className} data-rdr-enquiry-action="true"
     onClick={event=>{
       onClick?.();
       if(event.defaultPrevented || event.button!==0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)return;
@@ -350,7 +350,7 @@ const HomePage = () => (
         <span className="rdr-eyebrow"><span className="rdr-eyebrow__dot"/> EST. 2006 · HALUHERA, REWARI</span>
         <h1>Where curious minds <em>find their way.</em></h1>
         <p>Welcome to Rao Deena Ram Vidya Vihar — a school community that believes in thoughtful learning, strong values and the potential of every child.</p>
-        <div className="rdr-hero__actions"><EnquiryLink className="rdr-btn rdr-btn--solid">Enquire for admissions <ArrowUpRight size={17}/></EnquiryLink><EnquiryLink className="rdr-btn rdr-btn--text" to="/about">Get to know us <ArrowRight size={17}/></EnquiryLink></div>
+        <div className="rdr-hero__actions"><EnquiryLink className="rdr-btn rdr-btn--solid">Enquire for admissions <ArrowUpRight size={17}/></EnquiryLink><Link className="rdr-btn rdr-btn--text" to="/about">Get to know us <ArrowRight size={17}/></Link></div>
         <div className="rdr-hero__meta"><span><School size={17}/> CBSE affiliated</span><span><GraduationCap size={17}/> Senior Secondary</span><span><MapPin size={17}/> Rewari, Haryana</span></div>
       </div>
       <PhotoCollage/>
