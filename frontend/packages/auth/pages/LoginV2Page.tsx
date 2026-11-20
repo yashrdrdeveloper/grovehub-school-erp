@@ -1,8 +1,6 @@
 import { useId, useState, type FormEvent } from 'react';
-import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react';
+import { AlertCircle, ArrowRight, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-
-import { ApiError } from '@Business/api';
 
 import { useAuth } from '../core/providers/AuthProvider';
 
@@ -36,15 +34,15 @@ export const LoginV2Page = () => {
     try{
       await signIn(normalizedEmail,password);
       navigate('/dashboard',{replace:true});
-    }catch(failure){
-      setError(failure instanceof ApiError?failure.message:'Unable to sign in. Please try again.');
+    }catch{
+      setError('The email or password is incorrect. Please check your details and try again.');
     }finally{
       setBusy(false);
     }
   };
 
   return <LoginLayout title="Welcome back." description="Sign in to continue to your RDR School workspace.">
-          <form className="rdr-login-v2__form" onSubmit={event=>void submit(event)} noValidate>
+          <form className="rdr-login-v2__form rdr-login-v2__form--signin" onSubmit={event=>void submit(event)} noValidate>
             <div className="rdr-login-v2__field">
               <label htmlFor={`${fieldId}-email`}>Email address</label>
               <div className="rdr-login-v2__input-shell">
@@ -87,9 +85,15 @@ export const LoginV2Page = () => {
               <small className="rdr-login-v2__field-error rdr-login-v2__field-error--reserved" id={`${fieldId}-password-error`}>{fieldErrors.password || '\u00a0'}</small>
             </div>
 
-            <div className="rdr-login-v2__feedback-slot" aria-live="polite">{error&&<p className="rdr-login-v2__error" role="alert">{error}</p>}</div>
+            <div className="rdr-login-v2__feedback-slot rdr-login-v2__feedback-slot--signin" aria-live="polite">
+              {error && <div className="rdr-login-v2__auth-error" role="alert">
+                <AlertCircle size={16} aria-hidden="true"/>
+                <span><strong>Unable to sign in</strong><small>{error}</small></span>
+              </div>}
+            </div>
             <button type="submit" className="rdr-login-v2__submit" disabled={busy}>
-              <span>{busy?'Signing in…':'Sign in to workspace'}</span><ArrowRight size={19}/>
+              <span>{busy?'Signing in…':'Sign in'}</span>
+              {busy?<LoaderCircle className="rdr-login-v2__spinner" size={19} aria-hidden="true"/>:<ArrowRight size={19} aria-hidden="true"/>}
             </button>
           </form>
   </LoginLayout>;
