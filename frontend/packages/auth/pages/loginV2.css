@@ -452,3 +452,68 @@
   .rdr-login-v2__input-shell,.rdr-login-v2__submit{transition:none}
   .rdr-login-v2__orbit{animation:none}
 }
+
+
+/* Soffit: gradient is confined to the existing visual side of /loginv2.
+   Preserve the real RDR School auth form, navigation and theme controls. */
+.rdr-login-v2 {
+  --v2-art-ink:#f6fffb;
+  --v2-art-muted:#d7f3ec;
+  --v2-art-accent:#a9f7d7;
+  --v2-art-border:rgba(220,255,241,.34);
+}
+.rdr-login-v2__visual,
+:root[data-theme="dark"] .rdr-login-v2__visual {
+  background:#062334;
+  color:#f6fffb;
+}
+.rdr-login-v2__visual::after,
+:root[data-theme="dark"] .rdr-login-v2__visual::after {
+  background:linear-gradient(180deg,rgba(1,24,35,.38) 0%,transparent 31%,rgba(2,27,37,.24) 55%,rgba(2,22,32,.67) 100%);
+}
+.rdr-login-v2__visual > .lv2-gradient {
+  position:absolute;
+  inset:0;
+  z-index:0;
+  display:block;
+  width:100%;
+  height:100%;
+  pointer-events:none!important;
+}
+.rdr-login-v2__visual-brand,
+.rdr-login-v2__visual-copy { z-index:2; }
+.rdr-login-v2__visual-brand strong,
+:root[data-theme="dark"] .rdr-login-v2__visual-brand strong {
+  color:#f6fffb;
+}
+.rdr-login-v2__visual-brand small,
+:root[data-theme="dark"] .rdr-login-v2__visual-brand small {
+  color:#d7f3ec;
+}
+.rdr-login-v2__visual-kicker,
+.rdr-login-v2__visual-copy h2 em,
+:root[data-theme="dark"] .rdr-login-v2__visual-kicker,
+:root[data-theme="dark"] .rdr-login-v2__visual-copy h2 em {
+  color:#a9f7d7;
+}
+.rdr-login-v2__visual-copy h2,
+:root[data-theme="dark"] .rdr-login-v2__visual-copy h2 { color:#f6fffb; }
+.rdr-login-v2__visual-copy p,
+.rdr-login-v2__visual-footer,
+:root[data-theme="dark"] .rdr-login-v2__visual-copy p,
+:root[data-theme="dark"] .rdr-login-v2__visual-footer { color:#d7f3ec; }
+.rdr-login-v2__visual-kicker>span,
+.rdr-login-v2__visual-footer i { background:#a9f7d7; }
+@media(max-width:720px) {
+  .rdr-login-v2__visual,
+  :root[data-theme="dark"] .rdr-login-v2__visual {
+    border-radius:0 0 18px 18px;
+  }
+  .rdr-login-v2__visual::after,
+  :root[data-theme="dark"] .rdr-login-v2__visual::after {
+    background:linear-gradient(90deg,rgba(2,22,32,.60),rgba(2,22,32,.08));
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .rdr-login-v2__visual > .lv2-gradient { transition:none; }
+}
