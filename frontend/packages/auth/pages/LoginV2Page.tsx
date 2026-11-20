@@ -82,10 +82,10 @@ export const LoginV2Page = () => {
                   {visible?<EyeOff size={19}/>:<Eye size={19}/>}
                 </button>
               </div>
-              <small className="rdr-login-v2__field-error rdr-login-v2__field-error--reserved" id={`${fieldId}-password-error`}>{fieldErrors.password || '\u00a0'}</small>
             </div>
 
             <div className="rdr-login-v2__feedback-slot rdr-login-v2__feedback-slot--signin" aria-live="polite">
+              {fieldErrors.password && <small className="rdr-login-v2__field-error" id={`${fieldId}-password-error`}>{fieldErrors.password}</small>}
               {error && <div className="rdr-login-v2__auth-error" role="alert">
                 <AlertCircle size={16} aria-hidden="true"/>
                 <span><strong>Unable to sign in</strong><small>{error}</small></span>
