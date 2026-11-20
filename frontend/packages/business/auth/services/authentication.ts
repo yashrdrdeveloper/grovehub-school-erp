@@ -25,6 +25,14 @@ export const authenticationApi = {
       method: 'POST',
       body: { email },
     }),
+  validateRecovery: (proof: string) =>
+    apiRequest<GrantResult>(`${PUBLIC}/recovery/validate`, {
+      headers: { Authorization: `Recovery ${proof}` },
+    }),
+  validateInvitation: (proof: string) =>
+    apiRequest<GrantResult>(`${PUBLIC}/invitations/validate`, {
+      headers: { Authorization: `Invitation ${proof}` },
+    }),
   exchangeRecovery: (proof: string) =>
     apiRequest<GrantResult>(`${PUBLIC}/recovery/exchange`, {
       method: 'POST',
