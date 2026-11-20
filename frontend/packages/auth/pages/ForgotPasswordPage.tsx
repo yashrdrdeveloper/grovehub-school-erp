@@ -79,7 +79,7 @@ export const ForgotPasswordPage = () => {
             <span className="rdr-auth-flow__notice-copy">
               <strong>{noticeSuccess ? 'Request received!' : emailChanged ? 'Email address updated' : 'Secure password reset'}</strong>
               <small>{noticeSuccess
-                ? 'If this address is eligible, your reset link is on its way.'
+                ? `If eligible, a password reset link will be sent to ${lastRequestedEmail}.`
                 : emailChanged
                   ? 'You can send a link to the corrected address once the countdown ends.'
                   : 'Enter your email to receive a secure password reset link.'}</small>
