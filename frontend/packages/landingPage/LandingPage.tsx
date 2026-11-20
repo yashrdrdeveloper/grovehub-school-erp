@@ -126,7 +126,7 @@ const SiteHeader = () => {
         <button className="rdr-mobile-nav__scrim" type="button" aria-label="Close menu" onClick={()=>setOpen(false)}/>
         <nav className="rdr-mobile-nav" id="rdr-mobile-navigation" aria-label="Mobile navigation">
           <div className="rdr-mobile-nav__top"><strong>Explore RDR School</strong><button type="button" onClick={()=>setOpen(false)} aria-label="Close menu"><X size={21}/></button></div>
-          {navItems.map(item=><Link key={item.to} to={item.to}>{item.label}<ArrowUpRight size={16}/></Link>)}
+          {navItems.map(item=><Link key={item.to} to={item.to} onClick={()=>setOpen(false)}>{item.label}<ArrowUpRight size={16}/></Link>)}
           <Link to="/about/director">Director's message <ArrowUpRight size={16}/></Link>
           <Link to="/about/principal">Principal's message <ArrowUpRight size={16}/></Link>
           <Link to="/contact">Contact & directions <ArrowUpRight size={16}/></Link>
