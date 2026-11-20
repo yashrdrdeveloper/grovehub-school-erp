@@ -680,3 +680,50 @@
   outline:2px solid var(--v2-navy);
   outline-offset:3px;
 }
+
+/* LoginV2 dark input refinement: cohesive charcoal fields */
+:root[data-theme="dark"] .rdr-login-v2__input-shell {
+  background:#1a1d24;
+  border:1px solid #343946;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
+  transition:border-color .16s ease,background-color .16s ease,box-shadow .16s ease;
+}
+:root[data-theme="dark"] .rdr-login-v2__input-shell:hover:not(:focus-within) {
+  border-color:#475065;
+  background:#1e222b;
+}
+:root[data-theme="dark"] .rdr-login-v2__input-shell > svg,
+:root[data-theme="dark"] .rdr-login-v2__visibility {
+  color:#a0abba;
+}
+:root[data-theme="dark"] .rdr-login-v2__input-shell input {
+  color:#f5f7fa;
+  background:transparent!important;
+  caret-color:#b9c7e9;
+}
+:root[data-theme="dark"] .rdr-login-v2__input-shell input::placeholder {
+  color:#929cad;
+  opacity:1;
+}
+:root[data-theme="dark"] .rdr-login-v2__input-shell:focus-within {
+  background:#1d222c;
+  border-color:#61769e;
+  box-shadow:0 0 0 3px rgba(76,97,143,.24),inset 0 1px 0 rgba(255,255,255,.04);
+}
+:root[data-theme="dark"] .rdr-login-v2__input-shell:focus-within > svg,
+:root[data-theme="dark"] .rdr-login-v2__input-shell:focus-within .rdr-login-v2__visibility {
+  color:#c6d5f5;
+}
+:root[data-theme="dark"] .rdr-login-v2__input-shell input:focus-visible {
+  outline:0;
+}
+:root[data-theme="dark"] .rdr-login-v2__visibility:hover {
+  background:#2a3040;
+  color:#e6edf9;
+}
+.rdr-login-v2__input-shell input:focus-visible {
+  outline:0;
+}
+@media(prefers-reduced-motion:reduce) {
+  :root[data-theme="dark"] .rdr-login-v2__input-shell {transition:none;}
+}
