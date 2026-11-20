@@ -201,10 +201,19 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
 
   const formVisible = view === 'ready' || view === 'saving';
   const title = invitation ? 'Set your password.' : 'Reset your password.';
+  const mobileTitle = formVisible
+    ? invitation ? 'Set password' : 'Reset password'
+    : view === 'missing' ? 'Link incomplete'
+    : view === 'expired' ? 'Link expired'
+    : view === 'unavailable' ? 'Link unavailable'
+    : view === 'success' ? invitation ? 'Account ready' : 'Password updated'
+    : view === 'attempts-exhausted' ? 'Setup unavailable'
+    : 'Checking your link';
   return <LoginLayout title={title} description={invitation
     ? 'Secure your new RDR School account.'
     : 'Choose a new password for your school workspace.'}
     mobileDescription={invitation ? 'Create a secure password.' : 'Choose a new password.'}
+    minimalMobile mobileTitle={mobileTitle}
     eyebrow={invitation ? 'WELCOME TO RDR SCHOOL' : 'SECURE ACCOUNT RECOVERY'}>
     <div className="rdr-recovery">
       {formVisible ? <form className="rdr-login-v2__form rdr-recovery__form" onSubmit={event => void submit(event)} noValidate>
