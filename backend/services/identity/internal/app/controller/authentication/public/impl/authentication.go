@@ -102,6 +102,27 @@ func (controller *Controller) exchange(writer http.ResponseWriter, request *http
 	})
 }
 
+
+func (controller *Controller) inspectProof(writer http.ResponseWriter, request *http.Request, prefix string, purpose string) {
+  writer.Header().Set("Cache-Control", "no-store")
+  rest.RunStruct(writer, request, rest.StructConfig[dto.EmptyRequest, dto.GrantResult]{
+    Fallback: definitions.Internal,
+    Service: func(ctx context.Context, _ dto.EmptyRequest) (rest.Result[dto.GrantResult], error) {
+      result, err := controller.service.InspectProof(ctx, controller.cookies.Proof(request, prefix), purpose)
+      if err != nil { return rest.Result[dto.GrantResult]{}, helpers.Map(err) }
+      return rest.OK(result), nil
+    },
+  })
+}
+
+func (controller *Controller) RecoveryValidate(writer http.ResponseWriter, request *http.Request) {
+  controller.inspectProof(writer, request, "Recovery", "recovery")
+}
+
+func (controller *Controller) InvitationValidate(writer http.ResponseWriter, request *http.Request) {
+  controller.inspectProof(writer, request, "Invitation", "invitation")
+}
+
 func (controller *Controller) RecoveryExchange(writer http.ResponseWriter, request *http.Request) {
 	controller.exchange(writer, request, "Recovery", "recovery", cookies.ResetCookie, "/identity/public/auth/reset-password")
 }
