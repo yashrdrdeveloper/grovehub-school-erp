@@ -26,6 +26,9 @@
     --phone-border:#d6e0ef;
     --phone-teal:#008b97;
     --phone-shade:#edf7ff;
+    /* Shared optical start for every auth form, regardless of field count.
+       Relative to viewport height instead of centering each form's own height. */
+    --phone-auth-top:clamp(.75rem,calc(50dvh - 12.75rem),18rem);
     box-sizing:border-box;
     display:block;width:100%;max-width:100%;min-width:0;
     height:100dvh;min-height:0;margin:0;padding:0;
@@ -116,14 +119,20 @@
   }
   .rdr-login-v2__content::-webkit-scrollbar {display:none}
   .rdr-login-v2__content::before {display:none!important}
+  /*
+   * Same form origin on Sign in, Forgot Password, Set Password and Reset
+   * Password. Different numbers of fields must not change heading position.
+   * On short screens the fluid offset shrinks and the content area scrolls.
+   */
   .rdr-login-v2__main,
   :root[data-theme="dark"] .rdr-login-v2__main,
   .rdr-login-v2__main:has(.rdr-recovery),
   .rdr-login-v2__main:has(.rdr-auth-flow--forgot) {
-    display:flex;flex:1 0 auto;flex-direction:column;
-    align-items:stretch;justify-content:center;
+    display:flex;flex:0 0 auto;flex-direction:column;
+    align-items:stretch;justify-content:flex-start;
     width:100%;max-width:26rem;min-width:0;min-height:0;
-    height:auto;margin:0 auto;padding:0 0 clamp(1rem,3dvh,2rem);
+    height:auto;margin:0 auto;
+    padding:var(--phone-auth-top) 0 clamp(1rem,3dvh,2rem);
     border:0;border-radius:0;background:transparent;
     box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;
   }
@@ -517,8 +526,13 @@
     margin:0;border:0;border-radius:0;
     padding-top:.65rem;padding-bottom:1rem;
   }
-  .rdr-login-v2__main {
-    flex:0 0 auto;justify-content:flex-start;padding-block:.5rem;
+  .rdr-login-v2__main,
+  :root[data-theme="dark"] .rdr-login-v2__main,
+  .rdr-login-v2__main:has(.rdr-recovery),
+  .rdr-login-v2__main:has(.rdr-auth-flow--forgot) {
+    flex:0 0 auto;justify-content:flex-start;
+    padding-top:var(--phone-auth-top);
+    padding-bottom:.75rem;
   }
   .rdr-login-v2__mobile-description {margin-bottom:1rem}
   .rdr-login-v2__mobile-signin-title {font-size:1.35rem}
