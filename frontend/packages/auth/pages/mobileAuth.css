@@ -1,8 +1,8 @@
 /*
  * GrooveHub / RDR School auth — mobile-only design system.
  * One source of truth. Desktop auth remains in loginV2.css.
- * Full-bleed school illustration and gradient, with a focused floating
- * credential card. All auth routes share one background and compact controls.
+ * Full-viewport authentication surface: the whole phone IS the auth page.
+ * No separate floating card or white bottom sheet. All routes share the background.
  */
 .rdr-login-v2__mobile-header,
 .rdr-auth-mobile-scene,
@@ -17,10 +17,10 @@
 @media (max-width:720px) {
   body:has(.rdr-login-v2),#root:has(.rdr-login-v2) {width:100%;max-width:100%;overflow-x:clip}
   .rdr-login-v2 {
-    --phone-ink:#092650;
-    --phone-muted:#586b83;
-    --phone-canvas:#f9fbff;
-    --phone-card:rgba(255,255,255,.965);
+    --phone-ink:#f8fcff;
+    --phone-muted:#c6e0eb;
+    --phone-canvas:#05284f;
+    --phone-card:transparent;
     --phone-input:#fff;
     --phone-border:#d6e0ef;
     --phone-teal:#008b97;
@@ -58,7 +58,9 @@
   }
   .rdr-login-v2__visual::after,
   :root[data-theme="dark"] .rdr-login-v2__visual::after {
-    background:linear-gradient(90deg,rgba(2,18,48,.2),transparent 72%);
+    background:linear-gradient(180deg,
+      rgba(2,18,48,.12) 0%,rgba(2,23,51,.26) 34%,
+      rgba(1,21,49,.55) 64%,rgba(1,23,45,.66) 100%);
     pointer-events:none;
   }
   .rdr-login-v2__visual-brand,
@@ -105,8 +107,8 @@
     flex:1 1 auto;flex-direction:column;
     width:100%;max-width:100%;min-width:0;min-height:0;
     height:100%;margin:0;
-    padding:clamp(14.2rem,34dvh,18rem) clamp(1.15rem,5vw,1.55rem)
-      max(2rem,env(safe-area-inset-bottom));
+    padding:clamp(12.5rem,30dvh,16.5rem) clamp(1.25rem,6vw,2rem)
+      max(1.35rem,env(safe-area-inset-bottom));
     border:0;border-radius:0;
     background:transparent;box-shadow:none;
     overflow-x:hidden;overflow-y:auto;
@@ -127,22 +129,19 @@
   :root[data-theme="dark"] .rdr-login-v2__main,
   .rdr-login-v2__main:has(.rdr-recovery),
   .rdr-login-v2__main:has(.rdr-auth-flow--forgot) {
-    display:flex;flex:0 0 auto;flex-direction:column;
-    align-items:stretch;justify-content:flex-start;
-    width:100%;max-width:24rem;min-width:0;min-height:0;
-    height:auto;margin:0 auto;padding:clamp(1.25rem,4dvh,1.8rem)
-      clamp(1.1rem,5vw,1.55rem) clamp(1.3rem,4dvh,1.8rem);
-    border:1px solid rgba(255,255,255,.75);border-radius:1.55rem;
-    background:var(--phone-card);
-    box-shadow:0 1.2rem 3rem rgba(0,24,53,.22),0 .2rem .6rem rgba(1,34,62,.08);
-    backdrop-filter:blur(1.1rem);-webkit-backdrop-filter:blur(1.1rem);
+    display:flex;flex:1 0 auto;flex-direction:column;
+    align-items:stretch;justify-content:center;
+    width:100%;max-width:26rem;min-width:0;min-height:0;
+    height:auto;margin:0 auto;padding:0 0 clamp(1rem,3dvh,2rem);
+    border:0;border-radius:0;background:transparent;
+    box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;
   }
   .rdr-login-v2__main::before {display:none!important}
   .rdr-login-v2__heading {display:none!important}
   .rdr-login-v2__mobile-signin-title {
     display:block;width:100%;min-width:0;
     margin:0 0 .65rem;padding:0;
-    color:var(--phone-ink);text-align:left;
+    color:#fff;text-align:left;
     font-size:clamp(1.45rem,5.9vw,1.72rem);
     line-height:1.2;font-weight:750;letter-spacing:-.04em;
     overflow-wrap:break-word;
@@ -150,11 +149,39 @@
   .rdr-login-v2__mobile-description {
     display:block;max-width:20rem;width:100%;
     margin:0 0 clamp(1.45rem,4dvh,2.05rem);padding:0;
-    color:var(--phone-muted);
+    color:#cde3ed;
     font-size:.78rem;font-weight:400;line-height:1.48;
     overflow-wrap:anywhere;
   }
   .rdr-login-v2__mobile-description:empty {display:none}
+  /* The gradient is the entire mobile page; the form belongs to it.
+     White labels and links remain readable without a floating surface. */
+  .rdr-login-v2__field > label,
+  .rdr-login-v2__password-label label,
+  .rdr-auth-flow--forgot .rdr-auth-flow__email-field > label,
+  .rdr-recovery__form .rdr-login-v2__field > label {
+    color:#ebf7fc;
+  }
+  .rdr-login-v2__forgot-mobile,
+  .rdr-auth-flow__back,
+  .rdr-recovery__back {
+    color:#b7f5ee!important;
+  }
+  .rdr-login-v2__input-shell,
+  .rdr-login-v2__form--signin>.rdr-login-v2__field .rdr-login-v2__input-shell,
+  .rdr-auth-flow--forgot .rdr-auth-flow__email-field .rdr-login-v2__input-shell,
+  .rdr-recovery__form .rdr-login-v2__input-shell {
+    border-color:rgba(233,247,255,.78);
+  }
+  .rdr-recovery__art-message,
+  .rdr-auth-flow__mobile-success p,
+  .rdr-auth-flow__notice-copy small {
+    color:#d0e7ef;
+  }
+  .rdr-recovery__mobile-status-title,
+  .rdr-auth-flow__mobile-success h3 {color:#fff;}
+  .rdr-recovery__remaining,.rdr-recovery__slow {color:#cde3ed}
+
 
   /* One consistent form primitive: dimensions never depend on fixed error slots. */
   .rdr-login-v2__form,
@@ -493,10 +520,12 @@
   .rdr-login-v2__content,
   :root[data-theme="dark"] .rdr-login-v2__content {
     margin:0;border:0;border-radius:0;
-    padding-top:clamp(7.7rem,22dvh,10rem);
-    padding-bottom:1.2rem;
+    padding-top:clamp(7rem,21dvh,9.5rem);
+    padding-bottom:1rem;
   }
-  .rdr-login-v2__main {padding-block:1rem}
+  .rdr-login-v2__main {
+    flex:0 0 auto;justify-content:flex-start;padding-block:.5rem;
+  }
   .rdr-login-v2__mobile-description {margin-bottom:1rem}
   .rdr-login-v2__mobile-signin-title {font-size:1.35rem}
   .rdr-auth-mobile-status-art {width:5rem;height:4.5rem;margin-bottom:0}
@@ -512,10 +541,10 @@
 @media (max-width:720px) {
   :root[data-theme="dark"] .rdr-login-v2 {
     --phone-ink:#f4f8ff;
-    --phone-muted:#b7c8dd;
-    --phone-canvas:#131f2d;
-    --phone-card:rgba(21,35,53,.96);
-    --phone-input:#263449;
+    --phone-muted:#bdd4e4;
+    --phone-canvas:#091c33;
+    --phone-card:transparent;
+    --phone-input:#253750;
     --phone-border:#42526d;
     --phone-teal:#69dede;
     --phone-shade:#253a52;
@@ -528,9 +557,7 @@
     background:transparent;
   }
   :root[data-theme="dark"] .rdr-login-v2__main {
-    background:var(--phone-card);
-    border-color:rgba(152,201,217,.16);
-    box-shadow:0 1.2rem 3rem rgba(0,9,26,.42);
+    background:transparent;border:0;border-radius:0;box-shadow:none;
   }
   :root[data-theme="dark"] .rdr-login-v2__input-shell,
   :root[data-theme="dark"] .rdr-login-v2__form--signin>.rdr-login-v2__field .rdr-login-v2__input-shell,
