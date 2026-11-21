@@ -52,7 +52,7 @@ export const LoginV2Page = () => {
               <div className="rdr-login-v2__input-shell">
                 <Mail size={18} aria-hidden="true"/>
                 <input id={`${fieldId}-email`} type="email" inputMode="email"
-                  autoComplete="username" placeholder="you@school.edu" value={email}
+                  autoComplete="username" placeholder="Email" value={email}
                   aria-invalid={Boolean(fieldErrors.email)}
                   aria-describedby={fieldErrors.email?`${fieldId}-email-error`:undefined}
                   onChange={event=>{
@@ -72,7 +72,7 @@ export const LoginV2Page = () => {
               <div className="rdr-login-v2__input-shell">
                 <LockKeyhole size={18} aria-hidden="true"/>
                 <input id={`${fieldId}-password`} type={visible?'text':'password'}
-                  autoComplete="current-password" placeholder="Enter your password"
+                  autoComplete="current-password" placeholder="Password"
                   value={password} aria-invalid={Boolean(fieldErrors.password)}
                   aria-describedby={fieldErrors.password?`${fieldId}-password-error`:undefined}
                   onChange={event=>{
@@ -95,11 +95,11 @@ export const LoginV2Page = () => {
                 <span>{error}</span>
               </p>}
             </div>
+            <Link className="rdr-login-v2__forgot-mobile" to="/forgot-password">Forgot password?</Link>
             <button type="submit" className="rdr-login-v2__submit" disabled={busy}>
               <span>{busy?'Signing in…':'Sign in'}</span>
               {busy?<LoaderCircle className="rdr-login-v2__spinner" size={19} aria-hidden="true"/>:<ArrowRight size={19} aria-hidden="true"/>}
             </button>
-            <Link className="rdr-login-v2__forgot-mobile" to="/forgot-password">Forgot password?</Link>
           </form>
   </LoginLayout>;
 };
