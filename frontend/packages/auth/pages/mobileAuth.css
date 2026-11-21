@@ -1,8 +1,8 @@
 /*
  * GrooveHub / RDR School auth — mobile-only design system.
  * One source of truth. Desktop auth remains in loginV2.css.
- * Full-viewport card-colour authentication surface. Navy/teal is confined
- * to the branded school header; no full-page blue or floating form card.
+ * One continuous card-coloured authentication surface on mobile.
+ * No gradient header, illustration backdrop, bottom sheet, or floating card.
  */
 .rdr-login-v2__mobile-header,
 .rdr-auth-mobile-scene,
@@ -45,32 +45,23 @@
   :root[data-theme="dark"] .rdr-login-v2__visual {
     display:block;position:relative;isolation:isolate;
     inset:auto;z-index:0;
-    flex:0 0 clamp(10rem,23dvh,12.5rem);
+    flex:0 0 calc(env(safe-area-inset-top) + clamp(5.25rem,11dvh,6.5rem));
     width:100%;height:auto;min-width:0;min-height:0;
     padding:0;margin:0;overflow:hidden;
     border:0;border-radius:0;
-    background:
-      radial-gradient(ellipse at 95% 62%,rgba(37,207,190,.28) 0%,transparent 46%),
-      radial-gradient(ellipse at 12% 85%,rgba(5,26,74,.42) 0%,transparent 55%),
-      linear-gradient(148deg,#03224b 0%,#07527b 54%,#00a5a2 100%);
+    background:var(--phone-canvas);
   }
   .rdr-login-v2__visual > .lv2-gradient {
-    opacity:.30;mix-blend-mode:screen;
-    pointer-events:none;
+    display:none!important;
   }
   .rdr-login-v2__visual::after,
   :root[data-theme="dark"] .rdr-login-v2__visual::after {
-    background:linear-gradient(90deg,rgba(2,18,48,.18),rgba(2,23,51,.02) 78%);
-    pointer-events:none;
+    display:none!important;
   }
   .rdr-login-v2__visual-brand,
   .rdr-login-v2__visual-copy {display:none!important}
   .rdr-auth-mobile-scene {
-    display:block;position:absolute;
-    top:auto;right:-.5rem;bottom:-.6rem;left:auto;
-    width:min(92%,24rem);height:auto;max-width:none;min-width:0;
-    z-index:2;pointer-events:none;overflow:visible;
-    filter:drop-shadow(0 .5rem .8rem rgba(1,24,47,.08));
+    display:none!important;
   }
   .rdr-login-v2__mobile-header {
     display:block;position:absolute;inset:0;
@@ -87,15 +78,16 @@
     display:block;flex:none;
     width:2.85rem;height:2.85rem;
     margin:0;overflow:hidden;
-    border-radius:.82rem;background:#fff;
-    box-shadow:0 .55rem 1.15rem rgba(0,20,43,.16);
+    border:1px solid var(--phone-border);
+    border-radius:.82rem;background:var(--phone-input);
+    box-shadow:0 .2rem .65rem rgba(26,45,75,.07);
   }
   .rdr-auth-mobile-mark svg {display:block;width:100%;height:100%}
   .rdr-login-v2__mobile-school-name {
     display:block;width:100%;margin:0;padding:0;
     font-size:clamp(.95rem,4.35vw,1.15rem);font-weight:680;line-height:1.22;
-    letter-spacing:-.025em;color:#fff;white-space:normal;
-    text-shadow:0 .12rem .3rem rgba(0,12,31,.13);
+    letter-spacing:-.025em;color:var(--phone-ink);white-space:normal;
+    text-shadow:none;
   }
   /* Phone appearance follows the OS. No theme toggle or control overlay. */
   .rdr-login-v2__mobile-appearance {display:none!important}
@@ -106,17 +98,16 @@
     display:flex;position:relative;z-index:4;
     flex:1 1 0;flex-direction:column;
     width:100%;max-width:100%;min-width:0;min-height:0;
-    height:auto;margin:-1.1rem 0 0;
-    padding:clamp(1.05rem,2.5dvh,1.55rem) clamp(1.25rem,6vw,2rem)
+    height:auto;margin:0;
+    padding:clamp(.5rem,1.75dvh,1rem) clamp(1.25rem,6vw,2rem)
       max(1.35rem,env(safe-area-inset-bottom));
-    border:0;border-radius:1.55rem 1.55rem 0 0;
+    border:0;border-radius:0;
     background:var(--phone-canvas);box-shadow:none;
     overflow-x:hidden;overflow-y:auto;
     overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
     scrollbar-width:none;
   }
-  /* Confirmation, success and expired-link screens use the clean wave-only
-     header from the lower row of the approved reference. */
+  /* All auth states share the same single-colour surface. */
   .rdr-login-v2:has(.rdr-recovery__state) .rdr-auth-mobile-scene__school,
   .rdr-login-v2:has(.rdr-auth-flow--sent) .rdr-auth-mobile-scene__school,
   .rdr-login-v2:has(.rdr-recovery__state) .rdr-auth-mobile-scene__trees,
@@ -512,7 +503,7 @@
 @media (max-width:720px) and (max-height:710px) {
   .rdr-login-v2__visual,
   :root[data-theme="dark"] .rdr-login-v2__visual {
-    flex-basis:clamp(7.1rem,17dvh,9.5rem);
+    flex-basis:calc(env(safe-area-inset-top) + 4.5rem);
   }
   .rdr-login-v2__mobile-identity {
     top:calc(env(safe-area-inset-top) + .6rem);left:1rem;
@@ -520,11 +511,11 @@
   }
   .rdr-auth-mobile-mark {width:2.5rem;height:2.5rem;border-radius:.7rem}
   .rdr-login-v2__mobile-school-name {font-size:1rem}
-  .rdr-auth-mobile-scene {top:auto;bottom:-.45rem;width:75%;right:-1.3rem}
+  .rdr-auth-mobile-scene {display:none!important}
   .rdr-login-v2__content,
   :root[data-theme="dark"] .rdr-login-v2__content {
-    margin:-.8rem 0 0;border:0;border-radius:1.3rem 1.3rem 0 0;
-    padding-top:.9rem;padding-bottom:1rem;
+    margin:0;border:0;border-radius:0;
+    padding-top:.65rem;padding-bottom:1rem;
   }
   .rdr-login-v2__main {
     flex:0 0 auto;justify-content:flex-start;padding-block:.5rem;
