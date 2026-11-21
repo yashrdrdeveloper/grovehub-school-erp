@@ -59,6 +59,7 @@ describe('password link flows',()=>{
     expect(screen.getByTestId('mobile-recovery-title').textContent).toBe(purpose === 'invitation' ? 'Set password' : 'Reset password');
     expect(screen.queryByLabelText('New password')).toBeNull();
     expect(screen.getByText(new RegExp(helpText, 'i'))).toBeTruthy();
+    if (purpose === 'recovery') expect(screen.getByRole('link', {name:/Request new link/i}).getAttribute('href')).toBe('/forgot-password');
     for (const mock of [
       validateInvitation, exchangeInvitation, setupStatus,
       validateRecovery, exchangeRecovery, resetGrantStatus,
