@@ -23,7 +23,7 @@ export const AuthMobileSchoolScene = () => (
     </defs>
     <path d="M0 192C57 175 92 191 136 178S228 174 274 187 347 179 393 161V250H0Z" fill="#063768" opacity=".72"/>
     <path d="M0 217C65 189 98 205 146 190S230 191 281 197 352 177 393 174V250H0Z" fill="#085987" opacity=".78"/>
-    <g className="rdr-auth-mobile-scene__school">
+    <g className="rdr-auth-mobile-scene__school" transform="translate(-150 -50) scale(1.35)">
       <ellipse cx="343" cy="200" rx="65" ry="8" fill="#013D63" opacity=".3"/>
       <path d="M339 120L390 130V184L339 187Z" fill="#126E9A" stroke="#77CDE4" strokeWidth="1.5"/>
       <path d="M339 120L353 105 393 117V132Z" fill="#0A5986" stroke="#91E3F0" strokeWidth="1.5"/>
