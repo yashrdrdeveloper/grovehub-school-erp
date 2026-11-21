@@ -30,7 +30,7 @@ export const LOGIN_FIELDS = Object.freeze({
   }),
 });
 
-export const LOGIN_FIELD_ORDER: readonly LoginField[] = Object.freeze(['email', 'password']);
+export const LOGIN_FIELD_ORDER = Object.freeze(['email', 'password'] as const satisfies readonly LoginField[]);
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
