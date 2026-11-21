@@ -33,9 +33,36 @@ export const LoginLayout = ({ children, title, description, mobileDescription, m
       <div className="rdr-login-v2__frame">
         <section className="rdr-login-v2__visual" aria-label="RDR School abstract gradient artwork">
           <SoffitGradient/>
+          <svg className="rdr-login-v2__mobile-school-art" viewBox="0 0 360 210" fill="none" aria-hidden="true" focusable="false">
+            <defs>
+              <linearGradient id="rdr-hill" x1="72" y1="180" x2="328" y2="212" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#057CA0"/><stop offset="1" stopColor="#22C5B8"/>
+              </linearGradient>
+              <linearGradient id="rdr-school" x1="220" y1="88" x2="290" y2="168" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#D8F8FF"/><stop offset="1" stopColor="#59B9D6"/>
+              </linearGradient>
+            </defs>
+            <path d="M0 174C54 154 79 177 117 161S191 148 229 157 304 143 360 128V210H0Z" fill="#06658A" opacity=".62"/>
+            <path d="M0 197C61 168 98 200 157 174S264 157 360 152V210H0Z" fill="url(#rdr-hill)"/>
+            <g opacity=".9">
+              <circle cx="212" cy="152" r="23" fill="#067D94"/>
+              <circle cx="190" cy="160" r="17" fill="#0A8A9C"/>
+              <circle cx="331" cy="146" r="20" fill="#18B5B0"/>
+            </g>
+            <g stroke="#6ED5ED" strokeWidth="2" strokeLinejoin="round">
+              <path d="M232 94L272 59 313 94Z" fill="#B7EDF8"/>
+              <path d="M237 94V157H308V94Z" fill="url(#rdr-school)"/>
+              <path d="M246 100V154M259 100V154M272 100V154M285 100V154M298 100V154" stroke="#E8FDFF" strokeWidth="7"/>
+              <path d="M238 157H308M235 162H312M232 167H315" stroke="#B9F1FA" strokeWidth="4"/>
+              <path d="M265 157V128Q272 117 280 128V157" fill="#074E75" stroke="#DDFBFF" strokeWidth="3"/>
+              <path d="M272 60V43M272 43L291 48 272 54" stroke="#DDFBFF" strokeWidth="2.5"/>
+            </g>
+            <path d="M0 204C77 177 118 210 194 184S308 186 360 171V210H0Z" fill="#20B6B5" opacity=".9"/>
+          </svg>
           <div className="rdr-login-v2__mobile-header">
             <div className="rdr-login-v2__mobile-identity" aria-label="RDR School">
               <SchoolMonogram />
+              <span className="rdr-login-v2__mobile-school-name">RDR School</span>
             </div>
             <div className="rdr-login-v2__mobile-appearance" role="group" aria-label="Appearance">
               {appearanceOptions.map(({ value, label, Icon }) => (
@@ -80,7 +107,7 @@ export const LoginLayout = ({ children, title, description, mobileDescription, m
               <p className="rdr-login-v2__description-desktop">{description}</p>
               <p className="rdr-login-v2__description-mobile">{mobileDescription ?? description}</p>
             </div>
-            {minimalMobile && <div className="rdr-login-v2__mobile-signin-title">{mobileTitle}</div>}
+            {minimalMobile && <h2 className="rdr-login-v2__mobile-signin-title">{mobileTitle}</h2>}
             {children}
             <div className="rdr-login-v2__closing">
               <span className="rdr-login-v2__closing-rule"/>
