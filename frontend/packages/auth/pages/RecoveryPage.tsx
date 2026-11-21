@@ -227,7 +227,7 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
             <div className="rdr-login-v2__input-shell">
               <LockKeyhole size={18} aria-hidden="true"/>
               <input id={`${id}-password`} type={visible ? 'text' : 'password'} autoComplete="new-password"
-                placeholder="At least 12 characters" value={password} minLength={12} disabled={view === 'saving'}
+                placeholder="New password" value={password} minLength={12} disabled={view === 'saving'}
                 aria-invalid={Boolean(fieldErrors.password)}
                 aria-describedby={fieldErrors.password ? `${id}-password-error` : undefined}
                 onChange={event => { setPassword(event.target.value);setFieldErrors(e => ({...e,password:undefined})); }} required/>
@@ -243,10 +243,15 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
             <div className="rdr-login-v2__input-shell">
               <KeyRound size={18} aria-hidden="true"/>
               <input id={`${id}-confirmation`} type={visible ? 'text' : 'password'} autoComplete="new-password"
-                placeholder="Re-enter your password" value={confirmation} disabled={view === 'saving'}
+                placeholder="Confirm new password" value={confirmation} disabled={view === 'saving'}
                 aria-invalid={Boolean(fieldErrors.confirmation)}
                 aria-describedby={fieldErrors.confirmation ? `${id}-confirmation-error` : undefined}
                 onChange={event => { setConfirmation(event.target.value);setFieldErrors(e => ({...e,confirmation:undefined})); }} required/>
+              <button type="button" className="rdr-login-v2__visibility"
+                aria-label={visible ? 'Hide confirmation password' : 'Show confirmation password'}
+                onClick={() => setVisible(current => !current)} disabled={view === 'saving'}>
+                {visible ? <EyeOff size={19}/> : <Eye size={19}/>}
+              </button>
             </div>
             <small id={`${id}-confirmation-error`} className={`rdr-login-v2__field-error rdr-login-v2__field-error--reserved${fieldErrors.confirmation ? "" : " is-empty"}`}>{fieldErrors.confirmation || '\u00a0'}</small>
           </div>
