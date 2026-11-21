@@ -105,6 +105,14 @@
     overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
     scrollbar-width:none;
   }
+  /* Confirmation, success and expired-link screens use the clean wave-only
+     header from the lower row of the approved reference. */
+  .rdr-login-v2:has(.rdr-recovery__state) .rdr-auth-mobile-scene__school,
+  .rdr-login-v2:has(.rdr-auth-flow--sent) .rdr-auth-mobile-scene__school,
+  .rdr-login-v2:has(.rdr-recovery__state) .rdr-auth-mobile-scene__trees,
+  .rdr-login-v2:has(.rdr-auth-flow--sent) .rdr-auth-mobile-scene__trees {
+    display:none;
+  }
   .rdr-login-v2__content::-webkit-scrollbar {display:none}
   .rdr-login-v2__content::before {display:none!important}
   .rdr-login-v2__main,
@@ -129,7 +137,7 @@
   }
   .rdr-login-v2__mobile-description {
     display:block;max-width:20rem;width:100%;
-    margin:0 0 clamp(1.2rem,3.3dvh,1.8rem);padding:0;
+    margin:0 0 clamp(1.45rem,4dvh,2.05rem);padding:0;
     color:var(--phone-muted);
     font-size:.78rem;font-weight:400;line-height:1.48;
     overflow-wrap:anywhere;
@@ -160,7 +168,7 @@
     margin:0!important;padding:0;text-align:left;
   }
   .rdr-login-v2__form--signin>.rdr-login-v2__field+.rdr-login-v2__field {
-    margin-top:.75rem!important;
+    margin-top:1rem!important;
   }
   .rdr-recovery__fields,
   .rdr-auth-flow__fields {
@@ -281,13 +289,13 @@
   }
   .rdr-login-v2__forgot-mobile {
     display:block;align-self:flex-end;width:fit-content;
-    margin:.55rem 0 .15rem;padding:.45rem 0;
+    margin:1rem 0 .25rem;padding:.45rem 0;
     color:var(--phone-teal)!important;
     font-size:.75rem;line-height:1.3;font-weight:550;
     text-decoration:none;text-align:right;
   }
   .rdr-login-v2__forgot-mobile:hover {text-decoration:underline}
-  .rdr-login-v2__form--signin>.rdr-login-v2__submit {margin-top:.9rem}
+  .rdr-login-v2__form--signin>.rdr-login-v2__submit {margin-top:1.25rem}
 
   /* Forgot password: one email input, slim actions and a real sent state. */
   .rdr-auth-flow--forgot .rdr-auth-flow__fields {gap:0}
