@@ -206,7 +206,7 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
   return <LoginLayout title={title} description={invitation
     ? 'Secure your new RDR School account.'
     : 'Choose a new password for your school workspace.'}
-    mobileDescription={invitation ? 'Create a secure password.' : 'Choose a new password.'}
+    mobileDescription={formVisible ? invitation ? 'Create a secure password to activate your account.' : 'Choose a new password for your account.' : ''}
     minimalMobile mobileTitle={mobileTitle}
     eyebrow={invitation ? 'WELCOME TO RDR SCHOOL' : 'SECURE ACCOUNT RECOVERY'}>
     <div className="rdr-recovery">
@@ -254,7 +254,7 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
         </div>
       </form> : <div className="rdr-recovery__state">
         <RecoveryArtwork state={view} invitation={invitation}/>
-        {view === 'checking' && <p className="rdr-recovery__slow" role="status">{slow ? 'Still checking. This may take a moment…' : 'Verifying your invitation securely…'}</p>}
+        {view === 'checking' && <p className="rdr-recovery__slow" role="status">{slow ? 'Still checking. This may take a moment…' : invitation ? 'Verifying your invitation securely…' : 'Verifying your reset link securely…'}</p>}
         {view === 'success' && <Link className="rdr-login-v2__submit rdr-recovery__state-button" to="/login">Go to login <ArrowRight size={18}/></Link>}
         {view === 'unavailable' && <button className="rdr-login-v2__submit rdr-recovery__state-button" type="button"
           onClick={() => {
@@ -276,6 +276,7 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
               }
             }
           }}>Try checking again <ArrowRight size={18}/></button>}
+        {!invitation && (view === 'missing' || view === 'expired') && <Link className="rdr-login-v2__submit rdr-recovery__state-button" to="/forgot-password">Request new link <ArrowRight size={18}/></Link>}
         {(view === 'missing' || view === 'expired' || view === 'attempts-exhausted') && <Link className="rdr-recovery__back" to="/login">
           <ArrowLeft size={16}/> Return to login
         </Link>}
