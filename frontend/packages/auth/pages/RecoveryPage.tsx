@@ -201,14 +201,8 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
 
   const formVisible = view === 'ready' || view === 'saving';
   const title = invitation ? 'Set your password.' : 'Reset your password.';
-  const mobileTitle = formVisible
-    ? invitation ? 'Set password' : 'Reset password'
-    : view === 'missing' ? 'Link incomplete'
-    : view === 'expired' ? 'Link expired'
-    : view === 'unavailable' ? 'Link unavailable'
-    : view === 'success' ? invitation ? 'Account ready' : 'Password updated'
-    : view === 'attempts-exhausted' ? 'Setup unavailable'
-    : 'Checking your link';
+  // Keep the page identity stable throughout validation, errors and success.
+  const mobileTitle = invitation ? 'Set password' : 'Reset password';
   return <LoginLayout title={title} description={invitation
     ? 'Secure your new RDR School account.'
     : 'Choose a new password for your school workspace.'}
