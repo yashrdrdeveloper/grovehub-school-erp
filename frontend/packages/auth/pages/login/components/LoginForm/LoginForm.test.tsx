@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import type { FormEvent } from 'react';
 
 import { LoginForm } from './LoginForm';
 import type { LoginFormProps } from '../../types';
@@ -6,7 +7,7 @@ import type { LoginFormProps } from '../../types';
 const onEmailChange = jest.fn();
 const onPasswordChange = jest.fn();
 const onTogglePassword = jest.fn();
-const onSubmit = jest.fn((event: React.FormEvent<HTMLFormElement>) => event.preventDefault());
+const onSubmit = jest.fn((event: FormEvent<HTMLFormElement>) => event.preventDefault());
 
 const props: LoginFormProps = {
   fieldId: 'login',
