@@ -30,7 +30,7 @@ jest.mock('@Business/accounts',()=>({
   accountsApi:{setup:(password:string)=>setup(password),setupStatus:()=>setupStatus()},
 }));
 jest.mock('./LoginLayout',()=>({
-  LoginLayout:({children,title}:{children:ReactNode;title:string})=><main><h1>{title}</h1>{children}</main>,
+  LoginLayout:({children,title,mobileTitle}:{children:ReactNode;title:string;mobileTitle?:string})=><main><h1>{title}</h1>{mobileTitle && <span data-testid="mobile-recovery-title">{mobileTitle}</span>}{children}</main>,
 }));
 
 const renderPage = (purpose:'invitation'|'recovery',proof?:string) => {
@@ -56,6 +56,7 @@ describe('password link flows',()=>{
   ] as const)('shows missing-link state without calling APIs for %s', async (purpose, helpText) => {
     renderPage(purpose);
     expect(await screen.findByText('This link looks incomplete')).toBeTruthy();
+    expect(screen.getByTestId('mobile-recovery-title').textContent).toBe(purpose === 'invitation' ? 'Set password' : 'Reset password');
     expect(screen.queryByLabelText('New password')).toBeNull();
     expect(screen.getByText(new RegExp(helpText, 'i'))).toBeTruthy();
     for (const mock of [
@@ -136,6 +137,7 @@ describe('password link flows',()=>{
     fireEvent.change(screen.getByLabelText('Confirm password'),{target:{value:'a-strong-password-123'}});
     fireEvent.click(screen.getByRole('button',{name:'Activate account'}));
     expect(await screen.findByText('Welcome to RDR School!')).toBeTruthy();
+    expect(screen.getByTestId('mobile-recovery-title').textContent).toBe('Set password');
     expect(screen.getByRole('link',{name:/Go to login/i})).toBeTruthy();
   });
 
