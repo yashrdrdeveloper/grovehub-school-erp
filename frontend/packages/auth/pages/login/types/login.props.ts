@@ -17,3 +17,9 @@ export interface LoginFormProps extends LoginProps {
   readonly passwordLabelAction?: ReactNode;
   readonly afterFields?: ReactNode;
 }
+
+/** Pure page composition props supplied by LoginContainer. */
+export interface LoginPageProps {
+  readonly controls: LoginProps;
+  readonly isMobile: boolean;
+}
