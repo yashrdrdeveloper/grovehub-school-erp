@@ -1,2 +1,3 @@
 export { Login } from './Login';
-export type { LoginProps, LoginState, LoginFieldErrors } from './types';
+export { LoginContainer } from './LoginContainer';
+export type { LoginProps, LoginPageProps, LoginState, LoginFieldErrors } from './types';
