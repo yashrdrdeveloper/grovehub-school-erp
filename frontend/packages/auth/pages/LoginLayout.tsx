@@ -107,7 +107,7 @@ export const LoginLayout = ({ children, title, description, mobileDescription, m
               <p className="rdr-login-v2__description-desktop">{description}</p>
               <p className="rdr-login-v2__description-mobile">{mobileDescription ?? description}</p>
             </div>
-            {minimalMobile && <h2 className="rdr-login-v2__mobile-signin-title">{mobileTitle}</h2>}
+            {minimalMobile && <><h2 className="rdr-login-v2__mobile-signin-title">{mobileTitle}</h2><p className="rdr-login-v2__mobile-description">{mobileDescription ?? description}</p></>}
             {children}
             <div className="rdr-login-v2__closing">
               <span className="rdr-login-v2__closing-rule"/>
