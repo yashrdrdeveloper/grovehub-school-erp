@@ -57,8 +57,8 @@ describe('useLogin', () => {
     act(() => {
       result.current.onEmailChange('user@school.edu');
       result.current.onPasswordChange('wrong');
-      result.current.onSubmit(submitEvent());
     });
+    act(() => result.current.onSubmit(submitEvent()));
     await waitFor(() => expect(result.current.state.errorMessage).toContain('Incorrect email or password'));
     act(() => result.current.onPasswordChange('new-secret'));
     expect(result.current.state.errorMessage).toBe('');
