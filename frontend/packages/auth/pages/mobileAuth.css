@@ -1,27 +1,25 @@
-/* Phone-only RDR authentication design.
-   Desktop styles live in loginV2.css. Deliberately one mobile stylesheet,
-   rather than accumulating overrides of overrides.
-   The shared SoffitGradient canvas remains animated in the header. */
+/* RDR authentication — shared phone design.
+   All mobile routes share one curved surface and school illustration.
+   Desktop remains owned by loginV2.css. */
 .rdr-login-v2__mobile-header,
+.rdr-login-v2__mobile-school-art,
 .rdr-login-v2__mobile-appearance,
 .rdr-login-v2__mobile-signin-title,
-.rdr-login-v2__description-mobile {display:none}
+.rdr-login-v2__description-mobile,
+.rdr-login-v2__forgot-mobile {display:none}
 
 @media (max-width:720px) {
-  body:has(.rdr-login-v2),#root:has(.rdr-login-v2) {
-    width:100%;max-width:100%;min-width:0;overflow-x:clip;
-  }
+  body:has(.rdr-login-v2), #root:has(.rdr-login-v2) {width:100%;max-width:100%;overflow-x:clip}
   .rdr-login-v2 {
-    --phone-canvas:#f7f8fb;
-    --phone-control:#fff;
-    --phone-ink:#202737;
-    --phone-muted:#697487;
-    --phone-line:#dfe4eb;
-    --phone-primary:#1f2a44;
-    --phone-error:#be435c;
-    display:block;width:100%;max-width:100%;height:100dvh;
-    min-height:0;overflow:hidden;color:var(--phone-ink);
-    background:var(--phone-canvas);
+    --phone-ink:#15294a;
+    --phone-muted:#68768c;
+    --phone-border:#d9e3f0;
+    --phone-input:#fdfefe;
+    --phone-canvas:#f8faff;
+    --phone-cta:#073d67;
+    display:block;width:100%;max-width:100%;min-width:0;
+    height:100dvh;min-height:0;overflow:hidden;
+    color:var(--phone-ink);background:var(--phone-canvas);
   }
   .rdr-login-v2__frame {
     display:flex;flex-direction:column;
@@ -31,334 +29,365 @@
   }
   .rdr-login-v2__visual,
   :root[data-theme="dark"] .rdr-login-v2__visual {
-    position:relative;isolation:isolate;display:block;
-    flex:0 0 clamp(8.25rem,20dvh,10.75rem);
+    display:block;position:relative;isolation:isolate;
+    flex:0 0 clamp(12.5rem,29dvh,15rem);
     width:100%;height:auto;min-height:0;
-    border-radius:0;overflow:hidden;background:#082537;
+    border:0;border-radius:0;overflow:hidden;
+    background:linear-gradient(120deg,#06254b,#0d567d 70%,#04adad);
   }
-  .rdr-login-v2__visual > .lv2-gradient {
-    opacity:1;mix-blend-mode:normal;
-  }
+  .rdr-login-v2__visual > .lv2-gradient {opacity:.72;mix-blend-mode:screen}
   .rdr-login-v2__visual::after,
   :root[data-theme="dark"] .rdr-login-v2__visual::after {
-    background:linear-gradient(90deg,rgba(3,20,35,.3),rgba(3,20,35,.03));
+    background:linear-gradient(90deg,rgba(2,17,43,.32),rgba(0,75,88,.06));
+    pointer-events:none;
   }
-  .rdr-login-v2__visual-brand,
-  .rdr-login-v2__visual-copy {display:none}
+  .rdr-login-v2__visual-brand,.rdr-login-v2__visual-copy {display:none}
+  .rdr-login-v2__mobile-school-art {
+    display:block;position:absolute;right:-1.6rem;bottom:0;
+    z-index:2;width:min(88%,22rem);height:auto;
+    opacity:.86;pointer-events:none;
+    filter:drop-shadow(0 .4rem 1.1rem rgba(3,31,57,.14));
+  }
   .rdr-login-v2__mobile-header {
-    position:relative;z-index:3;
-    display:flex;align-items:center;justify-content:space-between;
-    width:100%;height:100%;min-width:0;gap:.75rem;
-    padding:calc(env(safe-area-inset-top) + .5rem) 1.25rem 1.1rem;
+    display:flex;position:relative;z-index:3;
+    align-items:flex-start;justify-content:space-between;gap:.6rem;
+    width:100%;height:100%;
+    padding:calc(env(safe-area-inset-top) + 1rem) 1.3rem 0;
   }
   .rdr-login-v2__mobile-identity {
-    display:flex;align-items:center;flex:none;min-width:0;
+    display:flex;align-items:center;gap:.7rem;min-width:0;
   }
   .rdr-login-v2__mobile-identity .school-monogram {
-    display:grid;place-items:center;
-    width:3.25rem;height:3.25rem;flex:0 0 3.25rem;
-    padding:.5rem;border-radius:1rem;
+    display:grid;place-items:center;flex:0 0 3rem;
+    width:3rem;height:3rem;
+    padding:.5rem;border-radius:.85rem;
     color:#1f2a44;background:#fff;
-    box-shadow:0 .6rem 1.5rem rgba(2,18,34,.24), inset 0 0 0 1px rgba(255,255,255,.7);
+    box-shadow:0 .45rem 1.1rem rgba(1,20,41,.16);
   }
   .rdr-login-v2__mobile-identity .school-monogram__symbol {
     display:block;width:100%;max-height:100%;color:#1f2a44;
   }
+  .rdr-login-v2__mobile-school-name {
+    display:block;min-width:0;
+    font-size:.96rem;line-height:1.2;
+    font-weight:650;color:#fff;
+    text-shadow:0 1px .4rem rgba(0,0,0,.15);
+    white-space:nowrap;
+  }
   .rdr-login-v2__mobile-appearance {
-    display:flex;align-items:center;gap:.125rem;flex:none;
-    padding:.2rem;border:1px solid rgba(255,255,255,.25);
-    border-radius:.75rem;background:rgba(255,255,255,.10);
-    backdrop-filter:blur(10px);
+    display:flex;align-items:center;gap:0;flex:none;
+    padding:.12rem;
+    border:1px solid rgba(255,255,255,.25);
+    border-radius:.7rem;background:rgba(4,27,53,.27);
+    backdrop-filter:blur(.55rem);
   }
   .rdr-login-v2__mobile-appearance button {
-    display:grid;place-items:center;
-    width:2.1rem;height:2.1rem;min-width:2.1rem;
-    padding:0;border:0;border-radius:.5rem;
-    color:#eff8fb;background:transparent;
+    display:grid;place-items:center;flex:0 0 1.75rem;
+    width:1.75rem;min-width:1.75rem;height:1.75rem;
+    margin:0;padding:0;border:0;border-radius:.5rem;
+    background:transparent;color:#eff9ff;
   }
   .rdr-login-v2__mobile-appearance button.is-active {
-    color:#1f2a44;background:#fff;
+    background:#fff;color:#1f2a44;
   }
-  .rdr-login-v2__mobile-appearance button svg {
-    width:1rem;height:1rem;
-  }
+  .rdr-login-v2__mobile-appearance button svg {width:.9rem;height:.9rem}
   .rdr-login-v2__content,
   :root[data-theme="dark"] .rdr-login-v2__content {
-    position:relative;z-index:4;
-    display:flex;flex:1 1 0;flex-direction:column;
+    display:flex;position:relative;z-index:4;
+    flex:1 1 0;flex-direction:column;
     width:100%;max-width:100%;min-width:0;min-height:0;
-    margin-top:-1.35rem;
-    padding:.95rem clamp(1.125rem,5vw,1.5rem)
-      max(1.125rem,env(safe-area-inset-bottom));
-    border-radius:1.5rem 1.5rem 0 0;
-    background:var(--phone-canvas);
-    box-shadow:0 -.75rem 2rem rgba(4,18,35,.08);
-    overflow-x:hidden;overflow-y:auto;
-    overscroll-behavior:contain;
-    -webkit-overflow-scrolling:touch;
-    scrollbar-width:none;
+    margin-top:-1.75rem;
+    padding:clamp(1.15rem,3dvh,1.6rem) clamp(1.15rem,5.4vw,1.65rem) max(1.2rem,env(safe-area-inset-bottom));
+    border:0;border-radius:1.8rem 1.8rem 0 0;
+    background:var(--phone-canvas);box-shadow:none;
+    overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;
   }
   .rdr-login-v2__content::-webkit-scrollbar {display:none}
-  .rdr-login-v2__toolbar {display:none}
+  .rdr-login-v2__toolbar,.rdr-login-v2__closing {display:none}
   .rdr-login-v2__main,
-  :root[data-theme="dark"] .rdr-login-v2__main {
+  :root[data-theme="dark"] .rdr-login-v2__main,
+  .rdr-login-v2__main:has(.rdr-recovery),
+  .rdr-login-v2__main:has(.rdr-auth-flow--forgot) {
+    display:flex;flex:1 0 auto;flex-direction:column;
+    align-items:stretch;justify-content:center;
+    width:100%;max-width:24rem;min-width:0;min-height:0;
+    height:auto;margin:0 auto;
+    padding:1rem 0 clamp(1rem,4dvh,2.4rem);
+    border:0;border-radius:0;
+    background:transparent;box-shadow:none;
+  }
+  .rdr-login-v2__heading {display:none}
+  .rdr-login-v2__mobile-signin-title {
+    display:block;width:100%;min-width:0;
+    margin:0 0 .4rem;padding:0;
+    color:var(--phone-ink);
+    font-size:clamp(1.35rem,5.65vw,1.72rem);
+    font-weight:700;line-height:1.23;letter-spacing:-.035em;
+    text-align:left;overflow-wrap:break-word;
+  }
+  .rdr-login-v2__mobile-description {
+    display:block;width:100%;
+    margin:0 0 clamp(1.35rem,3dvh,1.75rem);
+    color:var(--phone-muted);
+    font-size:.78rem;font-weight:400;line-height:1.45;
+    overflow-wrap:anywhere;
+  }
+  .rdr-login-v2__form,
+  .rdr-login-v2__form--signin,
+  .rdr-auth-flow,
+  .rdr-auth-flow__form,
+  .rdr-recovery,
+  .rdr-recovery__form,
+  .rdr-recovery__state {
     display:flex;flex:0 0 auto;flex-direction:column;
-    justify-content:flex-start;
-    width:100%;max-width:25rem;min-width:0;min-height:0;
-    margin:0 auto;padding:0;
-    border:0;border-radius:0;background:transparent;box-shadow:none;
-  }
-  .rdr-login-v2__heading {width:100%;min-width:0;text-align:left}
-  .rdr-login-v2__eyebrow {
-    display:inline-flex;align-items:center;gap:.375rem;
-    margin-bottom:.4rem;
-    font-size:.65rem;letter-spacing:.06em;
-    font-weight:600;line-height:1.35;
-    color:#907451;white-space:normal;
-  }
-  .rdr-login-v2__eyebrow svg {width:.875rem;height:.875rem;flex:none}
-  .rdr-login-v2__main .rdr-login-v2__heading h1,
-  .rdr-login-v2__main:has(.rdr-recovery) .rdr-login-v2__heading h1,
-  .rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading h1 {
-    max-width:100%;margin:.125rem 0 .375rem;
-    font-size:clamp(1.35rem,5.8vw,1.7rem);
-    line-height:1.2;letter-spacing:-.04em;
-    font-weight:700;color:var(--phone-ink);
-    white-space:normal;overflow-wrap:break-word;
-  }
-  .rdr-login-v2__main .rdr-login-v2__heading p,
-  .rdr-login-v2__main:has(.rdr-recovery) .rdr-login-v2__heading p,
-  .rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading p {
-    margin:0 0 1.2rem;max-width:100%;
-    font-size:.78rem;line-height:1.5;font-weight:400;
-    color:var(--phone-muted);overflow-wrap:anywhere;
-  }
-  .rdr-login-v2__description-desktop {display:none!important}
-  .rdr-login-v2__description-mobile {display:block!important}
-  .rdr-login-v2__form,.rdr-auth-flow,.rdr-recovery,
-  .rdr-recovery__form,.rdr-recovery__state,
-  .rdr-login-v2__input-shell,.rdr-login-v2__submit {
+    align-items:stretch;justify-content:flex-start;
     width:100%;max-width:100%;min-width:0;
-    box-sizing:border-box;
+    height:auto;min-height:0;max-height:none;
+    margin:0;padding:0;gap:0;
   }
-  .rdr-login-v2__form {gap:0}
-  .rdr-login-v2__field {min-width:0;gap:.45rem}
-  .rdr-login-v2 .rdr-login-v2__field label,
-  .rdr-login-v2 .rdr-login-v2__password-label label,
-  .rdr-login-v2 .rdr-login-v2__password-label > a {
-    font-size:.8rem;line-height:1.4;letter-spacing:0;
-    font-weight:500;color:var(--phone-ink);
+  .rdr-login-v2__field,
+  .rdr-login-v2__form--signin > .rdr-login-v2__field,
+  .rdr-auth-flow--forgot .rdr-auth-flow__email-field,
+  .rdr-recovery__form .rdr-login-v2__field {
+    display:flex;flex:0 0 auto;flex-direction:column;align-items:stretch;
+    min-width:0;min-height:0;height:auto;
+    width:100%;gap:0;grid-template:none;
+    margin:0!important;padding:0;text-align:left;
+  }
+  .rdr-login-v2__form--signin > .rdr-login-v2__field + .rdr-login-v2__field {
+    margin-top:1.1rem!important;
+  }
+  .rdr-recovery__fields,
+  .rdr-auth-flow__fields {
+    display:flex;flex-direction:column;
+    width:100%;min-width:0;gap:1.1rem;
+  }
+  .rdr-login-v2__field > label,
+  .rdr-login-v2__password-label label,
+  .rdr-auth-flow--forgot .rdr-auth-flow__email-field > label,
+  .rdr-recovery__form .rdr-login-v2__field > label {
+    display:block;width:100%;min-height:0;height:auto;
+    margin:0 0 .4rem;padding:0;
+    font-size:.76rem;line-height:1.3;font-weight:500;
+    color:var(--phone-ink);text-align:left;
   }
   .rdr-login-v2__password-label {
     display:flex;align-items:center;justify-content:space-between;
-    gap:.5rem;flex-wrap:nowrap;min-width:0;
+    width:100%;min-width:0;height:auto;min-height:0;
+    margin:0 0 .4rem;padding:0;
   }
-  .rdr-login-v2 .rdr-login-v2__password-label > a {
-    flex:none;white-space:nowrap;
-    font-size:.75rem;font-weight:500;
-    color:var(--phone-primary);
-    text-decoration:underline;text-decoration-thickness:1px;
-    text-underline-offset:.2rem;
+  .rdr-login-v2__password-label label {margin:0}
+  .rdr-login-v2__forgot-desktop {display:none!important}
+  .rdr-login-v2__forgot-mobile {
+    display:block;align-self:center;width:fit-content;
+    margin:1rem auto 0;padding:.45rem .65rem;
+    color:#086b87;font-size:.77rem;font-weight:600;
+    text-decoration:none;text-align:center;
   }
   .rdr-login-v2__input-shell,
   .rdr-login-v2__form--signin > .rdr-login-v2__field .rdr-login-v2__input-shell,
   .rdr-auth-flow--forgot .rdr-auth-flow__email-field .rdr-login-v2__input-shell,
   .rdr-recovery__form .rdr-login-v2__input-shell {
-    display:flex;align-items:center;gap:.625rem;
-    width:100%;height:3.2rem;min-height:3.2rem;
-    background:var(--phone-control);
-    border:1px solid var(--phone-line);
-    border-radius:.75rem;
-    box-shadow:0 .125rem .6rem rgba(19,35,59,.035);
-    transition:border-color .18s ease,box-shadow .18s ease;
+    display:flex;align-items:center;flex:0 0 auto;gap:.55rem;
+    width:100%;max-width:100%;height:3.05rem;min-height:3.05rem;
+    margin:0;padding:0;
+    border:1px solid var(--phone-border);
+    border-radius:.8rem;
+    background:var(--phone-input);
+    box-shadow:0 .15rem .7rem rgba(25,40,68,.03);
   }
   .rdr-login-v2__input-shell:focus-within {
-    border-color:#758aa9;
-    box-shadow:0 0 0 .2rem rgba(55,82,120,.12);
+    border-color:#448cae;
+    box-shadow:0 0 0 .18rem rgba(18,141,164,.12);
   }
-  .rdr-login-v2__input-shell:has(input[aria-invalid="true"]) {
-    border-color:var(--phone-error);
+  .rdr-login-v2__input-shell > svg,
+  .rdr-login-v2__form--signin .rdr-login-v2__input-shell > svg,
+  .rdr-recovery__form .rdr-login-v2__input-shell > svg {
+    display:block;flex:none;
+    width:1rem;height:1rem;margin:0 0 0 .9rem;
+    color:#7a90a7;
   }
-  .rdr-login-v2__input-shell > svg {
-    width:1.05rem;height:1.05rem;flex:none;
-    margin-left:.95rem;color:#8794a6;
-  }
-  .rdr-login-v2__input-shell input {
+  .rdr-login-v2__input-shell input,
+  .rdr-recovery__form .rdr-login-v2__input-shell input,
+  .rdr-auth-flow--forgot .rdr-login-v2__input-shell input {
     flex:1 1 0;width:0;min-width:0;height:100%;
-    font-size:1rem;font-weight:400;
-    background:transparent;color:var(--phone-ink);
+    padding:0 .25rem 0 0;
+    color:var(--phone-ink);
+    background:transparent;font-size:1rem;font-weight:400;
   }
   .rdr-login-v2__input-shell input::placeholder {
-    font-size:.82rem;font-weight:400;color:#9aa5b5;
+    color:#98a5b6;font-size:.77rem;font-weight:400;
   }
-  .rdr-login-v2__visibility {
-    flex:0 0 2.5rem;width:2.5rem;min-width:2.5rem;height:2.5rem;
-    margin-right:.2rem;border-radius:.55rem;
-    color:var(--phone-muted);
+  .rdr-login-v2__visibility,
+  .rdr-login-v2__input-shell .rdr-login-v2__visibility {
+    display:grid;place-items:center;flex:0 0 2.5rem;
+    width:2.5rem;min-width:2.5rem;height:2.5rem;
+    margin:0 .15rem 0 0;padding:0;border-radius:.6rem;
   }
-  .rdr-login-v2__field-error--reserved {
-    position:static;inset:auto;
-    display:block;height:auto;min-height:0;max-height:none;
-    margin:0;padding:0 .125rem;
-    font-size:.73rem;line-height:1.35;
-    white-space:normal;overflow:visible;
-    overflow-wrap:break-word;
-    color:var(--phone-error);
+  .rdr-login-v2__visibility svg {width:1.1rem;height:1.1rem}
+  .rdr-login-v2__field-error--reserved,
+  .rdr-login-v2__form--signin .rdr-login-v2__field-error--reserved {
+    position:static;inset:auto;display:block;
+    width:100%;height:auto;min-height:0;max-height:none;
+    margin:0;padding:.3rem .125rem 0;
+    line-height:1.45;font-size:.7rem;
+    white-space:normal;overflow:visible;text-overflow:clip;
+    color:#bf3b56;text-align:left;overflow-wrap:anywhere;
   }
   .rdr-login-v2__field-error--reserved.is-empty {display:none}
-  .rdr-login-v2__form--signin {
-    display:flex;flex:0 0 auto;flex-direction:column;
-    gap:0;min-height:0;
+  .rdr-login-v2__feedback-slot--signin,
+  .rdr-login-v2__form--signin > .rdr-login-v2__feedback-slot--signin,
+  .rdr-recovery__error-slot,.rdr-auth-flow__error-slot {
+    display:flex;align-items:flex-start;
+    width:100%;height:auto;min-height:0;max-height:none;
+    margin:0;padding:0;overflow:visible;
   }
-  .rdr-login-v2__form--signin > .rdr-login-v2__field {
-    display:flex;flex-direction:column;
-    gap:.5rem;min-width:0;
-  }
-  .rdr-login-v2__form--signin > .rdr-login-v2__field + .rdr-login-v2__field {
-    margin-top:1.45rem!important;
-  }
-  .rdr-login-v2__form--signin > .rdr-login-v2__feedback-slot--signin {
-    display:flex;align-items:center;
-    height:auto;min-height:0;max-height:none;
-    margin:.55rem 0 0;padding:0;
-  }
-  .rdr-login-v2__auth-error {
-    max-width:100%;margin:0;
-    font-size:.75rem;line-height:1.4;
-    overflow-wrap:anywhere;
-  }
+  .rdr-login-v2__feedback-slot--signin:has(.rdr-login-v2__auth-error),
+  .rdr-recovery__error-slot:not(:empty),
+  .rdr-auth-flow__error-slot:not(:empty) {margin-top:.6rem}
   .rdr-login-v2__submit,
   .rdr-login-v2__form--signin > .rdr-login-v2__submit,
   .rdr-auth-flow--forgot .rdr-login-v2__submit,
-  .rdr-recovery__actions .rdr-login-v2__submit {
-    display:flex;align-items:center;justify-content:center;
-    gap:.625rem;flex:none;
-    width:100%;height:3.2rem;min-height:3.2rem;
-    padding:.625rem 1rem;margin:1.2rem 0 0;
-    border:0;border-radius:.75rem;
-    background:linear-gradient(115deg,#171e2d 0%,#263653 64%,#354c6d 100%);
-    box-shadow:0 .75rem 1.5rem rgba(31,42,68,.18), inset 0 1px 0 rgba(255,255,255,.16);
-    color:#fff;font-size:.9rem;font-weight:600;
+  .rdr-recovery__actions .rdr-login-v2__submit,
+  .rdr-recovery__state .rdr-login-v2__submit {
+    display:flex;flex:0 0 auto;align-items:center;justify-content:center;
+    gap:.55rem;width:100%;max-width:100%;
+    height:auto;min-height:3.12rem;
+    margin:1.35rem 0 0;padding:.65rem 1rem;
+    border:0;border-radius:.82rem;
+    background:linear-gradient(105deg,#063862 8%,#087b94 72%,#06ada7 100%);
+    color:white;font-size:.89rem;line-height:1.35;font-weight:600;
+    box-shadow:0 .55rem 1.15rem rgba(8,57,87,.14);
+    text-align:center;white-space:normal;
   }
+  .rdr-login-v2__submit:disabled {opacity:.7;cursor:not-allowed}
   .rdr-login-v2__submit svg {width:1rem;height:1rem}
-  .rdr-login-v2__closing {display:none}
-
-  /* The sign-in view has exactly one mobile heading; desktop introduction
-     stays rendered for desktop but is hidden in this mobile experience. */
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__heading {display:none}
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__main {
-    display:flex;flex:0 0 auto;flex-direction:column;
-    justify-content:center;
-    margin:auto;
-    padding:clamp(.75rem,4dvh,2.5rem) 0;
+  .rdr-auth-flow--forgot .rdr-auth-flow__fields {gap:0}
+  .rdr-auth-flow--forgot .rdr-auth-flow__email-field {order:0}
+  .rdr-auth-flow--forgot .rdr-auth-flow__notice {order:1}
+  .rdr-auth-flow--forgot .rdr-auth-flow__notice--info {
+    display:flex;align-items:flex-start;gap:.45rem;
+    min-height:0;height:auto;max-height:none;
+    margin:.85rem 0 0;padding:0;border:0;
+    background:transparent;box-shadow:none;
+    color:var(--phone-muted);
   }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__mobile-signin-title {
-    display:block;width:100%;
-    margin:0 0 1.5rem;
-    font-size:1.5rem;font-weight:650;line-height:1.2;
-    letter-spacing:-.035em;text-align:center;
-    color:var(--phone-ink);
+  .rdr-auth-flow--forgot .rdr-auth-flow__notice--info .rdr-auth-flow__notice-icon {display:none}
+  .rdr-auth-flow--forgot .rdr-auth-flow__notice--info .rdr-auth-flow__notice-copy strong {display:none}
+  .rdr-auth-flow--forgot .rdr-auth-flow__notice--info .rdr-auth-flow__notice-copy small {
+    font-size:.71rem;line-height:1.45;color:var(--phone-muted);
   }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__submit {
-    margin-top:1.2rem;
+  .rdr-auth-flow--forgot .rdr-auth-flow__notice--success {
+    display:flex;align-items:flex-start;gap:.6rem;
+    width:100%;height:auto;min-height:0;max-height:none;
+    margin:1rem 0 0;padding:.8rem;
+    border-radius:.75rem;
   }
-
-  /* Forgot / set / reset password have their own content and use the
-     same controls without adopting sign-in's hidden-heading treatment. */
-  .rdr-auth-flow--forgot,
-  .rdr-auth-flow--forgot .rdr-auth-flow__form,
-  .rdr-recovery,.rdr-recovery__form,.rdr-recovery__state {
-    display:flex;flex:0 0 auto;flex-direction:column;
-    min-height:0;height:auto;
+  .rdr-auth-flow__notice-copy {display:flex;flex-direction:column;gap:.2rem;min-width:0;overflow-wrap:anywhere}
+  .rdr-auth-flow__notice-copy strong {font-size:.77rem;line-height:1.35}
+  .rdr-auth-flow__notice-copy small {font-size:.71rem;line-height:1.45;overflow-wrap:anywhere}
+  .rdr-auth-flow__actions,.rdr-recovery__actions {
+    display:flex;flex-direction:column;align-items:stretch;
+    width:100%;min-height:0;height:auto;margin:0;padding:0;gap:0;
   }
-  .rdr-auth-flow--forgot .rdr-auth-flow__fields {gap:1rem}
-  .rdr-auth-flow--forgot .rdr-auth-flow__notice {
-    height:auto;min-height:0;padding:.875rem;
-    overflow:visible;border-radius:.75rem;
+  .rdr-auth-flow__secondary-slot {
+    display:flex;align-items:center;justify-content:center;
+    width:100%;height:auto;min-height:2.75rem;margin:.65rem 0 0;
   }
-  .rdr-auth-flow--forgot .rdr-auth-flow__notice-copy small {
-    font-size:.75rem;line-height:1.45;overflow-wrap:anywhere;
+  .rdr-auth-flow__back,.rdr-recovery__back {
+    display:flex;align-items:center;justify-content:center;
+    width:100%;height:auto;min-height:2.75rem;
+    margin:0;padding:.5rem .75rem;
+    font-size:.76rem;font-weight:500;color:var(--phone-ink);
   }
-  .rdr-auth-flow--forgot .rdr-auth-flow__email-field {
-    display:flex;flex-direction:column;gap:.45rem;
-    min-height:0;height:auto;
+  .rdr-recovery__requirement {
+    display:flex;align-items:flex-start;gap:.45rem;
+    width:100%;margin:.2rem 0 0;padding:0;
+    font-size:.7rem;line-height:1.45;color:var(--phone-muted);
   }
-  .rdr-auth-flow--forgot .rdr-auth-flow__error-slot {
-    height:auto;min-height:0;overflow:visible;
+  .rdr-recovery__requirement svg {flex:none;width:1rem;height:1rem}
+  .rdr-recovery__remaining,.rdr-recovery__slow {
+    display:block;height:auto;min-height:0;max-height:none;
+    margin:.5rem 0 0;padding:0;
+    font-size:.71rem;line-height:1.4;white-space:normal;
+    color:var(--phone-muted);
   }
-  .rdr-auth-flow--forgot .rdr-auth-flow__actions {margin-top:.6rem}
-  .rdr-recovery__fields {gap:1rem}
-  .rdr-recovery__form .rdr-login-v2__field {
-    display:flex;flex-direction:column;gap:.45rem;
-  }
-  .rdr-recovery__actions {margin-top:.625rem}
+  .rdr-recovery__remaining:empty {display:none}
+  .rdr-recovery__state {gap:.8rem}
   .rdr-recovery__art {
-    display:flex;flex:0 0 auto;flex-direction:column;
-    align-items:center;justify-content:center;
-    gap:.75rem;width:100%;text-align:center;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    width:100%;height:auto;min-height:0;max-height:none;
+    gap:.5rem;margin:0;padding:0;text-align:center;
   }
   .rdr-recovery__art-visual {
-    flex:none;width:8.5rem;max-width:55vw;height:6rem;
+    display:flex;position:relative;flex:none;
+    align-items:center;justify-content:center;
+    width:7rem;height:6rem;max-width:65vw;margin:.1rem 0 .5rem;
   }
-  .rdr-recovery__art-orbit--one {width:7rem;height:4.8rem}
-  .rdr-recovery__art-orbit--two {width:8rem;height:4.2rem}
-  .rdr-recovery__art-icon {width:4rem;height:4rem;border-radius:1rem}
+  .rdr-recovery__art-orbit--one {width:6rem;height:4rem}
+  .rdr-recovery__art-orbit--two {width:6.6rem;height:3.7rem}
+  .rdr-recovery__art-icon {
+    display:grid;place-items:center;
+    width:4rem;height:4rem;border-radius:1.1rem;
+  }
   .rdr-recovery__art-icon svg {width:2rem;height:2rem}
+  .rdr-recovery__sparkle {width:1rem;height:1rem}
   .rdr-recovery__art-title {
-    max-width:100%;font-size:1.15rem;line-height:1.25;
-    font-weight:650;overflow-wrap:anywhere;
+    display:block;width:100%;max-width:100%;
+    font-size:1.1rem;font-weight:650;line-height:1.3;
+    color:var(--phone-ink);overflow-wrap:anywhere;
   }
   .rdr-recovery__art-message {
-    max-width:21rem;font-size:.78rem;line-height:1.5;
+    display:block;width:100%;max-width:20rem;
+    margin:0;color:var(--phone-muted);
+    font-size:.76rem;line-height:1.5;text-align:center;
     overflow-wrap:anywhere;
   }
-  .rdr-recovery__state {gap:.75rem}
-  .rdr-recovery__back {height:auto;min-height:2.75rem}
-  .rdr-recovery__remaining,.rdr-recovery__slow {height:auto;min-height:0}
+  .rdr-recovery__state .rdr-login-v2__submit {
+    margin:.35rem 0 0;
+  }
+  .rdr-recovery__art--success .rdr-recovery__art-icon {
+    background:linear-gradient(135deg,#c6f6e4,#d4f1ff);
+    color:#068a75;
+  }
+  .rdr-recovery__art--problem .rdr-recovery__art-icon {color:#ae4651}
+  .rdr-recovery__art--checking .rdr-recovery__art-icon {color:#236fa8}
 }
-
-/* Shrink the masthead, not the fields, on short phone screens. Short screens
-   are allowed to scroll inside the sheet; nothing is clipped behind a CTA. */
-@media (max-width:720px) and (max-height:700px) {
-  .rdr-login-v2__visual,
-  :root[data-theme="dark"] .rdr-login-v2__visual {
-    flex-basis:5.75rem;
+@media (max-width:720px) and (max-height:710px) {
+  .rdr-login-v2__visual,:root[data-theme="dark"] .rdr-login-v2__visual {
+    flex-basis:8.3rem;
   }
-  .rdr-login-v2__mobile-header {
-    padding:calc(env(safe-area-inset-top) + .25rem) 1rem .65rem;
+  .rdr-login-v2__mobile-header {padding-top:.6rem}
+  .rdr-login-v2__mobile-school-art {width:min(70%,17rem)}
+  .rdr-login-v2__main,.rdr-login-v2__main:has(.rdr-recovery),
+  .rdr-login-v2__main:has(.rdr-auth-flow--forgot) {
+    flex:0 0 auto;justify-content:flex-start;padding:.4rem 0 .75rem;
   }
-  .rdr-login-v2__mobile-identity .school-monogram {
-    width:2.65rem;height:2.65rem;flex-basis:2.65rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__main {
-    margin:auto;padding:.6rem 0;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__mobile-signin-title {
-    margin-bottom:1.2rem;font-size:1.4rem;
-  }
-  .rdr-login-v2__form--signin > .rdr-login-v2__field + .rdr-login-v2__field {
-    margin-top:.875rem!important;
-  }
+  .rdr-login-v2__mobile-description {margin-bottom:.9rem}
+  .rdr-login-v2__mobile-signin-title {font-size:1.3rem}
+  .rdr-recovery__art-visual {width:5rem;height:4rem;margin:0}
+  .rdr-recovery__art-icon {width:3rem;height:3rem}
+  .rdr-recovery__art-icon svg {width:1.5rem;height:1.5rem}
+  .rdr-recovery__art-orbit--one {width:4.5rem;height:3rem}
+  .rdr-recovery__art-orbit--two {width:4.8rem;height:2.7rem}
 }
-
 @media (max-width:350px) {
-  .rdr-login-v2__content,
-  :root[data-theme="dark"] .rdr-login-v2__content {padding-inline:1rem}
-  .rdr-login-v2__mobile-appearance button {
-    width:1.85rem;min-width:1.85rem;height:1.85rem;
-  }
-}
-
-:root[data-theme="dark"] .rdr-login-v2 {
-  --phone-canvas:#111822;
-  --phone-control:#202b3b;
-  --phone-ink:#f4f7fc;
-  --phone-muted:#aab8cb;
-  --phone-line:#3b4758;
-  --phone-primary:#b6cbef;
-  --phone-error:#f38aa1;
+  .rdr-login-v2__content {padding-inline:1rem}
+  .rdr-login-v2__mobile-school-name {font-size:.82rem}
+  .rdr-login-v2__mobile-appearance button {width:1.55rem;min-width:1.55rem;height:1.55rem}
 }
 @media (max-width:720px) {
+  :root[data-theme="dark"] .rdr-login-v2 {
+    --phone-ink:#f0f6ff;
+    --phone-muted:#b4c4d6;
+    --phone-border:#354761;
+    --phone-input:#233249;
+    --phone-canvas:#111b2a;
+    --phone-cta:#21547b;
+    background:var(--phone-canvas);
+  }
+  :root[data-theme="dark"] .rdr-login-v2__frame,
   :root[data-theme="dark"] .rdr-login-v2__content {
     background:var(--phone-canvas);
   }
@@ -366,1091 +395,20 @@
   :root[data-theme="dark"] .rdr-login-v2__form--signin > .rdr-login-v2__field .rdr-login-v2__input-shell,
   :root[data-theme="dark"] .rdr-auth-flow--forgot .rdr-auth-flow__email-field .rdr-login-v2__input-shell,
   :root[data-theme="dark"] .rdr-recovery__form .rdr-login-v2__input-shell {
-    background:var(--phone-control);
-    border-color:var(--phone-line);
-    box-shadow:none;
+    background:var(--phone-input);border-color:var(--phone-border);box-shadow:none;
   }
-  :root[data-theme="dark"] .rdr-login-v2__input-shell:focus-within {
-    border-color:#859ec7;
-    box-shadow:0 0 0 .2rem rgba(133,158,199,.18);
-  }
-  :root[data-theme="dark"] .rdr-login-v2__input-shell input {
-    color:var(--phone-ink);
-  }
-  :root[data-theme="dark"] .rdr-login-v2__mobile-appearance button.is-active {
-    background:#e8f0ff;color:#1f2a44;
-  }
+  :root[data-theme="dark"] .rdr-login-v2__input-shell input {color:var(--phone-ink)}
+  :root[data-theme="dark"] .rdr-login-v2__forgot-mobile {color:#69ddde}
   :root[data-theme="dark"] .rdr-login-v2__submit,
   :root[data-theme="dark"] .rdr-login-v2__form--signin > .rdr-login-v2__submit,
   :root[data-theme="dark"] .rdr-auth-flow--forgot .rdr-login-v2__submit,
-  :root[data-theme="dark"] .rdr-recovery__actions .rdr-login-v2__submit {
-    background:linear-gradient(110deg,#354766,#485c7e);
+  :root[data-theme="dark"] .rdr-recovery__actions .rdr-login-v2__submit,
+  :root[data-theme="dark"] .rdr-recovery__state .rdr-login-v2__submit {
+    background:linear-gradient(105deg,#194771,#087b94 72%,#069f9f);
     color:#fff;
-  }
-}
-/* Subtle depth and meaningful response to touch — not extra decoration. */
-@media(max-width:720px) {
-  .rdr-login-v2__visual::before {
-    content:"";position:absolute;pointer-events:none;z-index:2;
-    left:0;right:0;bottom:0;height:2.5rem;
-    background:linear-gradient(to top,rgba(13,42,65,.28),transparent);
-  }
-  .rdr-login-v2__content::before {
-    content:"";position:absolute;pointer-events:none;
-    top:0;left:1.5rem;right:1.5rem;height:1px;
-    background:linear-gradient(90deg,transparent,rgba(110,156,185,.35),transparent);
-  }
-  .rdr-login-v2__mobile-appearance {
-    box-shadow:0 .3rem 1rem rgba(0,15,32,.13),inset 0 1px 0 rgba(255,255,255,.1);
-  }
-  .rdr-login-v2__mobile-appearance button {
-    transition:background .18s ease,transform .18s ease,color .18s ease;
-  }
-  .rdr-login-v2__mobile-appearance button:active {transform:scale(.94)}
-  .rdr-login-v2__input-shell,
-  .rdr-login-v2__form--signin > .rdr-login-v2__field .rdr-login-v2__input-shell {
-    box-shadow:0 .25rem 1rem rgba(24,38,62,.045),inset 0 1px 0 rgba(255,255,255,.9);
-    transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease;
-  }
-  .rdr-login-v2__input-shell:focus-within,
-  .rdr-login-v2__form--signin > .rdr-login-v2__field .rdr-login-v2__input-shell:focus-within {
-    border-color:#647f9d;
-    box-shadow:0 0 0 .21rem rgba(67,104,157,.12),0 .45rem 1.25rem rgba(31,42,68,.08);
-  }
-  .rdr-login-v2__input-shell:focus-within > svg {color:#38577a}
-  .rdr-login-v2__submit,
-  .rdr-login-v2__form--signin > .rdr-login-v2__submit {
-    position:relative;overflow:hidden;
-    transition:transform .17s ease,box-shadow .2s ease,background .2s ease;
-  }
-  .rdr-login-v2__submit::before {
-    content:"";position:absolute;pointer-events:none;
-    top:0;left:0;right:0;height:1px;
-    background:linear-gradient(90deg,transparent,rgba(255,255,255,.42),transparent);
-  }
-  .rdr-login-v2__submit:active:not(:disabled),
-  .rdr-login-v2__form--signin > .rdr-login-v2__submit:active:not(:disabled) {
-    transform:scale(.987);
-    box-shadow:0 .35rem .7rem rgba(31,42,68,.17);
-  }
-  .rdr-login-v2__submit:focus-visible,
-  .rdr-login-v2__input-shell:focus-within {
-    outline-offset:2px;
-  }
-  :root[data-theme="dark"] .rdr-login-v2__input-shell,
-  :root[data-theme="dark"] .rdr-login-v2__form--signin > .rdr-login-v2__field .rdr-login-v2__input-shell {
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
-  }
-  :root[data-theme="dark"] .rdr-login-v2__input-shell:focus-within {
-    box-shadow:0 0 0 .21rem rgba(133,158,199,.18);
   }
 }
 @media (prefers-reduced-motion:reduce) and (max-width:720px) {
   .rdr-login-v2__input-shell,.rdr-login-v2__submit,
   .rdr-login-v2__mobile-appearance button {transition:none!important;animation:none!important}
-}
-
-/* The legacy desktop sign-in selectors center direct labels and fix field
-   heights. Explicitly reset them on phones: this is the alignment fix. */
-@media (max-width:720px) {
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__main {
-    flex:1 1 auto;
-    margin:0 auto;
-    padding:clamp(1.5rem,6dvh,3.5rem) 0 1.5rem;
-    justify-content:flex-start;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__mobile-signin-title {
-    text-align:left;
-    font-size:1.55rem;
-    line-height:1.25;
-    margin:0 0 1.75rem;
-    padding:0;
-  }
-  .rdr-login-v2__form--signin > .rdr-login-v2__field {
-    display:flex;
-    flex-direction:column;
-    align-items:stretch;
-    justify-content:flex-start;
-    width:100%;
-    grid-template:none;
-    row-gap:0;
-    margin:0!important;
-    min-height:0;
-    height:auto;
-    text-align:left;
-  }
-  .rdr-login-v2__form--signin > .rdr-login-v2__field > label,
-  .rdr-login-v2__form--signin > .rdr-login-v2__field > .rdr-login-v2__password-label {
-    display:flex;
-    align-self:stretch;
-    align-items:center;
-    justify-content:space-between;
-    width:100%;
-    flex:none;
-    height:auto;
-    min-height:1.5rem;
-    line-height:1.5;
-    margin:0 0 .5rem;
-    padding:0;
-    text-align:left;
-  }
-  .rdr-login-v2__form--signin > .rdr-login-v2__field > label {
-    display:block;
-    width:100%;
-    font-weight:500;
-    text-align:left;
-  }
-  .rdr-login-v2__form--signin > .rdr-login-v2__field .rdr-login-v2__password-label label {
-    display:block;
-    width:auto;
-    height:auto;
-    min-height:0;
-    line-height:1.5;
-    margin:0;
-    text-align:left;
-    align-self:auto;
-  }
-  .rdr-login-v2__form--signin > .rdr-login-v2__field .rdr-login-v2__input-shell {
-    width:100%;
-    height:3.25rem;
-    min-height:3.25rem;
-    margin:0;
-  }
-  .rdr-login-v2__form--signin > .rdr-login-v2__field > .rdr-login-v2__field-error--reserved {
-    position:static;
-    inset:auto;
-    display:block;
-    width:100%;
-    height:auto;
-    min-height:0;
-    max-height:none;
-    padding:.3rem .15rem 0;
-    margin:0;
-    font-size:.72rem;
-    line-height:1.4;
-    overflow:visible;
-    white-space:normal;
-    text-overflow:clip;
-    text-align:left;
-    pointer-events:auto;
-  }
-  .rdr-login-v2__form--signin > .rdr-login-v2__field > .rdr-login-v2__field-error--reserved.is-empty {
-    display:none;
-  }
-  .rdr-login-v2__form--signin > .rdr-login-v2__field + .rdr-login-v2__field {
-    margin-top:1.5rem!important;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__field + .rdr-login-v2__field {
-    margin-top:1.5rem!important;
-  }
-  .rdr-login-v2__form--signin > .rdr-login-v2__feedback-slot--signin {
-    position:static;
-    display:flex;
-    align-items:flex-start;
-    height:auto;
-    min-height:0;
-    max-height:none;
-    margin:0;
-    padding:0;
-    overflow:visible;
-  }
-  .rdr-login-v2__form--signin > .rdr-login-v2__feedback-slot--signin:has(.rdr-login-v2__auth-error) {
-    margin-top:.75rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__submit {
-    margin-top:1.8rem;
-    min-height:3.25rem;
-  }
-  .rdr-login-v2__content {
-    scroll-padding-bottom:1.25rem;
-  }
-}
-@media (max-width:720px) and (max-height:700px) {
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__main {
-    padding-top:1rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__mobile-signin-title {
-    margin-bottom:1.1rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__field + .rdr-login-v2__field {
-    margin-top:.95rem!important;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__submit {
-    margin-top:1.1rem;
-  }
-}
-
-/* Unified mobile sign-in composition.
-   The credential group is vertically balanced inside the remaining screen.
-   No raised card, no heavy decoration, and no fixed-height/absolute error
-   positioning. All rules are scoped to sign-in only. */
-@media (max-width:720px) {
-  .rdr-login-v2--mobile-minimal {
-    --phone-canvas:#f8f9fb;
-    --phone-control:#fff;
-    --phone-ink:#1f2a44;
-    --phone-line:#dce4ee;
-    height:100dvh;
-    overflow:hidden;
-    background:var(--phone-canvas);
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__frame {
-    height:100%;min-height:0;background:var(--phone-canvas);
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__visual,
-  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal .rdr-login-v2__visual {
-    flex:0 0 clamp(6.75rem,15dvh,8rem);
-    height:auto;min-height:0;
-    background:#082537;border-radius:0;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__visual::after {
-    background:linear-gradient(90deg,rgba(5,20,39,.20),rgba(3,27,45,.03));
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__mobile-header {
-    display:flex;align-items:center;justify-content:space-between;
-    height:100%;min-width:0;
-    padding:calc(env(safe-area-inset-top) + .45rem) 1.25rem 1rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__mobile-identity .school-monogram {
-    width:2.75rem;height:2.75rem;flex:0 0 2.75rem;
-    padding:.39rem;border-radius:.8rem;
-    box-shadow:0 .4rem 1.1rem rgba(2,17,34,.15);
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__mobile-appearance {
-    gap:0;padding:.125rem;
-    border-radius:.7rem;
-    background:rgba(8,28,47,.20);
-    border:1px solid rgba(255,255,255,.23);
-    box-shadow:none;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__mobile-appearance button {
-    width:1.85rem;min-width:1.85rem;height:1.85rem;border-radius:.47rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__content,
-  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal .rdr-login-v2__content {
-    position:relative;
-    display:flex;flex:1 1 0;flex-direction:column;
-    align-items:stretch;justify-content:stretch;
-    width:100%;max-width:100%;min-width:0;min-height:0;
-    margin-top:-.9rem;
-    padding:1rem clamp(1.2rem,5.3vw,1.6rem)
-      max(1.25rem,env(safe-area-inset-bottom));
-    background:var(--phone-canvas);
-    border:0;border-radius:1.15rem 1.15rem 0 0;
-    box-shadow:0 -.35rem 1rem rgba(5,22,40,.025);
-    overflow-x:hidden;overflow-y:auto;
-    overscroll-behavior:contain;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__content::before {display:none}
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__main,
-  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal .rdr-login-v2__main {
-    display:flex;flex:1 0 auto;flex-direction:column;
-    align-items:stretch;justify-content:center;
-    width:100%;max-width:24rem;min-width:0;
-    min-height:0;margin:0 auto;
-    padding:0 0 clamp(1rem,5dvh,2.75rem);
-    background:transparent;border:0;border-radius:0;box-shadow:none;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__main::before {display:none}
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__mobile-signin-title {
-    display:block;margin:0 0 clamp(1.35rem,3.2dvh,1.8rem);
-    font-size:clamp(1.35rem,5.5vw,1.55rem);
-    font-weight:650;line-height:1.22;letter-spacing:-.035em;
-    color:var(--phone-ink);text-align:left;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin {
-    display:flex;flex:0 0 auto;flex-direction:column;
-    align-items:stretch;gap:0;width:100%;min-width:0;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__field {
-    position:static;display:flex;flex-direction:column;
-    align-items:stretch;justify-content:flex-start;
-    width:100%;height:auto;min-height:0;min-width:0;
-    margin:0!important;padding:0;gap:0;
-    grid-template:none;row-gap:0;text-align:left;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__field > label,
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__field > .rdr-login-v2__password-label {
-    display:flex;align-items:center;align-self:stretch;
-    width:100%;min-height:0;height:auto;
-    margin:0 0 .4rem;padding:0;
-    font-size:.73rem;font-weight:450;line-height:1.3;
-    color:var(--phone-muted);text-align:left;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__field > label {
-    display:block;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__password-label {
-    justify-content:space-between;gap:.5rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__password-label label {
-    height:auto;min-height:0;margin:0;
-    font-size:.73rem;font-weight:450;line-height:1.3;
-    color:var(--phone-muted);
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__password-label a {
-    flex:none;white-space:nowrap;
-    font-size:.7rem;font-weight:500;
-    color:var(--phone-primary);
-    text-decoration:none;border:0;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__field .rdr-login-v2__input-shell {
-    width:100%;height:2.95rem;min-height:2.95rem;margin:0;
-    gap:.45rem;border:1px solid var(--phone-line);
-    border-radius:.75rem;background:var(--phone-control);
-    box-shadow:0 .15rem .7rem rgba(24,40,68,.03);
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__input-shell > svg {
-    flex:none;width:1rem;height:1rem;margin-left:.9rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__input-shell input {
-    width:0;min-width:0;flex:1 1 0;
-    font-size:1rem;font-weight:400;
-    padding-right:.2rem;color:var(--phone-ink);
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__input-shell input::placeholder {
-    font-size:.75rem;font-weight:400;color:#9aa6b7;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__visibility {
-    width:2.45rem;min-width:2.45rem;height:2.45rem;
-    margin-right:.2rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__visibility svg {
-    width:1.05rem;height:1.05rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__field + .rdr-login-v2__field {
-    margin-top:clamp(1.1rem,2.6dvh,1.45rem)!important;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__field > .rdr-login-v2__field-error--reserved {
-    position:static;inset:auto;display:block;
-    width:100%;height:auto;min-height:0;max-height:none;
-    margin:0;padding:.32rem .12rem 0;
-    font-size:.7rem;line-height:1.4;
-    white-space:normal;overflow:visible;
-    text-overflow:clip;text-align:left;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__field > .rdr-login-v2__field-error--reserved.is-empty {
-    display:none;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__feedback-slot--signin {
-    position:static;display:flex;align-items:flex-start;
-    height:auto;min-height:0;max-height:none;
-    margin:0;padding:0;overflow:visible;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__feedback-slot--signin:has(.rdr-login-v2__auth-error) {
-    margin-top:.65rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__submit {
-    width:100%;height:3.1rem;min-height:3.1rem;
-    margin-top:clamp(1.4rem,3.4dvh,1.85rem);
-    padding:.65rem 1rem;
-    border-radius:.75rem;
-    background:linear-gradient(110deg,#1c2639,#304461);
-    font-size:.875rem;font-weight:600;
-    box-shadow:0 .55rem 1.1rem rgba(31,42,68,.15);
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__submit svg {
-    width:1rem;height:1rem;
-  }
-}
-@media (max-width:720px) and (max-height:700px) {
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__visual,
-  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal .rdr-login-v2__visual {flex-basis:5.75rem}
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__content {
-    margin-top:-.6rem;
-    padding-top:.8rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__main {
-    padding-bottom:.4rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__mobile-signin-title {
-    margin-bottom:1rem;font-size:1.35rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__field + .rdr-login-v2__field {
-    margin-top:.9rem!important;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__submit {
-    margin-top:1.1rem;
-  }
-}
-@media (max-width:720px) {
-  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal {
-    --phone-canvas:#111823;
-    --phone-ink:#f4f7fc;
-    --phone-control:#1c2737;
-    --phone-line:#39485e;
-  }
-  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal .rdr-login-v2__frame,
-  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal .rdr-login-v2__content {
-    background:var(--phone-canvas);
-  }
-  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__field .rdr-login-v2__input-shell {
-    background:var(--phone-control);
-    border-color:var(--phone-line);box-shadow:none;
-  }
-  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal .rdr-login-v2__password-label a {
-    color:#cadcf5;
-  }
-  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal .rdr-login-v2__form--signin > .rdr-login-v2__submit {
-    background:linear-gradient(110deg,#344967,#4c6488);
-  }
-}
-
-/* Forgot-password and set/reset-password use the same compact mobile visual
-   system as sign-in. Forms and every recovery state are content-sized, never
-   fixed-height, so validation and long error messages cannot overlap controls. */
-@media (max-width:720px) {
-  .rdr-login-v2__main:has(.rdr-auth-flow--forgot),
-  .rdr-login-v2__main:has(.rdr-recovery),
-  :root[data-theme="dark"] .rdr-login-v2__main:has(.rdr-auth-flow--forgot),
-  :root[data-theme="dark"] .rdr-login-v2__main:has(.rdr-recovery) {
-    display:flex;flex:0 0 auto;flex-direction:column;align-items:stretch;
-    justify-content:center;width:100%;min-width:0;max-width:24rem;
-    margin:auto;padding:clamp(.85rem,3dvh,1.6rem) 0;
-    background:transparent;border:0;box-shadow:none;
-  }
-  .rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__eyebrow,
-  .rdr-login-v2__main:has(.rdr-recovery) .rdr-login-v2__eyebrow {
-    display:none;
-  }
-  .rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading h1,
-  .rdr-login-v2__main:has(.rdr-recovery) .rdr-login-v2__heading h1 {
-    margin:0 0 .3rem;
-    font-size:clamp(1.35rem,5.5vw,1.55rem);
-    font-weight:650;letter-spacing:-.035em;line-height:1.25;
-    color:var(--phone-ink);
-  }
-  .rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading p,
-  .rdr-login-v2__main:has(.rdr-recovery) .rdr-login-v2__heading p {
-    margin:0 0 clamp(1rem,2.4dvh,1.4rem);
-    color:var(--phone-muted);font-size:.76rem;line-height:1.45;
-  }
-  .rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__field label,
-  .rdr-login-v2__main:has(.rdr-recovery) .rdr-login-v2__field label {
-    display:block;height:auto;min-height:0;
-    font-size:.73rem;font-weight:450;line-height:1.3;
-    color:var(--phone-muted);
-  }
-  .rdr-auth-flow--forgot,
-  .rdr-auth-flow--forgot .rdr-auth-flow__form,
-  .rdr-recovery,
-  .rdr-recovery__form,
-  .rdr-recovery__state {
-    display:flex;flex:0 0 auto;flex-direction:column;
-    width:100%;max-width:100%;min-width:0;
-    height:auto;min-height:0;max-height:none;
-    margin:0;padding:0;
-  }
-  .rdr-auth-flow--forgot .rdr-auth-flow__fields,
-  .rdr-recovery__fields {
-    display:flex;flex-direction:column;
-    width:100%;min-width:0;gap:1rem;
-  }
-  .rdr-auth-flow--forgot .rdr-auth-flow__email-field,
-  .rdr-recovery__form .rdr-login-v2__field {
-    display:flex;flex-direction:column;
-    min-height:0;height:auto;grid-template:none;
-    gap:.4rem;margin:0;padding:0;
-  }
-  .rdr-auth-flow--forgot .rdr-auth-flow__email-field .rdr-login-v2__input-shell,
-  .rdr-recovery__form .rdr-login-v2__input-shell {
-    display:flex;align-items:center;gap:.45rem;
-    width:100%;height:2.95rem;min-height:2.95rem;
-    margin:0;border:1px solid var(--phone-line);
-    border-radius:.75rem;
-    background:var(--phone-control);
-    box-shadow:0 .15rem .7rem rgba(24,40,68,.03);
-  }
-  .rdr-auth-flow--forgot .rdr-auth-flow__email-field .rdr-login-v2__input-shell>svg,
-  .rdr-recovery__form .rdr-login-v2__input-shell>svg {
-    flex:none;width:1rem;height:1rem;margin-left:.9rem;
-  }
-  .rdr-auth-flow--forgot .rdr-login-v2__input-shell input,
-  .rdr-recovery__form .rdr-login-v2__input-shell input {
-    flex:1 1 0;width:0;min-width:0;
-    font-size:1rem;font-weight:400;
-  }
-  .rdr-auth-flow--forgot .rdr-login-v2__input-shell input::placeholder,
-  .rdr-recovery__form .rdr-login-v2__input-shell input::placeholder {
-    font-size:.75rem;font-weight:400;color:#9aa6b7;
-  }
-  .rdr-auth-flow--forgot .rdr-login-v2__field-error--reserved,
-  .rdr-recovery__form .rdr-login-v2__field-error--reserved {
-    position:static;inset:auto;display:block;
-    width:100%;height:auto;min-height:0;max-height:none;
-    margin:0;padding:.1rem .125rem 0;
-    line-height:1.4;font-size:.7rem;text-align:left;
-    white-space:normal;overflow:visible;overflow-wrap:anywhere;
-  }
-  .rdr-auth-flow--forgot .rdr-login-v2__field-error--reserved.is-empty,
-  .rdr-recovery__form .rdr-login-v2__field-error--reserved.is-empty {
-    display:none;
-  }
-  .rdr-auth-flow--forgot .rdr-auth-flow__notice {
-    display:flex;align-items:flex-start;gap:.625rem;
-    width:100%;min-width:0;height:auto;min-height:0;max-height:none;
-    margin:0;padding:.7rem .8rem;
-    overflow:visible;border-radius:.7rem;
-  }
-  .rdr-auth-flow--forgot .rdr-auth-flow__notice-icon {
-    flex:0 0 1.1rem;width:1.1rem;
-  }
-  .rdr-auth-flow--forgot .rdr-auth-flow__notice-icon svg {
-    width:1.05rem;height:1.05rem;
-  }
-  .rdr-auth-flow--forgot .rdr-auth-flow__notice-copy {
-    min-width:0;overflow-wrap:anywhere;gap:.2rem;
-  }
-  .rdr-auth-flow--forgot .rdr-auth-flow__notice-copy strong {
-    font-size:.72rem;font-weight:600;line-height:1.35;
-  }
-  .rdr-auth-flow--forgot .rdr-auth-flow__notice-copy small {
-    font-size:.7rem;line-height:1.4;overflow-wrap:anywhere;
-  }
-  .rdr-auth-flow--forgot .rdr-auth-flow__actions,
-  .rdr-recovery__actions {
-    display:flex;flex:0 0 auto;flex-direction:column;
-    gap:0;margin-top:1rem;min-width:0;
-  }
-  .rdr-auth-flow--forgot .rdr-auth-flow__error-slot,
-  .rdr-recovery__error-slot {
-    display:flex;align-items:flex-start;
-    width:100%;height:auto;min-height:0;max-height:none;
-    margin:0;padding:0;overflow:visible;
-  }
-  .rdr-auth-flow--forgot .rdr-auth-flow__error-slot:not(:empty),
-  .rdr-recovery__error-slot:not(:empty) {
-    margin-bottom:.5rem;
-  }
-  .rdr-auth-flow--forgot .rdr-login-v2__submit,
-  .rdr-recovery__actions .rdr-login-v2__submit,
-  .rdr-recovery__state .rdr-login-v2__submit {
-    display:flex;align-items:center;justify-content:center;gap:.55rem;
-    width:100%;min-height:3.1rem;height:auto;
-    margin:0;padding:.75rem 1rem;
-    background:#1f2a44;border-radius:.75rem;
-    color:#fff;font-size:.875rem;font-weight:550;
-    box-shadow:0 .375rem .875rem rgba(31,42,68,.12);
-    white-space:normal;text-align:center;
-  }
-  .rdr-auth-flow--forgot .rdr-auth-flow__secondary-slot {
-    display:flex;align-items:center;justify-content:center;
-    margin-top:.5rem;height:auto;min-height:2.5rem;
-  }
-  .rdr-auth-flow--forgot .rdr-auth-flow__back,
-  .rdr-recovery__back {
-    display:flex;align-items:center;justify-content:center;
-    width:100%;height:auto;min-height:2.5rem;
-    padding:.5rem .75rem;font-size:.75rem;font-weight:500;
-  }
-  .rdr-recovery__requirement {
-    display:flex;align-items:flex-start;gap:.45rem;
-    margin:0;color:var(--phone-muted);
-    font-size:.7rem;line-height:1.45;
-  }
-  .rdr-recovery__requirement svg {
-    flex:none;width:.95rem;height:.95rem;
-  }
-  .rdr-recovery__remaining,
-  .rdr-recovery__slow {
-    min-height:0;height:auto;
-    margin:.45rem 0 0;padding:0;
-    line-height:1.45;white-space:normal;
-  }
-  .rdr-recovery__state {
-    align-items:stretch;justify-content:center;gap:.9rem;
-  }
-  .rdr-recovery__art {
-    display:flex;flex:0 0 auto;flex-direction:column;
-    align-items:center;justify-content:center;
-    gap:.55rem;min-height:0;max-width:100%;padding:0;
-  }
-  .rdr-recovery__art-visual {
-    width:8rem;height:5.25rem;max-width:55vw;
-  }
-  .rdr-recovery__art-orbit--one {width:6.7rem;height:4.6rem}
-  .rdr-recovery__art-orbit--two {width:7.8rem;height:4.1rem}
-  .rdr-recovery__art-icon {
-    width:3.7rem;height:3.7rem;border-radius:1rem;
-  }
-  .rdr-recovery__art-icon svg {width:1.9rem;height:1.9rem}
-  .rdr-recovery__art-title {
-    font-size:1rem;line-height:1.3;font-weight:600;
-    overflow-wrap:anywhere;
-  }
-  .rdr-recovery__art-message {
-    width:100%;max-width:21rem;
-    margin:0;font-size:.73rem;line-height:1.45;
-    overflow-wrap:anywhere;
-  }
-}
-@media(max-width:720px) and (max-height:700px) {
-  .rdr-login-v2__main:has(.rdr-auth-flow--forgot),
-  .rdr-login-v2__main:has(.rdr-recovery) {
-    justify-content:flex-start;
-    margin:0 auto;padding:.75rem 0;
-  }
-  .rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading p,
-  .rdr-login-v2__main:has(.rdr-recovery) .rdr-login-v2__heading p {
-    margin-bottom:.75rem;
-  }
-  .rdr-auth-flow--forgot .rdr-auth-flow__fields,
-  .rdr-recovery__fields {gap:.75rem}
-}
-@media(max-width:720px) {
-  :root[data-theme="dark"] .rdr-auth-flow--forgot .rdr-login-v2__submit,
-  :root[data-theme="dark"] .rdr-recovery__actions .rdr-login-v2__submit,
-  :root[data-theme="dark"] .rdr-recovery__state .rdr-login-v2__submit {
-    background:#354766;color:#fff;
-  }
-}
-
-
-/* One shared vertical starting point for Sign in and Forgot password.
-   Centering different-height forms independently places the short forgot form
-   lower. Pin both headings to the same optical position instead. */
-@media (max-width:720px) {
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__main,
-  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal .rdr-login-v2__main,
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__main:has(.rdr-auth-flow--forgot),
-  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal .rdr-login-v2__main:has(.rdr-auth-flow--forgot) {
-    display:flex;flex:0 0 auto;flex-direction:column;
-    align-items:stretch;justify-content:flex-start;
-    width:100%;max-width:24rem;min-width:0;min-height:0;
-    margin:0 auto;
-    padding:clamp(6rem,23dvh,11rem) 0 1.25rem;
-    background:transparent;border:0;box-shadow:none;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading {
-    display:none;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__mobile-signin-title {
-    display:block;width:100%;
-    margin:0 0 clamp(1.35rem,3.2dvh,1.8rem);
-    font-size:clamp(1.35rem,5.5vw,1.55rem);
-    font-weight:650;line-height:1.22;letter-spacing:-.035em;
-    color:var(--phone-ink);text-align:left;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-auth-flow--forgot .rdr-auth-flow__fields {
-    display:flex;flex-direction:column-reverse;gap:0;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-auth-flow--forgot .rdr-auth-flow__notice--info {
-    display:flex;align-items:flex-start;gap:.45rem;
-    height:auto;min-height:0;max-height:none;
-    margin:.75rem 0 0;padding:0;
-    border:0;border-radius:0;box-shadow:none;
-    background:transparent;color:var(--phone-muted);
-  }
-  .rdr-login-v2--mobile-minimal .rdr-auth-flow--forgot .rdr-auth-flow__notice--info .rdr-auth-flow__notice-icon {
-    flex:0 0 .9rem;width:.9rem;margin-top:.1rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-auth-flow--forgot .rdr-auth-flow__notice--info .rdr-auth-flow__notice-icon svg {
-    width:.85rem;height:.85rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-auth-flow--forgot .rdr-auth-flow__notice--info .rdr-auth-flow__notice-copy strong {
-    display:none;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-auth-flow--forgot .rdr-auth-flow__notice--info .rdr-auth-flow__notice-copy small {
-    color:var(--phone-muted);font-size:.7rem;line-height:1.4;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-auth-flow--forgot .rdr-auth-flow__notice--success {
-    height:auto;min-height:0;max-height:none;
-    margin:.8rem 0 0;padding:.75rem .85rem;
-    border-radius:.75rem;overflow:visible;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-auth-flow--forgot .rdr-auth-flow__actions {
-    margin-top:clamp(1.35rem,3.2dvh,1.8rem);
-  }
-  .rdr-login-v2--mobile-minimal .rdr-auth-flow--forgot .rdr-login-v2__submit {
-    min-height:3.1rem;height:auto;margin:0;
-    font-weight:550;font-size:.875rem;
-    background:#1f2a44;border-radius:.75rem;
-    box-shadow:0 .375rem .875rem rgba(31,42,68,.12);
-  }
-  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal .rdr-auth-flow--forgot .rdr-login-v2__submit {
-    background:#354766;color:#fff;
-  }
-}
-@media (max-width:720px) and (max-height:700px) {
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__main,
-  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal .rdr-login-v2__main,
-  .rdr-login-v2--mobile-minimal .rdr-login-v2__main:has(.rdr-auth-flow--forgot),
-  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal .rdr-login-v2__main:has(.rdr-auth-flow--forgot) {
-    padding-top:clamp(1rem,9dvh,4rem);
-    padding-bottom:.75rem;
-  }
-}
-
-/* Set/Reset Password now share the same phone-only composition as Sign in
-   and Forgot Password. States stay simple: a clear title, useful explanation
-   and the action, with no redundant illustration or oversized heading. */
-@media(max-width:720px) {
-  .rdr-login-v2--mobile-minimal:has(.rdr-recovery) .rdr-login-v2__main,
-  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal:has(.rdr-recovery) .rdr-login-v2__main {
-    display:flex;flex:0 0 auto;flex-direction:column;
-    justify-content:flex-start;align-items:stretch;
-    width:100%;min-width:0;max-width:24rem;
-    margin:0 auto;
-    padding:clamp(6rem,23dvh,11rem) 0 1.25rem;
-    background:transparent;border:0;box-shadow:none;
-  }
-  .rdr-login-v2--mobile-minimal:has(.rdr-recovery) .rdr-login-v2__heading {
-    display:none;
-  }
-  .rdr-login-v2--mobile-minimal:has(.rdr-recovery) .rdr-login-v2__mobile-signin-title {
-    display:block;width:100%;
-    margin:0 0 clamp(1.35rem,3.2dvh,1.8rem);
-    padding:0;
-    text-align:left;font-size:clamp(1.35rem,5.5vw,1.55rem);
-    font-weight:650;line-height:1.22;letter-spacing:-.035em;
-    color:var(--phone-ink);overflow-wrap:anywhere;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery,
-  .rdr-login-v2--mobile-minimal .rdr-recovery__form,
-  .rdr-login-v2--mobile-minimal .rdr-recovery__state {
-    width:100%;max-width:100%;height:auto;min-height:0;
-    display:flex;flex:0 0 auto;flex-direction:column;
-    align-items:stretch;margin:0;padding:0;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__fields {
-    display:flex;flex-direction:column;gap:clamp(1rem,2.4dvh,1.35rem);
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__form .rdr-login-v2__field {
-    display:flex;flex-direction:column;gap:0;
-    width:100%;height:auto;min-height:0;
-    margin:0;padding:0;grid-template:none;text-align:left;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__form .rdr-login-v2__field>label {
-    display:block;width:100%;height:auto;min-height:0;
-    margin:0 0 .4rem;padding:0;text-align:left;
-    font-size:.73rem;font-weight:450;line-height:1.3;
-    color:var(--phone-muted);
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__form .rdr-login-v2__input-shell {
-    width:100%;height:2.95rem;min-height:2.95rem;
-    gap:.45rem;margin:0;
-    background:var(--phone-control);
-    border:1px solid var(--phone-line);
-    border-radius:.75rem;
-    box-shadow:0 .15rem .7rem rgba(24,40,68,.03);
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__form .rdr-login-v2__input-shell>svg {
-    flex:none;width:1rem;height:1rem;margin-left:.9rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__form .rdr-login-v2__input-shell input {
-    min-width:0;width:0;flex:1 1 0;font-size:1rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__form .rdr-login-v2__input-shell input::placeholder {
-    font-size:.75rem;color:#9aa6b7;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__form .rdr-login-v2__field-error--reserved {
-    position:static;inset:auto;
-    display:block;width:100%;height:auto;min-height:0;max-height:none;
-    margin:0;padding:.3rem .125rem 0;
-    font-size:.7rem;line-height:1.4;
-    white-space:normal;overflow:visible;overflow-wrap:anywhere;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__form .rdr-login-v2__field-error--reserved.is-empty {
-    display:none;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__requirement {
-    display:flex;align-items:center;gap:.45rem;
-    width:100%;margin:0;
-    font-size:.7rem;line-height:1.4;color:var(--phone-muted);
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__requirement svg {
-    flex:none;width:.9rem;height:.9rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__actions {
-    display:flex;flex:0 0 auto;flex-direction:column;
-    width:100%;height:auto;min-height:0;margin-top:clamp(1.3rem,3dvh,1.7rem);
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__error-slot {
-    height:auto;min-height:0;max-height:none;
-    margin:0;padding:0;overflow:visible;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__actions .rdr-login-v2__submit,
-  .rdr-login-v2--mobile-minimal .rdr-recovery__state .rdr-login-v2__submit {
-    display:flex;align-items:center;justify-content:center;gap:.55rem;
-    width:100%;height:auto;min-height:3.1rem;
-    margin:0;padding:.7rem 1rem;
-    border-radius:.75rem;background:#1f2a44;
-    color:#fff;font-size:.875rem;font-weight:550;
-    box-shadow:0 .375rem .875rem rgba(31,42,68,.12);
-    white-space:normal;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__remaining:empty {
-    display:none;
-  }
-  /* State content supplies the actual reason. Avoid repeating an identical
-     large headline or showing a giant disabled-link illustration. */
-  .rdr-login-v2--mobile-minimal .rdr-recovery__art {
-    display:flex;flex-direction:column;align-items:flex-start;
-    justify-content:flex-start;gap:0;
-    width:100%;max-width:100%;min-height:0;
-    margin:0;padding:0;text-align:left;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__art-visual,
-  .rdr-login-v2--mobile-minimal .rdr-recovery__art-title {
-    display:none;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__art-message {
-    display:block;max-width:100%;width:100%;
-    margin:0;font-size:.78rem;line-height:1.5;
-    color:var(--phone-muted);text-align:left;
-    overflow-wrap:anywhere;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__state {
-    gap:clamp(1rem,2.5dvh,1.35rem);
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__back {
-    display:flex;align-items:center;justify-content:center;
-    gap:.5rem;width:100%;min-height:2.75rem;
-    margin:0;padding:.55rem .75rem;
-    font-size:.78rem;font-weight:500;
-    text-align:center;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__slow {
-    margin:0;min-height:0;height:auto;
-    font-size:.72rem;line-height:1.4;color:var(--phone-muted);
-  }
-  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal .rdr-recovery__form .rdr-login-v2__input-shell {
-    background:var(--phone-control);border-color:var(--phone-line);box-shadow:none;
-  }
-  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal .rdr-recovery__actions .rdr-login-v2__submit,
-  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal .rdr-recovery__state .rdr-login-v2__submit {
-    background:#354766;color:#fff;
-  }
-}
-@media(max-width:720px) and (max-height:700px) {
-  .rdr-login-v2--mobile-minimal:has(.rdr-recovery) .rdr-login-v2__main,
-  :root[data-theme="dark"] .rdr-login-v2--mobile-minimal:has(.rdr-recovery) .rdr-login-v2__main {
-    padding-top:clamp(1rem,9dvh,4rem);
-    padding-bottom:.75rem;
-  }
-}
-
-/* Compact state artwork on set/reset password only. The page title stays
-   visible and unchanged as links are checked, expire or succeed. */
-@media (max-width:720px) {
-  .rdr-login-v2--mobile-minimal .rdr-recovery__state {
-    display:flex;flex-direction:column;
-    align-items:stretch;justify-content:flex-start;
-    gap:clamp(.85rem,2dvh,1.1rem);
-    width:100%;min-width:0;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__art {
-    display:flex;flex-direction:column;
-    align-items:center;justify-content:center;
-    gap:.5rem;
-    width:100%;min-width:0;max-width:100%;
-    margin:0;padding:0;text-align:center;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__art-visual {
-    display:flex;position:relative;align-items:center;justify-content:center;
-    flex:0 0 auto;
-    width:5.5rem;height:5rem;max-width:100%;
-    margin:0 0 .25rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__art-orbit--one {
-    width:5rem;height:3.4rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__art-orbit--two {
-    width:5.25rem;height:3.1rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__art-icon {
-    display:grid;place-items:center;
-    width:3.25rem;height:3.25rem;
-    border-radius:.85rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__art-icon svg {
-    width:1.5rem;height:1.5rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__sparkle {
-    width:.85rem;height:.85rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__art-title {
-    display:block;
-    width:100%;max-width:100%;
-    font-size:.92rem;line-height:1.3;
-    font-weight:600;letter-spacing:-.015em;
-    color:var(--phone-ink);text-align:center;
-    overflow-wrap:anywhere;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__art-message {
-    display:block;
-    width:100%;max-width:20rem;
-    margin:0;
-    font-size:.73rem;line-height:1.45;
-    color:var(--phone-muted);
-    text-align:center;overflow-wrap:anywhere;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__back {
-    width:100%;margin:0;
-  }
-}
-@media (max-width:720px) and (max-height:700px) {
-  .rdr-login-v2--mobile-minimal .rdr-recovery__art-visual {
-    width:4.5rem;height:4.1rem;margin-bottom:0;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__art-orbit--one {
-    width:4rem;height:2.8rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__art-orbit--two {
-    width:4.3rem;height:2.6rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__art-icon {
-    width:2.8rem;height:2.8rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__art-icon svg {
-    width:1.3rem;height:1.3rem;
-  }
-  .rdr-login-v2--mobile-minimal .rdr-recovery__art {
-    gap:.35rem;
-  }
-}
-
-/* Reference-inspired mobile sign-in: a quiet raised credential surface over
-   the existing animated RDR header. Strictly sign-in only; invitation/reset
-   and desktop pages keep their own established layouts. */
-.rdr-login-v2__forgot-mobile {display:none}
-@media (max-width:720px) {
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) {
-    background:#edf2fa;
-  }
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__frame {
-    background:linear-gradient(180deg,#dae5f5 0%,#f3f6fb 72%,#eaf0f8 100%);
-  }
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__visual,
-  :root[data-theme="dark"] .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__visual {
-    flex:0 0 clamp(12.25rem,29dvh,16rem);
-    min-height:0;
-  }
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__mobile-header {
-    align-items:flex-start;
-    height:100%;
-    padding:calc(env(safe-area-inset-top) + 1.1rem) 1.3rem 0;
-  }
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__content,
-  :root[data-theme="dark"] .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__content {
-    flex:1 1 0;min-height:0;
-    display:flex;flex-direction:column;
-    margin-top:clamp(-8.5rem,-15dvh,-6rem);
-    padding:0 clamp(1rem,4.5vw,1.4rem)
-      max(1rem,env(safe-area-inset-bottom));
-    background:transparent;
-    border:0;border-radius:0;box-shadow:none;
-    overflow-x:hidden;overflow-y:auto;
-    scrollbar-width:none;
-  }
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__content::before {
-    display:none;
-  }
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__main,
-  :root[data-theme="dark"] .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__main {
-    display:flex;flex:0 0 auto;flex-direction:column;
-    align-items:stretch;justify-content:flex-start;
-    width:100%;max-width:24rem;min-height:0;
-    margin:0 auto;
-    padding:clamp(1.3rem,4dvh,2rem) clamp(1.15rem,5.2vw,1.65rem)
-      clamp(1.35rem,4dvh,1.9rem);
-    background:#fff;
-    border:1px solid rgba(205,216,232,.8);
-    border-radius:1.7rem;
-    box-shadow:0 1.25rem 2.8rem rgba(23,41,71,.13),0 .25rem .7rem rgba(23,41,71,.035);
-  }
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__mobile-signin-title {
-    margin:0 0 clamp(1.2rem,3dvh,1.75rem);
-    padding:0;
-    color:#202b43;
-    font-size:clamp(1.45rem,6vw,1.75rem);
-    font-weight:650;line-height:1.18;letter-spacing:-.04em;
-  }
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__form--signin {
-    display:flex;flex:0 0 auto;flex-direction:column;
-    width:100%;min-width:0;gap:0;
-  }
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__form--signin > .rdr-login-v2__field {
-    min-height:0;height:auto;
-    display:flex;flex-direction:column;align-items:stretch;
-    margin:0!important;padding:0;
-  }
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__form--signin > .rdr-login-v2__field + .rdr-login-v2__field {
-    margin-top:1.1rem!important;
-  }
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__field > label,
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__password-label label {
-    color:#53637a;
-    font-size:.76rem;font-weight:500;line-height:1.3;
-  }
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__password-label {
-    justify-content:flex-start;align-items:center;
-  }
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__forgot-desktop {
-    display:none!important;
-  }
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__forgot-mobile {
-    display:block;align-self:center;
-    width:fit-content;max-width:100%;
-    margin:1.1rem 0 0;
-    padding:.45rem .6rem;
-    color:#344f79;
-    font-size:.8rem;line-height:1.35;
-    font-weight:500;text-align:center;
-    text-decoration:none;
-  }
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__forgot-mobile:hover,
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__forgot-mobile:focus-visible {
-    text-decoration:underline;text-underline-offset:.2rem;
-  }
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__form--signin > .rdr-login-v2__field .rdr-login-v2__input-shell {
-    width:100%;height:3.1rem;min-height:3.1rem;
-    border:1px solid #dde5ef;
-    border-radius:.85rem;background:#f9fbfd;
-    box-shadow:none;
-  }
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__form--signin > .rdr-login-v2__submit {
-    width:100%;height:3.15rem;min-height:3.15rem;
-    margin-top:1.45rem;
-    border-radius:.85rem;
-    background:linear-gradient(110deg,#1c2639,#304461);
-    color:#fff;
-    font-weight:600;
-    box-shadow:0 .5rem 1rem rgba(31,42,68,.15);
-  }
-  :root[data-theme="dark"] .rdr-login-v2:has(.rdr-login-v2__form--signin) {
-    background:#101824;
-  }
-  :root[data-theme="dark"] .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__frame {
-    background:linear-gradient(180deg,#17283f,#0e1826);
-  }
-  :root[data-theme="dark"] .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__main {
-    background:#1b2738;border-color:#35445a;
-    box-shadow:0 1.25rem 2.8rem rgba(0,0,0,.25);
-  }
-  :root[data-theme="dark"] .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__mobile-signin-title {
-    color:#f4f7fc;
-  }
-  :root[data-theme="dark"] .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__field > label,
-  :root[data-theme="dark"] .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__password-label label {
-    color:#c0cbdb;
-  }
-  :root[data-theme="dark"] .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__form--signin > .rdr-login-v2__field .rdr-login-v2__input-shell {
-    background:#25334a;border-color:#42546d;
-  }
-  :root[data-theme="dark"] .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__forgot-mobile {
-    color:#c7d9f5;
-  }
-}
-@media (max-width:720px) and (max-height:700px) {
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__visual,
-  :root[data-theme="dark"] .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__visual {
-    flex-basis:8.5rem;
-  }
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__content {
-    margin-top:-2.5rem;
-  }
-  .rdr-login-v2:has(.rdr-login-v2__form--signin) .rdr-login-v2__main {
-    padding-block:1.1rem;
-  }
 }
