@@ -34,6 +34,12 @@ describe('RDR Login V2',()=>{
     expect(forgotLinks.every(link=>link.getAttribute('href')==='/forgot-password')).toBe(true);
     expect(forgotLinks[0].classList.contains('rdr-login-v2__forgot-desktop')).toBe(true);
     expect(forgotLinks[1].classList.contains('rdr-login-v2__forgot-mobile')).toBe(true);
+    const mobileForm=document.querySelector('.rdr-login-v2__form--signin');
+    const forgot=mobileForm?.querySelector('.rdr-login-v2__forgot-mobile');
+    const submit=mobileForm?.querySelector('button[type="submit"]');
+    expect(forgot).not.toBeNull();
+    expect(submit).not.toBeNull();
+    expect(Boolean(forgot && submit && (forgot.compareDocumentPosition(submit) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
   });
 
   it('uses minimal phone structure without extra mobile headings or decorative imagery',()=>{
