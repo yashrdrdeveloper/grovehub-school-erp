@@ -55,7 +55,7 @@ describe('password link flows',()=>{
     ['recovery', 'request another password reset link'],
   ] as const)('shows missing-link state without calling APIs for %s', async (purpose, helpText) => {
     renderPage(purpose);
-    expect(await screen.findByText('This link looks incomplete')).toBeTruthy();
+    expect(await screen.findAllByText('This link looks incomplete')).toBeTruthy();
     expect(screen.getByTestId('mobile-recovery-title').textContent).toBe(purpose === 'invitation' ? 'Set password' : 'Reset password');
     expect(screen.queryByLabelText('New password')).toBeNull();
     expect(screen.getByText(new RegExp(helpText, 'i'))).toBeTruthy();
@@ -71,7 +71,7 @@ describe('password link flows',()=>{
   it('does not request grant status without an existing session marker', async () => {
     setupStatus.mockResolvedValue({verified:true,expiresIn:480});
     renderPage('invitation');
-    expect(await screen.findByText('This link looks incomplete')).toBeTruthy();
+    expect(await screen.findAllByText('This link looks incomplete')).toBeTruthy();
     expect(setupStatus).not.toHaveBeenCalled();
   });
 
@@ -114,7 +114,7 @@ describe('password link flows',()=>{
       purpose:'invitation', stage:'grant', expiresAt:Date.now()-1000,
     }));
     renderPage('invitation');
-    expect(await screen.findByText('This link looks incomplete')).toBeTruthy();
+    expect(await screen.findAllByText('This link looks incomplete')).toBeTruthy();
     expect(setupStatus).not.toHaveBeenCalled();
     expect(window.sessionStorage.length).toBe(0);
   });
@@ -132,11 +132,11 @@ describe('password link flows',()=>{
     setup.mockResolvedValue({setupCompleted:true});
     renderPage('invitation','proof');
     await screen.findByLabelText('New password');
-    fireEvent.click(screen.getByRole('button',{name:'Activate account'}));
+    fireEvent.click(screen.getByRole('button',{name:'Set password'}));
     expect(setup).not.toHaveBeenCalled();
     fireEvent.change(screen.getByLabelText('New password'),{target:{value:'a-strong-password-123'}});
     fireEvent.change(screen.getByLabelText('Confirm password'),{target:{value:'a-strong-password-123'}});
-    fireEvent.click(screen.getByRole('button',{name:'Activate account'}));
+    fireEvent.click(screen.getByRole('button',{name:'Set password'}));
     expect(await screen.findByText('Welcome to RDR School!')).toBeTruthy();
     expect(screen.getByTestId('mobile-recovery-title').textContent).toBe('Set password');
     expect(screen.getByRole('link',{name:/Go to login/i})).toBeTruthy();
@@ -149,11 +149,11 @@ describe('password link flows',()=>{
     for(let attempt=0;attempt<2;attempt++){
       fireEvent.change(screen.getByLabelText('New password'),{target:{value:'a-strong-password-123'}});
       fireEvent.change(screen.getByLabelText('Confirm password'),{target:{value:'a-strong-password-123'}});
-      fireEvent.click(screen.getByRole('button',{name:'Activate account'}));
+      fireEvent.click(screen.getByRole('button',{name:'Set password'}));
       if(attempt===0) await screen.findByText(/one more attempt/i);
     }
     expect(await screen.findByText('We couldn’t finish your setup')).toBeTruthy();
-    expect(screen.queryByRole('button',{name:'Activate account'})).toBeNull();
+    expect(screen.queryByRole('button',{name:'Set password'})).toBeNull();
     expect(setup).toHaveBeenCalledTimes(2);
   });
 
