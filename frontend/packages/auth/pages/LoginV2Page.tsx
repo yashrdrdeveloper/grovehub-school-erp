@@ -1,2 +1,2 @@
-/** Compatibility entry point. Login implementation lives in pages/login. */
-export { Login as LoginV2Page } from './login';
+/** Compatibility entry point. Implementation lives in pages/login. */
+export { LoginContainer as LoginV2Page } from './login';
