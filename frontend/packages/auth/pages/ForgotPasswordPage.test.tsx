@@ -34,7 +34,7 @@ describe('forgot password recovery',()=>{
     fireEvent.click(screen.getByRole('button',{name:'Send reset link'}));
     expect(screen.getByText('Please enter your email address.')).toBeTruthy();
     expect(mockForgotPassword).not.toHaveBeenCalled();
-    expect(screen.getByRole('link',{name:'Back to sign in'})).toBeTruthy();
+    expect(screen.getAllByRole('link',{name:'Back to sign in'}).length).toBeGreaterThan(0);
   });
 
   it('shows a fixed countdown, allows editing the address, and permits resend after 30 seconds',async()=>{
@@ -50,14 +50,16 @@ describe('forgot password recovery',()=>{
     expect(screen.getByText('Request received!')).toBeTruthy();
     expect(screen.getByText('If eligible, a password reset link will be sent to first@example.com.')).toBeTruthy();
     expect(mockForgotPassword).toHaveBeenCalledWith('first@example.com');
+    expect(screen.getByText('Check your email')).toBeTruthy();
+    expect(screen.getByText(/a password reset link will be sent to/i)).toBeTruthy();
     expect(screen.getByRole('link',{name:'Back to sign in'})).toBeTruthy();
 
-    const cooldownButton=screen.getByRole('button',{name:'Resend in 30s'});
+    const cooldownButton=screen.getAllByRole('button',{name:'Resend in 30s'})[0];
     expect((cooldownButton as HTMLButtonElement).disabled).toBe(true);
     fireEvent.change(email,{target:{value:'corrected@example.com'}});
     expect(email.value).toBe('corrected@example.com');
     expect(screen.getByText('Email address updated')).toBeTruthy();
-    expect((screen.getByRole('button',{name:'Resend in 30s'}) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getAllByRole('button',{name:'Resend in 30s'})[0] as HTMLButtonElement).disabled).toBe(true);
 
     act(()=>{jest.advanceTimersByTime(30_100);});
     const send=screen.getByRole('button',{name:'Send reset link'});
@@ -79,7 +81,7 @@ describe('forgot password recovery',()=>{
     fireEvent.change(screen.getByRole('textbox',{name:'Email address'}),{target:{value:'parent@example.com'}});
     fireEvent.click(screen.getByRole('button',{name:'Send reset link'}));
     await waitFor(()=>expect(screen.getByText('Request received!')).toBeTruthy());
-    fireEvent.click(screen.getByRole('link',{name:'Back to sign in'}));
+    fireEvent.click(screen.getAllByRole('link',{name:'Back to sign in'})[0]);
     expect(screen.getByText('Sign in page')).toBeTruthy();
   });
 });
