@@ -29,7 +29,11 @@ describe('RDR Login V2',()=>{
     expect(screen.getByRole('button',{name:/^sign in$/i})).toBeTruthy();
     expect(screen.queryByRole('button',{name:/continue with google/i})).toBeNull();
     expect(screen.queryByRole('button',{name:/create account/i})).toBeNull();
-    expect(screen.getByRole('link',{name:'Forgot password?'}).getAttribute('href')).toBe('/forgot-password');
+    const forgotLinks=screen.getAllByRole('link',{name:'Forgot password?'});
+    expect(forgotLinks).toHaveLength(2);
+    expect(forgotLinks.every(link=>link.getAttribute('href')==='/forgot-password')).toBe(true);
+    expect(forgotLinks[0].classList.contains('rdr-login-v2__forgot-desktop')).toBe(true);
+    expect(forgotLinks[1].classList.contains('rdr-login-v2__forgot-mobile')).toBe(true);
   });
 
   it('uses minimal phone structure without extra mobile headings or decorative imagery',()=>{
@@ -41,6 +45,7 @@ describe('RDR Login V2',()=>{
     expect(container.querySelector('.rdr-login-v2__mobile-illustration')).toBeNull();
     expect(container.querySelector('.rdr-login-v2__mobile-security')).toBeNull();
     expect(container.querySelector('.rdr-login-v2__mobile-appearance')).not.toBeNull();
+    expect(container.querySelector('.rdr-login-v2__form--signin > .rdr-login-v2__forgot-mobile')).not.toBeNull();
     expect(screen.getByRole('button',{name:'Light mobile theme'})).toBeTruthy();
   });
 
