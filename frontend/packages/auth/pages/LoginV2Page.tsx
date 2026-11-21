@@ -67,7 +67,7 @@ export const LoginV2Page = () => {
             <div className="rdr-login-v2__field">
               <div className="rdr-login-v2__password-label">
                 <label htmlFor={`${fieldId}-password`}>Password</label>
-                <Link to="/forgot-password">Forgot password?</Link>
+                <Link className="rdr-login-v2__forgot-desktop" to="/forgot-password">Forgot password?</Link>
               </div>
               <div className="rdr-login-v2__input-shell">
                 <LockKeyhole size={18} aria-hidden="true"/>
@@ -99,6 +99,7 @@ export const LoginV2Page = () => {
               <span>{busy?'Signing in…':'Sign in'}</span>
               {busy?<LoaderCircle className="rdr-login-v2__spinner" size={19} aria-hidden="true"/>:<ArrowRight size={19} aria-hidden="true"/>}
             </button>
+            <Link className="rdr-login-v2__forgot-mobile" to="/forgot-password">Forgot password?</Link>
           </form>
   </LoginLayout>;
 };
