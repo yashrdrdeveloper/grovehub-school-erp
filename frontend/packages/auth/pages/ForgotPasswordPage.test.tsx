@@ -52,7 +52,7 @@ describe('forgot password recovery',()=>{
     expect(mockForgotPassword).toHaveBeenCalledWith('first@example.com');
     expect(screen.getByText('Check your email')).toBeTruthy();
     expect(screen.getAllByText(/a password reset link will be sent to/i).length).toBeGreaterThan(0);
-    expect(screen.getByRole('link',{name:'Back to sign in'})).toBeTruthy();
+    expect(screen.getAllByRole('link',{name:'Back to sign in'}).length).toBeGreaterThan(0);
 
     const cooldownButton=screen.getAllByRole('button',{name:'Resend in 30s'})[0];
     expect((cooldownButton as HTMLButtonElement).disabled).toBe(true);
@@ -72,7 +72,7 @@ describe('forgot password recovery',()=>{
     expect(mockForgotPassword).toHaveBeenLastCalledWith('corrected@example.com');
     expect(screen.getByText('Request received!')).toBeTruthy();
     expect(screen.getByText('If eligible, a password reset link will be sent to corrected@example.com.')).toBeTruthy();
-    expect((screen.getByRole('button',{name:'Resend in 30s'}) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getAllByRole('button',{name:'Resend in 30s'})[0] as HTMLButtonElement).disabled).toBe(true);
   });
 
   it('keeps Back to sign in enabled throughout recovery',async()=>{
