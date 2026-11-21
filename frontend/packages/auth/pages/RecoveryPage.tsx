@@ -7,6 +7,7 @@ import { accountsApi } from '@Business/accounts';
 import { ApiError } from '@Business/api';
 
 import { LoginLayout } from './LoginLayout';
+import { AuthMobileStatusArt } from './AuthMobileArtwork';
 import { clearRecoveryFlow, readRecoveryFlow, saveRecoveryGrant, saveRecoveryProof } from './recoveryFlowSession';
 
 type Purpose = 'recovery' | 'invitation';
@@ -17,6 +18,13 @@ const RecoveryArtwork = ({ state, invitation }: { state: ViewState; invitation: 
   const success = state === 'success';
   const checking = state === 'checking';
   const Icon = success ? PartyPopper : checking ? ShieldCheck : state === 'missing' ? Link2Off : state === 'attempts-exhausted' ? AlertCircle : Clock3;
+  const mobileStatusTitle = success
+    ? invitation ? 'Account ready' : 'Password updated'
+    : checking ? 'Checking your link'
+    : state === 'missing' ? 'This link looks incomplete'
+    : state === 'attempts-exhausted' ? 'Setup unavailable'
+    : state === 'unavailable' ? 'Unable to check your link'
+    : 'This link has expired';
   const title = success
     ? invitation ? 'Welcome to RDR School!' : 'Password updated!'
     : checking ? 'Checking your secure link'
@@ -32,6 +40,8 @@ const RecoveryArtwork = ({ state, invitation }: { state: ViewState; invitation: 
     : state === 'unavailable' ? 'A connection issue prevented verification. Your link may still be valid.'
     : invitation ? 'It may have expired or already been used. Ask your school administrator to regenerate the invitation.' : 'Your reset link has expired or has already been used. Please request a new one.';
   return <div className={`rdr-recovery__art rdr-recovery__art--${success ? 'success' : checking ? 'checking' : 'problem'}`} role="status" aria-live="polite">
+    <AuthMobileStatusArt kind={state === 'success' ? 'success' : state === 'checking' ? 'checking' : state === 'expired' ? 'expired' : state === 'unavailable' ? 'unavailable' : state === 'attempts-exhausted' ? 'attempts-exhausted' : 'missing'}/>
+    <strong className="rdr-recovery__mobile-status-title">{mobileStatusTitle}</strong>
     <div className="rdr-recovery__art-visual" aria-hidden="true">
       <span className="rdr-recovery__art-orbit rdr-recovery__art-orbit--one"/>
       <span className="rdr-recovery__art-orbit rdr-recovery__art-orbit--two"/>
@@ -247,7 +257,7 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
             {error && <p role="alert" className="rdr-recovery__inline-error"><AlertCircle size={16}/>{error}</p>}
           </div>
           <button type="submit" className="rdr-login-v2__submit" disabled={view === 'saving'}>
-            {view === 'saving' ? 'Securing your account…' : invitation ? 'Activate account' : 'Reset password'}
+            {view === 'saving' ? 'Securing your account…' : invitation ? 'Set password' : 'Reset password'}
             {view === 'saving' ? <LoaderCircle className="rdr-login-v2__spinner" size={18}/> : <ArrowRight size={18}/>}
           </button>
           <span className="rdr-recovery__remaining">{invitation && attempts === 1 ? '1 activation attempt remaining' : '\u00a0'}</span>
