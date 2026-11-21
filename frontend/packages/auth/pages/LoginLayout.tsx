@@ -32,9 +32,14 @@ export const LoginLayout = ({ children, title, description, mobileDescription, m
   // On phones use the operating system's light/dark preference.
   // The existing desktop theme selector remains available.
   useEffect(() => {
-    if (typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 720px)').matches && preference !== 'system') {
-      setPreference('system');
-    }
+    if (typeof window.matchMedia !== 'function') return;
+    const mobile = window.matchMedia('(max-width: 720px)');
+    const syncMobileAppearance = () => {
+      if (mobile.matches && preference !== 'system') setPreference('system');
+    };
+    syncMobileAppearance();
+    mobile.addEventListener('change', syncMobileAppearance);
+    return () => mobile.removeEventListener('change', syncMobileAppearance);
   }, [preference, setPreference]);
 
   return (
