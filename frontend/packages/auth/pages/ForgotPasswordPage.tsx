@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { authenticationApi } from '@Business/auth';
 
 import { LoginLayout } from './LoginLayout';
+import { AuthMobileStatusArt } from './AuthMobileArtwork';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const RESEND_COOLDOWN_MS = 30_000;
@@ -12,6 +13,7 @@ const RESEND_COOLDOWN_MS = 30_000;
 /** Keeps the recovery flow predictable without revealing whether an email is registered. */
 export const ForgotPasswordPage = () => {
   const id = useId();
+  const formId = useId();
   const [email, setEmail] = useState('');
   const [lastRequestedEmail, setLastRequestedEmail] = useState('');
   const [busy, setBusy] = useState(false);
@@ -67,9 +69,9 @@ export const ForgotPasswordPage = () => {
         ? 'Resend reset link'
         : 'Send reset link';
 
-  return <LoginLayout title="Forgot password?" description="We’ll help you get back into your school workspace." mobileDescription="Reset your password securely." minimalMobile mobileTitle="Forgot password?" eyebrow="ACCOUNT RECOVERY">
-    <div className="rdr-auth-flow rdr-auth-flow--forgot">
-      <form className="rdr-login-v2__form rdr-auth-flow__form" onSubmit={event => void submit(event)} noValidate>
+  return <LoginLayout title="Forgot password?" description="We’ll help you get back into your school workspace." mobileDescription="Enter your email and we’ll send a reset link." minimalMobile mobileTitle="Forgot password?" eyebrow="ACCOUNT RECOVERY">
+    <div className={`rdr-auth-flow rdr-auth-flow--forgot${noticeSuccess ? " rdr-auth-flow--sent" : ""}`}>
+      <form id={formId} className="rdr-login-v2__form rdr-auth-flow__form" onSubmit={event => void submit(event)} noValidate>
         <div className="rdr-auth-flow__fields">
           <div className={`rdr-auth-flow__notice ${noticeSuccess ? 'rdr-auth-flow__notice--success' : 'rdr-auth-flow__notice--info'}`}
             role="status" aria-live="polite">
@@ -90,7 +92,7 @@ export const ForgotPasswordPage = () => {
             <div className="rdr-login-v2__input-shell">
               <Mail size={18} aria-hidden="true"/>
               <input id={id} type="email" inputMode="email" autoComplete="email"
-                placeholder="you@school.edu" value={email}
+                placeholder="Email" value={email}
                 aria-invalid={Boolean(emailError)}
                 aria-describedby={emailError ? `${id}-error` : undefined}
                 onChange={event => { setEmail(event.target.value); setEmailError(''); setError(''); }} required/>
@@ -114,6 +116,18 @@ export const ForgotPasswordPage = () => {
           </div>
         </div>
       </form>
+      {noticeSuccess && <div className="rdr-auth-flow__mobile-success" role="status" aria-live="polite">
+        <AuthMobileStatusArt kind="email"/>
+        <h3>Check your email</h3>
+        <p>If this email address is eligible, a password reset link will be sent to <strong>{lastRequestedEmail}</strong>.</p>
+        <Link className="rdr-login-v2__submit" to="/login">Back to sign in</Link>
+        <button type="submit" form={formId} className="rdr-auth-flow__resend" disabled={busy || cooldown}>
+          {busy ? 'Sending…' : cooldown ? `Resend in ${secondsLeft}s` : 'Resend reset link'}
+        </button>
+        <button type="button" className="rdr-auth-flow__resend" onClick={() => {
+          setLastRequestedEmail('');setEmail('');setEmailError('');setError('');
+        }}>Use another email</button>
+      </div>}
     </div>
   </LoginLayout>;
 };
