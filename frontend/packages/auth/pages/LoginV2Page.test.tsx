@@ -42,20 +42,20 @@ describe('RDR Login V2',()=>{
     expect(Boolean(forgot && submit && (forgot.compareDocumentPosition(submit) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
   });
 
-  it('uses minimal phone structure without extra mobile headings or decorative imagery',()=>{
+  it('uses the approved RDR school scene and compact phone heading',()=>{
     const {container}=render(<MemoryRouter><LoginV2Page/></MemoryRouter>);
     const layout=container.querySelector('.rdr-login-v2');
     expect(layout?.classList.contains('rdr-login-v2--mobile-minimal')).toBe(true);
     expect(container.querySelector('.rdr-login-v2__mobile-signin-title')?.textContent).toBe('Sign in');
-    expect(container.querySelector('.rdr-login-v2__mobile-header .school-monogram')).not.toBeNull();
+    expect(container.querySelector('.rdr-login-v2__mobile-header .rdr-auth-mobile-mark')).not.toBeNull();
     expect(container.querySelector('.rdr-login-v2__mobile-illustration')).toBeNull();
     expect(container.querySelector('.rdr-login-v2__mobile-security')).toBeNull();
-    expect(container.querySelector('.rdr-login-v2__mobile-appearance')).not.toBeNull();
-    expect(container.querySelector('svg.rdr-login-v2__mobile-school-art')).not.toBeNull();
+    expect(container.querySelector('.rdr-login-v2__mobile-appearance')).toBeNull();
+    expect(container.querySelector('svg.rdr-auth-mobile-scene')).not.toBeNull();
     expect(container.querySelector('.rdr-login-v2__mobile-school-name')?.textContent).toBe('RDR School');
     expect(container.querySelector('.rdr-login-v2__mobile-description')?.textContent).toContain('workspace');
     expect(container.querySelector('.rdr-login-v2__form--signin > .rdr-login-v2__forgot-mobile')).not.toBeNull();
-    expect(screen.getByRole('button',{name:'Light mobile theme'})).toBeTruthy();
+    expect(screen.queryByRole('button',{name:'Light mobile theme'})).toBeNull();
   });
 
   it('shows field validation and lets users toggle password visibility',async()=>{
