@@ -1,24 +1,18 @@
 import { LoginLayout } from '../LoginLayout';
 
 import { LOGIN_COPY } from './config';
-import { useLogin } from './hooks/useLogin';
-import { useLoginViewport } from './hooks/useLoginViewport';
 import { DesktopLogin } from './templates/desktopLogin';
 import { MobileLogin } from './templates/mobileLogin';
+import type { LoginPageProps } from './types';
 
-/** Page container: only binds the login use case to its active presentation. */
-export const Login = () => {
-  const login = useLogin();
-  const isMobile = useLoginViewport();
-
-  return (
-    <LoginLayout
-      title={LOGIN_COPY.desktopTitle}
-      description={LOGIN_COPY.desktopDescription}
-      mobileTitle={LOGIN_COPY.mobileTitle}
-      mobileDescription={LOGIN_COPY.mobileDescription}
-      minimalMobile>
-      {isMobile ? <MobileLogin {...login}/> : <DesktopLogin {...login}/>}
-    </LoginLayout>
-  );
-};
+/** Stateless page composition. LoginContainer owns state and side effects. */
+export const Login = ({ controls, isMobile }: LoginPageProps) => (
+  <LoginLayout
+    title={LOGIN_COPY.desktopTitle}
+    description={LOGIN_COPY.desktopDescription}
+    mobileTitle={LOGIN_COPY.mobileTitle}
+    mobileDescription={LOGIN_COPY.mobileDescription}
+    minimalMobile>
+    {isMobile ? <MobileLogin {...controls}/> : <DesktopLogin {...controls}/>}
+  </LoginLayout>
+);
