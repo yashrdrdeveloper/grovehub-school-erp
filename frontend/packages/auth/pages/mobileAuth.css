@@ -11,6 +11,7 @@
 .rdr-login-v2__mobile-description,
 .rdr-login-v2__forgot-mobile,
 .rdr-auth-mobile-status-art,
+.rdr-recovery__mobile-status-title,
 .rdr-auth-flow__mobile-success {display:none}
 
 @media (max-width:720px) {
@@ -343,6 +344,10 @@
     overflow-wrap:anywhere;
   }
   .rdr-auth-flow__mobile-success .rdr-login-v2__submit {margin-top:1.4rem}
+  .rdr-auth-flow__mobile-success .rdr-login-v2__submit svg,
+  .rdr-recovery__state .rdr-login-v2__submit svg:not(.rdr-login-v2__spinner),
+  .rdr-recovery__actions .rdr-login-v2__submit svg:not(.rdr-login-v2__spinner) {display:none}
+
   .rdr-auth-flow__mobile-success .rdr-auth-flow__secondary-slot {margin-top:0}
   .rdr-auth-flow__mobile-success .rdr-auth-flow__resend {
     align-self:center;
@@ -370,6 +375,17 @@
   }
   .rdr-recovery__remaining:empty {display:none}
   .rdr-recovery__state {gap:0}
+  /* No duplicate Set/Reset heading above the illustration in terminal states. */
+  .rdr-login-v2__main:has(.rdr-recovery__state)>.rdr-login-v2__mobile-signin-title,
+  .rdr-login-v2__main:has(.rdr-recovery__state)>.rdr-login-v2__mobile-description,
+  .rdr-login-v2__main:has(.rdr-auth-flow--sent)>.rdr-login-v2__mobile-signin-title,
+  .rdr-login-v2__main:has(.rdr-auth-flow--sent)>.rdr-login-v2__mobile-description {
+    display:none;
+  }
+  .rdr-login-v2__main:has(.rdr-recovery__state),
+  .rdr-login-v2__main:has(.rdr-auth-flow--sent) {
+    padding-top:1.7rem;
+  }
   .rdr-recovery__art {
     display:flex;flex-direction:column;align-items:center;
     justify-content:flex-start;
