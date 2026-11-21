@@ -54,7 +54,13 @@ export const LoginLayout = ({ children, title, description, mobileDescription, m
               <path d="M237 94V157H308V94Z" fill="url(#rdr-school)"/>
               <path d="M246 100V154M259 100V154M272 100V154M285 100V154M298 100V154" stroke="#E8FDFF" strokeWidth="7"/>
               <path d="M238 157H308M235 162H312M232 167H315" stroke="#B9F1FA" strokeWidth="4"/>
+              <path d="M225 116H237V156H217V131Z" fill="#73C4DD" strokeWidth="1.5"/>
+              <path d="M219 133H233M219 142H233M219 151H233" stroke="#E1FBFF" strokeWidth="3"/>
+              <path d="M308 114H327L337 128V157H308Z" fill="#60B5CF" strokeWidth="1.5"/>
+              <path d="M314 132H330M314 142H330M314 152H330" stroke="#E1FBFF" strokeWidth="3"/>
               <path d="M265 157V128Q272 117 280 128V157" fill="#074E75" stroke="#DDFBFF" strokeWidth="3"/>
+              <circle cx="272" cy="82" r="6.5" fill="#F2FFFF" stroke="#4BA6C6" strokeWidth="1.5"/>
+              <path d="M272 77V82L275 84" stroke="#2A799A" strokeWidth="1.25" strokeLinecap="round"/>
               <path d="M272 60V43M272 43L291 48 272 54" stroke="#DDFBFF" strokeWidth="2.5"/>
             </g>
             <path d="M0 204C77 177 118 210 194 184S308 186 360 171V210H0Z" fill="#20B6B5" opacity=".9"/>
