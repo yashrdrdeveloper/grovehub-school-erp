@@ -22,6 +22,7 @@
     --phone-canvas:#05284f;
     --phone-card:transparent;
     --phone-input:#fff;
+    --phone-field-ink:#102e54;
     --phone-border:#d6e0ef;
     --phone-teal:#008b97;
     --phone-shade:#edf7ff;
@@ -271,7 +272,7 @@
     flex:1 1 0;min-width:0;width:0;height:100%;
     padding:0 .3rem 0 0;border:0!important;
     outline:0!important;background:transparent;
-    color:var(--phone-ink);font-size:1rem;font-weight:400;
+    color:var(--phone-field-ink);font-size:1rem;font-weight:400;
   }
   .rdr-login-v2__input-shell input::placeholder {
     font-size:.78rem;font-weight:400;color:#8191a6;
@@ -318,7 +319,8 @@
     border:0;border-radius:.86rem;
     background:linear-gradient(105deg,#032d59 2%,#006985 70%,#0ab7ab 100%);
     color:#fff;font-size:.84rem;line-height:1.3;font-weight:650;
-    box-shadow:0 .25rem .65rem rgba(0,45,82,.11);
+    border:1px solid rgba(209,253,252,.45);
+    box-shadow:0 .5rem 1.3rem rgba(0,14,44,.25);
     white-space:normal;text-align:center;
   }
   .rdr-login-v2__submit:disabled {opacity:.65;cursor:not-allowed}
@@ -545,6 +547,7 @@
     --phone-canvas:#091c33;
     --phone-card:transparent;
     --phone-input:#253750;
+    --phone-field-ink:#f4f8ff;
     --phone-border:#42526d;
     --phone-teal:#69dede;
     --phone-shade:#253a52;
@@ -565,7 +568,7 @@
   :root[data-theme="dark"] .rdr-recovery__form .rdr-login-v2__input-shell {
     background:var(--phone-input);border-color:var(--phone-border);box-shadow:none;
   }
-  :root[data-theme="dark"] .rdr-login-v2__input-shell input {color:var(--phone-ink)}
+  :root[data-theme="dark"] .rdr-login-v2__input-shell input {color:var(--phone-field-ink)}
   :root[data-theme="dark"] .rdr-login-v2__forgot-mobile {color:var(--phone-teal)!important}
   :root[data-theme="dark"] .rdr-recovery__requirement {
     background:#233f53;color:#d9f4ff;
