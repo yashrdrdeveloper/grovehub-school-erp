@@ -412,3 +412,133 @@
   .rdr-login-v2__input-shell,.rdr-login-v2__submit,
   .rdr-login-v2__mobile-appearance button {transition:none!important;animation:none!important}
 }
+
+/* Mockup fidelity: RDR School illustrated masthead and compact sign-in.
+   Designed against the 393 × 852 mobile reference; applies to every auth
+   route for masthead, and to sign-in only for fields/actions. */
+@media (max-width:720px) {
+  .rdr-login-v2__visual,
+  :root[data-theme="dark"] .rdr-login-v2__visual {
+    flex:0 0 clamp(15.75rem,36dvh,19.25rem);
+    background:linear-gradient(111deg,#03234d 5%,#07537b 58%,#04a9aa);
+  }
+  .rdr-login-v2__visual > .lv2-gradient {opacity:.58;mix-blend-mode:screen}
+  .rdr-login-v2__mobile-header {
+    padding:calc(env(safe-area-inset-top) + 1.35rem) 1.4rem 0;
+    align-items:flex-start;justify-content:space-between;
+  }
+  .rdr-login-v2__mobile-identity {
+    flex:0 1 auto;min-width:0;max-width:58%;
+    align-items:flex-start;flex-direction:column;gap:.78rem;
+  }
+  .rdr-login-v2__mobile-identity .school-monogram {
+    width:3.55rem;height:3.55rem;flex:0 0 3.55rem;
+    border-radius:1.05rem;padding:.58rem;
+  }
+  .rdr-login-v2__mobile-school-name {
+    display:block;white-space:normal;
+    font-size:clamp(1.1rem,5vw,1.3rem);
+    font-weight:700;letter-spacing:-.035em;line-height:1.15;
+  }
+  .rdr-login-v2__mobile-appearance {
+    flex:0 0 auto;align-self:flex-start;
+    padding:.1rem;border-radius:.7rem;
+    background:rgba(5,27,54,.23);
+  }
+  .rdr-login-v2__mobile-appearance button {
+    width:1.52rem;height:1.75rem;min-width:1.52rem;
+    border-radius:.5rem;
+  }
+  .rdr-login-v2__mobile-appearance button svg {
+    width:.83rem;height:.83rem;
+  }
+  .rdr-login-v2__mobile-school-art {
+    width:min(116%,31rem);max-width:none;
+    right:-4.3rem;bottom:-.55rem;
+    opacity:1;filter:drop-shadow(0 .35rem .65rem rgba(0,29,55,.12));
+  }
+  .rdr-login-v2__content,
+  :root[data-theme="dark"] .rdr-login-v2__content {
+    margin-top:-3.35rem;
+    border-radius:3.7rem 3.7rem 0 0;
+    padding:clamp(1.2rem,4dvh,2rem) clamp(1.2rem,5.3vw,1.65rem)
+      max(1.2rem,env(safe-area-inset-bottom));
+  }
+  .rdr-login-v2__main,
+  :root[data-theme="dark"] .rdr-login-v2__main,
+  .rdr-login-v2__main:has(.rdr-recovery),
+  .rdr-login-v2__main:has(.rdr-auth-flow--forgot) {
+    justify-content:flex-start;
+    flex:0 0 auto;
+    margin:0 auto;
+    padding:clamp(.7rem,2dvh,1.15rem) 0 1.2rem;
+  }
+  .rdr-login-v2__mobile-signin-title {
+    font-size:clamp(1.55rem,6.3vw,1.85rem);
+    font-weight:700;line-height:1.17;
+    margin-bottom:.55rem;
+  }
+  .rdr-login-v2__mobile-description {
+    font-size:.78rem;line-height:1.5;
+    margin-bottom:clamp(1.5rem,4vh,2rem);
+  }
+
+  /* Exact login-only control composition from the approved reference:
+     no visible labels, labels remain associated for screen readers. */
+  .rdr-login-v2__form--signin > .rdr-login-v2__field > label,
+  .rdr-login-v2__form--signin .rdr-login-v2__password-label {
+    position:absolute!important;width:1px!important;height:1px!important;
+    padding:0!important;margin:-1px!important;overflow:hidden!important;
+    clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;
+  }
+  .rdr-login-v2__form--signin > .rdr-login-v2__field + .rdr-login-v2__field {
+    margin-top:.82rem!important;
+  }
+  .rdr-login-v2__form--signin > .rdr-login-v2__field .rdr-login-v2__input-shell {
+    height:3rem;min-height:3rem;border-radius:.9rem;
+    background:var(--phone-input);
+  }
+  .rdr-login-v2__form--signin .rdr-login-v2__input-shell input::placeholder {
+    font-size:.8rem;
+  }
+  .rdr-login-v2__form--signin .rdr-login-v2__forgot-mobile {
+    display:block;align-self:flex-end;
+    margin:.8rem 0 .5rem;padding:.4rem .05rem;
+    font-size:.79rem;color:#087b90;text-align:right;
+  }
+  .rdr-login-v2__form--signin > .rdr-login-v2__submit {
+    margin-top:.7rem;
+    background:linear-gradient(105deg,#052f5c,#007c94 75%,#05b9ac);
+    border-radius:.95rem;
+    box-shadow:0 .3rem .8rem rgba(2,53,76,.10);
+  }
+  .rdr-login-v2__form--signin > .rdr-login-v2__feedback-slot--signin:empty {
+    display:none;
+  }
+  :root[data-theme="dark"] .rdr-login-v2__form--signin .rdr-login-v2__forgot-mobile {
+    color:#69ddde;
+  }
+}
+@media (max-width:720px) and (max-height:710px) {
+  .rdr-login-v2__visual,:root[data-theme="dark"] .rdr-login-v2__visual {
+    flex-basis:clamp(10rem,27dvh,12rem);
+  }
+  .rdr-login-v2__mobile-header {
+    padding-top:.65rem;
+  }
+  .rdr-login-v2__mobile-identity {
+    flex-direction:row;align-items:center;gap:.6rem;
+    max-width:65%;
+  }
+  .rdr-login-v2__mobile-identity .school-monogram {
+    width:2.75rem;height:2.75rem;flex-basis:2.75rem;
+  }
+  .rdr-login-v2__mobile-school-name {font-size:.95rem}
+  .rdr-login-v2__mobile-school-art {width:82%;right:-1.5rem}
+  .rdr-login-v2__content {margin-top:-1.75rem;border-radius:2rem 2rem 0 0}
+  .rdr-login-v2__mobile-description {margin-bottom:1rem}
+}
+@media (max-width:350px) and (min-height:711px) {
+  .rdr-login-v2__mobile-identity {max-width:52%}
+  .rdr-login-v2__mobile-school-name {font-size:1.05rem}
+}
