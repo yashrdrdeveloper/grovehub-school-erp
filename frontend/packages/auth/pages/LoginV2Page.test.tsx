@@ -6,6 +6,19 @@ import { LoginV2Page } from './LoginV2Page';
 const signIn=jest.fn<Promise<void>,[string,string]>();
 const setPreference=jest.fn();
 
+const originalMatchMedia = window.matchMedia;
+const setPhoneViewport = (isPhone: boolean) => {
+  Object.defineProperty(window, 'matchMedia', {
+    configurable: true,
+    value: (query: string) => ({
+      matches: isPhone && query === '(max-width: 720px)',
+      media: query,
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+    }),
+  });
+};
+
 jest.mock('@Components',()=>({SchoolMonogram:()=> 'RDR'}));
 jest.mock('./loginv2/SoffitGradient',()=>({__esModule:true,default:()=> <canvas className="lv2-gradient" aria-hidden="true"/>}));
 jest.mock('../core/providers/AuthProvider',()=>({
@@ -19,6 +32,11 @@ describe('RDR Login V2',()=>{
   beforeEach(()=>{
     signIn.mockReset();
     setPreference.mockReset();
+    setPhoneViewport(false);
+  });
+
+  afterAll(()=>{
+    Object.defineProperty(window,'matchMedia',{configurable:true,value:originalMatchMedia});
   });
 
   it('renders the unified login layout and gradient without photographs or registration',()=>{
@@ -30,16 +48,11 @@ describe('RDR Login V2',()=>{
     expect(screen.queryByRole('button',{name:/continue with google/i})).toBeNull();
     expect(screen.queryByRole('button',{name:/create account/i})).toBeNull();
     const forgotLinks=screen.getAllByRole('link',{name:'Forgot password?'});
-    expect(forgotLinks).toHaveLength(2);
-    expect(forgotLinks.every(link=>link.getAttribute('href')==='/forgot-password')).toBe(true);
-    expect(forgotLinks[0].classList.contains('rdr-login-v2__forgot-desktop')).toBe(true);
-    expect(forgotLinks[1].classList.contains('rdr-login-v2__forgot-mobile')).toBe(true);
-    const mobileForm=document.querySelector('.rdr-login-v2__form--signin');
-    const forgot=mobileForm?.querySelector('.rdr-login-v2__forgot-mobile');
-    const submit=mobileForm?.querySelector('button[type="submit"]');
-    expect(forgot).not.toBeNull();
-    expect(submit).not.toBeNull();
-    expect(Boolean(forgot && submit && (forgot.compareDocumentPosition(submit) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+    expect(forgotLinks).toHaveLength(1);
+    expect(forgotLinks[0]?.getAttribute('href')).toBe('/forgot-password');
+    expect(forgotLinks[0]?.classList.contains('rdr-login-v2__forgot-desktop')).toBe(true);
+    expect(document.querySelectorAll('.rdr-login-v2__form--signin')).toHaveLength(1);
+    expect(document.querySelectorAll('input[autocomplete="username"]')).toHaveLength(1);
   });
 
   it('uses the approved RDR school scene and compact phone heading',()=>{
@@ -56,6 +69,21 @@ describe('RDR Login V2',()=>{
     expect(container.querySelector('.rdr-login-v2__mobile-description')?.textContent).toContain('workspace');
     expect(container.querySelector('.rdr-login-v2__form--signin > .rdr-login-v2__forgot-mobile')).not.toBeNull();
     expect(screen.queryByRole('button',{name:'Light mobile theme'})).toBeNull();
+  });
+
+  it('renders only the mobile template with one set of inputs and a below-fields recovery link',()=>{
+    setPhoneViewport(true);
+    render(<MemoryRouter><LoginV2Page/></MemoryRouter>);
+    const form=document.querySelector('.rdr-login-v2__form--signin');
+    const link=form?.querySelector('.rdr-login-v2__forgot-mobile');
+    const submit=form?.querySelector('button[type="submit"]');
+    expect(form).not.toBeNull();
+    expect(document.querySelectorAll('.rdr-login-v2__form--signin')).toHaveLength(1);
+    expect(screen.getAllByRole('link',{name:'Forgot password?'})).toHaveLength(1);
+    expect(form?.querySelector('.rdr-login-v2__forgot-desktop')).toBeNull();
+    expect(link?.getAttribute('href')).toBe('/forgot-password');
+    expect(Boolean(link && submit && (link.compareDocumentPosition(submit) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+    expect(screen.getByRole('textbox',{name:'Email address'})).toBeTruthy();
   });
 
   it('shows field validation and lets users toggle password visibility',async()=>{
@@ -88,7 +116,7 @@ describe('RDR Login V2',()=>{
     expect(errors()[0].classList.contains('is-empty')).toBe(true);
     expect(errors()[1].classList.contains('is-empty')).toBe(false);
     expect(container.querySelector('.rdr-login-v2__mobile-signin-title')?.textContent).toBe('Sign in');
-    expect(container.querySelector('.rdr-login-v2__mobile-appearance')).not.toBeNull();
+    expect(container.querySelector('.rdr-login-v2__mobile-appearance')).toBeNull();
   });
 
   it('keeps one feedback region, with a clear authentication error and the same CTA',async()=>{
