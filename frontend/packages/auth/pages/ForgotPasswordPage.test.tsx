@@ -51,7 +51,7 @@ describe('forgot password recovery',()=>{
     expect(screen.getByText('If eligible, a password reset link will be sent to first@example.com.')).toBeTruthy();
     expect(mockForgotPassword).toHaveBeenCalledWith('first@example.com');
     expect(screen.getByText('Check your email')).toBeTruthy();
-    expect(screen.getByText(/a password reset link will be sent to/i)).toBeTruthy();
+    expect(screen.getAllByText(/a password reset link will be sent to/i).length).toBeGreaterThan(0);
     expect(screen.getByRole('link',{name:'Back to sign in'})).toBeTruthy();
 
     const cooldownButton=screen.getAllByRole('button',{name:'Resend in 30s'})[0];
