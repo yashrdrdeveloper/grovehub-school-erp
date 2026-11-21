@@ -3,10 +3,10 @@ Owns sign-in, forgot password, invitation setup and session runtime. `@Business/
 
 ## Login unit — container / presentation
 
-The login page lives in `pages/login/` and is exported through its `index.ts`.
+The login unit lives in `pages/login/` and is exported through its `index.ts`. `Login.tsx` is presentational; `LoginContainer.tsx` is the route entry point.
 The legacy `LoginV2Page` name is maintained as a compatibility export.
 
-- `Login.tsx` composes the screen and selects one active desktop or mobile template at the 720px breakpoint.
+- `Login.tsx` is a pure page composition that selects one active desktop or mobile template from supplied props. `LoginContainer.tsx` invokes the state and breakpoint hooks and binds them to `Login`.
 - `hooks/useLogin/useLogin.tsx` owns the controlled fields, client validation, password visibility, pending/submission guard, existing `useAuth().signIn` call and successful redirect.
 - `hooks/useLoginViewport/` subscribes to viewport changes; it renders **one** form rather than duplicate hidden forms (autofill and IDs remain unique).
 - `helpers/login.credentials.validation.ts` and `helpers/login.authentication.error.ts` are pure and depend on `config/login.config.ts` for field rules, public messages and paths.
