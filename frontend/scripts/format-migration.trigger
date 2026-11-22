@@ -1,1 +1,1 @@
-Evaluate safe full frontend formatting across Phase 2.1 without relaxing the audit gates.
+Retry full-tree formatting with whitespace-independent architecture and measured audit output.
