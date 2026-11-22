@@ -1,25 +1,15 @@
-import type { ButtonHTMLAttributes } from 'react';
-
+import { LoaderCircle } from 'lucide-react';
 import { cn } from '@Base/utilities';
+import { buttonVariants } from './config/buttonVariants.config';
+import type { ButtonComponent } from './types/button.props';
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
-  loading?: boolean;
-}
-
-export const Button = ({
-  variant = 'primary',
-  loading = false,
-  className,
-  children,
-  disabled,
-  ...props
-}: ButtonProps) => (
-  <button
-    className={cn('button', `button--${variant}`, className)}
-    disabled={disabled || loading}
-    {...props}
-  >
-    {loading ? 'Please wait…' : children}
+export const Button: ButtonComponent = ({
+  variant, size, loading = false, loadingText = 'Please wait…', fullWidth = false,
+  className, children, disabled, type = 'button', ...props
+}) => (
+  <button type={type} className={cn(buttonVariants({ variant, size }),
+    fullWidth && 'button--full', className)}
+    disabled={disabled || loading} aria-busy={loading || undefined} {...props}>
+    {loading ? <><LoaderCircle aria-hidden="true" className="gh-button__spinner" size={16}/><span>{loadingText}</span></> : children}
   </button>
 );
