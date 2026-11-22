@@ -127,3 +127,57 @@
 .rdr-login-v2__mobile-identity>.school-monogram{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 46px!important;width:46px!important;height:46px!important;min-width:46px!important;max-width:46px!important;padding:6px!important;border:1px solid #d7dde7!important;border-radius:10px!important;background:#eef2f7!important;box-shadow:none!important;color:#1f2a44!important}
 .rdr-login-v2__mobile-identity>.school-monogram .school-monogram__symbol{display:block!important;width:100%!important;height:100%!important;color:#1f2a44!important}
 }
+
+/* 2026-11-22 viewport fit: compact shared auth shell for tablets and phones.
+   Do not clip success/error states; only enable internal scroll when truly needed. */
+@media(min-width:721px){
+.rdr-login-v2{height:100dvh;min-height:0;overflow:hidden}
+.rdr-login-v2__frame{height:100dvh;min-height:0!important;overflow:hidden;grid-template-columns:minmax(0,40%) minmax(0,60%)}
+.rdr-login-v2__visual{height:100%;min-height:0;overflow:hidden}
+.rdr-login-v2__visual-brand{padding:clamp(16px,2.5dvh,30px) clamp(18px,3vw,40px)}
+.rdr-login-v2__visual-copy{padding:0 clamp(18px,3vw,40px) clamp(20px,3dvh,38px)}
+.rdr-login-v2__visual-copy h2{font-size:clamp(1.65rem,3vw,2.7rem);line-height:1.07;overflow-wrap:normal}
+.rdr-login-v2__visual-copy p{font-size:.75rem;line-height:1.5}
+.rdr-o1-art{inset:17% -7% 21%}
+.rdr-o1-art__orb{width:min(75%,38dvh)}
+.rdr-o1-art__book{width:min(62%,30dvh)}
+.rdr-login-v2__content{height:100%;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:clamp(14px,2.4dvh,28px) clamp(22px,4vw,56px)}
+.rdr-login-v2__toolbar{flex:0 0 auto}
+.rdr-login-v2__main{width:100%;max-width:420px;min-height:0;margin:auto!important;padding:clamp(8px,1.8dvh,20px) 0!important}
+.rdr-login-v2__heading h1{font-size:clamp(1.85rem,3vw,2.55rem);margin:9px 0 6px}
+.rdr-login-v2__heading p{margin-bottom:clamp(12px,2dvh,20px)!important}
+.rdr-login-v2__form{gap:clamp(10px,1.6dvh,16px)}
+.rdr-login-v2__form--signin>.rdr-login-v2__field+.rdr-login-v2__field{margin-top:clamp(9px,1.6dvh,16px)!important}
+.rdr-login-v2__input-shell{min-height:44px!important}
+.rdr-login-v2__submit{min-height:45px!important}
+.rdr-login-v2__closing{margin-top:clamp(14px,2.5dvh,26px)!important}
+.rdr-o1-auth-footer{margin-top:clamp(12px,2dvh,22px)!important}
+.rdr-login-v2__main>.rdr-login-v2__mobile-description,.rdr-login-v2__main>.rdr-login-v2__mobile-signin-title{display:none!important}
+.rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading p,.rdr-login-v2__main:has(.rdr-recovery) .rdr-login-v2__heading p{margin-bottom:14px!important}
+.rdr-login-v2__main:has(.rdr-auth-flow--forgot) .rdr-login-v2__heading h1,.rdr-login-v2__main:has(.rdr-recovery) .rdr-login-v2__heading h1{font-size:clamp(1.75rem,2.8vw,2.35rem)}
+.rdr-recovery__art-visual{height:clamp(72px,11dvh,110px)}
+.rdr-recovery__art{gap:clamp(4px,1dvh,9px)}
+.rdr-auth-flow--forgot .rdr-auth-flow__notice{min-height:0;height:auto;padding:10px 12px}
+}
+@media(min-width:721px) and (max-height:720px){
+.rdr-login-v2__visual-copy h2{font-size:clamp(1.5rem,2.7vw,2.15rem)}
+.rdr-login-v2__visual-copy p{font-size:.7rem}
+.rdr-login-v2__main{padding:6px 0!important}
+.rdr-login-v2__heading h1{font-size:1.85rem}
+.rdr-login-v2__closing{margin-top:12px!important}
+.rdr-o1-auth-footer{margin-top:10px!important}
+}
+@media(max-width:720px){
+.rdr-login-v2__frame{height:100dvh!important;min-height:0!important;overflow:hidden!important}
+.rdr-login-v2__content{min-height:0!important;overflow-y:auto!important;overscroll-behavior:contain;scrollbar-width:none}
+.rdr-login-v2__content::-webkit-scrollbar{display:none}
+.rdr-login-v2__main{padding-block:clamp(6px,1.2dvh,12px)!important}
+.rdr-login-v2__heading h1{font-size:clamp(1.5rem,6.6vw,2rem)!important}
+.rdr-login-v2__heading{margin-bottom:clamp(10px,2dvh,18px)!important}
+.rdr-recovery__art-visual{height:clamp(65px,11dvh,100px)!important}
+.rdr-recovery__art{gap:clamp(3px,.8dvh,7px)!important}
+.rdr-recovery__art h2,.rdr-recovery__mobile-status-title{font-size:clamp(1.2rem,5.2vw,1.6rem)!important;line-height:1.18!important}
+.rdr-auth-flow--forgot .rdr-auth-flow__notice{height:auto!important;min-height:0!important;padding:9px 11px!important}
+.rdr-login-v2__closing{margin-top:clamp(10px,2dvh,18px)!important}
+.rdr-o1-auth-footer{margin-top:clamp(10px,2dvh,18px)!important}
+}
