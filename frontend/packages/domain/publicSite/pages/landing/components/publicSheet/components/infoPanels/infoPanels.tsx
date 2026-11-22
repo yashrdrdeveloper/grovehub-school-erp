@@ -1,5 +1,5 @@
 import { ArrowRight, ArrowUpRight, BookOpenText, CalendarDays, ExternalLink, FileText, GraduationCap, Mail, MapPin, Phone, ShieldCheck } from 'lucide-react';
-import { disclosedDocuments, facilities, photographs, school } from '../../../../config/content';
+import { disclosedDocuments, facilities, photographs, school } from '../../../../constants/school.content';
 import { PanelPhoto } from '../panelPhoto';
 
 const AcademicPanel = ({onEnquire}:{onEnquire:()=>void}) => (

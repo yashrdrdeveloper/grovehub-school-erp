@@ -1,7 +1,7 @@
 import { ArrowRight, Check, Mail } from 'lucide-react';
 import { InputControl } from '@Components/components/InputControl';
 import { Form } from '@Components/components/Form';
-import { enquiryTypes } from '../../config/content';
+import { enquiryTypes } from '../../constants/school.content';
 import type { EnquiryFormComponent } from './types/enquiryForm';
 
 /** Presentational only; validation and transitions belong to useEnquiryForm. */

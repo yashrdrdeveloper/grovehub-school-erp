@@ -1,4 +1,4 @@
-import { enquiryTypes, school } from '../../../../config/content';
+import { enquiryTypes, school } from '../../../../constants/school.content';
 import type { GetEnquiryMailto } from './types/getEnquiryMailto';
 
 /** Prepares an email draft only; it never claims a CRM submission. */

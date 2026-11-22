@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ArrowRight, ArrowUpRight, MapPin, Menu, X } from 'lucide-react';
 import { SchoolMonogram } from '@Components';
-import { school } from '../../config/content';
+import { school } from '../../constants/school.content';
 import { EnquiryLink } from '../siteActions';
 
 const navItems = [

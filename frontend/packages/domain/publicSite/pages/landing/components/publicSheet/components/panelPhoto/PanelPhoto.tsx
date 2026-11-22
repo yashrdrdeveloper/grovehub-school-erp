@@ -1,5 +1,5 @@
 import { Sparkles } from 'lucide-react';
-import { photographs } from '../../../../config/content';
+import { photographs } from '../../../../constants/school.content';
 
 const PanelPhoto = ({index,alt}:{index:number;alt:string}) => {
   const photo=photographs[index];

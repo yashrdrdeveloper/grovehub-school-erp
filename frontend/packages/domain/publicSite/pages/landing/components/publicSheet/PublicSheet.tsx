@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { ArrowRight, GraduationCap, Phone, ShieldCheck, X } from 'lucide-react';
-import { school } from '../../config/content';
+import { school } from '../../constants/school.content';
 import { panelTitles, overviewPanels, type StoryKey } from './config/sheetCopy';
 import { StoryPanel } from './components/storyPanel';
 import { AcademicPanel, CampusPanel, GalleryPanel, AdmissionsPanel, ResourcesPanel, ContactPanel } from './components/infoPanels';

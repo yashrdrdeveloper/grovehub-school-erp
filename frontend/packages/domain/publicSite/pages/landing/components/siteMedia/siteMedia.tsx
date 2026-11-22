@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { BookOpen, Bus, Computer, FlaskConical, HeartPulse, Pencil, Presentation, ShieldCheck, Sparkles, Star, Trophy } from 'lucide-react';
-import { photographs } from '../../config/content';
+import { photographs } from '../../constants/school.content';
 
 const facilityIcons = [Computer, FlaskConical, Presentation, BookOpen, Trophy, Bus, HeartPulse, ShieldCheck];
 const ImageCard = ({

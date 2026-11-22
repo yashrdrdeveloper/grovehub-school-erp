@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
-import { photographs } from '../../config/content';
+import { photographs } from '../../constants/school.content';
 import { EnquiryLink } from '../siteActions';
 import { ImageCard } from '../siteMedia';
 

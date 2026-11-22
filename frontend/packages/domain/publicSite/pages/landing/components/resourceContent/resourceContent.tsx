@@ -1,5 +1,5 @@
 import { ArrowUpRight, BookOpen, CalendarDays, Clock3, Download, ExternalLink, FileCheck2, GraduationCap, Mail, MapPin, Phone, ShieldCheck } from 'lucide-react';
-import { disclosedDocuments, historicDisclosure, school } from '../../config/content';
+import { disclosedDocuments, historicDisclosure, school } from '../../constants/school.content';
 import { Heading } from '../siteMedia';
 import { IntroPage } from '../aboutContent';
 import { EnquiryForm } from '../enquiryForm';
