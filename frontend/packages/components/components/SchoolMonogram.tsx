@@ -1,6 +1,6 @@
 import { cn } from '@Base/utilities/cn';
 import { RdrSchoolMonogramSvg } from '@Assets/brand';
-import { SVGRenderer } from '../SVGRenderer';
+import { SVGRenderer } from './SVGRenderer';
 
 export interface SchoolMonogramProps {
   readonly className?: string;
