@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { ShellContainer } from '@Shell';
-import { resolveWorkspaceTheme } from '@Components/hooks/theme';
+import { resolveWorkspaceTheme } from '@Components/hooks/useWorkspaceTheme';
 
 import '@Styles/index.css';
 import './styles.css';
