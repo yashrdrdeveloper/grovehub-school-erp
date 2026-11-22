@@ -1,0 +1,40 @@
+/* Self-contained workspace appearance picker; all colors follow design tokens. */
+.root {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  width: 100%;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+  padding: 10px 3px;
+  border: 1px solid var(--gh-color-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--gh-color-muted);
+  font-size: 0.6875rem;
+  font-weight: var(--gh-weight-medium);
+  cursor: pointer;
+}
+
+.item:hover {
+  background: var(--gh-color-surface-subtle);
+}
+
+.item:focus-visible {
+  outline: var(--gh-focus-outline-width) solid var(--gh-color-ring);
+  outline-offset: 2px;
+}
+
+.active {
+  background: var(--gh-color-surface-subtle);
+  color: var(--gh-color-text-strong);
+  border-color: var(--gh-color-border);
+  font-weight: var(--gh-weight-semibold);
+}
