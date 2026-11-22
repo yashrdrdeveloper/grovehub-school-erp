@@ -99,8 +99,8 @@ export default function SoffitGradient() {
       gl.uniform3f(loc(n), parseInt(raw.slice(0, 2), 16)/255, parseInt(raw.slice(2, 4), 16)/255, parseInt(raw.slice(4, 6), 16)/255);
     };
     rgb('uBg', CONFIG.bgColor);
-    for (const key of ['colorA','colorB','colorC','colorD'] as const) rgb('u'+key[0].toUpperCase()+key.slice(1), CONFIG[key]);
-    for (const [key, value] of Object.entries(CONFIG)) if (typeof value === 'number') one('u'+key[0].toUpperCase()+key.slice(1), value);
+    for (const key of ['colorA','colorB','colorC','colorD'] as const) rgb('u'+key.charAt(0).toUpperCase()+key.slice(1), CONFIG[key]);
+    for (const [key, value] of Object.entries(CONFIG)) if (typeof value === 'number') one('u'+key.charAt(0).toUpperCase()+key.slice(1), value);
     let width = 1, height = 1;
     const resize = () => {
       const r = canvas.getBoundingClientRect();
