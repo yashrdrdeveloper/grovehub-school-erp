@@ -1,5 +1,5 @@
 import { useCallback, useRef, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@Components/router';
 
 import { useAuth } from '../../../../core/providers/authProvider';
 import { APP_ROUTE } from '@Business/app/routes';

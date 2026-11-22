@@ -1,7 +1,7 @@
 import { Button } from '@Components/components/Button';
 import { Box } from '@Components/components/Box';
 import type { ReactElement } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '@Components/router';
 import { Pin, PinOff } from '@Components/icons';
 import { APP_LAUNCHER_COPY } from '../constants/appLauncher.copy';
 import { getAppTestIds } from '../helpers/appLauncher.getAppTestIds';
