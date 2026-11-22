@@ -1,5 +1,19 @@
 # Frontend Code Guidelines
 
+## Phase 2.1 remediation record — 23 November 2026
+
+**Current working branch:** `phase-2.1-identity-account`. This record is a change log, not a CI pass certificate. Run the blocking checks and real-browser flow tests before merging.
+
+- **P1 audit gate corrected:** `scripts/lib/audit-guard.mjs` validates allowed file/code pairs, per-code ceilings, total findings, flagged file count and a complete matching audit summary. `NATIVE_COLLECTION` has been removed from the legacy allowlist and is now forbidden from recurring. The migration ceiling is 39 flagged files / 47 findings from the last recorded run, not a fresh measurement. `scripts/__tests__/audit-guard.test.mjs` is executed by `pnpm test:architecture` within `pnpm check:architecture`.
+- **P2 shared interaction ownership:** login, forgot-password and recovery submit controls now use the shared Button loading renderer rather than supplying their own spinner markup; existing submit IDs and disabled state contracts are retained.
+- **P2 generic owner enforcement:** `check-owner-structure.mjs` additionally rejects legacy helper nesting, forbidden barrels, `config/` folders and flat compound component files across the package tree rather than inspecting only Dialog.
+- **P1 incremental real CSS migration:** the Dashboard root and two-column layout are now in `Dashboard.module.css`, including responsive breakpoints and theme-resolved accent tokens. Their previous root/layout CSS declarations were removed from `app/styles.css`. This is a small, scoped migration; the global stylesheet, auth CSS and public site CSS still require owner-by-owner extraction.
+- **P2 formatter reliability:** `format:check:core` now runs `prettier --check`, never `--write`, in CI. Broader formatting rollout is still pending because legacy files are not yet uniformly formatted.
+
+**Not complete:** Remaining login/recovery/public-site CSS extraction, shell/sidebar and dashboard child styles, mobile/light/dark/browser accessibility checks, complete TypeScript/Jest/Vite validation, and whole-tree formatting enforcement. Do not lower or delete the audit thresholds without checking actual audit output, replacing global selectors with locally scoped rules, and verifying responsive behavior.
+
+---
+
 ## Revision 10 addendum — strict ownership, Dialog, forms and remaining legacy work (23 November 2026)
 
 **Precedence:** This addendum overrides any older example that keeps transport operations in a domain root, declares `types.ts` beside a domain index, imports a `Dialog/parts` barrel, duplicates form-control ID logic, or treats a CSS filename change as a genuine styling migration. These requirements apply to every future domain/service/component, not only authentication.
