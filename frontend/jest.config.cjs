@@ -12,7 +12,7 @@ module.exports = {
     ],
     '^.+\\.js$': '<rootDir>/scripts/test/transformEsm.cjs',
   },
-  transformIgnorePatterns: ['/node_modules/(?!lodash-es/)'],
+  transformIgnorePatterns: ['/node_modules/(?!\\.pnpm/lodash-es@|lodash-es/)'],
   moduleNameMapper: {
     '^.+\\.(css|scss)$': '<rootDir>/scripts/test/styleMock.cjs',
     '^@Base$': '<rootDir>/packages/base',
