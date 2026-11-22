@@ -62,8 +62,21 @@ if (/PublicLayout|PublicFrame/.test(routes)) {
   violations.push('public school routes must not use a workspace public layout');
 }
 const workspace = await source('packages/shell/registry/domains.registry.tsx');
+const appRouteConstants = await source('packages/business/app/routes/constants/app.routes.ts');
+const appPaths = new Map(
+  [...appRouteConstants.matchAll(/([A-Z][A-Z_]+):\s*['"]([^'"]+)['"]/g)]
+    .map(match => [match[1], match[2]]),
+);
 const childRoutes = workspace.split('export const workspaceRoutes = ')[1] || '';
-const implemented = new Set([...childRoutes.matchAll(/path:\s*['"]([^'"]+)['"]/g)].map(match => match[1]));
+const implemented = new Set(
+  [...childRoutes.matchAll(/path:\s*(APP_ROUTE\.[A-Z_]+|['"][^'"]+['"])/g)]
+    .map(match => {
+      const identifier = match[1];
+      if (identifier.startsWith('APP_ROUTE.')) return appPaths.get(identifier.slice('APP_ROUTE.'.length));
+      return identifier.slice(1, -1);
+    })
+    .filter(Boolean),
+);
 const catalogPaths = [...catalog.matchAll(/path:\s*['"]([^'"]+)['"]/g)].map(match => match[1]);
 for (const pathname of catalogPaths) {
   if (!implemented.has(pathname)) violations.push(`catalog path ${pathname} has no implemented protected route`);
