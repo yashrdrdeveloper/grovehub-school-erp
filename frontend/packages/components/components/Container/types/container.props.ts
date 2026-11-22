@@ -5,5 +5,6 @@ export interface ContainerProps extends HTMLAttributes<HTMLElement> {
   readonly as?: ContainerTag;
   readonly maxWidth?: ContainerWidth;
   readonly padded?: boolean;
+  readonly dataTestId?: string;
 }
 export type ContainerComponent = (props: ContainerProps) => ReactElement;

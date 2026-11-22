@@ -1,6 +1,6 @@
-import { cn } from '@Base/utilities';
+import { cn } from '@Base/utilities/cn';
 import type { CardComponent } from './types/card.props';
 
-export const Card: CardComponent = ({ className, children, ...props }) => (
-  <section className={cn('card', className)} {...props}>{children}</section>
+export const Card: CardComponent = ({ className, children, dataTestId, ...props }) => (
+  <section className={cn('card rounded-xl border border-border bg-card text-card-foreground shadow-sm', className)} data-testid={dataTestId} {...props}>{children}</section>
 );

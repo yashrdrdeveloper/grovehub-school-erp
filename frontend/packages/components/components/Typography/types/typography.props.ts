@@ -6,5 +6,6 @@ export interface TypographyProps extends HTMLAttributes<HTMLElement> {
   readonly as?: TypographyTag;
   readonly variant?: TypographyVariant;
   readonly tone?: TypographyTone;
+  readonly dataTestId?: string;
 }
 export type TypographyComponent = (props: TypographyProps) => ReactElement;

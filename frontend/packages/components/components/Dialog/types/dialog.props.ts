@@ -7,5 +7,6 @@ export interface DialogProps {
   readonly description?: string;
   readonly children: ReactNode;
   readonly className?: string;
+  readonly dataTestId?: string;
 }
 export type DialogComponent = (props: DialogProps) => ReactElement;
