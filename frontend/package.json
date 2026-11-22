@@ -16,7 +16,7 @@
     "audit:guidelines": "node scripts/audit-guidelines.mjs",
     "format": "prettier --write \"{app,packages,scripts}/**/*.{ts,tsx,js,jsx,mjs,css,scss,json,md}\"",
     "format:check": "prettier --check \"{app,packages,scripts}/**/*.{ts,tsx,js,jsx,mjs,css,scss,json,md}\"",
-    "format:check:core": "prettier --write packages/components/components/Button/Button.tsx packages/components/hooks/useBoolean/useBoolean.ts packages/components/hooks/useWorkspaceTheme/useWorkspaceTheme.ts packages/shell/components/topbar/Topbar.tsx packages/shell/hooks/useShell/useShell.ts packages/shell/templates/workspaceShell/WorkspaceShell.tsx && git diff --exit-code -- packages/components/components/Button/Button.tsx packages/components/hooks/useBoolean/useBoolean.ts packages/components/hooks/useWorkspaceTheme/useWorkspaceTheme.ts packages/shell/components/topbar/Topbar.tsx packages/shell/hooks/useShell/useShell.ts packages/shell/templates/workspaceShell/WorkspaceShell.tsx"
+    "format:check:core": "prettier --check packages/components/components/Button/Button.tsx packages/components/hooks/useBoolean/useBoolean.ts packages/components/hooks/useWorkspaceTheme/useWorkspaceTheme.ts packages/shell/components/topbar/Topbar.tsx packages/shell/hooks/useShell/useShell.ts packages/shell/templates/workspaceShell/WorkspaceShell.tsx"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
