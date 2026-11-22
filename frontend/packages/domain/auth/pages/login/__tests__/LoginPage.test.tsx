@@ -42,7 +42,7 @@ describe('LoginContainer',()=>{
   it('renders the original RDR identity and self-contained abstract academic artwork',()=>{
     render(<MemoryRouter><LoginV2Page/></MemoryRouter>);
     expect(screen.getByRole('heading',{name:'Welcome back.'})).toBeTruthy();
-    expect(document.querySelector('.rdr-auth-art svg.rdr-auth-art__svg')).not.toBeNull();
+    expect(screen.getByTestId('auth-ambient-svg')).not.toBeNull();
     expect(document.querySelector('.rdr-campus-art')).toBeNull();
     expect(document.querySelector('.rdr-login-v2__visual svg.rdr-o1-art__book')).toBeNull();
     expect(document.querySelectorAll('.rdr-login-v2 img')).toHaveLength(0);
@@ -144,7 +144,7 @@ describe('LoginContainer',()=>{
     expect(visual).not.toBeNull();
     expect(visual?.querySelectorAll('img,picture,video,source')).toHaveLength(0);
     expect(visual?.querySelectorAll('svg.rdr-o1-art__book')).toHaveLength(0);
-    expect(visual?.querySelectorAll('svg.rdr-auth-art__svg')).toHaveLength(1);
+    expect(visual?.querySelectorAll('[data-testid="auth-ambient-svg"]')).toHaveLength(1);
     expect(visual?.querySelectorAll('.rdr-campus-art')).toHaveLength(0);
     expect(visual?.textContent).toContain('RDR School');
   });

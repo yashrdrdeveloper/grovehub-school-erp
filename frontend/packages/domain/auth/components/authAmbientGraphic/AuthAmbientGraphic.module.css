@@ -1,0 +1,56 @@
+/* The desktop abstract art is local to AuthAmbientGraphic, not global auth markup. */
+.root {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(4px, 1.4dvh, 12px);
+  min-width: 0;
+  min-height: 0;
+  padding: clamp(5px, 1.5dvh, 15px) clamp(14px, 2.8vw, 40px);
+  color: var(--gh-color-muted);
+  pointer-events: none;
+}
+
+.svg {
+  display: block;
+  width: min(100%, 560px);
+  height: auto;
+  max-height: clamp(130px, 43dvh, 400px);
+  aspect-ratio: 560 / 380;
+  color: inherit;
+  --art-node-bg: var(--gh-color-surface-subtle);
+}
+
+.caption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  color: var(--gh-color-muted);
+  font-size: clamp(9px, 0.83vw, 11px);
+  font-weight: var(--gh-weight-heavy);
+  letter-spacing: 0.16em;
+  white-space: nowrap;
+}
+
+.separator {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--gh-color-accent);
+}
+
+@media (max-width: 720px) {
+  .root {
+    display: none;
+  }
+}
+
+@media (min-width: 721px) and (max-height: 680px) {
+  .svg {
+    max-height: clamp(90px, 25dvh, 190px);
+  }
+}
