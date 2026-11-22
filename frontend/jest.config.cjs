@@ -21,7 +21,21 @@ module.exports = {
     '^@Components/(.*)$': '<rootDir>/packages/components/$1',
     '^@Domain$': '<rootDir>/packages/domain',
     '^@Domain/(.*)$': '<rootDir>/packages/domain/$1',
-    '^@Shell$': '<rootDir>/packages/shell',
+    '^@Styles
+    '^@Shell/(.*)$': '<rootDir>/packages/shell/$1',
+  },
+};
+: '<rootDir>/packages/styles',
+    '^@Styles/(.*)
+    '^@Shell/(.*)$': '<rootDir>/packages/shell/$1',
+  },
+};
+: '<rootDir>/packages/styles/$1',
+    '^@Shell
+    '^@Shell/(.*)$': '<rootDir>/packages/shell/$1',
+  },
+};
+: '<rootDir>/packages/shell',
     '^@Shell/(.*)$': '<rootDir>/packages/shell/$1',
   },
 };
