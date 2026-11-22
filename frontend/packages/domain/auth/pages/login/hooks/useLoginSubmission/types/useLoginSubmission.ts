@@ -3,7 +3,6 @@ import type { FormEventHandler } from 'react';
 import type { LoginFormModel } from '../../useLoginForm';
 
 export interface LoginSubmissionModel {
-  readonly isSubmitting: boolean;
   readonly onSubmit: FormEventHandler<HTMLFormElement>;
 }
 

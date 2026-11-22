@@ -18,7 +18,7 @@ export const useLogin: UseLogin = () => {
       email: form.email,
       password: form.password,
       isPasswordVisible: form.isPasswordVisible,
-      isSubmitting: submission.isSubmitting,
+      isSubmitting: form.isSubmitting,
       errorMessage: form.errorMessage,
       fieldErrors: form.fieldErrors,
     },

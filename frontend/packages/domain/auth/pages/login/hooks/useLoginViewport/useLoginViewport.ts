@@ -1,21 +1,9 @@
 import { useSyncExternalStore } from 'react';
 
+import { getMobileSnapshot } from './helpers/getMobileSnapshot';
+import { subscribeToViewport } from './helpers/subscribeToViewport';
 import type { UseLoginViewport } from './types/useLoginViewport';
 
-const PHONE_VIEWPORT = '(max-width: 720px)';
-
-const getMobileSnapshot = (): boolean =>
-  typeof window !== 'undefined'
-  && typeof window.matchMedia === 'function'
-  && window.matchMedia(PHONE_VIEWPORT).matches;
-
-const subscribeToViewport = (notify: () => void): (() => void) => {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return () => {};
-  const query = window.matchMedia(PHONE_VIEWPORT);
-  query.addEventListener('change', notify);
-  return () => query.removeEventListener('change', notify);
-};
-
-/** Keep a single active form in the DOM; CSS-only duplication breaks IDs and autofill. */
+/** Only a hook: viewport reading and subscription are named reusable helpers. */
 export const useLoginViewport: UseLoginViewport = () =>
   useSyncExternalStore(subscribeToViewport, getMobileSnapshot, () => false);

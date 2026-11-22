@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useRef, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../../../../core/providers/AuthProvider';
@@ -9,11 +9,10 @@ import type { UseLoginSubmission } from './types/useLoginSubmission';
 
 /** Validates, serializes submission, maps failures and redirects on success. */
 export const useLoginSubmission: UseLoginSubmission = (form: LoginFormModel) => {
-  const { email, password, setFieldErrors, setErrorMessage } = form;
+  const { email, password, setFieldErrors, setErrorMessage, setSubmitting } = form;
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const submittingRef = useRef(false);
-  const [isSubmitting, setSubmitting] = useState(false);
 
   const submitCredentials = useCallback(async (): Promise<void> => {
     if (submittingRef.current) return;
@@ -34,12 +33,12 @@ export const useLoginSubmission: UseLoginSubmission = (form: LoginFormModel) => 
       submittingRef.current = false;
       setSubmitting(false);
     }
-  }, [email, password, signIn, navigate, setFieldErrors, setErrorMessage]);
+  }, [email, password, signIn, navigate, setFieldErrors, setErrorMessage, setSubmitting]);
 
   const onSubmit = useCallback((event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     void submitCredentials();
   }, [submitCredentials]);
 
-  return { isSubmitting, onSubmit };
+  return { onSubmit };
 };
