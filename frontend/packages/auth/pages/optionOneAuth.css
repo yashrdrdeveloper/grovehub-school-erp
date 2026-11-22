@@ -44,6 +44,46 @@
 .rdr-login-v2__visual-brand>span:last-child{display:flex;flex-direction:column;min-width:0;gap:3px}
 .rdr-login-v2__visual-brand strong{font-weight:800;font-size:clamp(13px,1.4vw,17px);color:#1f2a44;letter-spacing:-.04em;line-height:1.14}
 .rdr-login-v2__visual-brand small{font-size:clamp(9px,.82vw,11px);color:#7e8795;line-height:1.3}
+/* One calm architectural illustration; no floating orbs, book or stock images. */
+.rdr-campus-art{
+  position:relative;z-index:1;display:grid;place-items:center;
+  flex:1 1 auto;min-height:0;min-width:0;width:100%;
+  padding:clamp(8px,2.5dvh,26px) clamp(18px,4.2vw,60px);
+  pointer-events:none
+}
+.rdr-campus-art__board{
+  width:min(100%,420px);max-height:100%;min-width:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border:1px solid #d5d8d2;border-radius:20px;
+  padding:clamp(12px,1.6vw,24px);
+  background:#ffffffc9;box-shadow:0 22px 55px #21334a12;
+  transform:rotate(-1.5deg)
+}
+.rdr-campus-art__overline{
+  align-self:flex-start;display:flex;align-items:center;gap:8px;
+  font-size:clamp(8px,.9vw,11px);font-weight:800;
+  letter-spacing:.14em;color:#7c775e;white-space:nowrap
+}
+.rdr-campus-art__dot{display:block;width:7px;height:7px;border-radius:50%;background:#ad9364}
+.rdr-campus-art__scene{display:block;width:100%;max-width:410px;max-height:clamp(142px,31dvh,300px);height:auto;aspect-ratio:520/340;object-fit:contain}
+.rdr-campus-art__caption{font-size:clamp(8px,.9vw,10px);font-weight:750;letter-spacing:.16em;color:#536477;text-align:center}
+.rdr-campus-art__caption span{color:#b29667;padding-inline:8px}
+.rdr-campus-art__stamp{
+  position:absolute;right:clamp(12px,3.1vw,43px);bottom:clamp(5px,1.8dvh,20px);
+  display:flex;align-items:center;gap:10px;border-radius:13px;
+  padding:10px 14px;border:1px solid #d7dbdc;
+  background:#fff;box-shadow:0 10px 26px #1f2a4417;
+  color:#344763;font-size:11px;font-weight:650;
+  transform:rotate(3deg)
+}
+.rdr-campus-art__stamp>span:last-child{display:flex;flex-direction:column;line-height:1.35}
+.rdr-campus-art__stamp strong{font-size:13px;color:#1f2a44}
+.rdr-campus-art__stamp-icon{display:grid;place-items:center;border-radius:9px;background:#f5f0e5;color:#a98b57;width:30px;height:30px;font-size:20px}
+@media (max-height:700px) and (min-width:721px){
+  .rdr-campus-art__scene{max-height:clamp(110px,23dvh,190px)}
+  .rdr-campus-art__board{padding:10px}
+  .rdr-campus-art__stamp{padding:7px 10px}
+}
 .rdr-login-v2__visual-copy{
  position:relative;z-index:2;flex-shrink:0;min-width:0;
  padding:0 clamp(20px,3.4vw,48px) clamp(24px,3.6dvh,46px)
@@ -67,11 +107,11 @@
 .rdr-login-v2__visual-footer i{width:4px;height:4px;border-radius:50%;background:currentColor}
 .rdr-login-v2__mobile-header{display:none}
 .rdr-login-v2__content{
- display:flex;flex-direction:column;min-width:0;min-height:0;height:100%;
+ display:flex;flex-direction:column;align-items:center;min-width:0;min-height:0;height:100%;
  padding:clamp(16px,3vw,40px) clamp(22px,5vw,70px);
  background:var(--auth-bg);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin
 }
-.rdr-login-v2__toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-shrink:0;min-width:0}
+.rdr-login-v2__toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-shrink:0;min-width:0;width:100%}
 .rdr-login-v2__back{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:var(--auth-muted)!important;white-space:nowrap}
 .rdr-login-v2__back svg{width:16px;height:16px}
 .rdr-login-v2__appearance{
@@ -83,7 +123,11 @@
  color:var(--auth-muted);background:transparent;border:0;border-radius:50%
 }
 .rdr-login-v2__appearance button.is-active{background:var(--auth-bg);color:var(--auth-ink);box-shadow:0 1px 6px #1f2a4420}
-.rdr-login-v2__main{width:100%;max-width:420px;min-width:0;margin:auto;padding:clamp(14px,2dvh,24px) 0}
+.rdr-login-v2__main{
+  flex:0 0 auto;align-self:center;
+  width:min(100%,440px)!important;max-width:440px!important;
+  min-width:0;margin:auto;padding:clamp(14px,2dvh,24px) 0
+}
 .rdr-login-v2__heading{margin:0 0 clamp(18px,2.7dvh,27px)}
 .rdr-login-v2__eyebrow{
  display:block;font-size:10px;letter-spacing:.14em;color:#9c775b;
@@ -125,10 +169,21 @@
  margin-right:-7px;padding:0;border:0;background:none;color:var(--auth-muted)
 }
 .rdr-login-v2__visibility svg{width:19px;height:19px}
-.rdr-login-v2__field-error--reserved{display:block;margin:5px 2px 0;font-size:11px;line-height:1.35;color:var(--auth-error);white-space:normal;overflow-wrap:anywhere}
-.rdr-login-v2__field-error--reserved.is-empty{display:none}
+.rdr-login-v2__field-error--reserved{
+  display:block;flex:0 0 auto;min-height:17px;margin:5px 2px 0;
+  font-size:11px;line-height:17px;color:var(--auth-error);
+  white-space:normal;overflow-wrap:anywhere
+}
+.rdr-login-v2__field-error--reserved.is-empty{visibility:hidden}
 .rdr-login-v2__feedback-slot,.rdr-auth-flow__error-slot,.rdr-recovery__error-slot{min-height:0;height:auto;margin:0}
-.rdr-login-v2__feedback-slot:empty,.rdr-auth-flow__error-slot:empty,.rdr-recovery__error-slot:empty{display:none}
+.rdr-auth-flow__error-slot:empty,.rdr-recovery__error-slot:empty{display:none}
+.rdr-login-v2__feedback-slot--signin{
+  display:flex;align-items:flex-start;min-height:46px;height:auto;
+  padding-top:9px;width:100%;min-width:0
+}
+.rdr-login-v2__feedback-slot--signin .rdr-login-v2__auth-error{
+  width:100%;margin:0;min-height:34px;padding:7px 9px
+}
 .rdr-login-v2__auth-error,.rdr-login-v2__error,.rdr-recovery__inline-error{
  display:flex;align-items:center;gap:8px;margin:10px 0 0;
  padding:9px 11px;border-radius:8px;border:1px solid #e8bcc6;
@@ -148,13 +203,13 @@
 .rdr-login-v2__closing{
  display:flex;justify-content:center;align-items:center;gap:7px;
  color:var(--auth-secondary);font-size:10px;line-height:1.3;
- white-space:nowrap;min-width:0;margin:24px 0 0;opacity:1;letter-spacing:normal
+ white-space:nowrap;min-width:0;margin:12px 0 0;opacity:1;letter-spacing:normal
 }
 .rdr-login-v2__closing>svg{width:13px;height:13px;flex-shrink:0}
 .rdr-login-v2__closing>span{font-size:inherit;white-space:nowrap}
 .rdr-o1-auth-footer{
  display:flex;align-items:center;justify-content:space-between;gap:12px;
- font-size:10px;color:var(--auth-secondary);margin-top:24px;white-space:nowrap
+ font-size:10px;color:var(--auth-secondary);margin-top:16px;white-space:nowrap
 }
 /* Forgot password: form and accepted-request state use identical UI at all breakpoints. */
 .rdr-auth-flow,.rdr-auth-flow__form,.rdr-auth-flow__fields,.rdr-auth-flow__actions{width:100%;min-width:0}
@@ -228,6 +283,9 @@
 }
 :root[data-theme="dark"] .rdr-login-v2__visual-brand strong,:root[data-theme="dark"] .rdr-login-v2__visual-copy h2{color:#fff}
 :root[data-theme="dark"] .rdr-login-v2__visual-brand small,:root[data-theme="dark"] .rdr-login-v2__visual-copy>p,:root[data-theme="dark"] .rdr-login-v2__visual-kicker,:root[data-theme="dark"] .rdr-login-v2__visual-footer{color:#d7d2e0}
+:root[data-theme="dark"] .rdr-campus-art__board{background:#eef0eadd;border-color:#465163}
+:root[data-theme="dark"] .rdr-campus-art__stamp{background:#f7f5ef;border-color:#c9d1d2}
+:root[data-theme="dark"] .rdr-campus-art__stamp strong{color:#1f2a44}
 :root[data-theme="dark"] .rdr-login-v2__visual-copy h2 em{color:#e3cba8}
 :root[data-theme="dark"] .rdr-login-v2__input-shell input::placeholder{color:#94a3b8}
 :root[data-theme="dark"] .rdr-login-v2__appearance button.is-active{background:#303e54}
@@ -256,7 +314,7 @@
 @media(max-width:720px){
  .rdr-login-v2__frame{display:flex;flex-direction:column}
  .rdr-login-v2__visual{height:auto;min-height:0;flex:0 0 calc(env(safe-area-inset-top) + 92px);background:var(--auth-bg)!important}
- .rdr-login-v2__visual-brand,.rdr-login-v2__visual-copy{display:none}
+ .rdr-login-v2__visual-brand,.rdr-login-v2__visual-copy,.rdr-campus-art{display:none}
  .rdr-login-v2__mobile-header{display:block;position:relative;z-index:1;width:100%;height:100%}
  .rdr-login-v2__mobile-identity{
    display:flex;align-items:center;gap:11px;position:absolute;
@@ -273,11 +331,11 @@
  .rdr-login-v2__mobile-school-name small{font-size:10px;color:var(--auth-muted);font-weight:500;letter-spacing:0}
  .rdr-login-v2__content{
   flex:1 1 0;height:auto;min-height:0;padding:0 clamp(20px,6vw,27px) max(13px,env(safe-area-inset-bottom));
-  justify-content:center;scrollbar-width:none;overflow-x:hidden;overflow-y:auto
+  align-items:center;justify-content:center;scrollbar-width:none;overflow-x:hidden;overflow-y:auto
  }
  .rdr-login-v2__content::-webkit-scrollbar{display:none}
  .rdr-login-v2__toolbar{display:none}
- .rdr-login-v2__main{margin:auto;max-width:420px;padding:10px 0 14px}
+ .rdr-login-v2__main{margin:auto;width:min(100%,420px)!important;max-width:420px!important;padding:10px 0 14px}
  .rdr-login-v2__heading{margin-bottom:clamp(17px,3dvh,26px)}
  .rdr-login-v2__heading h1{font-size:clamp(27px,7.3vw,35px);line-height:1.13;margin:0 0 10px}
  .rdr-login-v2__eyebrow{font-size:10px;color:#c19073;margin-bottom:13px}
@@ -298,8 +356,8 @@
  .rdr-login-v2__input-shell input{font-size:13px}
  .rdr-login-v2__field+.rdr-login-v2__field,.rdr-recovery__fields>.rdr-login-v2__field+.rdr-login-v2__field{margin-top:14px}
  .rdr-login-v2__submit{min-height:49px;margin-top:20px;font-size:12px}
- .rdr-login-v2__closing{margin-top:clamp(19px,3.7dvh,32px);font-size:clamp(9px,2.35vw,10px)}
- .rdr-o1-auth-footer{justify-content:center;gap:14px;margin-top:clamp(15px,3.2dvh,27px);font-size:10px}
+ .rdr-login-v2__closing{margin-top:10px;font-size:clamp(9px,2.35vw,10px)}
+ .rdr-o1-auth-footer{justify-content:center;gap:14px;margin-top:13px;font-size:10px}
   .rdr-auth-flow__mobile-success h3{font-size:clamp(22px,5.6vw,29px)}
  .rdr-auth-flow__mobile-success .rdr-login-v2__submit{margin-top:20px}
  .rdr-auth-mobile-status-art{height:96px}
