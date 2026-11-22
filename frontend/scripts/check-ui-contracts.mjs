@@ -33,7 +33,7 @@ for (const unit of await readdir(root, { withFileTypes: true })) {
     failures.push(`${unit.name}: missing explicit dataTestId propagation`);
   }
 
-  if (!forwardsToInput && !forwardsToNativeLeaf && !/data-testid/.test(source)
+  if (!forwardsToInput && !forwardsToNativeLeaf && !forwardsToTypography && !/data-testid/.test(source)
       && !/['"]data-testid['"]/.test(source)) {
     failures.push(`${unit.name}: dataTestId must reach a native DOM element`);
   }
