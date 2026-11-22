@@ -37,7 +37,7 @@ const [art, brand, renderer, routes, protectedLayout, shell, catalog, publicInde
   source('packages/shell/components/appRoutes/AppRoutes.tsx'),
   source('packages/shell/components/protectedLayout/ProtectedLayout.tsx'),
   source('packages/shell/Shell.tsx'),
-  source('packages/shell/registry/appCatalog.registry.ts'),
+  source('packages/shell/constants/shell.catalog.ts'),
   source('packages/domain/publicSite/index.ts'),
   source('../docs/engineering/frontend/FRONTEND_CODE_GUIDELINES.md'),
 ]);
@@ -61,7 +61,7 @@ if (!routes.includes('<RequireSession/>') || !routes.includes('<ProtectedLayout/
 if (/PublicLayout|PublicFrame/.test(routes)) {
   violations.push('public school routes must not use a workspace public layout');
 }
-const workspace = await source('packages/shell/registry/domains.registry.tsx');
+const workspace = await source('packages/shell/renderer/shell.routes.tsx');
 const appRouteConstants = await source('packages/business/app/routes/constants/app.routes.ts');
 const appPaths = new Map(
   [...appRouteConstants.matchAll(/([A-Z][A-Z_]+):\s*['"]([^'"]+)['"]/g)]
