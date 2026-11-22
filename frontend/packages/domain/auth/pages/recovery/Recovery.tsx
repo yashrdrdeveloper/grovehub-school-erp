@@ -1,10 +1,8 @@
 import { Box, BOX_TAG } from '@Components/components/Box';
-import type { ReactNode } from 'react';
 import { LoginLayout } from '../../components/loginLayout';
 import { LoginLayoutVariant } from '../../components/loginLayout/constants/loginLayout.variant';
 
-import { RecoveryPasswordForm } from './components/recoveryPasswordForm';
-import { RecoveryState } from './components/recoveryState';
+import { renderRecoveryContent } from './renderer/recovery.content';
 import type { RecoveryComponent } from './types';
 
 /** Stateless recovery/activation composition, one form in the DOM. */
@@ -15,8 +13,7 @@ export const Recovery: RecoveryComponent = (props) => {
   const description = 'Choose a strong password to protect your school account.';
   let mobileDescription = '';
   if (formVisible) mobileDescription = description;
-  let content: ReactNode = <RecoveryState {...props} />;
-  if (formVisible) content = <RecoveryPasswordForm {...props} />;
+  const content = renderRecoveryContent({ props, formVisible });
 
   return (
     <LoginLayout
