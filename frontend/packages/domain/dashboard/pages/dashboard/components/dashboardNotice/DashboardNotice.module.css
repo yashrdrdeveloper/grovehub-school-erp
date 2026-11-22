@@ -1,0 +1,66 @@
+/* The informational preview notice owns its structure, contrast and mobile behavior. */
+.root {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 17px;
+  border: 1px solid var(--gh-color-border);
+  border-radius: 12px;
+  background: var(--gh-color-surface);
+  color: var(--gh-color-text);
+}
+
+.mark {
+  display: grid;
+  flex: 0 0 36px;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--gh-color-surface-subtle);
+  color: var(--gh-color-text-strong);
+}
+
+.copy {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.copy strong {
+  color: var(--gh-color-text-strong);
+  font-size: 0.75rem;
+}
+
+.copy span {
+  color: var(--gh-color-muted);
+  font-size: 0.6875rem;
+  line-height: 1.5;
+}
+
+.state {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 5px;
+  padding: 6px 9px;
+  border: 1px solid var(--gh-color-border);
+  border-radius: 30px;
+  color: var(--gh-color-muted);
+  font-size: 0.5625rem;
+  font-weight: var(--gh-weight-bold);
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .root {
+    align-items: flex-start;
+  }
+
+  .state {
+    display: none;
+  }
+}
