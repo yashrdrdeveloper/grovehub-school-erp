@@ -2,7 +2,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import ts from 'typescript';
 
-/** Route UI and hooks use @Components/router, never direct React Router imports. */
+/** Router infrastructure uses @Components/router; links use AppLink/AppNavLink. */
 const violations = [];
 const root = path.join(process.cwd(), 'packages');
 
@@ -33,8 +33,29 @@ const visit = async (folder) => {
         continue;
       }
 
-      if (statement.moduleSpecifier.text === 'react-router-dom') {
-        violations.push(path.relative(process.cwd(), file));
+      const specifier = statement.moduleSpecifier.text;
+      const relative = path.relative(process.cwd(), file);
+
+      if (specifier === 'react-router-dom') {
+        violations.push(relative + ': use the shared router boundary');
+      }
+
+      if (specifier !== '@Components/router') {
+        continue;
+      }
+
+      const bindings = statement.importClause?.namedBindings;
+      if (!bindings || !ts.isNamedImports(bindings)) {
+        continue;
+      }
+
+      for (const binding of bindings.elements) {
+        const imported = binding.propertyName?.text ?? binding.name.text;
+        if (imported === 'Link' || imported === 'NavLink') {
+          violations.push(
+            relative + ': use AppLink or AppNavLink instead of router ' + imported,
+          );
+        }
       }
     }
   }
@@ -45,10 +66,10 @@ await visit(path.join(root, 'shell'));
 
 if (violations.length > 0) {
   for (const source of violations) {
-    process.stderr.write(source + ': import React Router through @Components/router\\n');
+    process.stderr.write(source + '\\n');
   }
 
   process.exitCode = 1;
 } else {
-  process.stdout.write('All domain and shell Router APIs pass through @Components/router.\\n');
+  process.stdout.write('Domain and shell navigation uses shared router and link adapters.\\n');
 }
