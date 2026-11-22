@@ -1,14 +1,16 @@
 import { Bell, CalendarDays, CircleDashed, Layers2 } from '@Components/icons';
 
+import { getDashboardCalendarCopy } from './helpers/dashboardAside.getCalendarCopy';
 import type { DashboardAsideComponent } from './types/dashboardAside';
 
 /** Calendar selection and reminder placeholder, without invented event data. */
 export const DashboardAside: DashboardAsideComponent = ({ date, calendar }) => {
   const today = calendar.view === 'today';
-  const calendarDay = today ? String(date.dayOfMonth) : '→';
-  const calendarHeading = today ? date.dayName : 'Next on your calendar';
-  const calendarDetail = today ? date.dateLabel : 'Calendar preview';
-  const calendarEmptyTitle = today ? 'Today’s schedule' : 'Upcoming events';
+  const { calendarDay, calendarHeading, calendarDetail, calendarEmptyTitle } = getDashboardCalendarCopy(date, today);
+  let todayClass = '';
+  let upcomingClass = '';
+  if (today) todayClass = 'is-active';
+  else upcomingClass = 'is-active';
 
   return (
     <aside className="school-home__side-column">
@@ -18,9 +20,9 @@ export const DashboardAside: DashboardAsideComponent = ({ date, calendar }) => {
         </div>
         <div className="school-home__calendar">
           <div className="school-home__calendar-tabs" role="group" aria-label="Calendar view">
-            <button type="button" aria-pressed={today} className={today ? 'is-active' : ''}
+            <button type="button" aria-pressed={today} className={todayClass}
               onClick={calendar.showToday}>Today</button>
-            <button type="button" aria-pressed={!today} className={!today ? 'is-active' : ''}
+            <button type="button" aria-pressed={!today} className={upcomingClass}
               onClick={calendar.showUpcoming}>Upcoming</button>
           </div>
           <div className="school-home__calendar-content">

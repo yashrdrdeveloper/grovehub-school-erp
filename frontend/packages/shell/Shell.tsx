@@ -5,6 +5,7 @@ import { Sidebar } from './components/sidebar';
 import { Topbar } from './components/topbar';
 import { MobileNav } from './components/mobileNav';
 import { useShell } from './hooks/useShell';
+import { getShellClassName } from './helpers/shell.getClassName';
 import type { ShellComponent } from './types/shell.props';
 
 export type { ShellProps } from './types/shell.props';
@@ -13,7 +14,7 @@ export type { ShellProps } from './types/shell.props';
 export const Shell: ShellComponent = (props) => {
   const model = useShell();
   return (
-    <div className={`shell${model.sidebarCollapsed ? ' shell--collapsed' : ''}`}>
+    <div className={getShellClassName(model.sidebarCollapsed)} data-testid="workspace-shell-root">
       <Sidebar {...props} model={model}/>
       {model.sidebarOpen && <button type="button" className="sidebar-backdrop"
         aria-label="Dismiss navigation" onClick={model.closeSidebar}/>}

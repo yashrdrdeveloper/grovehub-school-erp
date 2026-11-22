@@ -5,7 +5,10 @@ import type { DialogComponent } from './types/dialog.props';
 
 export const Dialog: DialogComponent = ({
   open, onOpenChange, title, description, children, className, dataTestId,
-}) => (
+}) => {
+  let closeTestId: string | undefined;
+  if (dataTestId) closeTestId = dataTestId + '-close';
+  return (
   <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
     <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay className="dialog-overlay"/>
@@ -15,10 +18,11 @@ export const Dialog: DialogComponent = ({
             <DialogPrimitive.Title>{title}</DialogPrimitive.Title>
             {description && <DialogPrimitive.Description>{description}</DialogPrimitive.Description>}
           </div>
-          <DialogPrimitive.Close className="icon-button" data-testid={dataTestId ? dataTestId + '-close' : undefined} aria-label="Close"><X size={19}/></DialogPrimitive.Close>
+          <DialogPrimitive.Close className="icon-button" data-testid={closeTestId} aria-label="Close"><X size={19}/></DialogPrimitive.Close>
         </div>
         {children}
       </DialogPrimitive.Content>
     </DialogPrimitive.Portal>
   </DialogPrimitive.Root>
-);
+  );
+};

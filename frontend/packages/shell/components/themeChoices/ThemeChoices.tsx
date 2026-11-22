@@ -1,6 +1,7 @@
 import { Monitor, Moon, Sun } from '@Components/icons';
 import type { ThemePreference } from '@Components/hooks/theme';
 
+import { getThemeChoiceClassName } from './helpers/themeChoices.getClassName';
 import type { ThemeChoicesComponent, ThemeChoicesProps } from './types/themeChoices';
 
 const choices: { value: ThemePreference; label: string; Icon: typeof Sun }[] = [
@@ -17,7 +18,7 @@ const ThemeChoice = ({ value, label, Icon, preference, onPreferenceChange }: {
   const handleChange = () => onPreferenceChange(value);
   return (
     <button type="button" aria-pressed={preference === value}
-      className={preference === value ? 'theme-choice theme-choice--active' : 'theme-choice'}
+      className={getThemeChoiceClassName(preference === value)}
       onClick={handleChange}><Icon size={16}/>{label}</button>
   );
 };

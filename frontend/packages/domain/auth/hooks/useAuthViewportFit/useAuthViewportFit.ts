@@ -65,7 +65,8 @@ export const useAuthViewportFit = () => {
     };
 
     measure();
-    const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(schedule) : null;
+    let observer: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') observer = new ResizeObserver(schedule);
     observer?.observe(content);
     observer?.observe(toolbar);
     observer?.observe(main);

@@ -10,11 +10,19 @@ import type { SidebarComponent } from './types/sidebar';
 
 /** Stateless sidebar. Interaction and persistence come from the shell model. */
 export const Sidebar: SidebarComponent = ({ accountLabel, schoolLabel, onLogout, model }) => {
-  const collapsedLabel = model.sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar';
-  const CollapseIcon = model.sidebarCollapsed ? ChevronsRight : ChevronsLeft;
+  let collapsedLabel = 'Collapse sidebar';
+  let collapsedShortLabel = 'Collapse sidebar';
+  let CollapseIcon = ChevronsLeft;
+  let sidebarClass = 'sidebar';
+  if (model.sidebarCollapsed) {
+    collapsedLabel = 'Expand sidebar';
+    collapsedShortLabel = 'Expand';
+    CollapseIcon = ChevronsRight;
+  }
+  if (model.sidebarOpen) sidebarClass += ' sidebar--open';
 
   return (
-    <aside className={`sidebar${model.sidebarOpen ? ' sidebar--open' : ''}`} aria-label="School workspace sidebar">
+    <aside className={sidebarClass} aria-label="School workspace sidebar">
       <div className="sidebar__header">
         <button type="button" className="icon-button app-switcher-button" title="Open app catalog"
           aria-label="Open app catalog" onClick={model.openCatalog}><Grid2X2 size={19}/></button>
@@ -35,9 +43,9 @@ export const Sidebar: SidebarComponent = ({ accountLabel, schoolLabel, onLogout,
       </button>
       <div className="sidebar__bottom">
         <button type="button" className="sidebar__collapse" onClick={model.toggleSidebarCollapsed}
-          title={model.sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} aria-label={collapsedLabel}>
+          title={collapsedLabel} aria-label={collapsedLabel}>
           <CollapseIcon size={17}/>
-          <span className="sidebar__label">{model.sidebarCollapsed ? 'Expand' : 'Collapse sidebar'}</span>
+          <span className="sidebar__label">{collapsedShortLabel}</span>
         </button>
         <button type="button" className="sidebar__settings" onClick={model.toggleQuickSettings}
           aria-expanded={model.quickSettings} title="Account and preferences">
