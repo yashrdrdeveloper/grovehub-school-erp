@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import { LandingPage } from './LandingPage';
@@ -91,7 +91,8 @@ describe('RDR public-site quick actions', () => {
   it('opens an enquiry and closes the mobile navigation drawer', async () => {
     render(<MemoryRouter initialEntries={['/']}><LandingPage/></MemoryRouter>);
     fireEvent.click(screen.getByRole('button',{name:'Open menu'}));
-    fireEvent.click(screen.getByRole('link',{name:/start an enquiry/i}));
+    const mobileNavigation=screen.getByRole('navigation',{name:'Mobile navigation'});
+    fireEvent.click(within(mobileNavigation).getByRole('link',{name:/start an enquiry/i}));
     await waitFor(()=>expect(screen.getByRole('dialog')).toBeTruthy());
     expect(screen.queryByRole('navigation',{name:'Mobile navigation'})).toBeNull();
   });
