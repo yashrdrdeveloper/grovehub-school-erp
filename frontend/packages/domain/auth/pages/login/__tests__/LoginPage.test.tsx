@@ -24,6 +24,7 @@ jest.mock('../../../core/providers/authProvider',()=>({
   useAuth:()=>({signIn}),
 }));
 jest.mock('@Components/hooks/useWorkspaceTheme',()=>({
+  ...jest.requireActual('@Components/hooks/useWorkspaceTheme'),
   useWorkspaceTheme:()=>({preference:'system',setPreference}),
 }));
 
