@@ -29,6 +29,6 @@ describe('PasswordField', () => {
     expect(input.getAttribute('aria-describedby')).toBe(
       'instructions new-password-description',
     );
-    expect(screen.getByRole('button', { name: 'Show password' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Show password' }).hasAttribute('disabled')).toBe(true);
   });
 });
