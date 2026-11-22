@@ -42,10 +42,11 @@ func New(tokens passwordtokenrepo.Repository, mail invitationrepo.Repository, co
 }
 
 func (service *Service) Queue(ctx context.Context, account entity.Account, purpose entity.TokenPurpose, name string) error {
-	if len(service.Config.EncryptionKey) != 32 ||
-		service.Config.MailTenantID == "" ||
-		service.Config.MailConnectionID == "" {
-		return errors.New("system mail unavailable")
+	if len(service.Config.EncryptionKey) != 32 {
+		return errors.New("invitation encryption unavailable")
+	}
+	if account.TenantID == nil || *account.TenantID == "" {
+		return errors.New("invitation requires a tenant-scoped account")
 	}
 
 	target := service.Config.SetupURL

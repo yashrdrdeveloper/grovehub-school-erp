@@ -29,8 +29,8 @@ func New(logger *slog.Logger, db *gorm.DB, foundation foundationclient.Client, i
 }
 
 func (b *builder) Build() (bootstrap.Runtime, error) {
-	if b.db == nil || b.foundation == nil || b.events == nil {
-		return nil, errors.New("identity requires PostgreSQL, Foundation, and Infrastructure")
+	if b.db == nil || b.foundation == nil || b.integration == nil || b.events == nil {
+		return nil, errors.New("identity requires PostgreSQL, Foundation, Integration, and Infrastructure")
 	}
 	if b.logger == nil {
 		b.logger = slog.Default()
@@ -38,6 +38,9 @@ func (b *builder) Build() (bootstrap.Runtime, error) {
 	settings, err := configimpl.Load()
 	if err != nil {
 		return nil, err
+	}
+	if len(settings.EncryptionKey) != 32 {
+		return nil, errors.New("identity invitation encryption key must be configured")
 	}
 	repositories := b.newRepository()
 	services := b.newServices(repositories, settings)

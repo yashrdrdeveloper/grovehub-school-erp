@@ -35,9 +35,9 @@ func RenderMail(mail Mail) (string, error) {
 
 // Send renders the resource-owned template and delegates to Integration's
 // public typed client. The underlying provider owns Gmail/Outlook transport.
-func Send(ctx context.Context, client integrationclient.Client, tenantID string, connectionID string, recipient string, mail Mail) error {
-	if client == nil || tenantID == "" || connectionID == "" {
-		return errors.New("system mail is not configured")
+func Send(ctx context.Context, client integrationclient.Client, tenantID string, recipient string, mail Mail) error {
+	if client == nil || tenantID == "" {
+		return errors.New("system mail service or tenant is unavailable")
 	}
 
 	html, err := RenderMail(mail)
@@ -58,12 +58,6 @@ func Send(ctx context.Context, client integrationclient.Client, tenantID string,
 		return err
 	}
 
-	_, err = client.ExecuteAction(
-		ctx,
-		tenantID,
-		connectionID,
-		integrationclient.Action("mail.send"),
-		json.RawMessage(payload),
-	)
+	_, err = client.ExecuteSystemMail(ctx, tenantID, json.RawMessage(payload))
 	return err
 }

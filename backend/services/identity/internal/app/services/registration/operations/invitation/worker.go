@@ -11,17 +11,19 @@ import (
 	integrationclient "grovehub/services/integration/client/connection"
 	"grovehub/services/identity/internal/app/config"
 	invitationrepo "grovehub/services/identity/internal/app/repository/invitation"
+	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	mailhelpers "grovehub/services/identity/internal/app/services/registration/operations/register/helpers"
 )
 
 type Worker struct {
 	repository invitationrepo.Repository
+	accounts accountrepo.Repository
 	client integrationclient.Client
 	config config.Config
 }
 
-func NewWorker(repository invitationrepo.Repository, client integrationclient.Client, config config.Config) *Worker {
-	return &Worker{repository: repository, client: client, config: config}
+func NewWorker(repository invitationrepo.Repository, accounts accountrepo.Repository, client integrationclient.Client, config config.Config) *Worker {
+	return &Worker{repository: repository, accounts: accounts, client: client, config: config}
 }
 
 func (worker *Worker) RunOnce(ctx context.Context) (bool, error) {
@@ -59,14 +61,14 @@ func (worker *Worker) RunOnce(ctx context.Context) (bool, error) {
 		Minutes: data.Minutes,
 	}
 
-	err = mailhelpers.Send(
-		ctx,
-		worker.client,
-		worker.config.MailTenantID,
-		worker.config.MailConnectionID,
-		invitation.Email,
-		mail,
-	)
+	account, lookupErr := worker.accounts.FindByID(ctx, invitation.AccountID)
+	if lookupErr != nil {
+		return true, lookupErr
+	}
+	if account.TenantID == nil || *account.TenantID == "" {
+		return true, errors.New("invitation has no tenant scope")
+	}
+	err = mailhelpers.Send(ctx, worker.client, *account.TenantID, invitation.Email, mail)
 	if err != nil {
 		delay := time.Duration(1<<min(invitation.Attempts+1, 9)) * time.Second
 		_ = worker.repository.Retry(ctx, invitation.ID, time.Now().UTC().Add(delay))

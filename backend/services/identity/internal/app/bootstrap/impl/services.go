@@ -47,9 +47,8 @@ func (b *builder) newServices(repositories repositories, cfg config.Config) serv
 	)
 
 	var worker *invitation.Worker
-	if b.integration != nil && len(cfg.EncryptionKey) == 32 &&
-		cfg.MailTenantID != "" && cfg.MailConnectionID != "" {
-		worker = invitation.NewWorker(repositories.mail, b.integration, cfg)
+	if b.integration != nil && len(cfg.EncryptionKey) == 32 {
+		worker = invitation.NewWorker(repositories.mail, repositories.accounts, b.integration, cfg)
 	}
 
 	return serviceGraph{account: accounts, auth: authentication, worker: worker}

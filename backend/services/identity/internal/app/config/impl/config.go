@@ -18,8 +18,6 @@ func Load() (config.Config, error) {
 		AdminIDs: make(map[string]bool),
 		SetupURL: os.Getenv("IDENTITY_SETUP_URL"),
 		ResetURL: os.Getenv("IDENTITY_RESET_URL"),
-		MailTenantID: os.Getenv("IDENTITY_SYSTEM_MAIL_TENANT_ID"),
-		MailConnectionID: os.Getenv("IDENTITY_SYSTEM_MAIL_CONNECTION_ID"),
 		AllowedOrigin: os.Getenv("IDENTITY_ALLOWED_ORIGIN"),
 	}
 
