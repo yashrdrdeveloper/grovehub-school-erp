@@ -1248,3 +1248,107 @@ No `dataTestId="forgot-password-submit"` or `data-testid="catalog-search"` writt
 - `publicSite`: all current SEO routes, enquiry dialog, forms and honest mailto behavior; no fabricated backend calls.
 - **Browser visual/a11y**: light/dark, 320–720px/mobile/tablet/desktop, short viewport, autofocus/autofill, high zoom and keyboard input.
 
+
+
+## 34. Full file-by-file audit, dead domain deletion and legacy CSS migration ledger
+
+**Do not infer that prior CI success implies Revision 7 compliance.** Read all frontend source paths and their call sites. Before implementation record an inventory with: path, owner, live importers, feature behavior, DOM/test IDs, status/route strings, JSX ternary and other conditional branches, native elements, JSX-returning function location, direct Lucide/Lodash imports, CSS classes/colors, provider state/side effects, tests, and exact move/remove plan. This audit belongs in the implementation work, not a claim that this docs-only commit scanned every line. Affected migrations require tests first or an explicit regression plan.
+
+The following **existing, unused UI domains** are removal candidates explicitly requested for deletion:
+
+~~~text
+frontend/packages/domain/accounts/
+frontend/packages/domain/people/
+frontend/packages/domain/integrations/
+frontend/packages/domain/settings/
+~~~
+
+They are still present at the time of the documentation audit. Before deletion, verify all static/dynamic imports, domain exports, tests, links, app catalog, persisted pinned paths, search indexes, generated dependencies and route registries. Then delete each directory and unused corresponding presentation references **in the same code migration**, without removing real reusable `@Business/accounts` or other backend/business clients needed by authentication. Do not reintroduce phantom People/Accounts/Integrations/Settings pages or "coming soon" clickable cards. If a domain has a real live route or critical use, disclose that blocker and retain it until safe to remove.
+
+**Observed concrete debt (selected verified files, not a complete repository-wide scan):**
+
+| Current file/area | Exact issue | Required change |
+|---|---|---|
+| `auth/components/authStatusArt/AuthStatusArt.tsx` | Raw string states, direct Lucide, JSX ternary, hard-coded badge fill and foreground | Enums/metadata, scoped status renderer, shared Icon and named theme colors |
+| `auth/components/credentialField/CredentialField.tsx` | GroupLabel JSX ternary, native `div/label`, BEM strings and inline error layout | `renderer/credentialField.label.tsx`, shared label/row/error controls, CSS Module |
+| `auth/components/loginLayout/LoginLayout.tsx` | Default text literals, appearance array, native button + native .map, raw routes, class ternary, inline mobile-description fallback and direct Lucide | Constants, typed theme options, `renderer/loginLayout.appearanceOption.tsx`, helpers, primitives and module SCSS |
+| `auth/components/loginLayout/styles/optionOneAuth.css` | Large mixed auth screens, hard-coded colors, theme/style values, responsive and status-art selectors in one global file | `loginLayout.module.scss` and separate credential/status/forgot/recovery modules; generic tokens to `@Styles` |
+| `auth/pages/forgotPassword/components/forgotPasswordForm/ForgotPasswordForm.tsx` | Direct icons, notice JSX ternary, conditional class string, native controls and status text/URLs | Typed view model/renderer, named ID/route/copy constants and shared primitives |
+| `auth/pages/recovery/Recovery.tsx` | Ternary title/description/form selection, raw `variant="recovery"` and `className="rdr-recovery"` | Typed enum, `recovery.getViewModel`, `renderer/recovery.content.tsx`, CSS Module |
+| `auth/pages/recovery/hooks/useRecovery/useRecovery.ts` | Combined proof parsing, grant, form state, submission, API verification and retry | Typed nested hooks with **one state owner**, pure local helpers and security regression tests |
+| `auth/core/guards/RecoveryFlowBoundary.tsx` | Side-effect component returns null | Convert to `useRecoveryFlowBoundary` hook and invoke under active Router |
+| `auth/core/guards/RequireSession.tsx` | PublicOnly/RequireSession mixed, raw loader UI, ternary and literal redirect | Typed PublicRoute/ProtectedRoute/RouteAccess, shared loader and central paths |
+| `auth/core/providers/AuthProvider.tsx` | Flat context/provider and multi-responsibility session actions, network request retries | Provider unit + `useAuthSession`, typed helpers, tests |
+| `auth/core/session/recoveryFlowSession.ts` | Proof/grant adapter holds purpose/expiry/storage/constants in one file | Preserve security, extract named constants, pure helpers, types/tests under owned folder |
+| `shell/components/appRoutes/AppRoutes.tsx` | Native `.map`, route JSX mapping and route-policy composition | `@Base` `_map`, typed route registries and `renderer/appRoutes.route.tsx` |
+| `shell/containers/shellContainer/ShellContainer.tsx` | Inline `QueryClient` options/runtime construction | Typed options constant, createQueryClient helper, stable per-runtime instance |
+| `shell/hooks/useShellState`, `useShellActions`, `useShell` | Peer state and actions and duplicate boolean handlers | One public `useShell` model, nested persistence hooks, shared boolean actions and pure pin selector |
+| `shell/layout/AppLauncher.tsx` | Large mixed search/dialog/catalog UI, native HTML, map/filter loops, raw class/route/icon | Real `components/appLauncher` unit, state hook, renderer, helpers, test IDs and module SCSS |
+| `packages/base/utilities` | `cn`/`isEqual` are present; many requested Lodash leaves are not | Add tested `_map`/`_filter`/`_find`/`_trim`/`_includes`/`_keys`/`_size`/`_isUndefined`/`_isFunction`, then migrate callers |
+| `packages/components` | Shared UI primitives exist, but generic semantic Box/Row/FieldLabel/Link/Icon/Status adapters are incomplete | Implement missing primitives before replacing feature-native tags |
+| `packages/domain/{accounts,people,integrations,settings}` | Code folders remain although they are not implemented protected pages | Remove after safe importer/route audit |
+| `frontend/scripts/check-*.mjs` | Earlier boundary/UI/style checks do not enforce all Revision 7 syntax and folder rules | Introduce AST, import, route, token, primitive and selector checks |
+
+The supplied auth CSS includes repeated later media queries and short-window override rules. **Do not mechanically strip them** until every overlapping selector, specificity conflict, accessibility state and mobile/desktop breakpoint behavior has been reviewed. For every migrated selector, identify its DOM consumer and its replacement CSS Module class. No blanket global replacement. Keep dark/light theme tokens centralized, mobile theme system behavior and responsive fit intact.
+
+### Audit commands and interpretation
+
+These are discovery commands, **not** standalone correctness checks. Run at the frontend root and review each finding, including library/vendor/test files separately where necessary:
+
+~~~bash
+rg -n 'from .lucide-react.|from .lodash-es.|\\.map\\(|\\.filter\\(|\\.find\\(|\\.includes\\(|\\.trim\\(|Object\\.keys\\(' packages app
+rg -n 'className="|\\bto="/|fill="#|color="#|style=\\{\\{|<div|<button|<input|<p\\b|<h[1-6]\\b' packages
+rg -n 'AuthProvider|RecoveryFlowBoundary|RequireSession|PublicOnly|AppLauncher|optionOneAuth' packages
+rg -n 'data-testid|dataTestId|const .*\\?|\\?.*:' packages/domain packages/shell
+rg -n 'accounts|people|integrations|settings' packages/shell packages/domain
+~~~
+
+Text searches can produce false positives for type syntax or tests; **true no-ternary enforcement uses TypeScript/ESLint AST**. Use TypeScript/lint to discover unused imports, but cross-check dynamic imports, route registration and public exports before deletion.
+
+## 35. Enforceability, migration order and definition of done
+
+### 35.1 New/extended automated gates to implement with source migration
+
+1. **AST no-ternary rule** across app/packages source (TypeScript `ConditionalExpression`), with explicit distinction from optional property syntax.
+2. **Import boundary rules**: only `@Base` imports Lodash; only `@Components` imports Lucide and Radix leaf implementations; `@Assets` and `@Styles` depend on no domain/shell code; the narrowly scoped `app/core/routes` contract is pure data.
+3. **Directory rules**: no `renderer/index.ts` / `helpers/index.ts` / `constants/index.ts`, no one-folder-per-helper, correctly named `*.tsx` renderers, no miscellaneous `pages/*.tsx` components.
+4. **Semantic UI boundary**: no raw generic/native HTML in migrated feature presentation/renderer, except documented shared primitive/Router/asset owners; no component-specific global CSS in migrated modules.
+5. **Style ownership**: enforce `*.module.scss`/SCSS compiler support when enabled, no feature hard-coded colors, parity of light/dark semantic tokens, canonical size/focus/contrast roles and CSS Module imports.
+6. **Enum/config and IDs**: no raw domain status/path/variant literals outside definitions, test ID catalogue for each screen, unique native test IDs and deterministic repeated controls.
+7. **Hooks/side effects**: state owner and lifecycle review, no storage writes inside React setState functional updater, no null-only side-effect components, no API calls in renderers.
+8. **Routing**: single path dictionary, `PUBLIC/PROTECTED` policy and guest-only distinction, one protected pathless shell and no unimplemented catalog entries.
+9. **Unused code/dependency removal**: no unreachable unused UI domains, dead helpers, obsolete barrels or duplicate styles after importer checks.
+10. **Tests**: pure helpers/renderers; form controls and accessibility; token/link/route enums; auth security; persistent shell; CSS/browser regressions. Document which checks are automated and which require manual review.
+
+The existing CI **does not yet enforce all ten**. Add the rules incrementally when their target code is migrated; do not add broad exemptions or claim "fully strict" with only this documentation update. If introducing a new rule would fail thousands of known legacy lines, either migrate the affected batch in the same commit or report the exact remaining violations with a tracked follow-up. Do not suppress lint errors globally.
+
+### 35.2 Mandatory implementation sequence
+
+1. Audit and classify frontend files, importers, routes, old test locations and stylesheet selectors; verify dead domains and their deletion impact.
+2. Implement shared `@Base` Lodash leaf utilities, `@Components` icons/semantic primitives/boolean state hooks; establish centralized app route constants and Sass tooling; add focused tests.
+3. Reorganize AuthProvider/core session/route guards and replace the recovery boundary component with a hook; test security and public/protected behavior.
+4. Refactor AuthStatusArt/CredentialField/LoginLayout (enums, constants, renderers, SCSS modules, IDs). Preserve SVG assets and exact merged RDR artwork.
+5. Refactor login, forgot-password and recovery screens with shared UI, renderers and pure helpers; **complete useRecovery split** before marking auth done.
+6. Consolidate `useShell` state/actions into one owner; decompose AppLauncher, centralize route mapping and QueryClient options; delete verified unused UI domains; preserve the mounted protected shell.
+7. Migrate remaining dashboard/publicSite layout and presentation to the same rules without changing verified school content, CBSE disclosure warnings, SEO paths or enquiry behavior.
+8. Enable/reinforce all checks, remove obsolete exports and CSS only after tests and browser visual verification. Update the single document's ledger with actual completion evidence.
+
+### 35.3 Required validation commands
+
+~~~bash
+cd frontend
+pnpm install --frozen-lockfile
+pnpm check:architecture
+pnpm typecheck
+pnpm exec jest --runInBand
+pnpm lint
+pnpm build
+~~~
+
+Also verify the deployed/prerendered public route HTML and run a **real browser** visual/accessibility matrix: 320/375/390/720px mobile/tablet, desktop and short windows, both themes and system theme, reduced motion, keyboard focus/tab/Enter, password reveal, login/password reset link validity, cooldown, form errors, autofill, zoom and screen reader labels. Do not claim that an unexecuted browser test passed merely because CI is green.
+
+### 35.4 Definition of done, per file and per feature
+
+A file is conformant only when its owner is obvious, it uses typed contracts, names static data in constants, puts JSX-returning variation in `renderer/`, puts pure non-JSX computations in `helpers/`, never contains ternary expressions, never reimplements generic HTML or imports vendor icons/Lodash in a domain, uses shared CSS tokens and scoped module styling, centralizes test IDs/routes, has tests where behavior warrants and has no obsolete imports. A feature is conformant only after the associated state/action hooks, providers, adapters, tests, accessibility and viewport behavior also conform.
+
+**The document is now the single authoritative rulebook. The implementation still has known migration debt.** A docs commit is complete when the document has been updated and verified in the repository; it does **not** delete domains, move hooks, convert CSS to Sass, implement missing shared components or fix the shown JSX by itself. Those are separate source changes that must be executed and verified before they can be reported as done.
