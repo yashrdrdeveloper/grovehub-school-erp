@@ -5,7 +5,7 @@ import {
 } from '@Components/components/Dialog/parts';
 import { InputControl } from '@Components/components/InputControl';
 import { Grid2X2, Pin, Search, X } from '@Components/icons';
-import { appCatalog } from '../../registry/appCatalog.registry';
+import { appCatalog } from '../../constants/shell.catalog';
 import { APP_LAUNCHER_COPY } from './constants/appLauncher.copy';
 import { APP_LAUNCHER_TEST_IDS } from './constants/appLauncher.testIds';
 import { renderAppLauncherApp } from './renderer/appLauncher.app';

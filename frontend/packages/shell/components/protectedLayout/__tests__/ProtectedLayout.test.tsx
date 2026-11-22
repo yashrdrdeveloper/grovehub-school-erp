@@ -5,8 +5,8 @@ import { ProtectedLayout } from '../ProtectedLayout';
 jest.mock('@Domain/auth', () => ({
   useAuth: () => ({ account: { email: 'school@example.test' }, signOut: jest.fn() }),
 }));
-jest.mock('../../../Shell', () => ({
-  Shell: () => <div data-testid="persistent-workspace-shell"><Outlet/></div>,
+jest.mock('../../../containers/workspaceShellContainer', () => ({
+  WorkspaceShellContainer: () => <div data-testid="persistent-workspace-shell"><Outlet/></div>,
 }));
 
 describe('ProtectedLayout', () => {

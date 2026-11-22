@@ -1,7 +1,7 @@
 import { _filter } from '@Base/utilities/filter';
 import { _trim } from '@Base/utilities/trim';
 import { _includes } from '@Base/utilities/includes';
-import { appCatalog } from '../../../registry/appCatalog.registry';
+import { appCatalog } from '../../../constants/shell.catalog';
 import type { FilterCatalog } from './types/appLauncher.filterCatalog';
 
 /** Search only implemented apps and derive disjoint pinned/available groups. */

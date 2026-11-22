@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useBoolean } from '@Components/hooks/useBoolean';
 import { useWorkspaceTheme } from '@Components/hooks/useWorkspaceTheme';
-import { readPinnedApps, readSidebarCollapsed, writePinnedApps, writeSidebarCollapsed } from '../../storage';
+import { readPinnedApps, readSidebarCollapsed, writePinnedApps, writeSidebarCollapsed } from './helpers/shell.preferences';
 import { togglePinnedPath } from './helpers/shell.togglePinnedPath';
 import type { UseShell } from './types/useShell';
 
@@ -14,20 +14,28 @@ export const useShell: UseShell = () => {
   const [pinned, setPinned] = useState<string[]>(readPinnedApps);
   const theme = useWorkspaceTheme();
 
-  useEffect(() => { writeSidebarCollapsed(sidebarCollapsed); }, [sidebarCollapsed]);
-  useEffect(() => { writePinnedApps(pinned); }, [pinned]);
+  useEffect(() => {
+    writeSidebarCollapsed(sidebarCollapsed);
+  }, [sidebarCollapsed]);
+  useEffect(() => {
+    writePinnedApps(pinned);
+  }, [pinned]);
 
   const openCatalog = useCallback(() => {
     launcher.setTrue();
     sidebar.setFalse();
   }, [launcher.setTrue, sidebar.setFalse]);
+
   const openAccountPreferences = useCallback(() => {
     quick.setTrue();
     sidebar.setTrue();
   }, [quick.setTrue, sidebar.setTrue]);
-  const toggleSidebarCollapsed = useCallback(() => setSidebarCollapsed(value => !value), []);
+
+  const toggleSidebarCollapsed = useCallback(() => {
+    setSidebarCollapsed((value) => !value);
+  }, []);
   const togglePin = useCallback((path: string) => {
-    setPinned(previous => togglePinnedPath(previous, path));
+    setPinned((previous) => togglePinnedPath(previous, path));
   }, []);
 
   return {

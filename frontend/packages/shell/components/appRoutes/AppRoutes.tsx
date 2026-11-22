@@ -4,7 +4,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { PublicOnly, RequireSession, useRecoveryFlowBoundary } from '@Domain/auth';
 import { LandingPage, PUBLIC_SITE_PATHS } from '@Domain/publicSite';
 
-import { publicRoutes, workspaceRoutes } from '../../registry';
+import { publicRoutes, workspaceRoutes } from '../../renderer/shell.routes';
 import { ProtectedLayout } from '../protectedLayout';
 import type { AppRoutesComponent } from './types/appRoutes';
 

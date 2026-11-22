@@ -1,6 +1,6 @@
 import { Box } from '@Components/components/Box';
 import type { ReactNode } from 'react';
-import { appCatalog } from '../../registry/appCatalog.registry';
+import { appCatalog } from '../../constants/shell.catalog';
 import { PinnedApp } from './PinnedApp';
 import type { PinnedNavigationComponent, PinnedAppEntry } from './types/pinnedNavigation';
 
