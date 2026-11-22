@@ -6,7 +6,7 @@
 >
 > **Stack:** React 19, TypeScript strict, pnpm, Vite, Tailwind CSS 4, shadcn-compatible Radix primitives, Lucide icons through the components package, Jest, and the existing project architecture checks.
 >
-> **Precedence:** The new Revision 8 sections 36–39 override older contradictory examples, especially route ownership and test naming. Sections 23–35 still apply where compatible. They override older examples where they conflict. This document replaces previous frontend guideline revisions and examples. Existing code that differs is **migration debt**, not an exception to this standard. Do not claim implementation is complete until checks and behavior regressions pass.
+ > **Precedence:** Revision 8 rules on route ownership, tests, and flat helper/constant units override older examples. Generic examples illustrate reusable patterns; actual GrooveHub migration paths are recorded separately in the audit inventory. This document replaces previous frontend guideline revisions and examples. Existing code that differs is **migration debt**, not an exception to this standard. Do not claim implementation is complete until checks and behavior regressions pass.
 
 ## 1. Non-negotiable principles
 
@@ -47,60 +47,60 @@ Use **the exact case-sensitive aliases actually declared in tsconfig/Vite**: `@B
 ## 3. Canonical directory layout: one page, one composition root
 
 ~~~text
-packages/domain/auth/
+packages/domain/catalog/
 ├── pages/
-│   └── login/
-│       ├── Login.tsx                     # presentation only
+│   └── item/
+│       ├── Item.tsx                     # presentation only
 │       ├── index.ts                      # page public entry
 │       ├── containers/
-│       │   └── loginContainer/
-│       │       ├── LoginContainer.tsx
+│       │   └── itemContainer/
+│       │       ├── ItemContainer.tsx
 │       │       ├── types/
 │       │       └── index.ts
 │       ├── components/
-│       │   └── LoginForm/
-│       │       ├── LoginForm.tsx
-│       │       ├── types/loginForm.props.ts
-│       │       ├── helpers/               # only if LoginForm owns pure view logic
-│       │       ├── constants/             # only if LoginForm owns fixed values
-│       │       ├── __tests__/LoginForm.test.tsx
+│       │   └── ItemForm/
+│       │       ├── ItemForm.tsx
+│       │       ├── types/itemForm.props.ts
+│       │       ├── helpers/               # only if ItemForm owns pure view logic
+│       │       ├── constants/             # only if ItemForm owns fixed values
+│       │       ├── __tests__/ItemForm.test.tsx
 │       │       └── index.ts
 │       ├── templates/
-│       │   ├── desktopLogin/
-│       │   └── mobileLogin/
+│       │   ├── desktopItem/
+│       │   └── mobileItem/
 │       ├── hooks/
-│       │   ├── useLoginForm/
-│       │   │   ├── useLoginForm.ts
-│       │   │   ├── types/useLoginForm.ts
+│       │   ├── useItemForm/
+│       │   │   ├── useItemForm.ts
+│       │   │   ├── types/useItemForm.ts
 │       │   │   ├── hooks/
 │       │   │   │   ├── useFormActions/
 │       │   │   │   └── useFormSubmission/
 │       │   │   ├── helpers/               # flat use-case helper files
-│       │   │   │   ├── login.validateCredentials.ts
-│       │   │   │   ├── types/login.validateCredentials.ts
-│       │   │   │   └── __tests__/login.validateCredentials.test.ts
+│       │   │   │   ├── item.validateCredentials.ts
+│       │   │   │   ├── types/item.validateCredentials.ts
+│       │   │   │   └── __tests__/item.validateCredentials.test.ts
 │       │   │   ├── constants/
 │       │   │   └── index.ts
-│       │   └── useLoginViewport/
-│       │       ├── useLoginViewport.ts    # only if a reusable hook is warranted
-│       │       ├── helpers/login.viewport.ts
+│       │   └── useItemViewport/
+│       │       ├── useItemViewport.ts    # only if a reusable hook is warranted
+│       │       ├── helpers/item.viewport.ts
 │       │       ├── constants/
 │       │       ├── types/
 │       │       └── index.ts
 │       ├── helpers/                       # page-wide pure operations only
-│       │   ├── login.getFormViewModel.ts
-│       │   ├── types/login.getFormViewModel.ts
-│       │   └── __tests__/login.getFormViewModel.test.ts
+│       │   ├── item.getFormViewModel.ts
+│       │   ├── types/item.getFormViewModel.ts
+│       │   └── __tests__/item.getFormViewModel.test.ts
 │       ├── constants/
-│       │   ├── login.fields.ts
-│       │   ├── login.copy.ts
-│       │   ├── login.routes.ts
-│       │   ├── login.testIds.ts
-│       │   ├── login.passwordVisibility.ts
+│       │   ├── item.fields.ts
+│       │   ├── item.copy.ts
+│       │   ├── item.routes.ts
+│       │   ├── item.testIds.ts
+│       │   ├── item.descriptionVisibility.ts
 │       │   └── types/                     # only for genuinely shared contracts
 │       └── types/
-│           ├── login.props.ts
-│           └── login.state.ts
+│           ├── item.props.ts
+│           └── item.state.ts
 └── index.ts
 ~~~
 
@@ -118,24 +118,24 @@ A unit's **public boundary** (domain, page, component, hook, HOC, container, ser
 
 ~~~text
 helpers/
-├── login.getFormViewModel.ts
-├── login.getPasswordViewModel.ts
-├── login.getFailureMessage.ts
+├── item.getFormViewModel.ts
+├── item.getDescriptionViewModel.ts
+├── item.getFailureMessage.ts
 ├── types/
-│   ├── login.getFormViewModel.ts
-│   ├── login.getPasswordViewModel.ts
-│   └── login.getFailureMessage.ts
+│   ├── item.getFormViewModel.ts
+│   ├── item.getDescriptionViewModel.ts
+│   └── item.getFailureMessage.ts
 └── __tests__/
-    ├── login.getFormViewModel.test.ts
-    ├── login.getPasswordViewModel.test.ts
-    └── login.getFailureMessage.test.ts
+    ├── item.getFormViewModel.test.ts
+    ├── item.getDescriptionViewModel.test.ts
+    └── item.getFailureMessage.test.ts
 
 constants/
-├── login.fields.ts
-├── login.copy.ts
-├── login.routes.ts
-├── login.testIds.ts
-├── login.passwordVisibility.ts
+├── item.fields.ts
+├── item.copy.ts
+├── item.routes.ts
+├── item.testIds.ts
+├── item.descriptionVisibility.ts
 └── types/
 ~~~
 
@@ -148,12 +148,12 @@ A self-contained business operation or reusable component is different: its own 
 Use filenames that identify owner **and** use case: `login.getPasswordViewModel.ts`, `login.validateCredentials.ts`, `login.fieldIds.ts`, `recovery.classifyFailure.ts`, `person.request.mapper.ts`. Avoid anonymous `getData.ts` or `helpers.ts`. Exported functions have named callable contracts in the nearest `types/<useCase>.ts`. Reuse the nearest authoritative page/entity types via indexed access, `Pick` and `Omit` instead of duplicating state shapes.
 
 ~~~ts
-// hooks/useLoginForm/helpers/types/login.validateCredentials.ts
-import type { LoginCredentials } from '../../../../types/login.state';
-export type ValidateCredentials = (input: LoginCredentials) => LoginFieldErrors;
+// hooks/useItemForm/helpers/types/item.validateCredentials.ts
+import type { ItemCredentials } from '../../../../types/item.state';
+export type ValidateCredentials = (input: ItemCredentials) => ItemFieldErrors;
 
-// hooks/useLoginForm/helpers/login.validateCredentials.ts
-import type { ValidateCredentials } from './types/login.validateCredentials';
+// hooks/useItemForm/helpers/item.validateCredentials.ts
+import type { ValidateCredentials } from './types/item.validateCredentials';
 export const validateCredentials: ValidateCredentials = (input) => {
   // focused pure validation
 };
@@ -180,22 +180,22 @@ Do not use a UI props type as an API transport contract. Shared backend entities
 Use string-valued `as const` maps, or a real TypeScript `enum` when stable interoperability requires it. Do not repeat raw `'email'`, `'password'`, `'change'`, `'hashchange'` or status strings across the code. Example:
 
 ~~~ts
-// constants/login.fields.ts
-export const LOGIN_FIELD = {
-  EMAIL: 'email',
-  PASSWORD: 'password',
+// constants/item.fields.ts
+export const ITEM_FIELD = {
+  TITLE: 'title',
+  DESCRIPTION: 'description',
 } as const;
 
-export type LoginField = (typeof LOGIN_FIELD)[keyof typeof LOGIN_FIELD];
+export type ItemField = (typeof ITEM_FIELD)[keyof typeof ITEM_FIELD];
 
-export const LOGIN_FIELD_ORDER: readonly LoginField[] = [
-  LOGIN_FIELD.EMAIL,
-  LOGIN_FIELD.PASSWORD,
+export const ITEM_FIELD_ORDER: readonly ItemField[] = [
+  ITEM_FIELD.TITLE,
+  ITEM_FIELD.DESCRIPTION,
 ];
 
-export const LOGIN_FIELDS = {
-  [LOGIN_FIELD.EMAIL]: { label: 'Email address', placeholder: 'Email', autoComplete: 'username' },
-  [LOGIN_FIELD.PASSWORD]: { label: 'Password', placeholder: 'Password', autoComplete: 'current-password' },
+export const ITEM_FIELDS = {
+  [ITEM_FIELD.TITLE]: { label: 'Title address', placeholder: 'Title', autoComplete: 'username' },
+  [ITEM_FIELD.DESCRIPTION]: { label: 'Description', placeholder: 'Description', autoComplete: 'current-description' },
 } as const;
 ~~~
 
@@ -245,9 +245,9 @@ A complex parent hook may contain **nested hook units**:
 
 ~~~text
 hooks/
-└── useLoginForm/
-    ├── useLoginForm.ts
-    ├── types/useLoginForm.ts
+└── useItemForm/
+    ├── useItemForm.ts
+    ├── types/useItemForm.ts
     ├── hooks/
     │   ├── useFormActions/
     │   │   ├── useFormActions.ts
@@ -256,8 +256,8 @@ hooks/
     │   └── useFormSubmission/
     │       ├── useFormSubmission.ts
     │       ├── helpers/
-    │       │   ├── login.validateCredentials.ts
-    │       │   ├── login.getErrorMessage.ts
+    │       │   ├── item.validateCredentials.ts
+    │       │   ├── item.getErrorMessage.ts
     │       │   ├── types/
     │       │   └── __tests__/
     │       ├── types/
@@ -277,15 +277,15 @@ The same structure applies to `useAuthViewportFit` and other auth page hooks: pu
 Viewport query strings are **constants**. Snapshot calculations, environment guards and subscription mechanics are **purely focused helpers** (each under one flat `helpers/` directory). A React hook invokes `useSyncExternalStore` directly on those functions.
 
 ~~~ts
-// hooks/useLoginViewport/constants/login.viewport.ts
+// hooks/useItemViewport/constants/item.viewport.ts
 export const PHONE_VIEWPORT = '(max-width: 720px)';
 
-// hooks/useLoginViewport/helpers/login.getMobileSnapshot.ts
+// hooks/useItemViewport/helpers/item.getMobileSnapshot.ts
 import { _isFunction } from '@Base/utilities/isFunction';
 import { _isUndefined } from '@Base/utilities/isUndefined';
 
-// hooks/useLoginViewport/useLoginViewport.ts
-export const useLoginViewport: UseLoginViewport = () => {
+// hooks/useItemViewport/useItemViewport.ts
+export const useItemViewport: UseItemViewport = () => {
   return useSyncExternalStore(subscribeToViewport, getMobileSnapshot, getServerSnapshot);
 };
 ~~~
@@ -314,31 +314,31 @@ A shared input, button, form field, dialog, checkbox, select, loader, icon or er
 A login form is a presentational component in `pages/login/components/LoginForm/` and is rendered by its page/desktop/mobile templates. The reusable Button, InputControl, form field, visibility action and accessibility behavior should come from `@Components`; use the existing auth CSS classes as transitional styling props rather than reimplementing primitives. Screen-specific branches and string/icon selection live in typed helpers, constants, or strategy registries.
 
 ~~~ts
-// constants/login.passwordVisibility.ts
-export const PASSWORD_VISIBILITY = {
+// constants/item.descriptionVisibility.ts
+export const DESCRIPTION_VISIBILITY = {
   HIDDEN: 'HIDDEN',
   VISIBLE: 'VISIBLE',
 } as const;
 
-export const PASSWORD_VIEW = {
-  [PASSWORD_VISIBILITY.HIDDEN]: {
-    inputType: 'password',
-    toggleLabel: 'Show password',
+export const DESCRIPTION_VIEW = {
+  [DESCRIPTION_VISIBILITY.HIDDEN]: {
+    inputType: 'description',
+    toggleLabel: 'Show description',
     icon: 'eye',
   },
-  [PASSWORD_VISIBILITY.VISIBLE]: {
+  [DESCRIPTION_VISIBILITY.VISIBLE]: {
     inputType: 'text',
-    toggleLabel: 'Hide password',
+    toggleLabel: 'Hide description',
     icon: 'eye-off',
   },
 } as const;
 
-// helpers/login.getPasswordViewModel.ts
-export const getPasswordViewModel: GetPasswordViewModel = (isVisible) => {
+// helpers/item.getDescriptionViewModel.ts
+export const getDescriptionViewModel: GetDescriptionViewModel = (isVisible) => {
   if (isVisible) {
-    return PASSWORD_VIEW[PASSWORD_VISIBILITY.VISIBLE];
+    return DESCRIPTION_VIEW[DESCRIPTION_VISIBILITY.VISIBLE];
   }
-  return PASSWORD_VIEW[PASSWORD_VISIBILITY.HIDDEN];
+  return DESCRIPTION_VIEW[DESCRIPTION_VISIBILITY.HIDDEN];
 };
 ~~~
 
@@ -351,25 +351,25 @@ export const getPasswordViewModel: GetPasswordViewModel = (isVisible) => {
 For three or more variants, use a `Map<Mode, Strategy>`, keyed by a typed enum/constant-derived value. Put the registry next to its owning use case (usually under `constants/<useCase>.strategies.ts` when it is a static map, with functions defined in helpers/services). Do not create a universal strategy registry for unrelated behavior.
 
 ~~~ts
-export const RECOVERY_MODE = {
-  INVITATION: 'INVITATION',
-  RESET: 'RESET',
-  FORGOT: 'FORGOT',
+export const PROCESS_MODE = {
+  CREATE: 'CREATE',
+  UPDATE: 'UPDATE',
+  ARCHIVE: 'ARCHIVE',
 } as const;
-export type RecoveryMode = (typeof RECOVERY_MODE)[keyof typeof RECOVERY_MODE];
+export type ProcessMode = (typeof PROCESS_MODE)[keyof typeof PROCESS_MODE];
 
-type RecoveryStrategy = (proof: string) => Promise<void>;
+type ProcessStrategy = (proof: string) => Promise<void>;
 
-const strategies = new Map<RecoveryMode, RecoveryStrategy>([
-  [RECOVERY_MODE.INVITATION, validateInvitation],
-  [RECOVERY_MODE.RESET, validateReset],
-  [RECOVERY_MODE.FORGOT, validateForgot],
+const strategies = new Map<ProcessMode, ProcessStrategy>([
+  [PROCESS_MODE.CREATE, validateInvitation],
+  [PROCESS_MODE.UPDATE, validateReset],
+  [PROCESS_MODE.ARCHIVE, validateForgot],
 ]);
 
-export const runRecoveryStrategy: RunRecoveryStrategy = (mode, proof) => {
+export const runProcessStrategy: RunProcessStrategy = (mode, proof) => {
   const strategy = strategies.get(mode);
   if (!strategy) {
-    throw new UnsupportedRecoveryModeError(mode);
+    throw new UnsupportedProcessModeError(mode);
   }
   return strategy(proof);
 };
@@ -386,22 +386,22 @@ In rendering, use focused components, explicit view-model flags, named handlers 
 **Mandatory page contract:** define a centralized page test ID catalog, e.g. `constants/login.testIds.ts`. Every **page-owned rendered DOM element** must carry a stable, meaningful `data-testid`: page root, sections, divs, labels, headings, form, individual fields, actions, feedback/error/status and interactive elements. For shared nested primitives, provide `dataTestId` rather than putting a second selector on a React wrapper. The requirement includes noninteractive owned container elements; decorative SVG paths created by an icon library inherit the parent icon's test ID and do not each receive separate IDs.
 
 ~~~ts
-export const LOGIN_TEST_IDS = {
-  PAGE: 'login-page',
-  FORM: 'login-form',
-  EMAIL_FIELD: 'login-email',
-  PASSWORD_FIELD: 'login-password',
-  PASSWORD_VISIBILITY: 'login-password-visibility',
-  SUBMIT: 'login-submit',
-  FEEDBACK: 'login-feedback',
+export const ITEM_TEST_IDS = {
+  PAGE: 'item-page',
+  FORM: 'item-form',
+  TITLE_FIELD: 'item-title',
+  DESCRIPTION_FIELD: 'item-description',
+  DESCRIPTION_VISIBILITY: 'item-description-visibility',
+  SUBMIT: 'item-submit',
+  FEEDBACK: 'item-feedback',
 } as const;
 
 // In a domain component:
-<Button dataTestId={LOGIN_TEST_IDS.SUBMIT} type="submit">Sign in</Button>
-<InputControl dataTestId={LOGIN_TEST_IDS.EMAIL_FIELD} />
+<Button dataTestId={ITEM_TEST_IDS.SUBMIT} type="submit">Sign in</Button>
+<InputControl dataTestId={ITEM_TEST_IDS.TITLE_FIELD} />
 
 // Native page-owned markup:
-<form data-testid={LOGIN_TEST_IDS.FORM}>...</form>
+<form data-testid={ITEM_TEST_IDS.FORM}>...</form>
 ~~~
 
 **Unique and deterministic:** every test ID should be unique among currently rendered elements; repeated list items derive IDs from a stable non-sensitive business key (`... + '-' + record.gid`), never array index, text label or a random/`useId()` value. Names must not expose passwords, email addresses, tokens, phone numbers or other PII. A component rendered more than once must receive distinct caller-provided IDs; don't use a hardcoded default that creates duplicates. Use an owner prefix and role suffix (e.g. `login-submit-spinner`). For a test needing to choose among repeated widgets, it must be able to locate the specific element using page/widget ancestry and a meaningful identifier.
@@ -413,21 +413,21 @@ export const LOGIN_TEST_IDS = {
 Place tests beside the **owning unit**, never in an unrelated global bucket.
 
 ~~~text
-pages/login/components/LoginForm/
-├── LoginForm.tsx
+pages/item/components/ItemForm/
+├── ItemForm.tsx
 ├── types/
 ├── __tests__/
-│   └── LoginForm.test.tsx
+│   └── ItemForm.test.tsx
 └── index.ts
 
-pages/login/hooks/useLoginForm/helpers/
-├── login.validateCredentials.ts
+pages/item/hooks/useItemForm/helpers/
+├── item.validateCredentials.ts
 ├── types/
 └── __tests__/
-    └── login.validateCredentials.test.ts
+    └── item.validateCredentials.test.ts
 
-pages/login/__tests__/
-└── login.flow.test.tsx
+pages/item/__tests__/
+└── item.flow.test.tsx
 ~~~
 
 - **Pure functions** (helpers, validations, mappers, selectors, view-model selectors, base utilities) require direct Jest tests for success, edge and error cases.
@@ -558,12 +558,12 @@ packages/styles/
 ```tsx
 import { Form, Input, Button, Card, Typography, Text } from '@Components';
 
-<Card variant="outline" padding="lg" dataTestId="admissions-card">
-  <Typography as="h2" variant="heading" size="2xl" dataTestId="admissions-heading">Enquiry</Typography>
-  <Text tone="muted" size="sm" dataTestId="admissions-hint">We will contact you.</Text>
-  <Form layout="stack" spacing="md" dataTestId="admissions-form" onSubmit={onSubmit}>
-    <Input label="Email" controlSize="md" dataTestId="admissions-email" />
-    <Button variant="primary" size="lg" type="submit" dataTestId="admissions-submit">Send</Button>
+<Card variant="outline" padding="lg" dataTestId="inventory-card">
+  <Typography as="h2" variant="heading" size="2xl" dataTestId="inventory-heading">Enquiry</Typography>
+  <Text tone="muted" size="sm" dataTestId="inventory-hint">Complete the item details.</Text>
+  <Form layout="stack" spacing="md" dataTestId="inventory-form" onSubmit={onSubmit}>
+    <Input label="Title" controlSize="md" dataTestId="inventory-title" />
+    <Button variant="primary" size="lg" type="submit" dataTestId="inventory-submit">Send</Button>
   </Form>
 </Card>
 ```
@@ -680,28 +680,28 @@ Examples: `helpers/recovery.getMobileDescription.ts`, `renderer/credentialField.
 The `renderer/` directory contains **pure typed functions returning JSX**, distinct from full reusable components. A renderer accepts values/callbacks and returns `ReactNode` / `ReactElement`. It may call another renderer or shared component. It **must not** call hooks, APIs, storage, router navigation, subscribe to events or mutate state. It does not own general layouts shared across pages. If a renderer is large/reusable and requires lifecycle, it should become an actual component with its own folder.
 
 ~~~text
-auth/components/credentialField/
-├── CredentialField.tsx
-├── constants/credentialField.testIds.ts
+auth/components/filterField/
+├── FilterField.tsx
+├── constants/filterField.testIds.ts
 ├── renderer/
-│   ├── credentialField.label.tsx
-│   ├── types/credentialField.label.ts
-│   └── __tests__/credentialField.label.test.tsx
-├── styles/credentialField.module.scss
-├── types/credentialField.props.ts
-├── __tests__/CredentialField.test.tsx
+│   ├── filterField.label.tsx
+│   ├── types/filterField.label.ts
+│   └── __tests__/filterField.label.test.tsx
+├── styles/filterField.module.scss
+├── types/filterField.props.ts
+├── __tests__/FilterField.test.tsx
 └── index.ts
 ~~~
 
 The grouped label currently uses a forbidden ternary. The correct target pattern is:
 
 ~~~tsx
-// renderer/credentialField.label.tsx
+// renderer/filterField.label.tsx
 import { FieldLabel, Row } from '@Components';
-import styles from '../styles/credentialField.module.scss';
-import type { RenderCredentialFieldLabel } from './types/credentialField.label';
+import styles from '../styles/filterField.module.scss';
+import type { RenderFilterFieldLabel } from './types/filterField.label';
 
-export const renderCredentialFieldLabel: RenderCredentialFieldLabel = (props) => {
+export const renderFilterFieldLabel: RenderFilterFieldLabel = (props) => {
   const label = (
     <FieldLabel htmlFor={props.id} dataTestId={props.ids.LABEL}>
       {props.label}
@@ -710,7 +710,7 @@ export const renderCredentialFieldLabel: RenderCredentialFieldLabel = (props) =>
 
   if (props.grouped) {
     return (
-      <Row className={styles.passwordLabel} dataTestId={props.ids.LABEL_ROW}>
+      <Row className={styles.groupedLabel} dataTestId={props.ids.LABEL_ROW}>
         {label}
         {props.action}
       </Row>
@@ -729,52 +729,52 @@ Use `renderer/recovery.content.tsx` for choosing form vs state, `renderer/forgot
 No raw string status comparisons (`kind === 'email'`, `props.view === 'ready'`, `variant='login'`) in migrated feature logic or feature props. Define explicit typed enums or stable `as const` runtime maps in nearest `constants/` file. Prefer string enums for server-aligned or cross-unit state identifiers. Every known state must have an explicit visual description; the compiler must detect missing mappings.
 
 ~~~ts
-// auth/components/authStatusArt/constants/authStatusArt.kind.ts
-export enum AuthStatusKind {
-  EMAIL = 'email',
+// auth/components/taskStatusVisual/constants/taskStatusVisual.kind.ts
+export enum TaskStatusKind {
+  CREATED = 'created',
   SUCCESS = 'success',
-  EXPIRED = 'expired',
-  MISSING = 'missing',
+  STALE = 'stale',
+  INVALID = 'invalid',
   CHECKING = 'checking',
   UNAVAILABLE = 'unavailable',
-  ATTEMPTS_EXHAUSTED = 'attempts-exhausted',
+  REJECTED = 'rejected',
 }
 ~~~
 
 ~~~ts
-// constants/authStatusArt.badge.ts
-import { AuthStatusKind } from './authStatusArt.kind';
+// constants/taskStatusVisual.badge.ts
+import { TaskStatusKind } from './taskStatusVisual.kind';
 
-export enum AuthBadgeKind {
+export enum TaskBadgeKind {
   CONFIRMED = 'confirmed',
   INVALID = 'invalid',
   NONE = 'none',
 }
 
-export const AUTH_STATUS_BADGE: Readonly<Record<AuthStatusKind, AuthBadgeKind>> = {
-  [AuthStatusKind.EMAIL]: AuthBadgeKind.CONFIRMED,
-  [AuthStatusKind.SUCCESS]: AuthBadgeKind.CONFIRMED,
-  [AuthStatusKind.EXPIRED]: AuthBadgeKind.INVALID,
-  [AuthStatusKind.MISSING]: AuthBadgeKind.INVALID,
-  [AuthStatusKind.CHECKING]: AuthBadgeKind.NONE,
-  [AuthStatusKind.UNAVAILABLE]: AuthBadgeKind.NONE,
-  [AuthStatusKind.ATTEMPTS_EXHAUSTED]: AuthBadgeKind.NONE,
+export const TASK_STATUS_BADGE: Readonly<Record<TaskStatusKind, TaskBadgeKind>> = {
+  [TaskStatusKind.CREATED]: TaskBadgeKind.CONFIRMED,
+  [TaskStatusKind.SUCCESS]: TaskBadgeKind.CONFIRMED,
+  [TaskStatusKind.STALE]: TaskBadgeKind.INVALID,
+  [TaskStatusKind.INVALID]: TaskBadgeKind.INVALID,
+  [TaskStatusKind.CHECKING]: TaskBadgeKind.NONE,
+  [TaskStatusKind.UNAVAILABLE]: TaskBadgeKind.NONE,
+  [TaskStatusKind.REJECTED]: TaskBadgeKind.NONE,
 };
 ~~~
 
 ~~~tsx
-// renderer/authStatusArt.badge.tsx
+// renderer/taskStatusVisual.badge.tsx
 import { Icon, Text } from '@Components';
-import { AUTH_STATUS_BADGE, AuthBadgeKind } from '../constants/authStatusArt.badge';
-import styles from '../styles/authStatusArt.module.scss';
-import type { RenderAuthStatusBadge } from './types/authStatusArt.badge';
+import { TASK_STATUS_BADGE, TaskBadgeKind } from '../constants/taskStatusVisual.badge';
+import styles from '../styles/taskStatusVisual.module.scss';
+import type { RenderTaskStatusBadge } from './types/taskStatusVisual.badge';
 
-export const renderAuthStatusBadge: RenderAuthStatusBadge = (kind) => {
-  const badge = AUTH_STATUS_BADGE[kind];
-  if (badge === AuthBadgeKind.CONFIRMED) {
+export const renderTaskStatusBadge: RenderTaskStatusBadge = (kind) => {
+  const badge = TASK_STATUS_BADGE[kind];
+  if (badge === TaskBadgeKind.CONFIRMED) {
     return <Icon name="check-circle-2" decorative className={styles.confirmedBadge}/>;
   }
-  if (badge === AuthBadgeKind.INVALID) {
+  if (badge === TaskBadgeKind.INVALID) {
     return <Text as="span" className={styles.invalidBadge} aria-hidden="true">×</Text>;
   }
   return null;
@@ -788,45 +788,45 @@ export const renderAuthStatusBadge: RenderAuthStatusBadge = (kind) => {
 ## 26. LoginLayout exact decomposition and theme-option renderer
 
 ~~~text
-auth/components/loginLayout/
-├── LoginLayout.tsx
+auth/components/itemLayout/
+├── ItemLayout.tsx
 ├── constants/
-│   ├── loginLayout.variant.ts
-│   ├── loginLayout.copy.ts
-│   ├── loginLayout.appearance.ts
-│   └── loginLayout.testIds.ts
+│   ├── itemLayout.variant.ts
+│   ├── itemLayout.copy.ts
+│   ├── itemLayout.appearance.ts
+│   └── itemLayout.testIds.ts
 ├── helpers/
-│   ├── loginLayout.className.ts
-│   ├── loginLayout.mobileDescription.ts
+│   ├── itemLayout.className.ts
+│   ├── itemLayout.mobileDescription.ts
 │   ├── types/
 │   └── __tests__/
 ├── renderer/
-│   ├── loginLayout.appearanceOption.tsx
-│   ├── loginLayout.visual.tsx
+│   ├── itemLayout.appearanceOption.tsx
+│   ├── itemLayout.visual.tsx
 │   ├── types/
 │   └── __tests__/
-├── styles/loginLayout.module.scss
-├── types/loginLayout.props.ts
-├── __tests__/LoginLayout.test.tsx
+├── styles/itemLayout.module.scss
+├── types/itemLayout.props.ts
+├── __tests__/ItemLayout.test.tsx
 └── index.ts
 ~~~
 
 ~~~ts
-// constants/loginLayout.variant.ts
-export enum AuthLayoutVariant {
-  LOGIN = 'login',
-  FORGOT = 'forgot',
-  RECOVERY = 'recovery',
+// constants/itemLayout.variant.ts
+export enum ItemLayoutVariant {
+  LIST = 'list',
+  DETAIL = 'detail',
+  EDIT = 'edit',
 }
 
-// constants/loginLayout.copy.ts
-export const LOGIN_LAYOUT_COPY = {
-  DEFAULT_EYEBROW: 'YOUR SCHOOL WORKSPACE',
-  RECOVERY_EYEBROW: 'SECURE YOUR ACCOUNT',
-  SCHOOL_NAME: 'RDR School',
+// constants/itemLayout.copy.ts
+export const ITEM_LAYOUT_COPY = {
+  DEFAULT_EYEBROW: 'YOUR WORKSPACE',
+  EDIT_EYEBROW: 'EDIT ITEM',
+  SCHOOL_NAME: 'Workspace',
 } as const;
 
-// constants/loginLayout.appearance.ts (shared theme values/icons are imported)
+// constants/itemLayout.appearance.ts (shared theme values/icons are imported)
 import { Monitor, Sun, Moon } from '@Components/icons';
 import { THEME_PREFERENCE } from '@Components/hooks/theme/constants/themePreference';
 
@@ -901,11 +901,11 @@ packages/styles/
     ├── _a11y.scss
     └── _layout.scss
 
-domain/auth/components/loginLayout/styles/loginLayout.module.scss
-domain/auth/components/credentialField/styles/credentialField.module.scss
-domain/auth/components/authStatusArt/styles/authStatusArt.module.scss
-domain/auth/pages/forgotPassword/components/forgotPasswordForm/styles/forgotPasswordForm.module.scss
-domain/auth/pages/recovery/styles/recovery.module.scss
+domain/auth/components/itemLayout/styles/itemLayout.module.scss
+domain/auth/components/filterField/styles/filterField.module.scss
+domain/auth/components/taskStatusVisual/styles/taskStatusVisual.module.scss
+domain/auth/pages/forgotPassword/components/itemEditor/styles/itemEditor.module.scss
+domain/auth/pages/itemDetails/styles/itemDetails.module.scss
 ~~~
 
 The present `auth/components/loginLayout/styles/optionOneAuth.css` is **not one logical component's styling**. The uploaded stylesheet includes layout, branding, SVG art, input shell, password toggle, form errors, forgot/password reset status, recovered-state illustrations, both theme palettes, autofill, responsive layout, very short windows and reduced motion. **Split by owner**, do not rename the same 1,095-line file to `loginLayout.module.scss` and leave all responsibilities mixed.
@@ -923,7 +923,7 @@ Required ownership during extraction:
 CSS Modules are imported with e.g. `import styles from './styles/loginLayout.module.scss'`, then `className={styles.root}`. Combine variants with `cn` imported from `@Base/utilities/cn`, e.g. `cn(styles.root, styles.compact)`. **Any branching CSS class selection is in a named helper**, not JSX string interpolation, nested ternary or raw class string `'is-active'`. Use `className={styles.recovery}` rather than `className="rdr-recovery"`. Domain-specific CSS modules are **owned next to their components**, while only generic design utilities/mixins/tokens belong in `packages/styles`. Do not centralize one-use feature selectors in the global styles package just to make an import shorter.
 
 ~~~scss
-/* authStatusArt.module.scss; both tokens must exist in @Styles light/dark themes. */
+/* taskStatusVisual.module.scss; both tokens must exist in @Styles light/dark themes. */
 .root {
   color: var(--gh-color-text);
 }
@@ -952,13 +952,13 @@ All navigation paths are named once. The user-selected canonical location is `fr
 // app/core/routes/constants/appRoutes.paths.ts
 export const APP_ROUTE = {
   HOME: '/',
-  LOGIN: '/login',
-  LOGIN_LEGACY: '/loginv2',
-  FORGOT_PASSWORD: '/forgot-password',
-  RESET_PASSWORD: '/reset-password',
-  SET_PASSWORD: '/set-password',
-  SETUP_LEGACY: '/setup',
-  DASHBOARD: '/dashboard',
+  ENTRY: '/entry',
+  LEGACY_ENTRY: '/old-entry',
+  HELP: '/help',
+  ITEM_EDIT: '/items/edit',
+  ITEM_CREATE: '/items/new',
+  LEGACY_ITEM: '/old-items',
+  WORKSPACE: '/workspace',
 } as const;
 
 // app/core/routes/constants/appRoutes.access.ts
@@ -984,7 +984,7 @@ BrowserRouter
         ├── PublicRoute (guest-only login / other allowed public auth pages)
         └── ProtectedRoute
             └── ProtectedLayout -> Shell -> Outlet
-                ├── /dashboard
+                ├── /workspace
                 └── future implemented protected domain pages
 ~~~
 
@@ -1019,34 +1019,34 @@ The outer `AppRoutes` becomes a thin container of named route arrays and rendere
 A provider is a functional **unit**, not a single do-everything file:
 
 ~~~text
-domain/auth/core/
+domain/resource/core/
 ├── providers/
-│   └── authProvider/
-│       ├── AuthProvider.tsx
+│   └── resourceProvider/
+│       ├── ResourceProvider.tsx
 │       ├── hooks/
-│       │   └── useAuthSession/
-│       │       ├── useAuthSession.ts
+│       │   └── useResourceSession/
+│       │       ├── useResourceSession.ts
 │       │       ├── helpers/
 │       │       ├── constants/
 │       │       ├── types/
 │       │       └── __tests__/
 │       ├── helpers/
-│       │   └── authProvider.requireContext.ts
-│       ├── constants/authProvider.messages.ts
+│       │   └── resourceProvider.requireContext.ts
+│       ├── constants/resourceProvider.messages.ts
 │       ├── types/
-│       │   ├── authProvider.props.ts
-│       │   └── authProvider.context.ts
-│       ├── __tests__/AuthProvider.test.tsx
+│       │   ├── resourceProvider.props.ts
+│       │   └── resourceProvider.context.ts
+│       ├── __tests__/ResourceProvider.test.tsx
 │       └── index.ts
-├── hooks/useRecoveryFlowBoundary/
+├── hooks/useOperationFlowBoundary/
 ├── session/
-│   └── recoveryFlowSession/
-│       ├── recoveryFlowSession.ts
-│       ├── constants/recoveryFlowSession.keys.ts
-│       ├── constants/recoveryFlowSession.lifetime.ts
-│       ├── helpers/recoveryFlowSession.parseMarker.ts
-│       ├── helpers/recoveryFlowSession.isActive.ts
-│       ├── types/recoveryFlowSession.ts
+│   └── operationFlowSession/
+│       ├── operationFlowSession.ts
+│       ├── constants/operationFlowSession.keys.ts
+│       ├── constants/operationFlowSession.lifetime.ts
+│       ├── helpers/operationFlowSession.parseMarker.ts
+│       ├── helpers/operationFlowSession.isActive.ts
+│       ├── types/operationFlowSession.ts
 │       └── __tests__/
 └── guards/
     ├── publicRoute/
@@ -1066,27 +1066,27 @@ Do **not** split a stateful browser adapter into unrelated globally mutable "hel
 ### 30.3 Full `useRecovery` split (currently not done)
 
 ~~~text
-pages/recovery/hooks/useRecovery/
-├── useRecovery.ts                 # returns one cohesive typed interface
+pages/operation/hooks/useOperation/
+├── useOperation.ts                 # returns one cohesive typed interface
 ├── hooks/
-│   ├── useRecoveryForm/           # one form-state owner
-│   ├── useRecoveryLink/           # hash proof handling + cleanup + sequence
-│   ├── useRecoveryGrant/          # grant status from server
-│   ├── useRecoverySubmission/     # validation + mutation + duplicate protection
-│   └── useRecoveryRetry/          # retry orchestration
+│   ├── useOperationForm/           # one form-state owner
+│   ├── useOperationLink/           # hash proof handling + cleanup + sequence
+│   ├── useOperationGrant/          # grant status from server
+│   ├── useOperationSubmission/     # validation + mutation + duplicate protection
+│   └── useOperationRetry/          # retry orchestration
 ├── helpers/
-│   ├── recovery.classifyFailure.ts
-│   ├── recovery.getViewModel.ts
-│   ├── recovery.validatePassword.ts
+│   ├── operation.classifyFailure.ts
+│   ├── operation.getViewModel.ts
+│   ├── operation.validatePassword.ts
 │   ├── types/
 │   └── __tests__/
 ├── constants/
-│   ├── recovery.state.ts
-│   ├── recovery.copy.ts
-│   ├── recovery.testIds.ts
-│   └── recovery.routes.ts         # use common paths instead of duplicating values
-├── types/useRecovery.ts
-└── __tests__/useRecovery.test.ts
+│   ├── operation.state.ts
+│   ├── operation.copy.ts
+│   ├── operation.testIds.ts
+│   └── operation.routes.ts         # use common paths instead of duplicating values
+├── types/useOperation.ts
+└── __tests__/useOperation.test.ts
 ~~~
 
 **One owner:** only one hook owns each mutable form field, fieldErrors and request-in-flight flag; subordinate hooks accept typed state and actions rather than creating second mirrors of it. If a child only transforms inputs or reads a map, it is a *helper*, not a hook. Hooks are permitted to be nested under a parent hook's `hooks/` to group focused effects. They must be called unconditionally. Do not add five hooks merely to shrink one file while leaving them mutually coupled through many setters.
@@ -1098,30 +1098,30 @@ Migrate the existing direct `invitation ? API_A : API_B` or `purpose === 'invita
 The shell's current `useShellState` and `useShellActions` are two peer hooks with extra setter plumbing, later combined by `useShell`. **Target:** one `hooks/useShell/useShell.ts` owns state and named actions and returns one typed model. Nested hook units are allowed for independently meaningful storage sync or theme integration, **not** for duplicating setters or making redundant open/close wrappers.
 
 ~~~text
-shell/
-├── Shell.tsx                           # presentation with <Outlet/>
-├── containers/shellContainer/
-│   ├── ShellContainer.tsx
-│   ├── constants/shellContainer.queryOptions.ts
-│   ├── helpers/shellContainer.createQueryClient.ts
+workspace/
+├── Workspace.tsx                           # presentation with <Outlet/>
+├── containers/workspaceContainer/
+│   ├── WorkspaceContainer.tsx
+│   ├── constants/workspaceContainer.queryOptions.ts
+│   ├── helpers/workspaceContainer.createQueryClient.ts
 │   └── types/
-├── hooks/useShell/
-│   ├── useShell.ts
+├── hooks/useWorkspace/
+│   ├── useWorkspace.ts
 │   ├── hooks/
 │   │   ├── usePinnedAppsPersistence/
 │   │   └── useSidebarPreference/
-│   ├── helpers/shell.togglePinnedPath.ts
-│   ├── types/useShell.ts
-│   └── __tests__/useShell.test.ts
+│   ├── helpers/workspace.togglePinnedPath.ts
+│   ├── types/useWorkspace.ts
+│   └── __tests__/useWorkspace.test.ts
 ├── components/
 │   ├── appRoutes/{renderer,types,__tests__}/
-│   ├── appLauncher/
-│   │   ├── AppLauncher.tsx
-│   │   ├── hooks/useAppLauncher/
-│   │   ├── helpers/shell.filterCatalog.ts
-│   │   ├── renderer/appLauncher.app.tsx
-│   │   ├── constants/appLauncher.testIds.ts
-│   │   ├── styles/appLauncher.module.scss
+│   ├── catalogLauncher/
+│   │   ├── CatalogLauncher.tsx
+│   │   ├── hooks/useCatalogLauncher/
+│   │   ├── helpers/workspace.filterCatalog.ts
+│   │   ├── renderer/catalogLauncher.app.tsx
+│   │   ├── constants/catalogLauncher.testIds.ts
+│   │   ├── styles/catalogLauncher.module.scss
 │   │   ├── types/
 │   │   └── __tests__/
 │   ├── protectedLayout/
@@ -1134,7 +1134,7 @@ shell/
 If `useBoolean` or `useBooleanState` is available from `@Components/hooks`, use its stable `[value, setTrue, setFalse]` actions in the shell model instead of duplicating `openSidebar = useCallback(() => setSidebarOpen(true))` and `closeSidebar = ...`. **Current availability must be checked:** do not add imports for imaginary exports. A named `openCatalog` action is still warranted because it opens the catalog **and** closes the sidebar; similarly `openAccountPreferences` may legitimately coordinate several UI states.
 
 ~~~ts
-// hooks/useShell/helpers/shell.togglePinnedPath.ts
+// hooks/useWorkspace/helpers/workspace.togglePinnedPath.ts
 import { _filter } from '@Base/utilities/filter';
 import { _includes } from '@Base/utilities/includes';
 
@@ -1153,7 +1153,7 @@ This helper is pure and tested. `_filter`/`_includes` must first exist as narrow
 The current module-level construction mixes immutable options and runtime instance creation. Store defaults in the owning container constants, and construct once through a helper. Do **not** create a QueryClient every render.
 
 ~~~ts
-// shell/containers/shellContainer/constants/shellContainer.queryOptions.ts
+// workspace/containers/workspaceContainer/constants/workspaceContainer.queryOptions.ts
 export const SHELL_QUERY_OPTIONS = {
   defaultOptions: {
     queries: {
@@ -1164,11 +1164,11 @@ export const SHELL_QUERY_OPTIONS = {
   },
 } as const;
 
-// shell/containers/shellContainer/helpers/shellContainer.createQueryClient.ts
+// workspace/containers/workspaceContainer/helpers/workspaceContainer.createQueryClient.ts
 import { QueryClient } from '@tanstack/react-query';
-import { SHELL_QUERY_OPTIONS } from '../constants/shellContainer.queryOptions';
+import { SHELL_QUERY_OPTIONS } from '../constants/workspaceContainer.queryOptions';
 
-export const createShellQueryClient = (): QueryClient => new QueryClient(SHELL_QUERY_OPTIONS);
+export const createWorkspaceQueryClient = (): QueryClient => new QueryClient(SHELL_QUERY_OPTIONS);
 ~~~
 
 A constructor is **not static data** and does not belong in `constants/` or `renderer/`. For the current SPA, a stable app-instance is sufficient; future SSR must scope the QueryClient per request/runtime. Query options, retry rules and timeouts must be named constants, not bare numbers in component markup.
@@ -1215,25 +1215,25 @@ Every page or reusable feature defines one typed `constants/<owner>.testIds.ts`.
 ~~~text
 <domain>-<screen>-<component>-<element>-<useCase>
 
-auth-login-form-input-email
-auth-login-form-input-password
-auth-login-form-button-submit
-auth-login-layout-button-theme-system
-auth-forgot-password-form-button-resend
-auth-forgot-password-form-alert-feedback
-auth-recovery-form-input-confirmation
+auth-item-form-input-title
+auth-item-form-input-description
+auth-item-form-button-submit
+auth-item-layout-button-theme-system
+auth-forgot-description-form-button-resend
+auth-forgot-description-form-alert-feedback
+auth-process-form-input-confirmation
 shell-app-launcher-dialog-input-search
 shell-app-launcher-card-button-pin-dashboard
 dashboard-home-card-status-tasks
 ~~~
 
 ~~~ts
-// pages/login/constants/login.testIds.ts
-export const LOGIN_TEST_IDS = {
-  EMAIL: 'auth-login-form-input-email',
-  PASSWORD: 'auth-login-form-input-password',
-  SUBMIT: 'auth-login-form-button-submit',
-  AUTH_ERROR: 'auth-login-form-alert-feedback',
+// pages/item/constants/item.testIds.ts
+export const ITEM_TEST_IDS = {
+  TITLE: 'auth-item-form-input-title',
+  DESCRIPTION: 'auth-item-form-input-description',
+  SUBMIT: 'auth-item-form-button-submit',
+  AUTH_ERROR: 'auth-item-form-alert-feedback',
 } as const;
 ~~~
 
@@ -1362,17 +1362,17 @@ A file is conformant only when its owner is obvious, it uses typed contracts, na
 One **top-level** `describe` per unit test file. The `describe` name must be the exact exported symbol being tested, matching case, not a prose capability:
 
 ~~~ts
-// helpers/__tests__/login.getErrorMessage.test.ts
-import { getLoginErrorMessage } from '../login.getErrorMessage';
+// helpers/__tests__/item.getErrorMessage.test.ts
+import { getItemErrorMessage } from '../item.getErrorMessage';
 
-describe('getLoginErrorMessage', () => {
+describe('getItemErrorMessage', () => {
   it('maps invalid credentials to safe copy', () => {
-    expect(getLoginErrorMessage(new Error('Invalid credentials')))
-      .toBe('Incorrect email or password. Please try again.');
+    expect(getItemErrorMessage(new Error('Invalid item')))
+      .toBe('The request was rejected.');
   });
   it('hides unknown backend failures', () => {
-    expect(getLoginErrorMessage(new Error('internal secret')))
-      .toBe('Unable to sign in right now. Please try again.');
+    expect(getItemErrorMessage(new Error('internal secret')))
+      .toBe('The service is currently unavailable.');
   });
 });
 ~~~
@@ -1388,28 +1388,28 @@ Tests belong under the owning `helpers/__tests__/`, `renderer/__tests__/`, `hook
 **Required login unit, reference for all future page refactors:**
 
 ~~~text
-pages/login/
-├── Login.tsx
+pages/item/
+├── Item.tsx
 ├── constants/
-│   ├── login.fields.ts
-│   ├── login.fieldConfig.ts
-│   ├── login.fieldOrder.ts
-│   ├── login.validation.ts
-│   ├── login.copy.ts
-│   ├── login.errorRules.ts
-│   ├── login.testIds.ts
-│   └── types/login.fieldConfig.ts
+│   ├── item.fields.ts
+│   ├── item.fieldConfig.ts
+│   ├── item.fieldOrder.ts
+│   ├── item.validation.ts
+│   ├── item.copy.ts
+│   ├── item.errorRules.ts
+│   ├── item.testIds.ts
+│   └── types/item.fieldConfig.ts
 ├── helpers/
-│   ├── login.getErrorMessage.ts
-│   ├── login.validateCredentials.ts
-│   ├── login.isValidEmail.ts
+│   ├── item.getErrorMessage.ts
+│   ├── item.validateCredentials.ts
+│   ├── item.isValidTitle.ts
 │   ├── types/
-│   │   ├── login.getErrorMessage.ts
-│   │   └── login.validateCredentials.ts
+│   │   ├── item.getErrorMessage.ts
+│   │   └── item.validateCredentials.ts
 │   └── __tests__/
-│       ├── login.getErrorMessage.test.ts
-│       ├── login.validateCredentials.test.ts
-│       └── login.isValidEmail.test.ts
+│       ├── item.getErrorMessage.test.ts
+│       ├── item.validateCredentials.test.ts
+│       └── item.isValidTitle.test.ts
 ├── renderer/                     # only JSX-producing pure selectors
 ├── hooks/
 ├── components/
@@ -1425,42 +1425,42 @@ pages/login/
 Use exactly **one authoritative stable field identifier contract**. Values remain lowercase to match existing state/error keys; enum *members* are uppercase to make identity explicit.
 
 ~~~ts
-// constants/login.fields.ts
-export enum LoginField {
-  EMAIL = 'email',
-  PASSWORD = 'password',
+// constants/item.fields.ts
+export enum ItemField {
+  TITLE = 'title',
+  DESCRIPTION = 'description',
 }
 ~~~
 
 ~~~ts
-// constants/types/login.fieldConfig.ts
-export interface LoginFieldConfig {
+// constants/types/item.fieldConfig.ts
+export interface ItemFieldConfig {
   readonly label: string;
   readonly placeholder: string;
-  readonly autoComplete: 'username' | 'current-password';
+  readonly autoComplete: 'name' | 'current-description';
 }
 
-// constants/login.fieldConfig.ts
-import { LoginField } from './login.fields';
-import type { LoginFieldConfig } from './types/login.fieldConfig';
+// constants/item.fieldConfig.ts
+import { ItemField } from './item.fields';
+import type { ItemFieldConfig } from './types/item.fieldConfig';
 
-export const LOGIN_FIELD_CONFIG: Readonly<Record<LoginField, Readonly<LoginFieldConfig>>> = Object.freeze({
-  [LoginField.EMAIL]: Object.freeze({
-    label: 'Email address', placeholder: 'Email', autoComplete: 'username',
+export const ITEM_FIELD_CONFIG: Readonly<Record<ItemField, Readonly<ItemFieldConfig>>> = Object.freeze({
+  [ItemField.TITLE]: Object.freeze({
+    label: 'Title address', placeholder: 'Title', autoComplete: 'name',
   }),
-  [LoginField.PASSWORD]: Object.freeze({
-    label: 'Password', placeholder: 'Password', autoComplete: 'current-password',
+  [ItemField.DESCRIPTION]: Object.freeze({
+    label: 'Description', placeholder: 'Description', autoComplete: 'current-description',
   }),
 });
 ~~~
 
 ~~~ts
-// constants/login.fieldOrder.ts
-import { LoginField } from './login.fields';
-export const LOGIN_FIELD_ORDER = Object.freeze([
-  LoginField.EMAIL,
-  LoginField.PASSWORD,
-] as const satisfies readonly LoginField[]);
+// constants/item.fieldOrder.ts
+import { ItemField } from './item.fields';
+export const ITEM_FIELD_ORDER = Object.freeze([
+  ItemField.TITLE,
+  ItemField.DESCRIPTION,
+] as const satisfies readonly ItemField[]);
 ~~~
 
 Components and validators read `LOGIN_FIELD_CONFIG[LoginField.EMAIL]` instead of inventing a separate email/password config. Do not store a duplicate object `{ email: ..., password: ... }` with unrelated string keys. The enum can type `LoginFieldErrors = Partial<Record<LoginField, string>>`, but avoid new circular runtime imports from page type modules.
@@ -1470,28 +1470,28 @@ Components and validators read `LOGIN_FIELD_CONFIG[LoginField.EMAIL]` instead of
 No `isValid: value => ...` functions inside `constants/login.validation.ts`. Represent rule ordering as typed **data**, and implement operations under `helpers/`:
 
 ~~~ts
-// constants/login.validation.ts
-import { LoginField } from './login.fields';
-export enum LoginValidationKind {
+// constants/item.validation.ts
+import { ItemField } from './item.fields';
+export enum ItemValidationKind {
   REQUIRED = 'REQUIRED',
-  EMAIL_FORMAT = 'EMAIL_FORMAT',
+  TITLE_FORMAT = 'TITLE_FORMAT',
 }
-export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-export const LOGIN_VALIDATION_RULES: Readonly<Record<LoginField, readonly LoginValidationKind[]>> = Object.freeze({
-  [LoginField.EMAIL]: Object.freeze([LoginValidationKind.REQUIRED, LoginValidationKind.EMAIL_FORMAT]),
-  [LoginField.PASSWORD]: Object.freeze([LoginValidationKind.REQUIRED]),
+export const TITLE_PATTERN = /^.{3,}$/;
+export const ITEM_VALIDATION_RULES: Readonly<Record<ItemField, readonly ItemValidationKind[]>> = Object.freeze({
+  [ItemField.TITLE]: Object.freeze([ItemValidationKind.REQUIRED, ItemValidationKind.TITLE_FORMAT]),
+  [ItemField.DESCRIPTION]: Object.freeze([ItemValidationKind.REQUIRED]),
 });
-export const LOGIN_REQUIRED_MESSAGES: Readonly<Record<LoginField, string>> = Object.freeze({
-  [LoginField.EMAIL]: 'Please enter your email address.',
-  [LoginField.PASSWORD]: 'Please enter your password.',
+export const ITEM_REQUIRED_MESSAGES: Readonly<Record<ItemField, string>> = Object.freeze({
+  [ItemField.TITLE]: 'Please enter your title address.',
+  [ItemField.DESCRIPTION]: 'Please enter your description.',
 });
-export const LOGIN_EMAIL_FORMAT_MESSAGE = 'Enter a valid email address.';
+export const ITEM_TITLE_FORMAT_MESSAGE = 'Enter a valid title address.';
 ~~~
 
 ~~~ts
-// helpers/login.isValidEmail.ts
-import { EMAIL_PATTERN } from '../constants/login.validation';
-export const isValidLoginEmail = (value: string): boolean => EMAIL_PATTERN.test(value);
+// helpers/item.isValidTitle.ts
+import { TITLE_PATTERN } from '../constants/item.validation';
+export const isValidItemTitle = (value: string): boolean => TITLE_PATTERN.test(value);
 ~~~
 
 `login.validateCredentials.ts` takes typed credentials, uses real `_trim` from `@Base/utilities/trim` to normalize **email only**, iterates `LOGIN_FIELD_ORDER` and evaluates rules through pure helper(s), returns typed field errors, and never logs/trims the password. For multiple behavioral rule strategies use a typed helper strategy registry; static policy metadata stays in constants. Tests execute real validators, not mocks.
@@ -1504,12 +1504,12 @@ Other exact responsibilities: `constants/login.copy.ts` for screen copy, `consta
 
 ~~~text
 packages/business/
-├── auth/routes/
-│   ├── constants/auth.routes.ts       # sign in, forgot, reset, invitation, legacy auth redirects
+├── resource/routes/
+│   ├── constants/resource.routes.ts       # sign in, forgot, reset, invitation, legacy auth redirects
 │   └── index.ts                       # intentional package public entrypoint
 └── app/routes/
-    ├── constants/app.routes.ts        # home, dashboard and implemented workspace destinations
-    ├── constants/app.routeAccess.ts   # PUBLIC / PROTECTED and OPEN / GUEST_ONLY
+    ├── constants/workspace.routes.ts        # home, dashboard and implemented workspace destinations
+    ├── constants/workspace.routeAccess.ts   # PUBLIC / PROTECTED and OPEN / GUEST_ONLY
     └── index.ts
 ~~~
 
