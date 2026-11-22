@@ -5,12 +5,12 @@ import { Link } from 'react-router-dom';
 import { SchoolMonogram } from '@Components';
 import { useWorkspaceTheme, type ThemePreference } from '@Components/hooks/theme';
 
-import { AuthAmbientGraphic } from '../components/authAmbientGraphic';
-import { useAuthViewportFit } from './hooks/useAuthViewportFit/useAuthViewportFit';
+import { AuthAmbientGraphic } from '../authAmbientGraphic';
+import { useAuthViewportFit } from '../../hooks/useAuthViewportFit';
 
 
 // One stylesheet owns the entire auth layout. Legacy variants are intentionally not loaded.
-import './optionOneAuth.css';
+import './styles/optionOneAuth.css';
 
 const appearanceOptions: { value: ThemePreference; label: string; Icon: typeof Sun }[] = [
   { value: 'system', label: 'System', Icon: Monitor },

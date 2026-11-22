@@ -2,14 +2,14 @@ import type { ReactNode } from 'react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
-import { ForgotPasswordPage } from './ForgotPasswordPage';
+import { ForgotPasswordContainer as ForgotPasswordPage } from './forgotPassword';
 
 const mockForgotPassword = jest.fn<Promise<{accepted:boolean;delivery:string}>,[string]>();
 
 jest.mock('@Business/auth',()=>({
   authenticationApi:{forgotPassword:(email:string)=>mockForgotPassword(email)},
 }));
-jest.mock('./LoginLayout',()=>({
+jest.mock('../components/loginLayout',()=>({
   LoginLayout:({children,title}:{children:ReactNode;title:string})=><div><h1>{title}</h1>{children}</div>,
 }));
 

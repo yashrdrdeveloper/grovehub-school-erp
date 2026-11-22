@@ -1,4 +1,4 @@
-import { LoginLayout } from '../LoginLayout';
+import { LoginLayout } from '../../components/loginLayout';
 
 import { RecoveryPasswordForm } from './components/recoveryPasswordForm';
 import { RecoveryState } from './components/recoveryState';

@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 
 import { ApiError } from '@Business/api';
 
-import { RecoveryPage } from './RecoveryPage';
+import { RecoveryContainer as RecoveryPage } from './recovery';
 import { clearRecoveryFlow } from './recoveryFlowSession';
 
 const validateInvitation = jest.fn<Promise<{verified:boolean;purpose:string;expiresIn:number}>,[string]>();
@@ -30,7 +30,7 @@ jest.mock('@Business/auth',()=>({
 jest.mock('@Business/accounts',()=>({
   accountsApi:{setup:(password:string)=>setup(password),setupStatus:()=>setupStatus()},
 }));
-jest.mock('./LoginLayout',()=>({
+jest.mock('../components/loginLayout',()=>({
   LoginLayout:({children,title,mobileTitle}:{children:ReactNode;title:string;mobileTitle?:string})=><main><h1>{title}</h1>{mobileTitle && <span data-testid="mobile-recovery-title">{mobileTitle}</span>}{children}</main>,
 }));
 

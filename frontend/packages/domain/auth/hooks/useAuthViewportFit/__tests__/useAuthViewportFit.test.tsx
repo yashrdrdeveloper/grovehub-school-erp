@@ -1,6 +1,6 @@
 import { act, render } from '@testing-library/react';
 
-import { useAuthViewportFit } from './useAuthViewportFit';
+import { useAuthViewportFit } from '../useAuthViewportFit';
 
 const Harness = () => {
   const { contentRef, toolbarRef, mainRef } = useAuthViewportFit();

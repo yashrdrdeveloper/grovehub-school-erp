@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import { LoginV2Page } from './LoginV2Page';
+import { LoginContainer as LoginV2Page } from './login';
 
 const signIn=jest.fn<Promise<void>,[string,string]>();
 const setPreference=jest.fn();

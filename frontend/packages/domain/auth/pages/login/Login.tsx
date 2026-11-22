@@ -1,4 +1,4 @@
-import { LoginLayout } from '../LoginLayout';
+import { LoginLayout } from '../../components/loginLayout';
 
 import { LOGIN_COPY } from './config';
 import { DesktopLogin } from './templates/desktopLogin';
