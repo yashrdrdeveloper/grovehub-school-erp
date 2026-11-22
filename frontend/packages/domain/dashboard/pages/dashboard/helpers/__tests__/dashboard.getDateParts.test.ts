@@ -1,4 +1,4 @@
-import { getDashboardDateParts } from '../getDashboardDateParts';
+import { getDashboardDateParts } from '../dashboard.getDateParts';
 
 describe('getDashboardDateParts', () => {
   it('assigns a morning greeting before noon', () => {

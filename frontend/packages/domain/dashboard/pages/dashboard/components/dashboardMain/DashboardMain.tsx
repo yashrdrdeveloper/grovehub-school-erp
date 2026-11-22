@@ -1,6 +1,6 @@
 import { ArrowUpRight, CheckCircle2, CircleDashed, Inbox } from 'lucide-react';
 
-import { DASHBOARD_WORKSPACES } from '../../config/dashboardPreview.config';
+import { DASHBOARD_WORKSPACES } from '../../constants/dashboard.workspaces';
 import type { DashboardMainComponent } from './types/dashboardMain';
 
 /** Preview placeholders for work queues and operational domains. */

@@ -1,5 +1,5 @@
 import { Dashboard } from '../../Dashboard';
-import { getDashboardDateParts } from '../../helpers/getDashboardDateParts';
+import { getDashboardDateParts } from '../../helpers/dashboard.getDateParts';
 import { useDashboardCalendar } from '../../hooks/useDashboardCalendar';
 import type { DashboardContainerComponent } from './types/dashboardContainer';
 

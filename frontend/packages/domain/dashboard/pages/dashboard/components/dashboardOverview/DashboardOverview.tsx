@@ -1,4 +1,4 @@
-import { DASHBOARD_METRICS } from '../../config/dashboardPreview.config';
+import { DASHBOARD_METRICS } from '../../constants/dashboard.metrics';
 import type { DashboardOverviewComponent } from './types/dashboardOverview';
 
 export const DashboardOverview: DashboardOverviewComponent = () => (

@@ -7,7 +7,7 @@ import type { DashboardComponent } from './types';
 
 /** Pure dashboard composition. All data is explicitly marked as a preview. */
 export const Dashboard: DashboardComponent = props => (
-  <div className="school-home">
+  <div className="school-home" data-testid="dashboard-page">
     <DashboardHeader date={props.date}/>
     <DashboardNotice/>
     <DashboardOverview/>
