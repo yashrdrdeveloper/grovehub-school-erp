@@ -73,3 +73,8 @@ Tests under `internal/tests/unit-test` validate provider factory/registry, contr
 ## External-provider Strategy
 
 Gmail and Outlook remain independently owned adapters under `externalService/mail/{gmail,outlook}`. Each registers a concrete `@Provider` and `@Strategy` implementation of the existing `mailprovider.Strategy` contract. The provider registry, OAuth credential handling and action DTOs remain Integration-owned; Identity must only call its typed public Integration client.
+
+
+## Tenant-scoped system mail sender
+
+An additive migration creates `integration.system_mail_senders` with one persisted connection selector per tenant. `POST /integrations/protected/connections/system-mail/sender` accepts `{"connectionId":"<uuid>"}` only from a gateway-verified tenant administrator. The operation confirms the selected connection is tenant-owned, ACTIVE and supports `mail.send` before saving the selection. `ExecuteSystemMail` revalidates the active connection and routes the delivery through the registered provider action. The setting can change without redeploying Identity or Integration.
