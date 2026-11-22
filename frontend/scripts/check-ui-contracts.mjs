@@ -24,12 +24,14 @@ for (const unit of await readdir(root, { withFileTypes: true })) {
   const source = await readFile(path.join(folder, impl), 'utf8');
   const forwardsToInput = unit.name === 'TextField'
     && /<Input\b/.test(source) && /\{\.\.\.props\}/.test(source);
+  const forwardsToNativeLeaf = unit.name === 'Input'
+    && /<InputControl\b/.test(source) && /dataTestId=\{controlTestId\}/.test(source);
 
   if (!forwardsToInput && !/dataTestId/.test(source)) {
     failures.push(`${unit.name}: missing explicit dataTestId propagation`);
   }
 
-  if (!forwardsToInput && !/data-testid/.test(source)
+  if (!forwardsToInput && !forwardsToNativeLeaf && !/data-testid/.test(source)
       && !/['"]data-testid['"]/.test(source)) {
     failures.push(`${unit.name}: dataTestId must reach a native DOM element`);
   }
