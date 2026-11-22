@@ -9,7 +9,7 @@ import type { RenderForgotPasswordNotice } from './types/forgotPassword.notice';
 /** Pure feedback selection for both informational and success notice states. */
 export const renderForgotPasswordNotice: RenderForgotPasswordNotice = (view) => {
   let NoticeIcon = Info;
-  let className = FORGOT_PASSWORD_LEGACY_CLASSES.NOTICE_INFO;
+  let className: string = FORGOT_PASSWORD_LEGACY_CLASSES.NOTICE_INFO;
 
   if (view.noticeSuccess) {
     NoticeIcon = CheckCircle2;
