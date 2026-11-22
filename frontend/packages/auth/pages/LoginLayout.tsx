@@ -1,13 +1,12 @@
 import { useEffect, type ReactNode } from 'react';
-import { ArrowLeft, GraduationCap, LockKeyhole, Monitor, Moon, Sun } from 'lucide-react';
+import { ArrowLeft, LockKeyhole, Monitor, Moon, Sun } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { SchoolMonogram } from '@Components';
 import { useWorkspaceTheme, type ThemePreference } from '@Components/hooks/theme';
 
 
-import './loginV2.css';
-import './mobileAuth.css';
+// One stylesheet owns the entire auth layout. Legacy variants are intentionally not loaded.
 import './optionOneAuth.css';
 
 const appearanceOptions: { value: ThemePreference; label: string; Icon: typeof Sun }[] = [
@@ -17,7 +16,7 @@ const appearanceOptions: { value: ThemePreference; label: string; Icon: typeof S
 ];
 
 /** Shared, card-free shell for sign-in and every recovery step. */
-export const LoginLayout = ({ children, title, description, mobileDescription, minimalMobile = false, mobileTitle = 'Sign in', eyebrow = 'YOUR SCHOOL WORKSPACE' }: {
+export const LoginLayout = ({ children, title, description, mobileDescription, minimalMobile = false, eyebrow = 'YOUR SCHOOL WORKSPACE' }: {
   children: ReactNode;
   title: string;
   description: string;
@@ -94,7 +93,6 @@ export const LoginLayout = ({ children, title, description, mobileDescription, m
               <p className="rdr-login-v2__description-desktop">{description}</p>
               <p className="rdr-login-v2__description-mobile">{mobileDescription ?? description}</p>
             </div>
-            {minimalMobile && <><h2 className="rdr-login-v2__mobile-signin-title">{mobileTitle}</h2><p className="rdr-login-v2__mobile-description">{mobileDescription ?? description}</p></>}
             {children}
             <div className="rdr-login-v2__closing" aria-label="Secure RDR School workspace">
               <LockKeyhole size={13} strokeWidth={1.8} aria-hidden="true"/>
