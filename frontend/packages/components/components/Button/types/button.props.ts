@@ -7,5 +7,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, Va
   readonly loadingText?: string;
   readonly fullWidth?: boolean;
   readonly dataTestId?: string;
+  /** Render a single child with Radix Slot (e.g. a React Router Link). */
+  readonly asChild?: boolean;
 }
 export type ButtonComponent = (props: ButtonProps) => ReactElement;

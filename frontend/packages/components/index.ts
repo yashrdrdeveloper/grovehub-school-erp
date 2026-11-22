@@ -1,5 +1,6 @@
 export { Button } from './components/Button';
 export { Input } from './components/Input';
+export { InputControl } from './components/InputControl';
 export { FormField } from './components/FormField';
 export { TextField } from './components/TextField';
 export { PasswordField } from './components/PasswordField';
