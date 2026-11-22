@@ -46,11 +46,19 @@ for (const file of files) {
   const sf = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true,
     file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
   const describes = [];
+  const importedUnitNames = new Set();
   const line = node => sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
   const visit = node => {
     if (ts.isConditionalExpression(node) && !test) flag(file, 'TERNARY', line(node));
     if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
       const spec = node.moduleSpecifier.text;
+      if (test && spec.startsWith('.') && node.importClause) {
+        const binding = node.importClause.namedBindings;
+        if (binding && ts.isNamedImports(binding)) {
+          for (const item of binding.elements) importedUnitNames.add(item.name.text);
+        }
+        if (node.importClause.name) importedUnitNames.add(node.importClause.name.text);
+      }
       if (spec === 'lucide-react' && !components) flag(file, 'DIRECT_LUCIDE', line(node));
       if ((spec === 'lodash-es' || spec.startsWith('lodash-es/')) && !base) flag(file, 'DIRECT_LODASH', line(node));
     }
@@ -90,8 +98,9 @@ for (const file of files) {
   visit(sf);
   if (test) {
     if (describes.length !== 1) flag(file, 'DESCRIBE_COUNT', 1);
-    const stem = path.basename(file).replace(/\.test\.[jt]sx?$/, '');
-    if (describes.length === 1 && describes[0] !== stem) flag(file, 'DESCRIBE_NAME_REVIEW', 1);
+    if (describes.length === 1 && !importedUnitNames.has(describes[0])) {
+      flag(file, 'DESCRIBE_EXPORT_MISMATCH', 1);
+    }
   }
 }
 const counts = {};
