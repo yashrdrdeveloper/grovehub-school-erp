@@ -29,9 +29,9 @@ export const CredentialField: CredentialFieldComponent = ({
           aria-invalid={Boolean(error)} aria-describedby={description}/>
         {trailingAction}
       </Box>
-      <small id={errorId}
+      <Box as="small" id={errorId}
         className={cn('rdr-login-v2__field-error rdr-login-v2__field-error--reserved', !error && 'is-empty')}
-        aria-live="polite" aria-atomic="true">{error || '\u00a0'}</small>
+        aria-live="polite" aria-atomic="true">{error || '\u00a0'}</Box>
     </Box>
   );
 };

@@ -1,3 +1,4 @@
+import { Box } from '@Components/components/Box';
 import { AlertCircle, LoaderCircle, LockKeyhole, Mail } from '@Components/icons';
 import type { ChangeEventHandler } from 'react';
 import { Button } from '@Components/components/Button';
@@ -40,22 +41,22 @@ export const LoginForm: LoginFormComponent = ({
         value={state.password} required error={state.fieldErrors[LoginField.PASSWORD]}
         onChange={handlePasswordChange}
         trailingAction={
-          <button type="button" className="rdr-login-v2__visibility" data-testid={LOGIN_TEST_IDS.VISIBILITY}
+          <Button unstyled type="button" className="rdr-login-v2__visibility" dataTestId={LOGIN_TEST_IDS.VISIBILITY}
             onClick={onTogglePassword} aria-label={visibilityLabel}>
             <VisibilityIcon size={19} aria-hidden="true"/>
-          </button>
+          </Button>
         }/>
 
       <Button type="submit" variant="primary" size="lg" dataTestId={LOGIN_TEST_IDS.SUBMIT} className="rdr-login-v2__submit" disabled={state.isSubmitting}>
-        <span>{submitLabel}</span>
+        <Box as="span">{submitLabel}</Box>
         {state.isSubmitting && <LoaderCircle className="rdr-login-v2__spinner" size={19} aria-hidden="true"/>}
       </Button>
-      <div className="rdr-login-v2__feedback-slot rdr-login-v2__feedback-slot--signin" aria-live="polite" data-testid={LOGIN_TEST_IDS.FEEDBACK}>
-        {state.errorMessage && <p className="rdr-login-v2__auth-error" role="alert" data-testid={LOGIN_TEST_IDS.AUTH_ERROR}>
+      <Box as="div" className="rdr-login-v2__feedback-slot rdr-login-v2__feedback-slot--signin" aria-live="polite" dataTestId={LOGIN_TEST_IDS.FEEDBACK}>
+        {state.errorMessage && <Box as="p" className="rdr-login-v2__auth-error" role="alert" dataTestId={LOGIN_TEST_IDS.AUTH_ERROR}>
           <AlertCircle size={16} aria-hidden="true"/>
-          <span>{state.errorMessage}</span>
-        </p>}
-      </div>
+          <Box as="span">{state.errorMessage}</Box>
+        </Box>}
+      </Box>
     </Form>
   );
 };
