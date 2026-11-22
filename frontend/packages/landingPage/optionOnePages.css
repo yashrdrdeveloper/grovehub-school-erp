@@ -42,3 +42,9 @@
 .rdr-site :is(a,button,input,select,textarea):focus-visible{outline:3px solid #9aafc9;outline-offset:3px}
 @media(max-width:900px){.rdr-o1-page-hero__inner{grid-template-columns:1fr;gap:24px}.rdr-o1-page-hero__photo{height:270px}}
 @media(max-width:700px){.rdr-site .rdr-header__inner{min-height:66px}.rdr-o1-page-hero__inner{padding-block:37px}.rdr-site .rdr-o1-page-hero h1{font-size:clamp(2.05rem,9vw,2.8rem)}.rdr-o1-page-hero__photo{height:225px}.rdr-site .rdr-section{padding-block:40px}.rdr-site .rdr-feature{padding:20px}}
+
+/* About page: ensure cards have readable navy headings on white surfaces. */
+.rdr-site .rdr-values>div{background:#fff!important;border:1px solid #e1e3e7!important;border-radius:12px!important;box-shadow:none!important}
+.rdr-site .rdr-values>div h3,.rdr-site .rdr-values>div strong{color:#1f2a44!important;opacity:1!important;text-shadow:none!important}
+.rdr-site .rdr-values>div p{color:#697384!important;opacity:1!important}
+.rdr-site .rdr-values>div>span{color:#b39160!important}
