@@ -40,6 +40,7 @@ backend-format:
 
 backend-lint:
 	@bash ./scripts/backend/format.sh "$(LINT_SCOPE)" --check
+	@bash ./scripts/backend/check-identity-architecture.sh
 
 .PHONY: db-schema-status db-schema-init db-schema-reset
 db-schema-status:
