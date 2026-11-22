@@ -4,12 +4,11 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/google/uuid"
-
 	corenormalize "grovehub/libs/core/normalize"
 	coresearch "grovehub/libs/core/search"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
 	accountvalidator "grovehub/services/identity/internal/app/validators/account"
+	searchhelpers "grovehub/services/identity/internal/app/validators/account/helpers"
 )
 
 // @Validator
@@ -66,94 +65,5 @@ func (Validator) NormalizeUsername(username string) (string, error) {
 }
 
 func (Validator) Search(request coresearch.Request) (coresearch.Query[string], error) {
-	invalid := errors.New("invalid account search")
-
-	terms, err := coresearch.NormalizeSearchTerms(request.SearchText, 256, 10, invalid)
-	if err != nil {
-		return coresearch.Query[string]{}, err
-	}
-
-	rows, err := coresearch.ResolveRows(request.PageInfo.Rows, invalid)
-	if err != nil {
-		return coresearch.Query[string]{}, err
-	}
-
-	sortFields := map[string]coresearch.CursorValueValidator{
-		"createdAt": coresearch.ValidateTimeCursor,
-		"updatedAt": coresearch.ValidateTimeCursor,
-		"accountId": coresearch.ValidateUUIDv7Cursor,
-		"status": coresearch.ValidateNonEmptyCursor,
-		"username": coresearch.ValidateNonEmptyCursor,
-	}
-
-	sort, err := coresearch.NormalizeSort(request.Sort, coresearch.QuerySort{
-		Field: "createdAt",
-		Direction: coresearch.DirectionDescending,
-	}, sortFields, invalid)
-	if err != nil {
-		return coresearch.Query[string]{}, err
-	}
-
-	normalizeUUID := func(_ coresearch.Operator, value string) (string, error) {
-		if _, err := uuid.Parse(value); err != nil {
-			return "", invalid
-		}
-		return value, nil
-	}
-	normalizeText := func(_ coresearch.Operator, value string) (string, error) {
-		value = strings.ToLower(strings.TrimSpace(value))
-		if value == "" {
-			return "", invalid
-		}
-		return value, nil
-	}
-	normalizeStatus := func(_ coresearch.Operator, value string) (string, error) {
-		value = strings.ToUpper(strings.TrimSpace(value))
-		switch value {
-		case "ACTIVE", "PENDING_SETUP", "SUSPENDED", "DEACTIVATED":
-			return value, nil
-		default:
-			return "", invalid
-		}
-	}
-	normalizeTime := func(_ coresearch.Operator, value string) (string, error) {
-		normalized, err := corenormalize.RFC3339UTC(value)
-		if err != nil {
-			return "", invalid
-		}
-		return normalized, nil
-	}
-
-	fields := map[string]coresearch.FieldSpec{
-		"accountId": {Operators: coresearch.EqualityOperators(), Normalizer: normalizeUUID},
-		"personGid": {Operators: coresearch.EqualityOperators(), Normalizer: normalizeUUID},
-		"username": {Operators: coresearch.TextOperators(), Normalizer: normalizeText},
-		"email": {Operators: coresearch.TextOperators(), Normalizer: normalizeText},
-		"status": {Operators: coresearch.EqualityOperators(), Normalizer: normalizeStatus},
-		"createdAt": {Operators: coresearch.TimeOperators(), Normalizer: normalizeTime},
-		"updatedAt": {Operators: coresearch.TimeOperators(), Normalizer: normalizeTime},
-	}
-	filters, err := coresearch.NormalizeFilters(request.Filters, fields, 20, 50, invalid)
-	if err != nil {
-		return coresearch.Query[string]{}, err
-	}
-
-	cursor, _, err := coresearch.NormalizeCursor(
-		request.PageInfo.Cursor,
-		sort,
-		sortFields[sort.Field],
-		coresearch.ValidateUUIDv7Cursor,
-		invalid,
-	)
-	if err != nil {
-		return coresearch.Query[string]{}, err
-	}
-
-	return coresearch.Query[string]{
-		SearchTerms: terms,
-		Filters: filters,
-		Sort: sort,
-		Cursor: cursor,
-		Limit: rows,
-	}, nil
+	return searchhelpers.NormalizeSearch(request)
 }

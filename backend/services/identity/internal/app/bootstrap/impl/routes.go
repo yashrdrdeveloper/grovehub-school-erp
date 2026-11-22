@@ -5,8 +5,8 @@ import (
 
 	accountprotected "grovehub/services/identity/internal/app/controller/account/protected"
 	accountprotectedimpl "grovehub/services/identity/internal/app/controller/account/protected/impl"
-	accountpublic "grovehub/services/identity/internal/app/controller/account/public"
-	accountpublicimpl "grovehub/services/identity/internal/app/controller/account/public/impl"
+	activationpublic "grovehub/services/identity/internal/app/controller/activation/public"
+	activationpublicimpl "grovehub/services/identity/internal/app/controller/activation/public/impl"
 	authprotected "grovehub/services/identity/internal/app/controller/authentication/protected"
 	authprotectedimpl "grovehub/services/identity/internal/app/controller/authentication/protected/impl"
 	authpublic "grovehub/services/identity/internal/app/controller/authentication/public"
@@ -18,7 +18,7 @@ import (
 type controllerGraph struct {
 	publicAuth       authpublic.AuthenticationController
 	protectedAuth    authprotected.AuthenticationController
-	publicAccount    accountpublic.AccountController
+	publicActivation activationpublic.ActivationController
 	protectedAccount accountprotected.AccountController
 }
 
@@ -27,13 +27,13 @@ func (b *builder) newControllers(services serviceGraph) controllerGraph {
 	return controllerGraph{
 		publicAuth:       authpublicimpl.New(services.auth, manager),
 		protectedAuth:    authprotectedimpl.New(services.auth, manager),
-		publicAccount:    accountpublicimpl.New(services.account, manager),
+		publicActivation: activationpublicimpl.New(services.account, manager),
 		protectedAccount: accountprotectedimpl.New(services.account),
 	}
 }
 
 func (controllers controllerGraph) RegisterHTTP(mux *http.ServeMux) {
-	routes.RegisterHTTP(mux, controllers.publicAuth, controllers.protectedAuth, controllers.publicAccount, controllers.protectedAccount)
+	routes.RegisterHTTP(mux, controllers.publicAuth, controllers.protectedAuth, controllers.publicActivation, controllers.protectedAccount)
 }
 
 func (module *runtime) RouteLimits() map[string]int {

@@ -3,7 +3,8 @@ package public
 import "net/http"
 
 // @Routes /accounts
-type AccountController interface {
+// Invitation setup is proof/grant protected, not open account registration.
+type ActivationController interface {
 	// @GET /setup/status
 	SetupStatus(writer http.ResponseWriter, request *http.Request)
 

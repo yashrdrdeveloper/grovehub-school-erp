@@ -64,13 +64,13 @@ func (strategy *Search) Hydrate(ctx context.Context, state *flows.Search) chain.
 		last := state.Accounts.Items[len(state.Accounts.Items)-1]
 		value := last.CreatedAt.UTC().Format(time.RFC3339Nano)
 		switch state.Query.Sort.Field {
-		case "accountId":
+		case accountdto.FieldAccountID:
 			value = last.AccountID
-		case "updatedAt":
+		case accountdto.FieldUpdatedAt:
 			value = last.UpdatedAt.UTC().Format(time.RFC3339Nano)
-		case "status":
+		case accountdto.FieldStatus:
 			value = string(last.Status)
-		case "username":
+		case accountdto.FieldUsername:
 			if last.Username != nil {
 				value = *last.Username
 			} else {

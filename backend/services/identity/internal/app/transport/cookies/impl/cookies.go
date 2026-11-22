@@ -25,13 +25,12 @@ func New() cookies.Manager {
 	return &Manager{}
 }
 
-const refreshPath = "/identity/public/auth/refresh"
 
 func (*Manager) Issue(writer http.ResponseWriter, access string, refresh string, csrf string) {
 	http.SetCookie(writer, &http.Cookie{
 		Name: AccessCookie,
 		Value: access,
-		Path: "/",
+		Path: cookies.SessionPath,
 		MaxAge: 900,
 		Secure: true,
 		HttpOnly: true,
@@ -40,7 +39,7 @@ func (*Manager) Issue(writer http.ResponseWriter, access string, refresh string,
 	http.SetCookie(writer, &http.Cookie{
 		Name: RefreshCookie,
 		Value: refresh,
-		Path: refreshPath,
+		Path: cookies.RefreshPath,
 		MaxAge: 30 * 24 * 60 * 60,
 		Secure: true,
 		HttpOnly: true,
@@ -50,13 +49,13 @@ func (*Manager) Issue(writer http.ResponseWriter, access string, refresh string,
 		http.SetCookie(writer, &http.Cookie{
 			Name: CSRFName,
 			Value: csrf,
-			Path: "/",
+			Path: cookies.SessionPath,
 			MaxAge: 30 * 24 * 60 * 60,
 			Secure: true,
 			SameSite: http.SameSiteStrictMode,
 		})
 	}
-	writer.Header().Set("Cache-Control", "no-store")
+	writer.Header().Set(cookies.HeaderCacheControl, cookies.DirectiveNoStore)
 }
 
 func (*Manager) ClearSession(writer http.ResponseWriter) {
@@ -64,9 +63,9 @@ func (*Manager) ClearSession(writer http.ResponseWriter) {
 		name string
 		path string
 	}{
-		{AccessCookie, "/"},
-		{RefreshCookie, refreshPath},
-		{CSRFName, "/"},
+		{AccessCookie, cookies.SessionPath},
+		{RefreshCookie, cookies.RefreshPath},
+		{CSRFName, cookies.SessionPath},
 	}
 	for _, cookie := range paths {
 		http.SetCookie(writer, &http.Cookie{
@@ -78,7 +77,7 @@ func (*Manager) ClearSession(writer http.ResponseWriter) {
 			SameSite: http.SameSiteStrictMode,
 		})
 	}
-	writer.Header().Set("Cache-Control", "no-store")
+	writer.Header().Set(cookies.HeaderCacheControl, cookies.DirectiveNoStore)
 }
 
 func (*Manager) Read(request *http.Request, name string) string {
@@ -99,7 +98,7 @@ func (*Manager) SetGrant(writer http.ResponseWriter, name string, path string, v
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
 	})
-	writer.Header().Set("Cache-Control", "no-store")
+	writer.Header().Set(cookies.HeaderCacheControl, cookies.DirectiveNoStore)
 }
 
 func (m *Manager) ClearGrant(writer http.ResponseWriter, name string, path string) {
@@ -111,7 +110,7 @@ func (m *Manager) ClearGrant(writer http.ResponseWriter, name string, path strin
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
 	})
-	writer.Header().Set("Cache-Control", "no-store")
+	writer.Header().Set(cookies.HeaderCacheControl, cookies.DirectiveNoStore)
 }
 
 func (*Manager) Proof(request *http.Request, prefix string) string {

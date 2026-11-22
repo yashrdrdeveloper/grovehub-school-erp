@@ -104,7 +104,7 @@ func (controller *Controller) exchange(writer http.ResponseWriter, request *http
 
 
 func (controller *Controller) inspectProof(writer http.ResponseWriter, request *http.Request, prefix string, purpose string) {
-  writer.Header().Set("Cache-Control", "no-store")
+  writer.Header().Set(cookies.HeaderCacheControl, cookies.DirectiveNoStore)
   rest.RunStruct(writer, request, rest.StructConfig[dto.EmptyRequest, dto.GrantResult]{
     Fallback: definitions.Internal,
     Service: func(ctx context.Context, _ dto.EmptyRequest) (rest.Result[dto.GrantResult], error) {
@@ -124,15 +124,15 @@ func (controller *Controller) InvitationValidate(writer http.ResponseWriter, req
 }
 
 func (controller *Controller) RecoveryExchange(writer http.ResponseWriter, request *http.Request) {
-	controller.exchange(writer, request, "Recovery", "recovery", cookies.ResetCookie, "/identity/public/auth/reset-password")
+	controller.exchange(writer, request, "Recovery", "recovery", cookies.ResetCookie, cookies.ResetGrantPath)
 }
 
 func (controller *Controller) InvitationExchange(writer http.ResponseWriter, request *http.Request) {
-	controller.exchange(writer, request, "Invitation", "invitation", cookies.SetupCookie, "/identity/public/accounts/setup")
+	controller.exchange(writer, request, "Invitation", "invitation", cookies.SetupCookie, cookies.SetupGrantPath)
 }
 
 func (controller *Controller) ResetGrantStatus(writer http.ResponseWriter, request *http.Request) {
-  writer.Header().Set("Cache-Control", "no-store")
+  writer.Header().Set(cookies.HeaderCacheControl, cookies.DirectiveNoStore)
   rest.RunStruct(writer, request, rest.StructConfig[dto.EmptyRequest, dto.GrantResult]{
     Fallback: definitions.Internal,
     Service: func(ctx context.Context, _ dto.EmptyRequest) (rest.Result[dto.GrantResult], error) {
@@ -152,7 +152,7 @@ func (controller *Controller) ResetPassword(writer http.ResponseWriter, request 
 			if err := controller.service.ResetPassword(ctx, controller.cookies.Read(request, cookies.ResetCookie), input.RequestBody.NewPassword); err != nil {
 				return rest.Result[dto.StatusResult]{}, helpers.Map(err)
 			}
-			controller.cookies.ClearGrant(writer, cookies.ResetCookie, "/identity/public/auth/reset-password")
+			controller.cookies.ClearGrant(writer, cookies.ResetCookie, cookies.ResetGrantPath)
 			return rest.OK(dto.StatusResult{Status: "PASSWORD_RESET", SessionsRevoked: true}), nil
 		},
 	})
