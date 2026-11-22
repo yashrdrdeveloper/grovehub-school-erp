@@ -23,7 +23,7 @@ jest.mock('@Components',()=>({SchoolMonogram:()=> <span className="school-monogr
 jest.mock('../../../core/providers/authProvider',()=>({
   useAuth:()=>({signIn}),
 }));
-jest.mock('@Components/hooks/theme',()=>({
+jest.mock('@Components/hooks/useWorkspaceTheme',()=>({
   useWorkspaceTheme:()=>({preference:'system',setPreference}),
 }));
 
