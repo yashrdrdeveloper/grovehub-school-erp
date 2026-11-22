@@ -1,3 +1,6 @@
+import { ExternalAnchor } from '@Components/components/ExternalAnchor';
+import { Button } from '@Components/components/Button';
+import { Box } from '@Components/components/Box';
 import type { ReactNode } from 'react';
 import {
   DialogRoot, DialogPortal, DialogOverlay, DialogContent,
@@ -31,16 +34,16 @@ export const PublicSheet = ({
     <DialogPortal>
       <DialogOverlay className="rdr-sheet-backdrop"/>
       <DialogContent className="rdr-sheet" aria-label={title}>
-        <div className="rdr-sheet__handle" aria-hidden="true"/>
-        <div className="rdr-sheet__header">
-          <div><span className="rdr-sheet-kicker">RAO DEENA RAM VIDYA VIHAR</span><DialogTitle>{title}</DialogTitle>
+        <Box as="div" className="rdr-sheet__handle" aria-hidden="true"/>
+        <Box as="div" className="rdr-sheet__header">
+          <Box as="div"><Box as="span" className="rdr-sheet-kicker">RAO DEENA RAM VIDYA VIHAR</Box><DialogTitle>{title}</DialogTitle>
             <DialogDescription>{description}</DialogDescription>
-          </div>
+          </Box>
           <DialogClose className="rdr-sheet__close" aria-label="Close and return to the page"><X size={22}/></DialogClose>
-        </div>
-        <div className="rdr-sheet__body" key={panel??'empty'}>
-          {panel==='enquiry'&&<div className="rdr-sheet-enquiry"><div className="rdr-sheet-enquiry__intro"><GraduationCap size={26}/><strong>Let's talk about your child's future.</strong><p>Share your details. Our school office is only a message away.</p>
-            <a href="tel:+919050077550"><Phone size={15}/> Prefer to call? {school.phone}</a></div>{enquiry}</div>}
+        </Box>
+        <Box as="div" className="rdr-sheet__body" key={panel??'empty'}>
+          {panel==='enquiry'&&<Box as="div" className="rdr-sheet-enquiry"><Box as="div" className="rdr-sheet-enquiry__intro"><GraduationCap size={26}/><Box as="strong">Let's talk about your child's future.</Box><Box as="p">Share your details. Our school office is only a message away.</Box>
+            <ExternalAnchor href="tel:+919050077550"><Phone size={15}/> Prefer to call? {school.phone}</ExternalAnchor></Box>{enquiry}</Box>}
           {story&&<StoryPanel initial={selectedStory} navigate={p=>onNavigate(p as SchoolPanel)}/>}
           {panel==='academics'&&<AcademicPanel onEnquire={onEnquire}/>}
           {panel==='campus'&&<CampusPanel onEnquire={onEnquire}/>}
@@ -48,8 +51,8 @@ export const PublicSheet = ({
           {panel==='admissions'&&<AdmissionsPanel onEnquire={onEnquire}/>}
           {panel==='resources'&&<ResourcesPanel/>}
           {panel==='contact'&&<ContactPanel onEnquire={onEnquire}/>}
-        </div>
-        {panel!=='enquiry'&&<div className="rdr-sheet__bottom"><span><ShieldCheck size={15}/> RDR School · Haluhera, Rewari</span><button onClick={onEnquire} type="button">Quick enquiry <ArrowRight size={16}/></button></div>}
+        </Box>
+        {panel!=='enquiry'&&<Box as="div" className="rdr-sheet__bottom"><Box as="span"><ShieldCheck size={15}/> RDR School · Haluhera, Rewari</Box><Button unstyled onClick={onEnquire} type="button">Quick enquiry <ArrowRight size={16}/></Button></Box>}
       </DialogContent>
     </DialogPortal>
   </DialogRoot>;
