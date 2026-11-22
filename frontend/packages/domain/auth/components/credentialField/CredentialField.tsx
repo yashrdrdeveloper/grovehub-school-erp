@@ -1,8 +1,9 @@
 import { cn } from '@Base/utilities/cn';
 import { Box, BOX_TAG } from '@Components/components/Box';
-import { FieldLabel } from '@Components/components/FieldLabel';
 import { getFormFieldCombinedDescription } from '@Components/components/FormField';
 import { InputControl } from '@Components/components/InputControl';
+
+import { renderCredentialFieldLabel } from './renderer/credentialField.label';
 
 import type { CredentialFieldComponent } from './types/credentialField.props';
 
@@ -30,16 +31,7 @@ export const CredentialField: CredentialFieldComponent = ({
 
   const description = getFormFieldCombinedDescription(describedBy, errorDescriptionId);
 
-  let fieldLabel = <FieldLabel htmlFor={id}>{label}</FieldLabel>;
-
-  if (groupLabel) {
-    fieldLabel = (
-      <Box as={BOX_TAG.DIV} className="rdr-login-v2__password-label">
-        <FieldLabel htmlFor={id}>{label}</FieldLabel>
-        {labelAction}
-      </Box>
-    );
-  }
+  const fieldLabel = renderCredentialFieldLabel({ id, label, groupLabel, labelAction });
 
   return (
     <Box
