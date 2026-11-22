@@ -18,7 +18,7 @@ const walk = async directory => {
       await walk(filename);
       continue;
     }
-    if (!/\\.tsx$/.test(item.name) || /\\.test\\.tsx$/.test(item.name)) continue;
+    if (!/\.tsx$/.test(item.name) || /\.test\.tsx$/.test(item.name)) continue;
     const text = await readFile(filename, 'utf8');
     const tree = ts.createSourceFile(filename, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
     scanned++;
@@ -37,6 +37,6 @@ const walk = async directory => {
 };
 await walk(path.join(process.cwd(), 'packages/domain'));
 await walk(path.join(process.cwd(), 'packages/shell'));
-for (const error of errors) process.stderr.write(error + '\\n');
+for (const error of errors) process.stderr.write(error + '\n');
 if (errors.length > 0) process.exitCode = 1;
 else process.stdout.write('Semantic UI boundary verified across ' + scanned + ' TSX files.\\n');
