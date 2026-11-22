@@ -9,6 +9,7 @@ export const DataTable: DataTableComponent = <T,>({
   rows,
   columns,
   emptyTitle = 'Nothing to show',
+  dataTestId,
 }: DataTableProps<T>) => {
   const table = useReactTable({
     data: rows,
@@ -22,7 +23,7 @@ export const DataTable: DataTableComponent = <T,>({
 
   return (
     <div className="table-scroll">
-      <table className="data-table">
+      <table data-testid={dataTestId} className="data-table">
         <thead>
           {table.getHeaderGroups().map((group) => (
             <tr key={group.id}>

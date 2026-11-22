@@ -4,5 +4,6 @@ export interface PageHeadingProps {
   readonly title: string;
   readonly description?: string;
   readonly action?: ReactNode;
+  readonly dataTestId?: string;
 }
 export type PageHeadingComponent = (props: PageHeadingProps) => ReactElement;
