@@ -1,4 +1,5 @@
 import { Building2 } from '@Components/icons';
+import { APP_ROUTE } from '@Business/app/routes';
 
 /** Only implemented protected domains belong in the catalog; no speculative pages. */
 export type CatalogApp = {
@@ -10,7 +11,7 @@ export type CatalogApp = {
 };
 
 export const appCatalog: CatalogApp[] = [
-  { name: 'Dashboard', description: 'Overview of your school', path: '/dashboard', icon: Building2, category: 'Workspace' },
+  { name: 'Dashboard', description: 'Overview of your school', path: APP_ROUTE.DASHBOARD, icon: Building2, category: 'Workspace' },
 ];
 
-export const defaultPinnedApps = ['/dashboard'];
+export const defaultPinnedApps = [APP_ROUTE.DASHBOARD];
