@@ -1,21 +1,13 @@
-import type { ReactNode } from 'react';
+import type { PageHeadingComponent } from './types/pageHeading.props';
 
-export const PageHeading = ({
-  eyebrow,
-  title,
-  description,
-  action,
-}: {
-  eyebrow?: string;
-  title: string;
-  description?: string;
-  action?: ReactNode;
+export const PageHeading: PageHeadingComponent = ({
+  eyebrow, title, description, action,
 }) => (
   <header className="page-heading">
     <div>
-      {eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}
+      {eyebrow && <span className="eyebrow">{eyebrow}</span>}
       <h1>{title}</h1>
-      {description ? <p>{description}</p> : null}
+      {description && <p>{description}</p>}
     </div>
     {action}
   </header>
