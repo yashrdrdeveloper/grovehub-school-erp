@@ -26,6 +26,7 @@ for (const unit of await readdir(root, { withFileTypes: true })) {
     && /<Typography\b/.test(source) && /dataTestId=\{dataTestId\}/.test(source);
   const forwardsToInput = unit.name === 'TextField'
     && /<Input\b/.test(source) && /\{\.\.\.props\}/.test(source);
+  const forwardsToBox = /<Box\\b/.test(source) && /dataTestId=\\{/.test(source);
   const forwardsToNativeLeaf = unit.name === 'Input'
     && /<InputControl\b/.test(source) && /dataTestId=\{controlTestId\}/.test(source);
 
@@ -33,7 +34,7 @@ for (const unit of await readdir(root, { withFileTypes: true })) {
     failures.push(`${unit.name}: missing explicit dataTestId propagation`);
   }
 
-  if (!forwardsToInput && !forwardsToNativeLeaf && !forwardsToTypography && !/data-testid/.test(source)
+  if (!forwardsToInput && !forwardsToNativeLeaf && !forwardsToTypography && !forwardsToBox && !/data-testid/.test(source)
       && !/['"]data-testid['"]/.test(source)) {
     failures.push(`${unit.name}: dataTestId must reach a native DOM element`);
   }

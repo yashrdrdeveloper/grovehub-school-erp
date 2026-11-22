@@ -50,7 +50,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         role="alert"
         aria-live="assertive"
         className="gh-error-boundary"
-        dataTestId={ERROR_BOUNDARY_TEST_IDS.ROOT}
+        dataTestId={this.props.dataTestId ?? ERROR_BOUNDARY_TEST_IDS.ROOT}
       >
         <Typography as="h2" variant="heading">
           {ERROR_BOUNDARY_COPY.TITLE}
