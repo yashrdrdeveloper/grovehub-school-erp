@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import type { RecoveryPurpose, RecoveryViewState } from '../../../../../../types';
+import type { RecoveryPurpose, RecoveryViewState } from '../../../../../types';
 
 export interface RecoveryLinkModel {
   readonly view: RecoveryViewState;

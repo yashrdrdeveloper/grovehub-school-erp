@@ -1,5 +1,5 @@
 import type { FormEventHandler } from 'react';
-import type { RecoveryPurpose } from '../../../../../../types';
+import type { RecoveryPurpose } from '../../../../../types';
 import type { RecoveryFormModel } from '../../useRecoveryForm/types/useRecoveryForm';
 import type { RecoveryLinkModel } from '../../useRecoveryLink/types/useRecoveryLink';
 

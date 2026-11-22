@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import type { RecoveryFieldErrors } from '../../../../../../types';
+import type { RecoveryFieldErrors } from '../../../../../types';
 
 export interface RecoveryFormModel {
   readonly password: string;
