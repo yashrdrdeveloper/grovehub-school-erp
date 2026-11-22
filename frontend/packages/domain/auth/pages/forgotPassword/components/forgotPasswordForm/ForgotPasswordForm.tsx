@@ -1,5 +1,6 @@
 import { ArrowLeft, CheckCircle2, Clock3, Info, LoaderCircle, Mail } from 'lucide-react';
 import type { ChangeEventHandler } from 'react';
+import { Button } from '@Components/components/Button';
 import { Link } from 'react-router-dom';
 
 import { AuthMobileStatusArt } from '../../../AuthMobileArtwork';
@@ -33,12 +34,12 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
             error={state.emailError} onChange={handleEmailChange} required/>
         </div>
         <div className="rdr-auth-flow__actions">
-          <button type="submit" className="rdr-login-v2__submit" disabled={state.busy || view.cooldown}
+          <Button type="submit" variant="primary" size="lg" dataTestId="forgot-password-submit" className="rdr-login-v2__submit" disabled={state.busy || view.cooldown}
             aria-label={view.buttonLabel}>
             <span>{view.buttonLabel}</span>
             {state.busy && <LoaderCircle className="rdr-login-v2__spinner" size={19}/>}
             {!state.busy && view.cooldown && <Clock3 size={19}/>}
-          </button>
+          </Button>
           <div className="rdr-auth-flow__secondary-slot">
             <Link className="rdr-auth-flow__back" to="/login"><ArrowLeft size={16}/> Back to sign in</Link>
           </div>

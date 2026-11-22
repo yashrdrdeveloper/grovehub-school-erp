@@ -1,5 +1,6 @@
 import { AlertCircle, Eye, EyeOff, KeyRound, LoaderCircle, LockKeyhole, ShieldCheck } from 'lucide-react';
 import type { ChangeEventHandler } from 'react';
+import { Button } from '@Components/components/Button';
 
 import { CredentialField } from '../../../../components/credentialField';
 import type { RecoveryPasswordFormComponent } from './types/recoveryPasswordForm';
@@ -49,10 +50,10 @@ export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
         </p>
       </div>
       <div className="rdr-recovery__actions">
-        <button type="submit" className="rdr-login-v2__submit" disabled={saving}>
+        <Button type="submit" variant="primary" size="lg" dataTestId="recovery-submit" className="rdr-login-v2__submit" disabled={saving}>
           {buttonLabel}
           {saving && <LoaderCircle className="rdr-login-v2__spinner" size={18}/>}
-        </button>
+        </Button>
         <span className="rdr-recovery__remaining" aria-hidden="true">{'\u00a0'}</span>
         <div className="rdr-recovery__error-slot" aria-live="polite">
           {error && <p role="alert" className="rdr-recovery__inline-error"><AlertCircle size={16}/>{error}</p>}

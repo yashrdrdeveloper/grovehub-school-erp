@@ -1,5 +1,6 @@
 import { AlertCircle, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail } from 'lucide-react';
 import type { ChangeEventHandler } from 'react';
+import { Button } from '@Components/components/Button';
 
 import { CredentialField } from '../../../../components/credentialField';
 import { LOGIN_COPY, LOGIN_FIELDS } from '../../config';
@@ -42,10 +43,10 @@ export const LoginForm: LoginFormComponent = ({
           </button>
         }/>
 
-      <button type="submit" className="rdr-login-v2__submit" disabled={state.isSubmitting}>
+      <Button type="submit" variant="primary" size="lg" dataTestId="login-submit" className="rdr-login-v2__submit" disabled={state.isSubmitting}>
         <span>{submitLabel}</span>
         {state.isSubmitting && <LoaderCircle className="rdr-login-v2__spinner" size={19} aria-hidden="true"/>}
-      </button>
+      </Button>
       <div className="rdr-login-v2__feedback-slot rdr-login-v2__feedback-slot--signin" aria-live="polite">
         {state.errorMessage && <p className="rdr-login-v2__auth-error" role="alert">
           <AlertCircle size={16} aria-hidden="true"/>
