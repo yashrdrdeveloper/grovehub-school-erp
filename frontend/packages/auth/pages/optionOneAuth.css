@@ -490,4 +490,51 @@
  .rdr-login-v2--forgot .rdr-login-v2__heading h1{white-space:normal}
  .rdr-login-v2__closing,.rdr-o1-auth-footer{white-space:normal;flex-wrap:wrap;text-align:center}
 }
+/* Shared measured fit — one centering strategy for desktop and tablets.
+   Error/success content is measured at its real height, not hidden behind overflow.
+   Only unusually short or zoomed displays fall back to accessible scrolling. */
+@media(min-width:721px){
+ .rdr-login-v2__content{
+   position:relative;
+   overflow:hidden;
+ }
+ .rdr-login-v2__toolbar{position:relative;z-index:2}
+ .rdr-login-v2__main{
+   position:absolute;
+   top:var(--auth-panel-center,50%);
+   left:50%;
+   transform:translate(-50%,-50%) scale(var(--auth-panel-scale,1));
+   transform-origin:center center;
+   width:min(calc(100% - 48px),440px);
+   max-width:440px;
+   margin:0;
+   flex:0 0 auto;
+ }
+ .rdr-login-v2__content[data-auth-fit="scroll"]{
+   overflow-x:hidden;
+   overflow-y:auto;
+ }
+ .rdr-login-v2__content[data-auth-fit="scroll"] .rdr-login-v2__main{
+   position:relative;
+   top:auto;
+   left:auto;
+   transform:none;
+   margin:auto;
+ }
+}
+/* Keep the sign-in subtitle on one line without truncating its meaning. */
+@media(max-width:720px){
+ .rdr-login-v2--login .rdr-login-v2__heading .rdr-login-v2__description-mobile{
+   white-space:nowrap;
+   font-size:clamp(11px,2.85vw,12px);
+   line-height:1.35;
+   letter-spacing:-.02em;
+ }
+}
+/* Below standard usable phone widths, allow wrapping instead of text clipping. */
+@media(max-width:285px){
+ .rdr-login-v2--login .rdr-login-v2__heading .rdr-login-v2__description-mobile{
+   white-space:normal;
+ }
+}
 @media(prefers-reduced-motion:reduce){.rdr-login-v2__submit{transition:none}}
