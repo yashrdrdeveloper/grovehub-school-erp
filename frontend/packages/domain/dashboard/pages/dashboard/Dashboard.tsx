@@ -1,3 +1,4 @@
+import { Box } from '@Components/components/Box';
 import { DashboardHeader } from './components/dashboardHeader';
 import { DASHBOARD_TEST_IDS } from './constants/dashboard.testIds';
 import { DashboardNotice } from './components/dashboardNotice';
@@ -8,13 +9,13 @@ import type { DashboardComponent } from './types';
 
 /** Pure dashboard composition. All data is explicitly marked as a preview. */
 export const Dashboard: DashboardComponent = props => (
-  <div className="school-home" data-testid={DASHBOARD_TEST_IDS.PAGE}>
+  <Box as="div" className="school-home" data-testid={DASHBOARD_TEST_IDS.PAGE}>
     <DashboardHeader date={props.date}/>
     <DashboardNotice/>
     <DashboardOverview/>
-    <div className="school-home__layout">
+    <Box as="div" className="school-home__layout">
       <DashboardMain/>
       <DashboardAside {...props}/>
-    </div>
-  </div>
+    </Box>
+  </Box>
 );

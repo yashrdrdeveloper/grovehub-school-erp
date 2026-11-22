@@ -1,15 +1,16 @@
+import { Box } from '@Components/components/Box';
 import { CalendarDays, ChevronRight, School } from '@Components/icons';
 
 import type { DashboardHeaderComponent } from './types/dashboardHeader';
 
 /** Presentational greeting and local date. */
 export const DashboardHeader: DashboardHeaderComponent = ({ date }) => (
-  <header className="school-home__header">
-    <div>
-      <div className="school-home__breadcrumb"><School size={14}/> RDR SCHOOL <ChevronRight size={13}/> OVERVIEW</div>
-      <h1>Good {date.greeting}<span className="school-home__spark">✳</span></h1>
-      <p>Your school day, in one clear view.</p>
-    </div>
-    <div className="school-home__date"><CalendarDays size={17}/><span><strong>{date.dayName}</strong><small>{date.dateLabel}</small></span></div>
-  </header>
+  <Box as="header" className="school-home__header">
+    <Box as="div">
+      <Box as="div" className="school-home__breadcrumb"><School size={14}/> RDR SCHOOL <ChevronRight size={13}/> OVERVIEW</Box>
+      <Box as="h1">Good {date.greeting}<Box as="span" className="school-home__spark">✳</Box></Box>
+      <Box as="p">Your school day, in one clear view.</Box>
+    </Box>
+    <Box as="div" className="school-home__date"><CalendarDays size={17}/><Box as="span"><Box as="strong">{date.dayName}</Box><Box as="small">{date.dateLabel}</Box></Box></Box>
+  </Box>
 );
