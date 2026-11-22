@@ -7,10 +7,6 @@ import { validateRendererSource } from './lib/renderer-policy.mjs';
 const root = path.join(process.cwd(), 'packages');
 const errors = [];
 let checked = 0;
-const legacyMissingTests = new Set([
-  'shell/renderer/shell.routes.tsx',
-  'shell/components/appLauncher/renderer/appLauncher.app.tsx',
-]);
 const exists = async (filename) => {
   try {
     await access(filename);
@@ -38,8 +34,7 @@ const walk = async (folder) => {
     for (const problem of validateRendererSource(filename, source)) {
       errors.push(relative + ': ' + problem);
     }
-    if (!legacyMissingTests.has(relative) &&
-        !(await exists(path.join(path.dirname(filename), '__tests__', basename + '.test.tsx')))) {
+    if (!(await exists(path.join(path.dirname(filename), '__tests__', basename + '.test.tsx')))) {
       errors.push(relative + ': missing owner-local renderer test');
     }
   }
