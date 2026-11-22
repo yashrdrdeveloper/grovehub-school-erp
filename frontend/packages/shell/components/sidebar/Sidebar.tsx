@@ -1,7 +1,7 @@
 import { Button } from '@Components/components/Button';
 import { Box } from '@Components/components/Box';
 import { ChevronsLeft, ChevronsRight, Grid2X2, Settings2, X } from '@Components/icons';
-import { NavLink } from '@Components/router';
+import { AppNavLink } from '@Components/components/AppNavLink';
 
 import { SchoolMonogram } from '@Components';
 import { APP_ROUTE } from '@Business/app/routes';
@@ -28,9 +28,9 @@ export const Sidebar: SidebarComponent = ({ accountLabel, schoolLabel, onLogout,
       <Box as="div" className="sidebar__header">
         <Button unstyled type="button" className="icon-button app-switcher-button" title="Open app catalog"
           aria-label="Open app catalog" onClick={model.openCatalog}><Grid2X2 size={19}/></Button>
-        <NavLink to={APP_ROUTE.DASHBOARD} className="sidebar__brand" onClick={model.closeSidebar} aria-label="GrooveHub home">
+        <AppNavLink to={APP_ROUTE.DASHBOARD} className="sidebar__brand" onClick={model.closeSidebar} aria-label="GrooveHub home">
           <Box as="span" className="brand-mark brand-mark--small">G</Box><Box as="span" className="sidebar__brand-name">groovehub<Box as="span" className="brand-period">.</Box></Box>
-        </NavLink>
+        </AppNavLink>
         <Button unstyled type="button" className="icon-button sidebar__close" aria-label="Close navigation"
           onClick={model.closeSidebar}><X size={20}/></Button>
       </Box>
