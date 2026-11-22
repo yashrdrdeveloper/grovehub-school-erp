@@ -1,0 +1,26 @@
+/* Fully owned CSS Module. No global selectors or arbitrary theme colors. */
+.root {
+  box-sizing: border-box;
+  display: grid;
+  align-content: center;
+  gap: var(--gh-space-3);
+  width: min(100%, 34rem);
+  min-width: 0;
+  padding: var(--gh-space-6);
+  background: var(--gh-color-surface);
+  color: var(--gh-color-text);
+  border: 1px solid var(--gh-color-border);
+  border-radius: var(--gh-radius-lg);
+  box-shadow: var(--gh-shadow-card);
+}
+
+.root > :last-child {
+  justify-self: start;
+}
+
+@media (max-width: 720px) {
+  .root {
+    width: 100%;
+    padding: var(--gh-space-4);
+  }
+}

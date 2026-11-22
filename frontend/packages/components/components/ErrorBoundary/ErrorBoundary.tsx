@@ -4,6 +4,7 @@ import { Box } from '../Box';
 import { Button } from '../Button';
 import { TYPOGRAPHY_TAG, TYPOGRAPHY_VARIANT, Typography } from '../Typography';
 
+import styles from './ErrorBoundary.module.css';
 import { ERROR_BOUNDARY_COPY } from './constants/errorBoundary.copy';
 import { ERROR_BOUNDARY_TEST_IDS } from './constants/errorBoundary.testIds';
 import type { ErrorBoundaryProps, ErrorBoundaryState } from './types/errorBoundary.props';
@@ -49,7 +50,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         as="section"
         role="alert"
         aria-live="assertive"
-        className="gh-error-boundary"
+        className={styles.root}
         dataTestId={this.props.dataTestId ?? ERROR_BOUNDARY_TEST_IDS.ROOT}
       >
         <Typography as={TYPOGRAPHY_TAG.H2} variant={TYPOGRAPHY_VARIANT.HEADING}>
