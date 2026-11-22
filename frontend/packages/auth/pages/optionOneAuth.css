@@ -181,3 +181,43 @@
 .rdr-login-v2__closing{margin-top:clamp(10px,2dvh,18px)!important}
 .rdr-o1-auth-footer{margin-top:clamp(10px,2dvh,18px)!important}
 }
+
+/* Validation messages are normal-flow grid rows, never painted over inputs.
+   Previous fixed 2-row grid and mobile static errors caused overlap. */
+@media(max-width:720px){
+.rdr-login-v2__form--signin>.rdr-login-v2__field{
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;
+ gap:0!important;height:auto!important;min-height:0!important;
+ grid-template-rows:none!important;position:relative!important;
+}
+.rdr-login-v2__form--signin>.rdr-login-v2__field>.rdr-login-v2__field-error--reserved{
+ position:static!important;inset:auto!important;order:3!important;
+ display:block!important;width:100%!important;height:auto!important;
+ min-height:0!important;max-height:none!important;margin:5px 0 0!important;
+ padding:0 2px!important;line-height:1.4!important;font-size:clamp(10px,2.8vw,12px)!important;
+ white-space:normal!important;overflow:visible!important;text-overflow:clip!important;
+ overflow-wrap:anywhere!important;pointer-events:auto!important;
+}
+.rdr-login-v2__form--signin>.rdr-login-v2__field>.rdr-login-v2__field-error--reserved.is-empty{
+ display:none!important;margin:0!important
+}
+.rdr-login-v2__form--signin>.rdr-login-v2__field>.rdr-login-v2__input-shell{
+ order:2!important;flex:none!important;width:100%!important;height:44px!important;min-height:44px!important;
+}
+.rdr-login-v2__form--signin>.rdr-login-v2__field>label,
+.rdr-login-v2__form--signin>.rdr-login-v2__field>.rdr-login-v2__password-label{
+ order:1!important;flex:none!important;height:auto!important;min-height:0!important;margin:0 0 5px!important
+}
+.rdr-login-v2__form--signin>.rdr-login-v2__field+.rdr-login-v2__field{
+ margin-top:clamp(12px,2dvh,19px)!important;
+}
+.rdr-login-v2__form--signin>.rdr-login-v2__forgot-mobile{
+ margin:clamp(7px,1.3dvh,12px) 0 0!important;padding:2px 0!important
+}
+.rdr-login-v2__form--signin>.rdr-login-v2__submit{
+ margin-top:clamp(12px,2dvh,20px)!important;flex:none!important;
+}
+.rdr-login-v2__form--signin>.rdr-login-v2__feedback-slot--signin{
+ height:auto!important;min-height:0!important;max-height:none!important;
+}
+}
