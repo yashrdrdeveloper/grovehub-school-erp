@@ -3,6 +3,7 @@ import { Box, BOX_TAG } from '@Components/components/Box';
 import { Button } from '@Components/components/Button';
 import { AUTH_ROUTE } from '@Business/auth/routes';
 
+import { FORGOT_PASSWORD_LEGACY_CLASSES } from '../constants/forgotPassword.legacyClasses';
 import { AuthStatusArt } from '../../../../../components/authStatusArt';
 import { AUTH_STATUS_KIND } from '../../../../../components/authStatusArt/constants/authStatusArt.kind';
 
@@ -17,7 +18,7 @@ export const renderForgotPasswordSuccess: RenderForgotPasswordSuccess = ({
 }) => (
   <Box
     as={BOX_TAG.DIV}
-    className="rdr-auth-flow__mobile-success"
+    className={FORGOT_PASSWORD_LEGACY_CLASSES.SUCCESS}
     role="status"
     aria-live="polite"
   >
@@ -27,14 +28,14 @@ export const renderForgotPasswordSuccess: RenderForgotPasswordSuccess = ({
       If this email address is eligible, a password reset link will be sent to{' '}
       <Box as={BOX_TAG.STRONG}>{state.lastRequestedEmail}</Box>.
     </Box>
-    <AppLink className="rdr-login-v2__submit" to={AUTH_ROUTE.LOGIN}>
+    <AppLink className={FORGOT_PASSWORD_LEGACY_CLASSES.SUBMIT} to={AUTH_ROUTE.LOGIN}>
       Back to sign in
     </AppLink>
     <Button
       unstyled
       type="submit"
       form={formId}
-      className="rdr-auth-flow__resend"
+      className={FORGOT_PASSWORD_LEGACY_CLASSES.RESEND}
       disabled={state.busy || view.cooldown}
     >
       {view.resendLabel}
@@ -42,7 +43,7 @@ export const renderForgotPasswordSuccess: RenderForgotPasswordSuccess = ({
     <Button
       unstyled
       type="button"
-      className="rdr-auth-flow__resend"
+      className={FORGOT_PASSWORD_LEGACY_CLASSES.RESEND}
       onClick={onUseAnotherEmail}
     >
       Use another email
