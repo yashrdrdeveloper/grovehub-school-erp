@@ -175,8 +175,14 @@
   white-space:normal;overflow-wrap:anywhere
 }
 .rdr-login-v2__field-error--reserved.is-empty{visibility:hidden}
-.rdr-login-v2__feedback-slot,.rdr-auth-flow__error-slot,.rdr-recovery__error-slot{min-height:0;height:auto;margin:0}
-.rdr-auth-flow__error-slot:empty,.rdr-recovery__error-slot:empty{display:none}
+.rdr-login-v2__feedback-slot{min-height:0;height:auto;margin:0}
+.rdr-auth-flow__error-slot,.rdr-recovery__error-slot{
+  display:flex;align-items:center;width:100%;min-width:0;
+  min-height:43px;height:auto;margin-top:7px
+}
+.rdr-auth-flow__error-slot .rdr-login-v2__error,.rdr-recovery__error-slot .rdr-recovery__inline-error{
+  margin:0;padding:7px 9px;min-height:35px;width:100%;line-height:1.4
+}
 .rdr-login-v2__feedback-slot--signin{
   display:flex;align-items:flex-start;min-height:46px;height:auto;
   padding-top:9px;width:100%;min-width:0
