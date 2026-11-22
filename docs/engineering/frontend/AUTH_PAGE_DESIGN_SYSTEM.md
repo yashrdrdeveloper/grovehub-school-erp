@@ -1,5 +1,7 @@
 # RDR authentication UI — design and acceptance standard
 
+> **Engineering ownership:** Follow [Frontend Code Guidelines, Revision 5](./FRONTEND_CODE_GUIDELINES.md) for file layout, pure-helper ownership, flat constants, nested hooks, central icons, stable `dataTestId`/`data-testid` selectors and no-ternary rendering. This document governs auth **visual and interaction acceptance**, not engineering folder structure.
+
 ## Scope and source
 
 Applies to sign-in, forgot-password, set-password, reset-password, invitation, link verification, success, unavailable, expired, and exhausted-attempt states.

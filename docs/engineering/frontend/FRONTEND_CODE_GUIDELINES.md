@@ -1,4357 +1,523 @@
 # Frontend Code Guidelines
 
-> **PackageManager** : use pnpm over npm always and react latest stable version
+> **Status:** Mandatory, authoritative frontend engineering standard — **Revision 5 (November 2026)**.
+>
+> **Scope:** Every source file under `frontend/`, including `app`, `packages/base`, `packages/business`, `packages/components`, `packages/domain`, `packages/shell`, unit tests, integration tests, styles, generated code boundaries, and scripts.
+>
+> **Stack:** React 19, TypeScript strict, pnpm, Vite, Tailwind CSS 4, shadcn-compatible Radix primitives, Lucide icons through the components package, Jest, and the existing project architecture checks.
+>
+> **Precedence:** This document replaces previous frontend guideline revisions and examples. Existing code that differs is **migration debt**, not an exception to this standard. Do not claim implementation is complete until checks and behavior regressions pass.
 
-> **Status:** Mandatory Phase 0 engineering standard — Revision 4
+## 1. Non-negotiable principles
 
-> **Applies to:** `frontend/`, `packages/base`, `packages/business`, `packages/components`, `packages/domain`, `packages/shell`, every domain, page, template, component, hook, HOC, helper, util, constant, service, reader, mock, type, story and test
+SRP, DRY, OCP, explicit ownership, composition, type safety, stable accessibility, automation selectors, domain isolation and predictable import boundaries are mandatory. A file has one discoverable purpose. A hook does not become a hiding place for a giant component. A helper must not restate an existing library operation without adding real semantics. Do not introduce a directory, abstraction, wrapper, factory, or duplicated state merely for the appearance of architecture.
 
-> **Primary stack:** React + TypeScript + Vite
+**Required working sequence:** identify the owning unit; reuse an existing shared primitive or utility; define types and constants; implement focused pure helpers or hooks; compose a presentational component; add the correct level of tests; delete unused code; run all applicable gates.
 
-> **Testing:** Jest for pure-function unit tests; focused integration/browser regressions
+**Prefer explicit behavior over clever syntax.** No ternary operator in application TypeScript/TSX, including JSX props and nested conditional rendering. No multi-branch `switch` for behavior selection. For two cases, use readable `if / else` in a named helper. For three or more variants of the **same behavior**, use an exhaustive typed strategy registry keyed by a named value/enum.
 
-> **Core principles:** **SRP**, **OCP**, **DRY**, composition, configuration-driven rendering, strong typing, explicit public boundaries, testability
+## 2. Required package ownership and dependency direction
 
----
-
-## 1. Objective
-
-The frontend must be designed as a collection of small, composable, reusable, strongly typed units.
-
-The architecture must remain predictable even when the product grows to many domains and hundreds of screens.
-
-Mandatory principles:
-
-1. **SRP — Single Responsibility Principle**
-
-2. **OCP — Open/Closed Principle**
-
-3. **DRY — Don't Repeat Yourself**
-
-4. Composition over inheritance
-
-5. Configuration/registry/strategy over repeated conditional markup
-
-6. Pure functions for transformations
-
-7. Custom hooks for reusable stateful behavior
-
-8. Explicit public APIs through `index.ts`
-
-9. No deep imports into another unit's internals
-
-10. Reuse the nearest authoritative type instead of redefining primitives
-
-11. Presentational components contain no business orchestration
-
-12. Containers/hooks/services own side effects and orchestration
-
-13. Repeated UI patterns become platform-level primitives
-
-14. `switch` is restricted
-
-15. Avoid `if / else if` chains when a strategy/config map can express the behavior
-
-16. Naming must explain intent without opening the file
-
-17. Public contracts should remain stable once consumed
-
-18. Architecture rules should be enforced automatically where practical
-
----
-
-## 2. Top-Level Package Architecture
-
-The frontend package hierarchy is mandatory. It separates pure technical primitives, shared business logic, shared UI primitives, isolated product domains, and the application-composition shell.
-
-```text
+~~~text
 frontend/
-├── app/
-│   ├── bootstrap/
-│   ├── main.tsx
-│   └── index.ts
-│
+├── app/                       # bootstrap only; mounts the shell
 ├── packages/
-│   ├── base/
-│   │   ├── constants/
-│   │   ├── helpers/
-│   │   ├── utils/
-│   │   ├── readers/
-│   │   ├── types/
-│   │   ├── RUNBOOK.md
-│   │   └── index.ts
-│   │
-│   ├── business/
-│   │   ├── services/
-│   │   ├── helpers/
-│   │   ├── utils/
-│   │   ├── readers/
-│   │   ├── constants/
-│   │   ├── types/
-│   │   ├── RUNBOOK.md
-│   │   └── index.ts
-│   │
-│   ├── components/
-│   │   ├── components/
-│   │   ├── templates/
-│   │   ├── builders/
-│   │   ├── renderers/
-│   │   ├── hooks/
-│   │   ├── hocs/
-│   │   ├── layouts/
-│   │   ├── types/
-│   │   ├── RUNBOOK.md
-│   │   └── index.ts
-│   │
+│   ├── base/                  # pure, framework-neutral technical utilities/constants
+│   ├── business/              # reusable business contracts, API transport and operations
+│   ├── components/            # reusable accessible UI, icons, hooks and design primitives
 │   ├── domain/
-│   │   ├── catalog/
-│   │   ├── delivery/
-│   │   ├── testing/
-│   │   ├── workbench/
-│   │   └── ...
-│   │
-│   └── shell/
-│       ├── Shell.tsx
-│       ├── containers/shellContainer/ShellContainer.tsx
-│       ├── providers/
-│       ├── state/
-│       ├── registry/
-│       ├── layout/
-│       ├── skeleton/
-│       ├── errors/
-│       ├── types/
-│       ├── RUNBOOK.md
-│       └── index.ts
-│
-├── assets/
-├── config/
-├── test/
-│   ├── fixtures/
-│   ├── mocks/
-│   └── setup/
-├── vite.config.ts
-├── tsconfig.json
-├── eslint.config.*
-├── jest.config.*
+│   │   ├── auth/              # authentication pages and session-aware UI
+│   │   ├── dashboard/         # school home page
+│   │   ├── publicSite/        # school website, enquiry UX and public pages
+│   │   └── <domain>/
+│   └── shell/                 # routing, providers and application/workspace composition
+├── components.json            # shadcn configuration
+├── scripts/
 └── package.json
-```
+~~~
 
-### Package responsibilities
+The dependency graph is `app → shell → domain / components / base` and `domain → business / components / base`; `business → base`; `components → base`; `base → nothing higher`. Business and components are independent of domain and shell. A domain never imports shell or another domain's private internals. Shell imports domain **root APIs only**, such as `@Domain/auth`. Type-only imports obey the same boundaries. API calls must not originate from the shell or reusable presentation components.
 
-| Package | Responsibility | May contain business logic? | May contain UI? | May call backend APIs? |
-| --- | --- | ---: | ---: | ---: |
-| `packages/base` | Pure, generic technical primitives | No | No | No |
-| `packages/business` | Shared product/business contracts and logic used by multiple domains | Yes | No | Yes |
-| `packages/components` | Shared platform UI, hooks, HOCs, templates, builders and renderers | No domain-specific business logic | Yes | No direct API calls |
-| `packages/domain/<name>` | Domain-specific screens, state, orchestration and domain behavior | Yes | Yes | Yes, through domain services |
-| `packages/shell` | Application composition, shared provider initialization, domain registration/binding, global layout and startup skeleton | **No** | Shell/chrome only | **No** |
+Use **the exact case-sensitive aliases actually declared in tsconfig/Vite**: `@Base`, `@Business`, `@Components`, `@Domain`, `@Shell`. No obsolete `@Auth` or `@LandingPage` alias. Within a unit use short relative imports; outside the unit use its intentional public boundary.
 
-### `frontend/app`
+`frontend/app` owns no business screens. `packages/base` must not import React, React Router, the DOM, business entities, or UI. Base browser-event **name constants** are pure; adding actual event listeners belongs in a browser-aware component/domain hook.
 
-`frontend/app` is the executable browser entry point.
+## 3. Canonical directory layout: one page, one composition root
 
-It should remain intentionally thin.
-
-Its responsibility is to:
-
-- perform minimal browser/bootstrap initialization
-- resolve root DOM mounting
-- load environment/bootstrap configuration required before React starts
-- mount the application shell
-
-Conceptually:
-
-```tsx
-import { createRoot } from 'react-dom/client';
-import { PerihellionShell } from '@shell';
-
-createRoot(document.getElementById('root')!).render(
-  <PerihellionShell />,
-);
-```
-
-`app` must not become the place where every domain route, reducer, provider, navigation item, or feature is manually wired.
-
-That belongs in `packages/shell`.
-
-### `packages/base`
-
-`base` is the dependency floor. Examples:
-
-```text
-getDateTime
-EMPTY_OBJECT
-EMPTY_ARRAY
-NOOP
-safeParseNumber
-createPropertyReader
-```
-
-`base` must remain pure and domain-independent. It must not import `business`, `components`, `domain`, `shell`, or `app`.
-
-### `packages/business`
-
-`business` contains reusable business logic shared by multiple domains. Examples:
-
-```text
-business/services/application/
-business/services/environment/
-business/utils/application/
-business/helpers/permissions/
-business/readers/application/
-```
-
-Do not promote logic into `business` merely because two files look similar. Promote it when the same business concept is intentionally shared and should evolve together.
-
-### `packages/components`
-
-`components` is the shared platform UI package. It owns reusable components such as `FormBuilder`, `TableManager`, `ModalManager`, `StatusBadge`, common hooks/HOCs, layouts, renderers and templates.
-
-Shared components must not import a product domain or `packages/shell`.
-
-### `packages/domain`
-
-Every actual product domain lives under `packages/domain/<domain-name>`. Domains own pages, domain state, domain services and domain-specific UI.
-
-A domain may consume:
-
-```text
-base
-business
-components
-another domain's root public API when explicitly required
-```
-
-A domain must never import `packages/shell`.
-
-### `packages/shell`
-
-`shell` is the **application-composition package**.
-
-It binds the frontend together without owning product business logic.
-
-It is responsible for:
-
-- the top-level `ShellContainer`
-- the top-level presentational shell/chrome
-- initialization of shared runtime providers
-- Redux store/provider construction
-- query-client provider construction
-- router provider construction
-- theme/design-system provider construction
-- global error boundary/fallback wiring
-- top-level telemetry provider wiring
-- assembling domain registrations
-- composing domain routes
-- composing domain navigation
-- composing domain reducers/middleware
-- application-level layout
-- startup/loading skeleton
-- domain mount/unmount registration where supported
-
-It must **not**:
-
-- call domain/backend APIs directly
-- contain product use cases
-- contain authorization decisions
-- contain domain reducers
-- contain domain service logic
-- contain domain entity transformations
-- deep-import any domain internal path
-
-The shell consumes domains only through their root public APIs.
-
-Example:
-
-```ts
-import { catalogDomain } from '@domain/catalog';
-import { deliveryDomain } from '@domain/delivery';
-```
-
-Never:
-
-```ts
-import { catalogReducer }
-  from '@domain/catalog/core/state/catalog.slice';
-```
-
-The shell is the composition root of the frontend, not a new business domain.
-
----
-
-## 3. Domain Package Structure
-
-Every domain follows the same predictable unit structure.
-
-```text
-frontend/packages/domain/<domain-name>/
-├── core/
-│   ├── routes/
-│   ├── state/
-│   ├── providers/
-│   ├── guards/
-│   ├── registry/
-│   ├── constants/
-│   ├── types/
-│   └── index.ts
-│
+~~~text
+packages/domain/auth/
 ├── pages/
-├── templates/
-├── components/
-├── constants/
-├── helpers/
-├── utils/
-├── hooks/
-├── hocs/
-├── types/
-│
-├── services/
-│   ├── <entity-or-use-case>/
-│   └── index.ts
-│
-├── mock/
-│   ├── builders/
-│   ├── fixtures/
-│   ├── handlers/
-│   ├── services/
-│   ├── state/
-│   └── index.ts
-│
-├── RUNBOOK.md
-└── index.ts
-```
-
-Examples:
-
-```text
-frontend/packages/domain/catalog/
-frontend/packages/domain/delivery/
-frontend/packages/domain/testing/
-frontend/packages/domain/workbench/
-frontend/packages/domain/migration/
-```
-
-A domain's root `index.ts` is its runtime public API. The `mock/index.ts` file is a separate test/development public API.
-
-Do not create services under individual components. API services belong at the domain level or, when intentionally shared across domains, in `packages/business`.
-
-Do not create empty folders only to satisfy the template. Create the folder when the domain owns that responsibility.
-
----
-
-## 4. Domain `core/`
-
-`core/` owns domain-level wiring.
-
-```text
-domain/core/
-├── routes/
-│   ├── domain.routes.ts
-│   ├── types/
-│   └── index.ts
-│
-├── state/
-│   ├── domain.slice.ts
-│   ├── domain.actions.ts
-│   ├── domain.selectors.ts
-│   ├── domain.middleware.ts
-│   ├── types/
-│   └── index.ts
-│
-├── providers/
-├── guards/
-├── constants/
-├── types/
-└── index.ts
-```
-
-Responsibilities may include:
-
-\- domain routes
-
-\- domain Redux state registration
-
-\- domain actions/selectors
-
-\- domain context/providers
-
-\- domain feature guards
-
-\- domain bootstrap
-
-\- domain configuration
-
-\- domain permission mappings
-
-\- public domain contracts
-
-A domain should be mountable from its public API.
-
-```ts
-import { deliveryDomain } from '@/packages/delivery';
-```
-
----
-
-## 5. Public API Rule — `index.ts`
-
-Every logical unit exposes its supported public API through `index.ts`.
-
-External consumers must import through the nearest public boundary.
-
-### Correct
-
-```ts
-import {
-  DeploymentStatus,
-  type DeploymentStatusProps,
-} from '@/packages/delivery/components/DeploymentStatus';
-```
-
-### Incorrect
-
-```ts
-import { DeploymentStatus }
-  from '@/packages/delivery/components/DeploymentStatus/DeploymentStatus';
-import { mapStatus }
-  from '@/packages/delivery/components/DeploymentStatus/helpers/deploymentStatus.mapper';
-```
-
-Internal files are private unless intentionally exported.
-
----
-
-## 6. `index.ts` Is a Contract, Not a Dumping Ground
-
-Good:
-
-```ts
-export { DeploymentStatus } from './DeploymentStatus';
-export { DeploymentStatusContainer } from './DeploymentStatusContainer';
-export type {
-  DeploymentStatusProps,
-  DeploymentStatusViewModel,
-} from './types';
-```
-
-Avoid:
-
-```ts
-export * from './helpers';
-export * from './constants';
-export * from './internal';
-```
-
-unless every export is intentionally public.
-
-Use barrels mainly at package/unit boundaries. Inside a unit, direct sibling imports are allowed when they prevent circular dependencies.
-
----
-
-## 7. Dependency Direction and Domain Isolation
-
-The dependency graph is intentionally one-directional.
-
-```text
-                               app
-                                ↓
-                              shell
-                    ┌───────────┼───────────┐
-                    ↓           ↓           ↓
-              domain/<name>  components    base
-               ↙      ↓
-          business   components
-              ↓         ↓
-             base      base
-```
-
-A more explicit form:
-
-```text
-base
-  ↑
-  ├──────── business
-  ├──────── components
-  │
-  └──────── domain
-             ↑
-             │
-           shell
-             ↑
-             │
-            app
-```
-
-The diagram is about dependency direction, not runtime ownership. `shell` may also directly consume `components` and `base`.
-
-Mandatory boundaries:
-
-```text
-base        -> third-party libraries only
-
-business    -> base
-
-components  -> base
-
-domain      -> base
-            + business
-            + components
-            + another domain's ROOT PUBLIC API only when explicitly required
-
-shell       -> base
-            + components
-            + domain ROOT PUBLIC APIs
-
-app         -> shell
-            + minimal bootstrap/config dependencies only
-```
-
-Forbidden dependency directions:
-
-```text
-base        ✗ business
-base        ✗ components
-base        ✗ domain
-base        ✗ shell
-
-business    ✗ domain
-business    ✗ shell
-
-components  ✗ domain
-components  ✗ shell
-
-domain      ✗ shell
-domain      ✗ app
-
-shell       ✗ domain internal paths
-
-app         ✗ domain internal paths
-app         ✗ direct domain composition that belongs in shell
-```
-
-`business` and `components` must not import a product domain.
-
-A domain must never deep-import another domain.
-
-### Allowed cross-domain import
-
-```ts
-import {
-  ApplicationSelector,
-  type ApplicationSummary,
-} from '@domain/catalog';
-```
-
-### Forbidden
-
-```ts
-import { selectCatalogInternalState }
-  from '@domain/catalog/core/state/catalog.internal.selectors';
-
-import { ApplicationRow }
-  from '@domain/catalog/components/ApplicationTable/components/ApplicationRow';
-```
-
-If Catalog wants another domain to use `ApplicationSelector`, Catalog explicitly exports it from its root `index.ts`.
-
-The exporting domain owns the contract. The consuming domain does not reach into implementation folders.
-
-### Domain import rule
-
-Cross-domain imports must look conceptually like:
-
-```ts
-import { something } from '@domain/<domain-name>';
-```
-
-and never like:
-
-```ts
-import { something } from '@domain/<domain-name>/<internal-path>';
-```
-
-The shell follows the same rule.
-
-CI/ESLint must enforce:
-
-- no cross-domain deep imports
-- no domain-to-shell imports
-- no components-to-shell imports
-- no business-to-shell imports
-- no app-level deep imports into domains
-- shell may import only domain root public APIs
-
----
-
-## 8. Application Shell Package
-
-`packages/shell` is the frontend **composition root**.
-
-It exists so global application wiring does not leak into:
-
-```text
-frontend/app
-individual domains
-shared components
-business services
-base utilities
-```
-
-The shell binds domain capabilities together while remaining business-logic-free.
-
-### Recommended structure
-
-```text
-frontend/packages/shell/
-├── Shell.tsx
-├── containers/shellContainer/ShellContainer.tsx
-│
-├── providers/
-│   ├── ReduxProvider/
-│   ├── QueryProvider/
-│   ├── RouterProvider/
-│   ├── ThemeProvider/
-│   ├── TelemetryProvider/
-│   ├── ErrorBoundaryProvider/
-│   └── index.ts
-│
-├── state/
-│   ├── createShellStore.ts
-│   ├── reducerRegistry.ts
-│   ├── middlewareRegistry.ts
-│   ├── types/
-│   └── index.ts
-│
-├── registry/
-│   ├── domains.registry.ts
-│   ├── routes.registry.ts
-│   ├── navigation.registry.ts
-│   ├── commands.registry.ts
-│   ├── types/
-│   └── index.ts
-│
-├── layout/
-│   ├── ShellLayout/
-│   └── index.ts
-│
-├── skeleton/
-│   ├── ShellSkeleton.tsx
-│   ├── ShellSkeleton.stories.tsx
-│   ├── types/
-│   └── index.ts
-│
-├── errors/
-├── constants/
-├── helpers/
-├── types/
-├── RUNBOOK.md
-└── index.ts
-```
-
-Do not create empty folders only for symmetry.
-
-### `Shell.tsx`
-
-`Shell.tsx` is the presentational application frame.
-
-It may render:
-
-```text
-application chrome
-global header
-navigation slots
-main content outlet
-global loading/skeleton state
-global error/fallback UI
-```
-
-It must not:
-
-```text
-fetch domain data
-dispatch domain business actions
-interpret backend entities
-make permission decisions
-contain domain-specific conditions
-```
-
-### `containers/shellContainer/ShellContainer.tsx`
-
-`ShellContainer.tsx` owns **composition/orchestration only**.
-
-Typical responsibilities:
-
-```text
-initialize global providers
-construct provider nesting
-construct global Redux runtime
-consume domain registrations
-create route/navigation registries
-select top-level loading/error fallback
-pass prepared shell configuration to Shell.tsx
-```
-
-It is allowed to orchestrate infrastructure.
-
-It is not allowed to implement a product use case.
-
-### Shared provider initialization
-
-Global providers should be initialized once in the shell.
-
-Examples:
-
-```text
-Redux Provider
-TanStack Query / QueryClient Provider
-Router Provider
-Theme / Design System Provider
-Global Error Boundary
-Telemetry Context
-Internationalization Provider when introduced
-other truly application-wide technical providers
-```
-
-Do not initialize the same provider independently inside every domain.
-
-A domain may still own a **domain-specific provider** inside its own `core/providers/` when the provider is not truly global.
-
-### Redux ownership
-
-The shell owns **Redux runtime composition**, not domain state semantics.
-
-The separation is:
-
-```text
-Domain
-  owns:
-    slice
-    reducers
-    actions
-    selectors
-    domain middleware
-    state types
-    registration metadata
-
-Shell
-  owns:
-    store creation
-    root reducer composition
-    middleware composition
-    Redux <Provider>
-```
-
-A domain should expose only the state registration it intentionally wants the shell to mount.
-
-Conceptually:
-
-```ts
-export const catalogDomain = {
-  id: DOMAIN_ID.CATALOG,
-  routes: catalogRoutes,
-  navigation: catalogNavigation,
-  state: {
-    key: CATALOG_STATE_KEY,
-    reducer: catalogReducer,
-  },
-} satisfies FrontendDomainRegistration;
-```
-
-The shell consumes:
-
-```ts
-import { catalogDomain } from '@domain/catalog';
-import { deliveryDomain } from '@domain/delivery';
-
-export const DOMAIN_REGISTRY = Object.freeze([
-  catalogDomain,
-  deliveryDomain,
-]) satisfies readonly FrontendDomainRegistration[];
-```
-
-The shell must never know:
-
-```text
-how catalog reducer calculates state
-how delivery permissions work
-how testing fetches data
-how workbench maps backend responses
-```
-
-### Registration contract placement
-
-A domain must not import `packages/shell` merely to implement the shell's registration type.
-
-The shared `FrontendDomainRegistration` contract must live at a dependency-safe lower level that both domains and shell can consume.
-
-Preferred placement:
-
-```text
-packages/components/types/registration/
-```
-
-because it is a frontend composition contract shared between product domains and the application shell.
-
-If the registration contract is later split into pure technical state contracts and visual contracts, pure technical contracts may move to `packages/base/types/registration/`.
-
-The important rule is:
-
-> **Domain registration types cannot create a `domain -> shell` dependency.**
-
-### Domain registration
-
-Every mountable domain should export one explicit registration object from its root public API.
-
-Example:
-
-```ts
-export {
-  catalogDomain,
-} from './core/registry';
-```
-
-Consumers:
-
-```ts
-import { catalogDomain } from '@domain/catalog';
-```
-
-The shell binds registrations.
-
-No other package should need to manually know every domain's internal route/reducer/provider files.
-
-### Routes
-
-Domains own their routes.
-
-The shell aggregates them.
-
-```text
-Domain route definitions
-        ↓
-Domain public registration
-        ↓
-Shell route registry
-        ↓
-Router Provider
-```
-
-`frontend/app` does not manually concatenate domain routes.
-
-### Navigation
-
-Domains expose navigation contributions as configuration.
-
-The shell aggregates and passes them to shared navigation components.
-
-The shell must not contain code such as:
-
-```ts
-if (domain === 'catalog') {
-  ...
-} else if (domain === 'delivery') {
-  ...
-}
-```
-
-Use registration/configuration.
-
-### Commands and extension points
-
-Where domains contribute:
-
-```text
-command palette commands
-navigation
-route definitions
-dashboard registrations
-global extension slots
-```
-
-they should expose typed configuration through their public registration.
-
-The shell aggregates it.
-
-### Shell skeleton
-
-The shell owns the **application startup skeleton**, not domain-specific loading UI.
-
-Examples:
-
-```text
-initial app bootstrap
-provider initialization
-session/bootstrap context resolution
-route registry startup
-lazy domain bundle loading
-```
-
-`ShellSkeleton` should remain generic.
-
-Domain-specific skeletons stay inside the domain.
-
-Because the shell skeleton is public visual infrastructure, it should have Storybook coverage.
-
-### Shell and business logic
-
-Forbidden inside `packages/shell`:
-
-```text
-createApplication()
-approveRelease()
-calculateReadiness()
-mapDeploymentResponse()
-fetchCatalogApplications()
-authorization business decisions
-migration calculations
-provider-specific product behavior
-```
-
-Those belong to domains/business services.
-
-### Shell and API calls
-
-The shell must not become a "global API service."
-
-If application startup needs business data, the owning domain should expose the required capability/hook/registration through its public contract.
-
-Only truly technical bootstrap/configuration required before domains exist may be handled at app/shell bootstrap level.
-
-### Shell public API
-
-Normal consumers should use:
-
-```ts
-import {
-  PerihellionShell,
-} from '@shell';
-```
-
-`frontend/app` is the primary runtime consumer.
-
-Domains must not consume the shell.
-
-### Shell testing
-
-Test shell behavior around:
-
-```text
-provider composition
-domain registration
-route aggregation
-navigation aggregation
-reducer/middleware registration
-startup skeleton
-global error fallback
-```
-
-Do not duplicate domain business tests inside shell tests.
-
-### Shell runbook
-
-`packages/shell/RUNBOOK.md` must document:
-
-```text
-shell responsibility
-provider nesting/order
-how to register a domain
-how routes are aggregated
-how Redux reducers/middleware are registered
-how startup skeleton works
-how global errors are handled
-what is explicitly forbidden from shell
-how to test shell composition
-```
-
----
-
-## 9. Pages Live at Domain Level
-
-```text
-domain/pages/
-├── DeliveryHomePage/
-├── ReleaseDetailsPage/
-├── PipelineRunsPage/
-└── index.ts
-```
-
-Recommended page unit:
-
-```text
-ReleaseDetailsPage/
-├── ReleaseDetailsPage.tsx
-├── ReleaseDetailsPageContainer.tsx
-├── components/
-├── templates/
-├── hooks/
-├── helpers/
-├── constants/
-├── types/
-└── index.ts
-```
-
-Pages compose screens. They must not become giant business-logic files.
-
----
-
-## 10. Presentational / Container Pattern
-
-Stateful feature components and pages should use a presentational/container split.
-
-### Presentational component
-
-```tsx
-export const ReleaseSummary: React.FC<ReleaseSummaryProps> = (props) =>{
-  {
-    title,
-    status,
-    owner,
-    isLoading,
-    onRefresh,
- } = props;
- return (
-    <SummaryCard
-      title={title}
-      status={status}
-      owner={owner}
-      isLoading={isLoading}
-      onRefresh={onRefresh}
-    />
-  );
-}
-```
-
-Presentational components:
-
-\- receive prepared props
-
-\- render UI
-
-\- emit callbacks
-
-\- do not call APIs
-
-\- do not access Redux directly
-
-\- do not know provider/vendor implementations
-
-\- do not build complex request payloads
-
-\- do not perform large business transformations
-
-\- do not own orchestration side effects
-
-### Container
-
-```tsx
-export const ReleaseSummaryContainer = () => {
-  const {
-    viewModel,
-    isLoading,
-    refresh,
-  } = useReleaseSummary();
-  return (
-    <ReleaseSummary
-      {...viewModel}
-      isLoading={isLoading}
-      onRefresh={refresh}
-    />
-  );
-};
-```
-
-The container owns orchestration.
-
-Every page and stateful/reusable feature should use this model. Tiny pure visual atoms do not need an empty container solely for ceremony.
-
----
-
-## 11. Component Unit Structure
-
-A full component unit may contain presentation, orchestration, local helpers, hooks, HOCs and nested UI units, but **not reusable backend API services**.
-
-```text
-ComponentName/
-├── ComponentName.tsx
-├── ComponentNameContainer.tsx
-│
-├── components/
-├── templates/
-│
-├── constants/
-│   ├── componentName.useCase.constant.ts
-│   ├── types/
-│   │   └── componentName.useCase.constant.types.ts
-│   └── index.ts
-│
-├── helpers/
-│   ├── componentName.useCase.mapper.ts
-│   ├── componentName.useCase.selector.ts
-│   ├── types/
-│   ├── __tests__/
-│   └── index.ts
-│
-├── utils/
-│   ├── componentName.useCase.util.ts
-│   ├── types/
-│   ├── __tests__/
-│   └── index.ts
-│
-├── hooks/
-│   └── useSomething/
-│       ├── useSomething.ts
+│   └── login/
+│       ├── Login.tsx                     # presentation only
+│       ├── index.ts                      # page public entry
+│       ├── containers/
+│       │   └── loginContainer/
+│       │       ├── LoginContainer.tsx
+│       │       ├── types/
+│       │       └── index.ts
+│       ├── components/
+│       │   └── LoginForm/
+│       │       ├── LoginForm.tsx
+│       │       ├── types/loginForm.props.ts
+│       │       ├── helpers/               # only if LoginForm owns pure view logic
+│       │       ├── constants/             # only if LoginForm owns fixed values
+│       │       ├── __tests__/LoginForm.test.tsx
+│       │       └── index.ts
+│       ├── templates/
+│       │   ├── desktopLogin/
+│       │   └── mobileLogin/
+│       ├── hooks/
+│       │   ├── useLoginForm/
+│       │   │   ├── useLoginForm.ts
+│       │   │   ├── types/useLoginForm.ts
+│       │   │   ├── hooks/
+│       │   │   │   ├── useFormActions/
+│       │   │   │   └── useFormSubmission/
+│       │   │   ├── helpers/               # flat use-case helper files
+│       │   │   │   ├── login.validateCredentials.ts
+│       │   │   │   ├── types/login.validateCredentials.ts
+│       │   │   │   └── __tests__/login.validateCredentials.test.ts
+│       │   │   ├── constants/
+│       │   │   └── index.ts
+│       │   └── useLoginViewport/
+│       │       ├── useLoginViewport.ts    # only if a reusable hook is warranted
+│       │       ├── helpers/login.viewport.ts
+│       │       ├── constants/
+│       │       ├── types/
+│       │       └── index.ts
+│       ├── helpers/                       # page-wide pure operations only
+│       │   ├── login.getFormViewModel.ts
+│       │   ├── types/login.getFormViewModel.ts
+│       │   └── __tests__/login.getFormViewModel.test.ts
 │       ├── constants/
-│       ├── helpers/
-│       ├── types/
-│       ├── __tests__/
-│       └── index.ts
-│
-├── hocs/
-│   └── withSomething/
-│       ├── withSomething.tsx
-│       ├── constants/
-│       ├── helpers/
-│       ├── types/
-│       ├── __tests__/
-│       └── index.ts
-│
-├── types/
-│   ├── ComponentName.props.ts
-│   ├── ComponentName.state.ts
-│   ├── ComponentName.viewModel.ts
-│   ├── ComponentName.useCase.ts
-│   └── index.ts
+│       │   ├── login.fields.ts
+│       │   ├── login.copy.ts
+│       │   ├── login.routes.ts
+│       │   ├── login.testIds.ts
+│       │   ├── login.passwordVisibility.ts
+│       │   └── types/                     # only for genuinely shared contracts
+│       └── types/
+│           ├── login.props.ts
+│           └── login.state.ts
 └── index.ts
-```
+~~~
 
-A component may consume a domain/business service through an injected hook or container, but the component folder does not own the service contract.
+For a **migrated page root**, only `<Page>.tsx` and `index.ts` are permitted as runtime code. Containers, templates, hooks, HOCs and visual subunits belong under their owning folders. Preserve one active form in the DOM across mobile/desktop variants; do not mount duplicate hidden credential forms.
 
-This avoids coupling reusable UI to a single API endpoint and prevents duplicate service definitions when the same backend entity is used by several components.
+For `packages/shell`, retain `Shell.tsx` and `index.ts` at root; container/provider/registry/workspace view units belong in named subfolders.
 
----
+**Only create a child `helpers/`, `constants/`, `hooks/`, `hocs/`, `components/` or `types/` folder when its owner actually needs it.** Hook-owned helpers stay next to that hook; component-owned visual helpers stay next to that component; page-wide helpers live at page level. Never duplicate the same operation at page level and hook level.
 
-## 12. Nested Components
+## 4. Public entrypoints: precisely where `index.ts` is allowed
 
-Components may own nested components.
+A unit's **public boundary** (domain, page, component, hook, HOC, container, service) can have an intentional `index.ts` when callers need that API. These exports must be explicit; do not use catch-all re-export barrels.
 
-```text
-PipelineTable/
-├── PipelineTable.tsx
-├── components/
-│   ├── PipelineRow/
-│   │   ├── PipelineRow\.tsx
-│   │   ├── types/
-│   │   └── index.ts
-│   └── index.ts
-└── index.ts
-```
+**`helpers/` and `constants/` have a stricter rule: no `index.ts`, no one-folder-per-helper.** Their implementations live directly in their owning `helpers/` or `constants/` folder. Import the exact file, for example `../helpers/login.getFormViewModel` or `../constants/login.copy`. A `types/` folder may contain multiple adjacent named contracts. Tests belong in the one flat sibling `__tests__/` folder.
 
-Nested units remain private unless exported through the parent unit's public API.
-
----
-
-## 13. Templates
-
-Templates are reusable composition/layout units.
-
-```text
-templates/
-└── ApplicationDetailsTemplate/
-    ├── ApplicationDetailsTemplate.tsx
-    ├── components/
-    ├── constants/
-    ├── helpers/
-    ├── hooks/
-    ├── types/
-    └── index.ts
-```
-
-Templates primarily handle:
-
-\- layout
-
-\- composition
-
-\- slots
-
-\- panel placement
-
-\- responsive structure
-
-\- repeated screen skeletons
-
-Business orchestration belongs in containers/hooks.
-
----
-
-## 14. Hooks
-
-Hooks own reusable stateful behavior.
-
-Do not pollute components with fetch/state/transformation logic.
-
-### Avoid
-
-```tsx
-export const SomethingContainer = () => {
-  const [data, setData] = useState([]);
-  const [isLoading, setLoading] = useState(false);
-  useEffect(() => {
-    setLoading(true);
-    fetchSomething()
-      .then((response) => setData(response.items))
-      .finally(() => setLoading(false));
-  }, []);
-  const grouped = data.reduce(...);
-  const filtered = grouped.filter(...);
-  return <Something data={filtered} />;
-};
-```
-
-### Prefer
-
-```ts
-const {
-  data,
-  isLoading,
-  refresh,
-} = useFetchSomething();
-const viewModel = useSomethingViewModel(data);
-```
-
-Then:
-
-```tsx
-<Something
-  {...viewModel}
-  isLoading={isLoading}
-  onRefresh={refresh}
-/>
-```
-
----
-
-## 15. Hook Structure
-
-```text
-hooks/
-└── useFetchSomething/
-    ├── useFetchSomething.ts
-    ├── constants/
-    ├── helpers/
-    ├── types/
-    ├── __tests__/
-    └── index.ts
-```
-
-Hooks should have one coherent responsibility.
-
-Compose focused hooks instead of creating one giant hook.
-
-```ts
-const query = useApplicationQuery(applicationId);
-const permissions = useApplicationPermissions(applicationId);
-const viewModel = useApplicationViewModel(query.data);
-const actions = useApplicationActions(applicationId);
-```
-
----
-
-## 16. HOCs
-
-Use HOCs only for wrapper-style composition.
-
-Typical uses:
-
-\- permission wrapper
-
-\- feature gating
-
-\- error boundary
-
-\- telemetry wrapper
-
-\- context/provider wrapping
-
-```text
-hocs/
-└── withPermission/
-    ├── withPermission.tsx
-    ├── constants/
-    ├── helpers/
-    ├── types/
-    ├── __tests__/
-    └── index.ts
-```
-
-Prefer hooks when a wrapper is not needed.
-
----
-
-## 17. Services, Backend Entities, and Response Readers
-
-API services live only at one of these levels:
-
-```text
-packages/domain/<domain>/services/
-packages/business/services/
-```
-
-They must not live inside component folders.
-
-Use a domain service when the API/entity is owned by one domain. Promote it to `packages/business/services/<entity>` only when the same business contract is intentionally shared across multiple domains.
-
-Recommended service unit:
-
-```text
-services/<entity-or-use-case>/
-├── fetchSomething.service.ts
-├── updateSomething.service.ts
-├── index.ts
-│
+~~~text
+helpers/
+├── login.getFormViewModel.ts
+├── login.getPasswordViewModel.ts
+├── login.getFailureMessage.ts
 ├── types/
-│   ├── request/
-│   │   ├── fetchSomething.request.ts
-│   │   └── index.ts
-│   ├── response/
-│   │   ├── something.response.ts
-│   │   └── index.ts
-│   ├── fetchSomething.service.types.ts
-│   └── index.ts
-│
-├── response/
-│   └── readers/
-│       ├── somethingResponse.reader.ts
-│       ├── types/
-│       ├── __tests__/
-│       └── index.ts
-│
+│   ├── login.getFormViewModel.ts
+│   ├── login.getPasswordViewModel.ts
+│   └── login.getFailureMessage.ts
 └── __tests__/
-```
+    ├── login.getFormViewModel.test.ts
+    ├── login.getPasswordViewModel.test.ts
+    └── login.getFailureMessage.test.ts
 
-Implementation:
-
-```ts
-export const fetchSomething: FetchSomething = async (request) => {
-  return api.post<SomethingResponse>(
-    '/something',
-    request,
-  );
-};
-```
-
-Callable type:
-
-```ts
-export type FetchSomething = (
-  request: FetchSomethingRequest,
-) => Promise<SomethingResponse>;
-```
-
-## Response readers
-
-Readers are the approved property-access layer for backend entities/responses when a property is repeatedly consumed.
-
-They provide:
-
-- one named place to read backend entity fields
-- strongly typed property access
-- refactor-safe reuse
-- a place to centralize null/default semantics when explicitly required
-- consistency across mappers, selectors and hooks
-
-Readers are pure. They do not call APIs, mutate data, make authorization decisions, or contain UI behavior.
-
-A generic property-reader helper may live in `packages/base` and may internally use Lodash:
-
-```ts
-import _property from 'lodash/property';
-
-export const createPropertyReader = <
-  TEntity,
-  TKey extends keyof TEntity,
->(key: TKey): ((entity: TEntity) => TEntity[TKey]) => {
-  return _property(key as string) as (
-    entity: TEntity,
-  ) => TEntity[TKey];
-};
-```
-
-Backend response reader:
-
-```ts
-import { createPropertyReader } from '@base/readers';
-import type { SomethingResponse } from '../../types/response';
-
-const readSomethingId = createPropertyReader<
-  SomethingResponse,
-  'somethingId'
->('somethingId');
-
-const readDisplayName = createPropertyReader<
-  SomethingResponse,
-  'displayName'
->('displayName');
-
-export const somethingResponseReader = Object.freeze({
-  somethingId: readSomethingId,
-  displayName: readDisplayName,
-});
-```
-
-Consumer:
-
-```ts
-const somethingId =
-  somethingResponseReader.somethingId(response);
-```
-
-Do not recreate:
-
-```ts
-const getSomethingId = (response: SomethingResponse) =>
-  response.somethingId;
-```
-
-in ten different files when the backend entity already has a shared reader.
-
-Readers should normally be associated with the service/backend entity they represent.
-
----
-
-## 18. Service Responsibility and Placement
-
-Services handle transport concerns and expose stable typed business-facing methods.
-
-Typical responsibilities:
-
-- endpoint
-- HTTP method
-- request serialization
-- response parsing
-- cancellation
-- normalized transport errors
-- transport telemetry
-- request/response contracts
-- response readers for backend entities
-
-Services should not contain large UI-specific transformations.
-
-Preferred flow:
-
-```text
-Backend API
-    ↓
-Domain/Business Service
-    ↓
-Response Type + Reader
-    ↓
-Mapper / Selector / Hook
-    ↓
-ViewModel
-    ↓
-Presentational Component
-```
-
-Placement decision:
-
-```text
-Used by one domain
-    -> packages/domain/<domain>/services
-
-Shared by multiple domains as the same business contract
-    -> packages/business/services/<entity>
-
-Component-specific API call
-    -> still domain/business service; never component/services
-```
-
-Do not move an API into `business` only to avoid imports. Shared placement must represent true shared ownership.
-
----
-
-## 19. Request / Response Types Are First-Class Contracts
-
-```ts
-export interface SomethingResponse {
-  somethingId: string;
-  displayName: string;
-  createdAt: string;
-}
-```
-
-Do not duplicate a field type when it already exists.
-
-Bad:
-
-```ts
-export interface SomethingProps {
-  somethingId: string;
-}
-```
-
-Better:
-
-```ts
-export interface SomethingProps {
-  somethingId: SomethingResponse['somethingId'];
-}
-```
-
-Also prefer:
-
-```ts
-export type SomethingSummary = Pick<
-  SomethingResponse,
-  'somethingId' | 'displayName'
->;
-```
-
-or:
-
-```ts
-export type SomethingWithoutMetadata = Omit<
-  SomethingResponse,
-  'metadata'
->;
-```
-
----
-
-## 20. Nearest Authoritative Type Rule
-
-When the same concept exists at multiple levels, reuse the nearest authoritative top-level type.
-
-Priority:
-
-```text
-Canonical domain entity / API contract
-        ↓
-Domain public type
-        ↓
-Component props/view model
-        ↓
-Local helper type
-```
-
-Example:
-
-```ts
-type DeploymentId = DeploymentResponse['deploymentId'];
-```
-
-not:
-
-```ts
-type DeploymentId = string;
-```
-
----
-
-## 21. Type Definitions Stay Adjacent in `types/`
-
-Implementation files should focus on implementation.
-
-Helper:
-
-```ts
-export const getSomething: GetSomething = (params) => {
-  // implementation
-};
-```
-
-Type:
-
-```ts
-export type GetSomething = (
-  params: GetSomethingParams,
-) => GetSomethingResult;
-```
-
-Params/result:
-
-```ts
-export interface GetSomethingParams {
-  somethingId: SomethingResponse['somethingId'];
-}
-export interface GetSomethingResult {
-  label: string;
-  isActive: boolean;
-}
-```
-
-Reusable helpers, services, selectors, mappers, factories, and public callbacks should have explicit callable types.
-
----
-
-## 22. Constants
-
-Scalar constants use `SCREAMING_SNAKE_CASE`.
-
-```ts
-export const HELLO_WORLD = 'HELLO_WORLD';
-```
-
-Use `as const` for strongly typed constant maps.
-
-```ts
-export const EXECUTION_STATUS = {
-  CREATED: 'CREATED',
-  RUNNING: 'RUNNING',
-  FAILED: 'FAILED',
-} as const;
-```
-
-Derived type:
-
-```ts
-export type ExecutionStatus =
-  (typeof EXECUTION_STATUS)[keyof typeof EXECUTION_STATUS];
-```
-
-If runtime freeze is required:
-
-```ts
-export const EXECUTION_STATUS = Object.freeze({
-  CREATED: 'CREATED',
-  RUNNING: 'RUNNING',
-  FAILED: 'FAILED',
-} as const);
-```
-
-Prefer `as const` object maps over TypeScript `enum` unless interoperability requires an enum.
-
----
-
-## 23. Constant Folder Structure
-
-```text
 constants/
-├── executionStatus.constant.ts
-├── types/
-│   └── executionStatus.constant.types.ts
-└── index.ts
-```
+├── login.fields.ts
+├── login.copy.ts
+├── login.routes.ts
+├── login.testIds.ts
+├── login.passwordVisibility.ts
+└── types/
+~~~
 
-Derive union types from the constant source instead of manually duplicating string unions.
+Forbidden in a migrated helpers/constants directory: `helpers/index.ts`, `constants/index.ts`, `helpers/getSomething/getSomething.ts`, `constants/someConstant/index.ts`, `helpers.ts`, `common.ts`, `utils.ts`, `misc.ts`.
 
----
+A self-contained business operation or reusable component is different: its own public `index.ts` can remain. Do not delete **domain/page/component/hook** public entrypoints while removing helper/constant barrels.
 
-## 24. Helpers
+## 5. File naming, types, placement and unused-code removal
 
-Helpers should be small, deterministic where possible, and single-purpose.
+Use filenames that identify owner **and** use case: `login.getPasswordViewModel.ts`, `login.validateCredentials.ts`, `login.fieldIds.ts`, `recovery.classifyFailure.ts`, `person.request.mapper.ts`. Avoid anonymous `getData.ts` or `helpers.ts`. Exported functions have named callable contracts in the nearest `types/<useCase>.ts`. Reuse the nearest authoritative page/entity types via indexed access, `Pick` and `Omit` instead of duplicating state shapes.
 
-```text
-helpers/
-├── deployment.request.mapper.ts
-├── deployment.response.mapper.ts
-├── deployment.status.selector.ts
-├── types/
-│   ├── deployment.request.mapper.types.ts
-│   ├── deployment.response.mapper.types.ts
-│   └── deployment.status.selector.types.ts
-├── __tests__/
-│   ├── deployment.request.mapper.test.ts
-│   ├── deployment.response.mapper.test.ts
-│   └── deployment.status.selector.test.ts
-└── index.ts
-```
+~~~ts
+// hooks/useLoginForm/helpers/types/login.validateCredentials.ts
+import type { LoginCredentials } from '../../../../types/login.state';
+export type ValidateCredentials = (input: LoginCredentials) => LoginFieldErrors;
 
-Avoid meaningless files:
-
-```text
-helper.ts
-common.ts
-misc.ts
-functions.ts
-```
-
----
-
-## 25. Helpers vs Utils and Lodash Usage
-
-Use `helpers` for domain/use-case-aware logic:
-
-- request mapper
-- response mapper
-- view-model builder
-- selector
-- domain parser
-- domain formatter
-
-Use `utils` for generic technical operations:
-
-- array utility
-- string utility
-- date/time utility
-- generic object utility
-- generic calculation
-- generic retry calculation
-
-Pure generic utilities belong in `packages/base`. Shared business-aware utilities belong in `packages/business/utils/<business-area>`. Domain-specific utilities remain in the domain.
-
-Do not place domain behavior into `packages/base`.
-
-## Lodash rule
-
-Lodash is approved for object/collection operations where it makes behavior clearer and more reliable.
-
-Always import the individual function.
-
-Correct:
-
-```ts
-import _noop from 'lodash/noop';
-import _groupBy from 'lodash/groupBy';
-import _property from 'lodash/property';
-import _uniqBy from 'lodash/uniqBy';
-```
-
-Forbidden:
-
-```ts
-import _ from 'lodash';
-import * as lodash from 'lodash';
-```
-
-The underscore-prefixed local alias makes Lodash usage immediately visible during review.
-
-Do not use Lodash merely to replace a trivial, clearer native expression. Use it for consistent reusable calculations/object operations where it improves readability or correctness.
-
----
-
-## 26. Use-Case-Based File Naming
-
-Names must communicate intent.
-
-Good:
-
-```text
-payloadCreation.request.mapper.ts
-applicationDetails.response.mapper.ts
-resourceTable.columns.builder.ts
-deploymentStatus.badge.mapper.ts
-migrationPlan.step.selector.ts
-```
-
-Bad:
-
-```text
-helper1.ts
-data.ts
-mapper.ts
-util.ts
-common.ts
-```
-
----
-
-## 27. Unit Tests
-
-Use **Jest** for unit testing.
-
-Use **React Testing Library** for component behavior tests.
-
-Pure functions require adjacent tests.
-
-```text
-helpers/
-├── buildDeploymentPayload.ts
-└── __tests__/
-    └── buildDeploymentPayload.test.ts
-```
-
-Test:
-
-\- happy path
-
-\- empty values
-
-\- optional values
-
-\- invalid values
-
-\- boundaries
-
-\- mapping correctness
-
-\- immutability
-
-\- error behavior
-
-\- unsupported strategy behavior
-
----
-
-## 28. `switch` Is Restricted
-
-Do not use `switch` for behavior selection.
-
-Bad:
-
-```ts
-switch (rendererType) {
-  case RENDERER_TYPES.TABLE:
-    return renderTable(params);
-  case RENDERER_TYPES.FORM:
-    return renderForm(params);
-  default:
-    return null;
-}
-```
-
-Use a strategy map:
-
-```ts
-const RENDERER_FACTORY = {
-  [RENDERER_TYPES.TABLE]: renderTable,
-  [RENDERER_TYPES.FORM]: renderForm,
-} satisfies Record<RendererType, RendererStrategy>;
-```
-
-```ts
-export const executeRenderer: ExecuteRenderer = ({
-  type,
-  params,
-}) => {
-  const renderer = RENDERER_FACTORY[type];
-  return renderer(params);
+// hooks/useLoginForm/helpers/login.validateCredentials.ts
+import type { ValidateCredentials } from './types/login.validateCredentials';
+export const validateCredentials: ValidateCredentials = (input) => {
+  // focused pure validation
 };
-```
+~~~
 
-`Record` + `satisfies` should be used where practical to make the registry exhaustive.
+Do not use a UI props type as an API transport contract. Shared backend entities live under `business/<domain>/types/baseEntities/`; per-operation service requests/responses stay with the business service. Backend readers should be typed, pure and free from page decisions.
 
----
+**Delete unused code** only after checking all importers: code search, public barrel exports, test references, route registrations, generated imports, dynamic loading and builds. Remove superseded imports, files, obsolete tests and empty directories in the same migration commit; update documentation and architecture checks for the new layout. Do not remove an indirectly referenced route or public API merely because a text search returns zero import lines.
 
-## 29. Avoid `if / else if` Chains
+## 6. Constants, identifiers, copy and configuration
 
-Bad:
+**Literal/static values belong in `constants/`, not a generic `config/` folder.** There is no page-level `config/index.ts`. Do not combine unrelated concerns into one huge `login.config.ts` or `Object.freeze({ ...everything })`. Separate:
 
-```ts
-if (role === 'ADMIN') {
-  return adminConfig;
-} else if (role === 'DEVELOPER') {
-  return developerConfig;
-} else if (role === 'VIEWER') {
-  return viewerConfig;
-}
-```
+- `constants/login.fields.ts` — typed field identity and metadata.
+- `constants/login.copy.ts` — user-visible messages/labels.
+- `constants/login.routes.ts` — stable route names and paths.
+- `constants/login.passwordVisibility.ts` — visibility states and their icon/label/type metadata.
+- `constants/login.submitStatus.ts` — ready/submitting labels and icon behaviors.
+- `constants/login.testIds.ts` — deterministic automation selectors.
+- `constants/login.validation.ts` — only literal regexes, limits, rule identifiers; any predicate/function belongs in a helper.
+- `constants/login.viewport.ts` — viewport media query.
+- `packages/base/events/constants/browserEvents.ts` — shared browser event names.
 
-Prefer:
+Use string-valued `as const` maps, or a real TypeScript `enum` when stable interoperability requires it. Do not repeat raw `'email'`, `'password'`, `'change'`, `'hashchange'` or status strings across the code. Example:
 
-```ts
-const ROLE_CONFIG = {
-  [ROLE.ADMIN]: adminConfig,
-  [ROLE.DEVELOPER]: developerConfig,
-  [ROLE.VIEWER]: viewerConfig,
-} satisfies Record<Role, RoleConfig>;
-```
+~~~ts
+// constants/login.fields.ts
+export const LOGIN_FIELD = {
+  EMAIL: 'email',
+  PASSWORD: 'password',
+} as const;
 
-```ts
-const config = ROLE_CONFIG[role];
-```
+export type LoginField = (typeof LOGIN_FIELD)[keyof typeof LOGIN_FIELD];
 
-A simple guard `if` is acceptable:
-
-```ts
-if (!applicationId) {
-  return null;
-}
-```
-
-Prefer guard clauses over nested logic.
-
----
-
-## 30. Strategy / Factory Pattern
-
-When behavior changes by type, use a strategy registry.
-
-```ts
-const ACTION_STRATEGIES = {
-  [ACTION_TYPE.BUILD]: executeBuild,
-  [ACTION_TYPE.TEST]: executeTest,
-  [ACTION_TYPE.DEPLOY]: executeDeploy,
-} satisfies Record<ActionType, ActionStrategy>;
-```
-
-```ts
-export const executeAction: ExecuteAction = ({
-  type,
-  params,
-}) => {
-  const strategy = ACTION_STRATEGIES[type];
-  return strategy(params);
-};
-```
-
-For untrusted runtime input, a guard is fine:
-
-```ts
-const strategy = ACTION_STRATEGIES[type];
-if (!strategy) {
-  throw new UnsupportedActionTypeError(type);
-}
-return strategy(params);
-```
-
----
-
-## 31. Configuration-Driven Rendering
-
-Repeated UI structures should be driven by configuration.
-
-```ts
-const SECTIONS = [
-  {
-    id: 'summary',
-    renderer: ApplicationSummary,
-    renderOptions: {
-      applicationId,
-    },
-  },
-  {
-    id: 'resources',
-    renderer: ResourceTable,
-    renderOptions: {
-      resources,
-    },
-  },
-] satisfies RendererConfig[];
-```
-
-Generic renderer:
-
-```tsx
-export const ConfigRenderer: ConfigRendererProps = ({
-  items,
-}) => (
-  <>
-    {items.map(({ renderer: Renderer, renderOptions, id }) => (
-      <Renderer key={id} {...renderOptions} />
-    ))}
-  </>
-);
-```
-
----
-
-## 32. Typed Renderer Contract
-
-```ts
-export interface RendererConfig<
-  TProps extends object = Record<string, never>,
-> {
-  id: string;
-  renderer: ComponentType<TProps>;
-  renderOptions: TProps;
-}
-```
-
-For heterogeneous renderer collections, use a discriminated contract rather than falling back to `any`.
-
----
-
-## 33. Shared Platform Components and Storybook
-
-Repeated UI patterns belong in `packages/components`.
-
-Priority shared units include:
-
-```text
-FormBuilder
-TableManager
-DataGrid
-FilterBuilder
-SearchBar
-PageHeader
-PageShell
-DetailsPanel
-DrawerManager
-ModalManager
-Wizard
-StepManager
-Tabs
-Renderer
-FieldRenderer
-ActionRenderer
-StatusBadge
-EmptyState
-LoadingState
-ErrorState
-PermissionGuard
-FeatureGuard
-ConfirmAction
-EntitySelector
-EnvironmentSelector
-ContextSelector
-CodeEditor
-JsonViewer
-YamlViewer
-DiffViewer
-Terminal
-LogViewer
-MetricPanel
-TraceViewer
-Timeline
-ExecutionGraph
-DependencyGraph
-KeyValueViewer
-ObjectInspector
-```
-
-Do not duplicate these patterns domain by domain.
-
-Every public reusable component in `packages/components` must include an adjacent Storybook story unless the unit is non-visual.
-
-Recommended component package:
-
-```text
-packages/components/components/TableManager/
-├── TableManager.tsx
-├── TableManagerContainer.tsx        # only when shared orchestration is truly needed
-├── TableManager.stories.tsx
-├── __tests__/
-├── components/
-├── hooks/
-├── helpers/
-├── constants/
-├── types/
-├── README.md                        # optional for simple units
-└── index.ts
-```
-
-Stories should cover meaningful states such as:
-
-- default
-- loading
-- empty
-- error
-- disabled/read-only
-- large data where relevant
-- important variants
-- interaction examples where useful
-
-Storybook stories are part of the component contract and should be reviewed with the implementation.
-
-Shared components must not call domain services directly. They receive data/configuration/callbacks through typed props.
-
----
-
-## 34. FormBuilder
-
-Do not repeatedly hand-code the same form infrastructure.
-
-```ts
-export const APPLICATION_FORM_CONFIG = [
-  {
-    name: 'applicationName',
-    type: FIELD_TYPE.TEXT,
-    label: 'Application name',
-  },
-  {
-    name: 'environmentId',
-    type: FIELD_TYPE.SELECT,
-    label: 'Environment',
-  },
-] as const;
-```
-
-```tsx
-<FormBuilder
-  fields={APPLICATION_FORM_CONFIG}
-  onSubmit={handleSubmit}
-/>
-```
-
-Domain-specific renderers should be registered without modifying the core FormBuilder.
-
----
-
-## 35. TableManager
-
-Do not reimplement sorting/filtering/selection/pagination/actions/loading/empty/error for every table.
-
-```tsx
-<TableManager
-  columns={columns}
-  rows={rows}
-  rowActions={rowActions}
-  filters={filters}
-  pagination={pagination}
-/>
-```
-
----
-
-## 36. View Models
-
-Do not pass raw API responses deeply through the UI when the view needs a different shape.
-
-Preferred flow:
-
-```text
-API Response
-     ↓
-response mapper
-     ↓
-ViewModel
-     ↓
-Presentational Component
-```
-
-Example:
-
-```ts
-const viewModel =
-  mapDeploymentResponseToDeploymentViewModel(response);
-```
-
----
-
-## 37. Request Mapping
-
-Do not construct complex API payloads inline in components.
-
-```text
-Form / UI state
-     ↓
-request mapper
-     ↓
-Service Request
-     ↓
-Service
-```
-
-```ts
-const request =
-  mapCreateApplicationFormToCreateApplicationRequest(formValues);
-await createApplication(request);
-```
-
----
-
-## 38. Domain State Management
-
-Each domain owns its state implementation.
-
-```text
-domain/core/state/
-├── domain.slice.ts
-├── domain.actions.ts
-├── domain.selectors.ts
-├── domain.middleware.ts
-├── types/
-└── index.ts
-```
-
-Rules:
-
-\- consumers use exported actions/selectors
-
-\- implementation details remain private
-
-\- large entity collections should be normalized where useful
-
-\- derived state belongs in selectors/hooks
-
-\- do not duplicate the same derived state in multiple places
-
-\- the domain owns its slice/reducer/actions/selectors and domain middleware
-
-\- the domain exports only the registration metadata the shell needs
-
-\- `packages/shell` constructs the shared Redux store and mounts the global Redux provider
-
-\- domains must not import the shell store or shell internals
-
-\- shell code must not directly mutate or interpret domain state
-
----
-
-## 39. Server State vs Client State
-
-Use the query layer for:
-
-\- API/server state
-
-\- caching
-
-\- stale state
-
-\- retry/refetch
-
-\- request deduplication
-
-Use Redux/domain state for:
-
-\- cross-screen workflows
-
-\- complex client orchestration
-
-\- editors
-
-\- coordinated UI state
-
-\- long-lived domain client state
-
-Do not automatically copy every API response into Redux.
-
----
-
-## 40. Selectors
-
-Non-trivial derived Redux state belongs in selectors.
-
-Bad:
-
-```tsx
-const activeItems = items
-  .filter(...)
-  .map(...)
-  .sort(...);
-```
-
-repeated in several components.
-
-Prefer:
-
-```ts
-export const selectActiveItems: SelectActiveItems = (state) => {
-  ...
-};
-```
-
-Non-trivial pure selectors require unit tests.
-
----
-
-## 41. No Vendor Logic in Presentation Code
-
-Bad:
-
-```ts
-if (provider === 'DATADOG') {
-  ...
-}
-```
-
-Prefer capability-based behavior:
-
-```ts
-const renderer = OBSERVABILITY_RENDERERS[capability];
-```
-
-or registration:
-
-```ts
-registerObservabilityPanel({
-  capability: OBSERVABILITY_CAPABILITY.TRACES,
-  renderer: TracePanel,
-});
-```
-
-UI should depend on normalized contracts/capabilities, not vendor names.
-
----
-
-## 42. Registry Pattern for Extensible UI
-
-Extensible areas should use registration rather than mega-components.
-
-Example:
-
-```ts
-registerWorkbenchPanel({
-  id: WORKBENCH_PANEL.LOGS,
-  title: 'Logs',
-  renderer: LogsPanel,
-  capability: CAPABILITY.LOGS,
-});
-```
-
-Use this pattern for:
-
-\- Workbench panels
-
-\- field renderers
-
-\- action renderers
-
-\- table cell renderers
-
-\- domain routes
-
-\- dashboard widgets
-
-\- command palette actions
-
-\- test-result renderers
-
-\- provider configuration forms
-
----
-
-## 43. Domain Route Registration
-
-Domains expose route configuration.
-
-```ts
-export const deliveryRoutes: DomainRouteConfig[] = [
-  ...
+export const LOGIN_FIELD_ORDER: readonly LoginField[] = [
+  LOGIN_FIELD.EMAIL,
+  LOGIN_FIELD.PASSWORD,
 ];
-```
 
-`packages/shell` combines domain route registries through domain public registrations.
-
-`frontend/app` only mounts the shell; it does not manually compose domain routes.
-
-Do not build a single giant route file containing the whole product.
-
----
-
-## 44. Feature Registration
-
-Feature packages should expose mountable contracts where useful.
-
-```ts
-export interface FrontendDomainRegistration {
-  id: DomainId;
-  routes: DomainRouteConfig[];
-  navigation: NavigationConfig[];
-  commands?: CommandConfig[];
-}
-```
-
-The domain exports this registration through its root public API. `packages/shell` consumes the registrations and binds the application together.
-
-This gives us a path toward extension packages/marketplace modules later without turning the shell into business logic.
-
----
-
-## 45. Permission Configuration
-
-Do not scatter permission strings throughout JSX.
-
-```ts
-export const ACTION_PERMISSION_MAP = {
-  [ACTION.DEPLOY]: PERMISSION.DEPLOYMENT_EXECUTE,
-  [ACTION.ROLLBACK]: PERMISSION.DEPLOYMENT_ROLLBACK,
-  [ACTION.VIEW_LOGS]: PERMISSION.LOG_READ,
+export const LOGIN_FIELDS = {
+  [LOGIN_FIELD.EMAIL]: { label: 'Email address', placeholder: 'Email', autoComplete: 'username' },
+  [LOGIN_FIELD.PASSWORD]: { label: 'Password', placeholder: 'Password', autoComplete: 'current-password' },
 } as const;
-```
+~~~
 
-Use normalized hooks/guards.
+A `config/` directory is **not** the default and must not be a synonym for constants. Allow it only when a named use case genuinely composes runtime-configurable providers, registries or policy from smaller constants/strategies. An executable calculation belongs in a helper; a static map belongs in constants. Do not add a `config/index.ts` as an import shortcut.
 
-```ts
-const canDeploy = usePermission(PERMISSION.DEPLOYMENT_EXECUTE);
-```
+For password visibility and submit labels, use constants for **fixed configurations**, and a pure `login.getPasswordViewModel.ts` / `login.getSubmitViewModel.ts` to select the configuration. Do not compute `VisibilityIcon`, `visibilityLabel`, `passwordType` or `submitLabel` via ternaries inside JSX or the component render function.
 
-Frontend permission checks improve UX; backend authorization remains authoritative.
+## 7. Lodash and `@Base`: the only generic transformation gateway
 
----
+All reusable Lodash operations **must** be exposed by `packages/base` and imported by exact operation from `@Base`, not from `lodash-es`, `lodash`, or from a broad base barrel that eagerly imports unrelated modules. The imported name carries a leading underscore: `_trim`, `_find`, `_keys`, `_size`, `_map`, `_isUndefined`, `_isFunction`, `_isEmpty`, `_get`, `_includes`, `_isEqual`.
 
-## 46. Feature Flags
+~~~ts
+// packages/base/utilities/trim/trim.ts
+import trim from 'lodash-es/trim';
+export { trim as _trim };
 
-Feature flag IDs are constants.
+// usage in domain/business code
+import { _trim } from '@Base/utilities/trim';
+import { _keys } from '@Base/utilities/keys';
+import { _size } from '@Base/utilities/size';
 
-```ts
-export const FEATURE_FLAG = {
-  WORKBENCH_PROFILING: 'WORKBENCH_PROFILING',
-} as const;
-```
+const normalizedEmail = _trim(email);
+const errorCount = _size(_keys(fieldErrors));
+~~~
 
-Use a normalized feature hook:
+**Do not create `normalizeLoginEmail.ts` that only returns `email.trim()`, or a custom `isUndefined` wrapper mirroring Lodash.** Call the existing named `@Base` operation directly. A dedicated helper is justified only when it adds real validation, context, return mapping or policy. A function named `_isValid` is **not assumed to exist in Lodash**; use a real domain validation helper or define an intentionally named pure base predicate if its semantics are genuinely generic and tested.
 
-```ts
-const isEnabled =
-  useFeature(FEATURE_FLAG.WORKBENCH_PROFILING);
-```
+Prefer `@Base` collection/object/string operations consistently for transformation and inspection; avoid scattered native `Object.keys`, `Array.prototype.find/map`, `String.prototype.trim` and duplicated comparison logic when the equivalent base utility is available. This does **not** ban language constructs or platform APIs: use React hooks, promises, `addEventListener`, `URL`, `FormData`, `Date` and native functionality where Lodash has no meaningful equivalent. Never import or expose a huge Lodash namespace: individual small leaf modules preserve tree-shaking and Jest compatibility.
 
-Do not spread vendor feature-flag SDK calls through the UI.
+Before using a requested `@Base` operation, implement/export/test it in base; **do not assume a documented name already exists**. `packages/base` may depend on Lodash but may not depend on React or a domain. Business operations must never import Lodash directly.
 
----
+## 8. Hooks, ownership of state and nested hook composition
 
-## 47. Error Normalization
+**Exactly one owner for each state domain.** For login, `useLoginForm` owns `email`, `password`, field errors, request error, visibility and `isSubmitting`. A separate submission hook may coordinate a request but must not create a second `isSubmitting` state. Pass the typed form model or its minimal selected contract to subordinate hooks.
 
-UI code consumes normalized errors.
+Reusable shared booleans belong to `@Components/hooks/useBoolean`. Required API:
 
-```ts
-export interface UiError {
-  code: string;
-  title: string;
-  message: string;
-  retryable: boolean;
-}
-```
+~~~ts
+const [isVisible, show, hide] = useBoolean(false);
+show();   // sets true
+hide();   // sets false
+~~~
 
-Components must not parse raw backend/provider error strings.
+The real hook must return stable, memoized action functions. A hook that needs additional toggle semantics may expose a separate named `toggle` action under an intentional contract. Do not replace business flows with many unrelated global booleans; the parent state owner still coordinates the use case.
 
----
+A complex parent hook may contain **nested hook units**:
 
-## 48. Async UI States
-
-Every async unit should deliberately handle:
-
-```text
-idle
-loading
-refreshing
-success
-empty
-partial
-error
-```
-
-Use reusable primitives:
-
-```tsx
-<LoadingState />
-<EmptyState />
-<ErrorState />
-```
-
----
-
-## 49. Pure Function Preference
-
-Transformation logic should be isolated.
-
-Instead of mapping inside a component:
-
-```tsx
-const rows = response.items.map(...);
-```
-
-prefer:
-
-```ts
-const rows =
-  mapApplicationResponseItemsToTableRows(response.items);
-```
-
-This improves naming, reuse, testability, and SRP.
-
----
-
-## 50. Immutability
-
-Do not mutate inputs.
-
-Bad:
-
-```ts
-items.sort(compareItems);
-```
-
-Prefer:
-
-```ts
-const sortedItems = [...items].sort(compareItems);
-```
-
-Redux Toolkit/Immer may handle controlled state mutation inside its intended abstraction.
-
----
-
-## 51. Magic Values
-
-Avoid raw literals in business logic.
-
-Bad:
-
-```ts
-if (status === 'RUNNING') {
-  ...
-}
-setTimeout(refresh, 30000);
-```
-
-Prefer:
-
-```ts
-if (status === EXECUTION_STATUS.RUNNING) {
-  ...
-}
-setTimeout(
-  refresh,
-  EXECUTION_REFRESH_INTERVAL_MS,
-);
-```
-
----
-
-## 52. Naming Conventions
-
-### React components
-
-```text
-PascalCase
-```
-
-### Hooks
-
-```text
-useCamelCase
-```
-
-### Functions
-
-```text
-camelCase
-```
-
-### Constants
-
-```text
-SCREAMING_SNAKE_CASE
-```
-
-### Types/interfaces
-
-```text
-PascalCase
-```
-
-### Good filenames
-
-```text
-ApplicationCard.tsx
-ApplicationCardContainer.tsx
-application.response.mapper.ts
-application.request.mapper.ts
-workbenchPanel.renderer.constant.ts
-useApplication.ts
-withPermission.tsx
-```
-
----
-
-## 53. Boolean Naming
-
-Use natural boolean names:
-
-```ts
-isLoading
-isEnabled
-hasPermission
-canDeploy
-shouldRefresh
-wasCancelled
-```
-
-Avoid ambiguous names such as `flag`, `value`, or `allowedValue`.
-
----
-
-## 54. Event Handler Naming
-
-Props:
-
-```ts
-onSubmit
-onCancel
-onRefresh
-onRowClick
-```
-
-Internal handlers:
-
-```ts
-handleSubmit
-handleCancel
-handleRefresh
-handleRowClick
-```
-
----
-
-## 55. Component Cleanliness Rule
-
-A presentational component should mostly read like this:
-
-```tsx
-export const ApplicationView: ApplicationViewProps = ({
-  header,
-  rows,
-  actions,
-  isLoading,
-}) => (
-  <ApplicationTemplate>
-    <PageHeader {...header} actions={actions} />
-    <TableManager
-      rows={rows}
-      loading={isLoading}
-    />
-  </ApplicationTemplate>
-);
-```
-
-If the component contains fetching, mapping, permission resolution, request creation, feature resolution, several effects, or provider-specific branches, move those responsibilities out.
-
----
-
-## 56. No God Components / No God Hooks
-
-A component should not simultaneously own:
-
-\- API calls
-
-\- state machine logic
-
-\- Redux orchestration
-
-\- routing
-
-\- permissions
-
-\- mapping
-
-\- mutations
-
-\- layout
-
-\- dialogs
-
-\- error parsing
-
-Do not solve a God Component by moving everything into one `useEverything()` hook.
-
-Create focused units and compose them.
-
----
-
-## 57. Component / Function Size Guidance
-
-Review thresholds, not blind hard limits:
-
-```text
-Presentational component: \~150 lines
-Container:                \~150 lines
-Hook:                     \~150 lines
-Helper:                   \~100 lines
-Service:                  \~100 lines
-```
-
-If a file grows substantially, review SRP.
-
----
-
-## 58. Reusability Hierarchy
-
-Code should live at the lowest correct reusable level.
-
-```text
-Platform-wide reusable primitive
-            ↑
-Cross-domain shared unit
-            ↑
-Domain reusable unit
-            ↑
-Page reusable unit
-            ↑
-Component-local unit
-```
-
-Do not put everything into `shared` prematurely.
-
----
-
-## 59. Promotion Rule
-
-When a local unit becomes reusable:
-
-1. stabilize the contract
-
-2. remove domain-specific assumptions
-
-3. expose generic inputs
-
-4. add tests
-
-5. move/promote to the nearest reusable package
-
-6. preserve compatibility through a re-export when existing consumers already depend on the previous path
-
-This lets architecture improve without breaking all existing consumers.
-
----
-
-## 60. Avoid Premature Generic Abstractions
-
-OCP does not mean building a generic framework for every two-line function.
-
-Promote an abstraction when:
-
-\- the pattern repeats
-
-\- the extension axis is clear
-
-\- inputs/outputs are sufficiently stable
-
-\- the abstraction reduces conceptual duplication
-
-Do not create an abstraction that is harder to understand than the code it replaces.
-
----
-
-## 61. Base, Business, Components, and Shell Package Rules
-
-The old generic `platform/shared` split is replaced by three explicit package tiers.
-
-### `packages/base`
-
-Purpose: pure technical building blocks.
-
-```text
-packages/base/
-├── constants/
-│   ├── empty.constant.ts
-│   └── index.ts
-├── helpers/
-├── utils/
-│   ├── dateTime/
-│   ├── object/
-│   ├── array/
-│   └── index.ts
-├── readers/
-│   ├── createPropertyReader.ts
-│   └── index.ts
-├── types/
-├── RUNBOOK.md
-└── index.ts
-```
-
-Examples:
-
-```ts
-export const EMPTY_OBJECT = Object.freeze({});
-export const EMPTY_ARRAY = Object.freeze([]);
-```
-
-`base` must be:
-
-- domain-independent
-- business-independent
-- UI-independent
-- deterministic/pure wherever practical
-- safe for every other frontend package to consume
-
-### `packages/business`
-
-Purpose: shared business logic and reusable backend entity contracts.
-
-```text
-packages/business/
-├── services/
-│   ├── application/
-│   ├── environment/
-│   └── ...
-├── readers/
-├── helpers/
-├── utils/
-│   ├── application/
-│   ├── authorization/
-│   └── ...
-├── constants/
-├── types/
-├── RUNBOOK.md
-└── index.ts
-```
-
-`business` may depend on `base` but must not depend on `domain` or shared UI components.
-
-### `packages/components`
-
-Purpose: common reusable platform UI.
-
-```text
-packages/components/
-├── components/
-├── templates/
-├── builders/
-├── renderers/
-├── hooks/
-├── hocs/
-├── forms/
-├── tables/
-├── layouts/
-├── navigation/
-├── feedback/
-├── permissions/
-├── types/
-├── RUNBOOK.md
-└── index.ts
-```
-
-`components` may depend on `base`. It must not depend on a product domain or `shell`.
-
-Business-aware UI that genuinely belongs to one domain should remain in that domain and may be exposed through the domain public API if other domains need it.
-
-### `packages/shell`
-
-Purpose: application composition and shared runtime initialization.
-
-```text
-packages/shell/
-├── Shell.tsx
-├── containers/shellContainer/ShellContainer.tsx
-├── providers/
-├── state/
-├── registry/
-├── layout/
-├── skeleton/
-├── errors/
-├── constants/
-├── helpers/
-├── types/
-├── RUNBOOK.md
-└── index.ts
-```
-
-`shell` may depend on:
-
-```text
-base
-components
-domain root public APIs
-```
-
-It must not deep-import domain internals.
-
-It must not own reusable business services or product use cases.
-
-`shell` is the only package responsible for binding all domain registrations into the assembled frontend runtime.
-
----
-
-## 62. Public Shared Packages, Stories, and Runbooks
-
-`base`, `business`, `components`, `shell`, and every domain are explicit package boundaries rather than dumping grounds.
-
-Every public shared/composition package must have a `RUNBOOK.md` at package root.
-
-The runbook should explain:
-
-- package purpose
-- ownership
-- allowed dependency direction
-- public import paths
-- how to add a new unit
-- how to promote a domain unit into the shared package
-- common failure modes
-- test commands
-- Storybook commands where applicable
-- deprecation/migration policy
-- examples of correct and forbidden usage
-
-For complex/highly reusable units, a unit-level `RUNBOOK.md` or `README.md` should be added beside the unit.
-
-Example:
-
-```text
-packages/components/
-├── RUNBOOK.md
-└── components/
-    └── FormBuilder/
-        ├── FormBuilder.tsx
-        ├── FormBuilder.stories.tsx
-        ├── README.md
-        └── index.ts
-```
-
-Stories are mandatory for public visual components. `packages/shell` also requires Storybook coverage for public visual infrastructure such as `ShellSkeleton`. Runbooks describe engineering/operational usage; stories demonstrate visual/component contracts.
-
-`index.ts` remains the only normal runtime public surface.
-
----
-
-## 63. Circular Dependencies Are Forbidden
-
-The build/CI should fail on circular dependencies.
-
-Resolve cycles by:
-
-\- moving true shared contracts downward
-
-\- injecting callbacks/contracts
-
-\- using public package APIs
-
-\- using registration/configuration
-
-\- splitting mixed responsibilities
-
-Do not hide cycles using arbitrary lazy imports.
-
----
-
-## 64. TypeScript Strictness
-
-Recommended baseline:
-
-```json
-{
-  "compilerOptions": {
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-    "noImplicitOverride": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "useUnknownInCatchVariables": true
-  }
-}
-```
-
-Avoid `any`.
-
-Use `unknown` and narrow safely.
-
----
-
-## 65. Avoid Unsafe Casts
-
-Bad:
-
-```ts
-const response = data as ApplicationResponse;
-```
-
-Prefer schema validation at unsafe boundaries where appropriate.
-
-Use `satisfies` to validate shapes without destroying inference.
-
-```ts
-const CONFIG = {
-  ...
-} satisfies ApplicationConfig;
-```
-
----
-
-## 66. API Boundary Validation
-
-Network data is not trustworthy just because a TypeScript type says so.
-
-For high-risk/external contracts, validate at the boundary.
-
-```ts
-const response =
-  ApplicationResponseSchema.parse(rawResponse);
-```
-
-Do not scatter validation throughout rendering components.
-
----
-
-## 67. Generated API Types
-
-If OpenAPI generation is introduced:
-
-\- generated models live in a clearly generated package
-
-\- generated files are never manually edited
-
-\- domain public types may wrap/alias generated contracts
-
-\- consumers still use domain public boundaries, not generated internals everywhere
-
----
-
-## 68. API Client
-
-All services use one shared API client abstraction.
-
-```ts
-api.get(...)
-api.post(...)
-api.put(...)
-api.patch(...)
-api.delete(...)
-```
-
-The API client owns:
-
-\- base URL
-
-\- auth attachment
-
-\- correlation IDs
-
-\- serialization
-
-\- normalized transport errors
-
-\- cancellation
-
-\- retry policy where appropriate
-
-\- telemetry
-
-Services do not recreate those behaviors.
-
----
-
-## 69. Cancellation
-
-Long-running or rapidly changing requests should support cancellation.
-
-Examples:
-
-\- typeahead search
-
-\- route change
-
-\- Workbench context switch
-
-\- tab change
-
-\- repeated polling
-
-Obsolete responses must not overwrite newer state.
-
----
-
-## 70. Security Rules
-
-\- never hardcode secrets
-
-\- never place secrets in query strings
-
-\- sanitize untrusted HTML
-
-\- do not render arbitrary raw HTML
-
-\- frontend permission checks never replace backend authorization
-
-\- prevent unsafe redirect URLs
-
-\- redact sensitive values from logs
-
-\- avoid unnecessary persistence of sensitive data
-
-\- do not expose internal stack traces
-
-\- avoid `eval` and dynamic code execution
-
-\- follow CSP requirements
-
----
-
-## 71. Accessibility
-
-Platform primitives should support accessibility by default:
-
-\- semantic HTML
-
-\- keyboard navigation
-
-\- focus management
-
-\- visible focus
-
-\- accessible labels
-
-\- form-error association
-
-\- screen-reader announcements for important live states
-
-\- modal focus trapping
-
-\- correct table semantics
-
-\- ARIA only when needed
-
-Accessibility should live in reusable primitives so every domain inherits it.
-
----
-
-## 72. Performance
-
-\- lazy-load domain routes
-
-\- lazy-load heavy Workbench panels
-
-\- virtualize large tables/lists
-
-\- avoid unnecessary re-renders
-
-\- memoize only when useful
-
-\- debounce high-frequency user inputs
-
-\- cancel obsolete requests
-
-\- avoid duplicate derived state
-
-\- avoid huge shared bundles
-
-\- keep provider-specific code split where practical
-
-Do not apply `useMemo`/`useCallback` blindly.
-
----
-
-## 73. Observability
-
-Frontend telemetry goes through one abstraction.
-
-```ts
-trackUiEvent(
-  UI_EVENT.DEPLOYMENT_STARTED,
-  {
-    applicationId,
-    environmentId,
-  },
-);
-```
-
-Do not scatter vendor analytics SDKs throughout the frontend.
-
----
-
-## 74. Logging
-
-Use a common frontend logger abstraction.
-
-Avoid committed production `console.log` calls.
-
-The logger should support:
-
-\- level
-
-\- correlation ID
-
-\- domain
-
-\- safe metadata
-
-\- redaction
-
-\- environment behavior
-
----
-
-## 75. Capability-Based UI
-
-Render features based on normalized capabilities, not vendor names.
-
-Good:
-
-```ts
-const canProfile =
-  capabilities.includes(CAPABILITY.PROFILING_CPU);
-```
-
-Bad:
-
-```ts
-const canProfile = provider === 'DATADOG';
-```
-
----
-
-## 76. OCP Review Rule
-
-When adding a new type, renderer, provider, panel, or action ask:
-
-> Can I add this by registering/configuring a new implementation, or do I have to edit a giant existing conditional?
-
-If a central conditional must be edited every time, the extension point probably needs redesign.
-
----
-
-## 77. SRP Review Rule
-
-Ask:
-
-> Can this file's responsibility be described in one short sentence?
-
-Good:
-
-> Maps deployment API response to a deployment view model.
-
-Bad:
-
-> Fetches deployment, checks permissions, maps status, creates actions, tracks telemetry, renders UI, and opens dialogs.
-
----
-
-## 78. DRY Review Rule
-
-DRY means avoiding duplication of the **same concept that should evolve together**.
-
-It does not mean extracting every two similar lines into a generic helper.
-
----
-
-## 79. Styling and Design Tokens
-
-Use one primary styling strategy consistently.
-
-Platform UI primitives should own their styles.
-
-Avoid domain CSS that modifies platform internals.
-
-Use shared design tokens for:
-
-\- spacing
-
-\- typography
-
-\- radius
-
-\- elevation
-
-\- breakpoints
-
-\- semantic colors
-
-\- z-index layers
-
-\- motion durations
-
----
-
-## 80. Stable IDs, Not Labels
-
-Do not use user-visible labels as logic keys.
-
-Bad:
-
-```ts
-if (tab.label === 'Logs') {
-  ...
-}
-```
-
-Prefer:
-
-```ts
-if (tab.id === WORKBENCH_TAB.LOGS) {
-  ...
-}
-```
-
-Labels can change. IDs are contracts.
-
----
-
-## 81. Date / Time
-
-Use one approved date/time abstraction.
-
-\- treat backend timestamps explicitly
-
-\- format through reusable helpers/components
-
-\- do not manually concatenate date strings
-
-\- timezone-sensitive behavior must be explicit
-
----
-
-## 82. Optional Values
-
-Do not use empty strings as a universal replacement for missing data.
-
-Recommended convention:
-
-\- `undefined` for absent optional frontend values
-
-\- `null` only where the external/domain contract explicitly uses semantic `null`
-
-Normalize external values in mappers.
-
----
-
-## 83. Full Domain Example
-
-```text
-frontend/packages/domain/delivery/
-├── core/
-│   ├── routes/
-│   ├── state/
-│   ├── providers/
-│   └── index.ts
-│
-├── pages/
-│   ├── ReleaseDetailsPage/
-│   └── PipelineRunsPage/
-│
-├── templates/
-│   └── ReleaseDetailsTemplate/
-│
-├── components/
-│   ├── ReleaseSummary/
-│   ├── PipelineRunTable/
-│   └── DeploymentStatus/
-│
-├── hooks/
-│   ├── useRelease/
-│   └── usePipelineRuns/
-│
-├── services/
-│   ├── getRelease.service.ts
-│   ├── startRelease.service.ts
-│   └── types/
-│
-├── helpers/
-├── constants/
-├── types/
-└── index.ts
-```
-
----
-
-## 84. Full Component Example
-
-```text
-DeploymentStatus/
-├── DeploymentStatus.tsx
-├── DeploymentStatusContainer.tsx
-│
-├── components/
-│   └── DeploymentStatusBadge/
-│       ├── DeploymentStatusBadge.tsx
-│       ├── types/
-│       └── index.ts
-│
-├── constants/
-│   ├── deploymentStatus.constant.ts
-│   ├── types/
-│   │   └── deploymentStatus.constant.types.ts
-│   └── index.ts
-│
-├── helpers/
-│   ├── deploymentStatus.response.mapper.ts
-│   ├── types/
-│   │   └── deploymentStatus.response.mapper.types.ts
-│   ├── __tests__/
-│   │   └── deploymentStatus.response.mapper.test.ts
-│   └── index.ts
-│
-├── hooks/
-│   └── useDeploymentStatus/
-│       ├── useDeploymentStatus.ts
-│       ├── helpers/
-│       ├── types/
-│       └── index.ts
-│
-├── services/
-│   ├── getDeploymentStatus.service.ts
-│   ├── types/
-│   │   ├── request/
-│   │   ├── response/
-│   │   └── getDeploymentStatus.service.types.ts
-│   └── index.ts
-│
-├── types/
-│   ├── DeploymentStatus.props.ts
-│   ├── DeploymentStatus.viewModel.ts
-│   └── index.ts
-│
-└── index.ts
-```
-
----
-
-## 85. Factory Example
-
-```ts
-export const ACTION_FACTORY = {
-  [ACTION_TYPE.CREATE]: createAction,
-  [ACTION_TYPE.UPDATE]: updateAction,
-  [ACTION_TYPE.DELETE]: deleteAction,
-} satisfies Record<ActionType, ActionExecutor>;
-```
-
-```ts
-export const executeAction: ExecuteAction = ({
-  actionType,
-  params,
-}) => {
-  const execute = ACTION_FACTORY[actionType];
-  return execute(params);
-};
-```
-
----
-
-## 86. Config-Driven Actions
-
-```ts
-const ACTION_CONFIG = [
-  {
-    id: ACTION.REFRESH,
-    label: 'Refresh',
-    icon: RefreshIcon,
-    onExecute: refresh,
-  },
-  {
-    id: ACTION.DEPLOY,
-    label: 'Deploy',
-    icon: DeployIcon,
-    permission: PERMISSION.DEPLOYMENT_EXECUTE,
-    onExecute: deploy,
-  },
-] satisfies ActionConfig[];
-```
-
-Render through a reusable `ActionRenderer`.
-
----
-
-## 87. Composition Instead of Boolean-Prop Explosion
-
-Avoid:
-
-```tsx
-<Table
-  isMigration
-  isReadOnly
-  showCost
-  useCompactMode
-  enableProviderActions
-/>
-```
-
-Prefer composable configuration:
-
-```tsx
-<TableManager
-  columns={columns}
-  actions={actions}
-  capabilities={capabilities}
-  layout={layout}
-/>
-```
-
-A growing list of behavioral booleans usually means the abstraction is closed to extension.
-
----
-
-## 88. State Colocation
-
-Keep state as close as possible to the feature that owns it.
-
-Promote state upward only when multiple consumers truly need the same source.
-
-Do not place every value in Redux.
-
----
-
-## 89. Side Effects
-
-Side effects must be easy to locate.
-
-Expected locations:
-
-\- services
-
-\- hooks
-
-\- middleware
-
-\- containers
-
-\- explicitly named effect modules
-
-Presentational components should not hide side effects.
-
----
-
-## 90. Reusable Fetch Hook Contract
-
-A data-fetch hook should expose a semantic frontend contract, not query-library internals.
-
-```ts
-export interface UseFetchApplicationResult {
-  application: ApplicationViewModel | undefined;
-  isLoading: boolean;
-  error: UiError | undefined;
-  refresh: () => Promise<void>;
-}
-```
-
----
-
-## 91. Testing by Unit Type
-
-### Pure helper
-
-Direct Jest unit test.
-
-### Mapper
-
-Test every important transformation.
-
-### Selector
-
-Test with controlled state fixtures.
-
-### Hook
-
-Test behavior with React Testing Library/hook utilities.
-
-### Presentational component
-
-Test visible behavior and callbacks.
-
-### Container
-
-Test orchestration at meaningful boundaries; do not duplicate lower-level tests.
-
-### Page
-
-Test important integrated user flows, not private implementation details.
-
----
-
-## 92. Domain Mock Mechanism
-
-Mocks are first-class package boundaries for testing, Storybook and local development.
-
-Each domain may expose a dedicated mock entry point:
-
-```text
-packages/domain/catalog/
-├── mock/
-│   ├── builders/
-│   │   └── application.builder.ts
-│   ├── fixtures/
-│   │   └── application.fixture.ts
-│   ├── handlers/
-│   │   └── application.msw.ts
-│   ├── services/
-│   │   └── application.service.mock.ts
-│   ├── state/
-│   └── index.ts
-├── index.ts
-└── RUNBOOK.md
-```
-
-Runtime imports use:
-
-```ts
-import {
-  ApplicationSelector,
-} from '@domain/catalog';
-```
-
-Tests/stories/dev-only code may use:
-
-```ts
-import {
-  buildApplication,
-  catalogHandlers,
-} from '@domain/catalog/mock';
-```
-
-A consuming domain must not mock another domain by importing its internal files.
-
-Preferred boundaries:
-
-- **MSW** for HTTP/network mocks
-- service mocks for isolated hook/container tests
-- typed builders for backend response entities
-- fixtures for stable examples
-- Jest mocks only at actual public boundaries when required
-
-Production runtime code must not import `@domain/*/mock`.
-
-CI should include an architecture check preventing mock entry points from being imported by production source.
-
-Mock data must use the same public request/response types as the real domain/service contracts so contract drift becomes visible.
-
-Mock true boundaries, not internal helper implementation details.
-
----
-
-## 93. Test Data Builders
-
-Prefer builders/factories over repeated large test objects.
-
-```ts
-const application = buildApplicationResponse({
-  name: 'CRM',
-});
-```
-
----
-
-## 94. Snapshot Tests
-
-Do not use giant snapshots as the main correctness mechanism.
-
-Prefer explicit behavior assertions.
-
-Small focused snapshots are allowed when they add clear value.
-
----
-
-## 95. ESLint / Architecture Enforcement
-
-The repository should automate these rules where practical:
-
-\- strict TypeScript
-
-\- no explicit `any`
-
-\- restricted `switch`
-
-\- package-boundary imports
-
-\- no circular dependencies
-
-\- React Hooks rules
-
-\- unused imports/variables
-
-\- import ordering
-
-\- consistent type imports
-
-\- complexity limits
-
-\- restricted deep imports
-
-\- restricted `console`
-
-\- restricted direct API client use outside services
-
-\- restricted cross-domain internal imports
-
-\- forbidden `domain -> shell` imports
-
-\- forbidden `components -> shell` and `business -> shell` imports
-
-\- shell imports from domains restricted to domain root public APIs
-
-\- app domain composition restricted in favor of `packages/shell`
-
-Rules should not rely only on reviewer memory.
-
----
-
-## 96. Formatting
-
-Use one automatic formatter.
-
-CI verifies formatting.
-
-Formatting should not consume review time.
-
----
-
-## 97. Import Ordering
-
-Recommended groups:
-
-```text
-1. React / external dependencies
-2. base
-3. business
-4. components
-5. domain public packages
-6. shell (only from app/shell-owned code; domains must never import it)
-7. local unit imports
-8. type imports
-9. styles/assets where applicable
-```
-
-Automate ordering.
-
----
-
-## 98. Path Aliases and Public Import Paths
-
-Use stable aliases that communicate architectural ownership.
-
-Recommended:
-
-```json
-{
-  "compilerOptions": {
-    "paths": {
-      "@app/*": ["app/*"],
-      "@base/*": ["packages/base/*"],
-      "@business/*": ["packages/business/*"],
-      "@components/*": ["packages/components/*"],
-      "@domain/*": ["packages/domain/*"],
-      "@shell/*": ["packages/shell/*"],
-      "@shell": ["packages/shell/index.ts"]
-    }
-  }
-}
-```
-
-Examples:
-
-```ts
-import { EMPTY_OBJECT } from '@base/constants';
-import { applicationService } from '@business/services/application';
-import { TableManager } from '@components/components/TableManager';
-import { ApplicationSelector } from '@domain/catalog';
-import { PerihellionShell } from '@shell';
-```
-
-Cross-domain code must use only the domain root public API:
-
-```ts
-import { Something } from '@domain/some-domain';
-```
-
-Never:
-
-```ts
-import { Something }
-  from '@domain/some-domain/components/internal/Something';
-```
-
-Test/Storybook-only mocks use the explicit secondary entry point:
-
-```ts
-import { buildSomething } from '@domain/some-domain/mock';
-```
-
-`@shell` is primarily consumed by `frontend/app` and shell-owned code.
-
-Domains must never do:
-
-```ts
-import { something } from '@shell';
-```
-
-Avoid long `../../../../` imports.
-
-Aliases do not bypass dependency rules. ESLint/architecture tests must still enforce allowed package direction.
-
----
-
-## 99. Validation
-
-Form validation belongs in reusable schemas/helpers.
-
-Do not scatter validation logic through JSX.
-
-Example:
-
-```ts
-export const CREATE_APPLICATION_SCHEMA = ...;
-```
-
-Validation errors should map to stable field IDs.
-
----
-
-## 100. Forms Do Not Persist Directly
-
-Preferred flow:
-
-```text
-Form View
-   ↓
-Container/Hook
-   ↓
-Request Mapper
-   ↓
-Service
-```
-
-This keeps forms reusable and testable.
-
----
-
-## 101. Dialog / Drawer Orchestration
-
-Avoid excessive boolean state:
-
-```ts
-isDeleteOpen
-isEditOpen
-isInfoOpen
-isRollbackOpen
-```
-
-For complex surfaces, prefer a dialog/drawer manager contract.
-
----
-
-## 102. Command / Action Model
-
-Complex product surfaces such as Workbench should use reusable command contracts.
-
-```ts
-export interface UiCommand {
-  id: CommandId;
-  label: string;
-  permission?: PermissionId;
-  execute: CommandExecutor;
-}
-```
-
-The same action can then appear in:
-
-\- buttons
-
-\- menus
-
-\- command palette
-
-\- context menus
-
-\- keyboard shortcuts
-
----
-
-## 103. Public Contract Stability
-
-Anything exported through `index.ts` is a public contract.
-
-Before breaking it:
-
-1. identify consumers
-
-2. prefer additive changes
-
-3. deprecate first where practical
-
-4. document migration
-
-5. preserve compatibility adapters when inexpensive
-
----
-
-## 104. Recommended Code Review Questions
-
-Every frontend PR should answer:
-
-\- Is SRP preserved?
-
-\- Is OCP preserved?
-
-\- Is true conceptual duplication avoided?
-
-\- Is the unit consumed through `index.ts`?
-
-\- Are deep imports prevented?
-
-\- Are authoritative types reused?
-
-\- Are API calls isolated in services?
-
-\- Is mapping outside presentation components?
-
-\- Are hooks focused?
-
-\- Is `switch` avoided?
-
-\- Are avoidable `if / else` chains replaced with maps/strategies/config?
-
-\- Is UI configuration-driven where useful?
-
-\- Does a reusable platform primitive already exist?
-
-\- Should this pattern become a platform primitive?
-
-\- Are pure functions tested?
-
-\- Are async states handled?
-
-\- Is accessibility preserved?
-
-\- Are errors normalized?
-
-\- Is vendor-specific logic kept out of presentation code?
-
-\- Is there a circular dependency?
-
-\- Is the public API intentional and stable?
-
----
-
-## 105. Definition of Done — Frontend Unit
-
-```text
-[ ] Responsibility is clear and singular
-[ ] Public API is exported through index.ts
-[ ] External consumers do not deep-import internals
-[ ] TypeScript types are explicit
-[ ] Nearest authoritative types are reused
-[ ] Primitive type duplication is avoided
-[ ] No switch statement exists
-[ ] Avoidable if/else chains are replaced by map/strategy/config
-[ ] Presentation/container responsibilities are separated
-[ ] API calls live in services
-[ ] Complex stateful logic lives in hooks/container/state layer
-[ ] Pure transformations live in helpers/selectors
-[ ] Constants are immutable and strongly typed
-[ ] Request/response contracts are typed
-[ ] Errors are normalized
-[ ] Loading/empty/error states are covered
-[ ] Pure functions have Jest tests
-[ ] React behavior has appropriate RTL tests
-[ ] Accessibility is checked
-[ ] No circular dependency exists
-[ ] No forbidden deep imports exist
-[ ] Lint passes
-[ ] TypeScript passes
-[ ] Tests pass
-[ ] Formatting passes
-[ ] Reusable public contract is documented
-```
-
----
-
-## 106. Target Architecture Shape
-
-Preferred application composition flow:
-
-```text
-frontend/app
-     ↓
-packages/shell
-     ↓
-Domain Registrations
-     ↓
-Routes + Navigation + Redux Registration
-     ↓
-Domain Container / Hook
-     ↓
-Service + State + Permissions
-     ↓
-Mapper / Selector
-     ↓
-ViewModel
-     ↓
-Presentational Component
-     ↓
-Shared Components / Base Primitives
-```
-
-The shell exists above domains. It composes them; domains do not depend on it.
-
-For extensibility:
-
-```text
-Configuration
-      ↓
-Registry
-      ↓
-Strategy / Renderer
-      ↓
-Reusable Unit
-```
-
-Avoid:
-
-```text
-Huge Component
-      ↓
-API Calls
-      ↓
-Redux
-      ↓
-Provider Checks
-      ↓
-Nested if/else
-      ↓
-Mapping
-      ↓
-Duplicated HTML
-```
-
----
-
-## 107. Phase 0 Frontend Deliverables
-
-Before Phase 0 is complete, frontend engineering must demonstrate the final package model:
-
-```text
-frontend/
-├── app/
-└── packages/
-    ├── base/
-    ├── business/
-    ├── components/
-    ├── domain/
-    │   └── example-domain/
-    └── shell/
-```
-
-Required reference implementation:
-
-1. `packages/base` with at least one generic utility and immutable constant such as `EMPTY_OBJECT`
-2. `packages/business` with one shared typed business/service unit
-3. `packages/components` with one reusable component and Storybook stories
-4. one example domain under `packages/domain/<name>`
-5. `packages/shell` with `Shell.tsx` + `containers/shellContainer/ShellContainer.tsx`
-6. shell-owned global provider composition
-7. shell-owned Redux store/provider initialization
-8. domain Redux registration consumed by the shell without deep imports
-9. domain route registration consumed by the shell
-10. domain navigation registration consumed by the shell
-11. generic application startup `ShellSkeleton` with Storybook coverage
-12. `frontend/app` mounting the shell rather than directly composing domains
-13. one container/presentational component pair inside the example domain
-14. one domain-level service with typed request/response
-15. one typed backend response reader
-16. one typed helper + adjacent Jest test
-17. one focused custom hook
-18. one config-driven renderer
-19. one strategy/factory map
-20. public root `index.ts` boundaries
-21. explicit `@domain/<name>/mock` mechanism with typed builder/fixture and MSW handler
-22. lint rule preventing cross-domain deep imports
-23. lint rule preventing `domain -> shell`
-24. lint rule restricting shell imports to domain root public APIs
-25. lint/architecture rule preventing component-level API services
-26. architecture rule preventing production imports from mock entry points
-27. circular dependency detection
-28. strict TypeScript
-29. approved Lodash per-function import rule
-30. Jest + React Testing Library setup
-31. Storybook setup
-32. `RUNBOOK.md` for `base`, `business`, `components`, and `shell`
-33. example domain `RUNBOOK.md`
-34. Woodpecker CI frontend checks
-
-The example domain plus `packages/shell` become the reference implementation for humans and coding agents.
-
-The Phase 0 architecture test should prove:
-
-```text
-app mounts shell
-shell initializes shared providers
-shell loads domain registrations
-domain reducers/routes/navigation become available
-domain never imports shell
-shell never deep-imports domain internals
-```
-
----
-
-## 108. Engineering Documentation and Runbooks
-
-These guidelines live with the rest of the repository engineering rules.
-
-```text
-docs/
-└── engineering/
-    ├── README.md
-    ├── FRONTEND_CODE_GUIDELINES.md
-    ├── backend.md
-    ├── API_CONTRACT_GUIDELINES.md
-    ├── PROVIDER_SDK_GUIDELINES.md
-    ├── DATABASE_GUIDELINES.md
-    ├── TESTING_GUIDELINES.md
-    ├── DEPLOYMENT_GUIDELINES.md
-    ├── DOCKER_GUIDELINES.md
-    ├── KUBERNETES_GUIDELINES.md
-    ├── SHELL_SCRIPT_GUIDELINES.md
-    ├── SECURITY_GUIDELINES.md
-    ├── OBSERVABILITY_GUIDELINES.md
-    ├── GIT_AND_PR_GUIDELINES.md
-    ├── RELEASE_GUIDELINES.md
-    └── DOCUMENTATION_GUIDELINES.md
-```
-
-Frontend package runbooks live with the code they govern:
-
-```text
-frontend/packages/base/RUNBOOK.md
-frontend/packages/business/RUNBOOK.md
-frontend/packages/components/RUNBOOK.md
-frontend/packages/shell/RUNBOOK.md
-frontend/packages/domain/<domain>/RUNBOOK.md
-```
-
-Root `CONTRIBUTING.md` should link to the frontend guideline and package runbooks.
-
-Runbooks are not a substitute for code comments or Storybook. They document package ownership, extension rules, public usage, development commands and failure/recovery guidance.
-
----
-
-## 109. GitHub Repository Guardrails
-
-Recommended repository files:
-
-```text
-.github/
-├── CODEOWNERS
-├── pull_request_template.md
-├── ISSUE_TEMPLATE/
-└── workflows/            # only where GitHub automation is actually used
-CONTRIBUTING.md
-SECURITY.md
-CODE_OF_CONDUCT.md
-README.md
-```
-
-Woodpecker remains the default/reference CI. GitHub metadata is for collaboration and repository governance, not a requirement to use GitHub Actions.
-
----
-
-## 110. Frontend PR Checklist
-
-Recommended PR template block:
-
-```text
-Frontend Architecture
-- [ ] SRP preserved
-- [ ] OCP extension point considered
-- [ ] No conceptual duplication
-- [ ] Correct package chosen: base / business / components / domain / shell
-- [ ] No switch for behavior selection
-- [ ] No avoidable if/else chain
-- [ ] No forbidden deep import
-- [ ] Cross-domain imports use only domain root public API
-- [ ] Domains do not import `packages/shell`
-- [ ] Shell imports domains only through root public APIs
-- [ ] Global provider/store/route composition lives in shell, not app/domains
-- [ ] Shell contains no product business logic
-- [ ] No circular dependency
-- [ ] index.ts public boundary respected
-- [ ] Existing authoritative types reused
-- [ ] API calls exist only in domain/business services
-- [ ] No component-level service was introduced
-- [ ] Backend entity reader reused/added where appropriate
-- [ ] Lodash imports are function-level (lodash/<fn>)
-- [ ] Presentational components contain no business orchestration
-- [ ] Stateful behavior extracted into hooks/container
-- [ ] Pure functions have tests
-- [ ] Config-driven rendering used where appropriate
-- [ ] Shared component reuse considered
-- [ ] New public shared visual component has Storybook stories
-- [ ] Shared package/shell/domain runbook updated when contract changed
-- [ ] Mock entry point updated when a public domain contract needs test support
-- [ ] Production code does not import domain mocks
-- [ ] Accessibility checked
-```
-
----
-
-## 111. Final Mandatory Rules
-
-1. Everything meaningful is a unit.
-2. Each unit has one clear responsibility.
-3. Frontend code is classified into `base`, `business`, `components`, `domain`, or `shell`.
-4. `base` contains only pure generic technical code and is the dependency floor.
-5. `business` contains reusable shared business logic/services, never domain UI.
-6. `components` contains reusable platform UI and never imports a product domain or shell.
-7. Domains live under `packages/domain/<name>`.
-8. `packages/shell` is the application-composition root for the frontend.
-9. `frontend/app` remains a thin executable/bootstrap entry point and mounts the shell.
-10. The shell initializes truly global providers once.
-11. The shell owns global Redux store/provider composition.
-12. Domains own their reducers/actions/selectors/domain middleware and expose only registration metadata required by shell.
-13. The shell aggregates domain routes/navigation/state registrations through domain root public APIs.
-14. The shell must never deep-import domain internals.
-15. Domains, `business`, `components`, and `base` must never import `packages/shell`.
-16. The shell contains no product business logic.
-17. The shell does not directly call domain/backend APIs.
-18. The shell owns generic application startup skeleton/fallback behavior; domain-specific skeletons remain in domains.
-19. Every public unit exposes an intentional `index.ts`.
-20. Consumers use the public boundary; forbidden deep imports are blocked.
-21. Cross-domain imports use only `@domain/<name>`.
-22. Domains expose only what they intentionally want other domains/shell to consume.
-23. Domain mocks are exposed separately through `@domain/<name>/mock`.
-24. Production code must never import domain mocks.
-25. Pages live at domain level.
-26. API services live at domain or business level, never inside component folders or shell.
-27. Backend entity/response readers live with their service/entity contract.
-28. Readers are pure typed accessors and contain no business decisions.
-29. Stateful pages/features use container + presentational separation.
-30. Presentational components contain minimal business logic.
-31. Hooks encapsulate focused reusable stateful behavior.
-32. Helpers own pure domain/use-case transformations.
-33. Utils are placed at the nearest correct level: base, business, or domain.
-34. Types stay adjacent to the unit they describe.
-35. Reuse authoritative types with indexed access, `Pick`, `Omit`, etc.
-36. Reusable functions have explicit callable types.
-37. Constants use `SCREAMING_SNAKE_CASE`.
-38. Constant maps use `as const`; runtime immutability may use `Object.freeze`.
-39. Derive constant union types instead of manually duplicating them.
-40. Lodash imports are function-specific, e.g. `import _noop from 'lodash/noop'`.
-41. Full-package Lodash imports are forbidden.
-42. `switch` is restricted for behavior selection.
-43. Avoid `if / else if` chains when strategy/config maps fit.
-44. Guard clauses are allowed and encouraged.
-45. Configuration-driven UI is preferred over duplicated markup.
-46. Use typed renderer/strategy/factory registries.
-47. Repeated UI patterns become `packages/components` primitives.
-48. Public shared visual components require Storybook stories.
-49. `base`, `business`, `components`, and `shell` require package runbooks.
-50. Pure functions require adjacent Jest tests.
-51. Do not create God Components.
-52. Do not replace God Components with God Hooks.
-53. Capability-based behavior is preferred over vendor-name checks.
-54. Circular dependencies are forbidden.
-55. Strict TypeScript is mandatory.
-56. `any` is forbidden except documented exceptional boundaries.
-57. Public contracts are stable once consumed.
-58. Promote reusable units deliberately and preserve compatibility when necessary.
-59. Enforce architecture rules automatically wherever practical.
-60. SRP, OCP, and DRY are mandatory review criteria.
-61. Names must make intent obvious.
-62. Extension should happen through registration/configuration rather than giant conditional files.
-63. A new contributor should understand the architecture by inspecting the shared package runbooks, shell runbook, and one reference domain.
-
----
-
-## 112. Guiding Principle
-
-The frontend should continuously move toward:
-
-```text
-Pure Base Primitives
-        +
-Shared Business Contracts
-        +
-Reusable Platform Components
-        +
-Isolated Product Domains
-        +
-Application Composition Shell
-        +
-Explicit Public Boundaries
-        +
-Typed Services + Readers
-        +
-Configuration / Strategy / Registry
-        +
-Stories + Tests + Runbooks
-```
-
-The dependency model should remain easy to explain:
-
-```text
-app
- ↓
-shell
- ├──────────────→ components ──→ base
- │
- └──────────────→ domain
-                    ├────────→ business ──→ base
-                    ├────────→ components ──→ base
-                    └────────→ base
-```
-
-The key isolation rule is:
-
-```text
-domain  ✗ shell
-business ✗ shell
-components ✗ shell
-
-shell → domain ROOT PUBLIC API only
-app   → shell
-```
-
-> **Target result:** clean files, predictable package ownership, deliberate public APIs, isolated domains, one explicit application composition root, reusable backend entity contracts, reusable UI, typed readers, realistic mocks, discoverable stories/runbooks, minimal branching, and a frontend that remains maintainable as Perihellion grows.
-
----
-
-
----
-
-## Revision 4 — Self-contained units, authoritative types and test ownership (mandatory)
-
-> **Precedence:** This section supersedes earlier examples or rules where they conflict. Preserve existing behavior while migrating legacy units. Do not create meaningless folders just to satisfy a diagram.
-
-### A. Unit structure
-
-A meaningful reusable helper, utility, mapper, selector, service, hook or component is an independent, single-responsibility unit. Name the folder after the use case. Place its callable contract in a nearest `types/` subfolder and export its intended API from `index.ts`.
-
-```text
-helpers/
-└── validateLoginCredentials/
-    ├── validateLoginCredentials.ts
-    ├── types/
-    │   └── validateLoginCredentials.ts
-    ├── __tests__/
-    │   └── validateLoginCredentials.test.ts
+~~~text
+hooks/
+└── useLoginForm/
+    ├── useLoginForm.ts
+    ├── types/useLoginForm.ts
+    ├── hooks/
+    │   ├── useFormActions/
+    │   │   ├── useFormActions.ts
+    │   │   ├── types/useFormActions.ts
+    │   │   └── index.ts
+    │   └── useFormSubmission/
+    │       ├── useFormSubmission.ts
+    │       ├── helpers/
+    │       │   ├── login.validateCredentials.ts
+    │       │   ├── login.getErrorMessage.ts
+    │       │   ├── types/
+    │       │   └── __tests__/
+    │       ├── types/
+    │       └── index.ts
+    ├── constants/
     └── index.ts
-```
+~~~
 
-Use the equivalent pattern under `utilities/`, `mappers/`, `selectors/`, `services/`, `hooks/` and `components/`. Unit-level `index.ts` is the public API. Avoid re-exporting internal contracts unintentionally. Internal one-off callbacks and trivial constants need not be promoted to artificial standalone units.
+`useLoginForm` composes these focused subhooks and returns **one cohesive form interface** (state, actions and onSubmit) to the container. Do not have `useLogin` assemble a second copy of the form interface, or scatter duplicate setters across page and component units. Avoid `useCallback`/`useMemo` when they add no stable identity or measurable benefit; favor named handlers and small dependency sets. Hook calls must be unconditional and obey React rules.
 
-### B. Explicit callable types
+The recovery flow **must** be split into focused units: `useRecoveryForm` (single state owner), `useRecoveryLink` (URL proof/exchange lifecycle), `useRecoveryGrant` (server-authoritative grant status), `useRecoverySubmission` (validation and password operation), `useRecoveryRetry` (retry orchestration), and a thin composition hook/container. Move API error classification, proof parsing and validation into the specific hook's flat `helpers/`. Never let a single hook own proof parsing, browser listeners, status verification, form state, submission and retry in one 200-line body. Preserve the backend's two-attempt policy: the client must **not** infer attempt count from transient errors.
 
-Define a reusable operation's parameter type, result type and callable type in its nearest `types/<operation>.ts` (or use-case-specific request/response contract). In the implementation, import the callable type and assign the exported function to it:
+The same structure applies to `useAuthViewportFit` and other auth page hooks: pure calculations/event constants inside the hook's own `helpers/` and `constants/`; DOM subscriptions in the hook; tests next to pure helpers. Do not create a generic hook that merely forwards a single hook call and has only one caller. Extract an abstraction when multiple consumers or independent semantics justify it.
 
-```ts
-// helpers/validateLoginCredentials/types/validateLoginCredentials.ts
-export type ValidateLoginCredentials = (
-  credentials: LoginCredentials
-) => ValidateLoginCredentialsResult;
+## 9. Viewport subscriptions, constants and event listeners
 
-// helpers/validateLoginCredentials/validateLoginCredentials.ts
-export const validateLoginCredentials: ValidateLoginCredentials = (credentials) => {
-  // Pure implementation
+Viewport query strings are **constants**. Snapshot calculations, environment guards and subscription mechanics are **purely focused helpers** (each under one flat `helpers/` directory). A React hook invokes `useSyncExternalStore` directly on those functions.
+
+~~~ts
+// hooks/useLoginViewport/constants/login.viewport.ts
+export const PHONE_VIEWPORT = '(max-width: 720px)';
+
+// hooks/useLoginViewport/helpers/login.getMobileSnapshot.ts
+import { _isFunction } from '@Base/utilities/isFunction';
+import { _isUndefined } from '@Base/utilities/isUndefined';
+
+// hooks/useLoginViewport/useLoginViewport.ts
+export const useLoginViewport: UseLoginViewport = () => {
+  return useSyncExternalStore(subscribeToViewport, getMobileSnapshot, getServerSnapshot);
 };
-```
+~~~
 
-For services, also define `<operation>.request.ts` and `<operation>.response.ts` as needed. API orchestration belongs in `business/<domain>/services/<useCase>/`, never in UI components. Never use a page's UI props as the service's request contract.
+The above shows responsibility placement, **not** a complete implementation: `_isUndefined` is imported separately from `@Base/utilities/isUndefined` and `_isFunction` from `@Base/utilities/isFunction`. Helpers handle server rendering and unavailable `matchMedia` without throwing. A direct, clear expression is better than chains of named helpers that simply wrap one line. Do not create a second `useLoginViewport` wrapper if the owner can call `useSyncExternalStore` directly and no reuse is needed.
 
-### C. Nearest authoritative type and dependency direction
+Define browser event names in pure `@Base` constants and reuse everywhere:
 
-1. Business-owned cross-feature entities are defined in `packages/business/<domain>/types/baseEntities/` and exported through the domain's public API.
-2. Pages define `types/<page>.props.ts`, `types/<page>.state.ts`, and any use-case view models. Prefer `Pick`, indexed access (`LoginProps['field']`) and explicit mapped types rather than duplicating fields.
-3. A local helper uses the **nearest authoritative type that is legal to import**. It should consume a page's typed contract when it is local to that page; shared business services use business contracts instead.
-4. Direction is non-negotiable: `base` cannot import business or UI; `business` cannot import page/domain UI; shared `components` cannot import domain or shell. Type-only imports are subject to the same dependency rules.
-5. Do not make an unrelated type depend on a UI component just to reuse a `string` alias. Prefer a business value object when genuine cross-domain semantics require it.
+~~~ts
+export const BROWSER_EVENT = {
+  CHANGE: 'change',
+  HASH_CHANGE: 'hashchange',
+  KEY_DOWN: 'keydown',
+  RESIZE: 'resize',
+} as const;
+~~~
 
-### D. Naming by use case
+A hook must register/unregister the **same** callback, handle SSR and listener availability, ensure cleanup, and not leak listeners across rerenders. Define proper no-op unsubscribe callbacks in helpers; do not put browser event names or media queries as inline magic strings in JSX.
 
-Disallow catch-all implementation filenames such as `helpers.ts`, `utils.ts`, `constants.ts`, `services.ts`, and `types.ts` for newly created unrelated behavior. Examples: `loginValidation.constant.ts`, `loginFields.config.ts`, `normalizeLoginEmail.ts`, `login.request.ts`, `login.response.ts`. Keep one cohesive use case per folder. Existing legacy filenames may be moved incrementally, with public import compatibility where required.
+## 10. Component composition and view-model selection
 
-### E. Page and shell boundaries
+A shared input, button, form field, dialog, checkbox, select, loader, icon or error-feedback primitive belongs under `@Components`. A page/component owns only feature-specific layout and labels; it must not reconstruct the native input behavior, password-toggle accessibility, submit-loading state or error-row conventions already provided by shared primitives.
 
-For a newly refactored page, only `<PageName>.tsx` and `index.ts` live at the page root. Put stateful containers in `containers/<name>Container/`, UI subunits in `components/<name>/`, focused hooks in `hooks/useName/`, pure logic in `helpers/<name>/`, and structural responsive variants in `templates/desktop/` and `templates/mobile/` where their markup truly differs. Avoid duplicating a live form in both templates; only one accessible form should exist in the DOM at a time.
+**All Lucide imports are centralized in `packages/components/icons/`**. Feature code imports icons through `@Components/icons` (or through a shared icon component), **never directly from `lucide-react`**. The components package can import Lucide internally and publish a curated, typed API. Do not copy SVG paths into domains.
 
-For `shell/`, keep `Shell.tsx` and `index.ts` at its root after migration. Move container, providers, registries, actions, state, layout and other units into named folders. Do not mix app registration, persistence, rendering and navigation state in one component.
+A login form is a presentational component in `pages/login/components/LoginForm/` and is rendered by its page/desktop/mobile templates. The reusable Button, InputControl, form field, visibility action and accessibility behavior should come from `@Components`; use the existing auth CSS classes as transitional styling props rather than reimplementing primitives. Screen-specific branches and string/icon selection live in typed helpers, constants, or strategy registries.
 
-### F. Container/presentational and JSX rules
+~~~ts
+// constants/login.passwordVisibility.ts
+export const PASSWORD_VISIBILITY = {
+  HIDDEN: 'HIDDEN',
+  VISIBLE: 'VISIBLE',
+} as const;
 
-Presentational JSX receives prepared data and callbacks; business API calls, async flows, validation and navigation orchestration belong in the container's focused hooks or a business service. No nested ternaries, complex inline anonymous functions, or significant business transformations inside JSX. Prefer named handlers and configuration-driven state/slot selection. Small declarative conditionals are acceptable. Avoid giant hooks: split coherent responsibilities only when they are independently meaningful.
+export const PASSWORD_VIEW = {
+  [PASSWORD_VISIBILITY.HIDDEN]: {
+    inputType: 'password',
+    toggleLabel: 'Show password',
+    icon: 'eye',
+  },
+  [PASSWORD_VISIBILITY.VISIBLE]: {
+    inputType: 'text',
+    toggleLabel: 'Hide password',
+    icon: 'eye-off',
+  },
+} as const;
 
-### G. Testing policy
+// helpers/login.getPasswordViewModel.ts
+export const getPasswordViewModel: GetPasswordViewModel = (isVisible) => {
+  if (isVisible) {
+    return PASSWORD_VIEW[PASSWORD_VISIBILITY.VISIBLE];
+  }
+  return PASSWORD_VIEW[PASSWORD_VISIBILITY.HIDDEN];
+};
+~~~
 
-**Unit tests are required for pure functions**: helpers, utilities, selectors, validators, and pure mappers. Place tests under the owning unit's `__tests__/<name>.test.ts` folder/file. Do not generate unit tests for every hook, UI component or API service by default. Static declarations and configuration without logic need no tests. Maintain a small separate set of browser/integration/accessibility/visual regression checks for security-critical flows and responsive behavior; such checks are not pure-function unit tests. Existing regression tests may be retained during migration.
+`LOGIN_COPY`, field definitions, visible/hidden UI, submission text, selected icon and layout variants must not be computed by ternaries in components. A view helper returns the required typed fields. Static variants may be looked up via a typed `Record`; behavior uses a strategy `Map`. Always assign a stable DOM test ID to resulting elements.
 
-### H. Shared UI
+## 11. Branching, registries and strategy/factory execution
 
-Develop shared accessible and responsive primitives in `packages/components`, using the existing React/design-token conventions and shadcn/Radix patterns without imposing new dependencies indiscriminately. A page should not copy input, button, feedback, icon, loading, validation and layout behavior unless an explicit design constraint requires it. Preserve mobile keyboard interaction, zoom accessibility, readable errors and a scroll fallback for unusually short viewports.
+**Forbidden:** ternary syntax `condition ? yes : no` anywhere in application code; nested conditional props; branching chains of `if / else if` for an extendable set of modes; `switch` for variant dispatch. Guard clauses and a simple `if / else` for a true binary case are allowed.
 
-### I. Migration and verification
+For three or more variants, use a `Map<Mode, Strategy>`, keyed by a typed enum/constant-derived value. Put the registry next to its owning use case (usually under `constants/<useCase>.strategies.ts` when it is a static map, with functions defined in helpers/services). Do not create a universal strategy registry for unrelated behavior.
 
-Refactor in phases: document rules, migrate authoritative business types and services, establish login as the page reference, migrate recovery and remaining auth, then shell and remaining domains. Keep temporary compatibility imports until their callers move. Gate completed phases with typecheck, architecture checks, pure tests and build; never claim a validation ran when dependencies or an execution environment were unavailable.
+~~~ts
+export const RECOVERY_MODE = {
+  INVITATION: 'INVITATION',
+  RESET: 'RESET',
+  FORGOT: 'FORGOT',
+} as const;
+export type RecoveryMode = (typeof RECOVERY_MODE)[keyof typeof RECOVERY_MODE];
 
+type RecoveryStrategy = (proof: string) => Promise<void>;
 
-### J. Canonical domain ownership and retired feature aliases
+const strategies = new Map<RecoveryMode, RecoveryStrategy>([
+  [RECOVERY_MODE.INVITATION, validateInvitation],
+  [RECOVERY_MODE.RESET, validateReset],
+  [RECOVERY_MODE.FORGOT, validateForgot],
+]);
 
-The canonical location for every product feature is `packages/domain/<domain>/`. Avoid parallel feature implementations at `packages/<feature>/` and avoid special-purpose feature aliases. The shell imports each domain through its root `@Domain/<domain>` API; it does not import pages, hooks or repositories inside a domain.
+export const runRecoveryStrategy: RunRecoveryStrategy = (mode, proof) => {
+  const strategy = strategies.get(mode);
+  if (!strategy) {
+    throw new UnsupportedRecoveryModeError(mode);
+  }
+  return strategy(proof);
+};
+~~~
 
-The established migration includes identity, dashboard and the public website under `packages/domain/`. When migrating other packages, move their full local unit tree without duplicating it in a compatibility package. Preserve stable public exports at the domain root and only retain old UI symbol names when existing route consumers require them. Unit entry points remain `index.ts`, while page roots contain only their named page and `index.ts`.
+A typed `Record<Mode, Configuration>` is preferred for static data/configuration. A typed `Map<Mode, Function>` is preferred for runtime function dispatch. Validate untrusted selector values before dispatch and fail explicitly on unsupported values. Keep business-side dispatch in `@Business` if it is shared business behavior.
 
-Pure transformation helpers must have adjacent tests; the architecture runner checks specified migrated units and page roots, alongside package dependency rules. This is not a claim that *all* historical units, user interfaces, responsive states or component stories have been migrated or verified. Extend enforcement to each newly completed domain.
+In rendering, use focused components, explicit view-model flags, named handlers and preselected component strategies. Do not put case selection or transformations inside JSX; do not replace a ternary with unreadable short-circuit chains or nested immediately invoked functions.
 
-Auth activation attempts are authoritative on the backend: client-side validation does not consume attempts, and generic network failures must not be interpreted as a known remaining attempt count. One-time bearer proofs stay in memory, while a non-secret cookie-continuation marker may be placed in session storage.
+## 12. Typed test selectors: every owned DOM element
 
+**Mandatory prop:** `dataTestId?: string` on every reusable DOM-producing base/component contract (including button, input, form field, icon, dialog, table, text and container). Each shared component forwards it to the **final native DOM element** as `data-testid`. Composite components pass it down to the leaf control; composite surfaces use deterministic suffixed selectors for internal label, hint, error, visibility action, spinner and wrapper. Do **not** output the camelCase prop directly onto DOM.
 
-### K. Tailwind v4, shadcn and automation selectors
+**Mandatory page contract:** define a centralized page test ID catalog, e.g. `constants/login.testIds.ts`. Every **page-owned rendered DOM element** must carry a stable, meaningful `data-testid`: page root, sections, divs, labels, headings, form, individual fields, actions, feedback/error/status and interactive elements. For shared nested primitives, provide `dataTestId` rather than putting a second selector on a React wrapper. The requirement includes noninteractive owned container elements; decorative SVG paths created by an icon library inherit the parent icon's test ID and do not each receive separate IDs.
 
-The frontend uses the Tailwind CSS v4 Vite plugin, with canonical shadcn configuration at `frontend/components.json`. Shared UI uses Radix primitives for accessible composition, CVA for button variants and CSS-variable-backed semantic utility classes. The RDR brand palette is mapped under `app/styles/tailwind.css`, and the light/dark modes use the existing `data-theme` attribute.
+~~~ts
+export const LOGIN_TEST_IDS = {
+  PAGE: 'login-page',
+  FORM: 'login-form',
+  EMAIL_FIELD: 'login-email',
+  PASSWORD_FIELD: 'login-password',
+  PASSWORD_VISIBILITY: 'login-password-visibility',
+  SUBMIT: 'login-submit',
+  FEEDBACK: 'login-feedback',
+} as const;
 
-**Migration guardrail:** Tailwind preflight reset is intentionally excluded until the public-school pages, full-page mobile auth and existing complex CSS layouts have been fully migrated. This does **not** disable Tailwind design tokens or utilities. Do not claim all legacy CSS has been converted; only component units built on the new design system should use shadcn-style utility classes. Do not change the school's approved monogram, marketing photographs or form alignment just to normalize styling.
+// In a domain component:
+<Button dataTestId={LOGIN_TEST_IDS.SUBMIT} type="submit">Sign in</Button>
+<InputControl dataTestId={LOGIN_TEST_IDS.EMAIL_FIELD} />
 
-Every exported component in `@Components` must expose `dataTestId?: string` as a typed prop. Forward it as `data-testid` on its own native DOM element, not on its React wrapper. For a composite control, use stable suffixed IDs for its label, error message and visibility control. Avoid unstable `useId()`-generated selectors; consumers should supply feature-specific stable IDs where a component repeats. A semantic role/label remains the primary accessibility contract; test IDs are deterministic automation hooks, not a substitute for accessibility.
+// Native page-owned markup:
+<form data-testid={LOGIN_TEST_IDS.FORM}>...</form>
+~~~
 
-Avoid spreading `dataTestId` onto the DOM as an unknown React attribute. Components that wrap other shared primitives must forward `dataTestId` to the **lowest DOM-rendering primitive**. Do not add selectors to every internal decoration or icon unless automation must interact with it.
+**Unique and deterministic:** every test ID should be unique among currently rendered elements; repeated list items derive IDs from a stable non-sensitive business key (`... + '-' + record.gid`), never array index, text label or a random/`useId()` value. Names must not expose passwords, email addresses, tokens, phone numbers or other PII. A component rendered more than once must receive distinct caller-provided IDs; don't use a hardcoded default that creates duplicates. Use an owner prefix and role suffix (e.g. `login-submit-spinner`). For a test needing to choose among repeated widgets, it must be able to locate the specific element using page/widget ancestry and a meaningful identifier.
 
-The reusable `InputControl` owns the actual native input, and `unstyled` is reserved for safe migration of established auth/public-site layouts. Domain code must not reimplement forwarding and error semantics already owned by this primitive. Buttons use Radix Slot (`asChild`) for semantic links when a link-style action needs the same visual tokens.
+**Accessibility is independent:** semantic role, label, keyboard activation and focus order remain required. Test IDs are for stable automation, not a substitute for accessible names or proper `id`/`htmlFor` relationships. Check every rendered page DOM node (excluding third-party implementation internals) in the migration audit; document justified exceptions.
 
-Run `pnpm install --frozen-lockfile`, `pnpm check:architecture`, `pnpm typecheck`, `pnpm exec jest --runInBand` and `pnpm build` before merging. User-visible responsive and keyboard testing remains necessary beyond CI.
+## 13. Test ownership and regression policy
+
+Place tests beside the **owning unit**, never in an unrelated global bucket.
+
+~~~text
+pages/login/components/LoginForm/
+├── LoginForm.tsx
+├── types/
+├── __tests__/
+│   └── LoginForm.test.tsx
+└── index.ts
+
+pages/login/hooks/useLoginForm/helpers/
+├── login.validateCredentials.ts
+├── types/
+└── __tests__/
+    └── login.validateCredentials.test.ts
+
+pages/login/__tests__/
+└── login.flow.test.tsx
+~~~
+
+- **Pure functions** (helpers, validations, mappers, selectors, view-model selectors, base utilities) require direct Jest tests for success, edge and error cases.
+- **Presentational components** receive focused tests for props, callbacks, role, error placement, conditional states, stable test IDs and keyboard focus; component tests live in that component's own `__tests__/`.
+- **Hooks** receive tests when they own meaningful state transitions, subscriptions or async orchestration. Do not write tests merely to prove a trivial hook exists.
+- **Containers/pages** receive integration-level tests for important user flows; do not mock away the behavior being validated. Preserve security flows, cookie-state transitions, recovery retries, and mobile breakpoint behavior.
+- **Shared primitives** have focused tests proving `dataTestId` reaches the native leaf. Avoid snapshots as the only contract.
+- **Browser tests** verify all required viewports, zoom, mobile keyboards, OS theme and dark mode, reduced motion, unusually short screens and focus management.
+
+No fabricated API responses/activities in production. Mock/test fixtures live in a separate domain `mock/` entrypoint and are never imported by production code.
+
+## 14. Forms, networking, auth and error states
+
+Frontend validation must run before a network call. A form component only renders controlled values, field error messages and named actions. The owning state hook manages its state, a nested submission hook manages asynchronous sequencing, and `@Business` owns HTTP transport, backend request/response types and idempotency/security logic.
+
+For identity, use HttpOnly cookie sessions. Never store credentials, password reset tokens, bearer proofs or secrets in localStorage/sessionStorage. Clear one-time URL fragments after exchange and use only a non-secret grant marker where required. A transient server/network failure is **not** evidence that an activation attempt was consumed. Server-issued expired/invalid and `IDENTITY_SETUP_ATTEMPTS_EXCEEDED` statuses are authoritative.
+
+Use a typed error classifier helper inside the operation that handles the error. Avoid exposing internal gateway error details to end users. Keep form errors in reserved readable slots and use accessible status/alert messages without layout-jumping.
+
+Async operations require cancellation/stale-request handling, duplicate submit protection, and cleanup of subscriptions/intervals. Define retries explicitly; do not retry non-idempotent mutations blindly.
+
+## 15. Shared component design and styling
+
+`@Components` owns reusable shadcn-compatible/Radix components, Tailwind utility composition, CVA variants, icons, focus rings, form accessibility and shared UI hooks such as `useBoolean`. Domains pass semantic props and feature-level test IDs. Do not duplicate input/loader/dialog/visibility/validation rendering in multiple pages.
+
+Tailwind 4 is installed through Vite, with semantic tokens in `app/styles/tailwind.css` and `components.json` for shadcn configuration. RDR brand uses navy `#1F2A44`, neutral/light and charcoal/dark palettes. **Tailwind preflight is intentionally disabled during migration** to preserve legacy public-site and auth layouts; styling utilities and tokens still work. Do not remove old CSS until screenshot and browser regression checks pass. Always make labels, controls and submit buttons reachable on mobile; avoid horizontal page scrolling; short viewports may need a vertical-scroll fallback instead of clipped buttons.
+
+Use system theme on mobile according to existing product UX; do not overwrite the user's desktop stored appearance preference. Do not replace the approved RDR monogram or historical school photography with artificial graphics. Respect source consent and disclosure validity.
+
+Use accessible HTML semantics: a native anchor for navigation, a native button for actions, proper labels and required state, visible focus, screen reader announcements, and no click-only non-focusable `div` interactions.
+
+## 16. Errors, performance, state, permissions and security
+
+Distinguish server state (TanStack Query/cache) from local UI state (component hooks). Do not mirror the same data or boolean into multiple stores. Each state domain has one owner. Shared application state is deliberate; avoid Redux for every local field. Keep permission decisions server-authoritative and have UI capabilities reflect trusted grants rather than role-name heuristics.
+
+No synchronous heavy transformations in JSX. Use pure tested selectors/mappers and memoize only expensive work or identity-sensitive derived props. Keep lists keyed by stable identity, prevent unnecessary rerenders and avoid dynamic circular imports. Avoid full Lodash barrels. No secrets in logs; do not log raw form input/authorization headers. Normalize API errors at business boundaries and public messages at use-case boundaries.
+
+Date/time logic must account for the intended locale/timezone and server representation; centralize reusable date helpers. Feature flags and provider differences should use typed registries; avoid vendor-name checks in presentation components. Observability belongs in shared infrastructure hooks/adapters, not repeated `console.log` statements.
+
+## 17. ESLint, architecture gates and automated enforcement
+
+Migration must add or update real static checks; documentation alone does not guarantee conformance. Enforce:
+
+1. Exact package aliases and allowed import graph; no deep cross-domain imports or circular dependencies.
+2. No `lucide-react` import outside `packages/components`.
+3. No direct `lodash`/`lodash-es` import outside `packages/base`; prefer one exact `@Base/utilities/<operation>` import.
+4. No ternary operators in application code; restrict `switch` and multi-variant `if/else if` to explicit justified exceptions.
+5. No `index.ts` below `helpers/` or `constants/`, no per-helper subdirectories, no giant `*.config.ts` containing mixed concerns.
+6. One state owner: review duplicate mutable state in hooks, with direct tests for meaningful transitions.
+7. Every shared component contract exposes `dataTestId` and forwards it to the native leaf; every migrated page-owned DOM element has a deterministic selector.
+8. No unused code, obsolete exports/imports, disabled tests, unsafe `any`, circular dependency or auth credential persistence.
+
+Some of these checks do **not yet exist** in the repo's current architecture scripts. Introduce them as migration code work; do not imply the existing CI already enforces all rules. Rule changes must be committed with the implementation they guard, and existing violations must be explicitly enumerated/managed rather than silently exempted.
+
+Run from `frontend/`:
+
+~~~bash
+pnpm install --frozen-lockfile
+pnpm check:architecture
+pnpm typecheck
+pnpm exec jest --runInBand
+pnpm lint
+pnpm build
+~~~
+
+CI verifies architecture, typecheck, Jest, build and static prerender routes. Add targeted responsive/visual tests separately; a passing compiler does not prove layout correctness.
+
+## 18. Migration order and definition of done
+
+Follow `docs/engineering/frontend/FRONTEND_REFACTOR_MIGRATION.md` for a specific inventory and phased plan. Do not relocate the same helper twice: ownership review happens before moving files.
+
+**Required migration order**:
+
+1. Add base leaf Lodash utilities and shared browser event constants; centralize icon exports and implement/test `useBoolean`; add architecture rules.
+2. Refactor `domain/auth/pages/login` as the reference unit: split constants, flatten helpers, move validation and error classification to owning nested hooks, centralize state in `useLoginForm`, remove redundant hook wrappers, replace render-time ternaries with pure view models, add selectors and tests.
+3. Refactor shared auth viewport fit and other cross-page hooks, then recovery into focused nested hooks, then forgot-password; preserve all auth behavior and UI.
+4. Migrate dashboard, school website, shell and remaining domains to the same units/selector/icon rules; remove dead files and obsolete import facades.
+5. Adopt shared shadcn/Tailwind components without breaking visual layout; extend end-to-end browser/automation coverage; remove superseded CSS only when safe.
+
+**A migrated unit is done only when** its owner and public contract are clear, helpers/constants are flat, state is not duplicated, pure transformations have tests, components expose deterministic `dataTestId` on real DOM, icons and Lodash use package boundaries, no ternary dispatch remains, unused files are removed, docs are accurate, and all applicable checks pass. Preserve public URLs and security invariants.
+
+## 19. Engineering review questions
+
+- Is this code in the closest correct package and parent hook/component?
+- Does a helper add value beyond calling an existing `@Base` utility?
+- Are constants/enums reused instead of string literals?
+- Is one hook the authoritative owner for this form's state?
+- Can a new behavior be registered via a typed `Map` instead of another branch?
+- Does a visual component delegate to existing `@Components` primitives/icons?
+- Does each owned DOM element have a stable `data-testid`, unique among repeated items and free of private data?
+- Are source owners obvious from filenames, and are tests located in the owner's `__tests__/`?
+- Were old implementations, unused exports and obsolete barrels actually removed?
+- Are accessibility, mobile layouts, errors, auth contracts and build/prerender unaffected?
+
+**Guiding principle:** make ordinary code explicit, reusable logic truly reusable, and every screen predictable to develop, test and automate.
