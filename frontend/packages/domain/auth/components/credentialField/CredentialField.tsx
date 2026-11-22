@@ -1,4 +1,4 @@
-import { cn } from '@Base/utilities';
+import { cn } from '@Base/utilities/cn';
 import type { CredentialFieldComponent } from './types/credentialField.props';
 
 /** Domain-owned auth appearance, shared across login, recovery and reset forms.
