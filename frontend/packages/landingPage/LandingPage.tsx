@@ -15,6 +15,7 @@ import { PublicSheet, type SchoolPanel } from './PublicSheet';
 
 import './landingPage.css';
 import './optionOne.css';
+import './optionOnePages.css';
 
 /** Explicit enquiry actions do not depend on catching React Router links
  * at the page root. Their href remains useful for opening a new tab or
@@ -73,7 +74,7 @@ const ImageCard = ({
       style={{objectPosition:position ?? 'center'}} referrerPolicy="no-referrer"
       onError={event => {
         const image = event.currentTarget;
-        const original = photographs.find(photo => photo.src === src)?.originalSrc;
+        const original = photographs.find(photo => photo.src === src || photo.originalSrc === src)?.originalSrc;
         if (original && !image.dataset.fallbackAttempted) {
           image.dataset.fallbackAttempted = 'true';
           image.src = original;
@@ -403,7 +404,17 @@ const HomePage = () => (
 );
 
 const IntroPage = ({eyebrow,title,description,image}:{eyebrow:string;title:string;description:string;image?:string}) => (
-  <section className="rdr-page-banner rdr-container"><div><span className="rdr-eyebrow">{eyebrow}</span><h1>{title}</h1><p>{description}</p></div>{image&&<div className="rdr-page-banner__art"><ImageCard className="rdr-page-banner__image" src={image} alt="Photograph of students and school activities at RDR School"/><PhotoMotifs variant="banner"/></div>}</section>
+  <section className="rdr-o1-page-hero">
+    <div className="rdr-container rdr-o1-page-hero__inner">
+      <div className="rdr-o1-page-hero__copy">
+        <span className="rdr-eyebrow">{eyebrow}</span>
+        <h1>{title}</h1>
+        <p>{description}</p>
+        <div className="rdr-o1-page-hero__actions"><EnquiryLink className="rdr-btn rdr-btn--solid">Enquire now <ArrowUpRight size={16}/></EnquiryLink><Link to="/" className="rdr-o1-page-hero__home">Back to homepage <ArrowRight size={16}/></Link></div>
+      </div>
+      {image&&<div className="rdr-o1-page-hero__photo"><ImageCard src={image} alt="RDR School students and school life" loading="eager"/><span>RDR SCHOOL · HALUHERA</span></div>}
+    </div>
+  </section>
 );
 
 const AboutPage = () => (
@@ -642,9 +653,9 @@ export const LandingPage = () => {
   const navigate=useNavigate();
   const [enquiryOpen,setEnquiryOpen]=useState(false);
   const state=location.state as {background?:string;panel?:SchoolPanel}|null;
-  const routedPanel=state?.background && state.panel ? state.panel : null;
+  const routedPanel:SchoolPanel|null=null;
   const panel:SchoolPanel|null=enquiryOpen?'enquiry':routedPanel;
-  const backgroundPath=routedPanel?(state?.background??'/'):location.pathname;
+  const backgroundPath=location.pathname;
   const CurrentPage=useMemo(()=>pageContent[backgroundPath] ?? HomePage,[backgroundPath]);
 
   const closePanel=()=>{
@@ -658,30 +669,20 @@ export const LandingPage = () => {
     navigate(path,{replace:true,state:{background:backgroundPath,panel:next}});
   };
 
-  // A real URL is always retained for navigation, direct links and SEO.
-  // Clicking around the public site opens a sheet without leaving the
-  // visible landing page; loading a URL directly renders its full HTML page.
+  // Public navigation opens full, addressable pages. The enquiry CTA
+  // continues to use the existing accessible sheet until Lead CRM is ready.
   const handleInternalLink=(event:MouseEvent<HTMLDivElement>)=>{
     if(event.defaultPrevented || event.button!==0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)return;
     if(!(event.target instanceof Element))return;
     const anchor=event.target.closest<HTMLAnchorElement>('a[href]');
     if(!anchor || anchor.hasAttribute('download') || (anchor.target&&anchor.target!=='_self'))return;
-    // Purpose-built enquiry links handle themselves. For generic Admissions
-    // links (header menu/footer) preserve the same working enquiry behavior.
     if(anchor.dataset.rdrEnquiryAction==='true')return;
     const url=new URL(anchor.href,window.location.href);
     if(url.origin!==window.location.origin)return;
-    if(url.pathname==='/admissions'){
+    if(url.pathname==='/admissions' && url.hash==='#enquiry'){
       event.preventDefault();
       setEnquiryOpen(true);
-      return;
     }
-    const requested=pathPanel[url.pathname];
-    if(!requested)return; // CBSE disclosures stay on their public HTML URL.
-    event.preventDefault();
-    navigate(url.pathname+url.search+url.hash,{
-      state:{background:backgroundPath,panel:requested},
-    });
   };
   useEffect(()=>{
     if(panel)return;
