@@ -1,4 +1,4 @@
-import { AlertCircle, ArrowRight, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail } from 'lucide-react';
 
 import { LOGIN_COPY, LOGIN_FIELDS } from '../../config';
 import type { LoginFormProps } from '../../types';
@@ -55,9 +55,7 @@ export const LoginForm = ({
     {afterFields}
     <button type="submit" className="rdr-login-v2__submit" disabled={state.isSubmitting}>
       <span>{state.isSubmitting ? LOGIN_COPY.busyButton : LOGIN_COPY.button}</span>
-      {state.isSubmitting
-        ? <LoaderCircle className="rdr-login-v2__spinner" size={19} aria-hidden="true"/>
-        : <ArrowRight size={19} aria-hidden="true"/>}
+      {state.isSubmitting && <LoaderCircle className="rdr-login-v2__spinner" size={19} aria-hidden="true"/>}
     </button>
     <div className="rdr-login-v2__feedback-slot rdr-login-v2__feedback-slot--signin" aria-live="polite">
       {state.errorMessage && <p className="rdr-login-v2__auth-error" role="alert">
