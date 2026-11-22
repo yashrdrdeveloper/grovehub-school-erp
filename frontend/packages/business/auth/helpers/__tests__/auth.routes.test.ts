@@ -1,5 +1,5 @@
-import { RouteType } from '../../baseEntities/routes';
-import { AUTH_ROUTE_IDS } from '../constants/auth.routeIds';
+import { RouteType } from '../../../baseEntities/routes';
+import { AUTH_ROUTE_IDS } from '../../constants/auth.routeIds';
 import { getAuthRoute } from '../auth.routes';
 
 describe('getAuthRoute', () => {
