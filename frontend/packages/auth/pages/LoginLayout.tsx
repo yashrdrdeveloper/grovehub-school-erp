@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { SchoolMonogram } from '@Components';
 import { useWorkspaceTheme, type ThemePreference } from '@Components/hooks/theme';
 
-import { AuthCampusIllustration } from './AuthCampusIllustration';
+import { AuthAmbientGraphic } from './AuthAmbientGraphic';
 
 
 // One stylesheet owns the entire auth layout. Legacy variants are intentionally not loaded.
@@ -18,13 +18,14 @@ const appearanceOptions: { value: ThemePreference; label: string; Icon: typeof S
 ];
 
 /** Shared, card-free shell for sign-in and every recovery step. */
-export const LoginLayout = ({ children, title, description, mobileDescription, minimalMobile = false, eyebrow = 'YOUR SCHOOL WORKSPACE' }: {
+export const LoginLayout = ({ children, title, description, mobileDescription, minimalMobile = false, variant = 'login', eyebrow = 'YOUR SCHOOL WORKSPACE' }: {
   children: ReactNode;
   title: string;
   description: string;
   mobileDescription?: string;
   minimalMobile?: boolean;
   mobileTitle?: string;
+  variant?: 'login' | 'forgot' | 'recovery';
   eyebrow?: string;
 }) => {
   const { preference, setPreference } = useWorkspaceTheme();
@@ -43,7 +44,7 @@ export const LoginLayout = ({ children, title, description, mobileDescription, m
   }, [preference, setPreference]);
 
   return (
-    <main className={`rdr-login-v2${minimalMobile ? ' rdr-login-v2--mobile-minimal' : ''}`}>
+    <main className={`rdr-login-v2 rdr-login-v2--${variant}${minimalMobile ? ' rdr-login-v2--mobile-minimal' : ''}`}>
       <div className="rdr-login-v2__frame">
         <section className="rdr-login-v2__visual" aria-label="RDR School branded gradient background">
           <div className="rdr-login-v2__mobile-header">
@@ -56,7 +57,7 @@ export const LoginLayout = ({ children, title, description, mobileDescription, m
             <SchoolMonogram/>
             <span><strong>RDR School</strong><small>Rao Deena Ram Vidya Vihar</small></span>
           </div>
-          <AuthCampusIllustration/>
+          <AuthAmbientGraphic/>
           <div className="rdr-login-v2__visual-copy">
             <span className="rdr-login-v2__visual-kicker"><span/> THE RDR SCHOOL WORKSPACE</span>
             <h2>For every school day.<br/><em>And everyone behind it.</em></h2>
