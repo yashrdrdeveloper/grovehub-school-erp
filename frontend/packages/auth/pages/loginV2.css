@@ -1798,3 +1798,16 @@
   .rdr-login-v2__content,
   :root[data-theme="dark"] .rdr-login-v2__content {padding-block:.75rem}
 }
+
+/* Option 1 shared desktop auth refinement; all recovery routes inherit this shell. */
+@media(min-width:721px){
+.rdr-login-v2__frame{grid-template-columns:minmax(0,46%) minmax(0,54%)}
+.rdr-login-v2__visual{background:radial-gradient(ellipse at 72% 27%,#f4cfc5 0%,transparent 48%),radial-gradient(ellipse at 23% 67%,#c5cce7 0%,transparent 56%),linear-gradient(155deg,#eee9ed,#e7eaf0)}
+.rdr-login-v2__visual-copy h2{letter-spacing:-.05em;line-height:1.1;text-wrap:balance}
+.rdr-login-v2__visual-copy h2 em{font-family:Georgia,'Times New Roman',serif;font-weight:400}
+.rdr-login-v2__main{max-width:27rem}
+.rdr-login-v2__heading h1{letter-spacing:-.045em}
+.rdr-login-v2__input-shell{border-radius:10px}
+.rdr-login-v2 :is(a,button,input):focus-visible{outline:3px solid #9aafc9;outline-offset:3px}
+}
+@media(min-width:721px) and (max-width:1100px){.rdr-login-v2__frame{grid-template-columns:minmax(0,40%) minmax(0,60%)}}
