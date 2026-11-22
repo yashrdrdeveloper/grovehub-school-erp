@@ -1,25 +1,36 @@
 import { apiRequest } from '@Business/api';
+import { HTTP_METHOD } from '@Business/api/constants/api.method';
 import type { PersonNames, SearchRequest, SearchResult } from '@Business/accounts';
 
-export interface Person {
-  gid: string;
-  firstName: string;
-  middleName: string | null;
-  lastName: string;
-  status: string;
-  version: number;
-}
+import { PERSON_ENDPOINT } from './constants/person.endpoints';
+import { getPersonResourcePath } from './helpers/person.getResourcePath';
 
-const ROOT = '/foundation/protected/persons';
+import type { Person } from '../types/person.entity';
 
 export const personApi = {
   create: (person: PersonNames, contacts: unknown, key: string) =>
-    apiRequest<Person>(ROOT, { method: 'POST', body: { ...person, contacts }, headers: { 'Idempotency-Key': key } }),
-  get: (gid: string) => apiRequest<Person>(`${ROOT}/${encodeURIComponent(gid)}`),
+    apiRequest<Person>(PERSON_ENDPOINT.PROTECTED, {
+      method: HTTP_METHOD.POST,
+      body: { ...person, contacts },
+      headers: { 'Idempotency-Key': key },
+    }),
+
+  get: (gid: string) => apiRequest<Person>(getPersonResourcePath(gid)),
+
   update: (gid: string, patch: Partial<Person>) =>
-    apiRequest<Person>(`${ROOT}/${encodeURIComponent(gid)}`, { method: 'PATCH', body: patch }),
+    apiRequest<Person>(getPersonResourcePath(gid), {
+      method: HTTP_METHOD.PATCH,
+      body: patch,
+    }),
+
   search: (request: SearchRequest) =>
-    apiRequest<SearchResult<Person>>(`${ROOT}/search`, { method: 'POST', body: request }),
+    apiRequest<SearchResult<Person>>(`${PERSON_ENDPOINT.PROTECTED}/search`, {
+      method: HTTP_METHOD.POST,
+      body: request,
+    }),
+
   deactivate: (gid: string) =>
-    apiRequest<Person>(`${ROOT}/${encodeURIComponent(gid)}/deactivate`, { method: 'PATCH' }),
+    apiRequest<Person>(`${getPersonResourcePath(gid)}/deactivate`, {
+      method: HTTP_METHOD.PATCH,
+    }),
 };
