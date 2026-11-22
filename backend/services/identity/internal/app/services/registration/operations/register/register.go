@@ -17,7 +17,7 @@ import (
 	"grovehub/services/identity/internal/app/entity"
 	accountproducer "grovehub/services/identity/internal/app/events/producers/account"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
-	"grovehub/services/identity/internal/app/security/principal"
+	"grovehub/services/identity/internal/app/services/security/principal"
 	"grovehub/services/identity/internal/app/services/registration/operations/register/flows"
 	registration "grovehub/services/identity/internal/app/services/registration"
 	validator "grovehub/services/identity/internal/app/validators/account"

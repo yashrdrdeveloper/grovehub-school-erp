@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"grovehub/services/identity/internal/app/entity"
-	"grovehub/services/identity/internal/app/security/principal"
+	"grovehub/services/identity/internal/app/services/security/principal"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	registration "grovehub/services/identity/internal/app/services/registration"
 	transaction "grovehub/libs/core/database/transaction"

@@ -4,7 +4,7 @@ import (
 	foundation "grovehub/services/foundation/client/person"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
 	"grovehub/services/identity/internal/app/entity"
-	"grovehub/services/identity/internal/app/security/principal"
+	"grovehub/services/identity/internal/app/services/security/principal"
 )
 
 // Register is scoped to one registration request and is never stored globally.
