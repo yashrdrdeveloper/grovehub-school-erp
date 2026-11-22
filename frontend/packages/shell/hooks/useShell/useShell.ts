@@ -1,15 +1,24 @@
 import { useCallback, useEffect, useState } from 'react';
+
 import { useBoolean } from '@Components/hooks/useBoolean';
 import { useWorkspaceTheme } from '@Components/hooks/useWorkspaceTheme';
-import { readPinnedApps, readSidebarCollapsed, writePinnedApps, writeSidebarCollapsed } from './helpers/shell.preferences';
+
+import {
+  readPinnedApps,
+  readSidebarCollapsed,
+  writePinnedApps,
+  writeSidebarCollapsed,
+} from './helpers/shell.preferences';
 import { togglePinnedPath } from './helpers/shell.togglePinnedPath';
+
 import type { UseShell } from './types/useShell';
 
-/** One state owner for workspace chrome, preferences and named actions. */
+/** The sole owner of workspace chrome state; persistence only runs after state commits. */
 export const useShell: UseShell = () => {
   const sidebar = useBoolean();
   const quick = useBoolean();
   const launcher = useBoolean();
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(readSidebarCollapsed);
   const [pinned, setPinned] = useState<string[]>(readPinnedApps);
   const theme = useWorkspaceTheme();
@@ -17,6 +26,7 @@ export const useShell: UseShell = () => {
   useEffect(() => {
     writeSidebarCollapsed(sidebarCollapsed);
   }, [sidebarCollapsed]);
+
   useEffect(() => {
     writePinnedApps(pinned);
   }, [pinned]);
@@ -34,6 +44,7 @@ export const useShell: UseShell = () => {
   const toggleSidebarCollapsed = useCallback(() => {
     setSidebarCollapsed((value) => !value);
   }, []);
+
   const togglePin = useCallback((path: string) => {
     setPinned((previous) => togglePinnedPath(previous, path));
   }, []);

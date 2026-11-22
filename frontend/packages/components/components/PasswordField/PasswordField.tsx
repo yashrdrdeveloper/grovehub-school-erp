@@ -1,3 +1,4 @@
+import { INPUT_CONTROL_SIZE } from '../InputControl/constants/inputControl.size';
 import { Eye, EyeOff } from 'lucide-react';
 import { forwardRef, useId, useState } from 'react';
 import { cn } from '@Base/utilities/cn';
@@ -6,7 +7,7 @@ import { InputControl } from '../InputControl';
 import type { PasswordFieldProps } from './types/passwordField.props';
 
 export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(({
-  label, hint, error, initiallyVisible = false, controlSize = 'md', className, id, disabled, required,
+  label, hint, error, initiallyVisible = false, controlSize = INPUT_CONTROL_SIZE.MEDIUM, className, id, disabled, required,
   dataTestId, 'aria-describedby': describedBy, ...props
 }, ref) => {
   const [visible, setVisible] = useState(initiallyVisible);

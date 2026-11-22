@@ -1,3 +1,4 @@
+import { INPUT_CONTROL_SIZE } from '../InputControl/constants/inputControl.size';
 import { forwardRef, useId } from 'react';
 import { cn } from '@Base/utilities/cn';
 import { FormField } from '../FormField';
@@ -5,7 +6,7 @@ import { InputControl } from '../InputControl';
 import type { InputComponent, InputProps } from './types/input.props';
 
 export const Input: InputComponent = forwardRef<HTMLInputElement, InputProps>(({
-  label, error, hint, className, id, required, dataTestId, controlSize = 'md', 'aria-describedby': describedBy, ...props
+  label, error, hint, className, id, required, dataTestId, controlSize = INPUT_CONTROL_SIZE.MEDIUM, 'aria-describedby': describedBy, ...props
 }, ref) => {
   const generatedId = useId();
   const inputId = id ?? generatedId;

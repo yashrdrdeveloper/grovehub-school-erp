@@ -2,7 +2,7 @@ import { Component } from 'react';
 
 import { Box } from '../Box';
 import { Button } from '../Button';
-import { Typography } from '../Typography';
+import { TYPOGRAPHY_TAG, TYPOGRAPHY_VARIANT, Typography } from '../Typography';
 
 import { ERROR_BOUNDARY_COPY } from './constants/errorBoundary.copy';
 import { ERROR_BOUNDARY_TEST_IDS } from './constants/errorBoundary.testIds';
@@ -52,10 +52,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         className="gh-error-boundary"
         dataTestId={this.props.dataTestId ?? ERROR_BOUNDARY_TEST_IDS.ROOT}
       >
-        <Typography as="h2" variant="heading">
+        <Typography as={TYPOGRAPHY_TAG.H2} variant={TYPOGRAPHY_VARIANT.HEADING}>
           {ERROR_BOUNDARY_COPY.TITLE}
         </Typography>
-        <Typography as="p">
+        <Typography as={TYPOGRAPHY_TAG.P}>
           {ERROR_BOUNDARY_COPY.DESCRIPTION}
         </Typography>
         <Button type="button" dataTestId={ERROR_BOUNDARY_TEST_IDS.RETRY} onClick={this.reset}>
