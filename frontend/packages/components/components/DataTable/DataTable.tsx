@@ -27,11 +27,12 @@ export const DataTable: DataTableComponent = <T,>({
         <thead>
           {table.getHeaderGroups().map((group) => (
             <tr key={group.id}>
-              {group.headers.map((header) => (
-                <th key={header.id}>
-                  {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext()) as ReactNode}
-                </th>
-              ))}
+              {group.headers.map((header) => {
+                if (header.isPlaceholder) return <th key={header.id}/>;
+                return <th key={header.id}>
+                  {flexRender(header.column.columnDef.header, header.getContext()) as ReactNode}
+                </th>;
+              })}
             </tr>
           ))}
         </thead>

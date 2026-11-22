@@ -9,7 +9,8 @@ export const Input: InputComponent = forwardRef<HTMLInputElement, InputProps>(({
 }, ref) => {
   const generatedId = useId();
   const inputId = id ?? generatedId;
-  const descriptionId = error || hint ? `${inputId}-description` : undefined;
+  let descriptionId: string | undefined;
+  if (error || hint) descriptionId = `${inputId}-description`;
   const controlTestId = dataTestId ?? id ?? label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   const combinedDescription = [describedBy, descriptionId].filter(Boolean).join(' ') || undefined;
 

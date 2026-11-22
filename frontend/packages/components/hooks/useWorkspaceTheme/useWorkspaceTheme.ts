@@ -10,7 +10,8 @@ const DARK_QUERY = '(prefers-color-scheme: dark)';
 const readPreference = (): ThemePreference => {
   try {
     const value = window.localStorage.getItem(STORAGE_KEY);
-    return value === 'light' || value === 'dark' ? value : 'system';
+    if (value === 'light' || value === 'dark') return value;
+    return 'system';
   } catch {
     return 'system';
   }

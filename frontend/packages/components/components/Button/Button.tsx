@@ -19,10 +19,12 @@ export const Button: ButtonComponent = ({
       </Slot>
     );
   }
+  let content = children;
+  if (loading) content = <><LoaderCircle aria-hidden="true" className="gh-button__spinner" size={16}/><span>{loadingText}</span></>;
   return (
     <button type={type} className={classes} disabled={disabled || loading}
       data-testid={testId} aria-busy={loading || undefined} {...props}>
-      {loading ? <><LoaderCircle aria-hidden="true" className="gh-button__spinner" size={16}/><span>{loadingText}</span></> : children}
+      {content}
     </button>
   );
 };

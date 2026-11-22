@@ -16,18 +16,19 @@ export const apiRequest = async <T>(
 ): Promise<T> => {
   const method = options.method ?? 'GET';
   const csrf = readCSRF();
-  const response = await fetch(path, {
+  const headers: Record<string, string> = {};
+  if (options.body !== undefined) headers['Content-Type'] = 'application/json';
+  if (method !== 'GET' && csrf) headers['X-CSRF-Token'] = csrf;
+  if (options.headers) Object.assign(headers, options.headers);
+  const request: RequestInit = {
     method,
     credentials: 'include',
     cache: 'no-store',
     signal: options.signal,
-    headers: {
-      ...(options.body === undefined ? {} : { 'Content-Type': 'application/json' }),
-      ...(method !== 'GET' && csrf ? { 'X-CSRF-Token': csrf } : {}),
-      ...options.headers,
-    },
-    ...(options.body === undefined ? {} : { body: JSON.stringify(options.body) }),
-  });
+    headers,
+  };
+  if (options.body !== undefined) request.body = JSON.stringify(options.body);
+  const response = await fetch(path, request);
 
   if (response.status === 204) {
     return undefined as T;

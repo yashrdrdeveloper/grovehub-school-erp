@@ -13,7 +13,7 @@ export const Dialog: DialogComponent = ({
         <div className="dialog-heading">
           <div>
             <DialogPrimitive.Title>{title}</DialogPrimitive.Title>
-            {description ? <DialogPrimitive.Description>{description}</DialogPrimitive.Description> : null}
+            {description && <DialogPrimitive.Description>{description}</DialogPrimitive.Description>}
           </div>
           <DialogPrimitive.Close className="icon-button" data-testid={dataTestId ? dataTestId + '-close' : undefined} aria-label="Close"><X size={19}/></DialogPrimitive.Close>
         </div>

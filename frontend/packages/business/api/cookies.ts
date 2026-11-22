@@ -5,5 +5,6 @@ export const readCSRF = (): string => {
     .split('; ')
     .find((entry) => entry.startsWith('gh_csrf='));
 
-  return cookie ? decodeURIComponent(cookie.slice('gh_csrf='.length)) : '';
+  if (!cookie) return '';
+  return decodeURIComponent(cookie.slice('gh_csrf='.length));
 };

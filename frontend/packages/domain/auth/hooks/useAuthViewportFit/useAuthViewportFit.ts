@@ -20,9 +20,8 @@ export const useAuthViewportFit = () => {
     const main = mainRef.current;
     if (!content || !toolbar || !main) return;
 
-    const desktop = typeof window.matchMedia === 'function'
-      ? window.matchMedia(STYLE_MEDIA_QUERY.DESKTOP)
-      : null;
+    let desktop: MediaQueryList | null = null;
+    if (typeof window.matchMedia === 'function') desktop = window.matchMedia(STYLE_MEDIA_QUERY.DESKTOP);
     const MIN_READABLE_SCALE = 0.82;
     let frame = 0;
     let active = true;
