@@ -3,7 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AUTH_ROUTE } from '@Business/auth/routes';
 import { APP_ROUTE } from '@Business/app/routes';
 
-import { useAuth } from '../providers/AuthProvider';
+import { useAuth } from '../providers/authProvider';
 
 export const RequireSession = () => {
   const { account, loading, initialized, reload } = useAuth();

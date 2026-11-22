@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 
-import { PublicOnly, RequireSession } from '@Domain/auth';
+import { PublicOnly, RequireSession, useRecoveryFlowBoundary } from '@Domain/auth';
 import { LandingPage, PUBLIC_SITE_PATHS } from '@Domain/publicSite';
 
 import { publicRoutes, workspaceRoutes } from '../../registry';
@@ -9,6 +9,7 @@ import type { AppRoutesComponent } from './types/appRoutes';
 
 /** Domain roots publish routes; shell only composes public/protected envelopes. */
 export const AppRoutes: AppRoutesComponent = () => {
+  useRecoveryFlowBoundary();
   const landing = PUBLIC_SITE_PATHS.map(path => <Route key={path} path={path} element={<LandingPage/>}/>);
   const publicPages = publicRoutes.map(({ path, element }) =>
     <Route key={path} path={path} element={element}/>);

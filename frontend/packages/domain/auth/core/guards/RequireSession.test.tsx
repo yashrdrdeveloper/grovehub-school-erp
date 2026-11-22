@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
-import { AuthProvider } from '../providers/AuthProvider';
+import { AuthProvider } from '../providers/authProvider';
 
 import { PublicOnly, RequireSession } from './RequireSession';
 

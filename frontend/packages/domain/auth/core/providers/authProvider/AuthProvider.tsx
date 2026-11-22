@@ -5,23 +5,14 @@ import {
   useMemo,
   useRef,
   useState,
-  type ReactNode,
 } from 'react';
 
-import { authenticationApi, type Account } from '@Business/auth';
-
-interface SessionContextValue {
-  account: Account | null;
-  loading: boolean;
-  initialized: boolean;
-  signIn: (identifier: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
-  reload: () => Promise<void>;
-}
+import { authenticationApi } from '@Business/auth';
+import type { AuthProviderProps, SessionContextValue } from './types/authProvider';
 
 const SessionContext = createContext<SessionContextValue | null>(null);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [account, setAccount] = useState<Account | null>(null);
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
