@@ -1,9 +1,9 @@
 import { apiRequest } from '@Business/api';
+import { login } from './login';
 
 import type {
   Account,
   GrantResult,
-  LoginResult,
   RefreshResult,
   SessionSummary,
   StatusResult,
@@ -13,11 +13,7 @@ const PUBLIC = '/identity/public/auth';
 const PROTECTED = '/identity/protected/auth';
 
 export const authenticationApi = {
-  login: (identifier: string, password: string) =>
-    apiRequest<LoginResult>(`${PUBLIC}/login`, {
-      method: 'POST',
-      body: { identifier, password },
-    }),
+  login,
   refresh: () =>
     apiRequest<RefreshResult>(`${PUBLIC}/refresh`, { method: 'POST' }),
   forgotPassword: (email: string) =>

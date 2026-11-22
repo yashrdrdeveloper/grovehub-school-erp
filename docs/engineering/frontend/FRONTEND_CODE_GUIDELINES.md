@@ -2,13 +2,13 @@
 
 > **PackageManager** : use pnpm over npm always and react latest stable version
 
-> **Status:** Mandatory Phase 0 engineering standard — Revision 3
+> **Status:** Mandatory Phase 0 engineering standard — Revision 4
 
 > **Applies to:** `frontend/`, `packages/base`, `packages/business`, `packages/components`, `packages/domain`, `packages/shell`, every domain, page, template, component, hook, HOC, helper, util, constant, service, reader, mock, type, story and test
 
 > **Primary stack:** React + TypeScript + Vite
 
-> **Testing:** Jest + React Testing Library
+> **Testing:** Jest for pure-function unit tests; focused integration/browser regressions
 
 > **Core principles:** **SRP**, **OCP**, **DRY**, composition, configuration-driven rendering, strong typing, explicit public boundaries, testability
 
@@ -4253,3 +4253,79 @@ app   → shell
 > **Target result:** clean files, predictable package ownership, deliberate public APIs, isolated domains, one explicit application composition root, reusable backend entity contracts, reusable UI, typed readers, realistic mocks, discoverable stories/runbooks, minimal branching, and a frontend that remains maintainable as Perihellion grows.
 
 ---
+
+
+---
+
+## Revision 4 — Self-contained units, authoritative types and test ownership (mandatory)
+
+> **Precedence:** This section supersedes earlier examples or rules where they conflict. Preserve existing behavior while migrating legacy units. Do not create meaningless folders just to satisfy a diagram.
+
+### A. Unit structure
+
+A meaningful reusable helper, utility, mapper, selector, service, hook or component is an independent, single-responsibility unit. Name the folder after the use case. Place its callable contract in a nearest `types/` subfolder and export its intended API from `index.ts`.
+
+```text
+helpers/
+└── validateLoginCredentials/
+    ├── validateLoginCredentials.ts
+    ├── types/
+    │   └── validateLoginCredentials.ts
+    ├── __tests__/
+    │   └── validateLoginCredentials.test.ts
+    └── index.ts
+```
+
+Use the equivalent pattern under `utilities/`, `mappers/`, `selectors/`, `services/`, `hooks/` and `components/`. Unit-level `index.ts` is the public API. Avoid re-exporting internal contracts unintentionally. Internal one-off callbacks and trivial constants need not be promoted to artificial standalone units.
+
+### B. Explicit callable types
+
+Define a reusable operation's parameter type, result type and callable type in its nearest `types/<operation>.ts` (or use-case-specific request/response contract). In the implementation, import the callable type and assign the exported function to it:
+
+```ts
+// helpers/validateLoginCredentials/types/validateLoginCredentials.ts
+export type ValidateLoginCredentials = (
+  credentials: LoginCredentials
+) => ValidateLoginCredentialsResult;
+
+// helpers/validateLoginCredentials/validateLoginCredentials.ts
+export const validateLoginCredentials: ValidateLoginCredentials = (credentials) => {
+  // Pure implementation
+};
+```
+
+For services, also define `<operation>.request.ts` and `<operation>.response.ts` as needed. API orchestration belongs in `business/<domain>/services/<useCase>/`, never in UI components. Never use a page's UI props as the service's request contract.
+
+### C. Nearest authoritative type and dependency direction
+
+1. Business-owned cross-feature entities are defined in `packages/business/<domain>/types/baseEntities/` and exported through the domain's public API.
+2. Pages define `types/<page>.props.ts`, `types/<page>.state.ts`, and any use-case view models. Prefer `Pick`, indexed access (`LoginProps['field']`) and explicit mapped types rather than duplicating fields.
+3. A local helper uses the **nearest authoritative type that is legal to import**. It should consume a page's typed contract when it is local to that page; shared business services use business contracts instead.
+4. Direction is non-negotiable: `base` cannot import business or UI; `business` cannot import page/domain UI; shared `components` cannot import domain or shell. Type-only imports are subject to the same dependency rules.
+5. Do not make an unrelated type depend on a UI component just to reuse a `string` alias. Prefer a business value object when genuine cross-domain semantics require it.
+
+### D. Naming by use case
+
+Disallow catch-all implementation filenames such as `helpers.ts`, `utils.ts`, `constants.ts`, `services.ts`, and `types.ts` for newly created unrelated behavior. Examples: `loginValidation.constant.ts`, `loginFields.config.ts`, `normalizeLoginEmail.ts`, `login.request.ts`, `login.response.ts`. Keep one cohesive use case per folder. Existing legacy filenames may be moved incrementally, with public import compatibility where required.
+
+### E. Page and shell boundaries
+
+For a newly refactored page, only `<PageName>.tsx` and `index.ts` live at the page root. Put stateful containers in `containers/<name>Container/`, UI subunits in `components/<name>/`, focused hooks in `hooks/useName/`, pure logic in `helpers/<name>/`, and structural responsive variants in `templates/desktop/` and `templates/mobile/` where their markup truly differs. Avoid duplicating a live form in both templates; only one accessible form should exist in the DOM at a time.
+
+For `shell/`, keep `Shell.tsx` and `index.ts` at its root after migration. Move container, providers, registries, actions, state, layout and other units into named folders. Do not mix app registration, persistence, rendering and navigation state in one component.
+
+### F. Container/presentational and JSX rules
+
+Presentational JSX receives prepared data and callbacks; business API calls, async flows, validation and navigation orchestration belong in the container's focused hooks or a business service. No nested ternaries, complex inline anonymous functions, or significant business transformations inside JSX. Prefer named handlers and configuration-driven state/slot selection. Small declarative conditionals are acceptable. Avoid giant hooks: split coherent responsibilities only when they are independently meaningful.
+
+### G. Testing policy
+
+**Unit tests are required for pure functions**: helpers, utilities, selectors, validators, and pure mappers. Place tests under the owning unit's `__tests__/<name>.test.ts` folder/file. Do not generate unit tests for every hook, UI component or API service by default. Static declarations and configuration without logic need no tests. Maintain a small separate set of browser/integration/accessibility/visual regression checks for security-critical flows and responsive behavior; such checks are not pure-function unit tests. Existing regression tests may be retained during migration.
+
+### H. Shared UI
+
+Develop shared accessible and responsive primitives in `packages/components`, using the existing React/design-token conventions and shadcn/Radix patterns without imposing new dependencies indiscriminately. A page should not copy input, button, feedback, icon, loading, validation and layout behavior unless an explicit design constraint requires it. Preserve mobile keyboard interaction, zoom accessibility, readable errors and a scroll fallback for unusually short viewports.
+
+### I. Migration and verification
+
+Refactor in phases: document rules, migrate authoritative business types and services, establish login as the page reference, migrate recovery and remaining auth, then shell and remaining domains. Keep temporary compatibility imports until their callers move. Gate completed phases with typecheck, architecture checks, pure tests and build; never claim a validation ran when dependencies or an execution environment were unavailable.

@@ -1,13 +1,5 @@
-export interface Account {
-  accountId: string;
-  personGid: string;
-  username: string | null;
-  email: string;
-  status: string;
-  version: number;
-  createdAt: string;
-  updatedAt: string;
-}
+export type { AccountEntity as Account } from './types/baseEntities';
+export type { SessionEntity as SessionSummary } from './types/baseEntities';
 
 export interface LoginResult {
   accountId: string;
@@ -26,14 +18,6 @@ export interface RefreshResult {
 export interface StatusResult {
   status: string;
   sessionsRevoked?: boolean;
-}
-
-export interface SessionSummary {
-  sessionId: string;
-  current: boolean;
-  createdAt: string;
-  lastActiveAt?: string;
-  expiresAt: string;
 }
 
 export interface GrantResult {
