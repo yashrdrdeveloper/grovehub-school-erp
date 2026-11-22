@@ -14,6 +14,7 @@ import { achievements, disclosedDocuments, enquiryTypes, facilities, historicDis
 import { PublicSheet, type SchoolPanel } from './PublicSheet';
 
 import './landingPage.css';
+import './optionOne.css';
 
 /** Explicit enquiry actions do not depend on catching React Router links
  * at the page root. Their href remains useful for opening a new tab or
@@ -344,55 +345,61 @@ const MobileQuickHome = () => (
 );
 
 const HomePage = () => (
-  <>
-    <section className="rdr-hero rdr-container">
-      <div className="rdr-hero__content">
-        <span className="rdr-eyebrow"><span className="rdr-eyebrow__dot"/> EST. 2006 · HALUHERA, REWARI</span>
-        <h1>Rooted in Haluhera. <em>Ready for every tomorrow.</em></h1>
-        <p>At Rao Deena Ram Vidya Vihar, learning goes beyond the classroom. We bring together academics, character and a caring school community so every child has room to grow.</p>
-        <div className="rdr-hero__actions"><EnquiryLink className="rdr-btn rdr-btn--solid">Enquire for admissions <ArrowUpRight size={17}/></EnquiryLink><Link className="rdr-btn rdr-btn--text" to="/about">Get to know us <ArrowRight size={17}/></Link></div>
-        <div className="rdr-hero__meta"><span><School size={17}/> CBSE affiliated</span><span><GraduationCap size={17}/> Senior Secondary</span><span><MapPin size={17}/> Rewari, Haryana</span></div>
-      </div>
-      <PhotoCollage/>
-    </section>
-    <MobileQuickHome/>
-    <section className="rdr-ribbon"><div className="rdr-container rdr-ribbon__inner"><span>ROOTED IN VALUES</span><i>✳</i><span>GROWING THROUGH LEARNING</span><i>✳</i><span>TOGETHER AS A COMMUNITY</span></div></section>
-    <section className="rdr-section rdr-container rdr-intro rdr-home-extended">
-      <div className="rdr-intro__text"><Heading eyebrow="WELCOME TO RDR" title="A place to belong. A chance to become." description="Established in 2006 in Haluhera, our school has long served families from Rewari and surrounding villages. We aim to nurture students academically, morally and socially."/><Link to="/about" className="rdr-inline-link">Discover our story <ArrowUpRight size={18}/></Link></div>
-      <div className="rdr-intro__photo"><ImageCard src={photographs[4].src} alt={photographs[4].alt}/><div className="rdr-intro__badge"><span>Since</span><strong>2006</strong><small>Committed to learning</small></div></div>
-    </section>
-    <section className="rdr-section rdr-section--wash rdr-home-facilities">
-      <div className="rdr-container">
-        <Heading eyebrow="EXPERIENCE RDR" title="Every child has a story. Every day has a purpose." description="The spaces, experiences and guidance that help young people learn, explore and grow."/>
-        <div className="rdr-feature-grid">
-          {facilities.slice(0,6).map((item,i)=>{
-            const Icon=facilityIcons[i];
-            return <div className="rdr-feature" key={item.title}><span className="rdr-feature__number">0{i+1}</span>{Icon&&<Icon size={27} strokeWidth={1.5}/>}<h3>{item.title}</h3><p>{item.description}</p></div>;
-          })}
+  <div className="rdr-option-one">
+    <section className="rdr-o1-hero">
+      <div className="rdr-container rdr-o1-hero__grid">
+        <div className="rdr-o1-hero__copy">
+          <span className="rdr-eyebrow">A COMMUNITY OF LEARNERS · SINCE 2006</span>
+          <h1>Rooted in Haluhera.<em>Ready for every tomorrow.</em></h1>
+          <p>At Rao Deena Ram Vidya Vihar, learning goes beyond the classroom. We bring together academics, character and a caring school community so every child has room to grow.</p>
+          <div className="rdr-o1-hero__actions">
+            <EnquiryLink className="rdr-btn rdr-btn--solid">Enquire for admission <ArrowUpRight size={17}/></EnquiryLink>
+            <Link className="rdr-btn rdr-o1-secondary" to="/about">Discover our school <ArrowRight size={17}/></Link>
+          </div>
+          <div className="rdr-o1-hero__proof"><span>CBSE affiliated</span><span>Senior Secondary</span><span>Rewari, Haryana</span></div>
         </div>
-        <Link className="rdr-inline-link" to="/campus">Explore the campus <ArrowUpRight size={18}/></Link>
+        <div className="rdr-o1-hero__images">
+          <ImageCard className="rdr-o1-hero__main-photo" src={photographs[0].src} alt={photographs[0].alt} position={photographs[0].position} loading="eager">
+            <span className="rdr-o1-hero__photo-caption">A school full of familiar faces.</span>
+          </ImageCard>
+          <div className="rdr-o1-hero__image-side">
+            <ImageCard className="rdr-o1-hero__side-photo" src={photographs[1].src} alt={photographs[1].alt} position={photographs[1].position} loading="eager"/>
+            <div className="rdr-o1-hero__note"><strong>Learning with purpose.</strong><small>Growing together since 2006.</small></div>
+          </div>
+        </div>
       </div>
     </section>
-    <section className="rdr-section rdr-container rdr-home-gallery">
-      <div className="rdr-section__split"><Heading eyebrow="A SCHOOL FULL OF LIFE" title="School life, as it really happens." description="Real snapshots from the original RDR School photo gallery — celebrating creativity, achievements and friendship."/><Link to="/gallery" className="rdr-inline-link">See the gallery <ArrowUpRight size={18}/></Link></div>
-      <div className="rdr-gallery-preview">
-        {photographs.slice(1,5).map((photo,index)=><ImageCard key={photo.src} src={photo.src} alt={photo.alt} className={index===0?'rdr-gallery-preview__lead':''}>{<span>{photo.category}</span>}</ImageCard>)}
+    <section className="rdr-o1-life rdr-container">
+      <div className="rdr-o1-life__heading">
+        <div><span className="rdr-eyebrow">LIFE AT RDR</span><h2>Every child has a story.<br/>Every day has a purpose.</h2></div>
+        <p>From classrooms to celebrations, these are the experiences that shape school life.</p>
+      </div>
+      <div className="rdr-o1-life__grid">
+        <Link to="/gallery" className="rdr-o1-life__card">
+          <ImageCard src={photographs[1].src} alt={photographs[1].alt} position={photographs[1].position}/>
+          <span>ACHIEVEMENT</span><h3>Celebrating every milestone.</h3><p>Recognising effort, confidence and achievement.</p>
+        </Link>
+        <Link to="/gallery" className="rdr-o1-life__card">
+          <ImageCard src={photographs[2].src} alt={photographs[2].alt} position={photographs[2].position}/>
+          <span>EXPRESSION</span><h3>More than textbooks.</h3><p>Music, movement and the joy of participating.</p>
+        </Link>
+        <Link to="/gallery" className="rdr-o1-life__card">
+          <ImageCard src={photographs[3].src} alt={photographs[3].alt} position={photographs[3].position}/>
+          <span>BELONGING</span><h3>Growing with confidence.</h3><p>Creating space for curiosity and friendships.</p>
+        </Link>
       </div>
     </section>
-    <section className="rdr-achievements rdr-home-extended">
-      <div className="rdr-container rdr-achievements__inner">
-        {achievements.map(item => <div key={item.label}><strong>{item.value}</strong><span>{item.label}</span><small>{item.detail}</small></div>)}
+    <section className="rdr-o1-cta">
+      <div className="rdr-container rdr-o1-cta__inner">
+        <div><h2>Come see what makes RDR special.</h2><p>Questions about admissions, classes or a campus visit?</p></div>
+        <EnquiryLink className="rdr-btn rdr-btn--light">Start an enquiry <ArrowUpRight size={17}/></EnquiryLink>
       </div>
     </section>
-    <div className="rdr-home-updates"><StoriesAndUpdates/></div>
-    <div className="rdr-home-extended"><SchoolMessages/></div>
-    <section className="rdr-section rdr-section--navy rdr-home-extended"><div className="rdr-container rdr-manifesto"><span className="rdr-eyebrow">OUR PURPOSE</span><h2>More than lessons.<br/><em>Learning for life.</em></h2><p>We believe education should help young people think critically, care for others and meet challenges with confidence.</p><Link className="rdr-btn rdr-btn--light" to="/academics">Explore academics <ArrowUpRight size={17}/></Link><span className="rdr-manifesto__ornament">✳</span></div></section>
-    <section className="rdr-section rdr-container rdr-enquiry-section rdr-enquiry-section--short">
-      <div><Heading eyebrow="ADMISSIONS & ENQUIRIES" title="A new chapter starts with a conversation." description="Ask about admissions, classes, transport or visiting RDR. Our team is here to help."/></div>
-      <EnquiryLink className="rdr-btn rdr-btn--solid">Open quick enquiry <ArrowUpRight size={17}/></EnquiryLink>
+    <section className="rdr-o1-disclosure rdr-container">
+      <span>Looking for school documents?</span>
+      <Link to="/mandatory-public-disclosure">Mandatory Public Disclosure <ArrowUpRight size={16}/></Link>
     </section>
-    <section className="rdr-section rdr-container rdr-disclosure-teaser"><div><span className="rdr-eyebrow">SCHOOL TRANSPARENCY</span><h2>Mandatory Public Disclosure</h2><p>Explore the school's CBSE affiliation reference, archived documents, and disclosure information.</p></div><Link to="/mandatory-public-disclosure" className="rdr-btn rdr-btn--outline">View disclosure <FileCheck2 size={18}/></Link></section>
-  </>
+  </div>
 );
 
 const IntroPage = ({eyebrow,title,description,image}:{eyebrow:string;title:string;description:string;image?:string}) => (
