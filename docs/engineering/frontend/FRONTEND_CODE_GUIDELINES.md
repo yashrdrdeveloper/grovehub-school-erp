@@ -6,7 +6,7 @@
 >
 > **Stack:** React 19, TypeScript strict, pnpm, Vite, Tailwind CSS 4, shadcn-compatible Radix primitives, Lucide icons through the components package, Jest, and the existing project architecture checks.
 >
- > **Precedence:** Revision 8 rules on route ownership, tests, and flat helper/constant units override older examples. Generic examples illustrate reusable patterns; actual GrooveHub migration paths are recorded separately in the audit inventory. This document replaces previous frontend guideline revisions and examples. Existing code that differs is **migration debt**, not an exception to this standard. Do not claim implementation is complete until checks and behavior regressions pass.
+> **Precedence:** Revision 8 rules on route ownership, tests, and flat helper/constant units override older examples. Generic examples illustrate reusable patterns; actual GrooveHub migration paths are recorded separately in the audit inventory. This document replaces previous frontend guideline revisions and examples. Existing code that differs is **migration debt**, not an exception to this standard. Do not claim implementation is complete until checks and behavior regressions pass.
 
 ## 1. Non-negotiable principles
 
@@ -194,8 +194,8 @@ export const ITEM_FIELD_ORDER: readonly ItemField[] = [
 ];
 
 export const ITEM_FIELDS = {
-  [ITEM_FIELD.TITLE]: { label: 'Title address', placeholder: 'Title', autoComplete: 'username' },
-  [ITEM_FIELD.DESCRIPTION]: { label: 'Description', placeholder: 'Description', autoComplete: 'current-description' },
+  [ITEM_FIELD.TITLE]: { label: 'Title', placeholder: 'Title', autoComplete: 'username' },
+  [ITEM_FIELD.DESCRIPTION]: { label: 'Description', placeholder: 'Description', autoComplete: 'off' },
 } as const;
 ~~~
 
@@ -680,7 +680,7 @@ Examples: `helpers/recovery.getMobileDescription.ts`, `renderer/credentialField.
 The `renderer/` directory contains **pure typed functions returning JSX**, distinct from full reusable components. A renderer accepts values/callbacks and returns `ReactNode` / `ReactElement`. It may call another renderer or shared component. It **must not** call hooks, APIs, storage, router navigation, subscribe to events or mutate state. It does not own general layouts shared across pages. If a renderer is large/reusable and requires lifecycle, it should become an actual component with its own folder.
 
 ~~~text
-auth/components/filterField/
+domain/catalog/components/filterField/
 ├── FilterField.tsx
 ├── constants/filterField.testIds.ts
 ├── renderer/
@@ -729,7 +729,7 @@ Use `renderer/recovery.content.tsx` for choosing form vs state, `renderer/forgot
 No raw string status comparisons (`kind === 'email'`, `props.view === 'ready'`, `variant='login'`) in migrated feature logic or feature props. Define explicit typed enums or stable `as const` runtime maps in nearest `constants/` file. Prefer string enums for server-aligned or cross-unit state identifiers. Every known state must have an explicit visual description; the compiler must detect missing mappings.
 
 ~~~ts
-// auth/components/taskStatusVisual/constants/taskStatusVisual.kind.ts
+// domain/catalog/components/taskStatusVisual/constants/taskStatusVisual.kind.ts
 export enum TaskStatusKind {
   CREATED = 'created',
   SUCCESS = 'success',
@@ -788,7 +788,7 @@ export const renderTaskStatusBadge: RenderTaskStatusBadge = (kind) => {
 ## 26. LoginLayout exact decomposition and theme-option renderer
 
 ~~~text
-auth/components/itemLayout/
+domain/catalog/components/itemLayout/
 ├── ItemLayout.tsx
 ├── constants/
 │   ├── itemLayout.variant.ts
@@ -823,7 +823,7 @@ export enum ItemLayoutVariant {
 export const ITEM_LAYOUT_COPY = {
   DEFAULT_EYEBROW: 'YOUR WORKSPACE',
   EDIT_EYEBROW: 'EDIT ITEM',
-  SCHOOL_NAME: 'Workspace',
+  APPLICATION_NAME: 'Workspace',
 } as const;
 
 // constants/itemLayout.appearance.ts (shared theme values/icons are imported)
@@ -901,9 +901,9 @@ packages/styles/
     ├── _a11y.scss
     └── _layout.scss
 
-domain/auth/components/itemLayout/styles/itemLayout.module.scss
-domain/auth/components/filterField/styles/filterField.module.scss
-domain/auth/components/taskStatusVisual/styles/taskStatusVisual.module.scss
+domain/domain/catalog/components/itemLayout/styles/itemLayout.module.scss
+domain/domain/catalog/components/filterField/styles/filterField.module.scss
+domain/domain/catalog/components/taskStatusVisual/styles/taskStatusVisual.module.scss
 domain/auth/pages/forgotPassword/components/itemEditor/styles/itemEditor.module.scss
 domain/auth/pages/itemDetails/styles/itemDetails.module.scss
 ~~~
@@ -946,10 +946,10 @@ CSS Modules are imported with e.g. `import styles from './styles/loginLayout.mod
 
 ## 29. Routes, PUBLIC/PROTECTED variants and the recovery-flow effect hook
 
-All navigation paths are named once. The user-selected canonical location is `frontend/app/core/routes/` with a narrowly scoped **pure-data leaf** allowed as a dependency of domain/shell (no React, business code, API, component import or state). Configure the `@AppRoutes` alias explicitly in TypeScript, Vite, Jest and boundaries **before adoption**. Other `frontend/app` imports remain disallowed from packages. If the project architecture cannot support this leaf without a dependency cycle, move canonical constants into `@Base/constants/routes` and keep `app/core/routes` as integration-only; **never duplicate the dictionaries**.
+All navigation paths are named once. Route constants belong in a **pure, framework-neutral business route contract** as specified in section 38, never duplicated in page constants or app bootstrap. Importing a route value does not authorize importing a React component or transport from that business module.
 
 ~~~ts
-// app/core/routes/constants/appRoutes.paths.ts
+// packages/business/app/routes/constants/app.routes.ts
 export const APP_ROUTE = {
   HOME: '/',
   ENTRY: '/entry',
@@ -961,7 +961,7 @@ export const APP_ROUTE = {
   WORKSPACE: '/workspace',
 } as const;
 
-// app/core/routes/constants/appRoutes.access.ts
+// packages/business/app/routes/constants/app.routeAccess.ts
 export enum RouteAccess {
   PUBLIC = 'PUBLIC',
   PROTECTED = 'PROTECTED',
@@ -1154,7 +1154,7 @@ The current module-level construction mixes immutable options and runtime instan
 
 ~~~ts
 // workspace/containers/workspaceContainer/constants/workspaceContainer.queryOptions.ts
-export const SHELL_QUERY_OPTIONS = {
+export const WORKSPACE_QUERY_OPTIONS = {
   defaultOptions: {
     queries: {
       staleTime: 30_000,
@@ -1166,9 +1166,9 @@ export const SHELL_QUERY_OPTIONS = {
 
 // workspace/containers/workspaceContainer/helpers/workspaceContainer.createQueryClient.ts
 import { QueryClient } from '@tanstack/react-query';
-import { SHELL_QUERY_OPTIONS } from '../constants/workspaceContainer.queryOptions';
+import { WORKSPACE_QUERY_OPTIONS } from '../constants/workspaceContainer.queryOptions';
 
-export const createWorkspaceQueryClient = (): QueryClient => new QueryClient(SHELL_QUERY_OPTIONS);
+export const createWorkspaceQueryClient = (): QueryClient => new QueryClient(WORKSPACE_QUERY_OPTIONS);
 ~~~
 
 A constructor is **not static data** and does not belong in `constants/` or `renderer/`. For the current SPA, a stable app-instance is sufficient; future SSR must scope the QueryClient per request/runtime. Query options, retry rules and timeouts must be named constants, not bare numbers in component markup.
@@ -1366,7 +1366,7 @@ One **top-level** `describe` per unit test file. The `describe` name must be the
 import { getItemErrorMessage } from '../item.getErrorMessage';
 
 describe('getItemErrorMessage', () => {
-  it('maps invalid credentials to safe copy', () => {
+  it('maps invalid input to safe copy', () => {
     expect(getItemErrorMessage(new Error('Invalid item')))
       .toBe('The request was rejected.');
   });
@@ -1437,7 +1437,7 @@ export enum ItemField {
 export interface ItemFieldConfig {
   readonly label: string;
   readonly placeholder: string;
-  readonly autoComplete: 'name' | 'current-description';
+  readonly autoComplete: 'name' | 'off';
 }
 
 // constants/item.fieldConfig.ts
@@ -1446,10 +1446,10 @@ import type { ItemFieldConfig } from './types/item.fieldConfig';
 
 export const ITEM_FIELD_CONFIG: Readonly<Record<ItemField, Readonly<ItemFieldConfig>>> = Object.freeze({
   [ItemField.TITLE]: Object.freeze({
-    label: 'Title address', placeholder: 'Title', autoComplete: 'name',
+    label: 'Title', placeholder: 'Title', autoComplete: 'name',
   }),
   [ItemField.DESCRIPTION]: Object.freeze({
-    label: 'Description', placeholder: 'Description', autoComplete: 'current-description',
+    label: 'Description', placeholder: 'Description', autoComplete: 'off',
   }),
 });
 ~~~
@@ -1482,10 +1482,10 @@ export const ITEM_VALIDATION_RULES: Readonly<Record<ItemField, readonly ItemVali
   [ItemField.DESCRIPTION]: Object.freeze([ItemValidationKind.REQUIRED]),
 });
 export const ITEM_REQUIRED_MESSAGES: Readonly<Record<ItemField, string>> = Object.freeze({
-  [ItemField.TITLE]: 'Please enter your title address.',
+  [ItemField.TITLE]: 'Please enter your title.',
   [ItemField.DESCRIPTION]: 'Please enter your description.',
 });
-export const ITEM_TITLE_FORMAT_MESSAGE = 'Enter a valid title address.';
+export const ITEM_TITLE_FORMAT_MESSAGE = 'Enter a valid title.';
 ~~~
 
 ~~~ts
