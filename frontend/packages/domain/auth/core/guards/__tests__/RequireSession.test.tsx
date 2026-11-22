@@ -1,9 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
-import { AuthProvider } from '../providers/authProvider';
+import { AuthProvider } from '../../providers/authProvider';
 
-import { PublicOnly, RequireSession } from './RequireSession';
+import { PublicOnly, RequireSession } from '../RequireSession';
 
 const me = jest.fn<Promise<unknown>, []>();
 const refresh = jest.fn<Promise<unknown>, []>();
@@ -30,7 +30,7 @@ const renderAt = (path: string) => render(
   </MemoryRouter>,
 );
 
-describe('authentication bootstrap routing', () => {
+describe('RequireSession', () => {
   beforeEach(() => {
     me.mockReset();
     refresh.mockReset();

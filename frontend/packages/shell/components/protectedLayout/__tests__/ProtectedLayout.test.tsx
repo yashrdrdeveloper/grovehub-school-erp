@@ -9,7 +9,7 @@ jest.mock('../../../Shell', () => ({
   Shell: () => <div data-testid="persistent-workspace-shell"><Outlet/></div>,
 }));
 
-describe('protected layout', () => {
+describe('ProtectedLayout', () => {
   it('retains the same mounted shell while protected child routes change', () => {
     render(<MemoryRouter initialEntries={['/dashboard']}>
       <Routes>

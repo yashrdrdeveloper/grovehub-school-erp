@@ -26,7 +26,7 @@ for (const file of files) {
   const styles = file.startsWith('packages/styles/');
   if (/^packages\/domain\/(accounts|people|integrations|settings)\//.test(file)) flag(file, 'UNUSED_DOMAIN_REVIEW', 1);
   if (file.startsWith('packages/') && /\/config\//.test(file)) flag(file, 'CONFIG_FOLDER', 1);
-  if (/\/helpers\/[^/]+\/(?:index\.ts|[^/]+\.ts|types\/|__tests__\/)/.test(file) && !base) flag(file, 'NESTED_HELPER', 1);
+  if (/\/helpers\/(?!types\/|__tests__\/)[^/]+\/(?:index\.ts|[^/]+\.tsx?|types\/|__tests__\/)/.test(file) && !base) flag(file, 'NESTED_HELPER', 1);
   if (/\/(?:helpers|constants|renderer)\/index\.ts$/.test(file)) flag(file, 'FORBIDDEN_BARREL', 1);
   if (test && !file.includes('/__tests__/')) flag(file, 'TEST_LOCATION', 1);
   if (/\.css$/.test(file) && file.startsWith('packages/domain/')) flag(file, 'LEGACY_DOMAIN_CSS', 1);
@@ -55,7 +55,10 @@ for (const file of files) {
       if (test && spec.startsWith('.') && node.importClause) {
         const binding = node.importClause.namedBindings;
         if (binding && ts.isNamedImports(binding)) {
-          for (const item of binding.elements) importedUnitNames.add(item.name.text);
+          for (const item of binding.elements) {
+            importedUnitNames.add(item.name.text);
+            if (item.propertyName) importedUnitNames.add(item.propertyName.text);
+          }
         }
         if (node.importClause.name) importedUnitNames.add(node.importClause.name.text);
       }

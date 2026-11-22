@@ -20,7 +20,7 @@ const renderRecovery=()=>render(<MemoryRouter initialEntries={['/forgot-password
   </Routes>
 </MemoryRouter>);
 
-describe('forgot password recovery',()=>{
+describe('ForgotPasswordContainer',()=>{
   beforeEach(()=>{
     mockForgotPassword.mockReset();
     jest.useRealTimers();

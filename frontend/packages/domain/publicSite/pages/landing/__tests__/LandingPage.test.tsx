@@ -7,7 +7,7 @@ import { LandingContainer as LandingPage } from '../containers/landingContainer'
 // ESM-only Lodash implementation under Jest's CommonJS test runner.
 jest.mock('@Components', () => ({ SchoolMonogram: () => 'RDR' }));
 
-describe('RDR public-site quick actions', () => {
+describe('LandingContainer', () => {
   beforeEach(() => {
     window.scrollTo = jest.fn();
   });

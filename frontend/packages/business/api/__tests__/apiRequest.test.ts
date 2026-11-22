@@ -1,6 +1,6 @@
-import { apiRequest } from './http';
+import { apiRequest } from '../http';
 
-describe('shared HTTP envelope', () => {
+describe('apiRequest', () => {
   const originalFetch = globalThis.fetch;
 
   afterEach(() => {

@@ -39,7 +39,7 @@ const renderPage = (purpose:'invitation'|'recovery',proof?:string) => {
   return render(<MemoryRouter><RecoveryPage purpose={purpose}/></MemoryRouter>);
 };
 
-describe('password link flows',()=>{
+describe('RecoveryContainer',()=>{
   beforeEach(()=>{
     clearRecoveryFlow();
     window.sessionStorage.clear();
