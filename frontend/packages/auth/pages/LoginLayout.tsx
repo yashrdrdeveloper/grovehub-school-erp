@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom';
 import { SchoolMonogram } from '@Components';
 import { useWorkspaceTheme, type ThemePreference } from '@Components/hooks/theme';
 
+import { AuthCampusIllustration } from './AuthCampusIllustration';
+
 
 // One stylesheet owns the entire auth layout. Legacy variants are intentionally not loaded.
 import './optionOneAuth.css';
@@ -54,6 +56,7 @@ export const LoginLayout = ({ children, title, description, mobileDescription, m
             <SchoolMonogram/>
             <span><strong>RDR School</strong><small>Rao Deena Ram Vidya Vihar</small></span>
           </div>
+          <AuthCampusIllustration/>
           <div className="rdr-login-v2__visual-copy">
             <span className="rdr-login-v2__visual-kicker"><span/> THE RDR SCHOOL WORKSPACE</span>
             <h2>For every school day.<br/><em>And everyone behind it.</em></h2>
