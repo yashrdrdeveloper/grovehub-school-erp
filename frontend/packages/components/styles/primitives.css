@@ -63,3 +63,25 @@
 .gh-typography--success { color: var(--gh-color-success); }
 @media (prefers-reduced-motion: reduce) { .gh-button__spinner { animation-duration: 1.8s; } }
 @media (max-width: 640px) { .gh-container--padded { padding-inline: 1rem; } }
+
+/* Shared composition and typography size recipes; values come from @Styles. */
+.gh-typography--warning { color: var(--gh-color-warning); }
+.gh-typography--size-xs { font-size: var(--gh-text-xs); }
+.gh-typography--size-sm { font-size: var(--gh-text-sm); }
+.gh-typography--size-base { font-size: var(--gh-text-base); }
+.gh-typography--size-lg { font-size: var(--gh-text-lg); }
+.gh-typography--size-xl { font-size: var(--gh-text-xl); }
+.gh-typography--size-2xl { font-size: var(--gh-text-2xl); }
+.gh-typography--weight-normal { font-weight: var(--gh-weight-normal); }
+.gh-typography--weight-medium { font-weight: var(--gh-weight-medium); }
+.gh-typography--weight-semibold { font-weight: var(--gh-weight-semibold); }
+.gh-typography--weight-bold { font-weight: var(--gh-weight-bold); }
+
+.gh-form { display: grid; width: 100%; min-width: 0; }
+.gh-form--stack { grid-template-columns: minmax(0, 1fr); }
+.gh-form--inline { display: flex; align-items: flex-end; flex-wrap: wrap; }
+.gh-form--gap-sm { gap: var(--gh-space-2); }
+.gh-form--gap-md { gap: var(--gh-space-4); }
+.gh-form--gap-lg { gap: var(--gh-space-6); }
+.gh-form--inline > * { min-width: 0; }
+@media (max-width: 720px) { .gh-form--inline { flex-direction: column; align-items: stretch; } }

@@ -5,6 +5,8 @@ export { FormField } from './components/FormField';
 export { TextField } from './components/TextField';
 export { PasswordField } from './components/PasswordField';
 export { Typography } from './components/Typography';
+export { Text } from './components/Text';
+export { Form } from './components/Form';
 export { Container } from './components/Container';
 export { Card } from './components/Card';
 export { DataTable } from './components/DataTable';

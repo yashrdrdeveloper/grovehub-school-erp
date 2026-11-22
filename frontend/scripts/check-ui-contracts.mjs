@@ -22,6 +22,8 @@ for (const unit of await readdir(root, { withFileTypes: true })) {
 
   checked++;
   const source = await readFile(path.join(folder, impl), 'utf8');
+  const forwardsToTypography = unit.name === 'Text'
+    && /<Typography\b/.test(source) && /dataTestId=\{dataTestId\}/.test(source);
   const forwardsToInput = unit.name === 'TextField'
     && /<Input\b/.test(source) && /\{\.\.\.props\}/.test(source);
   const forwardsToNativeLeaf = unit.name === 'Input'
