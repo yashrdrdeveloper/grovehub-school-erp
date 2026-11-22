@@ -30,6 +30,8 @@ jobs:
           cache-dependency-path: frontend/pnpm-lock.yaml
       - name: Install
         run: pnpm install --frozen-lockfile
+      - name: Audit all tracked frontend source (non-blocking report)
+        run: pnpm audit:guidelines
       - name: Check architecture
         run: pnpm check:architecture
       - name: Typecheck

@@ -12,7 +12,8 @@
     "test": "jest --passWithNoTests",
     "lint": "eslint .",
     "check:architecture": "node scripts/check-boundaries.mjs && node scripts/check-units.mjs && node scripts/check-ui-contracts.mjs && node scripts/check-styles.mjs && node scripts/check-layout-assets.mjs",
-    "assets:school": "node scripts/download-school-images.mjs"
+    "assets:school": "node scripts/download-school-images.mjs",
+    "audit:guidelines": "node scripts/audit-guidelines.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
