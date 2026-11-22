@@ -31,11 +31,7 @@ export const WorkspaceShell: WorkspaceShellComponent = ({ model, ...props }) => 
     )}
 
     <Box as="div" className="shell__content">
-      <Topbar
-        schoolLabel={props.schoolLabel}
-        accountLabel={props.accountLabel}
-        model={model}
-      />
+      <Topbar schoolLabel={props.schoolLabel} accountLabel={props.accountLabel} model={model} />
       <Box as="main" className="shell__main">
         <Outlet />
       </Box>
