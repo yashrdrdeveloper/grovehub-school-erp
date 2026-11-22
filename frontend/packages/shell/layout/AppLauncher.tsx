@@ -1,37 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import {
-  BookOpen, BriefcaseBusiness, Building2, Cable, CalendarDays, ClipboardCheck,
-  CreditCard, GraduationCap, Grid2X2, Megaphone, Pin, PinOff, Search,
-  Settings2, ShieldCheck, UsersRound, Workflow, X,
-} from 'lucide-react';
+import { Grid2X2, Pin, PinOff, Search, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export type CatalogApp = {
-  name: string;
-  description: string;
-  path?: string;
-  icon: typeof UsersRound;
-  category: string;
-};
+import { appCatalog, type CatalogApp } from '../registry/appCatalog.registry';
 
-export const appCatalog: CatalogApp[] = [
-  { name: 'Dashboard', description: 'Overview of your school', path: '/dashboard', icon: Building2, category: 'Workspace' },
-  { name: 'People', description: 'School community directory', icon: UsersRound, category: 'Workspace' },
-  { name: 'Accounts', description: 'Accounts and access', icon: ShieldCheck, category: 'Administration' },
-  { name: 'Integrations', description: 'Connected services', icon: Cable, category: 'Administration' },
-  { name: 'Security', description: 'Sessions and account security', icon: Settings2, category: 'Administration' },
-  { name: 'Admissions', description: 'Applications and enrollment', icon: GraduationCap, category: 'Student life' },
-  { name: 'Student lifecycle', description: 'Student journey and records', icon: BookOpen, category: 'Student life' },
-  { name: 'Attendance', description: 'Student and staff attendance', icon: ClipboardCheck, category: 'Student life' },
-  { name: 'Fees & finance', description: 'Collections and dues', icon: CreditCard, category: 'Operations' },
-  { name: 'Tasks', description: 'Assignments and follow-ups', icon: Workflow, category: 'Operations' },
-  { name: 'Calendar', description: 'Academic events and holidays', icon: CalendarDays, category: 'Operations' },
-  { name: 'Communication', description: 'Calls, mail, SMS and WhatsApp', icon: Megaphone, category: 'Operations' },
-  { name: 'HR', description: 'People operations and leave', icon: BriefcaseBusiness, category: 'Operations' },
-];
-
-export const defaultPinnedApps = ['/dashboard'];
+// Compatibility exports for existing launcher consumers.
+export { appCatalog, defaultPinnedApps } from '../registry/appCatalog.registry';
+export type { CatalogApp } from '../registry/appCatalog.registry';
 
 const categories = ['All', 'Workspace', 'Student life', 'Operations', 'Administration'];
 
