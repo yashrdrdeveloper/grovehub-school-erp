@@ -1,24 +1,18 @@
 import { readCSRF } from './cookies';
-import { ApiError, type ApiErrorBody, type ApiSuccess } from './types';
-
-type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
-
-export interface ApiOptions {
-  method?: HttpMethod;
-  body?: unknown;
-  signal?: AbortSignal;
-  headers?: Record<string, string>;
-}
+import { HTTP_METHOD } from './constants/api.method';
+import { ApiError } from './errors/ApiError';
+import type { ApiErrorBody, ApiSuccess } from './types/api.response';
+import type { ApiOptions } from './types/api.options';
 
 export const apiRequest = async <T>(
   path: string,
   options: ApiOptions = {},
 ): Promise<T> => {
-  const method = options.method ?? 'GET';
+  const method = options.method ?? HTTP_METHOD.GET;
   const csrf = readCSRF();
   const headers: Record<string, string> = {};
   if (options.body !== undefined) headers['Content-Type'] = 'application/json';
-  if (method !== 'GET' && csrf) headers['X-CSRF-Token'] = csrf;
+  if (method !== HTTP_METHOD.GET && csrf) headers['X-CSRF-Token'] = csrf;
   if (options.headers) Object.assign(headers, options.headers);
   const request: RequestInit = {
     method,

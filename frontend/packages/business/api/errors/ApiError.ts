@@ -1,16 +1,4 @@
-export interface ApiSuccess<T> {
-  success: true;
-  data: T;
-}
-
-export interface ApiErrorBody {
-  success: false;
-  errorCode: string;
-  errorMessage: string;
-  httpErrorCode: number;
-  errorMetaData?: Record<string, unknown>;
-}
-
+/** Structured HTTP error originating from the shared transport boundary. */
 export class ApiError extends Error {
   constructor(
     readonly status: number,
