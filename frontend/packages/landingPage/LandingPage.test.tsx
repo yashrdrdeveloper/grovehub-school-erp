@@ -20,17 +20,13 @@ describe('RDR public-site quick actions', () => {
     expect(screen.getByRole('textbox',{name:'Guardian first name'})).toBeTruthy();
     fireEvent.click(screen.getByRole('button',{name:/close and return to the page/i}));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
-    expect(screen.getByRole('heading',{name:/where curious minds/i})).toBeTruthy();
+    expect(screen.getByRole('heading',{name:/rooted in haluhera/i})).toBeTruthy();
   });
 
-  it('opens historical school leadership information without redirecting to the legacy site', async () => {
-    render(<MemoryRouter initialEntries={['/']}><LandingPage/></MemoryRouter>);
-    const director = screen.getAllByRole('link',{name:/director.s message/i})[0];
-    expect(director).toBeDefined();
-    fireEvent.click(director!);
-    await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy());
-    expect(screen.getByRole('heading',{name:"Director's message"})).toBeTruthy();
-    expect(screen.getByText(/education for the whole child/i)).toBeTruthy();
+  it('shows the full director page on its own route, not a homepage sheet',()=>{
+    render(<MemoryRouter initialEntries={['/about/director']}><LandingPage/></MemoryRouter>);
+    expect(screen.getByRole('heading',{name:/director.s message/i})).toBeTruthy();
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 
   it('keeps CBSE public disclosure as a proper route, not a modal', async () => {
@@ -69,9 +65,8 @@ describe('RDR public-site quick actions', () => {
 
   it.each([
     ['header', 'Enquire now'],
-    ['hero', 'Enquire for admissions'],
-    ['mobile action', 'Admission enquiry'],
-    ['homepage prompt', 'Open quick enquiry'],
+    ['hero', 'Enquire for admission'],
+    ['homepage prompt', 'Start an enquiry'],
   ])('opens the same working enquiry sheet from the %s CTA', async (_source, label) => {
     render(<MemoryRouter initialEntries={['/']}><LandingPage/></MemoryRouter>);
     fireEvent.click(screen.getByRole('link',{name:label}));
@@ -80,15 +75,16 @@ describe('RDR public-site quick actions', () => {
     expect(screen.getByRole('textbox',{name:'Guardian first name'})).toBeTruthy();
     fireEvent.click(screen.getByRole('button',{name:/close and return to the page/i}));
     await waitFor(()=>expect(screen.queryByRole('dialog')).toBeNull());
-    expect(screen.getByRole('heading',{name:/where curious minds/i})).toBeTruthy();
+    expect(screen.getByRole('heading',{name:/rooted in haluhera/i})).toBeTruthy();
   });
 
-  it('opens a live enquiry when Admissions is selected in the footer', async () => {
+  it('opens the standalone admissions page from the footer',async()=>{
     const {container}=render(<MemoryRouter initialEntries={['/']}><LandingPage/></MemoryRouter>);
     const footerAdmissions=container.querySelector<HTMLAnchorElement>('.rdr-footer a[href="/admissions"]');
     expect(footerAdmissions).not.toBeNull();
     fireEvent.click(footerAdmissions!);
-    await waitFor(()=>expect(screen.getByRole('dialog')).toBeTruthy());
+    await waitFor(()=>expect(screen.getByRole('heading',{name:/your child.s journey starts here/i})).toBeTruthy());
+    expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.getByRole('textbox',{name:'Guardian first name'})).toBeTruthy();
   });
 
