@@ -1,5 +1,5 @@
 import { Box } from '@Components/components/Box';
-import { AlertCircle, LoaderCircle, LockKeyhole, Mail } from '@Components/icons';
+import { AlertCircle, LockKeyhole, Mail } from '@Components/icons';
 import type { ChangeEventHandler } from 'react';
 import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '@Components/components/Button';
 import { Form } from '@Components/components/Form';
@@ -47,9 +47,16 @@ export const LoginForm: LoginFormComponent = ({
           </Button>
         }/>
 
-      <Button type="submit" variant={BUTTON_VARIANT.PRIMARY} size={BUTTON_SIZE.LARGE} dataTestId={LOGIN_TEST_IDS.SUBMIT} className="rdr-login-v2__submit" disabled={state.isSubmitting}>
+      <Button
+        type="submit"
+        variant={BUTTON_VARIANT.PRIMARY}
+        size={BUTTON_SIZE.LARGE}
+        dataTestId={LOGIN_TEST_IDS.SUBMIT}
+        className="rdr-login-v2__submit"
+        loading={state.isSubmitting}
+        loadingText={submitLabel}
+      >
         <Box as="span">{submitLabel}</Box>
-        {state.isSubmitting && <LoaderCircle className="rdr-login-v2__spinner" size={19} aria-hidden="true"/>}
       </Button>
       <Box as="div" className="rdr-login-v2__feedback-slot rdr-login-v2__feedback-slot--signin" aria-live="polite" dataTestId={LOGIN_TEST_IDS.FEEDBACK}>
         {state.errorMessage && <Box as="p" className="rdr-login-v2__auth-error" role="alert" dataTestId={LOGIN_TEST_IDS.AUTH_ERROR}>
