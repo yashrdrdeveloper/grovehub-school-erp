@@ -52,3 +52,6 @@ Do not confuse `identity.accounts.account_id` with `foundation.persons.gid`: onl
 4. With CSRF/Origin protection satisfied, use `POST /identity/protected/accounts` for subsequent invitations.
 
 Never publish the bootstrap password or a complete connection string in issue trackers, logs, or Swagger.
+
+
+The executable now lives at `backend/cmd/identity-bootstrap-admin`; the privileged service-local facade lives at `backend/services/identity/bootstrapadmin`. Do not recreate `services/identity/cmd`.

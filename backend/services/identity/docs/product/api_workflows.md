@@ -55,3 +55,8 @@ A database migration adds `attempts` to `identity.password_tokens`. `ReserveSetu
 A validation GET only checks the proof at that instant; the token can expire or be consumed before POST exchange. The frontend must handle either failure and never display the raw token. Rate-limit controls remain necessary for public endpoints.
 
 After a successful proof exchange, GET grant-status endpoints can resume a password form after page refresh without restoring or persisting the emailed proof in a readable URL or browser storage. The setup status response returns `{verified:true,expiresIn:N}`; exhausted setup grants return `IDENTITY_SETUP_ATTEMPTS_EXCEEDED`.
+
+
+## Per-tenant system mail sender
+
+A verified tenant administrator with an active Integration mail connection selects the default sender by calling `POST /integrations/protected/connections/system-mail/sender` with `{"connectionId":"<active-connection-uuid>"}`. Integration validates tenant, connection status and `mail.send` capability. The selection is stored in the database and used by queued Identity invitations, without redeployment. Password setup remains public-tier **activation only**; account creation is protected.

@@ -12,7 +12,7 @@ Identity is rebuilt to the same module topology as Foundation, Integration and I
 
 ## Module SRP
 
-`bootstrap/impl/` composes dependencies and owns worker cancellation. Identity controllers declare annotated HTTP verbs under the resource-specific access tiers; `routes/http.go` invokes generated registration groups only. Launcher owns tier classification and denies unauthorized external access. `controller/account/{public,protected}` and `controller/authentication/{public,protected}` adapt typed REST requests. `services/account`, `services/authentication`, `services/credential` and `services/registration` own business operations. `repository/<resource>/impl` owns SQL. `internal/resources/templates/registration/password_setup.html` owns presentation, while `registration/operations/register/helpers/mail.go` renders and sends through Integration.
+`bootstrap/impl/{build,runtime,client,routes,repository,services,events,workers}.go` separates composition, HTTP registration and cancellable worker lifecycle. Identity controllers declare annotated HTTP verbs under the resource-specific access tiers; `routes/http.go` invokes generated registration groups only. Launcher owns tier classification and denies unauthorized external access. `controller/account/protected`, `controller/activation/public` and `controller/authentication/{public,protected}` adapt typed REST requests. `services/account`, `services/authentication`, `services/credential` and `services/registration` own business operations. `repository/<resource>/impl` owns SQL. `internal/resources/templates/registration/password_setup.html` owns presentation, while `registration/operations/register/helpers/mail.go` renders and sends through Integration.
 
 ## Security
 
@@ -28,7 +28,7 @@ Authentication password login uses a narrow annotated `LoginStrategy` interface 
 
 ## Deployment and verification limitations
 
-The current schema history contains a destructive initial identity migration that MUST NOT be rerun against an existing schema; only apply pending additive migrations using the existing `identity_schema_state` history. Set `IDENTITY_ALLOWED_ORIGIN`, `IDENTITY_ADMIN_ACCOUNT_IDS`, `IDENTITY_INVITATION_KEY_B64`, `IDENTITY_SETUP_URL`, `IDENTITY_RESET_URL`, `IDENTITY_SYSTEM_MAIL_TENANT_ID`, and `IDENTITY_SYSTEM_MAIL_CONNECTION_ID` using managed secrets/configuration. Password recovery is deliberately non-enumerating. Pending production release requirements include distributed rate limits (the local HTTP limiter is only per-instance), refresh-token replay family detection, admin bootstrap, tenant data backfill/rollback, end-to-end Integration sandbox sends and PostgreSQL-backed concurrency tests. Email-only login is enforced until a tenant-aware username-login contract is designed.
+The current schema history contains a destructive initial identity migration that MUST NOT be rerun against an existing schema; only apply pending additive migrations using the existing `identity_schema_state` history. Set `IDENTITY_ALLOWED_ORIGIN`, `IDENTITY_ADMIN_ACCOUNT_IDS`, `IDENTITY_INVITATION_KEY_B64`, `IDENTITY_SETUP_URL`, `IDENTITY_RESET_URL` using managed secrets/configuration. Password recovery is deliberately non-enumerating. Pending production release requirements include distributed rate limits (the local HTTP limiter is only per-instance), refresh-token replay family detection, admin bootstrap, tenant data backfill/rollback, end-to-end Integration sandbox sends and PostgreSQL-backed concurrency tests. Email-only login is enforced until a tenant-aware username-login contract is designed.
 
 ## Renamed entities
 
@@ -40,4 +40,17 @@ The launcher supplies a verified Identity Principal to protected requests, plus 
 
 ## Rate limit and operation contracts
 
-Controller method `@RouteLimit N` metadata is validated by the shared generator and emitted as exact HTTP method+path policy. The `Identity` module's bootstrap returns generated rate limits to Launcher; no Identity route strings are maintained inside the generic limiter. Individual domain methods remain `services/authentication/operations/<action>` and `services/account/operations/<action>` contracts with `impl/` packages; `services/registration/registration.go` now defines separate `Service` (Register/Resend) and `InvitationSender` contracts; implementations live in `registration/impl` and `registration/operations/*`. `security/security.go` defines the access verifier interface. HTTP cookies are exposed as `transport/cookies.Manager` with `transport/cookies/impl` owned by the transport boundary.
+Controller method `@RouteLimit N` metadata is validated by the shared generator and emitted as exact HTTP method+path policy. The `Identity` module's bootstrap returns generated rate limits to Launcher; no Identity route strings are maintained inside the generic limiter. Individual domain methods remain `services/authentication/operations/<action>` and `services/account/operations/<action>` contracts with `impl/` packages; `services/registration/registration.go` now defines separate `Service` (Register/Resend) and `InvitationSender` contracts; implementations live in `registration/impl` and `registration/operations/*`. `services/security/security.go` defines the access verifier interface. HTTP cookies are exposed as `transport/cookies.Manager` with `transport/cookies/impl` owned by the transport boundary.
+
+
+## Refactor: composition, clients and activation
+
+Identity's `@Client identityAccountClient` uses `@RequestLine` for GET account and POST account search, with a generated in-process HTTP client in `internal/app/client/account/impl`. The Runtime no longer delegates account methods to the service. `bootstrap/impl/build.go` composes dependencies, `runtime.go` manages lifecycle, and `workers.go` handles cancellation.
+
+Protected account creation remains admin-only. Public `/identity/public/accounts/setup` and `/setup/status` routes belong to the activation controller and require a valid purpose-bound invitation setup grant. The offline administrator command is now `backend/cmd/identity-bootstrap-admin`, through the service-owned operator facade in `services/identity/bootstrapadmin`.
+
+## Dynamic Integration-managed mail routing
+
+Identity owns invitation content, encrypted queue payload, tenant/account relationship and retry intent. Its worker resolves the tenant from the stored Identity account and calls Integration's `ExecuteSystemMail` instead of reading fixed tenant/connection environment IDs. Integration persists the chosen mail connection in `integration.system_mail_senders`, checks the active connection and `mail.send` capability, and accepts updates through admin-protected `POST /integrations/protected/connections/system-mail/sender` with body `{"connectionId":"<uuid>"}`. Configure a default sender per tenant before delivering invitations; a sender change requires no backend restart.
+
+Startup now requires an Integration client and a valid 32-byte `IDENTITY_INVITATION_KEY_B64` secret. A disconnected or missing sender causes a delivery error rather than silently using a different account.
