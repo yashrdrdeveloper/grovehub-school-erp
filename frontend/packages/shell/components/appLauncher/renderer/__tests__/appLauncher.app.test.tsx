@@ -16,8 +16,12 @@ describe('renderAppLauncherApp', () => {
         {renderAppLauncherApp({
           app,
           isPinned: false,
-          onOpenChange: (next) => { open = next; },
-          onTogglePin: (path) => { toggled = path; },
+          onOpenChange: (next) => {
+            open = next;
+          },
+          onTogglePin: (path) => {
+            toggled = path;
+          },
         })}
       </MemoryRouter>,
     );

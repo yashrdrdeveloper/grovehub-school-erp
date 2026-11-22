@@ -9,6 +9,4 @@ describe('publicRoutes', () => {
     );
     expect(publicRoutes.every((route) => Boolean(route.element))).toBe(true);
   });
-
 });
-

@@ -28,15 +28,15 @@ const props: Pick<ForgotPasswordProps, 'formId' | 'state' | 'view' | 'onUseAnoth
 
 describe('renderForgotPasswordSuccess', () => {
   it('preserves its accessible heading, email, login link and disabled resend', () => {
-    render(
-      <MemoryRouter>
-        {renderForgotPasswordSuccess(props)}
-      </MemoryRouter>,
-    );
+    render(<MemoryRouter>{renderForgotPasswordSuccess(props)}</MemoryRouter>);
 
     expect(screen.getByRole('heading', { level: 3, name: 'Check your email' })).toBeTruthy();
     expect(screen.getByText('parent@example.com')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Back to sign in' }).getAttribute('href')).toBe('/login');
-    expect((screen.getByRole('button', { name: 'Resend in 30s' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByRole('link', { name: 'Back to sign in' }).getAttribute('href')).toBe(
+      '/login',
+    );
+    expect(
+      (screen.getByRole('button', { name: 'Resend in 30s' }) as HTMLButtonElement).disabled,
+    ).toBe(true);
   });
 });

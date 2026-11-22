@@ -24,7 +24,11 @@ export const renderForgotPasswordNotice: RenderForgotPasswordNotice = (view) => 
       role="status"
       aria-live="polite"
     >
-      <Box as={BOX_TAG.SPAN} className={FORGOT_PASSWORD_LEGACY_CLASSES.NOTICE_ICON} aria-hidden="true">
+      <Box
+        as={BOX_TAG.SPAN}
+        className={FORGOT_PASSWORD_LEGACY_CLASSES.NOTICE_ICON}
+        aria-hidden="true"
+      >
         <NoticeIcon size={20} />
       </Box>
       <Box as={BOX_TAG.SPAN} className={FORGOT_PASSWORD_LEGACY_CLASSES.NOTICE_COPY}>

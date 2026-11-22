@@ -42,4 +42,7 @@ const walk = async (folder) => {
 await walk(root);
 for (const issue of errors) process.stderr.write(issue + '\n');
 if (errors.length) process.exitCode = 1;
-else process.stdout.write('Renderer purity, naming and tests verified across ' + checked + ' JSX renderer files.\n');
+else
+  process.stdout.write(
+    'Renderer purity, naming and tests verified across ' + checked + ' JSX renderer files.\n',
+  );
