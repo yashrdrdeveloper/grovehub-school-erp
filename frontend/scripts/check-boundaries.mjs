@@ -58,6 +58,9 @@ for (const filename of files) {
     if (name === '@Auth' || name.startsWith('@Auth/')) {
       problems.push(`${relative}: retired @Auth alias; import @Domain/auth instead`);
     }
+    if (category !== 'components' && name.startsWith('@radix-ui/')) {
+      problems.push(`${relative}: Radix leaf components belong in @Components, not ${name}`);
+    }
     if (category !== 'components' && (name === 'lucide-react' || name.startsWith('lucide-react/'))) {
       problems.push(`${relative}: direct lucide-react import; use @Components/icons`);
     }

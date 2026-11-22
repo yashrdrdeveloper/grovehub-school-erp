@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react';
-import * as Dialog from '@radix-ui/react-dialog';
+import {
+  DialogRoot, DialogPortal, DialogOverlay, DialogContent,
+  DialogTitle, DialogDescription, DialogClose,
+} from '@Components/components/Dialog/parts';
 import { ArrowRight, GraduationCap, Phone, ShieldCheck, X } from '@Components/icons';
 import { school } from '../../constants/school.content';
 import { panelTitles, overviewPanels, type StoryKey } from './constants/school.sheetCopy';
@@ -24,16 +27,16 @@ export const PublicSheet = ({
   let title = 'RDR School information';
   let description = '';
   if (panel) { title = panelTitles[panel]; description = overviewPanels[panel]; }
-  return <Dialog.Root open={Boolean(panel)} onOpenChange={open=>{if(!open)onClose();}}>
-    <Dialog.Portal>
-      <Dialog.Overlay className="rdr-sheet-backdrop"/>
-      <Dialog.Content className="rdr-sheet" aria-label={title}>
+  return <DialogRoot open={Boolean(panel)} onOpenChange={open=>{if(!open)onClose();}}>
+    <DialogPortal>
+      <DialogOverlay className="rdr-sheet-backdrop"/>
+      <DialogContent className="rdr-sheet" aria-label={title}>
         <div className="rdr-sheet__handle" aria-hidden="true"/>
         <div className="rdr-sheet__header">
-          <div><span className="rdr-sheet-kicker">RAO DEENA RAM VIDYA VIHAR</span><Dialog.Title>{title}</Dialog.Title>
-            <Dialog.Description>{description}</Dialog.Description>
+          <div><span className="rdr-sheet-kicker">RAO DEENA RAM VIDYA VIHAR</span><DialogTitle>{title}</DialogTitle>
+            <DialogDescription>{description}</DialogDescription>
           </div>
-          <Dialog.Close className="rdr-sheet__close" aria-label="Close and return to the page"><X size={22}/></Dialog.Close>
+          <DialogClose className="rdr-sheet__close" aria-label="Close and return to the page"><X size={22}/></DialogClose>
         </div>
         <div className="rdr-sheet__body" key={panel??'empty'}>
           {panel==='enquiry'&&<div className="rdr-sheet-enquiry"><div className="rdr-sheet-enquiry__intro"><GraduationCap size={26}/><strong>Let's talk about your child's future.</strong><p>Share your details. Our school office is only a message away.</p>
@@ -47,7 +50,7 @@ export const PublicSheet = ({
           {panel==='contact'&&<ContactPanel onEnquire={onEnquire}/>}
         </div>
         {panel!=='enquiry'&&<div className="rdr-sheet__bottom"><span><ShieldCheck size={15}/> RDR School · Haluhera, Rewari</span><button onClick={onEnquire} type="button">Quick enquiry <ArrowRight size={16}/></button></div>}
-      </Dialog.Content>
-    </Dialog.Portal>
-  </Dialog.Root>;
+      </DialogContent>
+    </DialogPortal>
+  </DialogRoot>;
 };
