@@ -56,7 +56,7 @@ if (!routes.includes('PUBLIC_SITE_PATHS') || !publicIndex.includes('PUBLIC_SITE_
   violations.push('public routes must be owned by publicSite, not duplicated in shell');
 }
 if (!routes.includes('<RequireSession/>') || !routes.includes('<ProtectedLayout/>')
-    || !workspaceTemplate.includes('<Outlet/>')
+    || !/<Outlet\s*\/>/.test(workspaceTemplate)
     || !workspaceContainer.includes('<Shell ')
     || !protectedLayout.includes('<WorkspaceShellContainer ')) {
   violations.push('protected routes must keep one pathless protected layout with a persistent Shell and nested Outlet');
