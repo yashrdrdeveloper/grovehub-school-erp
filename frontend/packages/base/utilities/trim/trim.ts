@@ -1,4 +1,5 @@
 import lodashTrim from 'lodash-es/trim';
+import type { Trim } from './types/trim';
 
-/** A typed, side-effect-free Lodash utility exposed only through @Base. */
-export const _trim = (const value: string): string => lodashTrim(value);
+/** Pure typed gateway to Lodash's whitespace normalization. */
+export const _trim: Trim = value => lodashTrim(value);

@@ -1,12 +1,12 @@
 import { LoginField } from './login.fields';
 
-/** Data-only validation policy. Executable predicates live in helpers. */
+/** Pure data: executable validation belongs in helpers. */
 export enum LoginValidationKind {
   REQUIRED = 'REQUIRED',
   EMAIL_FORMAT = 'EMAIL_FORMAT',
 }
 
-export const LOGIN_EMAIL_PATTERN = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+export const LOGIN_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const LOGIN_VALIDATION_RULES: Readonly<Record<LoginField, readonly LoginValidationKind[]>> = Object.freeze({
   [LoginField.EMAIL]: Object.freeze([

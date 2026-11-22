@@ -1,4 +1,4 @@
 import lodashKeys from 'lodash-es/keys';
+import type { Keys } from './types/keys';
 
-/** A typed, side-effect-free Lodash utility exposed only through @Base. */
-export const _keys = (const value: object): string[] => lodashKeys(value);
+export const _keys: Keys = value => lodashKeys(value);

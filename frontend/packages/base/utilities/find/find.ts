@@ -1,4 +1,5 @@
 import lodashFind from 'lodash-es/find';
+import type { Find } from './types/find';
 
-/** A typed, side-effect-free Lodash utility exposed only through @Base. */
-export const _find = <T>(const values: readonly T[], predicate: (value: T) => boolean): T | undefined => lodashFind(values as T[], predicate);
+/** Preserve readonly inputs while returning the first matching element. */
+export const _find: Find = (values, predicate) => lodashFind(values as unknown[], predicate);

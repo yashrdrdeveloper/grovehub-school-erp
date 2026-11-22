@@ -1,4 +1,4 @@
 import lodashMap from 'lodash-es/map';
+import type { MapValues } from './types/map';
 
-/** A typed, side-effect-free Lodash utility exposed only through @Base. */
-export const _map = <T, R>(const values: readonly T[], iterator: (value: T, index: number) => R): R[] => lodashMap(values as T[], iterator);
+export const _map: MapValues = (values, iterator) => lodashMap(values as unknown[], iterator);
