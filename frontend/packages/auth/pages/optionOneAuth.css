@@ -106,3 +106,18 @@
 .rdr-login-v2__content{overflow-y:visible!important;justify-content:flex-start!important;padding-top:12px!important;padding-bottom:18px!important}
 .rdr-login-v2__visual{flex-basis:calc(env(safe-area-inset-top) + 66px)!important}
 }
+
+/* Security caption: centered, one line, with a real security icon. */
+.rdr-login-v2__closing{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;justify-content:center!important;gap:7px!important;min-width:0!important;max-width:100%!important;text-align:center!important;letter-spacing:normal!important;text-transform:none!important;white-space:nowrap!important}
+.rdr-login-v2__closing>svg{display:block!important;flex:0 0 13px!important;width:13px!important;height:13px!important;min-width:13px!important}
+.rdr-login-v2__closing>span{display:block!important;min-width:0!important;white-space:nowrap!important;overflow:visible!important;letter-spacing:0!important;word-spacing:0!important;font-size:clamp(8px,2.35vw,10px)!important;line-height:1.3!important;font-weight:400!important}
+@media(max-width:720px){
+.rdr-login-v2__main{display:flex!important;flex-direction:column!important;align-items:stretch!important;width:100%!important;max-width:420px!important;min-height:0!important}
+.rdr-login-v2__closing{order:10!important;margin:clamp(12px,2.5dvh,24px) 0 0!important;padding:0!important;color:#9ca6b7!important}
+.rdr-o1-auth-footer{order:11!important;display:flex!important;justify-content:center!important;align-items:center!important;gap:12px!important;flex-wrap:nowrap!important;white-space:nowrap!important;margin:clamp(13px,2.5dvh,24px) 0 0!important;padding:0!important;font-size:clamp(9px,2.35vw,10px)!important;letter-spacing:0!important}
+.rdr-login-v2__closing>span{font-size:clamp(8px,2.25vw,10px)!important}
+}
+@media(max-width:720px) and (max-width:350px){
+.rdr-login-v2__closing{gap:5px!important}
+.rdr-login-v2__closing>span{font-size:8px!important}
+}
