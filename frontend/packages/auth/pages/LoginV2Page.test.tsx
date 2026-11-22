@@ -113,8 +113,8 @@ describe('RDR Login V2',()=>{
     fireEvent.click(screen.getByRole('button',{name:/^sign in$/i}));
     expect(errors().every(node=>!node.classList.contains('is-empty'))).toBe(true);
     fireEvent.change(screen.getByRole('textbox',{name:'Email address'}),{target:{value:'student@example.edu'}});
-    expect(errors()[0].classList.contains('is-empty')).toBe(true);
-    expect(errors()[1].classList.contains('is-empty')).toBe(false);
+    expect(errors()[0]!.classList.contains('is-empty')).toBe(true);
+    expect(errors()[1]!.classList.contains('is-empty')).toBe(false);
     expect(container.querySelector('.rdr-login-v2__mobile-signin-title')).toBeNull();
     expect(container.querySelector('.rdr-login-v2__mobile-appearance')).toBeNull();
   });
