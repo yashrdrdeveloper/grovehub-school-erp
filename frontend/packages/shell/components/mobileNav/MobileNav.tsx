@@ -1,22 +1,28 @@
-import { Button } from '@Components/components/Button';
+import { APP_ROUTE } from '@Business/app/routes';
 import { Box } from '@Components/components/Box';
+import { Button } from '@Components/components/Button';
 import { Grid2X2, LayoutDashboard, Menu } from '@Components/icons';
 import { NavLink } from '@Components/router';
-import { APP_ROUTE } from '@Business/app/routes';
-import { getShellNavClassName } from '../../helpers/shell.getNavClassName';
+
+import styles from './MobileNav.module.css';
+import { getMobileNavClassName } from './helpers/mobileNav.getClassName';
+
 import type { MobileNavComponent } from './types/mobileNav';
 
-/** Same mobile navigation semantics with no inline action callbacks. */
+/** Responsive workspace navigation using owner-scoped CSS Module styles. */
 export const MobileNav: MobileNavComponent = ({ model }) => (
-  <Box as="nav" className="mobile-nav" aria-label="Mobile navigation">
-    <NavLink to={APP_ROUTE.DASHBOARD} className={getShellNavClassName}>
-      <LayoutDashboard size={19}/><Box as="span">Home</Box>
+  <Box as="nav" className={styles.root} aria-label="Mobile navigation">
+    <NavLink to={APP_ROUTE.DASHBOARD} className={getMobileNavClassName}>
+      <LayoutDashboard size={19} aria-hidden="true" />
+      <Box as="span">Home</Box>
     </NavLink>
-    <Button unstyled type="button" className="nav-item" onClick={model.openCatalog}>
-      <Grid2X2 size={19}/><Box as="span">Apps</Box>
+    <Button unstyled type="button" className={styles.item} onClick={model.openCatalog}>
+      <Grid2X2 size={19} aria-hidden="true" />
+      <Box as="span">Apps</Box>
     </Button>
-    <Button unstyled type="button" className="nav-item" onClick={model.openSidebar}>
-      <Menu size={19}/><Box as="span">Menu</Box>
+    <Button unstyled type="button" className={styles.item} onClick={model.openSidebar}>
+      <Menu size={19} aria-hidden="true" />
+      <Box as="span">Menu</Box>
     </Button>
   </Box>
 );
