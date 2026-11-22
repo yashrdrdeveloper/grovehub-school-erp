@@ -1,0 +1,10 @@
+# Temporary formatting debt: seven pre-existing oversized public-site source units.
+# These must be extracted into SRP components before the all-tree gate can include them.
+# Do not add new entries. CI verifies this exact list.
+/packages/domain/publicSite/pages/landing/components/aboutContent/aboutContent.tsx
+/packages/domain/publicSite/pages/landing/components/campusContent/campusContent.tsx
+/packages/domain/publicSite/pages/landing/components/enquiryForm/enquiryForm.tsx
+/packages/domain/publicSite/pages/landing/components/publicSheet/components/infoPanels/infoPanels.tsx
+/packages/domain/publicSite/pages/landing/components/resourceContent/resourceContent.tsx
+/packages/domain/publicSite/pages/landing/components/siteChrome/siteChrome.tsx
+/packages/domain/publicSite/pages/landing/constants/school.content.ts
