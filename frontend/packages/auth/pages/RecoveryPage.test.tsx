@@ -132,11 +132,11 @@ describe('password link flows',()=>{
     setup.mockResolvedValue({setupCompleted:true});
     renderPage('invitation','proof');
     await screen.findByLabelText('New password');
-    fireEvent.click(screen.getByRole('button',{name:'Set password'}));
+    fireEvent.click(screen.getByRole('button',{name:'Update password'}));
     expect(setup).not.toHaveBeenCalled();
     fireEvent.change(screen.getByLabelText('New password'),{target:{value:'a-strong-password-123'}});
     fireEvent.change(screen.getByLabelText('Confirm password'),{target:{value:'a-strong-password-123'}});
-    fireEvent.click(screen.getByRole('button',{name:'Set password'}));
+    fireEvent.click(screen.getByRole('button',{name:'Update password'}));
     expect(await screen.findByText('Welcome to RDR School!')).toBeTruthy();
     expect(screen.getByTestId('mobile-recovery-title').textContent).toBe('Set password');
     expect(screen.getByRole('link',{name:/Go to login/i})).toBeTruthy();
@@ -149,11 +149,11 @@ describe('password link flows',()=>{
     for(let attempt=0;attempt<2;attempt++){
       fireEvent.change(screen.getByLabelText('New password'),{target:{value:'a-strong-password-123'}});
       fireEvent.change(screen.getByLabelText('Confirm password'),{target:{value:'a-strong-password-123'}});
-      fireEvent.click(screen.getByRole('button',{name:'Set password'}));
+      fireEvent.click(screen.getByRole('button',{name:'Update password'}));
       if(attempt===0) await screen.findByText(/one more attempt/i);
     }
     expect(await screen.findByText('We couldn’t finish your setup')).toBeTruthy();
-    expect(screen.queryByRole('button',{name:'Set password'})).toBeNull();
+    expect(screen.queryByRole('button',{name:'Update password'})).toBeNull();
     expect(setup).toHaveBeenCalledTimes(2);
   });
 
