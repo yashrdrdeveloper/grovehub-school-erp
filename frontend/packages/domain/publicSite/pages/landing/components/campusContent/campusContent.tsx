@@ -1,3 +1,4 @@
+import { SCHOOL_ROUTE } from '../../constants/school.routes';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, BookOpen, ExternalLink, Sparkles } from '@Components/icons';
 import { facilities, photographs } from '../../constants/school.content';
@@ -26,7 +27,7 @@ const CampusPage = () => (
     <IntroPage eyebrow="CAMPUS & FACILITIES" title="Spaces for discovery and belonging." description="From learning laboratories to playful outdoor moments, explore the facilities described on the school's original website." image={photographs[2].src}/>
     <section className="rdr-section rdr-container"><Heading eyebrow="FACILITIES" title="Designed for a fuller school day."/>
       <div className="rdr-feature-grid">{facilities.map((x,i)=>{const Icon=facilityIcons[i];return <div className="rdr-feature" key={x.title}>{Icon&&<Icon size={29} strokeWidth={1.5}/>}<h3>{x.title}</h3><p>{x.description}</p></div>;})}</div>
-      <div className="rdr-campus-spotlight"><ImageCard src={photographs[2].src} alt={photographs[2].alt}/><div><span className="rdr-eyebrow">CAMPUS LIFE</span><h3>Spaces to explore, memories to make.</h3><p>From early experiences to senior school, each day brings moments of curiosity, teamwork and discovery.</p><Link className="rdr-inline-link" to="/gallery">See school life <ArrowUpRight size={17}/></Link></div></div>
+      <div className="rdr-campus-spotlight"><ImageCard src={photographs[2].src} alt={photographs[2].alt}/><div><span className="rdr-eyebrow">CAMPUS LIFE</span><h3>Spaces to explore, memories to make.</h3><p>From early experiences to senior school, each day brings moments of curiosity, teamwork and discovery.</p><Link className="rdr-inline-link" to={SCHOOL_ROUTE.GALLERY}>See school life <ArrowUpRight size={17}/></Link></div></div>
     </section>
   </>
 );

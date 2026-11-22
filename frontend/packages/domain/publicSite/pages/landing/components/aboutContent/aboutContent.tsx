@@ -1,3 +1,4 @@
+import { SCHOOL_ROUTE } from '../../constants/school.routes';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ArrowUpRight, Check, ExternalLink, GraduationCap, HeartHandshake, Landmark, Sparkles } from '@Components/icons';
 import { photographs } from '../../constants/school.content';
@@ -11,7 +12,7 @@ const IntroPage = ({eyebrow,title,description,image}:{eyebrow:string;title:strin
         <span className="rdr-eyebrow">{eyebrow}</span>
         <h1>{title}</h1>
         <p>{description}</p>
-        <div className="rdr-o1-page-hero__actions"><EnquiryLink className="rdr-btn rdr-btn--solid">Enquire now <ArrowUpRight size={16}/></EnquiryLink><Link to="/" className="rdr-o1-page-hero__home">Back to homepage <ArrowRight size={16}/></Link></div>
+        <div className="rdr-o1-page-hero__actions"><EnquiryLink className="rdr-btn rdr-btn--solid">Enquire now <ArrowUpRight size={16}/></EnquiryLink><Link to={SCHOOL_ROUTE.HOME} className="rdr-o1-page-hero__home">Back to homepage <ArrowRight size={16}/></Link></div>
       </div>
       {image&&<div className="rdr-o1-page-hero__photo"><ImageCard src={image} alt="RDR School students and school life" loading="eager"/><span>RDR SCHOOL · HALUHERA</span></div>}
     </div>
@@ -31,10 +32,10 @@ const AboutPage = () => (
     <section className="rdr-section rdr-container rdr-about-leaders">
       <Heading eyebrow="WORDS THAT GUIDE US" title="Meet the people and values behind RDR."/>
       <div className="rdr-about-leaders__links">
-        <Link to="/about/history"><Landmark size={22}/><strong>Our history</strong><small>From Haluhera, since 2006</small><ArrowUpRight size={16}/></Link>
-        <Link to="/about/director"><HeartHandshake size={22}/><strong>Director's message</strong><small>All-round development</small><ArrowUpRight size={16}/></Link>
-        <Link to="/about/principal"><GraduationCap size={22}/><strong>Principal's message</strong><small>Learning with character</small><ArrowUpRight size={16}/></Link>
-        <Link to="/about/philosophy"><Sparkles size={22}/><strong>Our philosophy</strong><small>Broadening minds</small><ArrowUpRight size={16}/></Link>
+        <Link to={SCHOOL_ROUTE.HISTORY}><Landmark size={22}/><strong>Our history</strong><small>From Haluhera, since 2006</small><ArrowUpRight size={16}/></Link>
+        <Link to={SCHOOL_ROUTE.DIRECTOR}><HeartHandshake size={22}/><strong>Director's message</strong><small>All-round development</small><ArrowUpRight size={16}/></Link>
+        <Link to={SCHOOL_ROUTE.PRINCIPAL}><GraduationCap size={22}/><strong>Principal's message</strong><small>Learning with character</small><ArrowUpRight size={16}/></Link>
+        <Link to={SCHOOL_ROUTE.PHILOSOPHY}><Sparkles size={22}/><strong>Our philosophy</strong><small>Broadening minds</small><ArrowUpRight size={16}/></Link>
       </div>
     </section>
     <section className="rdr-section rdr-container">

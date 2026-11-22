@@ -1,3 +1,4 @@
+import { SCHOOL_ROUTE } from '../../constants/school.routes';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ArrowUpRight } from '@Components/icons';
 import { photographs } from '../../constants/school.content';
@@ -14,7 +15,7 @@ const HomePage = () => (
           <p>At Rao Deena Ram Vidya Vihar, learning goes beyond the classroom. We bring together academics, character and a caring school community so every child has room to grow.</p>
           <div className="rdr-o1-hero__actions">
             <EnquiryLink className="rdr-btn rdr-btn--solid">Enquire for admission <ArrowUpRight size={17}/></EnquiryLink>
-            <Link className="rdr-btn rdr-o1-secondary" to="/about">Discover our school <ArrowRight size={17}/></Link>
+            <Link className="rdr-btn rdr-o1-secondary" to={SCHOOL_ROUTE.ABOUT}>Discover our school <ArrowRight size={17}/></Link>
           </div>
           <div className="rdr-o1-hero__proof"><span>CBSE affiliated</span><span>Senior Secondary</span><span>Rewari, Haryana</span></div>
         </div>
@@ -35,15 +36,15 @@ const HomePage = () => (
         <p>From classrooms to celebrations, these are the experiences that shape school life.</p>
       </div>
       <div className="rdr-o1-life__grid">
-        <Link to="/gallery" className="rdr-o1-life__card">
+        <Link to={SCHOOL_ROUTE.GALLERY} className="rdr-o1-life__card">
           <ImageCard src={photographs[0].src} alt={photographs[0].alt} position={photographs[0].position}/>
           <span>ACHIEVEMENT</span><h3>Celebrating every milestone.</h3><p>Recognising effort, confidence and achievement.</p>
         </Link>
-        <Link to="/gallery" className="rdr-o1-life__card">
+        <Link to={SCHOOL_ROUTE.GALLERY} className="rdr-o1-life__card">
           <ImageCard src={photographs[1].src} alt={photographs[1].alt} position={photographs[1].position}/>
           <span>EXPRESSION</span><h3>More than textbooks.</h3><p>Music, movement and the joy of participating.</p>
         </Link>
-        <Link to="/gallery" className="rdr-o1-life__card">
+        <Link to={SCHOOL_ROUTE.GALLERY} className="rdr-o1-life__card">
           <ImageCard src={photographs[2].src} alt={photographs[2].alt} position={photographs[2].position}/>
           <span>BELONGING</span><h3>Growing with confidence.</h3><p>Creating space for curiosity and friendships.</p>
         </Link>
@@ -57,7 +58,7 @@ const HomePage = () => (
     </section>
     <section className="rdr-o1-disclosure rdr-container">
       <span>Looking for school documents?</span>
-      <Link to="/mandatory-public-disclosure">Mandatory Public Disclosure <ArrowUpRight size={16}/></Link>
+      <Link to={SCHOOL_ROUTE.DISCLOSURE}>Mandatory Public Disclosure <ArrowUpRight size={16}/></Link>
     </section>
   </div>
 );

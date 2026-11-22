@@ -1,3 +1,4 @@
+import { APP_ROUTE } from '@Business/app/routes';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { PublicOnly, RequireSession, useRecoveryFlowBoundary } from '@Domain/auth';
@@ -23,7 +24,7 @@ export const AppRoutes: AppRoutesComponent = () => {
       <Route element={<RequireSession/>}>
         <Route element={<ProtectedLayout/>}>{workspacePages}</Route>
       </Route>
-      <Route path="*" element={<Navigate to="/" replace/>}/>
+      <Route path="*" element={<Navigate to={APP_ROUTE.HOME} replace/>}/>
     </Routes>
   );
 };

@@ -1,3 +1,4 @@
+import { SCHOOL_ROUTE } from '../../constants/school.routes';
 import { createContext, useContext, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -10,7 +11,7 @@ const EnquiryLink = ({className,children,onClick}:{
   className?:string;children:ReactNode;onClick?:()=>void;
 }) => {
   const openEnquiry=useContext(EnquiryActionContext);
-  return <Link to="/admissions#enquiry" className={className} data-rdr-enquiry-action="true"
+  return <Link to={SCHOOL_ROUTE.ENQUIRY} className={className} data-rdr-enquiry-action="true"
     onClick={event=>{
       onClick?.();
       if(event.defaultPrevented || event.button!==0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)return;

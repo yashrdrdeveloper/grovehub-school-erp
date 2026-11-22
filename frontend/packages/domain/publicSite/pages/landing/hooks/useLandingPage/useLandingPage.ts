@@ -1,3 +1,4 @@
+import { SCHOOL_ROUTE } from '../../constants/school.routes';
 import { useEffect, useState, type MouseEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { SchoolPanel } from '../../components/publicSheet';
@@ -20,12 +21,12 @@ export const useLandingPage: UseLandingPage = () => {
 
   const closePanel=()=>{
     if(enquiryOpen){setEnquiryOpen(false);return;}
-    navigate(state?.background??'/',{replace:true});
+    navigate(state?.background??SCHOOL_ROUTE.HOME,{replace:true});
   };
   const selectPanel=(next:SchoolPanel)=>{
     if(next==='enquiry'){setEnquiryOpen(true);return;}
     setEnquiryOpen(false);
-    const path=Object.entries(pathPanel).find(([,value])=>value===next)?.[0]??'/about';
+    const path=Object.entries(pathPanel).find(([,value])=>value===next)?.[0]??SCHOOL_ROUTE.ABOUT;
     navigate(path,{replace:true,state:{background:backgroundPath,panel:next}});
   };
 
@@ -39,7 +40,7 @@ export const useLandingPage: UseLandingPage = () => {
     if(anchor.dataset.rdrEnquiryAction==='true')return;
     const url=new URL(anchor.href,window.location.href);
     if(url.origin!==window.location.origin)return;
-    if(url.pathname==='/admissions' && url.hash==='#enquiry'){
+    if(url.pathname===SCHOOL_ROUTE.ADMISSIONS && url.hash==='#enquiry'){
       event.preventDefault();
       setEnquiryOpen(true);
     }
