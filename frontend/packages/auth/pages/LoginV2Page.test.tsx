@@ -41,7 +41,7 @@ describe('RDR Login V2',()=>{
   it('renders the unified auth design with the original RDR logo and no external media',()=>{
     render(<MemoryRouter><LoginV2Page/></MemoryRouter>);
     expect(screen.getByRole('heading',{name:'Welcome back.'})).toBeTruthy();
-    expect(document.querySelector('.rdr-login-v2__visual svg.rdr-o1-art__book')).not.toBeNull();
+    expect(document.querySelector('.rdr-login-v2__visual svg.rdr-o1-art__book')).toBeNull();
     expect(document.querySelectorAll('.rdr-login-v2 img')).toHaveLength(0);
     expect(screen.getByRole('button',{name:/^sign in$/i})).toBeTruthy();
     expect(screen.queryByRole('button',{name:/continue with google/i})).toBeNull();
@@ -131,12 +131,12 @@ describe('RDR Login V2',()=>{
     expect(screen.getByRole('button',{name:/^sign in$/i})).toBeTruthy();
   });
 
-  it('uses a local SVG book illustration for the hero, without external media',()=>{
+  it('uses a branded gradient hero without decorative illustration or external media',()=>{
     render(<MemoryRouter><LoginV2Page/></MemoryRouter>);
     const visual=document.querySelector('.rdr-login-v2__visual');
     expect(visual).not.toBeNull();
     expect(visual?.querySelectorAll('img,picture,video,source')).toHaveLength(0);
-    expect(visual?.querySelectorAll('svg.rdr-o1-art__book')).toHaveLength(1);
+    expect(visual?.querySelectorAll('svg.rdr-o1-art__book')).toHaveLength(0);
     expect(visual?.textContent).toContain('RDR School');
   });
 
