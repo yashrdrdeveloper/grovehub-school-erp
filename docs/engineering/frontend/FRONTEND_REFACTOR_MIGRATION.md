@@ -6,7 +6,7 @@
 
 ## 1. Baseline
 
-Existing code on `phase-2.1-identity-account` has Tailwind v4, shadcn-compatible shared primitives, root domain APIs, basic architecture checks and security-sensitive frontend regression tests. Revision 5 now requires a **new** flat helper/constant architecture and more rigorous selector/import/no-ternary enforcement. Passing current CI does **not** prove Revision 5 conformance.
+Existing code on `phase-2.1-identity-account` has Tailwind v4, shadcn-compatible shared primitives, root domain APIs, a shared `packages/styles` design-token package, basic architecture checks and security-sensitive frontend regression tests. Revision 5 now requires a **new** flat helper/constant architecture and more rigorous selector/import/no-ternary enforcement. Passing current CI does **not** prove Revision 5 conformance.
 
 ## 2. Repository inventory to inspect in code migration
 
@@ -21,7 +21,8 @@ Existing code on `phase-2.1-identity-account` has Tailwind v4, shadcn-compatible
 | `domain/auth/pages/recovery/hooks/useRecovery/` | One hook coordinates link verification, grant status, editing, saving, retry and browser listeners | Distinct form/link/grant/submission/retry hooks with narrow contracts and one coordinator; keep server-authoritative failures |
 | `domain/auth/pages/recovery/helpers/` | Nested helper units with `index.ts` | Flat helper files, tests/types adjacent in sibling folders |
 | `domain/auth/pages/forgotPassword/` | Nested helpers and constants, submission/render-time choices | Apply same flat and nested-hook standard |
-| `packages/components/` | Direct Lucide use across features; not all leaf controls have caller-owned selectors | Curated icon API, `useBoolean`, deterministic selectors passed to native DOM |
+| `packages/components/` | Generic `Form`, `Text`, button/card/input variants exist; other components and domains still have styling duplication | Curated icon API, `useBoolean`, deterministic selectors passed to native DOM, all controls using shared design tokens |
+| `packages/styles/` | Theme tokens, typography, spacing, breakpoints, shadows and Tailwind theme are now central; app still has large legacy screen CSS | Keep root light/dark tokens centralized and progressively move screen CSS to owning components/domains; browser visual regression required |
 | `packages/base/` | Only some generic utility leaf exports exist | Supply/test exact `_trim`, `_find`, `_size`, `_keys`, `_map`, `_isUndefined`, `_isFunction`, etc. as needed; browser event names |
 | `domain/dashboard/` and `domain/publicSite/` | Styling/JSX still contains inline choices and native controls | Common selectors, shared primitives and view helpers without layout regression |
 | `scripts/check-*.mjs` | Existing checks enforce only some Revision 4 rules | Add exact static enforcement for Revision 5 as each module migrates |
@@ -34,7 +35,8 @@ The table is a known-first audit, not a complete proof that all other files are 
 2. **Login:** rewrite constants; flatten page and hook-local helpers; replace wrapper normalizers with `_trim`; consolidate state; nested subhooks; view-model selection; use shared controls; tests.
 3. **Auth remainder:** shared viewport fit, recovery, forgot-password and guards; preserve user messaging, retry limits and security behavior.
 4. **Other domains:** dashboard, public school site, shell, business/remaining domains; no dead code, retained routes and responsive behavior.
-5. **Full enforcement:** no ternary/switch dispatch, typed IDs for page-owned DOM, no direct Lucide/Lodash outside owners, no deprecated helper layout; add browser UI regression coverage.
+5. **Style ownership:** keep `packages/styles` as the source for theme/type/spacing tokens; move remaining old app CSS to component/domain owners without changing auth/public page behavior.
+6. **Full enforcement:** no ternary/switch dispatch, typed IDs for page-owned DOM, no direct Lucide/Lodash outside owners, no deprecated helper layout; add browser UI regression coverage.
 
 After every batch, run frozen install, architecture checks, TypeScript, Jest, lint and build/prerender. Run real viewport tests before signing off styling or selector changes.
 

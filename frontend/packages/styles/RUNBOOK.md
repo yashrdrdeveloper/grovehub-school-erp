@@ -4,6 +4,8 @@
 
 Import `@Styles/index.css` **once** in `frontend/app/main.tsx`. Use `@Styles/tokens/breakpoints` only in browser-aware hooks to share viewport values. CSS files are deliberately separate from React so styles can be used by CSS Modules, Tailwind and plain CSS without importing components.
 
+The canonical root theme overrides were removed from the legacy app stylesheet. The architecture check now verifies light/dark token parity and single style ownership.
+
 The central theme is the document `data-theme="light" | "dark"`. The existing theme resolver respects the OS on mobile and a desktop preference elsewhere. No design token changes that behavior. The `--gh-*` variables are authoritative; `--canvas`, `--surface`, `--accent`, and `--rdr-*` are temporary aliases for legacy CSS during migration.
 
 `@Components` owns actual `Button`, `Input`, `FormField`, `Typography`, `Card`, `Container` and other reusable controls, their prop variants, accessibility, native leaf `dataTestId` and component-specific styles. `@Styles` never imports React, business data, domain pages or component code. Domains should use `@Components` rather than copy dimensions and colors.

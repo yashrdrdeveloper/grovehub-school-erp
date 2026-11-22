@@ -2,7 +2,7 @@
 
 > **Status:** Mandatory, authoritative frontend engineering standard — **Revision 5 (November 2026)**.
 >
-> **Scope:** Every source file under `frontend/`, including `app`, `packages/base`, `packages/business`, `packages/components`, `packages/domain`, `packages/shell`, unit tests, integration tests, styles, generated code boundaries, and scripts.
+> **Scope:** Every source file under `frontend/`, including `app`, `packages/base`, `packages/business`, `packages/components`, `packages/styles`, `packages/domain`, `packages/shell`, unit tests, integration tests, styles, generated code boundaries, and scripts.
 >
 > **Stack:** React 19, TypeScript strict, pnpm, Vite, Tailwind CSS 4, shadcn-compatible Radix primitives, Lucide icons through the components package, Jest, and the existing project architecture checks.
 >
@@ -24,7 +24,8 @@ frontend/
 ├── packages/
 │   ├── base/                  # pure, framework-neutral technical utilities/constants
 │   ├── business/              # reusable business contracts, API transport and operations
-│   ├── components/            # reusable accessible UI, icons, hooks and design primitives
+│   ├── components/            # reusable accessible UI, icons, hooks and component recipes
+│   ├── styles/                # global design tokens, themes, typography and Tailwind
 │   ├── domain/
 │   │   ├── auth/              # authentication pages and session-aware UI
 │   │   ├── dashboard/         # school home page
@@ -36,9 +37,9 @@ frontend/
 └── package.json
 ~~~
 
-The dependency graph is `app → shell → domain / components / base` and `domain → business / components / base`; `business → base`; `components → base`; `base → nothing higher`. Business and components are independent of domain and shell. A domain never imports shell or another domain's private internals. Shell imports domain **root APIs only**, such as `@Domain/auth`. Type-only imports obey the same boundaries. API calls must not originate from the shell or reusable presentation components.
+The dependency graph is `app → shell → domain / components / styles / base` and `domain → business / components / styles / base`; `business → base`; `components → styles / base`; `styles → nothing higher`; `base → nothing higher`. Business and components are independent of domain and shell. A domain never imports shell or another domain's private internals. Shell imports domain **root APIs only**, such as `@Domain/auth`. Type-only imports obey the same boundaries. API calls must not originate from the shell or reusable presentation components.
 
-Use **the exact case-sensitive aliases actually declared in tsconfig/Vite**: `@Base`, `@Business`, `@Components`, `@Domain`, `@Shell`. No obsolete `@Auth` or `@LandingPage` alias. Within a unit use short relative imports; outside the unit use its intentional public boundary.
+Use **the exact case-sensitive aliases actually declared in tsconfig/Vite**: `@Base`, `@Business`, `@Components`, `@Domain`, `@Styles`, `@Shell`. No obsolete `@Auth` or `@LandingPage` alias. Within a unit use short relative imports; outside the unit use its intentional public boundary.
 
 `frontend/app` owns no business screens. `packages/base` must not import React, React Router, the DOM, business entities, or UI. Base browser-event **name constants** are pure; adding actual event listeners belongs in a browser-aware component/domain hook.
 
@@ -451,7 +452,7 @@ Async operations require cancellation/stale-request handling, duplicate submit p
 
 `@Components` owns reusable shadcn-compatible/Radix components, Tailwind utility composition, CVA variants, icons, focus rings, form accessibility and shared UI hooks such as `useBoolean`. Domains pass semantic props and feature-level test IDs. Do not duplicate input/loader/dialog/visibility/validation rendering in multiple pages.
 
-Tailwind 4 is installed through Vite, with semantic tokens in `app/styles/tailwind.css` and `components.json` for shadcn configuration. RDR brand uses navy `#1F2A44`, neutral/light and charcoal/dark palettes. **Tailwind preflight is intentionally disabled during migration** to preserve legacy public-site and auth layouts; styling utilities and tokens still work. Do not remove old CSS until screenshot and browser regression checks pass. Always make labels, controls and submit buttons reachable on mobile; avoid horizontal page scrolling; short viewports may need a vertical-scroll fallback instead of clipped buttons.
+Tailwind 4 is installed through Vite, with the **single authoritative stylesheet** `packages/styles/index.css`, semantic foundations in `packages/styles/tokens/`, light and dark theme values in `packages/styles/themes/`, and `components.json` pointing to that same CSS file. RDR brand uses navy `#1F2A44`, neutral/light and charcoal/dark palettes. **Tailwind preflight is intentionally disabled during migration** to preserve legacy public-site and auth layouts; styling utilities and tokens still work. Do not remove old CSS until screenshot and browser regression checks pass. Always make labels, controls and submit buttons reachable on mobile; avoid horizontal page scrolling; short viewports may need a vertical-scroll fallback instead of clipped buttons.
 
 Use system theme on mobile according to existing product UX; do not overwrite the user's desktop stored appearance preference. Do not replace the approved RDR monogram or historical school photography with artificial graphics. Respect source consent and disclosure validity.
 
@@ -521,3 +522,53 @@ Follow `docs/engineering/frontend/FRONTEND_REFACTOR_MIGRATION.md` for a specific
 - Are accessibility, mobile layouts, errors, auth contracts and build/prerender unaffected?
 
 **Guiding principle:** make ordinary code explicit, reusable logic truly reusable, and every screen predictable to develop, test and automate.
+
+## 20. Mandatory shared styles package and reusable component styling
+
+`frontend/packages/styles` is the single source for **generic design decisions**, never feature-specific markup or API logic:
+
+```text
+packages/styles/
+├── index.css                 # imported once by app/main.tsx; Tailwind v4 theme entry
+├── index.ts                  # optional pure TypeScript tokens such as breakpoints
+├── tokens/
+│   ├── foundations.css      # fonts, type scale, spacing, radii, control sizes, shadows, motion
+│   └── breakpoints.ts       # shared viewport queries for browser-aware consumers
+├── themes/
+│   ├── light.css            # semantic light palette
+│   └── dark.css             # semantic dark palette
+├── base.css                 # HTML/browser defaults only
+├── utilities.css            # small generic classes only
+└── RUNBOOK.md
+```
+
+**Ownership is non-negotiable.** The `--gh-*` CSS custom properties are canonical; `--rdr-*`, `--canvas`, `--surface`, `--accent` and `--ui-*` compatibility aliases are declared only in `@Styles` until legacy styles are migrated. **No** feature, component or app stylesheet should redefine these root/theme tokens. Light/dark theme changes must be made in the two corresponding theme files, keeping their semantic keys in sync. App startup and the existing theme hook choose `data-theme`; the styles package merely interprets it.
+
+**Styling choice:** use **Tailwind CSS v4 + semantic CSS variables + CVA** for reusable component variants. Use scoped `.module.css` for unusually complex component-only selectors. Do not introduce `.module.scss`/Sass without a concrete demonstrated need: Sass adds a compiler and risks a second source for tokens. Shared `@Styles` should not depend on React, components, domains, business, shell or the DOM API. Components may use pure `@Styles` token values/queries; business and base may not.
+
+**Three-layer rule:**
+
+1. **`@Styles`** defines what `primary`, `muted`, `danger`, typography sizes, spacing, height, border, shadow and light/dark appearance *mean*. It does not implement buttons or fields.
+2. **`@Components`** defines *how* `Button`, `InputControl`, `Input`, `Text`, `Typography`, `Form`, `FormField`, `Card`, `Container` and `Dialog` render, with accessible semantics, typed props, native `dataTestId`, CVA variants and component-specific CSS. All colors, font sizes, focus rings, dimensions and spacing come from the style tokens.
+3. **`@Domain/<name>`** composes these components and supplies content, `variant`, `controlSize`, `padding`, `tone`, event handlers and stable test IDs. Domain CSS is allowed for truly feature-specific layout/artwork, not a second button/input/typography system.
+
+**Example — no per-screen CSS decisions:**
+
+```tsx
+import { Form, Input, Button, Card, Typography, Text } from '@Components';
+
+<Card variant="outline" padding="lg" dataTestId="admissions-card">
+  <Typography as="h2" variant="heading" size="2xl" dataTestId="admissions-heading">Enquiry</Typography>
+  <Text tone="muted" size="sm" dataTestId="admissions-hint">We will contact you.</Text>
+  <Form layout="stack" spacing="md" dataTestId="admissions-form" onSubmit={onSubmit}>
+    <Input label="Email" controlSize="md" dataTestId="admissions-email" />
+    <Button variant="primary" size="lg" type="submit" dataTestId="admissions-submit">Send</Button>
+  </Form>
+</Card>
+```
+
+Shared component APIs should expose sensible defaults. Prefer semantic `variant`, `tone`, `size`/`controlSize`, `spacing`, `layout`, `weight` or `padding` props to arbitrary style overrides. Consumers should not have to choose font pixels, border values or hover colors. **Do not create dozens of boolean variant props**; use a concise typed union backed by a CVA recipe or small CSS class variants. Do not put domain/business logic in the component just to avoid a prop.
+
+**Safe legacy migration:** Existing `app/styles.css` still contains old feature and shell CSS; migrate it gradually to its owning domain/component. The shared button/field/card classes are now owned by `packages/components/styles/primitives.css`, and global theme declarations are owned only by `packages/styles`. Tailwind Preflight stays disabled until responsive and visual regression checks prove it can be safely introduced.
+
+**Required verification:** `pnpm check:architecture` must enforce theme parity, no root-token redefinition, correct shadcn entrypoint and legal package imports; `pnpm typecheck`, Jest and build must pass. Visual verification across desktop, mobile, short viewports, light/dark and high zoom is still mandatory before declaring a CSS migration complete.
