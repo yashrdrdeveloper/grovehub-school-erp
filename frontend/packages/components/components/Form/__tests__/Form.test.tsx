@@ -12,4 +12,9 @@ describe('Form', () => {
     fireEvent.submit(form);
     expect(handleSubmit).toHaveBeenCalledTimes(1);
   });
+  it('preserves existing feature layout when requested', () => {
+    render(<Form unstyled dataTestId="existing-form" className="legacy-form"/>);
+    const element = screen.getByTestId('existing-form');
+    expect(element.className).toBe('legacy-form');
+  });
 });

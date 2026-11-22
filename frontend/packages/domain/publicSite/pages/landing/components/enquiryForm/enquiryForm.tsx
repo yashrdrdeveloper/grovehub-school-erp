@@ -1,5 +1,6 @@
 import { ArrowRight, Check, Mail } from 'lucide-react';
 import { InputControl } from '@Components/components/InputControl';
+import { Form } from '@Components/components/Form';
 import { enquiryTypes } from '../../config/content';
 import type { EnquiryFormComponent } from './types/enquiryForm';
 
@@ -22,7 +23,7 @@ export const EnquiryForm: EnquiryFormComponent = ({ compact = false, model }) =>
           <button className="rdr-link-button" data-testid="enquiry-edit" type="button" onClick={edit}>Edit details</button>
         </div>
       ) : (
-        <form onSubmit={step === 0 ? next : submit} noValidate data-testid="enquiry-form">
+        <Form unstyled dataTestId="enquiry-form" onSubmit={step === 0 ? next : submit} noValidate>
           <div className="rdr-enquiry__step"><span>STEP {step + 1} OF 2</span><span>{step === 0 ? 'Your details' : 'A little more detail'}</span></div>
           {step === 0 ? <>
             <label>Parent / guardian name <span>*</span></label>
@@ -55,7 +56,7 @@ export const EnquiryForm: EnquiryFormComponent = ({ compact = false, model }) =>
             {step === 1 && <button className="rdr-btn rdr-btn--outline" data-testid="enquiry-back" type="button" onClick={back}>Back</button>}
             <button type="submit" className="rdr-btn rdr-btn--solid" data-testid="enquiry-continue">{step === 0 ? 'Continue' : 'Prepare enquiry'} <ArrowRight size={17}/></button>
           </div>
-        </form>
+        </Form>
       )}
     </div>
   );

@@ -1,6 +1,7 @@
 import { AlertCircle, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail } from 'lucide-react';
 import type { ChangeEventHandler } from 'react';
 import { Button } from '@Components/components/Button';
+import { Form } from '@Components/components/Form';
 
 import { CredentialField } from '../../../../components/credentialField';
 import { LOGIN_COPY, LOGIN_FIELDS } from '../../config';
@@ -23,7 +24,7 @@ export const LoginForm: LoginFormComponent = ({
   const submitLabel = state.isSubmitting ? LOGIN_COPY.busyButton : LOGIN_COPY.button;
 
   return (
-    <form className="rdr-login-v2__form rdr-login-v2__form--signin" onSubmit={onSubmit} noValidate>
+    <Form unstyled dataTestId="login-form" className="rdr-login-v2__form rdr-login-v2__form--signin" onSubmit={onSubmit} noValidate>
       <CredentialField id={fieldId + '-email'} label={LOGIN_FIELDS.email.label} Icon={Mail}
         type="email" inputMode="email" autoComplete={LOGIN_FIELDS.email.autoComplete}
         placeholder={LOGIN_FIELDS.email.placeholder} value={state.email} required
@@ -53,6 +54,6 @@ export const LoginForm: LoginFormComponent = ({
           <span>{state.errorMessage}</span>
         </p>}
       </div>
-    </form>
+    </Form>
   );
 };

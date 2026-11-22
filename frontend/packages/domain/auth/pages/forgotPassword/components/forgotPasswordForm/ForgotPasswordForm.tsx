@@ -1,6 +1,7 @@
 import { ArrowLeft, CheckCircle2, Clock3, Info, LoaderCircle, Mail } from 'lucide-react';
 import type { ChangeEventHandler } from 'react';
 import { Button } from '@Components/components/Button';
+import { Form } from '@Components/components/Form';
 import { Link } from 'react-router-dom';
 
 import { AuthMobileStatusArt } from '../../../AuthMobileArtwork';
@@ -18,7 +19,7 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
 
   return (
     <div className={`rdr-auth-flow rdr-auth-flow--forgot${view.noticeSuccess ? ' rdr-auth-flow--sent' : ''}`}>
-      <form id={formId} className="rdr-login-v2__form rdr-auth-flow__form" onSubmit={onSubmit} noValidate>
+      <Form unstyled dataTestId="forgot-password-form" id={formId} className="rdr-login-v2__form rdr-auth-flow__form" onSubmit={onSubmit} noValidate>
         <div className="rdr-auth-flow__fields">
           <div className={`rdr-auth-flow__notice ${view.noticeSuccess ? 'rdr-auth-flow__notice--success' : 'rdr-auth-flow__notice--info'}`}
             role="status" aria-live="polite">
@@ -47,7 +48,7 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
             {state.error && <p className="rdr-login-v2__error" role="alert">{state.error}</p>}
           </div>
         </div>
-      </form>
+      </Form>
       {view.noticeSuccess && (
         <div className="rdr-auth-flow__mobile-success" role="status" aria-live="polite">
           <AuthMobileStatusArt kind="email"/>
