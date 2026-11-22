@@ -1,4 +1,4 @@
-import { readdir, access } from 'node:fs/promises';
+import { readdir, access, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const root = path.join(process.cwd(), 'packages');
@@ -46,6 +46,50 @@ for (const [relative, requirePureTests] of units) {
     }
     if (requirePureTests && !await exists(path.join(folder, '__tests__', `${name}.test.ts`))) {
       failures.push(`${relative}/${name}: missing __tests__/${name}.test.ts`);
+    }
+  }
+}
+
+
+/** Migrated flat units: other legacy page helpers are added after their safe move. */
+const flatUnits = [
+  'domain/auth/pages/login/helpers',
+  'domain/auth/pages/login/constants',
+  'domain/auth/pages/login/hooks/useLoginViewport/helpers',
+];
+for (const relative of flatUnits) {
+  const directory = path.join(root, relative);
+  if (!await exists(directory)) {
+    failures.push(relative + ': required flat unit directory is missing');
+    continue;
+  }
+  const entries = await readdir(directory, { withFileTypes: true });
+  for (const item of entries) {
+    if (item.name === 'index.ts') {
+      failures.push(relative + ': flat directory must not have an index.ts barrel');
+    }
+    if (item.isDirectory() && item.name !== 'types' && item.name !== '__tests__') {
+      failures.push(relative + '/' + item.name + ': helper/constant folder nesting is forbidden');
+    }
+  }
+  const tests = path.join(directory, '__tests__');
+  if (!await exists(tests)) continue;
+  for (const item of await readdir(tests, { withFileTypes: true })) {
+    if (!item.isFile() || !/\.test\.tsx?$/.test(item.name)) continue;
+    const file = await readFile(path.join(tests, item.name), 'utf8');
+    const descriptions = [...file.matchAll(/\bdescribe\(\s*['"]([^'"]+)['"]/g)];
+    if (descriptions.length !== 1) {
+      failures.push(relative + '/__tests__/' + item.name + ': exactly one top-level describe is required');
+      continue;
+    }
+    const exportedName = descriptions[0][1];
+    const matchingImport = [...file.matchAll(/import\s*\{([^}]+)\}\s*from/g)]
+      .some(match => match[1].split(',').some(name => name.trim() === exportedName));
+    if (!matchingImport) {
+      failures.push(relative + '/__tests__/' + item.name + ': describe must match a named imported export');
+    }
+    if (/\bjest\.mock\(/.test(file)) {
+      failures.push(relative + '/__tests__/' + item.name + ': pure helper tests must not mock dependencies');
     }
   }
 }
