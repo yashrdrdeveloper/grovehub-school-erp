@@ -31,6 +31,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Format all frontend source without behavior edits
         run: pnpm exec prettier --write "{app,packages,scripts}/**/*.{ts,tsx,js,jsx,mjs,css,scss,json,md}"
+      - name: Measure formatting impact on architecture debt
+        run: node scripts/audit-guidelines.mjs | grep 'GH_AUDIT_SUMMARY'
       - name: Check architecture and no new legacy findings
         run: pnpm check:architecture
       - name: Typecheck formatted source
