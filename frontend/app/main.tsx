@@ -6,6 +6,7 @@ import { resolveWorkspaceTheme } from '@Components/hooks/theme';
 
 import './styles.css';
 import '../packages/components/styles/primitives.css';
+import './styles/tailwind.css';
 
 // Apply the desktop preference before React mounts, without overriding system mode on phones.
 const applyInitialTheme = (): void => {

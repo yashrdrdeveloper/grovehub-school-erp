@@ -1,12 +1,13 @@
 import path from 'node:path';
 
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 
 const root = process.cwd();
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
       '@Base': path.resolve(root, 'packages/base'),
