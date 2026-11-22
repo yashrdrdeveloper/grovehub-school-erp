@@ -37,9 +37,9 @@ const EnquiryLink = ({className,children,onClick}:{
 };
 
 const navItems = [
-  { label:'About', to:'/about' },
+  { label:'Our school', to:'/about' },
   { label:'Academics', to:'/academics' },
-  { label:'Campus', to:'/campus' },
+  { label:'Campus life', to:'/campus' },
   { label:'Admissions', to:'/admissions' },
   { label:'Gallery', to:'/gallery' },
   { label:'CBSE Disclosure', to:'/mandatory-public-disclosure' },
@@ -70,17 +70,17 @@ const ImageCard = ({
   src:string;alt:string;position?:string;className?:string;loading?:'lazy'|'eager';children?:ReactNode;
 }) => (
   <div className={`rdr-photo ${className}`}>
-    <img src={src} alt={alt} loading={loading} decoding="async"
+    <img src={photographs.find(photo => photo.src === src)?.originalSrc ?? src}
+      alt={alt} loading={loading} decoding="async"
       style={{objectPosition:position ?? 'center'}} referrerPolicy="no-referrer"
       onError={event => {
         const image = event.currentTarget;
-        const original = photographs.find(photo => photo.src === src || photo.originalSrc === src)?.originalSrc;
-        if (original && !image.dataset.fallbackAttempted) {
+        const localPhoto = photographs.find(photo => photo.originalSrc === image.src);
+        if (localPhoto && !image.dataset.fallbackAttempted) {
           image.dataset.fallbackAttempted = 'true';
-          image.src = original;
+          image.src = localPhoto.src;
           return;
         }
-        // Avoid infinite onError loops and broken-image alt text on cards.
         image.style.display = 'none';
         image.parentElement?.classList.add('rdr-photo--unavailable');
       }} />
@@ -102,8 +102,8 @@ const SiteHeader = () => {
     <>
       <div className="rdr-topline">
         <div className="rdr-container rdr-topline__inner">
-          <span><MapPin size={13}/> Haluhera, Rewari, Haryana</span>
-          <span><Phone size={13}/> <a href="tel:+919050077550">{school.phone}</a></span>
+          <span>HALUHERA, REWARI · HARYANA</span>
+          <span>ESTABLISHED 2006</span>
         </div>
       </div>
       <header className="rdr-header">
