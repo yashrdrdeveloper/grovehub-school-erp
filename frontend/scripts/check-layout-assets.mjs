@@ -30,13 +30,14 @@ for (const pathname of retired) {
   if (await exists(pathname)) violations.push(`${pathname}: retired implementation must remain deleted`);
 }
 
-const [art, brand, renderer, routes, protectedLayout, shell, catalog, publicIndex, guide] = await Promise.all([
+const [art, brand, renderer, routes, protectedLayout, workspaceTemplate, workspaceContainer, catalog, publicIndex, guide] = await Promise.all([
   source('packages/domain/auth/components/authAmbientGraphic/AuthAmbientGraphic.tsx'),
   source('packages/components/components/SchoolMonogram.tsx'),
   source('packages/components/components/SVGRenderer/SVGRenderer.tsx'),
   source('packages/shell/components/appRoutes/AppRoutes.tsx'),
   source('packages/shell/components/protectedLayout/ProtectedLayout.tsx'),
-  source('packages/shell/Shell.tsx'),
+  source('packages/shell/templates/workspaceShell/WorkspaceShell.tsx'),
+  source('packages/shell/containers/workspaceShellContainer/WorkspaceShellContainer.tsx'),
   source('packages/shell/constants/shell.catalog.ts'),
   source('packages/domain/publicSite/index.ts'),
   source('../docs/engineering/frontend/FRONTEND_CODE_GUIDELINES.md'),
@@ -55,7 +56,9 @@ if (!routes.includes('PUBLIC_SITE_PATHS') || !publicIndex.includes('PUBLIC_SITE_
   violations.push('public routes must be owned by publicSite, not duplicated in shell');
 }
 if (!routes.includes('<RequireSession/>') || !routes.includes('<ProtectedLayout/>')
-    || !shell.includes('<Outlet/>') || !protectedLayout.includes('<Shell ')) {
+    || !workspaceTemplate.includes('<Outlet/>')
+    || !workspaceContainer.includes('<Shell ')
+    || !protectedLayout.includes('<WorkspaceShellContainer ')) {
   violations.push('protected routes must keep one pathless protected layout with a persistent Shell and nested Outlet');
 }
 if (/PublicLayout|PublicFrame/.test(routes)) {
@@ -77,7 +80,8 @@ const implemented = new Set(
     })
     .filter(Boolean),
 );
-const catalogPaths = [...catalog.matchAll(/path:\s*['"]([^'"]+)['"]/g)].map(match => match[1]);
+const catalogPaths = [...catalog.matchAll(/path:\s*APP_ROUTE\.([A-Z_]+)/g)]
+  .map(match => appPaths.get(match[1])).filter(Boolean);
 for (const pathname of catalogPaths) {
   if (!implemented.has(pathname)) violations.push(`catalog path ${pathname} has no implemented protected route`);
 }
