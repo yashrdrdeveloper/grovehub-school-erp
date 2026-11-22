@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes, ReactElement } from 'react';
 import type { VariantProps } from 'class-variance-authority';
-import type { buttonVariants } from '../config/buttonVariants.config';
+import type { buttonVariants } from '../constants/button.variants';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   readonly loading?: boolean;
