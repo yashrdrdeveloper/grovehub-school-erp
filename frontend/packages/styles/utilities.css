@@ -17,3 +17,8 @@
 @media (prefers-reduced-motion: reduce) {
   .gh-motion { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }
+
+/* Legacy generic aliases, centralized until the corresponding consumers use Typography. */
+.muted { color: var(--gh-color-muted); }
+.small { font-size: var(--gh-text-xs); }
+.mono { font-family: var(--gh-font-mono); }
