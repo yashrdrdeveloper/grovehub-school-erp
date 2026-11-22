@@ -1,4 +1,4 @@
-name: One-time frontend source formatting
+name: One-time semantic tag migration
 
 on:
   push:
@@ -29,8 +29,12 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
-      - name: Format all frontend source without behavior edits
+      - name: Migrate Box Text and Typography JSX tags to enum constants
+        run: node scripts/migrate-semantic-tags.mjs
+      - name: Format migrated frontend source
         run: pnpm exec prettier --write "{app,packages,scripts}/**/*.{ts,tsx,js,jsx,mjs,css,scss,json,md}"
+      - name: Verify no raw semantic JSX tag literals remain
+        run: node scripts/migrate-semantic-tags.mjs --check
       - name: Measure formatting impact on architecture debt
         run: node scripts/audit-guidelines.mjs | grep 'GH_AUDIT_SUMMARY'
       - name: Check formatter coverage excluding seven listed legacy source units
@@ -52,5 +56,5 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "style(frontend): format owner-scoped CSS Modules"
+          git commit -m "refactor(frontend): use typed semantic tags in all Box Text Typography JSX"
           git push origin HEAD:refs/heads/phase-2.1-identity-account
