@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom';
 
-import { AppLauncher } from './layout/AppLauncher';
+import { AppLauncherContainer } from './components/appLauncher';
 import { Sidebar } from './components/sidebar';
 import { Topbar } from './components/topbar';
 import { MobileNav } from './components/mobileNav';
@@ -22,7 +22,7 @@ export const Shell: ShellComponent = (props) => {
         <main className="shell__main"><Outlet/></main>
         <MobileNav model={model}/>
       </div>
-      <AppLauncher open={model.launcherOpen} onOpenChange={model.setLauncherOpen}
+      <AppLauncherContainer open={model.launcherOpen} onOpenChange={model.setLauncherOpen}
         pinned={model.pinned} onTogglePin={model.togglePin}
         sidebarCollapsed={model.sidebarCollapsed && !model.sidebarOpen}/>
     </div>
