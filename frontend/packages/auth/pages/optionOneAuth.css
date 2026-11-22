@@ -163,6 +163,8 @@
  font-size:11px;color:#405977
 }
 .rdr-auth-flow__notice--success{border-color:#c9e7d7;background:#eff9f2;color:#305b49}
+/* One consistent recovery presentation on desktop and mobile. */
+.rdr-auth-flow__notice--info{display:none}
 .rdr-auth-flow__notice-icon{flex:0 0 19px}
 .rdr-auth-flow__notice-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
 .rdr-auth-flow__notice-copy strong{font-size:11px}
@@ -214,7 +216,7 @@
 .rdr-recovery__back{margin-top:17px}
 /* Dark reference: charcoal form panel, dusk gradient art, no saturated neon. */
 :root[data-theme="dark"] .rdr-login-v2{
- --auth-bg:#151c2a;--auth-ink:#f3f6ff;--auth-muted:#aebbcf;
+ --auth-bg:#171e2a;--auth-ink:#f3f6ff;--auth-muted:#aebbcf;
  --auth-field:#202b3c;--auth-border:#42506a;--auth-primary:#202b49;
  --auth-link:#8fa8d2;--auth-secondary:#9eacc0;--auth-error:#ff8193
 }
@@ -298,8 +300,7 @@
  .rdr-login-v2__submit{min-height:49px;margin-top:20px;font-size:12px}
  .rdr-login-v2__closing{margin-top:clamp(19px,3.7dvh,32px);font-size:clamp(9px,2.35vw,10px)}
  .rdr-o1-auth-footer{justify-content:center;gap:14px;margin-top:clamp(15px,3.2dvh,27px);font-size:10px}
- .rdr-auth-flow__notice--info{display:none}
- .rdr-auth-flow__mobile-success h3{font-size:clamp(22px,5.6vw,29px)}
+  .rdr-auth-flow__mobile-success h3{font-size:clamp(22px,5.6vw,29px)}
  .rdr-auth-flow__mobile-success .rdr-login-v2__submit{margin-top:20px}
  .rdr-auth-mobile-status-art{height:96px}
  .rdr-recovery__requirement{font-size:10px}
@@ -321,3 +322,39 @@
  .rdr-login-v2__main{margin-top:0}
 }
 @media(prefers-reduced-motion:reduce){.rdr-login-v2__spinner{animation:none}}
+
+/* Compact responsive states: keep complete recovery actions visible at standard phone heights. */
+.rdr-login-v2__frame,.rdr-login-v2__content,.rdr-login-v2__main,.rdr-login-v2__form,.rdr-recovery__state,.rdr-auth-flow__mobile-success{max-width:100%;min-width:0}
+.rdr-auth-flow__mobile-success p strong,.rdr-recovery__art-message{overflow-wrap:anywhere}
+@media(max-width:720px){
+  .rdr-login-v2__content{overflow-x:clip;overflow-y:auto;scrollbar-width:none}
+  .rdr-login-v2__main:has(.rdr-auth-flow--sent) .rdr-login-v2__heading,
+  .rdr-login-v2__main:has(.rdr-recovery__state) .rdr-login-v2__heading{margin-bottom:clamp(10px,2dvh,18px)}
+  .rdr-login-v2__main:has(.rdr-auth-flow--sent) .rdr-auth-mobile-status-art,
+  .rdr-login-v2__main:has(.rdr-recovery__state) .rdr-auth-mobile-status-art{height:clamp(66px,10dvh,90px)}
+  .rdr-login-v2__main:has(.rdr-auth-flow--sent) .rdr-auth-flow__mobile-success h3{margin:8px 0 5px}
+  .rdr-login-v2__main:has(.rdr-auth-flow--sent) .rdr-auth-flow__mobile-success .rdr-login-v2__submit{margin-top:clamp(10px,2dvh,18px)}
+  .rdr-login-v2__main:has(.rdr-auth-flow--sent) .rdr-auth-flow__resend{min-height:28px;margin-top:7px}
+  .rdr-login-v2__main:has(.rdr-recovery__state) .rdr-recovery__art-title{margin:8px 0 5px}
+  .rdr-login-v2__main:has(.rdr-recovery__state) .rdr-recovery__state-button{margin-top:14px}
+  .rdr-login-v2__closing{white-space:nowrap;gap:6px}
+  .rdr-login-v2__closing>span{font-size:clamp(8px,2.35vw,10px)}
+  .rdr-o1-auth-footer{flex-wrap:nowrap;white-space:nowrap}
+}
+@media(max-width:720px) and (max-height:680px){
+  .rdr-login-v2__visual{flex-basis:calc(env(safe-area-inset-top) + 69px)}
+  .rdr-login-v2__mobile-identity{top:calc(env(safe-area-inset-top) + 8px)}
+  .rdr-login-v2__mobile-identity>.school-monogram{flex-basis:42px;width:42px;height:42px}
+  .rdr-login-v2__main{padding:3px 0}
+  .rdr-login-v2__heading{margin-bottom:11px}
+  .rdr-login-v2__heading h1{font-size:clamp(24px,6.5vw,29px);margin-bottom:6px}
+  .rdr-login-v2__eyebrow{margin-bottom:8px}
+  .rdr-login-v2__input-shell{height:42px;min-height:42px}
+  .rdr-login-v2__submit{min-height:43px;margin-top:11px}
+  .rdr-login-v2__field+.rdr-login-v2__field{margin-top:10px}
+  .rdr-login-v2__closing,.rdr-o1-auth-footer{margin-top:11px}
+  .rdr-auth-flow__mobile-success p{font-size:11px}
+  .rdr-auth-flow__mobile-success h3{font-size:21px}
+  .rdr-auth-mobile-status-art{height:66px}
+  .rdr-auth-flow__resend{min-height:26px}
+}
