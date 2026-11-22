@@ -1264,7 +1264,6 @@ body { background: var(--canvas); }
 
 /* School home v3 — reference-informed editorial command center.
    Clean dark depth, intentional hierarchy, one clear work focal point. */
-.school-home { --home-pink:#eb4c9b; --home-blue:#668cf1; --home-green:#33bf87; --home-amber:#c69c52; display:flex; flex-direction:column; gap:29px; max-width:1460px; padding-bottom:36px; }
 .school-home__header { display:flex; align-items:end; justify-content:space-between; gap:25px; padding:8px 0 12px; }
 .school-home__breadcrumb { display:flex; align-items:center; gap:9px; color:var(--muted); font-size:0.625rem; font-weight:800; letter-spacing:.12em; }
 .school-home__breadcrumb > svg:first-child { color:var(--home-pink); }
@@ -1304,7 +1303,6 @@ body { background: var(--canvas); }
 :root[data-theme='dark'] .school-home__tone--blue { --tone-bg:#232d48; }
 :root[data-theme='dark'] .school-home__tone--amber { --tone-bg:#373023; }
 :root[data-theme='dark'] .school-home__tone--green { --tone-bg:#233b31; }
-.school-home__layout { display:grid; grid-template-columns:minmax(0,1.75fr) minmax(285px,.85fr); align-items:start; gap:22px; }
 .school-home__main-column,.school-home__side-column { display:flex; flex-direction:column; gap:26px; min-width:0; }
 .school-home__focus { overflow:hidden; background:var(--surface); border:1px solid var(--border); border-radius:13px; }
 .school-home__focus-heading { display:flex; align-items:center; gap:12px; padding:17px 20px; border-bottom:1px solid var(--border); }
@@ -1353,13 +1351,12 @@ body { background: var(--canvas); }
 .school-home__reminders-head strong { font-size:0.75rem; line-height:1.45; }
 .school-home__reminders > p { font-size:0.6875rem; color:var(--muted); line-height:1.7; margin:13px 0 20px; max-width:290px; }
 .school-home__reminders-foot { display:flex; align-items:center; gap:7px; font-size:0.625rem; color:var(--muted); border-top:1px solid var(--border); padding-top:13px; }
-:root[data-theme='dark'] .school-home { --home-pink:#ff63b6; --home-blue:#87aaff; --home-green:#4fd69f; --home-amber:#edbd73; }
 :root[data-theme='dark'] .school-home__focus, :root[data-theme='dark'] .school-home__stat,
 :root[data-theme='dark'] .school-home__calendar, :root[data-theme='dark'] .school-home__notice,
 :root[data-theme='dark'] .school-home__operation, :root[data-theme='dark'] .school-home__reminders { box-shadow:0 2px 12px rgba(0,0,0,.1); }
-@media(max-width:1100px) { .school-home__layout { grid-template-columns:1fr; } .school-home__side-column { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; gap:16px; } .school-home__side-column > .school-home__section { min-width:0; } }
+@media(max-width:1100px) { .school-home__side-column { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; gap:16px; } .school-home__side-column > .school-home__section { min-width:0; } }
 @media(max-width:800px) { .school-home__stats { grid-template-columns:repeat(2,minmax(0,1fr)); } .school-home__stat:nth-child(2) { border-right:0; } .school-home__stat:nth-child(-n+2) { border-bottom:1px solid var(--border); } }
-@media(max-width:650px) { .school-home { gap:23px; } .school-home__header { flex-direction:column; align-items:start; gap:14px; } .school-home__header h1 { font-size:2.1875rem; } .school-home__date { padding:8px 10px; } .school-home__notice { align-items:start; } .school-home__notice-state { display:none; } .school-home__stats { border-radius:11px; } .school-home__stat { padding:16px; } .school-home__stat strong { font-size:1.875rem; } .school-home__side-column { display:flex; flex-direction:column; } .school-home__side-column > .school-home__section { width:100%; } .school-home__focus-content { min-height:245px; } .school-home__focus-count { display:none; } }
+@media(max-width:650px) { .school-home__header { flex-direction:column; align-items:start; gap:14px; } .school-home__header h1 { font-size:2.1875rem; } .school-home__date { padding:8px 10px; } .school-home__notice { align-items:start; } .school-home__notice-state { display:none; } .school-home__stats { border-radius:11px; } .school-home__stat { padding:16px; } .school-home__stat strong { font-size:1.875rem; } .school-home__side-column { display:flex; flex-direction:column; } .school-home__side-column > .school-home__section { width:100%; } .school-home__focus-content { min-height:245px; } .school-home__focus-count { display:none; } }
 @media(prefers-reduced-motion:reduce) { .school-home__operation,.school-home__calendar-tabs button { transition:none; } }
 
 
