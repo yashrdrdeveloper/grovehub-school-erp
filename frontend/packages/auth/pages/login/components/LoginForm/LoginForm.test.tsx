@@ -56,6 +56,9 @@ describe('LoginForm presentation', () => {
     render(<LoginForm {...props} state={state}/>);
     expect(screen.getByRole('alert').textContent).toContain('Unable to sign in');
     expect(screen.getByText('Enter a valid email address.')).toBeTruthy();
+    const fieldErrors=document.querySelectorAll('.rdr-login-v2__field-error--reserved');
+    expect(fieldErrors).toHaveLength(2);
+    expect(Array.from(fieldErrors).every(node => node.getAttribute('aria-live') === 'polite')).toBe(true);
     expect((screen.getByRole('button', { name: 'Signing in…' }) as HTMLButtonElement).disabled).toBe(true);
   });
 });
