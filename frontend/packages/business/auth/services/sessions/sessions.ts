@@ -1,7 +1,7 @@
 import { apiRequest } from '@Business/api';
 
-import { AuthOperation } from '../../constants/auth.operations';
-import { getAuthEndpoint } from '../../helpers/auth.getEndpoint';
+import { AuthOperation } from '../constants/auth.operations';
+import { getAuthEndpoint } from '../helpers/auth.getEndpoint';
 
 import type { Sessions } from './types/sessions';
 import type { SessionsResponse } from './types/sessions.response';
