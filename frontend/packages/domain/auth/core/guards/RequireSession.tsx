@@ -1,6 +1,6 @@
 import { Box } from '@Components/components/Box';
 import { useEffect } from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from '@Components/router';
 import { AUTH_ROUTE } from '@Business/auth/routes';
 import { APP_ROUTE } from '@Business/app/routes';
 

@@ -1,6 +1,6 @@
 import { Box } from '@Components/components/Box';
 import { ArrowLeft, LockKeyhole } from '@Components/icons';
-import { Link } from 'react-router-dom';
+import { Link } from '@Components/router';
 import { APP_ROUTE } from '@Business/app/routes';
 
 import { SchoolMonogram } from '@Components';

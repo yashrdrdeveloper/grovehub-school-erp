@@ -1,7 +1,7 @@
 import { ExternalAnchor } from '@Components/components/ExternalAnchor';
 import { Box } from '@Components/components/Box';
 import { SCHOOL_ROUTE } from '../../constants/school.routes';
-import { Link } from 'react-router-dom';
+import { Link } from '@Components/router';
 import { ArrowUpRight, BookOpen, ExternalLink, Sparkles } from '@Components/icons';
 import { facilities, photographs } from '../../constants/school.content';
 import { Heading, ImageCard, PhotoMotifs, facilityIcons } from '../siteMedia';

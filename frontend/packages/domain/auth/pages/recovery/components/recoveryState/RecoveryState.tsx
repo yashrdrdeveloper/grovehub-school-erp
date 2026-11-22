@@ -1,7 +1,7 @@
 import { Button } from '@Components/components/Button';
 import { Box } from '@Components/components/Box';
 import { ArrowLeft } from '@Components/icons';
-import { Link } from 'react-router-dom';
+import { Link } from '@Components/router';
 import { AUTH_ROUTE } from '@Business/auth/routes';
 
 import { RecoveryArtwork } from '../recoveryArtwork';

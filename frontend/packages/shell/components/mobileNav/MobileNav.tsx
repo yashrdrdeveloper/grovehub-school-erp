@@ -1,7 +1,7 @@
 import { Button } from '@Components/components/Button';
 import { Box } from '@Components/components/Box';
 import { Grid2X2, LayoutDashboard, Menu } from '@Components/icons';
-import { NavLink } from 'react-router-dom';
+import { NavLink } from '@Components/router';
 import { APP_ROUTE } from '@Business/app/routes';
 import { getShellNavClassName } from '../../helpers/shell.getNavClassName';
 import type { MobileNavComponent } from './types/mobileNav';

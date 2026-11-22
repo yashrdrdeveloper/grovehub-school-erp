@@ -1,7 +1,7 @@
 import { ExternalAnchor } from '@Components/components/ExternalAnchor';
 import { Box } from '@Components/components/Box';
 import { SCHOOL_ROUTE } from '../../constants/school.routes';
-import { Link } from 'react-router-dom';
+import { Link } from '@Components/router';
 import { ArrowRight, ArrowUpRight, Check, ExternalLink, GraduationCap, HeartHandshake, Landmark, Sparkles } from '@Components/icons';
 import { photographs } from '../../constants/school.content';
 import { EnquiryLink } from '../siteActions';

@@ -3,7 +3,7 @@ import { Button } from '@Components/components/Button';
 import { Box } from '@Components/components/Box';
 import { SCHOOL_ROUTE } from '../../constants/school.routes';
 import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from '@Components/router';
 import { ArrowRight, ArrowUpRight, MapPin, Menu, X } from '@Components/icons';
 import { SchoolMonogram } from '@Components';
 import { APP_ROUTE } from '@Business/app/routes';

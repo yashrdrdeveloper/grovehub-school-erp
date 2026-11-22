@@ -1,6 +1,6 @@
 import { SCHOOL_ROUTE } from '../../constants/school.routes';
 import { createContext, useContext, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '@Components/router';
 
 /** Explicit enquiry actions do not depend on catching React Router links
  * at the page root. Their href remains useful for opening a new tab or

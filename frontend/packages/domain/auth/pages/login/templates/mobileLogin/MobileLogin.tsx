@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from '@Components/router';
 
 import { AUTH_ROUTE } from '@Business/auth/routes';
 import { LOGIN_COPY } from '../../constants/login.copy';
