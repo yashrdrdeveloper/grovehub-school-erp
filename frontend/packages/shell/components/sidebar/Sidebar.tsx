@@ -1,7 +1,7 @@
 import { Button } from '@Components/components/Button';
 import { Box } from '@Components/components/Box';
 import { ChevronsLeft, ChevronsRight, Grid2X2, Settings2, X } from '@Components/icons';
-import { NavLink } from 'react-router-dom';
+import { NavLink } from '@Components/router';
 
 import { SchoolMonogram } from '@Components';
 import { APP_ROUTE } from '@Business/app/routes';
