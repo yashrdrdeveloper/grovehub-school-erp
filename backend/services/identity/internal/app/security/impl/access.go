@@ -6,7 +6,7 @@ import (
 	"time"
 
 	coregateway "grovehub/libs/core/gateway"
-	security "grovehub/services/identity/internal/app/security"
+	security "grovehub/services/identity/internal/app/services/security"
 	"grovehub/services/identity/internal/app/entity"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"
