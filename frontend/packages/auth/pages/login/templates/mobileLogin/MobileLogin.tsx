@@ -4,10 +4,10 @@ import { LOGIN_COPY, LOGIN_ROUTES } from '../../config';
 import { LoginForm } from '../../components/LoginForm';
 import type { LoginProps } from '../../types';
 
-/** Mobile-specific composition: recovery action below the credential fields. */
+/** Mobile-specific composition: recovery link between email and password, matching visual and keyboard order. */
 export const MobileLogin = (props: LoginProps) => (
   <LoginForm {...props}
-    afterFields={<Link className="rdr-login-v2__forgot-mobile" to={LOGIN_ROUTES.forgotPassword}>
+    betweenFields={<Link className="rdr-login-v2__forgot-mobile" to={LOGIN_ROUTES.forgotPassword}>
       {LOGIN_COPY.forgotPassword}
     </Link>}/>
 );
