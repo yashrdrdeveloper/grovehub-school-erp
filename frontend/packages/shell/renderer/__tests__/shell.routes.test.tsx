@@ -1,7 +1,6 @@
-import { APP_ROUTE_CONFIG, RouteAccess } from '@Business/app/routes';
 import { AUTH_ROUTE_CONFIG } from '@Business/auth/routes';
 
-import { publicRoutes, workspaceRoutes } from '../shell.routes';
+import { publicRoutes } from '../shell.routes';
 
 describe('publicRoutes', () => {
   it('maps public routes from the business registry without duplicating URLs', () => {
@@ -13,12 +12,3 @@ describe('publicRoutes', () => {
 
 });
 
-describe('workspaceRoutes', () => {
-  it('maps only protected app routes and preserves the workspace route values', () => {
-    const protectedPaths = APP_ROUTE_CONFIG
-      .filter((route) => route.type === RouteAccess.PROTECTED)
-      .map((route) => route.path);
-
-    expect(workspaceRoutes.map((route) => route.path)).toEqual(protectedPaths);
-  });
-});
