@@ -1,4 +1,5 @@
-import { AlertCircle, Clock3, Link2Off, PartyPopper, ShieldCheck, Sparkles } from '@Components/icons';
+import { Sparkles } from '@Components/icons';
+import { getRecoveryArtworkDescriptor } from '../../helpers/recovery.getArtworkDescriptor';
 
 import { AuthStatusArt } from '../../../../components/authStatusArt';
 import { getRecoveryArtworkCopy } from '../../helpers/recovery.getArtworkCopy';
@@ -7,14 +8,8 @@ import type { RecoveryArtworkComponent } from './types/recoveryArtwork';
 /** State rendering and wording are separate from recovery operations. */
 export const RecoveryArtwork: RecoveryArtworkComponent = ({ view, purpose }) => {
   const success = view === 'success';
-  const checking = view === 'checking';
-  const Icon = success ? PartyPopper : checking ? ShieldCheck
-    : view === 'missing' ? Link2Off : view === 'attempts-exhausted' ? AlertCircle : Clock3;
-  const statusKind = success ? 'success' : checking ? 'checking'
-    : view === 'expired' ? 'expired' : view === 'unavailable' ? 'unavailable'
-      : view === 'attempts-exhausted' ? 'attempts-exhausted' : 'missing';
+  const { Icon, statusKind, visualClass } = getRecoveryArtworkDescriptor(view);
   const { title, mobileStatusTitle, message } = getRecoveryArtworkCopy({ state: view, purpose });
-  const visualClass = success ? 'success' : checking ? 'checking' : 'problem';
 
   return (
     <div className={`rdr-recovery__art rdr-recovery__art--${visualClass}`} role="status" aria-live="polite">
