@@ -38,9 +38,10 @@ describe('RDR Login V2',()=>{
     Object.defineProperty(window,'matchMedia',{configurable:true,value:originalMatchMedia});
   });
 
-  it('renders the unified auth design with the original RDR logo and no external media',()=>{
+  it('renders the shared RDR identity and a self-contained campus illustration',()=>{
     render(<MemoryRouter><LoginV2Page/></MemoryRouter>);
     expect(screen.getByRole('heading',{name:'Welcome back.'})).toBeTruthy();
+    expect(document.querySelector('.rdr-campus-art svg.rdr-campus-art__scene')).not.toBeNull();
     expect(document.querySelector('.rdr-login-v2__visual svg.rdr-o1-art__book')).toBeNull();
     expect(document.querySelectorAll('.rdr-login-v2 img')).toHaveLength(0);
     expect(screen.getByRole('button',{name:/^sign in$/i})).toBeTruthy();
@@ -128,15 +129,20 @@ describe('RDR Login V2',()=>{
     expect(await screen.findByText('Incorrect email or password. Please try again.')).toBeTruthy();
     expect(screen.getAllByRole('alert')).toHaveLength(1);
     expect(document.querySelectorAll('.rdr-login-v2__feedback-slot--signin')).toHaveLength(1);
+    const form=document.querySelector('.rdr-login-v2__form--signin');
+    const submit=form?.querySelector('button[type="submit"]');
+    const feedback=form?.querySelector('.rdr-login-v2__feedback-slot--signin');
+    expect(Boolean(submit && feedback && (submit.compareDocumentPosition(feedback) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
     expect(screen.getByRole('button',{name:/^sign in$/i})).toBeTruthy();
   });
 
-  it('uses a branded gradient hero without decorative illustration or external media',()=>{
+  it('uses the architectural SVG illustration without photographs or external media',()=>{
     render(<MemoryRouter><LoginV2Page/></MemoryRouter>);
     const visual=document.querySelector('.rdr-login-v2__visual');
     expect(visual).not.toBeNull();
     expect(visual?.querySelectorAll('img,picture,video,source')).toHaveLength(0);
     expect(visual?.querySelectorAll('svg.rdr-o1-art__book')).toHaveLength(0);
+    expect(visual?.querySelectorAll('svg.rdr-campus-art__scene')).toHaveLength(1);
     expect(visual?.textContent).toContain('RDR School');
   });
 
