@@ -1,12 +1,12 @@
 # Frontend Code Guidelines
 
-> **Status:** Mandatory, authoritative frontend engineering standard — **Revision 7 (November 2026)**.
+> **Status:** Mandatory, authoritative frontend engineering standard — **Revision 8 (November 2026)**.
 >
 > **Scope:** Every source file under `frontend/`, including `app`, `packages/base`, `packages/business`, `packages/components`, `packages/styles`, `packages/assets`, `packages/domain`, `packages/shell`, unit tests, integration tests, styles, generated code boundaries, and scripts.
 >
 > **Stack:** React 19, TypeScript strict, pnpm, Vite, Tailwind CSS 4, shadcn-compatible Radix primitives, Lucide icons through the components package, Jest, and the existing project architecture checks.
 >
-> **Precedence:** Revision 7 sections 23–35 are the newest, most specific acceptance rules. They override older examples where they conflict. This document replaces previous frontend guideline revisions and examples. Existing code that differs is **migration debt**, not an exception to this standard. Do not claim implementation is complete until checks and behavior regressions pass.
+> **Precedence:** The new Revision 8 sections 36–39 override older contradictory examples, especially route ownership and test naming. Sections 23–35 still apply where compatible. They override older examples where they conflict. This document replaces previous frontend guideline revisions and examples. Existing code that differs is **migration debt**, not an exception to this standard. Do not claim implementation is complete until checks and behavior regressions pass.
 
 ## 1. Non-negotiable principles
 
@@ -1356,3 +1356,171 @@ Also verify the deployed/prerendered public route HTML and run a **real browser*
 A file is conformant only when its owner is obvious, it uses typed contracts, names static data in constants, puts JSX-returning variation in `renderer/`, puts pure non-JSX computations in `helpers/`, never contains ternary expressions, never reimplements generic HTML or imports vendor icons/Lodash in a domain, uses shared CSS tokens and scoped module styling, centralizes test IDs/routes, has tests where behavior warrants and has no obsolete imports. A feature is conformant only after the associated state/action hooks, providers, adapters, tests, accessibility and viewport behavior also conform.
 
 **The document is now the single authoritative rulebook. The implementation still has known migration debt.** A docs commit is complete when the document has been updated and verified in the repository; it does **not** delete domains, move hooks, convert CSS to Sass, implement missing shared components or fix the shown JSX by itself. Those are separate source changes that must be executed and verified before they can be reported as done.
+
+## 36. Unit test structure: exact exported name, no mock of pure code
+
+One **top-level** `describe` per unit test file. The `describe` name must be the exact exported symbol being tested, matching case, not a prose capability:
+
+~~~ts
+// helpers/__tests__/login.getErrorMessage.test.ts
+import { getLoginErrorMessage } from '../login.getErrorMessage';
+
+describe('getLoginErrorMessage', () => {
+  it('maps invalid credentials to safe copy', () => {
+    expect(getLoginErrorMessage(new Error('Invalid credentials')))
+      .toBe('Incorrect email or password. Please try again.');
+  });
+  it('hides unknown backend failures', () => {
+    expect(getLoginErrorMessage(new Error('internal secret')))
+      .toBe('Unable to sign in right now. Please try again.');
+  });
+});
+~~~
+
+**Never** `describe('login error mapping')` or `describe('login credential validation')`. Use `describe('validateLoginCredentials')`, `describe('LoginForm')`, `describe('useLogin')`, `describe('renderCredentialFieldLabel')`, etc. No nested `describe` for methods or error cases; use multiple named `it` cases. Different exports get separate test files.
+
+**Never mock pure helpers, validators, selectors, renderer functions or base utilities**: execute their real input/output semantics. Even when testing an upstream caller, prefer real pure dependencies; do not replace validation with a Jest spy to make the test pass. `jest.fn` is allowed as an interaction callback spy in a component test, not as a replacement for a pure helper. Mock only genuine external IO boundaries where necessary: network/API, browser storage failures, clock or framework navigation; prefer stateful integration tests when feasible. Pure tests must not require API or auth-context mocks.
+
+Tests belong under the owning `helpers/__tests__/`, `renderer/__tests__/`, `hooks/useX/__tests__/` or `components/X/__tests__/`. Never put tests under a nested single-function helper folder. Add targeted tests for valid, invalid, empty, malformed, case-preserving email, unchanged password, generic backend failure, and failure confidentiality. Preserve exact user-facing copy.
+
+## 37. Page-level constants and helpers must be flat; delete `config/`
+
+**Required login unit, reference for all future page refactors:**
+
+~~~text
+pages/login/
+├── Login.tsx
+├── constants/
+│   ├── login.fields.ts
+│   ├── login.fieldConfig.ts
+│   ├── login.fieldOrder.ts
+│   ├── login.validation.ts
+│   ├── login.copy.ts
+│   ├── login.errorRules.ts
+│   ├── login.testIds.ts
+│   └── types/login.fieldConfig.ts
+├── helpers/
+│   ├── login.getErrorMessage.ts
+│   ├── login.validateCredentials.ts
+│   ├── login.isValidEmail.ts
+│   ├── types/
+│   │   ├── login.getErrorMessage.ts
+│   │   └── login.validateCredentials.ts
+│   └── __tests__/
+│       ├── login.getErrorMessage.test.ts
+│       ├── login.validateCredentials.test.ts
+│       └── login.isValidEmail.test.ts
+├── renderer/                     # only JSX-producing pure selectors
+├── hooks/
+├── components/
+├── templates/
+├── types/
+└── __tests__/
+~~~
+
+**No `pages/login/config/`, `helpers/index.ts`, `constants/index.ts`, `renderer/index.ts`, `helpers/getLoginErrorMessage/` or any one-folder-per-helper nesting.** Constants have no executable operations, helpers contain no JSX, and renderers return JSX without hook/IO side effects. Nested `types/` and `__tests__/` are permitted only for ownership. Name source files `<owner>.<useCase>.ts[x]`. Update every direct importer and delete obsolete wrappers/barrels after validation.
+
+### 37.1 Typed fields and frozen static descriptors
+
+Use exactly **one authoritative stable field identifier contract**. Values remain lowercase to match existing state/error keys; enum *members* are uppercase to make identity explicit.
+
+~~~ts
+// constants/login.fields.ts
+export enum LoginField {
+  EMAIL = 'email',
+  PASSWORD = 'password',
+}
+~~~
+
+~~~ts
+// constants/types/login.fieldConfig.ts
+export interface LoginFieldConfig {
+  readonly label: string;
+  readonly placeholder: string;
+  readonly autoComplete: 'username' | 'current-password';
+}
+
+// constants/login.fieldConfig.ts
+import { LoginField } from './login.fields';
+import type { LoginFieldConfig } from './types/login.fieldConfig';
+
+export const LOGIN_FIELD_CONFIG: Readonly<Record<LoginField, Readonly<LoginFieldConfig>>> = Object.freeze({
+  [LoginField.EMAIL]: Object.freeze({
+    label: 'Email address', placeholder: 'Email', autoComplete: 'username',
+  }),
+  [LoginField.PASSWORD]: Object.freeze({
+    label: 'Password', placeholder: 'Password', autoComplete: 'current-password',
+  }),
+});
+~~~
+
+~~~ts
+// constants/login.fieldOrder.ts
+import { LoginField } from './login.fields';
+export const LOGIN_FIELD_ORDER = Object.freeze([
+  LoginField.EMAIL,
+  LoginField.PASSWORD,
+] as const satisfies readonly LoginField[]);
+~~~
+
+Components and validators read `LOGIN_FIELD_CONFIG[LoginField.EMAIL]` instead of inventing a separate email/password config. Do not store a duplicate object `{ email: ..., password: ... }` with unrelated string keys. The enum can type `LoginFieldErrors = Partial<Record<LoginField, string>>`, but avoid new circular runtime imports from page type modules.
+
+### 37.2 Validation policies are data; predicates belong to helpers
+
+No `isValid: value => ...` functions inside `constants/login.validation.ts`. Represent rule ordering as typed **data**, and implement operations under `helpers/`:
+
+~~~ts
+// constants/login.validation.ts
+import { LoginField } from './login.fields';
+export enum LoginValidationKind {
+  REQUIRED = 'REQUIRED',
+  EMAIL_FORMAT = 'EMAIL_FORMAT',
+}
+export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const LOGIN_VALIDATION_RULES: Readonly<Record<LoginField, readonly LoginValidationKind[]>> = Object.freeze({
+  [LoginField.EMAIL]: Object.freeze([LoginValidationKind.REQUIRED, LoginValidationKind.EMAIL_FORMAT]),
+  [LoginField.PASSWORD]: Object.freeze([LoginValidationKind.REQUIRED]),
+});
+export const LOGIN_REQUIRED_MESSAGES: Readonly<Record<LoginField, string>> = Object.freeze({
+  [LoginField.EMAIL]: 'Please enter your email address.',
+  [LoginField.PASSWORD]: 'Please enter your password.',
+});
+export const LOGIN_EMAIL_FORMAT_MESSAGE = 'Enter a valid email address.';
+~~~
+
+~~~ts
+// helpers/login.isValidEmail.ts
+import { EMAIL_PATTERN } from '../constants/login.validation';
+export const isValidLoginEmail = (value: string): boolean => EMAIL_PATTERN.test(value);
+~~~
+
+`login.validateCredentials.ts` takes typed credentials, uses real `_trim` from `@Base/utilities/trim` to normalize **email only**, iterates `LOGIN_FIELD_ORDER` and evaluates rules through pure helper(s), returns typed field errors, and never logs/trims the password. For multiple behavioral rule strategies use a typed helper strategy registry; static policy metadata stays in constants. Tests execute real validators, not mocks.
+
+Other exact responsibilities: `constants/login.copy.ts` for screen copy, `constants/login.errorRules.ts` for safe matcher metadata, `helpers/login.getErrorMessage.ts` for mapping unknown failures to nonleaking copy, `constants/login.testIds.ts` for stable automation IDs. The old `normalizeLoginEmail` pure wrapper is redundant with `_trim`: remove the wrapper and its obsolete test when migrating, and test the actual `_trim` leaf under `@Base`. Do not keep a compatibility `helpers/index.ts`.
+
+## 38. Central route contracts live under `@Business/auth/routes` and `@Business/app/routes`
+
+**Supersedes the earlier tentative `app/core/routes` placement in section 29.** Frontend navigation paths are immutable framework-neutral contracts:
+
+~~~text
+packages/business/
+├── auth/routes/
+│   ├── constants/auth.routes.ts       # sign in, forgot, reset, invitation, legacy auth redirects
+│   └── index.ts                       # intentional package public entrypoint
+└── app/routes/
+    ├── constants/app.routes.ts        # home, dashboard and implemented workspace destinations
+    ├── constants/app.routeAccess.ts   # PUBLIC / PROTECTED and OPEN / GUEST_ONLY
+    └── index.ts
+~~~
+
+**Auth route vs API endpoint distinction:** `@Business/auth/routes` stores browser-facing `/login` and `/forgot-password`, **not** `/identity/public/auth/*` transport URLs. `@Business/app/routes` stores `/`, `/dashboard` and route access policy. No duplicating auth path strings in both modules or hand-maintained `LOGIN_ROUTES = { success: '/dashboard', forgotPassword: '/forgot-password' }` inside login pages. Reference `APP_ROUTE.DASHBOARD` on login success and `AUTH_ROUTE.FORGOT_PASSWORD` in login template links. Keep publicSite SEO route registry as the owner of school paths (no duplicate shell copy).
+
+For route policy, use named enum `RouteAccess.PUBLIC` / `RouteAccess.PROTECTED` plus an explicit `PublicRoutePolicy.OPEN` / `PublicRoutePolicy.GUEST_ONLY`: public school pages remain accessible while signed in; login can use guest-only behavior. Shell keeps a **single persistent ProtectedLayout and Outlet**, without remounting per protected route. Keep compatibility `/loginv2` redirect and `/setup` invitation links; no new phantom domain URLs. Do not import React, router, hooks, fetch or UI components into these pure route contracts. Frontend `app` bootstrap may use the same source of truth but may not redefine it.
+
+## 39. Revision 8 completion criteria
+
+A conformant login unit has **no `config` directory, no helper/constant/renderer barrels, no nested helper unit folders and no normalize-wrapper**. It has enum-backed field metadata, immutable order, data-only validation rules, pure typed helper predicates, exact-name test `describe`, real pure utilities, named copy/test IDs, and no page-local route dictionary. All imports resolve to specific leaf files. Login/forgot/recovery visible behavior and server error confidentiality remain intact.
+
+**Implementation sequence:** documentation **first**; then real Base Lodash leaves and pure auth/app route contracts; then flat login constants/helpers and their tests; then hook and component/template imports; remove old directories and aliases; run architecture, TypeScript, Jest and production build and document results. Strict zero-ternary, renderer and CSS-module migration from sections 23–35 remain required; a successful helper refactor alone is not a claim the whole frontend is fully compliant.
+
+Only declare code migration done after tests and meaningful checks have run. For documentation-only commits, verify the actual document and report that code/CI were not yet changed.
