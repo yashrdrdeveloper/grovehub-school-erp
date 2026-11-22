@@ -10,7 +10,7 @@ export const EnquiryForm: EnquiryFormComponent = ({ compact = false, model }) =>
   const { fieldId, data, step, error, ready, mailto, patch, next, submit, edit, back } = model;
   let rootClass = 'rdr-enquiry';
   let rootId: string | undefined = 'enquiry';
-  let rootTestId = ENQUIRY_TEST_IDS.PAGE;
+  let rootTestId: string = ENQUIRY_TEST_IDS.PAGE;
   if (compact) {
     rootClass += ' rdr-enquiry--compact';
     rootId = undefined;
