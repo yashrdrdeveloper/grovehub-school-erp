@@ -8,8 +8,8 @@ type LoginValidationRule = Readonly<{
 export const LOGIN_COPY = Object.freeze({
   desktopTitle: 'Welcome back.',
   desktopDescription: 'Sign in to continue to your RDR School workspace.',
-  mobileTitle: 'Sign in',
-  mobileDescription: 'Sign in to your workspace.',
+  mobileTitle: 'Welcome back.',
+  mobileDescription: 'Sign in to continue to your RDR School workspace.',
   button: 'Sign in',
   busyButton: 'Signing in…',
   forgotPassword: 'Forgot password?',
