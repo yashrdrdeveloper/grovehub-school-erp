@@ -54,6 +54,19 @@
   --gh-motion-normal: 180ms;
   --gh-motion-slow: 250ms;
 
+  /* Historical responsive layout aliases; all values now have one owner. */
+  --ui-space-1: var(--gh-space-1);
+  --ui-space-2: var(--gh-space-2);
+  --ui-space-3: var(--gh-space-3);
+  --ui-space-4: var(--gh-space-4);
+  --ui-space-5: var(--gh-space-5);
+  --ui-space-6: var(--gh-space-6);
+  --ui-touch-min: var(--gh-control-height-md);
+  --ui-field-height: 3.125rem;
+  --ui-radius-md: .75rem;
+  --ui-radius-lg: 1rem;
+  --ui-page-gutter: clamp(1rem, 4vw, 2.25rem);
+
   /* Compatibility aliases keep existing component/domain CSS working. */
   --canvas: var(--gh-color-canvas);
   --surface: var(--gh-color-surface);

@@ -294,20 +294,8 @@
 
 
 /* RDR School workspace refresh: crisp editorial hierarchy, airy cards, generous contrast. */
-:root {
-  --canvas: #f6f7fb; --surface: #fff; --surface-subtle: #f1f3f9;
-  --ink: #3e485c; --ink-strong: #171e31; --muted: #818ba0;
-  --border: #e7eaf1; --accent: #635bdb; --accent-hover: #524ac8;
-  --accent-pale: #f0efff; --hero-start: #29245b; --hero-end: #5351a7;
-  --shadow: 0 3px 18px rgba(24,33,65,.035);
-}
-:root[data-theme='dark'] {
-  --canvas: #10131d; --surface: #1b2030; --surface-subtle: #242b3c;
-  --ink: #ccd3e1; --ink-strong: #f5f6fc; --muted: #9aa6ba;
-  --border: #343b50; --accent: #aaa4ff; --accent-hover: #c6c1ff;
-  --accent-pale: #35305b; --hero-start: #2b285c; --hero-end: #484887;
-  --shadow: 0 5px 24px rgba(0,0,0,.14);
-}
+
+
 body { background: var(--canvas); }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 .sidebar { background: var(--surface); border-right: 1px solid var(--border); }
@@ -408,36 +396,8 @@ body { background: var(--canvas); }
 
 /* RDR School / Atelier theme: creamy neutral foundation, sophisticated ocean teal,
    champagne warmth and selective lively accents instead of loud saturated panels. */
-:root {
-  --canvas: #f8f8f6;
-  --surface: #ffffff;
-  --surface-subtle: #f2f5f3;
-  --ink: #46505b;
-  --ink-strong: #182b36;
-  --muted: #78848b;
-  --border: #e3e9e7;
-  --accent: #147f81;
-  --accent-hover: #0d6266;
-  --accent-pale: #e7f5f3;
-  --hero-start: #173b4a;
-  --hero-end: #145d67;
-  --shadow: 0 3px 16px rgba(22,52,61,.035);
-}
-:root[data-theme='dark'] {
-  --canvas: #10191d;
-  --surface: #18252b;
-  --surface-subtle: #223238;
-  --ink: #c9d5d7;
-  --ink-strong: #f3f9f8;
-  --muted: #95a7ac;
-  --border: #304248;
-  --accent: #75d7d0;
-  --accent-hover: #a1e9df;
-  --accent-pale: #1c4041;
-  --hero-start: #13313d;
-  --hero-end: #12515b;
-  --shadow: 0 3px 18px rgba(0,0,0,.14);
-}
+
+
 .brand-mark, .button--primary { background: #147f81; color: #fff; }
 .button--primary:hover { background: #0d6266; color: #fff; }
 .brand-period { color: #e1a77c; }
@@ -577,21 +537,7 @@ body { background: var(--canvas); }
 
 /* Dark mode refinement — richer depth and clearer hierarchy.
    Scoped explicitly to dark mode; light mode is intentionally untouched. */
-:root[data-theme='dark'] {
-  --canvas: #0b141b;
-  --surface: #15252c;
-  --surface-subtle: #20343d;
-  --ink: #cfdbdd;
-  --ink-strong: #f4faf8;
-  --muted: #a1b6bb;
-  --border: #35515a;
-  --accent: #67dfca;
-  --accent-hover: #9bf4e2;
-  --accent-pale: #183c3e;
-  --hero-start: #143b49;
-  --hero-end: #12666c;
-  --shadow: 0 5px 22px rgba(0, 0, 0, .16);
-}
+
 :root[data-theme='dark'] .shell,
 :root[data-theme='dark'] .shell__content { background: var(--canvas); }
 :root[data-theme='dark'] .topbar {
@@ -794,36 +740,8 @@ body { background: var(--canvas); }
 
 /* RDR School / Atelier theme: creamy neutral foundation, sophisticated ocean teal,
    champagne warmth and selective lively accents instead of loud saturated panels. */
-:root {
-  --canvas: #f8f8f6;
-  --surface: #ffffff;
-  --surface-subtle: #f2f5f3;
-  --ink: #46505b;
-  --ink-strong: #182b36;
-  --muted: #78848b;
-  --border: #e3e9e7;
-  --accent: #147f81;
-  --accent-hover: #0d6266;
-  --accent-pale: #e7f5f3;
-  --hero-start: #173b4a;
-  --hero-end: #145d67;
-  --shadow: 0 3px 16px rgba(22,52,61,.035);
-}
-:root[data-theme='dark'] {
-  --canvas: #10191d;
-  --surface: #18252b;
-  --surface-subtle: #223238;
-  --ink: #c9d5d7;
-  --ink-strong: #f3f9f8;
-  --muted: #95a7ac;
-  --border: #304248;
-  --accent: #75d7d0;
-  --accent-hover: #a1e9df;
-  --accent-pale: #1c4041;
-  --hero-start: #13313d;
-  --hero-end: #12515b;
-  --shadow: 0 3px 18px rgba(0,0,0,.14);
-}
+
+
 .brand-mark, .button--primary { background: #147f81; color: #fff; }
 .button--primary:hover { background: #0d6266; color: #fff; }
 .brand-period { color: #e1a77c; }
@@ -963,21 +881,7 @@ body { background: var(--canvas); }
 
 /* Midnight Ocean — dark-only. Light Atelier remains exactly as before.
    Saturation is concentrated in actionable surfaces, not the page background. */
-:root[data-theme='dark'] {
-  --canvas: #0b151c;
-  --surface: #142731;
-  --surface-subtle: #203941;
-  --ink: #d3e1e4;
-  --ink-strong: #f7fcfa;
-  --muted: #a4b9c0;
-  --border: #36535e;
-  --accent: #6ce3ca;
-  --accent-hover: #9bf5df;
-  --accent-pale: #1c4245;
-  --hero-start: #123b4a;
-  --hero-end: #147781;
-  --shadow: 0 7px 22px rgba(0,0,0,.16);
-}
+
 :root[data-theme='dark'] .shell,
 :root[data-theme='dark'] .shell__content { background: var(--canvas); }
 :root[data-theme='dark'] .topbar {
@@ -1103,36 +1007,8 @@ body { background: var(--canvas); }
 
 /* Reference-inspired workspace palette (Nov 18 screenshots): monochrome UI,
    deliberate separation, with restrained chart-like accent colors. */
-:root {
-  --canvas: #fafafa;
-  --surface: #ffffff;
-  --surface-subtle: #f5f5f7;
-  --ink: #3e4050;
-  --ink-strong: #11111c;
-  --muted: #737584;
-  --border: #e9e9ed;
-  --accent: #494b72;
-  --accent-hover: #343652;
-  --accent-pale: #efeff5;
-  --hero-start: #f7f7fa;
-  --hero-end: #ffffff;
-  --shadow: 0 2px 12px rgba(19,19,35,.025);
-}
-:root[data-theme='dark'] {
-  --canvas: #0e0e16;
-  --surface: #12121c;
-  --surface-subtle: #1a1a27;
-  --ink: #d0d0dc;
-  --ink-strong: #fbfbff;
-  --muted: #9697ac;
-  --border: #252534;
-  --accent: #a0a9ff;
-  --accent-hover: #c4caff;
-  --accent-pale: #26263d;
-  --hero-start: #161622;
-  --hero-end: #1a1a28;
-  --shadow: none;
-}
+
+
 :root .shell, :root .shell__content { background: var(--canvas); }
 :root .sidebar { background: var(--surface); border-right: 1px solid var(--border); }
 :root .topbar { background: var(--surface); border-bottom: 1px solid var(--border); box-shadow: none; }
@@ -2312,20 +2188,7 @@ body { background: var(--canvas); }
    viewport media breakpoints remain in px because they depend on device width.
    Avoid page-level horizontal scrolling caused by long labels, grid contents,
    buttons or older minimum-width rules. */
-:root {
-  --ui-space-1:.25rem;
-  --ui-space-2:.5rem;
-  --ui-space-3:.75rem;
-  --ui-space-4:1rem;
-  --ui-space-5:1.25rem;
-  --ui-space-6:1.5rem;
-  --ui-touch-min:2.75rem;
-  --ui-field-height:3.125rem;
-  --ui-radius-md:.75rem;
-  --ui-radius-lg:1rem;
-  --ui-page-gutter:clamp(1rem,4vw,2.25rem);
-  font-size:100%;
-}
+
 html,body,#root {
   width:100%;
   max-width:100%;
@@ -2349,7 +2212,7 @@ body {min-width:0;overflow-x:clip}
   min-width:0;
 }
 @media(max-width:720px) {
-  :root {--ui-page-gutter:1rem}
+
   .shell__content {max-width:100%;min-width:0}
   .shell__main {min-width:0;max-width:100%;padding-inline:var(--ui-page-gutter)}
   .page-heading {flex-wrap:wrap}
@@ -2364,5 +2227,5 @@ body {min-width:0;overflow-x:clip}
 /* Scale rem typography slightly with the available phone width, while
    preserving user/browser font-size preferences on larger viewports. */
 @media(max-width:720px) {
-  :root {font-size:clamp(.9375rem,4vw,1rem)}
+
 }

@@ -23,3 +23,11 @@ h1, h2, h3, h4, strong { color: var(--gh-color-text-strong); }
 h1, h2, h3, h4 { font-family: var(--gh-font-heading); }
 p { line-height: var(--gh-leading-normal); }
 :focus-visible { outline-offset: 2px; }
+
+/* Generic viewport rules belong to @Styles, not the legacy feature stylesheet. */
+@media (max-width: 720px) {
+  :root {
+    --ui-page-gutter: 1rem;
+    font-size: clamp(.9375rem, 4vw, 1rem);
+  }
+}
