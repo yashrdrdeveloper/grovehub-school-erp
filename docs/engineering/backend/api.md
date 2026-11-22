@@ -68,3 +68,10 @@ Test malformed/unknown JSON properties, absent vs null PATCH, invalid IDs, unaut
 ## 10. Annotated route limits
 
 Route-specific HTTP throttling is owned by the controller contract, for example `@POST /login` followed by `@RouteLimit 12`. The shared generator validates and translates that declaration into an exact method-and-route policy; each service exposes it from bootstrap to Launcher. Hardcoded endpoint switches in the Launcher gateway are prohibited. An absent annotation does not override other applicable platform security controls. See `annotation.md` and `gateway.md`.
+
+
+## Strict access-tier and client-parity rules
+
+Administrator account registration MUST remain protected. Invitation setup and recovery may be public-tier because an unauthenticated account needs to redeem a purpose-bound one-time proof, but they MUST validate grant purpose, expiry, consumed state, attempts and tenant/account eligibility. Place activation controllers under their own resource ownership; do not label an activation endpoint as a public registration operation.
+
+A module's controller-backed typed client MUST use generated `@RequestLine`, not `@Proxy` service forwarding. Register those same controllers on the internal in-process mux while preserving authenticated principal context, tenant isolation and validation. Never assume the tier-named route alone enforces access.

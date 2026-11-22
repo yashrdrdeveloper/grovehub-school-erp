@@ -66,8 +66,8 @@ Category-specific `annotations.go` describes a directive. The processor under `g
 | `@ChainOfResponsibility` | Ordered operation chain | Checked; invoke real typed runner yourself |
 | `@Transactional` | Write operation intent | Checked; **explicit** UnitOfWork still required |
 | `@Client` | Public typed client interface | Processor-generated proxy or request adapter |
-| `@Proxy service.Operation` | Delegation in typed client | Calls supplied service implementation; no implicit network |
-| `@RequestLine METHOD /path` | In-process typed HTTP client | Generated against registered methods and REST contracts |
+| `@Proxy service.Operation` | Deliberately trusted internal-only delegation when no HTTP endpoint exists | Skips HTTP pipeline; caller must enforce authorization and scope |
+| `@RequestLine METHOD /path` | Required for public module client methods corresponding to an annotated HTTP operation | Generated against registered methods and REST contracts; preserves identical validation and access rules |
 | `@Routes` + `@GET/POST/PUT/PATCH/DELETE` | HTTP handler routing | Generated registration, not permission checks |
 | `@Event topic=... type=... source=...` | Domain event contract | Generated/checked metadata, not delivery guarantees |
 | `@ExternalService` | Third-party capability interface | Declares external boundary; bootstrap registers concrete adapter |
@@ -150,3 +150,8 @@ Before adding a directive, answer:
 Add `// @RouteLimit 30` on an annotated controller interface method (not in Launcher code), beside `@GET`, `@POST`, etc. Its numeric argument is the maximum number of requests per minute from the same remote IP address to that exact method+registered route pattern, and must be in the range **1–100000**. Missing annotation means no *route-specific* limit, not unlimited platform protection.
 
 The route generator parses the method's comments, validates the argument and emits `routes.RouteLimits() map[string]int` in the generated private routes package. Service bootstrap provides this map to the generic Launcher gateway limiter. No endpoint-specific switch belongs in shared gateway code. This generated declaration is configuration, not authorization: the gateway continues to validate route tiers, sessions, Origin, CSRF and provider/workload credentials. The in-memory limiter is not distributed and must not be represented as production multi-replica abuse prevention.
+
+
+## Mandatory client declaration parity
+
+For every controller-backed method on a module's exported `@Client` facade, declare `@RequestLine METHOD /relative/path` with the same method, route parameter names, typed request wrapper and response DTO as the controller. Compose its generated implementation through `bootstrap/impl/client.go`; do not implement that client by forwarding directly to the service from `bootstrap/impl/runtime.go`. Reject unmatched route/controller/client contracts during generation. `@Proxy` is reserved for explicitly reviewed, trusted internal-only actions with their own authorization enforcement.

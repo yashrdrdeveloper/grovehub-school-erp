@@ -108,3 +108,12 @@ Check the live generator for exact accepted signatures/config placement; this is
 ## 9. Tests
 
 Test empty query, one relation, multiple relation filters, unknown field, invalid operator, escaping/SQL injection strings, normalization parity, sorting ties, forward cursor pages, deleted/updated rows, 0/1/max page sizes, projection rebuild, concurrent updates, and parameterized SQL. Include a PostgreSQL-backed query-plan test for large/high-cardinality tables where warranted.
+
+
+## Field identifiers, enum rules and helper decomposition (mandatory)
+
+- The resource DTO boundary MUST declare canonical filter/sort field-name constants (or a reviewed generator must derive them). Validator maps, repository search configuration, cursor extraction and documented request schemas MUST share those constants.
+- Go JSON struct tags are literal values; a type-safe constant does not automatically update a tag. Add reflection-based parity assertions in **tests** (not the runtime request path) and update OpenAPI in the same commit.
+- Domain status values MUST be checked using the owning entity's enum constants; never duplicate status string values inside search validators.
+- Keep `validators/<resource>/impl/<resource>.go` as the thin entrypoint; substantive field specs, normalization functions, cursor/sort policies belong in `validators/<resource>/helpers/search.go` or other focused purpose files.
+- Only trusted repository search config maps identifiers to SQL expressions. All parameters remain bound, and a filter unsupported by either validator or repository must fail closed.

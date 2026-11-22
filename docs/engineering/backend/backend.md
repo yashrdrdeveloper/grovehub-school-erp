@@ -40,7 +40,8 @@ backend/
         │   │   ├── bootstrap/
         │   │   │   ├── bootstrap.go          # builder/runtime interfaces
         │   │   │   └── impl/
-        │   │   │       ├── bootstrap.go      # Build and Close
+        │   │   │       ├── build.go          # minimal dependency composition
+        │   │   │       ├── runtime.go        # module interface implementation, Close
         │   │   │       ├── client.go         # internal clients
         │   │   │       ├── routes.go         # HTTP wiring, only for HTTP modules
         │   │   │       ├── repository.go     # DB wiring
@@ -112,14 +113,16 @@ backend/
 | Module root | Stable module lifecycle interface | `New`, `Migrate`, public aliases | SQL, provider SDK calls, HTTP method logic |
 | `client/<resource>/` | Cross-module public API | Typed contracts, public DTO aliases, `@Client` | Import another module's `internal/`, leak GORM/entity/SDK |
 | `bootstrap/` | Object graph lifecycle | Define `Bootstrap`/`Runtime` | Business policy |
-| `bootstrap/impl/bootstrap.go` | Build/Close coordination | Validate dependencies, control shutdown | HTTP response logic or repository SQL |
-| `bootstrap/impl/client.go` | Client composition | Supply generated client dependencies | Business validations |
+| `bootstrap/impl/build.go` | Minimal dependency assembly | Validate dependencies and delegate typed wiring | Controllers, operations, workers, or SQL logic inline |
+| `bootstrap/impl/runtime.go` | Module Runtime implementation | RegisterHTTP, expose typed clients, VerifyAccess and Close through injected interfaces | Business policy, direct service calls or concrete controller assembly |
+| `bootstrap/impl/client.go` | Client composition | Supply generated @RequestLine client and in-process router dependencies | Direct service proxies for HTTP-exposed methods, business validations |
 | `bootstrap/impl/routes.go` | Controller + route composition | Register actual handlers | Inline handlers |
 | `bootstrap/impl/repository.go` | Persistence DI | Construct repository, mapper, validator | SQL query bodies |
 | `bootstrap/impl/services.go` | Use-case DI | Compose services from typed dependencies | Vendor switches in operations |
 | `bootstrap/impl/events.go` | Event subscriptions/producers | Bind producer and consumer contracts | Keep raw broker SDK logic |
 | `bootstrap/impl/external_services.go` | Vendor adapters | Register concrete SDK implementations | Domain rules |
 | `bootstrap/impl/workers.go` | Worker lifecycle | Cancel, join, expose failure/health | Detached, untracked goroutines |
+| `services/<capability>/` | Identity/security and other reusable module-owned use cases | Typed capability contracts and impl packages | Parallel feature-root `security/` implementing business use cases |
 | `config/` | Private runtime config | Load/validate env, redact secrets | Hardcoded production credentials/endpoints |
 | `constants/error/` | Error identity | Stable codes, metadata | HTTP implementation details |
 | `constants/keys/` | Stable persistence/header identifiers | Table constraints, agreed keys | Business decisions |
@@ -283,7 +286,7 @@ Load private configuration from environment/secret sources; validate required va
 
 ## 15. Go source and naming style
 
-1. **One-line Go function/method signatures** when readable and required by the module style; split only truly unmanageable signatures deliberately. Format every file with `gofmt`.
+1. **One-line Go function/method signatures** when readable and required by the module style; split only truly unmanageable signatures deliberately. Format every file with `gofmt`. CI MUST reject unformatted Go. No dense one-line function bodies or packed switch cases.
 2. **Blank line between every top-level type, const, var, and func declaration.** Also separate successive method definitions. Attach GoDoc/annotation comments directly to the following declaration.
 3. Naming: `<resource>.go`, `operations/<verb>/<verb>.go`, `strategies/strategy.go`, `strategies/impl/<verb>.go`, `helpers/<meaning>.go`; no repetitive `zz_thing` in source.
 4. Prefer domain-significant names over generic `manager`, `processor`, `common`, `handler2` or `misc`.
@@ -347,3 +350,16 @@ The in-process gateway has a separate typed invocation interface. A direct `@Pro
 Gateway implementation folders follow the same SRP convention: `launcher/services/gateway/operations/{external,internal}`. Shared principal contracts belong in `libs/core/gateway`; domain-specific credential verification remains owned by the authentication service.
 
 Use `gofmt` on all changed Go source files before a change is merged. Keep imports grouped, consistent tab indentation, one-line function signatures, and multiline bodies for control flow. Do not accept dense semicolon-separated statements as a coding convention.
+
+
+## Strict module consistency gates (mandatory)
+
+1. Executable commands MUST live in `backend/cmd/<command>/` or an operator script under `scripts/`, never in `backend/services/<module>/cmd/`. Module-owned implementation may be exposed through a narrowly scoped, public operator facade when Go's `internal` import rules require it.
+2. Each bootstrap MUST separate `build.go` and `runtime.go` from `routes.go`, `client.go`, `repository.go`, `services.go`, `events.go` and `workers.go` as needed. The generic `bootstrap/impl/bootstrap.go` catch-all file is prohibited. The runtime must not impersonate an HTTP client by implementing domain service methods.
+3. For a business operation exposed as a generated HTTP controller, the public typed client MUST use `@RequestLine` with the same route, request DTO and response contract. Direct `@Proxy` is allowed only for deliberate trusted internal capabilities lacking an HTTP route, with authorization and bypass implications documented.
+4. Transport constants (headers, directives, cookie paths and expiry durations), domain enums and resource search-field keys MUST have one owning declaration. Use entity-owned enum constants for domain states and resource-owned search-field identifiers for filters, sorts and SQL allowlists. Add tests confirming JSON/OpenAPI field-name parity; Go field tags cannot reference constants.
+5. Validator implementations MUST delegate substantial, pure resource-specific normalization and search policy to `validators/<resource>/helpers/<purpose>.go`. SQL expressions stay in `repository/<resource>/helpers/search/`. Neither layer may construct SQL identifiers from untrusted fields.
+6. Authentication and authorization use cases belong in `services/<capability>/`, not an unrelated top-level technical folder. Keep transport-only cookies in `transport/` and gateway cross-module policy in Launcher.
+7. Persistently configurable business selections (including the active Integration mail sender for a tenant) MUST NOT be frozen in service environment variables. Environment settings are reserved for deployment secrets, trusted origins, runtime endpoints and other deployment-owned invariants. Validate dynamic selections against tenant scope, active connection state and provider capability every use.
+8. Public routes for account activation, invitation grants or password recovery do not imply public account registration. Protected account creation is mandatory; grant-bound activation may be public-tier only if token consumption and business invariants are independently enforced.
+9. Changed source MUST pass `gofmt`, generation/build, authorization/tenant tests and documentation parity before merging. Avoid string-matching error messages when a typed/sentinel error can preserve the same safe API mapping.
