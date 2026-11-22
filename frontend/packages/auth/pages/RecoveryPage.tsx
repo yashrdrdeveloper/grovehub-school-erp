@@ -213,7 +213,7 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
   const title = 'Set a new password.';
   // Keep the page identity stable throughout validation, errors and success.
   const mobileTitle = invitation ? 'Set password' : 'Reset password';
-  return <LoginLayout title={title} description={invitation
+  return <LoginLayout variant="recovery" title={title} description={invitation
     ? 'Choose a strong password to protect your school account.'
     : 'Choose a strong password to protect your school account.'}
     mobileDescription={formVisible ? 'Choose a strong password to protect your school account.' : ''}
