@@ -1,3 +1,5 @@
+import { Button } from '@Components/components/Button';
+import { Box } from '@Components/components/Box';
 import { ChevronsLeft, ChevronsRight, Grid2X2, Settings2, X } from '@Components/icons';
 import { NavLink } from 'react-router-dom';
 
@@ -22,45 +24,45 @@ export const Sidebar: SidebarComponent = ({ accountLabel, schoolLabel, onLogout,
   if (model.sidebarOpen) sidebarClass += ' sidebar--open';
 
   return (
-    <aside className={sidebarClass} aria-label="School workspace sidebar">
-      <div className="sidebar__header">
-        <button type="button" className="icon-button app-switcher-button" title="Open app catalog"
-          aria-label="Open app catalog" onClick={model.openCatalog}><Grid2X2 size={19}/></button>
+    <Box as="aside" className={sidebarClass} aria-label="School workspace sidebar">
+      <Box as="div" className="sidebar__header">
+        <Button unstyled type="button" className="icon-button app-switcher-button" title="Open app catalog"
+          aria-label="Open app catalog" onClick={model.openCatalog}><Grid2X2 size={19}/></Button>
         <NavLink to={APP_ROUTE.DASHBOARD} className="sidebar__brand" onClick={model.closeSidebar} aria-label="GrooveHub home">
-          <span className="brand-mark brand-mark--small">G</span><span className="sidebar__brand-name">groovehub<span className="brand-period">.</span></span>
+          <Box as="span" className="brand-mark brand-mark--small">G</Box><Box as="span" className="sidebar__brand-name">groovehub<Box as="span" className="brand-period">.</Box></Box>
         </NavLink>
-        <button type="button" className="icon-button sidebar__close" aria-label="Close navigation"
-          onClick={model.closeSidebar}><X size={20}/></button>
-      </div>
-      <div className="sidebar__school" title={schoolLabel}>
+        <Button unstyled type="button" className="icon-button sidebar__close" aria-label="Close navigation"
+          onClick={model.closeSidebar}><X size={20}/></Button>
+      </Box>
+      <Box as="div" className="sidebar__school" title={schoolLabel}>
         <SchoolMonogram/>
-        <span className="sidebar__school-details"><strong>{schoolLabel}</strong><small>School operating system</small></span>
-      </div>
-      <div className="sidebar__section-label">PINNED APPS</div>
+        <Box as="span" className="sidebar__school-details"><Box as="strong">{schoolLabel}</Box><Box as="small">School operating system</Box></Box>
+      </Box>
+      <Box as="div" className="sidebar__section-label">PINNED APPS</Box>
       <PinnedNavigation pinned={model.pinned} closeSidebar={model.closeSidebar} togglePin={model.togglePin}/>
-      <button type="button" className="sidebar__catalog" title="Browse all applications" onClick={model.openCatalog}>
-        <Grid2X2 size={18}/><span className="sidebar__label">Browse all apps</span>
-      </button>
-      <div className="sidebar__bottom">
-        <button type="button" className="sidebar__collapse" onClick={model.toggleSidebarCollapsed}
+      <Button unstyled type="button" className="sidebar__catalog" title="Browse all applications" onClick={model.openCatalog}>
+        <Grid2X2 size={18}/><Box as="span" className="sidebar__label">Browse all apps</Box>
+      </Button>
+      <Box as="div" className="sidebar__bottom">
+        <Button unstyled type="button" className="sidebar__collapse" onClick={model.toggleSidebarCollapsed}
           title={collapsedLabel} aria-label={collapsedLabel}>
           <CollapseIcon size={17}/>
-          <span className="sidebar__label">{collapsedShortLabel}</span>
-        </button>
-        <button type="button" className="sidebar__settings" onClick={model.toggleQuickSettings}
+          <Box as="span" className="sidebar__label">{collapsedShortLabel}</Box>
+        </Button>
+        <Button unstyled type="button" className="sidebar__settings" onClick={model.toggleQuickSettings}
           aria-expanded={model.quickSettings} title="Account and preferences">
-          <span className="profile-avatar">{accountLabel.charAt(0).toUpperCase()}</span>
-          <span className="sidebar__profile-details"><strong>{accountLabel}</strong><small>Account & preferences</small></span>
+          <Box as="span" className="profile-avatar">{accountLabel.charAt(0).toUpperCase()}</Box>
+          <Box as="span" className="sidebar__profile-details"><Box as="strong">{accountLabel}</Box><Box as="small">Account & preferences</Box></Box>
           <Settings2 size={17} className="sidebar__settings-icon"/>
-        </button>
+        </Button>
         {model.quickSettings && (
-          <div className="settings-popover">
-            <strong>Appearance</strong>
+          <Box as="div" className="settings-popover">
+            <Box as="strong">Appearance</Box>
             <ThemeChoices preference={model.preference} onPreferenceChange={model.setPreference}/>
-            <button type="button" onClick={onLogout}>Sign out</button>
-          </div>
+            <Button unstyled type="button" onClick={onLogout}>Sign out</Button>
+          </Box>
         )}
-      </div>
-    </aside>
+      </Box>
+    </Box>
   );
 };

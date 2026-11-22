@@ -1,3 +1,4 @@
+import { Box } from '@Components/components/Box';
 import type { ReactNode } from 'react';
 import { appCatalog } from '../../registry/appCatalog.registry';
 import { PinnedApp } from './PinnedApp';
@@ -11,12 +12,12 @@ export const PinnedNavigation: PinnedNavigationComponent = (props) => {
     return [];
   });
   const nodes = entries.map(entry => <PinnedApp key={entry.path} entry={entry} {...props}/>);
-  let content: ReactNode = <p className="sidebar__empty">Pin apps from the catalog to see them here.</p>;
+  let content: ReactNode = <Box as="p" className="sidebar__empty">Pin apps from the catalog to see them here.</Box>;
   if (nodes.length > 0) content = nodes;
 
   return (
-    <nav aria-label="Pinned applications" className="sidebar__nav">
+    <Box as="nav" aria-label="Pinned applications" className="sidebar__nav">
       {content}
-    </nav>
+    </Box>
   );
 };

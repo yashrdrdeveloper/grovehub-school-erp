@@ -1,3 +1,5 @@
+import { Button } from '@Components/components/Button';
+import { Box } from '@Components/components/Box';
 import { Outlet } from 'react-router-dom';
 import { SHELL_TEST_IDS } from './constants/shell.testIds';
 
@@ -15,18 +17,18 @@ export type { ShellProps } from './types/shell.props';
 export const Shell: ShellComponent = (props) => {
   const model = useShell();
   return (
-    <div className={getShellClassName(model.sidebarCollapsed)} data-testid={SHELL_TEST_IDS.ROOT}>
+    <Box as="div" className={getShellClassName(model.sidebarCollapsed)} data-testid={SHELL_TEST_IDS.ROOT}>
       <Sidebar {...props} model={model}/>
-      {model.sidebarOpen && <button type="button" className="sidebar-backdrop"
+      {model.sidebarOpen && <Button unstyled type="button" className="sidebar-backdrop"
         aria-label="Dismiss navigation" onClick={model.closeSidebar}/>}
-      <div className="shell__content">
+      <Box as="div" className="shell__content">
         <Topbar schoolLabel={props.schoolLabel} accountLabel={props.accountLabel} model={model}/>
-        <main className="shell__main"><Outlet/></main>
+        <Box as="main" className="shell__main"><Outlet/></Box>
         <MobileNav model={model}/>
-      </div>
+      </Box>
       <AppLauncherContainer open={model.launcherOpen} onOpenChange={model.setLauncherOpen}
         pinned={model.pinned} onTogglePin={model.togglePin}
         sidebarCollapsed={model.sidebarCollapsed && !model.sidebarOpen}/>
-    </div>
+    </Box>
   );
 };

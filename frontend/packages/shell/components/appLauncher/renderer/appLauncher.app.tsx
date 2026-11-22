@@ -1,3 +1,5 @@
+import { Button } from '@Components/components/Button';
+import { Box } from '@Components/components/Box';
 import type { ReactElement } from 'react';
 import { Link } from 'react-router-dom';
 import { Pin, PinOff } from '@Components/icons';
@@ -20,16 +22,16 @@ export const renderAppLauncherApp: RenderAppLauncherApp = ({ app, isPinned, onOp
   const close = () => onOpenChange(false);
   const toggle = () => onTogglePin(app.path);
   return (
-    <div key={app.path} className="catalog-app" data-testid={ids.card}>
+    <Box as="div" key={app.path} className="catalog-app" data-testid={ids.card}>
       <Link to={app.path} className="catalog-app__link" onClick={close}>
-        <span className="catalog-app__icon"><Icon size={22} strokeWidth={1.8}/></span>
-        <strong>{app.name}</strong><small>{app.description}</small>
-        <span className="catalog-app__status">{APP_LAUNCHER_COPY.STATUS}</span>
+        <Box as="span" className="catalog-app__icon"><Icon size={22} strokeWidth={1.8}/></Box>
+        <Box as="strong">{app.name}</Box><Box as="small">{app.description}</Box>
+        <Box as="span" className="catalog-app__status">{APP_LAUNCHER_COPY.STATUS}</Box>
       </Link>
-      <button type="button" className={pinClass} onClick={toggle}
+      <Button unstyled type="button" className={pinClass} onClick={toggle}
         aria-label={pinLabel + ' ' + app.name} title={pinLabel + ' from sidebar'} data-testid={ids.pin}>
         <PinIcon size={15}/>
-      </button>
-    </div>
+      </Button>
+    </Box>
   );
 };
