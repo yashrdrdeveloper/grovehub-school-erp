@@ -61,6 +61,12 @@ test('evaluateAudit', async (t) => {
     assert.ok(result.failures.some((failure) => failure.includes('exceed ceiling')));
   });
 
+  await t.test('rejects stale exemptions after a source file is migrated', () => {
+    const output = outputFor(['GH_AUDIT|old.tsx|NO_PATTERN_FLAG'], {}, 0);
+    const result = evaluateAudit(output, baseline);
+    assert.ok(result.failures.some((failure) => failure.includes('Obsolete allowlist entry')));
+  });
+
   await t.test('rejects missing summaries rather than passing empty output', () => {
     const result = evaluateAudit('GH_AUDIT|old.tsx|RAW_CLASS@3', baseline);
     assert.ok(result.failures.some((failure) => failure.includes('missing GH_AUDIT_SUMMARY')));
