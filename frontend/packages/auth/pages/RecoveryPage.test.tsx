@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { ApiError } from '@Business/api';
 
 import { RecoveryPage } from './RecoveryPage';
+import { clearRecoveryFlow } from './recoveryFlowSession';
 
 const validateInvitation = jest.fn<Promise<{verified:boolean;purpose:string;expiresIn:number}>,[string]>();
 const exchangeInvitation = jest.fn<Promise<{verified:boolean;purpose:string;expiresIn:number}>,[string]>();
@@ -40,6 +41,7 @@ const renderPage = (purpose:'invitation'|'recovery',proof?:string) => {
 
 describe('password link flows',()=>{
   beforeEach(()=>{
+    clearRecoveryFlow();
     window.sessionStorage.clear();
     for(const mock of [validateInvitation,exchangeInvitation,setup,setupStatus,validateRecovery,exchangeRecovery,resetPassword,resetGrantStatus]) mock.mockReset();
     validateInvitation.mockResolvedValue(ok);

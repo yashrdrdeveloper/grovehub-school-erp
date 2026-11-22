@@ -1,5 +1,6 @@
-/** A short-lived, tab-local continuation for one password-link flow.
- * Raw proof is removed once exchanged; only the HttpOnly cookie can authorize setup.
+/** A short-lived single-tab continuation for one password-link flow.
+ * Raw bearer proofs must never enter web storage, URLs beyond first use, or logs.
+ * Only a non-secret marker for the HttpOnly grant cookie may survive a refresh.
  */
 export type RecoveryPurpose = 'invitation' | 'recovery';
 export type RecoveryFlow =
@@ -9,6 +10,10 @@ export type RecoveryFlow =
 const KEY = 'groovehub.identity.password-flow.v1';
 const MAX_LIFETIME_MS = 10 * 60 * 1000;
 
+// A failed exchange may retry while this JS context survives; page reload
+// discards the bearer proof. This intentionally favors secrecy over replay.
+let pendingProof: Extract<RecoveryFlow, { stage: 'proof' }> | null = null;
+
 export const recoveryPurposeForPath = (path: string): RecoveryPurpose | null => {
   if (path === '/set-password' || path === '/setup') return 'invitation';
   if (path === '/reset-password') return 'recovery';
@@ -16,36 +21,56 @@ export const recoveryPurposeForPath = (path: string): RecoveryPurpose | null => 
 };
 
 export const clearRecoveryFlow = (): void => {
-  try { window.sessionStorage.removeItem(KEY); } catch { /* Private mode can disable storage. */ }
+  pendingProof = null;
+  try { window.sessionStorage.removeItem(KEY); } catch { /* Storage may be disabled. */ }
 };
 
+const active = (expiresAt: number): boolean =>
+  Number.isFinite(expiresAt)
+  && expiresAt > Date.now()
+  && expiresAt <= Date.now() + MAX_LIFETIME_MS;
+
 export const readRecoveryFlow = (purpose: RecoveryPurpose): RecoveryFlow | null => {
+  if (pendingProof) {
+    if (pendingProof.purpose !== purpose || !active(pendingProof.expiresAt)) {
+      clearRecoveryFlow();
+      return null;
+    }
+    return pendingProof;
+  }
   try {
     const raw = window.sessionStorage.getItem(KEY);
     if (!raw) return null;
     const item: unknown = JSON.parse(raw);
     if (!item || typeof item !== 'object') { clearRecoveryFlow(); return null; }
-    const flow = item as { purpose?: RecoveryPurpose; stage?: string; proof?: unknown; expiresAt?: number };
-    if (flow.purpose !== purpose || typeof flow.expiresAt !== 'number' || !Number.isFinite(flow.expiresAt) ||
-        flow.expiresAt <= Date.now() || flow.expiresAt > Date.now() + MAX_LIFETIME_MS ||
-        (flow.stage !== 'grant' && (flow.stage !== 'proof' || typeof flow.proof !== 'string' || !flow.proof.trim()))) {
+    const marker = item as Partial<RecoveryFlow>;
+    // Legacy stored proof records are invalidated and never replayed.
+    if (marker.purpose !== purpose || marker.stage !== 'grant'
+        || typeof marker.expiresAt !== 'number' || !active(marker.expiresAt)) {
       clearRecoveryFlow();
       return null;
     }
-    return flow as RecoveryFlow;
-  } catch { clearRecoveryFlow(); return null; }
-};
-
-const save = (flow: RecoveryFlow): void => {
-  try { window.sessionStorage.setItem(KEY, JSON.stringify(flow)); } catch { /* In-memory flow still works. */ }
+    return { purpose, stage: 'grant', expiresAt: marker.expiresAt };
+  } catch {
+    clearRecoveryFlow();
+    return null;
+  }
 };
 
 export const saveRecoveryProof = (purpose: RecoveryPurpose, proof: string): void => {
-  save({ purpose, stage: 'proof', proof, expiresAt: Date.now() + MAX_LIFETIME_MS });
+  clearRecoveryFlow();
+  pendingProof = {
+    purpose, stage: 'proof', proof, expiresAt: Date.now() + MAX_LIFETIME_MS,
+  };
 };
 
 export const saveRecoveryGrant = (purpose: RecoveryPurpose, expiresIn: number): void => {
+  pendingProof = null;
   const lifetime = Math.max(0, Math.min(MAX_LIFETIME_MS, Math.floor(expiresIn * 1000)));
   if (lifetime === 0) { clearRecoveryFlow(); return; }
-  save({ purpose, stage: 'grant', expiresAt: Date.now() + lifetime });
+  try {
+    window.sessionStorage.setItem(KEY, JSON.stringify({
+      purpose, stage: 'grant', expiresAt: Date.now() + lifetime,
+    }));
+  } catch { /* Cookie-backed flow remains active in memory. */ }
 };

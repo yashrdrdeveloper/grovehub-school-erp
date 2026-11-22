@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Link, MemoryRouter, Route, Routes } from 'react-router-dom';
 
 import { RecoveryFlowBoundary } from './RecoveryFlowBoundary';
-import { readRecoveryFlow, saveRecoveryProof } from './recoveryFlowSession';
+import { clearRecoveryFlow, readRecoveryFlow, saveRecoveryProof } from './recoveryFlowSession';
 
 const renderRoutes = (path: string) => render(
   <MemoryRouter initialEntries={[path]}>
@@ -16,12 +16,13 @@ const renderRoutes = (path: string) => render(
 );
 
 describe('password-flow navigation', () => {
-  beforeEach(() => { window.sessionStorage.clear(); });
+  beforeEach(() => { clearRecoveryFlow(); window.sessionStorage.clear(); });
 
   it('retains its flow when the same page is loaded again', () => {
     saveRecoveryProof('invitation', 'private-proof');
     renderRoutes('/set-password');
     expect(readRecoveryFlow('invitation')).toMatchObject({ stage: 'proof', proof: 'private-proof' });
+    expect(window.sessionStorage.length).toBe(0);
   });
 
   it('clears the previous proof when switching set-password to reset-password', async () => {
