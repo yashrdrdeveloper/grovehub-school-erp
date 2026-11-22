@@ -1,0 +1,1 @@
+export { RdrSchoolMonogramSvg } from './RdrSchoolMonogramSvg';
