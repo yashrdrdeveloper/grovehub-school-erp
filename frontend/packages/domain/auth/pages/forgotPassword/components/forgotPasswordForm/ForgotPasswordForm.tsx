@@ -3,6 +3,7 @@ import type { ChangeEventHandler } from 'react';
 import { Link } from 'react-router-dom';
 
 import { AuthMobileStatusArt } from '../../../AuthMobileArtwork';
+import { CredentialField } from '../../../../components/credentialField';
 import type { ForgotPasswordFormComponent } from './types/forgotPasswordForm';
 
 /** Pure presentation shared by mobile and desktop layouts. */
@@ -26,21 +27,10 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
               <small>{view.noticeMessage}</small>
             </span>
           </div>
-          <div className="rdr-login-v2__field rdr-auth-flow__email-field">
-            <label htmlFor={id}>Email address</label>
-            <div className="rdr-login-v2__input-shell">
-              <Mail size={18} aria-hidden="true"/>
-              <input id={id} type="email" inputMode="email" autoComplete="email"
-                placeholder="Email" value={state.email}
-                aria-invalid={Boolean(state.emailError)}
-                aria-describedby={state.emailError ? `${id}-error` : undefined}
-                onChange={handleEmailChange} required/>
-            </div>
-            <small className={`rdr-login-v2__field-error rdr-login-v2__field-error--reserved${state.emailError ? '' : ' is-empty'}`}
-              id={`${id}-error`} aria-live="polite" aria-atomic="true">
-              {state.emailError || '\u00a0'}
-            </small>
-          </div>
+          <CredentialField id={id} label="Email address" Icon={Mail}
+            outerClassName="rdr-auth-flow__email-field" type="email" inputMode="email"
+            autoComplete="email" placeholder="Email" value={state.email}
+            error={state.emailError} onChange={handleEmailChange} required/>
         </div>
         <div className="rdr-auth-flow__actions">
           <button type="submit" className="rdr-login-v2__submit" disabled={state.busy || view.cooldown}

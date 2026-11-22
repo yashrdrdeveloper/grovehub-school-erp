@@ -1,18 +1,19 @@
 import { AlertCircle, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail } from 'lucide-react';
 import type { ChangeEventHandler } from 'react';
 
+import { CredentialField } from '../../../../components/credentialField';
 import { LOGIN_COPY, LOGIN_FIELDS } from '../../config';
 import type { LoginFormComponent } from './types/loginForm';
 
-/** Stateless credential fields used by both responsive templates. */
+/** Stateless credential presentation shared by desktop and mobile templates. */
 export const LoginForm: LoginFormComponent = ({
   fieldId, state, onSubmit, onEmailChange, onPasswordChange, onTogglePassword,
   passwordLabelAction, betweenFields,
 }) => {
-  const handleEmailChange: ChangeEventHandler<HTMLInputElement> = (event) => {
+  const handleEmailChange: ChangeEventHandler<HTMLInputElement> = event => {
     onEmailChange(event.currentTarget.value);
   };
-  const handlePasswordChange: ChangeEventHandler<HTMLInputElement> = (event) => {
+  const handlePasswordChange: ChangeEventHandler<HTMLInputElement> = event => {
     onPasswordChange(event.currentTarget.value);
   };
   const VisibilityIcon = state.isPasswordVisible ? EyeOff : Eye;
@@ -22,50 +23,24 @@ export const LoginForm: LoginFormComponent = ({
 
   return (
     <form className="rdr-login-v2__form rdr-login-v2__form--signin" onSubmit={onSubmit} noValidate>
-      <div className="rdr-login-v2__field">
-        <label htmlFor={`${fieldId}-email`}>{LOGIN_FIELDS.email.label}</label>
-        <div className="rdr-login-v2__input-shell">
-          <Mail size={18} aria-hidden="true"/>
-          <input id={`${fieldId}-email`} type="email" inputMode="email"
-            autoComplete={LOGIN_FIELDS.email.autoComplete} placeholder={LOGIN_FIELDS.email.placeholder}
-            value={state.email} required
-            aria-invalid={Boolean(state.fieldErrors.email)}
-            aria-describedby={state.fieldErrors.email ? `${fieldId}-email-error` : undefined}
-            onChange={handleEmailChange}/>
-        </div>
-        <small id={`${fieldId}-email-error`}
-          className={`rdr-login-v2__field-error rdr-login-v2__field-error--reserved${state.fieldErrors.email ? '' : ' is-empty'}`}
-          aria-live="polite" aria-atomic="true">
-          {state.fieldErrors.email || '\u00a0'}
-        </small>
-      </div>
+      <CredentialField id={fieldId + '-email'} label={LOGIN_FIELDS.email.label} Icon={Mail}
+        type="email" inputMode="email" autoComplete={LOGIN_FIELDS.email.autoComplete}
+        placeholder={LOGIN_FIELDS.email.placeholder} value={state.email} required
+        error={state.fieldErrors.email} onChange={handleEmailChange}/>
 
       {betweenFields}
-      <div className="rdr-login-v2__field">
-        <div className="rdr-login-v2__password-label">
-          <label htmlFor={`${fieldId}-password`}>{LOGIN_FIELDS.password.label}</label>
-          {passwordLabelAction}
-        </div>
-        <div className="rdr-login-v2__input-shell">
-          <LockKeyhole size={18} aria-hidden="true"/>
-          <input id={`${fieldId}-password`} type={passwordType}
-            autoComplete={LOGIN_FIELDS.password.autoComplete}
-            placeholder={LOGIN_FIELDS.password.placeholder}
-            value={state.password} required
-            aria-invalid={Boolean(state.fieldErrors.password)}
-            aria-describedby={state.fieldErrors.password ? `${fieldId}-password-error` : undefined}
-            onChange={handlePasswordChange}/>
+
+      <CredentialField id={fieldId + '-password'} label={LOGIN_FIELDS.password.label}
+        Icon={LockKeyhole} type={passwordType} groupLabel labelAction={passwordLabelAction}
+        autoComplete={LOGIN_FIELDS.password.autoComplete} placeholder={LOGIN_FIELDS.password.placeholder}
+        value={state.password} required error={state.fieldErrors.password}
+        onChange={handlePasswordChange}
+        trailingAction={
           <button type="button" className="rdr-login-v2__visibility"
             onClick={onTogglePassword} aria-label={visibilityLabel}>
             <VisibilityIcon size={19} aria-hidden="true"/>
           </button>
-        </div>
-        <small id={`${fieldId}-password-error`}
-          className={`rdr-login-v2__field-error rdr-login-v2__field-error--reserved${state.fieldErrors.password ? '' : ' is-empty'}`}
-          aria-live="polite" aria-atomic="true">
-          {state.fieldErrors.password || '\u00a0'}
-        </small>
-      </div>
+        }/>
 
       <button type="submit" className="rdr-login-v2__submit" disabled={state.isSubmitting}>
         <span>{submitLabel}</span>
