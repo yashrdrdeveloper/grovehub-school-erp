@@ -1,4 +1,5 @@
-import { LoginLayout, LoginLayoutVariant } from '../../components/loginLayout';
+import { LoginLayout } from '../../components/loginLayout';
+import { LoginLayoutVariant } from '../../components/loginLayout/constants/loginLayout.variant';
 
 import { LOGIN_COPY } from './constants/login.copy';
 import { DesktopLogin } from './templates/desktopLogin';
