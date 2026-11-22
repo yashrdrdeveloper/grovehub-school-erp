@@ -1,4 +1,4 @@
-import { ChevronsLeft, ChevronsRight, Grid2X2, Settings2, X } from 'lucide-react';
+import { ChevronsLeft, ChevronsRight, Grid2X2, Settings2, X } from '@Components/icons';
 import { NavLink } from 'react-router-dom';
 
 import { SchoolMonogram } from '@Components';

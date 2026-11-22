@@ -1,4 +1,4 @@
-import { ChevronDown, Menu } from 'lucide-react';
+import { ChevronDown, Menu } from '@Components/icons';
 import type { TopbarComponent } from './types/topbar';
 
 export const Topbar: TopbarComponent = ({ accountLabel, schoolLabel, model }) => (

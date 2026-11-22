@@ -1,4 +1,4 @@
-import { Monitor, Moon, Sun } from 'lucide-react';
+import { Monitor, Moon, Sun } from '@Components/icons';
 import type { ThemePreference } from '@Components/hooks/theme';
 
 import type { ThemeChoicesComponent, ThemeChoicesProps } from './types/themeChoices';

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { KeyRound, Lock, MonitorSmartphone, ShieldCheck, Trash2 } from 'lucide-react';
+import { KeyRound, Lock, MonitorSmartphone, ShieldCheck, Trash2 } from '@Components/icons';
 import { useMutation, useQuery, useQueryClient } from '@Components/hooks/query';
 
 import { authenticationApi } from '@Business/auth';

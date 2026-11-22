@@ -1,4 +1,4 @@
-import { Building2 } from 'lucide-react';
+import { Building2 } from '@Components/icons';
 
 /** Only implemented protected domains belong in the catalog; no speculative pages. */
 export type CatalogApp = {

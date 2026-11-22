@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { Grid2X2, Pin, PinOff, Search, X } from 'lucide-react';
+import { Grid2X2, Pin, PinOff, Search, X } from '@Components/icons';
 import { Link } from 'react-router-dom';
 
 import { appCatalog, type CatalogApp } from '../registry/appCatalog.registry';

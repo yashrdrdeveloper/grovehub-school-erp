@@ -1,4 +1,4 @@
-import { Grid2X2, LayoutDashboard, Menu } from 'lucide-react';
+import { Grid2X2, LayoutDashboard, Menu } from '@Components/icons';
 import { NavLink } from 'react-router-dom';
 import type { MobileNavComponent } from './types/mobileNav';
 

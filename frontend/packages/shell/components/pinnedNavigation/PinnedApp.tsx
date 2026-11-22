@@ -1,4 +1,4 @@
-import { PinOff } from 'lucide-react';
+import { PinOff } from '@Components/icons';
 import { NavLink } from 'react-router-dom';
 
 import type { PinnedAppProps } from './types/pinnedNavigation';
