@@ -1,4 +1,4 @@
-import { EMPTY_ENQUIRY } from '../../../config/emptyEnquiry.config';
+import { EMPTY_ENQUIRY } from '../../../constants/enquiry.initial';
 import { getEnquiryMailto } from '../getEnquiryMailto';
 
 describe('getEnquiryMailto', () => {

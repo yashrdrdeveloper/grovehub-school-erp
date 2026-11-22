@@ -3,16 +3,10 @@ import { Link, useLocation } from 'react-router-dom';
 import { ArrowRight, ArrowUpRight, MapPin, Menu, X } from 'lucide-react';
 import { SchoolMonogram } from '@Components';
 import { school } from '../../constants/school.content';
+import { SCHOOL_NAV_ITEMS as navItems } from '../../constants/school.navigation';
 import { EnquiryLink } from '../siteActions';
 
-const navItems = [
-  { label:'Our school', to:'/about' },
-  { label:'Academics', to:'/academics' },
-  { label:'Campus life', to:'/campus' },
-  { label:'Admissions', to:'/admissions' },
-  { label:'Gallery', to:'/gallery' },
-  { label:'CBSE Disclosure', to:'/mandatory-public-disclosure' },
-] as const;
+
 const SiteHeader = () => {
   const [open,setOpen] = useState(false);
   const { pathname } = useLocation();

@@ -1,6 +1,6 @@
 import { useCallback, useId, useState, type FormEvent } from 'react';
 
-import { EMPTY_ENQUIRY } from '../../config/emptyEnquiry.config';
+import { EMPTY_ENQUIRY } from '../../constants/enquiry.initial';
 import { validateEnquiryContact } from '../../helpers/validateEnquiryContact';
 import { getEnquiryMailto } from '../../helpers/getEnquiryMailto';
 import type { EnquiryFormData } from '../../types/enquiryForm';

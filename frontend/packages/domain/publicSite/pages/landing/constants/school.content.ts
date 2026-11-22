@@ -137,24 +137,3 @@ export const historicDisclosure = {
   boysToilets: 20,
   inspectionVideo: 'https://youtu.be/pJrIfB_zZPo',
 } as const;
-
-/** Verified on the legacy site; keep historical achievements clearly dated or
- * qualified until the school provides current records. */
-export const achievements = [
-  { label: 'International Mathematical Olympiad', value: '24', detail: 'Students qualified, reported on the original website' },
-  { label: 'Beyond the classroom', value: 'Sports', detail: 'State-level tennis achievement mentioned on the legacy site' },
-  { label: 'Learning with purpose', value: '2006', detail: 'Year RDR School began serving its community' },
-] as const;
-
-/** Past, approved legacy testimonials. Treat them as archival until the school
- * obtains current consent and confirms these can be republished. */
-export const testimonials = [
-  { quote: 'RDR gives individual care and attention to each child.', author: 'Devendra Khanna' },
-  { quote: 'My child has shown overall development in all walks of life.', author: 'Mahendra Sharma' },
-  { quote: 'RDR has good infrastructure and sporting facilities.', author: 'Virendra Sharma' },
-] as const;
-
-/** Only publish confirmed future events here. Intentionally empty because
- * the old site does not provide a verified current school event calendar. */
-export type SchoolEvent = { id:string; title:string; date:string; category:string; description:string };
-export const upcomingEvents: SchoolEvent[] = [];

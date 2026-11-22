@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ArrowRight, Check, ExternalLink } from 'lucide-react';
-import { legacyStories, storyNavigation, type StoryKey } from '../../config/sheetCopy';
+import { legacyStories, storyNavigation, type StoryKey } from '../../constants/school.sheetCopy';
 import { PanelPhoto } from '../panelPhoto';
 
 const StoryPanel = ({initial='history',navigate}:{initial?:StoryKey;navigate:(path:string)=>void}) => {
