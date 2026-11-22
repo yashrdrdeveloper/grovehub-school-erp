@@ -194,7 +194,7 @@ export const ITEM_FIELD_ORDER: readonly ItemField[] = [
 ];
 
 export const ITEM_FIELDS = {
-  [ITEM_FIELD.TITLE]: { label: 'Title', placeholder: 'Title', autoComplete: 'username' },
+  [ITEM_FIELD.TITLE]: { label: 'Title', placeholder: 'Title', autoComplete: 'name' },
   [ITEM_FIELD.DESCRIPTION]: { label: 'Description', placeholder: 'Description', autoComplete: 'off' },
 } as const;
 ~~~
@@ -351,27 +351,31 @@ export const getDescriptionViewModel: GetDescriptionViewModel = (isVisible) => {
 For three or more variants, use a `Map<Mode, Strategy>`, keyed by a typed enum/constant-derived value. Put the registry next to its owning use case (usually under `constants/<useCase>.strategies.ts` when it is a static map, with functions defined in helpers/services). Do not create a universal strategy registry for unrelated behavior.
 
 ~~~ts
-export const PROCESS_MODE = {
-  CREATE: 'CREATE',
-  UPDATE: 'UPDATE',
-  ARCHIVE: 'ARCHIVE',
-} as const;
-export type ProcessMode = (typeof PROCESS_MODE)[keyof typeof PROCESS_MODE];
+// Generic strategy selection; real operations are injected, not hard-coded.
+export enum OperationMode {
+  CREATE = 'CREATE',
+  UPDATE = 'UPDATE',
+  ARCHIVE = 'ARCHIVE',
+}
 
-type ProcessStrategy = (proof: string) => Promise<void>;
+type OperationHandler<T> = (value: T) => Promise<void>;
+type OperationRegistry<T> = Readonly<Record<OperationMode, OperationHandler<T>>>;
 
-const strategies = new Map<ProcessMode, ProcessStrategy>([
-  [PROCESS_MODE.CREATE, validateInvitation],
-  [PROCESS_MODE.UPDATE, validateReset],
-  [PROCESS_MODE.ARCHIVE, validateForgot],
-]);
+export const createStrategies = <T>(handlers: OperationRegistry<T>): ReadonlyMap<OperationMode, OperationHandler<T>> =>
+  new Map<OperationMode, OperationHandler<T>>([
+    [OperationMode.CREATE, handlers[OperationMode.CREATE]],
+    [OperationMode.UPDATE, handlers[OperationMode.UPDATE]],
+    [OperationMode.ARCHIVE, handlers[OperationMode.ARCHIVE]],
+  ]);
 
-export const runProcessStrategy: RunProcessStrategy = (mode, proof) => {
-  const strategy = strategies.get(mode);
-  if (!strategy) {
-    throw new UnsupportedProcessModeError(mode);
-  }
-  return strategy(proof);
+export const executeOperation = async <T>(
+  strategies: ReadonlyMap<OperationMode, OperationHandler<T>>,
+  mode: OperationMode,
+  value: T,
+): Promise<void> => {
+  const handler = strategies.get(mode);
+  if (!handler) throw new Error('Unsupported operation mode');
+  await handler(value);
 };
 ~~~
 
@@ -1401,14 +1405,14 @@ pages/item/
 │   └── types/item.fieldConfig.ts
 ├── helpers/
 │   ├── item.getErrorMessage.ts
-│   ├── item.validateCredentials.ts
+│   ├── item.validateFields.ts
 │   ├── item.isValidTitle.ts
 │   ├── types/
 │   │   ├── item.getErrorMessage.ts
-│   │   └── item.validateCredentials.ts
+│   │   └── item.validateFields.ts
 │   └── __tests__/
 │       ├── item.getErrorMessage.test.ts
-│       ├── item.validateCredentials.test.ts
+│       ├── item.validateFields.test.ts
 │       └── item.isValidTitle.test.ts
 ├── renderer/                     # only JSX-producing pure selectors
 ├── hooks/
@@ -1494,7 +1498,7 @@ import { TITLE_PATTERN } from '../constants/item.validation';
 export const isValidItemTitle = (value: string): boolean => TITLE_PATTERN.test(value);
 ~~~
 
-`login.validateCredentials.ts` takes typed credentials, uses real `_trim` from `@Base/utilities/trim` to normalize **email only**, iterates `LOGIN_FIELD_ORDER` and evaluates rules through pure helper(s), returns typed field errors, and never logs/trims the password. For multiple behavioral rule strategies use a typed helper strategy registry; static policy metadata stays in constants. Tests execute real validators, not mocks.
+`login.validateFields.ts` takes typed fields, uses real `_trim` from `@Base/utilities/trim` to normalize **email only**, iterates `LOGIN_FIELD_ORDER` and evaluates rules through pure helper(s), returns typed field errors, and never logs/trims the password. For multiple behavioral rule strategies use a typed helper strategy registry; static policy metadata stays in constants. Tests execute real validators, not mocks.
 
 Other exact responsibilities: `constants/login.copy.ts` for screen copy, `constants/login.errorRules.ts` for safe matcher metadata, `helpers/login.getErrorMessage.ts` for mapping unknown failures to nonleaking copy, `constants/login.testIds.ts` for stable automation IDs. The old `normalizeLoginEmail` pure wrapper is redundant with `_trim`: remove the wrapper and its obsolete test when migrating, and test the actual `_trim` leaf under `@Base`. Do not keep a compatibility `helpers/index.ts`.
 
@@ -1505,10 +1509,10 @@ Other exact responsibilities: `constants/login.copy.ts` for screen copy, `consta
 ~~~text
 packages/business/
 ├── resource/routes/
-│   ├── constants/resource.routes.ts       # sign in, forgot, reset, invitation, legacy auth redirects
+│   ├── constants/resource.routes.ts       # public resource destinations and aliases
 │   └── index.ts                       # intentional package public entrypoint
 └── app/routes/
-    ├── constants/workspace.routes.ts        # home, dashboard and implemented workspace destinations
+    ├── constants/workspace.routes.ts        # application entry and workspace destinations
     ├── constants/workspace.routeAccess.ts   # PUBLIC / PROTECTED and OPEN / GUEST_ONLY
     └── index.ts
 ~~~
