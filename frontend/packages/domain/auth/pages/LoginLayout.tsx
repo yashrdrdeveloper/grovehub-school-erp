@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { SchoolMonogram } from '@Components';
 import { useWorkspaceTheme, type ThemePreference } from '@Components/hooks/theme';
 
-import { AuthAmbientGraphic } from './AuthAmbientGraphic';
+import { AuthAmbientGraphic } from '../components/authAmbientGraphic';
 import { useAuthViewportFit } from './hooks/useAuthViewportFit/useAuthViewportFit';
 
 

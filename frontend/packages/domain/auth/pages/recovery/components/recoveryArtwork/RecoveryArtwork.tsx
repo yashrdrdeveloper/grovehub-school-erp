@@ -1,6 +1,6 @@
 import { AlertCircle, Clock3, Link2Off, PartyPopper, ShieldCheck, Sparkles } from 'lucide-react';
 
-import { AuthMobileStatusArt } from '../../../AuthMobileArtwork';
+import { AuthStatusArt } from '../../../../components/authStatusArt';
 import { getRecoveryArtworkCopy } from '../../helpers/getRecoveryArtworkCopy';
 import type { RecoveryArtworkComponent } from './types/recoveryArtwork';
 
@@ -18,7 +18,7 @@ export const RecoveryArtwork: RecoveryArtworkComponent = ({ view, purpose }) => 
 
   return (
     <div className={`rdr-recovery__art rdr-recovery__art--${visualClass}`} role="status" aria-live="polite">
-      <AuthMobileStatusArt kind={statusKind}/>
+      <AuthStatusArt kind={statusKind}/>
       <strong className="rdr-recovery__mobile-status-title">{mobileStatusTitle}</strong>
       <div className="rdr-recovery__art-visual" aria-hidden="true">
         <span className="rdr-recovery__art-orbit rdr-recovery__art-orbit--one"/>

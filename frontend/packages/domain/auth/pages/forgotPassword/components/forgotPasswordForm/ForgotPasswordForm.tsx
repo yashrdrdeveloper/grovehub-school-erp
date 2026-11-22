@@ -4,7 +4,7 @@ import { Button } from '@Components/components/Button';
 import { Form } from '@Components/components/Form';
 import { Link } from 'react-router-dom';
 
-import { AuthMobileStatusArt } from '../../../AuthMobileArtwork';
+import { AuthStatusArt } from '../../../../components/authStatusArt';
 import { CredentialField } from '../../../../components/credentialField';
 import type { ForgotPasswordFormComponent } from './types/forgotPasswordForm';
 
@@ -51,7 +51,7 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
       </Form>
       {view.noticeSuccess && (
         <div className="rdr-auth-flow__mobile-success" role="status" aria-live="polite">
-          <AuthMobileStatusArt kind="email"/>
+          <AuthStatusArt kind="email"/>
           <h3>Check your email</h3>
           <p>If this email address is eligible, a password reset link will be sent to <strong>{state.lastRequestedEmail}</strong>.</p>
           <Link className="rdr-login-v2__submit" to="/login">Back to sign in</Link>
