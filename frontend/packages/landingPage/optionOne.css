@@ -59,3 +59,15 @@
 .rdr-o1-disclosure{flex-direction:column;align-items:flex-start}
 }
 @media(prefers-reduced-motion:reduce){.rdr-option-one .rdr-photo img{transition:none!important}}
+
+/* Option 1 header framing on the homepage only. */
+.rdr-site:has(.rdr-option-one) .rdr-topline{background:#1f2a44;color:#e8e9ed}
+.rdr-site:has(.rdr-option-one) .rdr-topline__inner{min-height:29px;font-size:.625rem;letter-spacing:.05em}
+.rdr-site:has(.rdr-option-one) .rdr-header{background:#fff;border-bottom:1px solid #e9e9ea}
+.rdr-site:has(.rdr-option-one) .rdr-header__inner{min-height:76px}
+.rdr-site:has(.rdr-option-one) .rdr-logo .school-monogram{width:51px;height:41px;border-radius:9px}
+.rdr-site:has(.rdr-option-one) .rdr-logo strong{font-size:1rem}
+.rdr-site:has(.rdr-option-one) .rdr-logo small{font-size:.5625rem}
+.rdr-site:has(.rdr-option-one) .rdr-nav a{font-size:.75rem;color:#536073}
+.rdr-site:has(.rdr-option-one) .rdr-header__enquire{border-radius:8px;min-height:40px}
+@media(max-width:700px){.rdr-site:has(.rdr-option-one) .rdr-header__inner{min-height:66px}}
