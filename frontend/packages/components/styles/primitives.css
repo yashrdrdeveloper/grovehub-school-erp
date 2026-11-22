@@ -1,0 +1,42 @@
+/* Shared responsive design primitives; independent of feature domains. */
+.gh-button { min-width: 0; max-width: 100%; outline-offset: 3px; }
+.gh-button:focus-visible, .gh-password-field__toggle:focus-visible {
+  outline: 2px solid var(--accent, #1f2a44);
+}
+.gh-button--sm { min-height: 36px; padding: 8px 12px; }
+.gh-button--md { min-height: 40px; }
+.gh-button--lg { min-height: 48px; padding: 12px 18px; }
+.gh-button__spinner { flex: 0 0 auto; animation: gh-spin .8s linear infinite; }
+@keyframes gh-spin { to { transform: rotate(360deg); } }
+.gh-form-field, .gh-input { min-width: 0; }
+.gh-input { max-width: 100%; }
+.gh-input:focus-visible { outline: 2px solid var(--accent, #1f2a44); outline-offset: 1px; }
+.gh-field-required { color: #b84d49; }
+.gh-password-field { position: relative; min-width: 0; }
+.gh-password-field__input { padding-inline-end: 3rem; }
+.gh-password-field__toggle {
+  position: absolute; inset-inline-end: .4rem; inset-block-start: 50%; transform: translateY(-50%);
+  display: inline-grid; place-items: center; width: 2.25rem; height: 2.25rem;
+  border: 0; border-radius: .5rem; background: transparent; color: var(--muted, #64748b);
+}
+.gh-password-field__toggle:hover:not(:disabled) { background: var(--surface-subtle, #f1f5f9); }
+.gh-container { width: 100%; min-width: 0; max-width: var(--gh-container-limit); margin-inline: auto; }
+.gh-container--sm { --gh-container-limit: 38rem; }
+.gh-container--md { --gh-container-limit: 52rem; }
+.gh-container--lg { --gh-container-limit: 72rem; }
+.gh-container--xl { --gh-container-limit: 86rem; }
+.gh-container--full { --gh-container-limit: none; }
+.gh-container--padded { padding-inline: clamp(1rem, 3vw, 2rem); }
+.gh-typography { overflow-wrap: anywhere; }
+.gh-typography--display { font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 800; line-height: 1.15; }
+.gh-typography--heading { font-size: clamp(1.5rem, 2.5vw, 2rem); font-weight: 700; line-height: 1.25; }
+.gh-typography--subheading { font-size: clamp(1.125rem, 1.8vw, 1.4rem); font-weight: 600; line-height: 1.35; }
+.gh-typography--body { font-size: 1rem; line-height: 1.55; }
+.gh-typography--caption { font-size: .75rem; line-height: 1.5; }
+.gh-typography--label { font-size: .875rem; font-weight: 650; line-height: 1.35; }
+.gh-typography--default { color: var(--ink-strong, #0f172a); }
+.gh-typography--muted { color: var(--muted, #64748b); }
+.gh-typography--danger { color: #b84d49; }
+.gh-typography--success { color: #1f6d41; }
+@media (prefers-reduced-motion: reduce) { .gh-button__spinner { animation-duration: 1.8s; } }
+@media (max-width: 640px) { .gh-container--padded { padding-inline: 1rem; } }

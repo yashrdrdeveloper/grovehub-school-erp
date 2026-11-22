@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { ShellContainer } from '@Shell';
 
 import './styles.css';
+import '../packages/components/styles/primitives.css';
 
 // Apply the saved preference before React mounts, including on login screens.
 try {

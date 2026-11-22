@@ -1,5 +1,10 @@
 export { Button } from './components/Button';
 export { Input } from './components/Input';
+export { FormField } from './components/FormField';
+export { TextField } from './components/TextField';
+export { PasswordField } from './components/PasswordField';
+export { Typography } from './components/Typography';
+export { Container } from './components/Container';
 export { Card } from './components/Card';
 export { DataTable } from './components/DataTable';
 export { StatusPill } from './components/StatusPill';
