@@ -5,7 +5,7 @@ import { LandingPage } from '@Domain/publicSite';
 
 import { publicRoutes, workspaceRoutes } from '../../registry';
 import { LANDING_PATHS } from '../../registry/landingPaths.registry';
-import { WorkspaceFrame } from '../workspaceFrame';
+import { ProtectedLayout } from '../protectedLayout';
 import type { AppRoutesComponent } from './types/appRoutes';
 
 /** Domain roots publish routes; shell only composes public/protected envelopes. */
@@ -21,7 +21,7 @@ export const AppRoutes: AppRoutesComponent = () => {
       {landing}
       <Route element={<PublicOnly/>}>{publicPages}</Route>
       <Route element={<RequireSession/>}>
-        <Route element={<WorkspaceFrame/>}>{workspacePages}</Route>
+        <Route element={<ProtectedLayout/>}>{workspacePages}</Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace/>}/>
     </Routes>

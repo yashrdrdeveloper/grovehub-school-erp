@@ -2,9 +2,10 @@ import { useCallback } from 'react';
 import { useAuth } from '@Domain/auth';
 
 import { Shell } from '../../Shell';
-import type { WorkspaceFrameComponent } from './types/workspaceFrame';
+import type { ProtectedLayoutComponent } from './types/protectedLayout';
 
-export const WorkspaceFrame: WorkspaceFrameComponent = () => {
+/** Persistent authenticated workspace chrome. Only the nested <Outlet/> changes on child routes. */
+export const ProtectedLayout: ProtectedLayoutComponent = () => {
   const { account, signOut } = useAuth();
   const handleLogout = useCallback(() => { void signOut(); }, [signOut]);
   return (

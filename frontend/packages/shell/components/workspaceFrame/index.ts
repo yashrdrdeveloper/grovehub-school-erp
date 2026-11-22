@@ -1,1 +1,0 @@
-export { WorkspaceFrame } from './WorkspaceFrame';

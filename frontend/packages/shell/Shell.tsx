@@ -9,7 +9,7 @@ import type { ShellComponent } from './types/shell.props';
 
 export type { ShellProps } from './types/shell.props';
 
-/** Presentational workspace composition. State, actions and persistence live in units. */
+/** Stable protected layout. React Router replaces only the nested Outlet when changing domain routes. */
 export const Shell: ShellComponent = (props) => {
   const model = useShell();
   return (
