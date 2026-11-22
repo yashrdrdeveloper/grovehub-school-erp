@@ -6,7 +6,7 @@ import type { LoginFormProps } from '../../types';
 /** Stateless credential fields used by both screen-specific templates. */
 export const LoginForm = ({
   fieldId, state, onSubmit, onEmailChange, onPasswordChange, onTogglePassword,
-  passwordLabelAction, afterFields,
+  passwordLabelAction, betweenFields,
 }: LoginFormProps) => (
   <form className="rdr-login-v2__form rdr-login-v2__form--signin" onSubmit={onSubmit} noValidate>
     <div className="rdr-login-v2__field">
@@ -26,6 +26,7 @@ export const LoginForm = ({
       </small>
     </div>
 
+    {betweenFields}
     <div className="rdr-login-v2__field">
       <div className="rdr-login-v2__password-label">
         <label htmlFor={`${fieldId}-password`}>{LOGIN_FIELDS.password.label}</label>
@@ -52,7 +53,6 @@ export const LoginForm = ({
       </small>
     </div>
 
-    {afterFields}
     <button type="submit" className="rdr-login-v2__submit" disabled={state.isSubmitting}>
       <span>{state.isSubmitting ? LOGIN_COPY.busyButton : LOGIN_COPY.button}</span>
       {state.isSubmitting && <LoaderCircle className="rdr-login-v2__spinner" size={19} aria-hidden="true"/>}
