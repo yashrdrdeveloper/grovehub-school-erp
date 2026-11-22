@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { CatalogApp } from '../../../registry/appCatalog.registry';
+import type { CatalogApp } from '../../../constants/shell.catalog';
 import type { ShellViewModel } from '../../../hooks/useShell';
 
 export interface PinnedNavigationProps {

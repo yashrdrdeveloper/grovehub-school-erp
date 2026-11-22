@@ -1,4 +1,4 @@
-import type { CatalogApp } from '../../../../registry/appCatalog.registry';
+import type { CatalogApp } from '../../../../constants/shell.catalog';
 export interface CatalogResult {
   readonly matching: CatalogApp[];
   readonly pinnedApps: CatalogApp[];

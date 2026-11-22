@@ -1,5 +1,5 @@
 import type { ChangeEventHandler } from 'react';
-import type { CatalogApp } from '../../../registry/appCatalog.registry';
+import type { CatalogApp } from '../../../constants/shell.catalog';
 
 export interface AppLauncherProps {
   readonly open: boolean;
