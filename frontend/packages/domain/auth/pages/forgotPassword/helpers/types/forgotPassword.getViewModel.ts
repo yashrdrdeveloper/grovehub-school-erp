@@ -1,4 +1,4 @@
-import type { ForgotPasswordState, ForgotPasswordViewModel } from '../../../types';
+import type { ForgotPasswordState, ForgotPasswordViewModel } from '../../types';
 
 export type GetForgotPasswordViewModel = (
   state: ForgotPasswordState

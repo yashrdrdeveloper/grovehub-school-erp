@@ -2,8 +2,8 @@ import { useCallback, useRef, useState, type FormEvent } from 'react';
 
 import { authenticationApi } from '@Business/auth';
 
-import { getForgotPasswordViewModel } from '../../helpers/getForgotPasswordViewModel';
-import { validateForgotPasswordEmail } from '../../helpers/validateForgotPasswordEmail';
+import { getForgotPasswordViewModel } from '../../helpers/forgotPassword.getViewModel';
+import { validateForgotPasswordEmail } from '../../helpers/forgotPassword.validateEmail';
 import { useForgotPasswordCountdown } from '../useForgotPasswordCountdown';
 import type { UseForgotPassword } from './types/useForgotPassword';
 

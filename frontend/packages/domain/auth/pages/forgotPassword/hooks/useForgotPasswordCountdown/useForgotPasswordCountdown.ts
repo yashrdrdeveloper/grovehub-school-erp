@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { FORGOT_PASSWORD_COOLDOWN_MS } from '../../constants/forgotPasswordCooldown';
+import { FORGOT_PASSWORD_COOLDOWN_MS } from '../../constants/forgotPassword.cooldown';
 import type { UseForgotPasswordCountdown } from './types/useForgotPasswordCountdown';
 
 /** Wall-clock countdown remains accurate when the browser tab is inactive. */

@@ -1,4 +1,4 @@
-import type { ForgotPasswordState } from '../../../types';
+import type { ForgotPasswordState } from '../../types';
 
 export interface ValidateForgotPasswordEmailResult {
   readonly normalizedEmail: ForgotPasswordState['email'];

@@ -1,4 +1,4 @@
-import type { ValidateForgotPasswordEmail } from './types/validateForgotPasswordEmail';
+import type { ValidateForgotPasswordEmail } from './types/forgotPassword.validateEmail';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

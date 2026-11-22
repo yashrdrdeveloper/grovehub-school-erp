@@ -1,4 +1,4 @@
-import type { GetForgotPasswordViewModel } from './types/getForgotPasswordViewModel';
+import type { GetForgotPasswordViewModel } from './types/forgotPassword.getViewModel';
 
 /** All conditional copy is prepared before JSX rendering. */
 export const getForgotPasswordViewModel: GetForgotPasswordViewModel = (state) => {

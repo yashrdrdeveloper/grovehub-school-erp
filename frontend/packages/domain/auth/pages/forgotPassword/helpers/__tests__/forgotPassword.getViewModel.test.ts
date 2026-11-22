@@ -1,5 +1,5 @@
-import { getForgotPasswordViewModel } from '../getForgotPasswordViewModel';
-import type { ForgotPasswordState } from '../../../types';
+import { getForgotPasswordViewModel } from '../forgotPassword.getViewModel';
+import type { ForgotPasswordState } from '../../types';
 
 const state: ForgotPasswordState = {
   email: '', lastRequestedEmail: '', busy: false,

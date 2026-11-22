@@ -1,4 +1,4 @@
-import { validateForgotPasswordEmail } from '../validateForgotPasswordEmail';
+import { validateForgotPasswordEmail } from '../forgotPassword.validateEmail';
 
 describe('validateForgotPasswordEmail', () => {
   it('normalizes a valid email', () => {
