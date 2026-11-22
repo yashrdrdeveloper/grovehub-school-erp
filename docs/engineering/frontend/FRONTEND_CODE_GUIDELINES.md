@@ -1531,6 +1531,8 @@ Only declare code migration done after tests and meaningful checks have run. For
 
 ## 40. Every tracked frontend file: AST and structural gap audit
 
+> **Historical inventory, not current violations.** The 474-file table and rule counts in §40.1–40.2 document the pre-migration snapshot. They remain for traceability; do not use them as today's debt counts. The current source is checked using `cd frontend && pnpm audit:guidelines`. The updated, CI-verified phase-2.1 snapshot and remaining priorities are documented in §41 below.
+
 **Verified source snapshot:** [`35f236667`](https://github.com/yashrdrdeveloper/grovehub-school-erp/commit/35f2366676393072b7f49e065de9f2a7e8954ac8); CI audit run [45056409802](https://github.com/yashrdrdeveloper/grovehub-school-erp/actions/runs/45056409802). The nonblocking TypeScript AST audit processed **474 tracked files**, including **445 TypeScript/TSX/CSS source files**, and flagged **141 files**. Every tracked file is listed once below, including test files, package entrypoints, styles, assets, configuration and the generated lockfile. A file with no flag is **not guaranteed compliant**: AST/text rules cannot prove accessibility, dead importers, CSS selector reachability, correct browser state, security or all architectural nuances. All paths are relative to `frontend/`. Findings are the **first observed line per rule in that file**, not every occurrence; inspect the entire file during refactoring.
 
 ### 40.1 All 474 files and findings
@@ -2045,13 +2047,59 @@ These counts represent **number of files flagged per rule**, not raw occurrences
 
 Run `cd frontend && pnpm audit:guidelines` to regenerate one `GH_AUDIT|<path>|<codes@firstLine>` row per tracked file and one summary. The script uses the installed TypeScript AST to distinguish real ternary expressions from optional type syntax and detects native markup, imports, route/test-ID literals and helper placement. CI executes this audit **before** blocking architecture/typecheck tests and currently logs results without failing the build for legacy violations. Do not silently convert it into a failing global gate until associated migrations are implemented. For new code, apply the rules immediately. Keep this inventory synchronized with the latest branch snapshot; counts will change with new commits.
 
-## 41. Confirmed high-impact follow-ups and behavior checks
+## 41. Phase 2.1 identity-account: verified implementation and remaining priorities
 
-1. **Auth presentation:** LoginLayout, AuthStatusArt, CredentialField, LoginForm and recovery/forgot views still contain conditional JSX and/or raw generic markup. Extract enums, named renderer functions, shared primitives and token-driven scoped styles with thorough accessibility/responsive tests. The two login regressions observed during the review (incorrect email regex escapes and undefined `LOGIN_FIELDS`) were subsequently fixed; verify they remain covered by tests.
-2. **Hooks/state:** `useRecovery` still groups multiple proof/grant/form/submission responsibilities; `useShell` still composes peer state/actions. Move storage writes out of functional state updaters. Preserve auth proof lifetime, server-enforced retries and stable protected shell mounting.
-3. **Routes/providers:** the pure `@Business/auth/routes` and `@Business/app/routes` contracts exist. Convert remaining hard-coded routes, distinguish public school pages from guest-only authentication and preserve one persistent ProtectedLayout. Reorganize AuthProvider with one session owner.
-4. **CSS and design primitives:** move the large auth, landing and global CSS into owner-scoped `.module.scss` files while centralizing token colors. Current DOM selectors and mobile/short viewport interactions must be verified in a real browser; AST audit cannot verify them.
-5. **Dead UI domains:** `domain/{people,accounts,integrations,settings}` still need safe importer/pinned-route verification and deletion. Keep actual business auth/accounts APIs.
-6. **Test governance and checker drift:** exact exported-name `describe`, no pure-utility mocks, flat helpers and no duplicate state. `scripts/check-units.mjs` still enforces a nested-helper convention in some packages and should be scoped correctly. Update audit flags after code migration; do not treat “no source-pattern flag” as fully compliant.
+**Branch:** `phase-2.1-identity-account` in `yashrdrdeveloper/grovehub-school-erp`.
 
-**Source-review limit:** This AST audit genuinely parses every tracked TS/TSX file and reads every tracked CSS file; it is not a complete manual semantic code review of every line. The remaining validations—import reachability, unused export checks, visual contrast/overflows, authentication security, logical test completeness and runtime routing—require compiler/build/tests and browser checks. The CI audit itself passed in the snapshot run.
+**Baseline:** §40 records the original 474-file pre-migration inventory. **Verified current snapshot:** commit `cbc610af413a3b1a4b37c27506644a47ba59cbdf` (Frontend GitHub Actions run `45061982379`, success) reports **584 tracked frontend files**, **51 files with mechanical flags** and these rule counts:
+
+| Audit rule | Flagged files | Interpretation |
+|---|---:|---|
+| `RAW_CLASS` | 41 | Legacy/global class usage pending migration to scoped modules; do not remove without visual checks |
+| `NATIVE_COLLECTION` | 18 | Review native collections case-by-case; not every call is a defect |
+| `CSS_COLOR_LITERAL` | 6 | Inspect legacy token/color ownership and preserve documented exceptions |
+| `LEGACY_DOMAIN_CSS` | 4 | Feature-owned legacy CSS files awaiting Sass module migration |
+| `LARGE_STYLESHEET` | 3 | Large legacy CSS requiring selector/consumer inventory before splitting |
+| `LEGACY_GLOBAL_CSS` | 1 | `app/styles.css` still retains migration-owned layout classes |
+
+**Now zero in the AST/source inventory:** `TERNARY`, `RAW_NATIVE_HTML`, `DIRECT_LUCIDE`, `NESTED_HELPER`, `FORBIDDEN_BARREL`, `CONFIG_FOLDER`, `DESCRIBE_EXPORT_MISMATCH`, `TEST_LOCATION`, `ROUTE_LITERAL`, `TEST_ID_LITERAL`, `UNUSED_DOMAIN_REVIEW`, `FLAT_PROVIDER`, `EFFECT_COMPONENT`, `LARGE_UNIT`, and `MONOLITHIC_LAUNCHER`. Zero flagged rules do **not** imply every owner-specific UI selector, interaction or styling property is semantically tested.
+
+### 41.1 Implemented and verified by CI
+
+1. **Dependency boundaries:** Direct `lucide-react` imports moved into `@Components/icons`, and boundary checks prevent new feature imports. `@Base` owns generic collection/trim helpers; `@Components` owns Radix integration.
+2. **Authentication state:** `AuthProvider` moved to a dedicated provider unit; the null-returning recovery boundary became a route-aware effect hook. `useRecovery` now composes owned link/proof/grant, form and submission hooks. Recovery proofs remain in memory, only non-secret grant markers survive reload, and transient backend failures are not assumed to consume server attempts.
+3. **Login and forms:** Flat named helpers/constants/types, tested view models, exact exported-name test suites, status descriptors and centralized IDs replace nested helper folders and conditional JSX. Login, recovery and forgot-password remain distinct routes and retain a single active credential form.
+4. **Shared UI:** Added/tested `useBoolean`, `Box`, `FieldLabel`, `AppLink`, `ExternalAnchor`, `SelectControl`, `TextAreaControl` and a migration-safe unstyled `Button`. Domain and shell presentation now delegate generic HTML to these components while preserving semantic native tags, accessibility attributes, and legacy CSS classes.
+5. **Shell:** One `useShell` owns state and named actions; committed-state effects persist preferences outside React functional setState callbacks. AppLauncher is split into a container, hook, tested helpers and renderer. The pathless protected layout remains persistent.
+6. **Route ownership:** Public school paths, auth routes and workspace routes use central contracts. Only implemented modules are registered. Confirmed unused placeholder UI domains (`domain/accounts`, `domain/people`, `domain/integrations`, `domain/settings`) were removed, while real business APIs remain.
+7. **Blocking migration gates:** `check:architecture` includes TypeScript-AST checks for zero production ternaries and zero raw native feature markup, in addition to existing package boundaries, flat units, shared UI test selector contracts, styles checks, and layout checks.
+8. **Execution evidence:** The above commit passed frozen dependency installation, architecture checks, TypeScript typecheck, Jest, build/prerender, and public SEO artifact verification in GitHub Actions. The informational audit still emits legacy style/collection findings rather than treating all as proven errors.
+
+### 41.2 Remaining P0 / P1 / P2 / P3 work
+
+| Priority | Status and required completion evidence |
+|---|---|
+| **P0** | No confirmed critical source failure in the CI-verified snapshot. This does not replace browser or deployed auth security verification. |
+| **P1** | **Not done:** migrate the remaining auth, landing and app legacy CSS to owner-scoped `*.module.scss` using Sass and `@Styles` tokens; first capture CSS selector consumers and overlapping responsive rules, install Sass, then verify no screenshots/theme/layout regressions. **Not done:** real-browser checks for 320/375/390/720px, short windows, keyboard, autofill, zoom, system/light/dark theme, accessibility and invitation/reset flows. |
+| **P2** | **Not done:** resolve 41 class-ownership flags and 6 color-literal reviews; inspect the 18 remaining native collection flags (keep justified native operations). Verify **every** page-owned native DOM node has a unique, stable `data-testid` in a live rendered document; a zero literal-test-ID flag does not prove full selector coverage. |
+| **P3** | **Not done:** progressively remove obsolete CSS/classes and compatibility exports only after verified consumer/route search and visual regressions; re-run the entire file-by-file audit after the CSS migration. |
+
+Do not mark Revision 8 fully implemented while §41.2 remains open. A passing compiler, Jest suite or static AST scan does not establish mobile viewport correctness, contrast or DOM behavior. Equally, legacy CSS classes left intentionally in place must not be silently reclassified as compliant CSS Modules.
+
+### 41.3 Exact validation commands and coverage limits
+
+Run in `frontend/`:
+
+~~~bash
+pnpm install --frozen-lockfile
+pnpm audit:guidelines
+pnpm check:architecture
+pnpm typecheck
+pnpm exec jest --runInBand
+pnpm lint
+pnpm build
+~~~
+
+The verified GitHub Actions workflow runs the audit, architecture checks, typecheck, Jest, build/prerender and public SEO artifact verification. **It currently does not execute `pnpm lint`**; lint must be run independently or explicitly added to CI after known legacy violations are assessed. **It also does not run the required real-browser visual/accessibility matrix.** Avoid claiming those unexecuted checks passed.
+
+**Audit caveat:** all mechanical counts are numbers of flagged files, not raw violations. These flags are heuristics and do not constitute a complete semantic review; use direct tests, import reachability, actual browser interactions and source-consumer verification before deleting or rewriting code.
