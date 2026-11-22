@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Plus, Search, UserRound, UserRoundX } from 'lucide-react';
+import { Plus, Search, UserRound, UserRoundX } from '@Components/icons';
 
 import { personApi, type Person } from '@Business/foundation';
 import { Button, Card, Input, PageHeading, StatusPill } from '@Components';

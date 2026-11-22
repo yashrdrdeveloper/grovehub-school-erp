@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { ArrowLeft, FlaskConical, RadioTower, Send } from 'lucide-react';
+import { ArrowLeft, FlaskConical, RadioTower, Send } from '@Components/icons';
 import { Link, useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@Components/hooks/query';
 

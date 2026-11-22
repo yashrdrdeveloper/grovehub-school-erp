@@ -1,4 +1,4 @@
-import { CircleDashed, Sparkles } from 'lucide-react';
+import { CircleDashed, Sparkles } from '@Components/icons';
 import type { DashboardNoticeComponent } from './types/dashboardNotice';
 
 export const DashboardNotice: DashboardNoticeComponent = () => (

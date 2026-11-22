@@ -1,4 +1,4 @@
-import { Bell, CalendarDays, CircleDashed, Layers2 } from 'lucide-react';
+import { Bell, CalendarDays, CircleDashed, Layers2 } from '@Components/icons';
 
 import type { DashboardAsideComponent } from './types/dashboardAside';
 

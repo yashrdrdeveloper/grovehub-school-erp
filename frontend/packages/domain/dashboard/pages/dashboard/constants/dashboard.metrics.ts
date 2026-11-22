@@ -1,4 +1,4 @@
-import { Bell, ClipboardCheck, Clock3, GraduationCap } from 'lucide-react';
+import { Bell, ClipboardCheck, Clock3, GraduationCap } from '@Components/icons';
 
 // Layout preview only. No fabricated counts, events, tasks or school records.
 export const DASHBOARD_METRICS = [

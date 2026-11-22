@@ -1,4 +1,4 @@
-import { ArrowUpRight, CheckCircle2, CircleDashed, Inbox } from 'lucide-react';
+import { ArrowUpRight, CheckCircle2, CircleDashed, Inbox } from '@Components/icons';
 
 import { DASHBOARD_WORKSPACES } from '../../constants/dashboard.workspaces';
 import type { DashboardMainComponent } from './types/dashboardMain';

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Cable, ExternalLink, RefreshCw, Unplug } from 'lucide-react';
+import { Cable, ExternalLink, RefreshCw, Unplug } from '@Components/icons';
 import { useQuery, useQueryClient } from '@Components/hooks/query';
 
 import { integrationApi } from '@Business/integrations';

@@ -1,4 +1,4 @@
-import { CreditCard, MessageCircle, ShieldCheck } from 'lucide-react';
+import { CreditCard, MessageCircle, ShieldCheck } from '@Components/icons';
 
 export const DASHBOARD_WORKSPACES = [
   { title: 'Admissions & dues', hint: 'Applications, payments and follow-ups', icon: CreditCard, tone: 'blue' },

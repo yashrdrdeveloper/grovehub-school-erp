@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronRight, School } from 'lucide-react';
+import { CalendarDays, ChevronRight, School } from '@Components/icons';
 
 import type { DashboardHeaderComponent } from './types/dashboardHeader';
 
