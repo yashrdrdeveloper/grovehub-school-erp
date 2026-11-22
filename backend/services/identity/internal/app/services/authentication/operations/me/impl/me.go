@@ -2,7 +2,7 @@ package impl
 
 import (
 	"context"
-	"grovehub/services/identity/internal/app/security/principal"
+	"grovehub/services/identity/internal/app/services/security/principal"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	accountmapper "grovehub/services/identity/internal/app/mappers/account"

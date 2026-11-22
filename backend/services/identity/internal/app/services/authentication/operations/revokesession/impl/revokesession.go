@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/google/uuid"
-	"grovehub/services/identity/internal/app/security/principal"
+	"grovehub/services/identity/internal/app/services/security/principal"
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"
 	revokesession "grovehub/services/identity/internal/app/services/authentication/operations/revokesession"
 )

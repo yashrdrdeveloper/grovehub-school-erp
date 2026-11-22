@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"time"
-	"grovehub/services/identity/internal/app/security/principal"
+	"grovehub/services/identity/internal/app/services/security/principal"
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"
 	credential "grovehub/services/identity/internal/app/services/credential"
 	reauthenticate "grovehub/services/identity/internal/app/services/authentication/operations/reauthenticate"
