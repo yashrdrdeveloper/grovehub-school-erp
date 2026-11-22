@@ -260,7 +260,7 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
         <div className="rdr-recovery__actions">
           <button type="submit" className="rdr-login-v2__submit" disabled={view === 'saving'}>
             {view === 'saving' ? 'Securing your account…' : 'Update password'}
-            {view === 'saving' && <LoaderCircle className="rdr-login-v2__spinner" size={18}/>}}
+            {view === 'saving' && <LoaderCircle className="rdr-login-v2__spinner" size={18}/>}
           </button>
           <span className="rdr-recovery__remaining">{invitation && attempts === 1 ? '1 activation attempt remaining' : '\u00a0'}</span>
           <div className="rdr-recovery__error-slot" aria-live="polite">
