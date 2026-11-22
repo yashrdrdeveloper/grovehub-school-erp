@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Info, LoaderCircle, Mail } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Clock3, Info, LoaderCircle, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { authenticationApi } from '@Business/auth';
@@ -106,7 +106,7 @@ export const ForgotPasswordPage = () => {
             aria-label={buttonLabel}>
             <span>{buttonLabel}</span>
             {busy ? <LoaderCircle className="rdr-login-v2__spinner" size={19}/>
-              : cooldown ? <Clock3 size={19}/> : <ArrowRight size={19}/>}
+              : cooldown ? <Clock3 size={19}/> : null}
           </button>
           <div className="rdr-auth-flow__secondary-slot">
             <Link className="rdr-auth-flow__back" to="/login"><ArrowLeft size={16}/> Back to sign in</Link>
