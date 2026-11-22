@@ -4340,3 +4340,18 @@ The established migration includes identity, dashboard and the public website un
 Pure transformation helpers must have adjacent tests; the architecture runner checks specified migrated units and page roots, alongside package dependency rules. This is not a claim that *all* historical units, user interfaces, responsive states or component stories have been migrated or verified. Extend enforcement to each newly completed domain.
 
 Auth activation attempts are authoritative on the backend: client-side validation does not consume attempts, and generic network failures must not be interpreted as a known remaining attempt count. One-time bearer proofs stay in memory, while a non-secret cookie-continuation marker may be placed in session storage.
+
+
+### K. Tailwind v4, shadcn and automation selectors
+
+The frontend uses the Tailwind CSS v4 Vite plugin, with canonical shadcn configuration at `frontend/components.json`. Shared UI uses Radix primitives for accessible composition, CVA for button variants and CSS-variable-backed semantic utility classes. The RDR brand palette is mapped under `app/styles/tailwind.css`, and the light/dark modes use the existing `data-theme` attribute.
+
+**Migration guardrail:** Tailwind preflight reset is intentionally excluded until the public-school pages, full-page mobile auth and existing complex CSS layouts have been fully migrated. This does **not** disable Tailwind design tokens or utilities. Do not claim all legacy CSS has been converted; only component units built on the new design system should use shadcn-style utility classes. Do not change the school's approved monogram, marketing photographs or form alignment just to normalize styling.
+
+Every exported component in `@Components` must expose `dataTestId?: string` as a typed prop. Forward it as `data-testid` on its own native DOM element, not on its React wrapper. For a composite control, use stable suffixed IDs for its label, error message and visibility control. Avoid unstable `useId()`-generated selectors; consumers should supply feature-specific stable IDs where a component repeats. A semantic role/label remains the primary accessibility contract; test IDs are deterministic automation hooks, not a substitute for accessibility.
+
+Avoid spreading `dataTestId` onto the DOM as an unknown React attribute. Components that wrap other shared primitives must forward `dataTestId` to the **lowest DOM-rendering primitive**. Do not add selectors to every internal decoration or icon unless automation must interact with it.
+
+The reusable `InputControl` owns the actual native input, and `unstyled` is reserved for safe migration of established auth/public-site layouts. Domain code must not reimplement forwarding and error semantics already owned by this primitive. Buttons use Radix Slot (`asChild`) for semantic links when a link-style action needs the same visual tokens.
+
+Run `pnpm install --frozen-lockfile`, `pnpm check:architecture`, `pnpm typecheck`, `pnpm exec jest --runInBand` and `pnpm build` before merging. User-visible responsive and keyboard testing remains necessary beyond CI.

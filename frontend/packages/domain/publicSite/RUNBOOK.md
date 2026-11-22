@@ -137,3 +137,9 @@ GitHub CI runs dependency-boundary checks, TypeScript, Jest interaction tests,
 a production build, and assertions that SEO files exist. The tests cover
 navigation, enquiry-field validation, honest email handoff, and closing the
 mobile navigation sheet.
+
+## Current public-site decomposition
+
+The route entry `pages/landing/LandingPage.tsx` is a page composer rather than a giant component. Chrome, reusable photo/text motifs, home and about content, academic/campus/gallery sections and resources/disclosures are separated into `components/` units. Enquiry form content is presentational, with state and orchestration in `hooks/useEnquiryForm` and `containers/enquiryFormContainer`; contact validation and mailto generation are pure helpers with colocated tests. The floating school information sheet splits story/photo/info panels from its Radix dialog shell.
+
+The school site preserves original CSS classes until responsive browser review; Tailwind v4 and shadcn-style shared controls are available via `@Components`. The Enquiry form uses the shared native `InputControl` in unstyled migration mode so it does not unexpectedly change the public website.
