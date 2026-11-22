@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "jest --passWithNoTests",
     "lint": "eslint .",
-    "check:architecture": "node scripts/check-boundaries.mjs && node scripts/check-units.mjs",
+    "check:architecture": "node scripts/check-boundaries.mjs && node scripts/check-units.mjs && node scripts/check-ui-contracts.mjs",
     "assets:school": "node scripts/download-school-images.mjs"
   },
   "dependencies": {
