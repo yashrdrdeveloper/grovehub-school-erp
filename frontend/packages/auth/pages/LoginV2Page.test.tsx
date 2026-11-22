@@ -67,7 +67,7 @@ describe('RDR Login V2',()=>{
     expect(container.querySelector('.rdr-login-v2__mobile-appearance')).toBeNull();
     expect(container.querySelector('svg.rdr-auth-mobile-scene')).toBeNull();
     expect(container.querySelector('.rdr-login-v2__mobile-school-name')?.textContent).toContain('RDR School');
-    expect(container.querySelector('.rdr-login-v2__description-mobile')?.textContent).toContain('workspace');
+    expect(container.querySelector('.rdr-login-v2__description-mobile')?.textContent).toBe('Sign in to your RDR School workspace.');
     expect(container.querySelector('.rdr-login-v2__form--signin > .rdr-login-v2__forgot-mobile')).toBeNull();
     expect(container.querySelector('.rdr-login-v2__form--signin .rdr-login-v2__forgot-desktop')).not.toBeNull();
     expect(screen.queryByRole('button',{name:'Light mobile theme'})).toBeNull();
