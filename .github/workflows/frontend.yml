@@ -40,6 +40,28 @@ jobs:
         run: pnpm exec jest --runInBand
       - name: Build and prerender SEO pages
         run: pnpm build
+      - name: Install isolated Chromium test runner
+        run: |
+          npm install --prefix "$RUNNER_TEMP/groovehub-browser" --no-package-lock --no-save playwright@1.55.0
+          "$RUNNER_TEMP/groovehub-browser/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Browser regression smoke (mobile, accessibility, themes)
+        run: |
+          pnpm preview --host 127.0.0.1 --port 4173 > "$RUNNER_TEMP/groovehub-preview.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          ready=0
+          for attempt in $(seq 1 45); do
+            if curl --fail --silent http://127.0.0.1:4173/login > /dev/null; then
+              ready=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then
+            cat "$RUNNER_TEMP/groovehub-preview.log"
+            exit 1
+          fi
+          GH_PLAYWRIGHT_PACKAGE="$RUNNER_TEMP/groovehub-browser/node_modules/playwright" node scripts/e2e/browser-regressions.cjs
       - name: Verify public SEO artifacts
         run: |
           test -f dist/sitemap.xml
