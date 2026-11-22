@@ -1,4 +1,4 @@
-import type { DashboardDateParts } from '../../../../../types';
+import type { DashboardDateParts } from '../../../../types';
 export interface DashboardCalendarCopy {
   readonly calendarDay: string;
   readonly calendarHeading: string;
