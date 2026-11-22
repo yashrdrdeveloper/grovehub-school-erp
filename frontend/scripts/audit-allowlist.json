@@ -1,5 +1,5 @@
 {
-  "description": "Known legacy-only guidelines debt as of CI run 45065887411; new issue file/code pairs fail CI.",
+  "description": "Migration ceiling verified in Revision 10: 39 flagged files and 47 overlapping findings. New file/code pairs and retired codes are blocked.",
   "capturedRunId": 45065887411,
   "allowlisted": {
     "app/styles.css": [
@@ -23,8 +23,7 @@
       "RAW_CLASS"
     ],
     "packages/domain/auth/components/loginLayout/LoginLayout.tsx": [
-      "RAW_CLASS",
-      "NATIVE_COLLECTION"
+      "RAW_CLASS"
     ],
     "packages/domain/auth/components/loginLayout/styles/optionOneAuth.css": [
       "LEGACY_DOMAIN_CSS",
@@ -68,30 +67,25 @@
       "RAW_CLASS"
     ],
     "packages/domain/dashboard/pages/dashboard/components/dashboardMain/DashboardMain.tsx": [
-      "RAW_CLASS",
-      "NATIVE_COLLECTION"
+      "RAW_CLASS"
     ],
     "packages/domain/dashboard/pages/dashboard/components/dashboardNotice/DashboardNotice.tsx": [
       "RAW_CLASS"
     ],
     "packages/domain/dashboard/pages/dashboard/components/dashboardOverview/DashboardOverview.tsx": [
-      "RAW_CLASS",
-      "NATIVE_COLLECTION"
+      "RAW_CLASS"
     ],
     "packages/domain/publicSite/pages/landing/LandingPage.tsx": [
       "RAW_CLASS"
     ],
     "packages/domain/publicSite/pages/landing/components/aboutContent/aboutContent.tsx": [
-      "RAW_CLASS",
-      "NATIVE_COLLECTION"
+      "RAW_CLASS"
     ],
     "packages/domain/publicSite/pages/landing/components/campusContent/campusContent.tsx": [
-      "RAW_CLASS",
-      "NATIVE_COLLECTION"
+      "RAW_CLASS"
     ],
     "packages/domain/publicSite/pages/landing/components/enquiryForm/enquiryForm.tsx": [
-      "RAW_CLASS",
-      "NATIVE_COLLECTION"
+      "RAW_CLASS"
     ],
     "packages/domain/publicSite/pages/landing/components/homeContent/homeContent.tsx": [
       "RAW_CLASS"
@@ -100,33 +94,22 @@
       "RAW_CLASS"
     ],
     "packages/domain/publicSite/pages/landing/components/publicSheet/components/infoPanels/infoPanels.tsx": [
-      "RAW_CLASS",
-      "NATIVE_COLLECTION"
+      "RAW_CLASS"
     ],
     "packages/domain/publicSite/pages/landing/components/publicSheet/components/panelPhoto/PanelPhoto.tsx": [
       "RAW_CLASS"
     ],
     "packages/domain/publicSite/pages/landing/components/publicSheet/components/storyPanel/StoryPanel.tsx": [
-      "RAW_CLASS",
-      "NATIVE_COLLECTION"
-    ],
-    "packages/domain/publicSite/pages/landing/components/resourceContent/resourceContent.tsx": [
-      "RAW_CLASS",
-      "NATIVE_COLLECTION"
-    ],
-    "packages/domain/publicSite/pages/landing/components/siteChrome/siteChrome.tsx": [
-      "RAW_CLASS",
-      "NATIVE_COLLECTION"
-    ],
-    "packages/domain/publicSite/pages/landing/components/siteMedia/siteMedia.tsx": [
-      "NATIVE_COLLECTION",
       "RAW_CLASS"
     ],
-    "packages/domain/publicSite/pages/landing/hooks/useLandingPage/useLandingPage.ts": [
-      "NATIVE_COLLECTION"
+    "packages/domain/publicSite/pages/landing/components/resourceContent/resourceContent.tsx": [
+      "RAW_CLASS"
     ],
-    "packages/domain/publicSite/pages/landing/registry/schoolPages.registry.tsx": [
-      "NATIVE_COLLECTION"
+    "packages/domain/publicSite/pages/landing/components/siteChrome/siteChrome.tsx": [
+      "RAW_CLASS"
+    ],
+    "packages/domain/publicSite/pages/landing/components/siteMedia/siteMedia.tsx": [
+      "RAW_CLASS"
     ],
     "packages/domain/publicSite/pages/landing/styles/landingPage.css": [
       "LEGACY_DOMAIN_CSS",
@@ -142,14 +125,10 @@
       "CSS_COLOR_LITERAL"
     ],
     "packages/shell/components/appLauncher/AppLauncher.tsx": [
-      "RAW_CLASS",
-      "NATIVE_COLLECTION"
+      "RAW_CLASS"
     ],
     "packages/shell/components/appLauncher/renderer/appLauncher.app.tsx": [
       "RAW_CLASS"
-    ],
-    "packages/shell/components/appRoutes/AppRoutes.tsx": [
-      "NATIVE_COLLECTION"
     ],
     "packages/shell/components/mobileNav/MobileNav.tsx": [
       "RAW_CLASS"
@@ -158,27 +137,29 @@
       "RAW_CLASS"
     ],
     "packages/shell/components/pinnedNavigation/PinnedNavigation.tsx": [
-      "NATIVE_COLLECTION",
       "RAW_CLASS"
     ],
     "packages/shell/components/sidebar/Sidebar.tsx": [
       "RAW_CLASS"
     ],
     "packages/shell/components/themeChoices/ThemeChoices.tsx": [
-      "RAW_CLASS",
-      "NATIVE_COLLECTION"
+      "RAW_CLASS"
     ],
     "packages/shell/components/topbar/Topbar.tsx": [
       "RAW_CLASS"
     ],
-    "packages/shell/hooks/useShell/helpers/shell.preferences.ts": [
-      "NATIVE_COLLECTION"
-    ],
-    "packages/shell/renderer/shell.routes.tsx": [
-      "NATIVE_COLLECTION"
-    ],
     "packages/shell/templates/workspaceShell/WorkspaceShell.tsx": [
       "RAW_CLASS"
     ]
+  },
+  "referenceCommit": "60580cee9d5e881ecbc322b00e0c89b13384a77f",
+  "maxFlaggedFiles": 39,
+  "maxFindings": 47,
+  "maxByCode": {
+    "RAW_CLASS": 33,
+    "LEGACY_DOMAIN_CSS": 4,
+    "LEGACY_GLOBAL_CSS": 1,
+    "LARGE_STYLESHEET": 3,
+    "CSS_COLOR_LITERAL": 6
   }
 }
