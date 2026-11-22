@@ -14,10 +14,6 @@ const sourceExists = async (folder, name) =>
 const units = [
   ['base/utilities', true],
   ['base/readers', true],
-  ['domain/auth/pages/login/helpers', true],
-  ['domain/auth/pages/forgotPassword/helpers', true],
-  ['domain/auth/pages/recovery/helpers', true],
-  ['domain/dashboard/pages/dashboard/helpers', true],
   ['base/events', false],
   ['domain/auth/pages/login/hooks', false],
   ['domain/auth/pages/forgotPassword/hooks', false],
@@ -51,25 +47,30 @@ for (const [relative, requirePureTests] of units) {
 }
 
 
-/** Migrated flat units: other legacy page helpers are added after their safe move. */
-const flatUnits = [
-  'domain/auth/pages/login/helpers',
-  'domain/auth/pages/login/constants',
-  'domain/auth/pages/login/hooks/useLoginViewport/helpers',
-];
+/** All helper, constant and JSX renderer folders follow flat source ownership. */
+const flatUnits = [];
+const collectFlatUnits = async (directory, relative = '') => {
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const child = path.join(directory, entry.name);
+    const childRelative = path.join(relative, entry.name);
+    if (['helpers', 'constants', 'renderer'].includes(entry.name)) {
+      flatUnits.push(childRelative);
+    }
+    await collectFlatUnits(child, childRelative);
+  }
+};
+await collectFlatUnits(root);
+
 for (const relative of flatUnits) {
   const directory = path.join(root, relative);
-  if (!await exists(directory)) {
-    failures.push(relative + ': required flat unit directory is missing');
-    continue;
-  }
   const entries = await readdir(directory, { withFileTypes: true });
   for (const item of entries) {
     if (item.name === 'index.ts') {
       failures.push(relative + ': flat directory must not have an index.ts barrel');
     }
     if (item.isDirectory() && item.name !== 'types' && item.name !== '__tests__') {
-      failures.push(relative + '/' + item.name + ': helper/constant folder nesting is forbidden');
+      failures.push(relative + '/' + item.name + ': helpers/constants/renderer nesting is forbidden');
     }
   }
   const tests = path.join(directory, '__tests__');
