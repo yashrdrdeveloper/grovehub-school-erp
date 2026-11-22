@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import { LandingPage } from '../LandingPage';
+import { LandingContainer as LandingPage } from '../containers/landingContainer';
 
 // Isolate public-site navigation from the unrelated component barrel's
 // ESM-only Lodash implementation under Jest's CommonJS test runner.
