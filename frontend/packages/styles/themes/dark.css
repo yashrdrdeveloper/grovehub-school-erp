@@ -20,6 +20,10 @@
   --gh-color-success: #70d19c;
   --gh-color-warning: #e4ba71;
   /* Dashboard trend accents are theme-owned, not component color literals. */
+  --gh-color-home-tone-pink-bg: #3c2537;
+  --gh-color-home-tone-blue-bg: #232d48;
+  --gh-color-home-tone-amber-bg: #373023;
+  --gh-color-home-tone-green-bg: #233b31;
   --gh-color-home-pink: #ff63b6;
   --gh-color-home-blue: #87aaff;
   --gh-color-home-green: #4fd69f;
