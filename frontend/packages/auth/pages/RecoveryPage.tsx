@@ -218,7 +218,7 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
     : 'Choose a strong password to protect your school account.'}
     mobileDescription={formVisible ? 'Choose a strong password to protect your school account.' : ''}
     minimalMobile mobileTitle={mobileTitle}
-    eyebrow={invitation ? 'WELCOME TO RDR SCHOOL' : 'SECURE ACCOUNT RECOVERY'}>
+    eyebrow="SECURE YOUR ACCOUNT">
     <div className="rdr-recovery">
       {formVisible ? <form className="rdr-login-v2__form rdr-recovery__form" onSubmit={event => void submit(event)} noValidate>
         <div className="rdr-recovery__fields">
@@ -243,7 +243,7 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
             <div className="rdr-login-v2__input-shell">
               <KeyRound size={18} aria-hidden="true"/>
               <input id={`${id}-confirmation`} type={visible ? 'text' : 'password'} autoComplete="new-password"
-                placeholder="Confirm new password" value={confirmation} disabled={view === 'saving'}
+                placeholder="Confirm password" value={confirmation} disabled={view === 'saving'}
                 aria-invalid={Boolean(fieldErrors.confirmation)}
                 aria-describedby={fieldErrors.confirmation ? `${id}-confirmation-error` : undefined}
                 onChange={event => { setConfirmation(event.target.value);setFieldErrors(e => ({...e,confirmation:undefined})); }} required/>
@@ -262,7 +262,7 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
             {error && <p role="alert" className="rdr-recovery__inline-error"><AlertCircle size={16}/>{error}</p>}
           </div>
           <button type="submit" className="rdr-login-v2__submit" disabled={view === 'saving'}>
-            {view === 'saving' ? 'Securing your account…' : invitation ? 'Set password' : 'Reset password'}
+            {view === 'saving' ? 'Securing your account…' : 'Update password'}
             {view === 'saving' ? <LoaderCircle className="rdr-login-v2__spinner" size={18}/> : <ArrowRight size={18}/>}
           </button>
           <span className="rdr-recovery__remaining">{invitation && attempts === 1 ? '1 activation attempt remaining' : '\u00a0'}</span>
