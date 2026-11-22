@@ -34,22 +34,24 @@ A **renderer** is a pure typed function in `<owner>/renderer/<owner>.<useCase>.t
 - Need lifecycle, ref, hook or independent reusable behavior? A named `components/<unit>/` instead of a renderer.
 - Three or more varying behavior strategies? Typed strategy map of renderers. A static description? `Record<Enum, Descriptor>` in constants. Small binary selection may use `if/else`; never a JSX ternary.
 - A renderer's caller supplies data and named callbacks. Do not put API calls, hook state setters, or raw HTML primitives inside its implementation.
-- The AST gate `scripts/check-renderer-ownership.mjs` validates renderer naming, hook/IO purity and owner-local tests. The two already-existing untested renderers are explicitly tracked below, not treated as approved patterns for new code.
+- The AST gate `scripts/check-renderer-ownership.mjs` validates renderer naming, hook/IO purity and owner-local tests. All existing JSX renderer files now have owner-local tests. No legacy exceptions remain.
 
 ### 3. Renderer gap register — required remaining work
 
 | Priority | Owner / work | Target | Status |
 |---|---|---|---|
-| P1 | CredentialField conditional grouped label | `credentialField/renderer/credentialField.label.tsx` plus typed props and test | Implemented; CI verification required |
-| P1 | Forgot-password feedback status and success panel | `forgotPasswordForm/renderer/forgotPassword.notice.tsx` and `forgotPassword.success.tsx` | Implemented; CI verification required |
-| P1 | Recovery form vs token state selection | `recovery/renderer/recovery.content.tsx` with state/form tests | Implemented; CI verification required |
+| P1 | CredentialField conditional grouped label | `credentialField/renderer/credentialField.label.tsx` plus typed props and test | Completed; 119-suite regression CI verified |
+| P1 | Forgot-password feedback status and success panel | `forgotPasswordForm/renderer/forgotPassword.notice.tsx` and `forgotPassword.success.tsx` | Completed; 119-suite regression CI verified |
+| P1 | Recovery form vs token state selection | `recovery/renderer/recovery.content.tsx` with state/form tests | Completed; 119-suite regression CI verified |
 | P2 | AuthStatusArt badge and typed status states | `authStatusArt/renderer/authStatusArt.badge.tsx`, `AUTH_STATUS_KIND` | Implemented for existing status badge |
-| P2 | AppLauncher repeated catalog card | `appLauncher/renderer/appLauncher.app.tsx` | Renderer exists; dedicated test missing |
-| P2 | Shell declarative route JSX mapping | `shell/renderer/shell.routes.tsx` | Renderer exists; dedicated test missing |
+| P2 | AppLauncher repeated catalog card | `appLauncher/renderer/appLauncher.app.tsx` | Completed; dedicated renderer test added |
+| P2 | Shell declarative route JSX mapping | `shell/renderer/shell.routes.tsx` | Completed; two isolated suites cover public and protected exports |
 | P2 | Public-site large page content | aboutContent, campusContent, resourceContent, infoPanels, siteChrome | Audit repeated conditional/repeated JSX; split into owned components or renderers *where behavior warrants it* |
 | P2 | Dashboard repeated stat and operation items | dashboardOverview / dashboardMain | Move complex repeated icon/tone JSX to owner renderers with exact tests, keep static layout in component |
 | P2 | LoginLayout reusable visual sections | loginLayout renderer or named component | Extract only reusable state-dependent artwork/option selection; existing appearance option renderer is present |
 | P3 | Legacy comments / historical snippets | guideline + scripts | Remove outdated instructions once all callers are migrated |
+
+**Verified after renderer refactor:** Frontend formatting, 12 architecture-policy tests, 119 Jest suites / 223 Jest tests, TypeScript and Vite/SEO build passed in the gated run. Audit ceiling remains **34 flagged files / 42 findings** (28 RAW_CLASS, 4 LEGACY_DOMAIN_CSS, 1 LEGACY_GLOBAL_CSS, 3 LARGE_STYLESHEET, 6 CSS_COLOR_LITERAL). Renderer naming, purity and tests are enforced for all nine production renderer files. Real-browser regression is covered by the separate Frontend workflow.
 
 **Independent legacy debt remains:** The P1 auth/public-site/global CSS migration and the seven explicitly ignored oversized public-site formatting units are **not** resolved by a renderer or tag enum migration. They require separate owner-specific refactors and browser verification. Do not close them without a new measured audit.
 
