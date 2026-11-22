@@ -1,6 +1,5 @@
 import { Box } from '@Components/components/Box';
 import styles from './DashboardHeader.module.css';
-import sectionStyles from '../../DashboardSection.module.css';
 import { CalendarDays, ChevronRight, School } from '@Components/icons';
 
 import type { DashboardHeaderComponent } from './types/dashboardHeader';
