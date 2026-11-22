@@ -1,1 +1,1 @@
-Format all safe frontend source while retaining exactly seven documented oversized public-site exceptions.
+Migrate all Box Text Typography semantic as literals to typed constants, with architecture checks.
