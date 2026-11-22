@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
-import { ArrowLeft, GraduationCap, Monitor, Moon, Sun } from 'lucide-react';
+import { ArrowLeft, GraduationCap, LockKeyhole, Monitor, Moon, Sun } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { SchoolMonogram } from '@Components';
@@ -97,12 +97,11 @@ export const LoginLayout = ({ children, title, description, mobileDescription, m
             </div>
             {minimalMobile && <><h2 className="rdr-login-v2__mobile-signin-title">{mobileTitle}</h2><p className="rdr-login-v2__mobile-description">{mobileDescription ?? description}</p></>}
             {children}
-            <div className="rdr-o1-auth-footer"><span>© RDR School</span><span>Haluhera · Rewari</span></div>
-            <div className="rdr-login-v2__closing">
-              <span className="rdr-login-v2__closing-rule"/>
-              <span>♢ &nbsp; A secure workspace for RDR School</span>
-              <span className="rdr-login-v2__closing-rule"/>
+            <div className="rdr-login-v2__closing" aria-label="Secure RDR School workspace">
+              <LockKeyhole size={13} strokeWidth={1.8} aria-hidden="true"/>
+              <span>A secure workspace for RDR School</span>
             </div>
+            <div className="rdr-o1-auth-footer"><span>© RDR School</span><span>Haluhera · Rewari</span></div>
           </div>
         </section>
       </div>
