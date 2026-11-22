@@ -102,9 +102,6 @@ export const ForgotPasswordPage = () => {
           </div>
         </div>
         <div className="rdr-auth-flow__actions">
-          <div className="rdr-auth-flow__error-slot" aria-live="polite">
-            {error && <p className="rdr-login-v2__error" role="alert">{error}</p>}
-          </div>
           <button type="submit" className="rdr-login-v2__submit" disabled={busy || cooldown}
             aria-label={buttonLabel}>
             <span>{buttonLabel}</span>
@@ -113,6 +110,9 @@ export const ForgotPasswordPage = () => {
           </button>
           <div className="rdr-auth-flow__secondary-slot">
             <Link className="rdr-auth-flow__back" to="/login"><ArrowLeft size={16}/> Back to sign in</Link>
+          </div>
+          <div className="rdr-auth-flow__error-slot" aria-live="polite">
+            {error && <p className="rdr-login-v2__error" role="alert">{error}</p>}
           </div>
         </div>
       </form>
