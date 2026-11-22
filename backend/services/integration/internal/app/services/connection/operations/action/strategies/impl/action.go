@@ -9,6 +9,7 @@ import (
     "errors"
 
     "grovehub/services/integration/internal/app/entity"
+    mailconstants "grovehub/services/integration/internal/app/providers/mailprovider/constants"
     connectionrepo "grovehub/services/integration/internal/app/repository/connection"
     connectionhelpers "grovehub/services/integration/internal/app/services/connection/helpers"
     actionstrategy "grovehub/services/integration/internal/app/services/connection/operations/action/strategies"
