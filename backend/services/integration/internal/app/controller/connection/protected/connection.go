@@ -20,6 +20,8 @@ type ConnectionController interface {
 	ListTests(http.ResponseWriter, *http.Request)
 	// @POST /{id}/watch
 	Watch(http.ResponseWriter, *http.Request)
+	// @POST /system-mail/sender
+	ConfigureSystemMailSender(http.ResponseWriter, *http.Request)
 	// @POST /{id}/actions/{action}
 	ExecuteAction(http.ResponseWriter, *http.Request)
 }

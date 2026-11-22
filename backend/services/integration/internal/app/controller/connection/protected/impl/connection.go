@@ -2,6 +2,10 @@ package impl
 
 import (
 	"encoding/json"
+
+	"github.com/google/uuid"
+
+	coregateway "grovehub/libs/core/gateway"
 	"net/http"
 	"strings"
 
@@ -218,4 +222,28 @@ func (c *Controller) ExecuteAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_ = httpresponse.WriteSuccess(w, http.StatusOK, result)
+}
+
+func (c *Controller) ConfigureSystemMailSender(w http.ResponseWriter, r *http.Request) {
+	p, ok := c.principalFromRequest(r)
+	actor, verified := coregateway.PrincipalFrom(r.Context())
+	if !ok || !verified || !actor.Admin || p.TenantID == "" || actor.TenantID != p.TenantID || actor.PersonGID != p.ActorGID {
+		writeError(w, r, http.StatusForbidden, integrationerrors.Forbidden)
+		return
+	}
+	var input connectiondto.ConfigureSystemMailSender
+	if err := httprequest.DecodeStrictJSON(r, &input); err != nil {
+		writeError(w, r, http.StatusBadRequest, integrationerrors.Invalid)
+		return
+	}
+	parsed, err := uuid.Parse(input.ConnectionID)
+	if err != nil {
+		writeError(w, r, http.StatusBadRequest, integrationerrors.Invalid)
+		return
+	}
+	if err := c.service.ConfigureSystemMailSender(r.Context(), p.TenantID, parsed.String()); err != nil {
+		c.writeServiceError(w, r, err)
+		return
+	}
+	_ = httpresponse.WriteSuccess(w, http.StatusOK, map[string]string{"connectionId": parsed.String()})
 }
