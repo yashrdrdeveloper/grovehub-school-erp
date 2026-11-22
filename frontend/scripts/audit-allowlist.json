@@ -1,5 +1,5 @@
 {
-  "description": "Migration ceiling verified in Revision 10: 39 flagged files and 47 overlapping findings. New file/code pairs and retired codes are blocked.",
+  "description": "Exact legacy finding ceiling verified in Frontend CI run 45070078775 (commit 585e8f81f8091536222c446931466710626db283). New violations or increases fail CI.",
   "capturedRunId": 45065887411,
   "allowlisted": {
     "app/styles.css": [
@@ -9,9 +9,6 @@
     ],
     "packages/components/styles/primitives.css": [
       "CSS_COLOR_LITERAL"
-    ],
-    "packages/domain/auth/components/authAmbientGraphic/AuthAmbientGraphic.tsx": [
-      "RAW_CLASS"
     ],
     "packages/domain/auth/components/authStatusArt/AuthStatusArt.tsx": [
       "RAW_CLASS"
@@ -30,9 +27,6 @@
       "LARGE_STYLESHEET",
       "CSS_COLOR_LITERAL"
     ],
-    "packages/domain/auth/core/guards/RequireSession.tsx": [
-      "RAW_CLASS"
-    ],
     "packages/domain/auth/pages/forgotPassword/components/forgotPasswordForm/ForgotPasswordForm.tsx": [
       "RAW_CLASS"
     ],
@@ -45,9 +39,6 @@
     "packages/domain/auth/pages/login/templates/mobileLogin/MobileLogin.tsx": [
       "RAW_CLASS"
     ],
-    "packages/domain/auth/pages/recovery/Recovery.tsx": [
-      "RAW_CLASS"
-    ],
     "packages/domain/auth/pages/recovery/components/recoveryArtwork/RecoveryArtwork.tsx": [
       "RAW_CLASS"
     ],
@@ -57,7 +48,7 @@
     "packages/domain/auth/pages/recovery/components/recoveryState/RecoveryState.tsx": [
       "RAW_CLASS"
     ],
-    "packages/domain/dashboard/pages/dashboard/Dashboard.tsx": [
+    "packages/domain/auth/pages/recovery/Recovery.tsx": [
       "RAW_CLASS"
     ],
     "packages/domain/dashboard/pages/dashboard/components/dashboardAside/DashboardAside.tsx": [
@@ -69,13 +60,7 @@
     "packages/domain/dashboard/pages/dashboard/components/dashboardMain/DashboardMain.tsx": [
       "RAW_CLASS"
     ],
-    "packages/domain/dashboard/pages/dashboard/components/dashboardNotice/DashboardNotice.tsx": [
-      "RAW_CLASS"
-    ],
     "packages/domain/dashboard/pages/dashboard/components/dashboardOverview/DashboardOverview.tsx": [
-      "RAW_CLASS"
-    ],
-    "packages/domain/publicSite/pages/landing/LandingPage.tsx": [
       "RAW_CLASS"
     ],
     "packages/domain/publicSite/pages/landing/components/aboutContent/aboutContent.tsx": [
@@ -90,9 +75,6 @@
     "packages/domain/publicSite/pages/landing/components/homeContent/homeContent.tsx": [
       "RAW_CLASS"
     ],
-    "packages/domain/publicSite/pages/landing/components/publicSheet/PublicSheet.tsx": [
-      "RAW_CLASS"
-    ],
     "packages/domain/publicSite/pages/landing/components/publicSheet/components/infoPanels/infoPanels.tsx": [
       "RAW_CLASS"
     ],
@@ -102,6 +84,9 @@
     "packages/domain/publicSite/pages/landing/components/publicSheet/components/storyPanel/StoryPanel.tsx": [
       "RAW_CLASS"
     ],
+    "packages/domain/publicSite/pages/landing/components/publicSheet/PublicSheet.tsx": [
+      "RAW_CLASS"
+    ],
     "packages/domain/publicSite/pages/landing/components/resourceContent/resourceContent.tsx": [
       "RAW_CLASS"
     ],
@@ -109,6 +94,9 @@
       "RAW_CLASS"
     ],
     "packages/domain/publicSite/pages/landing/components/siteMedia/siteMedia.tsx": [
+      "RAW_CLASS"
+    ],
+    "packages/domain/publicSite/pages/landing/LandingPage.tsx": [
       "RAW_CLASS"
     ],
     "packages/domain/publicSite/pages/landing/styles/landingPage.css": [
@@ -130,36 +118,22 @@
     "packages/shell/components/appLauncher/renderer/appLauncher.app.tsx": [
       "RAW_CLASS"
     ],
-    "packages/shell/components/mobileNav/MobileNav.tsx": [
-      "RAW_CLASS"
-    ],
-    "packages/shell/components/pinnedNavigation/PinnedApp.tsx": [
-      "RAW_CLASS"
-    ],
-    "packages/shell/components/pinnedNavigation/PinnedNavigation.tsx": [
-      "RAW_CLASS"
-    ],
     "packages/shell/components/sidebar/Sidebar.tsx": [
-      "RAW_CLASS"
-    ],
-    "packages/shell/components/themeChoices/ThemeChoices.tsx": [
-      "RAW_CLASS"
-    ],
-    "packages/shell/components/topbar/Topbar.tsx": [
       "RAW_CLASS"
     ],
     "packages/shell/templates/workspaceShell/WorkspaceShell.tsx": [
       "RAW_CLASS"
     ]
   },
-  "referenceCommit": "60580cee9d5e881ecbc322b00e0c89b13384a77f",
-  "maxFlaggedFiles": 39,
-  "maxFindings": 47,
+  "referenceCommit": "585e8f81f8091536222c446931466710626db283",
+  "maxFlaggedFiles": 38,
+  "maxFindings": 46,
   "maxByCode": {
-    "RAW_CLASS": 33,
+    "CSS_COLOR_LITERAL": 6,
+    "LARGE_STYLESHEET": 3,
     "LEGACY_DOMAIN_CSS": 4,
     "LEGACY_GLOBAL_CSS": 1,
-    "LARGE_STYLESHEET": 3,
-    "CSS_COLOR_LITERAL": 6
-  }
+    "RAW_CLASS": 32
+  },
+  "lastVerifiedRunId": 45070078775
 }
