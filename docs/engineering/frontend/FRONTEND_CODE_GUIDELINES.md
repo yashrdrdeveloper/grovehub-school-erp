@@ -1,5 +1,61 @@
 # Frontend Code Guidelines
 
+## Phase 2.1 — mandatory typed UI values and renderer completion plan (23 November 2026)
+
+**Scope and precedence:** This section is authoritative over older code snippets using `variant="forgot"`, `Box as="div"`, `Box as="h3"`, `Text as="span"` or `Typography as="h2"`. This is a *code refactor*, not permission to use an enum for arbitrary content, form text, user-input values, network header names or ARIA attributes. Keep the actual semantic HTML, roles, accessibility, focus and exact test IDs.
+
+### 1. Closed presentation values must be typed runtime constants
+
+- Shared semantic tags are owned by `@Components/components/Box/constants/box.tag.ts` and exposed as `BOX_TAG` through its public index: `<Box as={BOX_TAG.DIV} />`, `<Box as={BOX_TAG.H3} />`, `<Box as={BOX_TAG.SECTION} />`. The Box props type derives from those actual constant values. A `div` remains a `div`, an `h3` remains an `h3`; no layout or heading hierarchy changes.
+- Text/typography semantics are owned by `TYPOGRAPHY_TAG`, not duplicated under the auth domain. Text's allowed subset must derive from that shared runtime constant.
+- The auth-layout closed variant is `LoginLayoutVariant` under `auth/components/loginLayout/constants/loginLayout.variant.ts`. Use `variant={LoginLayoutVariant.FORGOT}` (and `.LOGIN`, `.RECOVERY`), not string literal variants. Type the prop from the enum. Import the constant directly from its owning path where a component public barrel is intentionally mocked in unit tests; **never mock a pure enum or business-independent constant**.
+- For status badges and state selection, use owner-specific frozen constants such as `AUTH_STATUS_KIND.EMAIL` with a type derived from the constant. Keep exhaustive `Record<Kind, ...>` maps.
+- CI executes the read-only `node scripts/migrate-semantic-tags.mjs --check` AST gate. It forbids raw `as="..."` string literals in `Box`, `Text` and `Typography` JSX. The one-time migration converted 594 attributes in 46 files; new instances must fail instead of requiring another mass codemod.
+- Reuse existing `BUTTON_VARIANT`, `BUTTON_SIZE`, `TYPOGRAPHY_VARIANT`, `TYPOGRAPHY_TAG`, and similar owner-defined closed sets. Do not introduce a generic universal `VARIANT` that erases distinct component contracts.
+
+~~~tsx
+import { Box, BOX_TAG } from '@Components/components/Box';
+import { LoginLayout, LoginLayoutVariant } from '@Domain/auth/components/loginLayout';
+
+export const Example = () => (
+  <LoginLayout variant={LoginLayoutVariant.FORGOT} title="Recovery" description="Confirm email">
+    <Box as={BOX_TAG.DIV}>
+      <Box as={BOX_TAG.H3}>Check your email</Box>
+    </Box>
+  </LoginLayout>
+);
+~~~
+
+### 2. Renderer is a use-case boundary, not a folder for every JSX expression
+
+A **renderer** is a pure typed function in `<owner>/renderer/<owner>.<useCase>.tsx` that *selects or repeats* JSX from a closed status, strategy or view model. Its callable contract belongs to `renderer/types/<owner>.<useCase>.ts`. Direct tests belong in `renderer/__tests__/<owner>.<useCase>.test.tsx`. A renderer may accept callbacks to attach to event controls, but must not execute a hook, fetch, browser storage, DOM calls or navigation side effect. It must not own services or mutable state. A normal presentational component retains static JSX and its own lifecycle/props; moving every `<Box>` into a renderer is **not** a valid refactor.
+
+- Return JSX or `ReactNode`? Renderer. Return a string, enum, class, derived validation or non-JSX config? Pure `helpers/` (or static `constants/`).
+- Need lifecycle, ref, hook or independent reusable behavior? A named `components/<unit>/` instead of a renderer.
+- Three or more varying behavior strategies? Typed strategy map of renderers. A static description? `Record<Enum, Descriptor>` in constants. Small binary selection may use `if/else`; never a JSX ternary.
+- A renderer's caller supplies data and named callbacks. Do not put API calls, hook state setters, or raw HTML primitives inside its implementation.
+- The AST gate `scripts/check-renderer-ownership.mjs` validates renderer naming, hook/IO purity and owner-local tests. The two already-existing untested renderers are explicitly tracked below, not treated as approved patterns for new code.
+
+### 3. Renderer gap register — required remaining work
+
+| Priority | Owner / work | Target | Status |
+|---|---|---|---|
+| P1 | CredentialField conditional grouped label | `credentialField/renderer/credentialField.label.tsx` plus typed props and test | Implemented; CI verification required |
+| P1 | Forgot-password feedback status and success panel | `forgotPasswordForm/renderer/forgotPassword.notice.tsx` and `forgotPassword.success.tsx` | Implemented; CI verification required |
+| P1 | Recovery form vs token state selection | `recovery/renderer/recovery.content.tsx` with state/form tests | Implemented; CI verification required |
+| P2 | AuthStatusArt badge and typed status states | `authStatusArt/renderer/authStatusArt.badge.tsx`, `AUTH_STATUS_KIND` | Implemented for existing status badge |
+| P2 | AppLauncher repeated catalog card | `appLauncher/renderer/appLauncher.app.tsx` | Renderer exists; dedicated test missing |
+| P2 | Shell declarative route JSX mapping | `shell/renderer/shell.routes.tsx` | Renderer exists; dedicated test missing |
+| P2 | Public-site large page content | aboutContent, campusContent, resourceContent, infoPanels, siteChrome | Audit repeated conditional/repeated JSX; split into owned components or renderers *where behavior warrants it* |
+| P2 | Dashboard repeated stat and operation items | dashboardOverview / dashboardMain | Move complex repeated icon/tone JSX to owner renderers with exact tests, keep static layout in component |
+| P2 | LoginLayout reusable visual sections | loginLayout renderer or named component | Extract only reusable state-dependent artwork/option selection; existing appearance option renderer is present |
+| P3 | Legacy comments / historical snippets | guideline + scripts | Remove outdated instructions once all callers are migrated |
+
+**Independent legacy debt remains:** The P1 auth/public-site/global CSS migration and the seven explicitly ignored oversized public-site formatting units are **not** resolved by a renderer or tag enum migration. They require separate owner-specific refactors and browser verification. Do not close them without a new measured audit.
+
+---
+
+
 ## Phase 2.1 remediation record — 23 November 2026
 
 **Current working branch:** `phase-2.1-identity-account`. This record is a change log, not a CI pass certificate. Run the blocking checks and real-browser flow tests before merging.
