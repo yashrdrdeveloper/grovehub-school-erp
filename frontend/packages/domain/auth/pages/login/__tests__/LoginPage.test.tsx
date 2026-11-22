@@ -20,7 +20,7 @@ const setPhoneViewport = (isPhone: boolean) => {
 };
 
 jest.mock('@Components',()=>({SchoolMonogram:()=> <span className="school-monogram">RDR</span>}));
-jest.mock('../../../core/providers/AuthProvider',()=>({
+jest.mock('../../../core/providers/authProvider',()=>({
   useAuth:()=>({signIn}),
 }));
 jest.mock('@Components/hooks/theme',()=>({

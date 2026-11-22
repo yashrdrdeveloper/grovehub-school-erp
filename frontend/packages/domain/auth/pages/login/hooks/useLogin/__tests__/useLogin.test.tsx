@@ -6,7 +6,7 @@ import { useLogin } from '../useLogin';
 
 const signIn = jest.fn<Promise<void>, [string, string]>();
 
-jest.mock('../../../../../core/providers/AuthProvider', () => ({
+jest.mock('../../../../../core/providers/authProvider', () => ({
   useAuth: () => ({ signIn }),
 }));
 
