@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
-import { AlertCircle, ArrowLeft, ArrowRight, Clock3, Eye, EyeOff, KeyRound, Link2Off, LoaderCircle, LockKeyhole, PartyPopper, ShieldCheck, Sparkles } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Clock3, Eye, EyeOff, KeyRound, Link2Off, LoaderCircle, LockKeyhole, PartyPopper, ShieldCheck, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { authenticationApi } from '@Business/auth';
@@ -260,7 +260,7 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
         <div className="rdr-recovery__actions">
           <button type="submit" className="rdr-login-v2__submit" disabled={view === 'saving'}>
             {view === 'saving' ? 'Securing your account…' : 'Update password'}
-            {view === 'saving' ? <LoaderCircle className="rdr-login-v2__spinner" size={18}/> : <ArrowRight size={18}/>}
+            {view === 'saving' && <LoaderCircle className="rdr-login-v2__spinner" size={18}/>}}
           </button>
           <span className="rdr-recovery__remaining">{invitation && attempts === 1 ? '1 activation attempt remaining' : '\u00a0'}</span>
           <div className="rdr-recovery__error-slot" aria-live="polite">
@@ -270,7 +270,7 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
       </form> : <div className="rdr-recovery__state">
         <RecoveryArtwork state={view} invitation={invitation}/>
         {view === 'checking' && <p className="rdr-recovery__slow" role="status">{slow ? 'Still checking. This may take a moment…' : invitation ? 'Verifying your invitation securely…' : 'Verifying your reset link securely…'}</p>}
-        {view === 'success' && <Link className="rdr-login-v2__submit rdr-recovery__state-button" to="/login">Go to login <ArrowRight size={18}/></Link>}
+        {view === 'success' && <Link className="rdr-login-v2__submit rdr-recovery__state-button" to="/login">Go to login</Link>}
         {view === 'unavailable' && <button className="rdr-login-v2__submit rdr-recovery__state-button" type="button"
           onClick={() => {
             const sequence = ++flowSequence.current;
@@ -290,8 +290,8 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
                 })();
               }
             }
-          }}>Try checking again <ArrowRight size={18}/></button>}
-        {!invitation && (view === 'missing' || view === 'expired') && <Link className="rdr-login-v2__submit rdr-recovery__state-button" to="/forgot-password">Request new link <ArrowRight size={18}/></Link>}
+          }}>Try checking again</button>}
+        {!invitation && (view === 'missing' || view === 'expired') && <Link className="rdr-login-v2__submit rdr-recovery__state-button" to="/forgot-password">Request new link</Link>}
         {(view === 'missing' || view === 'expired' || view === 'attempts-exhausted') && <Link className="rdr-recovery__back" to="/login">
           <ArrowLeft size={16}/> Return to login
         </Link>}
