@@ -1,6 +1,7 @@
 import { apiRequest } from '@Business/api';
 
 import { AuthOperation } from '../constants/auth.operations';
+import { AuthProofPurpose } from '../constants/auth.proofScheme';
 import { getAuthEndpoint } from '../helpers/auth.getEndpoint';
 import { getAuthProofHeader } from '../helpers/auth.getProofHeader';
 
@@ -13,6 +14,6 @@ export const validateInvitation: ValidateInvitation = (proof) => {
 
   return apiRequest<GrantResult>(endpoint.path, {
     method: endpoint.method,
-    headers: getAuthProofHeader('INVITATION', proof),
+    headers: getAuthProofHeader(AuthProofPurpose.INVITATION, proof),
   });
 };
