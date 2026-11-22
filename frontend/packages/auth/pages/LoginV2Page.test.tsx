@@ -19,8 +19,7 @@ const setPhoneViewport = (isPhone: boolean) => {
   });
 };
 
-jest.mock('@Components',()=>({SchoolMonogram:()=> 'RDR'}));
-jest.mock('./loginv2/SoffitGradient',()=>({__esModule:true,default:()=> <canvas className="lv2-gradient" aria-hidden="true"/>}));
+jest.mock('@Components',()=>({SchoolMonogram:()=> <span className="school-monogram">RDR</span>}));
 jest.mock('../core/providers/AuthProvider',()=>({
   useAuth:()=>({signIn}),
 }));
@@ -39,10 +38,10 @@ describe('RDR Login V2',()=>{
     Object.defineProperty(window,'matchMedia',{configurable:true,value:originalMatchMedia});
   });
 
-  it('renders the unified login layout and gradient without photographs or registration',()=>{
+  it('renders the unified auth design with the original RDR logo and no external media',()=>{
     render(<MemoryRouter><LoginV2Page/></MemoryRouter>);
     expect(screen.getByRole('heading',{name:'Welcome back.'})).toBeTruthy();
-    expect(document.querySelector('.rdr-login-v2__visual .lv2-gradient')).not.toBeNull();
+    expect(document.querySelector('.rdr-login-v2__visual svg.rdr-o1-art__book')).not.toBeNull();
     expect(document.querySelectorAll('.rdr-login-v2 img')).toHaveLength(0);
     expect(screen.getByRole('button',{name:/^sign in$/i})).toBeTruthy();
     expect(screen.queryByRole('button',{name:/continue with google/i})).toBeNull();
@@ -55,18 +54,18 @@ describe('RDR Login V2',()=>{
     expect(document.querySelectorAll('input[autocomplete="username"]')).toHaveLength(1);
   });
 
-  it('uses the approved RDR school scene and compact phone heading',()=>{
+  it('uses the original shared monogram and a single heading across viewports',()=>{
     const {container}=render(<MemoryRouter><LoginV2Page/></MemoryRouter>);
     const layout=container.querySelector('.rdr-login-v2');
     expect(layout?.classList.contains('rdr-login-v2--mobile-minimal')).toBe(true);
-    expect(container.querySelector('.rdr-login-v2__mobile-signin-title')?.textContent).toBe('Sign in');
-    expect(container.querySelector('.rdr-login-v2__mobile-header .rdr-auth-mobile-mark')).not.toBeNull();
+    expect(container.querySelector('.rdr-login-v2__mobile-signin-title')).toBeNull();
+    expect(container.querySelector('.rdr-login-v2__mobile-header .school-monogram')).not.toBeNull();
     expect(container.querySelector('.rdr-login-v2__mobile-illustration')).toBeNull();
     expect(container.querySelector('.rdr-login-v2__mobile-security')).toBeNull();
     expect(container.querySelector('.rdr-login-v2__mobile-appearance')).toBeNull();
-    expect(container.querySelector('svg.rdr-auth-mobile-scene')).not.toBeNull();
-    expect(container.querySelector('.rdr-login-v2__mobile-school-name')?.textContent).toBe('RDR School');
-    expect(container.querySelector('.rdr-login-v2__mobile-description')?.textContent).toContain('workspace');
+    expect(container.querySelector('svg.rdr-auth-mobile-scene')).toBeNull();
+    expect(container.querySelector('.rdr-login-v2__mobile-school-name')?.textContent).toContain('RDR School');
+    expect(container.querySelector('.rdr-login-v2__description-mobile')?.textContent).toContain('workspace');
     expect(container.querySelector('.rdr-login-v2__form--signin > .rdr-login-v2__forgot-mobile')).toBeNull();
     expect(container.querySelector('.rdr-login-v2__form--signin .rdr-login-v2__forgot-desktop')).not.toBeNull();
     expect(screen.queryByRole('button',{name:'Light mobile theme'})).toBeNull();
@@ -116,7 +115,7 @@ describe('RDR Login V2',()=>{
     fireEvent.change(screen.getByRole('textbox',{name:'Email address'}),{target:{value:'student@example.edu'}});
     expect(errors()[0].classList.contains('is-empty')).toBe(true);
     expect(errors()[1].classList.contains('is-empty')).toBe(false);
-    expect(container.querySelector('.rdr-login-v2__mobile-signin-title')?.textContent).toBe('Sign in');
+    expect(container.querySelector('.rdr-login-v2__mobile-signin-title')).toBeNull();
     expect(container.querySelector('.rdr-login-v2__mobile-appearance')).toBeNull();
   });
 
@@ -132,12 +131,12 @@ describe('RDR Login V2',()=>{
     expect(screen.getByRole('button',{name:/^sign in$/i})).toBeTruthy();
   });
 
-  it('uses a local WebGL canvas for the hero, with no external media dependencies',()=>{
+  it('uses a local SVG book illustration for the hero, without external media',()=>{
     render(<MemoryRouter><LoginV2Page/></MemoryRouter>);
     const visual=document.querySelector('.rdr-login-v2__visual');
     expect(visual).not.toBeNull();
     expect(visual?.querySelectorAll('img,picture,video,source')).toHaveLength(0);
-    expect(visual?.querySelectorAll('canvas.lv2-gradient')).toHaveLength(1);
+    expect(visual?.querySelectorAll('svg.rdr-o1-art__book')).toHaveLength(1);
     expect(visual?.textContent).toContain('RDR School');
   });
 
