@@ -1,0 +1,15 @@
+import { Bell, ClipboardCheck, Clock3, CreditCard, GraduationCap, MessageCircle, ShieldCheck } from 'lucide-react';
+
+// Layout preview only. No fabricated counts, events, tasks or school records.
+export const DASHBOARD_METRICS = [
+  { name: 'Tasks for you', description: 'Your work queue', icon: ClipboardCheck, tone: 'pink' },
+  { name: 'Due today', description: 'Deadlines & follow-ups', icon: Clock3, tone: 'blue' },
+  { name: 'Overdue', description: 'Needs your attention', icon: Bell, tone: 'amber' },
+  { name: 'Students', description: 'School community', icon: GraduationCap, tone: 'green' },
+] as const;
+
+export const DASHBOARD_WORKSPACES = [
+  { title: 'Admissions & dues', hint: 'Applications, payments and follow-ups', icon: CreditCard, tone: 'blue' },
+  { title: 'Complaints & requests', hint: 'Conversations that need a response', icon: MessageCircle, tone: 'pink' },
+  { title: 'Audit & compliance', hint: 'Checks, reviews and approvals', icon: ShieldCheck, tone: 'green' },
+] as const;

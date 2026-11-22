@@ -17,10 +17,12 @@ const units = [
   ['domain/auth/pages/login/helpers', true],
   ['domain/auth/pages/forgotPassword/helpers', true],
   ['domain/auth/pages/recovery/helpers', true],
+  ['domain/dashboard/pages/dashboard/helpers', true],
   ['base/events', false],
   ['domain/auth/pages/login/hooks', false],
   ['domain/auth/pages/forgotPassword/hooks', false],
   ['domain/auth/pages/recovery/hooks', false],
+  ['domain/dashboard/pages/dashboard/hooks', false],
   ['shell/hooks', false],
   ['business/auth/services', false],
 ];
@@ -52,6 +54,7 @@ const guardedPages = {
   'domain/auth/pages/login': 'Login.tsx',
   'domain/auth/pages/forgotPassword': 'ForgotPassword.tsx',
   'domain/auth/pages/recovery': 'Recovery.tsx',
+  'domain/dashboard/pages/dashboard': 'Dashboard.tsx',
   'shell': 'Shell.tsx',
 };
 for (const [relative, entryName] of Object.entries(guardedPages)) {
