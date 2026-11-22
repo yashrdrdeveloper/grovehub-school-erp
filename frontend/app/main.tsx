@@ -15,7 +15,8 @@ const applyInitialTheme = (): void => {
     const phone = window.matchMedia('(max-width: 720px)');
     const apply = () => {
       const saved = window.localStorage.getItem('groovehub.theme');
-      const preference = saved === 'light' || saved === 'dark' ? saved : 'system';
+      let preference: 'light' | 'dark' | 'system' = 'system';
+      if (saved === 'light' || saved === 'dark') preference = saved;
       const resolved = resolveWorkspaceTheme({
         preference, systemDark: dark.matches, isMobile: phone.matches,
       });
@@ -27,7 +28,8 @@ const applyInitialTheme = (): void => {
     phone.addEventListener('change', apply);
   } catch {
     const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    if (dark) document.documentElement.dataset.theme = 'dark';
+    else document.documentElement.dataset.theme = 'light';
   }
 };
 applyInitialTheme();

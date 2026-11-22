@@ -17,3 +17,5 @@ export { PageHeading } from './components/PageHeading';
 export { Dialog } from './components/Dialog';
 
 export { SchoolMonogram } from './components/SchoolMonogram';
+
+export { useBoolean } from './hooks/useBoolean';

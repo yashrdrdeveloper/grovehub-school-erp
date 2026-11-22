@@ -7,7 +7,8 @@ import type { LoginPageComponent } from './types';
 
 /** Stateless page composition. Only one active form is rendered per viewport. */
 export const Login: LoginPageComponent = ({ controls, isMobile }) => {
-  const FormTemplate = isMobile ? MobileLogin : DesktopLogin;
+  let FormTemplate = DesktopLogin;
+  if (isMobile) FormTemplate = MobileLogin;
 
   return (
     <LoginLayout

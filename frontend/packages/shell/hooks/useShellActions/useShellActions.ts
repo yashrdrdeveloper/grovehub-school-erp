@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 
-import { writePinnedApps, writeSidebarCollapsed } from '../../storage';
 import type { ShellStateModel } from '../useShellState';
 import type { UseShellActions } from './types/useShellActions';
 
@@ -22,19 +21,12 @@ export const useShellActions: UseShellActions = (state: ShellStateModel) => {
     setQuickSettings(previous => !previous);
   }, [setQuickSettings]);
   const toggleSidebarCollapsed = useCallback(() => {
-    setSidebarCollapsed(previous => {
-      const next = !previous;
-      writeSidebarCollapsed(next);
-      return next;
-    });
+    setSidebarCollapsed(previous => !previous);
   }, [setSidebarCollapsed]);
   const togglePin = useCallback((path: string) => {
     setPinned(previous => {
-      const next = previous.includes(path)
-        ? previous.filter(item => item !== path)
-        : [...previous, path];
-      writePinnedApps(next);
-      return next;
+      if (previous.includes(path)) return previous.filter(item => item !== path);
+      return [...previous, path];
     });
   }, [setPinned]);
 
