@@ -410,4 +410,9 @@
  .rdr-login-v2__content{justify-content:flex-start;overflow-y:auto}
  .rdr-login-v2__main{margin-top:0}
 }
+@media(max-width:285px){
+ /* Browser zoom can reduce the effective CSS viewport below normal phone width. */
+ .rdr-login-v2--forgot .rdr-login-v2__heading h1{white-space:normal}
+ .rdr-login-v2__closing,.rdr-o1-auth-footer{white-space:normal;flex-wrap:wrap;text-align:center}
+}
 @media(prefers-reduced-motion:reduce){.rdr-login-v2__submit{transition:none}}
