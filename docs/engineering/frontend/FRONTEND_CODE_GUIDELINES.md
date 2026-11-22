@@ -1,12 +1,80 @@
 # Frontend Code Guidelines
 
-> **Status:** Mandatory, authoritative frontend engineering standard — **Revision 8 (November 2026)**.
+## Revision 9 addendum — mandatory architecture and formatting contract (23 November 2026)
+
+The rules in this addendum supersede any inconsistent older example below. Apply the same structure across `domain`, `shell`, `business`, `components` and their child units; only placement/ownership differs.
+
+### Shell is a composition domain, not an exception
+
+`packages/shell/Shell.tsx` is a pure presentation root; `index.ts` publishes its public contract. Prefer this shape:
+
+~~~text
+shell/
+├── Shell.tsx
+├── index.ts
+├── types/shell.props.ts
+├── containers/shellContainer/{ShellContainer.tsx,types/,index.ts}
+├── templates/workspaceShell/{WorkspaceShell.tsx,types/,index.ts}
+├── components/{topbar,sidebar,mobileNav,appLauncher}/
+├── hooks/useShell/{useShell.ts,types/,helpers/,constants/,index.ts}
+├── helpers/{shell.getClassName.ts,types/,__tests__/}
+└── constants/{shell.copy.ts,shell.testIds.ts}
+~~~
+
+A template defines workspace-wide visual layout; a container composes providers and state; a hook owns state/effects; a component renders inputs and callbacks. Only introduce a template when layout is reusable. Do **not** introduce top-level `layout/`, `registry/` or `storage/` as miscellaneous repositories. Catalog definitions and default pins belong in the owning `constants/`; persistence key names in `hooks/<owner>/constants/`; browser persistence implementations in `hooks/<owner>/helpers/` with named contracts/tests. Route definitions belong in `@Business`, not a shell registry; shell may compose domain route elements but must not redefine a domain path.
+
+### Strict shared UI / router boundary
+
+Feature and shell JSX must use shared `@Components` APIs, not native generic HTML. Use `Box as="header|nav|main|section|span|..."`, `Text`, `Typography`, `Button`, `InputControl`, `Form`, `FieldLabel`, `AppLink`, `AppNavLink`, and shared Radix adapters. Never introduce native `div`, `button`, `span`, `header`, `a`, `input`, `form` or other generic elements directly in feature/shell JSX. Native nodes are permitted inside the *implementation of the shared primitive*, browser bootstrapping, SVG assets and third-party integrations. Do not replace semantic links with click handlers on boxes.
+
+Feature/shell code must **not** import `Link` or `NavLink` directly from `react-router-dom`. `AppLink` and `AppNavLink` must forward refs, native keyboard interaction, route state and router props. Router infrastructure (Route, Routes, Outlet, Navigate, useLocation etc.) may be re-exported through one intentional `@Components/router` boundary. Preserve stable, named `dataTestId` constants, a11y labels, disabled states and focus when replacing native markup.
+
+A shared component publishes enums/enum-like frozen constants and their types from its public entrypoint:
+
+~~~ts
+export const BUTTON_VARIANT = {
+  PRIMARY: 'primary',
+  SECONDARY: 'secondary',
+  OUTLINE: 'outline',
+  GHOST: 'ghost',
+  DANGER: 'danger',
+} as const;
+export type ButtonVariant = typeof BUTTON_VARIANT[keyof typeof BUTTON_VARIANT];
+
+export const BUTTON_SIZE = { SMALL: 'sm', MEDIUM: 'md', LARGE: 'lg' } as const;
+export type ButtonSize = typeof BUTTON_SIZE[keyof typeof BUTTON_SIZE];
+~~~
+
+Its CVA variant keys, default values and typed props must reference the **same constants**; do not maintain two unconnected sets of keys. Consumers pass `variant={BUTTON_VARIANT.PRIMARY}` and `size={BUTTON_SIZE.LARGE}` instead of string literals. Apply the same approach to component-level state/size/appearance where the contract is a closed set; only open-ended user data remains raw text. A standard `Button` owns its spinner renderer and loading/click/disabled semantics. No duplicate spinner HTML at call sites.
+
+### Business route registry, not route literals
+
+A route is an immutable typed description `{ id, name, path, type }` with a `RouteType.PUBLIC` or `RouteType.PROTECTED` enum. `business/baseEntities/routes.ts` owns the generic route entity; `business/baseEntities/constants/` and `types/` own route enums/contracts. `business/helpers/routes.ts` owns typed `getRoute(config, id)` and missing-route behavior. Each domain, such as auth, owns `AUTH_ROUTE_IDS` and `AUTH_ROUTE_CONFIG: readonly RouteEntity[]` under `business/auth/constants/`; `business/auth/helpers/auth.routes.ts` exposes `getAuthRoute` and convenience getters like `getLoginRoute`, `getForgotPasswordRoute`. A browser route dictionary retained for compatibility must **derive from** the config/getters, not redefine paths. Public/protected route registration must reference the exact route metadata. The browser route registry is separate from transport API endpoint metadata.
+
+Transport operations belong in `business/<domain>/services/<operation>/`, each with a named request/response/callable type, public entrypoint and tests. `business/<domain>/constants/<domain>.operations.ts` owns an enum/enum-like operation ID; `constants/<domain>.endpoints.ts` owns method/path metadata. A typed dispatch `{ [AUTH_OPERATION.LOGIN]: login, ... }` may be used for operations with compatible signatures; heterogeneous operations should use a typed map of factories or a typed facade (do not erase types with `any`). Never duplicate `'/identity/public/auth'` or individual operation URLs in multiple services. Avoid changes to authentication cookies, CSRF headers, and reset/invitation grants while extracting transport metadata.
+
+### Hook ownership, theme enum and error isolation
+
+Every hook owns its own `constants/`, flat `helpers/`, `helpers/types/` and `helpers/__tests__/` where needed. A hook source may import only its inputs, focused helpers, owned constants and public dependencies. `useWorkspaceTheme` defines `ThemePreference.SYSTEM/LIGHT/DARK`, named query/key constants, `readThemePreference`/`writeThemePreference` pure-or-browser-bound helpers and an exhaustive typed resolver. Never put storage literals or helper implementations above the exported hook, and never keep compatibility hook-source barrels like `hooks/theme.ts`. For multi-variant theme resolution, prefer typed lookup/strategy maps; no ternaries, nested if-else ladders or raw state strings. `useBoolean` callbacks must be stable and formatted as readable named units.
+
+`@Components` owns a reusable `ErrorBoundary` with typed props/state, a composable error fallback, accessible retry/return actions, tests for thrown errors and recovery on reset, and a reset strategy on navigation. Wrap route content at an appropriate domain/route boundary; do not swallow errors silently or display stack traces to end users. Keep authentication error states and network failures separate from unexpected render failures.
+
+### Required readable formatting and enforcement
+
+Use **two spaces** per indentation, semicolons, single quotes, braces around multi-line callbacks/branches, trailing commas in multiline objects/args, one statement per line, and a blank line between imports, state setup, effects, named handlers and returns. No compressed single-line effects, catches, conditional branches, JSX expressions or multiple function statements. Prefer one prop per line once a component declaration exceeds the formatter line width. Configure Prettier (100-character print width, single quotes, trailing commas) and run it on changed TS/TSX/JS/JSON/CSS/MD files. Commit a formatter config and ensure CI rejects improperly formatted *migrated* code. Introduce the all-tree formatting gate only after formatting legacy files without behavioral changes.
+
+**Gates:** architecture checks reject illegal native feature JSX, direct router links, direct Lucide/Radix/Lodash imports, nested helpers, route ID duplication and new ternaries; typecheck + Jest + build must pass. Tests use exactly one top-level `describe('<exported function or component>')` and never mock pure helpers. Document remaining legacy migration separately instead of treating a passing check as a full compliance certificate.
+
+---
+
+
+> **Status:** Mandatory, authoritative frontend engineering standard — **Revision 9 (November 2026)**.
 >
 > **Scope:** Every source file under `frontend/`, including `app`, `packages/base`, `packages/business`, `packages/components`, `packages/styles`, `packages/assets`, `packages/domain`, `packages/shell`, unit tests, integration tests, styles, generated code boundaries, and scripts.
 >
 > **Stack:** React 19, TypeScript strict, pnpm, Vite, Tailwind CSS 4, shadcn-compatible Radix primitives, Lucide icons through the components package, Jest, and the existing project architecture checks.
 >
-> **Precedence:** Revision 8 rules on route ownership, tests, and flat helper/constant units override older examples. Generic examples illustrate reusable patterns; actual GrooveHub migration paths are recorded separately in the audit inventory. This document replaces previous frontend guideline revisions and examples. Existing code that differs is **migration debt**, not an exception to this standard. Do not claim implementation is complete until checks and behavior regressions pass.
+> **Precedence:** Revision 9 addendum and Revision 8 rules on route ownership, tests, and flat helper/constant units override older examples. Generic examples illustrate reusable patterns; actual GrooveHub migration paths are recorded separately in the audit inventory. This document replaces previous frontend guideline revisions and examples. Existing code that differs is **migration debt**, not an exception to this standard. Do not claim implementation is complete until checks and behavior regressions pass.
 
 ## 1. Non-negotiable principles
 
