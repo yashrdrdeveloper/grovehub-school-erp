@@ -10,7 +10,7 @@ const violations = [];
 
 const pageRoot = 'packages/domain/auth/pages';
 for (const entry of await readdir(path.join(process.cwd(), pageRoot), { withFileTypes: true })) {
-  if (entry.isFile() && /\\.tsx?$/.test(entry.name)) {
+  if (entry.isFile() && /\.tsx?$/.test(entry.name)) {
     violations.push(`${pageRoot}/${entry.name}: page root cannot own shared components or route/session helpers`);
   }
 }
@@ -63,8 +63,8 @@ if (/PublicLayout|PublicFrame/.test(routes)) {
 }
 const workspace = await source('packages/shell/registry/domains.registry.tsx');
 const childRoutes = workspace.split('export const workspaceRoutes = ')[1] || '';
-const implemented = new Set([...childRoutes.matchAll(/path:\\s*['"]([^'"]+)['"]/g)].map(match => match[1]));
-const catalogPaths = [...catalog.matchAll(/path:\\s*['"]([^'"]+)['"]/g)].map(match => match[1]);
+const implemented = new Set([...childRoutes.matchAll(/path:\s*['"]([^'"]+)['"]/g)].map(match => match[1]));
+const catalogPaths = [...catalog.matchAll(/path:\s*['"]([^'"]+)['"]/g)].map(match => match[1]);
 for (const pathname of catalogPaths) {
   if (!implemented.has(pathname)) violations.push(`catalog path ${pathname} has no implemented protected route`);
 }
@@ -75,8 +75,8 @@ if (!guide.includes('## 21. Assets') || !guide.includes('## 22. Unified migratio
   violations.push('frontend code guideline must own assets/layout rules and migration inventory');
 }
 if (violations.length) {
-  for (const violation of violations) process.stderr.write(`${violation}\\n`);
+  for (const violation of violations) process.stderr.write(`${violation}\n`);
   process.exitCode = 1;
 } else {
-  process.stdout.write('Artwork ownership, public route registry, persistent shell, catalog and unified guideline verified.\\n');
+  process.stdout.write('Artwork ownership, public route registry, persistent shell, catalog and unified guideline verified.\n');
 }
