@@ -22,7 +22,7 @@ export const PinnedApp = ({
 
   return (
     <Box as="div" className={styles.row}>
-      <NavLink
+      <AppNavLink
         to={entry.path}
         title={entry.app.name}
         aria-label={entry.app.name}
