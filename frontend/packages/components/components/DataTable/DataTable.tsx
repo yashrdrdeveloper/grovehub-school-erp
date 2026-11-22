@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { DataTableComponent } from './types/dataTable.props';
+import type { DataTableComponent, DataTableProps } from './types/dataTable.props';
 
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 
@@ -9,7 +9,7 @@ export const DataTable: DataTableComponent = <T,>({
   rows,
   columns,
   emptyTitle = 'Nothing to show',
-}) => {
+}: DataTableProps<T>) => {
   const table = useReactTable({
     data: rows,
     columns,
