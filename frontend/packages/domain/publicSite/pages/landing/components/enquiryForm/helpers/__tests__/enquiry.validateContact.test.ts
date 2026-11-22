@@ -1,5 +1,5 @@
-import { EMPTY_ENQUIRY } from '../../../constants/enquiry.initial';
-import { validateEnquiryContact } from '../validateEnquiryContact';
+import { EMPTY_ENQUIRY } from '../../constants/enquiry.initial';
+import { validateEnquiryContact } from '../enquiry.validateContact';
 
 describe('validateEnquiryContact', () => {
   it('requires the guardian name', () => {

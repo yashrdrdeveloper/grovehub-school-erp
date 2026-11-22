@@ -1,4 +1,4 @@
-import type { ValidateEnquiryContact } from './types/validateEnquiryContact';
+import type { ValidateEnquiryContact } from './types/enquiry.validateContact';
 
 export const validateEnquiryContact: ValidateEnquiryContact = data => {
   if (!data.firstName.trim()) return 'Please enter the guardian’s first name.';

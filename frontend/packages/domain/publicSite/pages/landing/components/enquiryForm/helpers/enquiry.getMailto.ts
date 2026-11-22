@@ -1,5 +1,5 @@
-import { enquiryTypes, school } from '../../../../constants/school.content';
-import type { GetEnquiryMailto } from './types/getEnquiryMailto';
+import { enquiryTypes, school } from '../../../constants/school.content';
+import type { GetEnquiryMailto } from './types/enquiry.getMailto';
 
 /** Prepares an email draft only; it never claims a CRM submission. */
 export const getEnquiryMailto: GetEnquiryMailto = data => {

@@ -1,5 +1,5 @@
-import { EMPTY_ENQUIRY } from '../../../constants/enquiry.initial';
-import { getEnquiryMailto } from '../getEnquiryMailto';
+import { EMPTY_ENQUIRY } from '../../constants/enquiry.initial';
+import { getEnquiryMailto } from '../enquiry.getMailto';
 
 describe('getEnquiryMailto', () => {
   it('generates an encoded email draft with contact details', () => {
