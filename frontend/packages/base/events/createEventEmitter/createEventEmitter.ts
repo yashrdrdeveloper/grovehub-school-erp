@@ -1,7 +1,7 @@
-import type { CreateEventEmitter } from './types/createEventEmitter';
+import type { CreateEventEmitter, EventEmitter } from './types/createEventEmitter';
 
 /** Technical event emitter with no business/domain dependencies. */
-export const createEventEmitter: CreateEventEmitter = <T>() => {
+export const createEventEmitter: CreateEventEmitter = <T>(): EventEmitter<T> => {
   const handlers = new Set<(value: T) => void>();
 
   return {
