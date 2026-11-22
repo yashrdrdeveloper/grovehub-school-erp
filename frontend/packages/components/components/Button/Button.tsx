@@ -7,9 +7,9 @@ import type { ButtonComponent } from './types/button.props';
 /** Shadcn-style CVA button. The asChild variant requires one child element. */
 export const Button: ButtonComponent = ({
   variant, size, loading = false, loadingText = 'Please wait…', fullWidth = false,
-  asChild = false, className, children, disabled, dataTestId, type = 'button', ...props
+  asChild = false, unstyled = false, className, children, disabled, dataTestId, type = 'button', ...props
 }) => {
-  const classes = cn(buttonVariants({ variant, size }), fullWidth && 'button--full', className);
+  const classes = cn(!unstyled && buttonVariants({ variant, size }), !unstyled && fullWidth && 'button--full', className);
   const testId = dataTestId ?? props.id;
   if (asChild) {
     return (

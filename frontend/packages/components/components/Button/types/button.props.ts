@@ -9,5 +9,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, Va
   readonly dataTestId?: string;
   /** Render a single child with Radix Slot (e.g. a React Router Link). */
   readonly asChild?: boolean;
+  /** Preserve native classes during the shared component migration. */
+  readonly unstyled?: boolean;
 }
 export type ButtonComponent = (props: ButtonProps) => ReactElement;
