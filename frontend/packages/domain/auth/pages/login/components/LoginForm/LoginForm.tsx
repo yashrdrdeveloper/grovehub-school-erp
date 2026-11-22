@@ -29,16 +29,16 @@ export const LoginForm: LoginFormComponent = ({
   return (
     <Form unstyled dataTestId={LOGIN_TEST_IDS.FORM} className="rdr-login-v2__form rdr-login-v2__form--signin" onSubmit={onSubmit} noValidate>
       <CredentialField id={fieldId + '-' + LoginField.EMAIL} label={LOGIN_FIELD_CONFIG[LoginField.EMAIL].label} Icon={Mail}
-        type="email" inputMode="email" autoComplete={LOGIN_FIELDS.email.autoComplete}
-        placeholder={LOGIN_FIELDS.email.placeholder} value={state.email} required
-        error={state.fieldErrors.email} onChange={handleEmailChange}/>
+        type="email" inputMode="email" autoComplete={LOGIN_FIELD_CONFIG[LoginField.EMAIL].autoComplete}
+        placeholder={LOGIN_FIELD_CONFIG[LoginField.EMAIL].placeholder} value={state.email} required
+        error={state.fieldErrors[LoginField.EMAIL]} onChange={handleEmailChange}/>
 
       {betweenFields}
 
       <CredentialField id={fieldId + '-' + LoginField.PASSWORD} label={LOGIN_FIELD_CONFIG[LoginField.PASSWORD].label}
         Icon={LockKeyhole} type={passwordType} groupLabel labelAction={passwordLabelAction}
-        autoComplete={LOGIN_FIELDS.password.autoComplete} placeholder={LOGIN_FIELDS.password.placeholder}
-        value={state.password} required error={state.fieldErrors.password}
+        autoComplete={LOGIN_FIELD_CONFIG[LoginField.PASSWORD].autoComplete} placeholder={LOGIN_FIELD_CONFIG[LoginField.PASSWORD].placeholder}
+        value={state.password} required error={state.fieldErrors[LoginField.PASSWORD]}
         onChange={handlePasswordChange}
         trailingAction={
           <button type="button" className="rdr-login-v2__visibility"

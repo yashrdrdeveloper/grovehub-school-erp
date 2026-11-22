@@ -1,5 +1,9 @@
 import lodashFind from 'lodash-es/find';
 import type { Find } from './types/find';
 
-/** Preserve readonly inputs while returning the first matching element. */
-export const _find: Find = (values, predicate) => lodashFind(values as unknown[], predicate);
+/** Pure, typed Lodash gateway. */
+export const _find = <T>(values: readonly T[], predicate: (value: T) => boolean): T | undefined =>
+  lodashFind(values as T[], predicate);
+
+const _findContract: Find = _find;
+void _findContract;
