@@ -20,9 +20,10 @@ const walk = async (dir) => {
 };
 
 const forbidden = {
-  base: ['@Business', '@Components', '@Domain', '@Shell', '@Auth'],
-  business: ['@Components', '@Domain', '@Shell', '@Auth'],
+  base: ['@Business', '@Components', '@Domain', '@Shell', '@Styles', '@Auth'],
+  business: ['@Components', '@Domain', '@Shell', '@Styles', '@Auth'],
   components: ['@Business', '@Domain', '@Shell', '@Auth'],
+  styles: ['@Base', '@Business', '@Components', '@Domain', '@Shell', '@Auth'],
   domain: ['@Shell', '@Auth/'],
   shell: ['@Business', '@Auth'],
 };
