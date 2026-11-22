@@ -5,7 +5,7 @@ import type { RecoveryPasswordFormComponent } from './types/recoveryPasswordForm
 
 /** Reusable reset/invitation form: no backend calls, redirects or flow orchestration. */
 export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
-  const { id, view, password, confirmation, visible, fieldErrors, error, invitation, attempts,
+  const { id, view, password, confirmation, visible, fieldErrors, error,
     onSubmit, onPasswordChange, onConfirmationChange, onToggleVisibility } = props;
   const handlePasswordChange: ChangeEventHandler<HTMLInputElement> = (event) => {
     onPasswordChange(event.currentTarget.value);
@@ -17,7 +17,6 @@ export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
   const passwordType = visible ? 'text' : 'password';
   const saving = view === 'saving';
   const buttonLabel = saving ? 'Securing your account…' : 'Update password';
-  const remaining = invitation && attempts === 1 ? '1 activation attempt remaining' : '\u00a0';
 
   return (
     <form className="rdr-login-v2__form rdr-recovery__form" onSubmit={onSubmit} noValidate>
@@ -67,7 +66,7 @@ export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
           {buttonLabel}
           {saving && <LoaderCircle className="rdr-login-v2__spinner" size={18}/>}
         </button>
-        <span className="rdr-recovery__remaining">{remaining}</span>
+        <span className="rdr-recovery__remaining" aria-hidden="true">{'\u00a0'}</span>
         <div className="rdr-recovery__error-slot" aria-live="polite">
           {error && <p role="alert" className="rdr-recovery__inline-error"><AlertCircle size={16}/>{error}</p>}
         </div>

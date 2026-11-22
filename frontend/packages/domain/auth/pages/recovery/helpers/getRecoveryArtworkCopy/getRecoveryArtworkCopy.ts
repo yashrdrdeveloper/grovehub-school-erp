@@ -15,7 +15,7 @@ const COPY: Record<RecoveryPurpose, Record<RecoveryViewState, RecoveryArtworkCop
   },
   recovery: {
     missing: { mobileStatusTitle: 'This link looks incomplete', title: 'This link looks incomplete', message: 'Please request another password reset link.' },
-    checking: { mobileStatusTitle: 'Checking your link', title: 'Checking your secure link', message: 'We’re verifying your invitation and preparing your workspace.' },
+    checking: { mobileStatusTitle: 'Checking your link', title: 'Checking your secure link', message: 'We’re verifying your password reset link securely.' },
     expired: { mobileStatusTitle: 'This link has expired', title: 'This link is no longer valid', message: 'Your reset link has expired or has already been used. Please request a new one.' },
     unavailable: { mobileStatusTitle: 'Unable to check your link', title: 'We couldn’t check your link', message: 'A connection issue prevented verification. Your link may still be valid.' },
     ready: { mobileStatusTitle: '', title: '', message: '' },

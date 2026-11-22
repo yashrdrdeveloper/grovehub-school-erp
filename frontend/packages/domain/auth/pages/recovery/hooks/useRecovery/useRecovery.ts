@@ -5,8 +5,8 @@ import { accountsApi } from '@Business/accounts';
 import { ApiError } from '@Business/api';
 
 import { clearRecoveryFlow, readRecoveryFlow, saveRecoveryGrant, saveRecoveryProof } from '../../../recoveryFlowSession';
-import { MAX_SETUP_ATTEMPTS } from '../../constants/recoveryAttempts';
 import { validateRecoveryPassword } from '../../helpers/validateRecoveryPassword';
+import { classifyRecoveryFailure } from '../../helpers/classifyRecoveryFailure';
 import type { RecoveryFieldErrors, RecoveryViewState } from '../../types';
 import type { UseRecovery } from './types/useRecovery';
 
@@ -16,7 +16,6 @@ export const useRecovery: UseRecovery = (purpose) => {
   const id = useId();
   const proofRef = useRef<string | null>(null);
   const flowSequence = useRef(0);
-  const attemptRef = useRef(0);
   const submittingRef = useRef(false);
   const [view, setView] = useState<RecoveryViewState>('checking');
   const [slow, setSlow] = useState(false);
@@ -25,7 +24,6 @@ export const useRecovery: UseRecovery = (purpose) => {
   const [visible, setVisible] = useState(false);
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<RecoveryFieldErrors>({});
-  const [attempts, setAttempts] = useState(0);
 
   const verify = useCallback(async (proof: string, sequence: number): Promise<void> => {
     setView('checking');
@@ -77,8 +75,6 @@ export const useRecovery: UseRecovery = (purpose) => {
         const sequence = ++flowSequence.current;
         saveRecoveryProof(purpose, incoming);
         proofRef.current = incoming;
-        attemptRef.current = 0;
-        setAttempts(0);
         setPassword('');
         setConfirmation('');
         setError('');
@@ -130,21 +126,19 @@ export const useRecovery: UseRecovery = (purpose) => {
       clearRecoveryFlow();
       setView('success');
     } catch (failure) {
-      const apiError = failure instanceof ApiError ? failure : null;
-      const attemptsExceeded = apiError?.code === 'IDENTITY_SETUP_ATTEMPTS_EXCEEDED';
-      const invalid = apiError?.code === 'IDENTITY_TOKEN_INVALID' ||
-        [401, 403, 410].includes(apiError?.status ?? 0);
-      const nextAttempts = attemptRef.current + 1;
-      attemptRef.current = nextAttempts;
-      setAttempts(nextAttempts);
+      const resolution = classifyRecoveryFailure(failure);
       setPassword('');
       setConfirmation('');
-      if (attemptsExceeded) { clearRecoveryFlow(); setView('attempts-exhausted'); }
-      else if (invalid) { clearRecoveryFlow(); setView('expired'); }
-      else if (invitation && nextAttempts >= MAX_SETUP_ATTEMPTS) {
-        clearRecoveryFlow(); setView('attempts-exhausted');
+      if (resolution === 'attempts-exhausted') {
+        clearRecoveryFlow();
+        setView('attempts-exhausted');
+      } else if (resolution === 'expired') {
+        clearRecoveryFlow();
+        setView('expired');
       } else {
-        setError(invitation ? 'Activation failed. You have one more attempt.'
+        // The frontend must not guess whether a failed request cost a server attempt.
+        setError(invitation
+          ? 'Unable to activate your account right now. Please try again.'
           : 'Unable to reset your password. Please try again.');
         setView('ready');
       }
@@ -175,7 +169,7 @@ export const useRecovery: UseRecovery = (purpose) => {
 
   return {
     purpose, invitation, id, view, slow, password, confirmation, visible,
-    error, fieldErrors, attempts, onPasswordChange, onConfirmationChange,
+    error, fieldErrors, onPasswordChange, onConfirmationChange,
     onToggleVisibility, onSubmit, onRetry,
   };
 };

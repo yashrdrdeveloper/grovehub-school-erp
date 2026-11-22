@@ -24,7 +24,6 @@ export interface RecoveryProps extends RecoveryPageProps {
   readonly visible: boolean;
   readonly error: string;
   readonly fieldErrors: RecoveryFieldErrors;
-  readonly attempts: number;
   readonly onPasswordChange: (value: string) => void;
   readonly onConfirmationChange: (value: string) => void;
   readonly onToggleVisibility: () => void;

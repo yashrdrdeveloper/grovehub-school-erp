@@ -144,19 +144,30 @@ describe('password link flows',()=>{
     expect(screen.getByRole('link',{name:/Go to login/i})).toBeTruthy();
   });
 
-  it('replaces the form with an illustration after two failed activation calls',async()=>{
+  it('keeps transient activation failures retryable without guessing the budget', async () => {
     setup.mockRejectedValue(new Error('temporary failure'));
-    renderPage('invitation','proof');
+    renderPage('invitation', 'proof');
     await screen.findByLabelText('New password');
-    for(let attempt=0;attempt<2;attempt++){
-      fireEvent.change(screen.getByLabelText('New password'),{target:{value:'a-strong-password-123'}});
-      fireEvent.change(screen.getByLabelText('Confirm password'),{target:{value:'a-strong-password-123'}});
-      fireEvent.click(screen.getByRole('button',{name:'Update password'}));
-      if(attempt===0) await screen.findByText(/one more attempt/i);
+    for (let attempt = 0; attempt < 2; attempt++) {
+      fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'a-strong-password-123' } });
+      fireEvent.change(screen.getByLabelText('Confirm password'), { target: { value: 'a-strong-password-123' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Update password' }));
+      await waitFor(() => expect(setup).toHaveBeenCalledTimes(attempt + 1));
+      await screen.findByText('Unable to activate your account right now. Please try again.');
+      expect(screen.getByRole('button', { name: 'Update password' })).toBeTruthy();
     }
+  });
+
+  it('shows the exhausted state only when reported by the backend', async () => {
+    setup.mockRejectedValue(new ApiError(429, 'IDENTITY_SETUP_ATTEMPTS_EXCEEDED', 'Attempts exhausted'));
+    renderPage('invitation', 'proof');
+    await screen.findByLabelText('New password');
+    fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'a-strong-password-123' } });
+    fireEvent.change(screen.getByLabelText('Confirm password'), { target: { value: 'a-strong-password-123' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Update password' }));
     expect(await screen.findByText('We couldn’t finish your setup')).toBeTruthy();
-    expect(screen.queryByRole('button',{name:'Update password'})).toBeNull();
-    expect(setup).toHaveBeenCalledTimes(2);
+    expect(screen.queryByRole('button', { name: 'Update password' })).toBeNull();
+    expect(setup).toHaveBeenCalledTimes(1);
   });
 
   it('shows an expired-link illustration on a rejected validation',async()=>{
