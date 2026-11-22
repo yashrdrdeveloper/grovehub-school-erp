@@ -33,6 +33,8 @@ jobs:
         run: pnpm exec prettier --write "{app,packages,scripts}/**/*.{ts,tsx,js,jsx,mjs,css,scss,json,md}"
       - name: Measure formatting impact on architecture debt
         run: node scripts/audit-guidelines.mjs | grep 'GH_AUDIT_SUMMARY'
+      - name: Check formatter coverage excluding seven listed legacy source units
+        run: pnpm format:check
       - name: Check architecture and no new legacy findings
         run: pnpm check:architecture
       - name: Typecheck formatted source
@@ -43,7 +45,7 @@ jobs:
         run: pnpm build
       - name: Commit formatting-only changes
         run: |
-          git add packages
+          git add app packages scripts
           if git diff --cached --quiet; then
             echo "Already formatted"
             exit 0
