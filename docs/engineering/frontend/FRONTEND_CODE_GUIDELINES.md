@@ -80,6 +80,28 @@ The architecture gate must prevent fresh `Dialog/parts.ts`, direct `Dialog/parts
 
 Legacy style work is tracked **honestly**, not made green by moving global selectors into a differently named file or wrapping every old selector with `:global`. Real migration requires consumer inventory, owner-specific CSS Modules or Sass Modules, className mapping, verified light/dark + mobile layout and a11y checks. Do not remove or reclassify remaining audit findings without actual migration evidence. An informational audit is **not** a promise that CSS Module migration is finished. CI should enforce no *new* known legacy anti-patterns while existing migrations progress.
 
+### E. Verified Revision 10 migration evidence and mandatory remaining gates
+
+**Structural implementation:** Dialog's `parts.ts` is removed and its seven Radix subcomponents are in individually named typed units. Identity transport metadata and its 16 operations live under `auth/services/`; browser route config remains domain-owned. The obsolete `auth/types.ts`, `accounts/types.ts` and `api/types.ts` have been moved into typed `types/` directories, with runtime `ApiError` outside the type contracts. Accounts, Foundation and Integrations use service-owned endpoint constants and tested URL helpers. Input, PasswordField and CredentialField share tested, typed, Lodash-backed FormField helpers, including `aria-describedby` composition.
+
+**Styling changes with real ownership:** `ErrorBoundary`, `Topbar`, `MobileNav`, `PinnedNavigation`, `ThemeChoices`, `RequireSession`, `AuthAmbientGraphic` and `DashboardNotice` now import their respective `*.module.css` and render scoped class maps. These are scoped styles, not aliases wrapping the old global CSS selectors. CSS Modules consume the published `--gh-*` token set. `check-css-module-tokens.mjs` rejects an undeclared design token or an unscoped global-class wrapper. `audit-guidelines.mjs` distinguishes a real domain `*.module.css` from legacy plain `.css`.
+
+**Latest completed code-and-test evidence before this documentation update:** GitHub Actions run `45068036792`, commit `60580cee9d5e881ecbc322b00e0c89b13384a77f`, passed architecture, TypeScript, 112 Jest suites, production build and public SEO checks. Subsequent style-token enforcement has its own CI validation; do not infer an uncompleted run passed.
+
+**Audit comparison:** The Revision 10 effort reduced the initial **52 flagged source files** to **39** at that verified run. All `NATIVE_COLLECTION` findings were eliminated. The remaining source flags are overlapping classifications, not counts of unique defects:
+
+| Audit code | Remaining flagged files at verified run | Completion criterion |
+|---|---:|---|
+| `RAW_CLASS` | 33 | Feature-owned CSS Modules and updated class maps, including responsive selectors and call-site tests |
+| `LEGACY_DOMAIN_CSS` | 4 | Replace plain auth/public-site CSS with owner modules; remove obsolete imports and dead selectors |
+| `LEGACY_GLOBAL_CSS` | 1 | Delete `app/styles.css` after consumer-safe extraction and verified cascade equivalence |
+| `LARGE_STYLESHEET` | 3 | Split real responsibilities; don't just rename large global files |
+| `CSS_COLOR_LITERAL` | 6 | Replace arbitrary colors with documented semantic tokens, keeping deliberate asset art exceptions |
+
+**Completion is still pending** for that styling debt. Before removing remaining legacy classes or consolidating media-query blocks, verify rendering at 320, 375, 390, and 720 px, short viewports, system/light/dark themes, zoom, keyboard focus, portal dismissal, auth autofill, and the login/recovery/invitation flows in a real browser. Do not claim a fully completed migration until these checks run and the audit no longer reports those migrated files.
+
+**Required blocking checks:** `pnpm check:architecture` (including `check-owner-structure`, `check-router-imports`, `check-css-module-tokens` and the explicit existing-finding audit regression gate), `pnpm typecheck`, `pnpm exec jest --runInBand`, and `pnpm build`. The audit allowlist is a temporary *ceiling* on legacy debt, not permission to introduce new violations. As owners migrate, their old allowlisted findings must be deleted rather than preserved indefinitely.
+
 ---
 
 
