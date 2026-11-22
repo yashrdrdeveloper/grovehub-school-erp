@@ -9,8 +9,7 @@ export const Dialog: DialogComponent = ({
   <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
     <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay className="dialog-overlay"/>
-      <DialogPrimitive.Content className={cn('dialog-content', className)}
-        aria-describedby={description ? undefined : undefined}>
+      <DialogPrimitive.Content className={cn('dialog-content', className)}>
         <div className="dialog-heading">
           <div>
             <DialogPrimitive.Title>{title}</DialogPrimitive.Title>
