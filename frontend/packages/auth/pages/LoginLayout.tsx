@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 import { SchoolMonogram } from '@Components';
 import { useWorkspaceTheme, type ThemePreference } from '@Components/hooks/theme';
 
-import { AuthMobileRdrMark } from './AuthMobileArtwork';
 
 import './loginV2.css';
 import './mobileAuth.css';
@@ -58,7 +57,7 @@ export const LoginLayout = ({ children, title, description, mobileDescription, m
           </div>
           <div className="rdr-login-v2__mobile-header">
             <div className="rdr-login-v2__mobile-identity" aria-label="RDR School">
-              <AuthMobileRdrMark/>
+              <SchoolMonogram/>
               <span className="rdr-login-v2__mobile-school-name">RDR School<small>Your school workspace</small></span>
             </div>
           </div>
