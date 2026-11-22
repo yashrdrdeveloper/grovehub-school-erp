@@ -1,4 +1,4 @@
-import { ArrowLeft, CheckCircle2, Clock3, Info, LoaderCircle, Mail } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Clock3, Info, LoaderCircle, Mail } from '@Components/icons';
 import type { ChangeEventHandler } from 'react';
 import { Button } from '@Components/components/Button';
 import { Form } from '@Components/components/Form';

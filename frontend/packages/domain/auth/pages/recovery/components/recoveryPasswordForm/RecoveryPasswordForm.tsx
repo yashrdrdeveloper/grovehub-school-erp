@@ -1,4 +1,4 @@
-import { AlertCircle, Eye, EyeOff, KeyRound, LoaderCircle, LockKeyhole, ShieldCheck } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff, KeyRound, LoaderCircle, LockKeyhole, ShieldCheck } from '@Components/icons';
 import type { ChangeEventHandler } from 'react';
 import { Button } from '@Components/components/Button';
 import { Form } from '@Components/components/Form';

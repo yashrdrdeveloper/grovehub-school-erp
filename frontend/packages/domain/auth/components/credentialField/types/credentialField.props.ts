@@ -1,5 +1,5 @@
 import type { InputHTMLAttributes, ReactElement, ReactNode } from 'react';
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from '@Components/icons';
 
 export interface CredentialFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   readonly id: string;

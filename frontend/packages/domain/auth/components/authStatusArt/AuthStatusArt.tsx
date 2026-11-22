@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Check, CheckCircle2, Clock3, Link2Off, MailCheck, ShieldCheck, WifiOff } from 'lucide-react';
+import { Check, CheckCircle2, Clock3, Link2Off, MailCheck, ShieldCheck, WifiOff } from '@Components/icons';
 
 export type AuthStatusKind = 'email' | 'success' | 'expired' | 'missing' | 'checking' | 'unavailable' | 'attempts-exhausted';
 

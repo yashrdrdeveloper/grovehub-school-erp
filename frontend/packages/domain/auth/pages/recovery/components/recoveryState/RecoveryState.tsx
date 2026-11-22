@@ -1,4 +1,4 @@
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from '@Components/icons';
 import { Link } from 'react-router-dom';
 import { AUTH_ROUTE } from '@Business/auth/routes';
 

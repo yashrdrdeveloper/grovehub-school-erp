@@ -1,5 +1,5 @@
 import { useMemo, useState, type FormEvent } from 'react';
-import { Plus, RefreshCw, Search, UserRound } from 'lucide-react';
+import { Plus, RefreshCw, Search, UserRound } from '@Components/icons';
 import { useMutation, useQuery, useQueryClient } from '@Components/hooks/query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Link } from 'react-router-dom';

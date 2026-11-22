@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ArrowLeft, LockKeyhole, Monitor, Moon, Sun } from 'lucide-react';
+import { ArrowLeft, LockKeyhole, Monitor, Moon, Sun } from '@Components/icons';
 import { Link } from 'react-router-dom';
 
 import { SchoolMonogram } from '@Components';

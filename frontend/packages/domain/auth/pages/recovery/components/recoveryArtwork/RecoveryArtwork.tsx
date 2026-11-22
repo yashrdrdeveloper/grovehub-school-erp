@@ -1,4 +1,4 @@
-import { AlertCircle, Clock3, Link2Off, PartyPopper, ShieldCheck, Sparkles } from 'lucide-react';
+import { AlertCircle, Clock3, Link2Off, PartyPopper, ShieldCheck, Sparkles } from '@Components/icons';
 
 import { AuthStatusArt } from '../../../../components/authStatusArt';
 import { getRecoveryArtworkCopy } from '../../helpers/getRecoveryArtworkCopy';

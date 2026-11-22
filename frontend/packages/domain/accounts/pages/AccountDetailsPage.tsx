@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { ArrowLeft, MailPlus, ShieldCheck, ShieldOff, UserRoundX } from 'lucide-react';
+import { ArrowLeft, MailPlus, ShieldCheck, ShieldOff, UserRoundX } from '@Components/icons';
 import { Link, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@Components/hooks/query';
 
