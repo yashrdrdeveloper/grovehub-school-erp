@@ -5,6 +5,7 @@ export interface FormFieldProps extends Omit<HTMLAttributes<HTMLDivElement>, 'ch
   readonly hint?: string;
   readonly error?: string;
   readonly required?: boolean;
+  readonly dataTestId?: string;
   readonly children: ReactNode;
 }
 export type FormFieldComponent = (props: FormFieldProps) => ReactElement;

@@ -4,6 +4,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   readonly label: string;
   readonly error?: string;
   readonly hint?: string;
+  readonly dataTestId?: string;
 }
 export type InputComponent = ForwardRefExoticComponent<
   PropsWithoutRef<InputProps> & RefAttributes<HTMLInputElement>

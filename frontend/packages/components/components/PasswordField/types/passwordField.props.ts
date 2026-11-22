@@ -4,4 +4,5 @@ export interface PasswordFieldProps extends Omit<InputHTMLAttributes<HTMLInputEl
   readonly hint?: string;
   readonly error?: string;
   readonly initiallyVisible?: boolean;
+  readonly dataTestId?: string;
 }

@@ -6,5 +6,6 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, Va
   readonly loading?: boolean;
   readonly loadingText?: string;
   readonly fullWidth?: boolean;
+  readonly dataTestId?: string;
 }
 export type ButtonComponent = (props: ButtonProps) => ReactElement;
