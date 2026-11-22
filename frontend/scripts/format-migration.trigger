@@ -1,1 +1,1 @@
-Retry enum-based semantic tag migration with LoginLayout enum imports compatible with component mocks.
+Format and validate new owner-local auth renderers, semantic constants and architecture gates.
