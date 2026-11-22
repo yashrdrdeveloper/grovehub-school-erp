@@ -46,6 +46,14 @@ await visit(modules, (filename) => filename.endsWith('.module.css'), async (file
   if (/:global\(\s*\.\w+\s*\)\s*\{/.test(css)) {
     violations.push(`${path.relative(root, filename)}: unscoped global classes are not a CSS Module migration`);
   }
+
+  if (/#[0-9a-f]{3,8}\b|\brgba?\(|\bhsla?\(/i.test(css)) {
+    violations.push(`${path.relative(root, filename)}: use semantic theme tokens instead of color literals`);
+  }
+
+  if (/:root\s*\{/.test(css)) {
+    violations.push(`${path.relative(root, filename)}: root design tokens belong to packages/styles`);
+  }
 });
 
 if (violations.length > 0) {
