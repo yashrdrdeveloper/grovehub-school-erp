@@ -3,6 +3,7 @@ import type { ChangeEventHandler } from 'react';
 import { Button } from '@Components/components/Button';
 import { Form } from '@Components/components/Form';
 import { Link } from 'react-router-dom';
+import { AUTH_ROUTE } from '@Business/auth/routes';
 
 import { AuthStatusArt } from '../../../../components/authStatusArt';
 import { CredentialField } from '../../../../components/credentialField';
@@ -42,7 +43,7 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
             {!state.busy && view.cooldown && <Clock3 size={19}/>}
           </Button>
           <div className="rdr-auth-flow__secondary-slot">
-            <Link className="rdr-auth-flow__back" to="/login"><ArrowLeft size={16}/> Back to sign in</Link>
+            <Link className="rdr-auth-flow__back" to={AUTH_ROUTE.LOGIN}><ArrowLeft size={16}/> Back to sign in</Link>
           </div>
           <div className="rdr-auth-flow__error-slot" aria-live="polite">
             {state.error && <p className="rdr-login-v2__error" role="alert">{state.error}</p>}
@@ -54,7 +55,7 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
           <AuthStatusArt kind="email"/>
           <h3>Check your email</h3>
           <p>If this email address is eligible, a password reset link will be sent to <strong>{state.lastRequestedEmail}</strong>.</p>
-          <Link className="rdr-login-v2__submit" to="/login">Back to sign in</Link>
+          <Link className="rdr-login-v2__submit" to={AUTH_ROUTE.LOGIN}>Back to sign in</Link>
           <button type="submit" form={formId} className="rdr-auth-flow__resend" disabled={state.busy || view.cooldown}>
             {view.resendLabel}
           </button>

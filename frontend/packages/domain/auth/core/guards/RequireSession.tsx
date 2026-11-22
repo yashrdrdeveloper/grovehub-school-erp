@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { AUTH_ROUTE } from '@Business/auth/routes';
+import { APP_ROUTE } from '@Business/app/routes';
 
 import { useAuth } from '../providers/AuthProvider';
 
@@ -14,12 +16,13 @@ export const RequireSession = () => {
   }, [initialized, reload]);
 
   if (loading || !initialized) return <div className="screen-loading">Opening your workspace…</div>;
-  if (!account) return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  if (!account) return <Navigate to={AUTH_ROUTE.LOGIN} state={{ from: location.pathname }} replace />;
   return <Outlet />;
 };
 
 export const PublicOnly = () => {
   const { account, loading } = useAuth();
   if (loading) return <div className="screen-loading">Checking your session…</div>;
-  return account ? <Navigate to="/dashboard" replace /> : <Outlet />;
+  if (account) return <Navigate to={APP_ROUTE.DASHBOARD} replace />;
+  return <Outlet />;
 };

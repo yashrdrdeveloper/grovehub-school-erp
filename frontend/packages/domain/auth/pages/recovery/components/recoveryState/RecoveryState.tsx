@@ -1,5 +1,6 @@
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { AUTH_ROUTE } from '@Business/auth/routes';
 
 import { RecoveryArtwork } from '../recoveryArtwork';
 import type { RecoveryStateComponent } from './types/recoveryState';
@@ -15,12 +16,12 @@ export const RecoveryState: RecoveryStateComponent = ({ view, purpose, invitatio
     <div className="rdr-recovery__state">
       <RecoveryArtwork view={view} purpose={purpose}/>
       {view === 'checking' && <p className="rdr-recovery__slow" role="status">{checkingMessage}</p>}
-      {view === 'success' && <Link className="rdr-login-v2__submit rdr-recovery__state-button" to="/login">Go to login</Link>}
+      {view === 'success' && <Link className="rdr-login-v2__submit rdr-recovery__state-button" to={AUTH_ROUTE.LOGIN}>Go to login</Link>}
       {view === 'unavailable' && <button className="rdr-login-v2__submit rdr-recovery__state-button"
         type="button" onClick={onRetry}>Try checking again</button>}
       {showResetLink && <Link className="rdr-login-v2__submit rdr-recovery__state-button"
-        to="/forgot-password">Request new link</Link>}
-      {showBack && <Link className="rdr-recovery__back" to="/login">
+        to={AUTH_ROUTE.FORGOT_PASSWORD}>Request new link</Link>}
+      {showBack && <Link className="rdr-recovery__back" to={AUTH_ROUTE.LOGIN}>
         <ArrowLeft size={16}/> Return to login
       </Link>}
     </div>

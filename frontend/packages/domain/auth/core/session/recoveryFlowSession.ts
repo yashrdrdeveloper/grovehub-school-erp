@@ -1,3 +1,5 @@
+import { AUTH_ROUTE } from '@Business/auth/routes';
+
 /** A short-lived single-tab continuation for one password-link flow.
  * Raw bearer proofs must never enter web storage, URLs beyond first use, or logs.
  * Only a non-secret marker for the HttpOnly grant cookie may survive a refresh.
@@ -15,8 +17,8 @@ const MAX_LIFETIME_MS = 10 * 60 * 1000;
 let pendingProof: Extract<RecoveryFlow, { stage: 'proof' }> | null = null;
 
 export const recoveryPurposeForPath = (path: string): RecoveryPurpose | null => {
-  if (path === '/set-password' || path === '/setup') return 'invitation';
-  if (path === '/reset-password') return 'recovery';
+  if (path === AUTH_ROUTE.SET_PASSWORD || path === AUTH_ROUTE.SETUP_LEGACY) return 'invitation';
+  if (path === AUTH_ROUTE.RESET_PASSWORD) return 'recovery';
   return null;
 };
 

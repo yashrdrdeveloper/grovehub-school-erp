@@ -2,6 +2,7 @@ import { ChevronsLeft, ChevronsRight, Grid2X2, Settings2, X } from 'lucide-react
 import { NavLink } from 'react-router-dom';
 
 import { SchoolMonogram } from '@Components';
+import { APP_ROUTE } from '@Business/app/routes';
 
 import { PinnedNavigation } from '../pinnedNavigation';
 import { ThemeChoices } from '../themeChoices';
@@ -17,7 +18,7 @@ export const Sidebar: SidebarComponent = ({ accountLabel, schoolLabel, onLogout,
       <div className="sidebar__header">
         <button type="button" className="icon-button app-switcher-button" title="Open app catalog"
           aria-label="Open app catalog" onClick={model.openCatalog}><Grid2X2 size={19}/></button>
-        <NavLink to="/dashboard" className="sidebar__brand" onClick={model.closeSidebar} aria-label="GrooveHub home">
+        <NavLink to={APP_ROUTE.DASHBOARD} className="sidebar__brand" onClick={model.closeSidebar} aria-label="GrooveHub home">
           <span className="brand-mark brand-mark--small">G</span><span className="sidebar__brand-name">groovehub<span className="brand-period">.</span></span>
         </NavLink>
         <button type="button" className="icon-button sidebar__close" aria-label="Close navigation"
