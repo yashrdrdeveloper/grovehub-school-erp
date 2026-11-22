@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "jest --passWithNoTests",
     "lint": "eslint .",
-    "check:architecture": "node scripts/check-boundaries.mjs && node scripts/check-units.mjs && node scripts/check-ui-contracts.mjs && node scripts/check-styles.mjs && node scripts/check-layout-assets.mjs && node scripts/check-no-ternaries.mjs && node scripts/check-semantic-html.mjs",
+    "check:architecture": "node scripts/check-boundaries.mjs && node scripts/check-units.mjs && node scripts/check-ui-contracts.mjs && node scripts/check-styles.mjs && node scripts/check-layout-assets.mjs && node scripts/check-no-ternaries.mjs && node scripts/check-semantic-html.mjs && node scripts/check-router-imports.mjs",
     "assets:school": "node scripts/download-school-images.mjs",
     "audit:guidelines": "node scripts/audit-guidelines.mjs"
   },
