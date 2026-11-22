@@ -1,14 +1,15 @@
 import { AppLink } from '@Components/components/AppLink';
 import { Box, BOX_TAG } from '@Components/components/Box';
-import { ArrowLeft, CheckCircle2, Clock3, Info, Mail } from '@Components/icons';
+import { ArrowLeft, Clock3, Mail } from '@Components/icons';
 import { FORGOT_PASSWORD_TEST_IDS } from '../../constants/forgotPassword.testIds';
 import type { ChangeEventHandler } from 'react';
 import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '@Components/components/Button';
 import { Form } from '@Components/components/Form';
 import { AUTH_ROUTE } from '@Business/auth/routes';
 
-import { AuthStatusArt } from '../../../../components/authStatusArt';
 import { CredentialField } from '../../../../components/credentialField';
+import { renderForgotPasswordNotice } from './renderer/forgotPassword.notice';
+import { renderForgotPasswordSuccess } from './renderer/forgotPassword.success';
 import type { ForgotPasswordFormComponent } from './types/forgotPasswordForm';
 
 /** Pure presentation shared by mobile and desktop layouts. */
@@ -24,13 +25,9 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
   const handleEmailChange: ChangeEventHandler<HTMLInputElement> = (event) => {
     onEmailChange(event.currentTarget.value);
   };
-  let NoticeIcon = Info;
   let rootClass = 'rdr-auth-flow rdr-auth-flow--forgot';
-  let noticeClass = 'rdr-auth-flow__notice rdr-auth-flow__notice--info';
   if (view.noticeSuccess) {
-    NoticeIcon = CheckCircle2;
     rootClass += ' rdr-auth-flow--sent';
-    noticeClass = 'rdr-auth-flow__notice rdr-auth-flow__notice--success';
   }
 
   return (
@@ -44,21 +41,7 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
         noValidate
       >
         <Box as={BOX_TAG.DIV} className="rdr-auth-flow__fields">
-          <Box
-            as={BOX_TAG.DIV}
-            className={noticeClass}
-            dataTestId={FORGOT_PASSWORD_TEST_IDS.NOTICE}
-            role="status"
-            aria-live="polite"
-          >
-            <Box as={BOX_TAG.SPAN} className="rdr-auth-flow__notice-icon" aria-hidden="true">
-              <NoticeIcon size={20} />
-            </Box>
-            <Box as={BOX_TAG.SPAN} className="rdr-auth-flow__notice-copy">
-              <Box as={BOX_TAG.STRONG}>{view.noticeTitle}</Box>
-              <Box as={BOX_TAG.SMALL}>{view.noticeMessage}</Box>
-            </Box>
-          </Box>
+          {renderForgotPasswordNotice(view)}
           <CredentialField
             id={id}
             label="Email address"
@@ -103,41 +86,8 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
           </Box>
         </Box>
       </Form>
-      {view.noticeSuccess && (
-        <Box
-          as={BOX_TAG.DIV}
-          className="rdr-auth-flow__mobile-success"
-          role="status"
-          aria-live="polite"
-        >
-          <AuthStatusArt kind="email" />
-          <Box as={BOX_TAG.H3}>Check your email</Box>
-          <Box as={BOX_TAG.P}>
-            If this email address is eligible, a password reset link will be sent to{' '}
-            <Box as={BOX_TAG.STRONG}>{state.lastRequestedEmail}</Box>.
-          </Box>
-          <AppLink className="rdr-login-v2__submit" to={AUTH_ROUTE.LOGIN}>
-            Back to sign in
-          </AppLink>
-          <Button
-            unstyled
-            type="submit"
-            form={formId}
-            className="rdr-auth-flow__resend"
-            disabled={state.busy || view.cooldown}
-          >
-            {view.resendLabel}
-          </Button>
-          <Button
-            unstyled
-            type="button"
-            className="rdr-auth-flow__resend"
-            onClick={onUseAnotherEmail}
-          >
-            Use another email
-          </Button>
-        </Box>
-      )}
+      {view.noticeSuccess &&
+        renderForgotPasswordSuccess({ formId, state, view, onUseAnotherEmail })}
     </Box>
   );
 };
