@@ -1,5 +1,5 @@
 import { Box } from '@Components/components/Box';
-import { AlertCircle, Eye, EyeOff, KeyRound, LoaderCircle, LockKeyhole, ShieldCheck } from '@Components/icons';
+import { AlertCircle, Eye, EyeOff, KeyRound, LockKeyhole, ShieldCheck } from '@Components/icons';
 import { RECOVERY_TEST_IDS } from '../../constants/recovery.testIds';
 import type { ChangeEventHandler } from 'react';
 import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '@Components/components/Button';
@@ -62,9 +62,16 @@ export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
         </Box>
       </Box>
       <Box as="div" className="rdr-recovery__actions">
-        <Button type="submit" variant={BUTTON_VARIANT.PRIMARY} size={BUTTON_SIZE.LARGE} dataTestId={RECOVERY_TEST_IDS.SUBMIT} className="rdr-login-v2__submit" disabled={saving}>
+        <Button
+          type="submit"
+          variant={BUTTON_VARIANT.PRIMARY}
+          size={BUTTON_SIZE.LARGE}
+          dataTestId={RECOVERY_TEST_IDS.SUBMIT}
+          className="rdr-login-v2__submit"
+          loading={saving}
+          loadingText={buttonLabel}
+        >
           {buttonLabel}
-          {saving && <LoaderCircle className="rdr-login-v2__spinner" size={18}/>}
         </Button>
         <Box as="span" className="rdr-recovery__remaining" aria-hidden="true">{'\u00a0'}</Box>
         <Box as="div" className="rdr-recovery__error-slot" aria-live="polite">
