@@ -8,6 +8,8 @@ import { SchoolMonogram } from '@Components';
 import { useWorkspaceTheme } from '@Components/hooks/useWorkspaceTheme';
 import { LOGIN_LAYOUT_APPEARANCES } from './constants/loginLayout.appearances';
 import { LOGIN_LAYOUT_TEST_IDS } from './constants/loginLayout.testIds';
+import { LoginLayoutVariant } from './constants/loginLayout.variant';
+import { LOGIN_LAYOUT_COPY } from './constants/loginLayout.copy';
 import { getLoginLayoutClassName } from './helpers/loginLayout.getClassName';
 import { renderLoginLayoutAppearanceOption } from './renderer/loginLayout.appearanceOption';
 import type { LoginLayoutComponent } from './types/loginLayout.props';
@@ -25,8 +27,8 @@ export const LoginLayout: LoginLayoutComponent = ({
   description,
   mobileDescription,
   minimalMobile = false,
-  variant = 'login',
-  eyebrow = 'YOUR SCHOOL WORKSPACE',
+  variant = LoginLayoutVariant.LOGIN,
+  eyebrow = LOGIN_LAYOUT_COPY.DEFAULT_EYEBROW,
 }) => {
   const { preference, setPreference } = useWorkspaceTheme();
   const { contentRef, toolbarRef, mainRef } = useAuthViewportFit();

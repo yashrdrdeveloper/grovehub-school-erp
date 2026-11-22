@@ -1,6 +1,6 @@
 import { Box } from '@Components/components/Box';
 import type { ReactNode } from 'react';
-import { LoginLayout } from '../../components/loginLayout';
+import { LoginLayout, LoginLayoutVariant } from '../../components/loginLayout';
 
 import { RecoveryPasswordForm } from './components/recoveryPasswordForm';
 import { RecoveryState } from './components/recoveryState';
@@ -19,7 +19,7 @@ export const Recovery: RecoveryComponent = (props) => {
 
   return (
     <LoginLayout
-      variant="recovery"
+      variant={LoginLayoutVariant.RECOVERY}
       title="Set a new password."
       description={description}
       mobileDescription={mobileDescription}

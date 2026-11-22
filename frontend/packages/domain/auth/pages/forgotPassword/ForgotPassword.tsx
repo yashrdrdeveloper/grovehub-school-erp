@@ -1,4 +1,4 @@
-import { LoginLayout } from '../../components/loginLayout';
+import { LoginLayout, LoginLayoutVariant } from '../../components/loginLayout';
 
 import { ForgotPasswordForm } from './components/forgotPasswordForm';
 import type { ForgotPasswordComponent } from './types';
@@ -6,7 +6,7 @@ import type { ForgotPasswordComponent } from './types';
 /** Stateless recovery page composition. */
 export const ForgotPassword: ForgotPasswordComponent = (props) => (
   <LoginLayout
-    variant="forgot"
+    variant={LoginLayoutVariant.FORGOT}
     title="Forgot your password?"
     description="Enter your school email address to request a reset link."
     mobileDescription="Enter your school email address to request a reset link."

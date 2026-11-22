@@ -1,4 +1,4 @@
-import { LoginLayout } from '../../components/loginLayout';
+import { LoginLayout, LoginLayoutVariant } from '../../components/loginLayout';
 
 import { LOGIN_COPY } from './constants/login.copy';
 import { DesktopLogin } from './templates/desktopLogin';
@@ -12,6 +12,7 @@ export const Login: LoginPageComponent = ({ controls, isMobile }) => {
 
   return (
     <LoginLayout
+      variant={LoginLayoutVariant.LOGIN}
       title={LOGIN_COPY.desktopTitle}
       description={LOGIN_COPY.desktopDescription}
       mobileTitle={LOGIN_COPY.mobileTitle}
