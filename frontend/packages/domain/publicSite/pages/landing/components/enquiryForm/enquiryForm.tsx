@@ -1,3 +1,4 @@
+import { _map } from '@Base/utilities/map';
 import { TextAreaControl } from '@Components/components/TextAreaControl';
 import { SelectControl } from '@Components/components/SelectControl';
 import { ExternalAnchor } from '@Components/components/ExternalAnchor';
@@ -65,14 +66,14 @@ export const EnquiryForm: EnquiryFormComponent = ({ compact = false, model }) =>
             <Box as="small" className="rdr-enquiry__hint">Please provide at least one: phone number or email.</Box>
             <FieldLabel htmlFor={`${fieldId}-type`}>I'm enquiring about <Box as="span">*</Box></FieldLabel>
             <SelectControl id={`${fieldId}-type`} data-testid={ENQUIRY_TEST_IDS.TYPE} value={data.type} onChange={event => patch('type', event.target.value)}>
-              {enquiryTypes.map(type => <option key={type.value} value={type.value}>{type.label}</option>)}
+              {_map(enquiryTypes, type => <option key={type.value} value={type.value}>{type.label}</option>)}
             </SelectControl>
           </>}
           {step !== 0 && <>
             {data.type === 'ADMISSION' && <><FieldLabel htmlFor={`${fieldId}-class`}>Class interested in</FieldLabel>
               <SelectControl id={`${fieldId}-class`} data-testid={ENQUIRY_TEST_IDS.CLASS} value={data.interestedClass} onChange={event => patch('interestedClass', event.target.value)}>
                 <option value="">Select a class (optional)</option>
-                {['Nursery','KG','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'].map(value => <option key={value} value={value}>{value}</option>)}
+                {_map(['Nursery','KG','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'], (value) => <option key={value} value={value}>{value}</option>)}
               </SelectControl></>}
             <FieldLabel htmlFor={`${fieldId}-message`}>Anything you'd like us to know?</FieldLabel>
             <TextAreaControl id={`${fieldId}-message`} data-testid={ENQUIRY_TEST_IDS.MESSAGE} rows={4} placeholder="Tell us a little about your enquiry..." value={data.message} onChange={event => patch('message', event.target.value)}/>

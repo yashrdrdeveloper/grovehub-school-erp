@@ -1,3 +1,4 @@
+import { _map } from '@Base/utilities/map';
 import { ExternalAnchor } from '@Components/components/ExternalAnchor';
 import { Box } from '@Components/components/Box';
 import { SCHOOL_ROUTE } from '../../constants/school.routes';
@@ -29,7 +30,7 @@ const AboutPage = () => (
       <Box as="div"><Box as="p">The school is named in memory of Late Shri Rao Deena Ram Ji. According to the school's history, it was founded in April 2006 by Shri Lal Singh Yadav (Retired HES-II), to extend educational opportunities to the surrounding rural community.</Box><Box as="p">Its stated philosophy emphasizes respect, responsibility, fairness, caring and citizenship. These values continue to shape how the school's story is presented.</Box><ExternalAnchor href="https://rdrschool.com/our-school.html" target="_blank" rel="noreferrer" className="rdr-inline-link">Read the original school history <ExternalLink size={16}/></ExternalAnchor></Box>
     </Box>
     <Box as="section" className="rdr-section rdr-section--wash"><Box as="div" className="rdr-container rdr-values">
-      {[{number:'01',title:'Learning',description:'Encouraging curiosity, creativity and independent thinking.'},{number:'02',title:'Character',description:'Building a foundation of responsibility, kindness and integrity.'},{number:'03',title:'Community',description:'Strengthening partnerships between families, teachers and students.'}].map(x=><Box as="div" key={x.number}><Box as="span">{x.number}</Box><Box as="h3">{x.title}</Box><Box as="p">{x.description}</Box></Box>)}
+      {_map([{number:'01',title:'Learning',description:'Encouraging curiosity, creativity and independent thinking.'},{number:'02',title:'Character',description:'Building a foundation of responsibility, kindness and integrity.'},{number:'03',title:'Community',description:'Strengthening partnerships between families, teachers and students.'}], x=><Box as="div" key={x.number}><Box as="span">{x.number}</Box><Box as="h3">{x.title}</Box><Box as="p">{x.description}</Box></Box>)}
     </Box></Box>
     <Box as="section" className="rdr-section rdr-container rdr-about-leaders">
       <Heading eyebrow="WORDS THAT GUIDE US" title="Meet the people and values behind RDR."/>
@@ -101,7 +102,7 @@ const StoryPage = ({topic}:{topic:keyof typeof legacySchoolStories}) => {
       <Box as="div"><Box as="span" className="rdr-eyebrow">A CLOSER LOOK</Box><Box as="h2">Inside the RDR community.</Box><Box as="p">{story.detail}</Box>
         <Box as="div" className="rdr-story-page__actions"><EnquiryLink className="rdr-btn rdr-btn--solid">Ask the school <ArrowUpRight size={16}/></EnquiryLink><ExternalAnchor href={story.src} target="_blank" rel="noreferrer" className="rdr-inline-link">Original school message <ExternalLink size={16}/></ExternalAnchor></Box>
       </Box>
-      <Box as="div" className="rdr-story-page__notes">{story.highlights.map((line,i)=><Box as="div" key={line}><Box as="span">0{i+1}</Box><Box as="strong">{line}</Box><Check size={16}/></Box>)}</Box>
+      <Box as="div" className="rdr-story-page__notes">{_map(story.highlights, (line,i)=><Box as="div" key={line}><Box as="span">0{i+1}</Box><Box as="strong">{line}</Box><Check size={16}/></Box>)}</Box>
     </Box>
   </>;
 };
