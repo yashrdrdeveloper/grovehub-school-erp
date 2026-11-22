@@ -1,6 +1,6 @@
 import { AppLink } from '@Components/components/AppLink';
 import { Box } from '@Components/components/Box';
-import { ArrowLeft, CheckCircle2, Clock3, Info, LoaderCircle, Mail } from '@Components/icons';
+import { ArrowLeft, CheckCircle2, Clock3, Info, Mail } from '@Components/icons';
 import { FORGOT_PASSWORD_TEST_IDS } from '../../constants/forgotPassword.testIds';
 import type { ChangeEventHandler } from 'react';
 import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '@Components/components/Button';
@@ -45,11 +45,19 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
             error={state.emailError} onChange={handleEmailChange} required/>
         </Box>
         <Box as="div" className="rdr-auth-flow__actions">
-          <Button type="submit" variant={BUTTON_VARIANT.PRIMARY} size={BUTTON_SIZE.LARGE} dataTestId={FORGOT_PASSWORD_TEST_IDS.SUBMIT} className="rdr-login-v2__submit" disabled={state.busy || view.cooldown}
-            aria-label={view.buttonLabel}>
+          <Button
+            type="submit"
+            variant={BUTTON_VARIANT.PRIMARY}
+            size={BUTTON_SIZE.LARGE}
+            dataTestId={FORGOT_PASSWORD_TEST_IDS.SUBMIT}
+            className="rdr-login-v2__submit"
+            disabled={state.busy || view.cooldown}
+            loading={state.busy}
+            loadingText={view.buttonLabel}
+            aria-label={view.buttonLabel}
+          >
             <Box as="span">{view.buttonLabel}</Box>
-            {state.busy && <LoaderCircle className="rdr-login-v2__spinner" size={19}/>}
-            {!state.busy && view.cooldown && <Clock3 size={19}/>}
+            {!state.busy && view.cooldown && <Clock3 size={19} />}
           </Button>
           <Box as="div" className="rdr-auth-flow__secondary-slot">
             <AppLink className="rdr-auth-flow__back" to={AUTH_ROUTE.LOGIN}><ArrowLeft size={16}/> Back to sign in</AppLink>
