@@ -1006,3 +1006,245 @@ The outer `AppRoutes` becomes a thin container of named route arrays and rendere
 
 `RecoveryFlowBoundary` is a **side-effect hook**, not a visual component. Replace the `RecoveryFlowBoundary.tsx` null component with `useRecoveryFlowBoundary` under `auth/core/hooks/useRecoveryFlowBoundary/`, with its own types, helper for purpose selection and tests. Call it unconditionally from an already-rendered component **inside BrowserRouter and AuthProvider**, such as the app-routes controller. On leaving/switching recovery paths it clears pending proof state; do not clear a valid flow merely because a layout rerenders. Never reintroduce a no-op JSX component whose sole purpose is executing effects. No token gets put in persistent browser storage.
 
+
+
+## 30. AuthProvider and recovery-flow session: real units, one state owner, zero secret leakage
+
+### 30.1 Provider directory
+
+A provider is a functional **unit**, not a single do-everything file:
+
+~~~text
+domain/auth/core/
+├── providers/
+│   └── authProvider/
+│       ├── AuthProvider.tsx
+│       ├── hooks/
+│       │   └── useAuthSession/
+│       │       ├── useAuthSession.ts
+│       │       ├── helpers/
+│       │       ├── constants/
+│       │       ├── types/
+│       │       └── __tests__/
+│       ├── helpers/
+│       │   └── authProvider.requireContext.ts
+│       ├── constants/authProvider.messages.ts
+│       ├── types/
+│       │   ├── authProvider.props.ts
+│       │   └── authProvider.context.ts
+│       ├── __tests__/AuthProvider.test.tsx
+│       └── index.ts
+├── hooks/useRecoveryFlowBoundary/
+├── session/
+│   └── recoveryFlowSession/
+│       ├── recoveryFlowSession.ts
+│       ├── constants/recoveryFlowSession.keys.ts
+│       ├── constants/recoveryFlowSession.lifetime.ts
+│       ├── helpers/recoveryFlowSession.parseMarker.ts
+│       ├── helpers/recoveryFlowSession.isActive.ts
+│       ├── types/recoveryFlowSession.ts
+│       └── __tests__/
+└── guards/
+    ├── publicRoute/
+    └── protectedRoute/
+~~~
+
+`AuthProvider.tsx` should create/provide context, not mix nested `try/catch`, HTTP refresh fallback, pending request deduplication, sign-in and sign-out in the same 80-line component. The named `useAuthSession` hook owns the **single** account/initialized/loading state and cohesive actions, with testable request helpers/classifiers where appropriate. The context contract is typed in `types/`; the exported `useAuth` consumer hook throws if used outside its provider, tested at the provider boundary.
+
+**No duplicated session state.** A public route must not bootstrap session just because the provider mounted; a protected route requests session initialization. No access tokens in JS storage; session remains HttpOnly-cookie based. On logout remove cached account state even when the network request fails; on login and refresh handle stale responses and duplicate requests. Preserve CSRF and session continuity rules established by the backend rather than trying to infer them from redirects.
+
+### 30.2 Recovery proof adapter
+
+The current `auth/core/session/recoveryFlowSession.ts` is **not dead simply because it has no JSX**. It holds security-sensitive lifecycle behavior. Classify it as a browser session adapter, with pure helpers for parsing/validation and constants for storage keys, limits and purpose enum. The only permitted persisted continuation is a short-lived **nonsecret grant marker** when required to resume an HttpOnly-cookie grant. Raw password recovery/invitation bearer proof stays in memory, is removed from URL fragments after exchange and is cleared on leaving/switching the flow; it is never written to localStorage/sessionStorage or printed in logs.
+
+Do **not** split a stateful browser adapter into unrelated globally mutable "helpers". An adapter entry may legitimately group coordinated `read`, `write`, `clear` operations; split out pure suboperations when independently testable. Test invalid/malformed markers, expiry, storage exceptions, reload, wrong purpose, URL navigation, transient server errors and server-owned exhausted-attempt decisions. Do not count attempts on the frontend.
+
+### 30.3 Full `useRecovery` split (currently not done)
+
+~~~text
+pages/recovery/hooks/useRecovery/
+├── useRecovery.ts                 # returns one cohesive typed interface
+├── hooks/
+│   ├── useRecoveryForm/           # one form-state owner
+│   ├── useRecoveryLink/           # hash proof handling + cleanup + sequence
+│   ├── useRecoveryGrant/          # grant status from server
+│   ├── useRecoverySubmission/     # validation + mutation + duplicate protection
+│   └── useRecoveryRetry/          # retry orchestration
+├── helpers/
+│   ├── recovery.classifyFailure.ts
+│   ├── recovery.getViewModel.ts
+│   ├── recovery.validatePassword.ts
+│   ├── types/
+│   └── __tests__/
+├── constants/
+│   ├── recovery.state.ts
+│   ├── recovery.copy.ts
+│   ├── recovery.testIds.ts
+│   └── recovery.routes.ts         # use common paths instead of duplicating values
+├── types/useRecovery.ts
+└── __tests__/useRecovery.test.ts
+~~~
+
+**One owner:** only one hook owns each mutable form field, fieldErrors and request-in-flight flag; subordinate hooks accept typed state and actions rather than creating second mirrors of it. If a child only transforms inputs or reads a map, it is a *helper*, not a hook. Hooks are permitted to be nested under a parent hook's `hooks/` to group focused effects. They must be called unconditionally. Do not add five hooks merely to shrink one file while leaving them mutually coupled through many setters.
+
+Migrate the existing direct `invitation ? API_A : API_B` or `purpose === 'invitation'` branches to a named enum plus a typed strategy registry. The validation and exchange sequence should use a `Map<RecoveryPurpose, RecoveryOperation>` **when selecting between registered API strategies**, with explicit missing-strategy handling. View state labels/copy/icons use data maps, not function maps. Strictly preserve: verify link before displaying form; clear proof fragment promptly; grant verification after refresh; two server-enforced unsuccessful password attempts; expired/missing/unavailable/attempts-exhausted distinct states; transient failures not counted by guesswork; and success clearing credentials and old sessions.
+
+## 31. `useShell`: one local state/actions interface and persistent layout
+
+The shell's current `useShellState` and `useShellActions` are two peer hooks with extra setter plumbing, later combined by `useShell`. **Target:** one `hooks/useShell/useShell.ts` owns state and named actions and returns one typed model. Nested hook units are allowed for independently meaningful storage sync or theme integration, **not** for duplicating setters or making redundant open/close wrappers.
+
+~~~text
+shell/
+├── Shell.tsx                           # presentation with <Outlet/>
+├── containers/shellContainer/
+│   ├── ShellContainer.tsx
+│   ├── constants/shellContainer.queryOptions.ts
+│   ├── helpers/shellContainer.createQueryClient.ts
+│   └── types/
+├── hooks/useShell/
+│   ├── useShell.ts
+│   ├── hooks/
+│   │   ├── usePinnedAppsPersistence/
+│   │   └── useSidebarPreference/
+│   ├── helpers/shell.togglePinnedPath.ts
+│   ├── types/useShell.ts
+│   └── __tests__/useShell.test.ts
+├── components/
+│   ├── appRoutes/{renderer,types,__tests__}/
+│   ├── appLauncher/
+│   │   ├── AppLauncher.tsx
+│   │   ├── hooks/useAppLauncher/
+│   │   ├── helpers/shell.filterCatalog.ts
+│   │   ├── renderer/appLauncher.app.tsx
+│   │   ├── constants/appLauncher.testIds.ts
+│   │   ├── styles/appLauncher.module.scss
+│   │   ├── types/
+│   │   └── __tests__/
+│   ├── protectedLayout/
+│   ├── sidebar/
+│   ├── topbar/
+│   └── ...
+└── registry/
+~~~
+
+If `useBoolean` or `useBooleanState` is available from `@Components/hooks`, use its stable `[value, setTrue, setFalse]` actions in the shell model instead of duplicating `openSidebar = useCallback(() => setSidebarOpen(true))` and `closeSidebar = ...`. **Current availability must be checked:** do not add imports for imaginary exports. A named `openCatalog` action is still warranted because it opens the catalog **and** closes the sidebar; similarly `openAccountPreferences` may legitimately coordinate several UI states.
+
+~~~ts
+// hooks/useShell/helpers/shell.togglePinnedPath.ts
+import { _filter } from '@Base/utilities/filter';
+import { _includes } from '@Base/utilities/includes';
+
+export const togglePinnedPath = (pinned: readonly string[], path: string): string[] => {
+  if (_includes(pinned, path)) {
+    return _filter(pinned, (entry) => entry !== path);
+  }
+  return [...pinned, path];
+};
+~~~
+
+This helper is pure and tested. `_filter`/`_includes` must first exist as narrow `@Base` exports. **Never perform `writePinnedApps` / `writeSidebarCollapsed` inside a `setState(previous => ...)` updater**: React StrictMode may invoke the updater more than once. Keep updaters pure and persist through one controlled effect or a separately tested external-store abstraction. Use lazy initialization from storage with browser exceptions handled; no duplicated `pinned` copies. Keep the shell mounted across protected child navigation and ensure only its Outlet page changes.
+
+### 31.1 QueryClient options are constants, creation is a factory helper
+
+The current module-level construction mixes immutable options and runtime instance creation. Store defaults in the owning container constants, and construct once through a helper. Do **not** create a QueryClient every render.
+
+~~~ts
+// shell/containers/shellContainer/constants/shellContainer.queryOptions.ts
+export const SHELL_QUERY_OPTIONS = {
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+} as const;
+
+// shell/containers/shellContainer/helpers/shellContainer.createQueryClient.ts
+import { QueryClient } from '@tanstack/react-query';
+import { SHELL_QUERY_OPTIONS } from '../constants/shellContainer.queryOptions';
+
+export const createShellQueryClient = (): QueryClient => new QueryClient(SHELL_QUERY_OPTIONS);
+~~~
+
+A constructor is **not static data** and does not belong in `constants/` or `renderer/`. For the current SPA, a stable app-instance is sufficient; future SSR must scope the QueryClient per request/runtime. Query options, retry rules and timeouts must be named constants, not bare numbers in component markup.
+
+### 31.2 AppLauncher must be decomposed, not relabeled
+
+Current `shell/layout/AppLauncher.tsx` still owns dialog, search state, effect, filtering, pins, UI cards, native input/buttons, direct icons, literal CSS class branches and render JSX; this is a **high-priority violation**.
+
+- `components/appLauncher/hooks/useAppLauncher`: single owner of query/search/category state, reset-on-open effect and typed actions.
+- `helpers/shell.filterCatalog.ts`: pure case normalization, `_trim`, `_filter`, `_includes` and `_size` against implemented-only app descriptors.
+- `renderer/appLauncher.app.tsx`: one catalog-item view returning accessible shared Card/AppLink/Button/Icon/Text primitives; no anonymous event closure or business logic.
+- `constants/appLauncher.copy.ts` / `appLauncher.testIds.ts` / `appLauncher.category.ts`: display strings, filters and stable IDs.
+- `styles/appLauncher.module.scss`: scoped layout consuming `@Styles`, not raw literal class names.
+- `AppLauncher.tsx`: typed, presentational composition from these units only.
+
+Remove stale façade `shell/layout/AppLauncher.tsx` and old exports after caller migration; verify pinned-navigation persistence and dialog focus trapping. **Only implemented apps** belong in launcher and navigation. People, Accounts, Integrations and Settings are not functional domain routes and may not appear as clickable features. All map/filter/find/length/key transformations use tested `@Base` leaf utilities where applicable.
+
+## 32. Lodash / Base, zero ternaries, meaningful class merging and readable formatting
+
+Use `@Base/utilities/<operation>` as the only application gateway to Lodash functions. **Required leaf exports when consumed** include `_map`, `_filter`, `_find`, `_trim`, `_includes`, `_keys`, `_size`, `_isUndefined`, `_isFunction` and `_isEmpty`. Each leaf has an explicit tested type and does not eagerly import the whole Lodash barrel (important for Jest CJS compatibility). Only `packages/base` can import `lodash-es` directly. Do not make a `normalizeLoginEmail` wrapper that only delegates to `_trim`. `_isValid` is not a standard Lodash function; a true business validation predicate lives under domain/business helpers.
+
+~~~tsx
+import { _map } from '@Base/utilities/map';
+import { renderAppRoute } from './renderer/appRoutes.route';
+
+// No direct .map in AppRoutes
+const landing = _map(PUBLIC_SITE_PATHS, renderPublicLandingRoute);
+const publicPages = _map(publicRoutes, renderAppRoute);
+const workspacePages = _map(workspaceRoutes, renderAppRoute);
+~~~
+
+Avoid raw `Object.keys`, `Object.entries`, `.find`, `.filter`, `.map`, `.includes` and `.trim` where the equivalent authorized Base leaf exists. **Don't** apply Lodash to platform-only APIs (React hooks, URL, streams, Intl, DOM event registration). A helper must add real policy, not one extra wrapper layer.
+
+**No ternary operator in any owned application TS/TSX**, including hooks, renderers, classes, styles, routing, icon selection and helper returns. Enforce using AST `ConditionalExpression` lint, not a naïve regex that rejects legitimate optional TS property syntax (`type?: string`). No inline `mobileDescription ?? description` in JSX: an explicit named helper owns defaulting and intentional empty-string handling. An inline `&&` is acceptable only for an already-computed, single-purpose visibility flag; when it selects a different JSX tree, use a renderer. No deeply nested conditional expressions hidden inside closures.
+
+Use `cn` imported from `@Base/utilities/cn` to combine **CSS module** classes: `cn(styles.root, styles.selected)`. The class decision itself may be a `helper` that takes typed variant enum. No raw `'is-active'`, magic global BEM strings, manual string concatenation or arbitrary colors directly in migrated UI. Do not use `className={styles['computed' + value]}` to bypass a typed variant map.
+
+**Readability:** normal two-space TypeScript indentation; descriptive exported names; sorted/import groups (React/router → `@Base`/`@Components`/`@Business` → domain-local); sensible multiline JSX; no squeezed one-line logic, repeated props, deep anonymous callbacks, inline async handlers or giant JSX return bodies. Reusable handler logic belongs in hooks. A renderer may receive a prebound stable action and forward it as `onClick={onSelect}`; do not create closures for state mutations in every list row.
+
+## 33. Test IDs, route IDs, icon names and UI variants: no literal leakage
+
+Every page or reusable feature defines one typed `constants/<owner>.testIds.ts`. Test ID naming follows:
+
+~~~text
+<domain>-<screen>-<component>-<element>-<useCase>
+
+auth-login-form-input-email
+auth-login-form-input-password
+auth-login-form-button-submit
+auth-login-layout-button-theme-system
+auth-forgot-password-form-button-resend
+auth-forgot-password-form-alert-feedback
+auth-recovery-form-input-confirmation
+shell-app-launcher-dialog-input-search
+shell-app-launcher-card-button-pin-dashboard
+dashboard-home-card-status-tasks
+~~~
+
+~~~ts
+// pages/login/constants/login.testIds.ts
+export const LOGIN_TEST_IDS = {
+  EMAIL: 'auth-login-form-input-email',
+  PASSWORD: 'auth-login-form-input-password',
+  SUBMIT: 'auth-login-form-button-submit',
+  AUTH_ERROR: 'auth-login-form-alert-feedback',
+} as const;
+~~~
+
+No `dataTestId="forgot-password-submit"` or `data-testid="catalog-search"` written directly in a migrated feature. Instead reference a named constant. For dynamic entries use a **central factory**, backed by a stable non-sensitive path/GID and an explicit prefix; no email, person name, password, token, index or random `useId` embedded in the selector. Test IDs are unique among simultaneously rendered elements; a hidden second form does not excuse duplicate IDs. Shared component `dataTestId` forwards to the native leaf `data-testid`. Composite children use documented stable suffixes, and semantic `id`/`htmlFor` must still work. No CSS based on automation IDs.
+
+**Typed variant convention:** domain-specific variants are enums (`AuthLayoutVariant.RECOVERY`, `AuthStatusKind.EMAIL`, `RouteAccess.PROTECTED`). Generic Button variants/size and Typography variants may use the shared component's documented string-union interface but should be supplied through named static descriptors when repeated. Do not write direct route literals `to="/login"`; use `APP_ROUTE.LOGIN` from the single canonical route contract. Do not write direct Lucide JSX in a domain; use `@Components/icons`/`Icon`. No magic icon size/color in feature JSX; expose semantic icon size/intent from the shared icon contract and CSS tokens.
+
+### Required tests by owner
+
+- `renderer/__tests__`: each JSX branch, unsupported status, icon and aria semantics, stable test IDs.
+- `helpers/__tests__`: pure class/URL/validation/selection logic, edge cases and missing/null inputs.
+- `components/<unit>/__tests__`: shared primitives forward `dataTestId` to the native leaf, focus order, label relations, submit and loading behavior, correct native role.
+- `hooks/use<Feature>/__tests__`: state transitions, stale async results, StrictMode cleanup, persistence without duplicate writes, timers, viewport matching and recovery sequence.
+- `auth/core/providers/authProvider/__tests__`: protected-only initialization, login/refresh/reload/logout and duplicate in-flight reload protection.
+- `shell/components/protectedLayout/__tests__`: same mounted Shell element across child protected navigation.
+- `publicSite`: all current SEO routes, enquiry dialog, forms and honest mailto behavior; no fabricated backend calls.
+- **Browser visual/a11y**: light/dark, 320–720px/mobile/tablet/desktop, short viewport, autofocus/autofill, high zoom and keyboard input.
+
