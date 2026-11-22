@@ -1,7 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import type { FormEvent } from 'react';
+import { MemoryRouter } from 'react-router-dom';
 
 import { LoginForm } from './LoginForm';
+import { MobileLogin } from '../../templates/mobileLogin/MobileLogin';
 import type { LoginFormProps } from '../../types';
 
 const onEmailChange = jest.fn();
@@ -44,6 +46,23 @@ describe('LoginForm presentation', () => {
     expect(onPasswordChange).toHaveBeenCalledWith('a-password');
     expect(onTogglePassword).toHaveBeenCalledTimes(1);
     expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps mobile forgot password between email and password and shows the complete API error', () => {
+    const message = 'Unable to sign in right now. Please try again.';
+    const { container } = render(
+      <MemoryRouter>
+        <MobileLogin {...props} state={{ ...props.state, errorMessage: message }}/>
+      </MemoryRouter>,
+    );
+    const emailField = container.querySelector('#login-email')?.closest('.rdr-login-v2__field');
+    const passwordField = container.querySelector('#login-password')?.closest('.rdr-login-v2__field');
+    const forgot = screen.getByRole('link', { name: 'Forgot password?' });
+    expect(emailField).not.toBeNull();
+    expect(passwordField).not.toBeNull();
+    expect(Boolean(emailField!.compareDocumentPosition(forgot) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+    expect(Boolean(forgot.compareDocumentPosition(passwordField!) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+    expect(screen.getByRole('alert').textContent).toContain(message);
   });
 
   it('renders errors and disables submit without owning any state', () => {
