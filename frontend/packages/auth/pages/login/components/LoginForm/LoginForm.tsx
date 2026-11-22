@@ -52,12 +52,6 @@ export const LoginForm = ({
       </small>
     </div>
 
-    <div className="rdr-login-v2__feedback-slot rdr-login-v2__feedback-slot--signin" aria-live="polite">
-      {state.errorMessage && <p className="rdr-login-v2__auth-error" role="alert">
-        <AlertCircle size={16} aria-hidden="true"/>
-        <span>{state.errorMessage}</span>
-      </p>}
-    </div>
     {afterFields}
     <button type="submit" className="rdr-login-v2__submit" disabled={state.isSubmitting}>
       <span>{state.isSubmitting ? LOGIN_COPY.busyButton : LOGIN_COPY.button}</span>
@@ -65,5 +59,11 @@ export const LoginForm = ({
         ? <LoaderCircle className="rdr-login-v2__spinner" size={19} aria-hidden="true"/>
         : <ArrowRight size={19} aria-hidden="true"/>}
     </button>
+    <div className="rdr-login-v2__feedback-slot rdr-login-v2__feedback-slot--signin" aria-live="polite">
+      {state.errorMessage && <p className="rdr-login-v2__auth-error" role="alert">
+        <AlertCircle size={16} aria-hidden="true"/>
+        <span>{state.errorMessage}</span>
+      </p>}
+    </div>
   </form>
 );
