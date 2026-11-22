@@ -1527,9 +1527,9 @@ Only declare code migration done after tests and meaningful checks have run. For
 
 ## 40. Comprehensive tracked-file inventory and gap review (Revision 8)
 
-**Scope:** Every file in the GitHub branch under `frontend/` at the time of the audit. Paths below are relative to `frontend/`. The inventory records verified violations when source was read, path-structure violations from the Git tree, and explicit **content review required** where detailed review has not yet been completed. **Do not treat any unreviewed row as passing the guidelines.** A filename/structure audit alone cannot prove runtime behavior, import reachability, CSS specificity, auth security or accessibility. `Source reviewed` is limited to files inspected in this conversation. This ledger must be updated with source-level evidence as the migration progresses.
+**GitHub snapshot:** `0eebd64a32760f520a94da31a75d7326b0bde6c1`, `473` tracked files under `frontend/`. Every tracked file has exactly one entry below, including source, tests, styles, configs, docs and the generated lockfile. **Source reviewed** means inspected in this audit; **Structural finding** means directory evidence; **Content review required** means no assertion of source compliance. Some other source-reviewed findings were established before the snapshot and should be reconfirmed after any code change. This is a rolling snapshot, so recent commits may have resolved some previously reported issues. No static scan substitutes for browser visual, security, import reachability or CI testing.
 
-| Tracked file | Finding / required action | Evidence level |
+| Tracked file (relative to `frontend/`) | Gap or verification requirement | Evidence |
 |---|---|---|
 | `.env.example` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
 | `README.md` | Check documentation examples/references against current source | Documentation review |
@@ -1563,23 +1563,27 @@ Only declare code migration done after tests and meaningful checks have run. For
 | `packages/base/utilities/cn/cn.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
 | `packages/base/utilities/cn/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
 | `packages/base/utilities/cn/types/cn.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/base/utilities/find/__tests__/find.test.ts` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/base/utilities/find/find.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/base/utilities/find/__tests__/find.test.ts` | **Source confirmed:** correct `describe('_find')`; real pure Lodash implementation, no mock | Source reviewed |
+| `packages/base/utilities/find/find.ts` | **Source confirmed:** typed pure Lodash `_find` bridge; verify compile/runtime contract and tests | Source reviewed |
 | `packages/base/utilities/find/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/base/utilities/find/types/find.ts` | Review prop/enum contract, data ownership and consumer typechecks | Content review required |
 | `packages/base/utilities/index.ts` | **Confirmed:** only cn/isEqual exported; Base _map/_filter/_trim etc not implemented | Source reviewed |
-| `packages/base/utilities/isEqual/__tests__/isEqual.test.ts` | **Confirmed:** mocks pure Lodash equality; test real behavior through compatible Jest transform | Source reviewed |
+| `packages/base/utilities/isEqual/__tests__/isEqual.test.ts` | **Source confirmed:** pure test mocks removed; tests execute real equality | Source reviewed |
 | `packages/base/utilities/isEqual/index.ts` | Check pure Lodash test/Jest compatibility | Structural finding |
 | `packages/base/utilities/isEqual/isEqual.ts` | Check pure Lodash test/Jest compatibility | Structural finding |
 | `packages/base/utilities/isEqual/types/isEqual.ts` | Check pure Lodash test/Jest compatibility | Structural finding |
 | `packages/base/utilities/keys/__tests__/keys.test.ts` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
 | `packages/base/utilities/keys/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/base/utilities/keys/keys.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/base/utilities/map/__tests__/map.test.ts` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/base/utilities/keys/keys.ts` | **Source confirmed:** typed pure Lodash `_keys` bridge | Source reviewed |
+| `packages/base/utilities/keys/types/keys.ts` | Review prop/enum contract, data ownership and consumer typechecks | Content review required |
+| `packages/base/utilities/map/__tests__/map.test.ts` | **Source confirmed:** correct `describe('_map')`; real pure Lodash implementation, no mock | Source reviewed |
 | `packages/base/utilities/map/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/base/utilities/map/map.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/base/utilities/map/map.ts` | **Source confirmed:** typed `_map` bridge; verify JSX callback typing | Source reviewed |
+| `packages/base/utilities/map/types/map.ts` | Review prop/enum contract, data ownership and consumer typechecks | Content review required |
 | `packages/base/utilities/trim/__tests__/trim.test.ts` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
 | `packages/base/utilities/trim/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/base/utilities/trim/trim.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/base/utilities/trim/trim.ts` | **Source confirmed:** typed `_trim` bridge; must preserve case | Source reviewed |
+| `packages/base/utilities/trim/types/trim.ts` | Review prop/enum contract, data ownership and consumer typechecks | Content review required |
 | `packages/business/RUNBOOK.md` | Check documentation examples/references against current source | Documentation review |
 | `packages/business/accounts/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
 | `packages/business/accounts/services/accounts.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
@@ -1591,11 +1595,11 @@ Only declare code migration done after tests and meaningful checks have run. For
 | `packages/business/api/types.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
 | `packages/business/app/routes/__tests__/app.routes.test.ts` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
 | `packages/business/app/routes/constants/app.routeAccess.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/business/app/routes/constants/app.routes.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/business/app/routes/constants/app.routes.ts` | **Source confirmed:** central app/browser paths implemented; check all consumers remove raw URLs | Source reviewed |
 | `packages/business/app/routes/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
 | `packages/business/auth/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
 | `packages/business/auth/routes/__tests__/auth.routes.test.ts` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/business/auth/routes/constants/auth.routes.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/business/auth/routes/constants/auth.routes.ts` | **Source confirmed:** central auth/browser paths implemented; backend API endpoint constants remain separate | Source reviewed |
 | `packages/business/auth/routes/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
 | `packages/business/auth/services/authentication.ts` | **Confirmed:** backend API path literals; separate transport endpoint constants from frontend page routes | Source reviewed |
 | `packages/business/auth/services/login/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
@@ -1741,43 +1745,47 @@ Only declare code migration done after tests and meaningful checks have run. For
 | `packages/domain/auth/pages/forgotPassword/types/forgotPassword.state.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
 | `packages/domain/auth/pages/forgotPassword/types/forgotPassword.viewModel.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
 | `packages/domain/auth/pages/forgotPassword/types/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/login/Login.tsx` | **Confirmed:** template ternary and config import | Source reviewed |
+| `packages/domain/auth/pages/login/Login.tsx` | **Source confirmed:** mobile/desktop template ternary; move selection to typed renderer, preserve one form | Source reviewed |
 | `packages/domain/auth/pages/login/__tests__/LoginPage.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/domain/auth/pages/login/components/LoginForm/LoginForm.test.tsx` | **Confirmed:** adjacent test and describe('LoginForm presentation'); move to __tests__, use 'LoginForm' | Source reviewed |
-| `packages/domain/auth/pages/login/components/LoginForm/LoginForm.tsx` | **Confirmed:** field strings, ternaries, direct icons, native HTML and literal IDs | Source reviewed |
+| `packages/domain/auth/pages/login/components/LoginForm/LoginForm.test.tsx` | **Source confirmed:** exact `describe('LoginForm')` fixed; still adjacent to component instead of `__tests__`, test mixes mobile template behavior | Source reviewed |
+| `packages/domain/auth/pages/login/components/LoginForm/LoginForm.tsx` | **Source confirmed, urgent:** uses undefined `LOGIN_FIELDS` after switching to `LOGIN_FIELD_CONFIG`; multiple ternaries, raw native controls, direct Lucide, legacy BEM CSS, untyped icon variants | Source reviewed |
 | `packages/domain/auth/pages/login/components/LoginForm/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
 | `packages/domain/auth/pages/login/components/LoginForm/types/loginForm.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/login/config/index.ts` | **Confirmed:** obsolete config barrel; remove | Source reviewed |
-| `packages/domain/auth/pages/login/config/login.config.ts` | **Confirmed:** mixed static copy, fields, rule lambdas and duplicated route strings; split constants/helpers | Source reviewed |
+| `packages/domain/auth/pages/login/constants/login.copy.ts` | Inspect state/logic ownership, utilities, importers and typed identifiers | Content review required |
+| `packages/domain/auth/pages/login/constants/login.errorRules.ts` | Inspect state/logic ownership, utilities, importers and typed identifiers | Content review required |
+| `packages/domain/auth/pages/login/constants/login.fieldConfig.ts` | **Source confirmed:** frozen typed `Record<LoginField, Config>` now implemented | Source reviewed |
+| `packages/domain/auth/pages/login/constants/login.fieldOrder.ts` | **Source confirmed:** immutable enum-backed field order now implemented | Source reviewed |
+| `packages/domain/auth/pages/login/constants/login.fields.ts` | **Source confirmed:** enum-backed email/password identity now implemented; verify all consumers use enum | Source reviewed |
+| `packages/domain/auth/pages/login/constants/login.testIds.ts` | Inspect state/logic ownership, utilities, importers and typed identifiers | Content review required |
+| `packages/domain/auth/pages/login/constants/login.validation.ts` | **Source confirmed:** enum-backed rule metadata now pure; email regex corrected in newer commit; add valid/invalid Unicode/whitespace test coverage | Source reviewed |
+| `packages/domain/auth/pages/login/constants/types/login.fieldConfig.ts` | Review prop/enum contract, data ownership and consumer typechecks | Content review required |
 | `packages/domain/auth/pages/login/containers/loginContainer/LoginContainer.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
 | `packages/domain/auth/pages/login/containers/loginContainer/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
 | `packages/domain/auth/pages/login/containers/loginContainer/types/loginContainer.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/login/helpers/getLoginErrorMessage/__tests__/getLoginErrorMessage.test.ts` | **Confirmed:** describe('login error mapping') must be describe('getLoginErrorMessage'); move to flat helpers/__tests__ | Source reviewed |
-| `packages/domain/auth/pages/login/helpers/getLoginErrorMessage/getLoginErrorMessage.ts` | **Confirmed:** nested helper; native .find, ternary/??; flatten and Base find | Source reviewed |
-| `packages/domain/auth/pages/login/helpers/getLoginErrorMessage/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/login/helpers/getLoginErrorMessage/types/getLoginErrorMessage.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/login/helpers/index.ts` | Forbidden barrel; direct leaf imports | Structural finding |
-| `packages/domain/auth/pages/login/helpers/normalizeLoginEmail/__tests__/normalizeLoginEmail.test.ts` | **Confirmed:** obsolete wrapper-only test; test Base _trim instead | Source reviewed |
-| `packages/domain/auth/pages/login/helpers/normalizeLoginEmail/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/login/helpers/normalizeLoginEmail/normalizeLoginEmail.ts` | **Confirmed:** pure .trim wrapper; replace with Base _trim and remove | Source reviewed |
-| `packages/domain/auth/pages/login/helpers/normalizeLoginEmail/types/normalizeLoginEmail.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/login/helpers/validateLoginCredentials/__tests__/validateLoginCredentials.test.ts` | **Confirmed:** describe('login credential validation') vs exported 'validateLoginCredentials'; move/rename | Source reviewed |
-| `packages/domain/auth/pages/login/helpers/validateLoginCredentials/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/login/helpers/validateLoginCredentials/types/validateLoginCredentials.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/login/helpers/validateLoginCredentials/validateLoginCredentials.ts` | **Confirmed:** nested helper, native .find, rule predicates in config; flatten with typed validator | Source reviewed |
+| `packages/domain/auth/pages/login/helpers/__tests__/login.getErrorMessage.test.ts` | **Source confirmed:** `describe('getLoginErrorMessage')`, unmocked real helper test now correct | Source reviewed |
+| `packages/domain/auth/pages/login/helpers/__tests__/login.getValidationError.test.ts` | **Source confirmed:** `describe('getLoginValidationError')`, no pure-function mock | Source reviewed |
+| `packages/domain/auth/pages/login/helpers/__tests__/login.isValidEmail.test.ts` | **Source confirmed:** `describe('isValidLoginEmail')`, no mock; limited positive domain cases | Source reviewed |
+| `packages/domain/auth/pages/login/helpers/__tests__/login.validateCredentials.test.ts` | **Source confirmed:** `describe('validateLoginCredentials')`, no pure-function mock; preserve password bytes | Source reviewed |
+| `packages/domain/auth/pages/login/helpers/login.getErrorMessage.ts` | **Source confirmed:** flat, safe message mapper using `_find`, no pure mock | Source reviewed |
+| `packages/domain/auth/pages/login/helpers/login.getValidationError.ts` | **Source confirmed:** validation branching resides in helper and maps enum rule kinds, not in constants | Source reviewed |
+| `packages/domain/auth/pages/login/helpers/login.isValidEmail.ts` | **Source confirmed:** pure predicate uses centralized email regex; add edge-case tests | Source reviewed |
+| `packages/domain/auth/pages/login/helpers/login.validateCredentials.ts` | **Source confirmed:** flat helper calls Base `_trim` for email only; password preserved | Source reviewed |
+| `packages/domain/auth/pages/login/helpers/types/login.getErrorMessage.ts` | Review prop/enum contract, data ownership and consumer typechecks | Content review required |
+| `packages/domain/auth/pages/login/helpers/types/login.getValidationError.ts` | Review prop/enum contract, data ownership and consumer typechecks | Content review required |
+| `packages/domain/auth/pages/login/helpers/types/login.validateCredentials.ts` | Review prop/enum contract, data ownership and consumer typechecks | Content review required |
 | `packages/domain/auth/pages/login/hooks/useLogin/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
 | `packages/domain/auth/pages/login/hooks/useLogin/types/useLogin.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
 | `packages/domain/auth/pages/login/hooks/useLogin/useLogin.test.tsx` | Move test inside owner __tests__; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
 | `packages/domain/auth/pages/login/hooks/useLogin/useLogin.tsx` | **Confirmed:** composes peer hooks; unify ownership under useLoginForm | Source reviewed |
 | `packages/domain/auth/pages/login/hooks/useLoginActions/index.ts` | Move peer hook under owning useLoginForm hook or combine into it | Structural finding |
 | `packages/domain/auth/pages/login/hooks/useLoginActions/types/useLoginActions.ts` | Move peer hook under owning useLoginForm hook or combine into it | Structural finding |
-| `packages/domain/auth/pages/login/hooks/useLoginActions/useLoginActions.ts` | **Confirmed:** ternary in field-error state updates and peer action hook; nested single owner | Source reviewed |
+| `packages/domain/auth/pages/login/hooks/useLoginActions/useLoginActions.ts` | **Source confirmed:** field enum and if-based error clearing implemented; still peer state/action hook, should be nested under useLoginForm | Source reviewed |
 | `packages/domain/auth/pages/login/hooks/useLoginForm/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
 | `packages/domain/auth/pages/login/hooks/useLoginForm/types/useLoginForm.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
 | `packages/domain/auth/pages/login/hooks/useLoginForm/useLoginForm.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
 | `packages/domain/auth/pages/login/hooks/useLoginSubmission/index.ts` | Move peer hook under owning useLoginForm hook or combine into it | Structural finding |
 | `packages/domain/auth/pages/login/hooks/useLoginSubmission/types/useLoginSubmission.ts` | Move peer hook under owning useLoginForm hook or combine into it | Structural finding |
-| `packages/domain/auth/pages/login/hooks/useLoginSubmission/useLoginSubmission.ts` | **Confirmed:** page config route, native Object.keys and helper barrels; refactor | Source reviewed |
+| `packages/domain/auth/pages/login/hooks/useLoginSubmission/useLoginSubmission.ts` | **Source confirmed:** uses `APP_ROUTE.DASHBOARD`, `_keys`, flat helpers; peer submission hook still outside one owner | Source reviewed |
 | `packages/domain/auth/pages/login/hooks/useLoginViewport/helpers/getMobileSnapshot/getMobileSnapshot.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
 | `packages/domain/auth/pages/login/hooks/useLoginViewport/helpers/getMobileSnapshot/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
 | `packages/domain/auth/pages/login/hooks/useLoginViewport/helpers/getMobileSnapshot/types/getMobileSnapshot.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
@@ -1788,10 +1796,10 @@ Only declare code migration done after tests and meaningful checks have run. For
 | `packages/domain/auth/pages/login/hooks/useLoginViewport/types/useLoginViewport.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
 | `packages/domain/auth/pages/login/hooks/useLoginViewport/useLoginViewport.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
 | `packages/domain/auth/pages/login/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/login/templates/desktopLogin/DesktopLogin.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/auth/pages/login/templates/desktopLogin/DesktopLogin.tsx` | **Source confirmed:** central `AUTH_ROUTE.FORGOT_PASSWORD` fixed; still native Link and raw global class | Source reviewed |
 | `packages/domain/auth/pages/login/templates/desktopLogin/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
 | `packages/domain/auth/pages/login/templates/desktopLogin/types/desktopLogin.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/login/templates/mobileLogin/MobileLogin.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/auth/pages/login/templates/mobileLogin/MobileLogin.tsx` | **Source confirmed:** central `AUTH_ROUTE.FORGOT_PASSWORD` fixed; still native Link and raw global class | Source reviewed |
 | `packages/domain/auth/pages/login/templates/mobileLogin/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
 | `packages/domain/auth/pages/login/templates/mobileLogin/types/mobileLogin.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
 | `packages/domain/auth/pages/login/types/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
@@ -1929,28 +1937,28 @@ Only declare code migration done after tests and meaningful checks have run. For
 | `packages/domain/settings/index.ts` | Remove unused UI domain after route/importer check | Structural finding |
 | `packages/domain/settings/pages/SecurityPage.tsx` | Remove unused UI domain after route/importer check | Structural finding |
 | `packages/shell/RUNBOOK.md` | Check documentation examples/references against current source | Documentation review |
-| `packages/shell/Shell.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/shell/Shell.tsx` | **Source confirmed:** native layout/button; sidebarCollapsed ternary builds BEM class; use Box/Button and named class helper | Source reviewed |
 | `packages/shell/components/appRoutes/AppRoutes.tsx` | **Confirmed:** direct .map route JSX, mixed route policy; central route constants and renderer | Source reviewed |
 | `packages/shell/components/appRoutes/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
 | `packages/shell/components/appRoutes/types/appRoutes.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/shell/components/mobileNav/MobileNav.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/shell/components/mobileNav/MobileNav.tsx` | **Source confirmed:** direct Lucide, literal `/dashboard`, conditional class ternary and native nav/button | Source reviewed |
 | `packages/shell/components/mobileNav/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
 | `packages/shell/components/mobileNav/types/mobileNav.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/shell/components/pinnedNavigation/PinnedApp.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/shell/components/pinnedNavigation/PinnedNavigation.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/shell/components/pinnedNavigation/PinnedApp.tsx` | **Source confirmed:** direct Lucide, NavLink class ternary, raw button/div/span; semantic components | Source reviewed |
+| `packages/shell/components/pinnedNavigation/PinnedNavigation.tsx` | **Source confirmed:** native flatMap/find/map, entries/empty ternary, native nav/p; move to Base and renderer | Source reviewed |
 | `packages/shell/components/pinnedNavigation/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
 | `packages/shell/components/pinnedNavigation/types/pinnedNavigation.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
 | `packages/shell/components/protectedLayout/ProtectedLayout.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
 | `packages/shell/components/protectedLayout/__tests__/ProtectedLayout.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
 | `packages/shell/components/protectedLayout/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
 | `packages/shell/components/protectedLayout/types/protectedLayout.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/shell/components/sidebar/Sidebar.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/shell/components/sidebar/Sidebar.tsx` | **Source confirmed:** direct Lucide, native buttons/aside, raw routes and class/label ternaries | Source reviewed |
 | `packages/shell/components/sidebar/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
 | `packages/shell/components/sidebar/types/sidebar.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/shell/components/themeChoices/ThemeChoices.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/shell/components/themeChoices/ThemeChoices.tsx` | **Source confirmed:** inline theme option literals and selection ternary, native button, direct icons; constants + renderer | Source reviewed |
 | `packages/shell/components/themeChoices/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
 | `packages/shell/components/themeChoices/types/themeChoices.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/shell/components/topbar/Topbar.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/shell/components/topbar/Topbar.tsx` | **Source confirmed:** direct Lucide, native header/button/span markup and global BEM | Source reviewed |
 | `packages/shell/components/topbar/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
 | `packages/shell/components/topbar/types/topbar.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
 | `packages/shell/containers/shellContainer/ShellContainer.tsx` | **Confirmed:** QueryClient construction/options mixed; separate constant and factory | Source reviewed |
@@ -1964,15 +1972,15 @@ Only declare code migration done after tests and meaningful checks have run. For
 | `packages/shell/hooks/useShellActions/useShellActions.ts` | **Confirmed:** duplicated boolean setters; native includes/filter; writes persistence in state updater | Source reviewed |
 | `packages/shell/hooks/useShellState/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
 | `packages/shell/hooks/useShellState/types/useShellState.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/shell/hooks/useShellState/useShellState.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/shell/hooks/useShellState/useShellState.ts` | **Source confirmed:** independent peer state owner; fold into authoritative useShell contract | Source reviewed |
 | `packages/shell/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
 | `packages/shell/layout/AppLauncher.tsx` | **Confirmed:** monolithic catalog, native button/input, inline filter and raw class/route/icon | Source reviewed |
-| `packages/shell/registry/appCatalog.registry.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/shell/registry/appCatalog.registry.ts` | **Source confirmed:** direct Lucide import, literal `/dashboard` duplicated and hard-coded pin descriptors; use shared route/icon constants | Source reviewed |
 | `packages/shell/registry/domains.registry.tsx` | **Confirmed:** inline route strings, raw purpose and legacy redirect; business path contracts | Source reviewed |
 | `packages/shell/registry/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
 | `packages/shell/storage/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
 | `packages/shell/storage/types/workspacePreferences.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/shell/storage/workspacePreferences.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/shell/storage/workspacePreferences.ts` | **Source confirmed:** inline storage keys, native filter/map and Set policy; constant keys and helper, preserve SSR/privacy handling | Source reviewed |
 | `packages/shell/types/shell.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
 | `packages/styles/RUNBOOK.md` | Check documentation examples/references against current source | Documentation review |
 | `packages/styles/base.css` | Review token colors, theme parity, media breakpoints and global selector ownership | Content review required |
@@ -1985,10 +1993,10 @@ Only declare code migration done after tests and meaningful checks have run. For
 | `packages/styles/utilities.css` | Review token colors, theme parity, media breakpoints and global selector ownership | Content review required |
 | `pnpm-lock.yaml` | Generated dependency snapshot; validate with frozen pnpm install, not manual code refactoring | Tracked metadata |
 | `scripts/check-boundaries.mjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
-| `scripts/check-layout-assets.mjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
+| `scripts/check-layout-assets.mjs` | **Source confirmed:** resolves route source by regex; catalog `/dashboard` check breaks with route constants instead of literal paths (latest failing CI) | Source reviewed |
 | `scripts/check-styles.mjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
 | `scripts/check-ui-contracts.mjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
-| `scripts/check-units.mjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
+| `scripts/check-units.mjs` | **Source confirmed:** enforces nested helper index.ts/contracts for Base and some page helpers, contradicting Rev 8 flat-helper rule; rewrite checker by ownership | Source reviewed |
 | `scripts/download-school-images.mjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
 | `scripts/prerender-public-pages.mjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
 | `scripts/test/polyfills.cjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
@@ -1996,3 +2004,17 @@ Only declare code migration done after tests and meaningful checks have run. For
 | `scripts/test/transformEsm.cjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
 | `tsconfig.json` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
 | `vite.config.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+
+## 41. Cross-cutting confirmed blockers and review priorities
+
+**Current priority evidence:**
+
+1. `pages/login/components/LoginForm/LoginForm.tsx` still refers to `LOGIN_FIELDS` despite importing `LOGIN_FIELD_CONFIG`; this is an unresolved symbol and should be found by TypeScript once the architecture gate passes. The field config already exists; fix both field descriptors without altering autofill.
+2. New Base `_find`/`_keys`/`_map`/`_trim` types were missing in commit `200d35de`, but the subsequent `b8340847` commit added contracts. Do **not** keep reporting that older failure as unresolved without checking the latest head.
+3. `scripts/check-layout-assets.mjs` currently compares string catalog paths against route registration that now uses `APP_ROUTE.DASHBOARD`. Its static regex does not correctly resolve that identifier, producing a false `catalog path /dashboard has no implemented protected route` architecture failure. Use a shared typed descriptor/route manifest rather than source-code regex parsing.
+4. `scripts/check-units.mjs` still requires nested helper folders, their `index.ts` and callable `types`; Revision 8 explicitly requires flat page helpers and no helper barrels. The checker must distinguish Base leaf utility units from flat domain page helpers instead of enforcing opposite conventions.
+5. Login helpers and exact suite names are now mostly migrated; login presentation, auth provider, recovery hooks, shell JSX, app launcher and legacy CSS remain substantial nonconformant areas. Do not mark a package complete when only constants or tests were reorganized.
+6. Public site/dashboard CSS has large legacy/global files; style migration requires CSS selector-to-DOM ownership mapping and real dark/light/mobile browser checks. Deleting CSS by regex or mass rename is unsafe.
+7. `domain/accounts`, `domain/people`, `domain/integrations`, `domain/settings` remain unimplemented UI-domain deletion candidates. Check all static/dynamic dependencies and exports before deleting, while preserving any real business/auth services.
+
+**Audit method limitation:** Every path is inventoried, but only rows explicitly marked **Source reviewed** were read/verified at the code-content level in this audit. The other entries are obligations, not a completed manual line-by-line review. Full AST no-ternary, import ownership, pure-test mocking, dead-symbol detection, JSX primitive enforcement and SCSS module validations must be implemented as automated repository checks before claiming exhaustive compliance.
