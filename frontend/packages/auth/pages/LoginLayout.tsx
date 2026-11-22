@@ -60,8 +60,8 @@ export const LoginLayout = ({ children, title, description, mobileDescription, m
           </div>
           <div className="rdr-login-v2__visual-copy">
             <span className="rdr-login-v2__visual-kicker"><span/> A PLACE TO BELONG</span>
-            <h2>Growing minds.<br/><em>Brighter futures.</em></h2>
-            <p>Learning, character and community — together at RDR School.</p>
+            <h2>For every school day.<br/><em>And everyone behind it.</em></h2>
+            <p>A connected space for the people who make learning happen.</p>
             <div className="rdr-login-v2__visual-footer"><span>HALUHERA</span><i aria-hidden="true"/><span>REWARI, HARYANA</span></div>
           </div>
         </section>
