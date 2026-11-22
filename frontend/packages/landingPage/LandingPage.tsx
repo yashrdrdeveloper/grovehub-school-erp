@@ -359,11 +359,11 @@ const HomePage = () => (
           <div className="rdr-o1-hero__proof"><span>CBSE affiliated</span><span>Senior Secondary</span><span>Rewari, Haryana</span></div>
         </div>
         <div className="rdr-o1-hero__images">
-          <ImageCard className="rdr-o1-hero__main-photo" src={photographs[0].src} alt={photographs[0].alt} position={photographs[0].position} loading="eager">
+          <ImageCard className="rdr-o1-hero__main-photo" src={photographs[4].src} alt={photographs[4].alt} position={photographs[4].position} loading="eager">
             <span className="rdr-o1-hero__photo-caption">A school full of familiar faces.</span>
           </ImageCard>
           <div className="rdr-o1-hero__image-side">
-            <ImageCard className="rdr-o1-hero__side-photo" src={photographs[1].src} alt={photographs[1].alt} position={photographs[1].position} loading="eager"/>
+            <ImageCard className="rdr-o1-hero__side-photo" src={photographs[0].src} alt={photographs[0].alt} position={photographs[0].position} loading="eager"/>
             <div className="rdr-o1-hero__note"><strong>Learning with purpose.</strong><small>Growing together since 2006.</small></div>
           </div>
         </div>
@@ -376,15 +376,15 @@ const HomePage = () => (
       </div>
       <div className="rdr-o1-life__grid">
         <Link to="/gallery" className="rdr-o1-life__card">
-          <ImageCard src={photographs[1].src} alt={photographs[1].alt} position={photographs[1].position}/>
+          <ImageCard src={photographs[0].src} alt={photographs[0].alt} position={photographs[0].position}/>
           <span>ACHIEVEMENT</span><h3>Celebrating every milestone.</h3><p>Recognising effort, confidence and achievement.</p>
         </Link>
         <Link to="/gallery" className="rdr-o1-life__card">
-          <ImageCard src={photographs[2].src} alt={photographs[2].alt} position={photographs[2].position}/>
+          <ImageCard src={photographs[1].src} alt={photographs[1].alt} position={photographs[1].position}/>
           <span>EXPRESSION</span><h3>More than textbooks.</h3><p>Music, movement and the joy of participating.</p>
         </Link>
         <Link to="/gallery" className="rdr-o1-life__card">
-          <ImageCard src={photographs[3].src} alt={photographs[3].alt} position={photographs[3].position}/>
+          <ImageCard src={photographs[2].src} alt={photographs[2].alt} position={photographs[2].position}/>
           <span>BELONGING</span><h3>Growing with confidence.</h3><p>Creating space for curiosity and friendships.</p>
         </Link>
       </div>
