@@ -1,5 +1,88 @@
 # Frontend Code Guidelines
 
+## Revision 10 addendum — strict ownership, Dialog, forms and remaining legacy work (23 November 2026)
+
+**Precedence:** This addendum overrides any older example that keeps transport operations in a domain root, declares `types.ts` beside a domain index, imports a `Dialog/parts` barrel, duplicates form-control ID logic, or treats a CSS filename change as a genuine styling migration. These requirements apply to every future domain/service/component, not only authentication.
+
+### A. Reusable compound components: one named unit per component
+
+A compound component owns a `components/` directory; each exported subcomponent owns a named subfolder with its own `<Component>.tsx`, `types/<component>.props.ts` and public `index.ts`. The parent component alone composes these units; consumers import only the parent unit's explicit public exports. **Flat `parts.ts`, `components.ts`, `primitives.ts`, anonymous Radix spreads, and broad vendor passthrough barrels are forbidden.** Example:
+
+~~~text
+packages/components/components/Dialog/
+├── Dialog.tsx
+├── types/dialog.props.ts
+├── index.ts
+├── __tests__/Dialog.test.tsx
+└── components/
+    ├── root/{DialogRoot.tsx,types/root.props.ts,index.ts}
+    ├── portal/{DialogPortal.tsx,types/portal.props.ts,index.ts}
+    ├── overlay/{DialogOverlay.tsx,types/overlay.props.ts,index.ts}
+    ├── content/{DialogContent.tsx,types/content.props.ts,index.ts}
+    ├── title/{DialogTitle.tsx,types/title.props.ts,index.ts}
+    ├── description/{DialogDescription.tsx,types/description.props.ts,index.ts}
+    └── close/{DialogClose.tsx,types/close.props.ts,index.ts}
+~~~
+
+Use `@Components/components/Dialog` to consume `DialogRoot`, `DialogPortal`, etc. The implementation may import Radix, but application/domain/shell code never does. Preserve refs, focus trap, focus restoration, screen reader labels, portals, Escape and overlay dismissal. A `DialogRoot` and its seven named components are not seven separate applications or providers.
+
+### B. Form IDs and accessibility: named tested helpers only
+
+Do not normalize a field label inline with regex or chain `filter(Boolean).join(' ')` in `Input`, `PasswordField` or any form component. The shared `FormField` owner publishes narrowly typed, tested leaf helpers `getFormFieldControlTestId`, `getFormFieldDescriptionId` and `getFormFieldCombinedDescription` from its explicit component entrypoint. Its helper implementation lives under `FormField/helpers/formField.<useCase>.ts`, contracts under `helpers/types/`, and tests under `helpers/__tests__/`. Do not create a helper barrel, nest one helper per folder or duplicate the helper in consumers.
+
+Label-normalization and collection operations must go through typed `@Base/utilities/kebabCase`, `@Base/utilities/compact`, `@Base/utilities/join` gateways backed by Lodash. Shared form presentation components reuse `FormField`, `InputControl`, `Box` and `Button`. `htmlFor`, unique deterministic `data-testid` selectors, `aria-describedby`, `aria-invalid`, visibility toggles and disabled behavior remain intact. Tests exercise both the pure helper contract **without mocks** and the rendered accessible field.
+
+### C. Service-local versus domain-local ownership (enforce for all business packages)
+
+~~~text
+packages/business/<domain>/
+├── index.ts                                  # intentional public boundary
+├── constants/                                # domain routes + domain-wide values only
+│   ├── <domain>.routeIds.ts
+│   ├── <domain>.routeConfig.ts
+│   └── types/
+├── helpers/                                  # domain-level route/domain logic only
+│   ├── <domain>.routes.ts
+│   ├── types/
+│   └── __tests__/
+├── types/                                    # NO root-level types.ts
+│   ├── <domain>.contracts.ts
+│   ├── baseEntities/
+│   └── index.ts                              # intentional, type-only API only
+└── services/
+    ├── constants/
+    │   ├── <domain>.operations.ts
+    │   ├── <domain>.endpoints.ts
+    │   └── <domain>.proofScheme.ts
+    ├── helpers/
+    │   ├── <domain>.getEndpoint.ts
+    │   ├── <domain>.getProofHeader.ts
+    │   ├── types/
+    │   └── __tests__/
+    ├── <operation>/
+    │   ├── <operation>.ts
+    │   ├── types/<operation>.ts
+    │   ├── types/<operation>.request.ts
+    │   ├── types/<operation>.response.ts
+    │   ├── __tests__/
+    │   └── index.ts
+    ├── <domain>.operations.ts
+    └── <domain>entication.ts                 # typed public facade where applicable
+~~~
+
+The last file name is schematic: use a descriptive domain-named facade such as `authentication.ts`, not a literal `<domain>entication.ts`. This layout is not permission to create directories without code; add only necessary folders. Any transport method, API endpoint path, wire-proof scheme, request operation enum, or operation dispatch helper belongs **inside `services/`**. A browser route configuration remains at the domain level because it has a different lifecycle and consumer set. Re-export service types/constants through an intentional domain public API; do not make shell/domain layers deep-import service internals. In `types/`, a type-only `index.ts` is permitted as a public type API; **the ban on `index.ts` applies to `helpers/`, `constants/` and `renderer/`**.
+
+Do not retain moved files as compatibility shims at `business/<domain>/types.ts` or in its old service-metadata `constants/`/`helpers/`. Update call sites and tests, delete old paths and ensure imports compile. Keep browser-route IDs/config and transport-operation IDs/config separate. Tests under `services/helpers/__tests__` name the exact exported helper. Avoid mocking pure utilities.
+
+### D. Enforcement and migration completion
+
+The architecture gate must prevent fresh `Dialog/parts.ts`, direct `Dialog/parts` imports, legacy root `business/<domain>/types.ts`, and misplaced service metadata or transport helpers. TypeScript, unit tests, Vite production build and SEO artifacts remain blocking. Prettier uses single quotes, semicolons, two-space indentation, 100-character print width and trailing commas. Every modified owner unit must be formatted; do not compress hooks, handlers, React JSX or declarations.
+
+Legacy style work is tracked **honestly**, not made green by moving global selectors into a differently named file or wrapping every old selector with `:global`. Real migration requires consumer inventory, owner-specific CSS Modules or Sass Modules, className mapping, verified light/dark + mobile layout and a11y checks. Do not remove or reclassify remaining audit findings without actual migration evidence. An informational audit is **not** a promise that CSS Module migration is finished. CI should enforce no *new* known legacy anti-patterns while existing migrations progress.
+
+---
+
+
 ## Revision 9 addendum — mandatory architecture and formatting contract (23 November 2026)
 
 The rules in this addendum supersede any inconsistent older example below. Apply the same structure across `domain`, `shell`, `business`, `components` and their child units; only placement/ownership differs.
@@ -51,7 +134,7 @@ Its CVA variant keys, default values and typed props must reference the **same c
 
 A route is an immutable typed description `{ id, name, path, type }` with a `RouteType.PUBLIC` or `RouteType.PROTECTED` enum. `business/baseEntities/routes.ts` owns the generic route entity; `business/baseEntities/constants/` and `types/` own route enums/contracts. `business/helpers/routes.ts` owns typed `getRoute(config, id)` and missing-route behavior. Each domain, such as auth, owns `AUTH_ROUTE_IDS` and `AUTH_ROUTE_CONFIG: readonly RouteEntity[]` under `business/auth/constants/`; `business/auth/helpers/auth.routes.ts` exposes `getAuthRoute` and convenience getters like `getLoginRoute`, `getForgotPasswordRoute`. A browser route dictionary retained for compatibility must **derive from** the config/getters, not redefine paths. Public/protected route registration must reference the exact route metadata. The browser route registry is separate from transport API endpoint metadata.
 
-Transport operations belong in `business/<domain>/services/<operation>/`, each with a named request/response/callable type, public entrypoint and tests. `business/<domain>/constants/<domain>.operations.ts` owns an enum/enum-like operation ID; `constants/<domain>.endpoints.ts` owns method/path metadata. A typed dispatch `{ [AUTH_OPERATION.LOGIN]: login, ... }` may be used for operations with compatible signatures; heterogeneous operations should use a typed map of factories or a typed facade (do not erase types with `any`). Never duplicate `'/identity/public/auth'` or individual operation URLs in multiple services. Avoid changes to authentication cookies, CSRF headers, and reset/invitation grants while extracting transport metadata.
+Transport operations belong in `business/<domain>/services/<operation>/`, each with a named request/response/callable type, public entrypoint and tests. `business/<domain>/services/constants/<domain>.operations.ts` owns an enum/enum-like operation ID; `services/constants/<domain>.endpoints.ts` owns method/path metadata. A typed dispatch `{ [AUTH_OPERATION.LOGIN]: login, ... }` may be used for operations with compatible signatures; heterogeneous operations should use a typed map of factories or a typed facade (do not erase types with `any`). Never duplicate `'/identity/public/auth'` or individual operation URLs in multiple services. Avoid changes to authentication cookies, CSRF headers, and reset/invitation grants while extracting transport metadata.
 
 ### Hook ownership, theme enum and error isolation
 
@@ -68,13 +151,13 @@ Use **two spaces** per indentation, semicolons, single quotes, braces around mul
 ---
 
 
-> **Status:** Mandatory, authoritative frontend engineering standard — **Revision 9 (November 2026)**.
+> **Status:** Mandatory, authoritative frontend engineering standard — **Revision 10 (November 2026)**.
 >
 > **Scope:** Every source file under `frontend/`, including `app`, `packages/base`, `packages/business`, `packages/components`, `packages/styles`, `packages/assets`, `packages/domain`, `packages/shell`, unit tests, integration tests, styles, generated code boundaries, and scripts.
 >
 > **Stack:** React 19, TypeScript strict, pnpm, Vite, Tailwind CSS 4, shadcn-compatible Radix primitives, Lucide icons through the components package, Jest, and the existing project architecture checks.
 >
-> **Precedence:** Revision 9 addendum and Revision 8 rules on route ownership, tests, and flat helper/constant units override older examples. Generic examples illustrate reusable patterns; actual GrooveHub migration paths are recorded separately in the audit inventory. This document replaces previous frontend guideline revisions and examples. Existing code that differs is **migration debt**, not an exception to this standard. Do not claim implementation is complete until checks and behavior regressions pass.
+> **Precedence:** Revision 10 addendum, Revision 9 addendum and Revision 8 rules on route ownership, tests, and flat helper/constant units override older examples. Generic examples illustrate reusable patterns; actual GrooveHub migration paths are recorded separately in the audit inventory. This document replaces previous frontend guideline revisions and examples. Existing code that differs is **migration debt**, not an exception to this standard. Do not claim implementation is complete until checks and behavior regressions pass.
 
 ## 1. Non-negotiable principles
 
