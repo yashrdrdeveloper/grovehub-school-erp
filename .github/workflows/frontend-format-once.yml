@@ -1,0 +1,44 @@
+name: One-time frontend CSS Module formatting
+
+on:
+  push:
+    branches:
+      - phase-2.1-identity-account
+    paths:
+      - 'frontend/scripts/format-migration.trigger'
+
+permissions:
+  contents: write
+
+jobs:
+  format-migrated-css:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - name: Format owned CSS Modules
+        run: pnpm exec prettier --write "packages/**/*.module.css"
+      - name: Commit formatting-only changes
+        run: |
+          git add packages
+          if git diff --cached --quiet; then
+            echo "Already formatted"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "style(frontend): format owner-scoped CSS Modules"
+          git push origin HEAD:refs/heads/phase-2.1-identity-account
