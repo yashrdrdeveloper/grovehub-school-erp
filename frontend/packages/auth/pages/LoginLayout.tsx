@@ -59,7 +59,7 @@ export const LoginLayout = ({ children, title, description, mobileDescription, m
           <div className="rdr-login-v2__mobile-header">
             <div className="rdr-login-v2__mobile-identity" aria-label="RDR School">
               <AuthMobileRdrMark/>
-              <span className="rdr-login-v2__mobile-school-name">RDR School</span>
+              <span className="rdr-login-v2__mobile-school-name">RDR School<small>Your school workspace</small></span>
             </div>
           </div>
           <div className="rdr-login-v2__visual-brand">
@@ -70,7 +70,7 @@ export const LoginLayout = ({ children, title, description, mobileDescription, m
             <span className="rdr-login-v2__visual-kicker"><span/> THE RDR SCHOOL WORKSPACE</span>
             <h2>For every school day.<br/><em>And everyone behind it.</em></h2>
             <p>A connected space for the people who make learning happen.</p>
-            <div className="rdr-login-v2__visual-footer"><span>HALUHERA</span><i aria-hidden="true"/><span>REWARI, HARYANA</span></div>
+            <div className="rdr-login-v2__visual-footer"><span>LEARN</span><i aria-hidden="true"/><span>ORGANISE</span><i aria-hidden="true"/><span>GROW</span></div>
           </div>
         </section>
         <section className="rdr-login-v2__content" aria-labelledby="rdr-auth-title">
@@ -90,16 +90,17 @@ export const LoginLayout = ({ children, title, description, mobileDescription, m
           </div>
           <div className="rdr-login-v2__main">
             <div className="rdr-login-v2__heading">
-              <span className="rdr-login-v2__eyebrow"><GraduationCap size={15}/>{eyebrow}</span>
+              <span className="rdr-login-v2__eyebrow">{eyebrow}</span>
               <h1 id="rdr-auth-title">{title}</h1>
               <p className="rdr-login-v2__description-desktop">{description}</p>
               <p className="rdr-login-v2__description-mobile">{mobileDescription ?? description}</p>
             </div>
             {minimalMobile && <><h2 className="rdr-login-v2__mobile-signin-title">{mobileTitle}</h2><p className="rdr-login-v2__mobile-description">{mobileDescription ?? description}</p></>}
             {children}
+            <div className="rdr-o1-auth-footer"><span>© RDR School</span><span>Haluhera · Rewari</span></div>
             <div className="rdr-login-v2__closing">
               <span className="rdr-login-v2__closing-rule"/>
-              <span>RDR SCHOOL · REWARI</span>
+              <span>♢ &nbsp; A secure workspace for RDR School</span>
               <span className="rdr-login-v2__closing-rule"/>
             </div>
           </div>
