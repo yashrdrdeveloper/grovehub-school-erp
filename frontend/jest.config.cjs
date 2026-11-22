@@ -6,11 +6,51 @@ module.exports = {
     '<rootDir>/packages/**/*.test.tsx',
   ],
   transform: {
-    '^.+\\.tsx?$': [
+    '^.+\\.tsx?
+  moduleNameMapper: {
+    '^.+\\.(css|scss)$': '<rootDir>/scripts/test/styleMock.cjs',
+    '^@Base$': '<rootDir>/packages/base',
+    '^@Base/(.*)$': '<rootDir>/packages/base/$1',
+    '^@Business$': '<rootDir>/packages/business',
+    '^@Business/(.*)$': '<rootDir>/packages/business/$1',
+    '^@Components$': '<rootDir>/packages/components',
+    '^@Components/(.*)$': '<rootDir>/packages/components/$1',
+    '^@Domain$': '<rootDir>/packages/domain',
+    '^@Domain/(.*)$': '<rootDir>/packages/domain/$1',
+    '^@Assets$': '<rootDir>/packages/assets',
+    '^@Assets/(.*)$': '<rootDir>/packages/assets/$1',
+    '^@Styles$': '<rootDir>/packages/styles',
+    '^@Styles/(.*)$': '<rootDir>/packages/styles/$1',
+    '^@Shell$': '<rootDir>/packages/shell',
+    '^@Shell/(.*)$': '<rootDir>/packages/shell/$1',
+  },
+};
+: [
       'ts-jest',
       { tsconfig: { module: 'CommonJS', jsx: 'react-jsx' } },
     ],
+    '^.+\\.js
+  moduleNameMapper: {
+    '^.+\\.(css|scss)$': '<rootDir>/scripts/test/styleMock.cjs',
+    '^@Base$': '<rootDir>/packages/base',
+    '^@Base/(.*)$': '<rootDir>/packages/base/$1',
+    '^@Business$': '<rootDir>/packages/business',
+    '^@Business/(.*)$': '<rootDir>/packages/business/$1',
+    '^@Components$': '<rootDir>/packages/components',
+    '^@Components/(.*)$': '<rootDir>/packages/components/$1',
+    '^@Domain$': '<rootDir>/packages/domain',
+    '^@Domain/(.*)$': '<rootDir>/packages/domain/$1',
+    '^@Assets$': '<rootDir>/packages/assets',
+    '^@Assets/(.*)$': '<rootDir>/packages/assets/$1',
+    '^@Styles$': '<rootDir>/packages/styles',
+    '^@Styles/(.*)$': '<rootDir>/packages/styles/$1',
+    '^@Shell$': '<rootDir>/packages/shell',
+    '^@Shell/(.*)$': '<rootDir>/packages/shell/$1',
   },
+};
+: '<rootDir>/scripts/test/transformEsm.cjs',
+  },
+  transformIgnorePatterns: ['/node_modules/(?!lodash-es/)'],
   moduleNameMapper: {
     '^.+\\.(css|scss)$': '<rootDir>/scripts/test/styleMock.cjs',
     '^@Base$': '<rootDir>/packages/base',

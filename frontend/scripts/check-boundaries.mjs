@@ -26,7 +26,7 @@ const forbidden = {
   styles: ['@Base', '@Business', '@Components', '@Domain', '@Shell', '@Assets', '@Auth'],
   assets: ['@Base', '@Business', '@Components', '@Domain', '@Shell', '@Styles', '@Auth'],
   domain: ['@Shell', '@Auth/'],
-  shell: ['@Business', '@Auth'],
+  shell: ['@Auth'],
 };
 
 const files = await walk(root);
@@ -41,6 +41,10 @@ for (const filename of files) {
   for (const name of imports) {
     if ((forbidden[category] ?? []).some((prefix) => name === prefix || name.startsWith(prefix + '/'))) {
       problems.push(`${relative}: illegal dependency ${name}`);
+    }
+    if (category === 'shell' && name.startsWith('@Business')
+      && name !== '@Business/app/routes' && name !== '@Business/auth/routes') {
+      problems.push(`${relative}: shell may only import pure @Business/app/routes or @Business/auth/routes, not ${name}`);
     }
     if (category === 'shell' && /^@Domain\/[^/]+\//.test(name)) {
       problems.push(`${relative}: shell cannot deep-import a domain: ${name}`);
