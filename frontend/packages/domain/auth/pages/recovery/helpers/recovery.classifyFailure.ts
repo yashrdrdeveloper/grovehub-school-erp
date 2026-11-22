@@ -1,5 +1,5 @@
 import { ApiError } from '@Business/api';
-import type { ClassifyRecoveryFailure } from './types/classifyRecoveryFailure';
+import type { ClassifyRecoveryFailure } from './types/recovery.classifyFailure';
 
 export const classifyRecoveryFailure: ClassifyRecoveryFailure = failure => {
   if (!(failure instanceof ApiError)) return 'retryable';

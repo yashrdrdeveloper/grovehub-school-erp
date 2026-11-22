@@ -1,5 +1,5 @@
 import { ApiError } from '@Business/api';
-import { classifyRecoveryFailure } from '../classifyRecoveryFailure';
+import { classifyRecoveryFailure } from '../recovery.classifyFailure';
 
 describe('classifyRecoveryFailure', () => {
   it('recognizes the server lock decision', () => {

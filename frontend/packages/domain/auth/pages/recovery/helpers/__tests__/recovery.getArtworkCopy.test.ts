@@ -1,4 +1,4 @@
-import { getRecoveryArtworkCopy } from '../getRecoveryArtworkCopy';
+import { getRecoveryArtworkCopy } from '../recovery.getArtworkCopy';
 
 describe('getRecoveryArtworkCopy', () => {
   it('uses invitation guidance for incomplete invitation links', () => {

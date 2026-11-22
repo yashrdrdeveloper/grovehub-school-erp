@@ -1,4 +1,4 @@
-import type { ValidateRecoveryPassword } from './types/validateRecoveryPassword';
+import type { ValidateRecoveryPassword } from './types/recovery.validatePassword';
 
 /** Pure browser-side checks must not count toward server setup attempts. */
 export const validateRecoveryPassword: ValidateRecoveryPassword = ({ password, confirmation }) => {

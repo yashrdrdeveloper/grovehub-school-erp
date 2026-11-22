@@ -1,5 +1,5 @@
-import type { RecoveryArtworkCopy, RecoveryPurpose, RecoveryViewState } from '../../types';
-import type { GetRecoveryArtworkCopy } from './types/getRecoveryArtworkCopy';
+import type { RecoveryArtworkCopy, RecoveryPurpose, RecoveryViewState } from '../types';
+import type { GetRecoveryArtworkCopy } from './types/recovery.getArtworkCopy';
 
 /** Single source of truth for the invitation/reset state text. */
 const COPY: Record<RecoveryPurpose, Record<RecoveryViewState, RecoveryArtworkCopy>> = {

@@ -1,7 +1,7 @@
 import { AlertCircle, Clock3, Link2Off, PartyPopper, ShieldCheck, Sparkles } from '@Components/icons';
 
 import { AuthStatusArt } from '../../../../components/authStatusArt';
-import { getRecoveryArtworkCopy } from '../../helpers/getRecoveryArtworkCopy';
+import { getRecoveryArtworkCopy } from '../../helpers/recovery.getArtworkCopy';
 import type { RecoveryArtworkComponent } from './types/recoveryArtwork';
 
 /** State rendering and wording are separate from recovery operations. */

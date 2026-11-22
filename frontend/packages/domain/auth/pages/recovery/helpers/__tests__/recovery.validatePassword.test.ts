@@ -1,4 +1,4 @@
-import { validateRecoveryPassword } from '../validateRecoveryPassword';
+import { validateRecoveryPassword } from '../recovery.validatePassword';
 
 describe('validateRecoveryPassword', () => {
   it('requires both fields', () => {

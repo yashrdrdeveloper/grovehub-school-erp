@@ -3,8 +3,8 @@ import { authenticationApi } from '@Business/auth';
 import { accountsApi } from '@Business/accounts';
 import { _keys } from '@Base/utilities/keys';
 import { clearRecoveryFlow } from '../../../../../../core/session/recoveryFlowSession';
-import { validateRecoveryPassword } from '../../../../helpers/validateRecoveryPassword';
-import { classifyRecoveryFailure } from '../../../../helpers/classifyRecoveryFailure';
+import { validateRecoveryPassword } from '../../../../helpers/recovery.validatePassword';
+import { classifyRecoveryFailure } from '../../../../helpers/recovery.classifyFailure';
 import type { UseRecoverySubmission } from './types/useRecoverySubmission';
 
 /** Serializes password changes; server classifications alone consume retry budget. */
