@@ -1,8 +1,8 @@
 package impl
 
 import (
-	"grovehub/services/identity/internal/app/routes"
-	cookieimpl "grovehub/services/identity/internal/app/transport/cookies/impl"
+	"net/http"
+
 	accountprotected "grovehub/services/identity/internal/app/controller/account/protected"
 	accountprotectedimpl "grovehub/services/identity/internal/app/controller/account/protected/impl"
 	accountpublic "grovehub/services/identity/internal/app/controller/account/public"
@@ -11,17 +11,31 @@ import (
 	authprotectedimpl "grovehub/services/identity/internal/app/controller/authentication/protected/impl"
 	authpublic "grovehub/services/identity/internal/app/controller/authentication/public"
 	authpublicimpl "grovehub/services/identity/internal/app/controller/authentication/public/impl"
+	"grovehub/services/identity/internal/app/routes"
+	cookieimpl "grovehub/services/identity/internal/app/transport/cookies/impl"
 )
 
-func (b *builder) newControllers(services serviceGraph) (authpublic.AuthenticationController, authprotected.AuthenticationController, accountpublic.AccountController, accountprotected.AccountController) {
-	manager := cookieimpl.New()
-	return authpublicimpl.New(services.auth, manager),
-		authprotectedimpl.New(services.auth, manager),
-		accountpublicimpl.New(services.account, manager),
-		accountprotectedimpl.New(services.account)
+type controllerGraph struct {
+	publicAuth       authpublic.AuthenticationController
+	protectedAuth    authprotected.AuthenticationController
+	publicAccount    accountpublic.AccountController
+	protectedAccount accountprotected.AccountController
 }
 
-// RouteLimits exposes generated, exact method+path policy to Launcher.
+func (b *builder) newControllers(services serviceGraph) controllerGraph {
+	manager := cookieimpl.New()
+	return controllerGraph{
+		publicAuth:       authpublicimpl.New(services.auth, manager),
+		protectedAuth:    authprotectedimpl.New(services.auth, manager),
+		publicAccount:    accountpublicimpl.New(services.account, manager),
+		protectedAccount: accountprotectedimpl.New(services.account),
+	}
+}
+
+func (controllers controllerGraph) RegisterHTTP(mux *http.ServeMux) {
+	routes.RegisterHTTP(mux, controllers.publicAuth, controllers.protectedAuth, controllers.publicAccount, controllers.protectedAccount)
+}
+
 func (module *runtime) RouteLimits() map[string]int {
 	return routes.RouteLimits()
 }

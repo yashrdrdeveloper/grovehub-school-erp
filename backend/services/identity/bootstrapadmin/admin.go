@@ -1,6 +1,6 @@
 // Command bootstrap-admin provisions the first Identity administrator from an
 // operator-controlled terminal. It is never registered as an HTTP route.
-package main
+package bootstrapadmin
 
 import (
     "bufio"
@@ -22,11 +22,9 @@ import (
     passwords "grovehub/services/identity/internal/app/services/credential/helpers"
 )
 
-func main() {
-    if err := run(); err != nil {
-        fmt.Fprintln(os.Stderr, "bootstrap-admin:", err)
-        os.Exit(1)
-    }
+// Run is a privileged operator entrypoint, never an HTTP handler.
+func Run() error {
+	return run()
 }
 
 func run() error {

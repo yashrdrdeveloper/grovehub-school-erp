@@ -37,6 +37,6 @@ args=(--confirm-bootstrap --password-stdin --email "$1" --first-name "$2" --last
 if [[ "$#" -eq 5 ]]; then args+=(--person-gid "$5"); fi
 (
   cd -- "${BACKEND_DIR}"
-  printf '%s\n' "${PASSWORD}" | go run ./services/identity/cmd/bootstrap-admin "${args[@]}"
+  printf '%s\n' "${PASSWORD}" | go run ./cmd/identity-bootstrap-admin "${args[@]}"
 )
 unset PASSWORD CONFIRM_PASSWORD
