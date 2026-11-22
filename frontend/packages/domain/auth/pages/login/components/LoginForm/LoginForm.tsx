@@ -1,7 +1,7 @@
 import { Box } from '@Components/components/Box';
 import { AlertCircle, LoaderCircle, LockKeyhole, Mail } from '@Components/icons';
 import type { ChangeEventHandler } from 'react';
-import { Button } from '@Components/components/Button';
+import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '@Components/components/Button';
 import { Form } from '@Components/components/Form';
 
 import { CredentialField } from '../../../../components/credentialField';
@@ -47,7 +47,7 @@ export const LoginForm: LoginFormComponent = ({
           </Button>
         }/>
 
-      <Button type="submit" variant="primary" size="lg" dataTestId={LOGIN_TEST_IDS.SUBMIT} className="rdr-login-v2__submit" disabled={state.isSubmitting}>
+      <Button type="submit" variant={BUTTON_VARIANT.PRIMARY} size={BUTTON_SIZE.LARGE} dataTestId={LOGIN_TEST_IDS.SUBMIT} className="rdr-login-v2__submit" disabled={state.isSubmitting}>
         <Box as="span">{submitLabel}</Box>
         {state.isSubmitting && <LoaderCircle className="rdr-login-v2__spinner" size={19} aria-hidden="true"/>}
       </Button>

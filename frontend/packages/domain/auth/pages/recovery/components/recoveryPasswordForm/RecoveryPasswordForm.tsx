@@ -2,7 +2,7 @@ import { Box } from '@Components/components/Box';
 import { AlertCircle, Eye, EyeOff, KeyRound, LoaderCircle, LockKeyhole, ShieldCheck } from '@Components/icons';
 import { RECOVERY_TEST_IDS } from '../../constants/recovery.testIds';
 import type { ChangeEventHandler } from 'react';
-import { Button } from '@Components/components/Button';
+import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '@Components/components/Button';
 import { Form } from '@Components/components/Form';
 
 import { CredentialField } from '../../../../components/credentialField';
@@ -62,7 +62,7 @@ export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
         </Box>
       </Box>
       <Box as="div" className="rdr-recovery__actions">
-        <Button type="submit" variant="primary" size="lg" dataTestId={RECOVERY_TEST_IDS.SUBMIT} className="rdr-login-v2__submit" disabled={saving}>
+        <Button type="submit" variant={BUTTON_VARIANT.PRIMARY} size={BUTTON_SIZE.LARGE} dataTestId={RECOVERY_TEST_IDS.SUBMIT} className="rdr-login-v2__submit" disabled={saving}>
           {buttonLabel}
           {saving && <LoaderCircle className="rdr-login-v2__spinner" size={18}/>}
         </Button>

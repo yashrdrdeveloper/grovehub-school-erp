@@ -3,7 +3,7 @@ import { Box } from '@Components/components/Box';
 import { ArrowLeft, CheckCircle2, Clock3, Info, LoaderCircle, Mail } from '@Components/icons';
 import { FORGOT_PASSWORD_TEST_IDS } from '../../constants/forgotPassword.testIds';
 import type { ChangeEventHandler } from 'react';
-import { Button } from '@Components/components/Button';
+import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '@Components/components/Button';
 import { Form } from '@Components/components/Form';
 import { AUTH_ROUTE } from '@Business/auth/routes';
 
@@ -45,7 +45,7 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
             error={state.emailError} onChange={handleEmailChange} required/>
         </Box>
         <Box as="div" className="rdr-auth-flow__actions">
-          <Button type="submit" variant="primary" size="lg" dataTestId={FORGOT_PASSWORD_TEST_IDS.SUBMIT} className="rdr-login-v2__submit" disabled={state.busy || view.cooldown}
+          <Button type="submit" variant={BUTTON_VARIANT.PRIMARY} size={BUTTON_SIZE.LARGE} dataTestId={FORGOT_PASSWORD_TEST_IDS.SUBMIT} className="rdr-login-v2__submit" disabled={state.busy || view.cooldown}
             aria-label={view.buttonLabel}>
             <Box as="span">{view.buttonLabel}</Box>
             {state.busy && <LoaderCircle className="rdr-login-v2__spinner" size={19}/>}
