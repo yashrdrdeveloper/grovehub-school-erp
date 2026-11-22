@@ -27,7 +27,7 @@ jest.mock('@Components/hooks/theme',()=>({
   useWorkspaceTheme:()=>({preference:'system',setPreference}),
 }));
 
-describe('RDR Login V2',()=>{
+describe('LoginContainer',()=>{
   beforeEach(()=>{
     signIn.mockReset();
     setPreference.mockReset();

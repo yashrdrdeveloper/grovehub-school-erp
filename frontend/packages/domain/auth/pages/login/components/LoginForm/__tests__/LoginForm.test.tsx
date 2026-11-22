@@ -2,9 +2,9 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import type { FormEvent } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 
-import { LoginForm } from './LoginForm';
-import { MobileLogin } from '../../templates/mobileLogin/MobileLogin';
-import type { LoginFormProps } from '../../types';
+import { LoginForm } from '../LoginForm';
+import { MobileLogin } from '../../../templates/mobileLogin/MobileLogin';
+import type { LoginFormProps } from '../../../types';
 
 const onEmailChange = jest.fn();
 const onPasswordChange = jest.fn();

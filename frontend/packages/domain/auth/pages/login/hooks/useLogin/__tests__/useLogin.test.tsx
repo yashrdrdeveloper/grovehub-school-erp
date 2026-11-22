@@ -2,11 +2,11 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import type { FormEvent, ReactNode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 
-import { useLogin } from './useLogin';
+import { useLogin } from '../useLogin';
 
 const signIn = jest.fn<Promise<void>, [string, string]>();
 
-jest.mock('../../../../core/providers/AuthProvider', () => ({
+jest.mock('../../../../../core/providers/AuthProvider', () => ({
   useAuth: () => ({ signIn }),
 }));
 
