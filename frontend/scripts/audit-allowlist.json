@@ -1,5 +1,5 @@
 {
-  "description": "Exact legacy finding ceiling verified in Frontend CI run 45070078775 (commit 585e8f81f8091536222c446931466710626db283). New violations or increases fail CI.",
+  "description": "Dashboard child source migration removed 4 RAW_CLASS findings from CI-verified 38/46 baseline; new ceiling 34 flagged files and 42 findings.",
   "capturedRunId": 45065887411,
   "allowlisted": {
     "app/styles.css": [
@@ -49,18 +49,6 @@
       "RAW_CLASS"
     ],
     "packages/domain/auth/pages/recovery/Recovery.tsx": [
-      "RAW_CLASS"
-    ],
-    "packages/domain/dashboard/pages/dashboard/components/dashboardAside/DashboardAside.tsx": [
-      "RAW_CLASS"
-    ],
-    "packages/domain/dashboard/pages/dashboard/components/dashboardHeader/DashboardHeader.tsx": [
-      "RAW_CLASS"
-    ],
-    "packages/domain/dashboard/pages/dashboard/components/dashboardMain/DashboardMain.tsx": [
-      "RAW_CLASS"
-    ],
-    "packages/domain/dashboard/pages/dashboard/components/dashboardOverview/DashboardOverview.tsx": [
       "RAW_CLASS"
     ],
     "packages/domain/publicSite/pages/landing/components/aboutContent/aboutContent.tsx": [
@@ -126,14 +114,14 @@
     ]
   },
   "referenceCommit": "585e8f81f8091536222c446931466710626db283",
-  "maxFlaggedFiles": 38,
-  "maxFindings": 46,
+  "maxFlaggedFiles": 34,
+  "maxFindings": 42,
   "maxByCode": {
     "CSS_COLOR_LITERAL": 6,
     "LARGE_STYLESHEET": 3,
     "LEGACY_DOMAIN_CSS": 4,
     "LEGACY_GLOBAL_CSS": 1,
-    "RAW_CLASS": 32
+    "RAW_CLASS": 28
   },
   "lastVerifiedRunId": 45070078775
 }
