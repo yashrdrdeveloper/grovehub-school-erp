@@ -24,6 +24,7 @@ export const useAuthViewportFit = () => {
       : null;
     const MIN_READABLE_SCALE = 0.82;
     let frame = 0;
+    let active = true;
 
     const measure = () => {
       frame = 0;
@@ -58,6 +59,7 @@ export const useAuthViewportFit = () => {
     };
 
     const schedule = () => {
+      if (!active) return;
       if (frame) window.cancelAnimationFrame(frame);
       frame = window.requestAnimationFrame(measure);
     };
@@ -74,6 +76,7 @@ export const useAuthViewportFit = () => {
     if (document.fonts?.ready) void document.fonts.ready.then(schedule);
 
     return () => {
+      active = false;
       if (frame) window.cancelAnimationFrame(frame);
       observer?.disconnect();
       window.removeEventListener('resize', schedule);
