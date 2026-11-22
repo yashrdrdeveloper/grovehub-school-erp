@@ -42,6 +42,14 @@ func (*connectionRepositoryFake) List(context.Context, string, string) ([]entity
 	return nil, nil
 }
 
+func (*connectionRepositoryFake) SystemMailSender(context.Context, string) (entity.Connection, error) {
+	return entity.Connection{}, nil
+}
+
+func (*connectionRepositoryFake) ConfigureSystemMailSender(context.Context, string, string) error {
+	return nil
+}
+
 func (*connectionRepositoryFake) Disconnect(context.Context, string, string) (entity.Connection, error) {
 	return entity.Connection{}, nil
 }

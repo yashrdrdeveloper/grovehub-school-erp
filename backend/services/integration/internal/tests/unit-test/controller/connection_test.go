@@ -77,6 +77,14 @@ func (*serviceStub) ExecuteAction(context.Context, string, string, providerdescr
 	return nil, nil
 }
 
+func (*serviceStub) ExecuteSystemMail(context.Context, string, json.RawMessage) (any, error) {
+	return nil, nil
+}
+
+func (*serviceStub) ConfigureSystemMailSender(context.Context, string, string) error {
+	return nil
+}
+
 func (*serviceStub) Disconnect(context.Context, string, string) (connectiondto.Connection, error) {
 	return connectiondto.Connection{}, nil
 }
