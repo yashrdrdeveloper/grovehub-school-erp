@@ -1,7 +1,7 @@
 import { Button } from '@Components/components/Button';
 import { Box } from '@Components/components/Box';
 import type { ReactElement } from 'react';
-import { Link } from '@Components/router';
+import { AppLink } from '@Components/components/AppLink';
 import { Pin, PinOff } from '@Components/icons';
 import { APP_LAUNCHER_COPY } from '../constants/appLauncher.copy';
 import { getAppTestIds } from '../helpers/appLauncher.getAppTestIds';
@@ -23,11 +23,11 @@ export const renderAppLauncherApp: RenderAppLauncherApp = ({ app, isPinned, onOp
   const toggle = () => onTogglePin(app.path);
   return (
     <Box as="div" key={app.path} className="catalog-app" data-testid={ids.card}>
-      <Link to={app.path} className="catalog-app__link" onClick={close}>
+      <AppLink to={app.path} className="catalog-app__link" onClick={close}>
         <Box as="span" className="catalog-app__icon"><Icon size={22} strokeWidth={1.8}/></Box>
         <Box as="strong">{app.name}</Box><Box as="small">{app.description}</Box>
         <Box as="span" className="catalog-app__status">{APP_LAUNCHER_COPY.STATUS}</Box>
-      </Link>
+      </AppLink>
       <Button unstyled type="button" className={pinClass} onClick={toggle}
         aria-label={pinLabel + ' ' + app.name} title={pinLabel + ' from sidebar'} data-testid={ids.pin}>
         <PinIcon size={15}/>
