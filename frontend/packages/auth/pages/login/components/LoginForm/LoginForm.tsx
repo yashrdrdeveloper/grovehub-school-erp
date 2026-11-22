@@ -21,7 +21,7 @@ export const LoginForm = ({
           onChange={event => onEmailChange(event.target.value)}/>
       </div>
       <small id={`${fieldId}-email-error`}
-        className={`rdr-login-v2__field-error rdr-login-v2__field-error--reserved${state.fieldErrors.email ? '' : ' is-empty'}`}>
+        className={`rdr-login-v2__field-error rdr-login-v2__field-error--reserved${state.fieldErrors.email ? '' : ' is-empty'}`} aria-live="polite" aria-atomic="true">
         {state.fieldErrors.email || '\u00a0'}
       </small>
     </div>
@@ -43,11 +43,11 @@ export const LoginForm = ({
         <button type="button" className="rdr-login-v2__visibility"
           onClick={onTogglePassword}
           aria-label={state.isPasswordVisible ? 'Hide password' : 'Show password'}>
-          {state.isPasswordVisible ? <EyeOff size={19}/> : <Eye size={19}/>}
+          {state.isPasswordVisible ? <EyeOff size={19} aria-hidden="true"/> : <Eye size={19} aria-hidden="true"/>}
         </button>
       </div>
       <small id={`${fieldId}-password-error`}
-        className={`rdr-login-v2__field-error rdr-login-v2__field-error--reserved${state.fieldErrors.password ? '' : ' is-empty'}`}>
+        className={`rdr-login-v2__field-error rdr-login-v2__field-error--reserved${state.fieldErrors.password ? '' : ' is-empty'}`} aria-live="polite" aria-atomic="true">
         {state.fieldErrors.password || '\u00a0'}
       </small>
     </div>
