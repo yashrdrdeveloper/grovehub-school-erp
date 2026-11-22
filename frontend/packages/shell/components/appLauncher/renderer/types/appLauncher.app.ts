@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { CatalogApp } from '../../../registry/appCatalog.registry';
+import type { CatalogApp } from '../../../../registry/appCatalog.registry';
 export interface RenderAppLauncherAppProps {
   readonly app: CatalogApp;
   readonly isPinned: boolean;
