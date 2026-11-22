@@ -350,7 +350,7 @@
  .rdr-login-v2__heading h1{font-size:clamp(27px,7.3vw,35px);line-height:1.13;margin:0 0 10px}
  .rdr-login-v2__eyebrow{font-size:10px;color:var(--auth-accent);margin-bottom:11px}
  .rdr-login-v2__description-desktop{display:none}
- .rdr-login-v2__description-mobile{display:block;font-size:12px;line-height:1.4;letter-spacing:-.015em}
+ .rdr-login-v2__heading .rdr-login-v2__description-mobile{display:block;font-size:12px;line-height:1.4;letter-spacing:-.015em}
  .rdr-login-v2__form--signin>.rdr-login-v2__field>label,
  .rdr-login-v2__form--signin .rdr-login-v2__password-label>label,
  .rdr-auth-flow__email-field>label,
