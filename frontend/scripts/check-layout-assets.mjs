@@ -55,10 +55,10 @@ if (!renderer.includes('data-testid') || !renderer.includes('aria-hidden') || !r
 if (!routes.includes('PUBLIC_SITE_PATHS') || !publicIndex.includes('PUBLIC_SITE_PATHS')) {
   violations.push('public routes must be owned by publicSite, not duplicated in shell');
 }
-if (!routes.includes('<RequireSession/>') || !routes.includes('<ProtectedLayout/>')
+if (!/<RequireSession\s*\/>/.test(routes) || !/<ProtectedLayout\s*\/>/.test(routes)
     || !/<Outlet\s*\/>/.test(workspaceTemplate)
-    || !workspaceContainer.includes('<Shell ')
-    || !protectedLayout.includes('<WorkspaceShellContainer ')) {
+    || !/<Shell\b/.test(workspaceContainer)
+    || !/<WorkspaceShellContainer\b/.test(protectedLayout)) {
   violations.push('protected routes must keep one pathless protected layout with a persistent Shell and nested Outlet');
 }
 if (/PublicLayout|PublicFrame/.test(routes)) {
