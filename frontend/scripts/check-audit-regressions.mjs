@@ -25,9 +25,3 @@ if (result.failures.length > 0) {
   );
 }
 
-if (result.stale.length > 0) {
-  process.stdout.write(
-    result.stale.length +
-      ' obsolete allowlist entries can be removed after verifying the current audit.\n',
-  );
-}
