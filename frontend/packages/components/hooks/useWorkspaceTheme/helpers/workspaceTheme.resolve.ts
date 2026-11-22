@@ -1,21 +1,18 @@
 import {
-  WORKSPACE_THEME_BY_PREFERENCE,
-  WORKSPACE_THEME_BY_SYSTEM,
-} from '../constants/workspaceTheme.resolution';
+  THEME_VIEWPORT_FROM_MEDIA,
+} from '../constants/workspaceTheme.viewport';
+import {
+  WORKSPACE_THEME_STRATEGIES,
+} from '../constants/workspaceTheme.strategy';
 
 import type { ResolveWorkspaceTheme } from './types/workspaceTheme.resolve';
 
-/** On phones follow the OS appearance without overwriting desktop preferences. */
+/** Enum-indexed strategies avoid conditional chains and preserve desktop preferences. */
 export const resolveWorkspaceTheme: ResolveWorkspaceTheme = ({
   preference,
   systemDark,
   isMobile,
 }) => {
-  const preferredTheme = WORKSPACE_THEME_BY_PREFERENCE[preference];
-
-  if (!isMobile && preferredTheme !== null) {
-    return preferredTheme;
-  }
-
-  return WORKSPACE_THEME_BY_SYSTEM[String(systemDark)]!;
+  const viewport = THEME_VIEWPORT_FROM_MEDIA[String(isMobile)]!;
+  return WORKSPACE_THEME_STRATEGIES[viewport](preference, systemDark);
 };
