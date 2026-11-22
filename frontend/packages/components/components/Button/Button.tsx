@@ -1,7 +1,7 @@
 import { Slot } from '@radix-ui/react-slot';
 import { LoaderCircle } from 'lucide-react';
 import { cn } from '@Base/utilities/cn';
-import { buttonVariants } from './config/buttonVariants.config';
+import { buttonVariants } from './constants/button.variants';
 import type { ButtonComponent } from './types/button.props';
 
 /** Shadcn-style CVA button. The asChild variant requires one child element. */
