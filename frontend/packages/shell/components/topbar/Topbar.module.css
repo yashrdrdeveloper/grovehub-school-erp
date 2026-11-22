@@ -1,0 +1,100 @@
+/* RDR workspace top bar. All selectors and responsive behavior belong to this component. */
+.root {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gh-space-4);
+  height: 66px;
+  padding-inline: 35px;
+  border-bottom: 1px solid var(--gh-color-border);
+  background: var(--gh-color-surface);
+  color: var(--gh-color-text);
+}
+
+.left,
+.right {
+  display: flex;
+  align-items: center;
+  gap: 19px;
+  min-width: 0;
+}
+
+.breadcrumb {
+  font-size: var(--gh-text-xs);
+  font-weight: var(--gh-weight-bold);
+  color: var(--gh-color-text-strong);
+  overflow-wrap: anywhere;
+}
+
+.separator,
+.muted {
+  font-size: var(--gh-text-xs);
+  color: var(--gh-color-muted);
+}
+
+.menu,
+.quick {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 33px;
+  height: 33px;
+  padding: 4px;
+  border: 0;
+  border-radius: var(--gh-radius-sm);
+  color: var(--gh-color-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.menu:hover,
+.quick:hover {
+  background: var(--gh-color-surface-subtle);
+}
+
+.menu:focus-visible,
+.quick:focus-visible {
+  outline: var(--gh-focus-outline-width) solid var(--gh-color-ring);
+  outline-offset: 2px;
+}
+
+.menu {
+  display: none;
+}
+
+.avatar {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: var(--gh-weight-heavy);
+  color: var(--gh-color-secondary-foreground);
+  background: var(--gh-color-secondary);
+}
+
+@media (max-width: 720px) {
+  .root {
+    height: 58px;
+    padding-inline: 16px;
+  }
+
+  .menu {
+    display: grid;
+  }
+
+  .left,
+  .right {
+    gap: 10px;
+  }
+
+  .separator,
+  .muted {
+    display: none;
+  }
+}

@@ -2,6 +2,8 @@ import { Box } from '@Components/components/Box';
 import { Button } from '@Components/components/Button';
 import { ChevronDown, Menu } from '@Components/icons';
 
+import styles from './Topbar.module.css';
+
 import { TOPBAR_COPY } from './constants/topbar.copy';
 import { TOPBAR_TEST_IDS } from './constants/topbar.testIds';
 
@@ -9,12 +11,12 @@ import type { TopbarComponent } from './types/topbar';
 
 /** Pure workspace chrome, with native semantics delegated to shared components. */
 export const Topbar: TopbarComponent = ({ accountLabel, schoolLabel, model }) => (
-  <Box as="header" className="topbar" dataTestId={TOPBAR_TEST_IDS.ROOT}>
-    <Box as="div" className="topbar__left">
+  <Box as="header" className={styles.root} dataTestId={TOPBAR_TEST_IDS.ROOT}>
+    <Box as="div" className={styles.left}>
       <Button
         unstyled
         type="button"
-        className="icon-button topbar__menu"
+        className={styles.menu}
         dataTestId={TOPBAR_TEST_IDS.OPEN_MENU}
         onClick={model.openSidebar}
         aria-label={TOPBAR_COPY.OPEN_MENU}
@@ -22,27 +24,27 @@ export const Topbar: TopbarComponent = ({ accountLabel, schoolLabel, model }) =>
         <Menu size={20} />
       </Button>
 
-      <Box as="span" className="topbar__breadcrumb">
+      <Box as="span" className={styles.breadcrumb}>
         {schoolLabel}
       </Box>
-      <Box as="span" className="topbar__separator" aria-hidden="true">
+      <Box as="span" className={styles.separator} aria-hidden="true">
         /
       </Box>
-      <Box as="span" className="topbar__muted">
+      <Box as="span" className={styles.muted}>
         {TOPBAR_COPY.WORKSPACE}
       </Box>
     </Box>
 
-    <Box as="div" className="topbar__right">
+    <Box as="div" className={styles.right}>
       <Button
         unstyled
         type="button"
-        className="icon-button topbar__quick"
+        className={styles.quick}
         dataTestId={TOPBAR_TEST_IDS.ACCOUNT}
         onClick={model.openAccountPreferences}
         aria-label={TOPBAR_COPY.ACCOUNT_PREFERENCES}
       >
-        <Box as="span" className="profile-avatar profile-avatar--small">
+        <Box as="span" className={styles.avatar}>
           {accountLabel.charAt(0).toUpperCase()}
         </Box>
         <ChevronDown size={14} aria-hidden="true" />
