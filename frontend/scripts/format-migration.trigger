@@ -1,1 +1,1 @@
-Validate named render-function Jest suites, pure renderer rule and full frontend formatting.
+Verify strictly isolated named test suites per JSX renderer export, plus typechecks and browser-safe build.
