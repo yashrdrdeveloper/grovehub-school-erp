@@ -23,3 +23,7 @@ export { useBoolean } from './hooks/useBoolean';
 export { Box } from './components/Box';
 export { FieldLabel } from './components/FieldLabel';
 export { AppLink } from './components/AppLink';
+
+export { ExternalAnchor } from './components/ExternalAnchor';
+export { SelectControl } from './components/SelectControl';
+export { TextAreaControl } from './components/TextAreaControl';
