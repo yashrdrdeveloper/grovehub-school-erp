@@ -1,7 +1,7 @@
 import { Button } from '@Components/components/Button';
 import { Box } from '@Components/components/Box';
 import { PinOff } from '@Components/icons';
-import { NavLink } from '@Components/router';
+import { AppNavLink } from '@Components/components/AppNavLink';
 
 import styles from './PinnedNavigation.module.css';
 import { getPinnedAppClassName } from './helpers/pinnedNavigation.getAppClassName';
@@ -31,7 +31,7 @@ export const PinnedApp = ({
       >
         <Icon size={19} strokeWidth={1.8} aria-hidden="true" />
         <Box as="span" className={styles.label}>{entry.app.name}</Box>
-      </NavLink>
+      </AppNavLink>
 
       <Button
         unstyled
