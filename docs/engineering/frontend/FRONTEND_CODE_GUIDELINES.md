@@ -1524,3 +1524,475 @@ A conformant login unit has **no `config` directory, no helper/constant/renderer
 **Implementation sequence:** documentation **first**; then real Base Lodash leaves and pure auth/app route contracts; then flat login constants/helpers and their tests; then hook and component/template imports; remove old directories and aliases; run architecture, TypeScript, Jest and production build and document results. Strict zero-ternary, renderer and CSS-module migration from sections 23–35 remain required; a successful helper refactor alone is not a claim the whole frontend is fully compliant.
 
 Only declare code migration done after tests and meaningful checks have run. For documentation-only commits, verify the actual document and report that code/CI were not yet changed.
+
+## 40. Comprehensive tracked-file inventory and gap review (Revision 8)
+
+**Scope:** Every file in the GitHub branch under `frontend/` at the time of the audit. Paths below are relative to `frontend/`. The inventory records verified violations when source was read, path-structure violations from the Git tree, and explicit **content review required** where detailed review has not yet been completed. **Do not treat any unreviewed row as passing the guidelines.** A filename/structure audit alone cannot prove runtime behavior, import reachability, CSS specificity, auth security or accessibility. `Source reviewed` is limited to files inspected in this conversation. This ledger must be updated with source-level evidence as the migration progresses.
+
+| Tracked file | Finding / required action | Evidence level |
+|---|---|---|
+| `.env.example` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
+| `README.md` | Check documentation examples/references against current source | Documentation review |
+| `app/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `app/main.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `app/styles.css` | Large legacy global CSS; split by feature/primitive while retaining responsive behavior | Source reviewed |
+| `components.json` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
+| `eslint.config.mjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
+| `index.html` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
+| `jest.config.cjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
+| `package.json` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
+| `packages/assets/README.md` | Check documentation examples/references against current source | Documentation review |
+| `packages/assets/auth/AcademicPathwaysSvg.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/assets/auth/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/assets/brand/RdrSchoolMonogramSvg.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/assets/brand/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/assets/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/base/RUNBOOK.md` | Check documentation examples/references against current source | Documentation review |
+| `packages/base/constants/index.ts` | Forbidden barrel; direct leaf imports | Structural finding |
+| `packages/base/events/createEventEmitter/createEventEmitter.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/base/events/createEventEmitter/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/base/events/createEventEmitter/types/createEventEmitter.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/base/events/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/base/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/base/readers/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/base/readers/readProperty/__tests__/readProperty.test.ts` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/base/readers/readProperty/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/base/readers/readProperty/readProperty.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/base/readers/readProperty/types/readProperty.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/base/utilities/cn/__tests__/cn.test.ts` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/base/utilities/cn/cn.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/base/utilities/cn/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/base/utilities/cn/types/cn.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/base/utilities/find/__tests__/find.test.ts` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/base/utilities/find/find.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/base/utilities/find/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/base/utilities/index.ts` | **Confirmed:** only cn/isEqual exported; Base _map/_filter/_trim etc not implemented | Source reviewed |
+| `packages/base/utilities/isEqual/__tests__/isEqual.test.ts` | **Confirmed:** mocks pure Lodash equality; test real behavior through compatible Jest transform | Source reviewed |
+| `packages/base/utilities/isEqual/index.ts` | Check pure Lodash test/Jest compatibility | Structural finding |
+| `packages/base/utilities/isEqual/isEqual.ts` | Check pure Lodash test/Jest compatibility | Structural finding |
+| `packages/base/utilities/isEqual/types/isEqual.ts` | Check pure Lodash test/Jest compatibility | Structural finding |
+| `packages/base/utilities/keys/__tests__/keys.test.ts` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/base/utilities/keys/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/base/utilities/keys/keys.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/base/utilities/map/__tests__/map.test.ts` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/base/utilities/map/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/base/utilities/map/map.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/base/utilities/trim/__tests__/trim.test.ts` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/base/utilities/trim/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/base/utilities/trim/trim.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/business/RUNBOOK.md` | Check documentation examples/references against current source | Documentation review |
+| `packages/business/accounts/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/business/accounts/services/accounts.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/business/accounts/types.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/business/api/cookies.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/business/api/http.test.ts` | Move test inside owner __tests__; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/business/api/http.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/business/api/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/business/api/types.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/business/app/routes/__tests__/app.routes.test.ts` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/business/app/routes/constants/app.routeAccess.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/business/app/routes/constants/app.routes.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/business/app/routes/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/business/auth/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/business/auth/routes/__tests__/auth.routes.test.ts` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/business/auth/routes/constants/auth.routes.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/business/auth/routes/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/business/auth/services/authentication.ts` | **Confirmed:** backend API path literals; separate transport endpoint constants from frontend page routes | Source reviewed |
+| `packages/business/auth/services/login/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/business/auth/services/login/login.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/business/auth/services/login/types/login.request.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/business/auth/services/login/types/login.response.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/business/auth/services/login/types/login.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/business/auth/types.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/business/auth/types/baseEntities/account.entity.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/business/auth/types/baseEntities/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/business/auth/types/baseEntities/session.entity.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/business/foundation/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/business/foundation/services/person.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/business/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/business/integrations/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/business/integrations/services/integrations.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/components/RUNBOOK.md` | Check documentation examples/references against current source | Documentation review |
+| `packages/components/components/Button/Button.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/components/components/Button/config/buttonVariants.config.ts` | Config-folder ownership debt; static descriptors should be constants | Structural finding |
+| `packages/components/components/Button/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/components/components/Button/types/button.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/components/components/Card/Card.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/components/components/Card/__tests__/Card.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/components/components/Card/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/components/components/Card/types/card.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/components/components/Container/Container.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/components/components/Container/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/components/components/Container/types/container.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/components/components/DataTable/DataTable.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/components/components/DataTable/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/components/components/DataTable/types/dataTable.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/components/components/Dialog/Dialog.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/components/components/Dialog/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/components/components/Dialog/types/dialog.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/components/components/EmptyState/EmptyState.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/components/components/EmptyState/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/components/components/EmptyState/types/emptyState.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/components/components/Form/Form.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/components/components/Form/__tests__/Form.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/components/components/Form/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/components/components/Form/types/form.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/components/components/FormField/FormField.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/components/components/FormField/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/components/components/FormField/types/formField.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/components/components/Input/Input.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/components/components/Input/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/components/components/Input/types/input.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/components/components/InputControl/InputControl.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/components/components/InputControl/__tests__/InputControl.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/components/components/InputControl/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/components/components/InputControl/types/inputControl.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/components/components/PageHeading/PageHeading.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/components/components/PageHeading/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/components/components/PageHeading/types/pageHeading.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/components/components/PasswordField/PasswordField.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/components/components/PasswordField/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/components/components/PasswordField/types/passwordField.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/components/components/SVGRenderer/SVGRenderer.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/components/components/SVGRenderer/__tests__/SVGRenderer.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/components/components/SVGRenderer/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/components/components/SVGRenderer/types/svgRenderer.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/components/components/SchoolMonogram.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/components/components/StatusPill/StatusPill.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/components/components/StatusPill/config/statusPillTones.config.ts` | Config-folder ownership debt; static descriptors should be constants | Structural finding |
+| `packages/components/components/StatusPill/helpers/getStatusPillTone/__tests__/getStatusPillTone.test.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts}; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/components/components/StatusPill/helpers/getStatusPillTone/getStatusPillTone.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/components/components/StatusPill/helpers/getStatusPillTone/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/components/components/StatusPill/helpers/getStatusPillTone/types/getStatusPillTone.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/components/components/StatusPill/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/components/components/StatusPill/types/statusPill.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/components/components/Text/Text.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/components/components/Text/__tests__/Text.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/components/components/Text/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/components/components/Text/types/text.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/components/components/TextField/TextField.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/components/components/TextField/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/components/components/TextField/types/textField.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/components/components/Typography/Typography.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/components/components/Typography/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/components/components/Typography/types/typography.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/components/hooks/query/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/components/hooks/theme.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/components/hooks/useWorkspaceTheme/helpers/resolveWorkspaceTheme/__tests__/resolveWorkspaceTheme.test.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts}; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/components/hooks/useWorkspaceTheme/helpers/resolveWorkspaceTheme/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/components/hooks/useWorkspaceTheme/helpers/resolveWorkspaceTheme/resolveWorkspaceTheme.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/components/hooks/useWorkspaceTheme/helpers/resolveWorkspaceTheme/types/resolveWorkspaceTheme.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/components/hooks/useWorkspaceTheme/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/components/hooks/useWorkspaceTheme/types/useWorkspaceTheme.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/components/hooks/useWorkspaceTheme/useWorkspaceTheme.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/components/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/components/styles/primitives.css` | Review token colors, theme parity, media breakpoints and global selector ownership | Content review required |
+| `packages/domain/accounts/index.ts` | Remove unused UI domain after route/importer check | Structural finding |
+| `packages/domain/accounts/pages/AccountDetailsPage.tsx` | Remove unused UI domain after route/importer check | Structural finding |
+| `packages/domain/accounts/pages/AccountsPage.tsx` | Remove unused UI domain after route/importer check | Structural finding |
+| `packages/domain/auth/RUNBOOK.md` | Check documentation examples/references against current source | Documentation review |
+| `packages/domain/auth/components/authAmbientGraphic/AuthAmbientGraphic.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/auth/components/authAmbientGraphic/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/components/authStatusArt/AuthStatusArt.tsx` | **Confirmed:** raw status literals, ternary/icon selection, inline hex colors, direct Lucide | Source reviewed |
+| `packages/domain/auth/components/authStatusArt/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/components/credentialField/CredentialField.tsx` | **Confirmed:** label JSX ternary, native label/wrapper and BEM classes | Source reviewed |
+| `packages/domain/auth/components/credentialField/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/components/credentialField/types/credentialField.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/components/loginLayout/LoginLayout.tsx` | **Confirmed:** inline copy/theme options, native buttons and .map, conditional class logic, direct Lucide | Source reviewed |
+| `packages/domain/auth/components/loginLayout/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/components/loginLayout/styles/optionOneAuth.css` | **Confirmed:** large mixed-scope auth stylesheet; split ownership into SCSS modules | Source reviewed |
+| `packages/domain/auth/core/guards/RecoveryFlowBoundary.tsx` | **Confirmed:** hook returning null used as component; convert to useRecoveryFlowBoundary | Source reviewed |
+| `packages/domain/auth/core/guards/RequireSession.test.tsx` | Move test inside owner __tests__; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/domain/auth/core/guards/RequireSession.tsx` | **Confirmed:** mixed guards and native loading/ternary; PublicRoute/ProtectedRoute | Source reviewed |
+| `packages/domain/auth/core/guards/__tests__/RecoveryFlowBoundary.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/domain/auth/core/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/core/providers/AuthProvider.tsx` | **Confirmed:** provider mixes session state/actions and context; unit ownership | Source reviewed |
+| `packages/domain/auth/core/session/recoveryFlowSession.ts` | **Confirmed:** security-sensitive adapter needs owned types/keys/validation helpers, no proof leakage | Source reviewed |
+| `packages/domain/auth/hooks/useAuthViewportFit/__tests__/useAuthViewportFit.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/domain/auth/hooks/useAuthViewportFit/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/hooks/useAuthViewportFit/useAuthViewportFit.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/domain/auth/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/forgotPassword/ForgotPassword.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/auth/pages/forgotPassword/__tests__/ForgotPasswordPage.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/domain/auth/pages/forgotPassword/components/forgotPasswordForm/ForgotPasswordForm.tsx` | **Confirmed:** native controls, literal routes and selectors, ternary notice icon and classes | Source reviewed |
+| `packages/domain/auth/pages/forgotPassword/components/forgotPasswordForm/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/forgotPassword/components/forgotPasswordForm/types/forgotPasswordForm.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/pages/forgotPassword/constants/forgotPasswordCooldown/forgotPasswordCooldown.constant.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/domain/auth/pages/forgotPassword/constants/forgotPasswordCooldown/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/forgotPassword/containers/forgotPasswordContainer/ForgotPasswordContainer.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/auth/pages/forgotPassword/containers/forgotPasswordContainer/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/forgotPassword/containers/forgotPasswordContainer/types/forgotPasswordContainer.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/pages/forgotPassword/helpers/getForgotPasswordViewModel/__tests__/getForgotPasswordViewModel.test.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts}; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/domain/auth/pages/forgotPassword/helpers/getForgotPasswordViewModel/getForgotPasswordViewModel.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/forgotPassword/helpers/getForgotPasswordViewModel/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/forgotPassword/helpers/getForgotPasswordViewModel/types/getForgotPasswordViewModel.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/forgotPassword/helpers/validateForgotPasswordEmail/__tests__/validateForgotPasswordEmail.test.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts}; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/domain/auth/pages/forgotPassword/helpers/validateForgotPasswordEmail/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/forgotPassword/helpers/validateForgotPasswordEmail/types/validateForgotPasswordEmail.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/forgotPassword/helpers/validateForgotPasswordEmail/validateForgotPasswordEmail.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/forgotPassword/hooks/useForgotPassword/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/forgotPassword/hooks/useForgotPassword/types/useForgotPassword.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/pages/forgotPassword/hooks/useForgotPassword/useForgotPassword.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/domain/auth/pages/forgotPassword/hooks/useForgotPasswordCountdown/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/forgotPassword/hooks/useForgotPasswordCountdown/types/useForgotPasswordCountdown.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/pages/forgotPassword/hooks/useForgotPasswordCountdown/useForgotPasswordCountdown.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/domain/auth/pages/forgotPassword/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/forgotPassword/types/forgotPassword.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/pages/forgotPassword/types/forgotPassword.state.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/pages/forgotPassword/types/forgotPassword.viewModel.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/pages/forgotPassword/types/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/login/Login.tsx` | **Confirmed:** template ternary and config import | Source reviewed |
+| `packages/domain/auth/pages/login/__tests__/LoginPage.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/domain/auth/pages/login/components/LoginForm/LoginForm.test.tsx` | **Confirmed:** adjacent test and describe('LoginForm presentation'); move to __tests__, use 'LoginForm' | Source reviewed |
+| `packages/domain/auth/pages/login/components/LoginForm/LoginForm.tsx` | **Confirmed:** field strings, ternaries, direct icons, native HTML and literal IDs | Source reviewed |
+| `packages/domain/auth/pages/login/components/LoginForm/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/login/components/LoginForm/types/loginForm.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/pages/login/config/index.ts` | **Confirmed:** obsolete config barrel; remove | Source reviewed |
+| `packages/domain/auth/pages/login/config/login.config.ts` | **Confirmed:** mixed static copy, fields, rule lambdas and duplicated route strings; split constants/helpers | Source reviewed |
+| `packages/domain/auth/pages/login/containers/loginContainer/LoginContainer.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/auth/pages/login/containers/loginContainer/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/login/containers/loginContainer/types/loginContainer.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/pages/login/helpers/getLoginErrorMessage/__tests__/getLoginErrorMessage.test.ts` | **Confirmed:** describe('login error mapping') must be describe('getLoginErrorMessage'); move to flat helpers/__tests__ | Source reviewed |
+| `packages/domain/auth/pages/login/helpers/getLoginErrorMessage/getLoginErrorMessage.ts` | **Confirmed:** nested helper; native .find, ternary/??; flatten and Base find | Source reviewed |
+| `packages/domain/auth/pages/login/helpers/getLoginErrorMessage/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/login/helpers/getLoginErrorMessage/types/getLoginErrorMessage.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/login/helpers/index.ts` | Forbidden barrel; direct leaf imports | Structural finding |
+| `packages/domain/auth/pages/login/helpers/normalizeLoginEmail/__tests__/normalizeLoginEmail.test.ts` | **Confirmed:** obsolete wrapper-only test; test Base _trim instead | Source reviewed |
+| `packages/domain/auth/pages/login/helpers/normalizeLoginEmail/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/login/helpers/normalizeLoginEmail/normalizeLoginEmail.ts` | **Confirmed:** pure .trim wrapper; replace with Base _trim and remove | Source reviewed |
+| `packages/domain/auth/pages/login/helpers/normalizeLoginEmail/types/normalizeLoginEmail.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/login/helpers/validateLoginCredentials/__tests__/validateLoginCredentials.test.ts` | **Confirmed:** describe('login credential validation') vs exported 'validateLoginCredentials'; move/rename | Source reviewed |
+| `packages/domain/auth/pages/login/helpers/validateLoginCredentials/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/login/helpers/validateLoginCredentials/types/validateLoginCredentials.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/login/helpers/validateLoginCredentials/validateLoginCredentials.ts` | **Confirmed:** nested helper, native .find, rule predicates in config; flatten with typed validator | Source reviewed |
+| `packages/domain/auth/pages/login/hooks/useLogin/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/login/hooks/useLogin/types/useLogin.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/pages/login/hooks/useLogin/useLogin.test.tsx` | Move test inside owner __tests__; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/domain/auth/pages/login/hooks/useLogin/useLogin.tsx` | **Confirmed:** composes peer hooks; unify ownership under useLoginForm | Source reviewed |
+| `packages/domain/auth/pages/login/hooks/useLoginActions/index.ts` | Move peer hook under owning useLoginForm hook or combine into it | Structural finding |
+| `packages/domain/auth/pages/login/hooks/useLoginActions/types/useLoginActions.ts` | Move peer hook under owning useLoginForm hook or combine into it | Structural finding |
+| `packages/domain/auth/pages/login/hooks/useLoginActions/useLoginActions.ts` | **Confirmed:** ternary in field-error state updates and peer action hook; nested single owner | Source reviewed |
+| `packages/domain/auth/pages/login/hooks/useLoginForm/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/login/hooks/useLoginForm/types/useLoginForm.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/pages/login/hooks/useLoginForm/useLoginForm.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/domain/auth/pages/login/hooks/useLoginSubmission/index.ts` | Move peer hook under owning useLoginForm hook or combine into it | Structural finding |
+| `packages/domain/auth/pages/login/hooks/useLoginSubmission/types/useLoginSubmission.ts` | Move peer hook under owning useLoginForm hook or combine into it | Structural finding |
+| `packages/domain/auth/pages/login/hooks/useLoginSubmission/useLoginSubmission.ts` | **Confirmed:** page config route, native Object.keys and helper barrels; refactor | Source reviewed |
+| `packages/domain/auth/pages/login/hooks/useLoginViewport/helpers/getMobileSnapshot/getMobileSnapshot.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/login/hooks/useLoginViewport/helpers/getMobileSnapshot/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/login/hooks/useLoginViewport/helpers/getMobileSnapshot/types/getMobileSnapshot.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/login/hooks/useLoginViewport/helpers/subscribeToViewport/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/login/hooks/useLoginViewport/helpers/subscribeToViewport/subscribeToViewport.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/login/hooks/useLoginViewport/helpers/subscribeToViewport/types/subscribeToViewport.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/login/hooks/useLoginViewport/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/login/hooks/useLoginViewport/types/useLoginViewport.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/pages/login/hooks/useLoginViewport/useLoginViewport.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/domain/auth/pages/login/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/login/templates/desktopLogin/DesktopLogin.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/auth/pages/login/templates/desktopLogin/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/login/templates/desktopLogin/types/desktopLogin.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/pages/login/templates/mobileLogin/MobileLogin.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/auth/pages/login/templates/mobileLogin/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/login/templates/mobileLogin/types/mobileLogin.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/pages/login/types/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/login/types/login.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/pages/login/types/login.state.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/pages/recovery/Recovery.tsx` | **Confirmed:** raw status strings, title and JSX ternaries, inline class | Source reviewed |
+| `packages/domain/auth/pages/recovery/__tests__/RecoveryPage.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/domain/auth/pages/recovery/components/recoveryArtwork/RecoveryArtwork.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/auth/pages/recovery/components/recoveryArtwork/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/recovery/components/recoveryArtwork/types/recoveryArtwork.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/pages/recovery/components/recoveryPasswordForm/RecoveryPasswordForm.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/auth/pages/recovery/components/recoveryPasswordForm/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/recovery/components/recoveryPasswordForm/types/recoveryPasswordForm.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/pages/recovery/components/recoveryState/RecoveryState.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/auth/pages/recovery/components/recoveryState/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/recovery/components/recoveryState/types/recoveryState.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/pages/recovery/containers/recoveryContainer/RecoveryContainer.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/auth/pages/recovery/containers/recoveryContainer/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/recovery/containers/recoveryContainer/types/recoveryContainer.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/pages/recovery/helpers/classifyRecoveryFailure/__tests__/classifyRecoveryFailure.test.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts}; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/domain/auth/pages/recovery/helpers/classifyRecoveryFailure/classifyRecoveryFailure.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/recovery/helpers/classifyRecoveryFailure/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/recovery/helpers/classifyRecoveryFailure/types/classifyRecoveryFailure.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/recovery/helpers/getRecoveryArtworkCopy/__tests__/getRecoveryArtworkCopy.test.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts}; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/domain/auth/pages/recovery/helpers/getRecoveryArtworkCopy/getRecoveryArtworkCopy.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/recovery/helpers/getRecoveryArtworkCopy/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/recovery/helpers/getRecoveryArtworkCopy/types/getRecoveryArtworkCopy.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/recovery/helpers/validateRecoveryPassword/__tests__/validateRecoveryPassword.test.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts}; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/domain/auth/pages/recovery/helpers/validateRecoveryPassword/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/recovery/helpers/validateRecoveryPassword/types/validateRecoveryPassword.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/recovery/helpers/validateRecoveryPassword/validateRecoveryPassword.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/auth/pages/recovery/hooks/useRecovery/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/recovery/hooks/useRecovery/types/useRecovery.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/pages/recovery/hooks/useRecovery/useRecovery.ts` | **Confirmed:** long combined form/proof/grant/submission/retry hook; split with one state owner | Source reviewed |
+| `packages/domain/auth/pages/recovery/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/recovery/types/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/auth/pages/recovery/types/recovery.artwork.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/auth/pages/recovery/types/recovery.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/dashboard/RUNBOOK.md` | Check documentation examples/references against current source | Documentation review |
+| `packages/domain/dashboard/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/dashboard/pages/dashboard/Dashboard.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardAside/DashboardAside.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardAside/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardAside/types/dashboardAside.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardHeader/DashboardHeader.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardHeader/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardHeader/types/dashboardHeader.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardMain/DashboardMain.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardMain/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardMain/types/dashboardMain.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardNotice/DashboardNotice.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardNotice/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardNotice/types/dashboardNotice.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardOverview/DashboardOverview.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardOverview/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardOverview/types/dashboardOverview.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/dashboard/pages/dashboard/constants/dashboard.metrics.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/domain/dashboard/pages/dashboard/constants/dashboard.workspaces.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/domain/dashboard/pages/dashboard/containers/dashboardContainer/DashboardContainer.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/dashboard/pages/dashboard/containers/dashboardContainer/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/dashboard/pages/dashboard/containers/dashboardContainer/types/dashboardContainer.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/dashboard/pages/dashboard/helpers/__tests__/dashboard.getDateParts.test.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts}; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/domain/dashboard/pages/dashboard/helpers/dashboard.getDateParts.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/domain/dashboard/pages/dashboard/helpers/types/dashboard.getDateParts.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/dashboard/pages/dashboard/hooks/useDashboardCalendar/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/dashboard/pages/dashboard/hooks/useDashboardCalendar/types/useDashboardCalendar.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/dashboard/pages/dashboard/hooks/useDashboardCalendar/useDashboardCalendar.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/domain/dashboard/pages/dashboard/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/dashboard/pages/dashboard/types/dashboard.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/dashboard/pages/dashboard/types/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/integrations/index.ts` | Remove unused UI domain after route/importer check | Structural finding |
+| `packages/domain/integrations/pages/ConnectionDetailsPage.tsx` | Remove unused UI domain after route/importer check | Structural finding |
+| `packages/domain/integrations/pages/IntegrationsPage.tsx` | Remove unused UI domain after route/importer check | Structural finding |
+| `packages/domain/people/index.ts` | Remove unused UI domain after route/importer check | Structural finding |
+| `packages/domain/people/pages/PeoplePage.tsx` | Remove unused UI domain after route/importer check | Structural finding |
+| `packages/domain/publicSite/RUNBOOK.md` | Check documentation examples/references against current source | Documentation review |
+| `packages/domain/publicSite/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/publicSite/pages/landing/LandingPage.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/publicSite/pages/landing/__tests__/LandingPage.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/domain/publicSite/pages/landing/components/aboutContent/aboutContent.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/publicSite/pages/landing/components/aboutContent/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/publicSite/pages/landing/components/campusContent/campusContent.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/publicSite/pages/landing/components/campusContent/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/constants/enquiry.initial.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/containers/enquiryFormContainer/EnquiryFormContainer.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/containers/enquiryFormContainer/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/enquiryForm.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/getEnquiryMailto/__tests__/getEnquiryMailto.test.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts}; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/getEnquiryMailto/getEnquiryMailto.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/getEnquiryMailto/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/getEnquiryMailto/types/getEnquiryMailto.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/validateEnquiryContact/__tests__/validateEnquiryContact.test.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts}; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/validateEnquiryContact/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/validateEnquiryContact/types/validateEnquiryContact.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/validateEnquiryContact/validateEnquiryContact.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/hooks/useEnquiryForm/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/hooks/useEnquiryForm/types/useEnquiryForm.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/hooks/useEnquiryForm/useEnquiryForm.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/types/enquiryForm.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/publicSite/pages/landing/components/homeContent/homeContent.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/publicSite/pages/landing/components/homeContent/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/publicSite/pages/landing/components/publicSheet/PublicSheet.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/publicSite/pages/landing/components/publicSheet/components/infoPanels/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/publicSite/pages/landing/components/publicSheet/components/infoPanels/infoPanels.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/publicSite/pages/landing/components/publicSheet/components/panelPhoto/PanelPhoto.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/publicSite/pages/landing/components/publicSheet/components/panelPhoto/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/publicSite/pages/landing/components/publicSheet/components/storyPanel/StoryPanel.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/publicSite/pages/landing/components/publicSheet/components/storyPanel/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/publicSite/pages/landing/components/publicSheet/constants/school.sheetCopy.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/domain/publicSite/pages/landing/components/publicSheet/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/publicSite/pages/landing/components/publicSheet/types/schoolPanel.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/publicSite/pages/landing/components/resourceContent/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/publicSite/pages/landing/components/resourceContent/resourceContent.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/publicSite/pages/landing/components/siteActions/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/publicSite/pages/landing/components/siteActions/siteActions.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/publicSite/pages/landing/components/siteChrome/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/publicSite/pages/landing/components/siteChrome/siteChrome.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/publicSite/pages/landing/components/siteMedia/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/publicSite/pages/landing/components/siteMedia/siteMedia.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/publicSite/pages/landing/constants/school.content.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/domain/publicSite/pages/landing/constants/school.navigation.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/domain/publicSite/pages/landing/constants/school.panels.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/domain/publicSite/pages/landing/constants/school.seo.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/domain/publicSite/pages/landing/containers/landingContainer/LandingContainer.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/publicSite/pages/landing/containers/landingContainer/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/publicSite/pages/landing/hooks/useLandingPage/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/publicSite/pages/landing/hooks/useLandingPage/types/useLandingPage.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/domain/publicSite/pages/landing/hooks/useLandingPage/useLandingPage.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/domain/publicSite/pages/landing/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/domain/publicSite/pages/landing/registry/schoolPages.registry.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/domain/publicSite/pages/landing/styles/landingPage.css` | Large global feature CSS; tokenize and split scoped ownership | Source reviewed |
+| `packages/domain/publicSite/pages/landing/styles/optionOne.css` | Legacy non-module CSS; map selectors to owning .module.scss with @Styles tokens | Structural finding |
+| `packages/domain/publicSite/pages/landing/styles/optionOnePages.css` | Legacy non-module CSS; map selectors to owning .module.scss with @Styles tokens | Structural finding |
+| `packages/domain/settings/index.ts` | Remove unused UI domain after route/importer check | Structural finding |
+| `packages/domain/settings/pages/SecurityPage.tsx` | Remove unused UI domain after route/importer check | Structural finding |
+| `packages/shell/RUNBOOK.md` | Check documentation examples/references against current source | Documentation review |
+| `packages/shell/Shell.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/shell/components/appRoutes/AppRoutes.tsx` | **Confirmed:** direct .map route JSX, mixed route policy; central route constants and renderer | Source reviewed |
+| `packages/shell/components/appRoutes/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/shell/components/appRoutes/types/appRoutes.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/shell/components/mobileNav/MobileNav.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/shell/components/mobileNav/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/shell/components/mobileNav/types/mobileNav.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/shell/components/pinnedNavigation/PinnedApp.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/shell/components/pinnedNavigation/PinnedNavigation.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/shell/components/pinnedNavigation/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/shell/components/pinnedNavigation/types/pinnedNavigation.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/shell/components/protectedLayout/ProtectedLayout.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/shell/components/protectedLayout/__tests__/ProtectedLayout.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
+| `packages/shell/components/protectedLayout/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/shell/components/protectedLayout/types/protectedLayout.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/shell/components/sidebar/Sidebar.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/shell/components/sidebar/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/shell/components/sidebar/types/sidebar.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/shell/components/themeChoices/ThemeChoices.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/shell/components/themeChoices/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/shell/components/themeChoices/types/themeChoices.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/shell/components/topbar/Topbar.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
+| `packages/shell/components/topbar/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/shell/components/topbar/types/topbar.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/shell/containers/shellContainer/ShellContainer.tsx` | **Confirmed:** QueryClient construction/options mixed; separate constant and factory | Source reviewed |
+| `packages/shell/containers/shellContainer/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/shell/containers/shellContainer/types/shellContainer.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/shell/hooks/useShell/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/shell/hooks/useShell/types/useShell.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/shell/hooks/useShell/useShell.ts` | **Confirmed:** peer useShellState + useShellActions, consolidate | Source reviewed |
+| `packages/shell/hooks/useShellActions/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/shell/hooks/useShellActions/types/useShellActions.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/shell/hooks/useShellActions/useShellActions.ts` | **Confirmed:** duplicated boolean setters; native includes/filter; writes persistence in state updater | Source reviewed |
+| `packages/shell/hooks/useShellState/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/shell/hooks/useShellState/types/useShellState.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/shell/hooks/useShellState/useShellState.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/shell/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/shell/layout/AppLauncher.tsx` | **Confirmed:** monolithic catalog, native button/input, inline filter and raw class/route/icon | Source reviewed |
+| `packages/shell/registry/appCatalog.registry.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/shell/registry/domains.registry.tsx` | **Confirmed:** inline route strings, raw purpose and legacy redirect; business path contracts | Source reviewed |
+| `packages/shell/registry/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/shell/storage/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/shell/storage/types/workspacePreferences.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/shell/storage/workspacePreferences.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/shell/types/shell.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
+| `packages/styles/RUNBOOK.md` | Check documentation examples/references against current source | Documentation review |
+| `packages/styles/base.css` | Review token colors, theme parity, media breakpoints and global selector ownership | Content review required |
+| `packages/styles/index.css` | Review token colors, theme parity, media breakpoints and global selector ownership | Content review required |
+| `packages/styles/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
+| `packages/styles/themes/dark.css` | Review token colors, theme parity, media breakpoints and global selector ownership | Content review required |
+| `packages/styles/themes/light.css` | Review token colors, theme parity, media breakpoints and global selector ownership | Content review required |
+| `packages/styles/tokens/breakpoints.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `packages/styles/tokens/foundations.css` | Review token colors, theme parity, media breakpoints and global selector ownership | Content review required |
+| `packages/styles/utilities.css` | Review token colors, theme parity, media breakpoints and global selector ownership | Content review required |
+| `pnpm-lock.yaml` | Generated dependency snapshot; validate with frozen pnpm install, not manual code refactoring | Tracked metadata |
+| `scripts/check-boundaries.mjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
+| `scripts/check-layout-assets.mjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
+| `scripts/check-styles.mjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
+| `scripts/check-ui-contracts.mjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
+| `scripts/check-units.mjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
+| `scripts/download-school-images.mjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
+| `scripts/prerender-public-pages.mjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
+| `scripts/test/polyfills.cjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
+| `scripts/test/styleMock.cjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
+| `scripts/test/transformEsm.cjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
+| `tsconfig.json` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
+| `vite.config.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
