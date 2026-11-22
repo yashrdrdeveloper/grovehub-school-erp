@@ -1,1 +1,1 @@
-Retry full-tree formatting with whitespace-independent architecture and measured audit output.
+Format all safe frontend source while retaining exactly seven documented oversized public-site exceptions.
