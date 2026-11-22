@@ -13,8 +13,8 @@ export const DashboardAside: DashboardAsideComponent = ({ date, calendar }) => {
   const { calendarDay, calendarHeading, calendarDetail, calendarEmptyTitle } = getDashboardCalendarCopy(date, today);
   let todayClass = '';
   let upcomingClass = '';
-  if (today) todayClass = styles['is-active'];
-  else upcomingClass = styles['is-active'];
+  if (today) todayClass = styles['is-active'] ?? '';
+  else upcomingClass = styles['is-active'] ?? '';
 
   return (
     <Box as="aside" className={styles['school-home__side-column']}>
