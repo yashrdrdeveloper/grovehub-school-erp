@@ -9,7 +9,7 @@ import (
 	accountdto "grovehub/services/identity/internal/app/dto/account"
 	mapper "grovehub/services/identity/internal/app/mappers/account"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
-	"grovehub/services/identity/internal/app/security/principal"
+	"grovehub/services/identity/internal/app/services/security/principal"
 	"grovehub/services/identity/internal/app/services/account/operations/search/flows"
 	strategies "grovehub/services/identity/internal/app/services/account/operations/search/strategies"
 	validator "grovehub/services/identity/internal/app/validators/account"
