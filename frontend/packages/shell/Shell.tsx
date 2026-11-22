@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom';
+import { SHELL_TEST_IDS } from './constants/shell.testIds';
 
 import { AppLauncherContainer } from './components/appLauncher';
 import { Sidebar } from './components/sidebar';
@@ -14,7 +15,7 @@ export type { ShellProps } from './types/shell.props';
 export const Shell: ShellComponent = (props) => {
   const model = useShell();
   return (
-    <div className={getShellClassName(model.sidebarCollapsed)} data-testid="workspace-shell-root">
+    <div className={getShellClassName(model.sidebarCollapsed)} data-testid={SHELL_TEST_IDS.ROOT}>
       <Sidebar {...props} model={model}/>
       {model.sidebarOpen && <button type="button" className="sidebar-backdrop"
         aria-label="Dismiss navigation" onClick={model.closeSidebar}/>}

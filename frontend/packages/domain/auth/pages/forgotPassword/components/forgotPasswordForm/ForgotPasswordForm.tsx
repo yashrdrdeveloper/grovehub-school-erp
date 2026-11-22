@@ -1,4 +1,5 @@
 import { ArrowLeft, CheckCircle2, Clock3, Info, LoaderCircle, Mail } from '@Components/icons';
+import { FORGOT_PASSWORD_TEST_IDS } from '../../constants/forgotPassword.testIds';
 import type { ChangeEventHandler } from 'react';
 import { Button } from '@Components/components/Button';
 import { Form } from '@Components/components/Form';
@@ -26,10 +27,10 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
   }
 
   return (
-    <div className={rootClass}>
-      <Form unstyled dataTestId="forgot-password-form" id={formId} className="rdr-login-v2__form rdr-auth-flow__form" onSubmit={onSubmit} noValidate>
+    <div className={rootClass} data-testid={FORGOT_PASSWORD_TEST_IDS.ROOT}>
+      <Form unstyled dataTestId={FORGOT_PASSWORD_TEST_IDS.FORM} id={formId} className="rdr-login-v2__form rdr-auth-flow__form" onSubmit={onSubmit} noValidate>
         <div className="rdr-auth-flow__fields">
-          <div className={noticeClass}
+          <div className={noticeClass} data-testid={FORGOT_PASSWORD_TEST_IDS.NOTICE}
             role="status" aria-live="polite">
             <span className="rdr-auth-flow__notice-icon" aria-hidden="true"><NoticeIcon size={20}/></span>
             <span className="rdr-auth-flow__notice-copy">
@@ -43,7 +44,7 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
             error={state.emailError} onChange={handleEmailChange} required/>
         </div>
         <div className="rdr-auth-flow__actions">
-          <Button type="submit" variant="primary" size="lg" dataTestId="forgot-password-submit" className="rdr-login-v2__submit" disabled={state.busy || view.cooldown}
+          <Button type="submit" variant="primary" size="lg" dataTestId={FORGOT_PASSWORD_TEST_IDS.SUBMIT} className="rdr-login-v2__submit" disabled={state.busy || view.cooldown}
             aria-label={view.buttonLabel}>
             <span>{view.buttonLabel}</span>
             {state.busy && <LoaderCircle className="rdr-login-v2__spinner" size={19}/>}

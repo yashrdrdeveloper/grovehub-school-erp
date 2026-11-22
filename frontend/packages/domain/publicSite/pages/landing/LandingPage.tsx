@@ -1,4 +1,5 @@
 import { SiteHeader, SiteFooter } from './components/siteChrome';
+import { LANDING_TEST_IDS } from './constants/landing.testIds';
 import { EnquiryActionContext } from './components/siteActions';
 import { EnquiryForm } from './components/enquiryForm';
 import { PublicSheet } from './components/publicSheet';
@@ -13,9 +14,9 @@ export const LandingPage = ({ model }: { readonly model: LandingPageModel }) => 
   const { CurrentPage, panel, closePanel, selectPanel, handleInternalLink, openEnquiry } = model;
   return (
     <EnquiryActionContext.Provider value={openEnquiry}>
-      <div className="rdr-site" data-testid="public-site-page" onClickCapture={handleInternalLink}>
+      <div className="rdr-site" data-testid={LANDING_TEST_IDS.PAGE} onClickCapture={handleInternalLink}>
         <SiteHeader/>
-        <main id="main-content" data-testid="public-site-content"><CurrentPage/></main>
+        <main id="main-content" data-testid={LANDING_TEST_IDS.CONTENT}><CurrentPage/></main>
         <SiteFooter/>
         <PublicSheet panel={panel} onClose={closePanel} onNavigate={selectPanel} enquiry={<EnquiryForm compact/>}/>
       </div>

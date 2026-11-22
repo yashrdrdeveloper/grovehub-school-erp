@@ -1,0 +1,18 @@
+export const ENQUIRY_TEST_IDS = {
+  PAGE: "enquiry-page",
+  SHEET: "enquiry-sheet",
+  FORM: "enquiry-form",
+  SEND_EMAIL: "enquiry-send-email",
+  EDIT: "enquiry-edit",
+  FIRST_NAME: "enquiry-first-name",
+  MIDDLE_NAME: "enquiry-middle-name",
+  LAST_NAME: "enquiry-last-name",
+  PHONE: "enquiry-phone",
+  EMAIL: "enquiry-email",
+  TYPE: "enquiry-type",
+  CLASS: "enquiry-class",
+  MESSAGE: "enquiry-message",
+  CONSENT: "enquiry-consent",
+  BACK: "enquiry-back",
+  CONTINUE: "enquiry-continue",
+} as const;

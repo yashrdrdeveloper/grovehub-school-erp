@@ -1,4 +1,5 @@
 import { AlertCircle, Eye, EyeOff, KeyRound, LoaderCircle, LockKeyhole, ShieldCheck } from '@Components/icons';
+import { RECOVERY_TEST_IDS } from '../../constants/recovery.testIds';
 import type { ChangeEventHandler } from 'react';
 import { Button } from '@Components/components/Button';
 import { Form } from '@Components/components/Form';
@@ -31,20 +32,20 @@ export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
   if (saving) buttonLabel = 'Securing your account…';
 
   return (
-    <Form unstyled dataTestId="recovery-form" className="rdr-login-v2__form rdr-recovery__form" onSubmit={onSubmit} noValidate>
+    <Form unstyled dataTestId={RECOVERY_TEST_IDS.FORM} className="rdr-login-v2__form rdr-recovery__form" onSubmit={onSubmit} noValidate>
       <div className="rdr-recovery__fields">
-        <CredentialField id={id + '-password'} label="New password" Icon={LockKeyhole}
+        <CredentialField dataTestId={RECOVERY_TEST_IDS.PASSWORD} id={id + '-password'} label="New password" Icon={LockKeyhole}
           type={passwordType} autoComplete="new-password" placeholder="New password"
           value={password} minLength={12} disabled={saving} required
           error={fieldErrors.password} onChange={handlePasswordChange}
           trailingAction={
-            <button type="button" className="rdr-login-v2__visibility" disabled={saving}
+            <button type="button" className="rdr-login-v2__visibility" data-testid={RECOVERY_TEST_IDS.PASSWORD_VISIBILITY} disabled={saving}
               aria-label={visibilityLabel} onClick={onToggleVisibility}>
               <VisibilityIcon size={19} aria-hidden="true"/>
             </button>
           }/>
 
-        <CredentialField id={id + '-confirmation'} label="Confirm password" Icon={KeyRound}
+        <CredentialField dataTestId={RECOVERY_TEST_IDS.CONFIRMATION} id={id + '-confirmation'} label="Confirm password" Icon={KeyRound}
           type={passwordType} autoComplete="new-password" placeholder="Confirm password"
           value={confirmation} disabled={saving} required
           error={fieldErrors.confirmation} onChange={handleConfirmationChange}
@@ -60,7 +61,7 @@ export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
         </p>
       </div>
       <div className="rdr-recovery__actions">
-        <Button type="submit" variant="primary" size="lg" dataTestId="recovery-submit" className="rdr-login-v2__submit" disabled={saving}>
+        <Button type="submit" variant="primary" size="lg" dataTestId={RECOVERY_TEST_IDS.SUBMIT} className="rdr-login-v2__submit" disabled={saving}>
           {buttonLabel}
           {saving && <LoaderCircle className="rdr-login-v2__spinner" size={18}/>}
         </Button>

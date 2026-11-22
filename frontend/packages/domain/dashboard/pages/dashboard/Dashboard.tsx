@@ -1,4 +1,5 @@
 import { DashboardHeader } from './components/dashboardHeader';
+import { DASHBOARD_TEST_IDS } from './constants/dashboard.testIds';
 import { DashboardNotice } from './components/dashboardNotice';
 import { DashboardOverview } from './components/dashboardOverview';
 import { DashboardMain } from './components/dashboardMain';
@@ -7,7 +8,7 @@ import type { DashboardComponent } from './types';
 
 /** Pure dashboard composition. All data is explicitly marked as a preview. */
 export const Dashboard: DashboardComponent = props => (
-  <div className="school-home" data-testid="dashboard-page">
+  <div className="school-home" data-testid={DASHBOARD_TEST_IDS.PAGE}>
     <DashboardHeader date={props.date}/>
     <DashboardNotice/>
     <DashboardOverview/>
