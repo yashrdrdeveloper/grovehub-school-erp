@@ -1,10 +1,11 @@
+import { INPUT_CONTROL_SIZE } from './constants/inputControl.size';
 import { forwardRef } from 'react';
 import { cn } from '@Base/utilities/cn';
 import type { InputControlComponent, InputControlProps } from './types/inputControl.props';
 
 /** Native leaf input. Unstyled mode preserves existing auth and school-site layouts. */
 export const InputControl: InputControlComponent = forwardRef<HTMLInputElement, InputControlProps>(({
-  id, name, className, dataTestId, unstyled = false, controlSize = 'md', invalid, 'aria-invalid': ariaInvalid, ...props
+  id, name, className, dataTestId, unstyled = false, controlSize = INPUT_CONTROL_SIZE.MEDIUM, invalid, 'aria-invalid': ariaInvalid, ...props
 }, ref) => (
   <input {...props} ref={ref} id={id} name={name}
     data-testid={dataTestId ?? id ?? name}
