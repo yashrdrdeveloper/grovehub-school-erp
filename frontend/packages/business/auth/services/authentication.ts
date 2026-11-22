@@ -1,68 +1,22 @@
-import { apiRequest } from '@Business/api';
-import { login } from './login';
+import { AuthOperation } from '../constants/auth.operations';
+import { AUTHENTICATION_OPERATIONS } from './auth.operations';
 
-import type {
-  Account,
-  GrantResult,
-  RefreshResult,
-  SessionSummary,
-  StatusResult,
-} from '../types';
-
-const PUBLIC = '/identity/public/auth';
-const PROTECTED = '/identity/protected/auth';
-
+/** Preserve the public named API while dispatching via typed operation identifiers. */
 export const authenticationApi = {
-  login,
-  refresh: () =>
-    apiRequest<RefreshResult>(`${PUBLIC}/refresh`, { method: 'POST' }),
-  forgotPassword: (email: string) =>
-    apiRequest<{ accepted: boolean; delivery: string }>(`${PUBLIC}/forgot-password`, {
-      method: 'POST',
-      body: { email },
-    }),
-  validateRecovery: (proof: string) =>
-    apiRequest<GrantResult>(`${PUBLIC}/recovery/validate`, {
-      headers: { Authorization: `Recovery ${proof}` },
-    }),
-  validateInvitation: (proof: string) =>
-    apiRequest<GrantResult>(`${PUBLIC}/invitations/validate`, {
-      headers: { Authorization: `Invitation ${proof}` },
-    }),
-  exchangeRecovery: (proof: string) =>
-    apiRequest<GrantResult>(`${PUBLIC}/recovery/exchange`, {
-      method: 'POST',
-      headers: { Authorization: `Recovery ${proof}` },
-    }),
-  exchangeInvitation: (proof: string) =>
-    apiRequest<GrantResult>(`${PUBLIC}/invitations/exchange`, {
-      method: 'POST',
-      headers: { Authorization: `Invitation ${proof}` },
-    }),
-  resetGrantStatus: () =>
-    apiRequest<GrantResult>(`${PUBLIC}/reset-password/status`),
-  resetPassword: (newPassword: string) =>
-    apiRequest<StatusResult>(`${PUBLIC}/reset-password`, {
-      method: 'POST',
-      body: { newPassword },
-    }),
-  me: () => apiRequest<Account>(`${PROTECTED}/me`),
-  logout: () => apiRequest<StatusResult>(`${PROTECTED}/logout`, { method: 'POST' }),
-  logoutAll: () => apiRequest<{ status: string; revokedCount: number }>(`${PROTECTED}/logout-all`, { method: 'POST' }),
-  changePassword: (newPassword: string) =>
-    apiRequest<StatusResult>(`${PROTECTED}/change-password`, {
-      method: 'POST',
-      body: { newPassword },
-    }),
-  reauthenticate: (password: string) =>
-    apiRequest<StatusResult>(`${PROTECTED}/reauthenticate`, {
-      method: 'POST',
-      body: { password },
-    }),
-  sessions: () => apiRequest<{ items: SessionSummary[] }>(`${PROTECTED}/sessions`),
-  revokeSession: (sessionId: string) =>
-    apiRequest<{ sessionId: string; status: string }>(
-      `${PROTECTED}/sessions/${encodeURIComponent(sessionId)}`,
-      { method: 'DELETE' },
-    ),
-};
+  login: AUTHENTICATION_OPERATIONS[AuthOperation.LOGIN],
+  refresh: AUTHENTICATION_OPERATIONS[AuthOperation.REFRESH],
+  forgotPassword: AUTHENTICATION_OPERATIONS[AuthOperation.FORGOT_PASSWORD],
+  validateRecovery: AUTHENTICATION_OPERATIONS[AuthOperation.VALIDATE_RECOVERY],
+  validateInvitation: AUTHENTICATION_OPERATIONS[AuthOperation.VALIDATE_INVITATION],
+  exchangeRecovery: AUTHENTICATION_OPERATIONS[AuthOperation.EXCHANGE_RECOVERY],
+  exchangeInvitation: AUTHENTICATION_OPERATIONS[AuthOperation.EXCHANGE_INVITATION],
+  resetGrantStatus: AUTHENTICATION_OPERATIONS[AuthOperation.RESET_GRANT_STATUS],
+  resetPassword: AUTHENTICATION_OPERATIONS[AuthOperation.RESET_PASSWORD],
+  me: AUTHENTICATION_OPERATIONS[AuthOperation.ME],
+  logout: AUTHENTICATION_OPERATIONS[AuthOperation.LOGOUT],
+  logoutAll: AUTHENTICATION_OPERATIONS[AuthOperation.LOGOUT_ALL],
+  changePassword: AUTHENTICATION_OPERATIONS[AuthOperation.CHANGE_PASSWORD],
+  reauthenticate: AUTHENTICATION_OPERATIONS[AuthOperation.REAUTHENTICATE],
+  sessions: AUTHENTICATION_OPERATIONS[AuthOperation.SESSIONS],
+  revokeSession: AUTHENTICATION_OPERATIONS[AuthOperation.REVOKE_SESSION],
+} as const;
