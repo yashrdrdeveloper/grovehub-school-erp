@@ -121,3 +121,9 @@
 .rdr-login-v2__closing{gap:5px!important}
 .rdr-login-v2__closing>span{font-size:8px!important}
 }
+
+/* Reuse the original shared RDR monogram on mobile (same as desktop). */
+@media(max-width:720px){
+.rdr-login-v2__mobile-identity>.school-monogram{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 46px!important;width:46px!important;height:46px!important;min-width:46px!important;max-width:46px!important;padding:6px!important;border:1px solid #d7dde7!important;border-radius:10px!important;background:#eef2f7!important;box-shadow:none!important;color:#1f2a44!important}
+.rdr-login-v2__mobile-identity>.school-monogram .school-monogram__symbol{display:block!important;width:100%!important;height:100%!important;color:#1f2a44!important}
+}
