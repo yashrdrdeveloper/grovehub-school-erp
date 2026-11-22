@@ -88,5 +88,9 @@ export const evaluateAudit = (output, baseline) => {
     }
   }
 
+  for (const entry of stale) {
+    failures.push('Obsolete allowlist entry: ' + entry);
+  }
+
   return { failures, counts, findings, flaggedFiles: observed.size, stale };
 };
