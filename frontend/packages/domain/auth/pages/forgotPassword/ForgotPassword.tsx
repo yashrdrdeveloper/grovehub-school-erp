@@ -1,4 +1,5 @@
-import { LoginLayout, LoginLayoutVariant } from '../../components/loginLayout';
+import { LoginLayout } from '../../components/loginLayout';
+import { LoginLayoutVariant } from '../../components/loginLayout/constants/loginLayout.variant';
 
 import { ForgotPasswordForm } from './components/forgotPasswordForm';
 import type { ForgotPasswordComponent } from './types';
