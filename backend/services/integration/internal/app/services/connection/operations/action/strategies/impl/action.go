@@ -52,3 +52,35 @@ func (s *actionStrategy) ExecuteAction(ctx context.Context, tenantID, connection
 		ConnectionID: connectionID, ProviderID: c.Provider, AccessToken: token.AccessToken,
 	}, action, input)
 }
+
+func (s *actionStrategy) ExecuteSystemMail(ctx context.Context, tenantID string, input json.RawMessage) (any, error) {
+	sender, err := s.repository.SystemMailSender(ctx, tenantID)
+	if err != nil {
+		return nil, err
+	}
+	return s.ExecuteAction(ctx, tenantID, sender.ID, mailconstants.MailSend, input)
+}
+
+func (s *actionStrategy) ConfigureSystemMailSender(ctx context.Context, tenantID string, connectionID string) error {
+	sender, err := s.repository.Get(ctx, tenantID, connectionID)
+	if err != nil {
+		return err
+	}
+	if sender.Status != entity.StatusActive {
+		return connectionhelpers.ErrConnectionInactive
+	}
+	if s.actions == nil {
+		return providerhelpers.ErrProviderUnavailable
+	}
+	supported := false
+	for _, action := range s.actions.Actions(sender.Provider) {
+		if action == mailconstants.MailSend {
+			supported = true
+			break
+		}
+	}
+	if !supported {
+		return providerhelpers.ErrProviderUnavailable
+	}
+	return s.repository.ConfigureSystemMailSender(ctx, tenantID, connectionID)
+}

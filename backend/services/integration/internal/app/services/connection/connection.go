@@ -25,4 +25,6 @@ type ConnectionService interface {
 	ProcessPush(ctx context.Context, notification gmail.PushNotification) error
 	RenewExpiring(ctx context.Context) error
 	ExecuteAction(ctx context.Context, tenantID, connectionID string, action providerdto.Action, input json.RawMessage) (any, error)
+	ExecuteSystemMail(ctx context.Context, tenantID string, input json.RawMessage) (any, error)
+	ConfigureSystemMailSender(ctx context.Context, tenantID string, connectionID string) error
 }
