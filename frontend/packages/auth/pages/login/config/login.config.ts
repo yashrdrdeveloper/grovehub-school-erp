@@ -9,7 +9,7 @@ export const LOGIN_COPY = Object.freeze({
   desktopTitle: 'Welcome back.',
   desktopDescription: 'Sign in to continue to your RDR School workspace.',
   mobileTitle: 'Welcome back.',
-  mobileDescription: 'Sign in to continue to your RDR School workspace.',
+  mobileDescription: 'Sign in to your RDR School workspace.',
   button: 'Sign in',
   busyButton: 'Signing in…',
   forgotPassword: 'Forgot password?',
