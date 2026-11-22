@@ -2,7 +2,6 @@ package refresh
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	authdto "grovehub/services/identity/internal/app/dto/authentication"
@@ -29,16 +28,16 @@ func New(accounts accountrepo.Repository, sessions sessionrepo.Repository) Opera
 func (operation *RefreshOperation) Execute(ctx context.Context, token string) (auth.RefreshResult, error) {
 	hash, err := secrets.Digest(token, 48)
 	if err != nil {
-		return auth.RefreshResult{}, errors.New("invalid refresh token")
+		return auth.RefreshResult{}, auth.ErrInvalidRefreshToken
 	}
 
 	session, err := operation.sessions.FindRefresh(ctx, hash, time.Now().UTC())
 	if err != nil {
-		return auth.RefreshResult{}, errors.New("invalid refresh token")
+		return auth.RefreshResult{}, auth.ErrInvalidRefreshToken
 	}
 	account, err := operation.accounts.FindByID(ctx, session.AccountID)
 	if err != nil || account.Status != entity.Active {
-		return auth.RefreshResult{}, errors.New("invalid refresh token")
+		return auth.RefreshResult{}, auth.ErrInvalidRefreshToken
 	}
 
 	access, err := secrets.NewSecret(32)
@@ -65,7 +64,7 @@ func (operation *RefreshOperation) Execute(ctx context.Context, token string) (a
 	rotated.AccessExpiresAt = now.Add(15 * time.Minute)
 	rotated.UpdatedAt = now
 	if err := operation.sessions.Rotate(ctx, rotated, hash); err != nil {
-		return auth.RefreshResult{}, errors.New("invalid refresh token")
+		return auth.RefreshResult{}, auth.ErrInvalidRefreshToken
 	}
 
 	return auth.RefreshResult{

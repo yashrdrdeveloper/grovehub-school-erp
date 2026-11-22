@@ -10,6 +10,12 @@ import (
 
 type Principal = coregateway.Principal
 
+var (
+	ErrAuthenticationRequired = errors.New("authentication required")
+	ErrAdminForbidden = errors.New("admin access forbidden")
+	ErrRecentAuthenticationRequired = errors.New("recent authentication required")
+)
+
 func With(ctx context.Context, principal Principal) context.Context {
 	return coregateway.WithPrincipal(ctx, principal)
 }
@@ -21,7 +27,7 @@ func From(ctx context.Context) (Principal, bool) {
 func Require(ctx context.Context) (Principal, error) {
 	principal, ok := From(ctx)
 	if !ok {
-		return Principal{}, errors.New("authentication required")
+		return Principal{}, ErrAuthenticationRequired
 	}
 	return principal, nil
 }
@@ -32,7 +38,7 @@ func RequireAdmin(ctx context.Context) (Principal, error) {
 		return Principal{}, err
 	}
 	if !principal.Admin || principal.TenantID == "" {
-		return Principal{}, errors.New("admin access forbidden")
+		return Principal{}, ErrAdminForbidden
 	}
 	return principal, nil
 }
@@ -43,7 +49,7 @@ func Recent(ctx context.Context, maxAge time.Duration) error {
 		return err
 	}
 	if principal.AuthenticatedAt.IsZero() || time.Since(principal.AuthenticatedAt) > maxAge {
-		return errors.New("recent authentication required")
+		return ErrRecentAuthenticationRequired
 	}
 	return nil
 }

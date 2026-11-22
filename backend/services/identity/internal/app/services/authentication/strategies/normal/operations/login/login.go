@@ -2,7 +2,6 @@ package login
 
 import (
 	"context"
-	"errors"
 	"strings"
 	"time"
 
@@ -33,17 +32,17 @@ func New(accounts accountrepo.Repository, sessions sessionrepo.Repository, crede
 func (operation *LoginOperation) Execute(ctx context.Context, input authdto.Login, userAgent string) (auth.SessionResult, error) {
 	identifier := strings.ToLower(strings.TrimSpace(input.Identifier))
 	if identifier == "" || input.Password == "" || !strings.Contains(identifier, "@") {
-		return auth.SessionResult{}, errors.New("invalid credentials")
+		return auth.SessionResult{}, auth.ErrInvalidCredentials
 	}
 
 	account, err := operation.accounts.FindByEmail(ctx, identifier)
 	if err != nil || account.Status != entity.Active {
-		return auth.SessionResult{}, errors.New("invalid credentials")
+		return auth.SessionResult{}, auth.ErrInvalidCredentials
 	}
 
 	valid, err := operation.credentials.Verify(ctx, account.AccountID, input.Password)
 	if err != nil || !valid {
-		return auth.SessionResult{}, errors.New("invalid credentials")
+		return auth.SessionResult{}, auth.ErrInvalidCredentials
 	}
 
 	access, err := secrets.NewSecret(32)
