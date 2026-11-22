@@ -1,1 +1,1 @@
-Format migrated owner-scoped CSS Modules in Phase 2.1.
+Evaluate safe full frontend formatting across Phase 2.1 without relaxing the audit gates.
