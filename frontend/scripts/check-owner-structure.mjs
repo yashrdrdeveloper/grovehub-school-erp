@@ -50,6 +50,42 @@ for (const entry of await readdir(business, { withFileTypes: true })) {
   }
 }
 
+/**
+ * Enforce reusable owner conventions across every package, not only Dialog.
+ * A flat parts/components/primitives barrel hides a compound unit's ownership.
+ */
+const checkOwnerFiles = async (directory) => {
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const filename = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name !== 'node_modules' && entry.name !== '.generated') {
+        await checkOwnerFiles(filename);
+      }
+      continue;
+    }
+
+    const relative = path.relative(root, filename).replaceAll(path.sep, '/');
+    if (/\/(?:helpers|constants|renderer)\/index\.ts$/.test(relative)) {
+      failures.push(relative + ': helper/constant/renderer barrels are forbidden');
+    }
+
+    if (/\/config\//.test(relative)) {
+      failures.push(relative + ': move config to owned constants/ or helpers/');
+    }
+
+    if (/\/helpers\/(?!types\/|__tests__\/)[^/]+\/.+\.[jt]sx?$/.test(relative) &&
+        !relative.startsWith('base/')) {
+      failures.push(relative + ': helpers must be flat, with types/ and __tests__/ only');
+    }
+
+    if (/^components\/components\/[^/]+\/(?:parts|components|primitives)\.[jt]sx?$/.test(relative)) {
+      failures.push(relative + ': compound child components require named owned units');
+    }
+  }
+};
+
+await checkOwnerFiles(root);
+
 const dialogRoot = path.join(root, 'components/components/Dialog');
 if (await exists(path.join(dialogRoot, 'parts.ts'))) {
   failures.push('components/Dialog/parts.ts: use one named unit per compound component');
@@ -71,7 +107,12 @@ for (const [unit, component] of [
   }
 }
 
-const dialogConsumers = [path.join(root, 'domain'), path.join(root, 'shell')];
+const dialogConsumers = [
+  path.join(root, 'domain'),
+  path.join(root, 'shell'),
+  path.join(root, 'components'),
+  path.join(root, 'business'),
+];
 const checkImports = async (directory) => {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const filename = path.join(directory, entry.name);
