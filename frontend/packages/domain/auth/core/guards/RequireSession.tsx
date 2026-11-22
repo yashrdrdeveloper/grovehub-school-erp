@@ -1,3 +1,4 @@
+import { Box } from '@Components/components/Box';
 import { useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AUTH_ROUTE } from '@Business/auth/routes';
@@ -15,14 +16,14 @@ export const RequireSession = () => {
     if (!initialized) void reload();
   }, [initialized, reload]);
 
-  if (loading || !initialized) return <div className="screen-loading">Opening your workspace…</div>;
+  if (loading || !initialized) return <Box as="div" className="screen-loading">Opening your workspace…</Box>;
   if (!account) return <Navigate to={AUTH_ROUTE.LOGIN} state={{ from: location.pathname }} replace />;
   return <Outlet />;
 };
 
 export const PublicOnly = () => {
   const { account, loading } = useAuth();
-  if (loading) return <div className="screen-loading">Checking your session…</div>;
+  if (loading) return <Box as="div" className="screen-loading">Checking your session…</Box>;
   if (account) return <Navigate to={APP_ROUTE.DASHBOARD} replace />;
   return <Outlet />;
 };

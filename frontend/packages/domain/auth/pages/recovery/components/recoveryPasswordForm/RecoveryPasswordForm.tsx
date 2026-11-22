@@ -1,3 +1,4 @@
+import { Box } from '@Components/components/Box';
 import { AlertCircle, Eye, EyeOff, KeyRound, LoaderCircle, LockKeyhole, ShieldCheck } from '@Components/icons';
 import { RECOVERY_TEST_IDS } from '../../constants/recovery.testIds';
 import type { ChangeEventHandler } from 'react';
@@ -33,16 +34,16 @@ export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
 
   return (
     <Form unstyled dataTestId={RECOVERY_TEST_IDS.FORM} className="rdr-login-v2__form rdr-recovery__form" onSubmit={onSubmit} noValidate>
-      <div className="rdr-recovery__fields">
+      <Box as="div" className="rdr-recovery__fields">
         <CredentialField dataTestId={RECOVERY_TEST_IDS.PASSWORD} id={id + '-password'} label="New password" Icon={LockKeyhole}
           type={passwordType} autoComplete="new-password" placeholder="New password"
           value={password} minLength={12} disabled={saving} required
           error={fieldErrors.password} onChange={handlePasswordChange}
           trailingAction={
-            <button type="button" className="rdr-login-v2__visibility" data-testid={RECOVERY_TEST_IDS.PASSWORD_VISIBILITY} disabled={saving}
+            <Button unstyled type="button" className="rdr-login-v2__visibility" data-testid={RECOVERY_TEST_IDS.PASSWORD_VISIBILITY} disabled={saving}
               aria-label={visibilityLabel} onClick={onToggleVisibility}>
               <VisibilityIcon size={19} aria-hidden="true"/>
-            </button>
+            </Button>
           }/>
 
         <CredentialField dataTestId={RECOVERY_TEST_IDS.CONFIRMATION} id={id + '-confirmation'} label="Confirm password" Icon={KeyRound}
@@ -50,26 +51,26 @@ export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
           value={confirmation} disabled={saving} required
           error={fieldErrors.confirmation} onChange={handleConfirmationChange}
           trailingAction={
-            <button type="button" className="rdr-login-v2__visibility" disabled={saving}
+            <Button unstyled type="button" className="rdr-login-v2__visibility" disabled={saving}
               aria-label={confirmationLabel}
               onClick={onToggleVisibility}>
               <VisibilityIcon size={19} aria-hidden="true"/>
-            </button>
+            </Button>
           }/>
-        <p className="rdr-recovery__requirement">
+        <Box as="p" className="rdr-recovery__requirement">
           <ShieldCheck size={17}/> Use at least 12 characters to keep your account secure.
-        </p>
-      </div>
-      <div className="rdr-recovery__actions">
+        </Box>
+      </Box>
+      <Box as="div" className="rdr-recovery__actions">
         <Button type="submit" variant="primary" size="lg" dataTestId={RECOVERY_TEST_IDS.SUBMIT} className="rdr-login-v2__submit" disabled={saving}>
           {buttonLabel}
           {saving && <LoaderCircle className="rdr-login-v2__spinner" size={18}/>}
         </Button>
-        <span className="rdr-recovery__remaining" aria-hidden="true">{'\u00a0'}</span>
-        <div className="rdr-recovery__error-slot" aria-live="polite">
-          {error && <p role="alert" className="rdr-recovery__inline-error"><AlertCircle size={16}/>{error}</p>}
-        </div>
-      </div>
+        <Box as="span" className="rdr-recovery__remaining" aria-hidden="true">{'\u00a0'}</Box>
+        <Box as="div" className="rdr-recovery__error-slot" aria-live="polite">
+          {error && <Box as="p" role="alert" className="rdr-recovery__inline-error"><AlertCircle size={16}/>{error}</Box>}
+        </Box>
+      </Box>
     </Form>
   );
 };

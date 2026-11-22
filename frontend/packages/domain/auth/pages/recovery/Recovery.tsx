@@ -1,3 +1,4 @@
+import { Box } from '@Components/components/Box';
 import type { ReactNode } from 'react';
 import { LoginLayout } from '../../components/loginLayout';
 
@@ -20,9 +21,9 @@ export const Recovery: RecoveryComponent = (props) => {
     <LoginLayout variant="recovery" title="Set a new password."
       description={description} mobileDescription={mobileDescription}
       minimalMobile mobileTitle={mobileTitle} eyebrow="SECURE YOUR ACCOUNT">
-      <div className="rdr-recovery">
+      <Box as="div" className="rdr-recovery">
         {content}
-      </div>
+      </Box>
     </LoginLayout>
   );
 };

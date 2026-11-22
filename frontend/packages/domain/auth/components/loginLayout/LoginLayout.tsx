@@ -1,3 +1,4 @@
+import { Box } from '@Components/components/Box';
 import { ArrowLeft, LockKeyhole } from '@Components/icons';
 import { Link } from 'react-router-dom';
 import { APP_ROUTE } from '@Business/app/routes';
@@ -24,52 +25,52 @@ export const LoginLayout: LoginLayoutComponent = ({ children, title, description
 
 
   return (
-    <main className={getLoginLayoutClassName(variant, minimalMobile)} data-testid={LOGIN_LAYOUT_TEST_IDS.ROOT}>
-      <div className="rdr-login-v2__frame">
-        <section className="rdr-login-v2__visual" aria-label="RDR School branded gradient background">
-          <div className="rdr-login-v2__mobile-header">
-            <div className="rdr-login-v2__mobile-identity" aria-label="RDR School">
+    <Box as="main" className={getLoginLayoutClassName(variant, minimalMobile)} data-testid={LOGIN_LAYOUT_TEST_IDS.ROOT}>
+      <Box as="div" className="rdr-login-v2__frame">
+        <Box as="section" className="rdr-login-v2__visual" aria-label="RDR School branded gradient background">
+          <Box as="div" className="rdr-login-v2__mobile-header">
+            <Box as="div" className="rdr-login-v2__mobile-identity" aria-label="RDR School">
               <SchoolMonogram/>
-              <span className="rdr-login-v2__mobile-school-name">RDR School<small>Your school workspace</small></span>
-            </div>
-          </div>
-          <div className="rdr-login-v2__visual-brand">
+              <Box as="span" className="rdr-login-v2__mobile-school-name">RDR School<Box as="small">Your school workspace</Box></Box>
+            </Box>
+          </Box>
+          <Box as="div" className="rdr-login-v2__visual-brand">
             <SchoolMonogram/>
-            <span><strong>RDR School</strong><small>Rao Deena Ram Vidya Vihar</small></span>
-          </div>
+            <Box as="span"><Box as="strong">RDR School</Box><Box as="small">Rao Deena Ram Vidya Vihar</Box></Box>
+          </Box>
           <AuthAmbientGraphic/>
-          <div className="rdr-login-v2__visual-copy">
-            <span className="rdr-login-v2__visual-kicker"><span/> THE RDR SCHOOL WORKSPACE</span>
-            <h2>For every school day.<br/><em>And everyone behind it.</em></h2>
-            <p>A connected space for the people who make learning happen.</p>
-            <div className="rdr-login-v2__visual-footer"><span>LEARN</span><i aria-hidden="true"/><span>ORGANISE</span><i aria-hidden="true"/><span>GROW</span></div>
-          </div>
-        </section>
-        <section ref={contentRef} className="rdr-login-v2__content" data-testid={LOGIN_LAYOUT_TEST_IDS.CONTENT} aria-labelledby="rdr-auth-title">
-          <div ref={toolbarRef} className="rdr-login-v2__toolbar" data-testid={LOGIN_LAYOUT_TEST_IDS.TOOLBAR}>
+          <Box as="div" className="rdr-login-v2__visual-copy">
+            <Box as="span" className="rdr-login-v2__visual-kicker"><Box as="span"/> THE RDR SCHOOL WORKSPACE</Box>
+            <Box as="h2">For every school day.<br/><em>And everyone behind it.</em></Box>
+            <Box as="p">A connected space for the people who make learning happen.</Box>
+            <Box as="div" className="rdr-login-v2__visual-footer"><Box as="span">LEARN</Box><i aria-hidden="true"/><Box as="span">ORGANISE</Box><i aria-hidden="true"/><Box as="span">GROW</Box></Box>
+          </Box>
+        </Box>
+        <Box as="section" ref={contentRef} className="rdr-login-v2__content" data-testid={LOGIN_LAYOUT_TEST_IDS.CONTENT} aria-labelledby="rdr-auth-title">
+          <Box as="div" ref={toolbarRef} className="rdr-login-v2__toolbar" data-testid={LOGIN_LAYOUT_TEST_IDS.TOOLBAR}>
             <Link to={APP_ROUTE.HOME} className="rdr-login-v2__back" aria-label="Back to RDR School homepage">
-              <ArrowLeft size={19}/><span>Back to school</span>
+              <ArrowLeft size={19}/><Box as="span">Back to school</Box>
             </Link>
-            <div className="rdr-login-v2__appearance" role="group" aria-label="Appearance">
+            <Box as="div" className="rdr-login-v2__appearance" role="group" aria-label="Appearance">
               {LOGIN_LAYOUT_APPEARANCES.map(option => renderLoginLayoutAppearanceOption({ ...option, preference, setPreference }))}
-            </div>
-          </div>
-          <div ref={mainRef} className="rdr-login-v2__main" data-testid={LOGIN_LAYOUT_TEST_IDS.MAIN}>
-            <div className="rdr-login-v2__heading">
-              <span className="rdr-login-v2__eyebrow">{eyebrow}</span>
-              <h1 id="rdr-auth-title" data-testid={LOGIN_LAYOUT_TEST_IDS.TITLE}>{title}</h1>
-              <p className="rdr-login-v2__description-desktop">{description}</p>
-              <p className="rdr-login-v2__description-mobile">{mobileDescription ?? description}</p>
-            </div>
+            </Box>
+          </Box>
+          <Box as="div" ref={mainRef} className="rdr-login-v2__main" data-testid={LOGIN_LAYOUT_TEST_IDS.MAIN}>
+            <Box as="div" className="rdr-login-v2__heading">
+              <Box as="span" className="rdr-login-v2__eyebrow">{eyebrow}</Box>
+              <Box as="h1" id="rdr-auth-title" data-testid={LOGIN_LAYOUT_TEST_IDS.TITLE}>{title}</Box>
+              <Box as="p" className="rdr-login-v2__description-desktop">{description}</Box>
+              <Box as="p" className="rdr-login-v2__description-mobile">{mobileDescription ?? description}</Box>
+            </Box>
             {children}
-            <div className="rdr-login-v2__closing" aria-label="Secure RDR School workspace">
+            <Box as="div" className="rdr-login-v2__closing" aria-label="Secure RDR School workspace">
               <LockKeyhole size={13} strokeWidth={1.8} aria-hidden="true"/>
-              <span>A secure workspace for RDR School</span>
-            </div>
-            <div className="rdr-o1-auth-footer"><span>© RDR School</span><span>Haluhera · Rewari</span></div>
-          </div>
-        </section>
-      </div>
-    </main>
+              <Box as="span">A secure workspace for RDR School</Box>
+            </Box>
+            <Box as="div" className="rdr-o1-auth-footer"><Box as="span">© RDR School</Box><Box as="span">Haluhera · Rewari</Box></Box>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 };
