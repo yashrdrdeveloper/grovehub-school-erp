@@ -1,4 +1,4 @@
-import type { ResolveWorkspaceTheme } from './types/resolveWorkspaceTheme';
+import type { ResolveWorkspaceTheme } from './types/workspaceTheme.resolve';
 
 /** On phones follow OS appearance without overwriting the desktop preference. */
 export const resolveWorkspaceTheme: ResolveWorkspaceTheme = ({ preference, systemDark, isMobile }) => {

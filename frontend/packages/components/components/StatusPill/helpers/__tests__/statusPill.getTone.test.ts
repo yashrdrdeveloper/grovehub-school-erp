@@ -1,4 +1,4 @@
-import { getStatusPillTone } from '../getStatusPillTone';
+import { getStatusPillTone } from '../statusPill.getTone';
 
 describe('getStatusPillTone', () => {
   it('maps recognized statuses to their visual treatment', () => {

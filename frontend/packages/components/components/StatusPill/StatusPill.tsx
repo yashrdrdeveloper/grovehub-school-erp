@@ -1,5 +1,5 @@
 import { cn } from '@Base/utilities/cn';
-import { getStatusPillTone } from './helpers/getStatusPillTone';
+import { getStatusPillTone } from './helpers/statusPill.getTone';
 import type { StatusPillComponent } from './types/statusPill.props';
 
 export const StatusPill: StatusPillComponent = ({ value, dataTestId }) => (

@@ -1,1 +1,0 @@
-export { getStatusPillTone } from './getStatusPillTone';

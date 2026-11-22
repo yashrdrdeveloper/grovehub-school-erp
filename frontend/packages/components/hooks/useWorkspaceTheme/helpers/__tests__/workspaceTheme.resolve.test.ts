@@ -1,4 +1,4 @@
-import { resolveWorkspaceTheme } from '../resolveWorkspaceTheme';
+import { resolveWorkspaceTheme } from '../workspaceTheme.resolve';
 
 describe('resolveWorkspaceTheme', () => {
   it('preserves the desktop preference', () => {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { resolveWorkspaceTheme } from './helpers/resolveWorkspaceTheme';
+import { resolveWorkspaceTheme } from './helpers/workspaceTheme.resolve';
 import type { ThemePreference, UseWorkspaceTheme } from './types/useWorkspaceTheme';
 
 const STORAGE_KEY = 'groovehub.theme';
