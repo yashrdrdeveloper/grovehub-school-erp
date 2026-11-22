@@ -1,6 +1,6 @@
-import { validateLoginCredentials } from '../validateLoginCredentials';
+import { validateLoginCredentials } from '../login.validateCredentials';
 
-describe('login credential validation', () => {
+describe('validateLoginCredentials', () => {
   it('normalizes email without changing the original password', () => {
     expect(validateLoginCredentials({
       email: '  person@school.edu  ', password: '  secret  ',

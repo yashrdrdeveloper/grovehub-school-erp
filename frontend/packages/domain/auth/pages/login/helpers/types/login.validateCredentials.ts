@@ -1,4 +1,4 @@
-import type { LoginCredentials, LoginFieldErrors } from '../../../types';
+import type { LoginCredentials, LoginFieldErrors } from '../../types';
 
 export interface ValidateLoginCredentialsResult {
   readonly normalizedEmail: LoginCredentials['email'];
@@ -6,5 +6,5 @@ export interface ValidateLoginCredentialsResult {
 }
 
 export type ValidateLoginCredentials = (
-  credentials: LoginCredentials
+  credentials: LoginCredentials,
 ) => ValidateLoginCredentialsResult;

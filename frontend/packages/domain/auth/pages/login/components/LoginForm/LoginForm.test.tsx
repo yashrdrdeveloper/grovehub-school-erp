@@ -27,7 +27,7 @@ const props: LoginFormProps = {
   onSubmit,
 };
 
-describe('LoginForm presentation', () => {
+describe('LoginForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });

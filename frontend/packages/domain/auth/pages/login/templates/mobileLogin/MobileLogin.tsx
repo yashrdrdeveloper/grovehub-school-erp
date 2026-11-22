@@ -1,13 +1,14 @@
 import { Link } from 'react-router-dom';
 
-import { LOGIN_COPY, LOGIN_ROUTES } from '../../config';
+import { AUTH_ROUTE } from '@Business/auth/routes';
+import { LOGIN_COPY } from '../../constants/login.copy';
 import { LoginForm } from '../../components/LoginForm';
 import type { MobileLoginComponent } from './types/mobileLogin';
 
 /** Mobile composition: recovery link between email and password. */
 export const MobileLogin: MobileLoginComponent = (props) => (
   <LoginForm {...props}
-    betweenFields={<Link className="rdr-login-v2__forgot-mobile" to={LOGIN_ROUTES.forgotPassword}>
+    betweenFields={<Link className="rdr-login-v2__forgot-mobile" to={AUTH_ROUTE.FORGOT_PASSWORD}>
       {LOGIN_COPY.forgotPassword}
     </Link>}/>
 );

@@ -1,7 +1,7 @@
 import type { AccountEntity } from '@Business/auth';
 
 /** Login-only view state. Reuse authoritative business fields, not full DTOs. */
-export type LoginField = 'email' | 'password';
+import type { LoginField } from '../constants/login.fields';
 
 export type LoginFieldErrors = Partial<Record<LoginField, string>>;
 

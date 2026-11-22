@@ -1,13 +1,14 @@
 import { Link } from 'react-router-dom';
 
-import { LOGIN_COPY, LOGIN_ROUTES } from '../../config';
+import { AUTH_ROUTE } from '@Business/auth/routes';
+import { LOGIN_COPY } from '../../constants/login.copy';
 import { LoginForm } from '../../components/LoginForm';
 import type { DesktopLoginComponent } from './types/desktopLogin';
 
 /** Desktop composition: recovery link beside the password label. */
 export const DesktopLogin: DesktopLoginComponent = (props) => (
   <LoginForm {...props}
-    passwordLabelAction={<Link className="rdr-login-v2__forgot-desktop" to={LOGIN_ROUTES.forgotPassword}>
+    passwordLabelAction={<Link className="rdr-login-v2__forgot-desktop" to={AUTH_ROUTE.FORGOT_PASSWORD}>
       {LOGIN_COPY.forgotPassword}
     </Link>}/>
 );

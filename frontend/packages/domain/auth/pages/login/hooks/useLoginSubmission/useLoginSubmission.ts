@@ -2,8 +2,10 @@ import { useCallback, useRef, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../../../../core/providers/AuthProvider';
-import { LOGIN_ROUTES } from '../../config';
-import { getLoginErrorMessage, validateLoginCredentials } from '../../helpers';
+import { APP_ROUTE } from '@Business/app/routes';
+import { _keys } from '@Base/utilities/keys';
+import { getLoginErrorMessage } from '../../helpers/login.getErrorMessage';
+import { validateLoginCredentials } from '../../helpers/login.validateCredentials';
 import type { LoginFormModel } from '../useLoginForm';
 import type { UseLoginSubmission } from './types/useLoginSubmission';
 
@@ -20,13 +22,13 @@ export const useLoginSubmission: UseLoginSubmission = (form: LoginFormModel) => 
     const result = validateLoginCredentials({ email, password });
     setFieldErrors(result.fieldErrors);
     setErrorMessage('');
-    if (Object.keys(result.fieldErrors).length > 0) return;
+    if (_keys(result.fieldErrors).length > 0) return;
 
     submittingRef.current = true;
     setSubmitting(true);
     try {
       await signIn(result.normalizedEmail, password);
-      navigate(LOGIN_ROUTES.success, { replace: true });
+      navigate(APP_ROUTE.DASHBOARD, { replace: true });
     } catch (failure: unknown) {
       setErrorMessage(getLoginErrorMessage(failure));
     } finally {

@@ -1,6 +1,6 @@
 import { LoginLayout } from '../../components/loginLayout';
 
-import { LOGIN_COPY } from './config';
+import { LOGIN_COPY } from './constants/login.copy';
 import { DesktopLogin } from './templates/desktopLogin';
 import { MobileLogin } from './templates/mobileLogin';
 import type { LoginPageComponent } from './types';

@@ -1,6 +1,6 @@
-import { getLoginErrorMessage } from '../getLoginErrorMessage';
+import { getLoginErrorMessage } from '../login.getErrorMessage';
 
-describe('login error mapping', () => {
+describe('getLoginErrorMessage', () => {
   it('does not expose credential failure details', () => {
     expect(getLoginErrorMessage(new Error('Invalid credentials'))).toBe(
       'Incorrect email or password. Please try again.',

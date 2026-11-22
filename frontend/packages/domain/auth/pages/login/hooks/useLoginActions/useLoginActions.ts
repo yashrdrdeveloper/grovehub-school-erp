@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 
+import { LoginField } from '../../constants/login.fields';
 import type { LoginFormModel } from '../useLoginForm';
 import type { UseLoginActions } from './types/useLoginActions';
 
@@ -9,13 +10,19 @@ export const useLoginActions: UseLoginActions = (form: LoginFormModel) => {
 
   const onEmailChange = useCallback((value: LoginFormModel['email']) => {
     setEmail(value);
-    setFieldErrors(current => current.email ? { ...current, email: undefined } : current);
+    setFieldErrors(current => {
+      if (!current[LoginField.EMAIL]) return current;
+      return { ...current, [LoginField.EMAIL]: undefined };
+    });
     setErrorMessage('');
   }, [setEmail, setFieldErrors, setErrorMessage]);
 
   const onPasswordChange = useCallback((value: LoginFormModel['password']) => {
     setPassword(value);
-    setFieldErrors(current => current.password ? { ...current, password: undefined } : current);
+    setFieldErrors(current => {
+      if (!current[LoginField.PASSWORD]) return current;
+      return { ...current, [LoginField.PASSWORD]: undefined };
+    });
     setErrorMessage('');
   }, [setPassword, setFieldErrors, setErrorMessage]);
 
