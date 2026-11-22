@@ -1,8 +1,13 @@
 import { Box } from '@Components/components/Box';
 import {
-  DialogRoot, DialogPortal, DialogOverlay, DialogContent,
-  DialogTitle, DialogDescription, DialogClose,
-} from '@Components/components/Dialog/parts';
+  DialogRoot,
+  DialogPortal,
+  DialogOverlay,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from '@Components/components/Dialog';
 import { InputControl } from '@Components/components/InputControl';
 import { Grid2X2, Pin, Search, X } from '@Components/icons';
 import { appCatalog } from '../../constants/shell.catalog';

@@ -1,28 +1,56 @@
-import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { X } from 'lucide-react';
+import { X } from '@Components/icons';
 import { cn } from '@Base/utilities/cn';
+
+import { Box } from '../Box';
+import { DialogRoot } from './components/root';
+import { DialogPortal } from './components/portal';
+import { DialogOverlay } from './components/overlay';
+import { DialogContent } from './components/content';
+import { DialogTitle } from './components/title';
+import { DialogDescription } from './components/description';
+import { DialogClose } from './components/close';
+
 import type { DialogComponent } from './types/dialog.props';
 
+/** Accessible shared Dialog composed from seven separately owned Radix primitives. */
 export const Dialog: DialogComponent = ({
-  open, onOpenChange, title, description, children, className, dataTestId,
+  open,
+  onOpenChange,
+  title,
+  description,
+  children,
+  className,
+  dataTestId,
 }) => {
-  let closeTestId: string | undefined;
-  if (dataTestId) closeTestId = dataTestId + '-close';
+  const closeTestId = dataTestId && `${dataTestId}-close`;
+
   return (
-  <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
-    <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="dialog-overlay"/>
-      <DialogPrimitive.Content className={cn('dialog-content rounded-xl border border-border bg-background text-foreground shadow-xl', className)} data-testid={dataTestId}>
-        <div className="dialog-heading">
-          <div>
-            <DialogPrimitive.Title>{title}</DialogPrimitive.Title>
-            {description && <DialogPrimitive.Description>{description}</DialogPrimitive.Description>}
-          </div>
-          <DialogPrimitive.Close className="icon-button" data-testid={closeTestId} aria-label="Close"><X size={19}/></DialogPrimitive.Close>
-        </div>
-        {children}
-      </DialogPrimitive.Content>
-    </DialogPrimitive.Portal>
-  </DialogPrimitive.Root>
+    <DialogRoot open={open} onOpenChange={onOpenChange}>
+      <DialogPortal>
+        <DialogOverlay className="dialog-overlay" />
+        <DialogContent
+          className={cn(
+            'dialog-content rounded-xl border border-border bg-background text-foreground shadow-xl',
+            className,
+          )}
+          data-testid={dataTestId}
+        >
+          <Box as="div" className="dialog-heading">
+            <Box as="div">
+              <DialogTitle>{title}</DialogTitle>
+              {description && <DialogDescription>{description}</DialogDescription>}
+            </Box>
+            <DialogClose
+              className="icon-button"
+              data-testid={closeTestId || undefined}
+              aria-label="Close"
+            >
+              <X size={19} aria-hidden="true" />
+            </DialogClose>
+          </Box>
+          {children}
+        </DialogContent>
+      </DialogPortal>
+    </DialogRoot>
   );
 };
