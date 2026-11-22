@@ -1,12 +1,12 @@
 # Frontend Code Guidelines
 
-> **Status:** Mandatory, authoritative frontend engineering standard — **Revision 6 (November 2026)**.
+> **Status:** Mandatory, authoritative frontend engineering standard — **Revision 7 (November 2026)**.
 >
 > **Scope:** Every source file under `frontend/`, including `app`, `packages/base`, `packages/business`, `packages/components`, `packages/styles`, `packages/assets`, `packages/domain`, `packages/shell`, unit tests, integration tests, styles, generated code boundaries, and scripts.
 >
 > **Stack:** React 19, TypeScript strict, pnpm, Vite, Tailwind CSS 4, shadcn-compatible Radix primitives, Lucide icons through the components package, Jest, and the existing project architecture checks.
 >
-> **Precedence:** This document replaces previous frontend guideline revisions and examples. Existing code that differs is **migration debt**, not an exception to this standard. Do not claim implementation is complete until checks and behavior regressions pass.
+> **Precedence:** Revision 7 sections 23–35 are the newest, most specific acceptance rules. They override older examples where they conflict. This document replaces previous frontend guideline revisions and examples. Existing code that differs is **migration debt**, not an exception to this standard. Do not claim implementation is complete until checks and behavior regressions pass.
 
 ## 1. Non-negotiable principles
 
@@ -497,7 +497,7 @@ CI verifies architecture, typecheck, Jest, build and static prerender routes. Ad
 
 ## 18. Migration order and definition of done
 
-The status/inventory and phased plan are integrated in **§22 of this document**. There is no separate migration document. Do not relocate the same helper twice: ownership review happens before moving files.
+The status/inventory and phased plan are integrated in **section 22 of this document**. There is no separate migration document. Do not relocate the same helper twice: ownership review happens before moving files.
 
 **Required migration order**:
 
@@ -545,7 +545,7 @@ packages/styles/
 
 **Ownership is non-negotiable.** The `--gh-*` CSS custom properties are canonical; `--rdr-*`, `--canvas`, `--surface`, `--accent` and `--ui-*` compatibility aliases are declared only in `@Styles` until legacy styles are migrated. **No** feature, component or app stylesheet should redefine these root/theme tokens. Light/dark theme changes must be made in the two corresponding theme files, keeping their semantic keys in sync. App startup and the existing theme hook choose `data-theme`; the styles package merely interprets it.
 
-**Styling choice:** use **Tailwind CSS v4 + semantic CSS variables + CVA** for reusable component variants. Use scoped `.module.css` for unusually complex component-only selectors. Do not introduce `.module.scss`/Sass without a concrete demonstrated need: Sass adds a compiler and risks a second source for tokens. Shared `@Styles` should not depend on React, components, domains, business, shell or the DOM API. Components may use pure `@Styles` token values/queries; business and base may not.
+**Styling choice:** use **Tailwind CSS v4 + semantic CSS variables + CVA** for reusable component variants. **New component layout styles target scoped `.module.scss`** using Dart Sass as the compiler. Sass must not become a second source for theme tokens: all color/typography/spacing values remain in `@Styles`. The migration must install Sass and verify Vite, TypeScript, Jest and browser behavior before replacing existing CSS. Shared `@Styles` should not depend on React, components, domains, business, shell or the DOM API. Components may use pure `@Styles` token values/queries; business and base may not.
 
 **Three-layer rule:**
 
@@ -647,3 +647,205 @@ This section replaces the retired `FRONTEND_REFACTOR_MIGRATION.md` and remains i
 **Mandatory batch sequence:** shared Base/icons/useBoolean improvements → login as the reference unit → recovery + forgot-password + auth viewport rules → remaining domain sections/components → cross-repo static enforcement and browser visual tests. After each batch run frozen dependency install, architecture, TypeScript, Jest, lint and production build/prerender. Do not claim `pnpm lint` is already part of CI unless that step is actually present in its workflow. Route behavior, accessible selectors, real browser responsive checks, backend security states and intentional dead-file removal are all part of the acceptance criteria.
 
 **Definition of done:** source paths meet the rules, no obsolete exports/barrels remain, components get stable leaf test IDs, helpers and static copy have a single owner, only real routes appear in the app launcher, the shell survives protected navigation, tests are colocated and pass, and visual checks verify light/dark/mobile. This is a live migration ledger: completed rows stay factual and uncompleted enforcement remains visible.
+
+## 23. Revision 7 strict classification, folders and ownership
+
+**Before touching any file, read it line by line with its direct and indirect importers, tests, routes, CSS, accessible DOM and live behavior.** A refactor must reassign responsibility, not merely move the same 200-line component into a subfolder. Unused-code deletion requires proof there is no importer, dynamic route, indirect export, generated dependency, stylesheet consumer or required test.
+
+| Code responsibility | Required owner | Explicitly forbidden |
+|---|---|---|
+| Design tokens, system/light/dark palette, fonts, spacing, radii, motion, focus and breakpoints | `@Styles` | Per-feature hex colors and token duplication |
+| SVG asset paths / raw vector markup | `@Assets/<feature>` | Auth pages/components embedding vector paths |
+| Accessible HTML, Text, Typography, Heading, Button, Input, Form, Label, Row, Box, Icon, Link | `@Components` | Native HTML controls and generic `div/span/p/h3` inside migrated feature presentation |
+| Reused auth visual layout/status | `domain/auth/components/<unit>` | Loose `auth/pages/*.tsx` components |
+| Page-only visual | `pages/<page>/components/<unit>` | Route registry or business layer |
+| JSX-producing selector, grouped label, status badge, variant content, repeated option | `renderer/<owner>.<useCase>.tsx` | Inline JSX ternary or nested callbacks |
+| Non-JSX pure computation: class selection, filters, validation, copy fallback | `helpers/<owner>.<useCase>.ts` | A `renderer` for non-JSX values |
+| Enums, static option arrays, metadata, copy, routes, test IDs, timeouts | `constants/<owner>.<concern>.ts` | Inline magic strings, huge mixed config |
+| State, stable actions, subscriptions and side effects | **One** owning `hooks/use<Feature>/` | Peer hooks duplicating state or passing many setters around |
+| Auth session context | `auth/core/providers/authProvider/` | Flat multipurpose provider |
+| Recovery proof/grant lifecycle | `auth/core/session` and owned helpers/constants | Generic page helper, persistent bearer token |
+| App routing/persistent workspace | `@Shell` plus shared route constants | Separate Shell per page; duplicate route strings |
+| Feature-scoped style | `styles/<unit>.module.scss` using `@Styles` vars | Global BEM strings, domain-owned theme colors |
+| Tests | Owner's `__tests__/` | Scattered page-root test files |
+
+**Flat file rules:** `helpers/`, `constants/`, and **`renderer/`** have no `index.ts`, no folder per single function and no generic `utils.ts`. Each may contain named flat files and optional sibling `types/` and `__tests__/`. Actual hook/component/provider units may have an intentional public `index.ts`, and can nest their own helpers, constants, renderers, hooks, styles and tests when their ownership is clear.
+
+Examples: `helpers/recovery.getMobileDescription.ts`, `renderer/credentialField.label.tsx`, `renderer/loginLayout.appearanceOption.tsx`, `constants/loginLayout.variant.ts`, `constants/forgotPassword.testIds.ts`. Never conflate **config** with constants: a static map is a constant; an executable selector is a helper; JSX selection is a renderer; a runtime provider factory is a factory helper. No extra directory if only an unconditional expression exists.
+
+**Zero ternaries** is a strict syntax rule for application TypeScript/TSX (all `ConditionalExpression` nodes). No nested JSX ternaries, inline ternary class/label/icon, ternary inside helper, or substitute nested `&&` / immediately invoked functions to hide complex branching. Binary choice uses a named `if/else` helper or renderer. Three or more executable strategies use a typed `Map<Enum, Function>`; static mappings use `Record<Enum, Descriptor>`. Never claim this is enforced today until the new AST lint check is actually installed.
+
+## 24. Renderers: JSX-only pure functions with tests
+
+The `renderer/` directory contains **pure typed functions returning JSX**, distinct from full reusable components. A renderer accepts values/callbacks and returns `ReactNode` / `ReactElement`. It may call another renderer or shared component. It **must not** call hooks, APIs, storage, router navigation, subscribe to events or mutate state. It does not own general layouts shared across pages. If a renderer is large/reusable and requires lifecycle, it should become an actual component with its own folder.
+
+~~~text
+auth/components/credentialField/
+├── CredentialField.tsx
+├── constants/credentialField.testIds.ts
+├── renderer/
+│   ├── credentialField.label.tsx
+│   ├── types/credentialField.label.ts
+│   └── __tests__/credentialField.label.test.tsx
+├── styles/credentialField.module.scss
+├── types/credentialField.props.ts
+├── __tests__/CredentialField.test.tsx
+└── index.ts
+~~~
+
+The grouped label currently uses a forbidden ternary. The correct target pattern is:
+
+~~~tsx
+// renderer/credentialField.label.tsx
+import { FieldLabel, Row } from '@Components';
+import styles from '../styles/credentialField.module.scss';
+import type { RenderCredentialFieldLabel } from './types/credentialField.label';
+
+export const renderCredentialFieldLabel: RenderCredentialFieldLabel = (props) => {
+  const label = (
+    <FieldLabel htmlFor={props.id} dataTestId={props.ids.LABEL}>
+      {props.label}
+    </FieldLabel>
+  );
+
+  if (props.grouped) {
+    return (
+      <Row className={styles.passwordLabel} dataTestId={props.ids.LABEL_ROW}>
+        {label}
+        {props.action}
+      </Row>
+    );
+  }
+  return label;
+};
+~~~
+
+`FieldLabel` and `Row` are **target shared primitives, not currently guaranteed to exist**. First implement them under `@Components` with correctly forwarded native test IDs and label semantics, then adopt them. Test both grouped/non-grouped render and `htmlFor` relationship. No one-off raw `<label>`/`<div>` in an auth renderer. The caller simply renders `{renderCredentialFieldLabel(model)}`. Do not place the helper inside JSX or call a React hook from it.
+
+Use `renderer/recovery.content.tsx` for choosing form vs state, `renderer/forgotPassword.notice.tsx` for status UI, `renderer/authStatusArt.badge.tsx` for status decoration, `renderer/appLauncher.app.tsx` for repeated catalog row JSX, and `renderer/appRoutes.route.tsx` for mapping route descriptors. Use a helper instead when the output is **not** JSX. Tests belong to the renderer in `renderer/__tests__/` or its nearest owning unit.
+
+## 25. Typed status enums, exhaustive maps, and zero inline icon/color literals
+
+No raw string status comparisons (`kind === 'email'`, `props.view === 'ready'`, `variant='login'`) in migrated feature logic or feature props. Define explicit typed enums or stable `as const` runtime maps in nearest `constants/` file. Prefer string enums for server-aligned or cross-unit state identifiers. Every known state must have an explicit visual description; the compiler must detect missing mappings.
+
+~~~ts
+// auth/components/authStatusArt/constants/authStatusArt.kind.ts
+export enum AuthStatusKind {
+  EMAIL = 'email',
+  SUCCESS = 'success',
+  EXPIRED = 'expired',
+  MISSING = 'missing',
+  CHECKING = 'checking',
+  UNAVAILABLE = 'unavailable',
+  ATTEMPTS_EXHAUSTED = 'attempts-exhausted',
+}
+
+export enum AuthBadgeKind {
+  CONFIRMED = 'confirmed',
+  INVALID = 'invalid',
+  NONE = 'none',
+}
+
+// constants/authStatusArt.badge.ts
+export const AUTH_STATUS_BADGE: Readonly<Record<AuthStatusKind, AuthBadgeKind>> = {
+  [AuthStatusKind.EMAIL]: AuthBadgeKind.CONFIRMED,
+  [AuthStatusKind.SUCCESS]: AuthBadgeKind.CONFIRMED,
+  [AuthStatusKind.EXPIRED]: AuthBadgeKind.INVALID,
+  [AuthStatusKind.MISSING]: AuthBadgeKind.INVALID,
+  [AuthStatusKind.CHECKING]: AuthBadgeKind.NONE,
+  [AuthStatusKind.UNAVAILABLE]: AuthBadgeKind.NONE,
+  [AuthStatusKind.ATTEMPTS_EXHAUSTED]: AuthBadgeKind.NONE,
+};
+~~~
+
+~~~tsx
+// renderer/authStatusArt.badge.tsx
+import { Icon, Text } from '@Components';
+import { AUTH_STATUS_BADGE, AuthBadgeKind } from '../constants/authStatusArt.badge';
+import styles from '../styles/authStatusArt.module.scss';
+import type { RenderAuthStatusBadge } from './types/authStatusArt.badge';
+
+export const renderAuthStatusBadge: RenderAuthStatusBadge = (kind) => {
+  const badge = AUTH_STATUS_BADGE[kind];
+  if (badge === AuthBadgeKind.CONFIRMED) {
+    return <Icon name="check-circle-2" decorative className={styles.confirmedBadge}/>;
+  }
+  if (badge === AuthBadgeKind.INVALID) {
+    return <Text as="span" className={styles.invalidBadge} aria-hidden="true">×</Text>;
+  }
+  return null;
+};
+~~~
+
+**Before this example compiles**, add the required shared `Icon` abstraction, typed icon identifiers and import the enum from the correct local file. Renderer functions are pure. Every dynamic icon, color and case is tested. Do not import `lucide-react` in domain/shell. Do not store a React component or JSX expression under a generic helper path when it is a renderer.
+
+**CSS colors:** `fill="#039C90"` and `color="#fff"` are forbidden. Use `styles.confirmedBadge` with `color: var(--gh-color-on-success)` and `fill: var(--gh-color-success)`. Add any new semantic token (e.g. `--gh-color-on-success`) in **both** `@Styles/themes/light.css` and `dark.css` before use. Background, border, title, ring, illustration and disabled colors all follow the same rule; no new theme palette in domain SCSS.
+
+## 26. LoginLayout exact decomposition and theme-option renderer
+
+~~~text
+auth/components/loginLayout/
+├── LoginLayout.tsx
+├── constants/
+│   ├── loginLayout.variant.ts
+│   ├── loginLayout.copy.ts
+│   ├── loginLayout.appearance.ts
+│   └── loginLayout.testIds.ts
+├── helpers/
+│   ├── loginLayout.className.ts
+│   ├── loginLayout.mobileDescription.ts
+│   ├── types/
+│   └── __tests__/
+├── renderer/
+│   ├── loginLayout.appearanceOption.tsx
+│   ├── loginLayout.visual.tsx
+│   ├── types/
+│   └── __tests__/
+├── styles/loginLayout.module.scss
+├── types/loginLayout.props.ts
+├── __tests__/LoginLayout.test.tsx
+└── index.ts
+~~~
+
+~~~ts
+// constants/loginLayout.variant.ts
+export enum AuthLayoutVariant {
+  LOGIN = 'login',
+  FORGOT = 'forgot',
+  RECOVERY = 'recovery',
+}
+
+// constants/loginLayout.copy.ts
+export const LOGIN_LAYOUT_COPY = {
+  DEFAULT_EYEBROW: 'YOUR SCHOOL WORKSPACE',
+  RECOVERY_EYEBROW: 'SECURE YOUR ACCOUNT',
+  SCHOOL_NAME: 'RDR School',
+} as const;
+
+// constants/loginLayout.appearance.ts (shared theme values/icons are imported)
+import { Monitor, Sun, Moon } from '@Components/icons';
+import { THEME_PREFERENCE } from '@Components/hooks/theme/constants/themePreference';
+
+export const APPEARANCE_OPTIONS = [
+  { value: THEME_PREFERENCE.SYSTEM, label: 'System', Icon: Monitor },
+  { value: THEME_PREFERENCE.LIGHT, label: 'Light', Icon: Sun },
+  { value: THEME_PREFERENCE.DARK, label: 'Dark', Icon: Moon },
+] as const;
+~~~
+
+`@Components/icons` and `THEME_PREFERENCE` are **planned APIs**. If current theme ownership only has a type union, add one runtime constant **in the shared theme unit**, not a second status map here. Default destructuring uses named constants, not `variant = 'login', eyebrow = '...'`. A separate `getMobileDescription(mobile, desktop)` helper uses explicit `if` and preserves an intentionally empty mobile string:
+
+~~~ts
+export const getMobileDescription = (
+  mobileDescription: string | undefined,
+  description: string,
+): string => {
+  if (mobileDescription !== undefined) return mobileDescription;
+  return description;
+};
+~~~
+
+Appearance rendering: the options live in constants; `renderer/loginLayout.appearanceOption.tsx` receives typed option, selected preference and a **stable bound action**. It uses `@Components/Button`, an icon from `@Components/icons`, `dataTestId` from `constants/loginLayout.testIds.ts`, `cn` from `@Base/utilities/cn`, and CSS-module classes `styles.appearanceOption`/`styles.appearanceSelected`. It derives `selected` as a boolean and calls an already-named action, not an inline JSX handler. The layout maps with `_map(APPEARANCE_OPTIONS, renderAppearanceOption)` from `@Base/utilities/map` (implement this leaf utility first). No `.map`, raw `<button>`, direct `'is-active'` class, ternary, or inline icon selection.
+
+`helpers/loginLayout.className.ts` constructs the layout classes using `cn`, a typed variant-to-module-class map, and an `if` for `minimalMobile`. Avoid `${minimalMobile ? '...' : ''}` in JSX. `LoginLayout.tsx` composes named `Box`/`Section`/`Heading`/`Text`/`AppLink`/`Icon` primitives instead of manually creating arbitrary `div/h1/h2/p/span/button`. Keep one actual form in the DOM across desktop/mobile. Test theme appearance buttons, dark/light/system behavior, media queries, compact states, and short-viewport reachability.
+
