@@ -1,4 +1,5 @@
 import { cn } from '@Base/utilities/cn';
+import { InputControl } from '@Components/components/InputControl';
 import type { CredentialFieldComponent } from './types/credentialField.props';
 
 /** Domain-owned auth appearance, shared across login, recovery and reset forms.
@@ -22,7 +23,7 @@ export const CredentialField: CredentialFieldComponent = ({
         : <label htmlFor={id}>{label}</label>}
       <div className="rdr-login-v2__input-shell">
         <Icon size={18} aria-hidden="true"/>
-        <input {...inputProps} id={id} className={className}
+        <InputControl unstyled {...inputProps} id={id} dataTestId={id} className={className}
           aria-invalid={Boolean(error)} aria-describedby={description}/>
         {trailingAction}
       </div>
