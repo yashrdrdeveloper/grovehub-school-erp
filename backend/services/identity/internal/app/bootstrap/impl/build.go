@@ -9,7 +9,7 @@ import (
 	foundationclient "grovehub/services/foundation/client/person"
 	"grovehub/services/identity/internal/app/bootstrap"
 	configimpl "grovehub/services/identity/internal/app/config/impl"
-	securityimpl "grovehub/services/identity/internal/app/security/impl"
+	securityimpl "grovehub/services/identity/internal/app/services/security/impl"
 	integrationclient "grovehub/services/integration/client/connection"
 	infrastructure "grovehub/services/infrastructure/client/messaging"
 )

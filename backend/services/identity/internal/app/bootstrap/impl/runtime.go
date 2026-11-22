@@ -9,7 +9,7 @@ import (
 	coregateway "grovehub/libs/core/gateway"
 	accountclient "grovehub/services/identity/client/account"
 	"grovehub/services/identity/internal/app/bootstrap"
-	security "grovehub/services/identity/internal/app/security"
+	security "grovehub/services/identity/internal/app/services/security"
 )
 
 type runtime struct {
