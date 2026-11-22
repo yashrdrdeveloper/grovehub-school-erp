@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import {
   DialogRoot, DialogPortal, DialogOverlay, DialogContent,
   DialogTitle, DialogDescription, DialogClose,
-} from '@Components/components/Dialog/parts';
+} from '@Components/components/Dialog';
 import { ArrowRight, GraduationCap, Phone, ShieldCheck, X } from '@Components/icons';
 import { school } from '../../constants/school.content';
 import { panelTitles, overviewPanels, type StoryKey } from './constants/school.sheetCopy';
