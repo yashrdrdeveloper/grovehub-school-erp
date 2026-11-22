@@ -6,7 +6,7 @@ import (
 	"errors"
 	"time"
 	"grovehub/services/identity/internal/app/entity"
-	"grovehub/services/identity/internal/app/security/principal"
+	"grovehub/services/identity/internal/app/services/security/principal"
 	accounthelpers "grovehub/services/identity/internal/app/services/account/helpers"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	accountmapper "grovehub/services/identity/internal/app/mappers/account"

@@ -5,7 +5,7 @@ import (
 	accountdto "grovehub/services/identity/internal/app/dto/account"
 	"time"
 	"grovehub/services/identity/internal/app/entity"
-	"grovehub/services/identity/internal/app/security/principal"
+	"grovehub/services/identity/internal/app/services/security/principal"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"
 	accountmapper "grovehub/services/identity/internal/app/mappers/account"

@@ -3,7 +3,7 @@ package impl
 import (
 	"context"
 	"time"
-	"grovehub/services/identity/internal/app/security/principal"
+	"grovehub/services/identity/internal/app/services/security/principal"
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"
 	credential "grovehub/services/identity/internal/app/services/credential"
 	transaction "grovehub/libs/core/database/transaction"
