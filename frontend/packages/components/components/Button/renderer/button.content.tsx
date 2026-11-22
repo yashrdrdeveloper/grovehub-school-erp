@@ -1,5 +1,3 @@
-import type { ReactNode } from 'react';
-
 import { LoaderCircle } from '@Components/icons';
 
 import type { RenderButtonContent } from './types/button.content';

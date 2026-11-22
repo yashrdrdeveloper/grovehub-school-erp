@@ -1,6 +1,6 @@
 import { Monitor, Moon, Sun } from '@Components/icons';
 import type { LucideIcon } from '@Components/icons';
-import type { ThemePreference } from '@Components/hooks/theme';
+import { ThemePreference } from '@Components/hooks/useWorkspaceTheme';
 
 export interface LoginLayoutAppearance {
   readonly value: ThemePreference;
@@ -8,7 +8,7 @@ export interface LoginLayoutAppearance {
   readonly Icon: LucideIcon;
 }
 export const LOGIN_LAYOUT_APPEARANCES: readonly LoginLayoutAppearance[] = [
-  { value: 'system', label: 'System', Icon: Monitor },
-  { value: 'light', label: 'Light', Icon: Sun },
-  { value: 'dark', label: 'Dark', Icon: Moon },
+  { value: ThemePreference.SYSTEM, label: 'System', Icon: Monitor },
+  { value: ThemePreference.LIGHT, label: 'Light', Icon: Sun },
+  { value: ThemePreference.DARK, label: 'Dark', Icon: Moon },
 ];

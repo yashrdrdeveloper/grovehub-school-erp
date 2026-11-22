@@ -1,11 +1,42 @@
+import { ResolvedTheme, ThemePreference } from '../../types/useWorkspaceTheme';
 import { resolveWorkspaceTheme } from '../workspaceTheme.resolve';
 
 describe('resolveWorkspaceTheme', () => {
-  it('preserves the desktop preference', () => {
-    expect(resolveWorkspaceTheme({ preference: 'light', systemDark: true, isMobile: false })).toBe('light');
+  it('preserves a selected desktop theme', () => {
+    expect(
+      resolveWorkspaceTheme({
+        preference: ThemePreference.LIGHT,
+        systemDark: true,
+        isMobile: false,
+      }),
+    ).toBe(ResolvedTheme.LIGHT);
   });
-  it('uses system appearance on mobile without mutating preference', () => {
-    expect(resolveWorkspaceTheme({ preference: 'light', systemDark: true, isMobile: true })).toBe('dark');
-    expect(resolveWorkspaceTheme({ preference: 'dark', systemDark: false, isMobile: true })).toBe('light');
+
+  it('follows the OS appearance on mobile without replacing the preference', () => {
+    expect(
+      resolveWorkspaceTheme({
+        preference: ThemePreference.LIGHT,
+        systemDark: true,
+        isMobile: true,
+      }),
+    ).toBe(ResolvedTheme.DARK);
+
+    expect(
+      resolveWorkspaceTheme({
+        preference: ThemePreference.DARK,
+        systemDark: false,
+        isMobile: true,
+      }),
+    ).toBe(ResolvedTheme.LIGHT);
+  });
+
+  it('resolves system preference on desktop', () => {
+    expect(
+      resolveWorkspaceTheme({
+        preference: ThemePreference.SYSTEM,
+        systemDark: false,
+        isMobile: false,
+      }),
+    ).toBe(ResolvedTheme.LIGHT);
   });
 });

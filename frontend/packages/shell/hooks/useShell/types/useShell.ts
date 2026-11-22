@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import type { ThemePreference } from '@Components/hooks/theme';
+import type { ThemePreference } from '@Components/hooks/useWorkspaceTheme';
 
 export interface ShellViewModel {
   readonly sidebarOpen: boolean;

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useBoolean } from '@Components/hooks/useBoolean';
-import { useWorkspaceTheme } from '@Components/hooks/theme';
+import { useWorkspaceTheme } from '@Components/hooks/useWorkspaceTheme';
 import { readPinnedApps, readSidebarCollapsed, writePinnedApps, writeSidebarCollapsed } from '../../storage';
 import { togglePinnedPath } from './helpers/shell.togglePinnedPath';
 import type { UseShell } from './types/useShell';

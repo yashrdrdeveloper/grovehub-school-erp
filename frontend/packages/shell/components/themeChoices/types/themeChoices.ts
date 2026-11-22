@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { ThemePreference } from '@Components/hooks/theme';
+import type { ThemePreference } from '@Components/hooks/useWorkspaceTheme';
 
 export interface ThemeChoicesProps {
   readonly preference: ThemePreference;

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { APP_ROUTE } from '@Business/app/routes';
 
 import { SchoolMonogram } from '@Components';
-import { useWorkspaceTheme } from '@Components/hooks/theme';
+import { useWorkspaceTheme } from '@Components/hooks/useWorkspaceTheme';
 import { LOGIN_LAYOUT_APPEARANCES } from './constants/loginLayout.appearances';
 import { LOGIN_LAYOUT_TEST_IDS } from './constants/loginLayout.testIds';
 import { getLoginLayoutClassName } from './helpers/loginLayout.getClassName';
