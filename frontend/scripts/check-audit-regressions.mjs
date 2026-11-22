@@ -2,41 +2,32 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
+import { evaluateAudit } from './lib/audit-guard.mjs';
+
 const baseline = JSON.parse(readFileSync(new URL('./audit-allowlist.json', import.meta.url), 'utf8'));
-const output = execFileSync(
-  'node',
-  [path.join(process.cwd(), 'scripts/audit-guidelines.mjs')],
-  { cwd: process.cwd(), encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 },
-);
-const problems = [];
-let remaining = 0;
+const output = execFileSync('node', [path.join(process.cwd(), 'scripts/audit-guidelines.mjs')], {
+  cwd: process.cwd(),
+  encoding: 'utf8',
+  maxBuffer: 8 * 1024 * 1024,
+});
+const result = evaluateAudit(output, baseline);
 
-for (const line of output.split('\n')) {
-  if (!line.startsWith('GH_AUDIT|')) {
-    continue;
-  }
-
-  const [, filename, observed] = line.split('|');
-  if (!observed || observed === 'NO_PATTERN_FLAG') {
-    continue;
-  }
-
-  const allowed = new Set(baseline.allowlisted[filename] ?? []);
-  for (const issue of observed.split(',')) {
-    const code = issue.split('@')[0];
-    remaining += 1;
-
-    if (!allowed.has(code)) {
-      problems.push(`${filename}: newly introduced guideline violation ${code}`);
-    }
-  }
-}
-
-if (problems.length > 0) {
-  problems.forEach((problem) => process.stderr.write(problem + '\n'));
+if (result.failures.length > 0) {
+  result.failures.forEach((failure) => process.stderr.write(failure + '\n'));
   process.exitCode = 1;
 } else {
   process.stdout.write(
-    `Guideline regression gate passed; ${remaining} known legacy findings still require migration.\n`,
+    'Guideline regression gate passed: ' +
+      result.flaggedFiles +
+      ' flagged files, ' +
+      result.findings +
+      ' legacy findings.\n',
+  );
+}
+
+if (result.stale.length > 0) {
+  process.stdout.write(
+    result.stale.length +
+      ' obsolete allowlist entries can be removed after verifying the current audit.\n',
   );
 }
