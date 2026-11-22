@@ -1,1 +1,1 @@
-Migrate all Box Text Typography semantic as literals to typed constants, with architecture checks.
+Retry enum-based semantic tag migration with LoginLayout enum imports compatible with component mocks.
