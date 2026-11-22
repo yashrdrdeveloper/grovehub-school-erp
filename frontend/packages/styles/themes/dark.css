@@ -19,6 +19,11 @@
   --gh-color-danger: #ef6a6a;
   --gh-color-success: #70d19c;
   --gh-color-warning: #e4ba71;
+  /* Dashboard trend accents are theme-owned, not component color literals. */
+  --gh-color-home-pink: #ff63b6;
+  --gh-color-home-blue: #87aaff;
+  --gh-color-home-green: #4fd69f;
+  --gh-color-home-amber: #edbd73;
   --gh-color-hero-start: #101a2c;
   --gh-color-hero-end: #1e3a65;
   --gh-shadow-card: 0 8px 24px rgb(0 0 0 / .13);
