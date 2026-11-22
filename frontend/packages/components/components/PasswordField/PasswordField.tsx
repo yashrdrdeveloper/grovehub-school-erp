@@ -2,10 +2,11 @@ import { Eye, EyeOff } from 'lucide-react';
 import { forwardRef, useId, useState } from 'react';
 import { cn } from '@Base/utilities/cn';
 import { FormField } from '../FormField';
+import { InputControl } from '../InputControl';
 import type { PasswordFieldProps } from './types/passwordField.props';
 
 export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(({
-  label, hint, error, initiallyVisible = false, className, id, disabled, required,
+  label, hint, error, initiallyVisible = false, controlSize = 'md', className, id, disabled, required,
   dataTestId, 'aria-describedby': describedBy, ...props
 }, ref) => {
   const [visible, setVisible] = useState(initiallyVisible);
@@ -21,9 +22,9 @@ export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(({
   return (
     <FormField label={label} htmlFor={inputId} hint={hint} error={error} required={required} dataTestId={controlTestId}>
       <div className="gh-password-field" data-testid={(controlTestId) + '-shell'}>
-        <input {...props} ref={ref} id={inputId} type={visible ? 'text' : 'password'}
-          required={required} disabled={disabled} data-testid={controlTestId}
-          className={cn('field__input gh-input gh-password-field__input flex h-10 w-full min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring/50',
+        <InputControl {...props} ref={ref} id={inputId} type={visible ? 'text' : 'password'} controlSize={controlSize}
+          required={required} disabled={disabled} dataTestId={controlTestId}
+          className={cn('field__input gh-input gh-password-field__input',
             error && 'field__input--error', className)}
           aria-invalid={Boolean(error)} aria-describedby={combinedDescription}/>
         <button type="button" className="gh-password-field__toggle" data-testid={(controlTestId) + '-visibility'} disabled={disabled}

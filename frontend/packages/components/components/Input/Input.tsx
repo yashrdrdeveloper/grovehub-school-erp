@@ -5,7 +5,7 @@ import { InputControl } from '../InputControl';
 import type { InputComponent, InputProps } from './types/input.props';
 
 export const Input: InputComponent = forwardRef<HTMLInputElement, InputProps>(({
-  label, error, hint, className, id, required, dataTestId, 'aria-describedby': describedBy, ...props
+  label, error, hint, className, id, required, dataTestId, controlSize = 'md', 'aria-describedby': describedBy, ...props
 }, ref) => {
   const generatedId = useId();
   const inputId = id ?? generatedId;
@@ -15,8 +15,8 @@ export const Input: InputComponent = forwardRef<HTMLInputElement, InputProps>(({
 
   return (
     <FormField label={label} htmlFor={inputId} error={error} hint={hint} required={required} dataTestId={controlTestId}>
-      <InputControl ref={ref} id={inputId} required={required} dataTestId={controlTestId}
-        className={cn('field__input gh-input flex h-10 w-full min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50', error && 'field__input--error', className)}
+      <InputControl ref={ref} id={inputId} required={required} dataTestId={controlTestId} controlSize={controlSize}
+        className={cn('field__input gh-input', error && 'field__input--error', className)}
         aria-invalid={Boolean(error)} aria-describedby={combinedDescription} {...props}/>
     </FormField>
   );

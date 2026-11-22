@@ -85,3 +85,24 @@
 .gh-form--gap-lg { gap: var(--gh-space-6); }
 .gh-form--inline > * { min-width: 0; }
 @media (max-width: 720px) { .gh-form--inline { flex-direction: column; align-items: stretch; } }
+
+/* Shared UI recipes; all measurements and semantic colors come from @Styles. */
+.button--outline { background: transparent; color: var(--gh-color-text-strong); border-color: var(--gh-color-input); }
+.button--outline:hover { background: var(--gh-color-surface-subtle); }
+.gh-input-control {
+  height: var(--gh-control-height-md);
+  border-color: var(--gh-color-input);
+  border-radius: var(--gh-radius-md);
+  color: var(--gh-color-text-strong);
+  background: var(--gh-color-surface);
+}
+.gh-input-control--sm { height: var(--gh-control-height-sm); }
+.gh-input-control--md { height: var(--gh-control-height-md); }
+.gh-input-control--lg { height: var(--gh-control-height-lg); }
+.gh-input-control:focus-visible { outline: var(--gh-focus-outline-width) solid var(--gh-color-ring); outline-offset: 1px; }
+.gh-card--outline { box-shadow: none; }
+.gh-card--muted { background: var(--gh-color-surface-subtle); }
+.gh-card--padding-none { padding: 0; }
+.gh-card--padding-sm { padding: var(--gh-space-3); }
+.gh-card--padding-md { padding: var(--gh-space-6); }
+.gh-card--padding-lg { padding: var(--gh-space-8); }

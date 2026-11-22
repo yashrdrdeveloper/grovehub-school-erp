@@ -5,6 +5,7 @@ export const buttonVariants = cva('button gh-button inline-flex items-center jus
     variant: {
       primary: 'button--primary bg-primary text-primary-foreground hover:bg-primary/90',
       secondary: 'button--secondary bg-secondary text-secondary-foreground hover:bg-secondary/85',
+      outline: 'button--outline border border-input bg-background text-foreground hover:bg-muted',
       ghost: 'button--ghost hover:bg-muted hover:text-foreground',
       danger: 'button--danger bg-destructive text-white hover:bg-destructive/90',
     },

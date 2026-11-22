@@ -10,7 +10,7 @@ export const Button: ButtonComponent = ({
   asChild = false, className, children, disabled, dataTestId, type = 'button', ...props
 }) => {
   const classes = cn(buttonVariants({ variant, size }), fullWidth && 'button--full', className);
-  const testId = dataTestId ?? props.id ?? 'ui-button';
+  const testId = dataTestId ?? props.id;
   if (asChild) {
     return (
       <Slot data-testid={testId} className={cn(classes, (disabled || loading) && 'pointer-events-none')}
