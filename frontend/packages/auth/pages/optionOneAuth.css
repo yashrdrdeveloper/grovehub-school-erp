@@ -435,7 +435,7 @@
 /* Portrait tablets: avoid an inner scrolling auth panel at ordinary viewport heights.
    Compress spacing across ALL states rather than clipping the footer. Shorter windows
    retain the standard scroll fallback to keep password recovery controls reachable. */
-@media(min-width:721px) and (max-width:1100px) and (min-height:700px){
+@media(min-width:721px) and (max-width:1100px) and (min-height:800px){
  .rdr-login-v2__content{padding-block:clamp(10px,2dvh,22px);overflow-y:hidden}
  .rdr-login-v2__main{padding-block:6px;margin:auto}
  .rdr-login-v2__heading{margin-bottom:12px}
@@ -459,7 +459,7 @@
  .rdr-recovery__art-title{margin:8px 0 5px}
 }
 /* Preserve accessibility for extra-large text, short tablet landscape, and keyboards. */
-@media(min-width:721px) and (max-width:1100px) and (max-height:699px){
+@media(min-width:721px) and (max-width:1100px) and (max-height:799px){
  .rdr-login-v2__content{overflow-y:auto}
 }
 @media(max-width:285px){
