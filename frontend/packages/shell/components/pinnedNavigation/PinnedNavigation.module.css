@@ -1,0 +1,122 @@
+/* Owner-specific pinned application list and its safe collapse behavior. */
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.empty {
+  margin: 0;
+  padding: 12px;
+  color: var(--gh-color-muted);
+  font-size: var(--gh-text-xs);
+  line-height: 1.5;
+}
+
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+}
+
+.item {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+  padding: 11px 13px;
+  border-radius: var(--gh-radius-md);
+  text-decoration: none;
+  font-size: var(--gh-text-xs);
+  font-weight: var(--gh-weight-semibold);
+  color: var(--gh-color-muted);
+  transition: background var(--gh-motion-normal);
+}
+
+.item:hover {
+  background: var(--gh-color-surface-subtle);
+  color: var(--gh-color-text-strong);
+}
+
+.item > svg {
+  flex: 0 0 auto;
+}
+
+.item:focus-visible,
+.unpin:focus-visible {
+  outline: var(--gh-focus-outline-width) solid var(--gh-color-ring);
+  outline-offset: 2px;
+}
+
+.active {
+  background: var(--gh-color-surface-subtle);
+  color: var(--gh-color-text-strong);
+  font-weight: var(--gh-weight-bold);
+}
+
+.label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.unpin {
+  display: grid;
+  flex: 0 0 23px;
+  place-items: center;
+  height: 25px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--gh-color-muted);
+  opacity: 0;
+  cursor: pointer;
+}
+
+.row:hover .unpin,
+.unpin:focus-visible {
+  opacity: 1;
+}
+
+.unpin:hover {
+  background: var(--gh-color-surface-subtle);
+  color: var(--gh-color-text-strong);
+}
+
+:global(.shell--collapsed) .nav {
+  padding-inline: 5px;
+}
+
+:global(.shell--collapsed) .item {
+  padding: 11px;
+  justify-content: center;
+}
+
+:global(.shell--collapsed) .label,
+:global(.shell--collapsed) .unpin {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  :global(.shell--collapsed) .nav {
+    padding-inline: 0;
+  }
+
+  :global(.shell--collapsed) .item {
+    justify-content: flex-start;
+    padding: 11px 13px;
+  }
+
+  :global(.shell--collapsed) .label {
+    display: initial;
+  }
+}
+
+@media (hover: none) {
+  .unpin {
+    opacity: 1;
+  }
+}

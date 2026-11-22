@@ -3,23 +3,45 @@ import { Box } from '@Components/components/Box';
 import { PinOff } from '@Components/icons';
 import { NavLink } from '@Components/router';
 
-import { getShellNavClassName } from '../../helpers/shell.getNavClassName';
+import styles from './PinnedNavigation.module.css';
+import { getPinnedAppClassName } from './helpers/pinnedNavigation.getAppClassName';
+
 import type { PinnedAppProps } from './types/pinnedNavigation';
 
-/** One pinned entry, with a named pin action and route navigation handler. */
-export const PinnedApp = ({ entry, closeSidebar, togglePin }: PinnedAppProps) => {
+/** One accessible pinned application and its independent unpin action. */
+export const PinnedApp = ({
+  entry,
+  closeSidebar,
+  togglePin,
+}: PinnedAppProps) => {
   const Icon = entry.app.icon;
-  const handleTogglePin = () => togglePin(entry.path);
+
+  const handleTogglePin = () => {
+    togglePin(entry.path);
+  };
+
   return (
-    <Box as="div" className="sidebar__pinned-row">
-      <NavLink to={entry.path} title={entry.app.name} aria-label={entry.app.name}
+    <Box as="div" className={styles.row}>
+      <NavLink
+        to={entry.path}
+        title={entry.app.name}
+        aria-label={entry.app.name}
         onClick={closeSidebar}
-        className={getShellNavClassName}>
-        <Icon size={19} strokeWidth={1.8}/><Box as="span" className="sidebar__label">{entry.app.name}</Box>
+        className={getPinnedAppClassName}
+      >
+        <Icon size={19} strokeWidth={1.8} aria-hidden="true" />
+        <Box as="span" className={styles.label}>{entry.app.name}</Box>
       </NavLink>
-      <Button unstyled type="button" className="sidebar__unpin" title={`Unpin ${entry.app.name}`}
-        aria-label={`Unpin ${entry.app.name}`} onClick={handleTogglePin}>
-        <PinOff size={14}/>
+
+      <Button
+        unstyled
+        type="button"
+        className={styles.unpin}
+        title={`Unpin ${entry.app.name}`}
+        aria-label={`Unpin ${entry.app.name}`}
+        onClick={handleTogglePin}
+      >
+        <PinOff size={14} aria-hidden="true" />
       </Button>
     </Box>
   );
