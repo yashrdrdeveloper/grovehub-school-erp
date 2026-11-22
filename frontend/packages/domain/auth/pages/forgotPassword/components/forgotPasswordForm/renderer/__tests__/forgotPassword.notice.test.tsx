@@ -17,7 +17,7 @@ describe('renderForgotPasswordNotice', () => {
   it('renders an accessible information notice', () => {
     render(<>{renderForgotPasswordNotice(info)}</>);
 
-    expect(screen.getByRole('status')).toHaveTextContent('Secure password reset');
+    expect(screen.getByRole('status').textContent).toContain('Secure password reset');
     expect(screen.getByTestId('forgot-password-notice').className).toContain('--info');
   });
 
@@ -32,7 +32,7 @@ describe('renderForgotPasswordNotice', () => {
       </>,
     );
 
-    expect(screen.getByRole('status')).toHaveTextContent('Request received!');
+    expect(screen.getByRole('status').textContent).toContain('Request received!');
     expect(screen.getByTestId('forgot-password-notice').className).toContain('--success');
   });
 });
