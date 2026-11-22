@@ -348,8 +348,8 @@ const HomePage = () => (
     <section className="rdr-hero rdr-container">
       <div className="rdr-hero__content">
         <span className="rdr-eyebrow"><span className="rdr-eyebrow__dot"/> EST. 2006 · HALUHERA, REWARI</span>
-        <h1>Where curious minds <em>find their way.</em></h1>
-        <p>Welcome to Rao Deena Ram Vidya Vihar — a school community that believes in thoughtful learning, strong values and the potential of every child.</p>
+        <h1>Rooted in Haluhera. <em>Ready for every tomorrow.</em></h1>
+        <p>At Rao Deena Ram Vidya Vihar, learning goes beyond the classroom. We bring together academics, character and a caring school community so every child has room to grow.</p>
         <div className="rdr-hero__actions"><EnquiryLink className="rdr-btn rdr-btn--solid">Enquire for admissions <ArrowUpRight size={17}/></EnquiryLink><Link className="rdr-btn rdr-btn--text" to="/about">Get to know us <ArrowRight size={17}/></Link></div>
         <div className="rdr-hero__meta"><span><School size={17}/> CBSE affiliated</span><span><GraduationCap size={17}/> Senior Secondary</span><span><MapPin size={17}/> Rewari, Haryana</span></div>
       </div>
@@ -363,7 +363,7 @@ const HomePage = () => (
     </section>
     <section className="rdr-section rdr-section--wash rdr-home-facilities">
       <div className="rdr-container">
-        <Heading eyebrow="EXPERIENCE RDR" title="Every day offers something new." description="The spaces, experiences and guidance that help young people learn, explore and grow."/>
+        <Heading eyebrow="EXPERIENCE RDR" title="Every child has a story. Every day has a purpose." description="The spaces, experiences and guidance that help young people learn, explore and grow."/>
         <div className="rdr-feature-grid">
           {facilities.slice(0,6).map((item,i)=>{
             const Icon=facilityIcons[i];
@@ -374,7 +374,7 @@ const HomePage = () => (
       </div>
     </section>
     <section className="rdr-section rdr-container rdr-home-gallery">
-      <div className="rdr-section__split"><Heading eyebrow="A SCHOOL FULL OF LIFE" title="The moments that make us." description="Real snapshots from the original RDR School photo gallery — celebrating creativity, achievements and friendship."/><Link to="/gallery" className="rdr-inline-link">See the gallery <ArrowUpRight size={18}/></Link></div>
+      <div className="rdr-section__split"><Heading eyebrow="A SCHOOL FULL OF LIFE" title="School life, as it really happens." description="Real snapshots from the original RDR School photo gallery — celebrating creativity, achievements and friendship."/><Link to="/gallery" className="rdr-inline-link">See the gallery <ArrowUpRight size={18}/></Link></div>
       <div className="rdr-gallery-preview">
         {photographs.slice(1,5).map((photo,index)=><ImageCard key={photo.src} src={photo.src} alt={photo.alt} className={index===0?'rdr-gallery-preview__lead':''}>{<span>{photo.category}</span>}</ImageCard>)}
       </div>
