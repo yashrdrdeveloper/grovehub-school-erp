@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { ApiError } from '@Business/api';
 
 import { RecoveryContainer as RecoveryPage } from './recovery';
-import { clearRecoveryFlow } from './recoveryFlowSession';
+import { clearRecoveryFlow } from '../core/session/recoveryFlowSession';
 
 const validateInvitation = jest.fn<Promise<{verified:boolean;purpose:string;expiresIn:number}>,[string]>();
 const exchangeInvitation = jest.fn<Promise<{verified:boolean;purpose:string;expiresIn:number}>,[string]>();

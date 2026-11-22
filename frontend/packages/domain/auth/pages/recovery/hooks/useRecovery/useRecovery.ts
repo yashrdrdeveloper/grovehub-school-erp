@@ -4,7 +4,7 @@ import { authenticationApi } from '@Business/auth';
 import { accountsApi } from '@Business/accounts';
 import { ApiError } from '@Business/api';
 
-import { clearRecoveryFlow, readRecoveryFlow, saveRecoveryGrant, saveRecoveryProof } from '../../../recoveryFlowSession';
+import { clearRecoveryFlow, readRecoveryFlow, saveRecoveryGrant, saveRecoveryProof } from '../../../../core/session/recoveryFlowSession';
 import { validateRecoveryPassword } from '../../helpers/validateRecoveryPassword';
 import { classifyRecoveryFailure } from '../../helpers/classifyRecoveryFailure';
 import type { RecoveryFieldErrors, RecoveryViewState } from '../../types';

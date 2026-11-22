@@ -1,8 +1,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Link, MemoryRouter, Route, Routes } from 'react-router-dom';
 
-import { RecoveryFlowBoundary } from './RecoveryFlowBoundary';
-import { clearRecoveryFlow, readRecoveryFlow, saveRecoveryProof } from './recoveryFlowSession';
+import { RecoveryFlowBoundary } from '../RecoveryFlowBoundary';
+import { clearRecoveryFlow, readRecoveryFlow, saveRecoveryProof } from '../../session/recoveryFlowSession';
 
 const renderRoutes = (path: string) => render(
   <MemoryRouter initialEntries={[path]}>

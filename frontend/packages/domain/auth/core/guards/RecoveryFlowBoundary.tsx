@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { clearRecoveryFlow, readRecoveryFlow, recoveryPurposeForPath } from './recoveryFlowSession';
+import { clearRecoveryFlow, readRecoveryFlow, recoveryPurposeForPath } from '../session/recoveryFlowSession';
 
 /** Remove password-link state as soon as navigation leaves its specific flow. */
 export const RecoveryFlowBoundary = () => {
