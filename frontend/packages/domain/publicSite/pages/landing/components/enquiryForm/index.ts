@@ -1,1 +1,1 @@
-export { EnquiryForm } from './enquiryForm';
+export { EnquiryFormContainer as EnquiryForm } from './containers/enquiryFormContainer';
