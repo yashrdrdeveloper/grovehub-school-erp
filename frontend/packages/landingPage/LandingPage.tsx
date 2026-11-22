@@ -4,7 +4,7 @@ import {
   ArrowRight, ArrowUpRight, BookOpen, Bus, CalendarDays,
   Check, Clock3, Computer, Download, ExternalLink, FileCheck2, FlaskConical,
   GraduationCap, HeartPulse, Mail, MapPin, Menu, Phone, Presentation,
-  School, ShieldCheck, Sparkles, Trophy, Pencil, Star, X,
+  ShieldCheck, Sparkles, Trophy, Pencil, Star, X,
   Landmark, HeartHandshake,
 } from 'lucide-react';
 
