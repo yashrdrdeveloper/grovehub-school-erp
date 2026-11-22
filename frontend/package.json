@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "jest --passWithNoTests",
     "lint": "eslint .",
-    "check:architecture": "node scripts/check-boundaries.mjs && node scripts/check-units.mjs && node scripts/check-ui-contracts.mjs && node scripts/check-styles.mjs && node scripts/check-layout-assets.mjs && node scripts/check-no-ternaries.mjs && node scripts/check-semantic-html.mjs && node scripts/check-router-imports.mjs && pnpm format:check && node scripts/check-formatter-debt.mjs && node scripts/check-owner-structure.mjs && node scripts/check-audit-regressions.mjs && node scripts/check-css-module-tokens.mjs && pnpm test:architecture",
+    "check:architecture": "node scripts/check-boundaries.mjs && node scripts/check-units.mjs && node scripts/check-ui-contracts.mjs && node scripts/check-styles.mjs && node scripts/check-layout-assets.mjs && node scripts/check-no-ternaries.mjs && node scripts/check-semantic-html.mjs && node scripts/migrate-semantic-tags.mjs --check && node scripts/check-renderer-ownership.mjs && node scripts/check-router-imports.mjs && pnpm format:check && node scripts/check-formatter-debt.mjs && node scripts/check-owner-structure.mjs && node scripts/check-audit-regressions.mjs && node scripts/check-css-module-tokens.mjs && pnpm test:architecture",
     "assets:school": "node scripts/download-school-images.mjs",
     "audit:guidelines": "node scripts/audit-guidelines.mjs",
     "format": "prettier --write \"{app,packages,scripts}/**/*.{ts,tsx,js,jsx,mjs,css,scss,json,md}\"",
