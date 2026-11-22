@@ -1,1 +1,1 @@
-Validate typed JSX renderers with explicit temporary auth stylesheet ownership and full regression checks.
+Run full frontend formatting, typed status renderer tests and strict renderer ownership checks.
