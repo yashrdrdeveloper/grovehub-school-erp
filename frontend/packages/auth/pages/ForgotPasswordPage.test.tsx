@@ -29,7 +29,7 @@ describe('forgot password recovery',()=>{
 
   it('shows guidance, validates email and preserves its action',()=>{
     renderRecovery();
-    expect(screen.getByRole('heading',{name:'Forgot password?'})).toBeTruthy();
+    expect(screen.getByRole('heading',{name:'Forgot your password?'})).toBeTruthy();
     expect(screen.getByText('Secure password reset')).toBeTruthy();
     fireEvent.click(screen.getByRole('button',{name:'Send reset link'}));
     expect(screen.getByText('Please enter your email address.')).toBeTruthy();
