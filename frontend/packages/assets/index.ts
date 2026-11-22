@@ -1,0 +1,1 @@
+export { AcademicPathwaysSvg } from './auth';

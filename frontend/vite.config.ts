@@ -16,6 +16,7 @@ export default defineConfig({
       '@Domain': path.resolve(root, 'packages/domain'),
       '@Shell': path.resolve(root, 'packages/shell'),
       '@Styles': path.resolve(root, 'packages/styles'),
+      '@Assets': path.resolve(root, 'packages/assets'),
     },
   },
   server: {

@@ -62,6 +62,12 @@
       ],
       "@Styles/*": [
         "packages/styles/*"
+      ],
+      "@Assets/*": [
+        "packages/assets/*"
+      ],
+      "@Assets": [
+        "packages/assets/index.ts"
       ]
     }
   },
