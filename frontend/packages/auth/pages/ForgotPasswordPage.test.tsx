@@ -81,7 +81,7 @@ describe('forgot password recovery',()=>{
     fireEvent.change(screen.getByRole('textbox',{name:'Email address'}),{target:{value:'parent@example.com'}});
     fireEvent.click(screen.getByRole('button',{name:'Send reset link'}));
     await waitFor(()=>expect(screen.getByText('Request received!')).toBeTruthy());
-    fireEvent.click(screen.getAllByRole('link',{name:'Back to sign in'})[0]);
+    fireEvent.click(screen.getAllByRole('link',{name:'Back to sign in'})[0]!);
     expect(screen.getByText('Sign in page')).toBeTruthy();
   });
 });
