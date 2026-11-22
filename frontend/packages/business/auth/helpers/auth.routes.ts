@@ -5,8 +5,9 @@ import { AUTH_ROUTE_IDS } from '../constants/auth.routeIds';
 
 import type { RouteEntity } from '../../baseEntities/routes';
 import type { AuthRouteId } from '../constants/types/auth.routeIds';
+import type { GetAuthRoute } from './types/auth.routes';
 
-export const getAuthRoute = (id: AuthRouteId): RouteEntity<AuthRouteId> =>
+export const getAuthRoute: GetAuthRoute = (id) =>
   getRoute(AUTH_ROUTE_CONFIG, id);
 
 export const getLoginRoute = (): RouteEntity<AuthRouteId> =>

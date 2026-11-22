@@ -1,7 +1,16 @@
-import { Navigate } from '@Components/router';
+import type { ReactElement } from 'react';
 
-import { AUTH_ROUTE } from '@Business/auth/routes';
-import { APP_ROUTE } from '@Business/app/routes';
+import { Navigate } from '@Components/router';
+import {
+  AUTH_ROUTE_CONFIG,
+  AUTH_ROUTE_IDS,
+  getLoginRoute,
+} from '@Business/auth/routes';
+import {
+  APP_ROUTE_CONFIG,
+  APP_ROUTE_IDS,
+  RouteAccess,
+} from '@Business/app/routes';
 
 import {
   ForgotPasswordPage,
@@ -10,19 +19,35 @@ import {
 } from '@Domain/auth';
 import { DashboardPage } from '@Domain/dashboard';
 
-// Phase 0.2: identity entrypoints and the dashboard shell only.
-// Business modules are deliberately not routable until implemented.
-export const publicRoutes = [
-  { path: AUTH_ROUTE.LOGIN, element: <LoginV2Page /> },
-  // Preserve old bookmarks without maintaining a second login screen.
-  { path: AUTH_ROUTE.LOGIN_LEGACY, element: <Navigate to={AUTH_ROUTE.LOGIN} replace /> },
-  { path: AUTH_ROUTE.FORGOT_PASSWORD, element: <ForgotPasswordPage /> },
-  { path: AUTH_ROUTE.RESET_PASSWORD, element: <RecoveryPage purpose="recovery" /> },
-  { path: AUTH_ROUTE.SET_PASSWORD, element: <RecoveryPage purpose="invitation" /> },
-  // Preserve links issued by the existing Identity invitation service.
-  { path: AUTH_ROUTE.SETUP_LEGACY, element: <RecoveryPage purpose="invitation" /> },
-] as const;
+/**
+ * Route metadata is owned exclusively by Business.
+ * Shell maps IDs to views without defining or duplicating browser paths.
+ */
+type AuthRouteKey = typeof AUTH_ROUTE_IDS[keyof typeof AUTH_ROUTE_IDS];
+type AppRouteKey = typeof APP_ROUTE_IDS[keyof typeof APP_ROUTE_IDS];
 
-export const workspaceRoutes = [
-  { path: APP_ROUTE.DASHBOARD, element: <DashboardPage /> },
-] as const;
+const authViews: Record<AuthRouteKey, ReactElement> = {
+  [AUTH_ROUTE_IDS.LOGIN]: <LoginV2Page />,
+  [AUTH_ROUTE_IDS.LOGIN_LEGACY]: <Navigate to={getLoginRoute().path} replace />,
+  [AUTH_ROUTE_IDS.FORGOT_PASSWORD]: <ForgotPasswordPage />,
+  [AUTH_ROUTE_IDS.RESET_PASSWORD]: <RecoveryPage purpose="recovery" />,
+  [AUTH_ROUTE_IDS.SET_PASSWORD]: <RecoveryPage purpose="invitation" />,
+  [AUTH_ROUTE_IDS.SETUP_LEGACY]: <RecoveryPage purpose="invitation" />,
+};
+
+const workspaceViews: Record<AppRouteKey, ReactElement | null> = {
+  [APP_ROUTE_IDS.HOME]: null,
+  [APP_ROUTE_IDS.DASHBOARD]: <DashboardPage />,
+};
+
+export const publicRoutes = AUTH_ROUTE_CONFIG.map((route) => ({
+  ...route,
+  element: authViews[route.id],
+}));
+
+export const workspaceRoutes = APP_ROUTE_CONFIG
+  .filter((route) => route.type === RouteAccess.PROTECTED)
+  .map((route) => ({
+    ...route,
+    element: workspaceViews[route.id],
+  }));

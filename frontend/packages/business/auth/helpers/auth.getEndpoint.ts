@@ -1,7 +1,6 @@
 import { AUTH_ENDPOINT } from '../constants/auth.endpoints';
 
-import type { AuthOperation } from '../constants/auth.operations';
-import type { AuthEndpoint } from '../constants/auth.endpoints';
+import type { GetAuthEndpoint } from './types/auth.getEndpoint';
 
-export const getAuthEndpoint = (operation: AuthOperation): AuthEndpoint =>
+export const getAuthEndpoint: GetAuthEndpoint = (operation) =>
   AUTH_ENDPOINT[operation];
