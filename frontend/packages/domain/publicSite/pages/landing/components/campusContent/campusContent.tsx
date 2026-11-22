@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, BookOpen, ExternalLink, Sparkles } from 'lucide-react';
+import { ArrowUpRight, BookOpen, ExternalLink, Sparkles } from '@Components/icons';
 import { facilities, photographs } from '../../constants/school.content';
 import { Heading, ImageCard, PhotoMotifs, facilityIcons } from '../siteMedia';
 import { IntroPage } from '../aboutContent';

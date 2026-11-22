@@ -1,4 +1,4 @@
-import { ArrowRight, Check, Mail } from 'lucide-react';
+import { ArrowRight, Check, Mail } from '@Components/icons';
 import { InputControl } from '@Components/components/InputControl';
 import { Form } from '@Components/components/Form';
 import { enquiryTypes } from '../../constants/school.content';

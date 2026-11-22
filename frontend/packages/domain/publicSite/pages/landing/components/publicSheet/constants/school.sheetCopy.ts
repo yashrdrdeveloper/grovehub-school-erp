@@ -1,4 +1,4 @@
-import { GraduationCap, HeartHandshake, Landmark, Sparkles } from 'lucide-react';
+import { GraduationCap, HeartHandshake, Landmark, Sparkles } from '@Components/icons';
 import type { SchoolPanel } from '../types/schoolPanel';
 
 const panelTitles: Record<SchoolPanel, string> = {

@@ -1,4 +1,4 @@
-import { Sparkles } from 'lucide-react';
+import { Sparkles } from '@Components/icons';
 import { photographs } from '../../../../constants/school.content';
 
 const PanelPhoto = ({index,alt}:{index:number;alt:string}) => {

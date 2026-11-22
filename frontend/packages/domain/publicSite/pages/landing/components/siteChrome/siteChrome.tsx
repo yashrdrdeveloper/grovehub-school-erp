@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ArrowRight, ArrowUpRight, MapPin, Menu, X } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, MapPin, Menu, X } from '@Components/icons';
 import { SchoolMonogram } from '@Components';
 import { school } from '../../constants/school.content';
 import { SCHOOL_NAV_ITEMS as navItems } from '../../constants/school.navigation';

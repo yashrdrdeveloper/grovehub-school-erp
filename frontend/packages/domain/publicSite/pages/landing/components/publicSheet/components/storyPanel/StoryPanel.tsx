@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, Check, ExternalLink } from 'lucide-react';
+import { ArrowRight, Check, ExternalLink } from '@Components/icons';
 import { legacyStories, storyNavigation, type StoryKey } from '../../constants/school.sheetCopy';
 import { PanelPhoto } from '../panelPhoto';
 

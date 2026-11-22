@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowUpRight, BookOpenText, CalendarDays, ExternalLink, FileText, GraduationCap, Mail, MapPin, Phone, ShieldCheck } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, BookOpenText, CalendarDays, ExternalLink, FileText, GraduationCap, Mail, MapPin, Phone, ShieldCheck } from '@Components/icons';
 import { disclosedDocuments, facilities, photographs, school } from '../../../../constants/school.content';
 import { PanelPhoto } from '../panelPhoto';
 
