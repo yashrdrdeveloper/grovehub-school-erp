@@ -4,13 +4,13 @@ import {
   ArrowRight, ArrowUpRight, BookOpen, Bus, CalendarDays,
   Check, Clock3, Computer, Download, ExternalLink, FileCheck2, FlaskConical,
   GraduationCap, HeartPulse, Mail, MapPin, Menu, Phone, Presentation,
-  School, ShieldCheck, Sparkles, Trophy, Megaphone, CalendarClock, Pencil, Star, X,
-  Landmark, HeartHandshake, Images,
+  School, ShieldCheck, Sparkles, Trophy, Pencil, Star, X,
+  Landmark, HeartHandshake,
 } from 'lucide-react';
 
 import { SchoolMonogram } from '@Components';
 
-import { achievements, disclosedDocuments, enquiryTypes, facilities, historicDisclosure, photographs, school, upcomingEvents } from './content';
+import { disclosedDocuments, enquiryTypes, facilities, historicDisclosure, photographs, school } from './content';
 import { PublicSheet, type SchoolPanel } from './PublicSheet';
 
 import './landingPage.css';
@@ -176,18 +176,6 @@ const PhotoMotifs = ({variant='hero'}:{variant?:'hero'|'gallery'|'banner'}) => (
   </div>
 );
 
-const PhotoCollage = () => (
-  <div className="rdr-collage rdr-collage--editorial" aria-label="Authentic photographs from RDR School events">
-    <ImageCard className="rdr-collage__large" src={photographs[0].src} alt={photographs[0].alt} position={photographs[0].position} loading="eager">
-      <span className="rdr-collage__image-label">ACHIEVEMENTS <span>✳</span> RDR SCHOOL</span>
-    </ImageCard>
-    <ImageCard className="rdr-collage__top" src={photographs[1].src} alt={photographs[1].alt} position={photographs[1].position} loading="eager"/>
-    <ImageCard className="rdr-collage__bottom" src={photographs[2].src} alt={photographs[2].alt} position={photographs[2].position} loading="eager"/>
-    <PhotoMotifs/>
-    <div className="rdr-collage__stamp"><Sparkles size={17}/> Every child, every possibility.</div>
-  </div>
-);
-
 const EnquiryForm = ({compact=false}:{compact?:boolean}) => {
   const fieldId=useId();
   const [data,setData] = useState<EnquiryFormData>(emptyEnquiry);
@@ -269,81 +257,6 @@ const EnquiryForm = ({compact=false}:{compact?:boolean}) => {
     </div>
   );
 };
-
-const StoriesAndUpdates = () => (
-  <section className="rdr-section rdr-container rdr-stories">
-    <div className="rdr-section__split">
-      <Heading eyebrow="STAY CONNECTED" title="What's happening at RDR." description="Celebrating school life, memorable moments and the next opportunities for our community."/>
-      <Link className="rdr-inline-link" to="/gallery">Explore our gallery <ArrowUpRight size={18}/></Link>
-    </div>
-    <div className="rdr-stories__grid">
-      <article className="rdr-stories__featured">
-        <ImageCard src={photographs[1].src} alt={photographs[1].alt} position={photographs[1].position}/>
-        <div className="rdr-stories__featured-caption"><span>FROM OUR ARCHIVES · SCHOOL LIFE</span><h3>Learning beyond the classroom</h3><p>Celebrating expression, confidence and togetherness through school programmes.</p></div>
-      </article>
-      <div className="rdr-stories__side">
-        <div className="rdr-stories__upcoming">
-          <span className="rdr-eyebrow"><CalendarClock size={16}/> {upcomingEvents.length?'SCHOOL CALENDAR':'MEET RDR SCHOOL'}</span>
-          <h3>{upcomingEvents.length?'Upcoming events':'The story behind our school'}</h3>
-          {upcomingEvents.length ? upcomingEvents.map(event => (
-            <div className="rdr-event" key={event.id}><strong>{event.date}</strong><span>{event.title}</span></div>
-          )) : (
-            <div className="rdr-school-message-links">
-              <Link to="/about/history"><Landmark size={19}/><span><strong>Our school story</strong><small>Haluhera, since 2006</small></span><ArrowRight size={16}/></Link>
-              <Link to="/about/director"><HeartHandshake size={19}/><span><strong>Director's message</strong><small>Care and all-round learning</small></span><ArrowRight size={16}/></Link>
-              <Link to="/about/principal"><GraduationCap size={19}/><span><strong>Principal's message</strong><small>Education with character</small></span><ArrowRight size={16}/></Link>
-            </div>
-          )}
-        </div>
-        <EnquiryLink className="rdr-stories__admission">
-          <span><Megaphone size={18}/> ADMISSIONS & VISITS</span>
-          <strong>Ready to discover RDR School?</strong>
-          <small>Ask about admissions, classes, transport and visiting the campus.</small>
-          <ArrowUpRight size={21}/>
-        </EnquiryLink>
-      </div>
-    </div>
-  </section>
-);
-
-const SchoolMessages = () => (
-  <section className="rdr-section rdr-section--wash rdr-home-leaders">
-    <div className="rdr-container">
-      <Heading eyebrow="THE PEOPLE BEHIND OUR SCHOOL" title="A vision carried forward." description="Explore the school's history and messages from its leadership as published on the original RDR website."/>
-      <div className="rdr-home-leaders__grid">
-        <Link to="/about/history"><span>EST. 2006</span><Landmark size={28}/><h3>A school rooted in Haluhera.</h3><p>Discover where RDR began and the community it serves.</p><ArrowUpRight size={20}/></Link>
-        <Link to="/about/director"><span>DIRECTOR'S MESSAGE</span><HeartHandshake size={28}/><h3>Education for every possibility.</h3><p>Shri Lal Singh Yadav on developing the whole child.</p><ArrowUpRight size={20}/></Link>
-        <Link to="/about/principal"><span>PRINCIPAL'S MESSAGE</span><GraduationCap size={28}/><h3>Learning with character.</h3><p>Shri Arvind Yadav on education, discipline and growth.</p><ArrowUpRight size={20}/></Link>
-      </div>
-    </div>
-  </section>
-);
-
-const MobileQuickHome = () => (
-  <section className="rdr-quick-home rdr-container" aria-label="Quick school information and actions">
-    <div className="rdr-quick-home__actions">
-      <EnquiryLink className="rdr-quick-home__primary"><GraduationCap size={19}/><span>Admission enquiry</span><ArrowUpRight size={16}/></EnquiryLink>
-      <a href="tel:+919050077550"><Phone size={19}/><span>Call school</span><ArrowUpRight size={16}/></a>
-      <a href="https://www.google.com/maps/search/?api=1&query=Rao+Deena+Ram+Vidya+Vihar+Haluhera" target="_blank" rel="noreferrer"><MapPin size={19}/><span>Directions</span><ArrowUpRight size={16}/></a>
-      <Link to="/mandatory-public-disclosure"><ShieldCheck size={19}/><span>CBSE details</span><ArrowUpRight size={16}/></Link>
-    </div>
-    <div className="rdr-quick-home__heading"><span className="rdr-eyebrow">DISCOVER OUR SCHOOL</span><h2>Everything important, a tap away.</h2></div>
-    <div className="rdr-quick-home__tiles">
-      {[
-        {to:'/about/history',icon:Landmark,title:'Our story',desc:'Since 2006'},
-        {to:'/about/director',icon:HeartHandshake,title:"Director's message",desc:'Growing every child'},
-        {to:'/about/principal',icon:GraduationCap,title:"Principal's message",desc:'Learning with values'},
-        {to:'/academics',icon:BookOpen,title:'Academics',desc:'Learning journey'},
-        {to:'/campus',icon:School,title:'Campus',desc:'Spaces to explore'},
-        {to:'/gallery',icon:Images,title:'School life',desc:'Moments in pictures'},
-      ].map(item=>{
-        const Icon=item.icon;
-        return <Link to={item.to} key={item.to}><span className="rdr-quick-home__tile-icon"><Icon size={21}/></span><span><strong>{item.title}</strong><small>{item.desc}</small></span><ArrowUpRight size={15}/></Link>;
-      })}
-    </div>
-    <div className="rdr-quick-home__bottom"><span><Sparkles size={16}/> A place to learn, belong and grow.</span><EnquiryLink>Talk to us <ArrowRight size={15}/></EnquiryLink></div>
-  </section>
-);
 
 const HomePage = () => (
   <div className="rdr-option-one">
