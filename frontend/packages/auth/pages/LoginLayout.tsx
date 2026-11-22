@@ -6,6 +6,7 @@ import { SchoolMonogram } from '@Components';
 import { useWorkspaceTheme, type ThemePreference } from '@Components/hooks/theme';
 
 import { AuthAmbientGraphic } from './AuthAmbientGraphic';
+import { useAuthViewportFit } from './hooks/useAuthViewportFit/useAuthViewportFit';
 
 
 // One stylesheet owns the entire auth layout. Legacy variants are intentionally not loaded.
@@ -29,6 +30,7 @@ export const LoginLayout = ({ children, title, description, mobileDescription, m
   eyebrow?: string;
 }) => {
   const { preference, setPreference } = useWorkspaceTheme();
+  const { contentRef, toolbarRef, mainRef } = useAuthViewportFit();
 
   // On phones use the operating system's light/dark preference.
   // The existing desktop theme selector remains available.
@@ -65,8 +67,8 @@ export const LoginLayout = ({ children, title, description, mobileDescription, m
             <div className="rdr-login-v2__visual-footer"><span>LEARN</span><i aria-hidden="true"/><span>ORGANISE</span><i aria-hidden="true"/><span>GROW</span></div>
           </div>
         </section>
-        <section className="rdr-login-v2__content" aria-labelledby="rdr-auth-title">
-          <div className="rdr-login-v2__toolbar">
+        <section ref={contentRef} className="rdr-login-v2__content" aria-labelledby="rdr-auth-title">
+          <div ref={toolbarRef} className="rdr-login-v2__toolbar">
             <Link to="/" className="rdr-login-v2__back" aria-label="Back to RDR School homepage">
               <ArrowLeft size={19}/><span>Back to school</span>
             </Link>
@@ -80,7 +82,7 @@ export const LoginLayout = ({ children, title, description, mobileDescription, m
               ))}
             </div>
           </div>
-          <div className="rdr-login-v2__main">
+          <div ref={mainRef} className="rdr-login-v2__main">
             <div className="rdr-login-v2__heading">
               <span className="rdr-login-v2__eyebrow">{eyebrow}</span>
               <h1 id="rdr-auth-title">{title}</h1>
