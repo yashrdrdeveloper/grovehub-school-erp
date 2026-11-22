@@ -1,18 +1,15 @@
 import type { ReactNode } from 'react';
+import type { DataTableComponent } from './types/dataTable.props';
 
-import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table';
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 
 import { EmptyState } from '@Components/components/EmptyState';
 
-export function DataTable<T>({
+export const DataTable: DataTableComponent = <T,>({
   rows,
   columns,
   emptyTitle = 'Nothing to show',
-}: {
-  rows: T[];
-  columns: ColumnDef<T, unknown>[];
-  emptyTitle?: string;
-}) {
+}) => {
   const table = useReactTable({
     data: rows,
     columns,
@@ -51,4 +48,4 @@ export function DataTable<T>({
       </table>
     </div>
   );
-}
+};
