@@ -51,9 +51,9 @@ export const useLandingPage: UseLandingPage = () => {
     } else window.scrollTo({top:0,behavior:'instant'});
   },[backgroundPath,location.hash,panel]);
   useEffect(()=>{
-    const details=pageMetadata[location.pathname] ?? (
-      location.pathname.startsWith('/about/')?pageMetadata['/about']:pageMetadata['/']
-    );
+    let fallback = pageMetadata['/'];
+    if (location.pathname.startsWith('/about/')) fallback = pageMetadata['/about'];
+    const details = pageMetadata[location.pathname] ?? fallback;
     if(!details)return;
     document.title=details.title;
     const description=document.querySelector<HTMLMetaElement>('meta[name="description"]');

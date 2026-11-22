@@ -1,6 +1,7 @@
 import { ArrowRight, ArrowUpRight, BookOpenText, CalendarDays, ExternalLink, FileText, GraduationCap, Mail, MapPin, Phone, ShieldCheck } from '@Components/icons';
 import { disclosedDocuments, facilities, photographs, school } from '../../../../constants/school.content';
 import { PanelPhoto } from '../panelPhoto';
+import { getInfoGalleryClassName } from './helpers/infoPanels.getGalleryClassName';
 
 const AcademicPanel = ({onEnquire}:{onEnquire:()=>void}) => (
   <div className="rdr-sheet-overview">
@@ -29,7 +30,7 @@ const CampusPanel = ({onEnquire}:{onEnquire:()=>void}) => (
 const GalleryPanel = ({onEnquire}:{onEnquire:()=>void}) => (
   <div className="rdr-sheet-overview">
     <div className="rdr-sheet-lead"><span className="rdr-sheet-kicker">REAL MOMENTS · SCHOOL ARCHIVE</span><h3>Life at RDR, in pictures.</h3><p>Celebrations, achievements and experiences from the original school photo collection.</p></div>
-    <div className="rdr-sheet-gallery">{photographs.slice(0,6).map((photo,i)=><figure key={photo.src} className={i===0?'featured':''}><PanelPhoto index={i} alt={photo.alt}/><figcaption>{photo.category}</figcaption></figure>)}</div>
+    <div className="rdr-sheet-gallery">{photographs.slice(0,6).map((photo,i)=><figure key={photo.src} className={getInfoGalleryClassName(i)}><PanelPhoto index={i} alt={photo.alt}/><figcaption>{photo.category}</figcaption></figure>)}</div>
     <button type="button" className="rdr-sheet-action" onClick={onEnquire}>Arrange a school visit <ArrowRight size={17}/></button>
   </div>
 );

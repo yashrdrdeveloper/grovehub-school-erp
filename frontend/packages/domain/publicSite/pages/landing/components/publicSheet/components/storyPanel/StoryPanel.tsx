@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { ArrowRight, Check, ExternalLink } from '@Components/icons';
 import { legacyStories, storyNavigation, type StoryKey } from '../../constants/school.sheetCopy';
 import { PanelPhoto } from '../panelPhoto';
+import { getStoryPanelPhotoIndex } from './helpers/storyPanel.getPhotoIndex';
+import { getStoryPanelTabClassName } from './helpers/storyPanel.getTabClassName';
 
 const StoryPanel = ({initial='history',navigate}:{initial?:StoryKey;navigate:(path:string)=>void}) => {
   const [selected,setSelected]=useState<StoryKey>(initial);
@@ -11,7 +13,7 @@ const StoryPanel = ({initial='history',navigate}:{initial?:StoryKey;navigate:(pa
       {storyNavigation.map(item=>{
         const Icon=item.icon;
         return <button type="button" role="tab" aria-selected={selected===item.id}
-          key={item.id} className={selected===item.id?'active':''} onClick={()=>setSelected(item.id)}>
+          key={item.id} className={getStoryPanelTabClassName(selected === item.id)} onClick={()=>setSelected(item.id)}>
           <Icon size={16}/>{item.label}
         </button>;
       })}
@@ -30,7 +32,7 @@ const StoryPanel = ({initial='history',navigate}:{initial?:StoryKey;navigate:(pa
         </div>
         {(selected==='principal'||selected==='director')&&<small>Role and message are from the school's historical website. Please confirm current leadership before official publication.</small>}
       </div>
-      <PanelPhoto index={selected==='history'?4:selected==='philosophy'?2:0}
+      <PanelPhoto index={getStoryPanelPhotoIndex(selected)}
         alt="Students participating in activities at RDR School"/>
     </div>
   </div>;

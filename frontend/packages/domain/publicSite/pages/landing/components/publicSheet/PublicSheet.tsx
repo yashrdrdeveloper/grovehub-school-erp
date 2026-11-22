@@ -17,11 +17,13 @@ export const PublicSheet = ({
   onNavigate:(panel:SchoolPanel)=>void;
   enquiry:ReactNode;
 }) => {
-  const selectedStory:StoryKey = panel==='director'||panel==='principal'||panel==='philosophy'||panel==='history'
-    ?panel:'history';
+  let selectedStory: StoryKey = 'history';
+  if (panel === 'director' || panel === 'principal' || panel === 'philosophy' || panel === 'history') selectedStory = panel;
   const story=panel==='about'||panel==='history'||panel==='director'||panel==='principal'||panel==='philosophy';
   const onEnquire=()=>onNavigate('enquiry');
-  const title=panel?panelTitles[panel]:'RDR School information';
+  let title = 'RDR School information';
+  let description = '';
+  if (panel) { title = panelTitles[panel]; description = overviewPanels[panel]; }
   return <Dialog.Root open={Boolean(panel)} onOpenChange={open=>{if(!open)onClose();}}>
     <Dialog.Portal>
       <Dialog.Overlay className="rdr-sheet-backdrop"/>
@@ -29,7 +31,7 @@ export const PublicSheet = ({
         <div className="rdr-sheet__handle" aria-hidden="true"/>
         <div className="rdr-sheet__header">
           <div><span className="rdr-sheet-kicker">RAO DEENA RAM VIDYA VIHAR</span><Dialog.Title>{title}</Dialog.Title>
-            <Dialog.Description>{panel?overviewPanels[panel]:''}</Dialog.Description>
+            <Dialog.Description>{description}</Dialog.Description>
           </div>
           <Dialog.Close className="rdr-sheet__close" aria-label="Close and return to the page"><X size={22}/></Dialog.Close>
         </div>

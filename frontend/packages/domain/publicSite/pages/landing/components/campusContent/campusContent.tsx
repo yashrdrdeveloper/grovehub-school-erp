@@ -4,6 +4,7 @@ import { facilities, photographs } from '../../constants/school.content';
 import { Heading, ImageCard, PhotoMotifs, facilityIcons } from '../siteMedia';
 import { IntroPage } from '../aboutContent';
 import { EnquiryForm } from '../enquiryForm';
+import { getGalleryPhotoClassName } from './helpers/campusContent.getGalleryPhotoClassName';
 
 const AcademicsPage = () => (
   <>
@@ -34,7 +35,7 @@ const GalleryPage = () => (
   <>
     <IntroPage eyebrow="GALLERY" title="Life at RDR, in moments." description="A photo story of school celebrations, student life and achievements — captured at RDR School."/>
     <section className="rdr-section rdr-container">
-      <div className="rdr-gallery-grid">{photographs.map((photo,i)=><figure className={i%5===0?'rdr-gallery-grid__wide':''} key={photo.src}><div className="rdr-gallery-grid__art"><ImageCard src={photo.src} alt={photo.alt} position={photo.position}/>{i%3===0&&<PhotoMotifs variant="gallery"/>}</div><figcaption><span>{photo.category}</span><strong>{photo.title}</strong></figcaption></figure>)}</div>
+      <div className="rdr-gallery-grid">{photographs.map((photo,i)=><figure className={getGalleryPhotoClassName(i)} key={photo.src}><div className="rdr-gallery-grid__art"><ImageCard src={photo.src} alt={photo.alt} position={photo.position}/>{i%3===0&&<PhotoMotifs variant="gallery"/>}</div><figcaption><span>{photo.category}</span><strong>{photo.title}</strong></figcaption></figure>)}</div>
       <p className="rdr-gallery__archive-note">From the RDR School photo archives. <a href="https://rdrschool.com/gallery.html" target="_blank" rel="noreferrer">See the original gallery <ExternalLink size={13}/></a></p>
     </section>
   </>
