@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { ArrowLeft, LockKeyhole, Monitor, Moon, Sun } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -32,18 +32,6 @@ export const LoginLayout = ({ children, title, description, mobileDescription, m
   const { preference, setPreference } = useWorkspaceTheme();
   const { contentRef, toolbarRef, mainRef } = useAuthViewportFit();
 
-  // On phones use the operating system's light/dark preference.
-  // The existing desktop theme selector remains available.
-  useEffect(() => {
-    if (typeof window.matchMedia !== 'function') return;
-    const mobile = window.matchMedia('(max-width: 720px)');
-    const syncMobileAppearance = () => {
-      if (mobile.matches && preference !== 'system') setPreference('system');
-    };
-    syncMobileAppearance();
-    mobile.addEventListener('change', syncMobileAppearance);
-    return () => mobile.removeEventListener('change', syncMobileAppearance);
-  }, [preference, setPreference]);
 
   return (
     <main className={`rdr-login-v2 rdr-login-v2--${variant}${minimalMobile ? ' rdr-login-v2--mobile-minimal' : ''}`}>
