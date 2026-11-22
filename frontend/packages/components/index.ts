@@ -29,3 +29,5 @@ export { SelectControl } from './components/SelectControl';
 export { TextAreaControl } from './components/TextAreaControl';
 
 export { AppNavLink } from './components/AppNavLink';
+
+export { ErrorBoundary } from './components/ErrorBoundary';
