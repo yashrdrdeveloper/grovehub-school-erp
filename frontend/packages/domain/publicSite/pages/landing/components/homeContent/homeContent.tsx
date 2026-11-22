@@ -1,6 +1,6 @@
 import { Box } from '@Components/components/Box';
 import { SCHOOL_ROUTE } from '../../constants/school.routes';
-import { Link } from '@Components/router';
+import { AppLink } from '@Components/components/AppLink';
 import { ArrowRight, ArrowUpRight } from '@Components/icons';
 import { photographs } from '../../constants/school.content';
 import { EnquiryLink } from '../siteActions';
@@ -16,7 +16,7 @@ const HomePage = () => (
           <Box as="p">At Rao Deena Ram Vidya Vihar, learning goes beyond the classroom. We bring together academics, character and a caring school community so every child has room to grow.</Box>
           <Box as="div" className="rdr-o1-hero__actions">
             <EnquiryLink className="rdr-btn rdr-btn--solid">Enquire for admission <ArrowUpRight size={17}/></EnquiryLink>
-            <Link className="rdr-btn rdr-o1-secondary" to={SCHOOL_ROUTE.ABOUT}>Discover our school <ArrowRight size={17}/></Link>
+            <AppLink className="rdr-btn rdr-o1-secondary" to={SCHOOL_ROUTE.ABOUT}>Discover our school <ArrowRight size={17}/></AppLink>
           </Box>
           <Box as="div" className="rdr-o1-hero__proof"><Box as="span">CBSE affiliated</Box><Box as="span">Senior Secondary</Box><Box as="span">Rewari, Haryana</Box></Box>
         </Box>
@@ -37,18 +37,18 @@ const HomePage = () => (
         <Box as="p">From classrooms to celebrations, these are the experiences that shape school life.</Box>
       </Box>
       <Box as="div" className="rdr-o1-life__grid">
-        <Link to={SCHOOL_ROUTE.GALLERY} className="rdr-o1-life__card">
+        <AppLink to={SCHOOL_ROUTE.GALLERY} className="rdr-o1-life__card">
           <ImageCard src={photographs[0].src} alt={photographs[0].alt} position={photographs[0].position}/>
           <Box as="span">ACHIEVEMENT</Box><Box as="h3">Celebrating every milestone.</Box><Box as="p">Recognising effort, confidence and achievement.</Box>
-        </Link>
-        <Link to={SCHOOL_ROUTE.GALLERY} className="rdr-o1-life__card">
+        </AppLink>
+        <AppLink to={SCHOOL_ROUTE.GALLERY} className="rdr-o1-life__card">
           <ImageCard src={photographs[1].src} alt={photographs[1].alt} position={photographs[1].position}/>
           <Box as="span">EXPRESSION</Box><Box as="h3">More than textbooks.</Box><Box as="p">Music, movement and the joy of participating.</Box>
-        </Link>
-        <Link to={SCHOOL_ROUTE.GALLERY} className="rdr-o1-life__card">
+        </AppLink>
+        <AppLink to={SCHOOL_ROUTE.GALLERY} className="rdr-o1-life__card">
           <ImageCard src={photographs[2].src} alt={photographs[2].alt} position={photographs[2].position}/>
           <Box as="span">BELONGING</Box><Box as="h3">Growing with confidence.</Box><Box as="p">Creating space for curiosity and friendships.</Box>
-        </Link>
+        </AppLink>
       </Box>
     </Box>
     <Box as="section" className="rdr-o1-cta">
@@ -59,7 +59,7 @@ const HomePage = () => (
     </Box>
     <Box as="section" className="rdr-o1-disclosure rdr-container">
       <Box as="span">Looking for school documents?</Box>
-      <Link to={SCHOOL_ROUTE.DISCLOSURE}>Mandatory Public Disclosure <ArrowUpRight size={16}/></Link>
+      <AppLink to={SCHOOL_ROUTE.DISCLOSURE}>Mandatory Public Disclosure <ArrowUpRight size={16}/></AppLink>
     </Box>
   </Box>
 );
