@@ -233,10 +233,10 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
                 onChange={event => { setPassword(event.target.value);setFieldErrors(e => ({...e,password:undefined})); }} required/>
               <button type="button" className="rdr-login-v2__visibility" aria-label={visible ? 'Hide passwords' : 'Show passwords'}
                 onClick={() => setVisible(!visible)} disabled={view === 'saving'}>
-                {visible ? <EyeOff size={19}/> : <Eye size={19}/>}
+                {visible ? <EyeOff size={19} aria-hidden="true"/> : <Eye size={19} aria-hidden="true"/>}
               </button>
             </div>
-            <small id={`${id}-password-error`} className={`rdr-login-v2__field-error rdr-login-v2__field-error--reserved${fieldErrors.password ? "" : " is-empty"}`}>{fieldErrors.password || '\u00a0'}</small>
+            <small id={`${id}-password-error`} className={`rdr-login-v2__field-error rdr-login-v2__field-error--reserved${fieldErrors.password ? "" : " is-empty"}`} aria-live="polite" aria-atomic="true">{fieldErrors.password || '\u00a0'}</small>
           </div>
           <div className="rdr-login-v2__field">
             <label htmlFor={`${id}-confirmation`}>Confirm password</label>
@@ -250,10 +250,10 @@ export const RecoveryPage = ({ purpose }: { purpose: Purpose }) => {
               <button type="button" className="rdr-login-v2__visibility"
                 aria-label={visible ? 'Hide confirmation password' : 'Show confirmation password'}
                 onClick={() => setVisible(current => !current)} disabled={view === 'saving'}>
-                {visible ? <EyeOff size={19}/> : <Eye size={19}/>}
+                {visible ? <EyeOff size={19} aria-hidden="true"/> : <Eye size={19} aria-hidden="true"/>}
               </button>
             </div>
-            <small id={`${id}-confirmation-error`} className={`rdr-login-v2__field-error rdr-login-v2__field-error--reserved${fieldErrors.confirmation ? "" : " is-empty"}`}>{fieldErrors.confirmation || '\u00a0'}</small>
+            <small id={`${id}-confirmation-error`} className={`rdr-login-v2__field-error rdr-login-v2__field-error--reserved${fieldErrors.confirmation ? "" : " is-empty"}`} aria-live="polite" aria-atomic="true">{fieldErrors.confirmation || '\u00a0'}</small>
           </div>
           <p className="rdr-recovery__requirement"><ShieldCheck size={17}/> Use at least 12 characters to keep your account secure.</p>
         </div>
