@@ -148,6 +148,24 @@
  outline:0;color:var(--auth-ink);box-shadow:none
 }
 .rdr-login-v2__input-shell input::placeholder{color:var(--auth-placeholder);opacity:1}
+/* Chrome/Safari autofill must match the field surface in light, dark and focused states.
+   The input remains transparent so only the outer input shell shows the focus ring. */
+.rdr-login-v2__input-shell input:-webkit-autofill,
+.rdr-login-v2__input-shell input:-webkit-autofill:hover,
+.rdr-login-v2__input-shell input:-webkit-autofill:focus,
+.rdr-login-v2__input-shell input:-webkit-autofill:active{
+ -webkit-box-shadow:0 0 0 1000px var(--auth-field) inset!important;
+ box-shadow:0 0 0 1000px var(--auth-field) inset!important;
+ -webkit-text-fill-color:var(--auth-ink)!important;
+ caret-color:var(--auth-ink);
+ border:0!important;
+ outline:0!important;
+ border-radius:0;
+}
+.rdr-login-v2__input-shell input:autofill{
+ color:var(--auth-ink)!important;
+ caret-color:var(--auth-ink)
+}
 .rdr-login-v2__visibility{
  display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;
  margin-right:-11px;padding:0;border:0;background:none;color:var(--auth-muted)
@@ -332,7 +350,7 @@
  .rdr-login-v2__heading h1{font-size:clamp(27px,7.3vw,35px);line-height:1.13;margin:0 0 10px}
  .rdr-login-v2__eyebrow{font-size:10px;color:var(--auth-accent);margin-bottom:11px}
  .rdr-login-v2__description-desktop{display:none}
- .rdr-login-v2__description-mobile{display:block;font-size:13px;line-height:1.5}
+ .rdr-login-v2__description-mobile{display:block;font-size:12px;line-height:1.4;letter-spacing:-.015em}
  .rdr-login-v2__form--signin>.rdr-login-v2__field>label,
  .rdr-login-v2__form--signin .rdr-login-v2__password-label>label,
  .rdr-auth-flow__email-field>label,
@@ -413,6 +431,36 @@
 @media(max-width:720px) and (max-height:580px){
  .rdr-login-v2__content{justify-content:flex-start;overflow-y:auto}
  .rdr-login-v2__main{margin-top:0}
+}
+/* Portrait tablets: avoid an inner scrolling auth panel at ordinary viewport heights.
+   Compress spacing across ALL states rather than clipping the footer. Shorter windows
+   retain the standard scroll fallback to keep password recovery controls reachable. */
+@media(min-width:721px) and (max-width:1100px) and (min-height:700px){
+ .rdr-login-v2__content{padding-block:clamp(10px,2dvh,22px);overflow-y:hidden}
+ .rdr-login-v2__main{padding-block:6px;margin:auto}
+ .rdr-login-v2__heading{margin-bottom:12px}
+ .rdr-login-v2__eyebrow{margin-bottom:8px}
+ .rdr-login-v2__heading h1{font-size:clamp(28px,3vw,36px);margin-bottom:6px}
+ .rdr-login-v2__heading p{font-size:12px;line-height:1.5}
+ .rdr-login-v2__field+.rdr-login-v2__field,
+ .rdr-recovery__fields>.rdr-login-v2__field+.rdr-login-v2__field{margin-top:8px}
+ .rdr-login-v2__field>label,.rdr-login-v2__password-label label,
+ .rdr-login-v2__password-label>a{margin-bottom:5px}
+ .rdr-login-v2__input-shell{height:45px;min-height:45px}
+ .rdr-login-v2__field-error--reserved{height:18px;min-height:18px;margin-top:2px;font-size:10px;line-height:15px}
+ .rdr-login-v2__submit{min-height:45px;margin-top:12px}
+ .rdr-login-v2__feedback-slot--signin{height:28px;min-height:28px;max-height:28px}
+ .rdr-login-v2__closing,.rdr-o1-auth-footer{margin-top:7px}
+ .rdr-auth-flow__mobile-success h3{margin:8px 0 4px}
+ .rdr-auth-flow__mobile-success .rdr-login-v2__submit{margin-top:12px}
+ .rdr-auth-mobile-status-art{height:78px}
+ .rdr-recovery__state-button{margin-top:12px}
+ .rdr-recovery__back{margin-top:8px}
+ .rdr-recovery__art-title{margin:8px 0 5px}
+}
+/* Preserve accessibility for extra-large text, short tablet landscape, and keyboards. */
+@media(min-width:721px) and (max-width:1100px) and (max-height:699px){
+ .rdr-login-v2__content{overflow-y:auto}
 }
 @media(max-width:285px){
  /* Browser zoom can reduce the effective CSS viewport below normal phone width. */
