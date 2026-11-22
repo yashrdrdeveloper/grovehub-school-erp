@@ -2,7 +2,7 @@ import { _map } from '@Base/utilities/map';
 import { ExternalAnchor } from '@Components/components/ExternalAnchor';
 import { Box } from '@Components/components/Box';
 import { SCHOOL_ROUTE } from '../../constants/school.routes';
-import { Link } from '@Components/router';
+import { AppLink } from '@Components/components/AppLink';
 import { ArrowRight, ArrowUpRight, Check, ExternalLink, GraduationCap, HeartHandshake, Landmark, Sparkles } from '@Components/icons';
 import { photographs } from '../../constants/school.content';
 import { EnquiryLink } from '../siteActions';
@@ -15,7 +15,7 @@ const IntroPage = ({eyebrow,title,description,image}:{eyebrow:string;title:strin
         <Box as="span" className="rdr-eyebrow">{eyebrow}</Box>
         <Box as="h1">{title}</Box>
         <Box as="p">{description}</Box>
-        <Box as="div" className="rdr-o1-page-hero__actions"><EnquiryLink className="rdr-btn rdr-btn--solid">Enquire now <ArrowUpRight size={16}/></EnquiryLink><Link to={SCHOOL_ROUTE.HOME} className="rdr-o1-page-hero__home">Back to homepage <ArrowRight size={16}/></Link></Box>
+        <Box as="div" className="rdr-o1-page-hero__actions"><EnquiryLink className="rdr-btn rdr-btn--solid">Enquire now <ArrowUpRight size={16}/></EnquiryLink><AppLink to={SCHOOL_ROUTE.HOME} className="rdr-o1-page-hero__home">Back to homepage <ArrowRight size={16}/></AppLink></Box>
       </Box>
       {image&&<Box as="div" className="rdr-o1-page-hero__photo"><ImageCard src={image} alt="RDR School students and school life" loading="eager"/><Box as="span">RDR SCHOOL · HALUHERA</Box></Box>}
     </Box>
@@ -35,10 +35,10 @@ const AboutPage = () => (
     <Box as="section" className="rdr-section rdr-container rdr-about-leaders">
       <Heading eyebrow="WORDS THAT GUIDE US" title="Meet the people and values behind RDR."/>
       <Box as="div" className="rdr-about-leaders__links">
-        <Link to={SCHOOL_ROUTE.HISTORY}><Landmark size={22}/><Box as="strong">Our history</Box><Box as="small">From Haluhera, since 2006</Box><ArrowUpRight size={16}/></Link>
-        <Link to={SCHOOL_ROUTE.DIRECTOR}><HeartHandshake size={22}/><Box as="strong">Director's message</Box><Box as="small">All-round development</Box><ArrowUpRight size={16}/></Link>
-        <Link to={SCHOOL_ROUTE.PRINCIPAL}><GraduationCap size={22}/><Box as="strong">Principal's message</Box><Box as="small">Learning with character</Box><ArrowUpRight size={16}/></Link>
-        <Link to={SCHOOL_ROUTE.PHILOSOPHY}><Sparkles size={22}/><Box as="strong">Our philosophy</Box><Box as="small">Broadening minds</Box><ArrowUpRight size={16}/></Link>
+        <AppLink to={SCHOOL_ROUTE.HISTORY}><Landmark size={22}/><Box as="strong">Our history</Box><Box as="small">From Haluhera, since 2006</Box><ArrowUpRight size={16}/></AppLink>
+        <AppLink to={SCHOOL_ROUTE.DIRECTOR}><HeartHandshake size={22}/><Box as="strong">Director's message</Box><Box as="small">All-round development</Box><ArrowUpRight size={16}/></AppLink>
+        <AppLink to={SCHOOL_ROUTE.PRINCIPAL}><GraduationCap size={22}/><Box as="strong">Principal's message</Box><Box as="small">Learning with character</Box><ArrowUpRight size={16}/></AppLink>
+        <AppLink to={SCHOOL_ROUTE.PHILOSOPHY}><Sparkles size={22}/><Box as="strong">Our philosophy</Box><Box as="small">Broadening minds</Box><ArrowUpRight size={16}/></AppLink>
       </Box>
     </Box>
     <Box as="section" className="rdr-section rdr-container">
