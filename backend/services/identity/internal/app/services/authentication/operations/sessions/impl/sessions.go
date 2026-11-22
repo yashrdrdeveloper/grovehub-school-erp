@@ -2,7 +2,7 @@ package impl
 
 import (
 	"context"
-	"grovehub/services/identity/internal/app/security/principal"
+	"grovehub/services/identity/internal/app/services/security/principal"
 	authdto "grovehub/services/identity/internal/app/dto/authentication"
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"
 	sessions "grovehub/services/identity/internal/app/services/authentication/operations/sessions"
