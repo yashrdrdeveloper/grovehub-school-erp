@@ -21,6 +21,8 @@
 /* Inputs use the parent shell's :focus-within ring; do not outline them twice. */
 .rdr-login-v2 :is(button,a):focus-visible{outline:2px solid var(--auth-focus);outline-offset:3px}
 .rdr-login-v2__input-shell input:focus-visible{outline:none;outline-offset:0;box-shadow:none}
+/* Scrollbar entry must not change form width. */
+.rdr-login-v2__content::-webkit-scrollbar{display:none}
 .rdr-login-v2__frame{
  display:grid;grid-template-columns:minmax(0,46fr) minmax(0,54fr);
  width:100%;height:100%;min-height:0;min-width:0;overflow:hidden
@@ -91,7 +93,7 @@
 .rdr-login-v2__content{
  display:flex;flex-direction:column;align-items:center;min-width:0;min-height:0;height:100%;
  padding:clamp(16px,3vw,40px) clamp(22px,5vw,70px);
- background:var(--auth-bg);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin
+ background:var(--auth-bg);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none
 }
 .rdr-login-v2__toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-shrink:0;min-width:0;width:100%}
 .rdr-login-v2__back{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--auth-muted)!important;white-space:nowrap;min-height:44px}
@@ -152,25 +154,25 @@
 }
 .rdr-login-v2__visibility svg{width:19px;height:19px}
 .rdr-login-v2__field-error--reserved{
-  display:block;flex:0 0 auto;height:34px;min-height:34px;margin:4px 2px 0;
-  font-size:12px;line-height:16px;color:var(--auth-error);
+  display:block;flex:0 0 auto;height:20px;min-height:20px;margin:3px 2px 0;
+  font-size:11px;line-height:16px;color:var(--auth-error);
   white-space:normal;overflow-wrap:anywhere;overflow-y:auto
 }
 .rdr-login-v2__field-error--reserved.is-empty{visibility:hidden}
 .rdr-login-v2__feedback-slot{min-height:0;height:auto;margin:0}
 .rdr-auth-flow__error-slot,.rdr-recovery__error-slot{
  display:flex;align-items:center;width:100%;min-width:0;
- height:56px;min-height:56px;max-height:56px;margin-top:6px;overflow-y:auto
+ height:32px;min-height:32px;max-height:32px;margin-top:4px;overflow-y:auto
 }
 .rdr-auth-flow__error-slot .rdr-login-v2__error,.rdr-recovery__error-slot .rdr-recovery__inline-error{
   margin:0;padding:7px 9px;min-height:35px;width:100%;line-height:1.4
 }
 .rdr-login-v2__feedback-slot--signin{
  display:flex;align-items:flex-start;width:100%;min-width:0;
- height:56px;min-height:56px;max-height:56px;overflow-y:auto;padding-top:8px
+ height:32px;min-height:32px;max-height:32px;overflow-y:auto;padding-top:5px
 }
 .rdr-login-v2__feedback-slot--signin .rdr-login-v2__auth-error{
-  width:100%;margin:0;min-height:34px;padding:7px 9px
+  width:100%;margin:0;min-height:26px;padding:4px 8px
 }
 .rdr-login-v2__auth-error,.rdr-login-v2__error,.rdr-recovery__inline-error{
  display:flex;align-items:center;gap:8px;margin:10px 0 0;
@@ -380,8 +382,8 @@
 @media(max-width:720px){
  .rdr-login-v2__content{overflow-x:clip}
  .rdr-login-v2__main{width:min(100%,380px);max-width:380px}
- .rdr-login-v2__field-error--reserved{height:28px;min-height:28px;font-size:11px;line-height:13px;margin-top:3px}
- .rdr-login-v2__feedback-slot--signin{height:51px;min-height:51px;max-height:51px}
+ .rdr-login-v2__field-error--reserved{height:19px;min-height:19px;font-size:10px;line-height:15px;margin-top:2px}
+ .rdr-login-v2__feedback-slot--signin{height:30px;min-height:30px;max-height:30px}
  .rdr-login-v2--forgot .rdr-login-v2__heading h1{font-size:clamp(19px,5.7vw,26px)}
  .rdr-login-v2__main:has(.rdr-auth-flow--sent) .rdr-login-v2__heading,
  .rdr-login-v2__main:has(.rdr-recovery__state) .rdr-login-v2__heading{margin-bottom:10px}
