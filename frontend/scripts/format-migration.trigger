@@ -1,1 +1,1 @@
-Format and validate new owner-local auth renderers, semantic constants and architecture gates.
+Validate typed JSX renderers with explicit temporary auth stylesheet ownership and full regression checks.
