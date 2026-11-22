@@ -5,4 +5,5 @@ export const STYLE_BREAKPOINT = {
 
 export const STYLE_MEDIA_QUERY = {
   PHONE: '(max-width: 720px)',
+  DESKTOP: '(min-width: 721px)',
 } as const;

@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef } from 'react';
+import { STYLE_MEDIA_QUERY } from '@Styles/tokens/breakpoints';
 
 /**
  * Fit a shared auth state into the usable desktop/tablet panel without clipping.
@@ -20,7 +21,7 @@ export const useAuthViewportFit = () => {
     if (!content || !toolbar || !main) return;
 
     const desktop = typeof window.matchMedia === 'function'
-      ? window.matchMedia('(min-width: 721px)')
+      ? window.matchMedia(STYLE_MEDIA_QUERY.DESKTOP)
       : null;
     const MIN_READABLE_SCALE = 0.82;
     let frame = 0;
