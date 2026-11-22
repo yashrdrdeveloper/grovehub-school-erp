@@ -13,7 +13,6 @@ export default defineConfig({
       '@Business': path.resolve(root, 'packages/business'),
       '@Components': path.resolve(root, 'packages/components'),
       '@Domain': path.resolve(root, 'packages/domain'),
-      '@Auth': path.resolve(root, 'packages/auth'),
       '@Shell': path.resolve(root, 'packages/shell'),
       '@LandingPage': path.resolve(root, 'packages/landingPage'),
     },

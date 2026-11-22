@@ -39,9 +39,6 @@
       "@Domain/*": [
         "packages/domain/*"
       ],
-      "@Auth/*": [
-        "packages/auth/*"
-      ],
       "@Shell/*": [
         "packages/shell/*"
       ],
@@ -56,9 +53,6 @@
       ],
       "@Domain": [
         "packages/domain/index.ts"
-      ],
-      "@Auth": [
-        "packages/auth/index.ts"
       ],
       "@Shell": [
         "packages/shell/index.ts"

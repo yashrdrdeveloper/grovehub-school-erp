@@ -1,13 +1,6 @@
-// Intentional compatibility facade: pages live under packages/auth/pages.
-// Shell consumes only this domain root, never feature internals.
-export {
-  AuthProvider,
-  useAuth,
-  RequireSession,
-  PublicOnly,
-  Login,
-  LoginV2Page,
-  ForgotPasswordPage,
-  RecoveryPage,
-  RecoveryFlowBoundary,
-} from '@Auth';
+export { AuthProvider, useAuth, RequireSession, PublicOnly } from './core';
+export { LoginContainer as Login, LoginContainer as LoginV2Page } from './pages/login';
+export { ForgotPasswordPage } from './pages/ForgotPasswordPage';
+export { RecoveryPage } from './pages/RecoveryPage';
+
+export { RecoveryFlowBoundary } from './pages/RecoveryFlowBoundary';

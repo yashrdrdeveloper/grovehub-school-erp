@@ -14,13 +14,13 @@ const sourceExists = async (folder, name) =>
 const units = [
   ['base/utilities', true],
   ['base/readers', true],
-  ['auth/pages/login/helpers', true],
-  ['auth/pages/forgotPassword/helpers', true],
-  ['auth/pages/recovery/helpers', true],
+  ['domain/auth/pages/login/helpers', true],
+  ['domain/auth/pages/forgotPassword/helpers', true],
+  ['domain/auth/pages/recovery/helpers', true],
   ['base/events', false],
-  ['auth/pages/login/hooks', false],
-  ['auth/pages/forgotPassword/hooks', false],
-  ['auth/pages/recovery/hooks', false],
+  ['domain/auth/pages/login/hooks', false],
+  ['domain/auth/pages/forgotPassword/hooks', false],
+  ['domain/auth/pages/recovery/hooks', false],
   ['shell/hooks', false],
   ['business/auth/services', false],
 ];
@@ -49,9 +49,9 @@ for (const [relative, requirePureTests] of units) {
 }
 
 const guardedPages = {
-  'auth/pages/login': 'Login.tsx',
-  'auth/pages/forgotPassword': 'ForgotPassword.tsx',
-  'auth/pages/recovery': 'Recovery.tsx',
+  'domain/auth/pages/login': 'Login.tsx',
+  'domain/auth/pages/forgotPassword': 'ForgotPassword.tsx',
+  'domain/auth/pages/recovery': 'Recovery.tsx',
   'shell': 'Shell.tsx',
 };
 for (const [relative, entryName] of Object.entries(guardedPages)) {

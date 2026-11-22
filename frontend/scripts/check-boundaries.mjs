@@ -23,7 +23,6 @@ const forbidden = {
   base: ['@Business', '@Components', '@Domain', '@Shell', '@Auth'],
   business: ['@Components', '@Domain', '@Shell', '@Auth'],
   components: ['@Business', '@Domain', '@Shell', '@Auth'],
-  auth: ['@Shell'],
   domain: ['@Shell', '@Auth/'],
   shell: ['@Business', '@Auth'],
 };
@@ -46,6 +45,9 @@ for (const filename of files) {
     }
     if (category === 'domain' && /^@Domain\/[^/]+\//.test(name)) {
       problems.push(`${relative}: cross-domain deep import: ${name}`);
+    }
+    if (name === '@Auth' || name.startsWith('@Auth/')) {
+      problems.push(`${relative}: retired @Auth alias; import @Domain/auth instead`);
     }
     if (category !== 'base' && (name === 'lodash-es' || name.startsWith('lodash-es/'))) {
       problems.push(`${relative}: use @Base/utilities instead of direct Lodash imports`);

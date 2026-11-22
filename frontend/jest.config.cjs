@@ -21,8 +21,6 @@ module.exports = {
     '^@Components/(.*)$': '<rootDir>/packages/components/$1',
     '^@Domain$': '<rootDir>/packages/domain',
     '^@Domain/(.*)$': '<rootDir>/packages/domain/$1',
-    '^@Auth$': '<rootDir>/packages/auth',
-    '^@Auth/(.*)$': '<rootDir>/packages/auth/$1',
     '^@Shell$': '<rootDir>/packages/shell',
     '^@Shell/(.*)$': '<rootDir>/packages/shell/$1',
   },
