@@ -38,10 +38,11 @@ describe('RDR Login V2',()=>{
     Object.defineProperty(window,'matchMedia',{configurable:true,value:originalMatchMedia});
   });
 
-  it('renders the shared RDR identity and a self-contained campus illustration',()=>{
+  it('renders the original RDR identity and self-contained abstract academic artwork',()=>{
     render(<MemoryRouter><LoginV2Page/></MemoryRouter>);
     expect(screen.getByRole('heading',{name:'Welcome back.'})).toBeTruthy();
-    expect(document.querySelector('.rdr-campus-art svg.rdr-campus-art__scene')).not.toBeNull();
+    expect(document.querySelector('.rdr-auth-art svg.rdr-auth-art__svg')).not.toBeNull();
+    expect(document.querySelector('.rdr-campus-art')).toBeNull();
     expect(document.querySelector('.rdr-login-v2__visual svg.rdr-o1-art__book')).toBeNull();
     expect(document.querySelectorAll('.rdr-login-v2 img')).toHaveLength(0);
     expect(screen.getByRole('button',{name:/^sign in$/i})).toBeTruthy();
@@ -136,13 +137,14 @@ describe('RDR Login V2',()=>{
     expect(screen.getByRole('button',{name:/^sign in$/i})).toBeTruthy();
   });
 
-  it('uses the architectural SVG illustration without photographs or external media',()=>{
+  it('uses abstract pathways without photographs, book or campus drawings',()=>{
     render(<MemoryRouter><LoginV2Page/></MemoryRouter>);
     const visual=document.querySelector('.rdr-login-v2__visual');
     expect(visual).not.toBeNull();
     expect(visual?.querySelectorAll('img,picture,video,source')).toHaveLength(0);
     expect(visual?.querySelectorAll('svg.rdr-o1-art__book')).toHaveLength(0);
-    expect(visual?.querySelectorAll('svg.rdr-campus-art__scene')).toHaveLength(1);
+    expect(visual?.querySelectorAll('svg.rdr-auth-art__svg')).toHaveLength(1);
+    expect(visual?.querySelectorAll('.rdr-campus-art')).toHaveLength(0);
     expect(visual?.textContent).toContain('RDR School');
   });
 
