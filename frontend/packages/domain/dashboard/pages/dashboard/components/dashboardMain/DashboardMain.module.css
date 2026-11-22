@@ -70,7 +70,7 @@
 
 .school-home__focus-content > strong {
   font-size: 0.875rem;
-  letter-spacing: -.02em;
+  letter-spacing: -0.02em;
   margin: 18px 0 6px;
 }
 
@@ -90,7 +90,9 @@
   border-radius: 12px;
   position: relative;
   transform: rotate(-4deg);
-  box-shadow: 10px 10px 0 -5px var(--surface-subtle), 10px 10px 0 -4px var(--border);
+  box-shadow:
+    10px 10px 0 -5px var(--surface-subtle),
+    10px 10px 0 -4px var(--border);
   padding: 19px;
   display: flex;
   flex-direction: column;
@@ -192,7 +194,7 @@
 .school-home__operation-arrow {
   flex-shrink: 0;
   color: var(--muted);
-  opacity: .55;
+  opacity: 0.55;
 }
 
 :global(:root[data-theme='dark']) .school-home__focus {

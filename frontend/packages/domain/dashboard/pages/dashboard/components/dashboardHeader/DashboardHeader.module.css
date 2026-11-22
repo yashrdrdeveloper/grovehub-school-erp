@@ -15,7 +15,7 @@
   color: var(--muted);
   font-size: 0.625rem;
   font-weight: 800;
-  letter-spacing: .12em;
+  letter-spacing: 0.12em;
 }
 
 .school-home__breadcrumb > svg:first-child {
@@ -24,16 +24,16 @@
 
 .school-home__header h1 {
   margin: 14px 0 7px;
-  font-size: clamp(1.9375rem,3.8vw,2.8125rem);
+  font-size: clamp(1.9375rem, 3.8vw, 2.8125rem);
   line-height: 1.11;
-  letter-spacing: -.07em;
+  letter-spacing: -0.07em;
   font-weight: 800;
 }
 
 .school-home__spark {
   margin-left: 10px;
   color: var(--home-pink);
-  font-size: .55em;
+  font-size: 0.55em;
   vertical-align: 12%;
 }
 
