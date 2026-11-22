@@ -3,7 +3,8 @@ import { validateForgotPasswordEmail } from '../forgotPassword.validateEmail';
 describe('validateForgotPasswordEmail', () => {
   it('normalizes a valid email', () => {
     expect(validateForgotPasswordEmail('  Parent@school.edu ')).toEqual({
-      normalizedEmail: 'Parent@school.edu', error: '',
+      normalizedEmail: 'Parent@school.edu',
+      error: '',
     });
   });
   it('requires an email', () => {

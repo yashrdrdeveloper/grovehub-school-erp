@@ -30,7 +30,7 @@ for (const entry of await readdir(business, { withFileTypes: true })) {
 
   for (const name of ['constants', 'helpers']) {
     const folder = path.join(owner, name);
-    if (!await exists(folder)) {
+    if (!(await exists(folder))) {
       continue;
     }
 
@@ -40,11 +40,15 @@ for (const entry of await readdir(business, { withFileTypes: true })) {
       }
 
       if (name === 'constants' && /\.(?:endpoints|operations|proofScheme)\.ts$/.test(file.name)) {
-        failures.push(`business/${entry.name}/constants/${file.name}: service metadata belongs in services/constants`);
+        failures.push(
+          `business/${entry.name}/constants/${file.name}: service metadata belongs in services/constants`,
+        );
       }
 
       if (name === 'helpers' && /\.(?:getEndpoint|getProofHeader)\.ts$/.test(file.name)) {
-        failures.push(`business/${entry.name}/helpers/${file.name}: service helper belongs in services/helpers`);
+        failures.push(
+          `business/${entry.name}/helpers/${file.name}: service helper belongs in services/helpers`,
+        );
       }
     }
   }
@@ -73,12 +77,16 @@ const checkOwnerFiles = async (directory) => {
       failures.push(relative + ': move config to owned constants/ or helpers/');
     }
 
-    if (/\/helpers\/(?!types\/|__tests__\/)[^/]+\/.+\.[jt]sx?$/.test(relative) &&
-        !relative.startsWith('base/')) {
+    if (
+      /\/helpers\/(?!types\/|__tests__\/)[^/]+\/.+\.[jt]sx?$/.test(relative) &&
+      !relative.startsWith('base/')
+    ) {
       failures.push(relative + ': helpers must be flat, with types/ and __tests__/ only');
     }
 
-    if (/^components\/components\/[^/]+\/(?:parts|components|primitives)\.[jt]sx?$/.test(relative)) {
+    if (
+      /^components\/components\/[^/]+\/(?:parts|components|primitives)\.[jt]sx?$/.test(relative)
+    ) {
       failures.push(relative + ': compound child components require named owned units');
     }
   }
@@ -101,7 +109,7 @@ for (const [unit, component] of [
 ]) {
   const folder = path.join(dialogRoot, 'components', unit);
   for (const relative of [`${component}.tsx`, 'index.ts', `types/${unit}.props.ts`]) {
-    if (!await exists(path.join(folder, relative))) {
+    if (!(await exists(path.join(folder, relative)))) {
       failures.push(`Dialog/components/${unit}: missing ${relative}`);
     }
   }
@@ -130,10 +138,14 @@ const checkImports = async (directory) => {
     const source = await readFile(filename, 'utf8');
     const ast = ts.createSourceFile(filename, source, ts.ScriptTarget.Latest, true);
     for (const statement of ast.statements) {
-      if (ts.isImportDeclaration(statement) &&
-          ts.isStringLiteral(statement.moduleSpecifier) &&
-          /Dialog\/parts$/.test(statement.moduleSpecifier.text)) {
-        failures.push(path.relative(root, filename) + ': import Dialog units through Dialog public API');
+      if (
+        ts.isImportDeclaration(statement) &&
+        ts.isStringLiteral(statement.moduleSpecifier) &&
+        /Dialog\/parts$/.test(statement.moduleSpecifier.text)
+      ) {
+        failures.push(
+          path.relative(root, filename) + ': import Dialog units through Dialog public API',
+        );
       }
     }
   }
@@ -165,5 +177,7 @@ if (failures.length > 0) {
   failures.forEach((item) => process.stderr.write(item + '\n'));
   process.exitCode = 1;
 } else {
-  process.stdout.write('Business service ownership, Dialog units and shared field helpers verified.\n');
+  process.stdout.write(
+    'Business service ownership, Dialog units and shared field helpers verified.\n',
+  );
 }

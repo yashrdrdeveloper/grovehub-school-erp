@@ -1,3 +1,3 @@
 export const DASHBOARD_TEST_IDS = {
-  PAGE: "dashboard-page",
+  PAGE: 'dashboard-page',
 } as const;

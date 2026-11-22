@@ -5,6 +5,7 @@
 **Theme/typography/spacing:** Colors, light/dark mode, font families, text scales, focus, shadows, radii, control heights and spacing are owned by `frontend/packages/styles`. Shared component CSS in `styles/primitives.css` consumes `--gh-*` variables and should not invent a second palette.
 
 **Public components:**
+
 - `Button`: `variant=` `primary | secondary | outline | ghost | danger`, `size=sm | md | lg`, loading, asChild, dataTestId
 - `InputControl`: lowest native input, `controlSize=sm | md | lg`, dataTestId; use `unstyled` only to preserve a legacy feature layout
 - `Input`/`TextField`: label/hint/error/required with `controlSize`, dataTestId and a shared InputControl leaf

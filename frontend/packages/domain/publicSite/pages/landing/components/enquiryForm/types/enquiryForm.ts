@@ -12,7 +12,9 @@ export interface EnquiryFormData {
   privacy: boolean;
 }
 
-export interface EnquiryFormProps { readonly compact?: boolean; }
+export interface EnquiryFormProps {
+  readonly compact?: boolean;
+}
 
 export interface EnquiryFormModel {
   readonly fieldId: string;
@@ -28,4 +30,6 @@ export interface EnquiryFormModel {
   readonly back: () => void;
 }
 
-export type EnquiryFormComponent = (props: EnquiryFormProps & { model: EnquiryFormModel }) => ReactElement;
+export type EnquiryFormComponent = (
+  props: EnquiryFormProps & { model: EnquiryFormModel },
+) => ReactElement;

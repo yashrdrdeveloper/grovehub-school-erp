@@ -18,5 +18,9 @@ export const RECOVERY_ARTWORK: Readonly<Record<RecoveryViewState, RecoveryArtwor
   ready: { Icon: ShieldCheck, statusKind: 'checking', visualClass: 'checking' },
   saving: { Icon: ShieldCheck, statusKind: 'checking', visualClass: 'checking' },
   success: { Icon: PartyPopper, statusKind: 'success', visualClass: 'success' },
-  'attempts-exhausted': { Icon: AlertCircle, statusKind: 'attempts-exhausted', visualClass: 'problem' },
+  'attempts-exhausted': {
+    Icon: AlertCircle,
+    statusKind: 'attempts-exhausted',
+    visualClass: 'problem',
+  },
 };

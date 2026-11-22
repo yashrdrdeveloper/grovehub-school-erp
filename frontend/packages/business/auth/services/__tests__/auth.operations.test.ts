@@ -11,8 +11,6 @@ describe('AUTHENTICATION_OPERATIONS', () => {
   });
 
   it('does not expose an unauthenticated logout endpoint', () => {
-    expect(AUTH_ENDPOINT[AuthOperation.LOGOUT].path).toBe(
-      '/identity/protected/auth/logout',
-    );
+    expect(AUTH_ENDPOINT[AuthOperation.LOGOUT].path).toBe('/identity/protected/auth/logout');
   });
 });

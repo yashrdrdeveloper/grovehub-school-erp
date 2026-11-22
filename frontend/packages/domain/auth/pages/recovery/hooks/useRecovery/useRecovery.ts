@@ -13,10 +13,17 @@ export const useRecovery: UseRecovery = (purpose) => {
   const { onSubmit } = useRecoverySubmission(purpose, form, link);
 
   return {
-    purpose, invitation, id,
-    view: link.view, slow: link.slow, onRetry: link.onRetry,
-    password: form.password, confirmation: form.confirmation, visible: form.visible,
-    error: form.error, fieldErrors: form.fieldErrors,
+    purpose,
+    invitation,
+    id,
+    view: link.view,
+    slow: link.slow,
+    onRetry: link.onRetry,
+    password: form.password,
+    confirmation: form.confirmation,
+    visible: form.visible,
+    error: form.error,
+    fieldErrors: form.fieldErrors,
     onPasswordChange: form.onPasswordChange,
     onConfirmationChange: form.onConfirmationChange,
     onToggleVisibility: form.onToggleVisibility,

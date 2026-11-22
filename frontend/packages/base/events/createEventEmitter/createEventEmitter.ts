@@ -10,7 +10,9 @@ export const createEventEmitter: CreateEventEmitter = <T>(): EventEmitter<T> => 
     },
     subscribe: (handler) => {
       handlers.add(handler);
-      return () => { handlers.delete(handler); };
+      return () => {
+        handlers.delete(handler);
+      };
     },
     clear: () => handlers.clear(),
   };

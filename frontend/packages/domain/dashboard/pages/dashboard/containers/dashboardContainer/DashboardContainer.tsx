@@ -7,5 +7,5 @@ import type { DashboardContainerComponent } from './types/dashboardContainer';
 export const DashboardContainer: DashboardContainerComponent = () => {
   const calendar = useDashboardCalendar();
   const date = getDashboardDateParts(new Date());
-  return <Dashboard calendar={calendar} date={date}/>;
+  return <Dashboard calendar={calendar} date={date} />;
 };

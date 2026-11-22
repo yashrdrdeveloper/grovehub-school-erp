@@ -8,15 +8,9 @@ export function _filter<T, S extends T>(
   predicate: (item: T) => item is S,
 ): S[];
 
-export function _filter<T>(
-  values: readonly T[],
-  predicate: (item: T) => boolean,
-): T[];
+export function _filter<T>(values: readonly T[], predicate: (item: T) => boolean): T[];
 
-export function _filter<T>(
-  values: readonly T[],
-  predicate: (item: T) => boolean,
-): T[] {
+export function _filter<T>(values: readonly T[], predicate: (item: T) => boolean): T[] {
   return lodashFilter(values as T[], predicate);
 }
 

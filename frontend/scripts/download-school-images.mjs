@@ -39,7 +39,9 @@ for (const [name, url] of images) {
     console.log(`Saved ${name} (${Math.round(bytes.length / 1024)} KB)`);
     completed++;
   } catch (error) {
-    console.warn(`Could not download ${name}: ${error instanceof Error ? error.message : String(error)}`);
+    console.warn(
+      `Could not download ${name}: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }
 console.log(`Downloaded ${completed}/${images.length} original school images to ${folder}.`);

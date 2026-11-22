@@ -10,12 +10,23 @@ import type { RecoveryPasswordFormComponent } from './types/recoveryPasswordForm
 
 /** Password-reset and invitation form with no backend calls or flow orchestration. */
 export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
-  const { id, view, password, confirmation, visible, fieldErrors, error,
-    onSubmit, onPasswordChange, onConfirmationChange, onToggleVisibility } = props;
-  const handlePasswordChange: ChangeEventHandler<HTMLInputElement> = event => {
+  const {
+    id,
+    view,
+    password,
+    confirmation,
+    visible,
+    fieldErrors,
+    error,
+    onSubmit,
+    onPasswordChange,
+    onConfirmationChange,
+    onToggleVisibility,
+  } = props;
+  const handlePasswordChange: ChangeEventHandler<HTMLInputElement> = (event) => {
     onPasswordChange(event.currentTarget.value);
   };
-  const handleConfirmationChange: ChangeEventHandler<HTMLInputElement> = event => {
+  const handleConfirmationChange: ChangeEventHandler<HTMLInputElement> = (event) => {
     onConfirmationChange(event.currentTarget.value);
   };
   let VisibilityIcon = Eye;
@@ -33,32 +44,71 @@ export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
   if (saving) buttonLabel = 'Securing your account…';
 
   return (
-    <Form unstyled dataTestId={RECOVERY_TEST_IDS.FORM} className="rdr-login-v2__form rdr-recovery__form" onSubmit={onSubmit} noValidate>
+    <Form
+      unstyled
+      dataTestId={RECOVERY_TEST_IDS.FORM}
+      className="rdr-login-v2__form rdr-recovery__form"
+      onSubmit={onSubmit}
+      noValidate
+    >
       <Box as="div" className="rdr-recovery__fields">
-        <CredentialField dataTestId={RECOVERY_TEST_IDS.PASSWORD} id={id + '-password'} label="New password" Icon={LockKeyhole}
-          type={passwordType} autoComplete="new-password" placeholder="New password"
-          value={password} minLength={12} disabled={saving} required
-          error={fieldErrors.password} onChange={handlePasswordChange}
+        <CredentialField
+          dataTestId={RECOVERY_TEST_IDS.PASSWORD}
+          id={id + '-password'}
+          label="New password"
+          Icon={LockKeyhole}
+          type={passwordType}
+          autoComplete="new-password"
+          placeholder="New password"
+          value={password}
+          minLength={12}
+          disabled={saving}
+          required
+          error={fieldErrors.password}
+          onChange={handlePasswordChange}
           trailingAction={
-            <Button unstyled type="button" className="rdr-login-v2__visibility" data-testid={RECOVERY_TEST_IDS.PASSWORD_VISIBILITY} disabled={saving}
-              aria-label={visibilityLabel} onClick={onToggleVisibility}>
-              <VisibilityIcon size={19} aria-hidden="true"/>
+            <Button
+              unstyled
+              type="button"
+              className="rdr-login-v2__visibility"
+              data-testid={RECOVERY_TEST_IDS.PASSWORD_VISIBILITY}
+              disabled={saving}
+              aria-label={visibilityLabel}
+              onClick={onToggleVisibility}
+            >
+              <VisibilityIcon size={19} aria-hidden="true" />
             </Button>
-          }/>
+          }
+        />
 
-        <CredentialField dataTestId={RECOVERY_TEST_IDS.CONFIRMATION} id={id + '-confirmation'} label="Confirm password" Icon={KeyRound}
-          type={passwordType} autoComplete="new-password" placeholder="Confirm password"
-          value={confirmation} disabled={saving} required
-          error={fieldErrors.confirmation} onChange={handleConfirmationChange}
+        <CredentialField
+          dataTestId={RECOVERY_TEST_IDS.CONFIRMATION}
+          id={id + '-confirmation'}
+          label="Confirm password"
+          Icon={KeyRound}
+          type={passwordType}
+          autoComplete="new-password"
+          placeholder="Confirm password"
+          value={confirmation}
+          disabled={saving}
+          required
+          error={fieldErrors.confirmation}
+          onChange={handleConfirmationChange}
           trailingAction={
-            <Button unstyled type="button" className="rdr-login-v2__visibility" disabled={saving}
+            <Button
+              unstyled
+              type="button"
+              className="rdr-login-v2__visibility"
+              disabled={saving}
               aria-label={confirmationLabel}
-              onClick={onToggleVisibility}>
-              <VisibilityIcon size={19} aria-hidden="true"/>
+              onClick={onToggleVisibility}
+            >
+              <VisibilityIcon size={19} aria-hidden="true" />
             </Button>
-          }/>
+          }
+        />
         <Box as="p" className="rdr-recovery__requirement">
-          <ShieldCheck size={17}/> Use at least 12 characters to keep your account secure.
+          <ShieldCheck size={17} /> Use at least 12 characters to keep your account secure.
         </Box>
       </Box>
       <Box as="div" className="rdr-recovery__actions">
@@ -73,9 +123,16 @@ export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
         >
           {buttonLabel}
         </Button>
-        <Box as="span" className="rdr-recovery__remaining" aria-hidden="true">{'\u00a0'}</Box>
+        <Box as="span" className="rdr-recovery__remaining" aria-hidden="true">
+          {'\u00a0'}
+        </Box>
         <Box as="div" className="rdr-recovery__error-slot" aria-live="polite">
-          {error && <Box as="p" role="alert" className="rdr-recovery__inline-error"><AlertCircle size={16}/>{error}</Box>}
+          {error && (
+            <Box as="p" role="alert" className="rdr-recovery__inline-error">
+              <AlertCircle size={16} />
+              {error}
+            </Box>
+          )}
         </Box>
       </Box>
     </Form>

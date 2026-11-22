@@ -17,7 +17,9 @@ const lines = readFileSync(new URL('../.prettierignore', import.meta.url), 'utf8
   .sort();
 
 if (lines.length !== expected.length || lines.some((line, index) => line !== expected[index])) {
-  process.stderr.write('Formatter exemptions must remain the seven verified oversized public-site units.\n');
+  process.stderr.write(
+    'Formatter exemptions must remain the seven verified oversized public-site units.\n',
+  );
   process.exitCode = 1;
 } else {
   process.stdout.write('Formatter debt locked to seven pre-existing public-site owner units.\n');

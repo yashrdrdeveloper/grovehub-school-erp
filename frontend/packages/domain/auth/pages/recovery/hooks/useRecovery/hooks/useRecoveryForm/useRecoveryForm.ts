@@ -22,17 +22,26 @@ export const useRecoveryForm: UseRecoveryForm = () => {
   }, [clearCredentials]);
   const onPasswordChange = useCallback((value: string) => {
     setPassword(value);
-    setFieldErrors(current => ({ ...current, password: undefined }));
+    setFieldErrors((current) => ({ ...current, password: undefined }));
   }, []);
   const onConfirmationChange = useCallback((value: string) => {
     setConfirmation(value);
-    setFieldErrors(current => ({ ...current, confirmation: undefined }));
+    setFieldErrors((current) => ({ ...current, confirmation: undefined }));
   }, []);
-  const onToggleVisibility = useCallback(() => setVisible(current => !current), []);
+  const onToggleVisibility = useCallback(() => setVisible((current) => !current), []);
 
   return {
-    password, confirmation, visible, error, fieldErrors,
-    setError, setFieldErrors, clearCredentials, clearForm,
-    onPasswordChange, onConfirmationChange, onToggleVisibility,
+    password,
+    confirmation,
+    visible,
+    error,
+    fieldErrors,
+    setError,
+    setFieldErrors,
+    clearCredentials,
+    clearForm,
+    onPasswordChange,
+    onConfirmationChange,
+    onToggleVisibility,
   };
 };

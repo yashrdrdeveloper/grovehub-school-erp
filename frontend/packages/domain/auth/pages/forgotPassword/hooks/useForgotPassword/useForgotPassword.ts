@@ -51,10 +51,13 @@ export const useForgotPassword: UseForgotPassword = () => {
     }
   }, [busy, email, isCoolingDown, startCountdown]);
 
-  const onSubmit = useCallback((event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    void submitRequest();
-  }, [submitRequest]);
+  const onSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      void submitRequest();
+    },
+    [submitRequest],
+  );
 
   const state = { email, lastRequestedEmail, busy, secondsLeft, error, emailError };
   const view = getForgotPasswordViewModel(state);

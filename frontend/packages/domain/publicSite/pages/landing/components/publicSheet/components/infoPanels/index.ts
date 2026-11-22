@@ -1,1 +1,8 @@
-export { AcademicPanel, CampusPanel, GalleryPanel, AdmissionsPanel, ResourcesPanel, ContactPanel } from './infoPanels';
+export {
+  AcademicPanel,
+  CampusPanel,
+  GalleryPanel,
+  AdmissionsPanel,
+  ResourcesPanel,
+  ContactPanel,
+} from './infoPanels';

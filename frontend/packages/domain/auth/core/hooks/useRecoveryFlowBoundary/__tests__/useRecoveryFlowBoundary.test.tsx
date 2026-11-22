@@ -2,28 +2,59 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Link, MemoryRouter, Route, Routes } from 'react-router-dom';
 
 import { useRecoveryFlowBoundary } from '../useRecoveryFlowBoundary';
-import { clearRecoveryFlow, readRecoveryFlow, saveRecoveryProof } from '../../../session/recoveryFlowSession';
+import {
+  clearRecoveryFlow,
+  readRecoveryFlow,
+  saveRecoveryProof,
+} from '../../../session/recoveryFlowSession';
 
-const Boundary = () => { useRecoveryFlowBoundary(); return null; };
+const Boundary = () => {
+  useRecoveryFlowBoundary();
+  return null;
+};
 
-const renderRoutes = (path: string) => render(
-  <MemoryRouter initialEntries={[path]}>
-    <Boundary />
-    <Routes>
-      <Route path="/set-password" element={<><p>Setup</p><Link to="/reset-password">Reset</Link><Link to="/login">Login</Link></>} />
-      <Route path="/reset-password" element={<><p>Reset</p><Link to="/set-password">Setup</Link></>} />
-      <Route path="/login" element={<p>Login</p>} />
-    </Routes>
-  </MemoryRouter>
-);
+const renderRoutes = (path: string) =>
+  render(
+    <MemoryRouter initialEntries={[path]}>
+      <Boundary />
+      <Routes>
+        <Route
+          path="/set-password"
+          element={
+            <>
+              <p>Setup</p>
+              <Link to="/reset-password">Reset</Link>
+              <Link to="/login">Login</Link>
+            </>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <>
+              <p>Reset</p>
+              <Link to="/set-password">Setup</Link>
+            </>
+          }
+        />
+        <Route path="/login" element={<p>Login</p>} />
+      </Routes>
+    </MemoryRouter>,
+  );
 
 describe('useRecoveryFlowBoundary', () => {
-  beforeEach(() => { clearRecoveryFlow(); window.sessionStorage.clear(); });
+  beforeEach(() => {
+    clearRecoveryFlow();
+    window.sessionStorage.clear();
+  });
 
   it('retains its flow when the same page is loaded again', () => {
     saveRecoveryProof('invitation', 'private-proof');
     renderRoutes('/set-password');
-    expect(readRecoveryFlow('invitation')).toMatchObject({ stage: 'proof', proof: 'private-proof' });
+    expect(readRecoveryFlow('invitation')).toMatchObject({
+      stage: 'proof',
+      proof: 'private-proof',
+    });
     expect(window.sessionStorage.length).toBe(0);
   });
 

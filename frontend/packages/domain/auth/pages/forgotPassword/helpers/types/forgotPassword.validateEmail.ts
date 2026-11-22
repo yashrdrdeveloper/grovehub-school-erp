@@ -6,5 +6,5 @@ export interface ValidateForgotPasswordEmailResult {
 }
 
 export type ValidateForgotPasswordEmail = (
-  email: ForgotPasswordState['email']
+  email: ForgotPasswordState['email'],
 ) => ValidateForgotPasswordEmailResult;

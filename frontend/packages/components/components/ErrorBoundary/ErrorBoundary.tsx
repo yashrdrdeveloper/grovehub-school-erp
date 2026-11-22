@@ -56,9 +56,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         <Typography as={TYPOGRAPHY_TAG.H2} variant={TYPOGRAPHY_VARIANT.HEADING}>
           {ERROR_BOUNDARY_COPY.TITLE}
         </Typography>
-        <Typography as={TYPOGRAPHY_TAG.P}>
-          {ERROR_BOUNDARY_COPY.DESCRIPTION}
-        </Typography>
+        <Typography as={TYPOGRAPHY_TAG.P}>{ERROR_BOUNDARY_COPY.DESCRIPTION}</Typography>
         <Button type="button" dataTestId={ERROR_BOUNDARY_TEST_IDS.RETRY} onClick={this.reset}>
           {ERROR_BOUNDARY_COPY.RETRY}
         </Button>

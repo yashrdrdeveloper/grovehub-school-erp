@@ -55,7 +55,9 @@ export const evaluateAudit = (output, baseline) => {
   }
 
   if (observed.size > baseline.maxFlaggedFiles) {
-    failures.push('Flagged files: ' + observed.size + ' exceed ceiling ' + baseline.maxFlaggedFiles);
+    failures.push(
+      'Flagged files: ' + observed.size + ' exceed ceiling ' + baseline.maxFlaggedFiles,
+    );
   }
 
   if (findings > baseline.maxFindings) {

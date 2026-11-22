@@ -2,8 +2,15 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { ShellContainer } from '@Shell';
-import { readThemePreference, resolveWorkspaceTheme, ResolvedTheme } from '@Components/hooks/useWorkspaceTheme';
-import { WORKSPACE_THEME_DARK_QUERY, WORKSPACE_THEME_PHONE_QUERY } from '@Components/hooks/useWorkspaceTheme/constants/workspaceTheme.storage';
+import {
+  readThemePreference,
+  resolveWorkspaceTheme,
+  ResolvedTheme,
+} from '@Components/hooks/useWorkspaceTheme';
+import {
+  WORKSPACE_THEME_DARK_QUERY,
+  WORKSPACE_THEME_PHONE_QUERY,
+} from '@Components/hooks/useWorkspaceTheme/constants/workspaceTheme.storage';
 
 import '@Styles/index.css';
 import './styles.css';
@@ -29,7 +36,7 @@ const applyInitialTheme = (): void => {
     phone.addEventListener('change', apply);
   } catch {
     const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    document.documentElement.dataset.theme = dark && ResolvedTheme.DARK || ResolvedTheme.LIGHT;
+    document.documentElement.dataset.theme = (dark && ResolvedTheme.DARK) || ResolvedTheme.LIGHT;
   }
 };
 applyInitialTheme();

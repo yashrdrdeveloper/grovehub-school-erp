@@ -43,11 +43,8 @@ export const integrationApi = {
     }),
 
   executeAction: (id: string, action: string, input: unknown) =>
-    apiRequest<unknown>(
-      `${getIntegrationResourcePath(id)}/actions/${encodeURIComponent(action)}`,
-      {
-        method: HTTP_METHOD.POST,
-        body: { input },
-      },
-    ),
+    apiRequest<unknown>(`${getIntegrationResourcePath(id)}/actions/${encodeURIComponent(action)}`, {
+      method: HTTP_METHOD.POST,
+      body: { input },
+    }),
 };

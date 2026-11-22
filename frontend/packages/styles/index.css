@@ -1,13 +1,13 @@
 /* Global design-system stylesheet. Import once from frontend/app/main.tsx. */
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
-@import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/utilities.css" layer(utilities);
-@import "tw-animate-css";
-@import "./tokens/foundations.css";
-@import "./themes/light.css";
-@import "./themes/dark.css";
-@import "./base.css";
-@import "./utilities.css";
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+@import 'tw-animate-css';
+@import './tokens/foundations.css';
+@import './themes/light.css';
+@import './themes/dark.css';
+@import './base.css';
+@import './utilities.css';
 
 /* Tailwind v4 scans each product package without an app-level CSS dependency. */
 @source "../";

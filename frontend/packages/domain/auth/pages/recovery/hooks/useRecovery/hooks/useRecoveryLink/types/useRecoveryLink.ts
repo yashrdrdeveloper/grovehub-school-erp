@@ -7,4 +7,7 @@ export interface RecoveryLinkModel {
   readonly setView: Dispatch<SetStateAction<RecoveryViewState>>;
   readonly onRetry: () => void;
 }
-export type UseRecoveryLink = (purpose: RecoveryPurpose, clearForm: () => void) => RecoveryLinkModel;
+export type UseRecoveryLink = (
+  purpose: RecoveryPurpose,
+  clearForm: () => void,
+) => RecoveryLinkModel;

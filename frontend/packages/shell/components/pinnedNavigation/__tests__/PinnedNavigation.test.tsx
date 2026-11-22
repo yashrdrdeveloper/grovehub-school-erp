@@ -19,17 +19,11 @@ describe('PinnedNavigation', () => {
   it('uses the implemented route metadata for pinned app navigation', () => {
     render(
       <MemoryRouter initialEntries={['/dashboard']}>
-        <PinnedNavigation
-          pinned={['/dashboard']}
-          closeSidebar={jest.fn()}
-          togglePin={jest.fn()}
-        />
+        <PinnedNavigation pinned={['/dashboard']} closeSidebar={jest.fn()} togglePin={jest.fn()} />
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('link', { name: 'Dashboard' }).getAttribute('href')).toBe(
-      '/dashboard',
-    );
+    expect(screen.getByRole('link', { name: 'Dashboard' }).getAttribute('href')).toBe('/dashboard');
     expect(screen.getByRole('button', { name: 'Unpin Dashboard' })).toBeTruthy();
   });
 });

@@ -23,9 +23,7 @@ export const PinnedNavigation: PinnedNavigationComponent = (props) => {
     return [];
   });
 
-  const nodes = _map(entries, (entry) => (
-    <PinnedApp key={entry.path} entry={entry} {...props} />
-  ));
+  const nodes = _map(entries, (entry) => <PinnedApp key={entry.path} entry={entry} {...props} />);
 
   let content: ReactNode = (
     <Box as="p" className={styles.empty}>

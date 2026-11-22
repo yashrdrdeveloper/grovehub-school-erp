@@ -13,7 +13,17 @@ export const useLoginForm: UseLoginForm = () => {
   const [isSubmitting, setSubmitting] = useState(false);
 
   return {
-    email, password, isPasswordVisible, isSubmitting, errorMessage, fieldErrors,
-    setEmail, setPassword, setPasswordVisible, setSubmitting, setErrorMessage, setFieldErrors,
+    email,
+    password,
+    isPasswordVisible,
+    isSubmitting,
+    errorMessage,
+    fieldErrors,
+    setEmail,
+    setPassword,
+    setPasswordVisible,
+    setSubmitting,
+    setErrorMessage,
+    setFieldErrors,
   };
 };

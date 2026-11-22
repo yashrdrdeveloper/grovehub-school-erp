@@ -11,17 +11,13 @@ const baseline = {
 };
 
 const outputFor = (lines, counts, flagged = 1) => {
-  return [
-    ...lines,
-    'GH_AUDIT_SUMMARY|' + JSON.stringify({ flagged, counts }),
-  ].join('\n');
+  return [...lines, 'GH_AUDIT_SUMMARY|' + JSON.stringify({ flagged, counts })].join('\n');
 };
 
 test('parseAuditOutput', () => {
-  const output = outputFor(
-    ['GH_AUDIT|old.tsx|RAW_CLASS@3', 'GH_AUDIT|new.tsx|NO_PATTERN_FLAG'],
-    { RAW_CLASS: 1 },
-  );
+  const output = outputFor(['GH_AUDIT|old.tsx|RAW_CLASS@3', 'GH_AUDIT|new.tsx|NO_PATTERN_FLAG'], {
+    RAW_CLASS: 1,
+  });
 
   assert.deepEqual([...parseAuditOutput(output).keys()], ['old.tsx']);
 });
@@ -45,7 +41,11 @@ test('evaluateAudit', async (t) => {
 
   await t.test('rejects a known issue introduced into another file', () => {
     const output = outputFor(['GH_AUDIT|new.tsx|RAW_CLASS@3'], { RAW_CLASS: 1 });
-    assert.ok(evaluateAudit(output, baseline).failures.some((failure) => failure.includes('newly introduced')));
+    assert.ok(
+      evaluateAudit(output, baseline).failures.some((failure) =>
+        failure.includes('newly introduced'),
+      ),
+    );
   });
 
   await t.test('rejects increases in total counts even for approved issue locations', () => {

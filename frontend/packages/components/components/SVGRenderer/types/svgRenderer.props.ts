@@ -5,7 +5,8 @@ export type SVGRendererSource =
 export type SVGRendererLabel =
   | { readonly decorative: true; readonly alt?: never }
   | { readonly decorative?: false; readonly alt: string };
-export type SVGRendererProps = SVGRendererSource & SVGRendererLabel & {
-  readonly className?: string;
-  readonly dataTestId?: string;
-};
+export type SVGRendererProps = SVGRendererSource &
+  SVGRendererLabel & {
+    readonly className?: string;
+    readonly dataTestId?: string;
+  };

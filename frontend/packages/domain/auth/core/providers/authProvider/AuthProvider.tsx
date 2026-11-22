@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 
 import { authenticationApi } from '@Business/auth';
 import type { AuthProviderProps, SessionContextValue } from './types/authProvider';
@@ -45,10 +38,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     return task;
   }, []);
 
-  const signIn = useCallback(async (identifier: string, password: string) => {
-    await authenticationApi.login(identifier, password);
-    await reload();
-  }, [reload]);
+  const signIn = useCallback(
+    async (identifier: string, password: string) => {
+      await authenticationApi.login(identifier, password);
+      await reload();
+    },
+    [reload],
+  );
 
   const signOut = useCallback(async () => {
     try {

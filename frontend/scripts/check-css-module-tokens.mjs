@@ -25,40 +25,56 @@ const visit = async (directory, predicate, callback) => {
   }
 };
 
-await visit(styles, (filename) => filename.endsWith('.css'), async (filename) => {
-  const css = await readFile(filename, 'utf8');
-  for (const match of css.matchAll(/(--gh-[\w-]+)\s*:/g)) {
-    declared.add(match[1]);
-  }
-});
+await visit(
+  styles,
+  (filename) => filename.endsWith('.css'),
+  async (filename) => {
+    const css = await readFile(filename, 'utf8');
+    for (const match of css.matchAll(/(--gh-[\w-]+)\s*:/g)) {
+      declared.add(match[1]);
+    }
+  },
+);
 
 let checked = 0;
-await visit(modules, (filename) => filename.endsWith('.module.css'), async (filename) => {
-  checked += 1;
-  const css = await readFile(filename, 'utf8');
+await visit(
+  modules,
+  (filename) => filename.endsWith('.module.css'),
+  async (filename) => {
+    checked += 1;
+    const css = await readFile(filename, 'utf8');
 
-  for (const match of css.matchAll(/var\((--gh-[\w-]+)/g)) {
-    if (!declared.has(match[1])) {
-      violations.push(`${path.relative(root, filename)}: undefined design token ${match[1]}`);
+    for (const match of css.matchAll(/var\((--gh-[\w-]+)/g)) {
+      if (!declared.has(match[1])) {
+        violations.push(`${path.relative(root, filename)}: undefined design token ${match[1]}`);
+      }
     }
-  }
 
-  if (/:global\(\s*\.\w+\s*\)\s*\{/.test(css)) {
-    violations.push(`${path.relative(root, filename)}: unscoped global classes are not a CSS Module migration`);
-  }
+    if (/:global\(\s*\.\w+\s*\)\s*\{/.test(css)) {
+      violations.push(
+        `${path.relative(root, filename)}: unscoped global classes are not a CSS Module migration`,
+      );
+    }
 
-  if (/#[0-9a-f]{3,8}\b|\brgba?\(|\bhsla?\(/i.test(css)) {
-    violations.push(`${path.relative(root, filename)}: use semantic theme tokens instead of color literals`);
-  }
+    if (/#[0-9a-f]{3,8}\b|\brgba?\(|\bhsla?\(/i.test(css)) {
+      violations.push(
+        `${path.relative(root, filename)}: use semantic theme tokens instead of color literals`,
+      );
+    }
 
-  if (/:root\s*\{/.test(css)) {
-    violations.push(`${path.relative(root, filename)}: root design tokens belong to packages/styles`);
-  }
-});
+    if (/:root\s*\{/.test(css)) {
+      violations.push(
+        `${path.relative(root, filename)}: root design tokens belong to packages/styles`,
+      );
+    }
+  },
+);
 
 if (violations.length > 0) {
   violations.forEach((violation) => process.stderr.write(violation + '\n'));
   process.exitCode = 1;
 } else {
-  process.stdout.write(`CSS Module token ownership verified across ${checked} scoped stylesheets.\n`);
+  process.stdout.write(
+    `CSS Module token ownership verified across ${checked} scoped stylesheets.\n`,
+  );
 }

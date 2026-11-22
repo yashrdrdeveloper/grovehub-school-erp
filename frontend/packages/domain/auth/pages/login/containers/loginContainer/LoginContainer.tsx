@@ -9,5 +9,5 @@ export const LoginContainer: LoginContainerContract = () => {
   const controls = useLogin();
   const isMobile = useLoginViewport();
 
-  return <Login controls={controls} isMobile={isMobile}/>;
+  return <Login controls={controls} isMobile={isMobile} />;
 };

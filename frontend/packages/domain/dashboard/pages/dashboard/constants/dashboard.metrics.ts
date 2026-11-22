@@ -7,4 +7,3 @@ export const DASHBOARD_METRICS = [
   { name: 'Overdue', description: 'Needs your attention', icon: Bell, tone: 'amber' },
   { name: 'Students', description: 'School community', icon: GraduationCap, tone: 'green' },
 ] as const;
-

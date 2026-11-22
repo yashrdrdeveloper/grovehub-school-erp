@@ -4,7 +4,9 @@ import path from 'node:path';
 
 import { evaluateAudit } from './lib/audit-guard.mjs';
 
-const baseline = JSON.parse(readFileSync(new URL('./audit-allowlist.json', import.meta.url), 'utf8'));
+const baseline = JSON.parse(
+  readFileSync(new URL('./audit-allowlist.json', import.meta.url), 'utf8'),
+);
 const output = execFileSync('node', [path.join(process.cwd(), 'scripts/audit-guidelines.mjs')], {
   cwd: process.cwd(),
   encoding: 'utf8',
@@ -24,4 +26,3 @@ if (result.failures.length > 0) {
       ' legacy findings.\n',
   );
 }
-

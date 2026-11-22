@@ -2,9 +2,12 @@ import { validateLoginCredentials } from '../login.validateCredentials';
 
 describe('validateLoginCredentials', () => {
   it('normalizes email without changing the original password', () => {
-    expect(validateLoginCredentials({
-      email: '  person@school.edu  ', password: '  secret  ',
-    })).toEqual({ normalizedEmail: 'person@school.edu', fieldErrors: {} });
+    expect(
+      validateLoginCredentials({
+        email: '  person@school.edu  ',
+        password: '  secret  ',
+      }),
+    ).toEqual({ normalizedEmail: 'person@school.edu', fieldErrors: {} });
   });
 
   it('uses configured required-field messages', () => {
@@ -15,7 +18,9 @@ describe('validateLoginCredentials', () => {
   });
 
   it('rejects malformed email without rejecting a provided password', () => {
-    expect(validateLoginCredentials({ email: 'bad-address', password: 'valid' }).fieldErrors).toEqual({
+    expect(
+      validateLoginCredentials({ email: 'bad-address', password: 'valid' }).fieldErrors,
+    ).toEqual({
       email: 'Enter a valid email address.',
     });
   });

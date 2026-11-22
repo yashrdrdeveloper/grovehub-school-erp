@@ -17,33 +17,47 @@ for (const unit of await readdir(root, { withFileTypes: true })) {
   if (!unit.isDirectory()) continue;
 
   const folder = path.join(root, unit.name);
-  const impl = (await readdir(folder)).find(file => file === `${unit.name}.tsx`);
+  const impl = (await readdir(folder)).find((file) => file === `${unit.name}.tsx`);
   if (!impl) continue;
 
   checked++;
   const source = await readFile(path.join(folder, impl), 'utf8');
-  const forwardsToTypography = unit.name === 'Text'
-    && /<Typography\b/.test(source) && /dataTestId=\{dataTestId\}/.test(source);
-  const forwardsToInput = unit.name === 'TextField'
-    && /<Input\b/.test(source) && /\{\.\.\.props\}/.test(source);
+  const forwardsToTypography =
+    unit.name === 'Text' &&
+    /<Typography\b/.test(source) &&
+    /dataTestId=\{dataTestId\}/.test(source);
+  const forwardsToInput =
+    unit.name === 'TextField' && /<Input\b/.test(source) && /\{\.\.\.props\}/.test(source);
   const forwardsToBox = /<Box\b/.test(source) && /dataTestId=\{/.test(source);
-  const forwardsToNativeLeaf = unit.name === 'Input'
-    && /<InputControl\b/.test(source) && /dataTestId=\{controlTestId\}/.test(source);
+  const forwardsToNativeLeaf =
+    unit.name === 'Input' &&
+    /<InputControl\b/.test(source) &&
+    /dataTestId=\{controlTestId\}/.test(source);
 
   if (!forwardsToInput && !/dataTestId/.test(source)) {
     failures.push(`${unit.name}: missing explicit dataTestId propagation`);
   }
 
-  if (!forwardsToInput && !forwardsToNativeLeaf && !forwardsToTypography && !forwardsToBox && !/data-testid/.test(source)
-      && !/['"]data-testid['"]/.test(source)) {
+  if (
+    !forwardsToInput &&
+    !forwardsToNativeLeaf &&
+    !forwardsToTypography &&
+    !forwardsToBox &&
+    !/data-testid/.test(source) &&
+    !/['"]data-testid['"]/.test(source)
+  ) {
     failures.push(`${unit.name}: dataTestId must reach a native DOM element`);
   }
 
   const typeDir = path.join(folder, 'types');
   try {
-    const contracts = (await Promise.all((await readdir(typeDir))
-      .filter(file => file.endsWith('.ts'))
-      .map(file => readFile(path.join(typeDir, file), 'utf8')))).join('\n');
+    const contracts = (
+      await Promise.all(
+        (await readdir(typeDir))
+          .filter((file) => file.endsWith('.ts'))
+          .map((file) => readFile(path.join(typeDir, file), 'utf8')),
+      )
+    ).join('\n');
     if (!/dataTestId/.test(contracts) && !/InputProps/.test(contracts)) {
       failures.push(`${unit.name}: public component prop contract must expose dataTestId`);
     }

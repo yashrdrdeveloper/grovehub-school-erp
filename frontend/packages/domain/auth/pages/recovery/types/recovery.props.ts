@@ -2,8 +2,14 @@ import type { FormEventHandler, ReactElement } from 'react';
 
 export type RecoveryPurpose = 'recovery' | 'invitation';
 export type RecoveryViewState =
-  | 'missing' | 'checking' | 'expired' | 'unavailable'
-  | 'ready' | 'saving' | 'success' | 'attempts-exhausted';
+  | 'missing'
+  | 'checking'
+  | 'expired'
+  | 'unavailable'
+  | 'ready'
+  | 'saving'
+  | 'success'
+  | 'attempts-exhausted';
 
 export interface RecoveryFieldErrors {
   password?: string;

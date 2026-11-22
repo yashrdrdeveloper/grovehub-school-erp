@@ -37,10 +37,13 @@ export const useLoginSubmission: UseLoginSubmission = (form: LoginFormModel) => 
     }
   }, [email, password, signIn, navigate, setFieldErrors, setErrorMessage, setSubmitting]);
 
-  const onSubmit = useCallback((event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    void submitCredentials();
-  }, [submitCredentials]);
+  const onSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      void submitCredentials();
+    },
+    [submitCredentials],
+  );
 
   return { onSubmit };
 };

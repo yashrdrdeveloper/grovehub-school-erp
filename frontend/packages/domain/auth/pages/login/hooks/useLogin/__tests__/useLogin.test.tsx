@@ -10,13 +10,12 @@ jest.mock('../../../../../core/providers/authProvider', () => ({
   useAuth: () => ({ signIn }),
 }));
 
-const wrapper = ({ children }: { children: ReactNode }) => (
-  <MemoryRouter>{children}</MemoryRouter>
-);
+const wrapper = ({ children }: { children: ReactNode }) => <MemoryRouter>{children}</MemoryRouter>;
 
-const submitEvent = () => ({
-  preventDefault: jest.fn(),
-} as unknown as FormEvent<HTMLFormElement>);
+const submitEvent = () =>
+  ({
+    preventDefault: jest.fn(),
+  }) as unknown as FormEvent<HTMLFormElement>;
 
 describe('useLogin', () => {
   beforeEach(() => {
@@ -33,7 +32,12 @@ describe('useLogin', () => {
 
   it('normalizes email, preserves password, and prevents concurrent requests', async () => {
     let resolveSignIn: (() => void) | undefined;
-    signIn.mockImplementation(() => new Promise<void>(resolve => { resolveSignIn = resolve; }));
+    signIn.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveSignIn = resolve;
+        }),
+    );
 
     const { result } = renderHook(() => useLogin(), { wrapper });
     act(() => {
@@ -47,7 +51,9 @@ describe('useLogin', () => {
     expect(signIn).toHaveBeenCalledTimes(1);
     expect(signIn).toHaveBeenCalledWith('user@school.edu', ' test-secret ');
     expect(result.current.state.isSubmitting).toBe(true);
-    await act(async () => { resolveSignIn?.(); });
+    await act(async () => {
+      resolveSignIn?.();
+    });
     await waitFor(() => expect(result.current.state.isSubmitting).toBe(false));
   });
 
@@ -59,7 +65,9 @@ describe('useLogin', () => {
       result.current.onPasswordChange('wrong');
     });
     act(() => result.current.onSubmit(submitEvent()));
-    await waitFor(() => expect(result.current.state.errorMessage).toContain('Incorrect email or password'));
+    await waitFor(() =>
+      expect(result.current.state.errorMessage).toContain('Incorrect email or password'),
+    );
     act(() => result.current.onPasswordChange('new-secret'));
     expect(result.current.state.errorMessage).toBe('');
   });

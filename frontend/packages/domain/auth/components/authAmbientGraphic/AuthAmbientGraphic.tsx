@@ -7,12 +7,7 @@ import { AUTH_AMBIENT_TEST_IDS } from './constants/authAmbientGraphic.testIds';
 
 /** Decorative school pathways use a true owner-scoped responsive CSS Module. */
 export const AuthAmbientGraphic = () => (
-  <Box
-    as="div"
-    className={styles.root}
-    dataTestId={AUTH_AMBIENT_TEST_IDS.ART}
-    aria-hidden="true"
-  >
+  <Box as="div" className={styles.root} dataTestId={AUTH_AMBIENT_TEST_IDS.ART} aria-hidden="true">
     <SVGRenderer
       component={AcademicPathwaysSvg}
       decorative

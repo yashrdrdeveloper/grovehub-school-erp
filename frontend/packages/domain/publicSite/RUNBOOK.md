@@ -37,6 +37,7 @@ SARAS 4.0 Appendix IX record, not a current certificate.
 The public disclosure page explicitly labels it as historical, preserves
 its original document references, and identifies required updates.
 Before production:
+
 - Provide the current self-attested Appendix IX as directed by CBSE.
 - Verify affiliation, principal, teacher qualifications, staff counts, fees,
   board results, infrastructure, certificates and current academic calendar.
@@ -60,6 +61,7 @@ public Lead CRM endpoint. Step 2 prepares a real `mailto:` message and
 prominently explains that the lead is not submitted until the user sends it.
 
 Production integration is a separate backend task:
+
 - Public, rate-limited and bot-protected tenant-specific lead endpoint
 - Server-side normalization, validation, deduplication and idempotency
 - Minimal data collection, consent metadata, retention and audit policies

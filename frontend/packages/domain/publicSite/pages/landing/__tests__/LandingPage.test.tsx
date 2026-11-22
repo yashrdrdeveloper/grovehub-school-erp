@@ -13,54 +13,82 @@ describe('LandingContainer', () => {
   });
 
   it('opens the admission enquiry in a full-page dialog without losing the homepage', async () => {
-    render(<MemoryRouter initialEntries={['/']}><LandingPage/></MemoryRouter>);
-    fireEvent.click(screen.getByRole('link',{name:/enquire now/i}));
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <LandingPage />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByRole('link', { name: /enquire now/i }));
     await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy());
-    expect(screen.getByRole('heading',{name:'Enquire at RDR School'})).toBeTruthy();
-    expect(screen.getByRole('textbox',{name:'Guardian first name'})).toBeTruthy();
-    fireEvent.click(screen.getByRole('button',{name:/close and return to the page/i}));
+    expect(screen.getByRole('heading', { name: 'Enquire at RDR School' })).toBeTruthy();
+    expect(screen.getByRole('textbox', { name: 'Guardian first name' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /close and return to the page/i }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
-    expect(screen.getByRole('heading',{name:/rooted in haluhera/i})).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /rooted in haluhera/i })).toBeTruthy();
   });
 
-  it('shows the full director page on its own route, not a homepage sheet',()=>{
-    render(<MemoryRouter initialEntries={['/about/director']}><LandingPage/></MemoryRouter>);
-    expect(screen.getByRole('heading',{name:/director.s message/i})).toBeTruthy();
+  it('shows the full director page on its own route, not a homepage sheet', () => {
+    render(
+      <MemoryRouter initialEntries={['/about/director']}>
+        <LandingPage />
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole('heading', { name: /director.s message/i })).toBeTruthy();
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
   it('keeps CBSE public disclosure as a proper route, not a modal', async () => {
-    render(<MemoryRouter initialEntries={['/']}><LandingPage/></MemoryRouter>);
-    fireEvent.click(screen.getAllByRole('link',{name:/cbse disclosure/i})[0]!);
-    await waitFor(() => expect(screen.getByRole('heading',{name:/mandatory public disclosure/i})).toBeTruthy());
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <LandingPage />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getAllByRole('link', { name: /cbse disclosure/i })[0]!);
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: /mandatory public disclosure/i })).toBeTruthy(),
+    );
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
   it('validates guardian details within the enquiry sheet and never claims a CRM submission', async () => {
-    render(<MemoryRouter initialEntries={['/']}><LandingPage/></MemoryRouter>);
-    fireEvent.click(screen.getByRole('link',{name:/enquire now/i}));
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <LandingPage />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByRole('link', { name: /enquire now/i }));
     await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy());
-    fireEvent.click(screen.getByRole('button',{name:/continue/i}));
+    fireEvent.click(screen.getByRole('button', { name: /continue/i }));
     expect(screen.getByRole('alert').textContent).toMatch(/guardian.*first name/i);
-    fireEvent.change(screen.getByRole('textbox',{name:'Guardian first name'}),{target:{value:'Parent'}});
-    fireEvent.click(screen.getByRole('button',{name:/continue/i}));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Guardian first name' }), {
+      target: { value: 'Parent' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /continue/i }));
     expect(screen.getByRole('alert').textContent).toMatch(/phone number or email/i);
-    fireEvent.change(screen.getByRole('textbox',{name:'Phone number'}),{target:{value:'9876543210'}});
-    fireEvent.click(screen.getByRole('button',{name:/continue/i}));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Phone number' }), {
+      target: { value: '9876543210' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /continue/i }));
     expect(screen.getByText(/a little more detail/i)).toBeTruthy();
     fireEvent.click(screen.getByRole('checkbox'));
-    fireEvent.click(screen.getByRole('button',{name:/prepare enquiry/i}));
+    fireEvent.click(screen.getByRole('button', { name: /prepare enquiry/i }));
     expect(screen.getByText(/not been submitted/i)).toBeTruthy();
-    const link=screen.getByRole('link',{name:/send enquiry by email/i});
+    const link = screen.getByRole('link', { name: /send enquiry by email/i });
     expect(link.getAttribute('href')).toMatch(/^mailto:/);
   });
 
   it('offers an accessible close control in the mobile navigation drawer', async () => {
-    render(<MemoryRouter initialEntries={['/']}><LandingPage/></MemoryRouter>);
-    fireEvent.click(screen.getByRole('button',{name:'Open menu'}));
-    expect(screen.getByRole('navigation',{name:'Mobile navigation'})).toBeTruthy();
-    fireEvent.click(screen.getAllByRole('button',{name:'Close menu'})[0]!);
-    await waitFor(() => expect(screen.queryByRole('navigation',{name:'Mobile navigation'})).toBeNull());
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <LandingPage />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Open menu' }));
+    expect(screen.getByRole('navigation', { name: 'Mobile navigation' })).toBeTruthy();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Close menu' })[0]!);
+    await waitFor(() =>
+      expect(screen.queryByRole('navigation', { name: 'Mobile navigation' })).toBeNull(),
+    );
   });
 
   it.each([
@@ -68,51 +96,75 @@ describe('LandingContainer', () => {
     ['hero', 'Enquire for admission'],
     ['homepage prompt', 'Start an enquiry'],
   ])('opens the same working enquiry sheet from the %s CTA', async (_source, label) => {
-    render(<MemoryRouter initialEntries={['/']}><LandingPage/></MemoryRouter>);
-    fireEvent.click(screen.getByRole('link',{name:label}));
-    await waitFor(()=>expect(screen.getByRole('dialog')).toBeTruthy());
-    expect(screen.getByRole('heading',{name:'Enquire at RDR School'})).toBeTruthy();
-    expect(screen.getByRole('textbox',{name:'Guardian first name'})).toBeTruthy();
-    fireEvent.click(screen.getByRole('button',{name:/close and return to the page/i}));
-    await waitFor(()=>expect(screen.queryByRole('dialog')).toBeNull());
-    expect(screen.getByRole('heading',{name:/rooted in haluhera/i})).toBeTruthy();
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <LandingPage />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByRole('link', { name: label }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy());
+    expect(screen.getByRole('heading', { name: 'Enquire at RDR School' })).toBeTruthy();
+    expect(screen.getByRole('textbox', { name: 'Guardian first name' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /close and return to the page/i }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.getByRole('heading', { name: /rooted in haluhera/i })).toBeTruthy();
   });
 
-  it('opens the standalone admissions page from the footer',async()=>{
-    const {container}=render(<MemoryRouter initialEntries={['/']}><LandingPage/></MemoryRouter>);
-    const footerAdmissions=container.querySelector<HTMLAnchorElement>('.rdr-footer a[href="/admissions"]');
+  it('opens the standalone admissions page from the footer', async () => {
+    const { container } = render(
+      <MemoryRouter initialEntries={['/']}>
+        <LandingPage />
+      </MemoryRouter>,
+    );
+    const footerAdmissions = container.querySelector<HTMLAnchorElement>(
+      '.rdr-footer a[href="/admissions"]',
+    );
     expect(footerAdmissions).not.toBeNull();
     fireEvent.click(footerAdmissions!);
-    await waitFor(()=>expect(screen.getByRole('heading',{name:/your child.s journey starts here/i})).toBeTruthy());
+    await waitFor(() =>
+      expect(
+        screen.getByRole('heading', { name: /your child.s journey starts here/i }),
+      ).toBeTruthy(),
+    );
     expect(screen.queryByRole('dialog')).toBeNull();
-    expect(screen.getByRole('textbox',{name:'Guardian first name'})).toBeTruthy();
+    expect(screen.getByRole('textbox', { name: 'Guardian first name' })).toBeTruthy();
   });
 
   it('opens an enquiry and closes the mobile navigation drawer', async () => {
-    render(<MemoryRouter initialEntries={['/']}><LandingPage/></MemoryRouter>);
-    fireEvent.click(screen.getByRole('button',{name:'Open menu'}));
-    const mobileNavigation=screen.getByRole('navigation',{name:'Mobile navigation'});
-    fireEvent.click(within(mobileNavigation).getByRole('link',{name:/start an enquiry/i}));
-    await waitFor(()=>expect(screen.getByRole('dialog')).toBeTruthy());
-    expect(screen.queryByRole('navigation',{name:'Mobile navigation'})).toBeNull();
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <LandingPage />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Open menu' }));
+    const mobileNavigation = screen.getByRole('navigation', { name: 'Mobile navigation' });
+    fireEvent.click(within(mobileNavigation).getByRole('link', { name: /start an enquiry/i }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy());
+    expect(screen.queryByRole('navigation', { name: 'Mobile navigation' })).toBeNull();
   });
 
   it('opens an enquiry from the director page without losing that page', async () => {
-    render(<MemoryRouter initialEntries={['/about/director']}><LandingPage/></MemoryRouter>);
-    expect(screen.getByRole('heading',{name:/director.s message/i})).toBeTruthy();
-    fireEvent.click(screen.getByRole('link',{name:/ask the school/i}));
-    await waitFor(()=>expect(screen.getByRole('dialog')).toBeTruthy());
-    fireEvent.click(screen.getByRole('button',{name:/close and return to the page/i}));
-    await waitFor(()=>expect(screen.queryByRole('dialog')).toBeNull());
-    expect(screen.getByRole('heading',{name:/director.s message/i})).toBeTruthy();
+    render(
+      <MemoryRouter initialEntries={['/about/director']}>
+        <LandingPage />
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole('heading', { name: /director.s message/i })).toBeTruthy();
+    fireEvent.click(screen.getByRole('link', { name: /ask the school/i }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy());
+    fireEvent.click(screen.getByRole('button', { name: /close and return to the page/i }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.getByRole('heading', { name: /director.s message/i })).toBeTruthy();
   });
 
   it('keeps the standalone admissions page usable from a direct URL', () => {
-    render(<MemoryRouter initialEntries={['/admissions']}><LandingPage/></MemoryRouter>);
-    expect(screen.getByRole('textbox',{name:'Guardian first name'})).toBeTruthy();
-    fireEvent.click(screen.getByRole('button',{name:/continue/i}));
+    render(
+      <MemoryRouter initialEntries={['/admissions']}>
+        <LandingPage />
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole('textbox', { name: 'Guardian first name' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /continue/i }));
     expect(screen.getByRole('alert').textContent).toMatch(/guardian.*first name/i);
   });
-
-
 });

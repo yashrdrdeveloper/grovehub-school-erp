@@ -1,4 +1,9 @@
-import type { ForwardRefExoticComponent, InputHTMLAttributes, PropsWithoutRef, RefAttributes } from 'react';
+import type {
+  ForwardRefExoticComponent,
+  InputHTMLAttributes,
+  PropsWithoutRef,
+  RefAttributes,
+} from 'react';
 import type { InputControlSize } from '../../InputControl/types/inputControl.props';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {

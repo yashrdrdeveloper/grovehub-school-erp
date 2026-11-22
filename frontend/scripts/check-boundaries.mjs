@@ -11,7 +11,7 @@ const walk = async (dir) => {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const absolute = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      results.push(...await walk(absolute));
+      results.push(...(await walk(absolute)));
     } else if (sourceExtensions.has(path.extname(entry.name))) {
       results.push(absolute);
     }
@@ -39,12 +39,20 @@ for (const filename of files) {
     (match) => match[1],
   );
   for (const name of imports) {
-    if ((forbidden[category] ?? []).some((prefix) => name === prefix || name.startsWith(prefix + '/'))) {
+    if (
+      (forbidden[category] ?? []).some((prefix) => name === prefix || name.startsWith(prefix + '/'))
+    ) {
       problems.push(`${relative}: illegal dependency ${name}`);
     }
-    if (category === 'shell' && name.startsWith('@Business')
-      && name !== '@Business/app/routes' && name !== '@Business/auth/routes') {
-      problems.push(`${relative}: shell may only import pure @Business/app/routes or @Business/auth/routes, not ${name}`);
+    if (
+      category === 'shell' &&
+      name.startsWith('@Business') &&
+      name !== '@Business/app/routes' &&
+      name !== '@Business/auth/routes'
+    ) {
+      problems.push(
+        `${relative}: shell may only import pure @Business/app/routes or @Business/auth/routes, not ${name}`,
+      );
     }
     if (category === 'shell' && /^@Domain\/[^/]+\//.test(name)) {
       problems.push(`${relative}: shell cannot deep-import a domain: ${name}`);
@@ -61,7 +69,10 @@ for (const filename of files) {
     if (category !== 'components' && name.startsWith('@radix-ui/')) {
       problems.push(`${relative}: Radix leaf components belong in @Components, not ${name}`);
     }
-    if (category !== 'components' && (name === 'lucide-react' || name.startsWith('lucide-react/'))) {
+    if (
+      category !== 'components' &&
+      (name === 'lucide-react' || name.startsWith('lucide-react/'))
+    ) {
       problems.push(`${relative}: direct lucide-react import; use @Components/icons`);
     }
     if (category !== 'base' && (name === 'lodash-es' || name.startsWith('lodash-es/'))) {

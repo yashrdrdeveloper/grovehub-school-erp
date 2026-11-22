@@ -5,11 +5,7 @@ import type { Account, SetupResult } from '@Business/auth';
 import { ACCOUNTS_ENDPOINT } from './constants/accounts.endpoints';
 import { getAccountResourcePath } from './helpers/accounts.getResourcePath';
 
-import type {
-  AccountSearchResult,
-  CreateAccount,
-  SearchRequest,
-} from '../types';
+import type { AccountSearchResult, CreateAccount, SearchRequest } from '../types';
 import type {
   CreateAccountResponse,
   AccountSetupStatus,
@@ -55,13 +51,11 @@ export const accountsApi = {
     }),
 
   resendInvitation: (accountId: string) =>
-    apiRequest<ResendInvitationResponse>(
-      `${getAccountResourcePath(accountId)}/resend-invitation`,
-      { method: HTTP_METHOD.POST },
-    ),
+    apiRequest<ResendInvitationResponse>(`${getAccountResourcePath(accountId)}/resend-invitation`, {
+      method: HTTP_METHOD.POST,
+    }),
 
-  setupStatus: () =>
-    apiRequest<AccountSetupStatus>(ACCOUNTS_ENDPOINT.PUBLIC_SETUP_STATUS),
+  setupStatus: () => apiRequest<AccountSetupStatus>(ACCOUNTS_ENDPOINT.PUBLIC_SETUP_STATUS),
 
   setup: (password: string) =>
     apiRequest<SetupResult>(ACCOUNTS_ENDPOINT.PUBLIC_SETUP, {

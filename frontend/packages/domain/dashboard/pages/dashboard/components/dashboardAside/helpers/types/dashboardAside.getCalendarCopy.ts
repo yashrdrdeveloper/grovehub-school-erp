@@ -5,4 +5,7 @@ export interface DashboardCalendarCopy {
   readonly calendarDetail: string;
   readonly calendarEmptyTitle: string;
 }
-export type GetDashboardCalendarCopy = (date: DashboardDateParts, today: boolean) => DashboardCalendarCopy;
+export type GetDashboardCalendarCopy = (
+  date: DashboardDateParts,
+  today: boolean,
+) => DashboardCalendarCopy;

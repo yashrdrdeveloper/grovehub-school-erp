@@ -52,9 +52,7 @@ const visit = async (folder) => {
       for (const binding of bindings.elements) {
         const imported = binding.propertyName?.text ?? binding.name.text;
         if (imported === 'Link' || imported === 'NavLink') {
-          violations.push(
-            relative + ': use AppLink or AppNavLink instead of router ' + imported,
-          );
+          violations.push(relative + ': use AppLink or AppNavLink instead of router ' + imported);
         }
       }
     }

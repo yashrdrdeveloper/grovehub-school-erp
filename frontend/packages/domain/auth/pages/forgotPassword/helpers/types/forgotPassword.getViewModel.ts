@@ -1,5 +1,3 @@
 import type { ForgotPasswordState, ForgotPasswordViewModel } from '../../types';
 
-export type GetForgotPasswordViewModel = (
-  state: ForgotPasswordState
-) => ForgotPasswordViewModel;
+export type GetForgotPasswordViewModel = (state: ForgotPasswordState) => ForgotPasswordViewModel;

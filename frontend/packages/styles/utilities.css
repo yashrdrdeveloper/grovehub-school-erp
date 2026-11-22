@@ -1,24 +1,44 @@
 /* Small, generic conveniences only; prefer shared @Components for controls. */
 .gh-visually-hidden {
   position: absolute;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
-  white-space: nowrap; border: 0;
+  white-space: nowrap;
+  border: 0;
 }
-.gh-truncate { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.gh-break-words { overflow-wrap: anywhere; }
-.gh-min-w-0 { min-width: 0; }
+.gh-truncate {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.gh-break-words {
+  overflow-wrap: anywhere;
+}
+.gh-min-w-0 {
+  min-width: 0;
+}
 .gh-focus-ring:focus-visible {
   outline: var(--gh-focus-outline-width) solid var(--gh-color-ring);
   outline-offset: 2px;
 }
 @media (prefers-reduced-motion: reduce) {
-  .gh-motion { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+  .gh-motion {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
 
 /* Legacy generic aliases, centralized until the corresponding consumers use Typography. */
-.muted { color: var(--gh-color-muted); }
-.small { font-size: var(--gh-text-xs); }
-.mono { font-family: var(--gh-font-mono); }
+.muted {
+  color: var(--gh-color-muted);
+}
+.small {
+  font-size: var(--gh-text-xs);
+}
+.mono {
+  font-family: var(--gh-font-mono);
+}

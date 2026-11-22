@@ -3,6 +3,6 @@ import type { GetMobileSnapshot } from './types/loginViewport.getMobileSnapshot'
 
 /** The viewport query is isolated from the React hook. */
 export const getMobileSnapshot: GetMobileSnapshot = () =>
-  typeof window !== 'undefined'
-  && typeof window.matchMedia === 'function'
-  && window.matchMedia(STYLE_MEDIA_QUERY.PHONE).matches;
+  typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function' &&
+  window.matchMedia(STYLE_MEDIA_QUERY.PHONE).matches;

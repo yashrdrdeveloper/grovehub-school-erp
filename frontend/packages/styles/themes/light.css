@@ -1,4 +1,5 @@
-:root, :root[data-theme='light'] {
+:root,
+:root[data-theme='light'] {
   color-scheme: light;
   --gh-color-canvas: #f8fafc;
   --gh-color-surface: #ffffff;
@@ -30,6 +31,6 @@
   --gh-color-home-amber: #c69c52;
   --gh-color-hero-start: #0b1220;
   --gh-color-hero-end: #1e3a8a;
-  --gh-shadow-card: 0 4px 20px rgb(15 23 42 / .035);
-  --gh-shadow-dialog: 0 16px 48px rgb(15 23 42 / .14);
+  --gh-shadow-card: 0 4px 20px rgb(15 23 42 / 0.035);
+  --gh-shadow-dialog: 0 16px 48px rgb(15 23 42 / 0.14);
 }

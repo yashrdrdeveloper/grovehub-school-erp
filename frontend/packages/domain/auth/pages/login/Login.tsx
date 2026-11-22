@@ -16,8 +16,9 @@ export const Login: LoginPageComponent = ({ controls, isMobile }) => {
       description={LOGIN_COPY.desktopDescription}
       mobileTitle={LOGIN_COPY.mobileTitle}
       mobileDescription={LOGIN_COPY.mobileDescription}
-      minimalMobile>
-      <FormTemplate {...controls}/>
+      minimalMobile
+    >
+      <FormTemplate {...controls} />
     </LoginLayout>
   );
 };

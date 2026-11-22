@@ -2,8 +2,9 @@ import { getFormFieldCombinedDescription } from '../formField.getCombinedDescrip
 
 describe('getFormFieldCombinedDescription', () => {
   it('joins the caller and generated descriptions in their original order', () => {
-    expect(getFormFieldCombinedDescription('custom-instructions', 'school-email-description'))
-      .toBe('custom-instructions school-email-description');
+    expect(getFormFieldCombinedDescription('custom-instructions', 'school-email-description')).toBe(
+      'custom-instructions school-email-description',
+    );
   });
 
   it('removes empty values without introducing spaces', () => {

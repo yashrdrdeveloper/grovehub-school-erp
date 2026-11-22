@@ -1,6 +1,10 @@
 import { useEffect } from 'react';
 import { useLocation } from '@Components/router';
-import { clearRecoveryFlow, readRecoveryFlow, recoveryPurposeForPath } from '../../session/recoveryFlowSession';
+import {
+  clearRecoveryFlow,
+  readRecoveryFlow,
+  recoveryPurposeForPath,
+} from '../../session/recoveryFlowSession';
 
 /** Keep an in-memory proof only while navigating inside the same recovery flow. */
 export const useRecoveryFlowBoundary = (): void => {

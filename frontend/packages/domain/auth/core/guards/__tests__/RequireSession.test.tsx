@@ -14,21 +14,22 @@ jest.mock('@Business/auth', () => ({
   },
 }));
 
-const renderAt = (path: string) => render(
-  <MemoryRouter initialEntries={[path]}>
-    <AuthProvider>
-      <Routes>
-        <Route element={<PublicOnly />}>
-          <Route path="/set-password" element={<div>Set password page</div>} />
-          <Route path="/login" element={<div>Login page</div>} />
-        </Route>
-        <Route element={<RequireSession />}>
-          <Route path="/dashboard" element={<div>Private dashboard</div>} />
-        </Route>
-      </Routes>
-    </AuthProvider>
-  </MemoryRouter>,
-);
+const renderAt = (path: string) =>
+  render(
+    <MemoryRouter initialEntries={[path]}>
+      <AuthProvider>
+        <Routes>
+          <Route element={<PublicOnly />}>
+            <Route path="/set-password" element={<div>Set password page</div>} />
+            <Route path="/login" element={<div>Login page</div>} />
+          </Route>
+          <Route element={<RequireSession />}>
+            <Route path="/dashboard" element={<div>Private dashboard</div>} />
+          </Route>
+        </Routes>
+      </AuthProvider>
+    </MemoryRouter>,
+  );
 
 describe('RequireSession', () => {
   beforeEach(() => {

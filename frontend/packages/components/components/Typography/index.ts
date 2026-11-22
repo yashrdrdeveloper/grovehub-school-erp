@@ -1,5 +1,10 @@
 export { Typography } from './Typography';
-export type { TypographyProps, TypographyTag, TypographyVariant, TypographyTone } from './types/typography.props';
+export type {
+  TypographyProps,
+  TypographyTag,
+  TypographyVariant,
+  TypographyTone,
+} from './types/typography.props';
 export { TYPOGRAPHY_TAG } from './constants/typography.tag';
 export { TYPOGRAPHY_VARIANT } from './constants/typography.variant';
 export { TYPOGRAPHY_TONE } from './constants/typography.tone';

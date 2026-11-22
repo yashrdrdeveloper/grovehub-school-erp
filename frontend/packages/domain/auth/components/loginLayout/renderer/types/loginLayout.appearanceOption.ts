@@ -5,4 +5,6 @@ export interface LoginLayoutAppearanceOptionProps extends LoginLayoutAppearance 
   readonly preference: ThemePreference;
   readonly setPreference: (next: ThemePreference) => void;
 }
-export type RenderLoginLayoutAppearanceOption = (props: LoginLayoutAppearanceOptionProps) => ReactElement;
+export type RenderLoginLayoutAppearanceOption = (
+  props: LoginLayoutAppearanceOptionProps,
+) => ReactElement;

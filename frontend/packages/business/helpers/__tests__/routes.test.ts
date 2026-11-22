@@ -2,9 +2,7 @@ import { RouteType } from '../../baseEntities/routes';
 import { getRoute } from '../routes';
 
 describe('getRoute', () => {
-  const routes = [
-    { id: 'HOME', name: 'Home', path: '/', type: RouteType.PUBLIC },
-  ] as const;
+  const routes = [{ id: 'HOME', name: 'Home', path: '/', type: RouteType.PUBLIC }] as const;
 
   it('finds a typed configured browser route', () => {
     expect(getRoute(routes, 'HOME')).toMatchObject({

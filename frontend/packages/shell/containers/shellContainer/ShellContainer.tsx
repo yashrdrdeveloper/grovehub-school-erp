@@ -15,9 +15,9 @@ export const ShellContainer: ShellContainerComponent = () => (
   <QueryClientProvider client={queryClient}>
     <ErrorBoundary>
       <BrowserRouter>
-      <AuthProvider>
-        <AppRoutes/>
-      </AuthProvider>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
       </BrowserRouter>
     </ErrorBoundary>
   </QueryClientProvider>

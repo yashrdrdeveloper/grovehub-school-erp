@@ -1,1 +1,7 @@
-export type { DashboardDateParts, DashboardCalendarControls, DashboardCalendarView, DashboardProps, DashboardComponent } from './dashboard.props';
+export type {
+  DashboardDateParts,
+  DashboardCalendarControls,
+  DashboardCalendarView,
+  DashboardProps,
+  DashboardComponent,
+} from './dashboard.props';

@@ -10,6 +10,6 @@ export interface SchoolMonogramProps {
 /** RDR School's approved merged monogram; artwork remains an inline theme-aware asset. */
 export const SchoolMonogram = ({ className, dataTestId }: SchoolMonogramProps) => (
   <span className={cn('school-monogram', className)} data-testid={dataTestId} aria-hidden="true">
-    <SVGRenderer component={RdrSchoolMonogramSvg} decorative className="school-monogram__symbol"/>
+    <SVGRenderer component={RdrSchoolMonogramSvg} decorative className="school-monogram__symbol" />
   </span>
 );

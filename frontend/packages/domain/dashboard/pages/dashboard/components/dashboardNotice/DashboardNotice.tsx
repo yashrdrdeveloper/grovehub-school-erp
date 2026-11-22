@@ -15,8 +15,8 @@ export const DashboardNotice: DashboardNoticeComponent = () => (
     <Box as="div" className={styles.copy}>
       <Box as="strong">Your workspace is taking shape</Box>
       <Box as="span">
-        This is a preview of the dashboard layout. Your school's activity will appear as
-        services are connected.
+        This is a preview of the dashboard layout. Your school's activity will appear as services
+        are connected.
       </Box>
     </Box>
 

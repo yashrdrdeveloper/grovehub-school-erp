@@ -4,10 +4,16 @@ import { useAuthViewportFit } from '../useAuthViewportFit';
 
 const Harness = () => {
   const { contentRef, toolbarRef, mainRef } = useAuthViewportFit();
-  return <section ref={contentRef} data-testid="auth-panel">
-    <div ref={toolbarRef} data-testid="auth-toolbar">Back to school</div>
-    <div ref={mainRef} data-testid="auth-main">Welcome back.</div>
-  </section>;
+  return (
+    <section ref={contentRef} data-testid="auth-panel">
+      <div ref={toolbarRef} data-testid="auth-toolbar">
+        Back to school
+      </div>
+      <div ref={mainRef} data-testid="auth-main">
+        Welcome back.
+      </div>
+    </section>
+  );
 };
 
 describe('useAuthViewportFit', () => {
@@ -27,7 +33,10 @@ describe('useAuthViewportFit', () => {
     });
     Object.defineProperty(window, 'requestAnimationFrame', {
       configurable: true,
-      value: (callback: FrameRequestCallback) => { callback(0); return 1; },
+      value: (callback: FrameRequestCallback) => {
+        callback(0);
+        return 1;
+      },
     });
     Object.defineProperty(window, 'cancelAnimationFrame', {
       configurable: true,
@@ -37,12 +46,18 @@ describe('useAuthViewportFit', () => {
 
   afterAll(() => {
     Object.defineProperty(window, 'matchMedia', { configurable: true, value: originalMatchMedia });
-    Object.defineProperty(window, 'requestAnimationFrame', { configurable: true, value: originalAnimationFrame });
-    Object.defineProperty(window, 'cancelAnimationFrame', { configurable: true, value: originalCancelFrame });
+    Object.defineProperty(window, 'requestAnimationFrame', {
+      configurable: true,
+      value: originalAnimationFrame,
+    });
+    Object.defineProperty(window, 'cancelAnimationFrame', {
+      configurable: true,
+      value: originalCancelFrame,
+    });
   });
 
   it('fits a tablet form within the available panel without scrolling', () => {
-    const { getByTestId } = render(<Harness/>);
+    const { getByTestId } = render(<Harness />);
     const panel = getByTestId('auth-panel');
     const toolbar = getByTestId('auth-toolbar');
     const main = getByTestId('auth-main');
@@ -61,7 +76,7 @@ describe('useAuthViewportFit', () => {
   });
 
   it('uses accessible scrolling rather than cutting off unusually tall states', () => {
-    const { getByTestId } = render(<Harness/>);
+    const { getByTestId } = render(<Harness />);
     const panel = getByTestId('auth-panel');
     const toolbar = getByTestId('auth-toolbar');
     const main = getByTestId('auth-main');

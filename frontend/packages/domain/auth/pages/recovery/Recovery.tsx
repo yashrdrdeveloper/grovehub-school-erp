@@ -14,13 +14,19 @@ export const Recovery: RecoveryComponent = (props) => {
   const description = 'Choose a strong password to protect your school account.';
   let mobileDescription = '';
   if (formVisible) mobileDescription = description;
-  let content: ReactNode = <RecoveryState {...props}/>;
-  if (formVisible) content = <RecoveryPasswordForm {...props}/>;
+  let content: ReactNode = <RecoveryState {...props} />;
+  if (formVisible) content = <RecoveryPasswordForm {...props} />;
 
   return (
-    <LoginLayout variant="recovery" title="Set a new password."
-      description={description} mobileDescription={mobileDescription}
-      minimalMobile mobileTitle={mobileTitle} eyebrow="SECURE YOUR ACCOUNT">
+    <LoginLayout
+      variant="recovery"
+      title="Set a new password."
+      description={description}
+      mobileDescription={mobileDescription}
+      minimalMobile
+      mobileTitle={mobileTitle}
+      eyebrow="SECURE YOUR ACCOUNT"
+    >
       <Box as="div" className="rdr-recovery">
         {content}
       </Box>

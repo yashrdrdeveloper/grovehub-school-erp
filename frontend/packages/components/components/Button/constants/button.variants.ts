@@ -6,9 +6,12 @@ import type { ButtonVariant } from './types/button.variant';
 import type { ButtonSize } from './types/button.size';
 
 const variants = {
-  [BUTTON_VARIANT.PRIMARY]: 'button--primary bg-primary text-primary-foreground hover:bg-primary/90',
-  [BUTTON_VARIANT.SECONDARY]: 'button--secondary bg-secondary text-secondary-foreground hover:bg-secondary/85',
-  [BUTTON_VARIANT.OUTLINE]: 'button--outline border border-input bg-background text-foreground hover:bg-muted',
+  [BUTTON_VARIANT.PRIMARY]:
+    'button--primary bg-primary text-primary-foreground hover:bg-primary/90',
+  [BUTTON_VARIANT.SECONDARY]:
+    'button--secondary bg-secondary text-secondary-foreground hover:bg-secondary/85',
+  [BUTTON_VARIANT.OUTLINE]:
+    'button--outline border border-input bg-background text-foreground hover:bg-muted',
   [BUTTON_VARIANT.GHOST]: 'button--ghost hover:bg-muted hover:text-foreground',
   [BUTTON_VARIANT.DANGER]: 'button--danger bg-destructive text-white hover:bg-destructive/90',
 } satisfies Record<ButtonVariant, string>;

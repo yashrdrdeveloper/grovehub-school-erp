@@ -15,11 +15,23 @@ export const LandingPage = ({ model }: { readonly model: LandingPageModel }) => 
   const { CurrentPage, panel, closePanel, selectPanel, handleInternalLink, openEnquiry } = model;
   return (
     <EnquiryActionContext.Provider value={openEnquiry}>
-      <Box as="div" className="rdr-site" data-testid={LANDING_TEST_IDS.PAGE} onClickCapture={handleInternalLink}>
-        <SiteHeader/>
-        <Box as="main" id="main-content" data-testid={LANDING_TEST_IDS.CONTENT}><CurrentPage/></Box>
-        <SiteFooter/>
-        <PublicSheet panel={panel} onClose={closePanel} onNavigate={selectPanel} enquiry={<EnquiryForm compact/>}/>
+      <Box
+        as="div"
+        className="rdr-site"
+        data-testid={LANDING_TEST_IDS.PAGE}
+        onClickCapture={handleInternalLink}
+      >
+        <SiteHeader />
+        <Box as="main" id="main-content" data-testid={LANDING_TEST_IDS.CONTENT}>
+          <CurrentPage />
+        </Box>
+        <SiteFooter />
+        <PublicSheet
+          panel={panel}
+          onClose={closePanel}
+          onNavigate={selectPanel}
+          enquiry={<EnquiryForm compact />}
+        />
       </Box>
     </EnquiryActionContext.Provider>
   );

@@ -8,15 +8,14 @@ export enum LoginValidationKind {
 
 export const LOGIN_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export const LOGIN_VALIDATION_RULES: Readonly<Record<LoginField, readonly LoginValidationKind[]>> = Object.freeze({
-  [LoginField.EMAIL]: Object.freeze([
-    LoginValidationKind.REQUIRED,
-    LoginValidationKind.EMAIL_FORMAT,
-  ]),
-  [LoginField.PASSWORD]: Object.freeze([
-    LoginValidationKind.REQUIRED,
-  ]),
-});
+export const LOGIN_VALIDATION_RULES: Readonly<Record<LoginField, readonly LoginValidationKind[]>> =
+  Object.freeze({
+    [LoginField.EMAIL]: Object.freeze([
+      LoginValidationKind.REQUIRED,
+      LoginValidationKind.EMAIL_FORMAT,
+    ]),
+    [LoginField.PASSWORD]: Object.freeze([LoginValidationKind.REQUIRED]),
+  });
 
 export const LOGIN_REQUIRED_MESSAGES: Readonly<Record<LoginField, string>> = Object.freeze({
   [LoginField.EMAIL]: 'Please enter your email address.',

@@ -15,7 +15,12 @@ export const useRecoverySubmission: UseRecoverySubmission = (purpose, form, link
   const { password, confirmation, setFieldErrors, setError, clearCredentials } = form;
   const { view, setView } = link;
 
-  useEffect(() => () => { flowGeneration.current += 1; }, [purpose]);
+  useEffect(
+    () => () => {
+      flowGeneration.current += 1;
+    },
+    [purpose],
+  );
 
   const submitPassword = useCallback(async (): Promise<void> => {
     if (view !== 'ready' || submittingRef.current) return;
@@ -52,12 +57,24 @@ export const useRecoverySubmission: UseRecoverySubmission = (purpose, form, link
     } finally {
       submittingRef.current = false;
     }
-  }, [view, password, confirmation, invitation, setFieldErrors, setError, setView, clearCredentials]);
+  }, [
+    view,
+    password,
+    confirmation,
+    invitation,
+    setFieldErrors,
+    setError,
+    setView,
+    clearCredentials,
+  ]);
 
-  const onSubmit = useCallback((event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    void submitPassword();
-  }, [submitPassword]);
+  const onSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      void submitPassword();
+    },
+    [submitPassword],
+  );
 
   return { onSubmit };
 };

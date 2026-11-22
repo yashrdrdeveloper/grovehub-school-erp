@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const fromProject = filename => readFile(path.join(process.cwd(), filename), 'utf8');
+const fromProject = (filename) => readFile(path.join(process.cwd(), filename), 'utf8');
 const paths = [
   'packages/styles/index.css',
   'packages/styles/tokens/foundations.css',
@@ -16,9 +16,8 @@ const sources = await Promise.all(paths.map(fromProject));
 const [entry, foundations, light, dark, base, legacy, main, shadcn] = sources;
 const errors = [];
 
-const definitions = css => new Set(
-  [...css.matchAll(/--(gh-(?:color|shadow)-[\w-]+)\s*:/g)].map(match => match[1]),
-);
+const definitions = (css) =>
+  new Set([...css.matchAll(/--(gh-(?:color|shadow)-[\w-]+)\s*:/g)].map((match) => match[1]));
 const lightTokens = definitions(light);
 const darkTokens = definitions(dark);
 for (const name of lightTokens) {
@@ -56,5 +55,7 @@ if (errors.length) {
   for (const error of errors) process.stderr.write(`${error}\n`);
   process.exitCode = 1;
 } else {
-  process.stdout.write(`Style ownership and ${lightTokens.size} light/dark semantic tokens verified.\n`);
+  process.stdout.write(
+    `Style ownership and ${lightTokens.size} light/dark semantic tokens verified.\n`,
+  );
 }

@@ -7,9 +7,13 @@ const getGreeting = (hour: number): 'morning' | 'afternoon' | 'evening' => {
 };
 
 /** Pure calendar presentation helper; only date input affects output. */
-export const getDashboardDateParts: GetDashboardDateParts = date => ({
+export const getDashboardDateParts: GetDashboardDateParts = (date) => ({
   greeting: getGreeting(date.getHours()),
   dayName: new Intl.DateTimeFormat(undefined, { weekday: 'long' }).format(date),
-  dateLabel: new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).format(date),
+  dateLabel: new Intl.DateTimeFormat(undefined, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(date),
   dayOfMonth: date.getDate(),
 });

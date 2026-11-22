@@ -3,30 +3,18 @@ import { _filter } from '@Base/utilities/filter';
 import type { ReactElement } from 'react';
 
 import { Navigate } from '@Components/router';
-import {
-  AUTH_ROUTE_CONFIG,
-  AUTH_ROUTE_IDS,
-  getLoginRoute,
-} from '@Business/auth/routes';
-import {
-  APP_ROUTE_CONFIG,
-  APP_ROUTE_IDS,
-  RouteAccess,
-} from '@Business/app/routes';
+import { AUTH_ROUTE_CONFIG, AUTH_ROUTE_IDS, getLoginRoute } from '@Business/auth/routes';
+import { APP_ROUTE_CONFIG, APP_ROUTE_IDS, RouteAccess } from '@Business/app/routes';
 
-import {
-  ForgotPasswordPage,
-  LoginV2Page,
-  RecoveryPage,
-} from '@Domain/auth';
+import { ForgotPasswordPage, LoginV2Page, RecoveryPage } from '@Domain/auth';
 import { DashboardPage } from '@Domain/dashboard';
 
 /**
  * Route metadata is owned exclusively by Business.
  * Shell maps IDs to views without defining or duplicating browser paths.
  */
-type AuthRouteKey = typeof AUTH_ROUTE_IDS[keyof typeof AUTH_ROUTE_IDS];
-type AppRouteKey = typeof APP_ROUTE_IDS[keyof typeof APP_ROUTE_IDS];
+type AuthRouteKey = (typeof AUTH_ROUTE_IDS)[keyof typeof AUTH_ROUTE_IDS];
+type AppRouteKey = (typeof APP_ROUTE_IDS)[keyof typeof APP_ROUTE_IDS];
 
 const authViews: Record<AuthRouteKey, ReactElement> = {
   [AUTH_ROUTE_IDS.LOGIN]: <LoginV2Page />,

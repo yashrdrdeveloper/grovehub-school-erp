@@ -24,13 +24,15 @@ export const recoveryPurposeForPath = (path: string): RecoveryPurpose | null => 
 
 export const clearRecoveryFlow = (): void => {
   pendingProof = null;
-  try { window.sessionStorage.removeItem(KEY); } catch { /* Storage may be disabled. */ }
+  try {
+    window.sessionStorage.removeItem(KEY);
+  } catch {
+    /* Storage may be disabled. */
+  }
 };
 
 const active = (expiresAt: number): boolean =>
-  Number.isFinite(expiresAt)
-  && expiresAt > Date.now()
-  && expiresAt <= Date.now() + MAX_LIFETIME_MS;
+  Number.isFinite(expiresAt) && expiresAt > Date.now() && expiresAt <= Date.now() + MAX_LIFETIME_MS;
 
 export const readRecoveryFlow = (purpose: RecoveryPurpose): RecoveryFlow | null => {
   if (pendingProof) {
@@ -44,11 +46,18 @@ export const readRecoveryFlow = (purpose: RecoveryPurpose): RecoveryFlow | null 
     const raw = window.sessionStorage.getItem(KEY);
     if (!raw) return null;
     const item: unknown = JSON.parse(raw);
-    if (!item || typeof item !== 'object') { clearRecoveryFlow(); return null; }
+    if (!item || typeof item !== 'object') {
+      clearRecoveryFlow();
+      return null;
+    }
     const marker = item as Partial<RecoveryFlow>;
     // Legacy stored proof records are invalidated and never replayed.
-    if (marker.purpose !== purpose || marker.stage !== 'grant'
-        || typeof marker.expiresAt !== 'number' || !active(marker.expiresAt)) {
+    if (
+      marker.purpose !== purpose ||
+      marker.stage !== 'grant' ||
+      typeof marker.expiresAt !== 'number' ||
+      !active(marker.expiresAt)
+    ) {
       clearRecoveryFlow();
       return null;
     }
@@ -62,17 +71,30 @@ export const readRecoveryFlow = (purpose: RecoveryPurpose): RecoveryFlow | null 
 export const saveRecoveryProof = (purpose: RecoveryPurpose, proof: string): void => {
   clearRecoveryFlow();
   pendingProof = {
-    purpose, stage: 'proof', proof, expiresAt: Date.now() + MAX_LIFETIME_MS,
+    purpose,
+    stage: 'proof',
+    proof,
+    expiresAt: Date.now() + MAX_LIFETIME_MS,
   };
 };
 
 export const saveRecoveryGrant = (purpose: RecoveryPurpose, expiresIn: number): void => {
   pendingProof = null;
   const lifetime = Math.max(0, Math.min(MAX_LIFETIME_MS, Math.floor(expiresIn * 1000)));
-  if (lifetime === 0) { clearRecoveryFlow(); return; }
+  if (lifetime === 0) {
+    clearRecoveryFlow();
+    return;
+  }
   try {
-    window.sessionStorage.setItem(KEY, JSON.stringify({
-      purpose, stage: 'grant', expiresAt: Date.now() + lifetime,
-    }));
-  } catch { /* Cookie-backed flow remains active in memory. */ }
+    window.sessionStorage.setItem(
+      KEY,
+      JSON.stringify({
+        purpose,
+        stage: 'grant',
+        expiresAt: Date.now() + lifetime,
+      }),
+    );
+  } catch {
+    /* Cookie-backed flow remains active in memory. */
+  }
 };

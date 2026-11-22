@@ -1,7 +1,11 @@
 import type { PageHeadingComponent } from './types/pageHeading.props';
 
 export const PageHeading: PageHeadingComponent = ({
-  eyebrow, title, description, action, dataTestId,
+  eyebrow,
+  title,
+  description,
+  action,
+  dataTestId,
 }) => (
   <header className="page-heading" data-testid={dataTestId}>
     <div>

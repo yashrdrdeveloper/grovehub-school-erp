@@ -8,5 +8,5 @@ export const ForgotPasswordContainer: ForgotPasswordContainerComponent = () => {
   const id = useId();
   const formId = useId();
   const controller = useForgotPassword();
-  return <ForgotPassword id={id} formId={formId} {...controller}/>;
+  return <ForgotPassword id={id} formId={formId} {...controller} />;
 };

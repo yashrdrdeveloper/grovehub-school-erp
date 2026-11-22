@@ -30,6 +30,6 @@
   --gh-color-home-amber: #edbd73;
   --gh-color-hero-start: #101a2c;
   --gh-color-hero-end: #1e3a65;
-  --gh-shadow-card: 0 8px 24px rgb(0 0 0 / .13);
-  --gh-shadow-dialog: 0 20px 60px rgb(0 0 0 / .35);
+  --gh-shadow-card: 0 8px 24px rgb(0 0 0 / 0.13);
+  --gh-shadow-dialog: 0 20px 60px rgb(0 0 0 / 0.35);
 }

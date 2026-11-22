@@ -24,7 +24,8 @@ describe('Input', () => {
 
   it('uses Lodash-normalized label selectors when neither ID is provided', () => {
     render(<Input label="Parent's Full Name" />);
-    expect(screen.getByRole('textbox', { name: "Parent's Full Name" }).dataset.testid)
-      .toBe('parents-full-name');
+    expect(screen.getByRole('textbox', { name: "Parent's Full Name" }).dataset.testid).toBe(
+      'parents-full-name',
+    );
   });
 });

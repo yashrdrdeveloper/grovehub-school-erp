@@ -10,14 +10,14 @@ import { DashboardAside } from './components/dashboardAside';
 import type { DashboardComponent } from './types';
 
 /** Pure dashboard composition. All data is explicitly marked as a preview. */
-export const Dashboard: DashboardComponent = props => (
+export const Dashboard: DashboardComponent = (props) => (
   <Box as="div" className={styles.root} data-testid={DASHBOARD_TEST_IDS.PAGE}>
-    <DashboardHeader date={props.date}/>
-    <DashboardNotice/>
-    <DashboardOverview/>
+    <DashboardHeader date={props.date} />
+    <DashboardNotice />
+    <DashboardOverview />
     <Box as="div" className={styles.layout}>
-      <DashboardMain/>
-      <DashboardAside {...props}/>
+      <DashboardMain />
+      <DashboardAside {...props} />
     </Box>
   </Box>
 );

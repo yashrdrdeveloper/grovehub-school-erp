@@ -4,5 +4,5 @@ import type { AppLauncherProps } from '../../types/appLauncher';
 
 export const AppLauncherContainer = (props: AppLauncherProps) => {
   const model = useAppLauncher(props.open, props.pinned);
-  return <AppLauncher {...props} model={model}/>;
+  return <AppLauncher {...props} model={model} />;
 };

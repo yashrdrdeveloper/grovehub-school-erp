@@ -4,10 +4,7 @@ import { ApiError } from './errors/ApiError';
 import type { ApiErrorBody, ApiSuccess } from './types/api.response';
 import type { ApiOptions } from './types/api.options';
 
-export const apiRequest = async <T>(
-  path: string,
-  options: ApiOptions = {},
-): Promise<T> => {
+export const apiRequest = async <T>(path: string, options: ApiOptions = {}): Promise<T> => {
   const method = options.method ?? HTTP_METHOD.GET;
   const csrf = readCSRF();
   const headers: Record<string, string> = {};

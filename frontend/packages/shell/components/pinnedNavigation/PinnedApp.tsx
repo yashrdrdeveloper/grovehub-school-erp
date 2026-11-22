@@ -9,11 +9,7 @@ import { getPinnedAppClassName } from './helpers/pinnedNavigation.getAppClassNam
 import type { PinnedAppProps } from './types/pinnedNavigation';
 
 /** One accessible pinned application and its independent unpin action. */
-export const PinnedApp = ({
-  entry,
-  closeSidebar,
-  togglePin,
-}: PinnedAppProps) => {
+export const PinnedApp = ({ entry, closeSidebar, togglePin }: PinnedAppProps) => {
   const Icon = entry.app.icon;
 
   const handleTogglePin = () => {
@@ -30,7 +26,9 @@ export const PinnedApp = ({
         className={getPinnedAppClassName}
       >
         <Icon size={19} strokeWidth={1.8} aria-hidden="true" />
-        <Box as="span" className={styles.label}>{entry.app.name}</Box>
+        <Box as="span" className={styles.label}>
+          {entry.app.name}
+        </Box>
       </AppNavLink>
 
       <Button

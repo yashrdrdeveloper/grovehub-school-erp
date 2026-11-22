@@ -1,9 +1,5 @@
-import {
-  THEME_VIEWPORT_FROM_MEDIA,
-} from '../constants/workspaceTheme.viewport';
-import {
-  WORKSPACE_THEME_STRATEGIES,
-} from '../constants/workspaceTheme.strategy';
+import { THEME_VIEWPORT_FROM_MEDIA } from '../constants/workspaceTheme.viewport';
+import { WORKSPACE_THEME_STRATEGIES } from '../constants/workspaceTheme.strategy';
 
 import type { ResolveWorkspaceTheme } from './types/workspaceTheme.resolve';
 
