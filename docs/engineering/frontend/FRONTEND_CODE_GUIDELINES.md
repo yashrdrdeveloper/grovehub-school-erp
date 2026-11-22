@@ -739,6 +739,11 @@ export enum AuthStatusKind {
   UNAVAILABLE = 'unavailable',
   ATTEMPTS_EXHAUSTED = 'attempts-exhausted',
 }
+~~~
+
+~~~ts
+// constants/authStatusArt.badge.ts
+import { AuthStatusKind } from './authStatusArt.kind';
 
 export enum AuthBadgeKind {
   CONFIRMED = 'confirmed',
@@ -746,7 +751,6 @@ export enum AuthBadgeKind {
   NONE = 'none',
 }
 
-// constants/authStatusArt.badge.ts
 export const AUTH_STATUS_BADGE: Readonly<Record<AuthStatusKind, AuthBadgeKind>> = {
   [AuthStatusKind.EMAIL]: AuthBadgeKind.CONFIRMED,
   [AuthStatusKind.SUCCESS]: AuthBadgeKind.CONFIRMED,
@@ -777,7 +781,7 @@ export const renderAuthStatusBadge: RenderAuthStatusBadge = (kind) => {
 };
 ~~~
 
-**Before this example compiles**, add the required shared `Icon` abstraction, typed icon identifiers and import the enum from the correct local file. Renderer functions are pure. Every dynamic icon, color and case is tested. Do not import `lucide-react` in domain/shell. Do not store a React component or JSX expression under a generic helper path when it is a renderer.
+**Before this example compiles**, add the required shared `Icon` abstraction, typed icon identifiers, and the renderer's callable type under `renderer/types/`; the snippets now show separate, correctly imported enum and mapping files. Renderer functions are pure. Every dynamic icon, color and case is tested. Do not import `lucide-react` in domain/shell. Do not store a React component or JSX expression under a generic helper path when it is a renderer.
 
 **CSS colors:** `fill="#039C90"` and `color="#fff"` are forbidden. Use `styles.confirmedBadge` with `color: var(--gh-color-on-success)` and `fill: var(--gh-color-success)`. Add any new semantic token (e.g. `--gh-color-on-success`) in **both** `@Styles/themes/light.css` and `dark.css` before use. Background, border, title, ring, illustration and disabled colors all follow the same rule; no new theme palette in domain SCSS.
 
