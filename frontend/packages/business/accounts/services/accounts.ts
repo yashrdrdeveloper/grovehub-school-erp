@@ -1,51 +1,71 @@
 import { apiRequest } from '@Business/api';
+import { HTTP_METHOD } from '@Business/api/constants/api.method';
 import type { Account, SetupResult } from '@Business/auth';
 
-import type { AccountSearchResult, CreateAccount, SearchRequest } from '../types';
+import { ACCOUNTS_ENDPOINT } from './constants/accounts.endpoints';
+import { getAccountResourcePath } from './helpers/accounts.getResourcePath';
 
-const PROTECTED = '/identity/protected/accounts';
+import type {
+  AccountSearchResult,
+  CreateAccount,
+  SearchRequest,
+} from '../types';
+import type {
+  CreateAccountResponse,
+  AccountSetupStatus,
+  ResendInvitationResponse,
+} from '../types/account.responses';
 
+/** Account transport; business entities and browser navigation are separate concerns. */
 export const accountsApi = {
   create: (input: CreateAccount, idempotencyKey: string) =>
-    apiRequest<{
-      accountId: string;
-      personGid: string;
-      email: string;
-      status: string;
-      invitation: { status: string };
-    }>(PROTECTED, {
-      method: 'POST',
+    apiRequest<CreateAccountResponse>(ACCOUNTS_ENDPOINT.PROTECTED, {
+      method: HTTP_METHOD.POST,
       body: input,
       headers: { 'Idempotency-Key': idempotencyKey },
     }),
+
   search: (request: SearchRequest) =>
-    apiRequest<AccountSearchResult>(`${PROTECTED}/search`, {
-      method: 'POST',
+    apiRequest<AccountSearchResult>(`${ACCOUNTS_ENDPOINT.PROTECTED}/search`, {
+      method: HTTP_METHOD.POST,
       body: request,
     }),
-  get: (accountId: string) =>
-    apiRequest<Account>(`${PROTECTED}/${encodeURIComponent(accountId)}`),
+
+  get: (accountId: string) => apiRequest<Account>(getAccountResourcePath(accountId)),
+
   update: (accountId: string, username: string | null) =>
-    apiRequest<Account>(`${PROTECTED}/${encodeURIComponent(accountId)}`, {
-      method: 'PATCH',
+    apiRequest<Account>(getAccountResourcePath(accountId), {
+      method: HTTP_METHOD.PATCH,
       body: { username },
     }),
+
   suspend: (accountId: string) =>
-    apiRequest<Account>(`${PROTECTED}/${encodeURIComponent(accountId)}/suspend`, { method: 'PATCH' }),
+    apiRequest<Account>(`${getAccountResourcePath(accountId)}/suspend`, {
+      method: HTTP_METHOD.PATCH,
+    }),
+
   activate: (accountId: string) =>
-    apiRequest<Account>(`${PROTECTED}/${encodeURIComponent(accountId)}/activate`, { method: 'PATCH' }),
+    apiRequest<Account>(`${getAccountResourcePath(accountId)}/activate`, {
+      method: HTTP_METHOD.PATCH,
+    }),
+
   deactivate: (accountId: string) =>
-    apiRequest<Account>(`${PROTECTED}/${encodeURIComponent(accountId)}/deactivate`, { method: 'PATCH' }),
+    apiRequest<Account>(`${getAccountResourcePath(accountId)}/deactivate`, {
+      method: HTTP_METHOD.PATCH,
+    }),
+
   resendInvitation: (accountId: string) =>
-    apiRequest<{ accountId: string; invitationStatus: string }>(
-      `${PROTECTED}/${encodeURIComponent(accountId)}/resend-invitation`,
-      { method: 'POST' },
+    apiRequest<ResendInvitationResponse>(
+      `${getAccountResourcePath(accountId)}/resend-invitation`,
+      { method: HTTP_METHOD.POST },
     ),
+
   setupStatus: () =>
-    apiRequest<{verified:boolean;expiresIn:number}>('/identity/public/accounts/setup/status'),
+    apiRequest<AccountSetupStatus>(ACCOUNTS_ENDPOINT.PUBLIC_SETUP_STATUS),
+
   setup: (password: string) =>
-    apiRequest<SetupResult>('/identity/public/accounts/setup', {
-      method: 'POST',
+    apiRequest<SetupResult>(ACCOUNTS_ENDPOINT.PUBLIC_SETUP, {
+      method: HTTP_METHOD.POST,
       body: { password },
     }),
 };
