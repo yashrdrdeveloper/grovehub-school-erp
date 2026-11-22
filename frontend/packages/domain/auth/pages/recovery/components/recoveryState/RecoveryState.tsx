@@ -1,7 +1,7 @@
 import { Button } from '@Components/components/Button';
 import { Box } from '@Components/components/Box';
 import { ArrowLeft } from '@Components/icons';
-import { Link } from '@Components/router';
+import { AppLink } from '@Components/components/AppLink';
 import { AUTH_ROUTE } from '@Business/auth/routes';
 
 import { RecoveryArtwork } from '../recoveryArtwork';
@@ -19,14 +19,14 @@ export const RecoveryState: RecoveryStateComponent = ({ view, purpose, invitatio
     <Box as="div" className="rdr-recovery__state">
       <RecoveryArtwork view={view} purpose={purpose}/>
       {view === 'checking' && <Box as="p" className="rdr-recovery__slow" role="status">{checkingMessage}</Box>}
-      {view === 'success' && <Link className="rdr-login-v2__submit rdr-recovery__state-button" to={AUTH_ROUTE.LOGIN}>Go to login</Link>}
+      {view === 'success' && <AppLink className="rdr-login-v2__submit rdr-recovery__state-button" to={AUTH_ROUTE.LOGIN}>Go to login</AppLink>}
       {view === 'unavailable' && <Button unstyled className="rdr-login-v2__submit rdr-recovery__state-button"
         type="button" onClick={onRetry}>Try checking again</Button>}
-      {showResetLink && <Link className="rdr-login-v2__submit rdr-recovery__state-button"
-        to={AUTH_ROUTE.FORGOT_PASSWORD}>Request new link</Link>}
-      {showBack && <Link className="rdr-recovery__back" to={AUTH_ROUTE.LOGIN}>
+      {showResetLink && <AppLink className="rdr-login-v2__submit rdr-recovery__state-button"
+        to={AUTH_ROUTE.FORGOT_PASSWORD}>Request new link</AppLink>}
+      {showBack && <AppLink className="rdr-recovery__back" to={AUTH_ROUTE.LOGIN}>
         <ArrowLeft size={16}/> Return to login
-      </Link>}
+      </AppLink>}
     </Box>
   );
 };
