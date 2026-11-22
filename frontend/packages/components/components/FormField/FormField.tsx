@@ -1,3 +1,4 @@
+import { BOX_TAG } from '@Components/components/Box';
 import { cn } from '@Base/utilities/cn';
 
 import { Box } from '../Box';
@@ -26,7 +27,7 @@ export const FormField: FormFieldComponent = ({
 
   return (
     <Box
-      as="div"
+      as={BOX_TAG.DIV}
       className={cn('field gh-form-field grid gap-1.5', className)}
       dataTestId={`${testId}-field`}
       {...props}
@@ -38,7 +39,7 @@ export const FormField: FormFieldComponent = ({
       >
         {label}
         {required && (
-          <Box as="span" className="gh-field-required" aria-hidden="true">
+          <Box as={BOX_TAG.SPAN} className="gh-field-required" aria-hidden="true">
             {' *'}
           </Box>
         )}
@@ -48,7 +49,7 @@ export const FormField: FormFieldComponent = ({
 
       {(error || hint) && (
         <Box
-          as="span"
+          as={BOX_TAG.SPAN}
           id={`${htmlFor}-description`}
           dataTestId={`${testId}-message`}
           className={cn('field__hint text-xs', error && 'field__hint--error')}

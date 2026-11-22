@@ -1,4 +1,4 @@
-import { Box } from '@Components/components/Box';
+import { Box, BOX_TAG } from '@Components/components/Box';
 import { AlertCircle, LockKeyhole, Mail } from '@Components/icons';
 import type { ChangeEventHandler } from 'react';
 import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '@Components/components/Button';
@@ -98,23 +98,23 @@ export const LoginForm: LoginFormComponent = ({
         loading={state.isSubmitting}
         loadingText={submitLabel}
       >
-        <Box as="span">{submitLabel}</Box>
+        <Box as={BOX_TAG.SPAN}>{submitLabel}</Box>
       </Button>
       <Box
-        as="div"
+        as={BOX_TAG.DIV}
         className="rdr-login-v2__feedback-slot rdr-login-v2__feedback-slot--signin"
         aria-live="polite"
         dataTestId={LOGIN_TEST_IDS.FEEDBACK}
       >
         {state.errorMessage && (
           <Box
-            as="p"
+            as={BOX_TAG.P}
             className="rdr-login-v2__auth-error"
             role="alert"
             dataTestId={LOGIN_TEST_IDS.AUTH_ERROR}
           >
             <AlertCircle size={16} aria-hidden="true" />
-            <Box as="span">{state.errorMessage}</Box>
+            <Box as={BOX_TAG.SPAN}>{state.errorMessage}</Box>
           </Box>
         )}
       </Box>

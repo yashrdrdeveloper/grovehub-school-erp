@@ -1,4 +1,4 @@
-import { Box } from '@Components/components/Box';
+import { Box, BOX_TAG } from '@Components/components/Box';
 import { Sparkles } from '@Components/icons';
 import { getRecoveryArtworkDescriptor } from '../../helpers/recovery.getArtworkDescriptor';
 
@@ -14,27 +14,27 @@ export const RecoveryArtwork: RecoveryArtworkComponent = ({ view, purpose }) => 
 
   return (
     <Box
-      as="div"
+      as={BOX_TAG.DIV}
       className={`rdr-recovery__art rdr-recovery__art--${visualClass}`}
       role="status"
       aria-live="polite"
     >
       <AuthStatusArt kind={statusKind} />
-      <Box as="strong" className="rdr-recovery__mobile-status-title">
+      <Box as={BOX_TAG.STRONG} className="rdr-recovery__mobile-status-title">
         {mobileStatusTitle}
       </Box>
-      <Box as="div" className="rdr-recovery__art-visual" aria-hidden="true">
-        <Box as="span" className="rdr-recovery__art-orbit rdr-recovery__art-orbit--one" />
-        <Box as="span" className="rdr-recovery__art-orbit rdr-recovery__art-orbit--two" />
-        <Box as="span" className="rdr-recovery__art-icon">
+      <Box as={BOX_TAG.DIV} className="rdr-recovery__art-visual" aria-hidden="true">
+        <Box as={BOX_TAG.SPAN} className="rdr-recovery__art-orbit rdr-recovery__art-orbit--one" />
+        <Box as={BOX_TAG.SPAN} className="rdr-recovery__art-orbit rdr-recovery__art-orbit--two" />
+        <Box as={BOX_TAG.SPAN} className="rdr-recovery__art-icon">
           <Icon size={44} strokeWidth={1.55} />
         </Box>
         {success && <Sparkles className="rdr-recovery__sparkle" size={25} />}
       </Box>
-      <Box as="strong" className="rdr-recovery__art-title">
+      <Box as={BOX_TAG.STRONG} className="rdr-recovery__art-title">
         {title}
       </Box>
-      <Box as="p" className="rdr-recovery__art-message">
+      <Box as={BOX_TAG.P} className="rdr-recovery__art-message">
         {message}
       </Box>
     </Box>

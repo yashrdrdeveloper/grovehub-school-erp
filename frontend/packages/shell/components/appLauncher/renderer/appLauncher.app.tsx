@@ -1,5 +1,5 @@
 import { Button } from '@Components/components/Button';
-import { Box } from '@Components/components/Box';
+import { Box, BOX_TAG } from '@Components/components/Box';
 import type { ReactElement } from 'react';
 import { AppLink } from '@Components/components/AppLink';
 import { Pin, PinOff } from '@Components/icons';
@@ -27,14 +27,14 @@ export const renderAppLauncherApp: RenderAppLauncherApp = ({
   const close = () => onOpenChange(false);
   const toggle = () => onTogglePin(app.path);
   return (
-    <Box as="div" key={app.path} className="catalog-app" data-testid={ids.card}>
+    <Box as={BOX_TAG.DIV} key={app.path} className="catalog-app" data-testid={ids.card}>
       <AppLink to={app.path} className="catalog-app__link" onClick={close}>
-        <Box as="span" className="catalog-app__icon">
+        <Box as={BOX_TAG.SPAN} className="catalog-app__icon">
           <Icon size={22} strokeWidth={1.8} />
         </Box>
-        <Box as="strong">{app.name}</Box>
-        <Box as="small">{app.description}</Box>
-        <Box as="span" className="catalog-app__status">
+        <Box as={BOX_TAG.STRONG}>{app.name}</Box>
+        <Box as={BOX_TAG.SMALL}>{app.description}</Box>
+        <Box as={BOX_TAG.SPAN} className="catalog-app__status">
           {APP_LAUNCHER_COPY.STATUS}
         </Box>
       </AppLink>

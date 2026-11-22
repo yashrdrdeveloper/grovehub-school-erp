@@ -1,5 +1,5 @@
 import { Button } from '@Components/components/Button';
-import { Box } from '@Components/components/Box';
+import { Box, BOX_TAG } from '@Components/components/Box';
 import { ChevronsLeft, ChevronsRight, Grid2X2, Settings2, X } from '@Components/icons';
 import { AppNavLink } from '@Components/components/AppNavLink';
 
@@ -24,8 +24,8 @@ export const Sidebar: SidebarComponent = ({ accountLabel, schoolLabel, onLogout,
   if (model.sidebarOpen) sidebarClass += ' sidebar--open';
 
   return (
-    <Box as="aside" className={sidebarClass} aria-label="School workspace sidebar">
-      <Box as="div" className="sidebar__header">
+    <Box as={BOX_TAG.ASIDE} className={sidebarClass} aria-label="School workspace sidebar">
+      <Box as={BOX_TAG.DIV} className="sidebar__header">
         <Button
           unstyled
           type="button"
@@ -42,12 +42,12 @@ export const Sidebar: SidebarComponent = ({ accountLabel, schoolLabel, onLogout,
           onClick={model.closeSidebar}
           aria-label="GrooveHub home"
         >
-          <Box as="span" className="brand-mark brand-mark--small">
+          <Box as={BOX_TAG.SPAN} className="brand-mark brand-mark--small">
             G
           </Box>
-          <Box as="span" className="sidebar__brand-name">
+          <Box as={BOX_TAG.SPAN} className="sidebar__brand-name">
             groovehub
-            <Box as="span" className="brand-period">
+            <Box as={BOX_TAG.SPAN} className="brand-period">
               .
             </Box>
           </Box>
@@ -62,14 +62,14 @@ export const Sidebar: SidebarComponent = ({ accountLabel, schoolLabel, onLogout,
           <X size={20} />
         </Button>
       </Box>
-      <Box as="div" className="sidebar__school" title={schoolLabel}>
+      <Box as={BOX_TAG.DIV} className="sidebar__school" title={schoolLabel}>
         <SchoolMonogram />
-        <Box as="span" className="sidebar__school-details">
-          <Box as="strong">{schoolLabel}</Box>
-          <Box as="small">School operating system</Box>
+        <Box as={BOX_TAG.SPAN} className="sidebar__school-details">
+          <Box as={BOX_TAG.STRONG}>{schoolLabel}</Box>
+          <Box as={BOX_TAG.SMALL}>School operating system</Box>
         </Box>
       </Box>
-      <Box as="div" className="sidebar__section-label">
+      <Box as={BOX_TAG.DIV} className="sidebar__section-label">
         PINNED APPS
       </Box>
       <PinnedNavigation
@@ -85,11 +85,11 @@ export const Sidebar: SidebarComponent = ({ accountLabel, schoolLabel, onLogout,
         onClick={model.openCatalog}
       >
         <Grid2X2 size={18} />
-        <Box as="span" className="sidebar__label">
+        <Box as={BOX_TAG.SPAN} className="sidebar__label">
           Browse all apps
         </Box>
       </Button>
-      <Box as="div" className="sidebar__bottom">
+      <Box as={BOX_TAG.DIV} className="sidebar__bottom">
         <Button
           unstyled
           type="button"
@@ -99,7 +99,7 @@ export const Sidebar: SidebarComponent = ({ accountLabel, schoolLabel, onLogout,
           aria-label={collapsedLabel}
         >
           <CollapseIcon size={17} />
-          <Box as="span" className="sidebar__label">
+          <Box as={BOX_TAG.SPAN} className="sidebar__label">
             {collapsedShortLabel}
           </Box>
         </Button>
@@ -111,18 +111,18 @@ export const Sidebar: SidebarComponent = ({ accountLabel, schoolLabel, onLogout,
           aria-expanded={model.quickSettings}
           title="Account and preferences"
         >
-          <Box as="span" className="profile-avatar">
+          <Box as={BOX_TAG.SPAN} className="profile-avatar">
             {accountLabel.charAt(0).toUpperCase()}
           </Box>
-          <Box as="span" className="sidebar__profile-details">
-            <Box as="strong">{accountLabel}</Box>
-            <Box as="small">Account & preferences</Box>
+          <Box as={BOX_TAG.SPAN} className="sidebar__profile-details">
+            <Box as={BOX_TAG.STRONG}>{accountLabel}</Box>
+            <Box as={BOX_TAG.SMALL}>Account & preferences</Box>
           </Box>
           <Settings2 size={17} className="sidebar__settings-icon" />
         </Button>
         {model.quickSettings && (
-          <Box as="div" className="settings-popover">
-            <Box as="strong">Appearance</Box>
+          <Box as={BOX_TAG.DIV} className="settings-popover">
+            <Box as={BOX_TAG.STRONG}>Appearance</Box>
             <ThemeChoices preference={model.preference} onPreferenceChange={model.setPreference} />
             <Button unstyled type="button" onClick={onLogout}>
               Sign out

@@ -1,3 +1,4 @@
+import { BOX_TAG } from '@Components/components/Box';
 import { createRef } from 'react';
 import { render, screen } from '@testing-library/react';
 import { Box } from '../Box';
@@ -7,7 +8,7 @@ describe('Box', () => {
     const ref = createRef<HTMLElement>();
     render(
       <Box
-        as="section"
+        as={BOX_TAG.SECTION}
         role="region"
         aria-label="School sections"
         ref={ref}

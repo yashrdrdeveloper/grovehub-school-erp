@@ -1,3 +1,4 @@
+import { BOX_TAG } from '@Components/components/Box';
 import { forwardRef, useCallback, useId, useState } from 'react';
 
 import { cn } from '@Base/utilities/cn';
@@ -64,7 +65,7 @@ export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(
         required={required}
         dataTestId={controlTestId}
       >
-        <Box as="div" className="gh-password-field" dataTestId={`${controlTestId}-shell`}>
+        <Box as={BOX_TAG.DIV} className="gh-password-field" dataTestId={`${controlTestId}-shell`}>
           <InputControl
             {...props}
             ref={ref}

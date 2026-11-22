@@ -1,3 +1,4 @@
+import { BOX_TAG } from '@Components/components/Box';
 import { X } from '@Components/icons';
 import { cn } from '@Base/utilities/cn';
 
@@ -35,8 +36,8 @@ export const Dialog: DialogComponent = ({
           )}
           data-testid={dataTestId}
         >
-          <Box as="div" className="dialog-heading">
-            <Box as="div">
+          <Box as={BOX_TAG.DIV} className="dialog-heading">
+            <Box as={BOX_TAG.DIV}>
               <DialogTitle>{title}</DialogTitle>
               {description && <DialogDescription>{description}</DialogDescription>}
             </Box>

@@ -1,5 +1,5 @@
 import { Button } from '@Components/components/Button';
-import { Box } from '@Components/components/Box';
+import { Box, BOX_TAG } from '@Components/components/Box';
 import styles from './DashboardAside.module.css';
 import sectionStyles from '../../DashboardSection.module.css';
 import { Bell, CalendarDays, CircleDashed, Layers2 } from '@Components/icons';
@@ -18,25 +18,25 @@ export const DashboardAside: DashboardAsideComponent = ({ date, calendar }) => {
   else upcomingClass = styles['is-active'] ?? '';
 
   return (
-    <Box as="aside" className={styles['school-home__side-column']}>
+    <Box as={BOX_TAG.ASIDE} className={styles['school-home__side-column']}>
       <Box
-        as="section"
+        as={BOX_TAG.SECTION}
         className={sectionStyles['school-home__section']}
         aria-labelledby="home-calendar"
       >
-        <Box as="div" className={sectionStyles['school-home__section-heading']}>
-          <Box as="div">
-            <Box as="span" className={sectionStyles['school-home__eyebrow']}>
+        <Box as={BOX_TAG.DIV} className={sectionStyles['school-home__section-heading']}>
+          <Box as={BOX_TAG.DIV}>
+            <Box as={BOX_TAG.SPAN} className={sectionStyles['school-home__eyebrow']}>
               CALENDAR / 04
             </Box>
-            <Box as="h2" id="home-calendar">
+            <Box as={BOX_TAG.H2} id="home-calendar">
               School calendar
             </Box>
           </Box>
         </Box>
-        <Box as="div" className={styles['school-home__calendar']}>
+        <Box as={BOX_TAG.DIV} className={styles['school-home__calendar']}>
           <Box
-            as="div"
+            as={BOX_TAG.DIV}
             className={styles['school-home__calendar-tabs']}
             role="group"
             aria-label="Calendar view"
@@ -60,54 +60,54 @@ export const DashboardAside: DashboardAsideComponent = ({ date, calendar }) => {
               Upcoming
             </Button>
           </Box>
-          <Box as="div" className={styles['school-home__calendar-content']}>
-            <Box as="div" className={styles['school-home__calendar-date']}>
-              <Box as="strong">{calendarDay}</Box>
-              <Box as="span">
+          <Box as={BOX_TAG.DIV} className={styles['school-home__calendar-content']}>
+            <Box as={BOX_TAG.DIV} className={styles['school-home__calendar-date']}>
+              <Box as={BOX_TAG.STRONG}>{calendarDay}</Box>
+              <Box as={BOX_TAG.SPAN}>
                 {calendarHeading}
-                <Box as="small">{calendarDetail}</Box>
+                <Box as={BOX_TAG.SMALL}>{calendarDetail}</Box>
               </Box>
             </Box>
-            <Box as="div" className={styles['school-home__calendar-line']} />
-            <Box as="div" className={styles['school-home__calendar-empty']}>
+            <Box as={BOX_TAG.DIV} className={styles['school-home__calendar-line']} />
+            <Box as={BOX_TAG.DIV} className={styles['school-home__calendar-empty']}>
               <CalendarDays size={22} />
-              <Box as="strong">{calendarEmptyTitle}</Box>
-              <Box as="span">
+              <Box as={BOX_TAG.STRONG}>{calendarEmptyTitle}</Box>
+              <Box as={BOX_TAG.SPAN}>
                 Holidays, school events and time off will appear here when Calendar is connected.
               </Box>
             </Box>
           </Box>
-          <Box as="div" className={styles['school-home__calendar-footer']}>
+          <Box as={BOX_TAG.DIV} className={styles['school-home__calendar-footer']}>
             <CircleDashed size={13} /> Calendar integration planned
           </Box>
         </Box>
       </Box>
       <Box
-        as="section"
+        as={BOX_TAG.SECTION}
         className={sectionStyles['school-home__section']}
         aria-labelledby="home-reminders"
       >
-        <Box as="div" className={sectionStyles['school-home__section-heading']}>
-          <Box as="div">
-            <Box as="span" className={sectionStyles['school-home__eyebrow']}>
+        <Box as={BOX_TAG.DIV} className={sectionStyles['school-home__section-heading']}>
+          <Box as={BOX_TAG.DIV}>
+            <Box as={BOX_TAG.SPAN} className={sectionStyles['school-home__eyebrow']}>
               FOLLOW-UPS / 05
             </Box>
-            <Box as="h2" id="home-reminders">
+            <Box as={BOX_TAG.H2} id="home-reminders">
               Reminders
             </Box>
           </Box>
         </Box>
-        <Box as="div" className={styles['school-home__reminders']}>
-          <Box as="div" className={styles['school-home__reminders-head']}>
-            <Box as="span" className={styles['school-home__reminders-icon']}>
+        <Box as={BOX_TAG.DIV} className={styles['school-home__reminders']}>
+          <Box as={BOX_TAG.DIV} className={styles['school-home__reminders-head']}>
+            <Box as={BOX_TAG.SPAN} className={styles['school-home__reminders-icon']}>
               <Bell size={18} />
             </Box>
-            <Box as="strong">Keep the important things close.</Box>
+            <Box as={BOX_TAG.STRONG}>Keep the important things close.</Box>
           </Box>
-          <Box as="p">
+          <Box as={BOX_TAG.P}>
             Your reminders and personal follow-ups will live here—right beside your school calendar.
           </Box>
-          <Box as="div" className={styles['school-home__reminders-foot']}>
+          <Box as={BOX_TAG.DIV} className={styles['school-home__reminders-foot']}>
             <Layers2 size={14} /> Coming with Tasks
           </Box>
         </Box>

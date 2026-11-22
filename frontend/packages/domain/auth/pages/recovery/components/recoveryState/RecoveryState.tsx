@@ -1,5 +1,5 @@
 import { Button } from '@Components/components/Button';
-import { Box } from '@Components/components/Box';
+import { Box, BOX_TAG } from '@Components/components/Box';
 import { ArrowLeft } from '@Components/icons';
 import { AppLink } from '@Components/components/AppLink';
 import { AUTH_ROUTE } from '@Business/auth/routes';
@@ -22,10 +22,10 @@ export const RecoveryState: RecoveryStateComponent = ({
   const showBack = view === 'missing' || view === 'expired' || view === 'attempts-exhausted';
 
   return (
-    <Box as="div" className="rdr-recovery__state">
+    <Box as={BOX_TAG.DIV} className="rdr-recovery__state">
       <RecoveryArtwork view={view} purpose={purpose} />
       {view === 'checking' && (
-        <Box as="p" className="rdr-recovery__slow" role="status">
+        <Box as={BOX_TAG.P} className="rdr-recovery__slow" role="status">
           {checkingMessage}
         </Box>
       )}

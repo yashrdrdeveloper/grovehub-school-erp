@@ -1,5 +1,5 @@
 import { _map } from '@Base/utilities/map';
-import { Box } from '@Components/components/Box';
+import { Box, BOX_TAG } from '@Components/components/Box';
 
 import styles from './ThemeChoices.module.css';
 
@@ -10,7 +10,7 @@ import type { ThemeChoicesComponent } from './types/themeChoices';
 
 /** Theme option rendering stays stateless; one controlled preference is passed down. */
 export const ThemeChoices: ThemeChoicesComponent = (props) => (
-  <Box as="div" className={styles.root} role="group" aria-label="Appearance">
+  <Box as={BOX_TAG.DIV} className={styles.root} role="group" aria-label="Appearance">
     {_map(THEME_CHOICES, (choice) => (
       <ThemeChoice key={choice.value} {...choice} {...props} />
     ))}

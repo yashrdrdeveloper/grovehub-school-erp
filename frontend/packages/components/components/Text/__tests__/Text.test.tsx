@@ -1,9 +1,10 @@
+import { TYPOGRAPHY_TAG } from '@Components/components/Typography';
 import { render, screen } from '@testing-library/react';
 import { Text } from '../Text';
 describe('Text', () => {
   it('renders accessible semantic text using the shared typography tokens', () => {
     render(
-      <Text as="small" tone="muted" size="sm" dataTestId="school-helper">
+      <Text as={TYPOGRAPHY_TAG.SMALL} tone="muted" size="sm" dataTestId="school-helper">
         Helper
       </Text>,
     );

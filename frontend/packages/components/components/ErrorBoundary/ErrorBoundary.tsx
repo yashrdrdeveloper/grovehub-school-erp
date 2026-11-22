@@ -1,3 +1,4 @@
+import { BOX_TAG } from '@Components/components/Box';
 import { Component } from 'react';
 
 import { Box } from '../Box';
@@ -47,7 +48,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
     return (
       <Box
-        as="section"
+        as={BOX_TAG.SECTION}
         role="alert"
         aria-live="assertive"
         className={styles.root}

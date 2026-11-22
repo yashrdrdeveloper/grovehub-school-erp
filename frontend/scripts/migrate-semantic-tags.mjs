@@ -14,9 +14,29 @@ const variants = {
     symbol: 'BOX_TAG',
     module: '@Components/components/Box',
     allowed: new Set([
-      'div', 'span', 'p', 'small', 'strong', 'figure', 'figcaption',
-      'em', 'i', 'time', 'main', 'section', 'article', 'aside',
-      'header', 'footer', 'nav', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'div',
+      'span',
+      'p',
+      'small',
+      'strong',
+      'figure',
+      'figcaption',
+      'em',
+      'i',
+      'time',
+      'main',
+      'section',
+      'article',
+      'aside',
+      'header',
+      'footer',
+      'nav',
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
     ]),
   },
   Text: {
@@ -44,27 +64,53 @@ const scan = async (folder) => {
     if (!entry.name.endsWith('.tsx')) continue;
 
     const before = await readFile(filename, 'utf8');
-    const sf = ts.createSourceFile(filename, before, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+    const sf = ts.createSourceFile(
+      filename,
+      before,
+      ts.ScriptTarget.Latest,
+      true,
+      ts.ScriptKind.TSX,
+    );
     const edits = [];
     const imports = new Map();
     const visit = (node) => {
-      if ((ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) &&
-          ts.isIdentifier(node.tagName)) {
+      if (
+        (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) &&
+        ts.isIdentifier(node.tagName)
+      ) {
         const owner = variants[node.tagName.text];
         if (owner) {
           for (const attribute of node.attributes.properties) {
-            if (!ts.isJsxAttribute(attribute) || attribute.name.text !== 'as' ||
-                !attribute.initializer || !ts.isStringLiteral(attribute.initializer)) continue;
+            if (
+              !ts.isJsxAttribute(attribute) ||
+              attribute.name.text !== 'as' ||
+              !attribute.initializer ||
+              !ts.isStringLiteral(attribute.initializer)
+            )
+              continue;
             const tag = attribute.initializer.text;
             const location = sf.getLineAndCharacterOfPosition(attribute.getStart(sf));
             if (!owner.allowed.has(tag)) {
-              violations.push(path.relative(root, filename) + ':' + (location.line + 1) +
-                ': unknown semantic tag ' + tag);
+              violations.push(
+                path.relative(root, filename) +
+                  ':' +
+                  (location.line + 1) +
+                  ': unknown semantic tag ' +
+                  tag,
+              );
               continue;
             }
             if (checkOnly) {
-              violations.push(path.relative(root, filename) + ':' + (location.line + 1) +
-                ': ' + node.tagName.text + ' as="' + tag + '" requires a typed semantic constant');
+              violations.push(
+                path.relative(root, filename) +
+                  ':' +
+                  (location.line + 1) +
+                  ': ' +
+                  node.tagName.text +
+                  ' as="' +
+                  tag +
+                  '" requires a typed semantic constant',
+              );
               continue;
             }
             edits.push({
@@ -85,15 +131,16 @@ const scan = async (folder) => {
     const importsToAdd = [];
     for (const [symbol, module] of imports) {
       if (new RegExp('\\b' + symbol + '\\b').test(before)) continue;
-      const existing = sf.statements.find((statement) =>
-        ts.isImportDeclaration(statement) &&
-        ts.isStringLiteral(statement.moduleSpecifier) &&
-        statement.moduleSpecifier.text === module &&
-        statement.importClause?.namedBindings &&
-        ts.isNamedImports(statement.importClause.namedBindings),
+      const existing = sf.statements.find(
+        (statement) =>
+          ts.isImportDeclaration(statement) &&
+          ts.isStringLiteral(statement.moduleSpecifier) &&
+          statement.moduleSpecifier.text === module &&
+          statement.importClause?.namedBindings &&
+          ts.isNamedImports(statement.importClause.namedBindings),
       );
       if (!existing) {
-        importsToAdd.push("import { " + symbol + " } from '" + module + "';");
+        importsToAdd.push('import { ' + symbol + " } from '" + module + "';");
         continue;
       }
       const names = existing.importClause.namedBindings;
@@ -118,4 +165,7 @@ if (violations.length) {
   process.exitCode = 1;
 }
 if (checkOnly && !violations.length) process.stdout.write('Semantic JSX tag constants verified.\n');
-if (!checkOnly) process.stdout.write('Migrated ' + changes + ' JSX attributes across ' + filesUpdated + ' files.\n');
+if (!checkOnly)
+  process.stdout.write(
+    'Migrated ' + changes + ' JSX attributes across ' + filesUpdated + ' files.\n',
+  );

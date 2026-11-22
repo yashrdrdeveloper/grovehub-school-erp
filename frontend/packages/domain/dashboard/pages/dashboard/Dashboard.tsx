@@ -1,4 +1,4 @@
-import { Box } from '@Components/components/Box';
+import { Box, BOX_TAG } from '@Components/components/Box';
 import styles from './Dashboard.module.css';
 
 import { DashboardHeader } from './components/dashboardHeader';
@@ -11,11 +11,11 @@ import type { DashboardComponent } from './types';
 
 /** Pure dashboard composition. All data is explicitly marked as a preview. */
 export const Dashboard: DashboardComponent = (props) => (
-  <Box as="div" className={styles.root} data-testid={DASHBOARD_TEST_IDS.PAGE}>
+  <Box as={BOX_TAG.DIV} className={styles.root} data-testid={DASHBOARD_TEST_IDS.PAGE}>
     <DashboardHeader date={props.date} />
     <DashboardNotice />
     <DashboardOverview />
-    <Box as="div" className={styles.layout}>
+    <Box as={BOX_TAG.DIV} className={styles.layout}>
       <DashboardMain />
       <DashboardAside {...props} />
     </Box>

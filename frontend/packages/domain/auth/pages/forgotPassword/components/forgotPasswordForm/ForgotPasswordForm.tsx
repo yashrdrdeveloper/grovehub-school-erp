@@ -1,5 +1,5 @@
 import { AppLink } from '@Components/components/AppLink';
-import { Box } from '@Components/components/Box';
+import { Box, BOX_TAG } from '@Components/components/Box';
 import { ArrowLeft, CheckCircle2, Clock3, Info, Mail } from '@Components/icons';
 import { FORGOT_PASSWORD_TEST_IDS } from '../../constants/forgotPassword.testIds';
 import type { ChangeEventHandler } from 'react';
@@ -34,7 +34,7 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
   }
 
   return (
-    <Box as="div" className={rootClass} dataTestId={FORGOT_PASSWORD_TEST_IDS.ROOT}>
+    <Box as={BOX_TAG.DIV} className={rootClass} dataTestId={FORGOT_PASSWORD_TEST_IDS.ROOT}>
       <Form
         unstyled
         dataTestId={FORGOT_PASSWORD_TEST_IDS.FORM}
@@ -43,20 +43,20 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
         onSubmit={onSubmit}
         noValidate
       >
-        <Box as="div" className="rdr-auth-flow__fields">
+        <Box as={BOX_TAG.DIV} className="rdr-auth-flow__fields">
           <Box
-            as="div"
+            as={BOX_TAG.DIV}
             className={noticeClass}
             dataTestId={FORGOT_PASSWORD_TEST_IDS.NOTICE}
             role="status"
             aria-live="polite"
           >
-            <Box as="span" className="rdr-auth-flow__notice-icon" aria-hidden="true">
+            <Box as={BOX_TAG.SPAN} className="rdr-auth-flow__notice-icon" aria-hidden="true">
               <NoticeIcon size={20} />
             </Box>
-            <Box as="span" className="rdr-auth-flow__notice-copy">
-              <Box as="strong">{view.noticeTitle}</Box>
-              <Box as="small">{view.noticeMessage}</Box>
+            <Box as={BOX_TAG.SPAN} className="rdr-auth-flow__notice-copy">
+              <Box as={BOX_TAG.STRONG}>{view.noticeTitle}</Box>
+              <Box as={BOX_TAG.SMALL}>{view.noticeMessage}</Box>
             </Box>
           </Box>
           <CredentialField
@@ -74,7 +74,7 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
             required
           />
         </Box>
-        <Box as="div" className="rdr-auth-flow__actions">
+        <Box as={BOX_TAG.DIV} className="rdr-auth-flow__actions">
           <Button
             type="submit"
             variant={BUTTON_VARIANT.PRIMARY}
@@ -86,17 +86,17 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
             loadingText={view.buttonLabel}
             aria-label={view.buttonLabel}
           >
-            <Box as="span">{view.buttonLabel}</Box>
+            <Box as={BOX_TAG.SPAN}>{view.buttonLabel}</Box>
             {!state.busy && view.cooldown && <Clock3 size={19} />}
           </Button>
-          <Box as="div" className="rdr-auth-flow__secondary-slot">
+          <Box as={BOX_TAG.DIV} className="rdr-auth-flow__secondary-slot">
             <AppLink className="rdr-auth-flow__back" to={AUTH_ROUTE.LOGIN}>
               <ArrowLeft size={16} /> Back to sign in
             </AppLink>
           </Box>
-          <Box as="div" className="rdr-auth-flow__error-slot" aria-live="polite">
+          <Box as={BOX_TAG.DIV} className="rdr-auth-flow__error-slot" aria-live="polite">
             {state.error && (
-              <Box as="p" className="rdr-login-v2__error" role="alert">
+              <Box as={BOX_TAG.P} className="rdr-login-v2__error" role="alert">
                 {state.error}
               </Box>
             )}
@@ -104,12 +104,17 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
         </Box>
       </Form>
       {view.noticeSuccess && (
-        <Box as="div" className="rdr-auth-flow__mobile-success" role="status" aria-live="polite">
+        <Box
+          as={BOX_TAG.DIV}
+          className="rdr-auth-flow__mobile-success"
+          role="status"
+          aria-live="polite"
+        >
           <AuthStatusArt kind="email" />
-          <Box as="h3">Check your email</Box>
-          <Box as="p">
+          <Box as={BOX_TAG.H3}>Check your email</Box>
+          <Box as={BOX_TAG.P}>
             If this email address is eligible, a password reset link will be sent to{' '}
-            <Box as="strong">{state.lastRequestedEmail}</Box>.
+            <Box as={BOX_TAG.STRONG}>{state.lastRequestedEmail}</Box>.
           </Box>
           <AppLink className="rdr-login-v2__submit" to={AUTH_ROUTE.LOGIN}>
             Back to sign in

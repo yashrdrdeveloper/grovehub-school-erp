@@ -1,4 +1,4 @@
-import { Box } from '@Components/components/Box';
+import { Box, BOX_TAG } from '@Components/components/Box';
 import type { ReactNode } from 'react';
 import { renderAuthStatusBadge } from './renderer/authStatusArt.badge';
 import type { AuthStatusKind } from './types/authStatusArt';
@@ -18,22 +18,22 @@ const statusIcons: Record<AuthStatusKind, ReactNode> = {
 /** Reusable state-specific mobile illustration, independent of any auth API. */
 export const AuthStatusArt = ({ kind }: { kind: AuthStatusKind }) => (
   <Box
-    as="div"
+    as={BOX_TAG.DIV}
     data-testid={`auth-status-${kind}`}
     className={`rdr-auth-mobile-status-art rdr-auth-mobile-status-art--${kind}`}
     aria-hidden="true"
   >
-    <Box as="span" className="rdr-auth-mobile-status-art__halo" />
-    <Box as="span" className="rdr-auth-mobile-status-art__symbol">
+    <Box as={BOX_TAG.SPAN} className="rdr-auth-mobile-status-art__halo" />
+    <Box as={BOX_TAG.SPAN} className="rdr-auth-mobile-status-art__symbol">
       {statusIcons[kind]}
     </Box>
     {renderAuthStatusBadge(kind)}
     <Box
-      as="span"
+      as={BOX_TAG.SPAN}
       className="rdr-auth-mobile-status-art__spark rdr-auth-mobile-status-art__spark--a"
     />
     <Box
-      as="span"
+      as={BOX_TAG.SPAN}
       className="rdr-auth-mobile-status-art__spark rdr-auth-mobile-status-art__spark--b"
     />
   </Box>

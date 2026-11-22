@@ -1,4 +1,4 @@
-import { Box } from '@Components/components/Box';
+import { Box, BOX_TAG } from '@Components/components/Box';
 import { Sparkles } from '@Components/icons';
 import { photographs } from '../../../../constants/school.content';
 
@@ -6,7 +6,7 @@ const PanelPhoto = ({ index, alt }: { index: number; alt: string }) => {
   const photo = photographs[index];
   if (!photo) return null;
   return (
-    <Box as="div" className="rdr-sheet-photo">
+    <Box as={BOX_TAG.DIV} className="rdr-sheet-photo">
       <img
         loading="lazy"
         src={photo.src}
@@ -21,7 +21,7 @@ const PanelPhoto = ({ index, alt }: { index: number; alt: string }) => {
           event.currentTarget.src = photo.originalSrc;
         }}
       />
-      <Box as="span" aria-hidden="true">
+      <Box as={BOX_TAG.SPAN} aria-hidden="true">
         <Sparkles size={17} /> RDR SCHOOL
       </Box>
     </Box>

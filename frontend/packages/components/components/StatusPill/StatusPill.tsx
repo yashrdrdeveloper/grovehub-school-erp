@@ -1,3 +1,4 @@
+import { BOX_TAG } from '@Components/components/Box';
 import { cn } from '@Base/utilities/cn';
 
 import { Box } from '../Box';
@@ -9,11 +10,11 @@ import type { StatusPillComponent } from './types/statusPill.props';
 /** Stateless status presentation with a shared Box and Lodash-derived label. */
 export const StatusPill: StatusPillComponent = ({ value, dataTestId }) => (
   <Box
-    as="span"
+    as={BOX_TAG.SPAN}
     dataTestId={dataTestId}
     className={cn('status-pill', `status-pill--${getStatusPillTone(value)}`)}
   >
-    <Box as="span" className="status-pill__dot" aria-hidden="true" />
+    <Box as={BOX_TAG.SPAN} className="status-pill__dot" aria-hidden="true" />
     {getStatusPillDisplayLabel(value)}
   </Box>
 );

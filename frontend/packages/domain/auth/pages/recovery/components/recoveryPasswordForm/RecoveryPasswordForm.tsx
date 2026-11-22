@@ -1,4 +1,4 @@
-import { Box } from '@Components/components/Box';
+import { Box, BOX_TAG } from '@Components/components/Box';
 import { AlertCircle, Eye, EyeOff, KeyRound, LockKeyhole, ShieldCheck } from '@Components/icons';
 import { RECOVERY_TEST_IDS } from '../../constants/recovery.testIds';
 import type { ChangeEventHandler } from 'react';
@@ -51,7 +51,7 @@ export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
       onSubmit={onSubmit}
       noValidate
     >
-      <Box as="div" className="rdr-recovery__fields">
+      <Box as={BOX_TAG.DIV} className="rdr-recovery__fields">
         <CredentialField
           dataTestId={RECOVERY_TEST_IDS.PASSWORD}
           id={id + '-password'}
@@ -107,11 +107,11 @@ export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
             </Button>
           }
         />
-        <Box as="p" className="rdr-recovery__requirement">
+        <Box as={BOX_TAG.P} className="rdr-recovery__requirement">
           <ShieldCheck size={17} /> Use at least 12 characters to keep your account secure.
         </Box>
       </Box>
-      <Box as="div" className="rdr-recovery__actions">
+      <Box as={BOX_TAG.DIV} className="rdr-recovery__actions">
         <Button
           type="submit"
           variant={BUTTON_VARIANT.PRIMARY}
@@ -123,12 +123,12 @@ export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
         >
           {buttonLabel}
         </Button>
-        <Box as="span" className="rdr-recovery__remaining" aria-hidden="true">
+        <Box as={BOX_TAG.SPAN} className="rdr-recovery__remaining" aria-hidden="true">
           {'\u00a0'}
         </Box>
-        <Box as="div" className="rdr-recovery__error-slot" aria-live="polite">
+        <Box as={BOX_TAG.DIV} className="rdr-recovery__error-slot" aria-live="polite">
           {error && (
-            <Box as="p" role="alert" className="rdr-recovery__inline-error">
+            <Box as={BOX_TAG.P} role="alert" className="rdr-recovery__inline-error">
               <AlertCircle size={16} />
               {error}
             </Box>

@@ -1,5 +1,5 @@
 import { _map } from '@Base/utilities/map';
-import { Box } from '@Components/components/Box';
+import { Box, BOX_TAG } from '@Components/components/Box';
 import {
   DialogRoot,
   DialogPortal,
@@ -42,15 +42,15 @@ export const AppLauncher = ({
           data-testid={APP_LAUNCHER_TEST_IDS.ROOT}
         >
           <Box
-            as="div"
+            as={BOX_TAG.DIV}
             className="catalog-content__header"
             data-testid={APP_LAUNCHER_TEST_IDS.HEADER}
           >
-            <Box as="div" className="catalog-content__title">
-              <Box as="span" className="catalog-content__mark">
+            <Box as={BOX_TAG.DIV} className="catalog-content__title">
+              <Box as={BOX_TAG.SPAN} className="catalog-content__mark">
                 <Grid2X2 size={23} />
               </Box>
-              <Box as="div">
+              <Box as={BOX_TAG.DIV}>
                 <DialogTitle>{APP_LAUNCHER_COPY.TITLE}</DialogTitle>
                 <DialogDescription id="catalog-description">
                   {APP_LAUNCHER_COPY.DESCRIPTION}
@@ -64,9 +64,13 @@ export const AppLauncher = ({
               <X size={20} />
             </DialogClose>
           </Box>
-          <Box as="div" className="catalog-content__body" data-testid={APP_LAUNCHER_TEST_IDS.BODY}>
-            <Box as="div" className="catalog-content__tools">
-              <Box as="div" className="catalog-search">
+          <Box
+            as={BOX_TAG.DIV}
+            className="catalog-content__body"
+            data-testid={APP_LAUNCHER_TEST_IDS.BODY}
+          >
+            <Box as={BOX_TAG.DIV} className="catalog-content__tools">
+              <Box as={BOX_TAG.DIV} className="catalog-search">
                 <Search size={18} />
                 <InputControl
                   unstyled
@@ -77,24 +81,24 @@ export const AppLauncher = ({
                   dataTestId={APP_LAUNCHER_TEST_IDS.SEARCH}
                 />
               </Box>
-              <Box as="span" className="catalog-content__count">
+              <Box as={BOX_TAG.SPAN} className="catalog-content__count">
                 {appCatalog.length} available
               </Box>
             </Box>
             {pinnedApps.length > 0 && (
               <Box
-                as="section"
+                as={BOX_TAG.SECTION}
                 className="catalog-section"
                 data-testid={APP_LAUNCHER_TEST_IDS.PINNED}
               >
-                <Box as="div" className="catalog-section__heading">
-                  <Box as="div">
+                <Box as={BOX_TAG.DIV} className="catalog-section__heading">
+                  <Box as={BOX_TAG.DIV}>
                     <Pin size={16} />
-                    <Box as="h3">{APP_LAUNCHER_COPY.PINNED_TITLE}</Box>
+                    <Box as={BOX_TAG.H3}>{APP_LAUNCHER_COPY.PINNED_TITLE}</Box>
                   </Box>
-                  <Box as="span">{APP_LAUNCHER_COPY.PINNED_DESCRIPTION}</Box>
+                  <Box as={BOX_TAG.SPAN}>{APP_LAUNCHER_COPY.PINNED_DESCRIPTION}</Box>
                 </Box>
-                <Box as="div" className="catalog-app-grid">
+                <Box as={BOX_TAG.DIV} className="catalog-app-grid">
                   {_map(pinnedApps, (app) =>
                     renderAppLauncherApp({ app, isPinned: true, onOpenChange, onTogglePin }),
                   )}
@@ -103,18 +107,18 @@ export const AppLauncher = ({
             )}
             {otherApps.length > 0 && (
               <Box
-                as="section"
+                as={BOX_TAG.SECTION}
                 className="catalog-section"
                 data-testid={APP_LAUNCHER_TEST_IDS.OTHER}
               >
-                <Box as="div" className="catalog-section__heading">
-                  <Box as="div">
+                <Box as={BOX_TAG.DIV} className="catalog-section__heading">
+                  <Box as={BOX_TAG.DIV}>
                     <Grid2X2 size={16} />
-                    <Box as="h3">{APP_LAUNCHER_COPY.OTHER_TITLE}</Box>
+                    <Box as={BOX_TAG.H3}>{APP_LAUNCHER_COPY.OTHER_TITLE}</Box>
                   </Box>
-                  <Box as="span">{APP_LAUNCHER_COPY.OTHER_DESCRIPTION}</Box>
+                  <Box as={BOX_TAG.SPAN}>{APP_LAUNCHER_COPY.OTHER_DESCRIPTION}</Box>
                 </Box>
-                <Box as="div" className="catalog-app-grid">
+                <Box as={BOX_TAG.DIV} className="catalog-app-grid">
                   {_map(otherApps, (app) =>
                     renderAppLauncherApp({ app, isPinned: false, onOpenChange, onTogglePin }),
                   )}
@@ -122,7 +126,11 @@ export const AppLauncher = ({
               </Box>
             )}
             {matching.length === 0 && (
-              <Box as="p" className="catalog-empty" data-testid={APP_LAUNCHER_TEST_IDS.EMPTY}>
+              <Box
+                as={BOX_TAG.P}
+                className="catalog-empty"
+                data-testid={APP_LAUNCHER_TEST_IDS.EMPTY}
+              >
                 {APP_LAUNCHER_COPY.EMPTY}
               </Box>
             )}

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 
 import { APP_ROUTE } from '@Business/app/routes';
 import { AUTH_ROUTE } from '@Business/auth/routes';
-import { Box } from '@Components/components/Box';
+import { Box, BOX_TAG } from '@Components/components/Box';
 import { Navigate, Outlet, useLocation } from '@Components/router';
 
 import { useAuth } from '../providers/authProvider';
@@ -23,7 +23,7 @@ export const RequireSession = () => {
   if (loading || !initialized) {
     return (
       <Box
-        as="div"
+        as={BOX_TAG.DIV}
         className={styles.loading}
         dataTestId={REQUIRE_SESSION_TEST_IDS.PRIVATE_LOADING}
         role="status"
@@ -48,7 +48,7 @@ export const PublicOnly = () => {
   if (loading) {
     return (
       <Box
-        as="div"
+        as={BOX_TAG.DIV}
         className={styles.loading}
         dataTestId={REQUIRE_SESSION_TEST_IDS.PUBLIC_LOADING}
         role="status"

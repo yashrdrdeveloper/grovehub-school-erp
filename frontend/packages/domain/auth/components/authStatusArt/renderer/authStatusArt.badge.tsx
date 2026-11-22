@@ -1,4 +1,4 @@
-import { Box } from '@Components/components/Box';
+import { Box, BOX_TAG } from '@Components/components/Box';
 import type { ReactNode } from 'react';
 import { CheckCircle2 } from '@Components/icons';
 import type { AuthStatusKind } from '../types/authStatusArt';
@@ -18,7 +18,7 @@ export const renderAuthStatusBadge = (kind: AuthStatusKind): ReactNode => {
   }
   if (kind === 'expired' || kind === 'missing') {
     return (
-      <Box as="span" className="rdr-auth-mobile-status-art__x">
+      <Box as={BOX_TAG.SPAN} className="rdr-auth-mobile-status-art__x">
         ×
       </Box>
     );

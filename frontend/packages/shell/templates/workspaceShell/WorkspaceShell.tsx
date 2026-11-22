@@ -1,4 +1,4 @@
-import { Box } from '@Components/components/Box';
+import { Box, BOX_TAG } from '@Components/components/Box';
 import { Button } from '@Components/components/Button';
 import { Outlet } from '@Components/router';
 
@@ -14,7 +14,7 @@ import type { WorkspaceShellComponent } from './types/workspaceShell.props';
 /** Pure workspace template: state, persistence and provider logic belong in containers/hooks. */
 export const WorkspaceShell: WorkspaceShellComponent = ({ model, ...props }) => (
   <Box
-    as="div"
+    as={BOX_TAG.DIV}
     className={getShellClassName(model.sidebarCollapsed)}
     dataTestId={SHELL_TEST_IDS.ROOT}
   >
@@ -30,9 +30,9 @@ export const WorkspaceShell: WorkspaceShellComponent = ({ model, ...props }) => 
       />
     )}
 
-    <Box as="div" className="shell__content">
+    <Box as={BOX_TAG.DIV} className="shell__content">
       <Topbar schoolLabel={props.schoolLabel} accountLabel={props.accountLabel} model={model} />
-      <Box as="main" className="shell__main">
+      <Box as={BOX_TAG.MAIN} className="shell__main">
         <Outlet />
       </Box>
       <MobileNav model={model} />

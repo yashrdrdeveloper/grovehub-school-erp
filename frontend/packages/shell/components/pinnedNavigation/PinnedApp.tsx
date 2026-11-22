@@ -1,5 +1,5 @@
 import { Button } from '@Components/components/Button';
-import { Box } from '@Components/components/Box';
+import { Box, BOX_TAG } from '@Components/components/Box';
 import { PinOff } from '@Components/icons';
 import { AppNavLink } from '@Components/components/AppNavLink';
 
@@ -17,7 +17,7 @@ export const PinnedApp = ({ entry, closeSidebar, togglePin }: PinnedAppProps) =>
   };
 
   return (
-    <Box as="div" className={styles.row}>
+    <Box as={BOX_TAG.DIV} className={styles.row}>
       <AppNavLink
         to={entry.path}
         title={entry.app.name}
@@ -26,7 +26,7 @@ export const PinnedApp = ({ entry, closeSidebar, togglePin }: PinnedAppProps) =>
         className={getPinnedAppClassName}
       >
         <Icon size={19} strokeWidth={1.8} aria-hidden="true" />
-        <Box as="span" className={styles.label}>
+        <Box as={BOX_TAG.SPAN} className={styles.label}>
           {entry.app.name}
         </Box>
       </AppNavLink>

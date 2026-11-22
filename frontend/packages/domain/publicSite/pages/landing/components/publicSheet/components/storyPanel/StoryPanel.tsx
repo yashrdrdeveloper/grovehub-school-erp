@@ -1,7 +1,7 @@
 import { _map } from '@Base/utilities/map';
 import { ExternalAnchor } from '@Components/components/ExternalAnchor';
 import { Button } from '@Components/components/Button';
-import { Box } from '@Components/components/Box';
+import { Box, BOX_TAG } from '@Components/components/Box';
 import { useState } from 'react';
 import { ArrowRight, Check, ExternalLink } from '@Components/icons';
 import { legacyStories, storyNavigation, type StoryKey } from '../../constants/school.sheetCopy';
@@ -19,9 +19,9 @@ const StoryPanel = ({
   const [selected, setSelected] = useState<StoryKey>(initial);
   const story = legacyStories[selected];
   return (
-    <Box as="div" className="rdr-sheet-story">
+    <Box as={BOX_TAG.DIV} className="rdr-sheet-story">
       <Box
-        as="div"
+        as={BOX_TAG.DIV}
         className="rdr-sheet-story__tabs"
         role="tablist"
         aria-label="School story topics"
@@ -44,22 +44,22 @@ const StoryPanel = ({
           );
         })}
       </Box>
-      <Box as="div" className="rdr-sheet-story__layout" role="tabpanel">
-        <Box as="div" className="rdr-sheet-story__copy">
-          <Box as="span" className="rdr-sheet-kicker">
+      <Box as={BOX_TAG.DIV} className="rdr-sheet-story__layout" role="tabpanel">
+        <Box as={BOX_TAG.DIV} className="rdr-sheet-story__copy">
+          <Box as={BOX_TAG.SPAN} className="rdr-sheet-kicker">
             {story.eyebrow}
           </Box>
-          <Box as="h3">{story.title}</Box>
-          <Box as="p">{story.description}</Box>
-          <Box as="div" className="rdr-sheet-story__points">
+          <Box as={BOX_TAG.H3}>{story.title}</Box>
+          <Box as={BOX_TAG.P}>{story.description}</Box>
+          <Box as={BOX_TAG.DIV} className="rdr-sheet-story__points">
             {_map(story.highlights, (label) => (
-              <Box as="span" key={label}>
+              <Box as={BOX_TAG.SPAN} key={label}>
                 <Check size={15} />
                 {label}
               </Box>
             ))}
           </Box>
-          <Box as="div" className="rdr-sheet-story__footer">
+          <Box as={BOX_TAG.DIV} className="rdr-sheet-story__footer">
             <ExternalAnchor href={story.link} target="_blank" rel="noreferrer">
               {story.linkLabel}
               <ExternalLink size={15} />
@@ -69,7 +69,7 @@ const StoryPanel = ({
             </Button>
           </Box>
           {(selected === 'principal' || selected === 'director') && (
-            <Box as="small">
+            <Box as={BOX_TAG.SMALL}>
               Role and message are from the school's historical website. Please confirm current
               leadership before official publication.
             </Box>

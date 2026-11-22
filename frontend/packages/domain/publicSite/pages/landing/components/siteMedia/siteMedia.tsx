@@ -1,5 +1,5 @@
 import { _find } from '@Base/utilities/find';
-import { Box } from '@Components/components/Box';
+import { Box, BOX_TAG } from '@Components/components/Box';
 import type { ReactNode } from 'react';
 import {
   BookOpen,
@@ -41,7 +41,7 @@ const ImageCard = ({
   loading?: 'lazy' | 'eager';
   children?: ReactNode;
 }) => (
-  <Box as="div" className={`rdr-photo ${className}`}>
+  <Box as={BOX_TAG.DIV} className={`rdr-photo ${className}`}>
     <img
       src={_find(photographs, (photo) => photo.src === src)?.originalSrc ?? src}
       alt={alt}
@@ -73,19 +73,23 @@ const Heading = ({
   title: string;
   description?: string;
 }) => (
-  <Box as="div" className="rdr-section-heading">
-    <Box as="span" className="rdr-eyebrow">
+  <Box as={BOX_TAG.DIV} className="rdr-section-heading">
+    <Box as={BOX_TAG.SPAN} className="rdr-eyebrow">
       {eyebrow}
     </Box>
-    <Box as="h2">{title}</Box>
-    {description && <Box as="p">{description}</Box>}
+    <Box as={BOX_TAG.H2}>{title}</Box>
+    {description && <Box as={BOX_TAG.P}>{description}</Box>}
   </Box>
 );
 
 /** Purely decorative school motifs. Keep them outside important photo faces
  * and out of the accessibility tree; the original photographs remain intact. */
 const PhotoMotifs = ({ variant = 'hero' }: { variant?: 'hero' | 'gallery' | 'banner' }) => (
-  <Box as="div" className={`rdr-photo-motifs rdr-photo-motifs--${variant}`} aria-hidden="true">
+  <Box
+    as={BOX_TAG.DIV}
+    className={`rdr-photo-motifs rdr-photo-motifs--${variant}`}
+    aria-hidden="true"
+  >
     <svg className="rdr-photo-motifs__flight" viewBox="0 0 170 76" fill="none">
       <path
         d="M4 59C34 26 48 83 83 44c20-21 25-38 51-36"
@@ -101,16 +105,16 @@ const PhotoMotifs = ({ variant = 'hero' }: { variant?: 'hero' | 'gallery' | 'ban
         strokeLinejoin="round"
       />
     </svg>
-    <Box as="span" className="rdr-photo-motifs__spark">
+    <Box as={BOX_TAG.SPAN} className="rdr-photo-motifs__spark">
       <Sparkles size={27} strokeWidth={1.4} />
     </Box>
-    <Box as="span" className="rdr-photo-motifs__star">
+    <Box as={BOX_TAG.SPAN} className="rdr-photo-motifs__star">
       <Star size={18} strokeWidth={1.5} />
     </Box>
-    <Box as="span" className="rdr-photo-motifs__book">
+    <Box as={BOX_TAG.SPAN} className="rdr-photo-motifs__book">
       <BookOpen size={25} strokeWidth={1.4} />
     </Box>
-    <Box as="span" className="rdr-photo-motifs__pencil">
+    <Box as={BOX_TAG.SPAN} className="rdr-photo-motifs__pencil">
       <Pencil size={23} strokeWidth={1.5} />
     </Box>
   </Box>

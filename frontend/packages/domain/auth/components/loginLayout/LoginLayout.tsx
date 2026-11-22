@@ -1,5 +1,5 @@
 import { _map } from '@Base/utilities/map';
-import { Box } from '@Components/components/Box';
+import { Box, BOX_TAG } from '@Components/components/Box';
 import { ArrowLeft, LockKeyhole } from '@Components/icons';
 import { AppLink } from '@Components/components/AppLink';
 import { APP_ROUTE } from '@Business/app/routes';
@@ -35,60 +35,60 @@ export const LoginLayout: LoginLayoutComponent = ({
 
   return (
     <Box
-      as="main"
+      as={BOX_TAG.MAIN}
       className={getLoginLayoutClassName(variant, minimalMobile)}
       data-testid={LOGIN_LAYOUT_TEST_IDS.ROOT}
     >
-      <Box as="div" className="rdr-login-v2__frame">
+      <Box as={BOX_TAG.DIV} className="rdr-login-v2__frame">
         <Box
-          as="section"
+          as={BOX_TAG.SECTION}
           className="rdr-login-v2__visual"
           aria-label="RDR School branded gradient background"
         >
-          <Box as="div" className="rdr-login-v2__mobile-header">
-            <Box as="div" className="rdr-login-v2__mobile-identity" aria-label="RDR School">
+          <Box as={BOX_TAG.DIV} className="rdr-login-v2__mobile-header">
+            <Box as={BOX_TAG.DIV} className="rdr-login-v2__mobile-identity" aria-label="RDR School">
               <SchoolMonogram />
-              <Box as="span" className="rdr-login-v2__mobile-school-name">
-                RDR School<Box as="small">Your school workspace</Box>
+              <Box as={BOX_TAG.SPAN} className="rdr-login-v2__mobile-school-name">
+                RDR School<Box as={BOX_TAG.SMALL}>Your school workspace</Box>
               </Box>
             </Box>
           </Box>
-          <Box as="div" className="rdr-login-v2__visual-brand">
+          <Box as={BOX_TAG.DIV} className="rdr-login-v2__visual-brand">
             <SchoolMonogram />
-            <Box as="span">
-              <Box as="strong">RDR School</Box>
-              <Box as="small">Rao Deena Ram Vidya Vihar</Box>
+            <Box as={BOX_TAG.SPAN}>
+              <Box as={BOX_TAG.STRONG}>RDR School</Box>
+              <Box as={BOX_TAG.SMALL}>Rao Deena Ram Vidya Vihar</Box>
             </Box>
           </Box>
           <AuthAmbientGraphic />
-          <Box as="div" className="rdr-login-v2__visual-copy">
-            <Box as="span" className="rdr-login-v2__visual-kicker">
-              <Box as="span" /> THE RDR SCHOOL WORKSPACE
+          <Box as={BOX_TAG.DIV} className="rdr-login-v2__visual-copy">
+            <Box as={BOX_TAG.SPAN} className="rdr-login-v2__visual-kicker">
+              <Box as={BOX_TAG.SPAN} /> THE RDR SCHOOL WORKSPACE
             </Box>
-            <Box as="h2">
+            <Box as={BOX_TAG.H2}>
               For every school day.
               <br />
               <em>And everyone behind it.</em>
             </Box>
-            <Box as="p">A connected space for the people who make learning happen.</Box>
-            <Box as="div" className="rdr-login-v2__visual-footer">
-              <Box as="span">LEARN</Box>
+            <Box as={BOX_TAG.P}>A connected space for the people who make learning happen.</Box>
+            <Box as={BOX_TAG.DIV} className="rdr-login-v2__visual-footer">
+              <Box as={BOX_TAG.SPAN}>LEARN</Box>
               <i aria-hidden="true" />
-              <Box as="span">ORGANISE</Box>
+              <Box as={BOX_TAG.SPAN}>ORGANISE</Box>
               <i aria-hidden="true" />
-              <Box as="span">GROW</Box>
+              <Box as={BOX_TAG.SPAN}>GROW</Box>
             </Box>
           </Box>
         </Box>
         <Box
-          as="section"
+          as={BOX_TAG.SECTION}
           ref={contentRef}
           className="rdr-login-v2__content"
           data-testid={LOGIN_LAYOUT_TEST_IDS.CONTENT}
           aria-labelledby="rdr-auth-title"
         >
           <Box
-            as="div"
+            as={BOX_TAG.DIV}
             ref={toolbarRef}
             className="rdr-login-v2__toolbar"
             data-testid={LOGIN_LAYOUT_TEST_IDS.TOOLBAR}
@@ -99,46 +99,51 @@ export const LoginLayout: LoginLayoutComponent = ({
               aria-label="Back to RDR School homepage"
             >
               <ArrowLeft size={19} />
-              <Box as="span">Back to school</Box>
+              <Box as={BOX_TAG.SPAN}>Back to school</Box>
             </AppLink>
-            <Box as="div" className="rdr-login-v2__appearance" role="group" aria-label="Appearance">
+            <Box
+              as={BOX_TAG.DIV}
+              className="rdr-login-v2__appearance"
+              role="group"
+              aria-label="Appearance"
+            >
               {_map(LOGIN_LAYOUT_APPEARANCES, (option) =>
                 renderLoginLayoutAppearanceOption({ ...option, preference, setPreference }),
               )}
             </Box>
           </Box>
           <Box
-            as="div"
+            as={BOX_TAG.DIV}
             ref={mainRef}
             className="rdr-login-v2__main"
             data-testid={LOGIN_LAYOUT_TEST_IDS.MAIN}
           >
-            <Box as="div" className="rdr-login-v2__heading">
-              <Box as="span" className="rdr-login-v2__eyebrow">
+            <Box as={BOX_TAG.DIV} className="rdr-login-v2__heading">
+              <Box as={BOX_TAG.SPAN} className="rdr-login-v2__eyebrow">
                 {eyebrow}
               </Box>
-              <Box as="h1" id="rdr-auth-title" data-testid={LOGIN_LAYOUT_TEST_IDS.TITLE}>
+              <Box as={BOX_TAG.H1} id="rdr-auth-title" data-testid={LOGIN_LAYOUT_TEST_IDS.TITLE}>
                 {title}
               </Box>
-              <Box as="p" className="rdr-login-v2__description-desktop">
+              <Box as={BOX_TAG.P} className="rdr-login-v2__description-desktop">
                 {description}
               </Box>
-              <Box as="p" className="rdr-login-v2__description-mobile">
+              <Box as={BOX_TAG.P} className="rdr-login-v2__description-mobile">
                 {mobileDescription ?? description}
               </Box>
             </Box>
             {children}
             <Box
-              as="div"
+              as={BOX_TAG.DIV}
               className="rdr-login-v2__closing"
               aria-label="Secure RDR School workspace"
             >
               <LockKeyhole size={13} strokeWidth={1.8} aria-hidden="true" />
-              <Box as="span">A secure workspace for RDR School</Box>
+              <Box as={BOX_TAG.SPAN}>A secure workspace for RDR School</Box>
             </Box>
-            <Box as="div" className="rdr-o1-auth-footer">
-              <Box as="span">© RDR School</Box>
-              <Box as="span">Haluhera · Rewari</Box>
+            <Box as={BOX_TAG.DIV} className="rdr-o1-auth-footer">
+              <Box as={BOX_TAG.SPAN}>© RDR School</Box>
+              <Box as={BOX_TAG.SPAN}>Haluhera · Rewari</Box>
             </Box>
           </Box>
         </Box>

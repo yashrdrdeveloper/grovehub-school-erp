@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { _find } from '@Base/utilities/find';
 import { _flatMap } from '@Base/utilities/flatMap';
 import { _map } from '@Base/utilities/map';
-import { Box } from '@Components/components/Box';
+import { Box, BOX_TAG } from '@Components/components/Box';
 
 import { appCatalog } from '../../constants/shell.catalog';
 import styles from './PinnedNavigation.module.css';
@@ -26,7 +26,7 @@ export const PinnedNavigation: PinnedNavigationComponent = (props) => {
   const nodes = _map(entries, (entry) => <PinnedApp key={entry.path} entry={entry} {...props} />);
 
   let content: ReactNode = (
-    <Box as="p" className={styles.empty}>
+    <Box as={BOX_TAG.P} className={styles.empty}>
       Pin apps from the catalog to see them here.
     </Box>
   );
@@ -36,7 +36,7 @@ export const PinnedNavigation: PinnedNavigationComponent = (props) => {
   }
 
   return (
-    <Box as="nav" aria-label="Pinned applications" className={styles.nav}>
+    <Box as={BOX_TAG.NAV} aria-label="Pinned applications" className={styles.nav}>
       {content}
     </Box>
   );

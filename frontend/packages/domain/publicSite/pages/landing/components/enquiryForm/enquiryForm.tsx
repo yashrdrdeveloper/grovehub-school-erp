@@ -4,7 +4,7 @@ import { SelectControl } from '@Components/components/SelectControl';
 import { ExternalAnchor } from '@Components/components/ExternalAnchor';
 import { FieldLabel } from '@Components/components/FieldLabel';
 import { Button } from '@Components/components/Button';
-import { Box } from '@Components/components/Box';
+import { Box , BOX_TAG} from '@Components/components/Box';
 import { ArrowRight, Check, Mail } from '@Components/icons';
 import { ENQUIRY_TEST_IDS } from '../../constants/enquiry.testIds';
 import { InputControl } from '@Components/components/InputControl';
@@ -34,27 +34,27 @@ export const EnquiryForm: EnquiryFormComponent = ({ compact = false, model }) =>
   let submitLabel = 'Prepare enquiry';
   if (step === 0) { handleSubmit = next; stepHeading = 'Your details'; submitLabel = 'Continue'; }
   return (
-    <Box as="div" className={rootClass}
+    <Box as={BOX_TAG.DIV} className={rootClass}
       id={rootId} data-testid={rootTestId}>
-      <Box as="div" className="rdr-enquiry__head">
-        <Box as="span" className="rdr-eyebrow">LET’S BEGIN</Box>
-        <Box as="h3">{heading}</Box>
-        <Box as="p">{description}</Box>
+      <Box as={BOX_TAG.DIV} className="rdr-enquiry__head">
+        <Box as={BOX_TAG.SPAN} className="rdr-eyebrow">LET’S BEGIN</Box>
+        <Box as={BOX_TAG.H3}>{heading}</Box>
+        <Box as={BOX_TAG.P}>{description}</Box>
       </Box>
       {ready && (
-        <Box as="div" className="rdr-enquiry__ready" role="status">
-          <Box as="span" className="rdr-enquiry__success"><Check size={22}/></Box>
-          <Box as="p">We’ve prepared your enquiry, but it has <Box as="strong">not been submitted</Box> to the school yet. Choose Send enquiry to open your email application.</Box>
+        <Box as={BOX_TAG.DIV} className="rdr-enquiry__ready" role="status">
+          <Box as={BOX_TAG.SPAN} className="rdr-enquiry__success"><Check size={22}/></Box>
+          <Box as={BOX_TAG.P}>We’ve prepared your enquiry, but it has <Box as={BOX_TAG.STRONG}>not been submitted</Box> to the school yet. Choose Send enquiry to open your email application.</Box>
           <ExternalAnchor className="rdr-btn rdr-btn--solid" data-testid={ENQUIRY_TEST_IDS.SEND_EMAIL} href={mailto}>Send enquiry by email <Mail size={17}/></ExternalAnchor>
           <Button unstyled className="rdr-link-button" data-testid={ENQUIRY_TEST_IDS.EDIT} type="button" onClick={edit}>Edit details</Button>
         </Box>
       )}
       {!ready && (
         <Form unstyled dataTestId={ENQUIRY_TEST_IDS.FORM} onSubmit={handleSubmit} noValidate>
-          <Box as="div" className="rdr-enquiry__step"><Box as="span">STEP {step + 1} OF 2</Box><Box as="span">{stepHeading}</Box></Box>
+          <Box as={BOX_TAG.DIV} className="rdr-enquiry__step"><Box as={BOX_TAG.SPAN}>STEP {step + 1} OF 2</Box><Box as={BOX_TAG.SPAN}>{stepHeading}</Box></Box>
           {step === 0 && <>
-            <FieldLabel>Parent / guardian name <Box as="span">*</Box></FieldLabel>
-            <Box as="div" className="rdr-field-grid rdr-field-grid--three">
+            <FieldLabel>Parent / guardian name <Box as={BOX_TAG.SPAN}>*</Box></FieldLabel>
+            <Box as={BOX_TAG.DIV} className="rdr-field-grid rdr-field-grid--three">
               <InputControl unstyled aria-label="Guardian first name" dataTestId={ENQUIRY_TEST_IDS.FIRST_NAME} placeholder="First name *" autoComplete="given-name" value={data.firstName} onChange={event => patch('firstName', event.target.value)}/>
               <InputControl unstyled aria-label="Guardian middle name" dataTestId={ENQUIRY_TEST_IDS.MIDDLE_NAME} placeholder="Middle" value={data.middleName} onChange={event => patch('middleName', event.target.value)}/>
               <InputControl unstyled aria-label="Guardian last name" dataTestId={ENQUIRY_TEST_IDS.LAST_NAME} placeholder="Last name" autoComplete="family-name" value={data.lastName} onChange={event => patch('lastName', event.target.value)}/>
@@ -63,8 +63,8 @@ export const EnquiryForm: EnquiryFormComponent = ({ compact = false, model }) =>
             <InputControl unstyled id={`${fieldId}-phone`} dataTestId={ENQUIRY_TEST_IDS.PHONE} type="tel" placeholder="+91 98765 43210" autoComplete="tel" value={data.phone} onChange={event => patch('phone', event.target.value)}/>
             <FieldLabel htmlFor={`${fieldId}-email`}>Email address</FieldLabel>
             <InputControl unstyled id={`${fieldId}-email`} dataTestId={ENQUIRY_TEST_IDS.EMAIL} type="email" placeholder="parent@example.com" autoComplete="email" value={data.email} onChange={event => patch('email', event.target.value)}/>
-            <Box as="small" className="rdr-enquiry__hint">Please provide at least one: phone number or email.</Box>
-            <FieldLabel htmlFor={`${fieldId}-type`}>I'm enquiring about <Box as="span">*</Box></FieldLabel>
+            <Box as={BOX_TAG.SMALL} className="rdr-enquiry__hint">Please provide at least one: phone number or email.</Box>
+            <FieldLabel htmlFor={`${fieldId}-type`}>I'm enquiring about <Box as={BOX_TAG.SPAN}>*</Box></FieldLabel>
             <SelectControl id={`${fieldId}-type`} data-testid={ENQUIRY_TEST_IDS.TYPE} value={data.type} onChange={event => patch('type', event.target.value)}>
               {_map(enquiryTypes, type => <option key={type.value} value={type.value}>{type.label}</option>)}
             </SelectControl>
@@ -77,10 +77,10 @@ export const EnquiryForm: EnquiryFormComponent = ({ compact = false, model }) =>
               </SelectControl></>}
             <FieldLabel htmlFor={`${fieldId}-message`}>Anything you'd like us to know?</FieldLabel>
             <TextAreaControl id={`${fieldId}-message`} data-testid={ENQUIRY_TEST_IDS.MESSAGE} rows={4} placeholder="Tell us a little about your enquiry..." value={data.message} onChange={event => patch('message', event.target.value)}/>
-            <FieldLabel className="rdr-enquiry__consent"><InputControl unstyled dataTestId={ENQUIRY_TEST_IDS.CONSENT} type="checkbox" checked={data.privacy} onChange={event => patch('privacy', event.target.checked)}/><Box as="span">I agree to share these details with RDR School to receive a response to my enquiry.</Box></FieldLabel>
+            <FieldLabel className="rdr-enquiry__consent"><InputControl unstyled dataTestId={ENQUIRY_TEST_IDS.CONSENT} type="checkbox" checked={data.privacy} onChange={event => patch('privacy', event.target.checked)}/><Box as={BOX_TAG.SPAN}>I agree to share these details with RDR School to receive a response to my enquiry.</Box></FieldLabel>
           </>}
-          {error && <Box as="p" className="rdr-enquiry__error" role="alert">{error}</Box>}
-          <Box as="div" className="rdr-enquiry__actions">
+          {error && <Box as={BOX_TAG.P} className="rdr-enquiry__error" role="alert">{error}</Box>}
+          <Box as={BOX_TAG.DIV} className="rdr-enquiry__actions">
             {step === 1 && <Button unstyled className="rdr-btn rdr-btn--outline" data-testid={ENQUIRY_TEST_IDS.BACK} type="button" onClick={back}>Back</Button>}
             <Button unstyled type="submit" className="rdr-btn rdr-btn--solid" data-testid={ENQUIRY_TEST_IDS.CONTINUE}>{submitLabel} <ArrowRight size={17}/></Button>
           </Box>
