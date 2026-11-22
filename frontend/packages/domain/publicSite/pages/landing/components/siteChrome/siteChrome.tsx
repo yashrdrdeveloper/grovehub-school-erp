@@ -1,3 +1,6 @@
+import { ExternalAnchor } from '@Components/components/ExternalAnchor';
+import { Button } from '@Components/components/Button';
+import { Box } from '@Components/components/Box';
 import { SCHOOL_ROUTE } from '../../constants/school.routes';
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -26,61 +29,61 @@ const SiteHeader = () => {
   },[open]);
   return (
     <>
-      <div className="rdr-topline">
-        <div className="rdr-container rdr-topline__inner">
-          <span>HALUHERA, REWARI · HARYANA</span>
-          <span>ESTABLISHED 2006</span>
-        </div>
-      </div>
-      <header className="rdr-header">
-        <div className="rdr-container rdr-header__inner">
+      <Box as="div" className="rdr-topline">
+        <Box as="div" className="rdr-container rdr-topline__inner">
+          <Box as="span">HALUHERA, REWARI · HARYANA</Box>
+          <Box as="span">ESTABLISHED 2006</Box>
+        </Box>
+      </Box>
+      <Box as="header" className="rdr-header">
+        <Box as="div" className="rdr-container rdr-header__inner">
           <Link to={APP_ROUTE.HOME} className="rdr-logo" aria-label="RDR School home">
             <SchoolMonogram/>
-            <span><strong>RDR School</strong><small>Rao Deena Ram Vidya Vihar</small></span>
+            <Box as="span"><Box as="strong">RDR School</Box><Box as="small">Rao Deena Ram Vidya Vihar</Box></Box>
           </Link>
-          <nav className="rdr-nav" aria-label="Main navigation">
+          <Box as="nav" className="rdr-nav" aria-label="Main navigation">
             {navItems.map(item => <Link className={getSiteNavClassName(pathname, item.to)} to={item.to} key={item.to}>{item.label}</Link>)}
-          </nav>
-          <div className="rdr-header__actions">
+          </Box>
+          <Box as="div" className="rdr-header__actions">
             <EnquiryLink className="rdr-btn rdr-btn--solid rdr-header__enquire">Enquire now <ArrowUpRight size={16}/></EnquiryLink>
-            <button type="button" className="rdr-menu-button" aria-label={menuLabel}
+            <Button unstyled type="button" className="rdr-menu-button" aria-label={menuLabel}
               aria-expanded={open} aria-controls="rdr-mobile-navigation" onClick={()=>setOpen(v=>!v)}>
               <MenuIcon size={22}/>
-            </button>
-          </div>
-        </div>
-      </header>
+            </Button>
+          </Box>
+        </Box>
+      </Box>
       {open && <>
-        <button className="rdr-mobile-nav__scrim" type="button" aria-label="Close menu" onClick={()=>setOpen(false)}/>
-        <nav className="rdr-mobile-nav" id="rdr-mobile-navigation" aria-label="Mobile navigation">
-          <div className="rdr-mobile-nav__top"><strong>Explore RDR School</strong><button type="button" onClick={()=>setOpen(false)} aria-label="Close menu"><X size={21}/></button></div>
+        <Button unstyled className="rdr-mobile-nav__scrim" type="button" aria-label="Close menu" onClick={()=>setOpen(false)}/>
+        <Box as="nav" className="rdr-mobile-nav" id="rdr-mobile-navigation" aria-label="Mobile navigation">
+          <Box as="div" className="rdr-mobile-nav__top"><Box as="strong">Explore RDR School</Box><Button unstyled type="button" onClick={()=>setOpen(false)} aria-label="Close menu"><X size={21}/></Button></Box>
           {navItems.map(item=><Link key={item.to} to={item.to} onClick={()=>setOpen(false)}>{item.label}<ArrowUpRight size={16}/></Link>)}
           <Link to={SCHOOL_ROUTE.DIRECTOR}>Director's message <ArrowUpRight size={16}/></Link>
           <Link to={SCHOOL_ROUTE.PRINCIPAL}>Principal's message <ArrowUpRight size={16}/></Link>
           <Link to={SCHOOL_ROUTE.CONTACT}>Contact & directions <ArrowUpRight size={16}/></Link>
           <EnquiryLink className="rdr-mobile-nav__action" onClick={()=>setOpen(false)}>Start an enquiry <ArrowRight size={16}/></EnquiryLink>
-        </nav>
+        </Box>
       </>}
     </>
   );
 };
 
 const SiteFooter = () => (
-  <footer className="rdr-footer">
-    <div className="rdr-container">
-      <div className="rdr-footer__top">
-        <div className="rdr-footer__intro">
-          <div className="rdr-logo rdr-logo--footer"><SchoolMonogram/><span><strong>RDR School</strong><small>Rao Deena Ram Vidya Vihar</small></span></div>
-          <p>Learning with purpose. Growing with confidence. Serving the community since 2006.</p>
-          <span className="rdr-footer__location"><MapPin size={16}/>{school.address}</span>
-        </div>
-        <div><h3>Discover</h3><Link to={SCHOOL_ROUTE.ABOUT}>Our story</Link><Link to={SCHOOL_ROUTE.ACADEMICS}>Academics</Link><Link to={SCHOOL_ROUTE.CAMPUS}>Facilities</Link><Link to={SCHOOL_ROUTE.GALLERY}>School life</Link></div>
-        <div><h3>For families</h3><Link to={SCHOOL_ROUTE.ADMISSIONS}>Admissions</Link><Link to={SCHOOL_ROUTE.RESOURCES}>Resources</Link><Link to={SCHOOL_ROUTE.CONTACT}>Contact</Link><Link to={AUTH_ROUTE.LOGIN}>School workspace</Link></div>
-        <div><h3>Transparency</h3><Link to={SCHOOL_ROUTE.DISCLOSURE}>Mandatory Public Disclosure</Link><a href={school.cbseSaras} target="_blank" rel="noreferrer">CBSE affiliation</a><a href={school.disclosurePdf} target="_blank" rel="noreferrer">2023 disclosure archive</a></div>
-      </div>
-      <div className="rdr-footer__bottom"><span>© {new Date().getFullYear()} RDR School. All rights reserved.</span><span>Haluhera · Rewari · Haryana</span></div>
-    </div>
-  </footer>
+  <Box as="footer" className="rdr-footer">
+    <Box as="div" className="rdr-container">
+      <Box as="div" className="rdr-footer__top">
+        <Box as="div" className="rdr-footer__intro">
+          <Box as="div" className="rdr-logo rdr-logo--footer"><SchoolMonogram/><Box as="span"><Box as="strong">RDR School</Box><Box as="small">Rao Deena Ram Vidya Vihar</Box></Box></Box>
+          <Box as="p">Learning with purpose. Growing with confidence. Serving the community since 2006.</Box>
+          <Box as="span" className="rdr-footer__location"><MapPin size={16}/>{school.address}</Box>
+        </Box>
+        <Box as="div"><Box as="h3">Discover</Box><Link to={SCHOOL_ROUTE.ABOUT}>Our story</Link><Link to={SCHOOL_ROUTE.ACADEMICS}>Academics</Link><Link to={SCHOOL_ROUTE.CAMPUS}>Facilities</Link><Link to={SCHOOL_ROUTE.GALLERY}>School life</Link></Box>
+        <Box as="div"><Box as="h3">For families</Box><Link to={SCHOOL_ROUTE.ADMISSIONS}>Admissions</Link><Link to={SCHOOL_ROUTE.RESOURCES}>Resources</Link><Link to={SCHOOL_ROUTE.CONTACT}>Contact</Link><Link to={AUTH_ROUTE.LOGIN}>School workspace</Link></Box>
+        <Box as="div"><Box as="h3">Transparency</Box><Link to={SCHOOL_ROUTE.DISCLOSURE}>Mandatory Public Disclosure</Link><ExternalAnchor href={school.cbseSaras} target="_blank" rel="noreferrer">CBSE affiliation</ExternalAnchor><ExternalAnchor href={school.disclosurePdf} target="_blank" rel="noreferrer">2023 disclosure archive</ExternalAnchor></Box>
+      </Box>
+      <Box as="div" className="rdr-footer__bottom"><Box as="span">© {new Date().getFullYear()} RDR School. All rights reserved.</Box><Box as="span">Haluhera · Rewari · Haryana</Box></Box>
+    </Box>
+  </Box>
 );
 
 export { SiteHeader };
