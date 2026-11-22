@@ -81,16 +81,29 @@ const scan = async (folder) => {
     };
     visit(sf);
     if (!edits.length) continue;
+    // Reuse the original import when it owns the same public component API.
+    const importsToAdd = [];
+    for (const [symbol, module] of imports) {
+      if (new RegExp('\\b' + symbol + '\\b').test(before)) continue;
+      const existing = sf.statements.find((statement) =>
+        ts.isImportDeclaration(statement) &&
+        ts.isStringLiteral(statement.moduleSpecifier) &&
+        statement.moduleSpecifier.text === module &&
+        statement.importClause?.namedBindings &&
+        ts.isNamedImports(statement.importClause.namedBindings),
+      );
+      if (!existing) {
+        importsToAdd.push("import { " + symbol + " } from '" + module + "';");
+        continue;
+      }
+      const names = existing.importClause.namedBindings;
+      edits.push({ start: names.getEnd() - 1, end: names.getEnd() - 1, text: ', ' + symbol });
+    }
+
     // Replacements are nonoverlapping source ranges. Apply backwards to preserve positions.
     let updated = before;
     for (const edit of edits.sort((a, b) => b.start - a.start)) {
       updated = updated.slice(0, edit.start) + edit.text + updated.slice(edit.end);
-    }
-    // Do not create an import if the owner already imports the symbol.
-    const importsToAdd = [];
-    for (const [symbol, module] of imports) {
-      const matching = new RegExp('\\b' + symbol + '\\b').test(before);
-      if (!matching) importsToAdd.push("import { " + symbol + " } from '" + module + "';");
     }
     if (importsToAdd.length) updated = importsToAdd.join('\n') + '\n' + updated;
     await writeFile(filename, updated, 'utf8');
