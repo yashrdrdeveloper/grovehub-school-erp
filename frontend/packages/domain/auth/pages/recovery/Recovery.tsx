@@ -1,6 +1,7 @@
 import { Box } from '@Components/components/Box';
 import type { ReactNode } from 'react';
-import { LoginLayout, LoginLayoutVariant } from '../../components/loginLayout';
+import { LoginLayout } from '../../components/loginLayout';
+import { LoginLayoutVariant } from '../../components/loginLayout/constants/loginLayout.variant';
 
 import { RecoveryPasswordForm } from './components/recoveryPasswordForm';
 import { RecoveryState } from './components/recoveryState';
