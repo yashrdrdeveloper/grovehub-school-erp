@@ -13,7 +13,7 @@ import type { AuthProviderProps, SessionContextValue } from './types/authProvide
 const SessionContext = createContext<SessionContextValue | null>(null);
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [account, setAccount] = useState<Account | null>(null);
+  const [account, setAccount] = useState<SessionContextValue['account']>(null);
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const pendingReload = useRef<Promise<void> | null>(null);
