@@ -1,6 +1,6 @@
 import { Button } from '@Components/components/Button';
 import { Box } from '@Components/components/Box';
-import { Outlet } from 'react-router-dom';
+import { Outlet } from '@Components/router';
 import { SHELL_TEST_IDS } from '../../constants/shell.testIds';
 
 import { AppLauncherContainer } from '../../components/appLauncher';

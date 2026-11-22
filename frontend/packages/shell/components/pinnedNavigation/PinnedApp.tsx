@@ -1,7 +1,7 @@
 import { Button } from '@Components/components/Button';
 import { Box } from '@Components/components/Box';
 import { PinOff } from '@Components/icons';
-import { NavLink } from 'react-router-dom';
+import { NavLink } from '@Components/router';
 
 import { getShellNavClassName } from '../../helpers/shell.getNavClassName';
 import type { PinnedAppProps } from './types/pinnedNavigation';

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from '@Components/router';
 import { clearRecoveryFlow, readRecoveryFlow, recoveryPurposeForPath } from '../../session/recoveryFlowSession';
 
 /** Keep an in-memory proof only while navigating inside the same recovery flow. */

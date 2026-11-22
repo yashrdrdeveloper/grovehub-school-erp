@@ -1,6 +1,6 @@
 import { ErrorBoundary } from '@Components/components/ErrorBoundary';
 import { APP_ROUTE } from '@Business/app/routes';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from '@Components/router';
 
 import { PublicOnly, RequireSession, useRecoveryFlowBoundary } from '@Domain/auth';
 import { LandingPage, PUBLIC_SITE_PATHS } from '@Domain/publicSite';

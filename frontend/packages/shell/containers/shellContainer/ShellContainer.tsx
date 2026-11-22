@@ -1,6 +1,6 @@
 import { ErrorBoundary } from '@Components/components/ErrorBoundary';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from '@Components/router';
 
 import { AuthProvider } from '@Domain/auth';
 

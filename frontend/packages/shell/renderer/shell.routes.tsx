@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate } from '@Components/router';
 
 import { AUTH_ROUTE } from '@Business/auth/routes';
 import { APP_ROUTE } from '@Business/app/routes';

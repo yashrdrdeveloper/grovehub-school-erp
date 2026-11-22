@@ -1,6 +1,6 @@
 import { SCHOOL_ROUTE } from '../../constants/school.routes';
 import { useEffect, useState, type MouseEvent } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from '@Components/router';
 import type { SchoolPanel } from '../../components/publicSheet';
 import { HomePage } from '../../components/homeContent';
 import { pageContent } from '../../registry/schoolPages.registry';
