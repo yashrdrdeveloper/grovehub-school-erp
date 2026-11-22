@@ -1,2 +1,1 @@
-export const readProperty = <T, K extends keyof T>(key: K) =>
-  (value: T): T[K] => value[key];
+export { readProperty } from './readProperty';

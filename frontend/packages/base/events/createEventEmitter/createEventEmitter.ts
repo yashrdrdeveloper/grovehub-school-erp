@@ -1,11 +1,7 @@
-// Pure technical event emitter. No application or domain dependencies.
-export interface EventEmitter<T> {
-  emit: (value: T) => void;
-  subscribe: (handler: (value: T) => void) => () => void;
-  clear: () => void;
-}
+import type { CreateEventEmitter } from './types/createEventEmitter';
 
-export const createEventEmitter = <T>(): EventEmitter<T> => {
+/** Technical event emitter with no business/domain dependencies. */
+export const createEventEmitter: CreateEventEmitter = <T>() => {
   const handlers = new Set<(value: T) => void>();
 
   return {
