@@ -4,11 +4,11 @@ The shell is a composition-only package. It constructs React Router, TanStack Qu
 
 ## RDR School experience (November 2026)
 
-The workspace displays **RDR School**; this is the requested school demo identity, not a claim that dynamic multi-tenant school branding exists. Later tenant-aware school metadata should replace the static label in `components/workspaceFrame/WorkspaceFrame.tsx` without changing the shared shell.
+The workspace displays **RDR School**; this is the requested school demo identity, not a claim that dynamic multi-tenant school branding exists. Later tenant-aware school metadata should replace the static label in `components/protectedLayout/ProtectedLayout.tsx` without changing the shared shell.
 
 ### Visual system
 
-Use screenshot-inspired neutral colors: clean white and pale-gray surfaces for light mode; near-black indigo-charcoal surfaces with hairline dividers for dark mode. Use bright pink, blue, and green sparingly as information accents, not large page backgrounds. Avoid oversized colorful hero gradients, fake charts, or fabricated metrics. Shared visual tokens are in `app/styles.css`. Follow components-first composition, accessible focus states, and clear contrast.
+Use screenshot-inspired neutral colors: clean white and pale-gray surfaces for light mode; near-black indigo-charcoal surfaces with hairline dividers for dark mode. Use bright pink, blue, and green sparingly as information accents, not large page backgrounds. Avoid oversized colorful hero gradients, fake charts, or fabricated metrics. Shared global design tokens are in `packages/styles`; component recipes belong in `packages/components/styles`. Follow components-first composition, accessible focus states, and clear contrast.
 
 ### Appearance
 
@@ -16,7 +16,7 @@ Use screenshot-inspired neutral colors: clean white and pale-gray surfaces for l
 
 ### Navigation and application catalog
 
-The shared shell owns the narrow desktop sidebar, mobile navigation (Home, Apps, Menu) and searchable, categorized app catalog. Active routes come from `registry/domains.registry.tsx`, and available shortcuts come from `registry/navigation.registry.ts`. The catalog may describe planned apps but must not create dead navigation to unimplemented routes or claim unimplemented operations work. Prioritize lightweight touch targets and a mobile bottom sheet for the catalog.
+The shared shell owns the narrow desktop sidebar, mobile navigation (Home, Apps, Menu) and searchable, categorized app catalog. Active routes come from `registry/domains.registry.tsx`, and available shortcuts come from `registry/navigation.registry.ts`. The catalog shows **implemented routes only**. Placeholder People, Accounts, Integrations, Security, Settings and future modules have been removed until working routes and business logic exist. Prioritize lightweight touch targets and a mobile bottom sheet for the catalog.
 
 ### Operational dashboard
 
@@ -31,7 +31,7 @@ At smaller widths, sidebar becomes a dismissible drawer, app catalog a bottom sh
 
 - The top-left four-square button opens a **full-workspace catalog**. On desktop it fills the area to the right of the persistent sidebar; on mobile it uses the entire viewport. Escape or the close button dismisses it.
 - **Pinned apps** are shown as the first catalog section and populate the sidebar in saved order. Use the pin/unpin control on any available application tile or hover over a pinned sidebar item to unpin it.
-- Planned applications are visible for discovery but cannot be opened or pinned until their routes are implemented. Never simulate functional navigation to unimplemented modules.
+- Unimplemented applications are **not listed**. Introduce an application only after it has an implemented, authorized route.
 - The desktop sidebar collapses to an icon rail. Its expanded/collapsed preference and pinned routes are stored in local browser storage (`groovehub.workspace.sidebar.collapsed.v1` and `groovehub.workspace.pinned.v1`).
 - The mobile sidebar remains a drawer even if the desktop collapse preference is on. The mobile Apps entry opens the full-screen catalog.
 - Navigation and catalog application metadata live in `registry/appCatalog.registry.ts`. The catalog UI is in `layout/AppLauncher.tsx`. Shell reads the same catalog, so app labels/icons/links must remain consistent. Pinning is currently per-browser, not server-synchronized.
@@ -44,4 +44,10 @@ Dashboard remains a layout preview, never invented analytics. KPI cards form a c
 
 ## Architecture after refactor
 
-Only `Shell.tsx` and `index.ts` live at the package root. `containers/shellContainer/` creates providers; `components/appRoutes/` composes domain-root routes; `components/workspaceFrame/`, `sidebar/`, `topbar/`, `mobileNav/`, `themeChoices/` and `pinnedNavigation/` own view markup. `hooks/useShellState/`, `hooks/useShellActions/` and `storage/` isolate state and persistence. Theme resolution is in `@Components/hooks/useWorkspaceTheme/` so mobile system appearance does not overwrite a desktop preference.
+Only `Shell.tsx` and `index.ts` live at the package root. `containers/shellContainer/` creates providers; `components/appRoutes/` composes domain-root routes; `components/protectedLayout/`, `sidebar/`, `topbar/`, `mobileNav/`, `themeChoices/` and `pinnedNavigation/` own view markup. `hooks/useShellState/`, `hooks/useShellActions/` and `storage/` isolate state and persistence. Theme resolution is in `@Components/hooks/useWorkspaceTheme/` so mobile system appearance does not overwrite a desktop preference.
+
+## Persistent protected layout, no public layout
+
+`AppRoutes` renders public school routes directly and public auth pages under `PublicOnly`. The protected pathless route nests `RequireSession → ProtectedLayout → Shell → Outlet`. The layout and its sidebar, toolbar, launcher and theme state are mounted once across protected child-route navigation; only the outlet's page changes. A regression test under `components/protectedLayout/__tests__` checks that the same shell DOM node survives child route changes.
+
+The Dashboard is an outlet child at `/dashboard`, **not** the workspace wrapper. Do not create a `Shell` per domain or key it by pathname. The catalog and pinned navigation contain **only implemented apps** (currently Dashboard); no route to People/Integrations/Settings is exposed until built.

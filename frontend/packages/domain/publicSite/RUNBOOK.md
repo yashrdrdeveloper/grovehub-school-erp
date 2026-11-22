@@ -25,7 +25,7 @@ the assets are migrated. Cropping is non-destructive, using CSS `object-fit`
 and carefully selected focal positions. Do not artificially change students,
 staff, certificates, buildings or facilities.
 
-Original URLs and alt text are maintained in `pages/landing/config/content.ts`.
+Original URLs and alt text are maintained in `pages/landing/constants/school.content.ts`.
 Obtain the school's rights/consent confirmation before production deployment,
 particularly for identifiable minors.
 
@@ -68,7 +68,7 @@ Production integration is a separate backend task:
 
 ## Architecture
 
-`packages/domain/publicSite/pages/landing/` owns public page composition, `config/content.ts` holds school content, and `components/publicSheet/` owns the Radix dialog.
+`packages/domain/publicSite/pages/landing/` owns public page composition, `constants/school.content.ts` holds school content, and `components/publicSheet/` owns the Radix dialog.
 Once a public API exists, place transport and business logic in
 `packages/business/lead/`; do not call API endpoints from generic components.
 
@@ -94,11 +94,8 @@ for republishing; current disclosure documents and Lead CRM API are not availabl
   history, leadership, academics, campus and gallery.
 - On mobile, long marketing sections are omitted **from the homepage view**.
   Public information remains available via dedicated URLs or information sheets.
-- Clicking a public navigation destination intercepts the same-origin link and
-  opens a full-screen `PublicSheet` (Radix Dialog, focus-trapped, Escape and X
-  close, background scroll locked, bottom-up motion).
-- The URL retains the target path and browser Back dismisses the sheet. Opening
-  the same URL directly renders a standalone public page for sharing and SEO.
+- Public navigation opens **standalone addressable pages**, not a generic overlay. Only enquiry actions open the `PublicSheet` (Radix Dialog, focus-trapped, Escape and X close).
+- Public pages have no shell-level public layout; each supported URL is independently addressable and suitable for SEO.
 - `/mandatory-public-disclosure` intentionally remains a standalone HTML
   disclosure route; it does not open in a marketing panel.
 - Director, principal, history and philosophy each have dedicated accessible
@@ -143,3 +140,11 @@ mobile navigation sheet.
 The route entry `pages/landing/LandingPage.tsx` is a page composer rather than a giant component. Chrome, reusable photo/text motifs, home and about content, academic/campus/gallery sections and resources/disclosures are separated into `components/` units. Enquiry form content is presentational, with state and orchestration in `hooks/useEnquiryForm` and `containers/enquiryFormContainer`; contact validation and mailto generation are pure helpers with colocated tests. The floating school information sheet splits story/photo/info panels from its Radix dialog shell.
 
 The school site preserves original CSS classes until responsive browser review; Tailwind v4 and shadcn-style shared controls are available via `@Components`. The Enquiry form uses the shared native `InputControl` in unstyled migration mode so it does not unexpectedly change the public website.
+
+## Revision 6 structure
+
+`pages/landing/LandingPage.tsx` is presentational. `containers/landingContainer` renders the controller hook `hooks/useLandingPage`, which owns navigation, enquiry dialog state, scroll and SEO effects. Route-view registration lives in `registry/schoolPages.registry.tsx`; `PUBLIC_SITE_PATHS` is exported through the publicSite domain root to the shell, preventing duplicated route lists.
+
+Static school information and photo references live in `constants/school.content.ts`. SEO in `constants/school.seo.ts`, panel paths in `constants/school.panels.ts`, site navigation in `constants/school.navigation.ts`, enquiry initial values and sheet copy in their corresponding component-local `constants/` folders. The old generic `config/` files have been deleted, as have unused testimonial/event constants that are not rendered.
+
+The public site does **not** render a shared authenticated `Shell` or a separate public workspace layout. Existing CSS remains scoped while visual migration proceeds.

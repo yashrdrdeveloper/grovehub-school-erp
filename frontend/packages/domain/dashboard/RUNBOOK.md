@@ -1,7 +1,9 @@
 # Dashboard domain
 
-The route exposed by `@Domain/dashboard` is composed in `pages/dashboard/`. The page root contains only `Dashboard.tsx` and `index.ts`; `containers/dashboardContainer/` gathers presentation inputs. `hooks/useDashboardCalendar/` owns the Today/Upcoming selection. `helpers/getDashboardDateParts/` is pure, typed and has adjacent Jest tests. Visual sections live in focused components, and preview metadata lives under `config/`.
+`@Domain/dashboard` exports only the implemented dashboard page. Its route is `/dashboard`, inside the persistent shell-level `ProtectedLayout`—the dashboard page **is not** itself the layout wrapper.
 
-**No live activity has been fabricated.** Empty metrics and cards explicitly indicate preview states. Any future domain service data must be introduced through domain hooks and business-owned API contracts, without fetching in presentational components or the shell.
+`pages/dashboard/Dashboard.tsx` is stateless presentation. `containers/dashboardContainer/` owns composition, `hooks/useDashboardCalendar/` owns calendar state, `helpers/dashboard.getDateParts.ts` is the pure typed helper with `helpers/__tests__`, and `constants/dashboard.metrics.ts` and `constants/dashboard.workspaces.ts` own static preview metadata. There is no `config/` folder or per-helper barrel.
 
-Run `pnpm check:architecture`, `pnpm typecheck`, `pnpm test -- --runInBand`, and `pnpm build` from `frontend/`.
+**No fabricated live activity**: cards explicitly show unavailable/preview states. User-specific counts are not invented. Add a domain only after its route and business services exist, and never trigger business fetching from the shared protected shell.
+
+Conformance and remaining work are maintained in `docs/engineering/frontend/FRONTEND_CODE_GUIDELINES.md` §22. Run architecture, TypeScript, Jest and production build checks before merge.

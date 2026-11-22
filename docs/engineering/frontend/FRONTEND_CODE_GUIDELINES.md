@@ -1,8 +1,8 @@
 # Frontend Code Guidelines
 
-> **Status:** Mandatory, authoritative frontend engineering standard — **Revision 5 (November 2026)**.
+> **Status:** Mandatory, authoritative frontend engineering standard — **Revision 6 (November 2026)**.
 >
-> **Scope:** Every source file under `frontend/`, including `app`, `packages/base`, `packages/business`, `packages/components`, `packages/styles`, `packages/domain`, `packages/shell`, unit tests, integration tests, styles, generated code boundaries, and scripts.
+> **Scope:** Every source file under `frontend/`, including `app`, `packages/base`, `packages/business`, `packages/components`, `packages/styles`, `packages/assets`, `packages/domain`, `packages/shell`, unit tests, integration tests, styles, generated code boundaries, and scripts.
 >
 > **Stack:** React 19, TypeScript strict, pnpm, Vite, Tailwind CSS 4, shadcn-compatible Radix primitives, Lucide icons through the components package, Jest, and the existing project architecture checks.
 >
@@ -26,6 +26,7 @@ frontend/
 │   ├── business/              # reusable business contracts, API transport and operations
 │   ├── components/            # reusable accessible UI, icons, hooks and component recipes
 │   ├── styles/                # global design tokens, themes, typography and Tailwind
+│   ├── assets/                # SVGs, images and illustrative assets by domain
 │   ├── domain/
 │   │   ├── auth/              # authentication pages and session-aware UI
 │   │   ├── dashboard/         # school home page
@@ -37,9 +38,9 @@ frontend/
 └── package.json
 ~~~
 
-The dependency graph is `app → shell → domain / components / styles / base` and `domain → business / components / styles / base`; `business → base`; `components → styles / base`; `styles → nothing higher`; `base → nothing higher`. Business and components are independent of domain and shell. A domain never imports shell or another domain's private internals. Shell imports domain **root APIs only**, such as `@Domain/auth`. Type-only imports obey the same boundaries. API calls must not originate from the shell or reusable presentation components.
+The dependency graph is `app → shell → domain / components / styles / base` and `domain → business / components / styles / base`; `business → base`; `components → assets / styles / base`; `assets → nothing higher`; `styles → nothing higher`; `base → nothing higher`. Business and components are independent of domain and shell. A domain never imports shell or another domain's private internals. Shell imports domain **root APIs only**, such as `@Domain/auth`. Type-only imports obey the same boundaries. API calls must not originate from the shell or reusable presentation components.
 
-Use **the exact case-sensitive aliases actually declared in tsconfig/Vite**: `@Base`, `@Business`, `@Components`, `@Domain`, `@Styles`, `@Shell`. No obsolete `@Auth` or `@LandingPage` alias. Within a unit use short relative imports; outside the unit use its intentional public boundary.
+Use **the exact case-sensitive aliases actually declared in tsconfig/Vite**: `@Base`, `@Business`, `@Components`, `@Domain`, `@Styles`, `@Assets`, `@Shell`. No obsolete `@Auth` or `@LandingPage` alias. Within a unit use short relative imports; outside the unit use its intentional public boundary.
 
 `frontend/app` owns no business screens. `packages/base` must not import React, React Router, the DOM, business entities, or UI. Base browser-event **name constants** are pure; adding actual event listeners belongs in a browser-aware component/domain hook.
 
@@ -496,7 +497,7 @@ CI verifies architecture, typecheck, Jest, build and static prerender routes. Ad
 
 ## 18. Migration order and definition of done
 
-Follow `docs/engineering/frontend/FRONTEND_REFACTOR_MIGRATION.md` for a specific inventory and phased plan. Do not relocate the same helper twice: ownership review happens before moving files.
+The status/inventory and phased plan are integrated in **§22 of this document**. There is no separate migration document. Do not relocate the same helper twice: ownership review happens before moving files.
 
 **Required migration order**:
 
@@ -572,3 +573,77 @@ Shared component APIs should expose sensible defaults. Prefer semantic `variant`
 **Safe legacy migration:** Existing `app/styles.css` still contains old feature and shell CSS; migrate it gradually to its owning domain/component. The shared button/field/card classes are now owned by `packages/components/styles/primitives.css`, and global theme declarations are owned only by `packages/styles`. Tailwind Preflight stays disabled until responsive and visual regression checks prove it can be safely introduced.
 
 **Required verification:** `pnpm check:architecture` must enforce theme parity, no root-token redefinition, correct shadcn entrypoint and legal package imports; `pnpm typecheck`, Jest and build must pass. Visual verification across desktop, mobile, short viewports, light/dark and high zoom is still mandatory before declaring a CSS migration complete.
+
+
+## 21. Assets, artwork, page components and persistent shell boundaries
+
+### 21.1 `packages/assets` owns the visual source, not screen behavior
+
+All **new** reusable SVG files, SVG-only TSX vectors, illustration source assets and reusable image assets must live under `frontend/packages/assets/<domain>/`, such as `packages/assets/auth/`. Prefer `.svg` for static standalone art; use a typed SVG-only `.tsx` component only when `currentColor`, theme CSS variables, SVG property forwarding or inline styling must be inherited. Do not copy SVG markup into `pages/`, shell layouts, JSX helper files, or domain feature pages. Do not create duplicate `.svg` and `.tsx` versions of identical art merely to satisfy naming.
+
+A shared renderer `@Components/components/SVGRenderer` receives either `src` for SVG files or `component` for inline SVG-only assets. It owns native `dataTestId` forwarding, the `img`/SVG leaf and accessible roles. Decorative art **must** be `decorative`, hidden from assistive tech, and has no synthetic alt text; meaningful art **must** specify `alt`. Keep status copy, surrounding layout and behavior in `@Domain/auth/components`, not in `@Assets`. The `SVGRenderer` component tests must exercise both rendering modes.
+
+**Approved auth example:** `@Assets/auth/AcademicPathwaysSvg` defines the vector, `@Components/components/SVGRenderer` renders the native SVG, and `@Domain/auth/components/authAmbientGraphic` owns the caption and page-level markup. A composite `AuthStatusArt` used across recovery and forgot-password belongs in the shared *auth-domain component layer*, not `pages/` and not `@Assets` because it contains status-specific presentation.
+
+**No dead prototypes:** the retired `AuthFrame`, `AuthMobileArtwork`, `loginv2/SoffitGradient` and standalone old `LoginV2` must not be restored or imported. Keep the single current RDR auth experience, its approved monogram, styles and accessible form. Delete all unused SVGs, import facades, component wrappers, styles and tests only after proving no live importer exists and updating the owning tests.
+
+### 21.2 Strict ownership by directory
+
+`pages/` is for actual routed pages and page-local `components`, `hooks`, `containers`, `templates`, `helpers`, `constants` and `__tests__`. Any UI component shared by multiple pages in the **same domain** belongs in `packages/domain/<domain>/components/`. A domain-wide viewport hook belongs in `packages/domain/<domain>/hooks/`; a session security guard and proof lifecycle belong in `packages/domain/auth/core/guards` and `core/session`.
+
+Do **not** leave `AuthAmbientGraphic.tsx`, `LoginLayout.tsx`, `RecoveryFlowBoundary.tsx`, random SVG elements, or compatibility stubs at `auth/pages/` root. Only true routing page files go under their own `pages/<page>/`. Existing tests at old flat locations must be relocated to the owning unit's `__tests__` during migration.
+
+`@Assets` has no business, hooks, styles, or renderer logic; `@Components` can import `@Assets`; `@Domain` can import `@Components` and `@Assets`. `@Styles`, `@Base` and `@Business` must not depend on `@Assets`. Vite, TypeScript and Jest must resolve every new alias consistently. Never expose sensitive or user-created content as public static files.
+
+### 21.3 Public routes have **no workspace layout**
+
+The school website is a public site. Its routes render `@Domain/publicSite` directly in `AppRoutes`: **no shared `PublicLayout` or `Shell` wrapper around school pages, and no session bootstrap requirement for public pages**. `LandingPage.tsx` is presentational; `containers/landingContainer` and `hooks/useLandingPage` own route navigation, enquiry sheet state, scroll restoration and SEO updates. The site header/footer may be composed inside that public page, without creating a shell-level layout.
+
+**Content and configuration:** school identity, school photographs and alt text, disclosures, navigation labels, enquiry options, panel mappings, SEO metadata and any fixed copy live in **named files under `constants/`**; never in generic `config/content.ts` or one enormous `*.config.ts`. `registry/schoolPages.registry.tsx` owns the React component-to-public-route table. `PUBLIC_SITE_PATHS` is derived from that registry and exported through `@Domain/publicSite`; the shell must not maintain a second copy of the route list. `config/` is reserved for genuine runtime composition, not static content or dictionaries. Keep all existing public SEO paths, disclosure caveats and enquiry behavior.
+
+### 21.4 Protected routes share **one persistent** layout
+
+Protected routes must follow this exact structural ownership:
+
+```text
+AppRoutes
+└── RequireSession            # session proof and redirect gate
+    └── ProtectedLayout       # mounts Shell once for authenticated workspace
+        └── Shell              # sidebar/topbar/app catalog/mobile navigation
+            └── Outlet         # ONLY this area changes with child route
+                ├── /dashboard
+                └── future real domain routes
+```
+
+The `ProtectedLayout` route is **pathless**, and no domain screen creates its own `Shell`. Within protected navigation the shell's local state, sidebar, pinned apps, theme and topbar survive without remounting. Do **not** put `key={pathname}` on `ProtectedLayout` or `Shell`, render distinct shells per child route, wrap protected child routes in another `BrowserRouter`, or rebuild the provider tree on route changes. React may rerender components when their state/context changes; the invariant is **no unmount/remount** of the shared shell when switching protected children. Add tests proving the same DOM shell remains mounted.
+
+`@Shell` composes only real route implementations exported by domain root APIs. Remove dead route entries and unimplemented People, Accounts, Integrations, Settings or Security pages; **do not** show clickable phantom navigation or catalog entries for them. The catalog may add a module only after that module has a routed, authorized implementation. Account/theme preferences inside the shell are controls, not automatically a separate Settings route. Retain the Dashboard domain at `/dashboard`; it is the implemented child page, **not** the persistent layout itself.
+
+### 21.5 Safe pruning and migration tests
+
+Before deleting source, verify actual live imports, dynamic imports, route registry, CSS consumers, public API exports and tests. Remove dead source + imports + unused tests + CSS as one change; never silently redirect an old production authentication URL to a non-equivalent screen. Keep `/loginv2` redirecting to the canonical sign-in URL for bookmarks, `/setup` for invitation links, all thirteen public SEO paths and `/dashboard`. The unused standalone `LoginV2` prototype is distinct from the preserved `/loginv2` compatibility *route*.
+
+The backend owns recovery retry limits; routing and artwork changes must not turn invalid links into sign-in states or leak one-time proof tokens to persistent storage. Test accessible artwork, original CSS hooks, mobile theme, login navigation, enquiry modal, public SEO routes, and protected layout identity; CI does not replace manual visual testing.
+
+## 22. Unified migration inventory and enforcement status
+
+This section replaces the retired `FRONTEND_REFACTOR_MIGRATION.md` and remains inside the **single authoritative** frontend engineering document. Status is based on implemented source changes, **not** a blanket claim that Revision 6 is fully enforced.
+
+| Area | Current state | Remaining strict requirement |
+|---|---|---|
+| `packages/assets/auth` and `@Components/SVGRenderer` | Active academic-pathways SVG moved; native renderer and its tests present; unused auth graphics/prototypes deleted | Move any remaining screen-owned new vectors to assets as touched |
+| `domain/auth/pages` | Shared login layout moved to `domain/auth/components/loginLayout`; viewport hook moved to domain hooks; recovery guard/session moved into core; redundant page wrappers deleted | Enforce owner-local `__tests__`, flatten remaining page helper directories |
+| `domain/auth/pages/login` | Functional form and dedicated hooks exist | Split remaining `config/` into flat `constants/`, flatten helpers, complete `@Base` Lodash migration and view-model/strategy selection |
+| `domain/auth/pages/recovery` | Server-authoritative activation recovery preserved | Split its large useRecovery hook into link/grant/form/submission/retry units; flatten helper units |
+| `domain/auth/pages/forgotPassword` | Functional form and countdown preserved | Flatten remaining helpers/constants, resolve branch-only view logic, add owner-local tests |
+| `domain/publicSite` | School content/SEO/panel data in constants, routed views in domain registry, page root presentational, navigation/enquiry owned by hook | Finish finer-grained section component splitting and remove duplicate CSS decisions only after visual verification |
+| `domain/dashboard` | Data preview split into constants, typed date helper and tests flattened; implemented dashboard route kept | Integrate real business APIs only when they exist, avoiding fabricated counts |
+| `shell` | Pathless `ProtectedLayout` persists the shell, tested across child route changes; only implemented applications in catalog; no public layout | Add routed modules only with working domain/page contracts; no speculative links |
+| `packages/styles` | Central light/dark tokens, typography, spacing, breakpoints and Tailwind mappings | Progressively move legacy `app/styles.css` screen rules to owning components/domains |
+| `packages/components` | Shared Form, Text, SVGRenderer, Input, Typography, Button and other primitives with typed selectors | Complete shared icon exports, `useBoolean`, native leaf selector coverage and consistent variants |
+| `packages/base` | Several typed leaf utilities already exist | Add/test requested Lodash `_trim`, `_keys`, `_size`, `_find`, `_isUndefined`, `_isFunction` as needed, never import Lodash outside Base |
+| `scripts/check-*.mjs` | Existing boundaries, UI contracts, styles parity, test/build checks | Add full no-ternary, strict flat helper/constant directory and icon import enforcement as code is migrated |
+
+**Mandatory batch sequence:** shared Base/icons/useBoolean improvements → login as the reference unit → recovery + forgot-password + auth viewport rules → remaining domain sections/components → cross-repo static enforcement and browser visual tests. After each batch run frozen dependency install, architecture, TypeScript, Jest, lint and production build/prerender. Do not claim `pnpm lint` is already part of CI unless that step is actually present in its workflow. Route behavior, accessible selectors, real browser responsive checks, backend security states and intentional dead-file removal are all part of the acceptance criteria.
+
+**Definition of done:** source paths meet the rules, no obsolete exports/barrels remain, components get stable leaf test IDs, helpers and static copy have a single owner, only real routes appear in the app launcher, the shell survives protected navigation, tests are colocated and pass, and visual checks verify light/dark/mobile. This is a live migration ledger: completed rows stay factual and uncompleted enforcement remains visible.

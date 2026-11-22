@@ -23,3 +23,9 @@ Canonical path: `frontend/packages/domain/auth/`. The shell imports only `@Domai
 ## Checks
 
 From `frontend/`: `pnpm check:architecture`, `pnpm typecheck`, `pnpm test -- --runInBand`, `pnpm build`. Browser verification remains required for keyboard focus, narrow-height mobile screens and reset/activation token behavior.
+
+## Layout and art ownership (Revision 6)
+
+The active `LoginLayout` now lives under `components/loginLayout/`, with its scoped stylesheet. `AuthAmbientGraphic` and `AuthStatusArt` are shared domain components, and the academic-pathways vector is supplied by `@Assets/auth` through the reusable `@Components/components/SVGRenderer`. Deprecated `AuthFrame`, mobile-school SVG mockups, the standalone `LoginV2` prototype and the Soffit shader were deleted as unused.
+
+`hooks/useAuthViewportFit/` is domain-wide; `core/guards/RecoveryFlowBoundary` and `core/session/recoveryFlowSession` own the route/session proof boundary. The `/loginv2` URL remains a redirect to `/login`, not a separate screen. The remaining login/recovery helper flattening and recovery hook decomposition are tracked in the unified engineering guideline §22.
