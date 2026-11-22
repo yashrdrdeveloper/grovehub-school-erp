@@ -1,2 +1,3 @@
-export { validateLoginCredentials } from './login.credentials.validation';
-export { getLoginErrorMessage } from './login.authentication.error';
+export { normalizeLoginEmail } from './normalizeLoginEmail';
+export { validateLoginCredentials } from './validateLoginCredentials';
+export { getLoginErrorMessage } from './getLoginErrorMessage';

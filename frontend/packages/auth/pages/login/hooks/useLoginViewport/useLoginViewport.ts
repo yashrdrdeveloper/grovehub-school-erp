@@ -1,5 +1,7 @@
 import { useSyncExternalStore } from 'react';
 
+import type { UseLoginViewport } from './types/useLoginViewport';
+
 const PHONE_VIEWPORT = '(max-width: 720px)';
 
 const getMobileSnapshot = (): boolean =>
@@ -15,5 +17,5 @@ const subscribeToViewport = (notify: () => void): (() => void) => {
 };
 
 /** Keep a single active form in the DOM; CSS-only duplication breaks IDs and autofill. */
-export const useLoginViewport = (): boolean =>
+export const useLoginViewport: UseLoginViewport = () =>
   useSyncExternalStore(subscribeToViewport, getMobileSnapshot, () => false);

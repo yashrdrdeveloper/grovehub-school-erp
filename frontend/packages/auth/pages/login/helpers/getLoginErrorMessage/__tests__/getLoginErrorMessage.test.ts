@@ -1,4 +1,4 @@
-import { getLoginErrorMessage } from './login.authentication.error';
+import { getLoginErrorMessage } from '../getLoginErrorMessage';
 
 describe('login error mapping', () => {
   it('does not expose credential failure details', () => {

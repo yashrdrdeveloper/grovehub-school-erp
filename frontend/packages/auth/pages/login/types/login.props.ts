@@ -1,4 +1,4 @@
-import type { FormEventHandler, ReactNode } from 'react';
+import type { FormEventHandler, ReactElement, ReactNode } from 'react';
 
 import type { LoginState } from './login.state';
 
@@ -6,8 +6,8 @@ import type { LoginState } from './login.state';
 export interface LoginProps {
   readonly fieldId: string;
   readonly state: LoginState;
-  readonly onEmailChange: (email: string) => void;
-  readonly onPasswordChange: (password: string) => void;
+  readonly onEmailChange: (email: LoginState['email']) => void;
+  readonly onPasswordChange: (password: LoginState['password']) => void;
   readonly onTogglePassword: () => void;
   readonly onSubmit: FormEventHandler<HTMLFormElement>;
 }
@@ -23,3 +23,5 @@ export interface LoginPageProps {
   readonly controls: LoginProps;
   readonly isMobile: boolean;
 }
+
+export type LoginPageComponent = (props: LoginPageProps) => ReactElement;

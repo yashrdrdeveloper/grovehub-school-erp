@@ -1,4 +1,4 @@
-import { validateLoginCredentials } from './login.credentials.validation';
+import { validateLoginCredentials } from '../validateLoginCredentials';
 
 describe('login credential validation', () => {
   it('normalizes email without changing the original password', () => {
