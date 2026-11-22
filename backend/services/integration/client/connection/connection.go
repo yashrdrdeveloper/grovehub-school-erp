@@ -26,6 +26,9 @@ type Client interface {
 	ListConnections(ctx context.Context, tenantID, ownerGID string) ([]connectiondto.Connection, error)
 	// @Proxy connections.Disconnect
 	DisconnectConnection(ctx context.Context, tenantID, id string) (connectiondto.Connection, error)
+	// @Proxy connections.ExecuteSystemMail
+	ExecuteSystemMail(ctx context.Context, tenantID string, input json.RawMessage) (any, error)
+
 	// @Proxy connections.ExecuteAction
 	ExecuteAction(ctx context.Context, tenantID, connectionID string, action providerdto.Action, input json.RawMessage) (any, error)
 }

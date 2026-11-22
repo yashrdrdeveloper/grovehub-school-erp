@@ -18,6 +18,8 @@ type ConnectionRepository interface {
 	Get(ctx context.Context, tenantID, id string) (entity.Connection, error)
 	GetByID(ctx context.Context, id string) (entity.Connection, error)
 	List(ctx context.Context, tenantID, ownerGID string) ([]entity.Connection, error)
+	SystemMailSender(ctx context.Context, tenantID string) (entity.Connection, error)
+	ConfigureSystemMailSender(ctx context.Context, tenantID string, connectionID string) error
 	Disconnect(ctx context.Context, tenantID, id string) (entity.Connection, error)
 	SaveOAuthState(ctx context.Context, state entity.OAuthState) error
 	ConsumeOAuthState(ctx context.Context, hash string, now time.Time) (entity.OAuthState, error)

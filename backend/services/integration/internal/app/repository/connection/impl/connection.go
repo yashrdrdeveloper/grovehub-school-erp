@@ -130,3 +130,35 @@ func (r *ConnectionRepository) ListTests(ctx context.Context, connectionID strin
 		Order("completed_at DESC, id DESC").Limit(100).Find(&tests).Error
 	return tests, err
 }
+
+func (r *ConnectionRepository) SystemMailSender(ctx context.Context, tenantID string) (entity.Connection, error) {
+	var sender entity.Connection
+	err := coretransaction.Database(ctx, r.db).
+		Table("integration.connections AS c").
+		Joins("JOIN integration.system_mail_senders AS s ON s.connection_id = c.id AND s.tenant_id = c.tenant_id").
+		Where("s.tenant_id = ? AND c.status = ?", tenantID, entity.StatusActive).
+		Take(&sender).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return entity.Connection{}, integrationrepository.ErrConnectionNotFound
+	}
+	return sender, err
+}
+
+func (r *ConnectionRepository) ConfigureSystemMailSender(ctx context.Context, tenantID string, connectionID string) error {
+	result := coretransaction.Database(ctx, r.db).Exec(
+		`INSERT INTO integration.system_mail_senders (tenant_id, connection_id, updated_at)
+		SELECT c.tenant_id, c.id, CURRENT_TIMESTAMP
+		FROM integration.connections AS c
+		WHERE c.tenant_id = ? AND c.id = ? AND c.status = ?
+		ON CONFLICT (tenant_id) DO UPDATE
+		SET connection_id = EXCLUDED.connection_id, updated_at = EXCLUDED.updated_at`,
+		tenantID, connectionID, entity.StatusActive,
+	)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected != 1 {
+		return integrationrepository.ErrConnectionNotFound
+	}
+	return nil
+}
