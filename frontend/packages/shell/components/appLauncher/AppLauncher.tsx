@@ -1,3 +1,4 @@
+import { _map } from '@Base/utilities/map';
 import { Box } from '@Components/components/Box';
 import {
   DialogRoot,
@@ -49,13 +50,13 @@ export const AppLauncher = ({ model, open, onOpenChange, onTogglePin, sidebarCol
             {pinnedApps.length > 0 && (
               <Box as="section" className="catalog-section" data-testid={APP_LAUNCHER_TEST_IDS.PINNED}>
                 <Box as="div" className="catalog-section__heading"><Box as="div"><Pin size={16}/><Box as="h3">{APP_LAUNCHER_COPY.PINNED_TITLE}</Box></Box><Box as="span">{APP_LAUNCHER_COPY.PINNED_DESCRIPTION}</Box></Box>
-                <Box as="div" className="catalog-app-grid">{pinnedApps.map(app => renderAppLauncherApp({ app, isPinned: true, onOpenChange, onTogglePin }))}</Box>
+                <Box as="div" className="catalog-app-grid">{_map(pinnedApps, app => renderAppLauncherApp({ app, isPinned: true, onOpenChange, onTogglePin }))}</Box>
               </Box>
             )}
             {otherApps.length > 0 && (
               <Box as="section" className="catalog-section" data-testid={APP_LAUNCHER_TEST_IDS.OTHER}>
                 <Box as="div" className="catalog-section__heading"><Box as="div"><Grid2X2 size={16}/><Box as="h3">{APP_LAUNCHER_COPY.OTHER_TITLE}</Box></Box><Box as="span">{APP_LAUNCHER_COPY.OTHER_DESCRIPTION}</Box></Box>
-                <Box as="div" className="catalog-app-grid">{otherApps.map(app => renderAppLauncherApp({ app, isPinned: false, onOpenChange, onTogglePin }))}</Box>
+                <Box as="div" className="catalog-app-grid">{_map(otherApps, app => renderAppLauncherApp({ app, isPinned: false, onOpenChange, onTogglePin }))}</Box>
               </Box>
             )}
             {matching.length === 0 && <Box as="p" className="catalog-empty" data-testid={APP_LAUNCHER_TEST_IDS.EMPTY}>{APP_LAUNCHER_COPY.EMPTY}</Box>}

@@ -1,3 +1,4 @@
+import { _map } from '@Base/utilities/map';
 import { ErrorBoundary } from '@Components/components/ErrorBoundary';
 import { APP_ROUTE } from '@Business/app/routes';
 import { Navigate, Route, Routes } from '@Components/router';
@@ -12,10 +13,10 @@ import type { AppRoutesComponent } from './types/appRoutes';
 /** Domain roots publish routes; shell only composes public/protected envelopes. */
 export const AppRoutes: AppRoutesComponent = () => {
   useRecoveryFlowBoundary();
-  const landing = PUBLIC_SITE_PATHS.map(path => <Route key={path} path={path} element={<ErrorBoundary resetKey={path}><LandingPage/></ErrorBoundary>}/>);
-  const publicPages = publicRoutes.map(({ path, element }) =>
+  const landing = _map(PUBLIC_SITE_PATHS, path => <Route key={path} path={path} element={<ErrorBoundary resetKey={path}><LandingPage/></ErrorBoundary>}/>);
+  const publicPages = _map(publicRoutes, ({ path, element }) =>
     <Route key={path} path={path} element={<ErrorBoundary resetKey={path}>{element}</ErrorBoundary>}/>);
-  const workspacePages = workspaceRoutes.map(({ path, element }) =>
+  const workspacePages = _map(workspaceRoutes, ({ path, element }) =>
     <Route key={path} path={path} element={element}/>);
 
   return (

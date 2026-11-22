@@ -1,3 +1,4 @@
+import { _keys } from '@Base/utilities/keys';
 import type { ReactNode } from 'react';
 import { SCHOOL_ROUTE } from '../constants/school.routes';
 import { HomePage } from '../components/homeContent';
@@ -21,4 +22,4 @@ export const pageContent: Record<string,()=>ReactNode> = {
   [SCHOOL_ROUTE.CONTACT]:ContactPage,
 };
 
-export const PUBLIC_SITE_PATHS = Object.keys(pageContent);
+export const PUBLIC_SITE_PATHS = _keys(pageContent);

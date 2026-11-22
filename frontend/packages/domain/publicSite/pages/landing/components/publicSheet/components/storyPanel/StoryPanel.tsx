@@ -1,3 +1,4 @@
+import { _map } from '@Base/utilities/map';
 import { ExternalAnchor } from '@Components/components/ExternalAnchor';
 import { Button } from '@Components/components/Button';
 import { Box } from '@Components/components/Box';
@@ -13,7 +14,7 @@ const StoryPanel = ({initial='history',navigate}:{initial?:StoryKey;navigate:(pa
   const story=legacyStories[selected];
   return <Box as="div" className="rdr-sheet-story">
     <Box as="div" className="rdr-sheet-story__tabs" role="tablist" aria-label="School story topics">
-      {storyNavigation.map(item=>{
+      {_map(storyNavigation, item=>{
         const Icon=item.icon;
         return <Button unstyled type="button" role="tab" aria-selected={selected===item.id}
           key={item.id} className={getStoryPanelTabClassName(selected === item.id)} onClick={()=>setSelected(item.id)}>
@@ -27,7 +28,7 @@ const StoryPanel = ({initial='history',navigate}:{initial?:StoryKey;navigate:(pa
         <Box as="h3">{story.title}</Box>
         <Box as="p">{story.description}</Box>
         <Box as="div" className="rdr-sheet-story__points">
-          {story.highlights.map(label=><Box as="span" key={label}><Check size={15}/>{label}</Box>)}
+          {_map(story.highlights, label=><Box as="span" key={label}><Check size={15}/>{label}</Box>)}
         </Box>
         <Box as="div" className="rdr-sheet-story__footer">
           <ExternalAnchor href={story.link} target="_blank" rel="noreferrer">{story.linkLabel}<ExternalLink size={15}/></ExternalAnchor>

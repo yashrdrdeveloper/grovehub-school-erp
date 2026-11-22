@@ -1,3 +1,4 @@
+import { _map } from '@Base/utilities/map';
 import { Box } from '@Components/components/Box';
 import { ArrowLeft, LockKeyhole } from '@Components/icons';
 import { Link } from '@Components/router';
@@ -52,7 +53,7 @@ export const LoginLayout: LoginLayoutComponent = ({ children, title, description
               <ArrowLeft size={19}/><Box as="span">Back to school</Box>
             </Link>
             <Box as="div" className="rdr-login-v2__appearance" role="group" aria-label="Appearance">
-              {LOGIN_LAYOUT_APPEARANCES.map(option => renderLoginLayoutAppearanceOption({ ...option, preference, setPreference }))}
+              {_map(LOGIN_LAYOUT_APPEARANCES, option => renderLoginLayoutAppearanceOption({ ...option, preference, setPreference }))}
             </Box>
           </Box>
           <Box as="div" ref={mainRef} className="rdr-login-v2__main" data-testid={LOGIN_LAYOUT_TEST_IDS.MAIN}>

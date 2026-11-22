@@ -1,3 +1,4 @@
+import { _map } from '@Base/utilities/map';
 import { ExternalAnchor } from '@Components/components/ExternalAnchor';
 import { Button } from '@Components/components/Button';
 import { Box } from '@Components/components/Box';
@@ -42,7 +43,7 @@ const SiteHeader = () => {
             <Box as="span"><Box as="strong">RDR School</Box><Box as="small">Rao Deena Ram Vidya Vihar</Box></Box>
           </Link>
           <Box as="nav" className="rdr-nav" aria-label="Main navigation">
-            {navItems.map(item => <Link className={getSiteNavClassName(pathname, item.to)} to={item.to} key={item.to}>{item.label}</Link>)}
+            {_map(navItems, item => <Link className={getSiteNavClassName(pathname, item.to)} to={item.to} key={item.to}>{item.label}</Link>)}
           </Box>
           <Box as="div" className="rdr-header__actions">
             <EnquiryLink className="rdr-btn rdr-btn--solid rdr-header__enquire">Enquire now <ArrowUpRight size={16}/></EnquiryLink>
@@ -57,7 +58,7 @@ const SiteHeader = () => {
         <Button unstyled className="rdr-mobile-nav__scrim" type="button" aria-label="Close menu" onClick={()=>setOpen(false)}/>
         <Box as="nav" className="rdr-mobile-nav" id="rdr-mobile-navigation" aria-label="Mobile navigation">
           <Box as="div" className="rdr-mobile-nav__top"><Box as="strong">Explore RDR School</Box><Button unstyled type="button" onClick={()=>setOpen(false)} aria-label="Close menu"><X size={21}/></Button></Box>
-          {navItems.map(item=><Link key={item.to} to={item.to} onClick={()=>setOpen(false)}>{item.label}<ArrowUpRight size={16}/></Link>)}
+          {_map(navItems, item=><Link key={item.to} to={item.to} onClick={()=>setOpen(false)}>{item.label}<ArrowUpRight size={16}/></Link>)}
           <Link to={SCHOOL_ROUTE.DIRECTOR}>Director's message <ArrowUpRight size={16}/></Link>
           <Link to={SCHOOL_ROUTE.PRINCIPAL}>Principal's message <ArrowUpRight size={16}/></Link>
           <Link to={SCHOOL_ROUTE.CONTACT}>Contact & directions <ArrowUpRight size={16}/></Link>

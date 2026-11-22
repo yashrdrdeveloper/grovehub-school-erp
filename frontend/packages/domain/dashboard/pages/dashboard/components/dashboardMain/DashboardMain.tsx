@@ -1,3 +1,4 @@
+import { _map } from '@Base/utilities/map';
 import { Box } from '@Components/components/Box';
 import { ArrowUpRight, CheckCircle2, CircleDashed, Inbox } from '@Components/icons';
 
@@ -34,7 +35,7 @@ export const DashboardMain: DashboardMainComponent = () => (
         <Box as="span" className="school-home__hint">Three work areas</Box>
       </Box>
       <Box as="div" className="school-home__operations">
-        {DASHBOARD_WORKSPACES.map(({ title, hint, icon: Icon, tone }) => (
+        {_map(DASHBOARD_WORKSPACES, ({ title, hint, icon: Icon, tone }) => (
           <Box as="div" className={'school-home__operation school-home__tone--' + tone} key={title}>
             <Box as="div" className="school-home__operation-icon"><Icon size={18}/></Box>
             <Box as="div"><Box as="h3">{title}</Box><Box as="p">{hint}</Box><Box as="small">Ready for future service data</Box></Box>

@@ -1,3 +1,4 @@
+import { _map } from '@Base/utilities/map';
 import { Box } from '@Components/components/Box';
 import { DASHBOARD_METRICS } from '../../constants/dashboard.metrics';
 import type { DashboardOverviewComponent } from './types/dashboardOverview';
@@ -9,7 +10,7 @@ export const DashboardOverview: DashboardOverviewComponent = () => (
       <Box as="span" className="school-home__hint">No live data yet</Box>
     </Box>
     <Box as="div" className="school-home__stats">
-      {DASHBOARD_METRICS.map(({ name, description, icon: Icon, tone }) => (
+      {_map(DASHBOARD_METRICS, ({ name, description, icon: Icon, tone }) => (
         <Box as="div" className={'school-home__stat school-home__tone--' + tone} key={name}>
           <Box as="div" className="school-home__stat-label"><Box as="span">{name}</Box><Icon size={18}/></Box>
           <Box as="strong" aria-label={name + ' not available'}>—</Box>

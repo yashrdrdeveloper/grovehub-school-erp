@@ -1,3 +1,4 @@
+import { _find } from '@Base/utilities/find';
 import { Box } from '@Components/components/Box';
 import type { ReactNode } from 'react';
 import { BookOpen, Bus, Computer, FlaskConical, HeartPulse, Pencil, Presentation, ShieldCheck, Sparkles, Star, Trophy } from '@Components/icons';
@@ -10,12 +11,12 @@ const ImageCard = ({
   src:string;alt:string;position?:string;className?:string;loading?:'lazy'|'eager';children?:ReactNode;
 }) => (
   <Box as="div" className={`rdr-photo ${className}`}>
-    <img src={photographs.find(photo => photo.src === src)?.originalSrc ?? src}
+    <img src={_find(photographs, photo => photo.src === src)?.originalSrc ?? src}
       alt={alt} loading={loading} decoding="async"
       style={{objectPosition:position ?? 'center'}} referrerPolicy="no-referrer"
       onError={event => {
         const image = event.currentTarget;
-        const localPhoto = photographs.find(photo => photo.originalSrc === image.src);
+        const localPhoto = _find(photographs, photo => photo.originalSrc === image.src);
         if (localPhoto && !image.dataset.fallbackAttempted) {
           image.dataset.fallbackAttempted = 'true';
           image.src = localPhoto.src;
