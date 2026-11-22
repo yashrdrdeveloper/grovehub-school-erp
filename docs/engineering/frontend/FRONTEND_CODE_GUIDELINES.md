@@ -1525,496 +1525,529 @@ A conformant login unit has **no `config` directory, no helper/constant/renderer
 
 Only declare code migration done after tests and meaningful checks have run. For documentation-only commits, verify the actual document and report that code/CI were not yet changed.
 
-## 40. Comprehensive tracked-file inventory and gap review (Revision 8)
+## 40. Every tracked frontend file: AST and structural gap audit
 
-**GitHub snapshot:** `0eebd64a32760f520a94da31a75d7326b0bde6c1`, `473` tracked files under `frontend/`. Every tracked file has exactly one entry below, including source, tests, styles, configs, docs and the generated lockfile. **Source reviewed** means inspected in this audit; **Structural finding** means directory evidence; **Content review required** means no assertion of source compliance. Some other source-reviewed findings were established before the snapshot and should be reconfirmed after any code change. This is a rolling snapshot, so recent commits may have resolved some previously reported issues. No static scan substitutes for browser visual, security, import reachability or CI testing.
+**Verified source snapshot:** [`35f236667`](https://github.com/yashrdrdeveloper/grovehub-school-erp/commit/35f2366676393072b7f49e065de9f2a7e8954ac8); CI audit run [45056409802](https://github.com/yashrdrdeveloper/grovehub-school-erp/actions/runs/45056409802). The nonblocking TypeScript AST audit processed **474 tracked files**, including **445 TypeScript/TSX/CSS source files**, and flagged **141 files**. Every tracked file is listed once below, including test files, package entrypoints, styles, assets, configuration and the generated lockfile. A file with no flag is **not guaranteed compliant**: AST/text rules cannot prove accessibility, dead importers, CSS selector reachability, correct browser state, security or all architectural nuances. All paths are relative to `frontend/`. Findings are the **first observed line per rule in that file**, not every occurrence; inspect the entire file during refactoring.
 
-| Tracked file (relative to `frontend/`) | Gap or verification requirement | Evidence |
+### 40.1 All 474 files and findings
+
+| File | Verified rule flags and file-specific review notes | Scan level |
 |---|---|---|
-| `.env.example` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
-| `README.md` | Check documentation examples/references against current source | Documentation review |
-| `app/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `app/main.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `app/styles.css` | Large legacy global CSS; split by feature/primitive while retaining responsive behavior | Source reviewed |
-| `components.json` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
-| `eslint.config.mjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
-| `index.html` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
-| `jest.config.cjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
-| `package.json` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
-| `packages/assets/README.md` | Check documentation examples/references against current source | Documentation review |
-| `packages/assets/auth/AcademicPathwaysSvg.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/assets/auth/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/assets/brand/RdrSchoolMonogramSvg.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/assets/brand/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/assets/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/base/RUNBOOK.md` | Check documentation examples/references against current source | Documentation review |
-| `packages/base/constants/index.ts` | Forbidden barrel; direct leaf imports | Structural finding |
-| `packages/base/events/createEventEmitter/createEventEmitter.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/base/events/createEventEmitter/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/base/events/createEventEmitter/types/createEventEmitter.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/base/events/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/base/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/base/readers/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/base/readers/readProperty/__tests__/readProperty.test.ts` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/base/readers/readProperty/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/base/readers/readProperty/readProperty.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/base/readers/readProperty/types/readProperty.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/base/utilities/cn/__tests__/cn.test.ts` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/base/utilities/cn/cn.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/base/utilities/cn/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/base/utilities/cn/types/cn.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/base/utilities/find/__tests__/find.test.ts` | **Source confirmed:** correct `describe('_find')`; real pure Lodash implementation, no mock | Source reviewed |
-| `packages/base/utilities/find/find.ts` | **Source confirmed:** typed pure Lodash `_find` bridge; verify compile/runtime contract and tests | Source reviewed |
-| `packages/base/utilities/find/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/base/utilities/find/types/find.ts` | Review prop/enum contract, data ownership and consumer typechecks | Content review required |
-| `packages/base/utilities/index.ts` | **Confirmed:** only cn/isEqual exported; Base _map/_filter/_trim etc not implemented | Source reviewed |
-| `packages/base/utilities/isEqual/__tests__/isEqual.test.ts` | **Source confirmed:** pure test mocks removed; tests execute real equality | Source reviewed |
-| `packages/base/utilities/isEqual/index.ts` | Check pure Lodash test/Jest compatibility | Structural finding |
-| `packages/base/utilities/isEqual/isEqual.ts` | Check pure Lodash test/Jest compatibility | Structural finding |
-| `packages/base/utilities/isEqual/types/isEqual.ts` | Check pure Lodash test/Jest compatibility | Structural finding |
-| `packages/base/utilities/keys/__tests__/keys.test.ts` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/base/utilities/keys/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/base/utilities/keys/keys.ts` | **Source confirmed:** typed pure Lodash `_keys` bridge | Source reviewed |
-| `packages/base/utilities/keys/types/keys.ts` | Review prop/enum contract, data ownership and consumer typechecks | Content review required |
-| `packages/base/utilities/map/__tests__/map.test.ts` | **Source confirmed:** correct `describe('_map')`; real pure Lodash implementation, no mock | Source reviewed |
-| `packages/base/utilities/map/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/base/utilities/map/map.ts` | **Source confirmed:** typed `_map` bridge; verify JSX callback typing | Source reviewed |
-| `packages/base/utilities/map/types/map.ts` | Review prop/enum contract, data ownership and consumer typechecks | Content review required |
-| `packages/base/utilities/trim/__tests__/trim.test.ts` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/base/utilities/trim/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/base/utilities/trim/trim.ts` | **Source confirmed:** typed `_trim` bridge; must preserve case | Source reviewed |
-| `packages/base/utilities/trim/types/trim.ts` | Review prop/enum contract, data ownership and consumer typechecks | Content review required |
-| `packages/business/RUNBOOK.md` | Check documentation examples/references against current source | Documentation review |
-| `packages/business/accounts/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/business/accounts/services/accounts.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/business/accounts/types.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/business/api/cookies.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/business/api/http.test.ts` | Move test inside owner __tests__; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/business/api/http.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/business/api/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/business/api/types.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/business/app/routes/__tests__/app.routes.test.ts` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/business/app/routes/constants/app.routeAccess.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/business/app/routes/constants/app.routes.ts` | **Source confirmed:** central app/browser paths implemented; check all consumers remove raw URLs | Source reviewed |
-| `packages/business/app/routes/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/business/auth/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/business/auth/routes/__tests__/auth.routes.test.ts` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/business/auth/routes/constants/auth.routes.ts` | **Source confirmed:** central auth/browser paths implemented; backend API endpoint constants remain separate | Source reviewed |
-| `packages/business/auth/routes/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/business/auth/services/authentication.ts` | **Confirmed:** backend API path literals; separate transport endpoint constants from frontend page routes | Source reviewed |
-| `packages/business/auth/services/login/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/business/auth/services/login/login.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/business/auth/services/login/types/login.request.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/business/auth/services/login/types/login.response.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/business/auth/services/login/types/login.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/business/auth/types.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/business/auth/types/baseEntities/account.entity.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/business/auth/types/baseEntities/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/business/auth/types/baseEntities/session.entity.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/business/foundation/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/business/foundation/services/person.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/business/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/business/integrations/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/business/integrations/services/integrations.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/components/RUNBOOK.md` | Check documentation examples/references against current source | Documentation review |
-| `packages/components/components/Button/Button.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/components/components/Button/config/buttonVariants.config.ts` | Config-folder ownership debt; static descriptors should be constants | Structural finding |
-| `packages/components/components/Button/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/components/components/Button/types/button.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/components/components/Card/Card.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/components/components/Card/__tests__/Card.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/components/components/Card/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/components/components/Card/types/card.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/components/components/Container/Container.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/components/components/Container/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/components/components/Container/types/container.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/components/components/DataTable/DataTable.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/components/components/DataTable/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/components/components/DataTable/types/dataTable.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/components/components/Dialog/Dialog.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/components/components/Dialog/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/components/components/Dialog/types/dialog.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/components/components/EmptyState/EmptyState.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/components/components/EmptyState/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/components/components/EmptyState/types/emptyState.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/components/components/Form/Form.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/components/components/Form/__tests__/Form.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/components/components/Form/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/components/components/Form/types/form.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/components/components/FormField/FormField.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/components/components/FormField/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/components/components/FormField/types/formField.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/components/components/Input/Input.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/components/components/Input/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/components/components/Input/types/input.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/components/components/InputControl/InputControl.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/components/components/InputControl/__tests__/InputControl.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/components/components/InputControl/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/components/components/InputControl/types/inputControl.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/components/components/PageHeading/PageHeading.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/components/components/PageHeading/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/components/components/PageHeading/types/pageHeading.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/components/components/PasswordField/PasswordField.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/components/components/PasswordField/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/components/components/PasswordField/types/passwordField.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/components/components/SVGRenderer/SVGRenderer.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/components/components/SVGRenderer/__tests__/SVGRenderer.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/components/components/SVGRenderer/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/components/components/SVGRenderer/types/svgRenderer.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/components/components/SchoolMonogram.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/components/components/StatusPill/StatusPill.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/components/components/StatusPill/config/statusPillTones.config.ts` | Config-folder ownership debt; static descriptors should be constants | Structural finding |
-| `packages/components/components/StatusPill/helpers/getStatusPillTone/__tests__/getStatusPillTone.test.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts}; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/components/components/StatusPill/helpers/getStatusPillTone/getStatusPillTone.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/components/components/StatusPill/helpers/getStatusPillTone/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/components/components/StatusPill/helpers/getStatusPillTone/types/getStatusPillTone.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/components/components/StatusPill/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/components/components/StatusPill/types/statusPill.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/components/components/Text/Text.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/components/components/Text/__tests__/Text.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/components/components/Text/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/components/components/Text/types/text.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/components/components/TextField/TextField.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/components/components/TextField/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/components/components/TextField/types/textField.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/components/components/Typography/Typography.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/components/components/Typography/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/components/components/Typography/types/typography.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/components/hooks/query/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/components/hooks/theme.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/components/hooks/useWorkspaceTheme/helpers/resolveWorkspaceTheme/__tests__/resolveWorkspaceTheme.test.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts}; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/components/hooks/useWorkspaceTheme/helpers/resolveWorkspaceTheme/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/components/hooks/useWorkspaceTheme/helpers/resolveWorkspaceTheme/resolveWorkspaceTheme.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/components/hooks/useWorkspaceTheme/helpers/resolveWorkspaceTheme/types/resolveWorkspaceTheme.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/components/hooks/useWorkspaceTheme/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/components/hooks/useWorkspaceTheme/types/useWorkspaceTheme.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/components/hooks/useWorkspaceTheme/useWorkspaceTheme.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/components/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/components/styles/primitives.css` | Review token colors, theme parity, media breakpoints and global selector ownership | Content review required |
-| `packages/domain/accounts/index.ts` | Remove unused UI domain after route/importer check | Structural finding |
-| `packages/domain/accounts/pages/AccountDetailsPage.tsx` | Remove unused UI domain after route/importer check | Structural finding |
-| `packages/domain/accounts/pages/AccountsPage.tsx` | Remove unused UI domain after route/importer check | Structural finding |
-| `packages/domain/auth/RUNBOOK.md` | Check documentation examples/references against current source | Documentation review |
-| `packages/domain/auth/components/authAmbientGraphic/AuthAmbientGraphic.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/auth/components/authAmbientGraphic/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/components/authStatusArt/AuthStatusArt.tsx` | **Confirmed:** raw status literals, ternary/icon selection, inline hex colors, direct Lucide | Source reviewed |
-| `packages/domain/auth/components/authStatusArt/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/components/credentialField/CredentialField.tsx` | **Confirmed:** label JSX ternary, native label/wrapper and BEM classes | Source reviewed |
-| `packages/domain/auth/components/credentialField/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/components/credentialField/types/credentialField.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/components/loginLayout/LoginLayout.tsx` | **Confirmed:** inline copy/theme options, native buttons and .map, conditional class logic, direct Lucide | Source reviewed |
-| `packages/domain/auth/components/loginLayout/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/components/loginLayout/styles/optionOneAuth.css` | **Confirmed:** large mixed-scope auth stylesheet; split ownership into SCSS modules | Source reviewed |
-| `packages/domain/auth/core/guards/RecoveryFlowBoundary.tsx` | **Confirmed:** hook returning null used as component; convert to useRecoveryFlowBoundary | Source reviewed |
-| `packages/domain/auth/core/guards/RequireSession.test.tsx` | Move test inside owner __tests__; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/domain/auth/core/guards/RequireSession.tsx` | **Confirmed:** mixed guards and native loading/ternary; PublicRoute/ProtectedRoute | Source reviewed |
-| `packages/domain/auth/core/guards/__tests__/RecoveryFlowBoundary.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/domain/auth/core/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/core/providers/AuthProvider.tsx` | **Confirmed:** provider mixes session state/actions and context; unit ownership | Source reviewed |
-| `packages/domain/auth/core/session/recoveryFlowSession.ts` | **Confirmed:** security-sensitive adapter needs owned types/keys/validation helpers, no proof leakage | Source reviewed |
-| `packages/domain/auth/hooks/useAuthViewportFit/__tests__/useAuthViewportFit.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/domain/auth/hooks/useAuthViewportFit/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/hooks/useAuthViewportFit/useAuthViewportFit.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/domain/auth/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/forgotPassword/ForgotPassword.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/auth/pages/forgotPassword/__tests__/ForgotPasswordPage.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/domain/auth/pages/forgotPassword/components/forgotPasswordForm/ForgotPasswordForm.tsx` | **Confirmed:** native controls, literal routes and selectors, ternary notice icon and classes | Source reviewed |
-| `packages/domain/auth/pages/forgotPassword/components/forgotPasswordForm/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/forgotPassword/components/forgotPasswordForm/types/forgotPasswordForm.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/forgotPassword/constants/forgotPasswordCooldown/forgotPasswordCooldown.constant.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/domain/auth/pages/forgotPassword/constants/forgotPasswordCooldown/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/forgotPassword/containers/forgotPasswordContainer/ForgotPasswordContainer.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/auth/pages/forgotPassword/containers/forgotPasswordContainer/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/forgotPassword/containers/forgotPasswordContainer/types/forgotPasswordContainer.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/forgotPassword/helpers/getForgotPasswordViewModel/__tests__/getForgotPasswordViewModel.test.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts}; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/domain/auth/pages/forgotPassword/helpers/getForgotPasswordViewModel/getForgotPasswordViewModel.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/forgotPassword/helpers/getForgotPasswordViewModel/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/forgotPassword/helpers/getForgotPasswordViewModel/types/getForgotPasswordViewModel.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/forgotPassword/helpers/validateForgotPasswordEmail/__tests__/validateForgotPasswordEmail.test.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts}; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/domain/auth/pages/forgotPassword/helpers/validateForgotPasswordEmail/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/forgotPassword/helpers/validateForgotPasswordEmail/types/validateForgotPasswordEmail.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/forgotPassword/helpers/validateForgotPasswordEmail/validateForgotPasswordEmail.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/forgotPassword/hooks/useForgotPassword/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/forgotPassword/hooks/useForgotPassword/types/useForgotPassword.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/forgotPassword/hooks/useForgotPassword/useForgotPassword.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/domain/auth/pages/forgotPassword/hooks/useForgotPasswordCountdown/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/forgotPassword/hooks/useForgotPasswordCountdown/types/useForgotPasswordCountdown.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/forgotPassword/hooks/useForgotPasswordCountdown/useForgotPasswordCountdown.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/domain/auth/pages/forgotPassword/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/forgotPassword/types/forgotPassword.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/forgotPassword/types/forgotPassword.state.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/forgotPassword/types/forgotPassword.viewModel.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/forgotPassword/types/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/login/Login.tsx` | **Source confirmed:** mobile/desktop template ternary; move selection to typed renderer, preserve one form | Source reviewed |
-| `packages/domain/auth/pages/login/__tests__/LoginPage.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/domain/auth/pages/login/components/LoginForm/LoginForm.test.tsx` | **Source confirmed:** exact `describe('LoginForm')` fixed; still adjacent to component instead of `__tests__`, test mixes mobile template behavior | Source reviewed |
-| `packages/domain/auth/pages/login/components/LoginForm/LoginForm.tsx` | **Source confirmed, urgent:** uses undefined `LOGIN_FIELDS` after switching to `LOGIN_FIELD_CONFIG`; multiple ternaries, raw native controls, direct Lucide, legacy BEM CSS, untyped icon variants | Source reviewed |
-| `packages/domain/auth/pages/login/components/LoginForm/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/login/components/LoginForm/types/loginForm.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/login/constants/login.copy.ts` | Inspect state/logic ownership, utilities, importers and typed identifiers | Content review required |
-| `packages/domain/auth/pages/login/constants/login.errorRules.ts` | Inspect state/logic ownership, utilities, importers and typed identifiers | Content review required |
-| `packages/domain/auth/pages/login/constants/login.fieldConfig.ts` | **Source confirmed:** frozen typed `Record<LoginField, Config>` now implemented | Source reviewed |
-| `packages/domain/auth/pages/login/constants/login.fieldOrder.ts` | **Source confirmed:** immutable enum-backed field order now implemented | Source reviewed |
-| `packages/domain/auth/pages/login/constants/login.fields.ts` | **Source confirmed:** enum-backed email/password identity now implemented; verify all consumers use enum | Source reviewed |
-| `packages/domain/auth/pages/login/constants/login.testIds.ts` | Inspect state/logic ownership, utilities, importers and typed identifiers | Content review required |
-| `packages/domain/auth/pages/login/constants/login.validation.ts` | **Source confirmed:** enum-backed rule metadata now pure; email regex corrected in newer commit; add valid/invalid Unicode/whitespace test coverage | Source reviewed |
-| `packages/domain/auth/pages/login/constants/types/login.fieldConfig.ts` | Review prop/enum contract, data ownership and consumer typechecks | Content review required |
-| `packages/domain/auth/pages/login/containers/loginContainer/LoginContainer.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/auth/pages/login/containers/loginContainer/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/login/containers/loginContainer/types/loginContainer.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/login/helpers/__tests__/login.getErrorMessage.test.ts` | **Source confirmed:** `describe('getLoginErrorMessage')`, unmocked real helper test now correct | Source reviewed |
-| `packages/domain/auth/pages/login/helpers/__tests__/login.getValidationError.test.ts` | **Source confirmed:** `describe('getLoginValidationError')`, no pure-function mock | Source reviewed |
-| `packages/domain/auth/pages/login/helpers/__tests__/login.isValidEmail.test.ts` | **Source confirmed:** `describe('isValidLoginEmail')`, no mock; limited positive domain cases | Source reviewed |
-| `packages/domain/auth/pages/login/helpers/__tests__/login.validateCredentials.test.ts` | **Source confirmed:** `describe('validateLoginCredentials')`, no pure-function mock; preserve password bytes | Source reviewed |
-| `packages/domain/auth/pages/login/helpers/login.getErrorMessage.ts` | **Source confirmed:** flat, safe message mapper using `_find`, no pure mock | Source reviewed |
-| `packages/domain/auth/pages/login/helpers/login.getValidationError.ts` | **Source confirmed:** validation branching resides in helper and maps enum rule kinds, not in constants | Source reviewed |
-| `packages/domain/auth/pages/login/helpers/login.isValidEmail.ts` | **Source confirmed:** pure predicate uses centralized email regex; add edge-case tests | Source reviewed |
-| `packages/domain/auth/pages/login/helpers/login.validateCredentials.ts` | **Source confirmed:** flat helper calls Base `_trim` for email only; password preserved | Source reviewed |
-| `packages/domain/auth/pages/login/helpers/types/login.getErrorMessage.ts` | Review prop/enum contract, data ownership and consumer typechecks | Content review required |
-| `packages/domain/auth/pages/login/helpers/types/login.getValidationError.ts` | Review prop/enum contract, data ownership and consumer typechecks | Content review required |
-| `packages/domain/auth/pages/login/helpers/types/login.validateCredentials.ts` | Review prop/enum contract, data ownership and consumer typechecks | Content review required |
-| `packages/domain/auth/pages/login/hooks/useLogin/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/login/hooks/useLogin/types/useLogin.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/login/hooks/useLogin/useLogin.test.tsx` | Move test inside owner __tests__; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/domain/auth/pages/login/hooks/useLogin/useLogin.tsx` | **Confirmed:** composes peer hooks; unify ownership under useLoginForm | Source reviewed |
-| `packages/domain/auth/pages/login/hooks/useLoginActions/index.ts` | Move peer hook under owning useLoginForm hook or combine into it | Structural finding |
-| `packages/domain/auth/pages/login/hooks/useLoginActions/types/useLoginActions.ts` | Move peer hook under owning useLoginForm hook or combine into it | Structural finding |
-| `packages/domain/auth/pages/login/hooks/useLoginActions/useLoginActions.ts` | **Source confirmed:** field enum and if-based error clearing implemented; still peer state/action hook, should be nested under useLoginForm | Source reviewed |
-| `packages/domain/auth/pages/login/hooks/useLoginForm/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/login/hooks/useLoginForm/types/useLoginForm.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/login/hooks/useLoginForm/useLoginForm.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/domain/auth/pages/login/hooks/useLoginSubmission/index.ts` | Move peer hook under owning useLoginForm hook or combine into it | Structural finding |
-| `packages/domain/auth/pages/login/hooks/useLoginSubmission/types/useLoginSubmission.ts` | Move peer hook under owning useLoginForm hook or combine into it | Structural finding |
-| `packages/domain/auth/pages/login/hooks/useLoginSubmission/useLoginSubmission.ts` | **Source confirmed:** uses `APP_ROUTE.DASHBOARD`, `_keys`, flat helpers; peer submission hook still outside one owner | Source reviewed |
-| `packages/domain/auth/pages/login/hooks/useLoginViewport/helpers/getMobileSnapshot/getMobileSnapshot.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/login/hooks/useLoginViewport/helpers/getMobileSnapshot/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/login/hooks/useLoginViewport/helpers/getMobileSnapshot/types/getMobileSnapshot.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/login/hooks/useLoginViewport/helpers/subscribeToViewport/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/login/hooks/useLoginViewport/helpers/subscribeToViewport/subscribeToViewport.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/login/hooks/useLoginViewport/helpers/subscribeToViewport/types/subscribeToViewport.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/login/hooks/useLoginViewport/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/login/hooks/useLoginViewport/types/useLoginViewport.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/login/hooks/useLoginViewport/useLoginViewport.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/domain/auth/pages/login/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/login/templates/desktopLogin/DesktopLogin.tsx` | **Source confirmed:** central `AUTH_ROUTE.FORGOT_PASSWORD` fixed; still native Link and raw global class | Source reviewed |
-| `packages/domain/auth/pages/login/templates/desktopLogin/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/login/templates/desktopLogin/types/desktopLogin.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/login/templates/mobileLogin/MobileLogin.tsx` | **Source confirmed:** central `AUTH_ROUTE.FORGOT_PASSWORD` fixed; still native Link and raw global class | Source reviewed |
-| `packages/domain/auth/pages/login/templates/mobileLogin/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/login/templates/mobileLogin/types/mobileLogin.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/login/types/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/login/types/login.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/login/types/login.state.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/recovery/Recovery.tsx` | **Confirmed:** raw status strings, title and JSX ternaries, inline class | Source reviewed |
-| `packages/domain/auth/pages/recovery/__tests__/RecoveryPage.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/domain/auth/pages/recovery/components/recoveryArtwork/RecoveryArtwork.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/auth/pages/recovery/components/recoveryArtwork/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/recovery/components/recoveryArtwork/types/recoveryArtwork.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/recovery/components/recoveryPasswordForm/RecoveryPasswordForm.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/auth/pages/recovery/components/recoveryPasswordForm/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/recovery/components/recoveryPasswordForm/types/recoveryPasswordForm.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/recovery/components/recoveryState/RecoveryState.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/auth/pages/recovery/components/recoveryState/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/recovery/components/recoveryState/types/recoveryState.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/recovery/containers/recoveryContainer/RecoveryContainer.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/auth/pages/recovery/containers/recoveryContainer/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/recovery/containers/recoveryContainer/types/recoveryContainer.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/recovery/helpers/classifyRecoveryFailure/__tests__/classifyRecoveryFailure.test.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts}; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/domain/auth/pages/recovery/helpers/classifyRecoveryFailure/classifyRecoveryFailure.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/recovery/helpers/classifyRecoveryFailure/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/recovery/helpers/classifyRecoveryFailure/types/classifyRecoveryFailure.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/recovery/helpers/getRecoveryArtworkCopy/__tests__/getRecoveryArtworkCopy.test.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts}; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/domain/auth/pages/recovery/helpers/getRecoveryArtworkCopy/getRecoveryArtworkCopy.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/recovery/helpers/getRecoveryArtworkCopy/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/recovery/helpers/getRecoveryArtworkCopy/types/getRecoveryArtworkCopy.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/recovery/helpers/validateRecoveryPassword/__tests__/validateRecoveryPassword.test.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts}; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/domain/auth/pages/recovery/helpers/validateRecoveryPassword/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/recovery/helpers/validateRecoveryPassword/types/validateRecoveryPassword.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/recovery/helpers/validateRecoveryPassword/validateRecoveryPassword.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/auth/pages/recovery/hooks/useRecovery/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/recovery/hooks/useRecovery/types/useRecovery.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/recovery/hooks/useRecovery/useRecovery.ts` | **Confirmed:** long combined form/proof/grant/submission/retry hook; split with one state owner | Source reviewed |
-| `packages/domain/auth/pages/recovery/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/recovery/types/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/auth/pages/recovery/types/recovery.artwork.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/auth/pages/recovery/types/recovery.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/dashboard/RUNBOOK.md` | Check documentation examples/references against current source | Documentation review |
-| `packages/domain/dashboard/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/dashboard/pages/dashboard/Dashboard.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/dashboard/pages/dashboard/components/dashboardAside/DashboardAside.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/dashboard/pages/dashboard/components/dashboardAside/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/dashboard/pages/dashboard/components/dashboardAside/types/dashboardAside.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/dashboard/pages/dashboard/components/dashboardHeader/DashboardHeader.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/dashboard/pages/dashboard/components/dashboardHeader/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/dashboard/pages/dashboard/components/dashboardHeader/types/dashboardHeader.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/dashboard/pages/dashboard/components/dashboardMain/DashboardMain.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/dashboard/pages/dashboard/components/dashboardMain/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/dashboard/pages/dashboard/components/dashboardMain/types/dashboardMain.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/dashboard/pages/dashboard/components/dashboardNotice/DashboardNotice.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/dashboard/pages/dashboard/components/dashboardNotice/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/dashboard/pages/dashboard/components/dashboardNotice/types/dashboardNotice.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/dashboard/pages/dashboard/components/dashboardOverview/DashboardOverview.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/dashboard/pages/dashboard/components/dashboardOverview/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/dashboard/pages/dashboard/components/dashboardOverview/types/dashboardOverview.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/dashboard/pages/dashboard/constants/dashboard.metrics.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/domain/dashboard/pages/dashboard/constants/dashboard.workspaces.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/domain/dashboard/pages/dashboard/containers/dashboardContainer/DashboardContainer.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/dashboard/pages/dashboard/containers/dashboardContainer/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/dashboard/pages/dashboard/containers/dashboardContainer/types/dashboardContainer.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/dashboard/pages/dashboard/helpers/__tests__/dashboard.getDateParts.test.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts}; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/domain/dashboard/pages/dashboard/helpers/dashboard.getDateParts.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/domain/dashboard/pages/dashboard/helpers/types/dashboard.getDateParts.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/dashboard/pages/dashboard/hooks/useDashboardCalendar/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/dashboard/pages/dashboard/hooks/useDashboardCalendar/types/useDashboardCalendar.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/dashboard/pages/dashboard/hooks/useDashboardCalendar/useDashboardCalendar.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/domain/dashboard/pages/dashboard/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/dashboard/pages/dashboard/types/dashboard.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/dashboard/pages/dashboard/types/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/integrations/index.ts` | Remove unused UI domain after route/importer check | Structural finding |
-| `packages/domain/integrations/pages/ConnectionDetailsPage.tsx` | Remove unused UI domain after route/importer check | Structural finding |
-| `packages/domain/integrations/pages/IntegrationsPage.tsx` | Remove unused UI domain after route/importer check | Structural finding |
-| `packages/domain/people/index.ts` | Remove unused UI domain after route/importer check | Structural finding |
-| `packages/domain/people/pages/PeoplePage.tsx` | Remove unused UI domain after route/importer check | Structural finding |
-| `packages/domain/publicSite/RUNBOOK.md` | Check documentation examples/references against current source | Documentation review |
-| `packages/domain/publicSite/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/publicSite/pages/landing/LandingPage.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/publicSite/pages/landing/__tests__/LandingPage.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/domain/publicSite/pages/landing/components/aboutContent/aboutContent.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/publicSite/pages/landing/components/aboutContent/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/publicSite/pages/landing/components/campusContent/campusContent.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/publicSite/pages/landing/components/campusContent/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/publicSite/pages/landing/components/enquiryForm/constants/enquiry.initial.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/domain/publicSite/pages/landing/components/enquiryForm/containers/enquiryFormContainer/EnquiryFormContainer.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/publicSite/pages/landing/components/enquiryForm/containers/enquiryFormContainer/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/publicSite/pages/landing/components/enquiryForm/enquiryForm.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/getEnquiryMailto/__tests__/getEnquiryMailto.test.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts}; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/getEnquiryMailto/getEnquiryMailto.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/getEnquiryMailto/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/getEnquiryMailto/types/getEnquiryMailto.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/validateEnquiryContact/__tests__/validateEnquiryContact.test.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts}; Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/validateEnquiryContact/index.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/validateEnquiryContact/types/validateEnquiryContact.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/validateEnquiryContact/validateEnquiryContact.ts` | Nested helper layout; flatten into helpers/{types,__tests__,<owner>.<useCase>.ts} | Structural finding |
-| `packages/domain/publicSite/pages/landing/components/enquiryForm/hooks/useEnquiryForm/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/publicSite/pages/landing/components/enquiryForm/hooks/useEnquiryForm/types/useEnquiryForm.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/publicSite/pages/landing/components/enquiryForm/hooks/useEnquiryForm/useEnquiryForm.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/domain/publicSite/pages/landing/components/enquiryForm/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/publicSite/pages/landing/components/enquiryForm/types/enquiryForm.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/publicSite/pages/landing/components/homeContent/homeContent.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/publicSite/pages/landing/components/homeContent/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/publicSite/pages/landing/components/publicSheet/PublicSheet.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/publicSite/pages/landing/components/publicSheet/components/infoPanels/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/publicSite/pages/landing/components/publicSheet/components/infoPanels/infoPanels.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/publicSite/pages/landing/components/publicSheet/components/panelPhoto/PanelPhoto.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/publicSite/pages/landing/components/publicSheet/components/panelPhoto/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/publicSite/pages/landing/components/publicSheet/components/storyPanel/StoryPanel.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/publicSite/pages/landing/components/publicSheet/components/storyPanel/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/publicSite/pages/landing/components/publicSheet/constants/school.sheetCopy.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/domain/publicSite/pages/landing/components/publicSheet/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/publicSite/pages/landing/components/publicSheet/types/schoolPanel.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/publicSite/pages/landing/components/resourceContent/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/publicSite/pages/landing/components/resourceContent/resourceContent.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/publicSite/pages/landing/components/siteActions/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/publicSite/pages/landing/components/siteActions/siteActions.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/publicSite/pages/landing/components/siteChrome/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/publicSite/pages/landing/components/siteChrome/siteChrome.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/publicSite/pages/landing/components/siteMedia/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/publicSite/pages/landing/components/siteMedia/siteMedia.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/publicSite/pages/landing/constants/school.content.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/domain/publicSite/pages/landing/constants/school.navigation.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/domain/publicSite/pages/landing/constants/school.panels.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/domain/publicSite/pages/landing/constants/school.seo.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/domain/publicSite/pages/landing/containers/landingContainer/LandingContainer.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/publicSite/pages/landing/containers/landingContainer/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/publicSite/pages/landing/hooks/useLandingPage/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/publicSite/pages/landing/hooks/useLandingPage/types/useLandingPage.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/domain/publicSite/pages/landing/hooks/useLandingPage/useLandingPage.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/domain/publicSite/pages/landing/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/domain/publicSite/pages/landing/registry/schoolPages.registry.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/domain/publicSite/pages/landing/styles/landingPage.css` | Large global feature CSS; tokenize and split scoped ownership | Source reviewed |
-| `packages/domain/publicSite/pages/landing/styles/optionOne.css` | Legacy non-module CSS; map selectors to owning .module.scss with @Styles tokens | Structural finding |
-| `packages/domain/publicSite/pages/landing/styles/optionOnePages.css` | Legacy non-module CSS; map selectors to owning .module.scss with @Styles tokens | Structural finding |
-| `packages/domain/settings/index.ts` | Remove unused UI domain after route/importer check | Structural finding |
-| `packages/domain/settings/pages/SecurityPage.tsx` | Remove unused UI domain after route/importer check | Structural finding |
-| `packages/shell/RUNBOOK.md` | Check documentation examples/references against current source | Documentation review |
-| `packages/shell/Shell.tsx` | **Source confirmed:** native layout/button; sidebarCollapsed ternary builds BEM class; use Box/Button and named class helper | Source reviewed |
-| `packages/shell/components/appRoutes/AppRoutes.tsx` | **Confirmed:** direct .map route JSX, mixed route policy; central route constants and renderer | Source reviewed |
-| `packages/shell/components/appRoutes/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/shell/components/appRoutes/types/appRoutes.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/shell/components/mobileNav/MobileNav.tsx` | **Source confirmed:** direct Lucide, literal `/dashboard`, conditional class ternary and native nav/button | Source reviewed |
-| `packages/shell/components/mobileNav/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/shell/components/mobileNav/types/mobileNav.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/shell/components/pinnedNavigation/PinnedApp.tsx` | **Source confirmed:** direct Lucide, NavLink class ternary, raw button/div/span; semantic components | Source reviewed |
-| `packages/shell/components/pinnedNavigation/PinnedNavigation.tsx` | **Source confirmed:** native flatMap/find/map, entries/empty ternary, native nav/p; move to Base and renderer | Source reviewed |
-| `packages/shell/components/pinnedNavigation/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/shell/components/pinnedNavigation/types/pinnedNavigation.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/shell/components/protectedLayout/ProtectedLayout.tsx` | Review native JSX, ternaries, icons, test IDs, route literals and scoped styles | Content review required |
-| `packages/shell/components/protectedLayout/__tests__/ProtectedLayout.test.tsx` | Check exact exported-name describe; no nested describe/pure mocks | Structural finding |
-| `packages/shell/components/protectedLayout/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/shell/components/protectedLayout/types/protectedLayout.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/shell/components/sidebar/Sidebar.tsx` | **Source confirmed:** direct Lucide, native buttons/aside, raw routes and class/label ternaries | Source reviewed |
-| `packages/shell/components/sidebar/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/shell/components/sidebar/types/sidebar.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/shell/components/themeChoices/ThemeChoices.tsx` | **Source confirmed:** inline theme option literals and selection ternary, native button, direct icons; constants + renderer | Source reviewed |
-| `packages/shell/components/themeChoices/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/shell/components/themeChoices/types/themeChoices.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/shell/components/topbar/Topbar.tsx` | **Source confirmed:** direct Lucide, native header/button/span markup and global BEM | Source reviewed |
-| `packages/shell/components/topbar/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/shell/components/topbar/types/topbar.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/shell/containers/shellContainer/ShellContainer.tsx` | **Confirmed:** QueryClient construction/options mixed; separate constant and factory | Source reviewed |
-| `packages/shell/containers/shellContainer/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/shell/containers/shellContainer/types/shellContainer.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/shell/hooks/useShell/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/shell/hooks/useShell/types/useShell.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/shell/hooks/useShell/useShell.ts` | **Confirmed:** peer useShellState + useShellActions, consolidate | Source reviewed |
-| `packages/shell/hooks/useShellActions/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/shell/hooks/useShellActions/types/useShellActions.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/shell/hooks/useShellActions/useShellActions.ts` | **Confirmed:** duplicated boolean setters; native includes/filter; writes persistence in state updater | Source reviewed |
-| `packages/shell/hooks/useShellState/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/shell/hooks/useShellState/types/useShellState.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/shell/hooks/useShellState/useShellState.ts` | **Source confirmed:** independent peer state owner; fold into authoritative useShell contract | Source reviewed |
-| `packages/shell/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/shell/layout/AppLauncher.tsx` | **Confirmed:** monolithic catalog, native button/input, inline filter and raw class/route/icon | Source reviewed |
-| `packages/shell/registry/appCatalog.registry.ts` | **Source confirmed:** direct Lucide import, literal `/dashboard` duplicated and hard-coded pin descriptors; use shared route/icon constants | Source reviewed |
-| `packages/shell/registry/domains.registry.tsx` | **Confirmed:** inline route strings, raw purpose and legacy redirect; business path contracts | Source reviewed |
-| `packages/shell/registry/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/shell/storage/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/shell/storage/types/workspacePreferences.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/shell/storage/workspacePreferences.ts` | **Source confirmed:** inline storage keys, native filter/map and Set policy; constant keys and helper, preserve SSR/privacy handling | Source reviewed |
-| `packages/shell/types/shell.props.ts` | Type contract: verify enum keys, props, boundary ownership and consumer compatibility | Structure only |
-| `packages/styles/RUNBOOK.md` | Check documentation examples/references against current source | Documentation review |
-| `packages/styles/base.css` | Review token colors, theme parity, media breakpoints and global selector ownership | Content review required |
-| `packages/styles/index.css` | Review token colors, theme parity, media breakpoints and global selector ownership | Content review required |
-| `packages/styles/index.ts` | Public API/entrypoint: verify exports used; no path-level violation detected | Structure only |
-| `packages/styles/themes/dark.css` | Review token colors, theme parity, media breakpoints and global selector ownership | Content review required |
-| `packages/styles/themes/light.css` | Review token colors, theme parity, media breakpoints and global selector ownership | Content review required |
-| `packages/styles/tokens/breakpoints.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
-| `packages/styles/tokens/foundations.css` | Review token colors, theme parity, media breakpoints and global selector ownership | Content review required |
-| `packages/styles/utilities.css` | Review token colors, theme parity, media breakpoints and global selector ownership | Content review required |
-| `pnpm-lock.yaml` | Generated dependency snapshot; validate with frozen pnpm install, not manual code refactoring | Tracked metadata |
-| `scripts/check-boundaries.mjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
-| `scripts/check-layout-assets.mjs` | **Source confirmed:** resolves route source by regex; catalog `/dashboard` check breaks with route constants instead of literal paths (latest failing CI) | Source reviewed |
-| `scripts/check-styles.mjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
-| `scripts/check-ui-contracts.mjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
-| `scripts/check-units.mjs` | **Source confirmed:** enforces nested helper index.ts/contracts for Base and some page helpers, contradicting Rev 8 flat-helper rule; rewrite checker by ownership | Source reviewed |
-| `scripts/download-school-images.mjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
-| `scripts/prerender-public-pages.mjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
-| `scripts/test/polyfills.cjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
-| `scripts/test/styleMock.cjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
-| `scripts/test/transformEsm.cjs` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
-| `tsconfig.json` | Verify configuration, import aliases, scripts, build/Jest/ESLint and boundary enforcement | Config review required |
-| `vite.config.ts` | Review raw strings, native loops, API/IO boundaries, exact helpers and tests | Content review required |
+| `.env.example` | No mechanical rule hit; **manual review required** | Tracked artifact |
+| `README.md` | No mechanical rule hit; **manual review required** | Tracked artifact |
+| `app/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `app/main.tsx` | `TERNARY` L18 | TypeScript AST scan |
+| `app/styles.css` | `LEGACY_GLOBAL_CSS` L1, `LARGE_STYLESHEET` L1, `CSS_COLOR_LITERAL` L1; **Reviewed:** Legacy broad global theme/screen CSS; assign selectors to proper styles/components/domains | Stylesheet static scan |
+| `components.json` | No mechanical rule hit; **manual review required** | Tracked artifact |
+| `eslint.config.mjs` | No mechanical rule hit; **manual review required** | Tracked file/structure scan |
+| `index.html` | No mechanical rule hit; **manual review required** | Tracked file/structure scan |
+| `jest.config.cjs` | No mechanical rule hit; **manual review required** | Tracked file/structure scan |
+| `package.json` | No mechanical rule hit; **manual review required** | Tracked artifact |
+| `packages/assets/README.md` | No mechanical rule hit; **manual review required** | Tracked artifact |
+| `packages/assets/auth/AcademicPathwaysSvg.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/assets/auth/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/assets/brand/RdrSchoolMonogramSvg.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/assets/brand/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/assets/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/RUNBOOK.md` | No mechanical rule hit; **manual review required** | Tracked artifact |
+| `packages/base/constants/index.ts` | `FORBIDDEN_BARREL` L1 | TypeScript AST scan |
+| `packages/base/events/createEventEmitter/createEventEmitter.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/events/createEventEmitter/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/events/createEventEmitter/types/createEventEmitter.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/events/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/readers/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/readers/readProperty/__tests__/readProperty.test.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/readers/readProperty/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/readers/readProperty/readProperty.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/readers/readProperty/types/readProperty.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/cn/__tests__/cn.test.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/cn/cn.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/cn/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/cn/types/cn.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/find/__tests__/find.test.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/find/find.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/find/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/find/types/find.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/isEqual/__tests__/isEqual.test.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/isEqual/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/isEqual/isEqual.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/isEqual/types/isEqual.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/keys/__tests__/keys.test.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/keys/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/keys/keys.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/keys/types/keys.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/map/__tests__/map.test.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/map/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/map/map.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/map/types/map.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/trim/__tests__/trim.test.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/trim/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/trim/trim.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/base/utilities/trim/types/trim.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/RUNBOOK.md` | No mechanical rule hit; **manual review required** | Tracked artifact |
+| `packages/business/accounts/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/accounts/services/accounts.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/accounts/types.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/api/cookies.ts` | `TERNARY` L8 | TypeScript AST scan |
+| `packages/business/api/http.test.ts` | `TEST_LOCATION` L1, `DESCRIBE_EXPORT_MISMATCH` L1 | TypeScript AST scan |
+| `packages/business/api/http.ts` | `TERNARY` L25 | TypeScript AST scan |
+| `packages/business/api/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/api/types.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/app/routes/__tests__/app.routes.test.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/app/routes/constants/app.routeAccess.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/app/routes/constants/app.routes.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/app/routes/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/auth/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/auth/routes/__tests__/auth.routes.test.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/auth/routes/constants/auth.routes.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/auth/routes/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/auth/services/authentication.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/auth/services/login/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/auth/services/login/login.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/auth/services/login/types/login.request.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/auth/services/login/types/login.response.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/auth/services/login/types/login.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/auth/types.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/auth/types/baseEntities/account.entity.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/auth/types/baseEntities/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/auth/types/baseEntities/session.entity.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/foundation/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/foundation/services/person.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/integrations/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/business/integrations/services/integrations.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/RUNBOOK.md` | No mechanical rule hit; **manual review required** | Tracked artifact |
+| `packages/components/components/Button/Button.tsx` | `TERNARY` L25 | TypeScript AST scan |
+| `packages/components/components/Button/config/buttonVariants.config.ts` | `CONFIG_FOLDER` L1 | TypeScript AST scan |
+| `packages/components/components/Button/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Button/types/button.props.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Card/Card.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Card/__tests__/Card.test.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Card/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Card/types/card.props.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Container/Container.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Container/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Container/types/container.props.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/DataTable/DataTable.tsx` | `TERNARY` L32 | TypeScript AST scan |
+| `packages/components/components/DataTable/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/DataTable/types/dataTable.props.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Dialog/Dialog.tsx` | `TERNARY` L16 | TypeScript AST scan |
+| `packages/components/components/Dialog/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Dialog/types/dialog.props.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/EmptyState/EmptyState.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/EmptyState/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/EmptyState/types/emptyState.props.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Form/Form.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Form/__tests__/Form.test.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Form/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Form/types/form.props.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/FormField/FormField.tsx` | `TERNARY` L16 | TypeScript AST scan |
+| `packages/components/components/FormField/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/FormField/types/formField.props.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Input/Input.tsx` | `TERNARY` L12 | TypeScript AST scan |
+| `packages/components/components/Input/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Input/types/input.props.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/InputControl/InputControl.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/InputControl/__tests__/InputControl.test.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/InputControl/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/InputControl/types/inputControl.props.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/PageHeading/PageHeading.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/PageHeading/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/PageHeading/types/pageHeading.props.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/PasswordField/PasswordField.tsx` | `TERNARY` L16 | TypeScript AST scan |
+| `packages/components/components/PasswordField/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/PasswordField/types/passwordField.props.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/SVGRenderer/SVGRenderer.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/SVGRenderer/__tests__/SVGRenderer.test.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/SVGRenderer/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/SVGRenderer/types/svgRenderer.props.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/SchoolMonogram.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/StatusPill/StatusPill.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/StatusPill/config/statusPillTones.config.ts` | `CONFIG_FOLDER` L1 | TypeScript AST scan |
+| `packages/components/components/StatusPill/helpers/getStatusPillTone/__tests__/getStatusPillTone.test.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/components/components/StatusPill/helpers/getStatusPillTone/getStatusPillTone.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/components/components/StatusPill/helpers/getStatusPillTone/index.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/components/components/StatusPill/helpers/getStatusPillTone/types/getStatusPillTone.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/components/components/StatusPill/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/StatusPill/types/statusPill.props.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Text/Text.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Text/__tests__/Text.test.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Text/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Text/types/text.props.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/TextField/TextField.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/TextField/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/TextField/types/textField.props.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Typography/Typography.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Typography/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/components/Typography/types/typography.props.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/hooks/query/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/hooks/theme.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/hooks/useWorkspaceTheme/helpers/resolveWorkspaceTheme/__tests__/resolveWorkspaceTheme.test.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/components/hooks/useWorkspaceTheme/helpers/resolveWorkspaceTheme/index.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/components/hooks/useWorkspaceTheme/helpers/resolveWorkspaceTheme/resolveWorkspaceTheme.ts` | `NESTED_HELPER` L1, `TERNARY` L6 | TypeScript AST scan |
+| `packages/components/hooks/useWorkspaceTheme/helpers/resolveWorkspaceTheme/types/resolveWorkspaceTheme.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/components/hooks/useWorkspaceTheme/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/hooks/useWorkspaceTheme/types/useWorkspaceTheme.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/hooks/useWorkspaceTheme/useWorkspaceTheme.ts` | `TERNARY` L13 | TypeScript AST scan |
+| `packages/components/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/components/styles/primitives.css` | `CSS_COLOR_LITERAL` L1 | Stylesheet static scan |
+| `packages/domain/accounts/index.ts` | `UNUSED_DOMAIN_REVIEW` L1 | TypeScript AST scan |
+| `packages/domain/accounts/pages/AccountDetailsPage.tsx` | `UNUSED_DOMAIN_REVIEW` L1, `DIRECT_LUCIDE` L2, `RAW_NATIVE_HTML` L60, `RAW_CLASS` L60, `ROUTE_LITERAL` L61, `TERNARY` L63 | TypeScript AST scan |
+| `packages/domain/accounts/pages/AccountsPage.tsx` | `UNUSED_DOMAIN_REVIEW` L1, `DIRECT_LUCIDE` L2, `TERNARY` L24, `NATIVE_COLLECTION` L24, `RAW_NATIVE_HTML` L45, `RAW_CLASS` L45 | TypeScript AST scan |
+| `packages/domain/auth/RUNBOOK.md` | No mechanical rule hit; **manual review required** | Tracked artifact |
+| `packages/domain/auth/components/authAmbientGraphic/AuthAmbientGraphic.tsx` | `RAW_NATIVE_HTML` L6, `RAW_CLASS` L6, `TEST_ID_LITERAL` L6 | TypeScript AST scan |
+| `packages/domain/auth/components/authAmbientGraphic/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/components/authStatusArt/AuthStatusArt.tsx` | `DIRECT_LUCIDE` L2, `RAW_NATIVE_HTML` L18, `RAW_CLASS` L19, `TERNARY` L21, `INLINE_COLOR` L22; **Reviewed:** State strings and status badge markup need enum/renderer/token migration | TypeScript AST scan |
+| `packages/domain/auth/components/authStatusArt/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/components/credentialField/CredentialField.tsx` | `NATIVE_COLLECTION` L14, `TERNARY` L14, `RAW_NATIVE_HTML` L17, `RAW_CLASS` L19; **Reviewed:** Grouped label needs pure renderer and shared FieldLabel/Row | TypeScript AST scan |
+| `packages/domain/auth/components/credentialField/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/components/credentialField/types/credentialField.props.ts` | `DIRECT_LUCIDE` L2 | TypeScript AST scan |
+| `packages/domain/auth/components/loginLayout/LoginLayout.tsx` | `DIRECT_LUCIDE` L2, `RAW_NATIVE_HTML` L37, `TERNARY` L37, `RAW_CLASS` L38, `ROUTE_LITERAL` L60, `NATIVE_COLLECTION` L64; **Reviewed:** Theme variants, copy, appearance options, and responsive classes need constants/helpers/renderer | TypeScript AST scan |
+| `packages/domain/auth/components/loginLayout/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/components/loginLayout/styles/optionOneAuth.css` | `LEGACY_DOMAIN_CSS` L1, `LARGE_STYLESHEET` L1, `CSS_COLOR_LITERAL` L1; **Reviewed:** Split mixed auth layout/credential/status/forgot/recovery styles, preserve mobile fit | Stylesheet static scan |
+| `packages/domain/auth/core/guards/RecoveryFlowBoundary.tsx` | `EFFECT_COMPONENT` L1 | TypeScript AST scan |
+| `packages/domain/auth/core/guards/RequireSession.test.tsx` | `TEST_LOCATION` L1, `DESCRIBE_EXPORT_MISMATCH` L1 | TypeScript AST scan |
+| `packages/domain/auth/core/guards/RequireSession.tsx` | `RAW_NATIVE_HTML` L16, `RAW_CLASS` L16, `ROUTE_LITERAL` L17, `TERNARY` L24 | TypeScript AST scan |
+| `packages/domain/auth/core/guards/__tests__/RecoveryFlowBoundary.test.tsx` | `DESCRIBE_EXPORT_MISMATCH` L1 | TypeScript AST scan |
+| `packages/domain/auth/core/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/core/providers/AuthProvider.tsx` | `FLAT_PROVIDER` L1; **Reviewed:** Move to authProvider unit and one session state/action hook | TypeScript AST scan |
+| `packages/domain/auth/core/session/recoveryFlowSession.ts` | No mechanical rule hit; **manual review required**; **Reviewed:** Separate constants/types/pure parsing from sensitive proof adapter without persisting proof | TypeScript AST scan |
+| `packages/domain/auth/hooks/useAuthViewportFit/__tests__/useAuthViewportFit.test.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/hooks/useAuthViewportFit/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/hooks/useAuthViewportFit/useAuthViewportFit.ts` | `TERNARY` L23 | TypeScript AST scan |
+| `packages/domain/auth/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/ForgotPassword.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/__tests__/ForgotPasswordPage.test.tsx` | `DESCRIBE_EXPORT_MISMATCH` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/components/forgotPasswordForm/ForgotPasswordForm.tsx` | `DIRECT_LUCIDE` L1, `TERNARY` L18, `RAW_NATIVE_HTML` L21, `TEST_ID_LITERAL` L22, `RAW_CLASS` L22, `ROUTE_LITERAL` L45 | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/components/forgotPasswordForm/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/components/forgotPasswordForm/types/forgotPasswordForm.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/constants/forgotPasswordCooldown/forgotPasswordCooldown.constant.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/constants/forgotPasswordCooldown/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/containers/forgotPasswordContainer/ForgotPasswordContainer.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/containers/forgotPasswordContainer/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/containers/forgotPasswordContainer/types/forgotPasswordContainer.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/helpers/getForgotPasswordViewModel/__tests__/getForgotPasswordViewModel.test.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/helpers/getForgotPasswordViewModel/getForgotPasswordViewModel.ts` | `NESTED_HELPER` L1, `NATIVE_COLLECTION` L7, `TERNARY` L10 | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/helpers/getForgotPasswordViewModel/index.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/helpers/getForgotPasswordViewModel/types/getForgotPasswordViewModel.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/helpers/validateForgotPasswordEmail/__tests__/validateForgotPasswordEmail.test.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/helpers/validateForgotPasswordEmail/index.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/helpers/validateForgotPasswordEmail/types/validateForgotPasswordEmail.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/helpers/validateForgotPasswordEmail/validateForgotPasswordEmail.ts` | `NESTED_HELPER` L1, `NATIVE_COLLECTION` L7 | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/hooks/useForgotPassword/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/hooks/useForgotPassword/types/useForgotPassword.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/hooks/useForgotPassword/useForgotPassword.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/hooks/useForgotPasswordCountdown/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/hooks/useForgotPasswordCountdown/types/useForgotPasswordCountdown.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/hooks/useForgotPasswordCountdown/useForgotPasswordCountdown.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/types/forgotPassword.props.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/types/forgotPassword.state.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/types/forgotPassword.viewModel.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/forgotPassword/types/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/Login.tsx` | `TERNARY` L10 | TypeScript AST scan |
+| `packages/domain/auth/pages/login/__tests__/LoginPage.test.tsx` | `DESCRIBE_EXPORT_MISMATCH` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/login/components/LoginForm/LoginForm.tsx` | `DIRECT_LUCIDE` L1, `TERNARY` L24, `RAW_CLASS` L30, `RAW_NATIVE_HTML` L44; **Reviewed:** Undefined `LOGIN_FIELDS` references were corrected; remaining JSX ternaries/native controls/icons still violate guidelines | TypeScript AST scan |
+| `packages/domain/auth/pages/login/components/LoginForm/__tests__/LoginForm.test.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/components/LoginForm/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/components/LoginForm/types/loginForm.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/constants/login.copy.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/constants/login.errorRules.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/constants/login.fieldConfig.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/constants/login.fieldOrder.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/constants/login.fields.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/constants/login.testIds.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/constants/login.validation.ts` | No mechanical rule hit; **manual review required**; **Reviewed:** Regex double escape regression was corrected; preserve correct regex and add whitespace/dot tests | TypeScript AST scan |
+| `packages/domain/auth/pages/login/constants/types/login.fieldConfig.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/containers/loginContainer/LoginContainer.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/containers/loginContainer/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/containers/loginContainer/types/loginContainer.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/helpers/__tests__/login.getErrorMessage.test.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/login/helpers/__tests__/login.getValidationError.test.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/login/helpers/__tests__/login.isValidEmail.test.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/login/helpers/__tests__/login.validateCredentials.test.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/login/helpers/login.getErrorMessage.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/helpers/login.getValidationError.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/helpers/login.isValidEmail.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/helpers/login.validateCredentials.ts` | No mechanical rule hit; **manual review required**; **Reviewed:** Now uses `_trim` on email only and pure enum-based rule helper; add focused edge-case tests | TypeScript AST scan |
+| `packages/domain/auth/pages/login/helpers/types/login.getErrorMessage.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/login/helpers/types/login.getValidationError.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/login/helpers/types/login.validateCredentials.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/login/hooks/useLogin/__tests__/useLogin.test.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/hooks/useLogin/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/hooks/useLogin/types/useLogin.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/hooks/useLogin/useLogin.tsx` | No mechanical rule hit; **manual review required**; **Reviewed:** Still composes multiple peer hooks; one LoginForm state/action owner required | TypeScript AST scan |
+| `packages/domain/auth/pages/login/hooks/useLoginActions/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/hooks/useLoginActions/types/useLoginActions.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/hooks/useLoginActions/useLoginActions.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/hooks/useLoginForm/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/hooks/useLoginForm/types/useLoginForm.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/hooks/useLoginForm/useLoginForm.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/hooks/useLoginSubmission/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/hooks/useLoginSubmission/types/useLoginSubmission.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/hooks/useLoginSubmission/useLoginSubmission.ts` | No mechanical rule hit; **manual review required**; **Reviewed:** Submission remains peer of useLoginForm; move under owning hook and preserve duplicate-request guard | TypeScript AST scan |
+| `packages/domain/auth/pages/login/hooks/useLoginViewport/helpers/__tests__/loginViewport.getMobileSnapshot.test.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/login/hooks/useLoginViewport/helpers/__tests__/loginViewport.subscribeToViewport.test.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/login/hooks/useLoginViewport/helpers/loginViewport.getMobileSnapshot.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/hooks/useLoginViewport/helpers/loginViewport.subscribeToViewport.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/hooks/useLoginViewport/helpers/types/loginViewport.getMobileSnapshot.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/login/hooks/useLoginViewport/helpers/types/loginViewport.subscribeToViewport.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/login/hooks/useLoginViewport/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/hooks/useLoginViewport/types/useLoginViewport.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/hooks/useLoginViewport/useLoginViewport.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/templates/desktopLogin/DesktopLogin.tsx` | `RAW_CLASS` L11 | TypeScript AST scan |
+| `packages/domain/auth/pages/login/templates/desktopLogin/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/templates/desktopLogin/types/desktopLogin.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/templates/mobileLogin/MobileLogin.tsx` | `RAW_CLASS` L11 | TypeScript AST scan |
+| `packages/domain/auth/pages/login/templates/mobileLogin/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/templates/mobileLogin/types/mobileLogin.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/types/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/types/login.props.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/login/types/login.state.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/Recovery.tsx` | `TERNARY` L10, `RAW_NATIVE_HTML` L17, `RAW_CLASS` L17 | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/__tests__/RecoveryPage.test.tsx` | `DESCRIBE_EXPORT_MISMATCH` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/components/recoveryArtwork/RecoveryArtwork.tsx` | `DIRECT_LUCIDE` L1, `TERNARY` L11, `RAW_NATIVE_HTML` L20, `RAW_CLASS` L22 | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/components/recoveryArtwork/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/components/recoveryArtwork/types/recoveryArtwork.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/components/recoveryPasswordForm/RecoveryPasswordForm.tsx` | `DIRECT_LUCIDE` L1, `TERNARY` L19, `TEST_ID_LITERAL` L25, `RAW_CLASS` L25, `RAW_NATIVE_HTML` L26 | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/components/recoveryPasswordForm/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/components/recoveryPasswordForm/types/recoveryPasswordForm.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/components/recoveryState/RecoveryState.tsx` | `DIRECT_LUCIDE` L1, `TERNARY` L9, `RAW_NATIVE_HTML` L15, `RAW_CLASS` L15, `ROUTE_LITERAL` L18 | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/components/recoveryState/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/components/recoveryState/types/recoveryState.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/containers/recoveryContainer/RecoveryContainer.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/containers/recoveryContainer/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/containers/recoveryContainer/types/recoveryContainer.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/helpers/classifyRecoveryFailure/__tests__/classifyRecoveryFailure.test.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/helpers/classifyRecoveryFailure/classifyRecoveryFailure.ts` | `NESTED_HELPER` L1, `NATIVE_COLLECTION` L7 | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/helpers/classifyRecoveryFailure/index.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/helpers/classifyRecoveryFailure/types/classifyRecoveryFailure.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/helpers/getRecoveryArtworkCopy/__tests__/getRecoveryArtworkCopy.test.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/helpers/getRecoveryArtworkCopy/getRecoveryArtworkCopy.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/helpers/getRecoveryArtworkCopy/index.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/helpers/getRecoveryArtworkCopy/types/getRecoveryArtworkCopy.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/helpers/validateRecoveryPassword/__tests__/validateRecoveryPassword.test.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/helpers/validateRecoveryPassword/index.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/helpers/validateRecoveryPassword/types/validateRecoveryPassword.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/helpers/validateRecoveryPassword/validateRecoveryPassword.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/hooks/useRecovery/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/hooks/useRecovery/types/useRecovery.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/hooks/useRecovery/useRecovery.ts` | `LARGE_UNIT` L156, `TERNARY` L34, `NATIVE_COLLECTION` L44; **Reviewed:** Large security-sensitive proof/grant/form/submission coordinator; split into owned hooks while retaining server retry authority | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/types/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/types/recovery.artwork.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/auth/pages/recovery/types/recovery.props.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/dashboard/RUNBOOK.md` | No mechanical rule hit; **manual review required** | Tracked artifact |
+| `packages/domain/dashboard/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/Dashboard.tsx` | `RAW_NATIVE_HTML` L10, `RAW_CLASS` L10, `TEST_ID_LITERAL` L10 | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardAside/DashboardAside.tsx` | `DIRECT_LUCIDE` L1, `TERNARY` L8, `RAW_NATIVE_HTML` L14, `RAW_CLASS` L14 | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardAside/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardAside/types/dashboardAside.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardHeader/DashboardHeader.tsx` | `DIRECT_LUCIDE` L1, `RAW_NATIVE_HTML` L7, `RAW_CLASS` L7 | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardHeader/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardHeader/types/dashboardHeader.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardMain/DashboardMain.tsx` | `DIRECT_LUCIDE` L1, `RAW_NATIVE_HTML` L8, `RAW_CLASS` L8, `NATIVE_COLLECTION` L36 | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardMain/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardMain/types/dashboardMain.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardNotice/DashboardNotice.tsx` | `DIRECT_LUCIDE` L1, `RAW_NATIVE_HTML` L5, `RAW_CLASS` L5 | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardNotice/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardNotice/types/dashboardNotice.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardOverview/DashboardOverview.tsx` | `RAW_NATIVE_HTML` L5, `RAW_CLASS` L5, `NATIVE_COLLECTION` L11 | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardOverview/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/components/dashboardOverview/types/dashboardOverview.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/constants/dashboard.metrics.ts` | `DIRECT_LUCIDE` L1 | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/constants/dashboard.workspaces.ts` | `DIRECT_LUCIDE` L1 | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/containers/dashboardContainer/DashboardContainer.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/containers/dashboardContainer/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/containers/dashboardContainer/types/dashboardContainer.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/helpers/__tests__/dashboard.getDateParts.test.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/helpers/dashboard.getDateParts.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/helpers/types/dashboard.getDateParts.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/hooks/useDashboardCalendar/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/hooks/useDashboardCalendar/types/useDashboardCalendar.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/hooks/useDashboardCalendar/useDashboardCalendar.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/types/dashboard.props.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/dashboard/pages/dashboard/types/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/integrations/index.ts` | `UNUSED_DOMAIN_REVIEW` L1 | TypeScript AST scan |
+| `packages/domain/integrations/pages/ConnectionDetailsPage.tsx` | `UNUSED_DOMAIN_REVIEW` L1, `DIRECT_LUCIDE` L2, `RAW_NATIVE_HTML` L69, `RAW_CLASS` L69, `ROUTE_LITERAL` L70, `TERNARY` L72, `NATIVE_COLLECTION` L106 | TypeScript AST scan |
+| `packages/domain/integrations/pages/IntegrationsPage.tsx` | `UNUSED_DOMAIN_REVIEW` L1, `DIRECT_LUCIDE` L3, `TERNARY` L48, `RAW_NATIVE_HTML` L65, `RAW_CLASS` L65, `NATIVE_COLLECTION` L75 | TypeScript AST scan |
+| `packages/domain/people/index.ts` | `UNUSED_DOMAIN_REVIEW` L1 | TypeScript AST scan |
+| `packages/domain/people/pages/PeoplePage.tsx` | `UNUSED_DOMAIN_REVIEW` L1, `DIRECT_LUCIDE` L2, `RAW_NATIVE_HTML` L54, `RAW_CLASS` L54, `TERNARY` L61, `NATIVE_COLLECTION` L87 | TypeScript AST scan |
+| `packages/domain/publicSite/RUNBOOK.md` | No mechanical rule hit; **manual review required** | Tracked artifact |
+| `packages/domain/publicSite/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/LandingPage.tsx` | `RAW_NATIVE_HTML` L16, `RAW_CLASS` L16, `TEST_ID_LITERAL` L16 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/__tests__/LandingPage.test.tsx` | `DESCRIBE_EXPORT_MISMATCH` L1 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/aboutContent/aboutContent.tsx` | `DIRECT_LUCIDE` L2, `RAW_NATIVE_HTML` L8, `RAW_CLASS` L8, `ROUTE_LITERAL` L14, `NATIVE_COLLECTION` L29 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/aboutContent/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/campusContent/campusContent.tsx` | `DIRECT_LUCIDE` L2, `RAW_NATIVE_HTML` L11, `RAW_CLASS` L11, `NATIVE_COLLECTION` L12, `ROUTE_LITERAL` L28, `TERNARY` L37 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/campusContent/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/constants/enquiry.initial.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/containers/enquiryFormContainer/EnquiryFormContainer.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/containers/enquiryFormContainer/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/enquiryForm.tsx` | `DIRECT_LUCIDE` L1, `RAW_NATIVE_HTML` L11, `TERNARY` L11, `RAW_CLASS` L13, `TEST_ID_LITERAL` L22, `NATIVE_COLLECTION` L42 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/getEnquiryMailto/__tests__/getEnquiryMailto.test.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/getEnquiryMailto/getEnquiryMailto.ts` | `NESTED_HELPER` L1, `NATIVE_COLLECTION` L6 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/getEnquiryMailto/index.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/getEnquiryMailto/types/getEnquiryMailto.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/validateEnquiryContact/__tests__/validateEnquiryContact.test.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/validateEnquiryContact/index.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/validateEnquiryContact/types/validateEnquiryContact.ts` | `NESTED_HELPER` L1 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/helpers/validateEnquiryContact/validateEnquiryContact.ts` | `NESTED_HELPER` L1, `NATIVE_COLLECTION` L4 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/hooks/useEnquiryForm/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/hooks/useEnquiryForm/types/useEnquiryForm.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/hooks/useEnquiryForm/useEnquiryForm.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/enquiryForm/types/enquiryForm.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/homeContent/homeContent.tsx` | `DIRECT_LUCIDE` L2, `RAW_NATIVE_HTML` L8, `RAW_CLASS` L8, `ROUTE_LITERAL` L17 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/homeContent/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/publicSheet/PublicSheet.tsx` | `DIRECT_LUCIDE` L3, `TERNARY` L20, `RAW_CLASS` L27, `RAW_NATIVE_HTML` L29 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/publicSheet/components/infoPanels/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/publicSheet/components/infoPanels/infoPanels.tsx` | `DIRECT_LUCIDE` L1, `RAW_NATIVE_HTML` L6, `RAW_CLASS` L6, `NATIVE_COLLECTION` L10, `TERNARY` L32 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/publicSheet/components/panelPhoto/PanelPhoto.tsx` | `DIRECT_LUCIDE` L1, `RAW_NATIVE_HTML` L7, `RAW_CLASS` L7 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/publicSheet/components/panelPhoto/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/publicSheet/components/storyPanel/StoryPanel.tsx` | `DIRECT_LUCIDE` L2, `RAW_NATIVE_HTML` L9, `RAW_CLASS` L9, `NATIVE_COLLECTION` L11, `TERNARY` L14 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/publicSheet/components/storyPanel/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/publicSheet/constants/school.sheetCopy.ts` | `DIRECT_LUCIDE` L1 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/publicSheet/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/publicSheet/types/schoolPanel.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/resourceContent/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/resourceContent/resourceContent.tsx` | `DIRECT_LUCIDE` L1, `RAW_NATIVE_HTML` L10, `RAW_CLASS` L10, `NATIVE_COLLECTION` L12 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/siteActions/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/siteActions/siteActions.tsx` | `ROUTE_LITERAL` L13 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/siteChrome/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/siteChrome/siteChrome.tsx` | `DIRECT_LUCIDE` L3, `RAW_NATIVE_HTML` L22, `RAW_CLASS` L22, `ROUTE_LITERAL` L30, `NATIVE_COLLECTION` L35, `TERNARY` L35 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/siteMedia/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/components/siteMedia/siteMedia.tsx` | `DIRECT_LUCIDE` L2, `RAW_NATIVE_HTML` L11, `NATIVE_COLLECTION` L12, `RAW_CLASS` L30 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/constants/school.content.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/constants/school.navigation.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/constants/school.panels.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/constants/school.seo.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/containers/landingContainer/LandingContainer.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/containers/landingContainer/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/hooks/useLandingPage/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/hooks/useLandingPage/types/useLandingPage.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/hooks/useLandingPage/useLandingPage.ts` | `NATIVE_COLLECTION` L28, `TERNARY` L55 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/registry/schoolPages.registry.tsx` | `NATIVE_COLLECTION` L23 | TypeScript AST scan |
+| `packages/domain/publicSite/pages/landing/styles/landingPage.css` | `LEGACY_DOMAIN_CSS` L1, `LARGE_STYLESHEET` L1, `CSS_COLOR_LITERAL` L1; **Reviewed:** Legacy large screen CSS; migrate selectors with browser visual audit | Stylesheet static scan |
+| `packages/domain/publicSite/pages/landing/styles/optionOne.css` | `LEGACY_DOMAIN_CSS` L1, `CSS_COLOR_LITERAL` L1 | Stylesheet static scan |
+| `packages/domain/publicSite/pages/landing/styles/optionOnePages.css` | `LEGACY_DOMAIN_CSS` L1, `CSS_COLOR_LITERAL` L1 | Stylesheet static scan |
+| `packages/domain/settings/index.ts` | `UNUSED_DOMAIN_REVIEW` L1 | TypeScript AST scan |
+| `packages/domain/settings/pages/SecurityPage.tsx` | `UNUSED_DOMAIN_REVIEW` L1, `DIRECT_LUCIDE` L2, `RAW_NATIVE_HTML` L37, `RAW_CLASS` L37, `TERNARY` L39, `NATIVE_COLLECTION` L59 | TypeScript AST scan |
+| `packages/shell/RUNBOOK.md` | No mechanical rule hit; **manual review required** | Tracked artifact |
+| `packages/shell/Shell.tsx` | `RAW_NATIVE_HTML` L16, `TERNARY` L16, `RAW_CLASS` L18 | TypeScript AST scan |
+| `packages/shell/components/appRoutes/AppRoutes.tsx` | `NATIVE_COLLECTION` L12, `ROUTE_LITERAL` L25 | TypeScript AST scan |
+| `packages/shell/components/appRoutes/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/components/appRoutes/types/appRoutes.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/components/mobileNav/MobileNav.tsx` | `DIRECT_LUCIDE` L1, `TERNARY` L6, `RAW_NATIVE_HTML` L10, `RAW_CLASS` L10, `ROUTE_LITERAL` L11 | TypeScript AST scan |
+| `packages/shell/components/mobileNav/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/components/mobileNav/types/mobileNav.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/components/pinnedNavigation/PinnedApp.tsx` | `DIRECT_LUCIDE` L1, `RAW_NATIVE_HTML` L11, `RAW_CLASS` L11, `TERNARY` L14 | TypeScript AST scan |
+| `packages/shell/components/pinnedNavigation/PinnedNavigation.tsx` | `NATIVE_COLLECTION` L7, `TERNARY` L9, `RAW_NATIVE_HTML` L14, `RAW_CLASS` L14 | TypeScript AST scan |
+| `packages/shell/components/pinnedNavigation/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/components/pinnedNavigation/types/pinnedNavigation.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/components/protectedLayout/ProtectedLayout.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/components/protectedLayout/__tests__/ProtectedLayout.test.tsx` | `DESCRIBE_EXPORT_MISMATCH` L1 | TypeScript AST scan |
+| `packages/shell/components/protectedLayout/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/components/protectedLayout/types/protectedLayout.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/components/sidebar/Sidebar.tsx` | `DIRECT_LUCIDE` L1, `TERNARY` L12, `RAW_NATIVE_HTML` L16, `RAW_CLASS` L17, `ROUTE_LITERAL` L20 | TypeScript AST scan |
+| `packages/shell/components/sidebar/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/components/sidebar/types/sidebar.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/components/themeChoices/ThemeChoices.tsx` | `DIRECT_LUCIDE` L1, `RAW_NATIVE_HTML` L19, `TERNARY` L20, `RAW_CLASS` L26, `NATIVE_COLLECTION` L27 | TypeScript AST scan |
+| `packages/shell/components/themeChoices/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/components/themeChoices/types/themeChoices.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/components/topbar/Topbar.tsx` | `DIRECT_LUCIDE` L1, `RAW_NATIVE_HTML` L5, `RAW_CLASS` L5 | TypeScript AST scan |
+| `packages/shell/components/topbar/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/components/topbar/types/topbar.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/containers/shellContainer/ShellContainer.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/containers/shellContainer/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/containers/shellContainer/types/shellContainer.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/hooks/useShell/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/hooks/useShell/types/useShell.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/hooks/useShell/useShell.ts` | No mechanical rule hit; **manual review required**; **Reviewed:** Peer useShellState/useShellActions ownership still requires single coordinator | TypeScript AST scan |
+| `packages/shell/hooks/useShellActions/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/hooks/useShellActions/types/useShellActions.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/hooks/useShellActions/useShellActions.ts` | `TERNARY` L33, `NATIVE_COLLECTION` L33; **Reviewed:** Storage writes inside React updater risk StrictMode duplication; move to effect/external adapter | TypeScript AST scan |
+| `packages/shell/hooks/useShellState/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/hooks/useShellState/types/useShellState.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/hooks/useShellState/useShellState.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/layout/AppLauncher.tsx` | `MONOLITHIC_LAUNCHER` L1, `DIRECT_LUCIDE` L3, `NATIVE_COLLECTION` L22, `RAW_NATIVE_HTML` L39, `RAW_CLASS` L39, `TERNARY` L45, `TEST_ID_LITERAL` L70; **Reviewed:** Split monolith into controller/filter/helper/renderers, scoped styles | TypeScript AST scan |
+| `packages/shell/registry/appCatalog.registry.ts` | `DIRECT_LUCIDE` L1; **Reviewed:** Dashboard path duplicates route constant and icon import bypasses curated API | TypeScript AST scan |
+| `packages/shell/registry/domains.registry.tsx` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/registry/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/storage/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/storage/types/workspacePreferences.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/shell/storage/workspacePreferences.ts` | `NATIVE_COLLECTION` L16 | TypeScript AST scan |
+| `packages/shell/types/shell.props.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/styles/RUNBOOK.md` | No mechanical rule hit; **manual review required** | Tracked artifact |
+| `packages/styles/base.css` | No mechanical rule hit; **manual review required** | Stylesheet static scan |
+| `packages/styles/index.css` | No mechanical rule hit; **manual review required** | Stylesheet static scan |
+| `packages/styles/index.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/styles/themes/dark.css` | No mechanical rule hit; **manual review required** | Stylesheet static scan |
+| `packages/styles/themes/light.css` | No mechanical rule hit; **manual review required** | Stylesheet static scan |
+| `packages/styles/tokens/breakpoints.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
+| `packages/styles/tokens/foundations.css` | No mechanical rule hit; **manual review required** | Stylesheet static scan |
+| `packages/styles/utilities.css` | No mechanical rule hit; **manual review required** | Stylesheet static scan |
+| `pnpm-lock.yaml` | No mechanical rule hit; **manual review required** | Tracked artifact |
+| `scripts/audit-guidelines.mjs` | No mechanical rule hit; **manual review required** | Tracked file/structure scan |
+| `scripts/check-boundaries.mjs` | No mechanical rule hit; **manual review required** | Tracked file/structure scan |
+| `scripts/check-layout-assets.mjs` | No mechanical rule hit; **manual review required**; **Reviewed:** Previously source-regex route resolution broke enum-backed routes; regression test checker on future route map changes | Tracked file/structure scan |
+| `scripts/check-styles.mjs` | No mechanical rule hit; **manual review required** | Tracked file/structure scan |
+| `scripts/check-ui-contracts.mjs` | No mechanical rule hit; **manual review required** | Tracked file/structure scan |
+| `scripts/check-units.mjs` | No mechanical rule hit; **manual review required**; **Reviewed:** Old rule requires nested helper units/index barrels; conflicts with flat helper convention | Tracked file/structure scan |
+| `scripts/download-school-images.mjs` | No mechanical rule hit; **manual review required** | Tracked file/structure scan |
+| `scripts/prerender-public-pages.mjs` | No mechanical rule hit; **manual review required** | Tracked file/structure scan |
+| `scripts/test/polyfills.cjs` | No mechanical rule hit; **manual review required** | Tracked file/structure scan |
+| `scripts/test/styleMock.cjs` | No mechanical rule hit; **manual review required** | Tracked file/structure scan |
+| `scripts/test/transformEsm.cjs` | No mechanical rule hit; **manual review required** | Tracked file/structure scan |
+| `tsconfig.json` | No mechanical rule hit; **manual review required** | Tracked artifact |
+| `vite.config.ts` | No mechanical rule hit; **manual review required** | TypeScript AST scan |
 
-## 41. Cross-cutting confirmed blockers and review priorities
+### 40.2 Rule-code definitions and counts
 
-**Current priority evidence:**
+These counts represent **number of files flagged per rule**, not raw occurrences of JSX tags or ternaries. Multiple flags can occur in one file. Some are explicit **review** rules rather than an immediate defect (such as a large file, a third-party color, or native collection methods in a special-purpose adapter).
 
-1. `pages/login/components/LoginForm/LoginForm.tsx` still refers to `LOGIN_FIELDS` despite importing `LOGIN_FIELD_CONFIG`; this is an unresolved symbol and should be found by TypeScript once the architecture gate passes. The field config already exists; fix both field descriptors without altering autofill.
-2. New Base `_find`/`_keys`/`_map`/`_trim` types were missing in commit `200d35de`, but the subsequent `b8340847` commit added contracts. Do **not** keep reporting that older failure as unresolved without checking the latest head.
-3. `scripts/check-layout-assets.mjs` currently compares string catalog paths against route registration that now uses `APP_ROUTE.DASHBOARD`. Its static regex does not correctly resolve that identifier, producing a false `catalog path /dashboard has no implemented protected route` architecture failure. Use a shared typed descriptor/route manifest rather than source-code regex parsing.
-4. `scripts/check-units.mjs` still requires nested helper folders, their `index.ts` and callable `types`; Revision 8 explicitly requires flat page helpers and no helper barrels. The checker must distinguish Base leaf utility units from flat domain page helpers instead of enforcing opposite conventions.
-5. Login helpers and exact suite names are now mostly migrated; login presentation, auth provider, recovery hooks, shell JSX, app launcher and legacy CSS remain substantial nonconformant areas. Do not mark a package complete when only constants or tests were reorganized.
-6. Public site/dashboard CSS has large legacy/global files; style migration requires CSS selector-to-DOM ownership mapping and real dark/light/mobile browser checks. Deleting CSS by regex or mass rename is unsafe.
-7. `domain/accounts`, `domain/people`, `domain/integrations`, `domain/settings` remain unimplemented UI-domain deletion candidates. Check all static/dynamic dependencies and exports before deleting, while preserving any real business/auth services.
+| Rule | Files | Required review/remediation |
+|---|---:|---|
+| `NESTED_HELPER` | 49 | flatten helper files and tests |
+| `TERNARY` | 47 | replace with helper or JSX renderer |
+| `RAW_CLASS` | 45 | use scoped CSS Module and @Styles tokens |
+| `RAW_NATIVE_HTML` | 43 | compose shared semantic primitive |
+| `DIRECT_LUCIDE` | 39 | use @Components/icons or shared Icon |
+| `NATIVE_COLLECTION` | 31 | replace native operation with tested Base leaf where applicable |
+| `ROUTE_LITERAL` | 14 | use @Business route constants |
+| `UNUSED_DOMAIN_REVIEW` | 10 | verify zero importers then delete unused UI domain |
+| `DESCRIBE_EXPORT_MISMATCH` | 8 | use exact tested export in describe |
+| `TEST_ID_LITERAL` | 7 | centralize deterministic test ID |
+| `CSS_COLOR_LITERAL` | 6 | token/asset exception audit |
+| `LEGACY_DOMAIN_CSS` | 4 | migrate to owned .module.scss |
+| `LARGE_STYLESHEET` | 3 | split stylesheet responsibility |
+| `TEST_LOCATION` | 2 | move suite to owner __tests__ |
+| `CONFIG_FOLDER` | 2 | replace static config with constants/helpers |
+| `LEGACY_GLOBAL_CSS` | 1 | distribute styles by owner |
+| `FORBIDDEN_BARREL` | 1 | remove helper/constant barrel |
+| `INLINE_COLOR` | 1 | use light/dark semantic token |
+| `EFFECT_COMPONENT` | 1 | convert null-returning effect component to hook |
+| `FLAT_PROVIDER` | 1 | organize AuthProvider into provider unit |
+| `LARGE_UNIT` | 1 | review SRP and extract focused units |
+| `MONOLITHIC_LAUNCHER` | 1 | split AppLauncher into hook/renderer/typed constants |
 
-**Audit method limitation:** Every path is inventoried, but only rows explicitly marked **Source reviewed** were read/verified at the code-content level in this audit. The other entries are obligations, not a completed manual line-by-line review. Full AST no-ternary, import ownership, pure-test mocking, dead-symbol detection, JSX primitive enforcement and SCSS module validations must be implemented as automated repository checks before claiming exhaustive compliance.
+### 40.3 Audit reproducibility
+
+Run `cd frontend && pnpm audit:guidelines` to regenerate one `GH_AUDIT|<path>|<codes@firstLine>` row per tracked file and one summary. The script uses the installed TypeScript AST to distinguish real ternary expressions from optional type syntax and detects native markup, imports, route/test-ID literals and helper placement. CI executes this audit **before** blocking architecture/typecheck tests and currently logs results without failing the build for legacy violations. Do not silently convert it into a failing global gate until associated migrations are implemented. For new code, apply the rules immediately. Keep this inventory synchronized with the latest branch snapshot; counts will change with new commits.
+
+## 41. Confirmed high-impact follow-ups and behavior checks
+
+1. **Auth presentation:** LoginLayout, AuthStatusArt, CredentialField, LoginForm and recovery/forgot views still contain conditional JSX and/or raw generic markup. Extract enums, named renderer functions, shared primitives and token-driven scoped styles with thorough accessibility/responsive tests. The two login regressions observed during the review (incorrect email regex escapes and undefined `LOGIN_FIELDS`) were subsequently fixed; verify they remain covered by tests.
+2. **Hooks/state:** `useRecovery` still groups multiple proof/grant/form/submission responsibilities; `useShell` still composes peer state/actions. Move storage writes out of functional state updaters. Preserve auth proof lifetime, server-enforced retries and stable protected shell mounting.
+3. **Routes/providers:** the pure `@Business/auth/routes` and `@Business/app/routes` contracts exist. Convert remaining hard-coded routes, distinguish public school pages from guest-only authentication and preserve one persistent ProtectedLayout. Reorganize AuthProvider with one session owner.
+4. **CSS and design primitives:** move the large auth, landing and global CSS into owner-scoped `.module.scss` files while centralizing token colors. Current DOM selectors and mobile/short viewport interactions must be verified in a real browser; AST audit cannot verify them.
+5. **Dead UI domains:** `domain/{people,accounts,integrations,settings}` still need safe importer/pinned-route verification and deletion. Keep actual business auth/accounts APIs.
+6. **Test governance and checker drift:** exact exported-name `describe`, no pure-utility mocks, flat helpers and no duplicate state. `scripts/check-units.mjs` still enforces a nested-helper convention in some packages and should be scoped correctly. Update audit flags after code migration; do not treat “no source-pattern flag” as fully compliant.
+
+**Source-review limit:** This AST audit genuinely parses every tracked TS/TSX file and reads every tracked CSS file; it is not a complete manual semantic code review of every line. The remaining validations—import reachability, unused export checks, visual contrast/overflows, authentication security, logical test completeness and runtime routing—require compiler/build/tests and browser checks. The CI audit itself passed in the snapshot run.
