@@ -1,7 +1,7 @@
 import { _map } from '@Base/utilities/map';
 import { Box } from '@Components/components/Box';
 import { ArrowLeft, LockKeyhole } from '@Components/icons';
-import { Link } from '@Components/router';
+import { AppLink } from '@Components/components/AppLink';
 import { APP_ROUTE } from '@Business/app/routes';
 
 import { SchoolMonogram } from '@Components';
@@ -49,9 +49,9 @@ export const LoginLayout: LoginLayoutComponent = ({ children, title, description
         </Box>
         <Box as="section" ref={contentRef} className="rdr-login-v2__content" data-testid={LOGIN_LAYOUT_TEST_IDS.CONTENT} aria-labelledby="rdr-auth-title">
           <Box as="div" ref={toolbarRef} className="rdr-login-v2__toolbar" data-testid={LOGIN_LAYOUT_TEST_IDS.TOOLBAR}>
-            <Link to={APP_ROUTE.HOME} className="rdr-login-v2__back" aria-label="Back to RDR School homepage">
+            <AppLink to={APP_ROUTE.HOME} className="rdr-login-v2__back" aria-label="Back to RDR School homepage">
               <ArrowLeft size={19}/><Box as="span">Back to school</Box>
-            </Link>
+            </AppLink>
             <Box as="div" className="rdr-login-v2__appearance" role="group" aria-label="Appearance">
               {_map(LOGIN_LAYOUT_APPEARANCES, option => renderLoginLayoutAppearanceOption({ ...option, preference, setPreference }))}
             </Box>
