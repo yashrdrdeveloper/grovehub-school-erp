@@ -29,7 +29,7 @@ for (const file of files) {
   if (/\/helpers\/(?!types\/|__tests__\/)[^/]+\/(?:index\.ts|[^/]+\.tsx?|types\/|__tests__\/)/.test(file) && !base) flag(file, 'NESTED_HELPER', 1);
   if (/\/(?:helpers|constants|renderer)\/index\.ts$/.test(file)) flag(file, 'FORBIDDEN_BARREL', 1);
   if (test && !file.includes('/__tests__/')) flag(file, 'TEST_LOCATION', 1);
-  if (/\.css$/.test(file) && file.startsWith('packages/domain/')) flag(file, 'LEGACY_DOMAIN_CSS', 1);
+  if (/\.css$/.test(file) && !/\.module\.css$/.test(file) && file.startsWith('packages/domain/')) flag(file, 'LEGACY_DOMAIN_CSS', 1);
   if (file === 'app/styles.css') flag(file, 'LEGACY_GLOBAL_CSS', 1);
   if (file === 'packages/domain/auth/core/providers/AuthProvider.tsx') flag(file, 'FLAT_PROVIDER', 1);
   if (file === 'packages/domain/auth/core/guards/RecoveryFlowBoundary.tsx') flag(file, 'EFFECT_COMPONENT', 1);
