@@ -1,4 +1,4 @@
-name: One-time frontend CSS Module formatting
+name: One-time frontend source formatting
 
 on:
   push:
@@ -29,8 +29,16 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
-      - name: Format owned CSS Modules
-        run: pnpm exec prettier --write "packages/**/*.module.css"
+      - name: Format all frontend source without behavior edits
+        run: pnpm exec prettier --write "{app,packages,scripts}/**/*.{ts,tsx,js,jsx,mjs,css,scss,json,md}"
+      - name: Check architecture and no new legacy findings
+        run: pnpm check:architecture
+      - name: Typecheck formatted source
+        run: pnpm typecheck
+      - name: Test formatted source
+        run: pnpm exec jest --runInBand
+      - name: Build formatted source
+        run: pnpm build
       - name: Commit formatting-only changes
         run: |
           git add packages
