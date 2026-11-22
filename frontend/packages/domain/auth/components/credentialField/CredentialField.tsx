@@ -1,3 +1,4 @@
+import { _filter } from '@Base/utilities/filter';
 import { cn } from '@Base/utilities/cn';
 import { InputControl } from '@Components/components/InputControl';
 import type { CredentialFieldComponent } from './types/credentialField.props';
@@ -13,7 +14,7 @@ export const CredentialField: CredentialFieldComponent = ({
   const errorId = id + '-error';
   const descriptors = [describedBy];
   if (error) descriptors.push(errorId);
-  const description = descriptors.filter(Boolean).join(' ') || undefined;
+  const description = _filter(descriptors, Boolean).join(' ') || undefined;
   let fieldLabel = <label htmlFor={id}>{label}</label>;
   if (groupLabel) fieldLabel = <div className="rdr-login-v2__password-label"><label htmlFor={id}>{label}</label>{labelAction}</div>;
 

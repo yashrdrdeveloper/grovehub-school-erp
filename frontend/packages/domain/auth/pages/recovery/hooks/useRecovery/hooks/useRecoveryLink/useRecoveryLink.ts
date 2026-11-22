@@ -1,3 +1,5 @@
+import { _includes } from '@Base/utilities/includes';
+import { _trim } from '@Base/utilities/trim';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { authenticationApi } from '@Business/auth';
 import { accountsApi } from '@Business/accounts';
@@ -32,7 +34,7 @@ export const useRecoveryLink: UseRecoveryLink = (purpose, clearForm) => {
     } catch (failure) {
       if (sequence !== flowSequence.current) return;
       const expired = failure instanceof ApiError &&
-        (failure.code === 'IDENTITY_TOKEN_INVALID' || [401, 403, 404, 410].includes(failure.status));
+        (failure.code === 'IDENTITY_TOKEN_INVALID' || _includes([401, 403, 404, 410], failure.status));
       if (expired) {
         clearRecoveryFlow();
         proofRef.current = null;
@@ -54,7 +56,7 @@ export const useRecoveryLink: UseRecoveryLink = (purpose, clearForm) => {
       if (failure instanceof ApiError && failure.code === 'IDENTITY_SETUP_ATTEMPTS_EXCEEDED') {
         clearRecoveryFlow();
         setView('attempts-exhausted');
-      } else if (failure instanceof ApiError && [401, 403, 404, 410].includes(failure.status)) {
+      } else if (failure instanceof ApiError && _includes([401, 403, 404, 410], failure.status)) {
         clearRecoveryFlow();
         setView('expired');
       } else {
@@ -66,7 +68,8 @@ export const useRecoveryLink: UseRecoveryLink = (purpose, clearForm) => {
   useEffect(() => {
     const handleLink = () => {
       const url = new URL(window.location.href);
-      const incoming = new URLSearchParams(url.hash.slice(1)).get('proof')?.trim();
+      let incoming = new URLSearchParams(url.hash.slice(1)).get('proof');
+      if (incoming) incoming = _trim(incoming);
       if (incoming) {
         const sequence = ++flowSequence.current;
         saveRecoveryProof(purpose, incoming);

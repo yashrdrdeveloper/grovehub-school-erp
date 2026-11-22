@@ -1,10 +1,11 @@
+import { _trim } from '@Base/utilities/trim';
 import type { GetForgotPasswordViewModel } from './types/forgotPassword.getViewModel';
 
 /** All conditional copy is prepared before JSX rendering. */
 export const getForgotPasswordViewModel: GetForgotPasswordViewModel = (state) => {
   const cooldown = state.secondsLeft > 0;
   const hasRequested = Boolean(state.lastRequestedEmail);
-  const emailChanged = hasRequested && state.email.trim() !== state.lastRequestedEmail;
+  const emailChanged = hasRequested && _trim(state.email) !== state.lastRequestedEmail;
   const noticeSuccess = hasRequested && !emailChanged;
 
   let noticeTitle = 'Secure password reset';

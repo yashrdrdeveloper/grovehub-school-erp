@@ -1,12 +1,14 @@
+import { _filter } from '@Base/utilities/filter';
+import { _find } from '@Base/utilities/find';
 import { enquiryTypes, school } from '../../../constants/school.content';
 import type { GetEnquiryMailto } from './types/enquiry.getMailto';
 
 /** Prepares an email draft only; it never claims a CRM submission. */
 export const getEnquiryMailto: GetEnquiryMailto = data => {
-  const enquiry = enquiryTypes.find(type => type.value === data.type)?.label ?? data.type;
+  const enquiry = _find(enquiryTypes, type => type.value === data.type)?.label ?? data.type;
   const subject = encodeURIComponent(`RDR School — ${enquiry}`);
   const body = encodeURIComponent([
-    `Guardian: ${[data.firstName, data.middleName, data.lastName].filter(Boolean).join(' ')}`,
+    `Guardian: ${_filter([data.firstName, data.middleName, data.lastName], Boolean).join(' ')}`,
     `Phone: ${data.phone || 'Not provided'}`,
     `Email: ${data.email || 'Not provided'}`,
     `Enquiry: ${enquiry}`,
