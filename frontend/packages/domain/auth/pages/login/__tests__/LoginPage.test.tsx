@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import { LoginContainer as LoginV2Page } from './login';
+import { LoginContainer as LoginV2Page } from '..';
 
 const signIn=jest.fn<Promise<void>,[string,string]>();
 const setPreference=jest.fn();
@@ -20,7 +20,7 @@ const setPhoneViewport = (isPhone: boolean) => {
 };
 
 jest.mock('@Components',()=>({SchoolMonogram:()=> <span className="school-monogram">RDR</span>}));
-jest.mock('../core/providers/AuthProvider',()=>({
+jest.mock('../../../core/providers/AuthProvider',()=>({
   useAuth:()=>({signIn}),
 }));
 jest.mock('@Components/hooks/theme',()=>({
