@@ -27,3 +27,5 @@ export { AppLink } from './components/AppLink';
 export { ExternalAnchor } from './components/ExternalAnchor';
 export { SelectControl } from './components/SelectControl';
 export { TextAreaControl } from './components/TextAreaControl';
+
+export { AppNavLink } from './components/AppNavLink';
