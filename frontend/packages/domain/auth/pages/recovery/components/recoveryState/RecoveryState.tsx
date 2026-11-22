@@ -7,8 +7,9 @@ import type { RecoveryStateComponent } from './types/recoveryState';
 
 /** Non-form recovery states, retry and accessible next actions. */
 export const RecoveryState: RecoveryStateComponent = ({ view, purpose, invitation, slow, onRetry }) => {
-  const checkingMessage = slow ? 'Still checking. This may take a moment…'
-    : invitation ? 'Verifying your invitation securely…' : 'Verifying your reset link securely…';
+  let checkingMessage = 'Verifying your reset link securely…';
+  if (invitation) checkingMessage = 'Verifying your invitation securely…';
+  if (slow) checkingMessage = 'Still checking. This may take a moment…';
   const showResetLink = !invitation && (view === 'missing' || view === 'expired');
   const showBack = view === 'missing' || view === 'expired' || view === 'attempts-exhausted';
 

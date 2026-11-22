@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { LoginLayout } from '../../components/loginLayout';
 
 import { RecoveryPasswordForm } from './components/recoveryPasswordForm';
@@ -7,15 +8,20 @@ import type { RecoveryComponent } from './types';
 /** Stateless recovery/activation composition, one form in the DOM. */
 export const Recovery: RecoveryComponent = (props) => {
   const formVisible = props.view === 'ready' || props.view === 'saving';
-  const mobileTitle = props.invitation ? 'Set password' : 'Reset password';
+  let mobileTitle = 'Reset password';
+  if (props.invitation) mobileTitle = 'Set password';
   const description = 'Choose a strong password to protect your school account.';
+  let mobileDescription = '';
+  if (formVisible) mobileDescription = description;
+  let content: ReactNode = <RecoveryState {...props}/>;
+  if (formVisible) content = <RecoveryPasswordForm {...props}/>;
 
   return (
     <LoginLayout variant="recovery" title="Set a new password."
-      description={description} mobileDescription={formVisible ? description : ''}
+      description={description} mobileDescription={mobileDescription}
       minimalMobile mobileTitle={mobileTitle} eyebrow="SECURE YOUR ACCOUNT">
       <div className="rdr-recovery">
-        {formVisible ? <RecoveryPasswordForm {...props}/> : <RecoveryState {...props}/>}
+        {content}
       </div>
     </LoginLayout>
   );

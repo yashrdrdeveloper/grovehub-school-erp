@@ -16,13 +16,20 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
   const handleEmailChange: ChangeEventHandler<HTMLInputElement> = (event) => {
     onEmailChange(event.currentTarget.value);
   };
-  const NoticeIcon = view.noticeSuccess ? CheckCircle2 : Info;
+  let NoticeIcon = Info;
+  let rootClass = 'rdr-auth-flow rdr-auth-flow--forgot';
+  let noticeClass = 'rdr-auth-flow__notice rdr-auth-flow__notice--info';
+  if (view.noticeSuccess) {
+    NoticeIcon = CheckCircle2;
+    rootClass += ' rdr-auth-flow--sent';
+    noticeClass = 'rdr-auth-flow__notice rdr-auth-flow__notice--success';
+  }
 
   return (
-    <div className={`rdr-auth-flow rdr-auth-flow--forgot${view.noticeSuccess ? ' rdr-auth-flow--sent' : ''}`}>
+    <div className={rootClass}>
       <Form unstyled dataTestId="forgot-password-form" id={formId} className="rdr-login-v2__form rdr-auth-flow__form" onSubmit={onSubmit} noValidate>
         <div className="rdr-auth-flow__fields">
-          <div className={`rdr-auth-flow__notice ${view.noticeSuccess ? 'rdr-auth-flow__notice--success' : 'rdr-auth-flow__notice--info'}`}
+          <div className={noticeClass}
             role="status" aria-live="polite">
             <span className="rdr-auth-flow__notice-icon" aria-hidden="true"><NoticeIcon size={20}/></span>
             <span className="rdr-auth-flow__notice-copy">

@@ -16,10 +16,19 @@ export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
   const handleConfirmationChange: ChangeEventHandler<HTMLInputElement> = event => {
     onConfirmationChange(event.currentTarget.value);
   };
-  const VisibilityIcon = visible ? EyeOff : Eye;
-  const passwordType = visible ? 'text' : 'password';
+  let VisibilityIcon = Eye;
+  let passwordType: 'text' | 'password' = 'password';
+  let visibilityLabel = 'Show passwords';
+  let confirmationLabel = 'Show confirmation password';
+  if (visible) {
+    VisibilityIcon = EyeOff;
+    passwordType = 'text';
+    visibilityLabel = 'Hide passwords';
+    confirmationLabel = 'Hide confirmation password';
+  }
   const saving = view === 'saving';
-  const buttonLabel = saving ? 'Securing your account…' : 'Update password';
+  let buttonLabel = 'Update password';
+  if (saving) buttonLabel = 'Securing your account…';
 
   return (
     <Form unstyled dataTestId="recovery-form" className="rdr-login-v2__form rdr-recovery__form" onSubmit={onSubmit} noValidate>
@@ -30,7 +39,7 @@ export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
           error={fieldErrors.password} onChange={handlePasswordChange}
           trailingAction={
             <button type="button" className="rdr-login-v2__visibility" disabled={saving}
-              aria-label={visible ? 'Hide passwords' : 'Show passwords'} onClick={onToggleVisibility}>
+              aria-label={visibilityLabel} onClick={onToggleVisibility}>
               <VisibilityIcon size={19} aria-hidden="true"/>
             </button>
           }/>
@@ -41,7 +50,7 @@ export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
           error={fieldErrors.confirmation} onChange={handleConfirmationChange}
           trailingAction={
             <button type="button" className="rdr-login-v2__visibility" disabled={saving}
-              aria-label={visible ? 'Hide confirmation password' : 'Show confirmation password'}
+              aria-label={confirmationLabel}
               onClick={onToggleVisibility}>
               <VisibilityIcon size={19} aria-hidden="true"/>
             </button>

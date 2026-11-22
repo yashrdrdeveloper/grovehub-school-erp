@@ -7,18 +7,23 @@ export const getForgotPasswordViewModel: GetForgotPasswordViewModel = (state) =>
   const emailChanged = hasRequested && state.email.trim() !== state.lastRequestedEmail;
   const noticeSuccess = hasRequested && !emailChanged;
 
-  const noticeTitle = noticeSuccess ? 'Request received!'
-    : emailChanged ? 'Email address updated' : 'Secure password reset';
-  const noticeMessage = noticeSuccess
-    ? `If eligible, a password reset link will be sent to ${state.lastRequestedEmail}.`
-    : emailChanged
-      ? 'You can send a link to the corrected address once the countdown ends.'
-      : 'Enter your email to receive a secure password reset link.';
-  const buttonLabel = state.busy ? 'Sending link…'
-    : cooldown ? `Resend in ${state.secondsLeft}s`
-      : noticeSuccess ? 'Resend reset link' : 'Send reset link';
-  const resendLabel = state.busy ? 'Sending…'
-    : cooldown ? `Resend in ${state.secondsLeft}s` : 'Resend reset link';
+  let noticeTitle = 'Secure password reset';
+  let noticeMessage = 'Enter your email to receive a secure password reset link.';
+  if (emailChanged) {
+    noticeTitle = 'Email address updated';
+    noticeMessage = 'You can send a link to the corrected address once the countdown ends.';
+  }
+  if (noticeSuccess) {
+    noticeTitle = 'Request received!';
+    noticeMessage = `If eligible, a password reset link will be sent to ${state.lastRequestedEmail}.`;
+  }
+  let buttonLabel = 'Send reset link';
+  if (noticeSuccess) buttonLabel = 'Resend reset link';
+  if (cooldown) buttonLabel = `Resend in ${state.secondsLeft}s`;
+  if (state.busy) buttonLabel = 'Sending link…';
+  let resendLabel = 'Resend reset link';
+  if (cooldown) resendLabel = `Resend in ${state.secondsLeft}s`;
+  if (state.busy) resendLabel = 'Sending…';
 
   return { cooldown, noticeSuccess, noticeTitle, noticeMessage, buttonLabel, resendLabel };
 };

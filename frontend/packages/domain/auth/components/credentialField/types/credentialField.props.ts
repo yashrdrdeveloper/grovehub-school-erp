@@ -10,5 +10,6 @@ export interface CredentialFieldProps extends InputHTMLAttributes<HTMLInputEleme
   readonly groupLabel?: boolean;
   readonly labelAction?: ReactNode;
   readonly trailingAction?: ReactNode;
+  readonly dataTestId?: string;
 }
 export type CredentialFieldComponent = (props: CredentialFieldProps) => ReactElement;
