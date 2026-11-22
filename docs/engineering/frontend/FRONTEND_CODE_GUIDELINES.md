@@ -849,3 +849,160 @@ Appearance rendering: the options live in constants; `renderer/loginLayout.appea
 
 `helpers/loginLayout.className.ts` constructs the layout classes using `cn`, a typed variant-to-module-class map, and an `if` for `minimalMobile`. Avoid `${minimalMobile ? '...' : ''}` in JSX. `LoginLayout.tsx` composes named `Box`/`Section`/`Heading`/`Text`/`AppLink`/`Icon` primitives instead of manually creating arbitrary `div/h1/h2/p/span/button`. Keep one actual form in the DOM across desktop/mobile. Test theme appearance buttons, dark/light/system behavior, media queries, compact states, and short-viewport reachability.
 
+
+
+## 27. No native generic markup in feature presentation: shared primitive contract
+
+In migrated domain and shell presentation/renderer components, **do not author generic native HTML directly**: `<div>`, `<span>`, `<p>`, `<h1>`–`<h6>`, `<small>`, `<strong>`, `<label>`, `<button>`, `<input>`, `<form>`, `<a>`. The design system handles appearance, semantics, native event behavior, accessibility, loading, disabled states and responsive spacing. A feature provides content, typed variant, state and named actions—not its own low-level control implementation.
+
+| Semantic requirement | Shared API to use/build | Required behavior |
+|---|---|---|
+| Layout/container | `Box` / `Row` / `Stack` / `Container` | Typed `as` where needed, layout/gap/size, forwarded `dataTestId` |
+| Section / main / header / footer / navigation | `Section`, `Main`, `Header`, `Footer`, `Navigation`, or a typed semantic `Box as="..."` | Preserve landmark semantics and accessible name |
+| Heading | `Heading` or `Typography as="h2"` | Correct heading hierarchy, size and token-based color |
+| Body, inline, bold or small text | `Text` / `Typography` with correct `as` | Own typography and native text semantics |
+| Input, label, password | `Input` / `InputControl` / `FieldLabel` / `FormField` / `PasswordField` | Unique id, htmlFor, accessible name, errors, autofill |
+| Actions | `Button` / `IconButton` | Native `type`, disabled, loading, focus, tests |
+| Form | `Form` | Native submit, aria, spacing and test ID |
+| In-app link | `AppLink` wrapping React Router Link | Typed route `to`, no navigation on a button |
+| Alerts/status/loading | `Alert` / `StatusMessage` / `Spinner` | `role`/`aria-live` and reserved geometry |
+| Icons/illustrations | `Icon` / `SVGRenderer` | Decorative/informative accessibility and theme-driven style |
+| Modal, panel, table, card | Shared `Dialog` / `Card` / `DataTable` | Radix/native accessibility and named variants |
+
+Some target primitives (`FieldLabel`, `Row`, `AppLink`, `Icon`, semantic landmarks, etc.) **are not presently in the repository**. First implement/export/test the missing shared primitive before migrating feature JSX. Never write an invalid import just to satisfy these guidelines. If a primitive cannot preserve the required HTML semantics, fix that primitive instead of substituting `div onClick` or a misleading `role`. **Exceptions:** native HTML is required *inside* shared primitive implementations, React Router/third-party adapters, and app bootstrap. A route renderer may create `<Route>` / `<Navigate>`; SVG asset vector files naturally own SVG path nodes. This rule targets **feature markup duplication**, not correct HTML implementation inside component boundaries.
+
+**Correct migration for `ForgotPasswordForm`:** its form, input, notice, alert, back link, resend action, error slot and success state are assembled from shared UI. Its status icon/body and class selection belong to `renderer/forgotPassword.notice.tsx`, `renderer/forgotPassword.sentState.tsx`, `helpers/forgotPassword.getNoticeViewModel.ts`. Its labels, messages, email input metadata and IDs belong in named constants. Use `Button loading` for standard spinner instead of emitting `LoaderCircle` in every page; use semantic `AppLink to={APP_ROUTE.LOGIN}` for navigation and a proper submit button for resend. Preserve cooldown, button reachability, the privacy-preserving "if eligible" response and live-region announcements.
+
+**Correct migration for `Recovery`:** `Recovery.tsx` composes `LoginLayout`, a scoped `styles.recovery` wrapper and the result of `renderer/recovery.content.tsx`, which selects **exactly one** of `RecoveryPasswordForm` and `RecoveryState`. A typed `recovery.getViewModel.ts` helper resolves form visibility, mobile title, description and status from enums; do not do `props.invitation ? ...`, `formVisible ? ...` or inline `view === 'ready' || view === 'saving'` in the page. Pass `AuthLayoutVariant.RECOVERY`, not raw `variant="recovery"`, and use named copy constants, not `eyebrow="SECURE YOUR ACCOUNT"`.
+
+### View renderer acceptance tests
+
+For every conditional renderer assert: initial state; each variant; no extra/hidden duplicate form; correct icon/accessible labels; no invalid native controls; correct test IDs; keyboard and Enter/Space support; reserved error geometry; light/dark token classes. Pure renderer tests may use React Testing Library without mocking the business layer because the renderer must have no business imports.
+
+## 28. CSS ownership: migrate the supplied 1,095-line authentication stylesheet to SCSS modules
+
+**Chosen stack:** Tailwind CSS v4 + CVA for shared component variants and **Dart Sass `*.module.scss`** for substantial component-specific styling. Sass preprocesses and scopes; **`@Styles` remains the only source of design decisions** (light/dark tokens, brand palette, font families/scales, spacing, motion, focus, borders and shadow). The repo currently has no `sass` compiler dependency, so **install and test it during the code refactor**—this document update itself does not make Sass work.
+
+Target ownership:
+
+~~~text
+packages/styles/
+├── index.css                         # one Tailwind entry
+├── tokens/foundations.css
+├── tokens/breakpoints.ts
+├── themes/light.css
+├── themes/dark.css
+└── scss/                             # shared mixins only; no duplicated palette
+    ├── _media.scss
+    ├── _a11y.scss
+    └── _layout.scss
+
+domain/auth/components/loginLayout/styles/loginLayout.module.scss
+domain/auth/components/credentialField/styles/credentialField.module.scss
+domain/auth/components/authStatusArt/styles/authStatusArt.module.scss
+domain/auth/pages/forgotPassword/components/forgotPasswordForm/styles/forgotPasswordForm.module.scss
+domain/auth/pages/recovery/styles/recovery.module.scss
+~~~
+
+The present `auth/components/loginLayout/styles/optionOneAuth.css` is **not one logical component's styling**. The uploaded stylesheet includes layout, branding, SVG art, input shell, password toggle, form errors, forgot/password reset status, recovered-state illustrations, both theme palettes, autofill, responsive layout, very short windows and reduced motion. **Split by owner**, do not rename the same 1,095-line file to `loginLayout.module.scss` and leave all responsibilities mixed.
+
+Required ownership during extraction:
+
+- **Generic shared primitives:** typography, Button variants, input focus/disabled, error alert, control sizing, loader, layout primitives → `@Components` recipes using `@Styles` values.
+- **LoginLayout:** desktop/mobile visual geometry, toolbar, brand, content centering, visual copy and measured fit → `loginLayout.module.scss`.
+- **CredentialField:** label group, input shell, password action, autofill, reserved error row → `credentialField.module.scss`.
+- **AuthStatusArt:** halo/symbol/badge/sparks, accessible decorative placement → `authStatusArt.module.scss`.
+- **ForgotPasswordForm:** notice, accepted-request state, actions and responsive form blocks → `forgotPasswordForm.module.scss`.
+- **Recovery:** proof state, requirement/attempt status, form presentation and responsive actions → `recovery.module.scss`.
+- **Pure design values:** gradients, error/success/brand colors, placeholders, font sizes/weights, spacing, shadows, radii and focus tokens → `@Styles/themes/*` / `tokens/foundations.css`.
+
+CSS Modules are imported with e.g. `import styles from './styles/loginLayout.module.scss'`, then `className={styles.root}`. Combine variants with `cn` imported from `@Base/utilities/cn`, e.g. `cn(styles.root, styles.compact)`. **Any branching CSS class selection is in a named helper**, not JSX string interpolation, nested ternary or raw class string `'is-active'`. Use `className={styles.recovery}` rather than `className="rdr-recovery"`. Domain-specific CSS modules are **owned next to their components**, while only generic design utilities/mixins/tokens belong in `packages/styles`. Do not centralize one-use feature selectors in the global styles package just to make an import shorter.
+
+~~~scss
+/* authStatusArt.module.scss; both tokens must exist in @Styles light/dark themes. */
+.root {
+  color: var(--gh-color-text);
+}
+.confirmedBadge {
+  fill: var(--gh-color-success);
+  color: var(--gh-color-on-success);
+}
+.invalidBadge {
+  color: var(--gh-color-primary-foreground);
+  background: var(--gh-color-danger);
+  border-radius: var(--gh-radius-full);
+}
+~~~
+
+**Forbidden in migrated feature SCSS:** hex/rgba/hsla color literals; duplicated light/dark color maps; global `.rdr-*` selectors without scoped module ownership; `!important` without documented interoperability reason; global `:root` overrides; magic gradient colors; inline `style={{ fill: ... }}`. New semantic roles require adding corresponding token keys to both `light.css` and `dark.css` and passing theme-parity checks. Numeric geometry can be local **only when it is layout-specific** (for example, artwork aspect ratio or measured safe-area offset), never a second generic type/spacing scale.
+
+**Migration trap:** converting `.rdr-login-v2__input-shell input` to a module class without changing the corresponding JSX will silently break styling. Move rules and their matching DOM classes **atomically**, and verify DOM screenshots before deleting old selectors. For controlled third-party internals, use a scoped `:global(...)` child under a local root, never a blanket global selector. Keep autofill, focus rings, password visibility, short viewport scroll fallback, high zoom, RDR monogram and system-mode mobile visuals working.
+
+**Required visual scenarios:** width 320/375/390/720 px, tablets, desktop, short-height browser window, 200% zoom, dark/light/system, reduced motion, iOS/Chrome autofill, focused/errors/expired/success/loading states, mobile keyboard open. Normal-height mobile screens should fit without unwanted scrolling, but unusually short/zoomed views **must scroll rather than clip actions**. Passing TypeScript/Jest/Vite alone is not visual verification.
+
+## 29. Routes, PUBLIC/PROTECTED variants and the recovery-flow effect hook
+
+All navigation paths are named once. The user-selected canonical location is `frontend/app/core/routes/` with a narrowly scoped **pure-data leaf** allowed as a dependency of domain/shell (no React, business code, API, component import or state). Configure the `@AppRoutes` alias explicitly in TypeScript, Vite, Jest and boundaries **before adoption**. Other `frontend/app` imports remain disallowed from packages. If the project architecture cannot support this leaf without a dependency cycle, move canonical constants into `@Base/constants/routes` and keep `app/core/routes` as integration-only; **never duplicate the dictionaries**.
+
+~~~ts
+// app/core/routes/constants/appRoutes.paths.ts
+export const APP_ROUTE = {
+  HOME: '/',
+  LOGIN: '/login',
+  LOGIN_LEGACY: '/loginv2',
+  FORGOT_PASSWORD: '/forgot-password',
+  RESET_PASSWORD: '/reset-password',
+  SET_PASSWORD: '/set-password',
+  SETUP_LEGACY: '/setup',
+  DASHBOARD: '/dashboard',
+} as const;
+
+// app/core/routes/constants/appRoutes.access.ts
+export enum RouteAccess {
+  PUBLIC = 'PUBLIC',
+  PROTECTED = 'PROTECTED',
+}
+export enum PublicRoutePolicy {
+  OPEN = 'OPEN',
+  GUEST_ONLY = 'GUEST_ONLY',
+}
+~~~
+
+**IMPORTANT:** PUBLIC does **not** always mean guest-only. Authenticated users must still view the school website (`PublicRoutePolicy.OPEN`). Login and certain auth pages may be `GUEST_ONLY`. Protected pages require an initialized session. Model this policy deliberately, not by checking pathname substrings.
+
+Create `PublicRoute` and `ProtectedRoute` reusable route wrappers/guards under their owning auth/shell route unit with typed `RouteAccess` and optional `PublicRoutePolicy`. Only guards trigger authenticated session initialization; normal public marketing and token exchange must not eagerly call `/me`. Route redirect and loading UI must use shared components and named route constants. Preserve `/loginv2` redirect, `/setup` invitation links and all public SEO paths. A protected layout remains a **single pathless mounted parent**:
+
+~~~text
+BrowserRouter
+└── AuthProvider
+    └── AppRoutes
+        ├── public school pages (no workspace layout)
+        ├── PublicRoute (guest-only login / other allowed public auth pages)
+        └── ProtectedRoute
+            └── ProtectedLayout -> Shell -> Outlet
+                ├── /dashboard
+                └── future implemented protected domain pages
+~~~
+
+**Do not** put a separate `Shell` inside every `Route` element: that unmounts sidebar/theme/pins on navigation. Route JSX registration is allowed to use React Router primitives; grouping and rendering route descriptors belongs in `renderer/appRoutes.route.tsx`, with `_map` from `@Base/utilities/map`. The route metadata itself is under `registry/` or constants; a renderer must not decide auth by looking for `'/protected'` in a string. Keep `PUBLIC_SITE_PATHS` exported from `@Domain/publicSite`; avoid a second hand-maintained thirteen-path copy.
+
+~~~tsx
+// Example: typed route descriptor renderer only, not a second shell instance
+export const renderRoute = (route: AppRouteDescriptor) => (
+  <Route key={route.path} path={route.path} element={route.element}/>
+);
+
+// AppRoutes maps descriptors via the base leaf
+const publicRouteElements = _map(publicRoutes, renderRoute);
+const workspaceRouteElements = _map(workspaceRoutes, renderRoute);
+
+// ONE protected parent wraps the entire workspace group; no per-page Shell
+<Route element={<ProtectedRoute/>}>
+  <Route element={<ProtectedLayout/>}>{workspaceRouteElements}</Route>
+</Route>
+~~~
+
+The outer `AppRoutes` becomes a thin container of named route arrays and renderers; no native `PUBLIC_SITE_PATHS.map(...)` or inline mapping arrow that emits a large JSX tree.
+
+`RecoveryFlowBoundary` is a **side-effect hook**, not a visual component. Replace the `RecoveryFlowBoundary.tsx` null component with `useRecoveryFlowBoundary` under `auth/core/hooks/useRecoveryFlowBoundary/`, with its own types, helper for purpose selection and tests. Call it unconditionally from an already-rendered component **inside BrowserRouter and AuthProvider**, such as the app-routes controller. On leaving/switching recovery paths it clears pending proof state; do not clear a valid flow merely because a layout rerenders. Never reintroduce a no-op JSX component whose sole purpose is executing effects. No token gets put in persistent browser storage.
+
