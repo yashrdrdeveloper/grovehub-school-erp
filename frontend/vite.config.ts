@@ -15,6 +15,7 @@ export default defineConfig({
       '@Components': path.resolve(root, 'packages/components'),
       '@Domain': path.resolve(root, 'packages/domain'),
       '@Shell': path.resolve(root, 'packages/shell'),
+      '@Styles': path.resolve(root, 'packages/styles'),
     },
   },
   server: {

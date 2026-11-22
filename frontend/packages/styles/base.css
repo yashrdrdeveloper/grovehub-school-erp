@@ -1,0 +1,25 @@
+/* Only document-wide defaults. Pages may own their own layouts. */
+:root {
+  font-family: var(--gh-font-body);
+  color: var(--gh-color-text-strong);
+  background: var(--gh-color-canvas);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--gh-color-canvas);
+  color: var(--gh-color-text);
+}
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .52; }
+a { color: inherit; text-decoration: none; }
+a:hover { color: var(--gh-color-accent); }
+h1, h2, h3, h4, strong { color: var(--gh-color-text-strong); }
+h1, h2, h3, h4 { font-family: var(--gh-font-heading); }
+p { line-height: var(--gh-leading-normal); }
+:focus-visible { outline-offset: 2px; }

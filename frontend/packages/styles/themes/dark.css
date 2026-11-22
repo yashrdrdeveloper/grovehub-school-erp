@@ -1,0 +1,26 @@
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --gh-color-canvas: #0b1220;
+  --gh-color-surface: #172033;
+  --gh-color-surface-subtle: #202c43;
+  --gh-color-text: #cbd5e1;
+  --gh-color-text-strong: #f8fafc;
+  --gh-color-muted: #94a3b8;
+  --gh-color-border: #334155;
+  --gh-color-input: #43526c;
+  --gh-color-primary: #dce6f7;
+  --gh-color-primary-foreground: #172033;
+  --gh-color-secondary: #27354b;
+  --gh-color-secondary-foreground: #edf2f9;
+  --gh-color-accent: #dce6f7;
+  --gh-color-accent-hover: #eef2ff;
+  --gh-color-accent-soft: #223149;
+  --gh-color-ring: #a2b5d5;
+  --gh-color-danger: #ef6a6a;
+  --gh-color-success: #70d19c;
+  --gh-color-warning: #e4ba71;
+  --gh-color-hero-start: #101a2c;
+  --gh-color-hero-end: #1e3a65;
+  --gh-shadow-card: 0 8px 24px rgb(0 0 0 / .13);
+  --gh-shadow-dialog: 0 20px 60px rgb(0 0 0 / .35);
+}

@@ -1,0 +1,26 @@
+:root, :root[data-theme='light'] {
+  color-scheme: light;
+  --gh-color-canvas: #f8fafc;
+  --gh-color-surface: #ffffff;
+  --gh-color-surface-subtle: #f1f5f9;
+  --gh-color-text: #334155;
+  --gh-color-text-strong: #0f172a;
+  --gh-color-muted: #64748b;
+  --gh-color-border: #d7dde7;
+  --gh-color-input: #d7dde7;
+  --gh-color-primary: #1f2a44;
+  --gh-color-primary-foreground: #ffffff;
+  --gh-color-secondary: #eef2f7;
+  --gh-color-secondary-foreground: #1f2a44;
+  --gh-color-accent: #1f2a44;
+  --gh-color-accent-hover: #33415e;
+  --gh-color-accent-soft: #eef2f7;
+  --gh-color-ring: #526686;
+  --gh-color-danger: #b91c1c;
+  --gh-color-success: #1f6d41;
+  --gh-color-warning: #9d7435;
+  --gh-color-hero-start: #0b1220;
+  --gh-color-hero-end: #1e3a8a;
+  --gh-shadow-card: 0 4px 20px rgb(15 23 42 / .035);
+  --gh-shadow-dialog: 0 16px 48px rgb(15 23 42 / .14);
+}

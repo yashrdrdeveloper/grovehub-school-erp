@@ -4,9 +4,9 @@ import { createRoot } from 'react-dom/client';
 import { ShellContainer } from '@Shell';
 import { resolveWorkspaceTheme } from '@Components/hooks/theme';
 
+import '@Styles/index.css';
 import './styles.css';
 import '../packages/components/styles/primitives.css';
-import './styles/tailwind.css';
 
 // Apply the desktop preference before React mounts, without overriding system mode on phones.
 const applyInitialTheme = (): void => {

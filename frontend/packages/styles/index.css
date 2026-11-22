@@ -1,0 +1,50 @@
+/* Global design-system stylesheet. Import once from frontend/app/main.tsx. */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "tw-animate-css";
+@import "./tokens/foundations.css";
+@import "./themes/light.css";
+@import "./themes/dark.css";
+@import "./base.css";
+@import "./utilities.css";
+
+/* Tailwind v4 scans each product package without an app-level CSS dependency. */
+@source "../";
+@custom-variant dark (&:is([data-theme="dark"] *));
+
+@theme inline {
+  --font-sans: var(--gh-font-body);
+  --font-display: var(--gh-font-heading);
+  --font-mono: var(--gh-font-mono);
+
+  --color-background: var(--gh-color-canvas);
+  --color-foreground: var(--gh-color-text-strong);
+  --color-card: var(--gh-color-surface);
+  --color-card-foreground: var(--gh-color-text-strong);
+  --color-popover: var(--gh-color-surface);
+  --color-popover-foreground: var(--gh-color-text-strong);
+  --color-primary: var(--gh-color-primary);
+  --color-primary-foreground: var(--gh-color-primary-foreground);
+  --color-secondary: var(--gh-color-secondary);
+  --color-secondary-foreground: var(--gh-color-secondary-foreground);
+  --color-muted: var(--gh-color-surface-subtle);
+  --color-muted-foreground: var(--gh-color-muted);
+  --color-accent: var(--gh-color-surface-subtle);
+  --color-accent-foreground: var(--gh-color-text-strong);
+  --color-border: var(--gh-color-border);
+  --color-input: var(--gh-color-input);
+  --color-ring: var(--gh-color-ring);
+  --color-destructive: var(--gh-color-danger);
+  --color-success: var(--gh-color-success);
+  --color-warning: var(--gh-color-warning);
+
+  --radius-sm: var(--gh-radius-sm);
+  --radius-md: var(--gh-radius-md);
+  --radius-lg: var(--gh-radius-lg);
+  --radius-xl: var(--gh-radius-xl);
+  --shadow-card: var(--gh-shadow-card);
+  --shadow-dialog: var(--gh-shadow-dialog);
+
+  --breakpoint-phone: 45rem;
+}

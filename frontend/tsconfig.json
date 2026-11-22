@@ -56,6 +56,12 @@
       ],
       "@Shell": [
         "packages/shell/index.ts"
+      ],
+      "@Styles": [
+        "packages/styles/index.ts"
+      ],
+      "@Styles/*": [
+        "packages/styles/*"
       ]
     }
   },
