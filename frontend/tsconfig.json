@@ -56,12 +56,6 @@
       ],
       "@Shell": [
         "packages/shell/index.ts"
-      ],
-      "@LandingPage": [
-        "packages/landingPage/index.ts"
-      ],
-      "@LandingPage/*": [
-        "packages/landingPage/*"
       ]
     }
   },

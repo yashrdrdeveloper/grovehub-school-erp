@@ -6,7 +6,7 @@ import {
   Landmark, Mail, MapPin, Phone, ShieldCheck, Sparkles, X,
 } from 'lucide-react';
 
-import { disclosedDocuments, facilities, photographs, school } from './content';
+import { disclosedDocuments, facilities, photographs, school } from '../../config/content';
 
 export type SchoolPanel =
   | 'enquiry' | 'about' | 'history' | 'director' | 'principal' | 'philosophy'

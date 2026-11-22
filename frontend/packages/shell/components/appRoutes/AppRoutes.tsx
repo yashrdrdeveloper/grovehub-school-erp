@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { PublicOnly, RequireSession } from '@Domain/auth';
-import { LandingPage } from '@LandingPage';
+import { LandingPage } from '@Domain/publicSite';
 
 import { publicRoutes, workspaceRoutes } from '../../registry';
 import { LANDING_PATHS } from '../../registry/landingPaths.registry';

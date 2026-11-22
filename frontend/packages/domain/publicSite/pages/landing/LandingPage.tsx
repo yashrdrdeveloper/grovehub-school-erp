@@ -10,12 +10,12 @@ import {
 
 import { SchoolMonogram } from '@Components';
 
-import { disclosedDocuments, enquiryTypes, facilities, historicDisclosure, photographs, school } from './content';
-import { PublicSheet, type SchoolPanel } from './PublicSheet';
+import { disclosedDocuments, enquiryTypes, facilities, historicDisclosure, photographs, school } from './config/content';
+import { PublicSheet, type SchoolPanel } from './components/publicSheet';
 
-import './landingPage.css';
-import './optionOne.css';
-import './optionOnePages.css';
+import './styles/landingPage.css';
+import './styles/optionOne.css';
+import './styles/optionOnePages.css';
 
 /** Explicit enquiry actions do not depend on catching React Router links
  * at the page root. Their href remains useful for opening a new tab or

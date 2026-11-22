@@ -1,6 +1,6 @@
 # RDR School public website
 
-Public, photography-led school site built in `frontend/packages/landingPage`.
+Public, photography-led school site built in `frontend/packages/domain/publicSite`.
 
 ## Pages
 

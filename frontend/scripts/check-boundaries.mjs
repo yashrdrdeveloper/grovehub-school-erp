@@ -46,6 +46,9 @@ for (const filename of files) {
     if (category === 'domain' && /^@Domain\/[^/]+\//.test(name)) {
       problems.push(`${relative}: cross-domain deep import: ${name}`);
     }
+    if (name === '@LandingPage' || name.startsWith('@LandingPage/')) {
+      problems.push(`${relative}: retired @LandingPage alias; import @Domain/publicSite instead`);
+    }
     if (name === '@Auth' || name.startsWith('@Auth/')) {
       problems.push(`${relative}: retired @Auth alias; import @Domain/auth instead`);
     }
