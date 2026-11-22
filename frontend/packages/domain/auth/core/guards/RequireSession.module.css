@@ -1,0 +1,11 @@
+/* Navigation guards isolate a loading state without relying on global page classes. */
+.loading {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: var(--gh-space-6);
+  color: var(--gh-color-muted);
+  background: var(--gh-color-canvas);
+  text-align: center;
+  font-size: 0.8125rem;
+}
