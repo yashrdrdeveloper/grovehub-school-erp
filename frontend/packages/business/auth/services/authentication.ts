@@ -1,4 +1,4 @@
-import { AuthOperation } from '../constants/auth.operations';
+import { AuthOperation } from './constants/auth.operations';
 import { AUTHENTICATION_OPERATIONS } from './auth.operations';
 
 /** Preserve the public named API while dispatching via typed operation identifiers. */

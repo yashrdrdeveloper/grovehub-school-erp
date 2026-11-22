@@ -15,7 +15,7 @@ import { sessions } from './sessions';
 import { revokeSession } from './revokeSession';
 import { login } from './login';
 
-import { AuthOperation } from '../constants/auth.operations';
+import { AuthOperation } from './constants/auth.operations';
 
 /** Exhaustive operation-to-function registry; each handler owns its transport and contracts. */
 export const AUTHENTICATION_OPERATIONS = {

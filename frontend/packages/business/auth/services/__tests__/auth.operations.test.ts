@@ -1,5 +1,5 @@
-import { AuthOperation } from '../../constants/auth.operations';
-import { AUTH_ENDPOINT } from '../../constants/auth.endpoints';
+import { AuthOperation } from '../constants/auth.operations';
+import { AUTH_ENDPOINT } from '../constants/auth.endpoints';
 import { AUTHENTICATION_OPERATIONS } from '../auth.operations';
 
 describe('AUTHENTICATION_OPERATIONS', () => {

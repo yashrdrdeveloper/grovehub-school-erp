@@ -1,5 +1,5 @@
-export type { AccountEntity as Account } from './types/baseEntities';
-export type { SessionEntity as SessionSummary } from './types/baseEntities';
+export type { AccountEntity as Account } from './baseEntities';
+export type { SessionEntity as SessionSummary } from './baseEntities';
 
 export interface LoginResult {
   accountId: string;
