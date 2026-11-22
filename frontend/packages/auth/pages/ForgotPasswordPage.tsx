@@ -98,7 +98,7 @@ export const ForgotPasswordPage = () => {
                 onChange={event => { setEmail(event.target.value); setEmailError(''); setError(''); }} required/>
             </div>
             <small className={`rdr-login-v2__field-error rdr-login-v2__field-error--reserved${emailError ? "" : " is-empty"}`}
-              id={`${id}-error`}>{emailError || '\u00a0'}</small>
+              id={`${id}-error`} aria-live="polite" aria-atomic="true">{emailError || '\u00a0'}</small>
           </div>
         </div>
         <div className="rdr-auth-flow__actions">
