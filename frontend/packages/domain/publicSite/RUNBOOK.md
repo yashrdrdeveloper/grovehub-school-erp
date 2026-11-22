@@ -25,7 +25,7 @@ the assets are migrated. Cropping is non-destructive, using CSS `object-fit`
 and carefully selected focal positions. Do not artificially change students,
 staff, certificates, buildings or facilities.
 
-Original URLs and alt text are maintained in `content.ts`.
+Original URLs and alt text are maintained in `pages/landing/config/content.ts`.
 Obtain the school's rights/consent confirmation before production deployment,
 particularly for identifiable minors.
 
@@ -68,11 +68,11 @@ Production integration is a separate backend task:
 
 ## Architecture
 
-`landingPage/` owns public page composition and school content.
+`packages/domain/publicSite/pages/landing/` owns public page composition, `config/content.ts` holds school content, and `components/publicSheet/` owns the Radix dialog.
 Once a public API exists, place transport and business logic in
 `packages/business/lead/`; do not call API endpoints from generic components.
 
-Site CSS is isolated with `.rdr-*` classes to avoid overwriting the ERP shell
+Page styles live under `pages/landing/styles/` and are isolated with `.rdr-*` classes to avoid overwriting the ERP shell
 or authentication UI.
 
 ## Run

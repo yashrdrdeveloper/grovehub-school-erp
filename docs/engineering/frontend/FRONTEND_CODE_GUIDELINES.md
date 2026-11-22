@@ -112,7 +112,7 @@ frontend/
 │   │
 │   └── shell/
 │       ├── Shell.tsx
-│       ├── ShellContainer.tsx
+│       ├── containers/shellContainer/ShellContainer.tsx
 │       ├── providers/
 │       ├── state/
 │       ├── registry/
@@ -604,7 +604,7 @@ The shell binds domain capabilities together while remaining business-logic-free
 ```text
 frontend/packages/shell/
 ├── Shell.tsx
-├── ShellContainer.tsx
+├── containers/shellContainer/ShellContainer.tsx
 │
 ├── providers/
 │   ├── ReduxProvider/
@@ -675,7 +675,7 @@ make permission decisions
 contain domain-specific conditions
 ```
 
-### `ShellContainer.tsx`
+### `containers/shellContainer/ShellContainer.tsx`
 
 `ShellContainer.tsx` owns **composition/orchestration only**.
 
@@ -2795,7 +2795,7 @@ Purpose: application composition and shared runtime initialization.
 ```text
 packages/shell/
 ├── Shell.tsx
-├── ShellContainer.tsx
+├── containers/shellContainer/ShellContainer.tsx
 ├── providers/
 ├── state/
 ├── registry/
@@ -3987,7 +3987,7 @@ Required reference implementation:
 2. `packages/business` with one shared typed business/service unit
 3. `packages/components` with one reusable component and Storybook stories
 4. one example domain under `packages/domain/<name>`
-5. `packages/shell` with `Shell.tsx` + `ShellContainer.tsx`
+5. `packages/shell` with `Shell.tsx` + `containers/shellContainer/ShellContainer.tsx`
 6. shell-owned global provider composition
 7. shell-owned Redux store/provider initialization
 8. domain Redux registration consumed by the shell without deep imports
@@ -4329,3 +4329,14 @@ Develop shared accessible and responsive primitives in `packages/components`, us
 ### I. Migration and verification
 
 Refactor in phases: document rules, migrate authoritative business types and services, establish login as the page reference, migrate recovery and remaining auth, then shell and remaining domains. Keep temporary compatibility imports until their callers move. Gate completed phases with typecheck, architecture checks, pure tests and build; never claim a validation ran when dependencies or an execution environment were unavailable.
+
+
+### J. Canonical domain ownership and retired feature aliases
+
+The canonical location for every product feature is `packages/domain/<domain>/`. Avoid parallel feature implementations at `packages/<feature>/` and avoid special-purpose feature aliases. The shell imports each domain through its root `@Domain/<domain>` API; it does not import pages, hooks or repositories inside a domain.
+
+The established migration includes identity, dashboard and the public website under `packages/domain/`. When migrating other packages, move their full local unit tree without duplicating it in a compatibility package. Preserve stable public exports at the domain root and only retain old UI symbol names when existing route consumers require them. Unit entry points remain `index.ts`, while page roots contain only their named page and `index.ts`.
+
+Pure transformation helpers must have adjacent tests; the architecture runner checks specified migrated units and page roots, alongside package dependency rules. This is not a claim that *all* historical units, user interfaces, responsive states or component stories have been migrated or verified. Extend enforcement to each newly completed domain.
+
+Auth activation attempts are authoritative on the backend: client-side validation does not consume attempts, and generic network failures must not be interpreted as a known remaining attempt count. One-time bearer proofs stay in memory, while a non-secret cookie-continuation marker may be placed in session storage.
