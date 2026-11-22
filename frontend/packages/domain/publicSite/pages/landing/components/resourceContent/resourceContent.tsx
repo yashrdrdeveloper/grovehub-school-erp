@@ -1,4 +1,4 @@
-import { ArrowUpRight, Clock3, Download, ExternalLink, FileCheck2, Mail, MapPin, Phone, ShieldCheck } from 'lucide-react';
+import { ArrowUpRight, BookOpen, CalendarDays, Clock3, Download, ExternalLink, FileCheck2, GraduationCap, Mail, MapPin, Phone, ShieldCheck } from 'lucide-react';
 import { disclosedDocuments, historicDisclosure, school } from '../../config/content';
 import { Heading } from '../siteMedia';
 import { IntroPage } from '../aboutContent';
