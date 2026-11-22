@@ -1,9 +1,14 @@
-import type { ReactNode } from 'react';
-import { ArrowLeft, LockKeyhole, Monitor, Moon, Sun } from '@Components/icons';
+import { ArrowLeft, LockKeyhole } from '@Components/icons';
 import { Link } from 'react-router-dom';
+import { APP_ROUTE } from '@Business/app/routes';
 
 import { SchoolMonogram } from '@Components';
-import { useWorkspaceTheme, type ThemePreference } from '@Components/hooks/theme';
+import { useWorkspaceTheme } from '@Components/hooks/theme';
+import { LOGIN_LAYOUT_APPEARANCES } from './constants/loginLayout.appearances';
+import { LOGIN_LAYOUT_TEST_IDS } from './constants/loginLayout.testIds';
+import { getLoginLayoutClassName } from './helpers/loginLayout.getClassName';
+import { renderLoginLayoutAppearanceOption } from './renderer/loginLayout.appearanceOption';
+import type { LoginLayoutComponent } from './types/loginLayout.props';
 
 import { AuthAmbientGraphic } from '../authAmbientGraphic';
 import { useAuthViewportFit } from '../../hooks/useAuthViewportFit';
@@ -12,29 +17,14 @@ import { useAuthViewportFit } from '../../hooks/useAuthViewportFit';
 // One stylesheet owns the entire auth layout. Legacy variants are intentionally not loaded.
 import './styles/optionOneAuth.css';
 
-const appearanceOptions: { value: ThemePreference; label: string; Icon: typeof Sun }[] = [
-  { value: 'system', label: 'System', Icon: Monitor },
-  { value: 'light', label: 'Light', Icon: Sun },
-  { value: 'dark', label: 'Dark', Icon: Moon },
-];
-
 /** Shared, card-free shell for sign-in and every recovery step. */
-export const LoginLayout = ({ children, title, description, mobileDescription, minimalMobile = false, variant = 'login', eyebrow = 'YOUR SCHOOL WORKSPACE' }: {
-  children: ReactNode;
-  title: string;
-  description: string;
-  mobileDescription?: string;
-  minimalMobile?: boolean;
-  mobileTitle?: string;
-  variant?: 'login' | 'forgot' | 'recovery';
-  eyebrow?: string;
-}) => {
+export const LoginLayout: LoginLayoutComponent = ({ children, title, description, mobileDescription, minimalMobile = false, variant = 'login', eyebrow = 'YOUR SCHOOL WORKSPACE' }) => {
   const { preference, setPreference } = useWorkspaceTheme();
   const { contentRef, toolbarRef, mainRef } = useAuthViewportFit();
 
 
   return (
-    <main className={`rdr-login-v2 rdr-login-v2--${variant}${minimalMobile ? ' rdr-login-v2--mobile-minimal' : ''}`}>
+    <main className={getLoginLayoutClassName(variant, minimalMobile)} data-testid={LOGIN_LAYOUT_TEST_IDS.ROOT}>
       <div className="rdr-login-v2__frame">
         <section className="rdr-login-v2__visual" aria-label="RDR School branded gradient background">
           <div className="rdr-login-v2__mobile-header">
@@ -55,25 +45,19 @@ export const LoginLayout = ({ children, title, description, mobileDescription, m
             <div className="rdr-login-v2__visual-footer"><span>LEARN</span><i aria-hidden="true"/><span>ORGANISE</span><i aria-hidden="true"/><span>GROW</span></div>
           </div>
         </section>
-        <section ref={contentRef} className="rdr-login-v2__content" aria-labelledby="rdr-auth-title">
-          <div ref={toolbarRef} className="rdr-login-v2__toolbar">
-            <Link to="/" className="rdr-login-v2__back" aria-label="Back to RDR School homepage">
+        <section ref={contentRef} className="rdr-login-v2__content" data-testid={LOGIN_LAYOUT_TEST_IDS.CONTENT} aria-labelledby="rdr-auth-title">
+          <div ref={toolbarRef} className="rdr-login-v2__toolbar" data-testid={LOGIN_LAYOUT_TEST_IDS.TOOLBAR}>
+            <Link to={APP_ROUTE.HOME} className="rdr-login-v2__back" aria-label="Back to RDR School homepage">
               <ArrowLeft size={19}/><span>Back to school</span>
             </Link>
             <div className="rdr-login-v2__appearance" role="group" aria-label="Appearance">
-              {appearanceOptions.map(({ value, label, Icon }) => (
-                <button key={value} type="button" className={preference === value ? 'is-active' : ''}
-                  aria-label={`${label} theme`} aria-pressed={preference === value}
-                  title={`${label} theme`} onClick={() => setPreference(value)}>
-                  <Icon size={16}/>
-                </button>
-              ))}
+              {LOGIN_LAYOUT_APPEARANCES.map(option => renderLoginLayoutAppearanceOption({ ...option, preference, setPreference }))}
             </div>
           </div>
-          <div ref={mainRef} className="rdr-login-v2__main">
+          <div ref={mainRef} className="rdr-login-v2__main" data-testid={LOGIN_LAYOUT_TEST_IDS.MAIN}>
             <div className="rdr-login-v2__heading">
               <span className="rdr-login-v2__eyebrow">{eyebrow}</span>
-              <h1 id="rdr-auth-title">{title}</h1>
+              <h1 id="rdr-auth-title" data-testid={LOGIN_LAYOUT_TEST_IDS.TITLE}>{title}</h1>
               <p className="rdr-login-v2__description-desktop">{description}</p>
               <p className="rdr-login-v2__description-mobile">{mobileDescription ?? description}</p>
             </div>
