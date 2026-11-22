@@ -1,3 +1,5 @@
+import { _filter } from '@Base/utilities/filter';
+import { _map } from '@Base/utilities/map';
 import { appCatalog, defaultPinnedApps } from '../../../constants/shell.catalog';
 import { SHELL_STORAGE_KEYS } from '../constants/shell.storageKeys';
 
@@ -14,9 +16,10 @@ export const readPinnedApps: ReadPinnedApps = () => {
     if (!raw) return [...defaultPinnedApps];
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [...defaultPinnedApps];
-    const known = new Set(appCatalog.filter(app => app.path).map(app => app.path));
-    return [...new Set(parsed.filter((item): item is string =>
-      typeof item === 'string' && known.has(item)))];
+    const known = new Set(_map(_filter(appCatalog, (app) => Boolean(app.path)), (app) => app.path));
+    const valid = _filter(parsed as unknown[], (item): item is string =>
+      typeof item === 'string' && known.has(item));
+    return [...new Set(valid)];
   } catch {
     return [...defaultPinnedApps];
   }

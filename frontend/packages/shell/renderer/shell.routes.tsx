@@ -1,3 +1,5 @@
+import { _map } from '@Base/utilities/map';
+import { _filter } from '@Base/utilities/filter';
 import type { ReactElement } from 'react';
 
 import { Navigate } from '@Components/router';
@@ -40,14 +42,15 @@ const workspaceViews: Record<AppRouteKey, ReactElement | null> = {
   [APP_ROUTE_IDS.DASHBOARD]: <DashboardPage />,
 };
 
-export const publicRoutes = AUTH_ROUTE_CONFIG.map((route) => ({
+export const publicRoutes = _map(AUTH_ROUTE_CONFIG, (route) => ({
   ...route,
   element: authViews[route.id],
 }));
 
-export const workspaceRoutes = APP_ROUTE_CONFIG
-  .filter((route) => route.type === RouteAccess.PROTECTED)
-  .map((route) => ({
+export const workspaceRoutes = _map(
+  _filter(APP_ROUTE_CONFIG, (route) => route.type === RouteAccess.PROTECTED),
+  (route) => ({
     ...route,
     element: workspaceViews[route.id],
-  }));
+  }),
+);

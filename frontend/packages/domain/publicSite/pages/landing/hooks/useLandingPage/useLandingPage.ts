@@ -1,3 +1,5 @@
+import { _find } from '@Base/utilities/find';
+import { _keys } from '@Base/utilities/keys';
 import { SCHOOL_ROUTE } from '../../constants/school.routes';
 import { useEffect, useState, type MouseEvent } from 'react';
 import { useLocation, useNavigate } from '@Components/router';
@@ -26,7 +28,7 @@ export const useLandingPage: UseLandingPage = () => {
   const selectPanel=(next:SchoolPanel)=>{
     if(next==='enquiry'){setEnquiryOpen(true);return;}
     setEnquiryOpen(false);
-    const path=Object.entries(pathPanel).find(([,value])=>value===next)?.[0]??SCHOOL_ROUTE.ABOUT;
+    const path=_find(_keys(pathPanel), (key) => pathPanel[key] === next)??SCHOOL_ROUTE.ABOUT;
     navigate(path,{replace:true,state:{background:backgroundPath,panel:next}});
   };
 
