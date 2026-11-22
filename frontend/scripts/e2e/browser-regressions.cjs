@@ -61,6 +61,7 @@ async function checkLayout(browser) {
       await page.locator('[data-testid="auth-layout-root"]').waitFor({ state: 'visible' });
       const heading = page.locator('[data-testid="auth-layout-title"]');
       assert.ok(await heading.isVisible(), pathname + ': missing accessible heading');
+      assert.equal(await heading.getAttribute('id'), 'rdr-auth-title', pathname + ': heading ID changed');
       if (pathname === '/login' && viewport.height >= 800) {
         const submit = page.locator('[data-testid="auth-login-form-button-submit"]');
         const bounds = await submit.boundingBox();
