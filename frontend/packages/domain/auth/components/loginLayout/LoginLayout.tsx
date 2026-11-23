@@ -15,7 +15,7 @@ import type { LoginLayoutComponent } from './types/loginLayout.props';
 
 import { useAuthViewportFit } from '../../hooks/useAuthViewportFit';
 import { LoginLayoutVisual } from './components/visual';
-import titleStyles from './LoginLayoutTitle.module.css';
+import { getLoginLayoutHeading } from './helpers/loginLayout.getHeading';
 import { LoginLayoutFooter } from './components/footer';
 
 // One stylesheet owns the entire auth layout. Legacy variants are intentionally not loaded.
@@ -33,7 +33,7 @@ export const LoginLayout: LoginLayoutComponent = ({
   eyebrow = LOGIN_LAYOUT_COPY.DEFAULT_EYEBROW,
 }) => {
   const { preference, setPreference } = useWorkspaceTheme();
-  const { contentRef, toolbarRef, mainRef } = useAuthViewportFit();
+  const { contentRef, toolbarRef, mainRef, isMobile } = useAuthViewportFit();
 
   return (
     <Box
@@ -86,12 +86,7 @@ export const LoginLayout: LoginLayoutComponent = ({
                 {eyebrow}
               </Box>
               <Box as={BOX_TAG.H1} id="rdr-auth-title" data-testid={LOGIN_LAYOUT_TEST_IDS.TITLE}>
-                <Box as={BOX_TAG.SPAN} className={titleStyles.desktop}>
-                  {title}
-                </Box>
-                <Box as={BOX_TAG.SPAN} className={titleStyles.mobile}>
-                  {mobileTitle ?? title}
-                </Box>
+                {getLoginLayoutHeading(isMobile, title, mobileTitle)}
               </Box>
               <Box as={BOX_TAG.P} className="rdr-login-v2__description-desktop">
                 {description}

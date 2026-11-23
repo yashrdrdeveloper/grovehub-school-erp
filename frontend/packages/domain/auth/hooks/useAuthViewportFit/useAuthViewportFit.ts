@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { STYLE_MEDIA_QUERY } from '@Styles/tokens/breakpoints';
 
 /**
@@ -13,6 +13,7 @@ export const useAuthViewportFit = () => {
   const contentRef = useRef<HTMLElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useLayoutEffect(() => {
     const content = contentRef.current;
@@ -27,6 +28,7 @@ export const useAuthViewportFit = () => {
       return null;
     };
     const desktop = getDesktopQuery();
+    setIsMobile(Boolean(desktop && !desktop.matches));
     const MIN_READABLE_SCALE = 0.82;
     const scheduleState = { frame: 0, active: true };
 
@@ -64,6 +66,7 @@ export const useAuthViewportFit = () => {
 
     const schedule = () => {
       if (!scheduleState.active) return;
+      setIsMobile(Boolean(desktop && !desktop.matches));
       if (scheduleState.frame) window.cancelAnimationFrame(scheduleState.frame);
       scheduleState.frame = window.requestAnimationFrame(measure);
     };
@@ -92,5 +95,5 @@ export const useAuthViewportFit = () => {
     };
   }, []);
 
-  return { contentRef, toolbarRef, mainRef };
+  return { contentRef, toolbarRef, mainRef, isMobile };
 };
