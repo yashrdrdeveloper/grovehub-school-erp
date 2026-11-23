@@ -1,0 +1,1 @@
+export { AcademicsPage } from './AcademicsPage';

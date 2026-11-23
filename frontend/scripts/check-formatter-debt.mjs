@@ -2,7 +2,6 @@ import { readFileSync } from 'node:fs';
 
 const expected = [
   '/packages/domain/publicSite/pages/landing/components/aboutContent/aboutContent.tsx',
-  '/packages/domain/publicSite/pages/landing/components/campusContent/campusContent.tsx',
   '/packages/domain/publicSite/pages/landing/components/enquiryForm/enquiryForm.tsx',
   '/packages/domain/publicSite/pages/landing/components/publicSheet/components/infoPanels/infoPanels.tsx',
   '/packages/domain/publicSite/pages/landing/components/resourceContent/resourceContent.tsx',
