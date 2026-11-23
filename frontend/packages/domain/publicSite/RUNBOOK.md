@@ -150,3 +150,9 @@ The school site preserves original CSS classes until responsive browser review; 
 Static school information and photo references live in `constants/school.content.ts`. SEO in `constants/school.seo.ts`, panel paths in `constants/school.panels.ts`, site navigation in `constants/school.navigation.ts`, enquiry initial values and sheet copy in their corresponding component-local `constants/` folders. The old generic `config/` files have been deleted, as have unused testimonial/event constants that are not rendered.
 
 The public site does **not** render a shared authenticated `Shell` or a separate public workspace layout. Existing CSS remains scoped while visual migration proceeds.
+
+## Website copy and static SEO boundary
+
+Public pages share the same `ShellContainer` i18n bootstrap as authentication and protected routes. Render-time human-readable headings, captions, links, alt text, enquiry labels, validation errors and accessibility names use bare `__()`, never an imported formatter or a new global registry. Translation parameter values are primitive named `{{value}}` replacements. School content is stored as source copy in domain constants; dynamic user input is never treated as a translation key. Retain real photos and accurate CBSE disclosures.
+
+`scripts/prerender-public-pages.mjs` generates search-indexable HTML **without executing React effects** and must keep its static, escapable title/description/body metadata. Do not depend on `window.__` in that Node prerender script. The current resolver only formats English source text, not other languages; future public multilingual SEO requires per-locale static generation, canonical/hreflang mapping and locale-specific metadata. Preserve all 13 crawlable routes, robots.txt and sitemap.xml.

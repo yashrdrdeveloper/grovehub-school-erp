@@ -27,3 +27,11 @@ The Dashboard presents unavailable/empty states without invented school analytic
 ## Checks and outstanding migration
 
 Run `pnpm check:architecture`, `pnpm typecheck`, `pnpm exec jest --runInBand`, and `pnpm build`. Architectural checks also block misplaced business transport contracts, native shell markup, direct router imports, and new audit findings. The remaining legacy selector/CSS ownership debt is still tracked; a successful build alone does not verify 320–720 px behavior, keyboard focus, dark mode contrast or browser autofill.
+
+## Global i18n initialization and route readiness
+
+The only runtime registration point for the browser-wide `__()` message function is `containers/shellContainer/hooks/useInitI18n/useInitI18n.ts`. The hook imports the pure `@Base/i18n` resolver, assigns `window.__` in a React effect, then marks the shell ready. The assignment is idempotent under StrictMode. `ShellContainer` renders `components/i18nBootstrapFallback` before readiness, **without calling `__()`**, and mounts BrowserRouter, AuthProvider, public routes and protected workspace routes only after registration.
+
+Do not initialize the global from `WorkspaceShellContainer` (it excludes unauthenticated public pages), module evaluation, component render, or the browser entrypoint. Domain/shell components call bare `__('message')` or `__('Hello {{name}}', { name })` without importing the formatter. The TypeScript declaration lives in `frontend/app/types/i18n.global.d.ts`. The real formatter is installed separately by Jest setup for component-only unit tests; no mock implementation is needed.
+
+The `scripts/check-i18n-conventions.mjs` guard rejects feature-level imports, unauthorized `window.__` access, eager module-scope translation and new untranslated literal JSX messages. The initial JSX migration replaced 332 literals, with no new raw-JSX copy permitted. Locale switching is **not implemented**: this is an English source-copy format, not a reactive multilingual store.

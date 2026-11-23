@@ -2,7 +2,7 @@
 
 ## Revision 13 — global __() bootstrap from ShellContainer (23 November 2026)
 
-**Status: approved implementation plan, not yet implemented.** This revision supersedes Revision 12 wherever it requires feature files to `import { __ } from '@Base/i18n'` or forbids the app-wide `window.__` bridge. Only one expressly controlled global binding is permitted: `__`. Components must call `__()` **without importing it**, but only *after ShellContainer has installed it*. Do not claim the runtime hook or migration is complete until the checks below pass. The existing pure resolver in `@Base/i18n` is retained.
+**Status: implemented and validated in Phase 2.1.** This revision supersedes Revision 12 wherever it requires feature files to `import { __ } from '@Base/i18n'` or forbids the app-wide `window.__` bridge. Only one expressly controlled global binding is permitted: `__`. Components must call `__()` **without importing it**, but only *after ShellContainer has installed it*. The hook, global type, Jest bootstrap, SSR-safe readiness fallback and CI ownership gate have now been implemented; remaining dynamic helper-based copy is tracked separately. The existing pure resolver in `@Base/i18n` is retained.
 
 ### 1. One app-scoped, typed global message function
 
@@ -95,7 +95,7 @@ Create the hook in `shellContainer/hooks/useInitI18n/useInitI18n.ts`. Its public
 5. Do not use `window.__` in feature code; use the typed bare `__(...)`. Do not use `window.` in `@Base/i18n/__.ts`.
 6. **Do not add the hook to WorkspaceShellContainer**: that container only wraps protected pages. `ShellContainer` is the shared parent of public/auth/landing and protected routes.
 
-Illustrative hook structure (**planned code, not existing implementation**):
+Implementation shape (see the actual typed hook under `shellContainer/hooks/useInitI18n/`):
 
 ~~~ts
 import { useEffect, useState } from 'react';
@@ -125,7 +125,7 @@ export const ShellContainer: ShellContainerComponent = () => {
   const ready = useInitI18n();
 
   if (!ready) {
-    return <ShellBootFallback />; // Shared, accessible, non-translated bootstrap UI.
+    return <I18nBootstrapFallback />; // Existing, non-translated boot placeholder.
   }
 
   return (
@@ -142,7 +142,7 @@ export const ShellContainer: ShellContainerComponent = () => {
 };
 ~~~
 
-Use the real exported Shell boot placeholder when implementing; the snippet's placeholder is a named future component, not an existing import. The fallback must not itself call `__()`. Gating is **required** because React may render child components before an effect runs; an unguarded `useEffect` plus immediate `<AppRoutes />` is incorrect. Do not make individual pages each wait for i18n or install a second initializer in the login/public-site route.
+The actual boot placeholder is `shellContainer/components/i18nBootstrapFallback/I18nBootstrapFallback.tsx` and never calls `__()`. The fallback must not itself call `__()`. Gating is **required** because React may render child components before an effect runs; an unguarded `useEffect` plus immediate `<AppRoutes />` is incorrect. Do not make individual pages each wait for i18n or install a second initializer in the login/public-site route.
 
 The current public SEO script (`scripts/prerender-public-pages.mjs`) creates static HTML snapshots and does not execute React's client effects; keep its titles, metadata and visible content available without JavaScript. A future actual SSR system cannot use a process-global mutable user locale: it must resolve messages per request, while browser clients may keep the shell-managed global.
 
@@ -167,9 +167,16 @@ The current public SEO script (`scripts/prerender-public-pages.mjs`) creates sta
 
 **Mandatory verification after each phase:** `pnpm check:architecture`, `pnpm typecheck`, `pnpm exec jest --runInBand`, `pnpm build` and Playwright/Chromium for 320/375/390/720px, dark/light/system, keyboard accessibility and auth routes. Never claim Phase A/B complete merely because the TypeScript global is declared.
 
-**Current repository truth:** Only the pure `@Base/i18n` formatter and its initial unit tests exist; the login page currently still has an explicit `__` import. `useInitI18n`, ambient typing, ShellContainer readiness gate, Jest bootstrap and an AST rule for imports are **planned, not implemented**. This revision records the requested convention and implementation order.
+**Verified current implementation:** `useInitI18n` installs `window.__` in the ShellContainer effect; `app/types/i18n.global.d.ts` declares the ambient symbol; ShellContainer gates all routes on readiness; Jest setup uses the actual base resolver. The login page does not import `__` directly. The JSX migration wrapped **332 messages across 35 files**; `scripts/check-i18n-conventions.mjs` enforces owner/global rules and a **zero new raw JSX copy** baseline. Validated by **124 Jest suites / 235 tests**, **19 architecture tests**, TypeScript, Prettier and Vite/13-page SEO prerender in gated CI. The source formatter still handles English only. Domain/business helper-generated copy and future multilingual catalogs remain separate cleanup.
 
 ---
+
+### 8. Verified implementation files and remaining work
+
+The authoritative runtime files are `packages/base/i18n/__.ts`, `app/types/i18n.global.d.ts`, `packages/shell/containers/shellContainer/hooks/useInitI18n/useInitI18n.ts`, `ShellContainer.tsx`, `scripts/test/setupI18n.ts`, and `scripts/check-i18n-conventions.mjs`. `scripts/i18n-allowlist.json` locks the remaining raw JSX copy baseline at **zero**, excluding the pre-initialization fallback. The codemod `scripts/migrate-i18n-copy.mjs` is not intended as a recurring runtime dependency.
+
+Do not conflate this literal JSX migration with a complete localization feature: dynamic business message construction, copy constants used outside render paths, number/date/plural formatting, and actual language catalogs need dedicated tests. The previous measured global/domain CSS migration backlog remains separate.
+
 
 ## Revision 12 — component-owned enums and shared UI messages (Phase 2.1, 23 November 2026; global bootstrap superseded by Revision 13)
 
@@ -251,7 +258,7 @@ __('Feature {{enabled}}', { enabled: false });      // "Feature false"
 
 **Migration acceptance criteria:** do not break existing markup, heading hierarchy, native form types, route behavior, test IDs, user-facing error meaning, CSRF/auth/session flows or autocomplete. Validate widths **320, 375, 390, and 720 px**, short viewport, keyboard navigation and light/dark/system modes. Audit baselines must reflect the actual current branch before any new blocking threshold is set. No blanket search-and-replace of **every** string in TypeScript: enums apply only to closed contracts; `__()` applies only to human-readable copy.
 
-**Current status (not a completion claim):** The pure `__` formatter and tests have been added; login title/description copy currently imports the formatter directly and must be migrated to the ShellContainer-managed global under Revision 13. Text exposes `TEXT_TAG` and aliases forwarded Typography values. Many other UI strings and closed-set props remain to be audited and migrated. **Separate legacy CSS debt** (last verified: 34 flagged files / 42 overlapping findings) is not resolved by string/enumeration migration. The phase-2.1 branch must not be described as fully migrated until the per-owner exit gates above pass.
+**Current status (verified JSX migration; not a claim of full multilingual support):** The pure `__` formatter, shell-global bootstrap and tests are implemented. Login uses bare `__()` and JSX-visible literal migration is enforced by CI. Helper-generated dynamic strings must still be audited separately. Text exposes `TEXT_TAG` and aliases forwarded Typography values. Many other UI strings and closed-set props remain to be audited and migrated. **Separate legacy CSS debt** (last verified: 34 flagged files / 42 overlapping findings) is not resolved by string/enumeration migration. The phase-2.1 branch must not be described as fully migrated until the per-owner exit gates above pass.
 
 ---
 

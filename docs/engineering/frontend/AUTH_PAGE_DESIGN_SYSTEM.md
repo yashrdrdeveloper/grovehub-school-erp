@@ -1,6 +1,6 @@
 # RDR authentication UI — design and acceptance standard
 
-> **Engineering ownership:** Follow [Frontend Code Guidelines, Revision 5](./FRONTEND_CODE_GUIDELINES.md) for file layout, pure-helper ownership, flat constants, nested hooks, central icons, stable `dataTestId`/`data-testid` selectors and no-ternary rendering. This document governs auth **visual and interaction acceptance**, not engineering folder structure.
+> **Engineering ownership:** Follow [Frontend Code Guidelines, current Revision 13](./FRONTEND_CODE_GUIDELINES.md) for file layout, pure-helper ownership, flat constants, nested hooks, central icons, stable `dataTestId`/`data-testid` selectors and no-ternary rendering. This document governs auth **visual and interaction acceptance**, not engineering folder structure.
 
 ## Scope and source
 
@@ -75,3 +75,9 @@ Choose the skill's **Accessible & Ethical** + **Minimalism & Swiss Style** chara
 - Confirm no asset requests are required for the desktop illustration; keep the RDR logo component unchanged.
 
 GitHub Actions typechecking and unit tests are **not** a substitute for these browser viewport checks.
+
+## Global copy rendering contract
+
+All authentication templates, actions, errors, confirmation messages, headings, placeholders and accessible labels use the unimported global `__()` after `ShellContainer` initializes it through `useInitI18n`. Use `__('Reset password')` for stable copy and `__('A link was sent to {{email}}', { email })` for named dynamic values. Do not import a new message service into each page, translate API/status tokens, or change the two-attempt security and resend contracts. Closed design choices use the owning component enums (`BUTTON_VARIANT`, `BUTTON_SIZE`, `BOX_TAG`, `TEXT_TAG`, `LoginLayoutVariant`).
+
+The message resolver is currently English-only. It is not a complete locale selector; accessible, screen-reader-ready text and the RDR mobile/dark/light design remain authoritative independently of future languages. See `FRONTEND_CODE_GUIDELINES.md` Revision 13.

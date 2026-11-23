@@ -15,3 +15,7 @@ The central theme is the document `data-theme="light" | "dark"`. The existing th
 **Preservation:** Tailwind Preflight is intentionally not imported yet. Existing `frontend/app/styles.css` contains legacy shell/feature rules; relocate those gradually to their owning components/domains. It must not reintroduce global theme tokens. Do not globally restyle the RDR auth/public site during infrastructure migration without visual regression evidence.
 
 **Verification:** `pnpm check:architecture`, `pnpm typecheck`, `pnpm exec jest --runInBand`, `pnpm build`. Responsive and dark/light browser testing is required before deleting legacy screen styles.
+
+## Text and tokens
+
+Styling owns colors, typography, spacing, focus and responsive tokens, **not translated copy**. Do not generate essential user-facing messages with CSS `content:`; text belongs in accessible JSX and is resolved through the shell-provided global `__()`. Translatable text must be able to expand without clipping and respect 320/375/390/720 px responsive layouts. A locale-aware future must handle font coverage, directionality and text expansion without creating per-domain global palettes.
