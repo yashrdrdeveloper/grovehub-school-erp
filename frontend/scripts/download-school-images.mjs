@@ -22,7 +22,7 @@ const images = [
 
 const folder = resolve(process.cwd(), 'public/school-images');
 await mkdir(folder, { recursive: true });
-let completed = 0;
+const completedCounter = { current: 0 };
 for (const [name, url] of images) {
   try {
     const response = await fetch(url, {
@@ -37,12 +37,12 @@ for (const [name, url] of images) {
     if (bytes.length > 15_000_000) throw new Error('Image exceeds 15 MB limit');
     await writeFile(join(folder, name), bytes);
     console.log(`Saved ${name} (${Math.round(bytes.length / 1024)} KB)`);
-    completed++;
+    completedCounter.current++;
   } catch (error) {
     console.warn(
       `Could not download ${name}: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
 }
-console.log(`Downloaded ${completed}/${images.length} original school images to ${folder}.`);
-if (completed !== images.length) process.exitCode = 1;
+console.log(`Downloaded ${completedCounter.current}/${images.length} original school images to ${folder}.`);
+if (completedCounter.current !== images.length) process.exitCode = 1;

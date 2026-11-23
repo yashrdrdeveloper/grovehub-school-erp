@@ -29,13 +29,13 @@ export const evaluateAudit = (output, baseline) => {
   const counts = {};
   const allowlisted = baseline.allowlisted ?? {};
   const maxByCode = baseline.maxByCode ?? {};
-  let findings = 0;
+  const findingsCounter = { current: 0 };
 
   for (const [filename, codes] of observed) {
     const permitted = new Set(allowlisted[filename] ?? []);
 
     for (const code of codes) {
-      findings += 1;
+      findingsCounter.current += 1;
       counts[code] = (counts[code] ?? 0) + 1;
 
       if (!permitted.has(code)) {
@@ -60,8 +60,8 @@ export const evaluateAudit = (output, baseline) => {
     );
   }
 
-  if (findings > baseline.maxFindings) {
-    failures.push('Findings: ' + findings + ' exceed ceiling ' + baseline.maxFindings);
+  if (findingsCounter.current > baseline.maxFindings) {
+    failures.push('Findings: ' + findingsCounter.current + ' exceed ceiling ' + baseline.maxFindings);
   }
 
   const summaryLine = output.split('\n').find((line) => line.startsWith('GH_AUDIT_SUMMARY|'));
@@ -94,5 +94,5 @@ export const evaluateAudit = (output, baseline) => {
     failures.push('Obsolete allowlist entry: ' + entry);
   }
 
-  return { failures, counts, findings, flaggedFiles: observed.size, stale };
+  return { failures, counts, findings: findingsCounter.current, flaggedFiles: observed.size, stale };
 };

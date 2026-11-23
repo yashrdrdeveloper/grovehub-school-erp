@@ -50,8 +50,8 @@ const variants = {
     allowed: new Set(['h1', 'h2', 'h3', 'h4', 'p', 'span', 'small', 'strong']),
   },
 };
-let filesUpdated = 0;
-let changes = 0;
+const filesUpdatedCounter = { current: 0 };
+const changesCounter = { current: 0 };
 const violations = [];
 
 const scan = async (folder) => {
@@ -119,7 +119,7 @@ const scan = async (folder) => {
               text: 'as={' + owner.symbol + '.' + tag.toUpperCase() + '}',
             });
             imports.set(owner.symbol, owner.module);
-            changes++;
+            changesCounter.current++;
           }
         }
       }
@@ -154,7 +154,7 @@ const scan = async (folder) => {
     }
     if (importsToAdd.length) updated = importsToAdd.join('\n') + '\n' + updated;
     await writeFile(filename, updated, 'utf8');
-    filesUpdated++;
+    filesUpdatedCounter.current++;
   }
 };
 
@@ -167,5 +167,5 @@ if (violations.length) {
 if (checkOnly && !violations.length) process.stdout.write('Semantic JSX tag constants verified.\n');
 if (!checkOnly)
   process.stdout.write(
-    'Migrated ' + changes + ' JSX attributes across ' + filesUpdated + ' files.\n',
+    'Migrated ' + changesCounter.current + ' JSX attributes across ' + filesUpdatedCounter.current + ' files.\n',
   );

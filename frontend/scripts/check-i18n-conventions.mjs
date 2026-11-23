@@ -8,8 +8,8 @@ const baselineFile = path.join(root, 'scripts/i18n-allowlist.json');
 const writeBaseline = process.argv.includes('--write-baseline');
 const issues = [];
 const copies = {};
-let sourceCount = 0;
-let copyCount = 0;
+const sourceCountCounter = { current: 0 };
+const copyCountCounter = { current: 0 };
 
 const bootstrapInstaller =
   'packages/shell/containers/shellContainer/helpers/shellContainer.installI18n.ts';
@@ -42,7 +42,7 @@ const walk = async (directory) => {
       copies[relative] = result.rawCopy.length;
       copyCount += result.rawCopy.length;
     }
-    sourceCount++;
+    sourceCountCounter.current++;
   }
 };
 for (const folder of [
@@ -62,31 +62,32 @@ if (issues.length) {
   const baseline = {
     description:
       'Initial measured JSX copy debt after the Phase 2.1 source-message codemod. Increase is forbidden.',
-    maxTotal: copyCount,
+    maxTotal: copyCount: copyCountCounter.current,
     counts: Object.fromEntries(Object.entries(copies).sort(([a], [b]) => a.localeCompare(b))),
   };
   await writeFile(baselineFile, JSON.stringify(baseline, null, 2) + '\n');
   process.stdout.write(
-    'Recorded ' +
-      copyCount +
+    'Recorded ' + copyCountCounter.current +
       ' legacy JSX copy findings across ' +
       Object.keys(copies).length +
-      ' files. ' +
-      sourceCount +
+      ' files. ' + sourceCountCounter.current +
       ' source modules checked.\n',
   );
 } else {
-  let baseline;
-  try {
-    baseline = JSON.parse(await readFile(baselineFile, 'utf8'));
-  } catch {
-    process.stderr.write(
-      'Missing scripts/i18n-allowlist.json; measure the current migration first.\n',
-    );
-    process.exitCode = 1;
-  }
+  const readBaseline = async () => {
+    try {
+      return JSON.parse(await readFile(baselineFile, 'utf8'));
+    } catch {
+      process.stderr.write(
+        'Missing scripts/i18n-allowlist.json; measure the current migration first.\n',
+      );
+      process.exitCode = 1;
+      return null;
+    }
+  };
+  const baseline = await readBaseline();
   if (baseline) {
-    if (copyCount > baseline.maxTotal) {
+    if (copyCountCounter.current > baseline.maxTotal) {
       issues.push('RAW_UI_COPY total increased from ' + baseline.maxTotal + ' to ' + copyCount);
     }
     for (const [file, current] of Object.entries(copies)) {
@@ -100,10 +101,8 @@ if (issues.length) {
       process.exitCode = 1;
     } else {
       process.stdout.write(
-        'Global __() ownership verified across ' +
-          sourceCount +
-          ' source modules; ' +
-          copyCount +
+        'Global __() ownership verified across ' + sourceCountCounter.current +
+          ' source modules; ' + copyCountCounter.current +
           ' legacy JSX messages remain within the locked per-file baseline.\n',
       );
     }

@@ -33,9 +33,9 @@ const scan = async (directory) => {
 };
 for (const folder of directories) await scan(path.join(root, folder));
 
-let changedFiles = 0;
-let replacedNodes = 0;
-let skippedEntities = 0;
+const changedFilesCounter = { current: 0 };
+const replacedNodesCounter = { current: 0 };
+const skippedEntitiesCounter = { current: 0 };
 for (const { absolute, relative } of allFiles) {
   const source = await readFile(absolute, 'utf8');
   const syntax = ts.createSourceFile(
@@ -52,7 +52,7 @@ for (const { absolute, relative } of allFiles) {
   const visit = (node, insideFunction = false) => {
     if (insideFunction && ts.isJsxText(node)) {
       const text = normalizeJsxText(node.getText(syntax));
-      if (hasEntity(text)) skippedEntities++;
+      if (hasEntity(text)) skippedEntitiesCounter.current++;
       if (hasLetters(text) && !hasEntity(text)) {
         insert(node, '{__(' + JSON.stringify(text) + ')}');
       }
@@ -96,15 +96,12 @@ for (const { absolute, relative } of allFiles) {
     output = output.slice(0, edit.start) + edit.text + output.slice(edit.end);
   }
   await writeFile(absolute, output, 'utf8');
-  changedFiles++;
-  replacedNodes += edits.length;
+  changedFilesCounter.current++;
+  replacedNodesCounter.current += edits.length;
 }
 process.stdout.write(
-  'Wrapped ' +
-    replacedNodes +
-    ' user-facing JSX expressions in ' +
-    changedFiles +
-    ' files; left ' +
-    skippedEntities +
+  'Wrapped ' + replacedNodesCounter.current +
+    ' user-facing JSX expressions in ' + changedFilesCounter.current +
+    ' files; left ' + skippedEntitiesCounter.current +
     ' entity-encoded fragments for manual review.\n',
 );

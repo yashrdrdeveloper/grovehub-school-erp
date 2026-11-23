@@ -46,7 +46,7 @@ const nativeOps = new Set([
   'entries',
 ]);
 const issues = new Map();
-let sourceFiles = 0;
+const sourceFilesCounter = { current: 0 };
 function flag(file, kind, line) {
   const found = issues.get(file) ?? new Map();
   if (!found.has(kind)) found.set(kind, line);
@@ -81,7 +81,7 @@ for (const file of files) {
   if (file === 'packages/shell/layout/AppLauncher.tsx') flag(file, 'MONOLITHIC_LAUNCHER', 1);
   if (!tsSource && !/\.css$/.test(file)) continue;
   const source = readFileSync(path.join(root, file), 'utf8');
-  sourceFiles += 1;
+  sourceFilesCounter.current += 1;
   if (tsSource && !test && source.split('\n').length > 155) flag(file, 'LARGE_UNIT', 156);
   if (/\.css$/.test(file)) {
     if (source.length > 15000) flag(file, 'LARGE_STYLESHEET', 1);
@@ -188,7 +188,7 @@ process.stdout.write(
   'GH_AUDIT_SUMMARY|' +
     JSON.stringify({
       files: files.length,
-      sourceFiles,
+      sourceFiles: sourceFilesCounter.current,
       flagged: issues.size,
       counts,
     }) +

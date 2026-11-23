@@ -4,7 +4,7 @@ import path from 'node:path';
 import { validateComponentEnums } from './lib/component-enum-policy.mjs';
 
 const root = path.join(process.cwd(), 'packages');
-let inspected = 0;
+const inspectedCounter = { current: 0 };
 const failures = [];
 const walk = async (folder) => {
   for (const entry of await readdir(folder, { withFileTypes: true })) {
@@ -30,7 +30,7 @@ const walk = async (folder) => {
           '" is a closed-set literal; import its owner enum',
       );
     }
-    inspected++;
+    inspectedCounter.current++;
   }
 };
 await walk(root);
@@ -39,6 +39,6 @@ if (failures.length) {
   process.exitCode = 1;
 } else {
   process.stdout.write(
-    'Closed UI prop enums verified across ' + inspected + ' production TSX modules.\n',
+    'Closed UI prop enums verified across ' + inspectedCounter.current + ' production TSX modules.\n',
   );
 }

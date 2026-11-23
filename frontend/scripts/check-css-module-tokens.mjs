@@ -36,12 +36,12 @@ await visit(
   },
 );
 
-let checked = 0;
+const checkedCounter = { current: 0 };
 await visit(
   modules,
   (filename) => filename.endsWith('.module.css'),
   async (filename) => {
-    checked += 1;
+    checkedCounter.current += 1;
     const css = await readFile(filename, 'utf8');
 
     for (const match of css.matchAll(/var\((--gh-[\w-]+)/g)) {
@@ -75,6 +75,6 @@ if (violations.length > 0) {
   process.exitCode = 1;
 } else {
   process.stdout.write(
-    `CSS Module token ownership verified across ${checked} scoped stylesheets.\n`,
+    `CSS Module token ownership verified across ${checkedCounter.current} scoped stylesheets.\n`,
   );
 }

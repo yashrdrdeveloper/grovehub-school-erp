@@ -4,7 +4,7 @@ import ts from 'typescript';
 
 /** Blocking AST rule for production application code; type annotations are not ternaries. */
 const violations = [];
-let checked = 0;
+const checkedCounter = { current: 0 };
 const visitDir = async (directory) => {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const filename = path.join(directory, entry.name);
@@ -27,7 +27,7 @@ const visitDir = async (directory) => {
       true,
       filename.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
     );
-    checked++;
+    checkedCounter.current++;
     const check = (node) => {
       if (ts.isConditionalExpression(node)) {
         const location = tree.getLineAndCharacterOfPosition(node.getStart(tree));
@@ -45,5 +45,5 @@ if (violations.length > 0) {
     process.stderr.write(item + ': conditional expression is forbidden\\n');
   process.exitCode = 1;
 } else {
-  process.stdout.write('No production ternary expressions in ' + checked + ' source files.\\n');
+  process.stdout.write('No production ternary expressions in ' + checkedCounter.current + ' source files.\\n');
 }

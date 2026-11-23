@@ -31,7 +31,7 @@ const nativeTags = new Set([
   'article',
 ]);
 const errors = [];
-let scanned = 0;
+const scannedCounter = { current: 0 };
 const walk = async (directory) => {
   for (const item of await readdir(directory, { withFileTypes: true })) {
     const filename = path.join(directory, item.name);
@@ -49,7 +49,7 @@ const walk = async (directory) => {
       true,
       ts.ScriptKind.TSX,
     );
-    scanned++;
+    scannedCounter.current++;
     const visit = (node) => {
       if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
         const tag = node.tagName.getText(tree);
@@ -74,4 +74,4 @@ await walk(path.join(process.cwd(), 'packages/domain'));
 await walk(path.join(process.cwd(), 'packages/shell'));
 for (const error of errors) process.stderr.write(error + '\n');
 if (errors.length > 0) process.exitCode = 1;
-else process.stdout.write('Semantic UI boundary verified across ' + scanned + ' TSX files.\\n');
+else process.stdout.write('Semantic UI boundary verified across ' + scannedCounter.current + ' TSX files.\\n');

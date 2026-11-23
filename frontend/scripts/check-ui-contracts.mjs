@@ -3,12 +3,12 @@ import path from 'node:path';
 
 const root = path.join(process.cwd(), 'packages/components/components');
 const failures = [];
-let checked = 0;
+const checkedCounter = { current: 0 };
 
 for (const unit of await readdir(root, { withFileTypes: true })) {
   if (unit.isFile() && unit.name === 'SchoolMonogram.tsx') {
     const source = await readFile(path.join(root, unit.name), 'utf8');
-    checked++;
+    checkedCounter.current++;
     if (!/dataTestId/.test(source) || !/data-testid/.test(source)) {
       failures.push('SchoolMonogram: dataTestId must reach its native root');
     }
@@ -20,7 +20,7 @@ for (const unit of await readdir(root, { withFileTypes: true })) {
   const impl = (await readdir(folder)).find((file) => file === `${unit.name}.tsx`);
   if (!impl) continue;
 
-  checked++;
+  checkedCounter.current++;
   const source = await readFile(path.join(folder, impl), 'utf8');
   const forwardsToTypography =
     unit.name === 'Text' &&
@@ -70,5 +70,5 @@ if (failures.length) {
   for (const failure of failures) process.stderr.write(`${failure}\n`);
   process.exitCode = 1;
 } else {
-  process.stdout.write(`UI automation contracts verified across ${checked} shared components.\n`);
+  process.stdout.write(`UI automation contracts verified across ${checkedCounter.current} shared components.\n`);
 }

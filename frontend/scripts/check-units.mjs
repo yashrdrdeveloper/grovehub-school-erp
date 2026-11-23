@@ -28,7 +28,7 @@ const units = [
   ['business/auth/services', false],
 ];
 
-let checked = 0;
+const checkedCounter = { current: 0 };
 for (const [relative, requirePureTests] of units) {
   const parent = path.join(root, relative);
   if (!(await exists(parent))) continue;
@@ -38,7 +38,7 @@ for (const [relative, requirePureTests] of units) {
     const name = item.name;
     // Enforce explicit callable contracts for named implementation units.
     if (!(await sourceExists(folder, name))) continue;
-    checked++;
+    checkedCounter.current++;
     if (!(await exists(path.join(folder, 'index.ts')))) {
       failures.push(`${relative}/${name}: missing index.ts public API`);
     }
@@ -137,6 +137,6 @@ if (failures.length > 0) {
   process.exitCode = 1;
 } else {
   process.stdout.write(
-    `Self-contained unit boundaries verified across ${checked} operation units.\n`,
+    `Self-contained unit boundaries verified across ${checkedCounter.current} operation units.\n`,
   );
 }

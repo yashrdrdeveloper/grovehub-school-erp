@@ -6,7 +6,7 @@ import { validateRendererSource } from './lib/renderer-policy.mjs';
 /** Renderer functions are pure JSX selectors with typed contracts and owner-local tests. */
 const root = path.join(process.cwd(), 'packages');
 const errors = [];
-let checked = 0;
+const checkedCounter = { current: 0 };
 const exists = async (filename) => {
   try {
     await access(filename);
@@ -25,7 +25,7 @@ const walk = async (folder) => {
     if (!filename.endsWith('.tsx')) continue;
     const relative = path.relative(root, filename).replaceAll(path.sep, '/');
     if (!relative.includes('/renderer/') || relative.includes('/__tests__/')) continue;
-    checked++;
+    checkedCounter.current++;
     const basename = path.basename(filename, '.tsx');
     if (!/^[a-z][a-zA-Z0-9]*\.[a-z][a-zA-Z0-9]*$/.test(basename)) {
       errors.push(relative + ': use renderer/<owner>.<useCase>.tsx naming');
@@ -44,5 +44,5 @@ for (const issue of errors) process.stderr.write(issue + '\n');
 if (errors.length) process.exitCode = 1;
 else
   process.stdout.write(
-    'Renderer purity, naming and tests verified across ' + checked + ' JSX renderer files.\n',
+    'Renderer purity, naming and tests verified across ' + checkedCounter.current + ' JSX renderer files.\n',
   );
