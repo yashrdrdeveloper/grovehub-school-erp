@@ -1,3 +1,4 @@
+import { __ } from '@Base/i18n';
 import { LoginLayout } from '../../components/loginLayout';
 import { LoginLayoutVariant } from '../../components/loginLayout/constants/loginLayout.variant';
 
@@ -14,10 +15,10 @@ export const Login: LoginPageComponent = ({ controls, isMobile }) => {
   return (
     <LoginLayout
       variant={LoginLayoutVariant.LOGIN}
-      title={LOGIN_COPY.desktopTitle}
-      description={LOGIN_COPY.desktopDescription}
-      mobileTitle={LOGIN_COPY.mobileTitle}
-      mobileDescription={LOGIN_COPY.mobileDescription}
+      title={__(LOGIN_COPY.desktopTitle)}
+      description={__(LOGIN_COPY.desktopDescription)}
+      mobileTitle={__(LOGIN_COPY.mobileTitle)}
+      mobileDescription={__(LOGIN_COPY.mobileDescription)}
       minimalMobile
     >
       <FormTemplate {...controls} />
