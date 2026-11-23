@@ -31,11 +31,11 @@ describe('useLogin', () => {
   });
 
   it('normalizes email, preserves password, and prevents concurrent requests', async () => {
-    let resolveSignIn: (() => void) | undefined;
+    const asyncSignIn = { resolve: undefined as (() => void) | undefined };
     signIn.mockImplementation(
       () =>
         new Promise<void>((resolve) => {
-          resolveSignIn = resolve;
+          asyncSignIn.resolve = resolve;
         }),
     );
 
@@ -52,7 +52,7 @@ describe('useLogin', () => {
     expect(signIn).toHaveBeenCalledWith('user@school.edu', ' test-secret ');
     expect(result.current.state.isSubmitting).toBe(true);
     await act(async () => {
-      resolveSignIn?.();
+      asyncSignIn.resolve?.();
     });
     await waitFor(() => expect(result.current.state.isSubmitting).toBe(false));
   });

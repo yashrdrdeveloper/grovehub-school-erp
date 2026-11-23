@@ -6,8 +6,7 @@ import { renderAppLauncherApp } from '../appLauncher.app';
 
 describe('renderAppLauncherApp', () => {
   it('renders a catalog link and its independent pin action', () => {
-    let toggled = '';
-    let open = true;
+    const interactions = { toggled: '', open: true };
     const app = appCatalog[0];
     if (!app) throw new Error('Catalog must contain the dashboard');
 
@@ -17,10 +16,10 @@ describe('renderAppLauncherApp', () => {
           app,
           isPinned: false,
           onOpenChange: (next) => {
-            open = next;
+            interactions.open = next;
           },
           onTogglePin: (path) => {
-            toggled = path;
+            interactions.toggled = path;
           },
         })}
       </MemoryRouter>,
@@ -28,9 +27,9 @@ describe('renderAppLauncherApp', () => {
 
     expect(screen.getByRole('link', { name: /Dashboard/ }).getAttribute('href')).toBe(app.path);
     fireEvent.click(screen.getByRole('button', { name: 'Pin Dashboard' }));
-    expect(toggled).toBe(app.path);
+    expect(interactions.toggled).toBe(app.path);
     fireEvent.click(screen.getByRole('link', { name: /Dashboard/ }));
-    expect(open).toBe(false);
+    expect(interactions.open).toBe(false);
   });
 
   it('exposes the unpin action for pinned applications', () => {

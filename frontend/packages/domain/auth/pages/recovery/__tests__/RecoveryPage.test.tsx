@@ -217,7 +217,7 @@ describe('RecoveryContainer', () => {
     setup.mockRejectedValue(new Error('temporary failure'));
     renderPage('invitation', 'proof');
     await screen.findByLabelText('New password');
-    for (let attempt = 0; attempt < 2; attempt++) {
+    for (const attempt of [0, 1]) {
       fireEvent.change(screen.getByLabelText('New password'), {
         target: { value: 'a-strong-password-123' },
       });

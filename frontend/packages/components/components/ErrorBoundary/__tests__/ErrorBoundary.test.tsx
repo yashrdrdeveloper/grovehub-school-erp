@@ -48,15 +48,15 @@ describe('ErrorBoundary', () => {
   });
 
   it('provides an accessible local retry action', () => {
-    let broken = true;
-    const Recoverable = () => <FaultyView crash={broken} />;
+    const renderState = { broken: true };
+    const Recoverable = () => <FaultyView crash={renderState.broken} />;
     render(
       <ErrorBoundary>
         <Recoverable />
       </ErrorBoundary>,
     );
 
-    broken = false;
+    renderState.broken = false;
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
     expect(screen.getByText('Ready')).toBeTruthy();
   });
