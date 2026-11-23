@@ -3,5 +3,3 @@ export { EMPTY_ARRAY } from './constants/base.emptyArray';
 export { NOOP } from './constants/base.noop';
 export { readProperty } from './readers';
 export { createEventEmitter } from './events';
-export { __ } from './i18n';
-export type { MessageParameter, MessageParameters } from './i18n';
