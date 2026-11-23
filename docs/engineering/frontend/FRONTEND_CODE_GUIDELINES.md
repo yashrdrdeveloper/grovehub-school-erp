@@ -1,5 +1,92 @@
 # Frontend Code Guidelines
 
+## Revision 12 — component-owned enums and shared UI messages (Phase 2.1, 23 November 2026)
+
+**Precedence:** This section overrides older examples that use inline closed-set props such as \`variant="primary"\`, \`size="lg"\`, \`as="h3"\`, \`tone="muted"\`, and user-visible copy authored directly in JSX. Apply it to **all** frontend owners (\`@Components\`, \`@Shell\`, \`@Domain\`, and feature-related business error-to-UI mapping). This is an incremental migration requirement, **not** a claim that every existing file has already been converted.
+
+### A. One source of truth for each kind of string
+
+| Category | Required approach | Example | Never do |
+|---|---|---|---|
+| Closed component prop (variant, size, tone, tag, alignment, layout, spacing, status) | Nearest shared component's exported runtime enum or frozen constant | \`<Button variant={BUTTON_VARIANT.PRIMARY} size={BUTTON_SIZE.LARGE} />\` | \`variant="primary"\` |
+| Semantic wrapper tag | Same wrapper's public tag constants | \`<Box as={BOX_TAG.H3} />\`, \`<Text as={TEXT_TAG.P} />\` | \`as="h3"\`, a second ad-hoc global tag map |
+| Business state / route ID / operation | Owning business/domain constant or enum | \`LoginLayoutVariant.FORGOT\`, \`AUTH_ROUTE.LOGIN\` | \`variant="forgot"\`, a raw URL |
+| User-visible text, accessible names, descriptions and feedback | Shared \`__()\` resolver called with a literal template or owned copy constant | \`__('Check your email')\` | Unwrapped JSX prose, string concatenation for copy |
+| Runtime person, school or record data | Interpolation argument only; never treat input as a message key | \`__('Hello {{name}}', { name })\` | \`__(name)\`, \`__('Hello ' + name)\` |
+| Protocol/API, data IDs, cookie names, CSS classes, HTTP methods, MIME, schema keys, input values, testing selectors, standards-defined ARIA token values | Keep exact wire/DOM semantics; use owner constants if repeated | \`dataTestId={LOGIN_TEST_IDS.SUBMIT}\`, \`aria-live="polite"\` | Passing technical identifiers through \`__()\` |
+
+**Only closed design-system choices become component enums.** Do not create enums for every arbitrary string in the system; that would corrupt HTML/ARIA/API contracts, create unmaintainable wrappers and make user data indistinguishable from design choices. Standards-defined attributes (e.g. \`autoComplete="email"\`, \`role="status"\`, \`aria-live="polite"\`) are not translated. Inputs that *expose a closed, component-owned option* should publish the corresponding constant through their public API.
+
+### B. Every shared component publishes its own public contract
+
+1. Put closed prop values in \`components/<Component>/constants/<component>.<prop>.ts\` (or a named type-specific enum). Use \`Object.freeze({ ... } as const)\` for UI-only options; string enums are appropriate for cross-unit or server-aligned domain states.
+2. Derive the prop union from the exported runtime value, not from a second hand-written string union:
+   \`type Size = (typeof BUTTON_SIZE)[keyof typeof BUTTON_SIZE]\`. Defaults in implementation use that same constant.
+3. Export the constant **and its type** through the component's \`index.ts\`. Feature callers import them from the same component API as the component itself.
+4. A composed component must expose forwarded choices at its own public boundary. If values are *exactly the same* as an underlying primitive, re-export/alias the original constant instead of creating a second unrelated map. Example: \`TEXT_SIZE\` and \`TEXT_TONE\` re-export Typography's actual values; \`TEXT_TAG\` defines Text's valid tag subset using \`TYPOGRAPHY_TAG\` values.
+5. Closed-set selection logic belongs in owned \`constants/\`, \`helpers/\` or typed \`renderer/\`, not inline JSX. Preserve the existing CSS Module and test ID contract. Avoid unnecessary enum aliases for open-ended content props (title, label, children, name, value).
+6. Component-owned enum audits must include Button, Box, Text, Typography, Card, Container, Form, InputControl, StatusPill, Dialog and each additional shared primitive, plus consuming auth, shell, dashboard and public-site components.
+
+~~~tsx
+import { Box, BOX_TAG } from '@Components/components/Box';
+import { Text, TEXT_TAG, TEXT_TONE, TEXT_SIZE } from '@Components/components/Text';
+import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '@Components/components/Button';
+import { __ } from '@Base/i18n';
+
+export const Confirmation = ({ value }: { value: string }) => (
+  <Box as={BOX_TAG.SECTION}>
+    <Box as={BOX_TAG.H3}>{__('Check your email')}</Box>
+    <Text as={TEXT_TAG.P} tone={TEXT_TONE.MUTED} size={TEXT_SIZE.SMALL}>
+      {__('A reset link was requested for {{value}}.', { value })}
+    </Text>
+    <Button variant={BUTTON_VARIANT.PRIMARY} size={BUTTON_SIZE.LARGE}>
+      {__('Back to sign in')}
+    </Button>
+  </Box>
+);
+~~~
+
+### C. The global \`__()\` message resolver
+
+**Implemented foundation:** \`@Base/i18n\` publicly exports \`__\` (also re-exported via \`@Base\`) and \`MessageParameters\`. It is a **pure English source-message formatter at present**; it is **not** a multilingual translation service. Do not advertise locale switching, dictionaries, pluralization or translations until implemented and tested.
+
+~~~ts
+import { __ } from '@Base/i18n';
+
+__('Sign in');                                      // "Sign in"
+__('Hello {{name}}', { name: 'Parent' });            // "Hello Parent"
+__('{{count}} records found', { count: 0 });       // "0 records found"
+__('Feature {{enabled}}', { enabled: false });      // "Feature false"
+~~~
+
+**Required rules:** Template is stable literal source copy or a constant in the nearest \`constants/<owner>.copy.ts\`; parameters are typed named \`string | number | boolean\` values. Repeated parameters work; missing values throw to surface defects rather than silently displaying \`{{placeholder}}\`. React renders the result as escaped text. \`__\` does not parse/return HTML or React nodes, does not modify the DOM, does not access storage, and does not perform network calls. Never use \`dangerouslySetInnerHTML\` to render its result. Avoid computed message templates, dynamic keys, nested interpolation objects and string concatenation as substitutes for named placeholders.
+
+**Component rendering, not module initialization:** Keep source copy in \`constants/<owner>.copy.ts\`, then call \`__(COPY.TITLE)\` or \`__('literal copy')\` while rendering. Do not eagerly store translated strings in a module-level constant: that would break future per-user locale switching. Migrate visible text inside headings, labels, buttons, helper text, status descriptions, errors, placeholders, accessible \`aria-label\`, \`title\`/tooltip, image alternatives, dialogs, toasts, empty states, document titles and SEO meta descriptions. Do **not** run backend error codes, API paths or IDs through the formatter; first map them to owned human-readable copy.
+
+**Future localization extension:** The pure base interpolator remains dependency-free. When additional languages are required, introduce a scoped dictionary/locale resolution layer with a React-aware hook/provider (so changing locale re-renders all consumers), consistent English fallback, placeholder parity checks and \`Intl.PluralRules\` / \`Intl.NumberFormat\` / \`Intl.DateTimeFormat\`. Do not attach a mutable \`__\` function to \`window\`, implement an unobservable process-global locale singleton, or guess locale from user input. Source-English copy with \`__()\` is *prepared for* extraction, **not already translated**.
+
+### D. Frontend-wide migration plan (tracked by priority)
+
+| Phase | Priority | Owners and actions | Exit gate |
+|---|---|---|---|
+| 0. Shared foundation | **P0** | Introduce \`@Base/i18n/__\` with named interpolation; pure tests for unchanged text, repeated tokens, zero/false, missing values and non-recursive values. Retain existing runtime semantics. | \`__\` test suite, TS and existing business/auth tests pass |
+| 1. Component contract inventory | **P1** | Enumerate every shared component's closed props; publish/forward \`COMPONENT_VARIANT\`, \`COMPONENT_SIZE\`, \`COMPONENT_TAG\`, \`COMPONENT_TONE\`, status/layout etc. Convert defaults, props types, caller imports and direct tests. Reuse underlying constants rather than duplicating. | Every closed public prop has one exported runtime constant and a type derived from it |
+| 2. Authentication messages | **P1** | Login, forgot password, reset/set password, token states, invitation/validation errors, field labels, success copy, mobile variants, accessibility names. Preserve existing security flow and 30s resend timer. | No auth user-visible copy bypasses \`__()\`; all old functional tests and responsive checks pass |
+| 3. Shell and dashboard messages | **P1** | Topbar, sidebar, mobile navigation, app catalog, menu/empty copy, theme controls, dashboard preview sections, toasts, labels and descriptions. | No raw UI copy or component closed-prop string in migrated shell/dashboard owners |
+| 4. Public-site content and SEO | **P1** | Landing and informational pages, enquiry form labels/validation, announcements, gallery alternatives, sheet/dialog copy, page title/description/meta. Extract the seven oversized public-site units into SRP owners while migrating. | Public SEO prerender remains stable; mobile layouts and contrast verified; all seven formatting exceptions removed |
+| 5. Audit and automated enforcement | **P2** | Implement TSX AST \`RAW_UI_COPY\` and \`RAW_CLOSED_PROP\` checks; distinguish display text/attributes from technical strings; establish a measured per-file baseline, then block **new** violations and shrink it with each migration. Test the analyzer without mocking pure utilities. | \`pnpm check:architecture\` blocks new unwrapped UI messages and closed prop literals |
+| 6. Dynamic text quality | **P2** | Convert concatenated welcome/status/validation copy to \`{{name}}\` arguments; cover missing values, special characters, accessibility labels, keyboard, short viewports, dark/light/system. Keep classes in owned CSS Modules. | No copied interpolators, no text-as-HTML, browser and Jest regression suites green |
+| 7. Language packs (when required) | **P3** | Add locale-aware catalogs/provider, fallback and pluralization without changing the public message syntax unnecessarily. | Language switch updates mounted UI and all dictionaries satisfy placeholder parity |
+
+**Required sequence inside each owner:** inventory presentation props and display strings → classify technical vs translated text → define/re-export enum values and types → put stable source copy in the nearest \`constants/<owner>.copy.ts\` → use \`__()\` at render time (interpolation for dynamic values) → update renderer/helper contracts and tests → remove legacy literals → run architecture, format, typecheck, Jest, Vite/SEO and Chromium.
+
+**Migration acceptance criteria:** do not break existing markup, heading hierarchy, native form types, route behavior, test IDs, user-facing error meaning, CSRF/auth/session flows or autocomplete. Validate widths **320, 375, 390, and 720 px**, short viewport, keyboard navigation and light/dark/system modes. Audit baselines must reflect the actual current branch before any new blocking threshold is set. No blanket search-and-replace of **every** string in TypeScript: enums apply only to closed contracts; \`__()\` applies only to human-readable copy.
+
+**Current status (not a completion claim):** The pure \`__\` formatter and tests have been added; login title/description copy uses it as an initial integration. Text exposes \`TEXT_TAG\` and aliases forwarded Typography values. Many other UI strings and closed-set props remain to be audited and migrated. **Separate legacy CSS debt** (last verified: 34 flagged files / 42 overlapping findings) is not resolved by string/enumeration migration. The phase-2.1 branch must not be described as fully migrated until the per-owner exit gates above pass.
+
+---
+
+
 ## Phase 2.1 — mandatory typed UI values and renderer completion plan (23 November 2026)
 
 **Scope and precedence:** This section is authoritative over older code snippets using `variant="forgot"`, `Box as="div"`, `Box as="h3"`, `Text as="span"` or `Typography as="h2"`. This is a *code refactor*, not permission to use an enum for arbitrary content, form text, user-input values, network header names or ARIA attributes. Keep the actual semantic HTML, roles, accessibility, focus and exact test IDs.
