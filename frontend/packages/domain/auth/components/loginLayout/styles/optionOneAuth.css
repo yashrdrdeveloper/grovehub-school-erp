@@ -678,32 +678,6 @@
   justify-content: center;
   text-align: center;
 }
-.rdr-recovery__art {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  max-width: 370px;
-  gap: 0;
-}
-.rdr-recovery__art-visual,
-.rdr-recovery__mobile-status-title {
-  display: none;
-}
-.rdr-recovery__art-title {
-  font-size: clamp(22px, 2.6vw, 30px);
-  font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: -0.045em;
-  margin: 12px 0 8px;
-}
-.rdr-recovery__art-message {
-  font-size: 12px;
-  line-height: 1.65;
-  color: var(--auth-muted);
-  margin: 0;
-  overflow-wrap: anywhere;
-}
 .rdr-recovery__slow {
   font-size: 11px;
   color: var(--auth-muted);
@@ -972,9 +946,6 @@
   .rdr-recovery__requirement {
     font-size: 10px;
   }
-  .rdr-recovery__art-title {
-    font-size: clamp(21px, 5.6vw, 28px);
-  }
 }
 @media (max-width: 720px) and (max-height: 740px) {
   .rdr-login-v2__visual {
@@ -1034,9 +1005,7 @@
   white-space: nowrap;
   letter-spacing: -0.055em;
   font-size: clamp(23px, 2.6vw, 36px);
-}
-.rdr-auth-flow__mobile-success p strong,
-.rdr-recovery__art-message {
+}.rdr-auth-flow__mobile-success p strong {
   overflow-wrap: anywhere;
 }
 @media (max-width: 720px) {
@@ -1067,9 +1036,6 @@
   .rdr-login-v2__main:has(.rdr-auth-flow--sent) .rdr-auth-flow__mobile-success p {
     font-size: 13px;
     line-height: 1.48;
-  }
-  .rdr-login-v2__main:has(.rdr-recovery__state) .rdr-recovery__art-title {
-    margin: 7px 0 5px;
   }
   .rdr-login-v2__main:has(.rdr-recovery__state) .rdr-recovery__state-button {
     margin-top: 10px;
@@ -1180,9 +1146,6 @@
   .rdr-recovery__back {
     margin-top: 8px;
   }
-  .rdr-recovery__art-title {
-    margin: 8px 0 5px;
-  }
 }
 /* Tablet landscape and short browser windows: fit the same content without
    clipping controls. Allow scrolling only when the viewport is exceptionally short. */
@@ -1226,9 +1189,6 @@
   }
   .rdr-auth-flow__mobile-success h3 {
     font-size: 23px;
-    margin: 5px 0 3px;
-  }
-  .rdr-recovery__art-title {
     margin: 5px 0 3px;
   }
   .rdr-recovery__state-button {

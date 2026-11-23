@@ -15,9 +15,6 @@
     "packages/domain/auth/pages/login/components/LoginForm/LoginForm.tsx": ["RAW_CLASS"],
     "packages/domain/auth/pages/login/templates/desktopLogin/DesktopLogin.tsx": ["RAW_CLASS"],
     "packages/domain/auth/pages/login/templates/mobileLogin/MobileLogin.tsx": ["RAW_CLASS"],
-    "packages/domain/auth/pages/recovery/components/recoveryArtwork/RecoveryArtwork.tsx": [
-      "RAW_CLASS"
-    ],
     "packages/domain/auth/pages/recovery/components/recoveryPasswordForm/RecoveryPasswordForm.tsx": [
       "RAW_CLASS"
     ],
@@ -64,14 +61,14 @@
     "packages/shell/templates/workspaceShell/WorkspaceShell.tsx": ["RAW_CLASS"]
   },
   "referenceCommit": "585e8f81f8091536222c446931466710626db283",
-  "maxFlaggedFiles": 27,
-  "maxFindings": 34,
+  "maxFlaggedFiles": 26,
+  "maxFindings": 33,
   "maxByCode": {
     "CSS_COLOR_LITERAL": 4,
     "LARGE_STYLESHEET": 3,
     "LEGACY_DOMAIN_CSS": 3,
     "LEGACY_GLOBAL_CSS": 1,
-    "RAW_CLASS": 23
+    "RAW_CLASS": 22
   },
   "lastVerifiedRunId": 45070078775
 }
