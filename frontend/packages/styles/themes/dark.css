@@ -17,6 +17,7 @@
   --gh-color-accent-soft: #223149;
   --gh-color-ring: #a2b5d5;
   --gh-color-danger: #ef6a6a;
+  --gh-color-danger-foreground: #172033;
   --gh-color-success: #70d19c;
   --gh-color-warning: #e4ba71;
   /* Dashboard trend accents are theme-owned, not component color literals. */

@@ -42,7 +42,7 @@
 }
 .button--danger {
   background: var(--gh-color-danger);
-  color: #fff;
+  color: var(--gh-color-danger-foreground);
 }
 .button--full {
   width: 100%;
