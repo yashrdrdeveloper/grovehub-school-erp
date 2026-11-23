@@ -1,5 +1,34 @@
 # Frontend Code Guidelines
 
+## Revision 16 — genuine owner-scoped CSS migration and current Phase 2.1 gap register (24 November 2026)
+
+**Authoritative migration status for branch `phase-2.1-identity-account`.** This revision supersedes historical numeric inventory counts below. Revisions 14 and 13 remain authoritative for literal `__()` sources, bootstrap and zero mutable `let`; Revision 12 and prior architecture/ownership rules remain active. **This is a verified incremental source migration, not a claim that every frontend guideline is implemented.**
+
+### Completed and preserved contracts
+
+1. **Owned CSS Modules, not renamed globals.** `authStatusArt/AuthStatusArt.module.css` now owns its status glyph/halo/responsive presentation. `credentialField/CredentialField.module.css` owns labels, input-shell, focus/autofill, validation rows and viewport overrides. `shell/components/appLauncher/AppLauncherApp.module.css` owns catalog cards/pin buttons. `publicSite/.../homeContent/HomeContent.module.css` owns home-only selectors and header states; obsolete `optionOne.css` was deleted, rather than retained as a compatibility facade. `publicSheet/components/panelPhoto/PanelPhoto.module.css` owns responsive gallery photo and fallback badge sizing. Each migrated JSX caller uses scoped module class maps. `@Styles/themes/light.css` and `dark.css` own every newly introduced `--gh-*` semantic color in parallel.
+2. **Reduced legacy audit baseline.** The original verified Revision 15 report had 34 flagged files and 42 overlapping findings. Current measured audit ceiling is **27 flagged files / 34 findings**: `RAW_CLASS=23`, `LEGACY_DOMAIN_CSS=3`, `LEGACY_GLOBAL_CSS=1`, `LARGE_STYLESHEET=3`, `CSS_COLOR_LITERAL=4`. Removed legacy `RAW_CLASS` entries are deleted from `scripts/audit-allowlist.json`; the gate continues to reject new or increased legacy findings. Counts are file-level flags, not occurrences.
+3. **Public content and formatter ownership.** `school.content.ts` now re-exports five focused school content units; the original ignored oversized content file is removed from the Prettier exclusions. Six oversized public-site JSX owners remain intentionally locked in `.prettierignore` and `check-formatter-debt.mjs` pending genuine SRP decomposition. Do not conceal formatting debt with artificial compatibility wrappers or relaxed analyzer thresholds.
+4. **Responsive auth correctness.** The `LoginLayout` mobile title now selects the active title through `useAuthViewportFit`'s existing media-query subscription and the tested pure `getLoginLayoutHeading` helper. It renders exactly one semantic `h1` and preserves the existing stable ID; do not add duplicate visually-hidden/mobile headings that produce contradictory accessible names in tests.
+5. **Accessibility and tests.** Chromium checks repeated `data-testid` collisions for rendered routes, mobile form submission reachability, short-viewport horizontal overflow and the visible recovery/activation title. A photo component test covers descriptive alt text and the original-image fallback. The component-owned form and catalog accessibility helpers still use literal translated source messages.
+
+### Open mandatory work — do not mark Phase 2.1 complete
+
+| Priority | Remaining gap | Completion evidence |
+|---|---|---|
+| P1 | `app/styles.css` is still a large global legacy stylesheet | Move actual consumer selectors into shell/component/domain CSS Modules, remove dead declarations after consumer search and theme/viewport screenshots; remove the import when empty |
+| P1 | Auth `loginLayout/styles/optionOneAuth.css` is still legacy and oversized | Migrate remaining login/forgot/recovery/template classes, shared form sizing and light/dark colors into the matching owner modules; verify identity proof/session semantics unchanged |
+| P1 | Public `landingPage.css` and `optionOnePages.css` are still legacy | Move shared chrome, sheet, pages, cards and forms to their named owner components; retain no unscoped duplicate selector wrappers |
+| P1 | Full live browser/a11y and backend auth testing incomplete | Verify 320/375/390/720 px and short/zoomed viewports, autofill, keyboard/focus, visual theme snapshots, all invitation/reset/error/retry states against backend or realistic contract environment |
+| P2 | Six public-site source files excluded from Prettier | Extract named SRP components/renderers, preserve scoped styles, remove exceptions one by one, pass full-tree Prettier |
+| P2 | Sass module target and remaining design-token review | Install and lock Dart Sass before adopting `*.module.scss`; migrate actual callers and test Vite/Jest; zero unowned design tokens and intentional visual exceptions documented |
+| P2 | `RAW_CLASS=23`, `CSS_COLOR_LITERAL=4`, and rendered test ID completeness | Remove source flags through actual class and token ownership; validate unique stable rendered selectors on real pages |
+
+**Required exit gate:** `cd frontend && pnpm audit:guidelines && pnpm check:architecture && pnpm typecheck && pnpm exec jest --runInBand && pnpm lint && pnpm build`, followed by the CI Chromium smoke test plus live visual/zoom/backend-connected auth matrix. An informational audit or a passing smoke test alone is not full completion.
+
+---
+
+
 
 ## Revision 15 — Phase 2.1 verified remediation and remaining CSS debt (23 November 2026)
 
