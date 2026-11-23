@@ -20,15 +20,18 @@ export const useAuthViewportFit = () => {
     const main = mainRef.current;
     if (!content || !toolbar || !main) return;
 
-    let desktop: MediaQueryList | null = null;
-    if (typeof window.matchMedia === 'function')
-      desktop = window.matchMedia(STYLE_MEDIA_QUERY.DESKTOP);
+    const getDesktopQuery = (): MediaQueryList | null => {
+      if (typeof window.matchMedia === 'function') {
+        return window.matchMedia(STYLE_MEDIA_QUERY.DESKTOP);
+      }
+      return null;
+    };
+    const desktop = getDesktopQuery();
     const MIN_READABLE_SCALE = 0.82;
-    let frame = 0;
-    let active = true;
+    const scheduleState = { frame: 0, active: true };
 
     const measure = () => {
-      frame = 0;
+      scheduleState.frame = 0;
       if (!desktop?.matches) {
         content.removeAttribute('data-auth-fit');
         content.style.removeProperty('--auth-panel-scale');
@@ -60,14 +63,17 @@ export const useAuthViewportFit = () => {
     };
 
     const schedule = () => {
-      if (!active) return;
-      if (frame) window.cancelAnimationFrame(frame);
-      frame = window.requestAnimationFrame(measure);
+      if (!scheduleState.active) return;
+      if (scheduleState.frame) window.cancelAnimationFrame(scheduleState.frame);
+      scheduleState.frame = window.requestAnimationFrame(measure);
     };
 
     measure();
-    let observer: ResizeObserver | null = null;
-    if (typeof ResizeObserver !== 'undefined') observer = new ResizeObserver(schedule);
+    const createObserver = (): ResizeObserver | null => {
+      if (typeof ResizeObserver !== 'undefined') return new ResizeObserver(schedule);
+      return null;
+    };
+    const observer = createObserver();
     observer?.observe(content);
     observer?.observe(toolbar);
     observer?.observe(main);
@@ -78,8 +84,8 @@ export const useAuthViewportFit = () => {
     if (document.fonts?.ready) void document.fonts.ready.then(schedule);
 
     return () => {
-      active = false;
-      if (frame) window.cancelAnimationFrame(frame);
+      scheduleState.active = false;
+      if (scheduleState.frame) window.cancelAnimationFrame(scheduleState.frame);
       observer?.disconnect();
       window.removeEventListener('resize', schedule);
       desktop?.removeEventListener?.('change', schedule);

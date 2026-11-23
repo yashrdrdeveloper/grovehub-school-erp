@@ -16,8 +16,7 @@ export const useLandingPage: UseLandingPage = () => {
   const navigate = useNavigate();
   const [enquiryOpen, setEnquiryOpen] = useState(false);
   const state = location.state as { background?: string; panel?: SchoolPanel } | null;
-  let panel: SchoolPanel | null = null;
-  if (enquiryOpen) panel = 'enquiry';
+  const panel: SchoolPanel | null = (enquiryOpen && 'enquiry') || null;
   const backgroundPath = location.pathname;
   const CurrentPage = pageContent[backgroundPath] ?? HomePage;
 
@@ -73,16 +72,16 @@ export const useLandingPage: UseLandingPage = () => {
     } else window.scrollTo({ top: 0, behavior: 'instant' });
   }, [backgroundPath, location.hash, panel]);
   useEffect(() => {
-    let fallback = pageMetadata['/'];
-    if (location.pathname.startsWith('/about/')) fallback = pageMetadata['/about'];
+    const fallback =
+      (location.pathname.startsWith('/about/') && pageMetadata['/about']) || pageMetadata['/'];
     const details = pageMetadata[location.pathname] ?? fallback;
     if (!details) return;
     document.title = details.title;
     const description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
     if (description) description.content = details.description;
-    let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
-    if (!canonical) {
-      canonical = document.createElement('link');
+    const existingCanonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    const canonical = existingCanonical || document.createElement('link');
+    if (!existingCanonical) {
       canonical.rel = 'canonical';
       document.head.appendChild(canonical);
     }

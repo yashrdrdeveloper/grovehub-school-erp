@@ -14,7 +14,7 @@ const MAX_LIFETIME_MS = 10 * 60 * 1000;
 
 // A failed exchange may retry while this JS context survives; page reload
 // discards the bearer proof. This intentionally favors secrecy over replay.
-let pendingProof: Extract<RecoveryFlow, { stage: 'proof' }> | null = null;
+const sessionState = { pendingProofState: null as Extract<RecoveryFlow, { stage: 'proof' }> | null };
 
 export const recoveryPurposeForPath = (path: string): RecoveryPurpose | null => {
   if (path === AUTH_ROUTE.SET_PASSWORD || path === AUTH_ROUTE.SETUP_LEGACY) return 'invitation';
@@ -23,7 +23,7 @@ export const recoveryPurposeForPath = (path: string): RecoveryPurpose | null => 
 };
 
 export const clearRecoveryFlow = (): void => {
-  pendingProof = null;
+  sessionState.pendingProofState = null;
   try {
     window.sessionStorage.removeItem(KEY);
   } catch {
@@ -35,12 +35,12 @@ const active = (expiresAt: number): boolean =>
   Number.isFinite(expiresAt) && expiresAt > Date.now() && expiresAt <= Date.now() + MAX_LIFETIME_MS;
 
 export const readRecoveryFlow = (purpose: RecoveryPurpose): RecoveryFlow | null => {
-  if (pendingProof) {
-    if (pendingProof.purpose !== purpose || !active(pendingProof.expiresAt)) {
+  if (sessionState.pendingProofState) {
+    if (sessionState.pendingProofState.purpose !== purpose || !active(sessionState.pendingProofState.expiresAt)) {
       clearRecoveryFlow();
       return null;
     }
-    return pendingProof;
+    return sessionState.pendingProofState;
   }
   try {
     const raw = window.sessionStorage.getItem(KEY);
@@ -70,7 +70,7 @@ export const readRecoveryFlow = (purpose: RecoveryPurpose): RecoveryFlow | null 
 
 export const saveRecoveryProof = (purpose: RecoveryPurpose, proof: string): void => {
   clearRecoveryFlow();
-  pendingProof = {
+  sessionState.pendingProofState = {
     purpose,
     stage: 'proof',
     proof,
@@ -79,7 +79,7 @@ export const saveRecoveryProof = (purpose: RecoveryPurpose, proof: string): void
 };
 
 export const saveRecoveryGrant = (purpose: RecoveryPurpose, expiresIn: number): void => {
-  pendingProof = null;
+  sessionState.pendingProofState = null;
   const lifetime = Math.max(0, Math.min(MAX_LIFETIME_MS, Math.floor(expiresIn * 1000)));
   if (lifetime === 0) {
     clearRecoveryFlow();
