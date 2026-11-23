@@ -2719,86 +2719,6 @@ body {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 15px;
 }
-.catalog-app {
-  position: relative;
-  min-width: 0;
-  min-height: 162px;
-  border: 1px solid var(--border);
-  border-radius: 15px;
-  background: var(--surface);
-  box-shadow: var(--shadow);
-  transition:
-    border-color 0.18s,
-    transform 0.18s,
-    box-shadow 0.18s;
-}
-.catalog-app:not(.catalog-app--planned):hover {
-  border-color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: 0 11px 26px rgba(32, 29, 41, 0.07);
-}
-.catalog-app__link {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 7px;
-  padding: 20px;
-}
-.catalog-app__icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  color: var(--accent);
-  background: var(--accent-pale);
-  margin-bottom: 7px;
-}
-.catalog-app strong {
-  font-size: 0.8125rem;
-  font-weight: 800;
-  color: var(--ink-strong);
-}
-.catalog-app small {
-  font-size: 0.6875rem;
-  line-height: 1.5;
-  color: var(--muted);
-}
-.catalog-app__status {
-  margin-top: auto;
-  font-size: 0.625rem;
-  font-weight: 700;
-  color: var(--accent);
-}
-.catalog-app--planned {
-  opacity: 0.63;
-}
-.catalog-app--planned .catalog-app__status {
-  color: var(--muted);
-}
-.catalog-app__pin {
-  position: absolute;
-  right: 12px;
-  top: 12px;
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  background: var(--surface);
-  color: var(--muted);
-}
-.catalog-app__pin--active {
-  color: var(--accent);
-  background: var(--accent-pale);
-  border-color: var(--accent-pale);
-}
-.catalog-app__pin:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
 .catalog-empty {
   font-size: 0.8125rem;
   color: var(--muted);
@@ -2903,16 +2823,6 @@ body {
   .catalog-app-grid {
     gap: 10px;
   }
-  .catalog-app {
-    min-height: 150px;
-  }
-  .catalog-app__link {
-    padding: 15px;
-  }
-  .catalog-app__icon {
-    width: 39px;
-    height: 39px;
-  }
   .catalog-section__heading > span {
     display: none;
   }
@@ -2921,9 +2831,6 @@ body {
   .catalog-app-grid {
     grid-template-columns: 1fr 1fr;
     gap: 8px;
-  }
-  .catalog-app__link {
-    padding: 12px;
   }
 }
 
@@ -3277,19 +3184,15 @@ body {
 }
 :root[data-theme='dark'] .dashboard-banner__copy span {
   color: #dcf2ed;
-}
-:root[data-theme='dark'] .metric-card,
+}:root[data-theme='dark'] .metric-card,
 :root[data-theme='dark'] .dashboard-panel,
-:root[data-theme='dark'] .dashboard-quick-link,
-:root[data-theme='dark'] .catalog-app {
+:root[data-theme='dark'] .dashboard-quick-link {
   background: #1a303b;
   border-color: #385966;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-}
-:root[data-theme='dark'] .metric-card:hover,
+}:root[data-theme='dark'] .metric-card:hover,
 :root[data-theme='dark'] .dashboard-panel:hover,
-:root[data-theme='dark'] .dashboard-quick-link:hover,
-:root[data-theme='dark'] .catalog-app:not(.catalog-app--planned):hover {
+:root[data-theme='dark'] .dashboard-quick-link:hover {
   background: #23404b;
   border-color: #5b9296;
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.23);
@@ -3322,9 +3225,7 @@ body {
 :root[data-theme='dark'] .dashboard-panel__icon {
   background: var(--tone-bg);
   color: var(--tone);
-}
-:root[data-theme='dark'] .dashboard-quick-link__icon,
-:root[data-theme='dark'] .catalog-app__icon,
+}:root[data-theme='dark'] .dashboard-quick-link__icon,
 :root[data-theme='dark'] .school-emblem,
 :root[data-theme='dark'] .member-avatar {
   color: #8cebd8;
@@ -3347,11 +3248,6 @@ body {
 :root[data-theme='dark'] .catalog-content__header {
   background: #19343d;
   border-bottom-color: #385966;
-}
-:root[data-theme='dark'] .catalog-app__pin--active {
-  background: #224d4c;
-  color: #9af0dd;
-  border-color: #477f7c;
 }
 :root[data-theme='dark'] .catalog-tab--active,
 :root[data-theme='dark'] .theme-choice--active {
@@ -3623,21 +3519,15 @@ body {
 }
 :root .dashboard-panel__footer {
   color: var(--muted);
-}
-:root .dashboard-quick-link,
-:root .catalog-app {
+}:root .dashboard-quick-link {
   background: var(--surface);
   border: 1px solid var(--border);
   box-shadow: none;
-}
-:root .dashboard-quick-link:hover,
-:root .catalog-app:not(.catalog-app--planned):hover {
+}:root .dashboard-quick-link:hover {
   border-color: var(--muted);
   background: var(--surface-subtle);
   box-shadow: none;
-}
-:root .dashboard-quick-link__icon,
-:root .catalog-app__icon {
+}:root .dashboard-quick-link__icon {
   background: var(--accent-pale);
   color: var(--accent);
 }
@@ -3649,10 +3539,6 @@ body {
 :root .catalog-content__header {
   background: var(--surface);
   border-bottom-color: var(--border);
-}
-:root .catalog-app__pin--active {
-  background: var(--accent-pale);
-  color: var(--accent);
 }
 :root .catalog-tab--active,
 :root .theme-choice--active {
@@ -3795,19 +3681,15 @@ body {
 :root[data-theme='dark'] .metric-grid {
   background: var(--surface);
   border-color: var(--border);
-}
-:root[data-theme='dark'] .metric-card,
+}:root[data-theme='dark'] .metric-card,
 :root[data-theme='dark'] .dashboard-panel,
-:root[data-theme='dark'] .dashboard-quick-link,
-:root[data-theme='dark'] .catalog-app {
+:root[data-theme='dark'] .dashboard-quick-link {
   background: var(--surface);
   border-color: var(--border);
   box-shadow: none;
-}
-:root[data-theme='dark'] .metric-card:hover,
+}:root[data-theme='dark'] .metric-card:hover,
 :root[data-theme='dark'] .dashboard-panel:hover,
-:root[data-theme='dark'] .dashboard-quick-link:hover,
-:root[data-theme='dark'] .catalog-app:not(.catalog-app--planned):hover {
+:root[data-theme='dark'] .dashboard-quick-link:hover {
   background: var(--surface-subtle);
   border-color: #424254;
   box-shadow: none;
@@ -3815,9 +3697,7 @@ body {
 :root[data-theme='dark'] .dashboard-panel__icon {
   background: var(--tone-bg);
   color: var(--tone);
-}
-:root[data-theme='dark'] .dashboard-quick-link__icon,
-:root[data-theme='dark'] .catalog-app__icon {
+}:root[data-theme='dark'] .dashboard-quick-link__icon {
   background: var(--accent-pale);
   color: var(--accent);
 }

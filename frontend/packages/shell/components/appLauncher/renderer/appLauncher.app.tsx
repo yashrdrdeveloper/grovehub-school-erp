@@ -1,5 +1,6 @@
 import { Button } from '@Components/components/Button';
 import { Box, BOX_TAG } from '@Components/components/Box';
+import styles from '../AppLauncherApp.module.css';
 import type { ReactElement } from 'react';
 import { AppLink } from '@Components/components/AppLink';
 
@@ -23,14 +24,14 @@ export const renderAppLauncherApp: RenderAppLauncherApp = ({
   const close = () => onOpenChange(false);
   const toggle = () => onTogglePin(app.path);
   return (
-    <Box as={BOX_TAG.DIV} key={app.path} className="catalog-app" data-testid={ids.card}>
-      <AppLink to={app.path} className="catalog-app__link" onClick={close}>
-        <Box as={BOX_TAG.SPAN} className="catalog-app__icon">
+    <Box as={BOX_TAG.DIV} key={app.path} className={styles['catalog-app']} data-testid={ids.card}>
+      <AppLink to={app.path} className={styles['catalog-app__link']} onClick={close}>
+        <Box as={BOX_TAG.SPAN} className={styles['catalog-app__icon']}>
           <Icon size={22} strokeWidth={1.8} />
         </Box>
         <Box as={BOX_TAG.STRONG}>{app.name}</Box>
         <Box as={BOX_TAG.SMALL}>{app.description}</Box>
-        <Box as={BOX_TAG.SPAN} className="catalog-app__status">
+        <Box as={BOX_TAG.SPAN} className={styles['catalog-app__status']}>
           {APP_LAUNCHER_COPY.STATUS}
         </Box>
       </AppLink>
