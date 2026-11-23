@@ -1,7 +1,10 @@
 import type { GetAppLauncherPinAccessibleCopy } from './types/appLauncher.getPinAccessibleCopy';
 
 /** Each runtime message branch uses a literal translation source and named parameters. */
-export const getAppLauncherPinAccessibleCopy: GetAppLauncherPinAccessibleCopy = (isPinned, name) => {
+export const getAppLauncherPinAccessibleCopy: GetAppLauncherPinAccessibleCopy = (
+  isPinned,
+  name,
+) => {
   if (isPinned) {
     return {
       accessibleName: __('Unpin {{name}}', { name }),
