@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { __ as resolveMessage } from '@Base/i18n';
+import { installShellI18n } from '../../helpers/shellContainer.installI18n';
 
 import { InitI18nStatus } from './constants/useInitI18n.status';
 import type { UseInitI18n } from './types/useInitI18n';
@@ -13,10 +13,7 @@ export const useInitI18n: UseInitI18n = () => {
     if (typeof window === 'undefined') return;
 
     try {
-      window.__ = resolveMessage;
-      if (window.__ !== resolveMessage) {
-        throw new Error('Failed to register the global message formatter');
-      }
+      installShellI18n();
       setStatus(InitI18nStatus.READY);
     } catch {
       setStatus(InitI18nStatus.FAILED);

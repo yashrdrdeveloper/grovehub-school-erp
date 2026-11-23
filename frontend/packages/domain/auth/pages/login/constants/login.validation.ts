@@ -18,8 +18,8 @@ export const LOGIN_VALIDATION_RULES: Readonly<Record<LoginField, readonly LoginV
   });
 
 export const LOGIN_REQUIRED_MESSAGES: Readonly<Record<LoginField, string>> = Object.freeze({
-  [LoginField.EMAIL]: 'Please enter your email address.',
-  [LoginField.PASSWORD]: 'Please enter your password.',
+  [LoginField.EMAIL]: __('Please enter your email address.'),
+  [LoginField.PASSWORD]: __('Please enter your password.'),
 });
 
-export const LOGIN_INVALID_EMAIL_MESSAGE = 'Enter a valid email address.';
+export const LOGIN_INVALID_EMAIL_MESSAGE = __('Enter a valid email address.');

@@ -67,6 +67,7 @@ export const analyzeI18nSource = (filename, source, options = {}) => {
   const allowRuntimeGlobal = options.allowRuntimeGlobal === true;
   const allowResolverImport = options.allowResolverImport === true;
   const checkVisibleCopy = options.checkVisibleCopy !== false;
+  const allowEagerCopy = options.allowEagerCopy === true;
   const add = (list, node, code, label) => {
     const loc = file.getLineAndCharacterOfPosition(node.getStart(file));
     list.push({ code, line: loc.line + 1, label });
@@ -96,7 +97,8 @@ export const analyzeI18nSource = (filename, source, options = {}) => {
       ts.isCallExpression(node) &&
       ts.isIdentifier(node.expression) &&
       node.expression.text === '__' &&
-      !insideFunction
+      !insideFunction &&
+      !allowEagerCopy
     ) {
       add(
         issues,
@@ -104,6 +106,13 @@ export const analyzeI18nSource = (filename, source, options = {}) => {
         'EAGER_I18N',
         'Translate UI copy at render time, not during module initialization',
       );
+    }
+    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) &&
+        node.expression.text === '__') {
+      const first = node.arguments[0];
+      if (!first || !(ts.isStringLiteral(first) || ts.isNoSubstitutionTemplateLiteral(first))) {
+        add(issues, node, 'I18N_LITERAL_REQUIRED', '__() must receive a literal text string, not a variable or expression');
+      }
     }
     if (checkVisibleCopy && ts.isJsxText(node)) {
       const message = normalizeJsxText(node.getText(file));
