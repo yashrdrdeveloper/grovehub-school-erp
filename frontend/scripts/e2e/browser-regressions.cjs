@@ -40,6 +40,18 @@ async function visit(browser, pathname, viewport, options = {}) {
   await page.locator('#root').waitFor({ state: 'visible' });
   await page.waitForTimeout(120);
   assert.deepEqual(exceptions, [], pathname + ': unhandled browser exceptions');
+  const i18n = await page.evaluate(() => ({
+    installed: typeof window.__ === 'function',
+    sample: typeof window.__ === 'function'
+      ? window.__('Hello {{name}}', { name: 'RDR' })
+      : null,
+    pending: Boolean(document.querySelector('[data-testid="i18n-boot-status"]')),
+  }));
+  assert.deepEqual(
+    i18n,
+    { installed: true, sample: 'Hello RDR', pending: false },
+    pathname + ': shell must install the global message function before routes mount',
+  );
   const geometry = await page.evaluate(() => ({
     scroll: document.documentElement.scrollWidth,
     viewport: window.innerWidth,
