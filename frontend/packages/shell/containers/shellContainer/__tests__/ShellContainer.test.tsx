@@ -29,7 +29,11 @@ jest.mock('../../../components/appRoutes', () => ({
 
 describe('ShellContainer', () => {
   afterEach(() => {
-    window.__ = resolveMessage;
+    Object.defineProperty(window, '__', {
+      configurable: true,
+      writable: true,
+      value: resolveMessage,
+    });
     mockWasI18nReady.mockClear();
   });
 
@@ -42,6 +46,19 @@ describe('ShellContainer', () => {
     expect(mockWasI18nReady).toHaveBeenCalledWith(true);
     expect(mockWasI18nReady.mock.calls.every(([ready]) => ready)).toBe(true);
     expect(screen.queryByTestId('i18n-boot-status')).toBeNull();
+  });
+
+  it('blocks route mounting and shows accessible failure copy when global installation is denied', () => {
+    Object.defineProperty(window, '__', {
+      configurable: true,
+      writable: false,
+      value: undefined,
+    });
+
+    render(<ShellContainer />);
+
+    expect(screen.getByRole('status').textContent).toContain('Unable to load RDR School.');
+    expect(mockWasI18nReady).not.toHaveBeenCalled();
   });
 
   it('remains safe under StrictMode initialization replay', () => {

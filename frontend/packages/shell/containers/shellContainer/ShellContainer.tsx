@@ -6,7 +6,7 @@ import { AuthProvider } from '@Domain/auth';
 
 import { AppRoutes } from '../../components/appRoutes';
 import { I18nBootstrapFallback } from './components/i18nBootstrapFallback';
-import { useInitI18n } from './hooks/useInitI18n';
+import { useInitI18n, InitI18nStatus } from './hooks/useInitI18n';
 import { createShellQueryClient } from './helpers/shellContainer.createQueryClient';
 import type { ShellContainerComponent } from './types/shellContainer';
 
@@ -14,9 +14,11 @@ const queryClient = createShellQueryClient();
 
 /** Provider composition only; route and workspace frame units own their markup. */
 export const ShellContainer: ShellContainerComponent = () => {
-  const i18nReady = useInitI18n();
+  const i18nStatus = useInitI18n();
 
-  if (!i18nReady) return <I18nBootstrapFallback />;
+  if (i18nStatus !== InitI18nStatus.READY) {
+    return <I18nBootstrapFallback status={i18nStatus} />;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
