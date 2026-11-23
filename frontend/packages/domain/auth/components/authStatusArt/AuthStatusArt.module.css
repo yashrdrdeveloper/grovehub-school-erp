@@ -1,0 +1,120 @@
+/* Scoped authentication-status illustration, preserving existing responsive states. */
+.rdr-auth-mobile-status-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 118px;
+  height: 105px;
+  flex-shrink: 0;
+  margin: 0 auto;
+  color: var(--gh-color-auth-art-foreground);
+}
+
+.rdr-auth-mobile-status-art__halo {
+  position: absolute;
+  inset: 11px 22px;
+  border-radius: 24px;
+  background: var(--gh-color-auth-art-halo);
+}
+
+.rdr-auth-mobile-status-art__symbol {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+}
+
+.rdr-auth-mobile-status-art__symbol svg {
+  width: 48px;
+  height: 48px;
+  stroke-width: 1.7;
+}
+
+.rdr-auth-mobile-status-art__badge {
+  position: absolute;
+  right: 14px;
+  bottom: 6px;
+  z-index: 2;
+}
+
+.rdr-auth-mobile-status-art__x {
+  position: absolute;
+  right: 20px;
+  bottom: 9px;
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: var(--gh-color-auth-art-error);
+  color: var(--gh-color-auth-art-on-error);
+  font-size: 22px;
+}
+
+.rdr-auth-mobile-status-art__spark {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  background: var(--gh-color-auth-art-spark);
+  transform: rotate(45deg);
+  border-radius: 2px;
+}
+
+.rdr-auth-mobile-status-art__spark--a {
+  left: 16px;
+  bottom: 22px;
+}
+
+.rdr-auth-mobile-status-art__spark--b {
+  right: 16px;
+  top: 21px;
+}
+
+:global(:root[data-theme='dark']) .rdr-auth-mobile-status-art__halo {
+  background: var(--gh-color-auth-art-halo);
+}
+
+@media (min-width: 721px) and (max-height: 760px) {
+.rdr-auth-mobile-status-art {
+    height: 86px;
+  }
+}
+
+@media (max-width: 720px) {
+.rdr-auth-mobile-status-art {
+    height: clamp(70px, 11dvh, 92px);
+  }
+}
+
+@media (max-width: 720px) and (max-height: 740px) {
+.rdr-auth-mobile-status-art {
+    height: 80px;
+  }
+}
+
+@media (max-width: 720px) {
+:global(.rdr-login-v2__main):has(:global(.rdr-auth-flow--sent)) .rdr-auth-mobile-status-art,
+  :global(.rdr-login-v2__main):has(:global(.rdr-recovery__state)) .rdr-auth-mobile-status-art {
+    height: clamp(64px, 10dvh, 85px);
+  }
+}
+
+@media (max-width: 720px) and (max-height: 680px) {
+.rdr-auth-mobile-status-art {
+    height: 66px;
+  }
+}
+
+@media (min-width: 721px) and (max-width: 1100px) and (min-height: 560px) {
+.rdr-auth-mobile-status-art {
+    height: 78px;
+  }
+}
+
+@media (min-width: 721px) and (max-width: 1100px) and (min-height: 560px) and (max-height: 799px) {
+.rdr-auth-mobile-status-art {
+    height: 64px;
+  }
+}

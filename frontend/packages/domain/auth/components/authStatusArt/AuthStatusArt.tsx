@@ -1,4 +1,5 @@
 import { Box, BOX_TAG } from '@Components/components/Box';
+import styles from './AuthStatusArt.module.css';
 import type { ReactNode } from 'react';
 import { AUTH_STATUS_KIND } from './constants/authStatusArt.kind';
 import { renderAuthStatusBadge } from './renderer/authStatusArt.badge';
@@ -21,21 +22,21 @@ export const AuthStatusArt = ({ kind }: { kind: AuthStatusKind }) => (
   <Box
     as={BOX_TAG.DIV}
     data-testid={`auth-status-${kind}`}
-    className={`rdr-auth-mobile-status-art rdr-auth-mobile-status-art--${kind}`}
+    className={styles['rdr-auth-mobile-status-art']}
     aria-hidden="true"
   >
-    <Box as={BOX_TAG.SPAN} className="rdr-auth-mobile-status-art__halo" />
-    <Box as={BOX_TAG.SPAN} className="rdr-auth-mobile-status-art__symbol">
+    <Box as={BOX_TAG.SPAN} className={styles['rdr-auth-mobile-status-art__halo']} />
+    <Box as={BOX_TAG.SPAN} className={styles['rdr-auth-mobile-status-art__symbol']}>
       {statusIcons[kind]}
     </Box>
     {renderAuthStatusBadge(kind)}
     <Box
       as={BOX_TAG.SPAN}
-      className="rdr-auth-mobile-status-art__spark rdr-auth-mobile-status-art__spark--a"
+      className={`${styles['rdr-auth-mobile-status-art__spark']} ${styles['rdr-auth-mobile-status-art__spark--a']}`}
     />
     <Box
       as={BOX_TAG.SPAN}
-      className="rdr-auth-mobile-status-art__spark rdr-auth-mobile-status-art__spark--b"
+      className={`${styles['rdr-auth-mobile-status-art__spark']} ${styles['rdr-auth-mobile-status-art__spark--b']}`}
     />
   </Box>
 );

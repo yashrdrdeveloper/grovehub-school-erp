@@ -744,70 +744,6 @@
   opacity: 0.5;
   cursor: wait;
 }
-.rdr-auth-mobile-status-art {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 118px;
-  height: 105px;
-  flex-shrink: 0;
-  margin: 0 auto;
-  color: #5fa8c8;
-}
-.rdr-auth-mobile-status-art__halo {
-  position: absolute;
-  inset: 11px 22px;
-  border-radius: 24px;
-  background: #eaf5fc;
-}
-.rdr-auth-mobile-status-art__symbol {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  width: 60px;
-  height: 60px;
-}
-.rdr-auth-mobile-status-art__symbol svg {
-  width: 48px;
-  height: 48px;
-  stroke-width: 1.7;
-}
-.rdr-auth-mobile-status-art__badge {
-  position: absolute;
-  right: 14px;
-  bottom: 6px;
-  z-index: 2;
-}
-.rdr-auth-mobile-status-art__x {
-  position: absolute;
-  right: 20px;
-  bottom: 9px;
-  display: grid;
-  place-items: center;
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  background: #b84a55;
-  color: #fff;
-  font-size: 22px;
-}
-.rdr-auth-mobile-status-art__spark {
-  position: absolute;
-  width: 9px;
-  height: 9px;
-  background: #a2d2e5;
-  transform: rotate(45deg);
-  border-radius: 2px;
-}
-.rdr-auth-mobile-status-art__spark--a {
-  left: 16px;
-  bottom: 22px;
-}
-.rdr-auth-mobile-status-art__spark--b {
-  right: 16px;
-  top: 21px;
-}
 /* Set/reset password forms, token checks, success, expired/unavailable states. */
 .rdr-recovery,
 .rdr-recovery__form,
@@ -958,9 +894,6 @@
   color: #ff9cab;
   border-color: #734356;
 }
-:root[data-theme='dark'] .rdr-auth-mobile-status-art__halo {
-  background: #294056;
-}
 @media (min-width: 721px) and (max-width: 1100px) {
   .rdr-login-v2__frame {
     grid-template-columns: minmax(0, 42fr) minmax(0, 58fr);
@@ -1005,9 +938,6 @@
   .rdr-login-v2__closing,
   .rdr-o1-auth-footer {
     margin-top: 8px;
-  }
-  .rdr-auth-mobile-status-art {
-    height: 86px;
   }
 }
 @media (max-width: 720px) {
@@ -1193,9 +1123,6 @@
   .rdr-auth-flow__mobile-success .rdr-login-v2__submit {
     margin-top: 11px;
   }
-  .rdr-auth-mobile-status-art {
-    height: clamp(70px, 11dvh, 92px);
-  }
   .rdr-recovery__requirement {
     font-size: 10px;
   }
@@ -1230,9 +1157,6 @@
   .rdr-login-v2__closing,
   .rdr-o1-auth-footer {
     margin-top: 13px;
-  }
-  .rdr-auth-mobile-status-art {
-    height: 80px;
   }
 }
 @media (max-width: 720px) and (max-height: 590px) {
@@ -1301,10 +1225,6 @@
   .rdr-login-v2__main:has(.rdr-recovery__state) .rdr-login-v2__heading {
     margin-bottom: 10px;
   }
-  .rdr-login-v2__main:has(.rdr-auth-flow--sent) .rdr-auth-mobile-status-art,
-  .rdr-login-v2__main:has(.rdr-recovery__state) .rdr-auth-mobile-status-art {
-    height: clamp(64px, 10dvh, 85px);
-  }
   .rdr-login-v2__main:has(.rdr-auth-flow--sent) .rdr-auth-flow__mobile-success h3 {
     margin: 7px 0 5px;
     font-size: clamp(20px, 5.8vw, 26px);
@@ -1360,9 +1280,6 @@
   .rdr-login-v2__submit {
     min-height: 44px;
     margin-top: 8px;
-  }
-  .rdr-auth-mobile-status-art {
-    height: 66px;
   }
   .rdr-login-v2__closing,
   .rdr-o1-auth-footer {
@@ -1449,9 +1366,6 @@
   .rdr-auth-flow__mobile-success .rdr-login-v2__submit {
     margin-top: 12px;
   }
-  .rdr-auth-mobile-status-art {
-    height: 78px;
-  }
   .rdr-recovery__state-button {
     margin-top: 12px;
   }
@@ -1522,9 +1436,6 @@
   .rdr-auth-flow__mobile-success h3 {
     font-size: 23px;
     margin: 5px 0 3px;
-  }
-  .rdr-auth-mobile-status-art {
-    height: 64px;
   }
   .rdr-recovery__art-title {
     margin: 5px 0 3px;

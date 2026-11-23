@@ -31,6 +31,11 @@
   --gh-color-home-amber: #c69c52;
   --gh-color-hero-start: #0b1220;
   --gh-color-hero-end: #1e3a8a;
+  --gh-color-auth-art-foreground: #5fa8c8;
+  --gh-color-auth-art-halo: #eaf5fc;
+  --gh-color-auth-art-error: #b84a55;
+  --gh-color-auth-art-on-error: #fff;
+  --gh-color-auth-art-spark: #a2d2e5;
   --gh-shadow-card: 0 4px 20px rgb(15 23 42 / 0.035);
   --gh-shadow-dialog: 0 16px 48px rgb(15 23 42 / 0.14);
 }
