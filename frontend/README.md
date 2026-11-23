@@ -44,7 +44,7 @@ Dependencies are pinned in `pnpm-lock.yaml`; setup and CI use `pnpm install --fr
 
 ## Global message API and component contracts
 
-The app uses a single browser-global `__()` for user-visible copy. `ShellContainer` calls its owned `useInitI18n` hook and **blocks rendering of both public and protected routes** until `window.__` is installed. Do not import `__` from `@Base/i18n` inside features. TypeScript exposes the function through `app/types/i18n.global.d.ts`; Jest installs the real pure formatter from `scripts/test/setupI18n.ts`.
+The app uses a single browser-global `__()` for user-visible copy. `ShellContainer` calls its owned `useInitI18n` hook and **blocks rendering of both public and protected routes** until `window.__` is installed and `InitI18nStatus.READY` is reached. A failed installation shows a separate accessible bootstrap error without mounting routes. Do not import `__` from `@Base/i18n` inside features. TypeScript exposes the function through `app/types/i18n.global.d.ts`; Jest installs the real pure formatter from `scripts/test/setupI18n.ts`.
 
 ```tsx
 import { Box, BOX_TAG } from '@Components/components/Box';

@@ -86,12 +86,12 @@ This declaration provides compile-time typing only. **It does not install the ru
 
 ### 4. `useInitI18n` installation lifecycle
 
-Create the hook in `shellContainer/hooks/useInitI18n/useInitI18n.ts`. Its public output can be a typed `ready: boolean` (or an explicitly typed init-status model if async dictionaries are added). The hook owns the following sequence:
+Create the hook in `shellContainer/hooks/useInitI18n/useInitI18n.ts`. Its public output is the closed `InitI18nStatus` enum (`INITIALIZING`, `READY`, `FAILED`), with the statuses owned by `hooks/useInitI18n/constants/useInitI18n.status.ts`. The hook owns the following sequence:
 
 1. Start **not ready**. Browser access is forbidden at module evaluation and during server-side rendering. Import the pure English resolver once from `@Base/i18n` (e.g. `import { __ as resolveMessage } from '@Base/i18n';`).
 2. In a React effect, assign `window.__ = resolveMessage` exactly at the shell bootstrap boundary. The assignment must be **idempotent under React StrictMode**, with no competing installers or destructive cleanup in the effect replay. Do not run translation or DOM writes during React render.
-3. Mark `ready` only **after** the global has been installed. If a future locale catalog must load asynchronously, mark ready only after loading and fallback resolution have succeeded.
-4. On initialization error, keep normal feature routes unmounted and surface a deterministic, accessible fallback owned by the shell. Do not allow a runtime `ReferenceError: __ is not defined` to leak into a page.
+3. Mark `InitI18nStatus.READY` only **after** the global has been installed. If a future locale catalog must load asynchronously, mark ready only after loading and fallback resolution have succeeded.
+4. On initialization error, transition to `InitI18nStatus.FAILED`, keep normal feature routes unmounted and render the accessible failure copy owned by the shell. Do not allow a runtime `ReferenceError: __ is not defined` to leak into a page.
 5. Do not use `window.__` in feature code; use the typed bare `__(...)`. Do not use `window.` in `@Base/i18n/__.ts`.
 6. **Do not add the hook to WorkspaceShellContainer**: that container only wraps protected pages. `ShellContainer` is the shared parent of public/auth/landing and protected routes.
 
@@ -100,17 +100,23 @@ Implementation shape (see the actual typed hook under `shellContainer/hooks/useI
 ~~~ts
 import { useEffect, useState } from 'react';
 import { __ as resolveMessage } from '@Base/i18n';
+import { InitI18nStatus } from './constants/useInitI18n.status';
 
-export const useInitI18n = (): boolean => {
-  const [ready, setReady] = useState(false);
+export const useInitI18n = (): InitI18nStatus => {
+  const [status, setStatus] = useState<InitI18nStatus>(InitI18nStatus.INITIALIZING);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    window.__ = resolveMessage;
-    setReady(true);
+    try {
+      window.__ = resolveMessage;
+      if (window.__ !== resolveMessage) throw new Error('Global i18n installation failed');
+      setStatus(InitI18nStatus.READY);
+    } catch {
+      setStatus(InitI18nStatus.FAILED);
+    }
   }, []);
 
-  return ready;
+  return status;
 };
 ~~~
 
@@ -118,14 +124,14 @@ The hook can remain synchronous English-only initially. Do **not** move the `win
 
 ### 5. `ShellContainer` must gate *all* pages
 
-Existing `ShellContainer` wraps `QueryClientProvider` → `ErrorBoundary` → `BrowserRouter` → `AuthProvider` → `AppRoutes`. Both public and protected routes are children. Call `useInitI18n()` **before** composing these descendants, then only mount them once ready.
+Existing `ShellContainer` wraps `QueryClientProvider` → `ErrorBoundary` → `BrowserRouter` → `AuthProvider` → `AppRoutes`. Both public and protected routes are children. Call `useInitI18n()` **before** composing these descendants, then only mount them when status is `InitI18nStatus.READY`.
 
 ~~~tsx
 export const ShellContainer: ShellContainerComponent = () => {
-  const ready = useInitI18n();
+  const status = useInitI18n();
 
-  if (!ready) {
-    return <I18nBootstrapFallback />; // Existing, non-translated boot placeholder.
+  if (status !== InitI18nStatus.READY) {
+    return <I18nBootstrapFallback status={status} />;
   }
 
   return (
@@ -142,7 +148,7 @@ export const ShellContainer: ShellContainerComponent = () => {
 };
 ~~~
 
-The actual boot placeholder is `shellContainer/components/i18nBootstrapFallback/I18nBootstrapFallback.tsx` and never calls `__()`. The fallback must not itself call `__()`. Gating is **required** because React may render child components before an effect runs; an unguarded `useEffect` plus immediate `<AppRoutes />` is incorrect. Do not make individual pages each wait for i18n or install a second initializer in the login/public-site route.
+The actual boot placeholder is `shellContainer/components/i18nBootstrapFallback/I18nBootstrapFallback.tsx` and never calls `__()`. It shows an English loading status during initialization and a distinct accessible refresh instruction on `FAILED`. The fallback must not itself call `__()`. Gating is **required** because React may render child components before an effect runs; an unguarded `useEffect` plus immediate `<AppRoutes />` is incorrect. Do not make individual pages each wait for i18n or install a second initializer in the login/public-site route.
 
 The current public SEO script (`scripts/prerender-public-pages.mjs`) creates static HTML snapshots and does not execute React's client effects; keep its titles, metadata and visible content available without JavaScript. A future actual SSR system cannot use a process-global mutable user locale: it must resolve messages per request, while browser clients may keep the shell-managed global.
 
