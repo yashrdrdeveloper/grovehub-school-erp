@@ -1,4 +1,5 @@
 import { cn } from '@Base/utilities/cn';
+import styles from './CredentialField.module.css';
 import { Box, BOX_TAG } from '@Components/components/Box';
 import { getFormFieldCombinedDescription } from '@Components/components/FormField';
 import { InputControl } from '@Components/components/InputControl';
@@ -32,12 +33,12 @@ export const CredentialField: CredentialFieldComponent = ({
   return (
     <Box
       as={BOX_TAG.DIV}
-      className={cn('rdr-login-v2__field', outerClassName)}
+      className={cn(styles['rdr-login-v2__field'], outerClassName)}
       dataTestId={dataTestId && `${dataTestId}-wrapper`}
     >
       {fieldLabel}
 
-      <Box as={BOX_TAG.DIV} className="rdr-login-v2__input-shell">
+      <Box as={BOX_TAG.DIV} className={styles['rdr-login-v2__input-shell']}>
         <Icon size={18} aria-hidden="true" />
         <InputControl
           {...inputProps}
@@ -55,8 +56,8 @@ export const CredentialField: CredentialFieldComponent = ({
         as={BOX_TAG.SMALL}
         id={errorId}
         className={cn(
-          'rdr-login-v2__field-error rdr-login-v2__field-error--reserved',
-          !error && 'is-empty',
+          styles['rdr-login-v2__field-error--reserved'],
+          !error && styles['is-empty'],
         )}
         aria-live="polite"
         aria-atomic="true"

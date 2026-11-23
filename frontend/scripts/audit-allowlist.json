@@ -1,5 +1,5 @@
 {
-  "description": "AuthStatusArt and catalog-card renderer scoped CSS migrations; precise remaining legacy audit ceilings.",
+  "description": "Scoped auth art, CredentialField, and app catalog cards; remaining legacy source debt cannot increase.",
   "capturedRunId": 45065887411,
   "allowlisted": {
     "app/styles.css": [
@@ -9,9 +9,6 @@
     ],
     "packages/components/styles/primitives.css": [
       "CSS_COLOR_LITERAL"
-    ],
-    "packages/domain/auth/components/credentialField/CredentialField.tsx": [
-      "RAW_CLASS"
     ],
     "packages/domain/auth/components/loginLayout/LoginLayout.tsx": [
       "RAW_CLASS"
@@ -105,14 +102,14 @@
     ]
   },
   "referenceCommit": "585e8f81f8091536222c446931466710626db283",
-  "maxFlaggedFiles": 31,
-  "maxFindings": 39,
+  "maxFlaggedFiles": 30,
+  "maxFindings": 38,
   "maxByCode": {
     "CSS_COLOR_LITERAL": 6,
     "LARGE_STYLESHEET": 3,
     "LEGACY_DOMAIN_CSS": 4,
     "LEGACY_GLOBAL_CSS": 1,
-    "RAW_CLASS": 25
+    "RAW_CLASS": 24
   },
   "lastVerifiedRunId": 45070078775
 }

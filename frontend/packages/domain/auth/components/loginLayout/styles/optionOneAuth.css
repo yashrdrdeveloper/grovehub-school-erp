@@ -51,11 +51,6 @@
   outline: 2px solid var(--auth-focus);
   outline-offset: 3px;
 }
-.rdr-login-v2__input-shell input:focus-visible {
-  outline: none;
-  outline-offset: 0;
-  box-shadow: none;
-}
 /* Scrollbar entry must not change form width. */
 .rdr-login-v2__content::-webkit-scrollbar {
   display: none;
@@ -347,34 +342,6 @@
   width: 100%;
   gap: 0;
 }
-.rdr-login-v2__field {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  gap: 0;
-}
-.rdr-login-v2__field + .rdr-login-v2__field {
-  margin-top: 15px;
-}
-.rdr-login-v2__field > label,
-.rdr-login-v2__password-label label {
-  display: block;
-  margin: 0 0 8px;
-  font-size: 12px;
-  line-height: 1.4;
-  font-weight: 750;
-  color: var(--auth-ink);
-}
-.rdr-login-v2__password-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-.rdr-login-v2__password-label > a {
-  margin: 0 0 8px;
-}
 .rdr-login-v2__forgot-desktop,
 .rdr-auth-flow__back,
 .rdr-recovery__back {
@@ -384,66 +351,6 @@
 }
 .rdr-login-v2__forgot-mobile {
   display: none;
-}
-.rdr-login-v2__input-shell {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  width: 100%;
-  height: 51px;
-  min-height: 51px;
-  padding: 0 14px;
-  background: var(--auth-field);
-  border: 1px solid var(--auth-border);
-  border-radius: 10px;
-  color: var(--auth-muted);
-  min-width: 0;
-}
-.rdr-login-v2__input-shell:focus-within {
-  border-color: var(--auth-focus);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--auth-focus) 23%, transparent);
-}
-.rdr-login-v2__input-shell > svg {
-  width: 18px;
-  height: 18px;
-  flex: 0 0 18px;
-}
-.rdr-login-v2__input-shell input {
-  flex: 1;
-  display: block;
-  width: 100%;
-  min-width: 0;
-  height: 100%;
-  padding: 0;
-  font-size: 15px;
-  line-height: normal;
-  border: 0;
-  background: transparent;
-  outline: 0;
-  color: var(--auth-ink);
-  box-shadow: none;
-}
-.rdr-login-v2__input-shell input::placeholder {
-  color: var(--auth-placeholder);
-  opacity: 1;
-}
-/* Chrome/Safari autofill must match the field surface in light, dark and focused states.
-   The input remains transparent so only the outer input shell shows the focus ring. */
-.rdr-login-v2__input-shell input:-webkit-autofill,
-.rdr-login-v2__input-shell input:-webkit-autofill:hover,
-.rdr-login-v2__input-shell input:-webkit-autofill:focus,
-.rdr-login-v2__input-shell input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px var(--auth-field) inset !important;
-  box-shadow: 0 0 0 1000px var(--auth-field) inset !important;
-  -webkit-text-fill-color: var(--auth-ink) !important;
-  caret-color: var(--auth-ink);
-  border: 0 !important;
-  outline: 0 !important;
-  border-radius: 0;
-}
-.rdr-login-v2__input-shell input:autofill {
-  color: var(--auth-ink) !important;
-  caret-color: var(--auth-ink);
 }
 .rdr-login-v2__visibility {
   display: grid;
@@ -460,22 +367,6 @@
 .rdr-login-v2__visibility svg {
   width: 19px;
   height: 19px;
-}
-.rdr-login-v2__field-error--reserved {
-  display: block;
-  flex: 0 0 auto;
-  height: 20px;
-  min-height: 20px;
-  margin: 3px 2px 0;
-  font-size: 11px;
-  line-height: 16px;
-  color: var(--auth-error);
-  white-space: normal;
-  overflow-wrap: anywhere;
-  overflow-y: auto;
-}
-.rdr-login-v2__field-error--reserved.is-empty {
-  visibility: hidden;
 }
 .rdr-login-v2__feedback-slot {
   min-height: 0;
@@ -753,9 +644,6 @@
   width: 100%;
   min-width: 0;
 }
-.rdr-recovery__fields > .rdr-login-v2__field + .rdr-login-v2__field {
-  margin-top: 15px;
-}
 .rdr-recovery__requirement {
   display: flex;
   align-items: center;
@@ -871,9 +759,6 @@
 :root[data-theme='dark'] .rdr-login-v2__visual-copy h2 em {
   color: #e3cba8;
 }
-:root[data-theme='dark'] .rdr-login-v2__input-shell input::placeholder {
-  color: var(--auth-placeholder);
-}
 :root[data-theme='dark'] .rdr-login-v2__appearance button.is-active {
   background: #303e54;
 }
@@ -926,10 +811,6 @@
   }
   .rdr-login-v2__heading h1 {
     font-size: clamp(27px, 3vw, 38px);
-  }
-  .rdr-login-v2__input-shell {
-    height: 45px;
-    min-height: 45px;
   }
   .rdr-login-v2__submit {
     min-height: 45px;
@@ -1051,21 +932,6 @@
     line-height: 1.4;
     letter-spacing: -0.015em;
   }
-  .rdr-login-v2__form--signin > .rdr-login-v2__field > label,
-  .rdr-login-v2__form--signin .rdr-login-v2__password-label > label,
-  .rdr-auth-flow__email-field > label,
-  .rdr-recovery__form .rdr-login-v2__field > label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    white-space: nowrap;
-    clip: rect(0, 0, 0, 0);
-    clip-path: inset(50%);
-    overflow: hidden;
-  }
-  .rdr-login-v2__password-label {
-    justify-content: flex-end;
-  }
   .rdr-login-v2__forgot-desktop {
     display: none;
   }
@@ -1081,26 +947,6 @@
     font-size: 12px;
     font-weight: 700;
     white-space: nowrap;
-  }
-  .rdr-login-v2__input-shell {
-    height: 48px;
-    min-height: 48px;
-    padding: 0 13px;
-  }
-  .rdr-login-v2__input-shell > svg {
-    width: 17px;
-    height: 17px;
-    flex-basis: 17px;
-  }
-  .rdr-login-v2__input-shell input {
-    font-size: 16px;
-  }
-  .rdr-login-v2__field + .rdr-login-v2__field,
-  .rdr-recovery__fields > .rdr-login-v2__field + .rdr-login-v2__field {
-    margin-top: 7px;
-  }
-  .rdr-login-v2__form--signin > .rdr-login-v2__field:nth-of-type(2) {
-    margin-top: 0;
   }
   .rdr-login-v2__submit {
     min-height: 48px;
@@ -1145,10 +991,6 @@
   }
   .rdr-login-v2__heading h1 {
     font-size: clamp(25px, 6.8vw, 31px);
-  }
-  .rdr-login-v2__input-shell {
-    height: 44px;
-    min-height: 44px;
   }
   .rdr-login-v2__submit {
     min-height: 44px;
@@ -1204,13 +1046,6 @@
   .rdr-login-v2__main {
     width: min(100%, 380px);
     max-width: 380px;
-  }
-  .rdr-login-v2__field-error--reserved {
-    height: 19px;
-    min-height: 19px;
-    font-size: 10px;
-    line-height: 15px;
-    margin-top: 2px;
   }
   .rdr-login-v2__feedback-slot--signin {
     height: auto;
@@ -1270,13 +1105,6 @@
   .rdr-login-v2__eyebrow {
     margin-bottom: 8px;
   }
-  .rdr-login-v2__field + .rdr-login-v2__field {
-    margin-top: 5px;
-  }
-  .rdr-login-v2__input-shell {
-    height: 44px;
-    min-height: 44px;
-  }
   .rdr-login-v2__submit {
     min-height: 44px;
     margin-top: 8px;
@@ -1325,26 +1153,6 @@
   .rdr-login-v2__heading p {
     font-size: 12px;
     line-height: 1.5;
-  }
-  .rdr-login-v2__field + .rdr-login-v2__field,
-  .rdr-recovery__fields > .rdr-login-v2__field + .rdr-login-v2__field {
-    margin-top: 8px;
-  }
-  .rdr-login-v2__field > label,
-  .rdr-login-v2__password-label label,
-  .rdr-login-v2__password-label > a {
-    margin-bottom: 5px;
-  }
-  .rdr-login-v2__input-shell {
-    height: 45px;
-    min-height: 45px;
-  }
-  .rdr-login-v2__field-error--reserved {
-    height: 18px;
-    min-height: 18px;
-    margin-top: 2px;
-    font-size: 10px;
-    line-height: 15px;
   }
   .rdr-login-v2__submit {
     min-height: 45px;
@@ -1398,23 +1206,6 @@
   .rdr-login-v2__heading p {
     font-size: 12px;
     line-height: 1.4;
-  }
-  .rdr-login-v2__field > label,
-  .rdr-login-v2__password-label label,
-  .rdr-login-v2__password-label > a {
-    margin-bottom: 4px;
-  }
-  .rdr-login-v2__field + .rdr-login-v2__field {
-    margin-top: 7px;
-  }
-  .rdr-login-v2__input-shell {
-    height: 42px;
-    min-height: 42px;
-  }
-  .rdr-login-v2__field-error--reserved {
-    height: 16px;
-    min-height: 16px;
-    margin-top: 2px;
   }
   .rdr-login-v2__submit {
     min-height: 42px;

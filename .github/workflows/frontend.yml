@@ -30,10 +30,10 @@ jobs:
           cache-dependency-path: frontend/pnpm-lock.yaml
       - name: Install
         run: pnpm install --frozen-lockfile
-      - name: Format scoped catalog migration and emit chunks (temporary)
+      - name: Format scoped ownership migrations and emit chunks (temporary)
         run: |
-          pnpm exec prettier --write app/styles.css packages/shell/components/appLauncher/AppLauncherApp.module.css scripts/audit-allowlist.json
-          node -e 'const fs=require("node:fs"); ["app/styles.css","packages/shell/components/appLauncher/AppLauncherApp.module.css","scripts/audit-allowlist.json"].forEach((path)=>{const value=fs.readFileSync(path,"utf8");Array.from({length:Math.ceil(value.length/10000)},(_,i)=>i*10000).forEach((start)=>console.log("GH_FORMAT|"+path+"|"+start+"|"+JSON.stringify(value.slice(start,start+10000))));});'
+          pnpm exec prettier --write app/styles.css packages/shell/components/appLauncher/AppLauncherApp.module.css scripts/audit-allowlist.json packages/domain/auth/components/credentialField/CredentialField.module.css packages/domain/auth/components/loginLayout/styles/optionOneAuth.css
+          node -e 'const fs=require("node:fs"); ["app/styles.css","packages/shell/components/appLauncher/AppLauncherApp.module.css","scripts/audit-allowlist.json","packages/domain/auth/components/credentialField/CredentialField.module.css","packages/domain/auth/components/loginLayout/styles/optionOneAuth.css"].forEach((path)=>{const value=fs.readFileSync(path,"utf8");Array.from({length:Math.ceil(value.length/10000)},(_,i)=>i*10000).forEach((start)=>console.log("GH_FORMAT|"+path+"|"+start+"|"+JSON.stringify(value.slice(start,start+10000))));});'
       - name: Audit all tracked frontend source (non-blocking report)
         run: pnpm audit:guidelines
       - name: Check architecture

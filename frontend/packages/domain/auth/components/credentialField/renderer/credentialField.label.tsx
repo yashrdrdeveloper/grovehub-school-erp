@@ -1,6 +1,6 @@
 import { Box, BOX_TAG } from '@Components/components/Box';
 import { FieldLabel } from '@Components/components/FieldLabel';
-import { CREDENTIAL_FIELD_LEGACY_CLASSES } from '../constants/credentialField.legacyClasses';
+import styles from '../CredentialField.module.css';
 
 import type { RenderCredentialFieldLabel } from './types/credentialField.label';
 
@@ -15,7 +15,7 @@ export const renderCredentialFieldLabel: RenderCredentialFieldLabel = ({
 
   if (groupLabel) {
     return (
-      <Box as={BOX_TAG.DIV} className={CREDENTIAL_FIELD_LEGACY_CLASSES.GROUPED_LABEL}>
+      <Box as={BOX_TAG.DIV} className={styles['rdr-login-v2__password-label']}>
         {labelNode}
         {labelAction}
       </Box>
