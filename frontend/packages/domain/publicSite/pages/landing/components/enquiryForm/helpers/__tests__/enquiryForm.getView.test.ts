@@ -2,7 +2,10 @@ import { getEnquiryFormView } from '../enquiryForm.getView';
 import type { EnquiryFormModel } from '../../types/enquiryForm';
 
 const model = {
-  step: 0, ready: false, next: jest.fn(), submit: jest.fn(),
+  step: 0,
+  ready: false,
+  next: jest.fn(),
+  submit: jest.fn(),
 } as unknown as EnquiryFormModel;
 
 describe('getEnquiryFormView', () => {

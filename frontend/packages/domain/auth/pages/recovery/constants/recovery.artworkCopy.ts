@@ -1,7 +1,10 @@
 import type { RecoveryArtworkCopy, RecoveryPurpose, RecoveryViewState } from '../types';
 
 /** Static human-facing copy translated once during shell-prebootstrapped module evaluation. */
-export const RECOVERY_ARTWORK_COPY: Record<RecoveryPurpose, Record<RecoveryViewState, RecoveryArtworkCopy>> = {
+export const RECOVERY_ARTWORK_COPY: Record<
+  RecoveryPurpose,
+  Record<RecoveryViewState, RecoveryArtworkCopy>
+> = {
   invitation: {
     missing: {
       mobileStatusTitle: __('This link looks incomplete'),
@@ -16,8 +19,9 @@ export const RECOVERY_ARTWORK_COPY: Record<RecoveryPurpose, Record<RecoveryViewS
     expired: {
       mobileStatusTitle: __('This link has expired'),
       title: __('This link is no longer valid'),
-      message:
-        __('It may have expired or already been used. Ask your school administrator to regenerate the invitation.'),
+      message: __(
+        'It may have expired or already been used. Ask your school administrator to regenerate the invitation.',
+      ),
     },
     unavailable: {
       mobileStatusTitle: __('Unable to check your link'),
@@ -51,7 +55,9 @@ export const RECOVERY_ARTWORK_COPY: Record<RecoveryPurpose, Record<RecoveryViewS
     expired: {
       mobileStatusTitle: __('This link has expired'),
       title: __('This link is no longer valid'),
-      message: __('Your reset link has expired or has already been used. Please request a new one.'),
+      message: __(
+        'Your reset link has expired or has already been used. Please request a new one.',
+      ),
     },
     unavailable: {
       mobileStatusTitle: __('Unable to check your link'),

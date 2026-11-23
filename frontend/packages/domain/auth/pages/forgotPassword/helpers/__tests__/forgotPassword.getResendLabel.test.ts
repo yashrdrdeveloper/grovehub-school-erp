@@ -2,8 +2,12 @@ import { getForgotPasswordResendLabel } from '../forgotPassword.getResendLabel';
 import type { ForgotPasswordState } from '../../types';
 
 const state: ForgotPasswordState = {
-  email: 'a@b.edu', lastRequestedEmail: '', busy: false,
-  secondsLeft: 0, error: '', emailError: '',
+  email: 'a@b.edu',
+  lastRequestedEmail: '',
+  busy: false,
+  secondsLeft: 0,
+  error: '',
+  emailError: '',
 };
 
 describe('getForgotPasswordResendLabel', () => {

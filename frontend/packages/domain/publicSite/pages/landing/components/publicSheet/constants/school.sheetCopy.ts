@@ -20,8 +20,9 @@ const legacyStories = {
   history: {
     eyebrow: __('ESTABLISHED IN APRIL 2006'),
     title: __('Rooted in Haluhera. Built for generations.'),
-    description:
-      __('The school was established in April 2006 by Shri Lal Singh Yadav (Retired HES-II), in memory of Late Shri Rao Deena Ram Ji. Its original mission was to bring quality educational opportunities closer to families around Rewari.'),
+    description: __(
+      'The school was established in April 2006 by Shri Lal Singh Yadav (Retired HES-II), in memory of Late Shri Rao Deena Ram Ji. Its original mission was to bring quality educational opportunities closer to families around Rewari.',
+    ),
     highlights: [
       __('Serving the local community since 2006'),
       __('Growing with students and their families'),
@@ -33,17 +34,23 @@ const legacyStories = {
   director: {
     eyebrow: __('SHRI LAL SINGH YADAV · LEGACY SCHOOL WEBSITE'),
     title: __('An education for the whole child.'),
-    description:
-      __("The director's published message highlights all-round development, school values and opportunities spanning academics, sports, arts, drama and co-curricular activities. It emphasizes preparing children for life, not simply examinations."),
-    highlights: [__('Holistic development'), __('Sports, arts and academics'), __('A foundation for tomorrow')],
+    description: __(
+      "The director's published message highlights all-round development, school values and opportunities spanning academics, sports, arts, drama and co-curricular activities. It emphasizes preparing children for life, not simply examinations.",
+    ),
+    highlights: [
+      __('Holistic development'),
+      __('Sports, arts and academics'),
+      __('A foundation for tomorrow'),
+    ],
     link: 'https://rdrschool.com/director-message.html',
     linkLabel: __("Read the original director's message"),
   },
   principal: {
     eyebrow: __('SHRI ARVIND YADAV · LEGACY SCHOOL WEBSITE'),
     title: __('Learning with discipline and confidence.'),
-    description:
-      __("The principal's published message describes the school's development from modest beginnings and its commitment to quality education, experienced teachers, laboratories, co-curricular learning and character building."),
+    description: __(
+      "The principal's published message describes the school's development from modest beginnings and its commitment to quality education, experienced teachers, laboratories, co-curricular learning and character building.",
+    ),
     highlights: [
       __('Quality education and guidance'),
       __('Discipline and gratitude'),
@@ -55,8 +62,9 @@ const legacyStories = {
   philosophy: {
     eyebrow: __('OUR VISION · BROADENING MINDS'),
     title: __('Be a lamp unto yourself.'),
-    description:
-      __("RDR's original philosophy calls for a caring and creative environment that nurtures students' social, physical and intellectual growth. It places compassion, critical thinking and independence alongside academic achievement."),
+    description: __(
+      "RDR's original philosophy calls for a caring and creative environment that nurtures students' social, physical and intellectual growth. It places compassion, critical thinking and independence alongside academic achievement.",
+    ),
     highlights: [
       __('Curiosity and independent thinking'),
       __('Care, fairness and compassion'),

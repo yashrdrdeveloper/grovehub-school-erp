@@ -25,12 +25,11 @@ export const PinnedNavigation: PinnedNavigationComponent = (props) => {
 
   const nodes = _map(entries, (entry) => <PinnedApp key={entry.path} entry={entry} {...props} />);
 
-  const content: ReactNode =
-    (nodes.length > 0 && nodes) || (
-      <Box as={BOX_TAG.P} className={styles.empty}>
-        {__('Pin apps from the catalog to see them here.')}
-      </Box>
-    );
+  const content: ReactNode = (nodes.length > 0 && nodes) || (
+    <Box as={BOX_TAG.P} className={styles.empty}>
+      {__('Pin apps from the catalog to see them here.')}
+    </Box>
+  );
 
   return (
     <Box as={BOX_TAG.NAV} aria-label={__('Pinned applications')} className={styles.nav}>

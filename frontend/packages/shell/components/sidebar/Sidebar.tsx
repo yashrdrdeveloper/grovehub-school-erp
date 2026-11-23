@@ -13,8 +13,9 @@ import type { SidebarComponent } from './types/sidebar';
 
 /** Stateless sidebar. Interaction and persistence come from the shell model. */
 export const Sidebar: SidebarComponent = ({ accountLabel, schoolLabel, onLogout, model }) => {
-  const { collapsedLabel, collapsedShortLabel, CollapseIcon } =
-    getSidebarCollapseView(model.sidebarCollapsed);
+  const { collapsedLabel, collapsedShortLabel, CollapseIcon } = getSidebarCollapseView(
+    model.sidebarCollapsed,
+  );
   const sidebarClass = 'sidebar' + ((model.sidebarOpen && ' sidebar--open') || '');
 
   return (

@@ -9,8 +9,10 @@ import type { RecoveryComponent } from './types';
 /** Stateless recovery/activation composition, one form in the DOM. */
 export const Recovery: RecoveryComponent = (props) => {
   const formVisible = props.view === 'ready' || props.view === 'saving';
-  const { mobileTitle, description, mobileDescription } =
-    getRecoveryLayoutCopy({ invitation: props.invitation, formVisible });
+  const { mobileTitle, description, mobileDescription } = getRecoveryLayoutCopy({
+    invitation: props.invitation,
+    formVisible,
+  });
   const content = renderRecoveryContent({ props, formVisible });
 
   return (

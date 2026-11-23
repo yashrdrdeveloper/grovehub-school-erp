@@ -44,5 +44,7 @@ for (const [name, url] of images) {
     );
   }
 }
-console.log(`Downloaded ${completedCounter.current}/${images.length} original school images to ${folder}.`);
+console.log(
+  `Downloaded ${completedCounter.current}/${images.length} original school images to ${folder}.`,
+);
 if (completedCounter.current !== images.length) process.exitCode = 1;

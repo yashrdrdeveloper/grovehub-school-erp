@@ -53,9 +53,8 @@ test('analyzeI18nSource', async (t) => {
   await t.test('rejects variables and expressions passed to the global translator', () => {
     const { issues } = analyzeI18nSource(
       'Login.tsx',
-      "export const Login = () => <h1>{__(LOGIN_COPY.desktopTitle)}</h1>;",
+      'export const Login = () => <h1>{__(LOGIN_COPY.desktopTitle)}</h1>;',
     );
     assert.ok(issues.some((issue) => issue.code === 'I18N_LITERAL_REQUIRED'));
   });
-
 });

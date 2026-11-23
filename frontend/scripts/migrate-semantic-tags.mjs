@@ -151,13 +151,10 @@ const scan = async (folder) => {
     const updated = edits
       .sort((a, b) => b.start - a.start)
       .reduce(
-        (current, edit) =>
-          current.slice(0, edit.start) + edit.text + current.slice(edit.end),
+        (current, edit) => current.slice(0, edit.start) + edit.text + current.slice(edit.end),
         before,
       );
-    const withImports = importsToAdd.length
-      ? importsToAdd.join('\n') + '\n' + updated
-      : updated;
+    const withImports = importsToAdd.length ? importsToAdd.join('\n') + '\n' + updated : updated;
     await writeFile(filename, withImports, 'utf8');
     filesUpdatedCounter.current++;
   }
@@ -172,5 +169,9 @@ if (violations.length) {
 if (checkOnly && !violations.length) process.stdout.write('Semantic JSX tag constants verified.\n');
 if (!checkOnly)
   process.stdout.write(
-    'Migrated ' + changesCounter.current + ' JSX attributes across ' + filesUpdatedCounter.current + ' files.\n',
+    'Migrated ' +
+      changesCounter.current +
+      ' JSX attributes across ' +
+      filesUpdatedCounter.current +
+      ' files.\n',
   );

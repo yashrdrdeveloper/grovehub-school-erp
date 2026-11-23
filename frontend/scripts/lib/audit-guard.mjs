@@ -61,7 +61,9 @@ export const evaluateAudit = (output, baseline) => {
   }
 
   if (findingsCounter.current > baseline.maxFindings) {
-    failures.push('Findings: ' + findingsCounter.current + ' exceed ceiling ' + baseline.maxFindings);
+    failures.push(
+      'Findings: ' + findingsCounter.current + ' exceed ceiling ' + baseline.maxFindings,
+    );
   }
 
   const summaryLine = output.split('\n').find((line) => line.startsWith('GH_AUDIT_SUMMARY|'));
@@ -94,5 +96,11 @@ export const evaluateAudit = (output, baseline) => {
     failures.push('Obsolete allowlist entry: ' + entry);
   }
 
-  return { failures, counts, findings: findingsCounter.current, flaggedFiles: observed.size, stale };
+  return {
+    failures,
+    counts,
+    findings: findingsCounter.current,
+    flaggedFiles: observed.size,
+    stale,
+  };
 };

@@ -104,11 +104,19 @@ export const analyzeI18nSource = (filename, source, options = {}) => {
         'Translate UI copy at render time, not during module initialization',
       );
     }
-    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) &&
-        node.expression.text === '__') {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === '__'
+    ) {
       const first = node.arguments[0];
       if (!first || !(ts.isStringLiteral(first) || ts.isNoSubstitutionTemplateLiteral(first))) {
-        add(issues, node, 'I18N_LITERAL_REQUIRED', '__() must receive a literal text string, not a variable or expression');
+        add(
+          issues,
+          node,
+          'I18N_LITERAL_REQUIRED',
+          '__() must receive a literal text string, not a variable or expression',
+        );
       }
     }
     if (checkVisibleCopy && ts.isJsxText(node)) {

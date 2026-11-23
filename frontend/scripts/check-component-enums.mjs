@@ -39,6 +39,8 @@ if (failures.length) {
   process.exitCode = 1;
 } else {
   process.stdout.write(
-    'Closed UI prop enums verified across ' + inspectedCounter.current + ' production TSX modules.\n',
+    'Closed UI prop enums verified across ' +
+      inspectedCounter.current +
+      ' production TSX modules.\n',
   );
 }

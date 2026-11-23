@@ -45,5 +45,7 @@ if (violations.length > 0) {
     process.stderr.write(item + ': conditional expression is forbidden\\n');
   process.exitCode = 1;
 } else {
-  process.stdout.write('No production ternary expressions in ' + checkedCounter.current + ' source files.\\n');
+  process.stdout.write(
+    'No production ternary expressions in ' + checkedCounter.current + ' source files.\\n',
+  );
 }

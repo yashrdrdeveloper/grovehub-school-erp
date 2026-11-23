@@ -70,5 +70,7 @@ if (failures.length) {
   for (const failure of failures) process.stderr.write(`${failure}\n`);
   process.exitCode = 1;
 } else {
-  process.stdout.write(`UI automation contracts verified across ${checkedCounter.current} shared components.\n`);
+  process.stdout.write(
+    `UI automation contracts verified across ${checkedCounter.current} shared components.\n`,
+  );
 }

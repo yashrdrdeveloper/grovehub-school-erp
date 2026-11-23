@@ -74,4 +74,7 @@ await walk(path.join(process.cwd(), 'packages/domain'));
 await walk(path.join(process.cwd(), 'packages/shell'));
 for (const error of errors) process.stderr.write(error + '\n');
 if (errors.length > 0) process.exitCode = 1;
-else process.stdout.write('Semantic UI boundary verified across ' + scannedCounter.current + ' TSX files.\\n');
+else
+  process.stdout.write(
+    'Semantic UI boundary verified across ' + scannedCounter.current + ' TSX files.\\n',
+  );

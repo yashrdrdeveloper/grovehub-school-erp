@@ -2,8 +2,12 @@ import { getForgotPasswordButtonLabel } from '../forgotPassword.getButtonLabel';
 import type { ForgotPasswordState } from '../../types';
 
 const state: ForgotPasswordState = {
-  email: 'a@b.edu', lastRequestedEmail: '', busy: false,
-  secondsLeft: 0, error: '', emailError: '',
+  email: 'a@b.edu',
+  lastRequestedEmail: '',
+  busy: false,
+  secondsLeft: 0,
+  error: '',
+  emailError: '',
 };
 
 describe('getForgotPasswordButtonLabel', () => {
@@ -11,6 +15,8 @@ describe('getForgotPasswordButtonLabel', () => {
     expect(getForgotPasswordButtonLabel(state, false)).toBe('Send reset link');
     expect(getForgotPasswordButtonLabel(state, true)).toBe('Resend reset link');
     expect(getForgotPasswordButtonLabel({ ...state, secondsLeft: 30 }, true)).toBe('Resend in 30s');
-    expect(getForgotPasswordButtonLabel({ ...state, secondsLeft: 30, busy: true }, true)).toBe('Sending link…');
+    expect(getForgotPasswordButtonLabel({ ...state, secondsLeft: 30, busy: true }, true)).toBe(
+      'Sending link…',
+    );
   });
 });

@@ -67,10 +67,12 @@ if (issues.length) {
   };
   await writeFile(baselineFile, JSON.stringify(baseline, null, 2) + '\n');
   process.stdout.write(
-    'Recorded ' + copyCountCounter.current +
+    'Recorded ' +
+      copyCountCounter.current +
       ' legacy JSX copy findings across ' +
       Object.keys(copies).length +
-      ' files. ' + sourceCountCounter.current +
+      ' files. ' +
+      sourceCountCounter.current +
       ' source modules checked.\n',
   );
 } else {
@@ -88,7 +90,9 @@ if (issues.length) {
   const baseline = await readBaseline();
   if (baseline) {
     if (copyCountCounter.current > baseline.maxTotal) {
-      issues.push('RAW_UI_COPY total increased from ' + baseline.maxTotal + ' to ' + copyCountCounter.current);
+      issues.push(
+        'RAW_UI_COPY total increased from ' + baseline.maxTotal + ' to ' + copyCountCounter.current,
+      );
     }
     for (const [file, current] of Object.entries(copies)) {
       const allowed = baseline.counts[file] ?? 0;
@@ -101,8 +105,10 @@ if (issues.length) {
       process.exitCode = 1;
     } else {
       process.stdout.write(
-        'Global __() ownership verified across ' + sourceCountCounter.current +
-          ' source modules; ' + copyCountCounter.current +
+        'Global __() ownership verified across ' +
+          sourceCountCounter.current +
+          ' source modules; ' +
+          copyCountCounter.current +
           ' legacy JSX messages remain within the locked per-file baseline.\n',
       );
     }

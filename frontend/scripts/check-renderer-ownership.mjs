@@ -44,5 +44,7 @@ for (const issue of errors) process.stderr.write(issue + '\n');
 if (errors.length) process.exitCode = 1;
 else
   process.stdout.write(
-    'Renderer purity, naming and tests verified across ' + checkedCounter.current + ' JSX renderer files.\n',
+    'Renderer purity, naming and tests verified across ' +
+      checkedCounter.current +
+      ' JSX renderer files.\n',
   );

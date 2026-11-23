@@ -94,8 +94,7 @@ for (const { absolute, relative } of allFiles) {
   const output = edits
     .sort((a, b) => b.start - a.start)
     .reduce(
-      (current, edit) =>
-        current.slice(0, edit.start) + edit.text + current.slice(edit.end),
+      (current, edit) => current.slice(0, edit.start) + edit.text + current.slice(edit.end),
       source,
     );
   await writeFile(absolute, output, 'utf8');
@@ -103,8 +102,11 @@ for (const { absolute, relative } of allFiles) {
   replacedNodesCounter.current += edits.length;
 }
 process.stdout.write(
-  'Wrapped ' + replacedNodesCounter.current +
-    ' user-facing JSX expressions in ' + changedFilesCounter.current +
-    ' files; left ' + skippedEntitiesCounter.current +
+  'Wrapped ' +
+    replacedNodesCounter.current +
+    ' user-facing JSX expressions in ' +
+    changedFilesCounter.current +
+    ' files; left ' +
+    skippedEntitiesCounter.current +
     ' entity-encoded fragments for manual review.\n',
 );

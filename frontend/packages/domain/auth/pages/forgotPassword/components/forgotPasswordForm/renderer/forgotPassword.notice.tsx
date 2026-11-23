@@ -1,6 +1,5 @@
 import { Box, BOX_TAG } from '@Components/components/Box';
 
-
 import { FORGOT_PASSWORD_LEGACY_CLASSES } from '../constants/forgotPassword.legacyClasses';
 import { FORGOT_PASSWORD_TEST_IDS } from '../../../constants/forgotPassword.testIds';
 

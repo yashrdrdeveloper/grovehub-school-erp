@@ -14,7 +14,9 @@ const MAX_LIFETIME_MS = 10 * 60 * 1000;
 
 // A failed exchange may retry while this JS context survives; page reload
 // discards the bearer proof. This intentionally favors secrecy over replay.
-const sessionState = { pendingProofState: null as Extract<RecoveryFlow, { stage: 'proof' }> | null };
+const sessionState = {
+  pendingProofState: null as Extract<RecoveryFlow, { stage: 'proof' }> | null,
+};
 
 export const recoveryPurposeForPath = (path: string): RecoveryPurpose | null => {
   if (path === AUTH_ROUTE.SET_PASSWORD || path === AUTH_ROUTE.SETUP_LEGACY) return 'invitation';
@@ -36,7 +38,10 @@ const active = (expiresAt: number): boolean =>
 
 export const readRecoveryFlow = (purpose: RecoveryPurpose): RecoveryFlow | null => {
   if (sessionState.pendingProofState) {
-    if (sessionState.pendingProofState.purpose !== purpose || !active(sessionState.pendingProofState.expiresAt)) {
+    if (
+      sessionState.pendingProofState.purpose !== purpose ||
+      !active(sessionState.pendingProofState.expiresAt)
+    ) {
       clearRecoveryFlow();
       return null;
     }
