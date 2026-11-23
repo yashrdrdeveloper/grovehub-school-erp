@@ -64,11 +64,9 @@ jest.mock('../../../components/loginLayout', () => ({
 }));
 
 const renderPage = (purpose: 'invitation' | 'recovery', proof?: string) => {
-  window.history.replaceState(
-    {},
-    '',
-    `/${purpose === 'invitation' ? 'set' : 'reset'}-password${proof ? `#proof=${proof}` : ''}`,
-  );
+  const route = purpose === 'invitation' && '/set-password' || '/reset-password';
+  const fragment = proof && `#proof=${proof}` || '';
+  window.history.replaceState({}, '', route + fragment);
   return render(
     <MemoryRouter>
       <RecoveryPage purpose={purpose} />
@@ -107,9 +105,11 @@ describe('RecoveryContainer', () => {
   ] as const)('shows missing-link state without calling APIs for %s', async (purpose, helpText) => {
     renderPage(purpose);
     expect(await screen.findAllByText('This link looks incomplete')).toBeTruthy();
-    expect(screen.getByTestId('mobile-recovery-title').textContent).toBe(
-      purpose === 'invitation' ? 'Set password' : 'Reset password',
-    );
+    if (purpose === 'invitation') {
+      expect(screen.getByTestId('mobile-recovery-title').textContent).toBe('Set password');
+    } else {
+      expect(screen.getByTestId('mobile-recovery-title').textContent).toBe('Reset password');
+    }
     expect(screen.queryByLabelText('New password')).toBeNull();
     expect(screen.getByText(new RegExp(helpText, 'i'))).toBeTruthy();
     if (purpose === 'recovery')
