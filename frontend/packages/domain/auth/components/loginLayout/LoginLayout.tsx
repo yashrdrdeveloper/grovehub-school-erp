@@ -1,10 +1,9 @@
 import { _map } from '@Base/utilities/map';
 import { Box, BOX_TAG } from '@Components/components/Box';
-import { ArrowLeft, LockKeyhole } from '@Components/icons';
+import { ArrowLeft } from '@Components/icons';
 import { AppLink } from '@Components/components/AppLink';
 import { APP_ROUTE } from '@Business/app/routes';
 
-import { SchoolMonogram } from '@Components';
 import { useWorkspaceTheme } from '@Components/hooks/useWorkspaceTheme';
 import { LOGIN_LAYOUT_APPEARANCES } from './constants/loginLayout.appearances';
 import { LOGIN_LAYOUT_TEST_IDS } from './constants/loginLayout.testIds';
@@ -14,8 +13,9 @@ import { getLoginLayoutClassName } from './helpers/loginLayout.getClassName';
 import { renderLoginLayoutAppearanceOption } from './renderer/loginLayout.appearanceOption';
 import type { LoginLayoutComponent } from './types/loginLayout.props';
 
-import { AuthAmbientGraphic } from '../authAmbientGraphic';
 import { useAuthViewportFit } from '../../hooks/useAuthViewportFit';
+import { LoginLayoutVisual } from './components/visual';
+import { LoginLayoutFooter } from './components/footer';
 
 // One stylesheet owns the entire auth layout. Legacy variants are intentionally not loaded.
 import './styles/optionOneAuth.css';
@@ -40,46 +40,7 @@ export const LoginLayout: LoginLayoutComponent = ({
       data-testid={LOGIN_LAYOUT_TEST_IDS.ROOT}
     >
       <Box as={BOX_TAG.DIV} className="rdr-login-v2__frame">
-        <Box
-          as={BOX_TAG.SECTION}
-          className="rdr-login-v2__visual"
-          aria-label="RDR School branded gradient background"
-        >
-          <Box as={BOX_TAG.DIV} className="rdr-login-v2__mobile-header">
-            <Box as={BOX_TAG.DIV} className="rdr-login-v2__mobile-identity" aria-label="RDR School">
-              <SchoolMonogram />
-              <Box as={BOX_TAG.SPAN} className="rdr-login-v2__mobile-school-name">
-                RDR School<Box as={BOX_TAG.SMALL}>Your school workspace</Box>
-              </Box>
-            </Box>
-          </Box>
-          <Box as={BOX_TAG.DIV} className="rdr-login-v2__visual-brand">
-            <SchoolMonogram />
-            <Box as={BOX_TAG.SPAN}>
-              <Box as={BOX_TAG.STRONG}>RDR School</Box>
-              <Box as={BOX_TAG.SMALL}>Rao Deena Ram Vidya Vihar</Box>
-            </Box>
-          </Box>
-          <AuthAmbientGraphic />
-          <Box as={BOX_TAG.DIV} className="rdr-login-v2__visual-copy">
-            <Box as={BOX_TAG.SPAN} className="rdr-login-v2__visual-kicker">
-              <Box as={BOX_TAG.SPAN} /> THE RDR SCHOOL WORKSPACE
-            </Box>
-            <Box as={BOX_TAG.H2}>
-              For every school day.
-              <br />
-              <em>And everyone behind it.</em>
-            </Box>
-            <Box as={BOX_TAG.P}>A connected space for the people who make learning happen.</Box>
-            <Box as={BOX_TAG.DIV} className="rdr-login-v2__visual-footer">
-              <Box as={BOX_TAG.SPAN}>LEARN</Box>
-              <i aria-hidden="true" />
-              <Box as={BOX_TAG.SPAN}>ORGANISE</Box>
-              <i aria-hidden="true" />
-              <Box as={BOX_TAG.SPAN}>GROW</Box>
-            </Box>
-          </Box>
-        </Box>
+        <LoginLayoutVisual />
         <Box
           as={BOX_TAG.SECTION}
           ref={contentRef}
@@ -133,18 +94,7 @@ export const LoginLayout: LoginLayoutComponent = ({
               </Box>
             </Box>
             {children}
-            <Box
-              as={BOX_TAG.DIV}
-              className="rdr-login-v2__closing"
-              aria-label="Secure RDR School workspace"
-            >
-              <LockKeyhole size={13} strokeWidth={1.8} aria-hidden="true" />
-              <Box as={BOX_TAG.SPAN}>A secure workspace for RDR School</Box>
-            </Box>
-            <Box as={BOX_TAG.DIV} className="rdr-o1-auth-footer">
-              <Box as={BOX_TAG.SPAN}>© RDR School</Box>
-              <Box as={BOX_TAG.SPAN}>Haluhera · Rewari</Box>
-            </Box>
+            <LoginLayoutFooter />
           </Box>
         </Box>
       </Box>
