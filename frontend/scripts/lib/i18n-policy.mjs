@@ -1,0 +1,90 @@
+import ts from 'typescript';
+
+/** UI copy lives at render time, whereas transport/HTML values retain native semantics. */
+export const VISIBLE_TEXT_ATTRIBUTES = new Set([
+  'title', 'label', 'description', 'mobileTitle', 'mobileDescription', 'placeholder',
+  'aria-label', 'aria-description', 'alt', 'heading', 'helperText', 'loadingText',
+  'buttonLabel', 'emptyLabel', 'caption', 'message', 'tooltip', 'successMessage',
+  'errorMessage', 'hint', 'secondaryLabel', 'errorText', 'helpText',
+]);
+
+const isVisible = (message) => /[A-Za-z\u00c0-\u024f]/.test(message);
+const hasEntity = (message) => /&(?:[a-zA-Z][a-zA-Z0-9]+|#[xX]?[0-9a-fA-F]+);/.test(message);
+const forbiddenGlobal = (node) => (
+  ts.isPropertyAccessExpression(node) && node.name.text === '__' &&
+  (node.expression.getText() === 'window' || node.expression.getText() === 'globalThis')
+);
+
+/** JSX transforms normalize layout indentation; reproduce the same textual whitespace. */
+export const normalizeJsxText = (input) => {
+  const lines = input.replace(/\t/g, ' ').split(/\r\n|\r|\n/);
+  let lastNonEmpty = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trim()) lastNonEmpty = i;
+  }
+  if (lastNonEmpty < 0) return '';
+  let result = '';
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+    if (i !== 0) line = line.replace(/^ +/, '');
+    if (i !== lines.length - 1) line = line.replace(/ +$/, '');
+    if (!line) continue;
+    if (i !== lastNonEmpty) line += ' ';
+    result += line;
+  }
+  return result;
+};
+
+export const analyzeI18nSource = (filename, source, options = {}) => {
+  const file = ts.createSourceFile(filename, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const issues = [];
+  const rawCopy = [];
+  const allowRuntimeGlobal = options.allowRuntimeGlobal === true;
+  const allowResolverImport = options.allowResolverImport === true;
+  const checkVisibleCopy = options.checkVisibleCopy !== false;
+  const add = (list, node, code, label) => {
+    const loc = file.getLineAndCharacterOfPosition(node.getStart(file));
+    list.push({ code, line: loc.line + 1, label });
+  };
+  const visit = (node, insideFunction = false) => {
+    if (ts.isImportDeclaration(node) &&
+        ts.isStringLiteral(node.moduleSpecifier) &&
+        ['@Base', '@Base/i18n', '@Base/i18n/__'].includes(node.moduleSpecifier.text) &&
+        !allowResolverImport) {
+      const clause = node.importClause;
+      if (clause?.namedBindings && ts.isNamedImports(clause.namedBindings) &&
+          clause.namedBindings.elements.some((name) => name.name.text === '__' ||
+            name.propertyName?.text === '__')) {
+        add(issues, node, 'IMPORTED_I18N', 'Importing __ in a frontend owner is forbidden');
+      }
+    }
+    if (forbiddenGlobal(node) && !allowRuntimeGlobal) {
+      add(issues, node, 'GLOBAL_I18N_ACCESS', 'Only ShellContainer bootstrap installs window.__');
+    }
+    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) &&
+        node.expression.text === '__' && !insideFunction) {
+      add(issues, node, 'EAGER_I18N', 'Translate UI copy at render time, not during module initialization');
+    }
+    if (checkVisibleCopy && ts.isJsxText(node)) {
+      const message = normalizeJsxText(node.getText(file));
+      if (isVisible(message) && !hasEntity(message)) {
+        add(rawCopy, node, 'RAW_UI_COPY', message.slice(0, 100));
+      }
+    }
+    if (checkVisibleCopy && ts.isJsxAttribute(node) &&
+        VISIBLE_TEXT_ATTRIBUTES.has(node.name.text) &&
+        node.initializer && ts.isStringLiteral(node.initializer) &&
+        isVisible(node.initializer.text)) {
+      add(rawCopy, node, 'RAW_UI_COPY', node.initializer.text.slice(0, 100));
+    }
+    if (checkVisibleCopy && ts.isJsxExpression(node) &&
+        node.expression && ts.isStringLiteral(node.expression) &&
+        isVisible(node.expression.text)) {
+      add(rawCopy, node, 'RAW_UI_COPY', node.expression.text.slice(0, 100));
+    }
+    const nextInsideFunction = insideFunction || ts.isFunctionLike(node);
+    ts.forEachChild(node, (child) => visit(child, nextInsideFunction));
+  };
+  ts.forEachChild(file, (child) => visit(child));
+  return { issues, rawCopy };
+};
