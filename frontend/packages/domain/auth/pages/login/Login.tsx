@@ -1,4 +1,3 @@
-import { __ } from '@Base/i18n';
 import { LoginLayout } from '../../components/loginLayout';
 import { LoginLayoutVariant } from '../../components/loginLayout/constants/loginLayout.variant';
 
