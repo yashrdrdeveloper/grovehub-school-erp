@@ -5,6 +5,7 @@ import { AppLink } from '@Components/components/AppLink';
 
 import { APP_LAUNCHER_COPY } from '../constants/appLauncher.copy';
 import { getAppTestIds } from '../helpers/appLauncher.getAppTestIds';
+import { getAppLauncherPinAccessibleCopy } from '../helpers/appLauncher.getPinAccessibleCopy';
 import { getAppLauncherPinView } from './appLauncher.pinView';
 import type { RenderAppLauncherApp } from './types/appLauncher.app';
 
@@ -16,7 +17,8 @@ export const renderAppLauncherApp: RenderAppLauncherApp = ({
   onTogglePin,
 }): ReactElement => {
   const Icon = app.icon;
-  const { pinLabel, PinIcon, pinClass } = getAppLauncherPinView(isPinned);
+  const { PinIcon, pinClass } = getAppLauncherPinView(isPinned);
+  const { accessibleName, tooltip } = getAppLauncherPinAccessibleCopy(isPinned, app.name);
   const ids = getAppTestIds(app.path);
   const close = () => onOpenChange(false);
   const toggle = () => onTogglePin(app.path);
@@ -37,8 +39,8 @@ export const renderAppLauncherApp: RenderAppLauncherApp = ({
         type="button"
         className={pinClass}
         onClick={toggle}
-        aria-label={pinLabel + ' ' + app.name}
-        title={pinLabel + ' from sidebar'}
+        aria-label={accessibleName}
+        title={tooltip}
         data-testid={ids.pin}
       >
         <PinIcon size={15} />
