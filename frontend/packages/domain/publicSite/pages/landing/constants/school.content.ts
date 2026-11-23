@@ -132,7 +132,7 @@ export const historicDisclosure = {
   campusSquareMetres: 8000,
   classrooms: 38,
   laboratories: 6,
-  internet: 'Yes',
+  internet: __('Yes'),
   girlsToilets: 20,
   boysToilets: 20,
   inspectionVideo: 'https://youtu.be/pJrIfB_zZPo',

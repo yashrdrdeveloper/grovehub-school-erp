@@ -6,12 +6,12 @@ export const getDashboardCalendarCopy: GetDashboardCalendarCopy = (date, today) 
       calendarDay: String(date.dayOfMonth),
       calendarHeading: date.dayName,
       calendarDetail: date.dateLabel,
-      calendarEmptyTitle: 'Today’s schedule',
+      calendarEmptyTitle: __('Today’s schedule'),
     };
   return {
     calendarDay: '→',
-    calendarHeading: 'Next on your calendar',
-    calendarDetail: 'Calendar preview',
-    calendarEmptyTitle: 'Upcoming events',
+    calendarHeading: __('Next on your calendar'),
+    calendarDetail: __('Calendar preview'),
+    calendarEmptyTitle: __('Upcoming events'),
   };
 };

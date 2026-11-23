@@ -17,6 +17,11 @@ const walk = async (directory) => {
   }
 };
 for (const folder of ['app', 'packages', 'scripts']) await walk(path.join(root, folder));
+for (const entry of await readdir(root, { withFileTypes: true })) {
+  if (entry.isFile() && /\.(?:[cm]?[jt]sx?)$/.test(entry.name)) {
+    files.push(path.join(root, entry.name));
+  }
+}
 
 for (const absolute of files) {
   const relative = path.relative(root, absolute).replaceAll(path.sep, '/');
