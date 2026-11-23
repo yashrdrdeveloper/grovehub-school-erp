@@ -172,7 +172,7 @@ for (const route of routes) {
     <meta property="og:description" content="${escapeHtml(route.description)}" />
     <meta name="twitter:card" content="summary" />
     <script type="application/ld+json">${JSON.stringify(schema).replace(/</g, '\\u003c')}</script>`;
-  let html = base
+  const html = base
     .replace(/<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(route.title)}</title>`)
     .replace(
       /<meta name="description"[^>]*>/,

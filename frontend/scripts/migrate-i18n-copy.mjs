@@ -91,10 +91,13 @@ for (const { absolute, relative } of allFiles) {
   };
   ts.forEachChild(syntax, visit);
   if (!edits.length) continue;
-  let output = source;
-  for (const edit of edits.sort((a, b) => b.start - a.start)) {
-    output = output.slice(0, edit.start) + edit.text + output.slice(edit.end);
-  }
+  const output = edits
+    .sort((a, b) => b.start - a.start)
+    .reduce(
+      (current, edit) =>
+        current.slice(0, edit.start) + edit.text + current.slice(edit.end),
+      source,
+    );
   await writeFile(absolute, output, 'utf8');
   changedFilesCounter.current++;
   replacedNodesCounter.current += edits.length;

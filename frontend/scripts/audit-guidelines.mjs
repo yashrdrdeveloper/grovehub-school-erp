@@ -148,14 +148,14 @@ for (const file of files) {
       if (callee === 'describe') {
         const arg = node.arguments[0];
         describes.push(arg && ts.isStringLiteral(arg) ? arg.text : '<dynamic>');
-        let parent = node.parent;
-        while (parent) {
+        const hasNestedDescribe = (parent) => {
+          if (!parent) return false;
           if (ts.isCallExpression(parent) && parent.expression.getText(sf) === 'describe') {
-            flag(file, 'NESTED_DESCRIBE', line(node));
-            break;
+            return true;
           }
-          parent = parent.parent;
-        }
+          return hasNestedDescribe(parent.parent);
+        };
+        if (hasNestedDescribe(node.parent)) flag(file, 'NESTED_DESCRIBE', line(node));
       }
       if (
         callee === 'jest.mock' &&

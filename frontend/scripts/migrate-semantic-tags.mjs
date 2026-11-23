@@ -148,12 +148,17 @@ const scan = async (folder) => {
     }
 
     // Replacements are nonoverlapping source ranges. Apply backwards to preserve positions.
-    let updated = before;
-    for (const edit of edits.sort((a, b) => b.start - a.start)) {
-      updated = updated.slice(0, edit.start) + edit.text + updated.slice(edit.end);
-    }
-    if (importsToAdd.length) updated = importsToAdd.join('\n') + '\n' + updated;
-    await writeFile(filename, updated, 'utf8');
+    const updated = edits
+      .sort((a, b) => b.start - a.start)
+      .reduce(
+        (current, edit) =>
+          current.slice(0, edit.start) + edit.text + current.slice(edit.end),
+        before,
+      );
+    const withImports = importsToAdd.length
+      ? importsToAdd.join('\n') + '\n' + updated
+      : updated;
+    await writeFile(filename, withImports, 'utf8');
     filesUpdatedCounter.current++;
   }
 };
