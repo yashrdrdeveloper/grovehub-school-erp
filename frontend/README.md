@@ -56,4 +56,4 @@ export const Greeting = ({ name }: { name: string }) => (
 
 `@Base/i18n` is currently an **English-only interpolation utility**; using `__()` is not equivalent to shipping multilingual dictionaries. Never format API identifiers, route paths, CSS classes, test IDs or HTML/ARIA protocol tokens. Design-system closed prop values use component-owned exports (`BUTTON_VARIANT`, `BUTTON_SIZE`, `BOX_TAG`, `TEXT_TAG`, etc.), not arbitrary strings.
 
-From `frontend/`, verify changes with `pnpm check:architecture`, `pnpm typecheck`, `pnpm exec jest --runInBand` and `pnpm build`. `pnpm check:architecture` includes a strict global i18n boundary checker and a measured zero-new-raw-JSX-copy baseline.
+From `frontend/`, verify changes with `pnpm check:architecture`, `pnpm check:component-enums`, `pnpm typecheck`, `pnpm exec jest --runInBand` and `pnpm build`. `pnpm check:architecture` includes a strict global i18n boundary checker and a measured zero-new-raw-JSX-copy baseline.

@@ -178,6 +178,12 @@ The authoritative runtime files are `packages/base/i18n/__.ts`, `app/types/i18n.
 Do not conflate this literal JSX migration with a complete localization feature: dynamic business message construction, copy constants used outside render paths, number/date/plural formatting, and actual language catalogs need dedicated tests. The previous measured global/domain CSS migration backlog remains separate.
 
 
+### 9. Enforced closed component-option contract
+
+`pnpm check:component-enums` (also part of `pnpm check:architecture`) uses the TypeScript AST to reject `variant="primary"`, `size="lg"`, `as="h3"` and other **known closed JSX component props** in production. It covers Button, Box, Text, Typography, Card, Container, Form, Input, InputControl, TextField, PasswordField, StatusPill, PhotoMotifs and LoginLayout; technical native attributes (`type="email"`, `role="status"`, `aria-live="polite"`) remain untouched. Extend the checked component table whenever a new closed-set shared API is introduced. Do not weaken the checker to make migration pass.
+
+Component roots now expose forwarded size options from the same runtime constant: `INPUT_SIZE`, `PASSWORD_FIELD_SIZE`, `TEXT_FIELD_SIZE` alias `INPUT_CONTROL_SIZE` rather than creating parallel values. `PhotoMotifs` publishes `PHOTO_MOTIFS_VARIANT` through its owning `siteMedia/index.ts` and its gallery consumer uses `PHOTO_MOTIFS_VARIANT.GALLERY`. Keep public exports and types consistent when extracting future single-responsibility components.
+
 ## Revision 12 — component-owned enums and shared UI messages (Phase 2.1, 23 November 2026; global bootstrap superseded by Revision 13)
 
 **Precedence:** This section overrides older examples that use inline closed-set props such as `variant="primary"`, `size="lg"`, `as="h3"`, `tone="muted"`, and user-visible copy authored directly in JSX. Apply it to **all** frontend owners (`@Components`, `@Shell`, `@Domain`, and feature-related business error-to-UI mapping). This is an incremental migration requirement, **not** a claim that every existing file has already been converted.
