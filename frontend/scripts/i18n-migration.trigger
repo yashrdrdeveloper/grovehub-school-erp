@@ -1,1 +1,1 @@
-Migrate user-visible JSX text to shell-managed global __ and format with all tests.
+Rerun gated global __() JSX migration after extracting LoginLayout visual and footer to dedicated components.
