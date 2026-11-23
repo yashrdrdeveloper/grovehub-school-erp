@@ -88,7 +88,7 @@ if (issues.length) {
   const baseline = await readBaseline();
   if (baseline) {
     if (copyCountCounter.current > baseline.maxTotal) {
-      issues.push('RAW_UI_COPY total increased from ' + baseline.maxTotal + ' to ' + copyCount);
+      issues.push('RAW_UI_COPY total increased from ' + baseline.maxTotal + ' to ' + copyCountCounter.current);
     }
     for (const [file, current] of Object.entries(copies)) {
       const allowed = baseline.counts[file] ?? 0;
