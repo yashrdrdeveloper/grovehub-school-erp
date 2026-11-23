@@ -2,6 +2,8 @@ import { getDashboardOverviewUnavailableLabel } from '../dashboardOverview.getUn
 
 describe('getDashboardOverviewUnavailableLabel', () => {
   it('interpolates metric accessibility copy', () => {
-    expect(getDashboardOverviewUnavailableLabel('Tasks for you')).toBe('Tasks for you not available');
+    expect(getDashboardOverviewUnavailableLabel('Tasks for you')).toBe(
+      'Tasks for you not available',
+    );
   });
 });
