@@ -43,12 +43,12 @@ export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(
     const combinedDescription = getFormFieldCombinedDescription(describedBy, descriptionId);
 
     let VisibilityIcon = Eye;
-    let toggleLabel = 'Show password';
+    let toggleLabel = __('Show password');
     let passwordType: 'password' | 'text' = 'password';
 
     if (visible) {
       VisibilityIcon = EyeOff;
-      toggleLabel = 'Hide password';
+      toggleLabel = __('Hide password');
       passwordType = 'text';
     }
 
