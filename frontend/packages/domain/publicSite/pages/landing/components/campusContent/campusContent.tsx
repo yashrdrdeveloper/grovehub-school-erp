@@ -5,7 +5,7 @@ import { SCHOOL_ROUTE } from '../../constants/school.routes';
 import { AppLink } from '@Components/components/AppLink';
 import { ArrowUpRight, BookOpen, ExternalLink, Sparkles } from '@Components/icons';
 import { facilities, photographs } from '../../constants/school.content';
-import { Heading, ImageCard, PhotoMotifs, facilityIcons } from '../siteMedia';
+import { Heading, ImageCard, PhotoMotifs, PHOTO_MOTIFS_VARIANT, facilityIcons } from '../siteMedia';
 import { IntroPage } from '../aboutContent';
 import { EnquiryForm } from '../enquiryForm';
 import { getGalleryPhotoClassName } from './helpers/campusContent.getGalleryPhotoClassName';
@@ -39,7 +39,7 @@ const GalleryPage = () => (
   <>
     <IntroPage eyebrow="GALLERY" title={__("Life at RDR, in moments.")} description={__("A photo story of school celebrations, student life and achievements — captured at RDR School.")}/>
     <Box as={BOX_TAG.SECTION} className="rdr-section rdr-container">
-      <Box as={BOX_TAG.DIV} className="rdr-gallery-grid">{_map(photographs, (photo,i)=><figure className={getGalleryPhotoClassName(i)} key={photo.src}><Box as={BOX_TAG.DIV} className="rdr-gallery-grid__art"><ImageCard src={photo.src} alt={photo.alt} position={photo.position}/>{i%3===0&&<PhotoMotifs variant="gallery"/>}</Box><figcaption><Box as={BOX_TAG.SPAN}>{photo.category}</Box><Box as={BOX_TAG.STRONG}>{photo.title}</Box></figcaption></figure>)}</Box>
+      <Box as={BOX_TAG.DIV} className="rdr-gallery-grid">{_map(photographs, (photo,i)=><figure className={getGalleryPhotoClassName(i)} key={photo.src}><Box as={BOX_TAG.DIV} className="rdr-gallery-grid__art"><ImageCard src={photo.src} alt={photo.alt} position={photo.position}/>{i%3===0&&<PhotoMotifs variant={PHOTO_MOTIFS_VARIANT.GALLERY}/>}</Box><figcaption><Box as={BOX_TAG.SPAN}>{photo.category}</Box><Box as={BOX_TAG.STRONG}>{photo.title}</Box></figcaption></figure>)}</Box>
       <Box as={BOX_TAG.P} className="rdr-gallery__archive-note">{__("From the RDR School photo archives. ")}<ExternalAnchor href="https://rdrschool.com/gallery.html" target="_blank" rel="noreferrer">{__("See the original gallery ")}<ExternalLink size={13}/></ExternalAnchor></Box>
     </Box>
   </>

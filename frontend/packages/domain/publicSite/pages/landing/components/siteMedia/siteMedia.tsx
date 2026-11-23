@@ -15,6 +15,8 @@ import {
   Trophy,
 } from '@Components/icons';
 import { photographs } from '../../constants/school.content';
+import { PHOTO_MOTIFS_VARIANT } from './constants/siteMedia.photoMotifsVariant';
+import type { PhotoMotifsVariant } from './constants/siteMedia.photoMotifsVariant';
 
 const facilityIcons = [
   Computer,
@@ -84,7 +86,7 @@ const Heading = ({
 
 /** Purely decorative school motifs. Keep them outside important photo faces
  * and out of the accessibility tree; the original photographs remain intact. */
-const PhotoMotifs = ({ variant = 'hero' }: { variant?: 'hero' | 'gallery' | 'banner' }) => (
+const PhotoMotifs = ({ variant = PHOTO_MOTIFS_VARIANT.HERO }: { variant?: PhotoMotifsVariant }) => (
   <Box
     as={BOX_TAG.DIV}
     className={`rdr-photo-motifs rdr-photo-motifs--${variant}`}
