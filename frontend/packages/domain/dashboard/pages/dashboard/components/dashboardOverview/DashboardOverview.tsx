@@ -1,7 +1,7 @@
 import { _map } from '@Base/utilities/map';
-import { cn } from '@Base/utilities/cn';
 import { Box, BOX_TAG } from '@Components/components/Box';
 import styles from './DashboardOverview.module.css';
+import { renderDashboardOverviewMetric } from './renderer/dashboardOverview.metric';
 import sectionStyles from '../../DashboardSection.module.css';
 import { DASHBOARD_METRICS } from '../../constants/dashboard.metrics';
 import type { DashboardOverviewComponent } from './types/dashboardOverview';
@@ -26,22 +26,7 @@ export const DashboardOverview: DashboardOverviewComponent = () => (
       </Box>
     </Box>
     <Box as={BOX_TAG.DIV} className={styles['school-home__stats']}>
-      {_map(DASHBOARD_METRICS, ({ name, description, icon: Icon, tone }) => (
-        <Box
-          as={BOX_TAG.DIV}
-          className={cn(styles['school-home__stat'], sectionStyles['school-home__tone--' + tone])}
-          key={name}
-        >
-          <Box as={BOX_TAG.DIV} className={styles['school-home__stat-label']}>
-            <Box as={BOX_TAG.SPAN}>{name}</Box>
-            <Icon size={18} />
-          </Box>
-          <Box as={BOX_TAG.STRONG} aria-label={name + ' not available'}>
-            —
-          </Box>
-          <Box as={BOX_TAG.SMALL}>{description}</Box>
-        </Box>
-      ))}
+      {_map(DASHBOARD_METRICS, renderDashboardOverviewMetric)}
     </Box>
   </Box>
 );
