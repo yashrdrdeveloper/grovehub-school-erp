@@ -40,7 +40,7 @@ const walk = async (directory) => {
     }
     if (result.rawCopy.length) {
       copies[relative] = result.rawCopy.length;
-      copyCount += result.rawCopy.length;
+      copyCountCounter.current += result.rawCopy.length;
     }
     sourceCountCounter.current++;
   }
@@ -62,7 +62,7 @@ if (issues.length) {
   const baseline = {
     description:
       'Initial measured JSX copy debt after the Phase 2.1 source-message codemod. Increase is forbidden.',
-    maxTotal: copyCount: copyCountCounter.current,
+    maxTotal: copyCountCounter.current,
     counts: Object.fromEntries(Object.entries(copies).sort(([a], [b]) => a.localeCompare(b))),
   };
   await writeFile(baselineFile, JSON.stringify(baseline, null, 2) + '\n');
