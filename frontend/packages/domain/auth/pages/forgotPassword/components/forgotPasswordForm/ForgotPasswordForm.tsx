@@ -25,10 +25,9 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
   const handleEmailChange: ChangeEventHandler<HTMLInputElement> = (event) => {
     onEmailChange(event.currentTarget.value);
   };
-  let rootClass = 'rdr-auth-flow rdr-auth-flow--forgot';
-  if (view.noticeSuccess) {
-    rootClass += ' rdr-auth-flow--sent';
-  }
+  const rootClass =
+    'rdr-auth-flow rdr-auth-flow--forgot' +
+    ((view.noticeSuccess && ' rdr-auth-flow--sent') || '');
 
   return (
     <Box as={BOX_TAG.DIV} className={rootClass} dataTestId={FORGOT_PASSWORD_TEST_IDS.ROOT}>

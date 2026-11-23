@@ -11,8 +11,7 @@ export const renderLoginLayoutAppearanceOption: RenderLoginLayoutAppearanceOptio
   preference,
   setPreference,
 }): ReactElement => {
-  let className = '';
-  if (preference === value) className = 'is-active';
+  const className = (preference === value && 'is-active') || '';
   const onSelect = () => setPreference(value);
   return (
     <Button

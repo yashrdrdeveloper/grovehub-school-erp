@@ -6,10 +6,10 @@ import type { I18nBootstrapFallbackComponent } from './types/i18nBootstrapFallba
 
 /** Must not call __(): the global resolver is not installed yet. */
 export const I18nBootstrapFallback: I18nBootstrapFallbackComponent = ({ status }) => {
-  let message = 'Loading school workspace…';
-  if (status === InitI18nStatus.FAILED) {
-    message = 'Unable to load RDR School. Please refresh the page.';
-  }
+  const message =
+    (status === InitI18nStatus.FAILED &&
+      'Unable to load RDR School. Please refresh the page.') ||
+    'Loading school workspace…';
 
   return (
     <Box

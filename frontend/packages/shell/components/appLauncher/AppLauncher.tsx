@@ -25,12 +25,10 @@ export const AppLauncher = ({
   onTogglePin,
   sidebarCollapsed,
 }: AppLauncherViewProps) => {
-  let overlayClass = 'catalog-overlay';
-  let contentClass = 'catalog-content';
-  if (sidebarCollapsed) {
-    overlayClass += ' catalog-overlay--collapsed';
-    contentClass += ' catalog-content--collapsed';
-  }
+  const overlayClass =
+    'catalog-overlay' + ((sidebarCollapsed && ' catalog-overlay--collapsed') || '');
+  const contentClass =
+    'catalog-content' + ((sidebarCollapsed && ' catalog-content--collapsed') || '');
   const { matching, pinnedApps, otherApps, filter, onFilterChange } = model;
   return (
     <DialogRoot open={open} onOpenChange={onOpenChange}>

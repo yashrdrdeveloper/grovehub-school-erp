@@ -12,10 +12,8 @@ export const DashboardAside: DashboardAsideComponent = ({ date, calendar }) => {
   const today = calendar.view === 'today';
   const { calendarDay, calendarHeading, calendarDetail, calendarEmptyTitle } =
     getDashboardCalendarCopy(date, today);
-  let todayClass = '';
-  let upcomingClass = '';
-  if (today) todayClass = styles['is-active'] ?? '';
-  else upcomingClass = styles['is-active'] ?? '';
+  const todayClass = (today && styles['is-active']) || '';
+  const upcomingClass = (!today && styles['is-active']) || '';
 
   return (
     <Box as={BOX_TAG.ASIDE} className={styles['school-home__side-column']}>

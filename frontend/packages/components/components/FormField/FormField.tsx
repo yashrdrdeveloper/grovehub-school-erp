@@ -19,11 +19,7 @@ export const FormField: FormFieldComponent = ({
   ...props
 }) => {
   const testId = dataTestId ?? htmlFor;
-  let messageRole: 'alert' | undefined;
-
-  if (error) {
-    messageRole = 'alert';
-  }
+  const messageRole = (error && ('alert' as const)) || undefined;
 
   return (
     <Box

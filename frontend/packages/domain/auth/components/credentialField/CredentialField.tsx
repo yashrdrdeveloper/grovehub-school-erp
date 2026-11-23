@@ -23,11 +23,7 @@ export const CredentialField: CredentialFieldComponent = ({
   ...inputProps
 }) => {
   const errorId = `${id}-error`;
-  let errorDescriptionId: string | undefined;
-
-  if (error) {
-    errorDescriptionId = errorId;
-  }
+  const errorDescriptionId = (error && errorId) || undefined;
 
   const description = getFormFieldCombinedDescription(describedBy, errorDescriptionId);
 

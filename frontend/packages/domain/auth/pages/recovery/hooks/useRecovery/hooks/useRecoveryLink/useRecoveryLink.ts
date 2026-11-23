@@ -28,9 +28,11 @@ export const useRecoveryLink: UseRecoveryLink = (purpose, clearForm) => {
         if (invitation) await authenticationApi.validateInvitation(proof);
         else await authenticationApi.validateRecovery(proof);
         if (sequence !== flowSequence.current) return;
-        let grant;
-        if (invitation) grant = await authenticationApi.exchangeInvitation(proof);
-        else grant = await authenticationApi.exchangeRecovery(proof);
+        const exchangeGrant = async () => {
+          if (invitation) return authenticationApi.exchangeInvitation(proof);
+          return authenticationApi.exchangeRecovery(proof);
+        };
+        const grant = await exchangeGrant();
         if (sequence !== flowSequence.current) return;
         saveRecoveryGrant(purpose, grant.expiresIn);
         proofRef.current = null;
@@ -79,8 +81,7 @@ export const useRecoveryLink: UseRecoveryLink = (purpose, clearForm) => {
   useEffect(() => {
     const handleLink = () => {
       const url = new URL(window.location.href);
-      let incoming = new URLSearchParams(url.hash.slice(1)).get('proof');
-      if (incoming) incoming = _trim(incoming);
+      const incoming = _trim(new URLSearchParams(url.hash.slice(1)).get('proof') ?? '');
       if (incoming) {
         const sequence = ++flowSequence.current;
         saveRecoveryProof(purpose, incoming);
