@@ -15,6 +15,7 @@ import type { LoginLayoutComponent } from './types/loginLayout.props';
 
 import { useAuthViewportFit } from '../../hooks/useAuthViewportFit';
 import { LoginLayoutVisual } from './components/visual';
+import titleStyles from './LoginLayoutTitle.module.css';
 import { LoginLayoutFooter } from './components/footer';
 
 // One stylesheet owns the entire auth layout. Legacy variants are intentionally not loaded.
@@ -24,6 +25,7 @@ import './styles/optionOneAuth.css';
 export const LoginLayout: LoginLayoutComponent = ({
   children,
   title,
+  mobileTitle,
   description,
   mobileDescription,
   minimalMobile = false,
@@ -84,7 +86,12 @@ export const LoginLayout: LoginLayoutComponent = ({
                 {eyebrow}
               </Box>
               <Box as={BOX_TAG.H1} id="rdr-auth-title" data-testid={LOGIN_LAYOUT_TEST_IDS.TITLE}>
-                {title}
+                <Box as={BOX_TAG.SPAN} className={titleStyles.desktop}>
+                  {title}
+                </Box>
+                <Box as={BOX_TAG.SPAN} className={titleStyles.mobile}>
+                  {mobileTitle ?? title}
+                </Box>
               </Box>
               <Box as={BOX_TAG.P} className="rdr-login-v2__description-desktop">
                 {description}

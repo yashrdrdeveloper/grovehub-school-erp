@@ -1,0 +1,18 @@
+/* Single semantic h1: show the owner-supplied mobile title at narrow widths. */
+.desktop {
+  display: inline;
+}
+
+.mobile {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .desktop {
+    display: none;
+  }
+
+  .mobile {
+    display: inline;
+  }
+}
