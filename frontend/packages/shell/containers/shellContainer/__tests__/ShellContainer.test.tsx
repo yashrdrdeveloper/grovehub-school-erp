@@ -1,9 +1,12 @@
 import type { ReactNode } from 'react';
 import { StrictMode } from 'react';
 import { render, screen } from '@testing-library/react';
-import { renderToString } from 'react-dom/server';
+
+import { __ as resolveMessage } from '@Base/i18n';
 
 import { ShellContainer } from '../ShellContainer';
+
+const mockWasI18nReady = jest.fn();
 
 jest.mock('@Domain/auth', () => ({
   AuthProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
@@ -18,18 +21,30 @@ jest.mock('@Components/components/ErrorBoundary', () => ({
 }));
 
 jest.mock('../../../components/appRoutes', () => ({
-  AppRoutes: () => <p>{__('Shell ready')}</p>,
+  AppRoutes: () => {
+    mockWasI18nReady(typeof window.__ === 'function');
+    return <p>{__('Shell ready')}</p>;
+  },
 }));
 
 describe('ShellContainer', () => {
-  it('server-renders only untranslated boot status before the client effect can run', () => {
-    const html = renderToString(<ShellContainer />);
-
-    expect(html).toContain('Loading school workspace');
-    expect(html).not.toContain('Shell ready');
+  afterEach(() => {
+    window.__ = resolveMessage;
+    mockWasI18nReady.mockClear();
   });
 
-  it('mounts application routes only after the global function is installed', () => {
+  it('never mounts public or protected routes before __ is registered', () => {
+    Reflect.deleteProperty(window, '__');
+
+    render(<ShellContainer />);
+
+    expect(screen.getByText('Shell ready')).toBeTruthy();
+    expect(mockWasI18nReady).toHaveBeenCalledWith(true);
+    expect(mockWasI18nReady.mock.calls.every(([ready]) => ready)).toBe(true);
+    expect(screen.queryByTestId('i18n-boot-status')).toBeNull();
+  });
+
+  it('remains safe under StrictMode initialization replay', () => {
     Reflect.deleteProperty(window, '__');
 
     render(
@@ -39,7 +54,7 @@ describe('ShellContainer', () => {
     );
 
     expect(screen.getByText('Shell ready')).toBeTruthy();
+    expect(mockWasI18nReady.mock.calls.every(([ready]) => ready)).toBe(true);
     expect(__('Welcome {{name}}', { name: 'Parent' })).toBe('Welcome Parent');
-    expect(screen.queryByTestId('i18n-boot-status')).toBeNull();
   });
 });
