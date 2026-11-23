@@ -50,9 +50,14 @@ frontend/
 │       └── containers/
 │           └── shellContainer/
 │               ├── ShellContainer.tsx
+│               ├── components/i18nBootstrapFallback/
+│               │   ├── I18nBootstrapFallback.tsx
+│               │   ├── types/i18nBootstrapFallback.ts
+│               │   └── __tests__/I18nBootstrapFallback.test.tsx
 │               ├── hooks/
 │               │   └── useInitI18n/
 │               │       ├── useInitI18n.ts
+│               │       ├── constants/useInitI18n.status.ts
 │               │       ├── index.ts
 │               │       ├── types/useInitI18n.ts
 │               │       └── __tests__/useInitI18n.test.tsx
