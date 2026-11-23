@@ -1,4 +1,4 @@
-# Temporary formatting debt: seven pre-existing oversized public-site source units.
+# Temporary formatting debt: six pre-existing oversized public-site source units.
 # These must be extracted into SRP components before the all-tree gate can include them.
 # Do not add new entries. CI verifies this exact list.
 /packages/domain/publicSite/pages/landing/components/aboutContent/aboutContent.tsx

@@ -30,10 +30,6 @@ jobs:
           cache-dependency-path: frontend/pnpm-lock.yaml
       - name: Install
         run: pnpm install --frozen-lockfile
-      - name: Format audit baseline and emit exact text (temporary)
-        run: |
-          pnpm exec prettier --write scripts/audit-allowlist.json
-          node -e 'const fs = require("node:fs"); console.log("GH_FORMATAUDIT|" + JSON.stringify(fs.readFileSync("scripts/audit-allowlist.json", "utf8")));'
       - name: Audit all tracked frontend source (non-blocking report)
         run: pnpm audit:guidelines
       - name: Check architecture
