@@ -1,37 +1,207 @@
 # Frontend Code Guidelines
 
-## Revision 12 — component-owned enums and shared UI messages (Phase 2.1, 23 November 2026)
+## Revision 13 — global __() bootstrap from ShellContainer (23 November 2026)
 
-**Precedence:** This section overrides older examples that use inline closed-set props such as \`variant="primary"\`, \`size="lg"\`, \`as="h3"\`, \`tone="muted"\`, and user-visible copy authored directly in JSX. Apply it to **all** frontend owners (\`@Components\`, \`@Shell\`, \`@Domain\`, and feature-related business error-to-UI mapping). This is an incremental migration requirement, **not** a claim that every existing file has already been converted.
+**Status: approved implementation plan, not yet implemented.** This revision supersedes Revision 12 wherever it requires feature files to `import { __ } from '@Base/i18n'` or forbids the app-wide `window.__` bridge. Only one expressly controlled global binding is permitted: `__`. Components must call `__()` **without importing it**, but only *after ShellContainer has installed it*. Do not claim the runtime hook or migration is complete until the checks below pass. The existing pure resolver in `@Base/i18n` is retained.
+
+### 1. One app-scoped, typed global message function
+
+The feature-facing API is:
+
+~~~tsx
+import { Box, BOX_TAG } from '@Components/components/Box';
+import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '@Components/components/Button';
+
+// No import for __ or MessageParameters in a presentation component.
+export const ResetNotice = ({ value }: { value: string }) => (
+  <Box as={BOX_TAG.SECTION}>
+    <Box as={BOX_TAG.H3}>{__('Check your email')}</Box>
+    <Box as={BOX_TAG.P}>
+      {__('A reset link was requested for {{value}}.', { value })}
+    </Box>
+    <Button variant={BUTTON_VARIANT.PRIMARY} size={BUTTON_SIZE.LARGE}>
+      {__('Back to sign in')}
+    </Button>
+  </Box>
+);
+~~~
+
+- `__('Sign in')` formats a static English source message.
+- `__('Hello {{name}}', { name })` replaces named parameters. Support repeated named tokens, zero, false, placeholder whitespace and non-recursive substitution. Missing values raise an explicit error; do not silently render unsubstituted placeholders.
+- Template is a string literal or named source-copy constant in `constants/<owner>.copy.ts`. Parameters are a read-only record of primitive `string | number | boolean` values. HTML, React nodes, nested objects, arbitrary user-generated translation keys and unsafe HTML injection are unsupported.
+- `__` is a **global JavaScript symbol used by app-rendered UI**, not a React hook and not `window.__` accessed manually by each feature. Only the initialization boundary writes `window.__`. Direct feature-level imports of `__` from `@Base/i18n` and inline ad-hoc translation functions are forbidden after migration.
+- Technical values are not translated: CSS classes, API paths, test IDs, protocol codes, identifiers, cookie names, MIME values, status keys, `type="email"`, `role="status"`, `aria-live="polite"` and other standard DOM semantics. Component-owned closed prop values still use their exported constants such as `BUTTON_VARIANT.PRIMARY` and `BOX_TAG.H3`.
+- **Phase 1 is English-only**. Installing a global resolver does not implement locale switching or actual translated dictionaries. Future multi-language support must provide an observable locale state that causes mounted UI to update; reassigning a global function alone will not cause React renders.
+
+### 2. Required ownership and directory structure
+
+~~~text
+frontend/
+├── app/
+│   └── types/i18n.global.d.ts        # ambient function + Window contract
+├── packages/
+│   ├── base/
+│   │   └── i18n/
+│   │       ├── __.ts                  # already exists: pure source interpolation
+│   │       ├── index.ts               # importable by shell only, not by UI
+│   │       ├── types/i18n.message.ts
+│   │       └── __tests__/__.test.ts
+│   └── shell/
+│       └── containers/
+│           └── shellContainer/
+│               ├── ShellContainer.tsx
+│               ├── hooks/
+│               │   └── useInitI18n/
+│               │       ├── useInitI18n.ts
+│               │       ├── index.ts
+│               │       ├── types/useInitI18n.ts
+│               │       └── __tests__/useInitI18n.test.tsx
+│               └── __tests__/ShellContainer.test.tsx
+└── scripts/
+    ├── test/setupI18n.ts             # actual formatter installed in Jest
+    └── check-i18n-conventions.mjs     # AST guard for migrated owners
+~~~
+
+The hook is owned by **`shellContainer`**, not by `@Base`, `@Components` or an individual page. `@Base/i18n` must stay pure JavaScript/TypeScript and must not import React, shell, browser storage or DOM APIs. The only application code allowed to import the resolver is the initializer (plus pure unit-test and test bootstrap code). Do not add another global service registry or a generic `window.services` object.
+
+### 3. Global TypeScript declarations (no feature imports)
+
+Implement the ambient callable function in `frontend/app/types/i18n.global.d.ts`, included by `tsconfig.json`:
+
+~~~ts
+import type { MessageParameters } from '@Base/i18n';
+
+declare global {
+  function __(message: string, params?: MessageParameters): string;
+
+  interface Window {
+    __: typeof __;
+  }
+}
+
+export {};
+~~~
+
+This declaration provides compile-time typing only. **It does not install the runtime function.** A feature can compile and still fail if bootstrapping is skipped; the ShellContainer initialization gate and tests below are mandatory. Keep one authoritative definition: do not repeat `declare global` in every component.
+
+### 4. `useInitI18n` installation lifecycle
+
+Create the hook in `shellContainer/hooks/useInitI18n/useInitI18n.ts`. Its public output can be a typed `ready: boolean` (or an explicitly typed init-status model if async dictionaries are added). The hook owns the following sequence:
+
+1. Start **not ready**. Browser access is forbidden at module evaluation and during server-side rendering. Import the pure English resolver once from `@Base/i18n` (e.g. `import { __ as resolveMessage } from '@Base/i18n';`).
+2. In a React effect, assign `window.__ = resolveMessage` exactly at the shell bootstrap boundary. The assignment must be **idempotent under React StrictMode**, with no competing installers or destructive cleanup in the effect replay. Do not run translation or DOM writes during React render.
+3. Mark `ready` only **after** the global has been installed. If a future locale catalog must load asynchronously, mark ready only after loading and fallback resolution have succeeded.
+4. On initialization error, keep normal feature routes unmounted and surface a deterministic, accessible fallback owned by the shell. Do not allow a runtime `ReferenceError: __ is not defined` to leak into a page.
+5. Do not use `window.__` in feature code; use the typed bare `__(...)`. Do not use `window.` in `@Base/i18n/__.ts`.
+6. **Do not add the hook to WorkspaceShellContainer**: that container only wraps protected pages. `ShellContainer` is the shared parent of public/auth/landing and protected routes.
+
+Illustrative hook structure (**planned code, not existing implementation**):
+
+~~~ts
+import { useEffect, useState } from 'react';
+import { __ as resolveMessage } from '@Base/i18n';
+
+export const useInitI18n = (): boolean => {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.__ = resolveMessage;
+    setReady(true);
+  }, []);
+
+  return ready;
+};
+~~~
+
+The hook can remain synchronous English-only initially. Do **not** move the `window.__` write into `useState`'s initializer or component render to remove the gate; render-phase side effects are disallowed. Do not clear the global on StrictMode's development effect cleanup and accidentally break the second mount.
+
+### 5. `ShellContainer` must gate *all* pages
+
+Existing `ShellContainer` wraps `QueryClientProvider` → `ErrorBoundary` → `BrowserRouter` → `AuthProvider` → `AppRoutes`. Both public and protected routes are children. Call `useInitI18n()` **before** composing these descendants, then only mount them once ready.
+
+~~~tsx
+export const ShellContainer: ShellContainerComponent = () => {
+  const ready = useInitI18n();
+
+  if (!ready) {
+    return <ShellBootFallback />; // Shared, accessible, non-translated bootstrap UI.
+  }
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <AuthProvider>
+            <AppRoutes />
+          </AuthProvider>
+        </BrowserRouter>
+      </ErrorBoundary>
+    </QueryClientProvider>
+  );
+};
+~~~
+
+Use the real exported Shell boot placeholder when implementing; the snippet's placeholder is a named future component, not an existing import. The fallback must not itself call `__()`. Gating is **required** because React may render child components before an effect runs; an unguarded `useEffect` plus immediate `<AppRoutes />` is incorrect. Do not make individual pages each wait for i18n or install a second initializer in the login/public-site route.
+
+The current public SEO script (`scripts/prerender-public-pages.mjs`) creates static HTML snapshots and does not execute React's client effects; keep its titles, metadata and visible content available without JavaScript. A future actual SSR system cannot use a process-global mutable user locale: it must resolve messages per request, while browser clients may keep the shell-managed global.
+
+### 6. Jest, typing, safety and ownership rules
+
+- Configure `scripts/test/setupI18n.ts` through Jest bootstrap to install the **real** `@Base/i18n` formatter on the JSDOM global before *component-only* test suites run. This is setup, not mocking a pure function. It lets components be tested in isolation without mounting the entire ShellContainer in every unit test.
+- Separately test `useInitI18n` and the ShellContainer gate in an environment where `__` is initially absent; verify that page children do **not** render before installation, that StrictMode installs idempotently, and that both public and protected routes can call the function.
+- Typecheck unimported `__('Hello {{name}}', { name })` in TSX; verify no global declarations conflict, no unsafe `any` parameters, no `__` writes outside the hook/test setup and no runtime missing-global failures.
+- Guard feature source via `scripts/check-i18n-conventions.mjs`: reject `import { __ } from '@Base/i18n'` and bare `window.__` assignments/reads outside the bootstrap, forbid calling `__` at module scope in feature code, and prohibit new raw user-facing JSX strings **after** creating a measured baseline. Avoid false positives for dynamic data, technical strings, HTML attributes and unit tests.
+- Retain per-owner tests for messages and interpolation. Test repeated placeholders, escaping through React text rendering, missing arguments, accessibility name matching, auth flows, mobile views and prerender SEO. Do not mask errors by falling back to the unlocalized string silently.
+
+### 7. Migration and acceptance plan
+
+| Phase | Priority | Work | Exit criterion |
+|---|---|---|---|
+| A — contract and runtime | **P0** | Add `app/types/i18n.global.d.ts`, typed callable interface, `useInitI18n` owned by `shellContainer`, exported hook, and ShellContainer readiness gate. Keep `@Base/i18n` pure and make the bootstrap StrictMode-safe. | No feature can render before `window.__` is registered; public and protected routes receive the same global |
+| B — test bootstrap | **P0** | Install the real formatter in Jest setup; add hook, ShellContainer, interpolation and missing-global tests; keep public static prerender unaffected. | Typecheck, Jest, Vite build, public SEO script and browser boot tests pass |
+| C — remove imports and migrate auth | **P1** | Remove direct `__` imports from login and all other feature owners. Convert auth labels, buttons, errors, success text, placeholders, accessibility names and recovery copy to the bare global `__()`. | Auth feature TSX has no imported resolver and no new raw UI text; login/recovery flows and 30s resend behavior are unchanged |
+| D — shell, dashboard, public site | **P1** | Migrate topbar/sidebar/catalog/dashboard text, public landing and content pages, enquiry form, dialogs, alt text, document titles and SEO strings. Preserve the owner-specific `constants/<owner>.copy.ts` structure and named `{{param}}` interpolation. | All user-visible strings are covered; routes, semantic tags and page layout remain unchanged |
+| E — CI architecture enforcement | **P2** | Enforce a single runtime installer; AST checks for raw JSX messages, component enum props, module-scope `__()` and illegal resolver imports. Introduce measured migration ceilings; tighten to zero when complete. | `pnpm check:architecture` blocks regressions without whitelisting new violations |
+| F — actual localization, optional | **P3** | Add typed language catalogs, request-safe locale handling, plural/number/date formatting and a React-observable locale provider/store. The global function delegates to the current locale resolver. | Changing locale re-renders mounted UI; catalogs pass parity/fallback and accessibility tests |
+
+**Mandatory verification after each phase:** `pnpm check:architecture`, `pnpm typecheck`, `pnpm exec jest --runInBand`, `pnpm build` and Playwright/Chromium for 320/375/390/720px, dark/light/system, keyboard accessibility and auth routes. Never claim Phase A/B complete merely because the TypeScript global is declared.
+
+**Current repository truth:** Only the pure `@Base/i18n` formatter and its initial unit tests exist; the login page currently still has an explicit `__` import. `useInitI18n`, ambient typing, ShellContainer readiness gate, Jest bootstrap and an AST rule for imports are **planned, not implemented**. This revision records the requested convention and implementation order.
+
+---
+
+## Revision 12 — component-owned enums and shared UI messages (Phase 2.1, 23 November 2026; global bootstrap superseded by Revision 13)
+
+**Precedence:** This section overrides older examples that use inline closed-set props such as `variant="primary"`, `size="lg"`, `as="h3"`, `tone="muted"`, and user-visible copy authored directly in JSX. Apply it to **all** frontend owners (`@Components`, `@Shell`, `@Domain`, and feature-related business error-to-UI mapping). This is an incremental migration requirement, **not** a claim that every existing file has already been converted.
 
 ### A. One source of truth for each kind of string
 
 | Category | Required approach | Example | Never do |
 |---|---|---|---|
-| Closed component prop (variant, size, tone, tag, alignment, layout, spacing, status) | Nearest shared component's exported runtime enum or frozen constant | \`<Button variant={BUTTON_VARIANT.PRIMARY} size={BUTTON_SIZE.LARGE} />\` | \`variant="primary"\` |
-| Semantic wrapper tag | Same wrapper's public tag constants | \`<Box as={BOX_TAG.H3} />\`, \`<Text as={TEXT_TAG.P} />\` | \`as="h3"\`, a second ad-hoc global tag map |
-| Business state / route ID / operation | Owning business/domain constant or enum | \`LoginLayoutVariant.FORGOT\`, \`AUTH_ROUTE.LOGIN\` | \`variant="forgot"\`, a raw URL |
-| User-visible text, accessible names, descriptions and feedback | Shared \`__()\` resolver called with a literal template or owned copy constant | \`__('Check your email')\` | Unwrapped JSX prose, string concatenation for copy |
-| Runtime person, school or record data | Interpolation argument only; never treat input as a message key | \`__('Hello {{name}}', { name })\` | \`__(name)\`, \`__('Hello ' + name)\` |
-| Protocol/API, data IDs, cookie names, CSS classes, HTTP methods, MIME, schema keys, input values, testing selectors, standards-defined ARIA token values | Keep exact wire/DOM semantics; use owner constants if repeated | \`dataTestId={LOGIN_TEST_IDS.SUBMIT}\`, \`aria-live="polite"\` | Passing technical identifiers through \`__()\` |
+| Closed component prop (variant, size, tone, tag, alignment, layout, spacing, status) | Nearest shared component's exported runtime enum or frozen constant | `<Button variant={BUTTON_VARIANT.PRIMARY} size={BUTTON_SIZE.LARGE} />` | `variant="primary"` |
+| Semantic wrapper tag | Same wrapper's public tag constants | `<Box as={BOX_TAG.H3} />`, `<Text as={TEXT_TAG.P} />` | `as="h3"`, a second ad-hoc global tag map |
+| Business state / route ID / operation | Owning business/domain constant or enum | `LoginLayoutVariant.FORGOT`, `AUTH_ROUTE.LOGIN` | `variant="forgot"`, a raw URL |
+| User-visible text, accessible names, descriptions and feedback | Shared `__()` resolver called with a literal template or owned copy constant | `__('Check your email')` | Unwrapped JSX prose, string concatenation for copy |
+| Runtime person, school or record data | Interpolation argument only; never treat input as a message key | `__('Hello {{name}}', { name })` | `__(name)`, `__('Hello ' + name)` |
+| Protocol/API, data IDs, cookie names, CSS classes, HTTP methods, MIME, schema keys, input values, testing selectors, standards-defined ARIA token values | Keep exact wire/DOM semantics; use owner constants if repeated | `dataTestId={LOGIN_TEST_IDS.SUBMIT}`, `aria-live="polite"` | Passing technical identifiers through `__()` |
 
-**Only closed design-system choices become component enums.** Do not create enums for every arbitrary string in the system; that would corrupt HTML/ARIA/API contracts, create unmaintainable wrappers and make user data indistinguishable from design choices. Standards-defined attributes (e.g. \`autoComplete="email"\`, \`role="status"\`, \`aria-live="polite"\`) are not translated. Inputs that *expose a closed, component-owned option* should publish the corresponding constant through their public API.
+**Only closed design-system choices become component enums.** Do not create enums for every arbitrary string in the system; that would corrupt HTML/ARIA/API contracts, create unmaintainable wrappers and make user data indistinguishable from design choices. Standards-defined attributes (e.g. `autoComplete="email"`, `role="status"`, `aria-live="polite"`) are not translated. Inputs that *expose a closed, component-owned option* should publish the corresponding constant through their public API.
 
 ### B. Every shared component publishes its own public contract
 
-1. Put closed prop values in \`components/<Component>/constants/<component>.<prop>.ts\` (or a named type-specific enum). Use \`Object.freeze({ ... } as const)\` for UI-only options; string enums are appropriate for cross-unit or server-aligned domain states.
+1. Put closed prop values in `components/<Component>/constants/<component>.<prop>.ts` (or a named type-specific enum). Use `Object.freeze({ ... } as const)` for UI-only options; string enums are appropriate for cross-unit or server-aligned domain states.
 2. Derive the prop union from the exported runtime value, not from a second hand-written string union:
-   \`type Size = (typeof BUTTON_SIZE)[keyof typeof BUTTON_SIZE]\`. Defaults in implementation use that same constant.
-3. Export the constant **and its type** through the component's \`index.ts\`. Feature callers import them from the same component API as the component itself.
-4. A composed component must expose forwarded choices at its own public boundary. If values are *exactly the same* as an underlying primitive, re-export/alias the original constant instead of creating a second unrelated map. Example: \`TEXT_SIZE\` and \`TEXT_TONE\` re-export Typography's actual values; \`TEXT_TAG\` defines Text's valid tag subset using \`TYPOGRAPHY_TAG\` values.
-5. Closed-set selection logic belongs in owned \`constants/\`, \`helpers/\` or typed \`renderer/\`, not inline JSX. Preserve the existing CSS Module and test ID contract. Avoid unnecessary enum aliases for open-ended content props (title, label, children, name, value).
+   `type Size = (typeof BUTTON_SIZE)[keyof typeof BUTTON_SIZE]`. Defaults in implementation use that same constant.
+3. Export the constant **and its type** through the component's `index.ts`. Feature callers import them from the same component API as the component itself.
+4. A composed component must expose forwarded choices at its own public boundary. If values are *exactly the same* as an underlying primitive, re-export/alias the original constant instead of creating a second unrelated map. Example: `TEXT_SIZE` and `TEXT_TONE` re-export Typography's actual values; `TEXT_TAG` defines Text's valid tag subset using `TYPOGRAPHY_TAG` values.
+5. Closed-set selection logic belongs in owned `constants/`, `helpers/` or typed `renderer/`, not inline JSX. Preserve the existing CSS Module and test ID contract. Avoid unnecessary enum aliases for open-ended content props (title, label, children, name, value).
 6. Component-owned enum audits must include Button, Box, Text, Typography, Card, Container, Form, InputControl, StatusPill, Dialog and each additional shared primitive, plus consuming auth, shell, dashboard and public-site components.
 
 ~~~tsx
 import { Box, BOX_TAG } from '@Components/components/Box';
 import { Text, TEXT_TAG, TEXT_TONE, TEXT_SIZE } from '@Components/components/Text';
 import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '@Components/components/Button';
-import { __ } from '@Base/i18n';
 
 export const Confirmation = ({ value }: { value: string }) => (
   <Box as={BOX_TAG.SECTION}>
@@ -46,12 +216,11 @@ export const Confirmation = ({ value }: { value: string }) => (
 );
 ~~~
 
-### C. The global \`__()\` message resolver
+### C. The global `__()` message resolver
 
-**Implemented foundation:** \`@Base/i18n\` publicly exports \`__\` (also re-exported via \`@Base\`) and \`MessageParameters\`. It is a **pure English source-message formatter at present**; it is **not** a multilingual translation service. Do not advertise locale switching, dictionaries, pluralization or translations until implemented and tested.
+**Implemented pure foundation:** `@Base/i18n` exports the resolver for bootstrap and tests; once Revision 13 is implemented, feature components use the shell-installed ambient `__()` without imports. `MessageParameters` remains the typed input contract. It is a **pure English source-message formatter at present**; it is **not** a multilingual translation service. Do not advertise locale switching, dictionaries, pluralization or translations until implemented and tested.
 
 ~~~ts
-import { __ } from '@Base/i18n';
 
 __('Sign in');                                      // "Sign in"
 __('Hello {{name}}', { name: 'Parent' });            // "Hello Parent"
@@ -59,30 +228,30 @@ __('{{count}} records found', { count: 0 });       // "0 records found"
 __('Feature {{enabled}}', { enabled: false });      // "Feature false"
 ~~~
 
-**Required rules:** Template is stable literal source copy or a constant in the nearest \`constants/<owner>.copy.ts\`; parameters are typed named \`string | number | boolean\` values. Repeated parameters work; missing values throw to surface defects rather than silently displaying \`{{placeholder}}\`. React renders the result as escaped text. \`__\` does not parse/return HTML or React nodes, does not modify the DOM, does not access storage, and does not perform network calls. Never use \`dangerouslySetInnerHTML\` to render its result. Avoid computed message templates, dynamic keys, nested interpolation objects and string concatenation as substitutes for named placeholders.
+**Required rules:** Template is stable literal source copy or a constant in the nearest `constants/<owner>.copy.ts`; parameters are typed named `string | number | boolean` values. Repeated parameters work; missing values throw to surface defects rather than silently displaying `{{placeholder}}`. React renders the result as escaped text. `__` does not parse/return HTML or React nodes, does not modify the DOM, does not access storage, and does not perform network calls. Never use `dangerouslySetInnerHTML` to render its result. Avoid computed message templates, dynamic keys, nested interpolation objects and string concatenation as substitutes for named placeholders.
 
-**Component rendering, not module initialization:** Keep source copy in \`constants/<owner>.copy.ts\`, then call \`__(COPY.TITLE)\` or \`__('literal copy')\` while rendering. Do not eagerly store translated strings in a module-level constant: that would break future per-user locale switching. Migrate visible text inside headings, labels, buttons, helper text, status descriptions, errors, placeholders, accessible \`aria-label\`, \`title\`/tooltip, image alternatives, dialogs, toasts, empty states, document titles and SEO meta descriptions. Do **not** run backend error codes, API paths or IDs through the formatter; first map them to owned human-readable copy.
+**Component rendering, not module initialization:** Keep source copy in `constants/<owner>.copy.ts`, then call `__(COPY.TITLE)` or `__('literal copy')` while rendering. Do not eagerly store translated strings in a module-level constant: that would break future per-user locale switching. Migrate visible text inside headings, labels, buttons, helper text, status descriptions, errors, placeholders, accessible `aria-label`, `title`/tooltip, image alternatives, dialogs, toasts, empty states, document titles and SEO meta descriptions. Do **not** run backend error codes, API paths or IDs through the formatter; first map them to owned human-readable copy.
 
-**Future localization extension:** The pure base interpolator remains dependency-free. When additional languages are required, introduce a scoped dictionary/locale resolution layer with a React-aware hook/provider (so changing locale re-renders all consumers), consistent English fallback, placeholder parity checks and \`Intl.PluralRules\` / \`Intl.NumberFormat\` / \`Intl.DateTimeFormat\`. Do not attach a mutable \`__\` function to \`window\`, implement an unobservable process-global locale singleton, or guess locale from user input. Source-English copy with \`__()\` is *prepared for* extraction, **not already translated**.
+**Future localization extension:** The pure base interpolator remains dependency-free. When additional languages are required, introduce a scoped dictionary/locale resolution layer with a React-aware hook/provider (so changing locale re-renders all consumers), consistent English fallback, placeholder parity checks and `Intl.PluralRules` / `Intl.NumberFormat` / `Intl.DateTimeFormat`. Revision 13 permits a single controlled `window.__` binding installed only by ShellContainer. The global alone cannot notify React when locale changes; use an observable locale provider/store in a later multilingual phase. Do not guess locale from user input. Source-English copy with `__()` is *prepared for* extraction, **not already translated**.
 
 ### D. Frontend-wide migration plan (tracked by priority)
 
 | Phase | Priority | Owners and actions | Exit gate |
 |---|---|---|---|
-| 0. Shared foundation | **P0** | Introduce \`@Base/i18n/__\` with named interpolation; pure tests for unchanged text, repeated tokens, zero/false, missing values and non-recursive values. Retain existing runtime semantics. | \`__\` test suite, TS and existing business/auth tests pass |
-| 1. Component contract inventory | **P1** | Enumerate every shared component's closed props; publish/forward \`COMPONENT_VARIANT\`, \`COMPONENT_SIZE\`, \`COMPONENT_TAG\`, \`COMPONENT_TONE\`, status/layout etc. Convert defaults, props types, caller imports and direct tests. Reuse underlying constants rather than duplicating. | Every closed public prop has one exported runtime constant and a type derived from it |
-| 2. Authentication messages | **P1** | Login, forgot password, reset/set password, token states, invitation/validation errors, field labels, success copy, mobile variants, accessibility names. Preserve existing security flow and 30s resend timer. | No auth user-visible copy bypasses \`__()\`; all old functional tests and responsive checks pass |
+| 0. Shared foundation | **P0** | Keep pure `@Base/i18n/__` interpolation; then implement the ShellContainer-owned `useInitI18n` hook, ambient global declaration, readiness gate, test bootstrap and StrictMode behavior specified by Revision 13. | `__` test suite, TS and existing business/auth tests pass |
+| 1. Component contract inventory | **P1** | Enumerate every shared component's closed props; publish/forward `COMPONENT_VARIANT`, `COMPONENT_SIZE`, `COMPONENT_TAG`, `COMPONENT_TONE`, status/layout etc. Convert defaults, props types, caller imports and direct tests. Reuse underlying constants rather than duplicating. | Every closed public prop has one exported runtime constant and a type derived from it |
+| 2. Authentication messages | **P1** | Login, forgot password, reset/set password, token states, invitation/validation errors, field labels, success copy, mobile variants, accessibility names. Preserve existing security flow and 30s resend timer. | No auth user-visible copy bypasses `__()`; all old functional tests and responsive checks pass |
 | 3. Shell and dashboard messages | **P1** | Topbar, sidebar, mobile navigation, app catalog, menu/empty copy, theme controls, dashboard preview sections, toasts, labels and descriptions. | No raw UI copy or component closed-prop string in migrated shell/dashboard owners |
 | 4. Public-site content and SEO | **P1** | Landing and informational pages, enquiry form labels/validation, announcements, gallery alternatives, sheet/dialog copy, page title/description/meta. Extract the seven oversized public-site units into SRP owners while migrating. | Public SEO prerender remains stable; mobile layouts and contrast verified; all seven formatting exceptions removed |
-| 5. Audit and automated enforcement | **P2** | Implement TSX AST \`RAW_UI_COPY\` and \`RAW_CLOSED_PROP\` checks; distinguish display text/attributes from technical strings; establish a measured per-file baseline, then block **new** violations and shrink it with each migration. Test the analyzer without mocking pure utilities. | \`pnpm check:architecture\` blocks new unwrapped UI messages and closed prop literals |
-| 6. Dynamic text quality | **P2** | Convert concatenated welcome/status/validation copy to \`{{name}}\` arguments; cover missing values, special characters, accessibility labels, keyboard, short viewports, dark/light/system. Keep classes in owned CSS Modules. | No copied interpolators, no text-as-HTML, browser and Jest regression suites green |
+| 5. Audit and automated enforcement | **P2** | Implement TSX AST `RAW_UI_COPY` and `RAW_CLOSED_PROP` checks; distinguish display text/attributes from technical strings; establish a measured per-file baseline, then block **new** violations and shrink it with each migration. Test the analyzer without mocking pure utilities. | `pnpm check:architecture` blocks new unwrapped UI messages and closed prop literals |
+| 6. Dynamic text quality | **P2** | Convert concatenated welcome/status/validation copy to `{{name}}` arguments; cover missing values, special characters, accessibility labels, keyboard, short viewports, dark/light/system. Keep classes in owned CSS Modules. | No copied interpolators, no text-as-HTML, browser and Jest regression suites green |
 | 7. Language packs (when required) | **P3** | Add locale-aware catalogs/provider, fallback and pluralization without changing the public message syntax unnecessarily. | Language switch updates mounted UI and all dictionaries satisfy placeholder parity |
 
-**Required sequence inside each owner:** inventory presentation props and display strings → classify technical vs translated text → define/re-export enum values and types → put stable source copy in the nearest \`constants/<owner>.copy.ts\` → use \`__()\` at render time (interpolation for dynamic values) → update renderer/helper contracts and tests → remove legacy literals → run architecture, format, typecheck, Jest, Vite/SEO and Chromium.
+**Required sequence inside each owner:** inventory presentation props and display strings → classify technical vs translated text → define/re-export enum values and types → put stable source copy in the nearest `constants/<owner>.copy.ts` → use `__()` at render time (interpolation for dynamic values) → update renderer/helper contracts and tests → remove legacy literals → run architecture, format, typecheck, Jest, Vite/SEO and Chromium.
 
-**Migration acceptance criteria:** do not break existing markup, heading hierarchy, native form types, route behavior, test IDs, user-facing error meaning, CSRF/auth/session flows or autocomplete. Validate widths **320, 375, 390, and 720 px**, short viewport, keyboard navigation and light/dark/system modes. Audit baselines must reflect the actual current branch before any new blocking threshold is set. No blanket search-and-replace of **every** string in TypeScript: enums apply only to closed contracts; \`__()\` applies only to human-readable copy.
+**Migration acceptance criteria:** do not break existing markup, heading hierarchy, native form types, route behavior, test IDs, user-facing error meaning, CSRF/auth/session flows or autocomplete. Validate widths **320, 375, 390, and 720 px**, short viewport, keyboard navigation and light/dark/system modes. Audit baselines must reflect the actual current branch before any new blocking threshold is set. No blanket search-and-replace of **every** string in TypeScript: enums apply only to closed contracts; `__()` applies only to human-readable copy.
 
-**Current status (not a completion claim):** The pure \`__\` formatter and tests have been added; login title/description copy uses it as an initial integration. Text exposes \`TEXT_TAG\` and aliases forwarded Typography values. Many other UI strings and closed-set props remain to be audited and migrated. **Separate legacy CSS debt** (last verified: 34 flagged files / 42 overlapping findings) is not resolved by string/enumeration migration. The phase-2.1 branch must not be described as fully migrated until the per-owner exit gates above pass.
+**Current status (not a completion claim):** The pure `__` formatter and tests have been added; login title/description copy currently imports the formatter directly and must be migrated to the ShellContainer-managed global under Revision 13. Text exposes `TEXT_TAG` and aliases forwarded Typography values. Many other UI strings and closed-set props remain to be audited and migrated. **Separate legacy CSS debt** (last verified: 34 flagged files / 42 overlapping findings) is not resolved by string/enumeration migration. The phase-2.1 branch must not be described as fully migrated until the per-owner exit gates above pass.
 
 ---
 
