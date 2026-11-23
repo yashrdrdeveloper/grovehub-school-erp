@@ -7,7 +7,6 @@ const expected = [
   '/packages/domain/publicSite/pages/landing/components/publicSheet/components/infoPanels/infoPanels.tsx',
   '/packages/domain/publicSite/pages/landing/components/resourceContent/resourceContent.tsx',
   '/packages/domain/publicSite/pages/landing/components/siteChrome/siteChrome.tsx',
-  '/packages/domain/publicSite/pages/landing/constants/school.content.ts',
 ].sort();
 
 const lines = readFileSync(new URL('../.prettierignore', import.meta.url), 'utf8')
