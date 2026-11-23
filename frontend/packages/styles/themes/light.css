@@ -40,6 +40,22 @@
   --gh-color-catalog-pin-foreground: var(--gh-color-accent);
   --gh-color-catalog-pin-border: var(--gh-color-accent-soft);
   --gh-color-catalog-hover-border: var(--gh-color-muted);
+  --gh-color-public-home-ivory: #f8f6f0;
+  --gh-color-public-home-gold: #987e55;
+  --gh-color-public-home-muted: #697384;
+  --gh-color-public-home-body: #202b3d;
+  --gh-color-public-home-lead: #66707d;
+  --gh-color-public-home-secondary-border: #dadde3;
+  --gh-color-public-home-proof-border: #dbdacf;
+  --gh-color-public-home-proof-text: #6e7480;
+  --gh-color-public-home-proof-dot: #aa9162;
+  --gh-color-public-home-caption-overlay: #142133b0;
+  --gh-color-public-home-note-muted: #cbd3df;
+  --gh-color-public-home-cta-muted: #c8d2e0;
+  --gh-color-public-home-topline-text: #e8e9ed;
+  --gh-color-public-home-header-border: #e9e9ea;
+  --gh-color-public-home-nav: #536073;
+  --gh-color-public-home-on-primary: #fff;
   --gh-shadow-card: 0 4px 20px rgb(15 23 42 / 0.035);
   --gh-shadow-dialog: 0 16px 48px rgb(15 23 42 / 0.14);
 }

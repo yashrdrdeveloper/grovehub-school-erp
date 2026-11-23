@@ -1,13 +1,14 @@
+/* School home-page layout. Owned classes are local; public primitives use explicit shared selectors. */
 /* Option 1 — dedicated homepage styles. Other public pages retain their original styles. */
 .rdr-option-one {
-  --o1-navy: #1f2a44;
-  --o1-ivory: #f8f6f0;
-  --o1-gold: #987e55;
-  --o1-muted: #697384;
-  background: #fff;
-  color: #202b3d;
+  --o1-navy: var(--gh-color-primary);
+  --o1-ivory: var(--gh-color-public-home-ivory);
+  --o1-gold: var(--gh-color-public-home-gold);
+  --o1-muted: var(--gh-color-public-home-muted);
+  background: var(--gh-color-surface);
+  color: var(--gh-color-public-home-body);
 }
-.rdr-option-one .rdr-eyebrow {
+.rdr-option-one :global(.rdr-eyebrow) {
   font-size: 0.6875rem;
   letter-spacing: 0.16em;
   color: var(--o1-gold);
@@ -46,7 +47,7 @@
   font-size: clamp(0.8125rem, 1.15vw, 0.9375rem);
   line-height: 1.8;
   max-width: 27rem;
-  color: #66707d;
+  color: var(--gh-color-public-home-lead);
   margin: 0;
 }
 .rdr-o1-hero__actions {
@@ -55,7 +56,7 @@
   gap: 10px;
   margin-top: 25px;
 }
-.rdr-option-one .rdr-btn {
+.rdr-option-one :global(.rdr-btn) {
   min-height: 44px;
   border-radius: 8px;
   padding: 11px 18px;
@@ -66,30 +67,30 @@
   align-items: center;
   justify-content: center;
 }
-.rdr-option-one .rdr-btn--solid {
+.rdr-option-one :global(.rdr-btn--solid) {
   background: var(--o1-navy);
   border-color: var(--o1-navy);
-  color: #fff;
+  color: var(--gh-color-public-home-on-primary);
 }
 .rdr-option-one .rdr-o1-secondary {
-  background: #fff;
-  border: 1px solid #dadde3;
+  background: var(--gh-color-surface);
+  border: 1px solid var(--gh-color-public-home-secondary-border);
   color: var(--o1-navy);
 }
 .rdr-o1-hero__proof {
   margin-top: 33px;
-  border-top: 1px solid #dbdacf;
+  border-top: 1px solid var(--gh-color-public-home-proof-border);
   padding-top: 16px;
   display: flex;
   flex-wrap: wrap;
   gap: 11px 20px;
-  color: #6e7480;
+  color: var(--gh-color-public-home-proof-text);
   font-size: 0.6875rem;
   font-weight: 650;
 }
 .rdr-o1-hero__proof span:before {
   content: '•';
-  color: #aa9162;
+  color: var(--gh-color-public-home-proof-dot);
   margin-right: 8px;
 }
 .rdr-o1-hero__images {
@@ -99,7 +100,7 @@
   gap: 11px;
   min-width: 0;
 }
-.rdr-o1-hero__images .rdr-photo {
+.rdr-o1-hero__images :global(.rdr-photo) {
   border-radius: 11px;
   min-height: 0;
 }
@@ -124,14 +125,14 @@
   left: 0;
   right: 0;
   padding: 26px 16px 15px;
-  background: linear-gradient(transparent, #142133b0);
+  background: linear-gradient(transparent, var(--gh-color-public-home-caption-overlay));
   color: white;
   font-size: 0.75rem;
   font-weight: 750;
 }
 .rdr-o1-hero__note {
   background: var(--o1-navy);
-  color: #fff;
+  color: var(--gh-color-public-home-on-primary);
   flex: 0 0 112px;
   border-radius: 11px;
   padding: 15px;
@@ -146,7 +147,7 @@
 }
 .rdr-o1-hero__note small {
   font-size: 0.625rem;
-  color: #cbd3df;
+  color: var(--gh-color-public-home-note-muted);
   margin-top: 9px;
 }
 .rdr-o1-life {
@@ -182,7 +183,7 @@
   display: block;
   min-width: 0;
 }
-.rdr-o1-life__card > .rdr-photo {
+.rdr-o1-life__card > :global(.rdr-photo) {
   height: clamp(135px, 14vw, 205px);
   border-radius: 10px;
   margin-bottom: 14px;
@@ -209,7 +210,7 @@
 }
 .rdr-o1-cta {
   background: var(--o1-navy);
-  color: #fff;
+  color: var(--gh-color-public-home-on-primary);
 }
 .rdr-o1-cta__inner {
   display: flex;
@@ -223,18 +224,18 @@
     400 clamp(1.45rem, 2.6vw, 2rem) / 1.2 Georgia,
     serif;
   letter-spacing: -0.03em;
-  color: #fff;
+  color: var(--gh-color-public-home-on-primary);
   margin: 0;
 }
 .rdr-o1-cta p {
   font-size: 0.75rem;
-  color: #c8d2e0;
+  color: var(--gh-color-public-home-cta-muted);
   margin: 8px 0 0;
 }
-.rdr-option-one .rdr-o1-cta .rdr-btn {
-  background: #fff;
+.rdr-option-one .rdr-o1-cta :global(.rdr-btn) {
+  background: var(--gh-color-surface);
   color: var(--o1-navy);
-  border: 1px solid #fff;
+  border: 1px solid var(--gh-color-surface);
   flex: none;
 }
 .rdr-o1-disclosure {
@@ -244,7 +245,7 @@
   gap: 16px;
   padding-block: 20px;
   font-size: 0.75rem;
-  color: #697384;
+  color: var(--gh-color-public-home-muted);
 }
 .rdr-o1-disclosure a {
   color: var(--o1-navy);
@@ -254,7 +255,7 @@
   gap: 8px;
 }
 .rdr-option-one :is(a, button):focus-visible {
-  outline: 3px solid #9aafc9;
+  outline: 3px solid var(--gh-color-ring);
   outline-offset: 3px;
 }
 @media (max-width: 900px) {
@@ -310,14 +311,14 @@
     grid-template-columns: 1fr;
     gap: 26px;
   }
-  .rdr-o1-life__card > .rdr-photo {
+  .rdr-o1-life__card > :global(.rdr-photo) {
     height: 195px;
   }
   .rdr-o1-cta__inner {
     display: block;
     padding-block: 28px;
   }
-  .rdr-o1-cta__inner .rdr-btn {
+  .rdr-o1-cta__inner :global(.rdr-btn) {
     margin-top: 18px;
   }
   .rdr-o1-disclosure {
@@ -326,49 +327,49 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .rdr-option-one .rdr-photo img {
+  .rdr-option-one :global(.rdr-photo) img {
     transition: none !important;
   }
 }
 
 /* Option 1 header framing on the homepage only. */
-.rdr-site:has(.rdr-option-one) .rdr-topline {
-  background: #1f2a44;
-  color: #e8e9ed;
+:global(.rdr-site):has(.rdr-option-one) :global(.rdr-topline) {
+  background: var(--gh-color-primary);
+  color: var(--gh-color-public-home-topline-text);
 }
-.rdr-site:has(.rdr-option-one) .rdr-topline__inner {
+:global(.rdr-site):has(.rdr-option-one) :global(.rdr-topline__inner) {
   min-height: 29px;
   font-size: 0.625rem;
   letter-spacing: 0.05em;
 }
-.rdr-site:has(.rdr-option-one) .rdr-header {
-  background: #fff;
-  border-bottom: 1px solid #e9e9ea;
+:global(.rdr-site):has(.rdr-option-one) :global(.rdr-header) {
+  background: var(--gh-color-surface);
+  border-bottom: 1px solid var(--gh-color-public-home-header-border);
 }
-.rdr-site:has(.rdr-option-one) .rdr-header__inner {
+:global(.rdr-site):has(.rdr-option-one) :global(.rdr-header__inner) {
   min-height: 76px;
 }
-.rdr-site:has(.rdr-option-one) .rdr-logo .school-monogram {
+:global(.rdr-site):has(.rdr-option-one) :global(.rdr-logo) :global(.school-monogram) {
   width: 51px;
   height: 41px;
   border-radius: 9px;
 }
-.rdr-site:has(.rdr-option-one) .rdr-logo strong {
+:global(.rdr-site):has(.rdr-option-one) :global(.rdr-logo) strong {
   font-size: 1rem;
 }
-.rdr-site:has(.rdr-option-one) .rdr-logo small {
+:global(.rdr-site):has(.rdr-option-one) :global(.rdr-logo) small {
   font-size: 0.5625rem;
 }
-.rdr-site:has(.rdr-option-one) .rdr-nav a {
+:global(.rdr-site):has(.rdr-option-one) :global(.rdr-nav) a {
   font-size: 0.75rem;
-  color: #536073;
+  color: var(--gh-color-public-home-nav);
 }
-.rdr-site:has(.rdr-option-one) .rdr-header__enquire {
+:global(.rdr-site):has(.rdr-option-one) :global(.rdr-header__enquire) {
   border-radius: 8px;
   min-height: 40px;
 }
 @media (max-width: 700px) {
-  .rdr-site:has(.rdr-option-one) .rdr-header__inner {
+  :global(.rdr-site):has(.rdr-option-one) :global(.rdr-header__inner) {
     min-height: 66px;
   }
 }

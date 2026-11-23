@@ -7,7 +7,6 @@ import { PublicSheet } from './components/publicSheet';
 import type { LandingPageModel } from './hooks/useLandingPage/types/useLandingPage';
 
 import './styles/landingPage.css';
-import './styles/optionOne.css';
 import './styles/optionOnePages.css';
 
 /** Public route presentation only; there is no public workspace/layout wrapper. */
