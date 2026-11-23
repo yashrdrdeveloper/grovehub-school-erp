@@ -37,21 +37,18 @@ const forbiddenGlobal = (node) =>
 /** JSX transforms normalize layout indentation; reproduce the same textual whitespace. */
 export const normalizeJsxText = (input) => {
   const lines = input.replace(/\t/g, ' ').split(/\r\n|\r|\n/);
-  let lastNonEmpty = -1;
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].trim()) lastNonEmpty = i;
-  }
+  const lastNonEmpty = lines.findLastIndex((line) => Boolean(line.trim()));
   if (lastNonEmpty < 0) return '';
-  let result = '';
-  for (let i = 0; i < lines.length; i++) {
-    let line = lines[i];
-    if (i !== 0) line = line.replace(/^ +/, '');
-    if (i !== lines.length - 1) line = line.replace(/ +$/, '');
-    if (!line) continue;
-    if (i !== lastNonEmpty) line += ' ';
-    result += line;
-  }
-  return result;
+
+  const normalized = lines.map((original, index) => {
+    const withoutLeft = index === 0 ? original : original.replace(/^ +/, '');
+    if (index === lines.length - 1) return withoutLeft;
+    return withoutLeft.replace(/ +$/, '');
+  });
+  return normalized.reduce((result, line, index) => {
+    if (!line) return result;
+    return result + line + (index === lastNonEmpty ? '' : ' ');
+  }, '');
 };
 
 export const analyzeI18nSource = (filename, source, options = {}) => {
