@@ -2,9 +2,10 @@ import { Button } from '@Components/components/Button';
 import { Box, BOX_TAG } from '@Components/components/Box';
 import type { ReactElement } from 'react';
 import { AppLink } from '@Components/components/AppLink';
-import { Pin, PinOff } from '@Components/icons';
+
 import { APP_LAUNCHER_COPY } from '../constants/appLauncher.copy';
 import { getAppTestIds } from '../helpers/appLauncher.getAppTestIds';
+import { getAppLauncherPinView } from './appLauncher.pinView';
 import type { RenderAppLauncherApp } from './types/appLauncher.app';
 
 /** Stateless catalog card. The caller supplies its pinned state explicitly. */
@@ -15,14 +16,7 @@ export const renderAppLauncherApp: RenderAppLauncherApp = ({
   onTogglePin,
 }): ReactElement => {
   const Icon = app.icon;
-  let pinLabel = 'Pin';
-  let PinIcon = Pin;
-  let pinClass = 'catalog-app__pin';
-  if (isPinned) {
-    pinLabel = 'Unpin';
-    PinIcon = PinOff;
-    pinClass += ' catalog-app__pin--active';
-  }
+  const { pinLabel, PinIcon, pinClass } = getAppLauncherPinView(isPinned);
   const ids = getAppTestIds(app.path);
   const close = () => onOpenChange(false);
   const toggle = () => onTogglePin(app.path);

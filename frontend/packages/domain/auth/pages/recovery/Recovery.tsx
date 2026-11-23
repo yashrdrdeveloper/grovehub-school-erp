@@ -3,16 +3,14 @@ import { LoginLayout } from '../../components/loginLayout';
 import { LoginLayoutVariant } from '../../components/loginLayout/constants/loginLayout.variant';
 
 import { renderRecoveryContent } from './renderer/recovery.content';
+import { getRecoveryLayoutCopy } from './helpers/recovery.getLayoutCopy';
 import type { RecoveryComponent } from './types';
 
 /** Stateless recovery/activation composition, one form in the DOM. */
 export const Recovery: RecoveryComponent = (props) => {
   const formVisible = props.view === 'ready' || props.view === 'saving';
-  let mobileTitle = 'Reset password';
-  if (props.invitation) mobileTitle = 'Set password';
-  const description = 'Choose a strong password to protect your school account.';
-  let mobileDescription = '';
-  if (formVisible) mobileDescription = description;
+  const { mobileTitle, description, mobileDescription } =
+    getRecoveryLayoutCopy({ invitation: props.invitation, formVisible });
   const content = renderRecoveryContent({ props, formVisible });
 
   return (
@@ -23,7 +21,7 @@ export const Recovery: RecoveryComponent = (props) => {
       mobileDescription={mobileDescription}
       minimalMobile
       mobileTitle={mobileTitle}
-      eyebrow="SECURE YOUR ACCOUNT"
+      eyebrow={__('SECURE YOUR ACCOUNT')}
     >
       <Box as={BOX_TAG.DIV} className="rdr-recovery">
         {content}

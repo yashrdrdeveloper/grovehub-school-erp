@@ -2,7 +2,7 @@ import { BOX_TAG } from '@Components/components/Box';
 import { forwardRef, useCallback, useId, useState } from 'react';
 
 import { cn } from '@Base/utilities/cn';
-import { Eye, EyeOff } from '@Components/icons';
+
 
 import { Box } from '../Box';
 import { Button } from '../Button';
@@ -14,6 +14,7 @@ import {
 } from '../FormField';
 import { InputControl, INPUT_CONTROL_SIZE } from '../InputControl';
 
+import { getPasswordFieldVisibility } from './renderer/passwordField.visibility';
 import type { PasswordFieldProps } from './types/passwordField.props';
 
 /** One reusable password field with keyboard-safe visibility controls. */
@@ -42,15 +43,7 @@ export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(
     const descriptionId = getFormFieldDescriptionId(inputId, error, hint);
     const combinedDescription = getFormFieldCombinedDescription(describedBy, descriptionId);
 
-    let VisibilityIcon = Eye;
-    let toggleLabel = __('Show password');
-    let passwordType: 'password' | 'text' = 'password';
-
-    if (visible) {
-      VisibilityIcon = EyeOff;
-      toggleLabel = __('Hide password');
-      passwordType = 'text';
-    }
+    const { VisibilityIcon, toggleLabel, passwordType } = getPasswordFieldVisibility(visible);
 
     const handleVisibilityChange = useCallback(() => {
       setVisible((current) => !current);

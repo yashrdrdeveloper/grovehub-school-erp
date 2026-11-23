@@ -1,20 +1,15 @@
 import { Box, BOX_TAG } from '@Components/components/Box';
-import { CheckCircle2, Info } from '@Components/icons';
+
 
 import { FORGOT_PASSWORD_LEGACY_CLASSES } from '../constants/forgotPassword.legacyClasses';
 import { FORGOT_PASSWORD_TEST_IDS } from '../../../constants/forgotPassword.testIds';
 
+import { getForgotPasswordNoticeAppearance } from './forgotPassword.noticeAppearance';
 import type { RenderForgotPasswordNotice } from './types/forgotPassword.notice';
 
 /** Pure feedback selection for both informational and success notice states. */
 export const renderForgotPasswordNotice: RenderForgotPasswordNotice = (view) => {
-  let NoticeIcon = Info;
-  let className: string = FORGOT_PASSWORD_LEGACY_CLASSES.NOTICE_INFO;
-
-  if (view.noticeSuccess) {
-    NoticeIcon = CheckCircle2;
-    className = FORGOT_PASSWORD_LEGACY_CLASSES.NOTICE_SUCCESS;
-  }
+  const { NoticeIcon, className } = getForgotPasswordNoticeAppearance(view.noticeSuccess);
 
   return (
     <Box

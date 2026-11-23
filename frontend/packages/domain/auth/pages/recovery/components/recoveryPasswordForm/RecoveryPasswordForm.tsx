@@ -1,11 +1,13 @@
 import { Box, BOX_TAG } from '@Components/components/Box';
-import { AlertCircle, Eye, EyeOff, KeyRound, LockKeyhole, ShieldCheck } from '@Components/icons';
+import { AlertCircle, KeyRound, LockKeyhole, ShieldCheck } from '@Components/icons';
 import { RECOVERY_TEST_IDS } from '../../constants/recovery.testIds';
 import type { ChangeEventHandler } from 'react';
 import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '@Components/components/Button';
 import { Form } from '@Components/components/Form';
 
 import { CredentialField } from '../../../../components/credentialField';
+import { getRecoveryPasswordVisibility } from './renderer/recoveryPasswordForm.visibility';
+import { getRecoveryPasswordSubmitLabel } from './renderer/recoveryPasswordForm.submitLabel';
 import type { RecoveryPasswordFormComponent } from './types/recoveryPasswordForm';
 
 /** Password-reset and invitation form with no backend calls or flow orchestration. */
@@ -29,19 +31,10 @@ export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
   const handleConfirmationChange: ChangeEventHandler<HTMLInputElement> = (event) => {
     onConfirmationChange(event.currentTarget.value);
   };
-  let VisibilityIcon = Eye;
-  let passwordType: 'text' | 'password' = 'password';
-  let visibilityLabel = 'Show passwords';
-  let confirmationLabel = 'Show confirmation password';
-  if (visible) {
-    VisibilityIcon = EyeOff;
-    passwordType = 'text';
-    visibilityLabel = 'Hide passwords';
-    confirmationLabel = 'Hide confirmation password';
-  }
+  const { VisibilityIcon, passwordType, visibilityLabel, confirmationLabel } =
+    getRecoveryPasswordVisibility(visible);
   const saving = view === 'saving';
-  let buttonLabel = 'Update password';
-  if (saving) buttonLabel = 'Securing your account…';
+  const buttonLabel = getRecoveryPasswordSubmitLabel(saving);
 
   return (
     <Form

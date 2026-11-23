@@ -5,6 +5,7 @@ import { AppLink } from '@Components/components/AppLink';
 import { AUTH_ROUTE } from '@Business/auth/routes';
 
 import { RecoveryArtwork } from '../recoveryArtwork';
+import { getRecoveryCheckingMessage } from './helpers/recoveryState.getCheckingMessage';
 import type { RecoveryStateComponent } from './types/recoveryState';
 
 /** Non-form recovery states, retry and accessible next actions. */
@@ -15,9 +16,7 @@ export const RecoveryState: RecoveryStateComponent = ({
   slow,
   onRetry,
 }) => {
-  let checkingMessage = 'Verifying your reset link securely…';
-  if (invitation) checkingMessage = 'Verifying your invitation securely…';
-  if (slow) checkingMessage = 'Still checking. This may take a moment…';
+  const checkingMessage = getRecoveryCheckingMessage({ invitation, slow });
   const showResetLink = !invitation && (view === 'missing' || view === 'expired');
   const showBack = view === 'missing' || view === 'expired' || view === 'attempts-exhausted';
 

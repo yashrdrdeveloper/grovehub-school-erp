@@ -1,6 +1,6 @@
 import { Button } from '@Components/components/Button';
 import { Box, BOX_TAG } from '@Components/components/Box';
-import { ChevronsLeft, ChevronsRight, Grid2X2, Settings2, X } from '@Components/icons';
+import { Grid2X2, Settings2, X } from '@Components/icons';
 import { AppNavLink } from '@Components/components/AppNavLink';
 
 import { SchoolMonogram } from '@Components';
@@ -8,20 +8,14 @@ import { APP_ROUTE } from '@Business/app/routes';
 
 import { PinnedNavigation } from '../pinnedNavigation';
 import { ThemeChoices } from '../themeChoices';
+import { getSidebarCollapseView } from './renderer/sidebar.collapseView';
 import type { SidebarComponent } from './types/sidebar';
 
 /** Stateless sidebar. Interaction and persistence come from the shell model. */
 export const Sidebar: SidebarComponent = ({ accountLabel, schoolLabel, onLogout, model }) => {
-  let collapsedLabel = 'Collapse sidebar';
-  let collapsedShortLabel = 'Collapse sidebar';
-  let CollapseIcon = ChevronsLeft;
-  let sidebarClass = 'sidebar';
-  if (model.sidebarCollapsed) {
-    collapsedLabel = 'Expand sidebar';
-    collapsedShortLabel = 'Expand';
-    CollapseIcon = ChevronsRight;
-  }
-  if (model.sidebarOpen) sidebarClass += ' sidebar--open';
+  const { collapsedLabel, collapsedShortLabel, CollapseIcon } =
+    getSidebarCollapseView(model.sidebarCollapsed);
+  const sidebarClass = 'sidebar' + ((model.sidebarOpen && ' sidebar--open') || '');
 
   return (
     <Box as={BOX_TAG.ASIDE} className={sidebarClass} aria-label={__('School workspace sidebar')}>
