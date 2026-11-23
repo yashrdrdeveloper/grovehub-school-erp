@@ -12,11 +12,11 @@ export interface CatalogApp {
 /** Register implemented protected domains only. No planned or imaginary pages. */
 export const appCatalog: CatalogApp[] = [
   {
-    name: 'Dashboard',
-    description: 'Overview of your school',
+    name: __('Dashboard'),
+    description: __('Overview of your school'),
     path: APP_ROUTE.DASHBOARD,
     icon: Building2,
-    category: 'Workspace',
+    category: __('Workspace'),
   },
 ];
 

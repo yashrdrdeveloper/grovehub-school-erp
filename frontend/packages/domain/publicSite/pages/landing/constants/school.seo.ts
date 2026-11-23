@@ -1,67 +1,67 @@
 export const pageMetadata: Record<string, { title: string; description: string }> = {
   '/': {
-    title: 'RDR School | Rao Deena Ram Vidya Vihar, Haluhera',
+    title: __('RDR School | Rao Deena Ram Vidya Vihar, Haluhera'),
     description:
-      'Discover Rao Deena Ram Vidya Vihar School in Haluhera, Rewari. Learn about school life, academic programmes, facilities and admissions.',
+      __('Discover Rao Deena Ram Vidya Vihar School in Haluhera, Rewari. Learn about school life, academic programmes, facilities and admissions.'),
   },
   '/about': {
-    title: 'About RDR School | History, Vision & Leadership',
+    title: __('About RDR School | History, Vision & Leadership'),
     description:
-      'Explore RDR School history since 2006, its philosophy, director and principal messages in Haluhera, Rewari.',
+      __('Explore RDR School history since 2006, its philosophy, director and principal messages in Haluhera, Rewari.'),
   },
   '/about/history': {
-    title: 'School History | RDR School Haluhera',
+    title: __('School History | RDR School Haluhera'),
     description:
-      'Discover how RDR School was founded in April 2006 in Haluhera, Rewari, by Shri Lal Singh Yadav.',
+      __('Discover how RDR School was founded in April 2006 in Haluhera, Rewari, by Shri Lal Singh Yadav.'),
   },
   '/about/director': {
-    title: "Director's Message | RDR School",
+    title: __("Director's Message | RDR School"),
     description:
-      "Discover Shri Lal Singh Yadav's published message about all-round student development at RDR School.",
+      __("Discover Shri Lal Singh Yadav's published message about all-round student development at RDR School."),
   },
   '/about/principal': {
-    title: "Principal's Message | RDR School",
+    title: __("Principal's Message | RDR School"),
     description:
-      "Read the historical RDR School principal's message about academic learning, character and school values.",
+      __("Read the historical RDR School principal's message about academic learning, character and school values."),
   },
   '/about/philosophy': {
-    title: 'School Vision & Philosophy | RDR School',
+    title: __('School Vision & Philosophy | RDR School'),
     description:
-      "Learn about RDR School's vision of broadening minds, independent thinking, compassion and growth.",
+      __("Learn about RDR School's vision of broadening minds, independent thinking, compassion and growth."),
   },
   '/academics': {
-    title: 'Academics | RDR School Haluhera',
+    title: __('Academics | RDR School Haluhera'),
     description:
-      'Explore learning stages, academics and school activities at Rao Deena Ram Vidya Vihar in Rewari.',
+      __('Explore learning stages, academics and school activities at Rao Deena Ram Vidya Vihar in Rewari.'),
   },
   '/campus': {
-    title: 'Campus & Facilities | RDR School',
+    title: __('Campus & Facilities | RDR School'),
     description:
-      'Explore the school campus, science labs, computer lab, smart classrooms, sports and student facilities.',
+      __('Explore the school campus, science labs, computer lab, smart classrooms, sports and student facilities.'),
   },
   '/admissions': {
-    title: 'Admissions & Enquiry | RDR School',
+    title: __('Admissions & Enquiry | RDR School'),
     description:
-      'Contact RDR School about admissions, classes, fees, transport and visits. Submit a quick enquiry to the school office.',
+      __('Contact RDR School about admissions, classes, fees, transport and visits. Submit a quick enquiry to the school office.'),
   },
   '/gallery': {
-    title: 'School Life & Gallery | RDR School',
+    title: __('School Life & Gallery | RDR School'),
     description:
-      'See moments of student life, culture, sports and school achievements from the RDR School gallery.',
+      __('See moments of student life, culture, sports and school achievements from the RDR School gallery.'),
   },
   '/mandatory-public-disclosure': {
-    title: 'CBSE Mandatory Public Disclosure | RDR School',
+    title: __('CBSE Mandatory Public Disclosure | RDR School'),
     description:
-      'Find RDR School CBSE affiliation details, historic Appendix IX disclosures and school documents.',
+      __('Find RDR School CBSE affiliation details, historic Appendix IX disclosures and school documents.'),
   },
   '/resources': {
-    title: 'School Resources | RDR School',
+    title: __('School Resources | RDR School'),
     description:
-      'Find school academic information, the calendar and available documents from RDR School.',
+      __('Find school academic information, the calendar and available documents from RDR School.'),
   },
   '/contact': {
-    title: 'Contact RDR School | Haluhera, Rewari',
+    title: __('Contact RDR School | Haluhera, Rewari'),
     description:
-      'Contact Rao Deena Ram Vidya Vihar School in Haluhera, Rewari, Haryana. Phone, email, directions and enquiries.',
+      __('Contact Rao Deena Ram Vidya Vihar School in Haluhera, Rewari, Haryana. Phone, email, directions and enquiries.'),
   },
 };

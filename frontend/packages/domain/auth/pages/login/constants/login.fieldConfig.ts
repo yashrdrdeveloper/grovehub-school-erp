@@ -5,13 +5,13 @@ import type { LoginFieldConfig } from './types/login.fieldConfig';
 export const LOGIN_FIELD_CONFIG: Readonly<Record<LoginField, Readonly<LoginFieldConfig>>> =
   Object.freeze({
     [LoginField.EMAIL]: Object.freeze({
-      label: 'Email address',
-      placeholder: 'Email',
+      label: __('Email address'),
+      placeholder: __('Email'),
       autoComplete: 'username',
     }),
     [LoginField.PASSWORD]: Object.freeze({
-      label: 'Password',
-      placeholder: 'Password',
+      label: __('Password'),
+      placeholder: __('Password'),
       autoComplete: 'current-password',
     }),
   });

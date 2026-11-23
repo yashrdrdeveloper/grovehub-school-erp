@@ -10,7 +10,7 @@ export interface ThemeChoiceOption {
 }
 
 export const THEME_CHOICES: readonly ThemeChoiceOption[] = [
-  { value: ThemePreference.SYSTEM, label: 'System', Icon: Monitor },
-  { value: ThemePreference.LIGHT, label: 'Light', Icon: Sun },
-  { value: ThemePreference.DARK, label: 'Dark', Icon: Moon },
+  { value: ThemePreference.SYSTEM, label: __('System'), Icon: Monitor },
+  { value: ThemePreference.LIGHT, label: __('Light'), Icon: Sun },
+  { value: ThemePreference.DARK, label: __('Dark'), Icon: Moon },
 ];
