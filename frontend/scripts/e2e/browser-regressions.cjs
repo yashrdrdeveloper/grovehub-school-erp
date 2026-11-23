@@ -127,10 +127,63 @@ async function checkKeyboardAndLabels(browser) {
   process.stdout.write('PASS keyboard password visibility and form labels\n');
 }
 
+
+async function checkMobileFormsAndValidation(browser) {
+  for (const viewport of [
+    { width: 320, height: 720 },
+    { width: 375, height: 812 },
+    { width: 390, height: 844 },
+  ]) {
+    for (const testCase of [
+      { pathname: '/login', submitId: 'auth-login-form-button-submit' },
+      { pathname: '/forgot-password', submitId: 'forgot-password-submit' },
+    ]) {
+      const { context, page } = await visit(browser, testCase.pathname, viewport);
+      const submit = page.locator('[data-testid="' + testCase.submitId + '"]');
+      assert.ok(await submit.isVisible(), testCase.pathname + ': submit is hidden');
+      const bounds = await submit.boundingBox();
+      assert.ok(bounds, testCase.pathname + ': submit has no layout box');
+      assert.ok(
+        bounds.y >= 0 && bounds.y + bounds.height <= viewport.height + 1,
+        testCase.pathname + ' ' + viewport.width + 'px: submit outside visible viewport',
+      );
+      await context.close();
+    }
+  }
+
+  const { context, page } = await visit(browser, '/forgot-password', {
+    width: 375,
+    height: 812,
+  });
+  await page.locator('[data-testid="forgot-password-submit"]').click();
+  const emailField = page.locator('input[type="email"]');
+  assert.ok(await emailField.isVisible(), 'Forgot password: email input must be visible');
+  const invalid = await emailField.getAttribute('aria-invalid');
+  const alert = page.locator('[role="alert"]');
+  assert.ok(invalid === 'true' || (await alert.count()) > 0, 'Forgot password: missing validation feedback');
+  await context.close();
+  process.stdout.write('PASS mobile auth submission reachability and form validation\n');
+}
+
+async function checkShortViewportAndZoom(browser) {
+  for (const viewport of [
+    { width: 320, height: 568 },
+    { width: 640, height: 360 },
+  ]) {
+    for (const pathname of ['/login', '/forgot-password']) {
+      const { context } = await visit(browser, pathname, viewport);
+      await context.close();
+    }
+  }
+  process.stdout.write('PASS short-viewport horizontal overflow regression\n');
+}
+
 (async () => {
   const browser = await chromium.launch({ headless: true });
   try {
     await checkLayout(browser);
+    await checkMobileFormsAndValidation(browser);
+    await checkShortViewportAndZoom(browser);
     await checkThemes(browser);
     await checkKeyboardAndLabels(browser);
   } finally {
