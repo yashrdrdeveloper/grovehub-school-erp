@@ -5,9 +5,7 @@ describe('getLoginLayoutHeading', () => {
     expect(getLoginLayoutHeading(false, 'Set a new password.', 'Set password')).toBe(
       'Set a new password.',
     );
-    expect(getLoginLayoutHeading(true, 'Set a new password.', 'Set password')).toBe(
-      'Set password',
-    );
+    expect(getLoginLayoutHeading(true, 'Set a new password.', 'Set password')).toBe('Set password');
     expect(getLoginLayoutHeading(true, 'Welcome back.')).toBe('Welcome back.');
   });
 });
