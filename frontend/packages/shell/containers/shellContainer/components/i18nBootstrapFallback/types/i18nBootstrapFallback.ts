@@ -6,6 +6,4 @@ export interface I18nBootstrapFallbackProps {
   readonly status: InitI18nStatus;
 }
 
-export type I18nBootstrapFallbackComponent = (
-  props: I18nBootstrapFallbackProps,
-) => ReactElement;
+export type I18nBootstrapFallbackComponent = (props: I18nBootstrapFallbackProps) => ReactElement;
