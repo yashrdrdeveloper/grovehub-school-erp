@@ -31,6 +31,8 @@ describe('LoginLayout', () => {
       </MemoryRouter>,
     );
     expect(screen.getByRole('heading', { level: 1 }).querySelectorAll('span')).toHaveLength(2);
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Welcome back.Welcome back.');
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
+      'Welcome back.Welcome back.',
+    );
   });
 });
