@@ -6,7 +6,10 @@ import { validateComponentEnums } from '../lib/component-enum-policy.mjs';
 test('validateComponentEnums', async (t) => {
   await t.test('rejects raw variants and sizes for component-owned contracts', () => {
     const errors = validateComponentEnums('Demo.tsx', '<Button variant="primary" size="lg" />');
-    assert.deepEqual(errors.map((problem) => problem.prop), ['variant', 'size']);
+    assert.deepEqual(
+      errors.map((problem) => problem.prop),
+      ['variant', 'size'],
+    );
   });
 
   await t.test('accepts imported constant expressions', () => {

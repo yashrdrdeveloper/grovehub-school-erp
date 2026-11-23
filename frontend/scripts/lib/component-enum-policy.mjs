@@ -23,13 +23,20 @@ export const validateComponentEnums = (filename, source) => {
   const sf = ts.createSourceFile(filename, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const problems = [];
   const visit = (node) => {
-    if ((ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) &&
-        ts.isIdentifier(node.tagName)) {
+    if (
+      (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) &&
+      ts.isIdentifier(node.tagName)
+    ) {
       const closed = COMPONENT_CLOSED_PROPS[node.tagName.text];
       if (closed) {
         for (const attr of node.attributes.properties) {
-          if (!ts.isJsxAttribute(attr) || !closed.includes(attr.name.text) ||
-              !attr.initializer || !ts.isStringLiteral(attr.initializer)) continue;
+          if (
+            !ts.isJsxAttribute(attr) ||
+            !closed.includes(attr.name.text) ||
+            !attr.initializer ||
+            !ts.isStringLiteral(attr.initializer)
+          )
+            continue;
           const line = sf.getLineAndCharacterOfPosition(attr.getStart(sf)).line + 1;
           problems.push({
             line,

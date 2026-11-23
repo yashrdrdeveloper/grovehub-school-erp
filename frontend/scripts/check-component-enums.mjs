@@ -17,8 +17,18 @@ const walk = async (folder) => {
     const relative = path.relative(root, absolute).replaceAll(path.sep, '/');
     const source = await readFile(absolute, 'utf8');
     for (const issue of validateComponentEnums(relative, source)) {
-      failures.push(relative + ':' + issue.line + ': ' + issue.component + '.' +
-        issue.prop + '="' + issue.value + '" is a closed-set literal; import its owner enum');
+      failures.push(
+        relative +
+          ':' +
+          issue.line +
+          ': ' +
+          issue.component +
+          '.' +
+          issue.prop +
+          '="' +
+          issue.value +
+          '" is a closed-set literal; import its owner enum',
+      );
     }
     inspected++;
   }
@@ -28,5 +38,7 @@ if (failures.length) {
   for (const problem of failures) process.stderr.write(problem + '\n');
   process.exitCode = 1;
 } else {
-  process.stdout.write('Closed UI prop enums verified across ' + inspected + ' production TSX modules.\n');
+  process.stdout.write(
+    'Closed UI prop enums verified across ' + inspected + ' production TSX modules.\n',
+  );
 }
