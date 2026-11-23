@@ -15,3 +15,7 @@ Do not mock pure URL, route or mapping helpers in tests. Verify HTTP method, URL
 ## Text and state ownership
 
 Business entities, HTTP methods, backend operation/status codes, route metadata, error identifiers, schemas and validation data remain **raw technical values** or their own typed enums. Never run these through the global `__()` and never import the browser ShellContainer/i18n installer into Business. A domain presentation maps business error/status codes to stable human-readable copy in its own `constants/<owner>.copy.ts`, then calls `__()` while rendering. Test pure mapping and business utilities without mocking them.
+
+## Literal business versus presentation copy
+
+Business identifiers and transport constants are **not** translated. Feature-facing display copy is translated using a literal at the presentation owner's constants declaration, not through `__(businessCode)` or `__(COPY.key)` during render. Pure error-mapping and route helpers return stable codes or already resolved labels; they never compose arbitrary interpolation keys. All frontend files, including business tests, prohibit `let`.

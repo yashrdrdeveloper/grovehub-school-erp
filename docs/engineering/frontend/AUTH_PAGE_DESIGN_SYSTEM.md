@@ -1,6 +1,6 @@
 # RDR authentication UI — design and acceptance standard
 
-> **Engineering ownership:** Follow [Frontend Code Guidelines, current Revision 13](./FRONTEND_CODE_GUIDELINES.md) for file layout, pure-helper ownership, flat constants, nested hooks, central icons, stable `dataTestId`/`data-testid` selectors and no-ternary rendering. This document governs auth **visual and interaction acceptance**, not engineering folder structure.
+> **Engineering ownership:** Follow [Frontend Code Guidelines, current Revision 14](./FRONTEND_CODE_GUIDELINES.md) for file layout, pure-helper ownership, flat constants, nested hooks, central icons, stable `dataTestId`/`data-testid` selectors and no-ternary rendering. This document governs auth **visual and interaction acceptance**, not engineering folder structure.
 
 ## Scope and source
 
@@ -81,3 +81,7 @@ GitHub Actions typechecking and unit tests are **not** a substitute for these br
 All authentication templates, actions, errors, confirmation messages, headings, placeholders and accessible labels use the unimported global `__()` after `ShellContainer` initializes it through `useInitI18n`. Use `__('Reset password')` for stable copy and `__('A link was sent to {{email}}', { email })` for named dynamic values. Do not import a new message service into each page, translate API/status tokens, or change the two-attempt security and resend contracts. Closed design choices use the owning component enums (`BUTTON_VARIANT`, `BUTTON_SIZE`, `BOX_TAG`, `TEXT_TAG`, `LoginLayoutVariant`).
 
 The message resolver is currently English-only. It is not a complete locale selector; accessible, screen-reader-ready text and the RDR mobile/dark/light design remain authoritative independently of future languages. See `FRONTEND_CODE_GUIDELINES.md` Revision 13.
+
+## Copy and renderer implementation (Revision 14)
+
+Authentication presentation constants such as `LOGIN_COPY.desktopTitle` call `__('literal')` at their declaration and are used as `{LOGIN_COPY.desktopTitle}`; never call `__(LOGIN_COPY.desktopTitle)`. Runtime variant selectors, password visibility controls, link-state messages and desktop/mobile template choice live in owner-local pure renderer/helpers with tests, not mutable `let` assignments. The shell's installer runs before the dynamically imported route tree evaluates and its hook confirms readiness afterward. `pnpm check:i18n` and `pnpm check:no-let` enforce these rules.

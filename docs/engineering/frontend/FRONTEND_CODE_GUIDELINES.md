@@ -1,8 +1,93 @@
 # Frontend Code Guidelines
 
+## Revision 14 — literal-message copy ownership and zero mutable bindings (23 November 2026)
+
+**Mandatory, implemented architecture. This revision supersedes earlier advice that prohibited translated constants or recommended `__(COPY.key)` in JSX.** It applies throughout `frontend/app`, `frontend/packages`, `frontend/scripts` and all frontend tests. Preserve the structure/semantics policies from prior revisions unless they contradict this section.
+
+### A. Every `__()` source message MUST be a literal
+
+- The first argument is always a static string literal or no-substitution template literal. Never pass a variable, indexed key, conditional, function result, concatenated expression, or dynamic template. Translation placeholders are provided separately as named parameters.
+- Reusable presentation copy belongs in the nearest owner `constants/<owner>.copy.ts` or other owner-specific presentation content constant. **Translate each value at its declaration**. Later pages, renderers, hooks and helpers use the resulting constant **without another translation call**.
+- The rule covers UI labels, headings, descriptions, accessibility text, tooltips, errors, empty states, dashboard cards, public-school copy, photographs' alt text and human-readable SEO labels. **Do not translate** routes, API codes, CSS classes, enum wire values, HTML input types, object IDs, test IDs, proof/auth tokens, URLs or other technical protocol strings.
+- A runtime-dependent message must be selected in a pure owner helper/renderer using explicit branch returns. Each branch calls `__('literal')` directly. A dynamic value uses an interpolation template with named placeholders: `__('Resend in {{seconds}}s', { seconds })`. Avoid string concatenation or JS template interpolation for user messages.
+- Never import `__` into feature code; ambient global types are in `app/types/i18n.global.d.ts`. **Only the shell boot installer** imports the pure Base formatter; Jest bootstrap also imports the actual formatter for isolated tests.
+
+Correct:
+~~~tsx
+// pages/login/constants/login.copy.ts
+export const LOGIN_COPY = Object.freeze({
+  desktopTitle: __('Welcome back.'),
+  desktopDescription: __('Sign in to continue to your RDR School workspace.'),
+  button: __('Sign in'),
+});
+
+// pages/login/Login.tsx
+<LoginLayout title={LOGIN_COPY.desktopTitle} description={LOGIN_COPY.desktopDescription} />;
+
+// owner-local helper when text depends on runtime state
+export const getResendLabel = (seconds: number): string => {
+  if (seconds > 0) return __('Resend in {{seconds}}s', { seconds });
+  return __('Resend reset link');
+};
+~~~
+
+Forbidden:
+~~~tsx
+title={__(LOGIN_COPY.desktopTitle)}
+const label = __(messageVariable);
+__('Resend in ' + seconds + 's');
+__(`Hello ${name}`);
+export const LOGIN_COPY = { desktopTitle: 'Welcome back.' }; // untranslated UI source
+~~~
+
+### B. Bootstrapping must precede eager copy constants
+
+Translated copy constants now execute at **module evaluation time**. `ShellContainer`'s effect alone cannot initialize a global before its statically imported child modules evaluate. To prevent `ReferenceError: __ is not defined`, **`app/main.tsx` imports only the named shell-owned `installShellI18n` leaf installer, calls it synchronously, then dynamically imports `@Shell`** before mounting React. Never statically import the Shell/root feature graph in the browser entrypoint ahead of installation.
+
+`containers/shellContainer/helpers/shellContainer.installI18n.ts` is the sole browser writer to `window.__`. It imports the pure English resolver from `@Base/i18n` and checks that the assignment succeeded. `useInitI18n` reuses this idempotent helper in its effect to preserve typed `INITIALIZING / READY / FAILED` readiness and the router gate; it does not maintain a second writer. The fallback renders plain error/loading copy without calling `__()`. Jest `scripts/test/setupI18n.ts` installs the same pure formatter before test module evaluation.
+
+Important scope: this is a browser English-source resolver, **not yet reactive multilingual localization**. Eagerly evaluated translated constants retain their import-time values. Introducing live language switching requires a different observable source-copy/catal​og strategy and must not be falsely advertised by this revision. Node scripts such as static HTML prerender are independent and must not assume React effects execute.
+
+### C. Zero `let` declarations in the entire frontend
+
+- **Never declare `let`**, in JSX, helpers, hooks, services, constants, scripts or tests, including `for (let ...)`. Prefer `const` with a meaningful derived value or a pure branch-return selector. Ternary expressions remain forbidden.
+- Conditional component, icon, label, class, status or template selection belongs to a small, typed, tested **owner-local** `renderer/<owner>.<useCase>.ts[x]` or `helpers/<owner>.<useCase>.ts`, with adjacent `types/` and `__tests__/`. Never reassign a React component variable inside page JSX.
+- For truly mutable asynchronous/effect state, use React state, `useRef`, or a clearly owned `const` state object with controlled updates and cleanup; never disguise render-time selection as mutable state. A security-sensitive proof is managed in an owned state module rather than a global mutable `let`.
+- JS scripts doing pure text transforms can use `.reduce()`, `.map()`, and immutable data; for counters in procedural audits, an explicit `const` state owner is acceptable. Do not introduce semantically invalid no-op counters merely to satisfy lint.
+
+Correct:
+~~~tsx
+// pages/login/renderer/login.formTemplate.ts
+export const getLoginFormTemplate = (isMobile: boolean) => {
+  if (isMobile) return MobileLogin;
+  return DesktopLogin;
+};
+
+// pages/login/Login.tsx
+const FormTemplate = getLoginFormTemplate(isMobile);
+return <FormTemplate {...controls} />;
+~~~
+
+Forbidden:
+~~~tsx
+let FormTemplate = DesktopLogin;
+if (isMobile) FormTemplate = MobileLogin;
+let title = 'Welcome back';
+if (isMobile) title = 'Hi';
+for (let i = 0; i < count; i++) { /* not allowed */ }
+~~~
+
+### D. Mandatory CI contracts
+
+Run `pnpm check:i18n`, `pnpm check:no-let`, `pnpm check:architecture`, `pnpm typecheck`, `pnpm exec jest --runInBand`, and `pnpm build`. `check:i18n` uses TypeScript AST parsing: reject `__(nonliteral)` everywhere, feature formatter imports and unauthorized `window.__`; allow literal eager copy only under the owned `constants/` directories and render-time literal calls in functions; preserve measured JSX raw-copy baseline. `check:no-let` checks frontend production files, scripts and tests (including loop declarations) with an AST; no allowlist. Keep both inside `check:architecture`.
+
+Unit tests describe **the exported function name**. Pure helpers are tested directly without mocks. Test conditional branches, named interpolation, SSR-safe shell failure, desktop/mobile forms, auth/recovery copy and the browser launch route. Broader frontend guideline audit and remaining CSS/legacy component debt are separate obligations; passing one AST check does not imply the entire app is finished refactoring.
+
+---
+
 ## Revision 13 — global __() bootstrap from ShellContainer (23 November 2026)
 
-**Status: implemented and validated in Phase 2.1.** This revision supersedes Revision 12 wherever it requires feature files to `import { __ } from '@Base/i18n'` or forbids the app-wide `window.__` bridge. Only one expressly controlled global binding is permitted: `__`. Components must call `__()` **without importing it**, but only *after ShellContainer has installed it*. The hook, global type, Jest bootstrap, SSR-safe readiness fallback and CI ownership gate have now been implemented; remaining dynamic helper-based copy is tracked separately. The existing pure resolver in `@Base/i18n` is retained.
+**Historical Revision 13 (superseded by Revision 14 for eager copy and initialization timing).** This revision supersedes Revision 12 wherever it requires feature files to `import { __ } from '@Base/i18n'` or forbids the app-wide `window.__` bridge. Only one expressly controlled global binding is permitted: `__`. Components must call `__()` **without importing it**, but only *after ShellContainer has installed it*. The hook, global type, Jest bootstrap, SSR-safe readiness fallback and CI ownership gate have now been implemented; remaining dynamic helper-based copy is tracked separately. The existing pure resolver in `@Base/i18n` is retained.
 
 ### 1. One app-scoped, typed global message function
 

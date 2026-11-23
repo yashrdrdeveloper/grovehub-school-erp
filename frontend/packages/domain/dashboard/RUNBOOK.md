@@ -11,3 +11,7 @@ Conformance and remaining work are maintained in `docs/engineering/frontend/FRON
 ## Display strings and static preview states
 
 Dashboard visible headings, hints, empty-state messages and accessibility labels call bare global `__()` during render. Stable copy should live in the owning `constants/<owner>.copy.ts`; any varying school data is passed as named `{{value}}` parameters, not concatenated. Static preview metadata remains owned by the dashboard and is **never** treated as live student or fee data. Closed UI props use component-exported constants such as `BOX_TAG` and `TEXT_TONE`. Do not import `@Base/i18n` into domain UI; the shell registers the browser-global resolver before mounting the dashboard.
+
+## Display content at its static owner
+
+`constants/dashboard.metrics.ts` and `constants/dashboard.workspaces.ts` translate human-readable names/descriptions when declared using literal `__('message')`, while technical tone classes and icon tokens stay raw. JSX renders these values directly and does not call `__(metric.name)`. Conditional view state belongs to owner-local tested helpers; no `let` declarations.

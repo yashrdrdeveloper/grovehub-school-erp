@@ -158,3 +158,7 @@ Public pages share the same `ShellContainer` i18n bootstrap as authentication an
 `scripts/prerender-public-pages.mjs` generates search-indexable HTML **without executing React effects** and must keep its static, escapable title/description/body metadata. Do not depend on `window.__` in that Node prerender script. The current resolver only formats English source text, not other languages; future public multilingual SEO requires per-locale static generation, canonical/hreflang mapping and locale-specific metadata. Preserve all 13 crawlable routes, robots.txt and sitemap.xml.
 
 **Closed public-site variants:** `PhotoMotifs` exports `PHOTO_MOTIFS_VARIANT.HERO/GALLERY/BANNER` from its own `siteMedia` API. Public-site consumers use that typed constant instead of literal `variant="gallery"`. The global component-enum checker applies to production public-site pages as well as shared UI.
+
+## Public-school content and SEO messages
+
+Static visible `school.content.ts` photos' `title`, `alt`, `category`, navigation item labels, `school.seo.ts` titles and descriptions, and sheet copy are translated with literal `__('message')` **at their defining constant**. Browser bootstrap installs global `__()` before dynamic imports evaluate them. Phone numbers, document URLs, routes, HTML/CSS tokens, affiliation codes and data IDs remain unchanged technical strings. Dynamic view selection in enquiries and navigation lives in tested pure helpers, not mutable `let`. Prerender's own static HTML generation remains independent of React effects and untranslated protocol fields.

@@ -27,3 +27,7 @@ Every component must export its own closed-set runtime options and derive public
 Presentational features call bare `__()` for user-facing labels, headings, accessible names, placeholders, errors and tooltips. They must not import `__` or mutate `window.__`. The global resolver is provided by `ShellContainer` before routes mount, while Jest installs the real pure resolver in test setup. Component contracts still forward actual DOM attributes and `dataTestId` precisely. See the unified frontend guideline Revision 13 for the literal-versus-technical-string rules.
 
 **Enforced enums:** `pnpm check:component-enums` rejects raw closed prop literals for shared components. `Input`, `PasswordField` and `TextField` publicly alias the same underlying InputControl sizing values as `INPUT_SIZE`, `PASSWORD_FIELD_SIZE` and `TEXT_FIELD_SIZE`. The aliases are public conveniences, not new size scales; always re-use the owner's actual runtime value and derive types from it.
+
+## Pure display selection and immutable bindings
+
+Presentation copy in owned `constants/*.copy.ts` is declared as `__('literal')`; components later use `COPY.key` without re-wrapping. Per-instance dynamic labels call the global `__('literal')` inside branch-return helpers/renderer functions. Components must not import the formatter. Mutable `let` declarations, JSX component reassignment and ternaries are forbidden. `PasswordField/renderer/passwordField.visibility.ts` demonstrates a typed pure icon/label/input-type selector.

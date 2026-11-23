@@ -19,3 +19,7 @@ The central theme is the document `data-theme="light" | "dark"`. The existing th
 ## Text and tokens
 
 Styling owns colors, typography, spacing, focus and responsive tokens, **not translated copy**. Do not generate essential user-facing messages with CSS `content:`; text belongs in accessible JSX and is resolved through the shell-provided global `__()`. Translatable text must be able to expand without clipping and respect 320/375/390/720 px responsive layouts. A locale-aware future must handle font coverage, directionality and text expansion without creating per-domain global palettes.
+
+## No mutable display state
+
+Copy expansion and responsive text remain presentation concerns. Never implement alternate CSS/class/token selection by `let` reassignment inside JSX; use a pure owner-specific renderer/helper returning an immutable variant. Translation calls always receive literal source messages. Styling technical class strings are not translated.
