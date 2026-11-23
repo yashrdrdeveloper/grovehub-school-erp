@@ -30,10 +30,6 @@ jobs:
           cache-dependency-path: frontend/pnpm-lock.yaml
       - name: Install
         run: pnpm install --frozen-lockfile
-      - name: Format migration candidates and emit source (temporary)
-        run: |
-          pnpm exec prettier --ignore-path /dev/null --write packages/domain/auth/components/authStatusArt/AuthStatusArt.module.css scripts/audit-allowlist.json packages/domain/publicSite/pages/landing/components/aboutContent/aboutContent.tsx packages/domain/publicSite/pages/landing/components/campusContent/campusContent.tsx packages/domain/publicSite/pages/landing/components/enquiryForm/enquiryForm.tsx packages/domain/publicSite/pages/landing/components/publicSheet/components/infoPanels/infoPanels.tsx packages/domain/publicSite/pages/landing/components/resourceContent/resourceContent.tsx packages/domain/publicSite/pages/landing/components/siteChrome/siteChrome.tsx packages/domain/publicSite/pages/landing/constants/school.content.ts
-          node -e 'const fs = require("node:fs"); const files = ["packages/domain/auth/components/authStatusArt/AuthStatusArt.module.css","scripts/audit-allowlist.json","packages/domain/publicSite/pages/landing/components/aboutContent/aboutContent.tsx","packages/domain/publicSite/pages/landing/components/campusContent/campusContent.tsx","packages/domain/publicSite/pages/landing/components/enquiryForm/enquiryForm.tsx","packages/domain/publicSite/pages/landing/components/publicSheet/components/infoPanels/infoPanels.tsx","packages/domain/publicSite/pages/landing/components/resourceContent/resourceContent.tsx","packages/domain/publicSite/pages/landing/components/siteChrome/siteChrome.tsx","packages/domain/publicSite/pages/landing/constants/school.content.ts"]; files.forEach((path) => console.log("GH_FORMAT|" + path + "|" + JSON.stringify(fs.readFileSync(path, "utf8"))));'
       - name: Audit all tracked frontend source (non-blocking report)
         run: pnpm audit:guidelines
       - name: Check architecture

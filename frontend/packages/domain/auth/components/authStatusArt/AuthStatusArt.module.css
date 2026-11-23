@@ -77,44 +77,44 @@
 }
 
 @media (min-width: 721px) and (max-height: 760px) {
-.rdr-auth-mobile-status-art {
+  .rdr-auth-mobile-status-art {
     height: 86px;
   }
 }
 
 @media (max-width: 720px) {
-.rdr-auth-mobile-status-art {
+  .rdr-auth-mobile-status-art {
     height: clamp(70px, 11dvh, 92px);
   }
 }
 
 @media (max-width: 720px) and (max-height: 740px) {
-.rdr-auth-mobile-status-art {
+  .rdr-auth-mobile-status-art {
     height: 80px;
   }
 }
 
 @media (max-width: 720px) {
-:global(.rdr-login-v2__main):has(:global(.rdr-auth-flow--sent)) .rdr-auth-mobile-status-art,
+  :global(.rdr-login-v2__main):has(:global(.rdr-auth-flow--sent)) .rdr-auth-mobile-status-art,
   :global(.rdr-login-v2__main):has(:global(.rdr-recovery__state)) .rdr-auth-mobile-status-art {
     height: clamp(64px, 10dvh, 85px);
   }
 }
 
 @media (max-width: 720px) and (max-height: 680px) {
-.rdr-auth-mobile-status-art {
+  .rdr-auth-mobile-status-art {
     height: 66px;
   }
 }
 
 @media (min-width: 721px) and (max-width: 1100px) and (min-height: 560px) {
-.rdr-auth-mobile-status-art {
+  .rdr-auth-mobile-status-art {
     height: 78px;
   }
 }
 
 @media (min-width: 721px) and (max-width: 1100px) and (min-height: 560px) and (max-height: 799px) {
-.rdr-auth-mobile-status-art {
+  .rdr-auth-mobile-status-art {
     height: 64px;
   }
 }
