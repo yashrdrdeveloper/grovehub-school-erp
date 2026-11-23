@@ -1,0 +1,56 @@
+name: One-time frontend i18n source migration
+
+on:
+  push:
+    branches:
+      - phase-2.1-identity-account
+    paths:
+      - 'frontend/scripts/i18n-migration.trigger'
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - name: Wrap user-facing JSX copy in global __()
+        run: node scripts/migrate-i18n-copy.mjs
+      - name: Lock any remaining legacy JSX copy to verified per-file counts
+        run: node scripts/check-i18n-conventions.mjs --write-baseline
+      - name: Format all migrated TypeScript and scripts
+        run: pnpm format
+      - name: Architecture and formatting checks
+        run: pnpm check:architecture
+      - name: TypeScript validation
+        run: pnpm typecheck
+      - name: Run all Jest regression suites
+        run: pnpm exec jest --runInBand
+      - name: Build and SEO prerender
+        run: pnpm build
+      - name: Commit validated source transformations
+        run: |
+          git add app packages scripts
+          if git diff --cached --quiet; then
+            echo "Nothing to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "refactor(frontend): migrate visible JSX copy to shell-managed global __"
+          git push origin HEAD:refs/heads/phase-2.1-identity-account
