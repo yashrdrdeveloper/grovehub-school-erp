@@ -63,10 +63,18 @@ jest.mock('../../../components/loginLayout', () => ({
   ),
 }));
 
+const RECOVERY_TEST_PATHS = {
+  invitation: '/set-password',
+  recovery: '/reset-password',
+} as const;
+
 const renderPage = (purpose: 'invitation' | 'recovery', proof?: string) => {
-  const route = purpose === 'invitation' && '/set-password' || '/reset-password';
-  const fragment = proof && `#proof=${proof}` || '';
-  window.history.replaceState({}, '', route + fragment);
+  const route = RECOVERY_TEST_PATHS[purpose];
+  if (proof) {
+    window.history.replaceState({}, '', `${route}#proof=${proof}`);
+  } else {
+    window.history.replaceState({}, '', route);
+  }
   return render(
     <MemoryRouter>
       <RecoveryPage purpose={purpose} />
