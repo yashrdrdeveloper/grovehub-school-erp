@@ -1,1 +1,1 @@
-Rerun gated global __() JSX migration after extracting LoginLayout visual and footer to dedicated components.
+Retry gated i18n source-copy migration with browser-safe ShellContainer route gate tests.
