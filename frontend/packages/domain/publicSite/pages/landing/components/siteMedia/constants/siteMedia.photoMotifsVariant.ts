@@ -4,5 +4,4 @@ export const PHOTO_MOTIFS_VARIANT = Object.freeze({
   GALLERY: 'gallery',
   BANNER: 'banner',
 } as const);
-export type PhotoMotifsVariant =
-  (typeof PHOTO_MOTIFS_VARIANT)[keyof typeof PHOTO_MOTIFS_VARIANT];
+export type PhotoMotifsVariant = (typeof PHOTO_MOTIFS_VARIANT)[keyof typeof PHOTO_MOTIFS_VARIANT];
