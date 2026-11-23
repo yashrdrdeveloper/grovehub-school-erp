@@ -13,7 +13,8 @@ import {
 } from '@Components/components/Dialog';
 import { ArrowRight, GraduationCap, Phone, ShieldCheck, X } from '@Components/icons';
 import { school } from '../../constants/school.content';
-import { panelTitles, overviewPanels, type StoryKey } from './constants/school.sheetCopy';
+import { getPublicSheetCopy } from './helpers/publicSheet.getCopy';
+import { getPublicSheetStoryKey } from './helpers/publicSheet.getStoryKey';
 import { StoryPanel } from './components/storyPanel';
 import {
   AcademicPanel,
@@ -38,14 +39,7 @@ export const PublicSheet = ({
   onNavigate: (panel: SchoolPanel) => void;
   enquiry: ReactNode;
 }) => {
-  let selectedStory: StoryKey = 'history';
-  if (
-    panel === 'director' ||
-    panel === 'principal' ||
-    panel === 'philosophy' ||
-    panel === 'history'
-  )
-    selectedStory = panel;
+  const selectedStory = getPublicSheetStoryKey(panel);
   const story =
     panel === 'about' ||
     panel === 'history' ||
@@ -53,12 +47,7 @@ export const PublicSheet = ({
     panel === 'principal' ||
     panel === 'philosophy';
   const onEnquire = () => onNavigate('enquiry');
-  let title = 'RDR School information';
-  let description = '';
-  if (panel) {
-    title = panelTitles[panel];
-    description = overviewPanels[panel];
-  }
+  const { title, description } = getPublicSheetCopy(panel);
   return (
     <DialogRoot
       open={Boolean(panel)}

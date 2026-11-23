@@ -10,29 +10,14 @@ import { ENQUIRY_TEST_IDS } from '../../constants/enquiry.testIds';
 import { InputControl } from '@Components/components/InputControl';
 import { Form } from '@Components/components/Form';
 import { enquiryTypes } from '../../constants/school.content';
+import { getEnquiryFormView } from './helpers/enquiryForm.getView';
 import type { EnquiryFormComponent } from './types/enquiryForm';
 
 /** Presentational only; validation and transitions belong to useEnquiryForm. */
 export const EnquiryForm: EnquiryFormComponent = ({ compact = false, model }) => {
-  const { fieldId, data, step, error, ready, mailto, patch, next, submit, edit, back } = model;
-  let rootClass = 'rdr-enquiry';
-  let rootId: string | undefined = 'enquiry';
-  let rootTestId: string = ENQUIRY_TEST_IDS.PAGE;
-  if (compact) {
-    rootClass += ' rdr-enquiry--compact';
-    rootId = undefined;
-    rootTestId = ENQUIRY_TEST_IDS.SHEET;
-  }
-  let heading = 'Have a question? We’re here.';
-  let description = 'A quick conversation is the first step. We’ll help you find the answers.';
-  if (ready) {
-    heading = 'Your enquiry is ready';
-    description = 'Open your email application to send the enquiry to the school.';
-  }
-  let handleSubmit = submit;
-  let stepHeading = 'A little more detail';
-  let submitLabel = 'Prepare enquiry';
-  if (step === 0) { handleSubmit = next; stepHeading = 'Your details'; submitLabel = 'Continue'; }
+  const { fieldId, data, step, error, ready, mailto, patch, edit, back } = model;
+  const { rootClass, rootId, rootTestId, heading, description, handleSubmit,
+    stepHeading, submitLabel } = getEnquiryFormView(compact, model);
   return (
     <Box as={BOX_TAG.DIV} className={rootClass}
       id={rootId} data-testid={rootTestId}>

@@ -6,11 +6,12 @@ import { SCHOOL_ROUTE } from '../../constants/school.routes';
 import { useEffect, useState } from 'react';
 import { AppLink } from '@Components/components/AppLink';
 import { useLocation } from '@Components/router';
-import { ArrowRight, ArrowUpRight, MapPin, Menu, X } from '@Components/icons';
+import { ArrowRight, ArrowUpRight, MapPin, X } from '@Components/icons';
 import { SchoolMonogram } from '@Components';
 import { APP_ROUTE } from '@Business/app/routes';
 import { AUTH_ROUTE } from '@Business/auth/routes';
 import { getSiteNavClassName } from './helpers/siteChrome.getNavClassName';
+import { getSiteChromeMenuView } from './helpers/siteChrome.getMenuView';
 import { school } from '../../constants/school.content';
 import { SCHOOL_NAV_ITEMS as navItems } from '../../constants/school.navigation';
 import { EnquiryLink } from '../siteActions';
@@ -19,9 +20,7 @@ import { EnquiryLink } from '../siteActions';
 const SiteHeader = () => {
   const [open,setOpen] = useState(false);
   const { pathname } = useLocation();
-  let menuLabel = 'Open menu';
-  let MenuIcon = Menu;
-  if (open) { menuLabel = 'Close menu'; MenuIcon = X; }
+  const { menuLabel, MenuIcon } = getSiteChromeMenuView(open);
   useEffect(() => setOpen(false),[pathname]);
   useEffect(() => {
     if (!open) return;
