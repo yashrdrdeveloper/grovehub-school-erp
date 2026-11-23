@@ -37,8 +37,25 @@ test('analyzeI18nSource', async (t) => {
     });
     assert.deepEqual(issues, []);
   });
-  await t.test('rejects calling __ during module initialization', () => {
+  await t.test('rejects calling __ during module initialization outside constants', () => {
     const { issues } = analyzeI18nSource('copy.ts', "export const TITLE = __('Hello');");
     assert.equal(issues[0].code, 'EAGER_I18N');
   });
+  await t.test('permits literal translated constants after the shell prebootstrap', () => {
+    const { issues } = analyzeI18nSource(
+      'constants/login.copy.ts',
+      "export const LOGIN_COPY = Object.freeze({ title: __('Welcome back.') });",
+      { allowEagerCopy: true },
+    );
+    assert.deepEqual(issues, []);
+  });
+
+  await t.test('rejects variables and expressions passed to the global translator', () => {
+    const { issues } = analyzeI18nSource(
+      'Login.tsx',
+      "export const Login = () => <h1>{__(LOGIN_COPY.desktopTitle)}</h1>;",
+    );
+    assert.ok(issues.some((issue) => issue.code === 'I18N_LITERAL_REQUIRED'));
+  });
+
 });

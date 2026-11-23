@@ -11,7 +11,8 @@ const copies = {};
 let sourceCount = 0;
 let copyCount = 0;
 
-const bootstrapHook = 'packages/shell/containers/shellContainer/hooks/useInitI18n/useInitI18n.ts';
+const bootstrapInstaller =
+  'packages/shell/containers/shellContainer/helpers/shellContainer.installI18n.ts';
 const bootFallback =
   'packages/shell/containers/shellContainer/components/i18nBootstrapFallback/I18nBootstrapFallback.tsx';
 
@@ -28,8 +29,9 @@ const walk = async (directory) => {
     const relative = path.relative(root, abs).replaceAll(path.sep, '/');
     const source = await readFile(abs, 'utf8');
     const options = {
-      allowRuntimeGlobal: relative === bootstrapHook,
-      allowResolverImport: relative === bootstrapHook || relative.startsWith('packages/base/'),
+      allowRuntimeGlobal: relative === bootstrapInstaller,
+      allowResolverImport: relative === bootstrapInstaller || relative.startsWith('packages/base/'),
+      allowEagerCopy: relative.includes('/constants/'),
       checkVisibleCopy: relative !== bootFallback && relative.endsWith('.tsx'),
     };
     const result = analyzeI18nSource(relative, source, options);
