@@ -92,26 +92,26 @@
 }
 
 @media (max-width: 720px) {
-.catalog-app {
+  .catalog-app {
     min-height: 150px;
   }
 }
 
 @media (max-width: 720px) {
-.catalog-app__link {
+  .catalog-app__link {
     padding: 15px;
   }
 }
 
 @media (max-width: 720px) {
-.catalog-app__icon {
+  .catalog-app__icon {
     width: 39px;
     height: 39px;
   }
 }
 
 @media (max-width: 375px) {
-.catalog-app__link {
+  .catalog-app__link {
     padding: 12px;
   }
 }

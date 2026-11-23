@@ -3184,13 +3184,15 @@ body {
 }
 :root[data-theme='dark'] .dashboard-banner__copy span {
   color: #dcf2ed;
-}:root[data-theme='dark'] .metric-card,
+}
+:root[data-theme='dark'] .metric-card,
 :root[data-theme='dark'] .dashboard-panel,
 :root[data-theme='dark'] .dashboard-quick-link {
   background: #1a303b;
   border-color: #385966;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-}:root[data-theme='dark'] .metric-card:hover,
+}
+:root[data-theme='dark'] .metric-card:hover,
 :root[data-theme='dark'] .dashboard-panel:hover,
 :root[data-theme='dark'] .dashboard-quick-link:hover {
   background: #23404b;
@@ -3225,7 +3227,8 @@ body {
 :root[data-theme='dark'] .dashboard-panel__icon {
   background: var(--tone-bg);
   color: var(--tone);
-}:root[data-theme='dark'] .dashboard-quick-link__icon,
+}
+:root[data-theme='dark'] .dashboard-quick-link__icon,
 :root[data-theme='dark'] .school-emblem,
 :root[data-theme='dark'] .member-avatar {
   color: #8cebd8;
@@ -3519,15 +3522,18 @@ body {
 }
 :root .dashboard-panel__footer {
   color: var(--muted);
-}:root .dashboard-quick-link {
+}
+:root .dashboard-quick-link {
   background: var(--surface);
   border: 1px solid var(--border);
   box-shadow: none;
-}:root .dashboard-quick-link:hover {
+}
+:root .dashboard-quick-link:hover {
   border-color: var(--muted);
   background: var(--surface-subtle);
   box-shadow: none;
-}:root .dashboard-quick-link__icon {
+}
+:root .dashboard-quick-link__icon {
   background: var(--accent-pale);
   color: var(--accent);
 }
@@ -3681,13 +3687,15 @@ body {
 :root[data-theme='dark'] .metric-grid {
   background: var(--surface);
   border-color: var(--border);
-}:root[data-theme='dark'] .metric-card,
+}
+:root[data-theme='dark'] .metric-card,
 :root[data-theme='dark'] .dashboard-panel,
 :root[data-theme='dark'] .dashboard-quick-link {
   background: var(--surface);
   border-color: var(--border);
   box-shadow: none;
-}:root[data-theme='dark'] .metric-card:hover,
+}
+:root[data-theme='dark'] .metric-card:hover,
 :root[data-theme='dark'] .dashboard-panel:hover,
 :root[data-theme='dark'] .dashboard-quick-link:hover {
   background: var(--surface-subtle);
@@ -3697,7 +3705,8 @@ body {
 :root[data-theme='dark'] .dashboard-panel__icon {
   background: var(--tone-bg);
   color: var(--tone);
-}:root[data-theme='dark'] .dashboard-quick-link__icon {
+}
+:root[data-theme='dark'] .dashboard-quick-link__icon {
   background: var(--accent-pale);
   color: var(--accent);
 }

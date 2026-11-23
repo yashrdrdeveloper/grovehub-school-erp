@@ -55,10 +55,7 @@ export const CredentialField: CredentialFieldComponent = ({
       <Box
         as={BOX_TAG.SMALL}
         id={errorId}
-        className={cn(
-          styles['rdr-login-v2__field-error--reserved'],
-          !error && styles['is-empty'],
-        )}
+        className={cn(styles['rdr-login-v2__field-error--reserved'], !error && styles['is-empty'])}
         aria-live="polite"
         aria-atomic="true"
       >
