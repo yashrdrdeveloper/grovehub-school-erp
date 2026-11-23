@@ -1,1 +1,0 @@
-export { CampusPage } from './CampusPage';

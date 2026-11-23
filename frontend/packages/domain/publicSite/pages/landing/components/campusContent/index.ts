@@ -1,4 +1,4 @@
-export { AcademicsPage } from './components/academicsPage';
-export { CampusPage } from './components/campusPage';
-export { GalleryPage } from './components/galleryPage';
-export { AdmissionsPage } from './components/admissionsPage';
+export { AcademicsPage } from './campusContent';
+export { CampusPage } from './campusContent';
+export { GalleryPage } from './campusContent';
+export { AdmissionsPage } from './campusContent';

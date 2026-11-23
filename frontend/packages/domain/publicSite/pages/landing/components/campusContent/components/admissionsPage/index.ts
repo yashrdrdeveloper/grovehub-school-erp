@@ -1,1 +1,0 @@
-export { AdmissionsPage } from './AdmissionsPage';
