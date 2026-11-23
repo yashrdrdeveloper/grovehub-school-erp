@@ -2,18 +2,37 @@ import ts from 'typescript';
 
 /** UI copy lives at render time, whereas transport/HTML values retain native semantics. */
 export const VISIBLE_TEXT_ATTRIBUTES = new Set([
-  'title', 'label', 'description', 'mobileTitle', 'mobileDescription', 'placeholder',
-  'aria-label', 'aria-description', 'alt', 'heading', 'helperText', 'loadingText',
-  'buttonLabel', 'emptyLabel', 'caption', 'message', 'tooltip', 'successMessage',
-  'errorMessage', 'hint', 'secondaryLabel', 'errorText', 'helpText',
+  'title',
+  'label',
+  'description',
+  'mobileTitle',
+  'mobileDescription',
+  'placeholder',
+  'aria-label',
+  'aria-description',
+  'alt',
+  'heading',
+  'helperText',
+  'loadingText',
+  'buttonLabel',
+  'emptyLabel',
+  'caption',
+  'message',
+  'tooltip',
+  'successMessage',
+  'errorMessage',
+  'hint',
+  'secondaryLabel',
+  'errorText',
+  'helpText',
 ]);
 
 const isVisible = (message) => /[A-Za-z\u00c0-\u024f]/.test(message);
 const hasEntity = (message) => /&(?:[a-zA-Z][a-zA-Z0-9]+|#[xX]?[0-9a-fA-F]+);/.test(message);
-const forbiddenGlobal = (node) => (
-  ts.isPropertyAccessExpression(node) && node.name.text === '__' &&
-  (node.expression.getText() === 'window' || node.expression.getText() === 'globalThis')
-);
+const forbiddenGlobal = (node) =>
+  ts.isPropertyAccessExpression(node) &&
+  node.name.text === '__' &&
+  (node.expression.getText() === 'window' || node.expression.getText() === 'globalThis');
 
 /** JSX transforms normalize layout indentation; reproduce the same textual whitespace. */
 export const normalizeJsxText = (input) => {
@@ -36,7 +55,13 @@ export const normalizeJsxText = (input) => {
 };
 
 export const analyzeI18nSource = (filename, source, options = {}) => {
-  const file = ts.createSourceFile(filename, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const file = ts.createSourceFile(
+    filename,
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX,
+  );
   const issues = [];
   const rawCopy = [];
   const allowRuntimeGlobal = options.allowRuntimeGlobal === true;
@@ -47,23 +72,38 @@ export const analyzeI18nSource = (filename, source, options = {}) => {
     list.push({ code, line: loc.line + 1, label });
   };
   const visit = (node, insideFunction = false) => {
-    if (ts.isImportDeclaration(node) &&
-        ts.isStringLiteral(node.moduleSpecifier) &&
-        ['@Base', '@Base/i18n', '@Base/i18n/__'].includes(node.moduleSpecifier.text) &&
-        !allowResolverImport) {
+    if (
+      ts.isImportDeclaration(node) &&
+      ts.isStringLiteral(node.moduleSpecifier) &&
+      ['@Base', '@Base/i18n', '@Base/i18n/__'].includes(node.moduleSpecifier.text) &&
+      !allowResolverImport
+    ) {
       const clause = node.importClause;
-      if (clause?.namedBindings && ts.isNamedImports(clause.namedBindings) &&
-          clause.namedBindings.elements.some((name) => name.name.text === '__' ||
-            name.propertyName?.text === '__')) {
+      if (
+        clause?.namedBindings &&
+        ts.isNamedImports(clause.namedBindings) &&
+        clause.namedBindings.elements.some(
+          (name) => name.name.text === '__' || name.propertyName?.text === '__',
+        )
+      ) {
         add(issues, node, 'IMPORTED_I18N', 'Importing __ in a frontend owner is forbidden');
       }
     }
     if (forbiddenGlobal(node) && !allowRuntimeGlobal) {
       add(issues, node, 'GLOBAL_I18N_ACCESS', 'Only ShellContainer bootstrap installs window.__');
     }
-    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) &&
-        node.expression.text === '__' && !insideFunction) {
-      add(issues, node, 'EAGER_I18N', 'Translate UI copy at render time, not during module initialization');
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === '__' &&
+      !insideFunction
+    ) {
+      add(
+        issues,
+        node,
+        'EAGER_I18N',
+        'Translate UI copy at render time, not during module initialization',
+      );
     }
     if (checkVisibleCopy && ts.isJsxText(node)) {
       const message = normalizeJsxText(node.getText(file));
@@ -71,15 +111,23 @@ export const analyzeI18nSource = (filename, source, options = {}) => {
         add(rawCopy, node, 'RAW_UI_COPY', message.slice(0, 100));
       }
     }
-    if (checkVisibleCopy && ts.isJsxAttribute(node) &&
-        VISIBLE_TEXT_ATTRIBUTES.has(node.name.text) &&
-        node.initializer && ts.isStringLiteral(node.initializer) &&
-        isVisible(node.initializer.text)) {
+    if (
+      checkVisibleCopy &&
+      ts.isJsxAttribute(node) &&
+      VISIBLE_TEXT_ATTRIBUTES.has(node.name.text) &&
+      node.initializer &&
+      ts.isStringLiteral(node.initializer) &&
+      isVisible(node.initializer.text)
+    ) {
       add(rawCopy, node, 'RAW_UI_COPY', node.initializer.text.slice(0, 100));
     }
-    if (checkVisibleCopy && ts.isJsxExpression(node) &&
-        node.expression && ts.isStringLiteral(node.expression) &&
-        isVisible(node.expression.text)) {
+    if (
+      checkVisibleCopy &&
+      ts.isJsxExpression(node) &&
+      node.expression &&
+      ts.isStringLiteral(node.expression) &&
+      isVisible(node.expression.text)
+    ) {
       add(rawCopy, node, 'RAW_UI_COPY', node.expression.text.slice(0, 100));
     }
     const nextInsideFunction = insideFunction || ts.isFunctionLike(node);

@@ -15,14 +15,14 @@ export const DashboardOverview: DashboardOverviewComponent = () => (
     <Box as={BOX_TAG.DIV} className={sectionStyles['school-home__section-heading']}>
       <Box as={BOX_TAG.DIV}>
         <Box as={BOX_TAG.SPAN} className={sectionStyles['school-home__eyebrow']}>
-          YOUR DAY / 01
+          {__('YOUR DAY / 01')}
         </Box>
         <Box as={BOX_TAG.H2} id="home-priorities">
-          At a glance
+          {__('At a glance')}
         </Box>
       </Box>
       <Box as={BOX_TAG.SPAN} className={sectionStyles['school-home__hint']}>
-        No live data yet
+        {__('No live data yet')}
       </Box>
     </Box>
     <Box as={BOX_TAG.DIV} className={styles['school-home__stats']}>

@@ -9,15 +9,19 @@ export const DashboardHeader: DashboardHeaderComponent = ({ date }) => (
   <Box as={BOX_TAG.HEADER} className={styles['school-home__header']}>
     <Box as={BOX_TAG.DIV}>
       <Box as={BOX_TAG.DIV} className={styles['school-home__breadcrumb']}>
-        <School size={14} /> RDR SCHOOL <ChevronRight size={13} /> OVERVIEW
+        <School size={14} />
+        {__('RDR SCHOOL ')}
+        <ChevronRight size={13} />
+        {__('OVERVIEW')}
       </Box>
       <Box as={BOX_TAG.H1}>
-        Good {date.greeting}
+        {__('Good ')}
+        {date.greeting}
         <Box as={BOX_TAG.SPAN} className={styles['school-home__spark']}>
           ✳
         </Box>
       </Box>
-      <Box as={BOX_TAG.P}>Your school day, in one clear view.</Box>
+      <Box as={BOX_TAG.P}>{__('Your school day, in one clear view.')}</Box>
     </Box>
     <Box as={BOX_TAG.DIV} className={styles['school-home__date']}>
       <CalendarDays size={17} />

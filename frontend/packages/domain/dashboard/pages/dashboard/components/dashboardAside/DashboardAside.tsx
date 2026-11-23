@@ -27,10 +27,10 @@ export const DashboardAside: DashboardAsideComponent = ({ date, calendar }) => {
         <Box as={BOX_TAG.DIV} className={sectionStyles['school-home__section-heading']}>
           <Box as={BOX_TAG.DIV}>
             <Box as={BOX_TAG.SPAN} className={sectionStyles['school-home__eyebrow']}>
-              CALENDAR / 04
+              {__('CALENDAR / 04')}
             </Box>
             <Box as={BOX_TAG.H2} id="home-calendar">
-              School calendar
+              {__('School calendar')}
             </Box>
           </Box>
         </Box>
@@ -39,7 +39,7 @@ export const DashboardAside: DashboardAsideComponent = ({ date, calendar }) => {
             as={BOX_TAG.DIV}
             className={styles['school-home__calendar-tabs']}
             role="group"
-            aria-label="Calendar view"
+            aria-label={__('Calendar view')}
           >
             <Button
               unstyled
@@ -48,7 +48,7 @@ export const DashboardAside: DashboardAsideComponent = ({ date, calendar }) => {
               className={todayClass}
               onClick={calendar.showToday}
             >
-              Today
+              {__('Today')}
             </Button>
             <Button
               unstyled
@@ -57,7 +57,7 @@ export const DashboardAside: DashboardAsideComponent = ({ date, calendar }) => {
               className={upcomingClass}
               onClick={calendar.showUpcoming}
             >
-              Upcoming
+              {__('Upcoming')}
             </Button>
           </Box>
           <Box as={BOX_TAG.DIV} className={styles['school-home__calendar-content']}>
@@ -73,12 +73,15 @@ export const DashboardAside: DashboardAsideComponent = ({ date, calendar }) => {
               <CalendarDays size={22} />
               <Box as={BOX_TAG.STRONG}>{calendarEmptyTitle}</Box>
               <Box as={BOX_TAG.SPAN}>
-                Holidays, school events and time off will appear here when Calendar is connected.
+                {__(
+                  'Holidays, school events and time off will appear here when Calendar is connected.',
+                )}
               </Box>
             </Box>
           </Box>
           <Box as={BOX_TAG.DIV} className={styles['school-home__calendar-footer']}>
-            <CircleDashed size={13} /> Calendar integration planned
+            <CircleDashed size={13} />
+            {__('Calendar integration planned')}
           </Box>
         </Box>
       </Box>
@@ -90,10 +93,10 @@ export const DashboardAside: DashboardAsideComponent = ({ date, calendar }) => {
         <Box as={BOX_TAG.DIV} className={sectionStyles['school-home__section-heading']}>
           <Box as={BOX_TAG.DIV}>
             <Box as={BOX_TAG.SPAN} className={sectionStyles['school-home__eyebrow']}>
-              FOLLOW-UPS / 05
+              {__('FOLLOW-UPS / 05')}
             </Box>
             <Box as={BOX_TAG.H2} id="home-reminders">
-              Reminders
+              {__('Reminders')}
             </Box>
           </Box>
         </Box>
@@ -102,13 +105,16 @@ export const DashboardAside: DashboardAsideComponent = ({ date, calendar }) => {
             <Box as={BOX_TAG.SPAN} className={styles['school-home__reminders-icon']}>
               <Bell size={18} />
             </Box>
-            <Box as={BOX_TAG.STRONG}>Keep the important things close.</Box>
+            <Box as={BOX_TAG.STRONG}>{__('Keep the important things close.')}</Box>
           </Box>
           <Box as={BOX_TAG.P}>
-            Your reminders and personal follow-ups will live here—right beside your school calendar.
+            {__(
+              'Your reminders and personal follow-ups will live here—right beside your school calendar.',
+            )}
           </Box>
           <Box as={BOX_TAG.DIV} className={styles['school-home__reminders-foot']}>
-            <Layers2 size={14} /> Coming with Tasks
+            <Layers2 size={14} />
+            {__('Coming with Tasks')}
           </Box>
         </Box>
       </Box>

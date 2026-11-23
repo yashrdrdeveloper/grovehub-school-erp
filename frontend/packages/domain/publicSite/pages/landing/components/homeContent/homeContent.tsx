@@ -12,27 +12,31 @@ const HomePage = () => (
       <Box as={BOX_TAG.DIV} className="rdr-container rdr-o1-hero__grid">
         <Box as={BOX_TAG.DIV} className="rdr-o1-hero__copy">
           <Box as={BOX_TAG.SPAN} className="rdr-eyebrow">
-            A COMMUNITY OF LEARNERS · SINCE 2006
+            {__('A COMMUNITY OF LEARNERS · SINCE 2006')}
           </Box>
           <Box as={BOX_TAG.H1}>
-            Rooted in Haluhera.<em>Ready for every tomorrow.</em>
+            {__('Rooted in Haluhera.')}
+            <em>{__('Ready for every tomorrow.')}</em>
           </Box>
           <Box as={BOX_TAG.P}>
-            At Rao Deena Ram Vidya Vihar, learning goes beyond the classroom. We bring together
-            academics, character and a caring school community so every child has room to grow.
+            {__(
+              'At Rao Deena Ram Vidya Vihar, learning goes beyond the classroom. We bring together academics, character and a caring school community so every child has room to grow.',
+            )}
           </Box>
           <Box as={BOX_TAG.DIV} className="rdr-o1-hero__actions">
             <EnquiryLink className="rdr-btn rdr-btn--solid">
-              Enquire for admission <ArrowUpRight size={17} />
+              {__('Enquire for admission ')}
+              <ArrowUpRight size={17} />
             </EnquiryLink>
             <AppLink className="rdr-btn rdr-o1-secondary" to={SCHOOL_ROUTE.ABOUT}>
-              Discover our school <ArrowRight size={17} />
+              {__('Discover our school ')}
+              <ArrowRight size={17} />
             </AppLink>
           </Box>
           <Box as={BOX_TAG.DIV} className="rdr-o1-hero__proof">
-            <Box as={BOX_TAG.SPAN}>CBSE affiliated</Box>
-            <Box as={BOX_TAG.SPAN}>Senior Secondary</Box>
-            <Box as={BOX_TAG.SPAN}>Rewari, Haryana</Box>
+            <Box as={BOX_TAG.SPAN}>{__('CBSE affiliated')}</Box>
+            <Box as={BOX_TAG.SPAN}>{__('Senior Secondary')}</Box>
+            <Box as={BOX_TAG.SPAN}>{__('Rewari, Haryana')}</Box>
           </Box>
         </Box>
         <Box as={BOX_TAG.DIV} className="rdr-o1-hero__images">
@@ -44,7 +48,7 @@ const HomePage = () => (
             loading="eager"
           >
             <Box as={BOX_TAG.SPAN} className="rdr-o1-hero__photo-caption">
-              A school full of familiar faces.
+              {__('A school full of familiar faces.')}
             </Box>
           </ImageCard>
           <Box as={BOX_TAG.DIV} className="rdr-o1-hero__image-side">
@@ -56,8 +60,8 @@ const HomePage = () => (
               loading="eager"
             />
             <Box as={BOX_TAG.DIV} className="rdr-o1-hero__note">
-              <Box as={BOX_TAG.STRONG}>Learning with purpose.</Box>
-              <Box as={BOX_TAG.SMALL}>Growing together since 2006.</Box>
+              <Box as={BOX_TAG.STRONG}>{__('Learning with purpose.')}</Box>
+              <Box as={BOX_TAG.SMALL}>{__('Growing together since 2006.')}</Box>
             </Box>
           </Box>
         </Box>
@@ -67,16 +71,16 @@ const HomePage = () => (
       <Box as={BOX_TAG.DIV} className="rdr-o1-life__heading">
         <Box as={BOX_TAG.DIV}>
           <Box as={BOX_TAG.SPAN} className="rdr-eyebrow">
-            LIFE AT RDR
+            {__('LIFE AT RDR')}
           </Box>
           <Box as={BOX_TAG.H2}>
-            Every child has a story.
+            {__('Every child has a story.')}
             <br />
-            Every day has a purpose.
+            {__('Every day has a purpose.')}
           </Box>
         </Box>
         <Box as={BOX_TAG.P}>
-          From classrooms to celebrations, these are the experiences that shape school life.
+          {__('From classrooms to celebrations, these are the experiences that shape school life.')}
         </Box>
       </Box>
       <Box as={BOX_TAG.DIV} className="rdr-o1-life__grid">
@@ -86,9 +90,9 @@ const HomePage = () => (
             alt={photographs[0].alt}
             position={photographs[0].position}
           />
-          <Box as={BOX_TAG.SPAN}>ACHIEVEMENT</Box>
-          <Box as={BOX_TAG.H3}>Celebrating every milestone.</Box>
-          <Box as={BOX_TAG.P}>Recognising effort, confidence and achievement.</Box>
+          <Box as={BOX_TAG.SPAN}>{__('ACHIEVEMENT')}</Box>
+          <Box as={BOX_TAG.H3}>{__('Celebrating every milestone.')}</Box>
+          <Box as={BOX_TAG.P}>{__('Recognising effort, confidence and achievement.')}</Box>
         </AppLink>
         <AppLink to={SCHOOL_ROUTE.GALLERY} className="rdr-o1-life__card">
           <ImageCard
@@ -96,9 +100,9 @@ const HomePage = () => (
             alt={photographs[1].alt}
             position={photographs[1].position}
           />
-          <Box as={BOX_TAG.SPAN}>EXPRESSION</Box>
-          <Box as={BOX_TAG.H3}>More than textbooks.</Box>
-          <Box as={BOX_TAG.P}>Music, movement and the joy of participating.</Box>
+          <Box as={BOX_TAG.SPAN}>{__('EXPRESSION')}</Box>
+          <Box as={BOX_TAG.H3}>{__('More than textbooks.')}</Box>
+          <Box as={BOX_TAG.P}>{__('Music, movement and the joy of participating.')}</Box>
         </AppLink>
         <AppLink to={SCHOOL_ROUTE.GALLERY} className="rdr-o1-life__card">
           <ImageCard
@@ -106,27 +110,29 @@ const HomePage = () => (
             alt={photographs[2].alt}
             position={photographs[2].position}
           />
-          <Box as={BOX_TAG.SPAN}>BELONGING</Box>
-          <Box as={BOX_TAG.H3}>Growing with confidence.</Box>
-          <Box as={BOX_TAG.P}>Creating space for curiosity and friendships.</Box>
+          <Box as={BOX_TAG.SPAN}>{__('BELONGING')}</Box>
+          <Box as={BOX_TAG.H3}>{__('Growing with confidence.')}</Box>
+          <Box as={BOX_TAG.P}>{__('Creating space for curiosity and friendships.')}</Box>
         </AppLink>
       </Box>
     </Box>
     <Box as={BOX_TAG.SECTION} className="rdr-o1-cta">
       <Box as={BOX_TAG.DIV} className="rdr-container rdr-o1-cta__inner">
         <Box as={BOX_TAG.DIV}>
-          <Box as={BOX_TAG.H2}>Come see what makes RDR special.</Box>
-          <Box as={BOX_TAG.P}>Questions about admissions, classes or a campus visit?</Box>
+          <Box as={BOX_TAG.H2}>{__('Come see what makes RDR special.')}</Box>
+          <Box as={BOX_TAG.P}>{__('Questions about admissions, classes or a campus visit?')}</Box>
         </Box>
         <EnquiryLink className="rdr-btn rdr-btn--light">
-          Start an enquiry <ArrowUpRight size={17} />
+          {__('Start an enquiry ')}
+          <ArrowUpRight size={17} />
         </EnquiryLink>
       </Box>
     </Box>
     <Box as={BOX_TAG.SECTION} className="rdr-o1-disclosure rdr-container">
-      <Box as={BOX_TAG.SPAN}>Looking for school documents?</Box>
+      <Box as={BOX_TAG.SPAN}>{__('Looking for school documents?')}</Box>
       <AppLink to={SCHOOL_ROUTE.DISCLOSURE}>
-        Mandatory Public Disclosure <ArrowUpRight size={16} />
+        {__('Mandatory Public Disclosure ')}
+        <ArrowUpRight size={16} />
       </AppLink>
     </Box>
   </Box>

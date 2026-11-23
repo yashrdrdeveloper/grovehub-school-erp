@@ -22,7 +22,8 @@ const PanelPhoto = ({ index, alt }: { index: number; alt: string }) => {
         }}
       />
       <Box as={BOX_TAG.SPAN} aria-hidden="true">
-        <Sparkles size={17} /> RDR SCHOOL
+        <Sparkles size={17} />
+        {__('RDR SCHOOL')}
       </Box>
     </Box>
   );

@@ -31,7 +31,7 @@ export const RecoveryState: RecoveryStateComponent = ({
       )}
       {view === 'success' && (
         <AppLink className="rdr-login-v2__submit rdr-recovery__state-button" to={AUTH_ROUTE.LOGIN}>
-          Go to login
+          {__('Go to login')}
         </AppLink>
       )}
       {view === 'unavailable' && (
@@ -41,7 +41,7 @@ export const RecoveryState: RecoveryStateComponent = ({
           type="button"
           onClick={onRetry}
         >
-          Try checking again
+          {__('Try checking again')}
         </Button>
       )}
       {showResetLink && (
@@ -49,12 +49,13 @@ export const RecoveryState: RecoveryStateComponent = ({
           className="rdr-login-v2__submit rdr-recovery__state-button"
           to={AUTH_ROUTE.FORGOT_PASSWORD}
         >
-          Request new link
+          {__('Request new link')}
         </AppLink>
       )}
       {showBack && (
         <AppLink className="rdr-recovery__back" to={AUTH_ROUTE.LOGIN}>
-          <ArrowLeft size={16} /> Return to login
+          <ArrowLeft size={16} />
+          {__('Return to login')}
         </AppLink>
       )}
     </Box>

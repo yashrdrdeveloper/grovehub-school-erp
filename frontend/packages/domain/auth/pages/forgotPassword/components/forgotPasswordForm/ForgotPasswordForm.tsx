@@ -44,13 +44,13 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
           {renderForgotPasswordNotice(view)}
           <CredentialField
             id={id}
-            label="Email address"
+            label={__('Email address')}
             Icon={Mail}
             outerClassName="rdr-auth-flow__email-field"
             type="email"
             inputMode="email"
             autoComplete="email"
-            placeholder="Email"
+            placeholder={__('Email')}
             value={state.email}
             error={state.emailError}
             onChange={handleEmailChange}
@@ -74,7 +74,8 @@ export const ForgotPasswordForm: ForgotPasswordFormComponent = ({
           </Button>
           <Box as={BOX_TAG.DIV} className="rdr-auth-flow__secondary-slot">
             <AppLink className="rdr-auth-flow__back" to={AUTH_ROUTE.LOGIN}>
-              <ArrowLeft size={16} /> Back to sign in
+              <ArrowLeft size={16} />
+              {__('Back to sign in')}
             </AppLink>
           </Box>
           <Box as={BOX_TAG.DIV} className="rdr-auth-flow__error-slot" aria-live="polite">

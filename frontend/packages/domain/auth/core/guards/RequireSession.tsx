@@ -29,7 +29,7 @@ export const RequireSession = () => {
         role="status"
         aria-live="polite"
       >
-        Opening your workspace…
+        {__('Opening your workspace…')}
       </Box>
     );
   }
@@ -54,7 +54,7 @@ export const PublicOnly = () => {
         role="status"
         aria-live="polite"
       >
-        Checking your session…
+        {__('Checking your session…')}
       </Box>
     );
   }

@@ -12,7 +12,8 @@ let sourceCount = 0;
 let copyCount = 0;
 
 const bootstrapHook = 'packages/shell/containers/shellContainer/hooks/useInitI18n/useInitI18n.ts';
-const bootFallback = 'packages/shell/containers/shellContainer/components/i18nBootstrapFallback/I18nBootstrapFallback.tsx';
+const bootFallback =
+  'packages/shell/containers/shellContainer/components/i18nBootstrapFallback/I18nBootstrapFallback.tsx';
 
 const walk = async (directory) => {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
@@ -28,8 +29,7 @@ const walk = async (directory) => {
     const source = await readFile(abs, 'utf8');
     const options = {
       allowRuntimeGlobal: relative === bootstrapHook,
-      allowResolverImport: relative === bootstrapHook ||
-        relative.startsWith('packages/base/'),
+      allowResolverImport: relative === bootstrapHook || relative.startsWith('packages/base/'),
       checkVisibleCopy: relative !== bootFallback && relative.endsWith('.tsx'),
     };
     const result = analyzeI18nSource(relative, source, options);
@@ -43,7 +43,13 @@ const walk = async (directory) => {
     sourceCount++;
   }
 };
-for (const folder of ['packages/base', 'packages/business', 'packages/components', 'packages/domain', 'packages/shell']) {
+for (const folder of [
+  'packages/base',
+  'packages/business',
+  'packages/components',
+  'packages/domain',
+  'packages/shell',
+]) {
   await walk(path.join(root, folder));
 }
 
@@ -52,19 +58,29 @@ if (issues.length) {
   process.exitCode = 1;
 } else if (writeBaseline) {
   const baseline = {
-    description: 'Initial measured JSX copy debt after the Phase 2.1 source-message codemod. Increase is forbidden.',
+    description:
+      'Initial measured JSX copy debt after the Phase 2.1 source-message codemod. Increase is forbidden.',
     maxTotal: copyCount,
     counts: Object.fromEntries(Object.entries(copies).sort(([a], [b]) => a.localeCompare(b))),
   };
   await writeFile(baselineFile, JSON.stringify(baseline, null, 2) + '\n');
-  process.stdout.write('Recorded ' + copyCount + ' legacy JSX copy findings across ' +
-    Object.keys(copies).length + ' files. ' + sourceCount + ' source modules checked.\n');
+  process.stdout.write(
+    'Recorded ' +
+      copyCount +
+      ' legacy JSX copy findings across ' +
+      Object.keys(copies).length +
+      ' files. ' +
+      sourceCount +
+      ' source modules checked.\n',
+  );
 } else {
   let baseline;
   try {
     baseline = JSON.parse(await readFile(baselineFile, 'utf8'));
   } catch {
-    process.stderr.write('Missing scripts/i18n-allowlist.json; measure the current migration first.\n');
+    process.stderr.write(
+      'Missing scripts/i18n-allowlist.json; measure the current migration first.\n',
+    );
     process.exitCode = 1;
   }
   if (baseline) {
@@ -82,8 +98,11 @@ if (issues.length) {
       process.exitCode = 1;
     } else {
       process.stdout.write(
-        'Global __() ownership verified across ' + sourceCount + ' source modules; ' +
-        copyCount + ' legacy JSX messages remain within the locked per-file baseline.\n',
+        'Global __() ownership verified across ' +
+          sourceCount +
+          ' source modules; ' +
+          copyCount +
+          ' legacy JSX messages remain within the locked per-file baseline.\n',
       );
     }
   }

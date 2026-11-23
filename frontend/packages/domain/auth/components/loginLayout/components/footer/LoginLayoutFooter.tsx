@@ -10,14 +10,14 @@ export const LoginLayoutFooter: LoginLayoutFooterComponent = () => (
     <Box
       as={BOX_TAG.DIV}
       className={LOGIN_LAYOUT_LEGACY_CLASSES.CLOSING}
-      aria-label="Secure RDR School workspace"
+      aria-label={__('Secure RDR School workspace')}
     >
       <LockKeyhole size={13} strokeWidth={1.8} aria-hidden="true" />
-      <Box as={BOX_TAG.SPAN}>A secure workspace for RDR School</Box>
+      <Box as={BOX_TAG.SPAN}>{__('A secure workspace for RDR School')}</Box>
     </Box>
     <Box as={BOX_TAG.DIV} className={LOGIN_LAYOUT_LEGACY_CLASSES.FOOTER}>
-      <Box as={BOX_TAG.SPAN}>© RDR School</Box>
-      <Box as={BOX_TAG.SPAN}>Haluhera · Rewari</Box>
+      <Box as={BOX_TAG.SPAN}>{__('© RDR School')}</Box>
+      <Box as={BOX_TAG.SPAN}>{__('Haluhera · Rewari')}</Box>
     </Box>
   </>
 );

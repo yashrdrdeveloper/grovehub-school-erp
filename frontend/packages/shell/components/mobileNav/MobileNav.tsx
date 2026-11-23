@@ -11,18 +11,18 @@ import type { MobileNavComponent } from './types/mobileNav';
 
 /** Responsive workspace navigation using owner-scoped CSS Module styles. */
 export const MobileNav: MobileNavComponent = ({ model }) => (
-  <Box as={BOX_TAG.NAV} className={styles.root} aria-label="Mobile navigation">
+  <Box as={BOX_TAG.NAV} className={styles.root} aria-label={__('Mobile navigation')}>
     <AppNavLink to={APP_ROUTE.DASHBOARD} className={getMobileNavClassName}>
       <LayoutDashboard size={19} aria-hidden="true" />
-      <Box as={BOX_TAG.SPAN}>Home</Box>
+      <Box as={BOX_TAG.SPAN}>{__('Home')}</Box>
     </AppNavLink>
     <Button unstyled type="button" className={styles.item} onClick={model.openCatalog}>
       <Grid2X2 size={19} aria-hidden="true" />
-      <Box as={BOX_TAG.SPAN}>Apps</Box>
+      <Box as={BOX_TAG.SPAN}>{__('Apps')}</Box>
     </Button>
     <Button unstyled type="button" className={styles.item} onClick={model.openSidebar}>
       <Menu size={19} aria-hidden="true" />
-      <Box as={BOX_TAG.SPAN}>Menu</Box>
+      <Box as={BOX_TAG.SPAN}>{__('Menu')}</Box>
     </Button>
   </Box>
 );

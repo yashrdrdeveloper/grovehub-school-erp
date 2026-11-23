@@ -19,14 +19,14 @@ export const ShellContainer: ShellContainerComponent = () => {
   if (!i18nReady) return <I18nBootstrapFallback />;
 
   return (
-  <QueryClientProvider client={queryClient}>
-    <ErrorBoundary>
-      <BrowserRouter>
-        <AuthProvider>
-          <AppRoutes />
-        </AuthProvider>
-      </BrowserRouter>
-    </ErrorBoundary>
-  </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <AuthProvider>
+            <AppRoutes />
+          </AuthProvider>
+        </BrowserRouter>
+      </ErrorBoundary>
+    </QueryClientProvider>
   );
 };

@@ -19,14 +19,14 @@ export const DashboardMain: DashboardMainComponent = () => (
       <Box as={BOX_TAG.DIV} className={sectionStyles['school-home__section-heading']}>
         <Box as={BOX_TAG.DIV}>
           <Box as={BOX_TAG.SPAN} className={sectionStyles['school-home__eyebrow']}>
-            FOCUS / 02
+            {__('FOCUS / 02')}
           </Box>
           <Box as={BOX_TAG.H2} id="home-queue">
-            What needs attention
+            {__('What needs attention')}
           </Box>
         </Box>
         <Box as={BOX_TAG.SPAN} className={sectionStyles['school-home__hint']}>
-          Your personal workspace
+          {__('Your personal workspace')}
         </Box>
       </Box>
       <Box as={BOX_TAG.DIV} className={styles['school-home__focus']}>
@@ -35,11 +35,11 @@ export const DashboardMain: DashboardMainComponent = () => (
             <Inbox size={19} />
           </Box>
           <Box as={BOX_TAG.DIV}>
-            <Box as={BOX_TAG.H3}>Pending for you</Box>
-            <Box as={BOX_TAG.P}>Tasks, approvals and follow-ups assigned to you</Box>
+            <Box as={BOX_TAG.H3}>{__('Pending for you')}</Box>
+            <Box as={BOX_TAG.P}>{__('Tasks, approvals and follow-ups assigned to you')}</Box>
           </Box>
           <Box as={BOX_TAG.SPAN} className={styles['school-home__focus-count']}>
-            Not connected
+            {__('Not connected')}
           </Box>
         </Box>
         <Box as={BOX_TAG.DIV} className={styles['school-home__focus-content']}>
@@ -49,17 +49,19 @@ export const DashboardMain: DashboardMainComponent = () => (
             <Box as={BOX_TAG.SPAN} />
             <CheckCircle2 size={24} />
           </Box>
-          <Box as={BOX_TAG.STRONG}>A clear place to start your day</Box>
+          <Box as={BOX_TAG.STRONG}>{__('A clear place to start your day')}</Box>
           <Box as={BOX_TAG.P}>
-            Once Tasks is connected, your priorities will appear here, organized by what needs your
-            attention first.
+            {__(
+              'Once Tasks is connected, your priorities will appear here, organized by what needs your attention first.',
+            )}
           </Box>
         </Box>
         <Box as={BOX_TAG.DIV} className={styles['school-home__focus-footer']}>
           <Box as={BOX_TAG.SPAN}>
-            <CircleDashed size={13} /> Waiting for Tasks service
+            <CircleDashed size={13} />
+            {__('Waiting for Tasks service')}
           </Box>
-          <Box as={BOX_TAG.SPAN}>Workspace preview</Box>
+          <Box as={BOX_TAG.SPAN}>{__('Workspace preview')}</Box>
         </Box>
       </Box>
     </Box>
@@ -71,14 +73,14 @@ export const DashboardMain: DashboardMainComponent = () => (
       <Box as={BOX_TAG.DIV} className={sectionStyles['school-home__section-heading']}>
         <Box as={BOX_TAG.DIV}>
           <Box as={BOX_TAG.SPAN} className={sectionStyles['school-home__eyebrow']}>
-            OPERATIONS / 03
+            {__('OPERATIONS / 03')}
           </Box>
           <Box as={BOX_TAG.H2} id="home-operations">
-            Around your school
+            {__('Around your school')}
           </Box>
         </Box>
         <Box as={BOX_TAG.SPAN} className={sectionStyles['school-home__hint']}>
-          Three work areas
+          {__('Three work areas')}
         </Box>
       </Box>
       <Box as={BOX_TAG.DIV} className={styles['school-home__operations']}>
@@ -97,7 +99,7 @@ export const DashboardMain: DashboardMainComponent = () => (
             <Box as={BOX_TAG.DIV}>
               <Box as={BOX_TAG.H3}>{title}</Box>
               <Box as={BOX_TAG.P}>{hint}</Box>
-              <Box as={BOX_TAG.SMALL}>Ready for future service data</Box>
+              <Box as={BOX_TAG.SMALL}>{__('Ready for future service data')}</Box>
             </Box>
             <ArrowUpRight size={16} className={styles['school-home__operation-arrow']} />
           </Box>

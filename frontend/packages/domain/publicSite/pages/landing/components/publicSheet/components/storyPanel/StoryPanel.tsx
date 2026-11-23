@@ -24,7 +24,7 @@ const StoryPanel = ({
         as={BOX_TAG.DIV}
         className="rdr-sheet-story__tabs"
         role="tablist"
-        aria-label="School story topics"
+        aria-label={__('School story topics')}
       >
         {_map(storyNavigation, (item) => {
           const Icon = item.icon;
@@ -65,19 +65,21 @@ const StoryPanel = ({
               <ExternalLink size={15} />
             </ExternalAnchor>
             <Button unstyled type="button" onClick={() => navigate('enquiry')}>
-              Ask us a question <ArrowRight size={16} />
+              {__('Ask us a question ')}
+              <ArrowRight size={16} />
             </Button>
           </Box>
           {(selected === 'principal' || selected === 'director') && (
             <Box as={BOX_TAG.SMALL}>
-              Role and message are from the school's historical website. Please confirm current
-              leadership before official publication.
+              {__(
+                "Role and message are from the school's historical website. Please confirm current leadership before official publication.",
+              )}
             </Box>
           )}
         </Box>
         <PanelPhoto
           index={getStoryPanelPhotoIndex(selected)}
-          alt="Students participating in activities at RDR School"
+          alt={__('Students participating in activities at RDR School')}
         />
       </Box>
     </Box>

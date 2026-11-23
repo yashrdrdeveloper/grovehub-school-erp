@@ -59,7 +59,7 @@ export const AppLauncher = ({
             </Box>
             <DialogClose
               className="icon-button catalog-content__close"
-              aria-label="Close app catalog"
+              aria-label={__('Close app catalog')}
             >
               <X size={20} />
             </DialogClose>
@@ -82,7 +82,8 @@ export const AppLauncher = ({
                 />
               </Box>
               <Box as={BOX_TAG.SPAN} className="catalog-content__count">
-                {appCatalog.length} available
+                {appCatalog.length}
+                {__('available')}
               </Box>
             </Box>
             {pinnedApps.length > 0 && (

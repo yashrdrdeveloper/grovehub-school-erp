@@ -38,7 +38,13 @@ let replacedNodes = 0;
 let skippedEntities = 0;
 for (const { absolute, relative } of allFiles) {
   const source = await readFile(absolute, 'utf8');
-  const syntax = ts.createSourceFile(relative, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const syntax = ts.createSourceFile(
+    relative,
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX,
+  );
   const edits = [];
   const insert = (node, text) => {
     edits.push({ start: node.pos, end: node.end, text });
@@ -50,22 +56,33 @@ for (const { absolute, relative } of allFiles) {
       if (hasLetters(text) && !hasEntity(text)) {
         insert(node, '{__(' + JSON.stringify(text) + ')}');
       }
-    } else if (insideFunction && ts.isJsxAttribute(node) &&
-        VISIBLE_TEXT_ATTRIBUTES.has(node.name.text) &&
-        node.initializer && ts.isStringLiteral(node.initializer)) {
+    } else if (
+      insideFunction &&
+      ts.isJsxAttribute(node) &&
+      VISIBLE_TEXT_ATTRIBUTES.has(node.name.text) &&
+      node.initializer &&
+      ts.isStringLiteral(node.initializer)
+    ) {
       const text = node.initializer.text;
       if (hasLetters(text)) {
         edits.push({
-          start: node.initializer.getStart(syntax), end: node.initializer.end,
+          start: node.initializer.getStart(syntax),
+          end: node.initializer.end,
           text: '{__(' + JSON.stringify(text) + ')}',
         });
       }
-    } else if (insideFunction && ts.isJsxExpression(node) && node.expression &&
-        ts.isStringLiteral(node.expression) && hasLetters(node.expression.text)) {
+    } else if (
+      insideFunction &&
+      ts.isJsxExpression(node) &&
+      node.expression &&
+      ts.isStringLiteral(node.expression) &&
+      hasLetters(node.expression.text)
+    ) {
       // Only convert literal string expressions; changing dynamic expressions can
       // accidentally alter API identifiers and is out of scope.
       edits.push({
-        start: node.expression.getStart(syntax), end: node.expression.end,
+        start: node.expression.getStart(syntax),
+        end: node.expression.end,
         text: '__(' + JSON.stringify(node.expression.text) + ')',
       });
     }
@@ -83,6 +100,11 @@ for (const { absolute, relative } of allFiles) {
   replacedNodes += edits.length;
 }
 process.stdout.write(
-  'Wrapped ' + replacedNodes + ' user-facing JSX expressions in ' + changedFiles +
-    ' files; left ' + skippedEntities + ' entity-encoded fragments for manual review.\n',
+  'Wrapped ' +
+    replacedNodes +
+    ' user-facing JSX expressions in ' +
+    changedFiles +
+    ' files; left ' +
+    skippedEntities +
+    ' entity-encoded fragments for manual review.\n',
 );

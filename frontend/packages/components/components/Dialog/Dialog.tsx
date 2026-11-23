@@ -44,7 +44,7 @@ export const Dialog: DialogComponent = ({
             <DialogClose
               className="icon-button"
               data-testid={closeTestId || undefined}
-              aria-label="Close"
+              aria-label={__('Close')}
             >
               <X size={19} aria-hidden="true" />
             </DialogClose>

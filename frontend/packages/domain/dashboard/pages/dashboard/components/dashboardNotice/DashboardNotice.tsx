@@ -13,15 +13,17 @@ export const DashboardNotice: DashboardNoticeComponent = () => (
     </Box>
 
     <Box as={BOX_TAG.DIV} className={styles.copy}>
-      <Box as={BOX_TAG.STRONG}>Your workspace is taking shape</Box>
+      <Box as={BOX_TAG.STRONG}>{__('Your workspace is taking shape')}</Box>
       <Box as={BOX_TAG.SPAN}>
-        This is a preview of the dashboard layout. Your school's activity will appear as services
-        are connected.
+        {__(
+          "This is a preview of the dashboard layout. Your school's activity will appear as services are connected.",
+        )}
       </Box>
     </Box>
 
     <Box as={BOX_TAG.SPAN} className={styles.state}>
-      <CircleDashed size={14} aria-hidden="true" /> PREVIEW
+      <CircleDashed size={14} aria-hidden="true" />
+      {__('PREVIEW')}
     </Box>
   </Box>
 );

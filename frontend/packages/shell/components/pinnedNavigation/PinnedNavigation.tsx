@@ -27,7 +27,7 @@ export const PinnedNavigation: PinnedNavigationComponent = (props) => {
 
   let content: ReactNode = (
     <Box as={BOX_TAG.P} className={styles.empty}>
-      Pin apps from the catalog to see them here.
+      {__('Pin apps from the catalog to see them here.')}
     </Box>
   );
 
@@ -36,7 +36,7 @@ export const PinnedNavigation: PinnedNavigationComponent = (props) => {
   }
 
   return (
-    <Box as={BOX_TAG.NAV} aria-label="Pinned applications" className={styles.nav}>
+    <Box as={BOX_TAG.NAV} aria-label={__('Pinned applications')} className={styles.nav}>
       {content}
     </Box>
   );

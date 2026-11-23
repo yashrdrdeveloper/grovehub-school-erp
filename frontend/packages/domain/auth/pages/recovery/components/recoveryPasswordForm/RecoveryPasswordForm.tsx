@@ -55,11 +55,11 @@ export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
         <CredentialField
           dataTestId={RECOVERY_TEST_IDS.PASSWORD}
           id={id + '-password'}
-          label="New password"
+          label={__('New password')}
           Icon={LockKeyhole}
           type={passwordType}
           autoComplete="new-password"
-          placeholder="New password"
+          placeholder={__('New password')}
           value={password}
           minLength={12}
           disabled={saving}
@@ -84,11 +84,11 @@ export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
         <CredentialField
           dataTestId={RECOVERY_TEST_IDS.CONFIRMATION}
           id={id + '-confirmation'}
-          label="Confirm password"
+          label={__('Confirm password')}
           Icon={KeyRound}
           type={passwordType}
           autoComplete="new-password"
-          placeholder="Confirm password"
+          placeholder={__('Confirm password')}
           value={confirmation}
           disabled={saving}
           required
@@ -108,7 +108,8 @@ export const RecoveryPasswordForm: RecoveryPasswordFormComponent = (props) => {
           }
         />
         <Box as={BOX_TAG.P} className="rdr-recovery__requirement">
-          <ShieldCheck size={17} /> Use at least 12 characters to keep your account secure.
+          <ShieldCheck size={17} />
+          {__('Use at least 12 characters to keep your account secure.')}
         </Box>
       </Box>
       <Box as={BOX_TAG.DIV} className="rdr-recovery__actions">

@@ -20,11 +20,11 @@ export const AuthAmbientGraphic = () => (
       dataTestId={AUTH_AMBIENT_TEST_IDS.SVG}
     />
     <Box as={BOX_TAG.DIV} className={styles.caption}>
-      <Box as={BOX_TAG.SPAN}>LEARNING</Box>
+      <Box as={BOX_TAG.SPAN}>{__('LEARNING')}</Box>
       <Box as={BOX_TAG.SPAN} className={styles.separator} />
-      <Box as={BOX_TAG.SPAN}>PEOPLE</Box>
+      <Box as={BOX_TAG.SPAN}>{__('PEOPLE')}</Box>
       <Box as={BOX_TAG.SPAN} className={styles.separator} />
-      <Box as={BOX_TAG.SPAN}>PROGRESS</Box>
+      <Box as={BOX_TAG.SPAN}>{__('PROGRESS')}</Box>
     </Box>
   </Box>
 );

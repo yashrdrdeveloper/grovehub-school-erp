@@ -18,7 +18,7 @@ export const Recovery: RecoveryComponent = (props) => {
   return (
     <LoginLayout
       variant={LoginLayoutVariant.RECOVERY}
-      title="Set a new password."
+      title={__('Set a new password.')}
       description={description}
       mobileDescription={mobileDescription}
       minimalMobile

@@ -8,11 +8,11 @@ import type { ForgotPasswordComponent } from './types';
 export const ForgotPassword: ForgotPasswordComponent = (props) => (
   <LoginLayout
     variant={LoginLayoutVariant.FORGOT}
-    title="Forgot your password?"
-    description="Enter your school email address to request a reset link."
-    mobileDescription="Enter your school email address to request a reset link."
+    title={__('Forgot your password?')}
+    description={__('Enter your school email address to request a reset link.')}
+    mobileDescription={__('Enter your school email address to request a reset link.')}
     minimalMobile
-    mobileTitle="Forgot your password?"
+    mobileTitle={__('Forgot your password?')}
     eyebrow="ACCOUNT RECOVERY"
   >
     <ForgotPasswordForm {...props} />

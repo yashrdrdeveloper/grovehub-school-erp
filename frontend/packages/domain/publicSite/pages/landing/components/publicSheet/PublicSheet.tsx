@@ -73,12 +73,15 @@ export const PublicSheet = ({
           <Box as={BOX_TAG.DIV} className="rdr-sheet__header">
             <Box as={BOX_TAG.DIV}>
               <Box as={BOX_TAG.SPAN} className="rdr-sheet-kicker">
-                RAO DEENA RAM VIDYA VIHAR
+                {__('RAO DEENA RAM VIDYA VIHAR')}
               </Box>
               <DialogTitle>{title}</DialogTitle>
               <DialogDescription>{description}</DialogDescription>
             </Box>
-            <DialogClose className="rdr-sheet__close" aria-label="Close and return to the page">
+            <DialogClose
+              className="rdr-sheet__close"
+              aria-label={__('Close and return to the page')}
+            >
               <X size={22} />
             </DialogClose>
           </Box>
@@ -87,12 +90,14 @@ export const PublicSheet = ({
               <Box as={BOX_TAG.DIV} className="rdr-sheet-enquiry">
                 <Box as={BOX_TAG.DIV} className="rdr-sheet-enquiry__intro">
                   <GraduationCap size={26} />
-                  <Box as={BOX_TAG.STRONG}>Let's talk about your child's future.</Box>
+                  <Box as={BOX_TAG.STRONG}>{__("Let's talk about your child's future.")}</Box>
                   <Box as={BOX_TAG.P}>
-                    Share your details. Our school office is only a message away.
+                    {__('Share your details. Our school office is only a message away.')}
                   </Box>
                   <ExternalAnchor href="tel:+919050077550">
-                    <Phone size={15} /> Prefer to call? {school.phone}
+                    <Phone size={15} />
+                    {__('Prefer to call? ')}
+                    {school.phone}
                   </ExternalAnchor>
                 </Box>
                 {enquiry}
@@ -111,10 +116,12 @@ export const PublicSheet = ({
           {panel !== 'enquiry' && (
             <Box as={BOX_TAG.DIV} className="rdr-sheet__bottom">
               <Box as={BOX_TAG.SPAN}>
-                <ShieldCheck size={15} /> RDR School · Haluhera, Rewari
+                <ShieldCheck size={15} />
+                {__('RDR School · Haluhera, Rewari')}
               </Box>
               <Button unstyled onClick={onEnquire} type="button">
-                Quick enquiry <ArrowRight size={16} />
+                {__('Quick enquiry ')}
+                <ArrowRight size={16} />
               </Button>
             </Box>
           )}

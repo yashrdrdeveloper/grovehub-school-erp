@@ -23,13 +23,13 @@ export const renderForgotPasswordSuccess: RenderForgotPasswordSuccess = ({
     aria-live="polite"
   >
     <AuthStatusArt kind={AUTH_STATUS_KIND.EMAIL} />
-    <Box as={BOX_TAG.H3}>Check your email</Box>
+    <Box as={BOX_TAG.H3}>{__('Check your email')}</Box>
     <Box as={BOX_TAG.P}>
-      If this email address is eligible, a password reset link will be sent to{' '}
+      {__('If this email address is eligible, a password reset link will be sent to')}{' '}
       <Box as={BOX_TAG.STRONG}>{state.lastRequestedEmail}</Box>.
     </Box>
     <AppLink className={FORGOT_PASSWORD_LEGACY_CLASSES.SUBMIT} to={AUTH_ROUTE.LOGIN}>
-      Back to sign in
+      {__('Back to sign in')}
     </AppLink>
     <Button
       unstyled
@@ -46,7 +46,7 @@ export const renderForgotPasswordSuccess: RenderForgotPasswordSuccess = ({
       className={FORGOT_PASSWORD_LEGACY_CLASSES.RESEND}
       onClick={onUseAnotherEmail}
     >
-      Use another email
+      {__('Use another email')}
     </Button>
   </Box>
 );

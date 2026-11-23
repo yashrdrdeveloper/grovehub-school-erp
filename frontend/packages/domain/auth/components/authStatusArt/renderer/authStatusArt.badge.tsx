@@ -20,7 +20,7 @@ export const renderAuthStatusBadge = (kind: AuthStatusKind): ReactNode => {
   if (kind === AUTH_STATUS_KIND.EXPIRED || kind === AUTH_STATUS_KIND.MISSING) {
     return (
       <Box as={BOX_TAG.SPAN} className="rdr-auth-mobile-status-art__x">
-        ×
+        {__('×')}
       </Box>
     );
   }

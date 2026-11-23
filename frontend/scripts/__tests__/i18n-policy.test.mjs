@@ -11,7 +11,8 @@ test('normalizeJsxText', () => {
 
 test('analyzeI18nSource', async (t) => {
   await t.test('detects visible raw JSX and attribute copy without technical values', () => {
-    const source = "const Card = () => <div aria-live=\"polite\" data-testid=\"saved\" title=\"A title\">Check your email</div>;";
+    const source =
+      'const Card = () => <div aria-live="polite" data-testid="saved" title="A title">Check your email</div>;';
     const { rawCopy, issues } = analyzeI18nSource('Card.tsx', source);
     assert.equal(rawCopy.length, 2);
     assert.deepEqual(issues, []);

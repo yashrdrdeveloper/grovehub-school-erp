@@ -57,16 +57,16 @@ export const LoginLayout: LoginLayoutComponent = ({
             <AppLink
               to={APP_ROUTE.HOME}
               className="rdr-login-v2__back"
-              aria-label="Back to RDR School homepage"
+              aria-label={__('Back to RDR School homepage')}
             >
               <ArrowLeft size={19} />
-              <Box as={BOX_TAG.SPAN}>Back to school</Box>
+              <Box as={BOX_TAG.SPAN}>{__('Back to school')}</Box>
             </AppLink>
             <Box
               as={BOX_TAG.DIV}
               className="rdr-login-v2__appearance"
               role="group"
-              aria-label="Appearance"
+              aria-label={__('Appearance')}
             >
               {_map(LOGIN_LAYOUT_APPEARANCES, (option) =>
                 renderLoginLayoutAppearanceOption({ ...option, preference, setPreference }),

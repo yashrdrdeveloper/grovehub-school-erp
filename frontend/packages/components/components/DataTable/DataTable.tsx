@@ -18,7 +18,9 @@ export const DataTable: DataTableComponent = <T,>({
   });
 
   if (rows.length === 0) {
-    return <EmptyState title={emptyTitle} description="Results will appear here when available." />;
+    return (
+      <EmptyState title={emptyTitle} description={__('Results will appear here when available.')} />
+    );
   }
 
   return (

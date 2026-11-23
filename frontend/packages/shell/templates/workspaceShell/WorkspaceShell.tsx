@@ -25,7 +25,7 @@ export const WorkspaceShell: WorkspaceShellComponent = ({ model, ...props }) => 
         unstyled
         type="button"
         className="sidebar-backdrop"
-        aria-label="Dismiss navigation"
+        aria-label={__('Dismiss navigation')}
         onClick={model.closeSidebar}
       />
     )}
