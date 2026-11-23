@@ -38,9 +38,6 @@
     "packages/domain/publicSite/pages/landing/components/publicSheet/components/infoPanels/infoPanels.tsx": [
       "RAW_CLASS"
     ],
-    "packages/domain/publicSite/pages/landing/components/publicSheet/components/panelPhoto/PanelPhoto.tsx": [
-      "RAW_CLASS"
-    ],
     "packages/domain/publicSite/pages/landing/components/publicSheet/components/storyPanel/StoryPanel.tsx": [
       "RAW_CLASS"
     ],
@@ -67,14 +64,14 @@
     "packages/shell/templates/workspaceShell/WorkspaceShell.tsx": ["RAW_CLASS"]
   },
   "referenceCommit": "585e8f81f8091536222c446931466710626db283",
-  "maxFlaggedFiles": 28,
-  "maxFindings": 35,
+  "maxFlaggedFiles": 27,
+  "maxFindings": 34,
   "maxByCode": {
     "CSS_COLOR_LITERAL": 4,
     "LARGE_STYLESHEET": 3,
     "LEGACY_DOMAIN_CSS": 3,
     "LEGACY_GLOBAL_CSS": 1,
-    "RAW_CLASS": 24
+    "RAW_CLASS": 23
   },
   "lastVerifiedRunId": 45070078775
 }
