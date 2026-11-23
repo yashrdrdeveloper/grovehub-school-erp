@@ -63,6 +63,18 @@ async function visit(browser, pathname, viewport, options = {}) {
     pathname + ' at ' + viewport.width + 'px: horizontal overflow ' +
       JSON.stringify(geometry),
   );
+  const duplicateTestIds = await page.evaluate(() => {
+    const seen = new Set();
+    const duplicates = [];
+    for (const element of document.querySelectorAll('[data-testid]')) {
+      const value = element.getAttribute('data-testid');
+      if (!value) continue;
+      if (seen.has(value)) duplicates.push(value);
+      seen.add(value);
+    }
+    return duplicates;
+  });
+  assert.deepEqual(duplicateTestIds, [], pathname + ': duplicate data-testid in live DOM');
   return { context, page, geometry };
 }
 
