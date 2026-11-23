@@ -43,14 +43,14 @@ for (const { absolute, relative } of allFiles) {
   const insert = (node, text) => {
     edits.push({ start: node.pos, end: node.end, text });
   };
-  const visit = (node) => {
-    if (ts.isJsxText(node)) {
+  const visit = (node, insideFunction = false) => {
+    if (insideFunction && ts.isJsxText(node)) {
       const text = normalizeJsxText(node.getText(syntax));
       if (hasEntity(text)) skippedEntities++;
       if (hasLetters(text) && !hasEntity(text)) {
         insert(node, '{__(' + JSON.stringify(text) + ')}');
       }
-    } else if (ts.isJsxAttribute(node) &&
+    } else if (insideFunction && ts.isJsxAttribute(node) &&
         VISIBLE_TEXT_ATTRIBUTES.has(node.name.text) &&
         node.initializer && ts.isStringLiteral(node.initializer)) {
       const text = node.initializer.text;
@@ -60,7 +60,7 @@ for (const { absolute, relative } of allFiles) {
           text: '{__(' + JSON.stringify(text) + ')}',
         });
       }
-    } else if (ts.isJsxExpression(node) && node.expression &&
+    } else if (insideFunction && ts.isJsxExpression(node) && node.expression &&
         ts.isStringLiteral(node.expression) && hasLetters(node.expression.text)) {
       // Only convert literal string expressions; changing dynamic expressions can
       // accidentally alter API identifiers and is out of scope.
@@ -69,7 +69,8 @@ for (const { absolute, relative } of allFiles) {
         text: '__(' + JSON.stringify(node.expression.text) + ')',
       });
     }
-    ts.forEachChild(node, visit);
+    const childInsideFunction = insideFunction || ts.isFunctionLike(node);
+    ts.forEachChild(node, (child) => visit(child, childInsideFunction));
   };
   ts.forEachChild(syntax, visit);
   if (!edits.length) continue;
