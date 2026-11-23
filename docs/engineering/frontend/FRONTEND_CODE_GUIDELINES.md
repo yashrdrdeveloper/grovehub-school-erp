@@ -1,5 +1,22 @@
 # Frontend Code Guidelines
 
+
+## Revision 15 — Phase 2.1 verified remediation and remaining CSS debt (23 November 2026)
+
+**Branch:** `phase-2.1-identity-account`. **Verified frontend source commit:** `283d7e622d11080c3bb039455a8b9306c5ce9fd2`; [Frontend CI run 45241153582](https://github.com/yashrdrdeveloper/grovehub-school-erp/actions/runs/45241153582) succeeded. This is a tracked **partial remediation**, not full guideline compliance.
+
+- **Dashboard presentation ownership:** `dashboardOverview` and `dashboardMain` use tested pure card renderers with adjacent `renderer/types/` and `renderer/__tests__/`. Metric/workspace tones have a typed closed constant and exhaustive CSS Module lookup; dynamic CSS class key concatenation is removed.
+- **Accessible copy:** `dashboardOverview.getUnavailableLabel` and `appLauncher.getPinAccessibleCopy` call `__()` with literal source templates and named interpolation, with direct unmocked unit tests. App catalog pin/unpin buttons preserve accessible names.
+- **Tests:** all **146 Jest suites / 263 tests** passed, along with architecture checks, TypeScript, production Vite build/prerender, SEO assertions and **blocking ESLint**. ESLint ignores generated `dist/` output, provides correct Node/browser globals, and permits CommonJS `require()` only in `.cjs` files.
+- **Chromium regression smoke:** mobile submit reachability and client validation for login/forgot-password at 320/375/390 px, short-viewport horizontal-overflow checks, existing 320/375/390/720 px auth/public routes, theme behavior and password visibility passed. The browser suite is **not** end-to-end coverage for a live identity backend, full reset/invitation flows, browser autofill, zoom or comprehensive accessibility audits.
+- **Measured audit:** **988 tracked frontend files, 931 source files, 34 flagged files / 42 overlapping findings**: `RAW_CLASS=28`, `LEGACY_DOMAIN_CSS=4`, `LEGACY_GLOBAL_CSS=1`, `LARGE_STYLESHEET=3`, `CSS_COLOR_LITERAL=6`. The audit regression gate remains blocking on newly introduced or increased debt. Previous structural rule categories remain zero.
+- **Open mandatory work:** migrate `app/styles.css`, auth `optionOneAuth.css`, and public-site `landingPage.css`/`optionOne.css`/`optionOnePages.css` into genuine owner-scoped CSS Modules/Sass Modules with token ownership, real selector/consumer review and screenshots. Seven public-site formatting exemptions remain; do not remove them without formatting/refactoring those source files. Also audit all owned DOM test selectors and complete backend-connected auth/accessibility/zoom browser verification.
+
+**Precedence:** Revision 14 remains authoritative for literal translation source and zero `let`. Revision 15 supersedes outdated numeric status reports and statements claiming that lint or basic Chromium browser smoke is absent from CI. Styling debt remains a blocker for complete adoption of this guideline.
+
+---
+
+
 ## Revision 14 — literal-message copy ownership and zero mutable bindings (23 November 2026)
 
 **Mandatory, implemented architecture. This revision supersedes earlier advice that prohibited translated constants or recommended `__(COPY.key)` in JSX.** It applies throughout `frontend/app`, `frontend/packages`, `frontend/scripts` and all frontend tests. Preserve the structure/semantics policies from prior revisions unless they contradict this section.
@@ -412,7 +429,7 @@ A **renderer** is a pure typed function in `<owner>/renderer/<owner>.<useCase>.t
 | P2 | AppLauncher repeated catalog card | `appLauncher/renderer/appLauncher.app.tsx` | Completed; dedicated renderer test added |
 | P2 | Shell declarative route JSX mapping | `shell/renderer/shell.routes.tsx` | Completed; two isolated suites cover public and protected exports |
 | P2 | Public-site large page content | aboutContent, campusContent, resourceContent, infoPanels, siteChrome | Audit repeated conditional/repeated JSX; split into owned components or renderers *where behavior warrants it* |
-| P2 | Dashboard repeated stat and operation items | dashboardOverview / dashboardMain | Move complex repeated icon/tone JSX to owner renderers with exact tests, keep static layout in component |
+| P2 | Dashboard repeated stat and operation items | dashboardOverview / dashboardMain | Completed: tested metric/workspace renderers, typed tones and exhaustive CSS class mapping |
 | P2 | LoginLayout reusable visual sections | loginLayout renderer or named component | Extract only reusable state-dependent artwork/option selection; existing appearance option renderer is present |
 | P3 | Legacy comments / historical snippets | guideline + scripts | Remove outdated instructions once all callers are migrated |
 
@@ -2663,18 +2680,17 @@ Run `cd frontend && pnpm audit:guidelines` to regenerate one `GH_AUDIT|<path>|<c
 
 **Branch:** `phase-2.1-identity-account` in `yashrdrdeveloper/grovehub-school-erp`.
 
-**Baseline:** §40 records the original 474-file pre-migration inventory. **Verified current snapshot:** commit `cbc610af413a3b1a4b37c27506644a47ba59cbdf` (Frontend GitHub Actions run `45061982379`, success) reports **584 tracked frontend files**, **51 files with mechanical flags** and these rule counts:
+**Historical baseline:** §40 contains the original 474-file pre-migration inventory. **Verified current branch:** commit `283d7e622d11080c3bb039455a8b9306c5ce9fd2`, Frontend CI run `45241153582` (success) measured **988 tracked frontend files / 931 source files / 34 flagged files / 42 findings**.
 
 | Audit rule | Flagged files | Interpretation |
 |---|---:|---|
-| `RAW_CLASS` | 41 | Legacy/global class usage pending migration to scoped modules; do not remove without visual checks |
-| `NATIVE_COLLECTION` | 18 | Review native collections case-by-case; not every call is a defect |
-| `CSS_COLOR_LITERAL` | 6 | Inspect legacy token/color ownership and preserve documented exceptions |
-| `LEGACY_DOMAIN_CSS` | 4 | Feature-owned legacy CSS files awaiting Sass module migration |
-| `LARGE_STYLESHEET` | 3 | Large legacy CSS requiring selector/consumer inventory before splitting |
-| `LEGACY_GLOBAL_CSS` | 1 | `app/styles.css` still retains migration-owned layout classes |
+| `RAW_CLASS` | 28 | Auth/public site/shell legacy classes; migrate with owned modules and screenshot regressions |
+| `CSS_COLOR_LITERAL` | 6 | Review color literals, preserving deliberate illustration exceptions |
+| `LEGACY_DOMAIN_CSS` | 4 | Auth and public-site legacy CSS ownership |
+| `LARGE_STYLESHEET` | 3 | Oversized app/auth/landing CSS; split by actual consumer responsibility |
+| `LEGACY_GLOBAL_CSS` | 1 | `app/styles.css` migration remains open |
 
-**Now zero in the AST/source inventory:** `TERNARY`, `RAW_NATIVE_HTML`, `DIRECT_LUCIDE`, `NESTED_HELPER`, `FORBIDDEN_BARREL`, `CONFIG_FOLDER`, `DESCRIBE_EXPORT_MISMATCH`, `TEST_LOCATION`, `ROUTE_LITERAL`, `TEST_ID_LITERAL`, `UNUSED_DOMAIN_REVIEW`, `FLAT_PROVIDER`, `EFFECT_COMPONENT`, `LARGE_UNIT`, and `MONOLITHIC_LAUNCHER`. Zero flagged rules do **not** imply every owner-specific UI selector, interaction or styling property is semantically tested.
+The AST/source audit currently flags zero `TERNARY`, `RAW_NATIVE_HTML`, `DIRECT_LUCIDE`, `NESTED_HELPER`, `NATIVE_COLLECTION`, `CONFIG_FOLDER`, `FORBIDDEN_BARREL`, `ROUTE_LITERAL`, `TEST_ID_LITERAL` and the other historical structural categories. These zero flags do not prove full live accessibility, selector completeness or backend workflow coverage.
 
 ### 41.1 Implemented and verified by CI
 
@@ -2692,8 +2708,8 @@ Run `cd frontend && pnpm audit:guidelines` to regenerate one `GH_AUDIT|<path>|<c
 | Priority | Status and required completion evidence |
 |---|---|
 | **P0** | No confirmed critical source failure in the CI-verified snapshot. This does not replace browser or deployed auth security verification. |
-| **P1** | **Not done:** migrate the remaining auth, landing and app legacy CSS to owner-scoped `*.module.scss` using Sass and `@Styles` tokens; first capture CSS selector consumers and overlapping responsive rules, install Sass, then verify no screenshots/theme/layout regressions. **Not done:** real-browser checks for 320/375/390/720px, short windows, keyboard, autofill, zoom, system/light/dark theme, accessibility and invitation/reset flows. |
-| **P2** | **Not done:** resolve 41 class-ownership flags and 6 color-literal reviews; inspect the 18 remaining native collection flags (keep justified native operations). Verify **every** page-owned native DOM node has a unique, stable `data-testid` in a live rendered document; a zero literal-test-ID flag does not prove full selector coverage. |
+| **P1** | **Not done:** migrate remaining auth, landing and app legacy CSS into genuine owner-scoped Sass/CSS Modules with semantic tokens and visual comparison. **Partially done:** Chromium smoke checks cover 320/375/390/720 px, short windows, mobile submit/validation, keyboard password visibility and themes; backend-connected login/recovery/invitation, native autofill, zoom and full accessibility regressions remain unverified. |
+| **P2** | **Not done:** resolve 28 remaining raw-class ownership flags and 6 color-literal reviews; native-collection flags are now zero. Verify **every** page-owned native DOM node has a stable unique test ID in the rendered DOM. Seven oversized public-site source files retain formatter exemptions. |
 | **P3** | **Not done:** progressively remove obsolete CSS/classes and compatibility exports only after verified consumer/route search and visual regressions; re-run the entire file-by-file audit after the CSS migration. |
 
 Do not mark Revision 8 fully implemented while §41.2 remains open. A passing compiler, Jest suite or static AST scan does not establish mobile viewport correctness, contrast or DOM behavior. Equally, legacy CSS classes left intentionally in place must not be silently reclassified as compliant CSS Modules.
@@ -2712,6 +2728,6 @@ pnpm lint
 pnpm build
 ~~~
 
-The verified GitHub Actions workflow runs the audit, architecture checks, typecheck, Jest, build/prerender and public SEO artifact verification. **It currently does not execute `pnpm lint`**; lint must be run independently or explicitly added to CI after known legacy violations are assessed. **It also does not run the required real-browser visual/accessibility matrix.** Avoid claiming those unexecuted checks passed.
+The verified GitHub Actions workflow runs the audit, architecture checks, typecheck, Jest, build/prerender, public SEO verification, **blocking `pnpm lint`** and a **real Chromium smoke test** for the auth/public viewport and basic interaction matrix. This is not a complete screenshot, zoom, native autofill, backend-connected recovery, or accessibility conformance run. Avoid claiming those additional checks passed.
 
 **Audit caveat:** all mechanical counts are numbers of flagged files, not raw violations. These flags are heuristics and do not constitute a complete semantic review; use direct tests, import reachability, actual browser interactions and source-consumer verification before deleting or rewriting code.
