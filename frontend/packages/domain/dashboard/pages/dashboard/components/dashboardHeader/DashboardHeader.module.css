@@ -19,7 +19,7 @@
 }
 
 .school-home__breadcrumb > svg:first-child {
-  color: var(--home-pink);
+  color: var(--gh-color-accent);
 }
 
 .school-home__header h1 {
@@ -32,7 +32,7 @@
 
 .school-home__spark {
   margin-left: 10px;
-  color: var(--home-pink);
+  color: var(--gh-color-accent);
   font-size: 0.55em;
   vertical-align: 12%;
 }

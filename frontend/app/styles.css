@@ -81,8 +81,8 @@
   place-items: center;
   width: 31px;
   height: 31px;
-  background: #e9f1e5;
-  color: #4b6f4d;
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-accent);
   border-radius: 9px;
   font-size: 1.0625rem;
 }
@@ -189,7 +189,7 @@
   width: 244px;
   display: flex;
   flex-direction: column;
-  background: var(--surface);
+  background: var(--gh-color-shell-surface);
   border-right: 1px solid var(--border);
   padding: 23px 14px 13px;
 }
@@ -248,7 +248,7 @@
   padding: 0 14px;
   font-size: 0.625rem;
   font-weight: 800;
-  color: #a4ada3;
+  color: var(--gh-color-muted);
   letter-spacing: 0.09em;
   margin-bottom: 11px;
 }
@@ -265,7 +265,7 @@
   border-radius: 8px;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #728073;
+  color: var(--gh-color-muted);
   transition: background 0.15s;
 }
 .nav-item:hover {
@@ -273,8 +273,8 @@
   color: var(--ink);
 }
 .nav-item--active {
-  background: #edf3e9;
-  color: #38553d;
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-accent);
   font-weight: 800;
 }
 .sidebar__bottom {
@@ -286,7 +286,7 @@
   align-items: center;
   margin: 0 9px 19px;
   font-size: 0.625rem;
-  color: #a5b0a4;
+  color: var(--gh-color-muted);
 }
 .sidebar__settings {
   display: flex;
@@ -315,8 +315,8 @@
   border-radius: 10px;
   font-size: 0.8125rem;
   font-weight: 800;
-  color: #496349;
-  background: #e3ebde;
+  color: var(--gh-color-accent);
+  background: var(--gh-color-accent-soft);
 }
 .profile-avatar--small {
   width: 28px;
@@ -356,7 +356,7 @@
   align-items: center;
   gap: 16px;
   height: 68px;
-  background: var(--surface);
+  background: var(--gh-color-canvas);
   border-bottom: 1px solid var(--border);
   padding: 0 35px;
 }
@@ -372,7 +372,7 @@
 }
 .topbar__separator,
 .topbar__muted {
-  color: #a0aaa0;
+  color: var(--gh-color-muted);
   font-size: 0.75rem;
 }
 .topbar__search {
@@ -384,7 +384,7 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--canvas);
-  color: #a0aaa0;
+  color: var(--gh-color-muted);
   text-align: left;
   font-size: 0.6875rem;
 }
@@ -1095,8 +1095,8 @@
 .school-emblem,
 .auth-panel__icon,
 .card-title__icon {
-  background: var(--accent-pale);
-  color: var(--accent);
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-accent);
 }
 .auth-footer,
 .auth-security {
@@ -1114,18 +1114,18 @@
   margin-bottom: 28px;
 }
 .sidebar__school {
-  background: var(--surface-subtle);
+  background: var(--gh-color-shell-surface);
   margin-bottom: 22px;
 }
 .sidebar__section-label {
-  color: var(--muted);
+  color: var(--gh-color-muted);
 }
 .nav-item {
-  color: var(--muted);
+  color: var(--gh-color-muted);
 }
 .nav-item--active {
-  background: var(--accent-pale);
-  color: var(--accent);
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-accent);
 }
 .sidebar__catalog {
   width: 100%;
@@ -1168,9 +1168,9 @@
   font-size: 0.6875rem;
 }
 .theme-choice--active {
-  background: var(--accent-pale) !important;
-  border-color: var(--accent) !important;
-  color: var(--accent) !important;
+  background: var(--gh-color-accent-soft);
+  border-color: var(--gh-color-border);
+  color: var(--gh-color-accent);
 }
 .topbar {
   position: sticky;
@@ -1181,11 +1181,11 @@
   color: var(--muted);
 }
 .topbar__search {
-  color: var(--muted);
+  color: var(--gh-color-muted);
 }
 .topbar__separator,
 .topbar__muted {
-  color: var(--muted);
+  color: var(--gh-color-muted);
 }
 .dashboard-hero {
   background: linear-gradient(110deg, var(--hero-start), var(--hero-end));
@@ -1373,9 +1373,9 @@
   white-space: nowrap;
 }
 .catalog-tab--active {
-  background: var(--accent-pale);
-  color: var(--accent);
-  border-color: var(--accent);
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-accent);
+  border-color: var(--gh-color-border);
 }
 .app-launcher-item {
   background: var(--surface);
@@ -1471,8 +1471,8 @@
     justify-content: center;
   }
   .mobile-nav .nav-item--active {
-    color: var(--accent);
-    background: var(--accent-pale);
+    color: var(--gh-color-accent);
+    background: var(--gh-color-accent-soft);
   }
   .mobile-nav__icon {
     font-size: 1.375rem;
@@ -1529,7 +1529,7 @@ body {
   border-right: 1px solid var(--border);
 }
 .sidebar__school {
-  background: var(--surface-subtle);
+  background: var(--gh-color-shell-surface);
   border: 1px solid var(--border);
   border-radius: 13px;
 }
@@ -1543,8 +1543,8 @@ body {
   font-weight: 650;
 }
 .nav-item--active {
-  background: var(--accent-pale);
-  color: var(--accent);
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-accent);
 }
 .brand-mark,
 .button--primary {
@@ -1560,12 +1560,12 @@ body {
 .school-emblem,
 .member-avatar,
 .card-title__icon {
-  background: var(--accent-pale);
-  color: var(--accent);
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-accent);
 }
 .topbar {
   height: 66px;
-  background: var(--surface);
+  background: var(--gh-color-canvas);
   box-shadow: 0 1px 0 var(--border);
 }
 .topbar__search {
@@ -1926,7 +1926,7 @@ body {
   font-size: 0.75rem;
 }
 .catalog-tab--active {
-  background: var(--accent-pale);
+  background: var(--gh-color-accent-soft);
 }
 @media (max-width: 1150px) {
   .dashboard-panels {
@@ -2223,8 +2223,8 @@ body {
   background: var(--gh-color-shell-surface);
 }
 .school-emblem {
-  color: var(--accent);
-  background: var(--surface);
+  color: var(--gh-color-accent);
+  background: var(--gh-color-accent-soft);
   border: 1px solid var(--border);
 }
 .sidebar__school,
@@ -2233,8 +2233,8 @@ body {
   border-radius: 13px;
 }
 .nav-item--active {
-  color: var(--accent);
-  background: var(--accent-pale);
+  color: var(--gh-color-accent);
+  background: var(--gh-color-accent-soft);
 }
 .dashboard-quick-link {
   transition:
@@ -2260,15 +2260,15 @@ body {
 }
 .theme-choice--active,
 .catalog-tab--active {
-  background: var(--accent-pale) !important;
-  color: var(--accent) !important;
-  border-color: var(--accent) !important;
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-accent);
+  border-color: var(--gh-color-border);
 }
 .field__input:focus,
 .catalog-search:focus-within,
 .search-control:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(20, 127, 129, 0.12);
+  border-color: var(--gh-color-ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gh-color-ring) 18%, transparent);
 }
 .auth-page {
   background:
@@ -2318,16 +2318,16 @@ body {
   background: var(--canvas);
 }
 :root[data-theme='dark'] .topbar {
-  background: #14242c;
-  border-bottom-color: #35515a;
+  background: var(--gh-color-canvas);
+  border-bottom-color: var(--gh-color-border);
 }
 :root[data-theme='dark'] .sidebar {
-  background: #111f27;
-  border-right-color: #35515a;
+  background: var(--gh-color-shell-surface);
+  border-right-color: var(--gh-color-border);
 }
 :root[data-theme='dark'] .sidebar__school {
-  background: linear-gradient(135deg, #23454b, #172d36);
-  border-color: #3b6268;
+  background: var(--gh-color-shell-surface);
+  border-color: var(--gh-color-border);
 }
 :root[data-theme='dark'] .brand-mark,
 :root[data-theme='dark'] .button--primary {
@@ -2343,9 +2343,9 @@ body {
 :root[data-theme='dark'] .school-emblem,
 :root[data-theme='dark'] .dashboard-quick-link__icon,
 :root[data-theme='dark'] .member-avatar {
-  color: #86e3d2;
-  background: #204449;
-  border-color: #366a6d;
+  color: var(--gh-color-accent);
+  background: var(--gh-color-accent-soft);
+  border-color: var(--gh-color-border);
 }
 :root[data-theme='dark'] .dashboard-welcome h1 span {
   color: #e6b784;
@@ -2426,8 +2426,8 @@ body {
 }
 :root[data-theme='dark'] .nav-item--active,
 :root[data-theme='dark'] .mobile-nav .nav-item--active {
-  color: #8fe7d6;
-  background: #234548;
+  color: var(--gh-color-accent);
+  background: var(--gh-color-accent-soft);
 }
 :root[data-theme='dark'] .mobile-nav {
   background: #13232b;
@@ -2435,9 +2435,9 @@ body {
 }
 :root[data-theme='dark'] .theme-choice--active,
 :root[data-theme='dark'] .catalog-tab--active {
-  background: #234548 !important;
-  color: #8fe7d6 !important;
-  border-color: #568c8d !important;
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-accent);
+  border-color: var(--gh-color-border);
 }
 :root[data-theme='dark'] .app-launcher-item > span,
 :root[data-theme='dark'] .dashboard-panel__empty-symbol {
@@ -2462,8 +2462,8 @@ body {
 :root[data-theme='dark'] .field__input:focus,
 :root[data-theme='dark'] .catalog-search:focus-within,
 :root[data-theme='dark'] .search-control:focus-within {
-  border-color: #67dfca;
-  box-shadow: 0 0 0 3px rgba(103, 223, 202, 0.16);
+  border-color: var(--gh-color-ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gh-color-ring) 18%, transparent);
 }
 
 /* Workspace navigation and catalog — full content overlay beside persistent sidebar. */
@@ -2606,7 +2606,7 @@ body {
   position: fixed;
   z-index: 96;
   inset: 0 0 0 244px;
-  background: var(--canvas);
+  background: var(--gh-color-canvas);
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -2623,7 +2623,7 @@ body {
   align-items: center;
   padding: 27px clamp(20px, 4vw, 58px);
   border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--gh-color-shell-surface);
   gap: 16px;
 }
 .catalog-content__title {
@@ -3041,8 +3041,8 @@ body {
   background: var(--gh-color-shell-surface);
 }
 .school-emblem {
-  color: var(--accent);
-  background: var(--surface);
+  color: var(--gh-color-accent);
+  background: var(--gh-color-accent-soft);
   border: 1px solid var(--border);
 }
 .sidebar__school,
@@ -3051,8 +3051,8 @@ body {
   border-radius: 13px;
 }
 .nav-item--active {
-  color: var(--accent);
-  background: var(--accent-pale);
+  color: var(--gh-color-accent);
+  background: var(--gh-color-accent-soft);
 }
 .dashboard-quick-link {
   transition:
@@ -3078,15 +3078,15 @@ body {
 }
 .theme-choice--active,
 .catalog-tab--active {
-  background: var(--accent-pale) !important;
-  color: var(--accent) !important;
-  border-color: var(--accent) !important;
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-accent);
+  border-color: var(--gh-color-border);
 }
 .field__input:focus,
 .catalog-search:focus-within,
 .search-control:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(20, 127, 129, 0.12);
+  border-color: var(--gh-color-ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gh-color-ring) 18%, transparent);
 }
 .auth-page {
   background:
@@ -3136,16 +3136,16 @@ body {
   background: var(--canvas);
 }
 :root[data-theme='dark'] .topbar {
-  background: #142731;
-  border-bottom-color: #34535e;
+  background: var(--gh-color-canvas);
+  border-bottom-color: var(--gh-color-border);
 }
 :root[data-theme='dark'] .sidebar {
-  background: #10222b;
-  border-right-color: #34535e;
+  background: var(--gh-color-shell-surface);
+  border-right-color: var(--gh-color-border);
 }
 :root[data-theme='dark'] .sidebar__school {
-  background: linear-gradient(125deg, #1c4650, #162d37);
-  border-color: #3b6570;
+  background: var(--gh-color-shell-surface);
+  border-color: var(--gh-color-border);
 }
 :root[data-theme='dark'] .brand-mark,
 :root[data-theme='dark'] .button--primary {
@@ -3231,32 +3231,32 @@ body {
 :root[data-theme='dark'] .dashboard-quick-link__icon,
 :root[data-theme='dark'] .school-emblem,
 :root[data-theme='dark'] .member-avatar {
-  color: #8cebd8;
-  background: #22494c;
-  border-color: #3f7072;
+  color: var(--gh-color-accent);
+  background: var(--gh-color-accent-soft);
+  border-color: var(--gh-color-border);
 }
 :root[data-theme='dark'] .nav-item--active,
 :root[data-theme='dark'] .mobile-nav .nav-item--active {
-  background: #204c4f;
-  color: #9af0dd;
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-accent);
 }
 :root[data-theme='dark'] .sidebar__collapse:hover,
 :root[data-theme='dark'] .sidebar__catalog:hover {
-  background: #24444b;
+  background: var(--gh-color-accent-soft);
 }
 :root[data-theme='dark'] .catalog-content {
-  background: #10232d;
-  border-color: #36535e;
+  background: var(--gh-color-canvas);
+  border-color: var(--gh-color-border);
 }
 :root[data-theme='dark'] .catalog-content__header {
-  background: #19343d;
-  border-bottom-color: #385966;
+  background: var(--gh-color-shell-surface);
+  border-bottom-color: var(--gh-color-border);
 }
 :root[data-theme='dark'] .catalog-tab--active,
 :root[data-theme='dark'] .theme-choice--active {
-  background: #204c4f !important;
-  color: #9af0dd !important;
-  border-color: #54938c !important;
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-accent);
+  border-color: var(--gh-color-border);
 }
 :root[data-theme='dark'] .mobile-nav {
   background: #142731;
@@ -3281,8 +3281,8 @@ body {
 :root[data-theme='dark'] .field__input:focus,
 :root[data-theme='dark'] .catalog-search:focus-within,
 :root[data-theme='dark'] .search-control:focus-within {
-  border-color: #6ce3ca;
-  box-shadow: 0 0 0 3px rgba(108, 227, 202, 0.15);
+  border-color: var(--gh-color-ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gh-color-ring) 18%, transparent);
 }
 
 /* Phase 0.2 shell: Home / Apps / Menu are the only mobile destinations. */
@@ -3317,22 +3317,22 @@ body {
   border-right: 1px solid var(--border);
 }
 :root .topbar {
-  background: var(--surface);
+  background: var(--gh-color-canvas);
   border-bottom: 1px solid var(--border);
   box-shadow: none;
 }
 :root .sidebar__school {
-  background: var(--surface-subtle);
-  border-color: var(--border);
+  background: var(--gh-color-shell-surface);
+  border-color: var(--gh-color-border);
 }
 :root .school-emblem {
-  background: var(--surface);
-  color: var(--ink-strong);
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-accent);
   border-color: var(--border);
 }
 :root .nav-item--active {
-  color: var(--ink-strong);
-  background: var(--surface-subtle);
+  color: var(--gh-color-accent);
+  background: var(--gh-color-accent-soft);
 }
 :root .brand-mark,
 :root .button--primary {
@@ -3538,19 +3538,19 @@ body {
   color: var(--accent);
 }
 :root .catalog-content {
-  background: var(--canvas);
-  border-color: var(--border);
+  background: var(--gh-color-canvas);
+  border-color: var(--gh-color-border);
   box-shadow: none;
 }
 :root .catalog-content__header {
-  background: var(--surface);
-  border-bottom-color: var(--border);
+  background: var(--gh-color-shell-surface);
+  border-bottom-color: var(--gh-color-border);
 }
 :root .catalog-tab--active,
 :root .theme-choice--active {
-  color: var(--ink-strong) !important;
-  background: var(--surface-subtle) !important;
-  border-color: var(--border) !important;
+  color: var(--gh-color-accent);
+  background: var(--gh-color-accent-soft);
+  border-color: var(--gh-color-border);
 }
 :root .auth-page {
   background: var(--canvas);
@@ -3563,8 +3563,8 @@ body {
 :root .field__input:focus,
 :root .catalog-search:focus-within,
 :root .search-control:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(115, 122, 210, 0.12);
+  border-color: var(--gh-color-ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gh-color-ring) 18%, transparent);
 }
 :root .status-pill--positive {
   background: #e7f8ec;
@@ -3595,8 +3595,8 @@ body {
   border-top-color: var(--border);
 }
 :root .mobile-nav .nav-item--active {
-  color: var(--ink-strong);
-  background: var(--surface-subtle);
+  color: var(--gh-color-accent);
+  background: var(--gh-color-accent-soft);
 }
 :root .sidebar__catalog:hover,
 :root .sidebar__collapse:hover {
@@ -3649,23 +3649,23 @@ body {
   background: var(--canvas);
 }
 :root[data-theme='dark'] .topbar {
-  background: var(--surface);
-  border-bottom-color: var(--border);
+  background: var(--gh-color-canvas);
+  border-bottom-color: var(--gh-color-border);
   box-shadow: none;
 }
 :root[data-theme='dark'] .sidebar {
-  background: #101019;
-  border-right-color: var(--border);
+  background: var(--gh-color-shell-surface);
+  border-right-color: var(--gh-color-border);
 }
 :root[data-theme='dark'] .sidebar__school {
-  background: #1b1b28;
-  border-color: var(--border);
+  background: var(--gh-color-shell-surface);
+  border-color: var(--gh-color-border);
 }
 :root[data-theme='dark'] .school-emblem,
 :root[data-theme='dark'] .member-avatar {
-  background: var(--surface-subtle);
-  color: var(--ink-strong);
-  border-color: var(--border);
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-accent);
+  border-color: var(--gh-color-border);
 }
 :root[data-theme='dark'] .dashboard-banner {
   background: #151520;
@@ -3711,17 +3711,17 @@ body {
   color: var(--accent);
 }
 :root[data-theme='dark'] .catalog-content {
-  background: var(--canvas);
-  border-color: var(--border);
+  background: var(--gh-color-canvas);
+  border-color: var(--gh-color-border);
 }
 :root[data-theme='dark'] .catalog-content__header {
-  background: var(--surface);
-  border-bottom-color: var(--border);
+  background: var(--gh-color-shell-surface);
+  border-bottom-color: var(--gh-color-border);
 }
 :root[data-theme='dark'] .nav-item--active,
 :root[data-theme='dark'] .mobile-nav .nav-item--active {
-  color: var(--ink-strong);
-  background: var(--surface-subtle);
+  color: var(--gh-color-accent);
+  background: var(--gh-color-accent-soft);
 }
 :root[data-theme='dark'] .mobile-nav {
   background: var(--surface);
@@ -3729,9 +3729,9 @@ body {
 }
 :root[data-theme='dark'] .theme-choice--active,
 :root[data-theme='dark'] .catalog-tab--active {
-  background: var(--surface-subtle) !important;
-  color: var(--ink-strong) !important;
-  border-color: #424254 !important;
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-accent);
+  border-color: var(--gh-color-border);
 }
 :root[data-theme='dark'] .auth-page {
   background: var(--canvas);

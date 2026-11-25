@@ -10,7 +10,7 @@
   height: 66px;
   padding-inline: 35px;
   border-bottom: 1px solid var(--gh-color-border);
-  background: var(--gh-color-shell-surface);
+  background: var(--gh-color-canvas);
   color: var(--gh-color-text);
 }
 

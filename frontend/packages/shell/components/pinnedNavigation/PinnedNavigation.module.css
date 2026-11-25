@@ -54,8 +54,7 @@
 
 .active {
   background: var(--gh-color-accent-soft);
-  color: var(--gh-color-secondary-foreground);
-  box-shadow: inset 3px 0 var(--gh-color-accent);
+  color: var(--gh-color-accent);
   font-weight: var(--gh-weight-bold);
 }
 

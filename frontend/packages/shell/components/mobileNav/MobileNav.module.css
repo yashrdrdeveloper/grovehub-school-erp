@@ -33,8 +33,8 @@
 }
 
 .active {
-  background: var(--gh-color-surface-subtle);
-  color: var(--gh-color-text-strong);
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-accent);
 }
 
 .item svg {

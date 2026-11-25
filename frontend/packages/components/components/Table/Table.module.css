@@ -20,7 +20,7 @@
   gap: 0;
   overflow: hidden;
   border: 1px solid var(--gh-color-table-rule);
-  border-radius: var(--gh-control-radius);
+  border-radius: var(--gh-radius-md);
   background: var(--gh-color-surface);
   box-shadow: none;
 }
@@ -71,6 +71,8 @@
   min-width: 0;
   max-height: 70dvh;
   overflow: auto;
+  scrollbar-color: var(--gh-color-scrollbar-thumb) var(--gh-color-scrollbar-track);
+  scrollbar-width: thin;
 }
 .table {
   table-layout: fixed;

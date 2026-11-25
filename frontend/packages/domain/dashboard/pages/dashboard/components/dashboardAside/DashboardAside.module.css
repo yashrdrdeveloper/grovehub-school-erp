@@ -32,8 +32,8 @@
 }
 
 .school-home__calendar-tabs button.is-active {
-  background: var(--surface-subtle);
-  color: var(--ink-strong);
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-accent);
 }
 
 .school-home__calendar-content {
