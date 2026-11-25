@@ -8,7 +8,7 @@ import { getPopoverPosition } from './helpers/popover.getPosition';
 import styles from './Popover.module.css';
 import type { PopoverProps } from './types/popover.props';
 
-export const Popover = ({ open, onOpenChange, onOutsideClick, title, trigger, children, width = 360, fullWidth, compact = false, desktopScrollLayout = false, desktopDropdown = false, desktopDropdownWidth, dataTestId }: PopoverProps) => {
+export const Popover = ({ open, onOpenChange, onOutsideClick, title, headerContent, trigger, children, width = 360, fullWidth, compact = false, desktopScrollLayout = false, desktopDropdown = false, desktopDropdownWidth, dataTestId }: PopoverProps) => {
   const anchor = useRef<HTMLElement>(null);
   const [panel, setPanel] = useState<HTMLDivElement | null>(null);
   const [position, setPosition] = useState({ left: 0, top: 0, width, maxHeight: 0 });
@@ -76,8 +76,9 @@ export const Popover = ({ open, onOpenChange, onOutsideClick, title, trigger, ch
             anchor.current?.querySelector('button')?.focus();
           }}
         >
-          <Box className={styles.heading}>
+          <Box className={styles.heading} data-custom-heading={headerContent !== undefined}>
             <DialogTitle className={styles.title}>{title}</DialogTitle>
+            {headerContent !== undefined && <Box className={styles.headerContent}>{headerContent}</Box>}
             <DialogClose asChild>
               <button type="button" className={styles.close} aria-label={__('Close')}><X size={18} aria-hidden="true" /></button>
             </DialogClose>
