@@ -5,6 +5,7 @@ import { Box } from '../Box';
 import { getStatusPillDisplayLabel } from './helpers/statusPill.getDisplayLabel';
 import { getStatusPillTone } from './helpers/statusPill.getTone';
 
+import styles from './StatusPill.module.css';
 import type { StatusPillComponent } from './types/statusPill.props';
 
 /** Stateless status presentation with a shared Box and Lodash-derived label. */
@@ -12,7 +13,8 @@ export const StatusPill: StatusPillComponent = ({ value, dataTestId }) => (
   <Box
     as={BOX_TAG.SPAN}
     dataTestId={dataTestId}
-    className={cn('status-pill', `status-pill--${getStatusPillTone(value)}`)}
+    data-tone={getStatusPillTone(value)}
+    className={cn(styles.badge, 'status-pill', `status-pill--${getStatusPillTone(value)}`)}
   >
     <Box as={BOX_TAG.SPAN} className="status-pill__dot" aria-hidden="true" />
     {getStatusPillDisplayLabel(value)}

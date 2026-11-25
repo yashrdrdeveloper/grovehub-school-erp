@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { _map } from '@Base/utilities/map';
 
 import { Box } from '../../../Box';
@@ -48,6 +48,9 @@ export const DesktopTable = <T,>(props: DesktopTableProps<T>) => {
   const columnsWidth = controls.layout.reduce((sum, item) => sum + item.width, 0);
   const fill = getTableFillWidth(available, columnsWidth, fixedWidth);
   const filler = fill > 0;
+  const firstRight = controls.layout.findIndex((entry) => entry.pin === TablePin.RIGHT);
+  const fillBefore = (index: number) => filler && firstRight === index;
+  const fillAtEnd = filler && firstRight < 0;
 
   const span = Math.max(1, controls.layout.length + Number(selection) + Number(rowActions) + Number(filler));
   const pageChecked = Boolean(controls.selectable.length) && controls.selectable.every((id) => controls.selected.includes(id));
@@ -66,20 +69,28 @@ export const DesktopTable = <T,>(props: DesktopTableProps<T>) => {
       <table className={styles.table} data-density={controls.preferences.density} data-virtual={virtual} style={{ width: tableWidth }} aria-busy={props.refreshing} aria-label={props.headerProps?.title ?? __('Table')}>
         <colgroup>
           {selection && <col style={{ width: TABLE_DIMENSIONS.selection }} />}
-          {_map(controls.layout, (entry) => <col key={entry.column.id} style={{ width: entry.width }} />)}
-          {filler && <col style={{ width: fill }} />}
+          {_map(controls.layout, (entry, index) => (
+            <Fragment key={entry.column.id}>
+              {fillBefore(index) && <col style={{ width: fill }} />}
+              <col style={{ width: entry.width }} />
+            </Fragment>
+          ))}
+          {fillAtEnd && <col style={{ width: fill }} />}
           {rowActions && <col style={{ width: TABLE_DIMENSIONS.actions }} />}
         </colgroup>
         <thead>
           <tr>
             {selection && <th scope="col" className={styles.selection}><TableSelection label={__('Select visible rows')} checked={pageChecked} indeterminate={someChecked && !pageChecked} disabled={!controls.selectable.length} onChange={controls.selectPage} /></th>}
-            {_map(controls.layout, (entry) => (
-              <th key={entry.column.id} scope="col" style={{ ...getTableCellStyle(entry, selection, rowActions), position: 'sticky', top: 0, zIndex: 3 + Number(entry.pin !== TablePin.NONE) }} data-pinned={entry.pin !== TablePin.NONE}>
+            {_map(controls.layout, (entry, index) => (
+              <Fragment key={entry.column.id}>
+              {fillBefore(index) && <th aria-hidden="true" className={styles.filler} />}
+              <th scope="col" style={{ ...getTableCellStyle(entry, selection, rowActions), position: 'sticky', top: 0, zIndex: 3 + Number(entry.pin !== TablePin.NONE) }} data-pinned={entry.pin !== TablePin.NONE}>
                 <TableSortHeader column={entry.column} props={props} />
                 {entry.column.resizable !== false && <ColumnResizeHandle label={__('Resize {{column}}', { column: entry.column.header })} width={entry.width} min={entry.column.minWidth ?? 80} max={entry.column.maxWidth ?? 1200} onResize={(width) => controls.resize(entry.column.id, width)} />}
               </th>
+              </Fragment>
             ))}
-            {filler && <th aria-hidden="true" className={styles.filler} style={{ width: fill }} />}
+            {fillAtEnd && <th aria-hidden="true" className={styles.filler} style={{ width: fill }} />}
             {rowActions && <th className={styles.actionColumn} scope="col" aria-label={__('Actions')}>{__('Actions')}</th>}
           </tr>
         </thead>
@@ -102,7 +113,9 @@ export const DesktopTable = <T,>(props: DesktopTableProps<T>) => {
               <tr key={`row:${entry.id}`} style={rowStyle()} onDoubleClick={() => props.actions?.ROW_DOUBLE_CLICK?.(row)} data-selected={controls.selected.includes(entry.id)}>
                 {selection && <td className={styles.selection}><TableSelection label={__('Select row {{id}}', { id: entry.id })} checked={controls.selected.includes(entry.id)} disabled={!controls.selectable.includes(entry.id)} onChange={() => controls.selectRow(entry.id)} /></td>}
                 {_map(controls.layout, (layout, index) => (
-                  <td key={layout.column.id} style={getTableCellStyle(layout, selection, rowActions)} data-pinned={layout.pin !== TablePin.NONE}>
+                  <Fragment key={layout.column.id}>
+                  {fillBefore(index) && <td aria-hidden="true" className={styles.filler} />}
+                  <td style={getTableCellStyle(layout, selection, rowActions)} data-pinned={layout.pin !== TablePin.NONE}>
                     <Box className={styles.cell} style={{ paddingInlineStart: Number(index === 0) * entry.depth * 16 }}>
                       {index === 0 && entry.expandable && (
                         <Button variant={BUTTON_VARIANT.GHOST} aria-expanded={controls.expanded.includes(entry.id)} aria-label={__('Toggle row details')} onClick={() => controls.toggleExpanded(entry.id)}>
@@ -113,8 +126,9 @@ export const DesktopTable = <T,>(props: DesktopTableProps<T>) => {
                       <TableCell row={row} column={layout.column} actions={props.actions} />
                     </Box>
                   </td>
+                  </Fragment>
                 ))}
-                {filler && <td aria-hidden="true" className={styles.filler} />}
+                {fillAtEnd && <td aria-hidden="true" className={styles.filler} />}
                 {rowActions && <td className={styles.actionColumn}><TableRowActions row={row} props={props} /></td>}
               </tr>
             );
