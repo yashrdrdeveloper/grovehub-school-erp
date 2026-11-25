@@ -107,13 +107,24 @@ func Apply[TId any](db *gorm.DB, query Query[TId], config Config) (*gorm.DB, err
 		db = db.Order(config.CursorExpression + " " + direction)
 	}
 
-	return db.Limit(query.Limit + 1), nil
+	return applyPage(db, query), nil
 }
 
 // Execute shares the safe, parameterized search and keyset-pagination mechanics.
 // The repository supplies its own explicit model/table and allowlisted Config.
 func Execute[TId any, T any](db *gorm.DB, query Query[TId], config Config) (QueryResult[T], error) {
-	searchDB, err := Apply(db, query, config)
+	var total *int64
+	if query.PageNumber > 0 {
+		countQuery := query
+		countQuery.Cursor = nil
+		countQuery.Offset = 0
+		countDB, err := Apply(db.Session(&gorm.Session{}), countQuery, config)
+		if err != nil { return QueryResult[T]{}, err }
+		var count int64
+		if err := countDB.Model(new(T)).Select("COUNT(*)").Limit(-1).Offset(-1).Count(&count).Error; err != nil { return QueryResult[T]{}, err }
+		total = &count
+	}
+	searchDB, err := Apply(db.Session(&gorm.Session{}), query, config)
 	if err != nil {
 		return QueryResult[T]{}, err
 	}
@@ -125,7 +136,7 @@ func Execute[TId any, T any](db *gorm.DB, query Query[TId], config Config) (Quer
 	if hasNext {
 		items = items[:query.Limit]
 	}
-	return QueryResult[T]{Items: items, HasNext: hasNext}, nil
+	return QueryResult[T]{Items: items, HasNext: hasNext, TotalRecords: total}, nil
 }
 
 func EncodeCursor(cursor CursorPayload) (string, error) {

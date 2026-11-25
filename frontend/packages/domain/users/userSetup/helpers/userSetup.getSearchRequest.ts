@@ -36,6 +36,6 @@ export const getUserSetupSearchRequest = (state: UserSetupQueryState): SearchReq
     searchText: state.searchText.trim(),
     filters,
     sort: _map(state.sorting, (rule) => ({ field: rule.field, direction: rule.direction })),
-    pageInfo: { rows: state.pageSize, cursor: state.cursors[state.cursors.length - 1] },
+    pageInfo: { pageNumber: state.pageNumber, rowSize: state.pageSize, cursor: state.cursors[state.pageNumber] },
   };
 };

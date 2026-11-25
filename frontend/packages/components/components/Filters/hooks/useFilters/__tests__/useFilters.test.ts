@@ -15,6 +15,15 @@ const first = { id: '1', field: 'email', operator: FilterOperator.EXISTS, values
 const second = { id: '2', field: 'status', operator: FilterOperator.EXISTS, values: [] };
 
 describe('useFilters', () => {
+  it('preselects the first unused field and its first operator on desktop and mobile', () => {
+    const { result } = renderHook(() => useFilters({ fields, value: [first], onChange: jest.fn() }));
+    if (typeof crypto.randomUUID !== 'function') Object.defineProperty(crypto, 'randomUUID', { configurable: true, value: () => '00000000-0000-4000-8000-000000000000' });
+    act(() => result.current.addInline());
+    expect(result.current.draft[1]).toMatchObject({ field: 'status', operator: FilterOperator.EXISTS, values: [] });
+    act(() => result.current.add());
+    expect(result.current.editing).toMatchObject({ field: 'createdAt', operator: FilterOperator.EXISTS, values: [] });
+  });
+
   it('excludes fields used by other rows and restores them after removal or replacement', () => {
     const { result } = renderHook(() =>
       useFilters({ fields, value: [first, second], onChange: jest.fn() }),

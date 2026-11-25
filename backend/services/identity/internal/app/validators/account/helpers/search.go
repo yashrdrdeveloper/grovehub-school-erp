@@ -91,7 +91,7 @@ func NormalizeSearch(request coresearch.Request) (coresearch.Query[string], erro
 	if err != nil {
 		return coresearch.Query[string]{}, err
 	}
-	rows, err := coresearch.ResolveRows(request.PageInfo.Rows, errInvalidSearch)
+	page, rows, offset, err := coresearch.ResolvePage(request.PageInfo, errInvalidSearch)
 	if err != nil {
 		return coresearch.Query[string]{}, err
 	}
@@ -111,6 +111,8 @@ func NormalizeSearch(request coresearch.Request) (coresearch.Query[string], erro
 	if err != nil {
 		return coresearch.Query[string]{}, err
 	}
+	if err := coresearch.ValidatePageCursor(request.PageInfo, page, rows, errInvalidSearch); err != nil { return coresearch.Query[string]{}, err }
+	if request.PageInfo.PageNumber == 0 { page = 0 }
 	return coresearch.Query[string]{
 		SearchTerms: terms,
 		Filters: filters,
@@ -118,5 +120,7 @@ func NormalizeSearch(request coresearch.Request) (coresearch.Query[string], erro
 		SecondarySorts: ordered[1:],
 		Cursor: cursor,
 		Limit: rows,
+		PageNumber: page,
+		Offset: offset,
 	}, nil
 }

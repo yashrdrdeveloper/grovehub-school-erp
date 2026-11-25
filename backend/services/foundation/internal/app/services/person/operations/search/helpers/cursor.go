@@ -12,5 +12,6 @@ func BuildNextCursor(result coresearch.QueryResult[entity.Person], query coresea
     last := result.Items[len(result.Items)-1]
     cursor.Value = personCursorValue(last, query.Sort.Field)
     cursor.CursorId = last.GID
+    if query.PageNumber > 0 { cursor.PageNumber = query.PageNumber + 1; cursor.RowSize = query.Limit }
     return coresearch.EncodeCursor(cursor)
 }

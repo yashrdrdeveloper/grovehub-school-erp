@@ -85,5 +85,5 @@ func applyMultiSort[TId any](db *gorm.DB, query Query[TId], config Config) (*gor
 		db = db.Where("("+strings.Join(parts, " OR ")+")", builder.Args()...)
 	}
 	for index, field := range fields { db = db.Order(field.Expression+" "+string(directions[index])) }
-	return db.Limit(query.Limit+1), nil
+	return applyPage(db, query), nil
 }

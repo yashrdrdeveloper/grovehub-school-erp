@@ -9,7 +9,8 @@ export interface UserSetupQueryState {
   readonly sorting: readonly SortCondition[];
   readonly quickFilterIds: readonly string[];
   readonly pageSize: number;
-  readonly cursors: readonly (string | undefined)[];
+  readonly pageNumber: number;
+  readonly cursors: Readonly<Record<number, string | undefined>>;
 }
 
 export interface UserSetupDialog {

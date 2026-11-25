@@ -22,7 +22,8 @@ export const useUserSetup = () => {
     sorting: USER_SETUP_DEFAULT_SORT,
     quickFilterIds: ['ALL'],
     pageSize: 25,
-    cursors: [undefined],
+    pageNumber: 1,
+    cursors: {},
   });
   const [dialog, setDialog] = useState<UserSetupDialog | null>(null);
   const request = getUserSetupSearchRequest(state);
@@ -47,22 +48,40 @@ export const useUserSetup = () => {
     if (!mutation.isPending) setDialog(null);
   };
   const resetQuery = (change: Partial<UserSetupQueryState>) => {
-    setState((current) => ({ ...current, ...change, cursors: [undefined] }));
+    setState((current) => ({ ...current, ...change, pageNumber: 1, cursors: {} }));
   };
   const paginate = (action: PaginationAction) => {
     if (action.type === 'PAGE_SIZE_CHANGE') {
       resetQuery({ pageSize: action.pageSize });
       return;
     }
+    if (query.isFetching) return;
+    if (action.type === 'PAGE_CHANGE') {
+      const totalPages = query.data?.pageInfo.totalPages;
+      if (!Number.isSafeInteger(action.page) || action.page < 1 || (totalPages !== undefined && action.page > totalPages)) return;
+      setState((current) => {
+        const nextCursor = query.data?.pageInfo.nextCursor;
+        if (action.page === current.pageNumber + 1 && nextCursor) {
+          return { ...current, pageNumber: action.page, cursors: { ...current.cursors, [action.page]: nextCursor } };
+        }
+        return { ...current, pageNumber: action.page };
+      });
+      return;
+    }
     if (action.type === 'PREVIOUS') {
       setState((current) => {
-        if (current.cursors.length < 2) return current;
-        return { ...current, cursors: current.cursors.slice(0, -1) };
+        if (current.pageNumber <= 1) return current;
+        return { ...current, pageNumber: current.pageNumber - 1 };
       });
+      return;
     }
     const nextCursor = query.data?.pageInfo.nextCursor;
     if (action.type === 'NEXT' && query.data?.pageInfo.hasNext && nextCursor) {
-      setState((current) => ({ ...current, cursors: [...current.cursors, nextCursor] }));
+      setState((current) => ({
+        ...current,
+        pageNumber: current.pageNumber + 1,
+        cursors: { ...current.cursors, [current.pageNumber + 1]: nextCursor },
+      }));
     }
   };
   const actions: TableActions<Account> = {
@@ -99,13 +118,15 @@ export const useUserSetup = () => {
     if (dialog.action === UserAction.RESEND) mutation.mutate(() => usersApi.resendInvitation(row.accountId));
   };
   const pagination = {
-    type: PaginationType.CURSOR,
+    type: PaginationType.HYBRID,
     pageSize: state.pageSize,
-    currentPage: state.cursors.length,
-    hasPrevious: state.cursors.length > 1,
+    currentPage: state.pageNumber,
+    totalRecords: query.data?.pageInfo.totalRecords,
+    totalPages: query.data?.pageInfo.totalPages,
+    hasPrevious: state.pageNumber > 1,
     hasNext: Boolean(query.data?.pageInfo.hasNext && query.data.pageInfo.nextCursor),
     loading: query.isFetching,
-  } satisfies Omit<Extract<PaginationProps, { type: typeof PaginationType.CURSOR }>, 'onChange'>;
+  } satisfies Omit<Extract<PaginationProps, { type: typeof PaginationType.HYBRID }>, 'onChange'>;
 
   return {
     state, actions, dialog, closeDialog, create, edit, confirm, pagination,

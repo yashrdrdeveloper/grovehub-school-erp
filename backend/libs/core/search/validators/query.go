@@ -12,7 +12,7 @@ func ValidateQuery[TId any](
 	query contracts.Query[TId],
 	config contracts.Config,
 ) (contracts.SortField, error) {
-	if query.Limit <= 0 || config.CursorExpression == "" {
+	if query.Limit <= 0 || query.Offset < 0 || (query.Cursor != nil && query.Offset != 0) || config.CursorExpression == "" {
 		return contracts.SortField{}, ErrInvalidQuery
 	}
 	if len(query.SearchTerms) > 0 && config.SearchExpression == "" {

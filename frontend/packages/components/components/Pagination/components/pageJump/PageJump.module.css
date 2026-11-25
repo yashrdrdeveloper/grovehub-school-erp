@@ -1,0 +1,19 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gh-space-1);
+  white-space: nowrap;
+}
+.input.input {
+  width: 4rem;
+  text-align: center;
+  min-height: var(--gh-control-height-sm);
+  height: var(--gh-control-height-sm);
+  padding: var(--gh-space-1);
+  font-size: var(--gh-text-xs);
+}
+.input::-webkit-inner-spin-button,
+.input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}

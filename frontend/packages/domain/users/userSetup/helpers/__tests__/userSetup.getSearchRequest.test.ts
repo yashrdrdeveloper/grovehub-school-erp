@@ -18,8 +18,10 @@ describe('getUserSetupSearchRequest', () => {
       ],
       quickFilterIds: ['ALL'],
       pageSize: 25,
-      cursors: [undefined],
+      pageNumber: 4,
+      cursors: { 4: 'page-four-cursor' },
     });
+    expect(request.pageInfo).toEqual({ pageNumber: 4, rowSize: 25, cursor: 'page-four-cursor' });
     expect(request.filters).toEqual([
       { field: 'status', operator: 'EQUALS', values: ['ACTIVE'] },
       { field: 'createdAt', operator: 'GTE', values: [new Date(2026, 10, 1).toISOString()] },

@@ -41,13 +41,19 @@ type Sort struct {
 }
 
 type PageRequest struct {
-	Rows   int    `json:"rows,omitempty"`
+	Rows   int    `json:"rows,omitempty"` // legacy request alias
+	PageNumber int `json:"pageNumber,omitempty"`
+	RowSize int `json:"rowSize,omitempty"`
 	Cursor string `json:"cursor,omitempty"`
 }
 
 type PageResponse struct {
 	TotalRecords *int64 `json:"totalRecords,omitempty"`
 	Rows       int    `json:"rows"`
+	PageNumber int `json:"pageNumber,omitempty"`
+	RowSize int `json:"rowSize,omitempty"`
+	TotalPages *int64 `json:"totalPages,omitempty"`
+	HasPrevious bool `json:"hasPrevious"`
 	NextCursor string `json:"nextCursor,omitempty"`
 	HasNext    bool   `json:"hasNext"`
 }
@@ -88,6 +94,8 @@ type Query[TId any] struct {
 	SecondarySorts []QuerySort
 	Cursor      *Cursor[TId]
 	Limit       int
+	PageNumber int
+	Offset int
 }
 
 type QueryResult[T any] struct {
@@ -103,6 +111,8 @@ type CursorPayload struct {
 	CursorId  string    `json:"cursorId"`
 	SecondarySorts []Sort `json:"secondarySorts,omitempty"`
 	SecondaryValues []string `json:"secondaryValues,omitempty"`
+	PageNumber int `json:"pageNumber,omitempty"`
+	RowSize int `json:"rowSize,omitempty"`
 }
 
 type ScalarField struct {

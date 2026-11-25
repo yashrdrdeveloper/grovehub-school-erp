@@ -14,7 +14,7 @@ func NormalizePersonSearchRequest(request coresearch.Request) (coresearch.Query[
     terms, err := coresearch.NormalizeSearchTerms(request.SearchText, maxSearchTextLength, maxSearchTerms, invalidPersonSearch())
     if err != nil { return coresearch.Query[string]{}, coresearch.CursorPayload{}, err }
 
-    rows, err := coresearch.ResolveRows(request.PageInfo.Rows, invalidPersonSearch())
+    page, rows, offset, err := coresearch.ResolvePage(request.PageInfo, invalidPersonSearch())
     if err != nil { return coresearch.Query[string]{}, coresearch.CursorPayload{}, err }
 
     fallback := coresearch.QuerySort{Field: "createdAt", Direction: coresearch.DirectionDescending}
@@ -27,11 +27,15 @@ func NormalizePersonSearchRequest(request coresearch.Request) (coresearch.Query[
     cursor, payload, err := coresearch.NormalizeCursor(request.PageInfo.Cursor, sort, personSortFields[sort.Field], coresearch.ValidateUUIDv7Cursor, invalidPersonSearchCursor())
     if err != nil { return coresearch.Query[string]{}, coresearch.CursorPayload{}, err }
 
+    if err := coresearch.ValidatePageCursor(request.PageInfo, page, rows, invalidPersonSearchCursor()); err != nil { return coresearch.Query[string]{}, coresearch.CursorPayload{}, err }
+    if request.PageInfo.PageNumber == 0 { page = 0 }
     return coresearch.Query[string]{
         SearchTerms: terms,
         Filters: filters,
         Sort: sort,
         Cursor: cursor,
         Limit: rows,
+        PageNumber: page,
+        Offset: offset,
     }, payload, nil
 }

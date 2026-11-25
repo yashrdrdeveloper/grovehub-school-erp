@@ -59,8 +59,11 @@ func (strategy *Searcher) Hydrate(ctx context.Context, state *searchflow.Search)
     }
     nextCursor, err := searchhelpers.BuildNextCursor(state.Result, state.Query, state.Cursor)
     if err != nil { return servicepipeline.Fail[coresearch.Result[persondto.Person]](coreerrors.Wrap(personerror.PersonSearchFailed, err)) }
+    pageInfo := coresearch.NewPageResponse(state.Query, state.Result)
+    pageInfo.Rows = state.Query.Limit
+    pageInfo.NextCursor = nextCursor
     return servicepipeline.Return(coresearch.Result[persondto.Person]{
         Items: items,
-        PageInfo: coresearch.PageResponse{Rows: state.Query.Limit, NextCursor: nextCursor, HasNext: state.Result.HasNext},
+        PageInfo: pageInfo,
     }, false)
 }

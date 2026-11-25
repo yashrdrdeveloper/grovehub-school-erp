@@ -57,11 +57,7 @@ func (strategy *Search) Hydrate(ctx context.Context, state *flows.Search) chain.
 	for _, account := range state.Accounts.Items {
 		result.Items = append(result.Items, strategy.mapper.ToResponse(account))
 	}
-	result.PageInfo = coresearch.PageResponse{
-		TotalRecords: state.Accounts.TotalRecords,
-		Rows: len(result.Items),
-		HasNext: state.Accounts.HasNext,
-	}
+	result.PageInfo = coresearch.NewPageResponse(state.Query, state.Accounts)
 
 	if state.Accounts.HasNext && len(state.Accounts.Items) > 0 {
 		last := state.Accounts.Items[len(state.Accounts.Items)-1]
@@ -70,7 +66,10 @@ func (strategy *Search) Hydrate(ctx context.Context, state *flows.Search) chain.
 			Direction: state.Query.Sort.Direction,
 			Value: accountSortValue(last, state.Query.Sort.Field),
 			CursorId: last.AccountID,
+			PageNumber: coresearch.NextPageNumber(state.Request.PageInfo, state.Query.PageNumber),
+			RowSize: state.Query.Limit,
 		}
+		if payload.PageNumber == 0 { payload.RowSize = 0 }
 		for _, rule := range state.Query.SecondarySorts {
 			payload.SecondarySorts = append(payload.SecondarySorts, coresearch.Sort{Field: rule.Field, Direction: rule.Direction})
 			payload.SecondaryValues = append(payload.SecondaryValues, accountSortValue(last, rule.Field))

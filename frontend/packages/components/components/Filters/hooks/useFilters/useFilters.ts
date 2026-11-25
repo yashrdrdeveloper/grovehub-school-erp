@@ -14,7 +14,7 @@ export const useFilters = ({ value, onChange, fields, maxFilters }: FiltersProps
 
   const getAvailableFields = (id?: string) =>
     _filter(fields, (field) => !draft.some((item) => item.id !== id && item.field === field.id));
-  const canAdd = draft.length < Math.min(fields.length, maxFilters ?? fields.length);
+  const canAdd = draft.length < Math.min(fields.length, maxFilters ?? fields.length) && getAvailableFields().some((field) => field.operators.length > 0);
   const getAddReason = () => {
     if (canAdd) return undefined;
     if (!getAvailableFields().length) return __('All filter fields are selected.');
@@ -37,10 +37,12 @@ export const useFilters = ({ value, onChange, fields, maxFilters }: FiltersProps
 
   const addInline = () => {
     if (!canAdd) return;
-    const condition = { id: crypto.randomUUID(), field: '', operator: FilterOperator.EQUALS, values: [] };
+    const id = crypto.randomUUID();
     setDraft((items) => {
       if (items.length >= Math.min(fields.length, maxFilters ?? fields.length)) return items;
-      return [...items, condition];
+      const field = _find(fields, (entry) => entry.operators.length > 0 && !items.some((item) => item.field === entry.id));
+      if (!field) return items;
+      return [...items, { id, field: field.id, operator: field.operators[0], values: [] }];
     });
   };
 
@@ -58,7 +60,9 @@ export const useFilters = ({ value, onChange, fields, maxFilters }: FiltersProps
 
   const add = () => {
     if (!canAdd) return;
-    setEditing({ id: crypto.randomUUID(), field: '', operator: FilterOperator.EQUALS, values: [] });
+    const field = _find(getAvailableFields(), (entry) => entry.operators.length > 0);
+    if (!field) return;
+    setEditing({ id: crypto.randomUUID(), field: field.id, operator: field.operators[0], values: [] });
   };
   const edit = (condition: FilterCondition) => setEditing(condition);
   const remove = (id: string) => setDraft((items) => _filter(items, (item) => item.id !== id));
