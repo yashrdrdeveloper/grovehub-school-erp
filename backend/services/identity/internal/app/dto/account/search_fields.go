@@ -8,6 +8,7 @@ const (
 	FieldUsername = "username"
 	FieldEmail = "email"
 	FieldStatus = "status"
+	FieldPrimaryRoleID = "primaryRoleId"
 	FieldCreatedAt = "createdAt"
 	FieldUpdatedAt = "updatedAt"
 )

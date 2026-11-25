@@ -1,6 +1,9 @@
 package entity
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type AccountStatus string
 
@@ -16,6 +19,8 @@ type Account struct {
 	AccountID                  string        `gorm:"column:account_id;primaryKey;type:uuid" json:"accountId"`
 	PersonGID                  string        `gorm:"column:person_gid;type:uuid;not null" json:"personGid"`
 	TenantID                   *string       `gorm:"column:tenant_id" json:"-"`
+	PrimaryRoleID              *string         `gorm:"column:primary_role_id" json:"primaryRoleId"`
+	SecondaryRoleIDs           json.RawMessage `gorm:"column:secondary_role_ids;type:jsonb;default:'[]'" json:"secondaryRoleIds"`
 	Username                   *string       `gorm:"column:username" json:"username"`
 	Email                      string        `gorm:"column:email;not null" json:"email"`
 	Phone                      *string       `gorm:"column:phone" json:"-"`

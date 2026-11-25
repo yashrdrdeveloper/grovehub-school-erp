@@ -17,6 +17,7 @@ import (
 	"grovehub/services/identity/internal/app/entity"
 	accountproducer "grovehub/services/identity/internal/app/events/producers/account"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
+	accounthelpers "grovehub/services/identity/internal/app/services/account/helpers"
 	"grovehub/services/identity/internal/app/services/security/principal"
 	"grovehub/services/identity/internal/app/services/registration/operations/register/flows"
 	registration "grovehub/services/identity/internal/app/services/registration"
@@ -233,6 +234,11 @@ func (operation *RegisterOperation) persist(ctx context.Context, flow *flows.Reg
 	}
 	if flow.Request.PhoneNumber != "" {
 		accountEntity.Phone = &flow.Request.PhoneNumber
+	}
+	if flow.Request.RoleAssignment != nil {
+		if err := accounthelpers.ApplyRoleAssignment(&accountEntity, *flow.Request.RoleAssignment); err != nil {
+			return err
+		}
 	}
 	accountEntity.SearchDetails = strings.ToLower(accountEntity.Email)
 

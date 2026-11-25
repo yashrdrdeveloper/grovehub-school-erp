@@ -10,6 +10,9 @@ type AccountController interface {
 	// @POST /search
 	Search(writer http.ResponseWriter, request *http.Request)
 
+	// @GET /roles
+	Roles(writer http.ResponseWriter, request *http.Request)
+
 	// @GET /{accountId}
 	Get(writer http.ResponseWriter, request *http.Request)
 

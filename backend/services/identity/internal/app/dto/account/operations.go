@@ -30,3 +30,7 @@ type SearchRequest struct {
 	request.Request
 	RequestBody search.Request `validate:"valid"`
 }
+
+type RolesRequest struct {
+	request.Request
+}

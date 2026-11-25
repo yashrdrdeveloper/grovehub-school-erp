@@ -63,11 +63,17 @@ func (repository *Repository) FindByIdempotencyKey(ctx context.Context, key stri
 }
 
 func (repository *Repository) Update(ctx context.Context, account entity.Account) error {
+	secondary := string(account.SecondaryRoleIDs)
+	if secondary == "" || secondary == "null" {
+		secondary = "[]"
+	}
 	result := repository.dbFor(ctx).
 		Model(&entity.Account{}).
 		Where("account_id = ? AND version = ?", account.AccountID, account.Version-1).
 		Updates(map[string]any{
 			"username":       account.Username,
+			"primary_role_id": account.PrimaryRoleID,
+			"secondary_role_ids": gorm.Expr("?::jsonb", secondary),
 			"email":          account.Email,
 			"status":         account.Status,
 			"version":        account.Version,

@@ -13,6 +13,7 @@ import (
 	"grovehub/services/identity/internal/app/controller/helpers"
 	dto "grovehub/services/identity/internal/app/dto/account"
 	account "grovehub/services/identity/internal/app/services/account"
+	roles "grovehub/services/identity/internal/app/services/account/operations/roles"
 )
 
 type Controller struct {
@@ -44,6 +45,16 @@ func (controller *Controller) Search(writer http.ResponseWriter, request *http.R
 		Fallback: definitions.Internal,
 		Service: func(ctx context.Context, input dto.SearchRequest) (rest.Result[coresearch.Result[dto.Account]], error) {
 			result, err := controller.service.Search(ctx, input.RequestBody)
+			return rest.OK(result), helpers.Map(err)
+		},
+	})
+}
+
+func (controller *Controller) Roles(writer http.ResponseWriter, request *http.Request) {
+	rest.RunStruct(writer, request, rest.StructConfig[dto.RolesRequest, []dto.Role]{
+		Fallback: definitions.Internal,
+		Service: func(ctx context.Context, input dto.RolesRequest) (rest.Result[[]dto.Role], error) {
+			result, err := roles.List(ctx)
 			return rest.OK(result), helpers.Map(err)
 		},
 	})

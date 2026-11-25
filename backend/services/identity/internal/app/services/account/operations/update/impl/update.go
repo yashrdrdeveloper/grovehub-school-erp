@@ -11,6 +11,7 @@ import (
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	accountmapper "grovehub/services/identity/internal/app/mappers/account"
 	accountvalidator "grovehub/services/identity/internal/app/validators/account"
+	rolevalidator "grovehub/services/identity/internal/app/validators/account/helpers"
 	transaction "grovehub/libs/core/database/transaction"
 	accountproducer "grovehub/services/identity/internal/app/events/producers/account"
 	update "grovehub/services/identity/internal/app/services/account/operations/update"
@@ -35,12 +36,24 @@ func (op *Service) Execute(ctx context.Context, accountID string, request accoun
 	if err != nil {
 		return accountdto.Account{}, err
 	}
-	if request.Username == nil {
-		return accountdto.Account{}, errors.New("username must be supplied")
+	if request.Username == nil && request.RoleAssignment == nil {
+		return accountdto.Account{}, errors.New("username or role assignment must be supplied")
 	}
-	username, err := op.validator.NormalizeUsername(*request.Username)
-	if err != nil {
-		return accountdto.Account{}, err
+	var username *string
+	if request.Username != nil {
+		normalized, err := op.validator.NormalizeUsername(*request.Username)
+		if err != nil {
+			return accountdto.Account{}, err
+		}
+		username = &normalized
+	}
+	var assignment *accountdto.RoleAssignment
+	if request.RoleAssignment != nil {
+		normalized, err := rolevalidator.NormalizeRoleAssignment(*request.RoleAssignment)
+		if err != nil {
+			return accountdto.Account{}, err
+		}
+		assignment = &normalized
 	}
 
 	var updated entity.Account
@@ -53,8 +66,18 @@ func (op *Service) Execute(ctx context.Context, accountID string, request accoun
 			return accountrepo.ErrNotFound
 		}
 
+		if request.Version != nil && current.Version != *request.Version {
+			return accountrepo.ErrVersionConflict
+		}
 		before := current
-		current.Username = &username
+		if username != nil {
+			current.Username = username
+		}
+		if assignment != nil {
+			if err := accounthelpers.ApplyRoleAssignment(&current, *assignment); err != nil {
+				return err
+			}
+		}
 		current.Version++
 		current.UpdatedAt = time.Now().UTC()
 		current.SearchDetails = accounthelpers.SearchDetails(current)

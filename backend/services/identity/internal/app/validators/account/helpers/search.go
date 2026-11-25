@@ -9,6 +9,7 @@ import (
 	corenormalize "grovehub/libs/core/normalize"
 	coresearch "grovehub/libs/core/search"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
+	roles "grovehub/services/identity/internal/app/constants/role"
 	"grovehub/services/identity/internal/app/entity"
 )
 
@@ -40,6 +41,14 @@ func normalizeStatus(_ coresearch.Operator, value string) (string, error) {
 	}
 }
 
+func normalizeRole(_ coresearch.Operator, value string) (string, error) {
+	id := strings.TrimSpace(value)
+	if !roles.IsAssignable(id) {
+		return "", errInvalidSearch
+	}
+	return id, nil
+}
+
 func normalizeTime(_ coresearch.Operator, value string) (string, error) {
 	normalized, err := corenormalize.RFC3339UTC(value)
 	if err != nil {
@@ -65,6 +74,7 @@ func filterFields() map[string]coresearch.FieldSpec {
 		accountdto.FieldUsername: {Operators: coresearch.TextOperators(), Normalizer: normalizeText},
 		accountdto.FieldEmail: {Operators: coresearch.TextOperators(), Normalizer: normalizeText},
 		accountdto.FieldStatus: {Operators: coresearch.EqualityOperators(), Normalizer: normalizeStatus},
+		accountdto.FieldPrimaryRoleID: {Operators: coresearch.EqualityOperators(), Normalizer: normalizeRole},
 		accountdto.FieldCreatedAt: {Operators: coresearch.TimeOperators(), Normalizer: normalizeTime},
 		accountdto.FieldUpdatedAt: {Operators: coresearch.TimeOperators(), Normalizer: normalizeTime},
 	}

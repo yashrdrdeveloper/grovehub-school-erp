@@ -10,10 +10,13 @@ type Create struct {
 	Person      PersonNames `json:"person"`
 	Email       string      `json:"email"`
 	PhoneNumber string      `json:"phoneNumber,omitempty"`
+	RoleAssignment *RoleAssignment `json:"roleAssignment,omitempty"`
 }
 
 type Update struct {
-	Username *string `json:"username"`
+	Username *string `json:"username,omitempty"`
+	RoleAssignment *RoleAssignment `json:"roleAssignment,omitempty"`
+	Version *int64 `json:"version,omitempty"`
 }
 
 type Setup struct {

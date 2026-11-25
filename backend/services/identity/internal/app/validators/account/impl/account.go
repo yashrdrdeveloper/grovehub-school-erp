@@ -45,6 +45,13 @@ func (Validator) NormalizeCreate(request accountdto.Create) (accountdto.Create, 
 		len(request.Person.FirstName) > 100 || len(request.Person.LastName) > 100 {
 		return request, errors.New("invalid registration")
 	}
+	if request.RoleAssignment != nil {
+		assignment, err := searchhelpers.NormalizeRoleAssignment(*request.RoleAssignment)
+		if err != nil {
+			return request, err
+		}
+		request.RoleAssignment = &assignment
+	}
 	return request, nil
 }
 
