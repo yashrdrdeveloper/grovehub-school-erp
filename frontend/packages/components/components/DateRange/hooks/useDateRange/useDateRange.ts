@@ -5,7 +5,7 @@ import { CUSTOM_DATE_RANGE_PRESET, DATE_RANGE_PRESETS } from '../../constants/da
 import type { DateRangePreset } from '../../types/dateRange.preset';
 import type { DateRangeProps } from '../../types/dateRange.props';
 
-export const useDateRange = ({ value, onChange, disabled }: DateRangeProps) => {
+export const useDateRange = ({ value, onChange, disabled, showFooter = true }: DateRangeProps) => {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(value);
   const [month, setMonth] = useState(() => getRangeMonth(value.startDate, new Date()));
@@ -33,18 +33,28 @@ export const useDateRange = ({ value, onChange, disabled }: DateRangeProps) => {
     setOpen(next);
   };
   const selectDate = (date: string | null) => {
-    if (!date || disabled) return;
-    setDraft((current) => ({ ...getRangeSelection(current, date), presetId: CUSTOM_DATE_RANGE_PRESET }));
+    if (!date || disabled || !open) return;
+    const next = { ...getRangeSelection(draft, date), presetId: CUSTOM_DATE_RANGE_PRESET };
+    setDraft(next);
     setHover(null);
+    if (!showFooter && next.startDate && next.endDate) {
+      onChange(next);
+      setOpen(false);
+    }
   };
   const selectPreset = (preset: DateRangePreset) => {
     if (disabled) return;
     const today = new Date();
     const start = preset.start(today);
     const end = preset.end(today);
-    setDraft({ startDate: formatRangeDate(start), endDate: formatRangeDate(end), presetId: preset.id });
+    const next = { startDate: formatRangeDate(start), endDate: formatRangeDate(end), presetId: preset.id };
+    setDraft(next);
     setMonth(shiftRangeMonth(start, 0));
     setHover(null);
+    if (!showFooter) {
+      onChange(next);
+      setOpen(false);
+    }
   };
   const selectCustom = () => {
     if (disabled) return;

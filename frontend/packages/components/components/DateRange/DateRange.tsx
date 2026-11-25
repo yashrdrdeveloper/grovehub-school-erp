@@ -17,7 +17,7 @@ import styles from './DateRange.module.css';
 import type { DateRangeProps } from './types/dateRange.props';
 
 export const DateRange = (props: DateRangeProps) => {
-  const { value, disabled, dataTestId } = props;
+  const { value, disabled, dataTestId, showHeader = true, showFooter = true } = props;
   const controls = useDateRange(props);
   const empty = !value.startDate && !value.endDate;
   const revealSelectedPreset = useCallback((element: HTMLElement | null) => {
@@ -49,19 +49,14 @@ export const DateRange = (props: DateRangeProps) => {
         onOpenChange={controls.onOpenChange}
         onOutsideClick={controls.onOutsideClick}
         title={__('Date range')}
+        showHeader={showHeader}
         headerContent={
-        <Box className={styles.header}>
           <Box className={styles.headerSummary} aria-live="polite">
             {!controls.draft.startDate && __('Select date range')}
             {controls.draft.startDate && getFormattedRangeDate(controls.draft.startDate)}
             {controls.draft.startDate && ' – '}
             {controls.draft.startDate && getFormattedRangeDate(controls.draft.endDate, __('End date'))}
           </Box>
-          <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} disabled={disabled} onClick={controls.clear}>{__('Clear')}</Button>
-          <Tooltip label={getApplyReason()} focusable={!controls.canApply}>
-            <Button size={BUTTON_SIZE.SMALL} disabled={!controls.canApply} onClick={controls.apply}>{__('Apply')}</Button>
-          </Tooltip>
-        </Box>
         }
         width={520}
         compact
@@ -90,6 +85,14 @@ export const DateRange = (props: DateRangeProps) => {
             </Box>
           </Box>
           {controls.invalid && <Box role="alert" className={styles.hint}>{__('The start date must not exceed the end date.')}</Box>}
+          {showFooter && (
+            <Box className={styles.footer}>
+              <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} disabled={disabled} onClick={controls.clear}>{__('Clear')}</Button>
+              <Tooltip label={getApplyReason()} focusable={!controls.canApply}>
+                <Button size={BUTTON_SIZE.SMALL} disabled={!controls.canApply} onClick={controls.apply}>{__('Apply')}</Button>
+              </Tooltip>
+            </Box>
+          )}
         </Box>
       </Popover>
     </Box>

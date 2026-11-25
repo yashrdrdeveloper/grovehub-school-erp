@@ -5,6 +5,35 @@ import type { DateRangeValue } from '../../../types/dateRange.props';
 import { useDateRange } from '../useDateRange';
 
 describe('useDateRange', () => {
+  it('automatically commits a complete manual range only when the footer is hidden', () => {
+    const onChange = jest.fn();
+    const { result } = renderHook(() => useDateRange({ value: { startDate: null, endDate: null }, onChange, showFooter: false }));
+    act(() => result.current.onOpenChange(true));
+    act(() => result.current.selectDate('2026-11-15'));
+    expect(onChange).not.toHaveBeenCalled();
+    expect(result.current.open).toBe(true);
+    act(() => result.current.setHover('2026-11-10'));
+    expect(onChange).not.toHaveBeenCalled();
+    act(() => result.current.selectDate('2026-11-10'));
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith({ startDate: '2026-11-10', endDate: '2026-11-15', presetId: 'custom' });
+    expect(result.current.open).toBe(false);
+    act(() => result.current.onOutsideClick());
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('automatically commits a selected preset and closes without an additional click', () => {
+    const onChange = jest.fn();
+    const { result } = renderHook(() => useDateRange({ value: { startDate: null, endDate: null }, onChange, showFooter: false }));
+    act(() => result.current.onOpenChange(true));
+    act(() => result.current.selectCustom());
+    expect(onChange).not.toHaveBeenCalled();
+    expect(result.current.open).toBe(true);
+    act(() => result.current.selectPreset(DATE_RANGE_PRESETS[0]));
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ presetId: DATE_RANGE_PRESETS[0].id }));
+    expect(result.current.open).toBe(false);
+  });
+
   it('commits a completed manual range when clicking outside', () => {
     const onChange = jest.fn();
     const { result } = renderHook(() => useDateRange({ value: { startDate: null, endDate: null }, onChange }));

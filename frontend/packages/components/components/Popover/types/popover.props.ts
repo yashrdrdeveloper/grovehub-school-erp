@@ -8,6 +8,8 @@ export interface PopoverProps {
   readonly title: string;
   /** Custom visible heading content; title remains the accessible dialog name. */
   readonly headerContent?: ReactNode;
+  /** Hide the visual heading and close button, retaining the accessible dialog name. */
+  readonly showHeader?: boolean;
   readonly trigger: ReactNode;
   readonly children: ReactNode;
   readonly width?: number;

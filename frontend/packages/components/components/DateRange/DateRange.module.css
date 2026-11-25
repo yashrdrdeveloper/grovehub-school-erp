@@ -60,11 +60,14 @@
   padding-inline-start: var(--gh-space-2);
   border-inline-start: 1px solid var(--gh-color-border);
 }
-.header {
+.footer {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: var(--gh-space-1);
   min-width: 0;
+  border-top: 1px solid var(--gh-color-border);
+  padding-top: var(--gh-space-1);
 }
 .headerSummary {
   flex: 1 1 auto;
@@ -74,7 +77,7 @@
   color: var(--gh-color-text);
   overflow-wrap: anywhere;
 }
-.header button {
+.footer button {
   flex: 0 0 auto;
   font-size: var(--gh-text-xs);
   padding-inline: var(--gh-space-2);
@@ -118,7 +121,7 @@
   }
 }
 
-.header button {
+.footer button {
   min-height: var(--gh-control-height-xs);
   height: var(--gh-control-height-xs);
 }
