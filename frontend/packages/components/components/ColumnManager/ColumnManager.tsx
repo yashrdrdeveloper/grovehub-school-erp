@@ -28,7 +28,7 @@ export const ColumnManager = ({ options, density, onToggle, onDensityChange, onR
                 {onMove && <Button variant={BUTTON_VARIANT.GHOST} disabled={option.reorderable === false || index === options.length - 1} aria-label={__('Move column down')} onClick={() => onMove(option.id, 1)}>↓</Button>}
                 {onResize && option.resizable !== false && <Button variant={BUTTON_VARIANT.GHOST} aria-label={__('Decrease width')} onClick={() => onResize(option.id, (option.width ?? 180) - 20)}>−</Button>}
                 {onResize && option.resizable !== false && <Button variant={BUTTON_VARIANT.GHOST} aria-label={__('Increase width')} onClick={() => onResize(option.id, (option.width ?? 180) + 20)}>+</Button>}
-                {onResize && <Box>{option.width ?? 180}px</Box>}
+                {onResize && <Box>{__('{{width}} px', { width: option.width ?? 180 })}</Box>}
               </Box>
               {onPin && <Select label={__('Pin column')} value={option.pin ?? TablePin.NONE} clearable={false} searchable={false} options={[{value: TablePin.NONE, label: __('Not pinned')}, {value: TablePin.LEFT, label: __('Pin left')}, {value: TablePin.RIGHT, label: __('Pin right')}]} onChange={(value) => { if (value) onPin(option.id, value); }} />}
             </Box>

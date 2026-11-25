@@ -1,26 +1,17 @@
 import { Box } from '@Components/components/Box';
 import { Button, BUTTON_VARIANT } from '@Components/components/Button';
 import { Sheet } from '@Components/components/Sheet';
-import { Table, TableType, TableDataMode } from '@Components/components/Table';
+import { UserTable } from './components/userTable';
 
 import { UserForm } from './components/userForm';
 import { UserAction } from './constants/userSetup.actions';
-import { USER_SETUP_COLUMNS } from './constants/userSetup.columns';
-import { USER_SETUP_FILTERS, USER_SETUP_QUICK_FILTERS } from './constants/userSetup.filters';
-import { USER_SETUP_HEADER } from './constants/userSetup.header';
-import { USER_SETUP_ROW_ACTIONS } from './constants/userSetup.rowActions';
-import { USER_SETUP_SORT_FIELDS } from './constants/userSetup.sort';
 import { USER_SETUP_TEST_IDS } from './constants/userSetup.testIds';
-import { getUserSetupRowId } from './helpers/userSetup.getRowId';
+import { getUserRoleLabel } from './helpers/userSetup.getRoleLabel';
 import styles from './UserSetup.module.css';
 import type { UserSetupProps } from './types/userSetup.props';
 
 export const UserSetup = ({ controls }: UserSetupProps) => {
-  const { state, dialog } = controls;
-  const getError = () => {
-    if (controls.error) return __('Unable to load users. Check your access and try again.');
-    return undefined;
-  };
+  const { dialog } = controls;
   const confirmationTitle = () => {
     if (dialog?.action === UserAction.RESEND) return __('Resend invitation');
     if (dialog?.action === UserAction.ACTIVATE) return __('Activate account');
@@ -30,26 +21,7 @@ export const UserSetup = ({ controls }: UserSetupProps) => {
   const showConfirmation = Boolean(dialog?.row && dialog.action !== UserAction.VIEW && dialog.action !== UserAction.EDIT);
   return (
     <Box className={styles.page}>
-      <Table
-        id={USER_SETUP_TEST_IDS.TABLE}
-        type={TableType.DEFAULT}
-        dataMode={TableDataMode.SERVER}
-        data={controls.data}
-        columns={USER_SETUP_COLUMNS}
-        getRowId={getUserSetupRowId}
-        headerProps={USER_SETUP_HEADER}
-        searchProps={{ value: state.searchText, placeholder: __('Search users...') }}
-        filterProps={{ fields: USER_SETUP_FILTERS, value: state.filters, maxFilters: 19 }}
-        sortProps={{ fields: USER_SETUP_SORT_FIELDS, value: state.sorting, maxFields: 1 }}
-        quickFilterProps={{ options: USER_SETUP_QUICK_FILTERS, value: state.quickFilterIds }}
-        paginationProps={controls.pagination}
-        rowActions={USER_SETUP_ROW_ACTIONS}
-        actions={controls.actions}
-        preferencesProps={{ storageKey: controls.preferencesKey }}
-        loading={controls.loading}
-        refreshing={controls.refreshing}
-        error={getError()}
-      />
+      <UserTable controls={controls} />
       {dialog && (dialog.action === UserAction.CREATE || dialog.action === UserAction.EDIT) && (
         <UserForm
           key={dialog.row?.accountId ?? UserAction.CREATE}
@@ -79,6 +51,8 @@ export const UserSetup = ({ controls }: UserSetupProps) => {
             <Box>{dialog.row.email}</Box>
             <Box>{dialog.row.username ?? '—'}</Box>
             <Box>{dialog.row.status}</Box>
+            <Box>{__('Primary role')}: {getUserRoleLabel(controls.roles, dialog.row.primaryRoleId)}</Box>
+            <Box>{__('Secondary roles')}: {(dialog.row.secondaryRoleIds ?? []).map((id) => getUserRoleLabel(controls.roles, id)).join(', ') || '—'}</Box>
             {controls.profile && <Box>{[controls.profile.firstName, controls.profile.middleName, controls.profile.lastName].filter(Boolean).join(' ')}</Box>}
             {controls.profile?.phoneNumber && <Box>{controls.profile.phoneNumber}</Box>}
           </Box>

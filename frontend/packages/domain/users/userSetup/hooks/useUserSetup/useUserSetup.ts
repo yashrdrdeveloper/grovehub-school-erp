@@ -96,6 +96,7 @@ export const useUserSetup = () => {
     HEADER_ACTION: (id) => {
       if (id === UserAction.CREATE) openDialog({ action: UserAction.CREATE });
     },
+    ROW_CLICK: (row) => openDialog({ action: UserAction.VIEW, row }),
     ROW_ACTION: ({ id, row }) => {
       if (id === UserAction.VIEW) openDialog({ action: UserAction.VIEW, row });
       if (id === UserAction.EDIT) openDialog({ action: UserAction.EDIT, row });
