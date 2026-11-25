@@ -1,0 +1,41 @@
+.field {
+  width: 100%;
+  min-width: 0;
+}
+.trigger {
+  justify-content: space-between;
+  text-align: start;
+  font-size: var(--gh-text-sm);
+}
+.content {
+  display: grid;
+  gap: var(--gh-space-3);
+  min-width: 0;
+}
+.options {
+  display: grid;
+  gap: var(--gh-space-1);
+  max-height: min(44dvh, 22rem);
+  overflow: auto;
+}
+.option {
+  justify-content: space-between;
+  min-width: 0;
+  height: auto;
+  text-align: start;
+  white-space: normal;
+}
+.optionLabel {
+  display: grid;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+.description {
+  color: var(--gh-color-muted);
+  font-size: var(--gh-text-xs);
+}
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--gh-space-2);
+}

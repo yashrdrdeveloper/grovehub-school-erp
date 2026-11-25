@@ -1,0 +1,19 @@
+.sheet {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  max-height: min(85dvh, 48rem);
+  overflow: auto;
+  border-radius: var(--gh-control-radius);
+}
+@media (max-width: 640px) {
+  .sheet.sheet {
+    inset: auto 0 0;
+    transform: none;
+    width: 100%;
+    max-width: none;
+    max-height: 94dvh;
+    padding-bottom: max(var(--gh-space-4), env(safe-area-inset-bottom));
+    border-radius: var(--gh-radius-md) var(--gh-radius-md) 0 0;
+  }
+}
