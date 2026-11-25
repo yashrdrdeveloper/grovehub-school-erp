@@ -6,7 +6,7 @@ import { useAuth } from '@Domain/auth';
 import { PaginationType } from '@Components/components/Pagination';
 import type { PaginationAction, PaginationProps } from '@Components/components/Pagination';
 import type { TableActions } from '@Components/components/Table';
-import type { Account, CreateAccount } from '@Business/domain/users';
+import type { Account, CreateUser, UpdateUser, UpdateUserProfile } from '@Business/domain/users';
 
 import { UserAction } from '../../constants/userSetup.actions';
 import { USER_SETUP_DEFAULT_SORT } from '../../constants/userSetup.sort';
@@ -29,8 +29,27 @@ export const useUserSetup = () => {
   const scope = ['user-setup', account?.accountId];
   const query = useQuery({
     queryKey: [...scope, request],
-    queryFn: () => usersApi.search(request),
+    queryFn: ({ signal }) => usersApi.search(request, signal),
     enabled: Boolean(account),
+  });
+  const roles = useQuery({
+    queryKey: [...scope, 'roles'],
+    queryFn: ({ signal }) => usersApi.roles(signal),
+    enabled: Boolean(account && query.isSuccess),
+    staleTime: 300000,
+  });
+  const rowId = dialog?.row?.accountId ?? '';
+  const profile = useQuery({
+    queryKey: [...scope, 'profile', rowId],
+    queryFn: ({ signal }) => usersApi.profile(rowId, signal),
+    enabled: Boolean(rowId && (dialog?.action === UserAction.EDIT || dialog?.action === UserAction.VIEW)),
+  });
+  const profileMutation = useMutation({
+    mutationFn: ({ id, input }: { id: string; input: UpdateUserProfile }) => usersApi.updateProfile(id, input),
+    onSuccess: async (value, variables) => {
+      queryClient.setQueryData([...scope, 'profile', variables.id], value);
+      await queryClient.invalidateQueries({ queryKey: scope });
+    },
   });
   const mutation = useMutation({
     mutationFn: async (operation: () => Promise<unknown>) => operation(),
@@ -41,10 +60,11 @@ export const useUserSetup = () => {
   });
   const openDialog = (next: UserSetupDialog) => {
     mutation.reset();
+    profileMutation.reset();
     setDialog(next);
   };
   const closeDialog = () => {
-    if (!mutation.isPending) setDialog(null);
+    if (!mutation.isPending && !profileMutation.isPending) setDialog(null);
   };
   const resetQuery = (change: Partial<UserSetupQueryState>) => {
     setState((current) => ({ ...current, ...change, cursors: [undefined] }));
@@ -85,10 +105,12 @@ export const useUserSetup = () => {
       if (id === UserAction.RESEND) openDialog({ action: UserAction.RESEND, row });
     },
   };
-  const create = (input: CreateAccount, key: string) =>
+  const create = (input: CreateUser, key: string) =>
     mutation.mutate(() => usersApi.create(input, key));
-  const edit = (row: Account, username: string | null) =>
-    mutation.mutate(() => usersApi.update(row.accountId, username));
+  const edit = (row: Account, input: UpdateUser) =>
+    mutation.mutate(() => usersApi.update(row.accountId, input));
+  const editProfile = (row: Account, input: UpdateUserProfile) =>
+    profileMutation.mutate({ id: row.accountId, input });
   const confirm = () => {
     const row = dialog?.row;
     if (!row || !dialog) return;
@@ -107,7 +129,19 @@ export const useUserSetup = () => {
   } satisfies Omit<Extract<PaginationProps, { type: typeof PaginationType.CURSOR }>, 'onChange'>;
 
   return {
-    state, actions, dialog, closeDialog, create, edit, confirm, pagination,
+    state, actions, dialog, closeDialog, create, edit, editProfile, confirm, pagination,
+    roles: roles.data ?? [],
+    rolesLoading: roles.isPending,
+    rolesError: roles.isError,
+    retryRoles: () => { void roles.refetch(); },
+    profile: profile.data,
+    profileLoading: profile.isFetching,
+    profileError: profile.isError,
+    retryProfile: () => { void profile.refetch(); },
+    profileSubmitting: profileMutation.isPending,
+    profileSubmissionError: profileMutation.isError,
+    profileSaved: profileMutation.isSuccess,
+    preferencesKey: account?.accountId && 'groovehub:user-setup:' + account.accountId + ':columns:v1',
     data: query.data?.items ?? [],
     loading: query.isPending,
     refreshing: query.isFetching,
