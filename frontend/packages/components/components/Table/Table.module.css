@@ -30,6 +30,7 @@
   gap: var(--gh-space-2);
   flex-wrap: wrap;
   padding: var(--gh-space-2) var(--gh-space-3);
+  border-bottom: 1px solid var(--gh-color-table-rule);
   background: var(--gh-color-table-footer);
 }
 .toolbar button {
@@ -117,7 +118,6 @@
   padding-inline-end: var(--gh-space-3);
   height: var(--gh-table-heading-height);
   font-size: var(--gh-text-table-heading);
-  border-top: 1px solid var(--gh-color-table-rule);
   border-bottom-color: var(--gh-color-table-heading-border);
 }
 .table th button {
