@@ -38,3 +38,29 @@
   border-color: var(--gh-color-border);
   font-weight: var(--gh-weight-semibold);
 }
+
+/* Header presentation uses the same controlled choices in an icon-only segmented group. */
+.root[data-compact='true'] {
+  flex: 0 0 auto;
+  grid-template-columns: repeat(3, 30px);
+  gap: 2px;
+  width: auto;
+  padding: 3px;
+  border: 1px solid var(--gh-color-border);
+  border-radius: var(--gh-control-radius);
+  background: var(--gh-color-surface);
+}
+
+.root[data-compact='true'] .item {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--gh-radius-sm);
+}
+
+.root[data-compact='true'] .active {
+  color: var(--gh-color-secondary-foreground);
+  background: var(--gh-color-secondary);
+  border-color: var(--gh-color-border);
+}

@@ -5,8 +5,10 @@
   z-index: 15;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: var(--gh-space-3);
   height: 66px;
-  padding-inline: 35px;
+  padding-inline: 16px;
   border-bottom: 1px solid var(--gh-color-border);
   background: var(--gh-color-canvas);
   color: var(--gh-color-text);
@@ -19,17 +21,28 @@
   min-width: 0;
 }
 
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gh-space-2);
+  color: var(--gh-color-text-strong);
+  white-space: nowrap;
+}
+
+.schoolName {
+  font-size: 1.25rem;
+  font-weight: var(--gh-weight-semibold);
+  line-height: 1;
+}
+
 .logo {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 38px;
-  padding: 6px;
-  border: 1px solid var(--gh-color-border);
-  border-radius: var(--gh-control-radius);
-  background: var(--gh-color-surface);
-  color: var(--gh-color-text-strong);
+  flex: 0 0 auto;
+  width: 64px;
+  height: 32px;
+  color: inherit;
 }
 
 .logo svg {
@@ -63,7 +76,21 @@
 @media (max-width: 720px) {
   .root {
     height: 58px;
-    padding-inline: 16px;
+    gap: var(--gh-space-2);
+    padding-inline: 12px;
+  }
+
+  .brand {
+    gap: var(--gh-space-1);
+  }
+
+  .logo {
+    width: 48px;
+    height: 26px;
+  }
+
+  .schoolName {
+    font-size: 1rem;
   }
 
   .menu {

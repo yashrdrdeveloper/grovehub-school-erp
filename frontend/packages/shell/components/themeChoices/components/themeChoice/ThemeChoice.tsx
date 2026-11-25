@@ -10,6 +10,7 @@ export const ThemeChoice: ThemeChoiceComponent = ({
   label,
   Icon,
   preference,
+  compact,
   onPreferenceChange,
 }) => {
   const selected = preference === value;
@@ -23,11 +24,13 @@ export const ThemeChoice: ThemeChoiceComponent = ({
       unstyled
       type="button"
       aria-pressed={selected}
+      aria-label={label}
+      title={label}
       className={getThemeChoiceClassName(selected)}
       onClick={handleChange}
     >
       <Icon size={16} aria-hidden="true" />
-      {label}
+      {!compact && label}
     </Button>
   );
 };

@@ -3,6 +3,8 @@ import { Button } from '@Components/components/Button';
 import { Menu } from '@Components/icons';
 import { SchoolMonogram } from '@Components';
 
+import { ThemeChoices } from '../themeChoices';
+
 import styles from './Topbar.module.css';
 
 import { TOPBAR_COPY } from './constants/topbar.copy';
@@ -25,9 +27,13 @@ export const Topbar: TopbarComponent = ({ schoolLabel, model }) => (
         <Menu size={20} />
       </Button>
 
-      <Box as={BOX_TAG.SPAN} role="img" aria-label={schoolLabel}>
+      <Box as={BOX_TAG.SPAN} className={styles.brand} role="img" aria-label={schoolLabel}>
         <SchoolMonogram className={styles.logo} />
+        <Box as={BOX_TAG.SPAN} className={styles.schoolName}>
+          {TOPBAR_COPY.SCHOOL}
+        </Box>
       </Box>
     </Box>
+    <ThemeChoices compact preference={model.preference} onPreferenceChange={model.setPreference} />
   </Box>
 );
