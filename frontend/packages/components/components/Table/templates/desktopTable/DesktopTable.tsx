@@ -1,9 +1,10 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useId, useRef, useState } from 'react';
 import { _map } from '@Base/utilities/map';
 
 import { Box } from '../../../Box';
 import { Button, BUTTON_VARIANT } from '../../../Button';
 
+import { TableScrollbar } from '../../components/tableScrollbar';
 import { TableCell } from '../../components/tableCell';
 import { TableRowActions } from '../../components/tableRowActions';
 import { TableSelection } from '../../components/tableSelection';
@@ -24,6 +25,7 @@ export const DesktopTable = <T,>(props: DesktopTableProps<T>) => {
   const { controls } = props;
   const [scrollTop, setScrollTop] = useState(0);
   const frame = useRef<HTMLElement>(null);
+  const viewportId = useId();
   const [available, setAvailable] = useState(0);
   useEffect(() => {
     const element = frame.current;
@@ -68,7 +70,8 @@ export const DesktopTable = <T,>(props: DesktopTableProps<T>) => {
     return undefined;
   };
   return (
-    <Box ref={frame} className={styles.scroll} style={frameStyle()} onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}>
+    <Box className={styles.scrollFrame}>
+    <Box id={viewportId} ref={frame} className={styles.scroll} style={frameStyle()} onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}>
       <table className={styles.table} data-density={controls.preferences.density} data-virtual={virtual} style={{ width: tableWidth }} aria-busy={props.refreshing} aria-label={props.headerProps?.title ?? __('Table')}>
         <colgroup>
           {selection && <col style={{ width: TABLE_DIMENSIONS.selection }} />}
@@ -144,6 +147,9 @@ export const DesktopTable = <T,>(props: DesktopTableProps<T>) => {
           {virtual && range.after > 0 && <tr aria-hidden="true"><td colSpan={span} className={styles.spacer} style={{ height: range.after }} /></tr>}
         </tbody>
       </table>
+    </Box>
+    <TableScrollbar viewport={frame} viewportId={viewportId} axis="vertical" />
+    <TableScrollbar viewport={frame} viewportId={viewportId} axis="horizontal" />
     </Box>
   );
 };

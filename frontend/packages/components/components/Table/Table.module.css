@@ -85,11 +85,26 @@
   min-width: 0;
   min-height: 0;
 }
+.scrollFrame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
 .scroll {
   min-width: 0;
   max-height: 70dvh;
   overflow: auto;
-  scrollbar-gutter: stable;
+  scrollbar-gutter: auto;
+}
+@media (hover: hover) and (pointer: fine) and (forced-colors: none) {
+  .scroll.scroll {
+    scrollbar-width: none;
+  }
+  .scroll.scroll::-webkit-scrollbar {
+    display: none;
+  }
 }
 .table {
   table-layout: fixed;
@@ -280,6 +295,10 @@
   .root[data-fill-height='true'] .body {
     flex: 1;
     overflow: hidden;
+  }
+  .root[data-fill-height='true'] .scrollFrame {
+    flex: 1;
+    min-height: 0;
   }
   .root[data-fill-height='true'] .scroll {
     flex: 1;

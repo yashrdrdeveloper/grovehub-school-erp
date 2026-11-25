@@ -1,0 +1,60 @@
+.track {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) and (forced-colors: none) {
+  .track {
+    display: block;
+    position: absolute;
+    z-index: 8;
+    touch-action: none;
+    user-select: none;
+    cursor: default;
+    border-radius: var(--gh-radius-full);
+  }
+  .track[data-table-scrollbar='vertical'] {
+    inset: 0 0 0 auto;
+    width: var(--gh-scrollbar-size);
+  }
+  .track[data-table-scrollbar='horizontal'] {
+    inset: auto 0 0 0;
+    height: var(--gh-scrollbar-size);
+  }
+  .track[data-table-scrollbar='vertical']:has(+ [data-table-scrollbar='horizontal']) {
+    bottom: var(--gh-scrollbar-size);
+  }
+  [data-table-scrollbar='vertical'] + .track[data-table-scrollbar='horizontal'] {
+    right: var(--gh-scrollbar-size);
+  }
+  .thumb {
+    position: absolute;
+    box-sizing: border-box;
+    border: var(--gh-scrollbar-inset) solid transparent;
+    border-radius: var(--gh-radius-full);
+    background: var(--gh-color-scrollbar-thumb);
+    background-clip: padding-box;
+    opacity: 0;
+    transition: opacity var(--gh-motion-fast);
+    pointer-events: none;
+  }
+  .track[data-table-scrollbar='vertical'] .thumb {
+    width: 100%;
+  }
+  .track[data-table-scrollbar='horizontal'] .thumb {
+    height: 100%;
+  }
+  [data-gh-scroll-active='true'] ~ .track .thumb,
+  .track:hover .thumb,
+  .track:focus-visible .thumb,
+  .track[data-dragging='true'] .thumb {
+    opacity: 1;
+  }
+  .track:hover .thumb,
+  .track[data-dragging='true'] .thumb {
+    background-color: var(--gh-color-scrollbar-thumb-active);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thumb { transition: none; }
+}
