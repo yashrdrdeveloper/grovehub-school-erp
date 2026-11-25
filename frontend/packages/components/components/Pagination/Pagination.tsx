@@ -1,7 +1,9 @@
+import { ChevronLeft, ChevronRight } from '@Components/icons';
 import { _map } from '@Base/utilities/map';
 
 import { Box } from '../Box';
-import { Button, BUTTON_VARIANT } from '../Button';
+import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '../Button';
+import { ButtonWithIcon } from '../ButtonWithIcon';
 import { Select } from '../Select';
 
 import { PaginationType } from './constants/pagination.type';
@@ -30,9 +32,9 @@ export const Pagination = (props: PaginationProps) => {
         }} />
       </Box>
       <Box className={styles.navigation}>
-        <Button variant={BUTTON_VARIANT.OUTLINE} disabled={disabled || !hasPrevious()} onClick={() => props.onChange({ type: 'PREVIOUS' })}>{__('Previous')}</Button>
-        <Box aria-live="polite">{__('Page {{page}}', { page: props.currentPage })}</Box>
-        <Button variant={BUTTON_VARIANT.OUTLINE} disabled={disabled || !hasNext()} onClick={() => props.onChange({ type: 'NEXT' })}>{__('Next')}</Button>
+        <ButtonWithIcon icon={ChevronLeft} iconSize={15} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} aria-label={__('Previous')} disabled={disabled || !hasPrevious()} onClick={() => props.onChange({ type: 'PREVIOUS' })} />
+        <Box className={styles.page} aria-live="polite" aria-label={__('Page {{page}}', { page: props.currentPage })}>{props.currentPage}</Box>
+        <ButtonWithIcon icon={ChevronRight} iconSize={15} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} aria-label={__('Next')} disabled={disabled || !hasNext()} onClick={() => props.onChange({ type: 'NEXT' })} />
       </Box>
     </Box>
   );

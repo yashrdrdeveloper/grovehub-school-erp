@@ -7,7 +7,7 @@
   gap: var(--gh-space-2);
 }
 .footer {
-  font-size: var(--gh-text-sm);
+  font-size: var(--gh-text-xs);
 }
 .size {
   display: flex;
@@ -16,8 +16,26 @@
   white-space: nowrap;
 }
 .size > :last-child {
-  width: 5rem;
+  width: 4rem;
 }
 .navigation {
   justify-content: flex-end;
+}
+.size button {
+  height: var(--gh-control-height-sm);
+  min-height: var(--gh-control-height-sm);
+  font-size: var(--gh-text-xs);
+}
+.page {
+  min-width: var(--gh-control-height-sm);
+  height: var(--gh-control-height-sm);
+  display: grid;
+  place-items: center;
+  border-radius: var(--gh-control-radius);
+  background: var(--gh-color-surface-subtle);
+  color: var(--gh-color-text-strong);
+  font-weight: var(--gh-weight-semibold);
+}
+.navigation button {
+  padding-inline: var(--gh-space-2);
 }

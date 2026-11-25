@@ -40,7 +40,7 @@ export const UserSetup = ({ controls }: UserSetupProps) => {
         columns={USER_SETUP_COLUMNS}
         getRowId={getUserSetupRowId}
         headerProps={USER_SETUP_HEADER}
-        searchProps={{ value: state.searchText, placeholder: __('Search users...') }}
+        searchProps={{ value: state.searchText, placeholder: __('Search users...'), fields: [__('Email address'), __('Username')] }}
         filterProps={{ fields: USER_SETUP_FILTERS, value: state.filters, maxFilters: 19 }}
         sortProps={{ fields: USER_SETUP_SORT_FIELDS, value: state.sorting, maxFields: 1 }}
         paginationProps={controls.pagination}

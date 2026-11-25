@@ -26,6 +26,7 @@ export interface FiltersProps {
   readonly value: readonly FilterCondition[];
   readonly onChange: (value: readonly FilterCondition[]) => void;
   readonly maxFilters?: number;
+  readonly iconOnly?: boolean;
   readonly disabled?: boolean;
   readonly dataTestId?: string;
 }

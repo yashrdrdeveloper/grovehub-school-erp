@@ -78,6 +78,8 @@ export interface TableSearchProps {
   readonly value: string;
   readonly placeholder?: string;
   readonly debounceMs?: number;
+  /** Explicit searchable fields for server data; never inferred from visible columns. */
+  readonly fields?: readonly string[];
 }
 
 export interface TableSelectionProps<T> {

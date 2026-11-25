@@ -7,7 +7,7 @@
 }
 .title {
   margin: 0;
-  font-size: var(--gh-text-2xl);
+  font-size: var(--gh-text-lg);
   font-weight: var(--gh-weight-semibold);
   color: var(--gh-color-text-strong);
 }

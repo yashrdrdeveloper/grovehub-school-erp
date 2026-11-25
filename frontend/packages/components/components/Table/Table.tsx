@@ -1,17 +1,17 @@
 import { _map } from '@Base/utilities/map';
-import { RefreshCw, Search } from '@Components/icons';
+import { RefreshCw } from '@Components/icons';
 
-import { Icon } from '../Icon';
 import { Box } from '../Box';
 import { Button, BUTTON_VARIANT } from '../Button';
 import { ButtonWithIcon } from '../ButtonWithIcon';
 import { ColumnManager } from '../ColumnManager';
-import { DebouncedInput } from '../DebouncedInput';
 import { Filters } from '../Filters';
 import { Sort } from '../Sort';
 import { QuickFilters } from '../QuickFilters';
 import { Pagination, PaginationType } from '../Pagination';
 
+import { TableSearch } from './components/tableSearch';
+import { TableOptions } from './components/tableOptions';
 import { TableHeader } from './components/tableHeader';
 import { DesktopTable } from './templates/desktopTable';
 import { MobileTable } from './templates/mobileTable';
@@ -44,14 +44,22 @@ export const TableView = <T,>(props: TableViewProps<T>) => {
       {headerProps && <TableHeader {...headerProps} onAction={actions?.HEADER_ACTION} />}
       <Box className={styles.panel}>
         <Box className={styles.toolbar}>
-          {searchProps && <Box className={styles.search}><Box className={styles.searchIcon} aria-hidden="true"><Icon icon={Search} /></Box><DebouncedInput type="search" label={__('Search')} value={searchProps.value} placeholder={searchProps.placeholder} debounceMs={searchProps.debounceMs} onChange={(value) => actions?.SEARCH?.(value)} /></Box>}
-          {filterProps && <Filters {...filterProps} onChange={(value) => actions?.FILTER?.(value)} />}
-          {sortProps && <Sort {...sortProps} onChange={(value) => actions?.SORT?.(value)} />}
-          <ColumnManager options={options} density={controls.preferences.density} onToggle={controls.toggle} onDensityChange={controls.setRowDensity} onReset={controls.reset} onReorder={controls.reorder} onPin={controls.pin} maxPinnedColumns={props.maxPinnedColumns} />
-          {actions?.REFRESH && <ButtonWithIcon icon={RefreshCw} variant={BUTTON_VARIANT.OUTLINE} aria-label={__('Refresh')} onClick={actions.REFRESH} disabled={props.refreshing} />}
-          {actions?.EXPORT && <Button variant={BUTTON_VARIANT.OUTLINE} onClick={actions.EXPORT}>{__('Export')}</Button>}
-          {actions?.FULLSCREEN_CHANGE && <Button variant={BUTTON_VARIANT.OUTLINE} aria-pressed={controls.fullscreen} onClick={() => controls.changeFullscreen(!controls.fullscreen)}>{!controls.fullscreen && __('Fullscreen')}{controls.fullscreen && __('Exit fullscreen')}</Button>}
+          {filterProps && <Filters {...filterProps} iconOnly onChange={(value) => actions?.FILTER?.(value)} />}
+          <Box className={styles.toolbarRight}>
+            {searchProps && <TableSearch {...searchProps} onChange={(value) => actions?.SEARCH?.(value)} />}
+            <TableOptions>
+              {sortProps && <Sort {...sortProps} onChange={(value) => actions?.SORT?.(value)} />}
+              <ColumnManager options={options} density={controls.preferences.density} onToggle={controls.toggle} onDensityChange={controls.setRowDensity} onReset={controls.reset} onReorder={controls.reorder} onPin={controls.pin} maxPinnedColumns={props.maxPinnedColumns} />
+              {actions?.REFRESH && <ButtonWithIcon icon={RefreshCw} variant={BUTTON_VARIANT.GHOST} onClick={actions.REFRESH} disabled={props.refreshing}>{__('Refresh')}</ButtonWithIcon>}
+              {actions?.EXPORT && <Button variant={BUTTON_VARIANT.GHOST} onClick={actions.EXPORT}>{__('Export')}</Button>}
+              {actions?.FULLSCREEN_CHANGE && <Button variant={BUTTON_VARIANT.GHOST} aria-pressed={controls.fullscreen} onClick={() => controls.changeFullscreen(!controls.fullscreen)}>{!controls.fullscreen && __('Fullscreen')}{controls.fullscreen && __('Exit fullscreen')}</Button>}
+            </TableOptions>
+          </Box>
         </Box>
+        {!props.loading && !props.error && <Box className={styles.summary} aria-live="polite">
+          {pagination?.type === PaginationType.OFFSET && __('Showing {{start}}–{{end}} of {{total}}', { start: props.data.length && (pagination.currentPage - 1) * pagination.pageSize + 1, end: Math.min(pagination.currentPage * pagination.pageSize, pagination.totalRecords), total: pagination.totalRecords })}
+          {pagination?.type !== PaginationType.OFFSET && __('{{count}} records on this page', { count: props.data.length })}
+        </Box>}
         {subheaderProps && <TableHeader {...subheaderProps} onAction={actions?.SUBHEADER_ACTION} />}
         {quickFilterProps && <QuickFilters {...quickFilterProps} onChange={(value) => actions?.QUICK_FILTER?.(value)} />}
         {!!controls.selected.length && props.bulkActions && <Box className={styles.toolbar}>

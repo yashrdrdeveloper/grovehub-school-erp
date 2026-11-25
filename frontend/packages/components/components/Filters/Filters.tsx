@@ -4,7 +4,7 @@ import { _find } from '@Base/utilities/find';
 import { Pencil, Plus, Trash2, Filter } from '@Components/icons';
 
 import { Box } from '../Box';
-import { Button, BUTTON_VARIANT } from '../Button';
+import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '../Button';
 import { ButtonWithIcon } from '../ButtonWithIcon';
 import { Select } from '../Select';
 import { Popover } from '../Popover';
@@ -18,7 +18,7 @@ import type { FilterOperator } from './constants/filter.operator';
 import type { FiltersProps } from './types/filters.props';
 import type { useFilters } from './hooks/useFilters';
 
-export const FiltersView = ({ fields, value, disabled, maxFilters, dataTestId, controls }: FiltersProps & { readonly controls: ReturnType<typeof useFilters> }) => {
+export const FiltersView = ({ fields, value, disabled, maxFilters, iconOnly, dataTestId, controls }: FiltersProps & { readonly controls: ReturnType<typeof useFilters> }) => {
   const mobile = useMobileViewport();
   const { editing, selectedField } = controls;
   const getTitle = () => {
@@ -32,8 +32,8 @@ export const FiltersView = ({ fields, value, disabled, maxFilters, dataTestId, c
   };
   return (
     <Popover open={controls.open} onOpenChange={controls.onOpenChange} title={getTitle()} width={520} trigger={
-      <ButtonWithIcon icon={Filter} variant={BUTTON_VARIANT.OUTLINE} disabled={disabled} dataTestId={dataTestId} onClick={() => controls.onOpenChange(true)}>
-        {getButton()}
+      <ButtonWithIcon icon={Filter} size={BUTTON_SIZE.SMALL} iconSize={16} variant={BUTTON_VARIANT.OUTLINE} aria-label={getButton()} aria-expanded={controls.open} title={getButton()} disabled={disabled} dataTestId={dataTestId} onClick={() => controls.onOpenChange(true)}>
+        {(!iconOnly || !!value.length) && getButton()}
       </ButtonWithIcon>
     }>
         {!mobile && <DesktopFilters fields={fields} maxFilters={maxFilters} controls={controls} />}
