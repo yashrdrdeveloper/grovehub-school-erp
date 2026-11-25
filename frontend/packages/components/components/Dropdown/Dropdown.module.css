@@ -17,3 +17,14 @@
   padding: var(--gh-space-1);
   font-size: var(--gh-text-xs);
 }
+
+.items[data-compact='true'] {
+  gap: 0;
+}
+.items[data-compact='true'] button {
+  min-height: var(--gh-control-height-xs);
+  height: var(--gh-control-height-xs);
+  padding-inline: var(--gh-space-2);
+  font-size: var(--gh-text-xs);
+  font-weight: var(--gh-weight-normal);
+}

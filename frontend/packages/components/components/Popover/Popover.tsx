@@ -7,7 +7,7 @@ import { DialogRoot, DialogPortal, DialogContent, DialogTitle, DialogClose } fro
 import styles from './Popover.module.css';
 import type { PopoverProps } from './types/popover.props';
 
-export const Popover = ({ open, onOpenChange, title, trigger, children, width = 360, fullWidth, compact = false, desktopScrollLayout = false, desktopDropdown = false, dataTestId }: PopoverProps) => {
+export const Popover = ({ open, onOpenChange, title, trigger, children, width = 360, fullWidth, compact = false, desktopScrollLayout = false, desktopDropdown = false, desktopDropdownWidth, dataTestId }: PopoverProps) => {
   const anchor = useRef<HTMLElement>(null);
   const panel = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ left: 0, top: 0, width });
@@ -18,16 +18,17 @@ export const Popover = ({ open, onOpenChange, title, trigger, children, width = 
       if (!rect) return;
       const available = Math.max(0, window.innerWidth - 24);
       const getWidth = () => {
-        if (desktopDropdown && window.innerWidth > 640) return Math.max(180, rect.width);
+        if (desktopDropdown && window.innerWidth > 640) return Math.max(desktopDropdownWidth ?? 0, rect.width);
         return Math.max(width, rect.width);
       };
       const panelWidth = Math.min(available, getWidth());
       const panelHeight = Math.min(panel.current?.offsetHeight ?? 320, window.innerHeight - 24);
+      const gap = 4;
       const left = Math.max(12, Math.min(rect.left, window.innerWidth - panelWidth - 12));
       const bottomSpace = window.innerHeight - rect.bottom - 12;
-      const top = Math.max(12, Math.min(rect.bottom + 8, window.innerHeight - panelHeight - 12));
+      const top = Math.max(12, Math.min(rect.bottom + gap, window.innerHeight - panelHeight - 12));
       if (bottomSpace < panelHeight && rect.top > bottomSpace) {
-        setPosition({ left, top: Math.max(12, rect.top - panelHeight - 8), width: panelWidth });
+        setPosition({ left, top: Math.max(12, rect.top - panelHeight - gap), width: panelWidth });
         return;
       }
       setPosition({ left, top, width: panelWidth });
@@ -42,7 +43,7 @@ export const Popover = ({ open, onOpenChange, title, trigger, children, width = 
       window.removeEventListener('resize', place);
       window.removeEventListener('scroll', place, true);
     };
-  }, [open, width, desktopDropdown]);
+  }, [open, width, desktopDropdown, desktopDropdownWidth]);
   return (
     <DialogRoot open={open} onOpenChange={onOpenChange}>
       <Box ref={anchor} dataTestId={dataTestId} className={styles.anchor} data-full-width={fullWidth}>

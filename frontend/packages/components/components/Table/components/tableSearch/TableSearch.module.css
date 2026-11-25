@@ -4,7 +4,7 @@
   min-width: 0;
   flex: 1 1 18rem;
   max-width: 22rem;
-  border: 1px solid var(--gh-color-table-rule);
+  border: 1px solid var(--gh-color-input);
   border-radius: var(--gh-control-radius);
   background: var(--gh-color-table-control);
 }
@@ -21,8 +21,8 @@
   clip-path: inset(50%);
 }
 .input input {
-  height: var(--gh-control-height-sm);
-  min-height: var(--gh-control-height-sm);
+  min-height: calc(var(--gh-control-height-sm) - 2px);
+  height: calc(var(--gh-control-height-sm) - 2px);
   padding-block: 0;
   padding-inline-start: var(--gh-space-8);
   border: 0;
@@ -41,7 +41,7 @@
 }
 .info.info {
   height: 100%;
-  min-height: var(--gh-control-height-sm);
+  min-height: calc(var(--gh-control-height-sm) - 2px);
   padding-inline: var(--gh-space-2);
   border: 0;
   border-inline-start: 1px solid var(--gh-color-table-rule);

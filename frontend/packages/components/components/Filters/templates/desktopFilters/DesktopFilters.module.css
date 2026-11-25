@@ -62,8 +62,8 @@
 }
 @media (min-width: 641px) {
   .footer button[class] {
-    height: var(--gh-control-height-xs);
-    min-height: var(--gh-control-height-xs);
+    height: var(--gh-control-height-sm);
+    min-height: var(--gh-control-height-sm);
     padding-inline: var(--gh-space-2);
   }
 }
@@ -91,4 +91,18 @@
 
 .list[data-empty='true'] {
   align-content: center;
+}
+
+.row input:disabled,
+.row button:disabled:not(:last-child) {
+  opacity: 1;
+  background: var(--gh-color-surface-subtle);
+  border-color: var(--gh-color-input);
+  color: var(--gh-color-muted);
+}
+.row input:disabled::placeholder {
+  color: var(--gh-color-muted);
+}
+.row input {
+  padding-block: 0;
 }

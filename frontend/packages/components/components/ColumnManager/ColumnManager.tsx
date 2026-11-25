@@ -20,7 +20,7 @@ export const ColumnManager = ({ options, density, onToggle, onDensityChange, onR
   const lockedCount = options.filter(isLocked).length;
   return (
     <Box dataTestId={dataTestId}>
-      <Popover open={open} onOpenChange={setOpen} title={__('Table settings')} width={320} trigger={
+      <Popover open={open} onOpenChange={setOpen} title={__('Table settings')} width={320} compact trigger={
         <ButtonWithIcon icon={Settings} iconSize={16} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} aria-label={__('Table settings')} title={__('Table settings')} aria-expanded={open} onClick={() => setOpen(true)} />
       }>
         <Box className={styles.content}>
@@ -34,8 +34,8 @@ export const ColumnManager = ({ options, density, onToggle, onDensityChange, onR
               <Box className={styles.option}>
                 <Checkbox checked={option.visible} disabled={option.disabled} label={option.label} onChange={() => onToggle(option.id)} />
                 <Box className={styles.name}>{option.label}</Box>
-                {onPin && isLocked(option) && <ButtonWithIcon icon={Lock} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} className={styles.locked} aria-label={__('Unlock {{column}}', { column: option.label })} aria-pressed={true} onClick={() => onPin(option.id, TablePin.NONE)} />}
-                {onPin && !isLocked(option) && <ButtonWithIcon icon={LockOpen} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} disabled={!option.visible || lockedCount >= maxPinnedColumns} aria-label={__('Lock {{column}}', { column: option.label })} aria-pressed={false} onClick={() => onPin(option.id, TablePin.LEFT)} />}
+                {onPin && isLocked(option) && <ButtonWithIcon icon={Lock} iconSize={14} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} className={styles.locked} aria-label={__('Unlock {{column}}', { column: option.label })} aria-pressed={true} onClick={() => onPin(option.id, TablePin.NONE)} />}
+                {onPin && !isLocked(option) && <ButtonWithIcon icon={LockOpen} iconSize={14} className={styles.unlocked} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} disabled={!option.visible || lockedCount >= maxPinnedColumns} aria-label={__('Lock {{column}}', { column: option.label })} aria-pressed={false} onClick={() => onPin(option.id, TablePin.LEFT)} />}
               </Box>
             )} />
           <Button variant={BUTTON_VARIANT.OUTLINE} size={BUTTON_SIZE.SMALL} onClick={onReset}>{__('Reset columns')}</Button>

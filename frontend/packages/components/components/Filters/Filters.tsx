@@ -58,7 +58,7 @@ export const FiltersView = ({ fields, value, disabled, maxFilters, iconOnly, dat
             <Box className={styles.footer}>
               <ButtonWithIcon icon={Plus} size={BUTTON_SIZE.SMALL} iconSize={14} variant={BUTTON_VARIANT.GHOST} className={styles.add} disabled={maxFilters !== undefined && controls.draft.length >= maxFilters} onClick={controls.add}>{__('Add filter')}</ButtonWithIcon>
               <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} onClick={controls.reset}>{__('Reset')}</Button>
-              <Button size={BUTTON_SIZE.SMALL} disabled={controls.draft.some((condition) => !isFilterValid(condition, _find(fields, (field) => field.id === condition.field)))} onClick={controls.apply}>{__('Save')}</Button>
+              <Button size={BUTTON_SIZE.SMALL} disabled={controls.draft.some((condition) => !isFilterValid(condition, _find(fields, (field) => field.id === condition.field)))} onClick={controls.apply}>{__('Apply filters')}</Button>
             </Box>
           </Box>
         )}

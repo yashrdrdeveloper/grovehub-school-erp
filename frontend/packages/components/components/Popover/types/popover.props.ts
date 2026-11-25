@@ -13,5 +13,6 @@ export interface PopoverProps {
   readonly desktopScrollLayout?: boolean;
   /** Anchor-sized desktop selection menu; retain the titled mobile sheet. */
   readonly desktopDropdown?: boolean;
+  readonly desktopDropdownWidth?: number;
   readonly dataTestId?: string;
 }

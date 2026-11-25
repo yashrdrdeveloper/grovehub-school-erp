@@ -1,6 +1,6 @@
 import { _map } from '@Base/utilities/map';
 import { _filter } from '@Base/utilities/filter';
-import { ChevronDown, Search } from '@Components/icons';
+import { ChevronDown, Check, Search } from '@Components/icons';
 
 import { useMobileViewport } from '@Components/hooks/useMobileViewport';
 import { Box } from '../../../Box';
@@ -42,7 +42,11 @@ export const SelectionPanel = <T extends SelectValue>({
   dataTestId,
 }: SelectionPanelProps<T>) => {
   const mobile = useMobileViewport();
-  const dropdown = !multiple && !mobile;
+  const dropdown = !mobile;
+  const getDropdownWidth = () => {
+    if (multiple || searchable) return 180;
+    return undefined;
+  };
   const chosen = _filter(displayOptions ?? options, (option) => selected.includes(option.value));
   const getLabel = () => {
     if (!selected.length) return placeholder ?? __('Select an option');
@@ -53,12 +57,13 @@ export const SelectionPanel = <T extends SelectValue>({
   return (
     <Box className={styles.field}>
       {!hideLabel && <Box className={styles.description}>{label}</Box>}
-      <Popover open={open} onOpenChange={onOpenChange} title={label} compact fullWidth desktopDropdown={!multiple} dataTestId={dataTestId && `${dataTestId}-options`} trigger={
+      <Popover open={open} onOpenChange={onOpenChange} title={label} compact fullWidth desktopDropdown desktopDropdownWidth={getDropdownWidth()} dataTestId={dataTestId && `${dataTestId}-options`} trigger={
       <ButtonWithIcon
         icon={ChevronDown}
         iconPosition={BUTTON_ICON_POSITION.RIGHT}
         variant={BUTTON_VARIANT.OUTLINE}
         fullWidth
+        size={BUTTON_SIZE.SMALL}
         disabled={disabled}
         aria-label={label}
         aria-expanded={open}
@@ -70,7 +75,7 @@ export const SelectionPanel = <T extends SelectValue>({
         {getLabel()}
       </ButtonWithIcon>
       }>
-        <Box className={styles.content} data-dropdown={dropdown}>
+        <Box className={styles.content} data-dropdown={dropdown} data-multiple={multiple}>
           {searchable && dropdown && (
             <Box className={styles.search}>
               <Box className={styles.searchIcon} aria-hidden="true"><Icon icon={Search} size={14} /></Box>
@@ -105,11 +110,12 @@ export const SelectionPanel = <T extends SelectValue>({
                 className={styles.option}
                 dataTestId={dataTestId && `${dataTestId}-option-${option.value}`}
               >
+                {multiple && <Box className={styles.check} data-checked={selected.includes(option.value)} aria-hidden="true">{selected.includes(option.value) && <Icon icon={Check} size={12} />}</Box>}
                 <Box className={styles.optionLabel}>
                   {option.label}
                   {option.description && <Box className={styles.description}>{option.description}</Box>}
                 </Box>
-                {selected.includes(option.value) && <Box aria-hidden="true">✓</Box>}
+                {!multiple && selected.includes(option.value) && <Icon icon={Check} size={14} />}
               </Button>
             ))}
             {!options.length && !loading && !error && <EmptyState compact icon={Search} title={__('No options found')} description={__('Try a different search or selection.')} />}

@@ -45,8 +45,8 @@
 
 @media (min-width: 641px) {
   .trigger.trigger {
-    height: var(--gh-control-height-xs);
-    min-height: var(--gh-control-height-xs);
+    height: var(--gh-control-height-sm);
+    min-height: var(--gh-control-height-sm);
     padding-inline: var(--gh-space-2);
     font-size: var(--gh-text-xs);
   }

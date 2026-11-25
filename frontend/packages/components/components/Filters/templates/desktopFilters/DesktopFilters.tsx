@@ -48,7 +48,7 @@ export const DesktopFilters = ({ fields, maxFilters, controls }: DesktopFiltersP
         <ButtonWithIcon icon={Plus} iconSize={14} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} disabled={maxFilters !== undefined && controls.draft.length >= maxFilters} onClick={controls.addInline}>{__('Add filter')}</ButtonWithIcon>
         <Box className={styles.actions}>
           <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} onClick={controls.reset}>{__('Reset')}</Button>
-          <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.PRIMARY} disabled={invalid} onClick={controls.apply}>{__('Save')}</Button>
+          <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.PRIMARY} disabled={invalid} onClick={controls.apply}>{__('Apply filters')}</Button>
         </Box>
       </Box>
     </Box>

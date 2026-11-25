@@ -1,6 +1,6 @@
 .content {
   display: grid;
-  gap: var(--gh-space-3);
+  gap: var(--gh-space-2);
 }
 .hint {
   font-size: var(--gh-text-xs);
@@ -11,19 +11,27 @@
   align-items: center;
   gap: var(--gh-space-2);
   min-width: 0;
-  font-size: var(--gh-text-sm);
+  font-size: var(--gh-text-xs);
 }
 .name {
   flex: 1;
   min-width: 0;
   overflow-wrap: anywhere;
 }
-.locked {
+ .locked.locked, .unlocked.unlocked {
+  width: var(--gh-control-height-sm);
+  padding: 0;
+  color: var(--gh-color-muted);
+  border: 1px solid transparent;
+}
+.locked.locked {
   color: var(--gh-color-accent);
+  background: var(--gh-color-accent-soft);
+  border-color: var(--gh-color-border);
 }
 
 .heading {
-  font-size: var(--gh-text-sm);
+  font-size: var(--gh-text-xs);
   font-weight: var(--gh-weight-semibold);
   color: var(--gh-color-text-strong);
   padding-top: var(--gh-space-2);
