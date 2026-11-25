@@ -68,3 +68,9 @@
 .root .info.info:focus-visible {
   border-inline-start: 1px solid var(--gh-color-table-rule);
 }
+
+.info.info:hover:not(:disabled),
+.root [data-tooltip-hover='true'] > .info.info:not(:disabled) {
+  color: var(--gh-color-accent);
+  background: var(--gh-color-accent-soft);
+}

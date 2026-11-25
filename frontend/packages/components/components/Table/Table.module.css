@@ -40,11 +40,13 @@
   border-color: var(--gh-color-table-rule);
   background: var(--gh-color-table-control);
 }
-.toolbar button:hover:not(:disabled),
 .toolbar button[aria-expanded='true'],
-.toolbar button[aria-pressed='true'] {
-  background: var(--gh-color-table-selected);
-  color: var(--gh-color-table-selected-text);
+.toolbar button[aria-pressed='true'],
+.toolbar button:focus-visible,
+.toolbar button:hover:not(:disabled),
+.toolbar [data-tooltip-hover='true'] > button:not(:disabled) {
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-accent);
   border-color: var(--gh-color-table-divider);
 }
 .toolbarLeft,

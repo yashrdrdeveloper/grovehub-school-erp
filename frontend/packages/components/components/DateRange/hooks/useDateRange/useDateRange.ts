@@ -61,8 +61,14 @@ export const useDateRange = ({ value, onChange, disabled }: DateRangeProps) => {
     onChange(draft);
     setOpen(false);
   };
+  const onOutsideClick = () => {
+    if (!open) return;
+    const changed = draft.startDate !== value.startDate || draft.endDate !== value.endDate || draft.presetId !== value.presetId;
+    if (canApply && changed) onChange(draft);
+    setOpen(false);
+  };
   return {
     open, draft, month, nextMonth: shiftRangeMonth(month, 1), selectedPreset, preview: getPreview(),
-    invalid, incomplete, canApply, onOpenChange, setMonth, setHover, selectDate, selectPreset, selectCustom, clear, apply,
+    invalid, incomplete, canApply, onOpenChange, onOutsideClick, setMonth, setHover, selectDate, selectPreset, selectCustom, clear, apply,
   };
 };

@@ -47,6 +47,7 @@ export const DateRange = (props: DateRangeProps) => {
       <Popover
         open={controls.open}
         onOpenChange={controls.onOpenChange}
+        onOutsideClick={controls.onOutsideClick}
         title={__('Date range')}
         width={520}
         compact

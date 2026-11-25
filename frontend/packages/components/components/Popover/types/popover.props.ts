@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 export interface PopoverProps {
   readonly open: boolean;
   readonly onOpenChange: (open: boolean) => void;
+  /** Optional override for primary pointer dismissal; other close actions retain their existing behavior. */
+  readonly onOutsideClick?: () => void;
   readonly title: string;
   readonly trigger: ReactNode;
   readonly children: ReactNode;

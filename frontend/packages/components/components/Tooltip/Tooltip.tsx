@@ -8,6 +8,8 @@ import styles from './Tooltip.module.css';
 export const Tooltip = ({ label, children, focusable, fullWidth }: TooltipProps) => {
   const id = useId();
   const bubble = useRef<HTMLElement>(null);
+  const anchor = useRef<HTMLElement>(null);
+  const [hovered, setHovered] = useState(false);
   const [position, setPosition] = useState<{ left: number; top: number } | null>(null);
   const show = (element: HTMLElement) => {
     if (!label) return;
@@ -27,16 +29,18 @@ export const Tooltip = ({ label, children, focusable, fullWidth }: TooltipProps)
   }, [position]);
   useEffect(() => {
     if (!position) return;
-    const dismiss = () => setPosition(null);
-    window.addEventListener('scroll', dismiss, true);
-    window.addEventListener('resize', dismiss);
+    const reposition = () => {
+      if (anchor.current) show(anchor.current);
+    };
+    window.addEventListener('scroll', reposition, true);
+    window.addEventListener('resize', reposition);
     return () => {
-      window.removeEventListener('scroll', dismiss, true);
-      window.removeEventListener('resize', dismiss);
+      window.removeEventListener('scroll', reposition, true);
+      window.removeEventListener('resize', reposition);
     };
   }, [position]);
   return (
-    <Box className={styles.anchor} data-full-width={fullWidth} tabIndex={getTabIndex()} aria-label={focusable && label || undefined} onMouseEnter={(event) => show(event.currentTarget)} onMouseLeave={hide} onFocus={(event) => { if (event.target.matches(':focus-visible')) show(event.currentTarget); }} onBlur={hide} onPointerDown={hide} onClick={(event) => { if (focusable) show(event.currentTarget); }} onKeyDown={(event) => { if (event.key === 'Escape') hide(); }}>
+    <Box ref={anchor} className={styles.anchor} data-tooltip-hover={hovered} data-full-width={fullWidth} tabIndex={getTabIndex()} aria-label={focusable && label || undefined} onMouseEnter={(event) => { setHovered(true); show(event.currentTarget); }} onMouseLeave={() => { setHovered(false); hide(); }} onFocus={(event) => { if (event.target.matches(':focus-visible')) show(event.currentTarget); }} onBlur={hide} onPointerDown={hide} onClick={(event) => { if (focusable) show(event.currentTarget); }} onKeyDown={(event) => { if (event.key === 'Escape') hide(); }}>
       {children}
       {label && position && createPortal(<Box ref={bubble} id={id} role="tooltip" className={styles.bubble} style={position}>{label}</Box>, document.body)}
     </Box>

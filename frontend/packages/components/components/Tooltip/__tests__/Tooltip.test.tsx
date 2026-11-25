@@ -11,6 +11,9 @@ describe('Tooltip', () => {
 
     fireEvent.mouseEnter(button);
     expect(screen.getByRole('tooltip').textContent).toBe('Refresh');
+    expect(button.parentElement?.getAttribute('data-tooltip-hover')).toBe('true');
+    fireEvent.scroll(window);
+    expect(screen.getByRole('tooltip').textContent).toBe('Refresh');
     expect(screen.getByRole('tooltip').style.top).toBe('-6px');
 
     fireEvent.pointerDown(button);

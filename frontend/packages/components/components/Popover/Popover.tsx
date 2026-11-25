@@ -8,7 +8,7 @@ import { getPopoverPosition } from './helpers/popover.getPosition';
 import styles from './Popover.module.css';
 import type { PopoverProps } from './types/popover.props';
 
-export const Popover = ({ open, onOpenChange, title, trigger, children, width = 360, fullWidth, compact = false, desktopScrollLayout = false, desktopDropdown = false, desktopDropdownWidth, dataTestId }: PopoverProps) => {
+export const Popover = ({ open, onOpenChange, onOutsideClick, title, trigger, children, width = 360, fullWidth, compact = false, desktopScrollLayout = false, desktopDropdown = false, desktopDropdownWidth, dataTestId }: PopoverProps) => {
   const anchor = useRef<HTMLElement>(null);
   const [panel, setPanel] = useState<HTMLDivElement | null>(null);
   const [position, setPosition] = useState({ left: 0, top: 0, width, maxHeight: 0 });
@@ -58,6 +58,13 @@ export const Popover = ({ open, onOpenChange, title, trigger, children, width = 
           data-desktop-scroll-layout={desktopScrollLayout}
           data-desktop-dropdown={desktopDropdown}
           style={{ left: position.left, top: position.top, width: position.width }}
+          onPointerDownOutside={(event) => {
+            if (!onOutsideClick) return;
+            const pointer = event.detail.originalEvent;
+            if (pointer.button !== 0 || (pointer.pointerType === 'mouse' && pointer.ctrlKey)) return;
+            event.preventDefault();
+            onOutsideClick();
+          }}
           onOpenAutoFocus={(event) => {
             if (!desktopDropdown || window.innerWidth <= 640) return;
             event.preventDefault();
