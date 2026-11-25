@@ -1,10 +1,11 @@
 import { _map } from '@Base/utilities/map';
 import { _find } from '@Base/utilities/find';
-import { Plus, Trash2 } from '@Components/icons';
+import { Filter, Plus, Trash2 } from '@Components/icons';
 
 import { Box } from '../../../Box';
 import { Button, BUTTON_SIZE, BUTTON_VARIANT } from '../../../Button';
 import { ButtonWithIcon } from '../../../ButtonWithIcon';
+import { EmptyState } from '../../../EmptyState';
 import { Input } from '../../../Input';
 import { Select } from '../../../Select';
 
@@ -20,7 +21,7 @@ export const DesktopFilters = ({ fields, maxFilters, controls }: DesktopFiltersP
   return (
     <Box className={styles.panel}>
       <Box className={styles.list}>
-        {!controls.draft.length && <Box className={styles.empty}>{__('No filters added')}</Box>}
+        {!controls.draft.length && <EmptyState compact icon={Filter} title={__('No filters added')} description={__('Add a filter to narrow down your results.')} />}
         {_map(controls.draft, (condition) => {
           const field = _find(fields, (entry) => entry.id === condition.field);
           const needsValue = condition.operator !== FilterOperator.EXISTS && condition.operator !== FilterOperator.NOT_EXISTS;
@@ -44,10 +45,10 @@ export const DesktopFilters = ({ fields, maxFilters, controls }: DesktopFiltersP
         })}
       </Box>
       <Box className={styles.footer}>
-        <ButtonWithIcon icon={Plus} iconSize={16} variant={BUTTON_VARIANT.GHOST} disabled={maxFilters !== undefined && controls.draft.length >= maxFilters} onClick={controls.addInline}>{__('Add filter')}</ButtonWithIcon>
+        <ButtonWithIcon icon={Plus} iconSize={14} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} disabled={maxFilters !== undefined && controls.draft.length >= maxFilters} onClick={controls.addInline}>{__('Add filter')}</ButtonWithIcon>
         <Box className={styles.actions}>
-          <Button variant={BUTTON_VARIANT.GHOST} onClick={controls.reset}>{__('Reset')}</Button>
-          <Button variant={BUTTON_VARIANT.PRIMARY} disabled={invalid} onClick={controls.apply}>{__('Save')}</Button>
+          <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} onClick={controls.reset}>{__('Reset')}</Button>
+          <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.PRIMARY} disabled={invalid} onClick={controls.apply}>{__('Save')}</Button>
         </Box>
       </Box>
     </Box>

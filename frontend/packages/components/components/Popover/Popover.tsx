@@ -7,7 +7,7 @@ import { DialogRoot, DialogPortal, DialogContent, DialogTitle, DialogClose } fro
 import styles from './Popover.module.css';
 import type { PopoverProps } from './types/popover.props';
 
-export const Popover = ({ open, onOpenChange, title, trigger, children, width = 360, fullWidth, dataTestId }: PopoverProps) => {
+export const Popover = ({ open, onOpenChange, title, trigger, children, width = 360, fullWidth, compact = false, dataTestId }: PopoverProps) => {
   const anchor = useRef<HTMLElement>(null);
   const panel = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ left: 0, top: 0, width });
@@ -49,6 +49,7 @@ export const Popover = ({ open, onOpenChange, title, trigger, children, width = 
           ref={panel}
           aria-describedby={undefined}
           className={styles.panel}
+          data-compact={compact}
           style={position}
           onCloseAutoFocus={(event) => {
             event.preventDefault();

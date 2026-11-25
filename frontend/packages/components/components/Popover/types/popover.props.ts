@@ -8,5 +8,6 @@ export interface PopoverProps {
   readonly children: ReactNode;
   readonly width?: number;
   readonly fullWidth?: boolean;
+  readonly compact?: boolean;
   readonly dataTestId?: string;
 }

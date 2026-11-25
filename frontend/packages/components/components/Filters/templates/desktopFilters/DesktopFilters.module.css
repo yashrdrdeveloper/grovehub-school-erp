@@ -1,6 +1,6 @@
 .panel {
   display: grid;
-  gap: var(--gh-space-3);
+  gap: var(--gh-space-2);
   min-width: 0;
 }
 .list {
@@ -25,15 +25,10 @@
   overflow: hidden;
   clip-path: inset(50%);
 }
-.row button,
-.row input {
-  font-size: var(--gh-text-sm);
+.row button[class],
+.row input[class] {
+  font-size: var(--gh-text-xs);
   font-weight: var(--gh-weight-normal);
-}
-.empty {
-  color: var(--gh-color-muted);
-  font-size: var(--gh-text-sm);
-  padding-block: var(--gh-space-3);
 }
 .footer,
 .actions {
@@ -44,10 +39,10 @@
 .footer {
   justify-content: space-between;
   border-top: 1px solid var(--gh-color-border);
-  padding-top: var(--gh-space-3);
+  padding-top: var(--gh-space-2);
 }
 .footer button {
-  font-size: var(--gh-text-sm);
+  font-size: var(--gh-text-xs);
   font-weight: var(--gh-weight-medium);
 }
 @media (max-width: 800px) {
@@ -61,5 +56,13 @@
   .row > :last-child {
     grid-column: 3;
     grid-row: 1;
+  }
+}
+
+@media (min-width: 641px) {
+  .row button[class],
+  .row input[class] {
+    min-height: var(--gh-control-height-sm);
+    height: var(--gh-control-height-sm);
   }
 }

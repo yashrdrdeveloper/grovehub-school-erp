@@ -1,10 +1,11 @@
 import { _map } from '@Base/utilities/map';
 import { _filter } from '@Base/utilities/filter';
-import { ChevronDown } from '@Components/icons';
+import { ChevronDown, Search } from '@Components/icons';
 
 import { Box } from '../../../Box';
 import { Button, BUTTON_VARIANT } from '../../../Button';
 import { ButtonWithIcon, BUTTON_ICON_POSITION } from '../../../ButtonWithIcon';
+import { EmptyState } from '../../../EmptyState';
 import { Input } from '../../../Input';
 import { Popover } from '../../../Popover';
 
@@ -47,7 +48,7 @@ export const SelectionPanel = <T extends SelectValue>({
   return (
     <Box className={styles.field}>
       {!hideLabel && <Box className={styles.description}>{label}</Box>}
-      <Popover open={open} onOpenChange={onOpenChange} title={label} fullWidth dataTestId={dataTestId && `${dataTestId}-options`} trigger={
+      <Popover open={open} onOpenChange={onOpenChange} title={label} compact fullWidth dataTestId={dataTestId && `${dataTestId}-options`} trigger={
       <ButtonWithIcon
         icon={ChevronDown}
         iconPosition={BUTTON_ICON_POSITION.RIGHT}
@@ -93,7 +94,7 @@ export const SelectionPanel = <T extends SelectValue>({
                 {selected.includes(option.value) && <Box aria-hidden="true">✓</Box>}
               </Button>
             ))}
-            {!options.length && !loading && !error && <Box>{__('No options found')}</Box>}
+            {!options.length && !loading && !error && <EmptyState compact icon={Search} title={__('No options found')} description={__('Try a different search or selection.')} />}
             {loading && <Box role="status">{__('Loading…')}</Box>}
             {hasNext && <Button disabled={loading} onClick={onLoadMore}>{__('Load more')}</Button>}
           </Box>

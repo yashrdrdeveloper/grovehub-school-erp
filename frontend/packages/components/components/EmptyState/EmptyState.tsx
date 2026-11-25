@@ -1,10 +1,18 @@
-import { Inbox } from 'lucide-react';
-import type { EmptyStateComponent } from './types/emptyState.props';
+import { Inbox } from '@Components/icons';
 
-export const EmptyState: EmptyStateComponent = ({ title, description, dataTestId }) => (
-  <div className="empty-state" data-testid={dataTestId}>
-    <Inbox size={28} strokeWidth={1.5} />
-    <strong>{title}</strong>
-    <p>{description}</p>
-  </div>
+import { Box } from '../Box';
+import { Icon } from '../Icon';
+import type { EmptyStateComponent } from './types/emptyState.props';
+import styles from './EmptyState.module.css';
+
+export const EmptyState: EmptyStateComponent = ({ title, description, icon = Inbox, compact = false, dataTestId }) => (
+  <Box className={styles.root} data-compact={compact} dataTestId={dataTestId}>
+    <Box className={styles.illustration} aria-hidden="true">
+      <Box className={styles.symbol}>
+        <Icon icon={icon} size={24} />
+      </Box>
+    </Box>
+    <Box className={styles.title}>{title}</Box>
+    <Box className={styles.description}>{description}</Box>
+  </Box>
 );

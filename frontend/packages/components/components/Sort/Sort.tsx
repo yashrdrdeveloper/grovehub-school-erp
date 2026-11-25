@@ -5,6 +5,7 @@ import { Plus, Trash2, ArrowUpDown } from '@Components/icons';
 import { Box } from '../Box';
 import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '../Button';
 import { ButtonWithIcon } from '../ButtonWithIcon';
+import { EmptyState } from '../EmptyState';
 import { Select } from '../Select';
 import { Popover } from '../Popover';
 
@@ -19,13 +20,14 @@ export const SortView = ({ fields, value, maxFields, disabled, iconOnly, dataTes
     return __('Sort');
   };
   return (
-    <Popover open={controls.open} onOpenChange={controls.onOpenChange} title={__('Manage sort')} width={440} trigger={
+    <Popover open={controls.open} onOpenChange={controls.onOpenChange} title={__('Manage sort')} width={440} compact trigger={
       <ButtonWithIcon icon={ArrowUpDown} iconSize={16} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} aria-label={getLabel()} title={getLabel()} aria-expanded={controls.open} disabled={disabled} dataTestId={dataTestId} onClick={() => controls.onOpenChange(true)}>
         {!iconOnly && getLabel()}
         {iconOnly && !!value.length && value.length}
       </ButtonWithIcon>
     }>
         <Box className={styles.panel}>
+          {!controls.draft.length && <EmptyState compact icon={ArrowUpDown} title={__('No sorting added')} description={__('Add a sort rule to change the order of results.')} />}
           {_map(controls.draft, (rule, index) => (
             <Box className={styles.rule} key={rule.field}>
               <Select label={__('Field')} value={rule.field} clearable={false} options={_map(_filter(fields, (field) => field.id === rule.field || !controls.draft.some((item) => item.field === field.id)), (field) => ({ value: field.id, label: field.label }))} onChange={(field) => {
@@ -41,10 +43,10 @@ export const SortView = ({ fields, value, maxFields, disabled, iconOnly, dataTes
               </Box>
             </Box>
           ))}
-          <ButtonWithIcon icon={Plus} variant={BUTTON_VARIANT.OUTLINE} disabled={!controls.available.length || (maxFields !== undefined && controls.draft.length >= maxFields)} onClick={controls.add}>{__('Add sort')}</ButtonWithIcon>
-          <Box className={styles.actions}>
-            <Button variant={BUTTON_VARIANT.OUTLINE} onClick={controls.reset}>{__('Reset')}</Button>
-            <Button onClick={controls.apply}>{__('Apply sort')}</Button>
+          <Box className={styles.footer}>
+            <ButtonWithIcon icon={Plus} iconSize={14} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} className={styles.add} disabled={!controls.available.length || (maxFields !== undefined && controls.draft.length >= maxFields)} onClick={controls.add}>{__('Add sort')}</ButtonWithIcon>
+            <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} onClick={controls.reset}>{__('Reset')}</Button>
+            <Button size={BUTTON_SIZE.SMALL} onClick={controls.apply}>{__('Save')}</Button>
           </Box>
         </Box>
     </Popover>

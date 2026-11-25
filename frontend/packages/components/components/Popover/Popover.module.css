@@ -57,3 +57,16 @@
     padding-bottom: max(var(--gh-space-4), env(safe-area-inset-bottom));
   }
 }
+
+.panel[data-compact='true'] .heading {
+  padding-bottom: var(--gh-space-1);
+}
+.panel[data-compact='true'] .title {
+  font-size: var(--gh-text-sm);
+  font-weight: var(--gh-weight-medium);
+}
+@media (min-width: 641px) {
+  .panel[data-compact='true'] {
+    padding: var(--gh-space-2) var(--gh-space-3);
+  }
+}

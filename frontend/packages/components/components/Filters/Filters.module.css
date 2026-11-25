@@ -37,3 +37,8 @@
   border-top: 1px solid var(--gh-color-border);
   padding-top: var(--gh-space-2);
 }
+
+.footer button {
+  font-size: var(--gh-text-xs);
+  font-weight: var(--gh-weight-medium);
+}

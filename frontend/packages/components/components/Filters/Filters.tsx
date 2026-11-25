@@ -6,6 +6,7 @@ import { Pencil, Plus, Trash2, Filter } from '@Components/icons';
 import { Box } from '../Box';
 import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '../Button';
 import { ButtonWithIcon } from '../ButtonWithIcon';
+import { EmptyState } from '../EmptyState';
 import { Input } from '../Input';
 import { Select } from '../Select';
 import { Popover } from '../Popover';
@@ -32,7 +33,7 @@ export const FiltersView = ({ fields, value, disabled, maxFilters, iconOnly, dat
     return __('Filters');
   };
   return (
-    <Popover open={controls.open} onOpenChange={controls.onOpenChange} title={getTitle()} width={760} trigger={
+    <Popover open={controls.open} onOpenChange={controls.onOpenChange} title={getTitle()} width={760} compact trigger={
       <ButtonWithIcon icon={Filter} size={BUTTON_SIZE.SMALL} iconSize={16} variant={BUTTON_VARIANT.OUTLINE} aria-label={getButton()} aria-expanded={controls.open} title={getButton()} disabled={disabled} dataTestId={dataTestId} onClick={() => controls.onOpenChange(true)}>
         {!iconOnly && getButton()}
         {iconOnly && !!value.length && value.length}
@@ -42,7 +43,7 @@ export const FiltersView = ({ fields, value, disabled, maxFilters, iconOnly, dat
         {mobile && !editing && (
           <Box className={styles.panel}>
             <Box className={styles.list}>
-              {!controls.draft.length && <Box>{__('No filters added')}</Box>}
+              {!controls.draft.length && <EmptyState compact icon={Filter} title={__('No filters added')} description={__('Add a filter to narrow down your results.')} />}
               {_map(controls.draft, (condition) => (
                 <Box className={styles.condition} key={condition.id}>
                   <Box className={styles.summary}>
@@ -55,9 +56,9 @@ export const FiltersView = ({ fields, value, disabled, maxFilters, iconOnly, dat
               ))}
             </Box>
             <Box className={styles.footer}>
-              <ButtonWithIcon icon={Plus} variant={BUTTON_VARIANT.GHOST} className={styles.add} disabled={maxFilters !== undefined && controls.draft.length >= maxFilters} onClick={controls.add}>{__('Add filter')}</ButtonWithIcon>
-              <Button variant={BUTTON_VARIANT.GHOST} onClick={controls.reset}>{__('Reset')}</Button>
-              <Button disabled={controls.draft.some((condition) => !isFilterValid(condition, _find(fields, (field) => field.id === condition.field)))} onClick={controls.apply}>{__('Save')}</Button>
+              <ButtonWithIcon icon={Plus} size={BUTTON_SIZE.SMALL} iconSize={14} variant={BUTTON_VARIANT.GHOST} className={styles.add} disabled={maxFilters !== undefined && controls.draft.length >= maxFilters} onClick={controls.add}>{__('Add filter')}</ButtonWithIcon>
+              <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} onClick={controls.reset}>{__('Reset')}</Button>
+              <Button size={BUTTON_SIZE.SMALL} disabled={controls.draft.some((condition) => !isFilterValid(condition, _find(fields, (field) => field.id === condition.field)))} onClick={controls.apply}>{__('Save')}</Button>
             </Box>
           </Box>
         )}
@@ -73,8 +74,8 @@ export const FiltersView = ({ fields, value, disabled, maxFilters, iconOnly, dat
               {selectedField && (editing.operator === FilterOperator.EXISTS || editing.operator === FilterOperator.NOT_EXISTS) && <Input label={__('Value')} placeholder={__('Not required')} value="" disabled />}
             </Box>
             <Box className={styles.footer}>
-              <Button variant={BUTTON_VARIANT.OUTLINE} onClick={controls.back}>{__('Back')}</Button>
-              <Button disabled={!isFilterValid(editing, selectedField)} onClick={controls.save}>{__('Save filter')}</Button>
+              <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} onClick={controls.back}>{__('Back')}</Button>
+              <Button size={BUTTON_SIZE.SMALL} disabled={!isFilterValid(editing, selectedField)} onClick={controls.save}>{__('Save filter')}</Button>
             </Box>
           </Box>
         )}

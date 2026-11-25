@@ -5,6 +5,7 @@ import { Box } from '../Box';
 import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '../Button';
 import { ButtonWithIcon } from '../ButtonWithIcon';
 import { ColumnManager } from '../ColumnManager';
+import { EmptyState } from '../EmptyState';
 import { Filters } from '../Filters';
 import { Sort } from '../Sort';
 import { QuickFilters } from '../QuickFilters';
@@ -83,7 +84,7 @@ export const TableView = <T,>(props: TableViewProps<T>) => {
         <Box className={styles.body}>
         {props.error && <Box role="alert" className={styles.state}>{props.error}{actions?.RETRY && <Button onClick={actions.RETRY}>{__('Retry')}</Button>}</Box>}
         {props.loading && <Box role="status" className={styles.state}>{__('Loading…')}</Box>}
-        {!props.loading && !props.error && !controls.entries.length && <Box className={styles.state}>{props.emptyTitle ?? __('No results found')}</Box>}
+        {!props.loading && !props.error && !controls.entries.length && <Box className={styles.state}><EmptyState title={props.emptyTitle ?? __('No results found')} description={__('No records match the current view. Try changing your search or filters.')} /></Box>}
         {!!controls.entries.length && !mobile && <DesktopTable {...props} />}
         {!!controls.entries.length && mobile && <MobileTable {...props} />}
         </Box>
