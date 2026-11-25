@@ -1,20 +1,23 @@
-.footer,.navigation {
+.footer,
+.navigation {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: var(--gh-space-2);
 }
-.size {
-  width: 8rem;
-}
-.navigation {
-  justify-content: flex-end;
-}
-
 .footer {
   font-size: var(--gh-text-sm);
 }
 .size {
-  width: 7rem;
+  display: flex;
+  align-items: center;
+  gap: var(--gh-space-2);
+  white-space: nowrap;
+}
+.size > :last-child {
+  width: 5rem;
+}
+.navigation {
+  justify-content: flex-end;
 }

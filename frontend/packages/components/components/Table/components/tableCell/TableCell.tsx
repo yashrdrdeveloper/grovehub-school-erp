@@ -14,6 +14,11 @@ export const TableCell = <T,>({ row, column, actions }: TableCellProps<T>) => {
     if (column.renderer) return column.renderer(row);
     return String(column.accessor(row) ?? '—');
   };
+  const content = render();
+  const getTitle = () => {
+    if (typeof content === 'string') return content;
+    return undefined;
+  };
   if (editing && column.editRenderer && actions?.CELL_EDIT) {
     return (
       <Box className={styles.cell} onClick={(event) => event.stopPropagation()}>
@@ -30,8 +35,8 @@ export const TableCell = <T,>({ row, column, actions }: TableCellProps<T>) => {
       {actions?.CELL_CLICK && <Button variant={BUTTON_VARIANT.GHOST} onClick={(event) => {
         event.stopPropagation();
         actions.CELL_CLICK?.({ row, columnId: column.id });
-      }}>{render()}</Button>}
-      {!actions?.CELL_CLICK && <Box className={styles.value}>{render()}</Box>}
+      }}>{content}</Button>}
+      {!actions?.CELL_CLICK && <Box className={styles.value} title={getTitle()}>{content}</Box>}
       {column.editRenderer && actions?.CELL_EDIT && (
         <ButtonWithIcon icon={Pencil} variant={BUTTON_VARIANT.GHOST} aria-label={__('Edit cell')} onClick={(event) => {
           event.stopPropagation();

@@ -19,7 +19,7 @@
   border-radius: var(--gh-control-radius);
 }
 .filter[aria-pressed='true'] {
-  background: var(--gh-color-accent-soft);
-  color: var(--gh-color-accent);
+  background: var(--gh-color-primary);
+  color: var(--gh-color-primary-foreground);
   box-shadow: inset 0 0 0 1px var(--gh-color-border);
 }

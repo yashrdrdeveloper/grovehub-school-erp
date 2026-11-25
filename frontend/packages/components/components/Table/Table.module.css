@@ -168,3 +168,60 @@
 @media (max-width: 760px) {
   .body { padding-inline: var(--gh-space-2); }
 }
+
+/* Compact toolbar and predictable fixed-layout column geometry. */
+.search {
+  position: relative;
+  flex: 0 1 28rem;
+  max-width: 100%;
+  margin-inline-end: auto;
+}
+.search label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  clip-path: inset(50%);
+  overflow: hidden;
+}
+.search input {
+  padding-inline-start: var(--gh-space-8);
+}
+.searchIcon {
+  position: absolute;
+  inset-inline-start: var(--gh-space-3);
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--gh-color-muted);
+  display: flex;
+}
+.toolbar {
+  gap: var(--gh-space-2);
+  padding: var(--gh-space-3);
+}
+.table th, .table td {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.table th {
+  background: var(--gh-color-surface-subtle);
+}
+.table th[data-pinned='true'], .table td[data-pinned='true'] {
+  box-shadow: inset -1px 0 var(--gh-color-muted);
+}
+.table .actionColumn {
+  font-size: var(--gh-text-xs);
+  padding-inline: var(--gh-space-1);
+  box-shadow: inset 1px 0 var(--gh-color-muted);
+}
+.table th.actionColumn, .table th.selection {
+  z-index: 5;
+}
+.cell {
+  overflow: hidden;
+}
+@media (max-width: 640px) {
+  .search {
+    flex: 1 1 100%;
+  }
+}

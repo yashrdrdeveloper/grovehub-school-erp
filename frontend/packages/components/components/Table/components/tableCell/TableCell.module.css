@@ -8,3 +8,11 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
+
+@media (min-width: 641px) {
+  .value {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

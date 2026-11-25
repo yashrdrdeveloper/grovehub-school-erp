@@ -2,6 +2,7 @@ import { getFormattedDate } from '@Base/localization/getFormattedDate';
 import { Column } from '@Components/components/Table';
 import type { Account } from '@Business/domain/users';
 
+import { renderUserStatus } from '../renderer/userSetup.status';
 import { UserField } from './userSetup.fields';
 
 export const USER_SETUP_COLUMNS = Object.freeze([
@@ -9,18 +10,25 @@ export const USER_SETUP_COLUMNS = Object.freeze([
     .setId(UserField.EMAIL)
     .setHeader(__('Email address'))
     .setAccessor('email')
+    .setWidth(340)
+    .setMinWidth(140)
     .setHideable(false)
     .build(),
   new Column<Account>()
     .setId(UserField.USERNAME)
     .setHeader(__('Username'))
     .setAccessor('username')
+    .setWidth(190)
+    .setMinWidth(110)
     .setSortable(true)
     .build(),
   new Column<Account>()
     .setId(UserField.STATUS)
     .setHeader(__('Status'))
     .setAccessor('status')
+    .setRenderer(renderUserStatus)
+    .setWidth(160)
+    .setMinWidth(120)
     .setSortable(true)
     .build(),
   new Column<Account>()
@@ -28,7 +36,8 @@ export const USER_SETUP_COLUMNS = Object.freeze([
     .setHeader(__('Created at'))
     .setAccessor('createdAt')
     .setRenderer((account) => getFormattedDate(account.createdAt))
-    .setWidth(190)
+    .setWidth(220)
+    .setMinWidth(150)
     .setSortable(true)
     .build(),
   new Column<Account>()
@@ -36,7 +45,8 @@ export const USER_SETUP_COLUMNS = Object.freeze([
     .setHeader(__('Updated at'))
     .setAccessor('updatedAt')
     .setRenderer((account) => getFormattedDate(account.updatedAt))
-    .setWidth(190)
+    .setWidth(220)
+    .setMinWidth(150)
     .setSortable(true)
     .build(),
 ]);

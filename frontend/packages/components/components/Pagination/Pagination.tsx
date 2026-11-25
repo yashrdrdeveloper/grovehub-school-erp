@@ -24,7 +24,8 @@ export const Pagination = (props: PaginationProps) => {
   return (
     <Box className={styles.footer} dataTestId={props.dataTestId}>
       <Box className={styles.size}>
-        <Select<number> label={__('Rows per page')} value={props.pageSize} options={_map(props.pageSizeOptions ?? [10, 25, 50, 100], (size) => ({ value: size, label: String(size) }))} searchable={false} clearable={false} disabled={disabled} onChange={(pageSize) => {
+        <Box>{__('Rows per page')}</Box>
+        <Select<number> hideLabel label={__('Rows per page')} value={props.pageSize} options={_map(props.pageSizeOptions ?? [10, 25, 50, 100], (size) => ({ value: size, label: String(size) }))} searchable={false} clearable={false} disabled={disabled} onChange={(pageSize) => {
           if (pageSize) props.onChange({ type: 'PAGE_SIZE_CHANGE', pageSize });
         }} />
       </Box>

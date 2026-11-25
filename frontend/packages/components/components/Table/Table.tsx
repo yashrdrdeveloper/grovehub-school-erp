@@ -1,6 +1,7 @@
 import { _map } from '@Base/utilities/map';
-import { RefreshCw } from '@Components/icons';
+import { RefreshCw, Search } from '@Components/icons';
 
+import { Icon } from '../Icon';
 import { Box } from '../Box';
 import { Button, BUTTON_VARIANT } from '../Button';
 import { ButtonWithIcon } from '../ButtonWithIcon';
@@ -43,7 +44,7 @@ export const TableView = <T,>(props: TableViewProps<T>) => {
       {headerProps && <TableHeader {...headerProps} onAction={actions?.HEADER_ACTION} />}
       <Box className={styles.panel}>
         <Box className={styles.toolbar}>
-          {searchProps && <Box className={styles.search}><DebouncedInput label={__('Search')} value={searchProps.value} placeholder={searchProps.placeholder} debounceMs={searchProps.debounceMs} onChange={(value) => actions?.SEARCH?.(value)} /></Box>}
+          {searchProps && <Box className={styles.search}><Box className={styles.searchIcon} aria-hidden="true"><Icon icon={Search} /></Box><DebouncedInput type="search" label={__('Search')} value={searchProps.value} placeholder={searchProps.placeholder} debounceMs={searchProps.debounceMs} onChange={(value) => actions?.SEARCH?.(value)} /></Box>}
           {filterProps && <Filters {...filterProps} onChange={(value) => actions?.FILTER?.(value)} />}
           {sortProps && <Sort {...sortProps} onChange={(value) => actions?.SORT?.(value)} />}
           <ColumnManager options={options} density={controls.preferences.density} onToggle={controls.toggle} onDensityChange={controls.setRowDensity} onReset={controls.reset} onReorder={controls.reorder} onPin={controls.pin} maxPinnedColumns={props.maxPinnedColumns} />
