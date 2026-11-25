@@ -81,3 +81,10 @@ export type { ColumnManagerProps } from './components/ColumnManager';
 
 export { Popover } from './components/Popover';
 export type { PopoverProps } from './components/Popover';
+
+export { Calendar } from './components/Calendar';
+export type { CalendarProps } from './components/Calendar';
+export { IconButton } from './components/IconButton';
+export type { IconButtonProps } from './components/IconButton';
+export { SearchInput } from './components/SearchInput';
+export type { SearchInputProps } from './components/SearchInput';
