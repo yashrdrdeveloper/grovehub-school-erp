@@ -47,7 +47,7 @@ export const FilterValue = ({ field, condition, onChange, hideLabel }: FilterVal
     return <Select label={label} placeholder={__('Select value')} hideLabel={hideLabel} options={field.options ?? []} value={first || null} onChange={single} />;
   }
   if (field.type === FilterFieldType.DATE_RANGE || (field.type === FilterFieldType.DATE && condition.operator === FilterOperator.BETWEEN)) {
-    return <DateRange value={{ startDate: first || null, endDate: second || null }} onChange={(range) => onChange([range.startDate ?? '', range.endDate ?? ''])} />;
+    return <DateRange value={{ startDate: first || null, endDate: second || null, presetId: condition.dateRangePresetId }} onChange={(range) => onChange([range.startDate ?? '', range.endDate ?? ''], range.presetId)} />;
   }
   if (field.type === FilterFieldType.NUMBER_RANGE || (field.type === FilterFieldType.NUMBER && condition.operator === FilterOperator.BETWEEN)) {
     return <NumberRange value={{ min: numeric(first), max: numeric(second) }} onChange={(range) => onChange([String(range.min ?? ''), String(range.max ?? '')])} />;

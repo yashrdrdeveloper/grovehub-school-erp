@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { _map } from '@Base/utilities/map';
 import { CalendarDays } from '@Components/icons';
 
@@ -8,7 +9,7 @@ import { Calendar } from '../Calendar';
 import { Popover } from '../Popover';
 import { Tooltip } from '../Tooltip';
 
-import { DATE_RANGE_PRESETS } from './constants/dateRange.presets';
+import { CUSTOM_DATE_RANGE_PRESET, DATE_RANGE_PRESETS } from './constants/dateRange.presets';
 import { shiftRangeMonth } from './helpers/dateRange.calendar';
 import { getFormattedRangeDate } from './helpers/dateRange.getFormattedDate';
 import { useDateRange } from './hooks/useDateRange';
@@ -19,6 +20,17 @@ export const DateRange = (props: DateRangeProps) => {
   const { value, disabled, dataTestId } = props;
   const controls = useDateRange(props);
   const empty = !value.startDate && !value.endDate;
+  const revealSelectedPreset = useCallback((element: HTMLElement | null) => {
+    if (!controls.open) return;
+    const selected = element?.querySelector<HTMLElement>('[aria-pressed="true"]');
+    if (!element || !selected) return;
+    const container = element.getBoundingClientRect();
+    const button = selected.getBoundingClientRect();
+    if (button.bottom > container.bottom) element.scrollTop += button.bottom - container.bottom;
+    if (button.top < container.top) element.scrollTop -= container.top - button.top;
+    if (button.right > container.right) element.scrollLeft += button.right - container.right;
+    if (button.left < container.left) element.scrollLeft -= container.left - button.left;
+  }, [controls.open]);
   const getSummary = () => {
     if (empty) return __('Select date range');
     return [getFormattedRangeDate(value.startDate), getFormattedRangeDate(value.endDate)].join(' – ');
@@ -36,7 +48,7 @@ export const DateRange = (props: DateRangeProps) => {
         open={controls.open}
         onOpenChange={controls.onOpenChange}
         title={__('Date range')}
-        width={560}
+        width={520}
         compact
         fullWidth
         trigger={
@@ -47,7 +59,8 @@ export const DateRange = (props: DateRangeProps) => {
       >
         <Box className={styles.range}>
           <Box className={styles.layout}>
-            <Box className={styles.presets} role="group" aria-label={__('Date range presets')}>
+            <Box ref={revealSelectedPreset} className={styles.presets} role="group" aria-label={__('Date range presets')}>
+              <Button variant={BUTTON_VARIANT.GHOST} size={BUTTON_SIZE.SMALL} className={styles.preset} aria-pressed={controls.selectedPreset === CUSTOM_DATE_RANGE_PRESET} disabled={disabled} onClick={controls.selectCustom}>{__('Custom')}</Button>
               {_map(DATE_RANGE_PRESETS, (preset) => (
                 <Button key={preset.id} variant={BUTTON_VARIANT.GHOST} size={BUTTON_SIZE.SMALL} className={styles.preset} aria-pressed={controls.selectedPreset === preset.id} disabled={disabled} onClick={() => controls.selectPreset(preset)}>
                   {preset.label}
@@ -55,12 +68,7 @@ export const DateRange = (props: DateRangeProps) => {
               ))}
             </Box>
             <Box className={styles.selection}>
-              <Box className={styles.summary} aria-live="polite">
-                <Box className={styles.date} data-placeholder={!controls.draft.startDate}>{getFormattedRangeDate(controls.draft.startDate, __('Start date'))}</Box>
-                <Box className={styles.separator} aria-hidden="true">–</Box>
-                <Box className={styles.date} data-placeholder={!controls.draft.endDate}>{getFormattedRangeDate(controls.draft.endDate, __('End date'))}</Box>
-              </Box>
-              <Box className={styles.calendars} key={controls.selectedPreset ?? "custom"}>
+              <Box className={styles.calendars} key={controls.selectedPreset ?? CUSTOM_DATE_RANGE_PRESET}>
                 <Calendar compact hideFooter navigation="previous" month={controls.month} onMonthChange={controls.setMonth} value={controls.draft.startDate} range={controls.preview} onChange={controls.selectDate} onDayHover={controls.setHover} disabled={disabled} />
                 <Calendar compact hideFooter navigation="next" month={controls.nextMonth} onMonthChange={(month) => controls.setMonth(shiftRangeMonth(month, -1))} value={controls.draft.endDate} range={controls.preview} onChange={controls.selectDate} onDayHover={controls.setHover} disabled={disabled} />
               </Box>
@@ -68,7 +76,12 @@ export const DateRange = (props: DateRangeProps) => {
           </Box>
           {controls.invalid && <Box role="alert" className={styles.hint}>{__('The start date must not exceed the end date.')}</Box>}
           <Box className={styles.actions}>
-            <Box className={styles.hint}>{__('Select a start and end date, or choose a preset.')}</Box>
+            <Box className={styles.hint} aria-live="polite">
+              {!controls.draft.startDate && __('Select date range')}
+              {controls.draft.startDate && getFormattedRangeDate(controls.draft.startDate)}
+              {controls.draft.startDate && ' – '}
+              {controls.draft.startDate && getFormattedRangeDate(controls.draft.endDate, __('End date'))}
+            </Box>
             <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} disabled={disabled} onClick={controls.clear}>{__('Clear')}</Button>
             <Tooltip label={getApplyReason()} focusable={!controls.canApply}>
               <Button size={BUTTON_SIZE.SMALL} disabled={!controls.canApply} onClick={controls.apply}>{__('Apply')}</Button>

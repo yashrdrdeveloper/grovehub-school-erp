@@ -4,5 +4,5 @@ export interface FilterValueProps {
   readonly hideLabel?: boolean;
   readonly field: FilterField;
   readonly condition: FilterCondition;
-  readonly onChange: (values: readonly string[]) => void;
+  readonly onChange: (values: readonly string[], dateRangePresetId?: string) => void;
 }

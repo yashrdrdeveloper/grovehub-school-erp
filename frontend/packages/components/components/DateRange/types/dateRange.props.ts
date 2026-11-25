@@ -1,6 +1,7 @@
 export interface DateRangeValue {
   readonly startDate: string | null;
   readonly endDate: string | null;
+  readonly presetId?: string;
 }
 
 export interface DateRangeProps {

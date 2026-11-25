@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { formatRangeDate, getRangeMonth, getRangeSelection, shiftRangeMonth } from '../../helpers/dateRange.calendar';
+import { CUSTOM_DATE_RANGE_PRESET, DATE_RANGE_PRESETS } from '../../constants/dateRange.presets';
 import type { DateRangePreset } from '../../types/dateRange.preset';
 import type { DateRangeProps } from '../../types/dateRange.props';
 
@@ -9,7 +10,12 @@ export const useDateRange = ({ value, onChange, disabled }: DateRangeProps) => {
   const [draft, setDraft] = useState(value);
   const [month, setMonth] = useState(() => getRangeMonth(value.startDate, new Date()));
   const [hover, setHover] = useState<string | null>(null);
-  const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
+  const getPreset = () => {
+    if (!draft.startDate && !draft.endDate) return draft.presetId ?? null;
+    if (DATE_RANGE_PRESETS.some((preset) => preset.id === draft.presetId)) return draft.presetId;
+    return CUSTOM_DATE_RANGE_PRESET;
+  };
+  const selectedPreset = getPreset();
   const invalid = Boolean(draft.startDate && draft.endDate && draft.startDate > draft.endDate);
   const incomplete = Boolean(draft.startDate) !== Boolean(draft.endDate);
   const canApply = !disabled && !invalid && !incomplete;
@@ -22,15 +28,13 @@ export const useDateRange = ({ value, onChange, disabled }: DateRangeProps) => {
     if (next) {
       setDraft(value);
       setMonth(getRangeMonth(value.startDate, new Date()));
-      setSelectedPreset(null);
       setHover(null);
     }
     setOpen(next);
   };
   const selectDate = (date: string | null) => {
     if (!date || disabled) return;
-    setDraft((current) => getRangeSelection(current, date));
-    setSelectedPreset(null);
+    setDraft((current) => ({ ...getRangeSelection(current, date), presetId: CUSTOM_DATE_RANGE_PRESET }));
     setHover(null);
   };
   const selectPreset = (preset: DateRangePreset) => {
@@ -38,15 +42,18 @@ export const useDateRange = ({ value, onChange, disabled }: DateRangeProps) => {
     const today = new Date();
     const start = preset.start(today);
     const end = preset.end(today);
-    setDraft({ startDate: formatRangeDate(start), endDate: formatRangeDate(end) });
+    setDraft({ startDate: formatRangeDate(start), endDate: formatRangeDate(end), presetId: preset.id });
     setMonth(shiftRangeMonth(start, 0));
-    setSelectedPreset(preset.id);
+    setHover(null);
+  };
+  const selectCustom = () => {
+    if (disabled) return;
+    setDraft((current) => ({ ...current, presetId: CUSTOM_DATE_RANGE_PRESET }));
     setHover(null);
   };
   const clear = () => {
     if (disabled) return;
     setDraft({ startDate: null, endDate: null });
-    setSelectedPreset(null);
     setHover(null);
   };
   const apply = () => {
@@ -56,6 +63,6 @@ export const useDateRange = ({ value, onChange, disabled }: DateRangeProps) => {
   };
   return {
     open, draft, month, nextMonth: shiftRangeMonth(month, 1), selectedPreset, preview: getPreview(),
-    invalid, incomplete, canApply, onOpenChange, setMonth, setHover, selectDate, selectPreset, clear, apply,
+    invalid, incomplete, canApply, onOpenChange, setMonth, setHover, selectDate, selectPreset, selectCustom, clear, apply,
   };
 };

@@ -28,13 +28,13 @@ export const DesktopFilters = ({ fields, controls }: DesktopFiltersProps) => {
             <Box className={styles.row} key={condition.id}>
               <Select label={__('Field')} hideLabel placeholder={__('Select field')} value={condition.field || null} options={_map(controls.getAvailableFields(condition.id), (entry) => ({ value: entry.id, label: entry.label }))} clearable={false} onChange={(id) => {
                 const next = _find(controls.getAvailableFields(condition.id), (entry) => entry.id === id);
-                if (next && next.operators[0]) controls.updateInline({ ...condition, field: next.id, operator: next.operators[0], values: [] });
+                if (next && next.operators[0]) controls.updateInline({ ...condition, field: next.id, operator: next.operators[0], values: [], dateRangePresetId: undefined });
               }} />
               <Select<FilterOperator> label={__('Operator')} hideLabel placeholder={__('Select operator')} value={(field && condition.operator) || null} options={_map(field?.operators ?? [], (operator) => ({ value: operator, label: FILTER_OPERATOR_LABELS[operator] }))} disabled={!field} disabledReason={__('Select a field first.')} searchable={false} clearable={false} onChange={(operator) => {
-                if (operator) controls.updateInline({ ...condition, operator, values: [] });
+                if (operator) controls.updateInline({ ...condition, operator, values: [], dateRangePresetId: undefined });
               }} />
               <Box className={styles.value}>
-                {field && needsValue && <FilterValue hideLabel field={field} condition={condition} onChange={(values) => controls.updateInline({ ...condition, values })} />}
+                {field && needsValue && <FilterValue hideLabel field={field} condition={condition} onChange={(values, dateRangePresetId) => controls.updateInline({ ...condition, values, dateRangePresetId })} />}
                 {!field && <Tooltip label={__('Select a field first.')} focusable fullWidth><Input label={__('Value')} placeholder={__('Enter value')} value="" disabled /></Tooltip>}
                 {field && !needsValue && <Tooltip label={__('This operator does not require a value.')} focusable fullWidth><Input label={__('Value')} placeholder={__('Not required')} value="" disabled /></Tooltip>}
               </Box>

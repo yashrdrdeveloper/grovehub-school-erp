@@ -9,6 +9,7 @@ export interface FilterCondition {
   readonly field: string;
   readonly operator: FilterOperator;
   readonly values: readonly string[];
+  readonly dateRangePresetId?: string;
 }
 
 export interface FilterField {

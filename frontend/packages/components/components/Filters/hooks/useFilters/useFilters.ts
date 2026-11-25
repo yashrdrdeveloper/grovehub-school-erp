@@ -71,7 +71,7 @@ export const useFilters = ({ value, onChange, fields, maxFilters }: FiltersProps
     if (!editing || !id) return;
     const field = _find(getAvailableFields(editing.id), (entry) => entry.id === id);
     if (!field) return;
-    setEditing({ ...editing, field: id, operator: field.operators[0] ?? FilterOperator.EQUALS, values: [] });
+    setEditing({ ...editing, field: id, operator: field.operators[0] ?? FilterOperator.EQUALS, values: [], dateRangePresetId: undefined });
   };
 
   const save = () => {

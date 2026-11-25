@@ -1,6 +1,8 @@
 import { shiftRangeDay } from '../helpers/dateRange.calendar';
 import type { DateRangePreset } from '../types/dateRange.preset';
 
+export const CUSTOM_DATE_RANGE_PRESET = 'custom';
+
 const today = (date: Date) => date;
 const weekStart = (date: Date) => shiftRangeDay(date, -((date.getDay() + 6) % 7));
 const monthStart = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1);
