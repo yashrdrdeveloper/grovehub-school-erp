@@ -49,20 +49,28 @@
   color: var(--gh-color-muted);
   background: var(--gh-color-surface-subtle);
 }
-.fields {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--gh-space-1);
-}
-.field {
-  background: var(--gh-color-surface-subtle);
-  border-radius: var(--gh-control-radius);
-  padding: var(--gh-space-1) var(--gh-space-2);
-  color: var(--gh-color-text-secondary);
+.description {
+  padding: var(--gh-space-2);
+  color: var(--gh-color-muted);
   font-size: var(--gh-text-xs);
+  line-height: var(--gh-leading-normal);
 }
 @media (max-width: 640px) {
   .root {
     max-width: none;
   }
+}
+
+.root:focus-within {
+  border-color: var(--gh-color-ring);
+}
+.root .input input:focus,
+.root .input input:focus-visible,
+.root .info:focus-visible {
+  border: 0;
+  outline: none;
+  box-shadow: none;
+}
+.root .info:focus-visible {
+  border-inline-start: 1px solid var(--gh-color-table-rule);
 }

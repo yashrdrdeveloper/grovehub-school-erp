@@ -14,6 +14,7 @@ import { getTableFillWidth } from '../../helpers/table.getFillWidth';
 import { getTableStretchLayout } from '../../helpers/table.getStretchLayout';
 import { TablePin, TableType } from '../../constants/table.type';
 import { getVirtualWindow } from '../../helpers/table.getVirtualWindow';
+import { getTablePinnedBoundary } from '../../helpers/table.getPinnedBoundary';
 import { getTableCellStyle } from '../../helpers/table.getCellStyle';
 
 import type { DesktopTableProps } from './types/desktopTable.props';
@@ -86,7 +87,7 @@ export const DesktopTable = <T,>(props: DesktopTableProps<T>) => {
             {_map(layout, (entry, index) => (
               <Fragment key={entry.column.id}>
               {fillBefore(index) && <th aria-hidden="true" className={styles.filler} />}
-              <th scope="col" style={{ ...getTableCellStyle(entry, selection, rowActions), position: 'sticky', top: 0, zIndex: 3 + Number(entry.pin !== TablePin.NONE) }} data-pinned={entry.pin !== TablePin.NONE}>
+              <th scope="col" style={{ ...getTableCellStyle(entry, selection, rowActions), position: 'sticky', top: 0, zIndex: 3 + Number(entry.pin !== TablePin.NONE) }} data-pinned={entry.pin !== TablePin.NONE} data-pin-boundary={getTablePinnedBoundary(layout, index)}>
                 <TableSortHeader column={entry.column} props={props} />
                 {entry.column.resizable !== false && <ColumnResizeHandle label={__('Resize {{column}}', { column: entry.column.header })} width={entry.width} min={entry.column.minWidth ?? 80} max={entry.column.maxWidth ?? 1200} onResize={(width) => controls.resize(entry.column.id, width)} />}
               </th>
@@ -120,17 +121,17 @@ export const DesktopTable = <T,>(props: DesktopTableProps<T>) => {
                 if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); props.actions.ROW_CLICK(row); }
               }} onDoubleClick={() => props.actions?.ROW_DOUBLE_CLICK?.(row)} data-selected={controls.selected.includes(entry.id)}>
                 {selection && <td className={styles.selection}><TableSelection label={__('Select row {{id}}', { id: entry.id })} checked={controls.selected.includes(entry.id)} disabled={!controls.selectable.includes(entry.id)} onChange={() => controls.selectRow(entry.id)} /></td>}
-                {_map(layout, (layout, index) => (
-                  <Fragment key={layout.column.id}>
+                {_map(layout, (columnLayout, index) => (
+                  <Fragment key={columnLayout.column.id}>
                   {fillBefore(index) && <td aria-hidden="true" className={styles.filler} />}
-                  <td style={getTableCellStyle(layout, selection, rowActions)} data-pinned={layout.pin !== TablePin.NONE}>
+                  <td style={getTableCellStyle(columnLayout, selection, rowActions)} data-pinned={columnLayout.pin !== TablePin.NONE} data-pin-boundary={getTablePinnedBoundary(layout, index)}>
                     <Box className={styles.cell} style={{ paddingInlineStart: Number(index === 0) * entry.depth * 16 }}>
                       {index === 0 && entry.expandable && (
                         <Button variant={BUTTON_VARIANT.GHOST} aria-expanded={controls.expanded.includes(entry.id)} aria-label={__('Toggle row details')} onClick={() => controls.toggleExpanded(entry.id)}>
                           {controls.expanded.includes(entry.id) && '▾'}{!controls.expanded.includes(entry.id) && '▸'}
                         </Button>
                       )}
-                      <TableCell row={row} column={layout.column} actions={props.actions} />
+                      <TableCell row={row} column={columnLayout.column} actions={props.actions} />
                     </Box>
                   </td>
                   </Fragment>

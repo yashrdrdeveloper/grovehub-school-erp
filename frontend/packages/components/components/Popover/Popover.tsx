@@ -55,8 +55,7 @@ export const Popover = ({ open, onOpenChange, title, trigger, children, width = 
           onOpenAutoFocus={(event) => {
             if (!desktopDropdown || window.innerWidth <= 640) return;
             event.preventDefault();
-            const selected = panel?.querySelector<HTMLElement>('button[aria-pressed="true"]');
-            (selected ?? panel)?.focus({ preventScroll: true });
+            if (event.target instanceof HTMLElement) event.target.focus({ preventScroll: true });
           }}
           tabIndex={-1}
           onCloseAutoFocus={(event) => {
