@@ -384,3 +384,17 @@
 .gh-card--padding-lg {
   padding: var(--gh-space-8);
 }
+
+/* Disabled input fields keep the enabled border and geometry. */
+.gh-input-control:disabled,
+.gh-input:disabled {
+  opacity: 1;
+  border-color: var(--gh-color-input);
+  background: var(--gh-color-surface-subtle);
+  color: var(--gh-color-muted);
+  cursor: not-allowed;
+}
+.gh-input-control:disabled::placeholder,
+.gh-input:disabled::placeholder {
+  color: var(--gh-color-muted);
+}

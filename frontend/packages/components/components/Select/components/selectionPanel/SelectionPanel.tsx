@@ -104,6 +104,7 @@ export const SelectionPanel = <T extends SelectValue>({
               <Button
                 key={option.value}
                 variant={BUTTON_VARIANT.GHOST}
+                size={BUTTON_SIZE.SMALL}
                 disabled={option.disabled}
                 aria-pressed={selected.includes(option.value)}
                 onClick={() => onToggle(option.value)}
