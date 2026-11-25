@@ -51,10 +51,6 @@
   outline: 2px solid var(--auth-focus);
   outline-offset: 3px;
 }
-/* Scrollbar entry must not change form width. */
-.rdr-login-v2__content::-webkit-scrollbar {
-  display: none;
-}
 .rdr-login-v2__frame {
   display: grid;
   grid-template-columns: minmax(0, 46fr) minmax(0, 54fr);
@@ -242,8 +238,8 @@
   background: var(--auth-bg);
   overflow-x: hidden;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   overscroll-behavior: contain;
-  scrollbar-width: none;
 }
 .rdr-login-v2__toolbar {
   display: flex;
@@ -384,6 +380,7 @@
   max-height: 32px;
   margin-top: 4px;
   overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 .rdr-auth-flow__error-slot .rdr-login-v2__error,
 .rdr-recovery__error-slot .rdr-recovery__inline-error {
@@ -868,12 +865,9 @@
     padding: 0 clamp(20px, 6vw, 27px) max(13px, env(safe-area-inset-bottom));
     align-items: center;
     justify-content: center;
-    scrollbar-width: none;
     overflow-x: hidden;
     overflow-y: auto;
-  }
-  .rdr-login-v2__content::-webkit-scrollbar {
-    display: none;
+    scrollbar-gutter: stable;
   }
   .rdr-login-v2__toolbar {
     display: none;
@@ -1089,6 +1083,7 @@
   .rdr-login-v2__content {
     justify-content: flex-start;
     overflow-y: auto;
+    scrollbar-gutter: stable;
   }
   .rdr-login-v2__main {
     margin-top: 0;
@@ -1101,6 +1096,7 @@
   .rdr-login-v2__content {
     padding-block: clamp(10px, 2dvh, 22px);
     overflow-y: auto;
+    scrollbar-gutter: stable;
   }
   .rdr-login-v2__main {
     padding-block: 6px;
@@ -1201,6 +1197,7 @@
 @media (min-width: 721px) and (max-width: 1100px) and (max-height: 559px) {
   .rdr-login-v2__content {
     overflow-y: auto;
+    scrollbar-gutter: stable;
   }
 }
 @media (max-width: 285px) {
@@ -1241,6 +1238,7 @@
   .rdr-login-v2__content[data-auth-fit='scroll'] {
     overflow-x: hidden;
     overflow-y: auto;
+    scrollbar-gutter: stable;
   }
   .rdr-login-v2__content[data-auth-fit='scroll'] .rdr-login-v2__main {
     position: relative;

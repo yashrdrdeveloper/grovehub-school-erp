@@ -10,6 +10,7 @@
   inset: 0;
   z-index: 40;
   overflow: auto;
+  scrollbar-gutter: stable;
   background: var(--gh-color-canvas);
   padding: var(--gh-space-4);
   align-content: start;
@@ -88,8 +89,7 @@
   min-width: 0;
   max-height: 70dvh;
   overflow: auto;
-  scrollbar-color: var(--gh-color-scrollbar-thumb) var(--gh-color-scrollbar-track);
-  scrollbar-width: thin;
+  scrollbar-gutter: stable;
 }
 .table {
   table-layout: fixed;

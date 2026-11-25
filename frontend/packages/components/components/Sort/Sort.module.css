@@ -11,8 +11,8 @@
   align-content: start;
   gap: var(--gh-space-2);
   overflow: auto;
-  padding: var(--gh-space-2) var(--gh-space-3);
   scrollbar-gutter: stable;
+  padding: var(--gh-space-2) var(--gh-space-3);
 }
 .list[data-empty='true'] {
   align-content: center;

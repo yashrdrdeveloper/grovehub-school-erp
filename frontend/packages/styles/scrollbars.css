@@ -1,0 +1,60 @@
+/* Global native scrollbars: reveal by paint only, never by changing their size. */
+:root {
+  scrollbar-gutter: stable;
+}
+
+@media (hover: hover) and (pointer: fine) and (forced-colors: none) {
+  :where(*) {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  :where([data-gh-scroll-active='true'], :hover, :focus-visible) {
+    scrollbar-color: var(--gh-color-scrollbar-thumb) transparent;
+  }
+
+  @supports selector(::-webkit-scrollbar) {
+    /* Standard scrollbar properties override the WebKit pseudo-elements in Chromium. */
+    :where(*) {
+      scrollbar-width: auto;
+      scrollbar-color: auto;
+    }
+
+    ::-webkit-scrollbar {
+      width: var(--gh-scrollbar-size);
+      height: var(--gh-scrollbar-size);
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-track,
+    ::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: transparent;
+      border: var(--gh-scrollbar-inset) solid transparent;
+      background-clip: padding-box;
+      border-radius: var(--gh-radius-full);
+      min-height: var(--gh-space-6);
+      min-width: var(--gh-space-6);
+    }
+
+    [data-gh-scroll-active='true']::-webkit-scrollbar-thumb,
+    :focus-visible::-webkit-scrollbar-thumb {
+      background-color: var(--gh-color-scrollbar-thumb);
+    }
+
+    ::-webkit-scrollbar-thumb:hover,
+    ::-webkit-scrollbar-thumb:active {
+      background-color: var(--gh-color-scrollbar-thumb-active);
+    }
+  }
+}
+
+@media (forced-colors: active) {
+  :where(*) {
+    scrollbar-color: auto;
+    scrollbar-width: auto;
+  }
+}

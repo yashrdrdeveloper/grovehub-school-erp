@@ -55,6 +55,8 @@
   --gh-radius-xl: 1.125rem;
   --gh-radius-full: 9999px;
 
+  --gh-scrollbar-size: 8px;
+  --gh-scrollbar-inset: 1px;
   --gh-focus-outline-width: 1px;
   --gh-motion-fast: 120ms;
   --gh-motion-normal: 180ms;

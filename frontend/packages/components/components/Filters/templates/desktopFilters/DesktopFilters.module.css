@@ -15,10 +15,8 @@
   gap: var(--gh-space-2);
   padding: var(--gh-space-2) var(--gh-space-3);
   overflow-y: auto;
-  overflow-x: hidden;
   scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: var(--gh-color-scrollbar-thumb) var(--gh-color-scrollbar-track);
+  overflow-x: hidden;
 }
 .row {
   display: grid;

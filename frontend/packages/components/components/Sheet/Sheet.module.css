@@ -4,6 +4,7 @@
   flex-direction: column;
   max-height: min(85dvh, 48rem);
   overflow: auto;
+  scrollbar-gutter: stable;
   border-radius: var(--gh-control-radius);
 }
 @media (max-width: 640px) {

@@ -23,3 +23,11 @@ Styling owns colors, typography, spacing, focus and responsive tokens, **not tra
 ## No mutable display state
 
 Copy expansion and responsive text remain presentation concerns. Never implement alternate CSS/class/token selection by `let` reassignment inside JSX; use a pure owner-specific renderer/helper returning an immutable variant. Translation calls always receive literal source messages. Styling technical class strings are not translated.
+
+## Native scrollbars
+
+`@Styles/scrollbars.css` owns the application-wide scrollbar appearance. The root ShellContainer installs one passive capture-phase scroll observer for document and nested scroll containers, including portal content. Each scroll owner reveals its thumb independently; after 1000 ms without a scroll event, the active marker is removed. No React render or wheel-event interception is involved.
+
+Use native overflow on scroll owners, and `scrollbar-gutter: stable` for vertical or two-axis scroll containers where the appearance of overflow must not change content width. Do not toggle scrollbar widths, overflow or padding to show and hide a scrollbar. Do not define component-local scrollbar colors, scrollbar widths or hidden scrollbar pseudo-elements. The global desktop style uses fixed 8px scrollbar geometry and rounded thumbs in Chromium/WebKit; native thin scrollbars in other engines retain their platform geometry and reveal on hover/focus/scroll. Touch and forced-colors environments retain their native appearance and behavior. Classic scrollbars reserve space; OS overlay scrollbars need not. A newly appearing horizontal overflow can still consume height on classic-scrollbar platforms.
+
+Verify wheel/trackpad, thumb dragging, keyboard scrolling, nested dialog scroll, table horizontal/vertical scrolling, dark/light themes, and content width before/after thumb reveal in browsers. No third-party scroll library is needed.

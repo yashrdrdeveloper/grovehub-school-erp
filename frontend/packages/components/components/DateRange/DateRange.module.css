@@ -21,8 +21,7 @@
   max-height: 11rem;
   min-height: 0;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--gh-color-scrollbar-thumb) var(--gh-color-scrollbar-track);
+  scrollbar-gutter: stable;
   gap: 0;
   padding-inline-end: var(--gh-space-2);
   border-inline-end: 1px solid var(--gh-color-border);

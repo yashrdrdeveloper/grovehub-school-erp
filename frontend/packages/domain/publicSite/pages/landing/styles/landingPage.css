@@ -1050,6 +1050,7 @@
     box-shadow: 0 20px 40px #1f2a4422;
     max-height: calc(100dvh - 105px);
     overflow-y: auto;
+    scrollbar-gutter: stable;
   }
   .rdr-mobile-nav a {
     display: flex;
@@ -2688,9 +2689,9 @@
 .rdr-sheet__body {
   flex: 1;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   overscroll-behavior: contain;
   padding: clamp(22px, 4vh, 40px) clamp(22px, 5vw, 84px) 24px;
-  scrollbar-gutter: stable;
 }
 .rdr-sheet__bottom {
   display: flex;
@@ -3094,6 +3095,7 @@
     top: clamp(50px, 12vh, 140px);
     display: flex;
     overflow-y: auto;
+    scrollbar-gutter: stable;
     overscroll-behavior: contain;
     max-height: none;
     min-height: 0;
@@ -3147,7 +3149,6 @@
   }
   .rdr-sheet__body {
     padding: 16px 17px 24px;
-    scrollbar-gutter: auto;
   }
   .rdr-sheet__bottom {
     padding: 12px 17px max(12px, env(safe-area-inset-bottom));

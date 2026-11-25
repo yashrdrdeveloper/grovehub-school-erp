@@ -22,6 +22,7 @@
   gap: var(--gh-space-1);
   max-height: min(44dvh, 22rem);
   overflow: auto;
+  scrollbar-gutter: stable;
 }
 .option.option {
   justify-content: space-between;
@@ -61,8 +62,7 @@
   padding: var(--gh-space-1);
   max-height: none;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--gh-color-scrollbar-thumb) var(--gh-color-scrollbar-track);
+  scrollbar-gutter: stable;
 }
 .content[data-dropdown='true'] .option.option {
   min-height: var(--gh-control-height-xs);
