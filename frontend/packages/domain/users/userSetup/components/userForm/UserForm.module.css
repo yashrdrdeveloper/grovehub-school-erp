@@ -7,3 +7,12 @@
   justify-content: flex-end;
   gap: var(--gh-space-2);
 }
+
+.sections {
+  display: grid;
+  gap: var(--gh-space-6);
+}
+.sectionTitle {
+  font-size: var(--gh-text-base);
+  font-weight: var(--gh-weight-semibold);
+}

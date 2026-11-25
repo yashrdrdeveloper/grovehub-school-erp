@@ -45,12 +45,33 @@ export const UserSetup = ({ controls }: UserSetupProps) => {
         paginationProps={controls.pagination}
         rowActions={USER_SETUP_ROW_ACTIONS}
         actions={controls.actions}
+        preferencesProps={{ storageKey: controls.preferencesKey }}
         loading={controls.loading}
         refreshing={controls.refreshing}
         error={getError()}
       />
       {dialog && (dialog.action === UserAction.CREATE || dialog.action === UserAction.EDIT) && (
-        <UserForm row={dialog.row} onClose={controls.closeDialog} onCreate={controls.create} onEdit={controls.edit} submitting={controls.submitting} error={controls.submissionError} />
+        <UserForm
+          key={dialog.row?.accountId ?? UserAction.CREATE}
+          row={dialog.row}
+          roles={controls.roles}
+          rolesLoading={controls.rolesLoading}
+          rolesError={controls.rolesError}
+          retryRoles={controls.retryRoles}
+          profile={controls.profile}
+          profileLoading={controls.profileLoading}
+          profileError={controls.profileError}
+          retryProfile={controls.retryProfile}
+          onClose={controls.closeDialog}
+          onCreate={controls.create}
+          onEdit={controls.edit}
+          onEditProfile={controls.editProfile}
+          submitting={controls.submitting}
+          error={controls.submissionError}
+          profileSubmitting={controls.profileSubmitting}
+          profileSubmissionError={controls.profileSubmissionError}
+          profileSaved={controls.profileSaved}
+        />
       )}
       {dialog?.action === UserAction.VIEW && dialog.row && (
         <Sheet open title={__('Account details')} onOpenChange={(open) => { if (!open) controls.closeDialog(); }} dataTestId={USER_SETUP_TEST_IDS.DETAILS}>
@@ -58,6 +79,8 @@ export const UserSetup = ({ controls }: UserSetupProps) => {
             <Box>{dialog.row.email}</Box>
             <Box>{dialog.row.username ?? '—'}</Box>
             <Box>{dialog.row.status}</Box>
+            {controls.profile && <Box>{[controls.profile.firstName, controls.profile.middleName, controls.profile.lastName].filter(Boolean).join(' ')}</Box>}
+            {controls.profile?.phoneNumber && <Box>{controls.profile.phoneNumber}</Box>}
           </Box>
         </Sheet>
       )}

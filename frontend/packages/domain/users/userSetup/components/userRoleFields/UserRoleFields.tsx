@@ -8,11 +8,9 @@ import type { UserRoleFieldsProps } from './types/userRoleFields.props';
 
 export const UserRoleFields = ({ options, value, onChange, disabled }: UserRoleFieldsProps) => (
   <Box className={styles.fields}>
-    <Box>{__('Primary role (required)')}</Box>
-    <Select label={__('Primary role')} value={value.primaryRoleId || null} options={options} clearable={false} disabled={disabled} onChange={(role) => {
+    <Select label={__('Primary role (required)')} value={value.primaryRoleId || null} options={options} clearable={false} disabled={disabled} onChange={(role) => {
       if (role) onChange({ primaryRoleId: role, secondaryRoleIds: _filter(value.secondaryRoleIds, (id) => id !== role) });
     }} />
-    <Box>{__('Secondary roles')}</Box>
     <MultiSelect label={__('Secondary roles')} value={value.secondaryRoleIds} options={_filter(options, (option) => option.value !== value.primaryRoleId)} disabled={disabled} onChange={(roles) => onChange({ ...value, secondaryRoleIds: roles })} />
   </Box>
 );
