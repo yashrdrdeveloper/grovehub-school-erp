@@ -136,6 +136,8 @@ type TableCommonProps<T> = {
   readonly rowActions?: readonly TableRowAction<T>[];
   readonly selectionProps?: TableSelectionProps<T>;
   readonly bulkActions?: readonly TableHeaderAction[];
+  readonly fillHeight?: boolean;
+  readonly maxPinnedColumns?: number;
   readonly preferencesProps?: TablePreferencesProps;
   readonly loading?: boolean;
   readonly refreshing?: boolean;

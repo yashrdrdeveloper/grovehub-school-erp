@@ -10,7 +10,7 @@ export const TableRowActions = <T,>({ row, props }: TableRowActionsProps<T>) => 
   if (!items.length) return null;
   return (
     <Box onClick={(event) => event.stopPropagation()}>
-      <Dropdown label={__('Actions')} items={items} onSelect={(id) => props.actions?.ROW_ACTION?.({ id, row })} />
+      <Dropdown iconOnly label={__('Actions')} items={items} onSelect={(id) => props.actions?.ROW_ACTION?.({ id, row })} />
     </Box>
   );
 };

@@ -39,14 +39,14 @@ export const TableView = <T,>(props: TableViewProps<T>) => {
     }];
   });
   return (
-    <Box className={styles.root} dataTestId={props.dataTestId ?? props.id} data-fullscreen={controls.fullscreen}>
+    <Box className={styles.root} dataTestId={props.dataTestId ?? props.id} data-fullscreen={controls.fullscreen} data-fill-height={props.fillHeight}>
       {headerProps && <TableHeader {...headerProps} onAction={actions?.HEADER_ACTION} />}
       <Box className={styles.panel}>
         <Box className={styles.toolbar}>
           {searchProps && <Box className={styles.search}><DebouncedInput label={__('Search')} value={searchProps.value} placeholder={searchProps.placeholder} debounceMs={searchProps.debounceMs} onChange={(value) => actions?.SEARCH?.(value)} /></Box>}
           {filterProps && <Filters {...filterProps} onChange={(value) => actions?.FILTER?.(value)} />}
           {sortProps && <Sort {...sortProps} onChange={(value) => actions?.SORT?.(value)} />}
-          <ColumnManager options={options} density={controls.preferences.density} onToggle={controls.toggle} onDensityChange={controls.setRowDensity} onReset={controls.reset} onMove={controls.move} onResize={controls.resize} onPin={controls.pin} />
+          <ColumnManager options={options} density={controls.preferences.density} onToggle={controls.toggle} onDensityChange={controls.setRowDensity} onReset={controls.reset} onReorder={controls.reorder} onPin={controls.pin} maxPinnedColumns={props.maxPinnedColumns} />
           {actions?.REFRESH && <ButtonWithIcon icon={RefreshCw} variant={BUTTON_VARIANT.OUTLINE} aria-label={__('Refresh')} onClick={actions.REFRESH} disabled={props.refreshing} />}
           {actions?.EXPORT && <Button variant={BUTTON_VARIANT.OUTLINE} onClick={actions.EXPORT}>{__('Export')}</Button>}
           {actions?.FULLSCREEN_CHANGE && <Button variant={BUTTON_VARIANT.OUTLINE} aria-pressed={controls.fullscreen} onClick={() => controls.changeFullscreen(!controls.fullscreen)}>{!controls.fullscreen && __('Fullscreen')}{controls.fullscreen && __('Exit fullscreen')}</Button>}
@@ -58,11 +58,14 @@ export const TableView = <T,>(props: TableViewProps<T>) => {
           {_map(props.bulkActions, (item) => <Button key={item.id} disabled={item.disabled} variant={BUTTON_VARIANT.OUTLINE} onClick={() => actions?.BULK_ACTION?.({ id: item.id, rowIds: controls.selected })}>{item.label}</Button>)}
           <Button variant={BUTTON_VARIANT.GHOST} onClick={() => actions?.SELECTION_CHANGE?.([])}>{__('Clear selection')}</Button>
         </Box>}
+        <Box className={styles.body}>
         {props.error && <Box role="alert" className={styles.state}>{props.error}{actions?.RETRY && <Button onClick={actions.RETRY}>{__('Retry')}</Button>}</Box>}
         {props.loading && <Box role="status" className={styles.state}>{__('Loading…')}</Box>}
         {!props.loading && !props.error && !controls.entries.length && <Box className={styles.state}>{props.emptyTitle ?? __('No results found')}</Box>}
         {!!controls.entries.length && !mobile && <DesktopTable {...props} />}
         {!!controls.entries.length && mobile && <MobileTable {...props} />}
+        </Box>
+        <Box className={styles.footer}>
         {pagination && <Pagination {...pagination} onChange={(action) => {
           if (action.type === 'LOAD_MORE' && actions?.LOAD_MORE) {
             actions.LOAD_MORE();
@@ -71,6 +74,7 @@ export const TableView = <T,>(props: TableViewProps<T>) => {
           actions?.PAGINATION?.(action);
         }} />}
         {footerProps && <TableHeader {...footerProps} onAction={actions?.FOOTER_ACTION} />}
+        </Box>
       </Box>
     </Box>
   );

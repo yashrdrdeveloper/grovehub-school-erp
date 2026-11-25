@@ -62,6 +62,14 @@ export const useTable = <T,>(props: TableProps<T>) => {
     update({ ...preferences, hidden });
     actions?.COLUMN_VISIBILITY?.(hidden);
   };
+  const reorder = (ids: readonly string[]) => {
+    const order = Array.from(new Set(ids));
+    if (order.length !== columns.length || columns.some((column) => !order.includes(column.id))) return;
+    const previous = Array.from(new Set([...preferences.order, ..._map(columns, (column) => column.id)]));
+    if (columns.some((column) => column.reorderable === false && previous.indexOf(column.id) !== order.indexOf(column.id))) return;
+    update({ ...preferences, order });
+    actions?.COLUMN_REORDER?.(order);
+  };
   const move = (id: string, delta: number) => {
     const order = Array.from(new Set([...preferences.order, ..._map(columns, (column) => column.id)]));
     const from = order.indexOf(id);
@@ -84,6 +92,8 @@ export const useTable = <T,>(props: TableProps<T>) => {
   };
   const pin = (id: string, value: ColumnPin) => {
     if (!columns.some((column) => column.id === id) || !Object.values(TablePin).includes(value)) return;
+    const locked = _filter(columns, (column) => (preferences.pins[column.id] ?? column.pin ?? TablePin.NONE) !== TablePin.NONE);
+    if (value !== TablePin.NONE && !locked.some((column) => column.id === id) && locked.length >= (props.maxPinnedColumns ?? 3)) return;
     update({ ...preferences, pins: { ...preferences.pins, [id]: value } });
     actions?.COLUMN_PIN?.({ id, pin: value });
   };
@@ -122,7 +132,7 @@ export const useTable = <T,>(props: TableProps<T>) => {
   };
   return {
     preferences, layout, entries, total: client.total, expanded, collapsed, selected, selectable,
-    toggle, move, resize, pin, setRowDensity, toggleExpanded, toggleGroup, selectRow, selectPage,
+    toggle, move, reorder, resize, pin, setRowDensity, toggleExpanded, toggleGroup, selectRow, selectPage,
     fullscreen, changeFullscreen,
     reset: () => {
       update(getDefaultTablePreferences(props));

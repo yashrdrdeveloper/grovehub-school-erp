@@ -32,12 +32,12 @@ export const ColumnManager = ({ options, density, onToggle, onDensityChange, onR
               <Box className={styles.option}>
                 <Checkbox checked={option.visible} disabled={option.disabled} label={option.label} onChange={() => onToggle(option.id)} />
                 <Box className={styles.name}>{option.label}</Box>
-                {onPin && isLocked(option) && <ButtonWithIcon icon={Lock} size={BUTTON_SIZE.SM} variant={BUTTON_VARIANT.GHOST} className={styles.locked} aria-label={__('Unlock {{column}}', { column: option.label })} aria-pressed={true} onClick={() => onPin(option.id, TablePin.NONE)} />}
-                {onPin && !isLocked(option) && <ButtonWithIcon icon={LockOpen} size={BUTTON_SIZE.SM} variant={BUTTON_VARIANT.GHOST} disabled={!option.visible || lockedCount >= maxPinnedColumns} aria-label={__('Lock {{column}}', { column: option.label })} aria-pressed={false} onClick={() => onPin(option.id, TablePin.LEFT)} />}
+                {onPin && isLocked(option) && <ButtonWithIcon icon={Lock} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} className={styles.locked} aria-label={__('Unlock {{column}}', { column: option.label })} aria-pressed={true} onClick={() => onPin(option.id, TablePin.NONE)} />}
+                {onPin && !isLocked(option) && <ButtonWithIcon icon={LockOpen} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} disabled={!option.visible || lockedCount >= maxPinnedColumns} aria-label={__('Lock {{column}}', { column: option.label })} aria-pressed={false} onClick={() => onPin(option.id, TablePin.LEFT)} />}
               </Box>
             )} />
           <Select label={__('Density')} value={density} clearable={false} searchable={false} options={[{value: TableDensity.COMPACT, label: __('Compact')}, {value: TableDensity.DEFAULT, label: __('Default')}, {value: TableDensity.COMFORTABLE, label: __('Comfortable')}]} onChange={(value) => { if (value) onDensityChange(value); }} />
-          <Button variant={BUTTON_VARIANT.OUTLINE} size={BUTTON_SIZE.SM} onClick={onReset}>{__('Reset columns')}</Button>
+          <Button variant={BUTTON_VARIANT.OUTLINE} size={BUTTON_SIZE.SMALL} onClick={onReset}>{__('Reset columns')}</Button>
         </Box>
       </Popover>
     </Box>
