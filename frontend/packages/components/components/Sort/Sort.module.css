@@ -23,7 +23,7 @@
   align-items: center;
   gap: var(--gh-space-2);
 }
-.actions, .footer {
+.footer {
   display: flex;
   align-items: center;
   gap: var(--gh-space-1);
@@ -41,8 +41,10 @@
   font-weight: var(--gh-weight-normal);
 }
 @media (max-width: 640px) {
-  .rule { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-  .actions { grid-column: 1 / -1; justify-content: flex-end; }
+  .rule {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: var(--gh-space-1);
+  }
 }
 
 .rule { min-height: var(--gh-control-height-sm); }

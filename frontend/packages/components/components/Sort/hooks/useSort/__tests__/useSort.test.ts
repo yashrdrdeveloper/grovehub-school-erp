@@ -33,6 +33,19 @@ describe('useSort', () => {
     expect(result.current.draft).toHaveLength(3);
   });
 
+  it('preserves sort directions and applies the dragged priority order', () => {
+    const onChange = jest.fn();
+    const third = { field: 'createdAt', direction: SortDirection.ASC };
+    const { result } = renderHook(() =>
+      useSort({ fields, value: [first, second, third], onChange }),
+    );
+    act(() => result.current.reorder([third, first, second]));
+    expect(result.current.draft).toEqual([third, first, second]);
+    expect(onChange).not.toHaveBeenCalled();
+    act(() => result.current.apply());
+    expect(onChange).toHaveBeenCalledWith([third, first, second]);
+  });
+
   it('does not apply duplicate fields', () => {
     const onChange = jest.fn();
     const { result } = renderHook(() =>

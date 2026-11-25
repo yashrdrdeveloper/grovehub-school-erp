@@ -47,19 +47,9 @@ export const useSort = ({ value, onChange, fields, maxFields }: SortProps) => {
       });
     });
   };
-  const move = (index: number, offset: number) => {
-    const target = index + offset;
-    const current = draft[index];
-    const other = draft[target];
-    if (!current || !other) return;
-    setDraft(_map(draft, (item, position) => {
-      if (position === index) return other;
-      if (position === target) return current;
-      return item;
-    }));
-  };
+  const reorder = (items: readonly SortCondition[]) => setDraft(items);
   return {
-    open, draft, available, getAvailableFields, canAdd, isDraftValid, addReason: getAddReason(), onOpenChange, add, update, move,
+    open, draft, available, getAvailableFields, canAdd, isDraftValid, addReason: getAddReason(), onOpenChange, add, update, reorder,
     remove: (index: number) => setDraft((items) => _filter(items, (item) => item !== items[index])),
     reset: () => setDraft([]),
     apply: () => {

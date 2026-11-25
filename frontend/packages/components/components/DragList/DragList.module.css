@@ -23,3 +23,11 @@
   flex: 1;
   min-width: 0;
 }
+
+.row[data-compact='true'] {
+  border-bottom: 0;
+  padding-block: var(--gh-space-1);
+}
+.handle.handle:disabled {
+  cursor: not-allowed;
+}
