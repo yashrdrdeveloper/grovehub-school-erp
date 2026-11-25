@@ -17,6 +17,8 @@ export interface ColumnManagerProps {
   readonly density: (typeof TableDensity)[keyof typeof TableDensity];
   readonly onToggle: (id: string) => void;
   readonly onDensityChange: (density: (typeof TableDensity)[keyof typeof TableDensity]) => void;
+  readonly maxPinnedColumns?: number;
+  readonly onReorder?: (ids: readonly string[]) => void;
   readonly onMove?: (id: string, offset: number) => void;
   readonly onResize?: (id: string, width: number) => void;
   readonly onPin?: (id: string, pin: ColumnPin) => void;

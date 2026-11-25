@@ -1,16 +1,23 @@
-.content,
-.option {
+.content {
   display: grid;
-  gap: var(--gh-space-2);
+  gap: var(--gh-space-3);
+}
+.hint {
+  font-size: var(--gh-text-xs);
+  color: var(--gh-color-muted);
 }
 .option {
-  border: 1px solid var(--gh-color-border);
-  border-radius: var(--gh-control-radius);
-  padding: var(--gh-space-2);
-}
-.actions {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: var(--gh-space-1);
+  gap: var(--gh-space-2);
+  min-width: 0;
+  font-size: var(--gh-text-sm);
+}
+.name {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.locked {
+  color: var(--gh-color-accent);
 }
