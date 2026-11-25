@@ -21,7 +21,7 @@ func New(accounts accountrepo.Repository, mapper accountmapper.Mapper) get.Opera
 }
 
 func (op *Service) Execute(ctx context.Context, accountID string) (accountdto.Account, error) {
-	actor, err := principal.RequireAdmin(ctx)
+	actor, err := principal.RequireTenant(ctx)
 	if err != nil {
 		return accountdto.Account{}, err
 	}

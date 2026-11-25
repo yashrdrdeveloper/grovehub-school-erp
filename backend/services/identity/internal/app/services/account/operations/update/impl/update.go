@@ -32,7 +32,7 @@ func New(accounts accountrepo.Repository, mapper accountmapper.Mapper, validator
 }
 
 func (op *Service) Execute(ctx context.Context, accountID string, request accountdto.Update) (accountdto.Account, error) {
-	actor, err := principal.RequireAdmin(ctx)
+	actor, err := principal.RequireTenant(ctx)
 	if err != nil {
 		return accountdto.Account{}, err
 	}
