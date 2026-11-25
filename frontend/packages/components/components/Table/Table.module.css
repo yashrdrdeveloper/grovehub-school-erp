@@ -179,7 +179,7 @@
   font-size: var(--gh-text-xs);
   padding-inline: var(--gh-space-1);
   text-align: center;
-  box-shadow: inset 2px 0 var(--gh-color-table-divider);
+  box-shadow: inset 1px 0 var(--gh-color-table-rule);
 }
 .table th.selection,
 .table th.actionColumn {
