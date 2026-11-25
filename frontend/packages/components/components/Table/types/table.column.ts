@@ -14,6 +14,8 @@ export interface TableColumn<T> {
   readonly sortable?: boolean;
   readonly sortField?: string;
   readonly width?: number;
+  /** Grow into spare viewport width until explicitly resized. */
+  readonly fillRemainingWidth?: boolean;
   readonly minWidth?: number;
   readonly maxWidth?: number;
   readonly pin?: ColumnPin;

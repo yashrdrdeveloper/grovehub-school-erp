@@ -40,6 +40,10 @@ export class Column<T> {
     return new Column({ ...this.definition, width });
   }
 
+  setFillRemainingWidth(fillRemainingWidth: boolean): Column<T> {
+    return new Column({ ...this.definition, fillRemainingWidth });
+  }
+
   setMinWidth(minWidth: number): Column<T> {
     return new Column({ ...this.definition, minWidth });
   }

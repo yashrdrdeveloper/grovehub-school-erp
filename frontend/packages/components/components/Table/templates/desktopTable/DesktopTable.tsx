@@ -11,6 +11,7 @@ import { TableSortHeader } from '../../components/tableSortHeader';
 import { ColumnResizeHandle } from '../../components/columnResizeHandle';
 import { TABLE_DIMENSIONS } from '../../constants/table.dimensions';
 import { getTableFillWidth } from '../../helpers/table.getFillWidth';
+import { getTableStretchLayout } from '../../helpers/table.getStretchLayout';
 import { TablePin, TableType } from '../../constants/table.type';
 import { getVirtualWindow } from '../../helpers/table.getVirtualWindow';
 import { getTableCellStyle } from '../../helpers/table.getCellStyle';
@@ -45,14 +46,15 @@ export const DesktopTable = <T,>(props: DesktopTableProps<T>) => {
   const selection = Boolean(props.selectionProps);
   const rowActions = Boolean(props.rowActions?.length);
   const fixedWidth = Number(selection) * TABLE_DIMENSIONS.selection + Number(rowActions) * TABLE_DIMENSIONS.actions;
-  const columnsWidth = controls.layout.reduce((sum, item) => sum + item.width, 0);
+  const layout = getTableStretchLayout(controls.layout, available, fixedWidth, controls.preferences.widths);
+  const columnsWidth = layout.reduce((sum, item) => sum + item.width, 0);
   const fill = getTableFillWidth(available, columnsWidth, fixedWidth);
   const filler = fill > 0;
-  const firstRight = controls.layout.findIndex((entry) => entry.pin === TablePin.RIGHT);
+  const firstRight = layout.findIndex((entry) => entry.pin === TablePin.RIGHT);
   const fillBefore = (index: number) => filler && firstRight === index;
   const fillAtEnd = filler && firstRight < 0;
 
-  const span = Math.max(1, controls.layout.length + Number(selection) + Number(rowActions) + Number(filler));
+  const span = Math.max(1, layout.length + Number(selection) + Number(rowActions) + Number(filler));
   const pageChecked = Boolean(controls.selectable.length) && controls.selectable.every((id) => controls.selected.includes(id));
   const someChecked = controls.selectable.some((id) => controls.selected.includes(id));
   const tableWidth = columnsWidth + fixedWidth + fill;
@@ -69,7 +71,7 @@ export const DesktopTable = <T,>(props: DesktopTableProps<T>) => {
       <table className={styles.table} data-density={controls.preferences.density} data-virtual={virtual} style={{ width: tableWidth }} aria-busy={props.refreshing} aria-label={props.headerProps?.title ?? __('Table')}>
         <colgroup>
           {selection && <col style={{ width: TABLE_DIMENSIONS.selection }} />}
-          {_map(controls.layout, (entry, index) => (
+          {_map(layout, (entry, index) => (
             <Fragment key={entry.column.id}>
               {fillBefore(index) && <col style={{ width: fill }} />}
               <col style={{ width: entry.width }} />
@@ -81,7 +83,7 @@ export const DesktopTable = <T,>(props: DesktopTableProps<T>) => {
         <thead>
           <tr>
             {selection && <th scope="col" className={styles.selection}><TableSelection label={__('Select visible rows')} checked={pageChecked} indeterminate={someChecked && !pageChecked} disabled={!controls.selectable.length} onChange={controls.selectPage} /></th>}
-            {_map(controls.layout, (entry, index) => (
+            {_map(layout, (entry, index) => (
               <Fragment key={entry.column.id}>
               {fillBefore(index) && <th aria-hidden="true" className={styles.filler} />}
               <th scope="col" style={{ ...getTableCellStyle(entry, selection, rowActions), position: 'sticky', top: 0, zIndex: 3 + Number(entry.pin !== TablePin.NONE) }} data-pinned={entry.pin !== TablePin.NONE}>
@@ -112,7 +114,7 @@ export const DesktopTable = <T,>(props: DesktopTableProps<T>) => {
             return (
               <tr key={`row:${entry.id}`} style={rowStyle()} onDoubleClick={() => props.actions?.ROW_DOUBLE_CLICK?.(row)} data-selected={controls.selected.includes(entry.id)}>
                 {selection && <td className={styles.selection}><TableSelection label={__('Select row {{id}}', { id: entry.id })} checked={controls.selected.includes(entry.id)} disabled={!controls.selectable.includes(entry.id)} onChange={() => controls.selectRow(entry.id)} /></td>}
-                {_map(controls.layout, (layout, index) => (
+                {_map(layout, (layout, index) => (
                   <Fragment key={layout.column.id}>
                   {fillBefore(index) && <td aria-hidden="true" className={styles.filler} />}
                   <td style={getTableCellStyle(layout, selection, rowActions)} data-pinned={layout.pin !== TablePin.NONE}>

@@ -3,9 +3,11 @@
   align-items: center;
   gap: var(--gh-space-1);
   min-width: 0;
+  flex: 1;
 }
 .value {
   min-width: 0;
+  flex: 1;
   overflow-wrap: anywhere;
 }
 
