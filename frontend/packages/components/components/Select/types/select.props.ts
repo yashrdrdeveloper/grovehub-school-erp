@@ -10,6 +10,7 @@ export interface SelectOption<T extends SelectValue = string> {
 export interface SelectCommonProps<T extends SelectValue> {
   readonly options: readonly SelectOption<T>[];
   readonly label: string;
+  readonly hideLabel?: boolean;
   readonly placeholder?: string;
   readonly disabled?: boolean;
   readonly searchable?: boolean;

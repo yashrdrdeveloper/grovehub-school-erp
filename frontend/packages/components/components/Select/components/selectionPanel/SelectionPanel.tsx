@@ -28,6 +28,7 @@ export const SelectionPanel = <T extends SelectValue>({
   onLoadMore,
   onRetry,
   label,
+  hideLabel,
   placeholder,
   disabled,
   searchable = true,
@@ -45,7 +46,7 @@ export const SelectionPanel = <T extends SelectValue>({
 
   return (
     <Box className={styles.field}>
-      <Box className={styles.description}>{label}</Box>
+      {!hideLabel && <Box className={styles.description}>{label}</Box>}
       <Popover open={open} onOpenChange={onOpenChange} title={label} fullWidth dataTestId={dataTestId && `${dataTestId}-options`} trigger={
       <ButtonWithIcon
         icon={ChevronDown}
