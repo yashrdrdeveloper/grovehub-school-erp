@@ -24,13 +24,13 @@
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: var(--gh-space-2);
+  gap: var(--gh-space-1);
   color: var(--gh-color-text-strong);
   white-space: nowrap;
 }
 
 .schoolName {
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: var(--gh-weight-semibold);
   line-height: 1;
 }
@@ -40,8 +40,8 @@
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  width: 64px;
-  height: 32px;
+  width: 48px;
+  height: 26px;
   color: inherit;
 }
 
@@ -85,12 +85,12 @@
   }
 
   .logo {
-    width: 48px;
-    height: 26px;
+    width: 40px;
+    height: 22px;
   }
 
   .schoolName {
-    font-size: 1rem;
+    font-size: 0.875rem;
   }
 
   .menu {
