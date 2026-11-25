@@ -10,6 +10,7 @@ import { Tooltip } from '../Tooltip';
 
 import { DATE_RANGE_PRESETS } from './constants/dateRange.presets';
 import { shiftRangeMonth } from './helpers/dateRange.calendar';
+import { getFormattedRangeDate } from './helpers/dateRange.getFormattedDate';
 import { useDateRange } from './hooks/useDateRange';
 import styles from './DateRange.module.css';
 import type { DateRangeProps } from './types/dateRange.props';
@@ -20,7 +21,7 @@ export const DateRange = (props: DateRangeProps) => {
   const empty = !value.startDate && !value.endDate;
   const getSummary = () => {
     if (empty) return __('Select date range');
-    return [value.startDate ?? '—', value.endDate ?? '—'].join(' – ');
+    return [getFormattedRangeDate(value.startDate), getFormattedRangeDate(value.endDate)].join(' – ');
   };
   const getApplyReason = () => {
     if (disabled) return __('Date range is disabled.');
@@ -55,9 +56,9 @@ export const DateRange = (props: DateRangeProps) => {
             </Box>
             <Box className={styles.selection}>
               <Box className={styles.summary} aria-live="polite">
-                <Box className={styles.date} data-placeholder={!controls.draft.startDate}>{controls.draft.startDate ?? __('Start date')}</Box>
+                <Box className={styles.date} data-placeholder={!controls.draft.startDate}>{getFormattedRangeDate(controls.draft.startDate, __('Start date'))}</Box>
                 <Box className={styles.separator} aria-hidden="true">–</Box>
-                <Box className={styles.date} data-placeholder={!controls.draft.endDate}>{controls.draft.endDate ?? __('End date')}</Box>
+                <Box className={styles.date} data-placeholder={!controls.draft.endDate}>{getFormattedRangeDate(controls.draft.endDate, __('End date'))}</Box>
               </Box>
               <Box className={styles.calendars}>
                 <Calendar compact hideFooter navigation="previous" month={controls.month} onMonthChange={controls.setMonth} value={controls.draft.startDate} range={controls.preview} onChange={controls.selectDate} onDayHover={controls.setHover} disabled={disabled} />

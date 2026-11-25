@@ -7,6 +7,7 @@ import { Box } from '../Box';
 import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '../Button';
 import { ButtonWithIcon } from '../ButtonWithIcon';
 import { EmptyState } from '../EmptyState';
+import { getFormattedRangeDate } from '../DateRange';
 import { Input } from '../Input';
 import { Select } from '../Select';
 import { Tooltip } from '../Tooltip';
@@ -18,12 +19,21 @@ import { FILTER_OPERATOR_LABELS } from './constants/filters.copy';
 import { isFilterValid } from './helpers/filters.isValid';
 import styles from './Filters.module.css';
 import { FilterOperator } from './constants/filter.operator';
+import { FilterFieldType } from './constants/filter.fieldType';
+import type { FilterCondition } from './types/filters.props';
 import type { FiltersProps } from './types/filters.props';
 import type { useFilters } from './hooks/useFilters';
 
 export const FiltersView = ({ fields, value, disabled, iconOnly, dataTestId, controls }: FiltersProps & { readonly controls: ReturnType<typeof useFilters> }) => {
   const mobile = useMobileViewport();
   const { editing, selectedField } = controls;
+  const getValueSummary = (condition: FilterCondition) => {
+    const field = _find(fields, (entry) => entry.id === condition.field);
+    if (field?.type === FilterFieldType.DATE_RANGE || (field?.type === FilterFieldType.DATE && condition.operator === FilterOperator.BETWEEN)) {
+      return _map(condition.values, (value) => getFormattedRangeDate(value)).join(' – ');
+    }
+    return condition.values.join(', ');
+  };
   const getTitle = () => {
     if (!mobile) return __('Manage filters');
     if (editing) return __('Filter condition');
@@ -49,7 +59,7 @@ export const FiltersView = ({ fields, value, disabled, iconOnly, dataTestId, con
                 <Box className={styles.condition} key={condition.id}>
                   <Box className={styles.summary}>
                     <Box>{_find(fields, (field) => field.id === condition.field)?.label ?? condition.field}</Box>
-                    <Box className={styles.muted}>{FILTER_OPERATOR_LABELS[condition.operator]} {condition.values.join(', ')}</Box>
+                    <Box className={styles.muted}>{FILTER_OPERATOR_LABELS[condition.operator]} {getValueSummary(condition)}</Box>
                   </Box>
                   <ButtonWithIcon icon={Pencil} variant={BUTTON_VARIANT.GHOST} aria-label={__('Edit filter')} onClick={() => controls.edit(condition)} />
                   <ButtonWithIcon icon={Trash2} variant={BUTTON_VARIANT.GHOST} aria-label={__('Delete filter')} onClick={() => controls.remove(condition.id)} />
