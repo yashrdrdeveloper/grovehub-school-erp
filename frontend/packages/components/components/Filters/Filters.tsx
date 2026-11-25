@@ -22,7 +22,7 @@ export const FiltersView = ({ fields, value, disabled, maxFilters, dataTestId, c
   const mobile = useMobileViewport();
   const { editing, selectedField } = controls;
   const getTitle = () => {
-    if (!mobile) return __('Filter users');
+    if (!mobile) return __('Manage filters');
     if (editing) return __('Filter condition');
     return __('Manage filters');
   };
@@ -36,7 +36,7 @@ export const FiltersView = ({ fields, value, disabled, maxFilters, dataTestId, c
         {getButton()}
       </ButtonWithIcon>
     }>
-        {!mobile && <DesktopFilters fields={fields} value={value} onChange={() => undefined} maxFilters={maxFilters} controls={controls} />}
+        {!mobile && <DesktopFilters fields={fields} maxFilters={maxFilters} controls={controls} />}
         {mobile && !editing && (
           <Box className={styles.panel}>
             <Box className={styles.list}>

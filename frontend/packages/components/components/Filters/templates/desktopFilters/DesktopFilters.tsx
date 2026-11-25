@@ -32,7 +32,7 @@ export const DesktopFilters = ({ fields, maxFilters, controls }: DesktopFiltersP
                 if (operator) controls.updateInline({ ...condition, operator, values: [] });
               }} />
               <Box className={styles.value}>
-                {field && <FilterValue field={field} condition={condition} onChange={(values) => controls.updateInline({ ...condition, values })} />}
+                {field && <FilterValue hideLabel field={field} condition={condition} onChange={(values) => controls.updateInline({ ...condition, values })} />}
               </Box>
               <ButtonWithIcon icon={Trash2} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} aria-label={__('Delete filter')} onClick={() => controls.remove(condition.id)} />
             </Box>

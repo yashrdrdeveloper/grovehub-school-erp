@@ -1,4 +1,4 @@
-import { Button, BUTTON_VARIANT } from '../../../Button';
+import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '../../../Button';
 import { SortDirection } from '../../../Sort';
 
 import type { TableSortHeaderProps } from './types/tableSortHeader.props';
@@ -28,5 +28,5 @@ export const TableSortHeader = <T,>({ column, props }: TableSortHeaderProps<T>) 
     }
     props.actions?.SORT?.([next, ...rules].slice(0, props.sortProps?.maxFields ?? rules.length + 1));
   };
-  return <Button variant={BUTTON_VARIANT.GHOST} onClick={change}>{column.header}{getLabel()}</Button>;
+  return <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} onClick={change}>{column.header}{getLabel()}</Button>;
 };
