@@ -1525,7 +1525,7 @@ body {
   outline-offset: 3px;
 }
 .sidebar {
-  background: var(--surface);
+  background: var(--gh-color-shell-surface);
   border-right: 1px solid var(--border);
 }
 .sidebar__school {
@@ -2217,10 +2217,10 @@ body {
   box-shadow: var(--shadow);
 }
 .sidebar {
-  background: var(--surface);
+  background: var(--gh-color-shell-surface);
 }
 .sidebar__school {
-  background: linear-gradient(125deg, var(--accent-pale), var(--surface));
+  background: var(--gh-color-shell-surface);
 }
 .school-emblem {
   color: var(--accent);
@@ -3035,10 +3035,10 @@ body {
   box-shadow: var(--shadow);
 }
 .sidebar {
-  background: var(--surface);
+  background: var(--gh-color-shell-surface);
 }
 .sidebar__school {
-  background: linear-gradient(125deg, var(--accent-pale), var(--surface));
+  background: var(--gh-color-shell-surface);
 }
 .school-emblem {
   color: var(--accent);
@@ -3313,7 +3313,7 @@ body {
   background: var(--canvas);
 }
 :root .sidebar {
-  background: var(--surface);
+  background: var(--gh-color-shell-surface);
   border-right: 1px solid var(--border);
 }
 :root .topbar {

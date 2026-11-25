@@ -29,7 +29,7 @@
   gap: 13px;
   min-width: 0;
   padding: 11px 13px;
-  border-radius: var(--gh-radius-md);
+  border-radius: var(--gh-control-radius);
   text-decoration: none;
   font-size: var(--gh-text-xs);
   font-weight: var(--gh-weight-semibold);
@@ -53,8 +53,9 @@
 }
 
 .active {
-  background: var(--gh-color-surface-subtle);
-  color: var(--gh-color-text-strong);
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-secondary-foreground);
+  box-shadow: inset 3px 0 var(--gh-color-accent);
   font-weight: var(--gh-weight-bold);
 }
 

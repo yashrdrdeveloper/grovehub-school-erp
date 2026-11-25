@@ -20,5 +20,5 @@
 .handle:focus-visible::after,
 .handle[data-resizing='true']::after {
   width: 2px;
-  background: var(--gh-color-table-heading-text);
+  background: var(--gh-color-ring);
 }

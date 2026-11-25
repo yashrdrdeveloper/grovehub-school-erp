@@ -14,7 +14,7 @@
   font-weight: var(--gh-weight-medium);
   border: 1px solid transparent;
   border-radius: var(--gh-control-radius);
-  color: var(--gh-color-muted);
+  color: var(--gh-color-text-secondary);
 }
 .filter:hover:not(:disabled) {
   color: var(--gh-color-table-selected-text);
@@ -25,5 +25,4 @@
   color: var(--gh-color-table-selected-text);
   border-color: var(--gh-color-table-control-border);
   font-weight: var(--gh-weight-semibold);
-  box-shadow: inset 0 -2px var(--gh-color-table-action);
 }

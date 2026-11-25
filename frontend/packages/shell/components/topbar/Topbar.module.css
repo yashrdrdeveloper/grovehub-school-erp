@@ -10,7 +10,7 @@
   height: 66px;
   padding-inline: 35px;
   border-bottom: 1px solid var(--gh-color-border);
-  background: var(--gh-color-surface);
+  background: var(--gh-color-shell-surface);
   color: var(--gh-color-text);
 }
 
@@ -71,7 +71,7 @@
   place-items: center;
   width: 28px;
   height: 28px;
-  border-radius: 8px;
+  border-radius: var(--gh-control-radius);
   font-size: 0.8125rem;
   font-weight: var(--gh-weight-heavy);
   color: var(--gh-color-secondary-foreground);

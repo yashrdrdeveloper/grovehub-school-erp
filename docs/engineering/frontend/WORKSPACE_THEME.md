@@ -1,0 +1,3 @@
+# Workspace theme
+
+The approved palette uses royal-blue actions and neutral Graphite table column headers: light `#E2E5E9`, dark `#383D46`. Workspace canvas, shell, controls, stripes, selected states, status badges and pagination use shared semantic tokens in `packages/styles/themes/light.css` and `dark.css`. Normal resize lines are one pixel, pinned dividers two pixels, and resize hover uses the theme focus color. The column header is 40px with 13px semibold text. Shared typography and control sizing remain unchanged in this color-focused revision. Existing behavior, API contracts and user preferences are unchanged. Auth and public pages consuming shared tokens inherit the new general colors; dedicated illustration and public-site brand tokens are retained.

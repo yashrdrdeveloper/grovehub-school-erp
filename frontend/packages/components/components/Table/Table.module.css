@@ -35,7 +35,7 @@
 .toolbar button {
   font-size: var(--gh-text-sm);
   font-weight: var(--gh-weight-medium);
-  color: var(--gh-color-table-selected-text);
+  color: var(--gh-color-text-secondary);
   border-color: var(--gh-color-table-control-border);
   background: var(--gh-color-table-control);
 }
@@ -117,7 +117,10 @@
   font-weight: var(--gh-weight-semibold);
   padding-block: var(--gh-space-1);
   padding-inline-end: var(--gh-space-3);
-  border-bottom-color: var(--gh-color-table-heading);
+  height: var(--gh-table-heading-height);
+  font-size: var(--gh-text-table-heading);
+  border-top: 1px solid var(--gh-color-table-heading-border);
+  border-bottom-color: var(--gh-color-table-heading-border);
 }
 .table th button {
   color: inherit;
@@ -134,7 +137,7 @@
   color: var(--gh-color-table-heading-text);
 }
 .table th button:focus-visible {
-  outline-color: var(--gh-color-table-heading-muted);
+  outline-color: var(--gh-color-ring);
   outline-offset: -2px;
 }
 .table tbody tr:nth-child(even) td {
@@ -182,7 +185,7 @@
   font-size: var(--gh-text-xs);
   padding-inline: var(--gh-space-1);
   text-align: center;
-  box-shadow: inset 1px 0 var(--gh-color-table-divider);
+  box-shadow: inset 2px 0 var(--gh-color-table-divider);
 }
 .table th.selection,
 .table th.actionColumn {
@@ -190,7 +193,7 @@
 }
 .table th[data-pinned='true'],
 .table td[data-pinned='true'] {
-  box-shadow: inset -1px 0 var(--gh-color-table-divider);
+  box-shadow: inset -2px 0 var(--gh-color-table-divider);
 }
 .table .filler {
   padding: 0;
