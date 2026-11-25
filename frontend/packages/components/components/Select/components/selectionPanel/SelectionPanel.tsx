@@ -2,11 +2,14 @@ import { _map } from '@Base/utilities/map';
 import { _filter } from '@Base/utilities/filter';
 import { ChevronDown, Search } from '@Components/icons';
 
+import { useMobileViewport } from '@Components/hooks/useMobileViewport';
 import { Box } from '../../../Box';
-import { Button, BUTTON_VARIANT } from '../../../Button';
+import { Button, BUTTON_SIZE, BUTTON_VARIANT } from '../../../Button';
 import { ButtonWithIcon, BUTTON_ICON_POSITION } from '../../../ButtonWithIcon';
 import { EmptyState } from '../../../EmptyState';
 import { Input } from '../../../Input';
+import { InputControl, INPUT_CONTROL_SIZE } from '../../../InputControl';
+import { Icon } from '../../../Icon';
 import { Popover } from '../../../Popover';
 
 import styles from './SelectionPanel.module.css';
@@ -38,6 +41,8 @@ export const SelectionPanel = <T extends SelectValue>({
   error,
   dataTestId,
 }: SelectionPanelProps<T>) => {
+  const mobile = useMobileViewport();
+  const dropdown = !multiple && !mobile;
   const chosen = _filter(displayOptions ?? options, (option) => selected.includes(option.value));
   const getLabel = () => {
     if (!selected.length) return placeholder ?? __('Select an option');
@@ -48,7 +53,7 @@ export const SelectionPanel = <T extends SelectValue>({
   return (
     <Box className={styles.field}>
       {!hideLabel && <Box className={styles.description}>{label}</Box>}
-      <Popover open={open} onOpenChange={onOpenChange} title={label} compact fullWidth dataTestId={dataTestId && `${dataTestId}-options`} trigger={
+      <Popover open={open} onOpenChange={onOpenChange} title={label} compact fullWidth desktopDropdown={!multiple} dataTestId={dataTestId && `${dataTestId}-options`} trigger={
       <ButtonWithIcon
         icon={ChevronDown}
         iconPosition={BUTTON_ICON_POSITION.RIGHT}
@@ -65,8 +70,21 @@ export const SelectionPanel = <T extends SelectValue>({
         {getLabel()}
       </ButtonWithIcon>
       }>
-        <Box className={styles.content}>
-          {searchable && (
+        <Box className={styles.content} data-dropdown={dropdown}>
+          {searchable && dropdown && (
+            <Box className={styles.search}>
+              <Box className={styles.searchIcon} aria-hidden="true"><Icon icon={Search} size={14} /></Box>
+              <InputControl
+                aria-label={__('Search options')}
+                controlSize={INPUT_CONTROL_SIZE.SMALL}
+                className={styles.searchInput}
+                value={search}
+                onChange={(event) => onSearch(event.currentTarget.value)}
+                placeholder={__('Search...')}
+              />
+            </Box>
+          )}
+          {searchable && !dropdown && (
             <Input
               label={__('Search options')}
               value={search}
@@ -98,10 +116,12 @@ export const SelectionPanel = <T extends SelectValue>({
             {loading && <Box role="status">{__('Loading…')}</Box>}
             {hasNext && <Button disabled={loading} onClick={onLoadMore}>{__('Load more')}</Button>}
           </Box>
-          <Box className={styles.footer}>
-            {clearable && <Button variant={BUTTON_VARIANT.OUTLINE} onClick={onClear}>{__('Clear')}</Button>}
-            {multiple && <Button onClick={onApply}>{__('Apply')}</Button>}
-          </Box>
+          {(clearable || multiple) && (
+            <Box className={styles.footer}>
+              {clearable && <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} onClick={onClear}>{__('Clear')}</Button>}
+              {multiple && <Button onClick={onApply}>{__('Apply')}</Button>}
+            </Box>
+          )}
         </Box>
       </Popover>
     </Box>

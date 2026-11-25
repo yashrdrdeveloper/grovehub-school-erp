@@ -11,5 +11,7 @@ export interface PopoverProps {
   readonly compact?: boolean;
   /** Desktop-only bounded layout for content with its own scrollable body and footer. */
   readonly desktopScrollLayout?: boolean;
+  /** Anchor-sized desktop selection menu; retain the titled mobile sheet. */
+  readonly desktopDropdown?: boolean;
   readonly dataTestId?: string;
 }

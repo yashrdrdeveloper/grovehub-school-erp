@@ -20,7 +20,7 @@ export const DesktopFilters = ({ fields, maxFilters, controls }: DesktopFiltersP
   const invalid = controls.draft.some((condition) => !isFilterValid(condition, _find(fields, (field) => field.id === condition.field)));
   return (
     <Box className={styles.panel}>
-      <Box className={styles.list}>
+      <Box className={styles.list} data-empty={!controls.draft.length}>
         {!controls.draft.length && <EmptyState compact icon={Filter} title={__('No filters added')} description={__('Add a filter to narrow down your results.')} />}
         {_map(controls.draft, (condition) => {
           const field = _find(fields, (entry) => entry.id === condition.field);

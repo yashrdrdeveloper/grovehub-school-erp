@@ -1,7 +1,7 @@
 .panel {
   display: flex;
   flex-direction: column;
-  flex: 0 1 auto;
+  flex: 1 1 0;
   min-height: 0;
   min-width: 0;
   width: 100%;
@@ -16,6 +16,7 @@
   padding: var(--gh-space-2) var(--gh-space-3);
   overflow-y: auto;
   overflow-x: hidden;
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: var(--gh-color-scrollbar-thumb) var(--gh-color-scrollbar-track);
 }
@@ -86,4 +87,8 @@
     min-height: var(--gh-control-height-sm);
     height: var(--gh-control-height-sm);
   }
+}
+
+.list[data-empty='true'] {
+  align-content: center;
 }

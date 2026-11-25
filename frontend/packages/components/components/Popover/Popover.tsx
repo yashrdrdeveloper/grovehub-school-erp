@@ -7,7 +7,7 @@ import { DialogRoot, DialogPortal, DialogContent, DialogTitle, DialogClose } fro
 import styles from './Popover.module.css';
 import type { PopoverProps } from './types/popover.props';
 
-export const Popover = ({ open, onOpenChange, title, trigger, children, width = 360, fullWidth, compact = false, desktopScrollLayout = false, dataTestId }: PopoverProps) => {
+export const Popover = ({ open, onOpenChange, title, trigger, children, width = 360, fullWidth, compact = false, desktopScrollLayout = false, desktopDropdown = false, dataTestId }: PopoverProps) => {
   const anchor = useRef<HTMLElement>(null);
   const panel = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ left: 0, top: 0, width });
@@ -17,7 +17,11 @@ export const Popover = ({ open, onOpenChange, title, trigger, children, width = 
       const rect = anchor.current?.getBoundingClientRect();
       if (!rect) return;
       const available = Math.max(0, window.innerWidth - 24);
-      const panelWidth = Math.min(available, Math.max(width, rect.width));
+      const getWidth = () => {
+        if (desktopDropdown && window.innerWidth > 640) return Math.max(180, rect.width);
+        return Math.max(width, rect.width);
+      };
+      const panelWidth = Math.min(available, getWidth());
       const panelHeight = Math.min(panel.current?.offsetHeight ?? 320, window.innerHeight - 24);
       const left = Math.max(12, Math.min(rect.left, window.innerWidth - panelWidth - 12));
       const bottomSpace = window.innerHeight - rect.bottom - 12;
@@ -38,7 +42,7 @@ export const Popover = ({ open, onOpenChange, title, trigger, children, width = 
       window.removeEventListener('resize', place);
       window.removeEventListener('scroll', place, true);
     };
-  }, [open, width]);
+  }, [open, width, desktopDropdown]);
   return (
     <DialogRoot open={open} onOpenChange={onOpenChange}>
       <Box ref={anchor} dataTestId={dataTestId} className={styles.anchor} data-full-width={fullWidth}>
@@ -51,6 +55,7 @@ export const Popover = ({ open, onOpenChange, title, trigger, children, width = 
           className={styles.panel}
           data-compact={compact}
           data-desktop-scroll-layout={desktopScrollLayout}
+          data-desktop-dropdown={desktopDropdown}
           style={position}
           onCloseAutoFocus={(event) => {
             event.preventDefault();
