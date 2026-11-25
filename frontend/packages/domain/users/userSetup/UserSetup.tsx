@@ -6,7 +6,7 @@ import { Table, TableType, TableDataMode } from '@Components/components/Table';
 import { UserForm } from './components/userForm';
 import { UserAction } from './constants/userSetup.actions';
 import { USER_SETUP_COLUMNS } from './constants/userSetup.columns';
-import { USER_SETUP_FILTERS, USER_SETUP_QUICK_FILTERS } from './constants/userSetup.filters';
+import { USER_SETUP_FILTERS } from './constants/userSetup.filters';
 import { USER_SETUP_HEADER } from './constants/userSetup.header';
 import { USER_SETUP_ROW_ACTIONS } from './constants/userSetup.rowActions';
 import { USER_SETUP_SORT_FIELDS } from './constants/userSetup.sort';
@@ -43,7 +43,6 @@ export const UserSetup = ({ controls }: UserSetupProps) => {
         searchProps={{ value: state.searchText, placeholder: __('Search users...') }}
         filterProps={{ fields: USER_SETUP_FILTERS, value: state.filters, maxFilters: 19 }}
         sortProps={{ fields: USER_SETUP_SORT_FIELDS, value: state.sorting, maxFields: 1 }}
-        quickFilterProps={{ options: USER_SETUP_QUICK_FILTERS, value: state.quickFilterIds }}
         paginationProps={controls.pagination}
         rowActions={USER_SETUP_ROW_ACTIONS}
         actions={controls.actions}
