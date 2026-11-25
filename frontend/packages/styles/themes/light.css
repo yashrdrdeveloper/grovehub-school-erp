@@ -7,7 +7,25 @@
   --gh-color-text: #334155;
   --gh-color-text-strong: #0f172a;
   --gh-color-muted: #64748b;
-  --gh-color-table-resize: #c0cad9;
+  /* Data workspace palette — independent of authentication and public pages. */
+  --gh-color-table-heading: #263c5d;
+  --gh-color-table-heading-text: #f8faff;
+  --gh-color-table-heading-muted: #b9cbe3;
+  --gh-color-table-heading-hover: #385477;
+  --gh-color-table-control: #f7f9fd;
+  --gh-color-table-control-border: #c7d4e5;
+  --gh-color-table-action: #284f91;
+  --gh-color-table-action-hover: #1e3d73;
+  --gh-color-table-action-text: #ffffff;
+  --gh-color-table-selected: #e4edfb;
+  --gh-color-table-selected-text: #244880;
+  --gh-color-table-stripe: #f7faff;
+  --gh-color-table-row-hover: #edf4ff;
+  --gh-color-table-footer: #f5f8fc;
+  --gh-color-table-divider: #a4b8d2;
+  --gh-color-table-rule: #dce5f0;
+  --gh-shadow-table: 0 3px 14px rgb(31 42 68 / 0.055);
+  --gh-color-table-resize: #6f88a9;
   --gh-color-border: #d7dde7;
   --gh-color-input: #d7dde7;
   --gh-color-primary: #1f2a44;
