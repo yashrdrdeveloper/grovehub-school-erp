@@ -40,8 +40,8 @@ export const SortView = ({ value, maxFields, disabled, iconOnly, dataTestId, con
               <Box className={styles.actions}>
                 {maxFields !== 1 && controls.draft.length > 1 && (
                   <>
-                    <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} aria-label={__('Increase priority')} disabled={index === 0} onClick={() => controls.move(index, -1)}>↑</Button>
-                    <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} aria-label={__('Decrease priority')} disabled={index === controls.draft.length - 1} onClick={() => controls.move(index, 1)}>↓</Button>
+                    <Tooltip label={index === 0 && __('This sort already has the highest priority.') || undefined} focusable={Boolean(index === 0 && __('This sort already has the highest priority.') || undefined)}><Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} aria-label={__('Increase priority')} disabled={index === 0} onClick={() => controls.move(index, -1)}>↑</Button></Tooltip>
+                    <Tooltip label={index === controls.draft.length - 1 && __('This sort already has the lowest priority.') || undefined} focusable={Boolean(index === controls.draft.length - 1 && __('This sort already has the lowest priority.') || undefined)}><Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} aria-label={__('Decrease priority')} disabled={index === controls.draft.length - 1} onClick={() => controls.move(index, 1)}>↓</Button></Tooltip>
                   </>
                 )}
                 <ButtonWithIcon icon={Trash2} iconSize={14} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} aria-label={__('Remove sort')} onClick={() => controls.remove(index)} />
@@ -50,9 +50,9 @@ export const SortView = ({ value, maxFields, disabled, iconOnly, dataTestId, con
           ))}
           </Box>
           <Box className={styles.footer}>
-            <ButtonWithIcon icon={Plus} iconSize={14} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} className={styles.add} disabled={!controls.canAdd} onClick={controls.add}>{__('Add sort')}</ButtonWithIcon>
+            <Tooltip label={controls.addReason} focusable={Boolean(controls.addReason)}><ButtonWithIcon icon={Plus} iconSize={14} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} className={styles.add} disabled={!controls.canAdd} onClick={controls.add}>{__('Add sort')}</ButtonWithIcon></Tooltip>
             <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} onClick={controls.reset}>{__('Reset')}</Button>
-            <Button size={BUTTON_SIZE.SMALL} disabled={!controls.isDraftValid} onClick={controls.apply}>{__('Apply sort')}</Button>
+            <Tooltip label={!controls.isDraftValid && __('Choose a unique field for each sort rule.') || undefined} focusable={Boolean(!controls.isDraftValid && __('Choose a unique field for each sort rule.') || undefined)}><Button size={BUTTON_SIZE.SMALL} disabled={!controls.isDraftValid} onClick={controls.apply}>{__('Apply sort')}</Button></Tooltip>
           </Box>
         </Box>
     </Popover>

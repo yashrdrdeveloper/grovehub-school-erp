@@ -36,13 +36,13 @@ export const FilterValue = ({ field, condition, onChange, hideLabel }: FilterVal
   if (field.type === FilterFieldType.ASYNC_SELECT || field.type === FilterFieldType.ASYNC_MULTI_SELECT) {
     if (!field.source) return null;
     if (multiple || field.type === FilterFieldType.ASYNC_MULTI_SELECT) {
-      return <AsyncMultiSelect {...field.source} label={label} hideLabel={hideLabel} value={condition.values} onChange={onChange} />;
+      return <AsyncMultiSelect {...field.source} label={label} placeholder={__('Select value')} hideLabel={hideLabel} value={condition.values} onChange={onChange} />;
     }
-    return <AsyncSelect {...field.source} label={label} hideLabel={hideLabel} value={first || null} onChange={single} />;
+    return <AsyncSelect {...field.source} label={label} placeholder={__('Select value')} hideLabel={hideLabel} value={first || null} onChange={single} />;
   }
   if (field.type === FilterFieldType.SELECT || field.type === FilterFieldType.MULTI_SELECT || field.type === FilterFieldType.BOOLEAN) {
     if (multiple || field.type === FilterFieldType.MULTI_SELECT) {
-      return <MultiSelect label={label} hideLabel={hideLabel} options={field.options ?? []} value={condition.values} onChange={onChange} />;
+      return <MultiSelect label={label} placeholder={__('Select value')} hideLabel={hideLabel} options={field.options ?? []} value={condition.values} onChange={onChange} />;
     }
     return <Select label={label} placeholder={__('Select value')} hideLabel={hideLabel} options={field.options ?? []} value={first || null} onChange={single} />;
   }

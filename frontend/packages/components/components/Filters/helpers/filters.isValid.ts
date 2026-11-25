@@ -1,3 +1,4 @@
+import { FilterFieldType } from '../constants/filter.fieldType';
 import { FilterOperator } from '../constants/filter.operator';
 import type { FilterCondition, FilterField } from '../types/filters.props';
 
@@ -7,7 +8,9 @@ export const isFilterValid = (condition: FilterCondition, field: FilterField | u
     return condition.values.length === 0;
   }
   if (condition.operator === FilterOperator.BETWEEN) {
-    return condition.values.length === 2 && condition.values.every((value) => value.trim().length > 0);
+    if (condition.values.length !== 2 || !condition.values.every((value) => value.trim().length > 0)) return false;
+    if (field.type === FilterFieldType.DATE_RANGE || field.type === FilterFieldType.DATE) return condition.values[0] <= condition.values[1];
+    return true;
   }
   if (condition.operator === FilterOperator.IN || condition.operator === FilterOperator.NOT_IN) {
     return condition.values.length > 0 && condition.values.every((value) => value.trim().length > 0);

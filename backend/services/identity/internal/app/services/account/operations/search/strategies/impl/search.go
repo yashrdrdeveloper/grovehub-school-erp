@@ -3,6 +3,8 @@ package impl
 import (
 	"context"
 	"time"
+	"strings"
+	"grovehub/services/identity/internal/app/entity"
 
 	chain "grovehub/libs/core/pipeline/service"
 	coresearch "grovehub/libs/core/search"
@@ -63,31 +65,37 @@ func (strategy *Search) Hydrate(ctx context.Context, state *flows.Search) chain.
 
 	if state.Accounts.HasNext && len(state.Accounts.Items) > 0 {
 		last := state.Accounts.Items[len(state.Accounts.Items)-1]
-		value := last.CreatedAt.UTC().Format(time.RFC3339Nano)
-		switch state.Query.Sort.Field {
-		case accountdto.FieldAccountID:
-			value = last.AccountID
-		case accountdto.FieldUpdatedAt:
-			value = last.UpdatedAt.UTC().Format(time.RFC3339Nano)
-		case accountdto.FieldStatus:
-			value = string(last.Status)
-		case accountdto.FieldUsername:
-			if last.Username != nil {
-				value = *last.Username
-			} else {
-				value = ""
-			}
-		}
-		cursor, err := coresearch.EncodeCursor(coresearch.CursorPayload{
+		payload := coresearch.CursorPayload{
 			Field: state.Query.Sort.Field,
 			Direction: state.Query.Sort.Direction,
-			Value: value,
+			Value: accountSortValue(last, state.Query.Sort.Field),
 			CursorId: last.AccountID,
-		})
+		}
+		for _, rule := range state.Query.SecondarySorts {
+			payload.SecondarySorts = append(payload.SecondarySorts, coresearch.Sort{Field: rule.Field, Direction: rule.Direction})
+			payload.SecondaryValues = append(payload.SecondaryValues, accountSortValue(last, rule.Field))
+		}
+		cursor, err := coresearch.EncodeCursor(payload)
 		if err != nil {
 			return chain.Fail[coresearch.Result[accountdto.Account]](err)
 		}
 		result.PageInfo.NextCursor = cursor
 	}
 	return chain.Return(result, false)
+}
+
+func accountSortValue(account entity.Account, field string) string {
+	switch field {
+	case accountdto.FieldAccountID:
+		return account.AccountID
+	case accountdto.FieldUpdatedAt:
+		return account.UpdatedAt.UTC().Format(time.RFC3339Nano)
+	case accountdto.FieldStatus:
+		return string(account.Status)
+	case accountdto.FieldUsername:
+		if account.Username != nil { return strings.ToLower(*account.Username) }
+		return ""
+	default:
+		return account.CreatedAt.UTC().Format(time.RFC3339Nano)
+	}
 }

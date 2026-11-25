@@ -30,7 +30,7 @@
   gap: var(--gh-space-2);
 }
 
-.add {
+.footer > :first-child {
   margin-inline-end: auto;
 }
 .footer {

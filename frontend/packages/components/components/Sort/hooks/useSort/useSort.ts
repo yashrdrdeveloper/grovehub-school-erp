@@ -12,6 +12,12 @@ export const useSort = ({ value, onChange, fields, maxFields }: SortProps) => {
     _filter(fields, (field) => !draft.some((item, position) => position !== index && item.field === field.id));
   const available = getAvailableFields();
   const canAdd = Boolean(available.length) && draft.length < (maxFields ?? fields.length);
+  const getAddReason = () => {
+    if (canAdd) return undefined;
+    if (!available.length) return __('All sort fields are selected.');
+    if (maxFields === 1) return __('Only one sort field is allowed.');
+    return __('Maximum of {{count}} sort fields reached.', { count: maxFields ?? fields.length });
+  };
   const isDraftValid =
     new Set(draft.map((item) => item.field)).size === draft.length &&
     draft.every((item) => fields.some((field) => field.id === item.field));
@@ -53,7 +59,7 @@ export const useSort = ({ value, onChange, fields, maxFields }: SortProps) => {
     }));
   };
   return {
-    open, draft, available, getAvailableFields, canAdd, isDraftValid, onOpenChange, add, update, move,
+    open, draft, available, getAvailableFields, canAdd, isDraftValid, addReason: getAddReason(), onOpenChange, add, update, move,
     remove: (index: number) => setDraft((items) => _filter(items, (item) => item !== items[index])),
     reset: () => setDraft([]),
     apply: () => {

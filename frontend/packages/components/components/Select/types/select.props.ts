@@ -13,6 +13,7 @@ export interface SelectCommonProps<T extends SelectValue> {
   readonly hideLabel?: boolean;
   readonly placeholder?: string;
   readonly disabled?: boolean;
+  readonly disabledReason?: string;
   readonly searchable?: boolean;
   readonly clearable?: boolean;
   readonly loading?: boolean;

@@ -9,6 +9,9 @@
   font-weight: var(--gh-weight-normal);
   border-color: var(--gh-color-input);
 }
+.trigger.trigger[data-placeholder='true'] {
+  color: var(--gh-color-muted);
+}
 .content {
   display: grid;
   gap: var(--gh-space-3);

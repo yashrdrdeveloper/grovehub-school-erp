@@ -33,7 +33,7 @@
   padding: var(--gh-space-2) var(--gh-space-3);
   border-top: 1px solid var(--gh-color-border);
 }
-.add {
+.footer > :first-child {
   margin-inline-end: auto;
 }
 .footer button, .rule button {

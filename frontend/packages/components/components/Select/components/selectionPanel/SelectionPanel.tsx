@@ -11,6 +11,7 @@ import { Input } from '../../../Input';
 import { InputControl, INPUT_CONTROL_SIZE } from '../../../InputControl';
 import { Icon } from '../../../Icon';
 import { Popover } from '../../../Popover';
+import { Tooltip } from '../../../Tooltip';
 
 import styles from './SelectionPanel.module.css';
 import type { SelectValue } from '../../types/select.props';
@@ -35,6 +36,7 @@ export const SelectionPanel = <T extends SelectValue>({
   hideLabel,
   placeholder,
   disabled,
+  disabledReason,
   searchable = true,
   clearable = true,
   loading,
@@ -58,6 +60,7 @@ export const SelectionPanel = <T extends SelectValue>({
     <Box className={styles.field}>
       {!hideLabel && <Box className={styles.description}>{label}</Box>}
       <Popover open={open} onOpenChange={onOpenChange} title={label} compact fullWidth desktopDropdown desktopDropdownWidth={getDropdownWidth()} dataTestId={dataTestId && `${dataTestId}-options`} trigger={
+      <Tooltip label={disabled && disabledReason || undefined} focusable={Boolean(disabled && disabledReason)} fullWidth>
       <ButtonWithIcon
         icon={ChevronDown}
         iconPosition={BUTTON_ICON_POSITION.RIGHT}
@@ -70,10 +73,12 @@ export const SelectionPanel = <T extends SelectValue>({
         aria-haspopup="dialog"
         dataTestId={dataTestId}
         className={styles.trigger}
+        data-placeholder={!selected.length}
         onClick={() => onOpenChange(true)}
       >
         {getLabel()}
       </ButtonWithIcon>
+      </Tooltip>
       }>
         <Box className={styles.content} data-dropdown={dropdown} data-multiple={multiple}>
           {searchable && dropdown && (

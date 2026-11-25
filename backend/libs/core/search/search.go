@@ -85,6 +85,9 @@ func Apply[TId any](db *gorm.DB, query Query[TId], config Config) (*gorm.DB, err
 		db = db.Where(condition, builder.Args()...)
 	}
 
+	if len(query.SecondarySorts) > 0 {
+		return applyMultiSort(db, query, config)
+	}
 	if query.Cursor != nil {
 		builder := &helpers.QueryBuilder{}
 		condition := helpers.BuildCursorCondition(

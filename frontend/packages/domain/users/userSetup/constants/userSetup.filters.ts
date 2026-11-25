@@ -13,23 +13,23 @@ export const USER_SETUP_STATUS_OPTIONS = Object.freeze([
 
 export const USER_SETUP_FILTERS: readonly FilterField[] = Object.freeze([
   {
-    id: UserField.EMAIL,
-    label: __('Email address'),
-    type: FilterFieldType.TEXT,
-    operators: [FilterOperator.EQUALS, FilterOperator.NOT_EQUALS, FilterOperator.CONTAINS, FilterOperator.STARTS_WITH],
-  },
-  {
-    id: UserField.USERNAME,
-    label: __('Username'),
-    type: FilterFieldType.TEXT,
-    operators: [FilterOperator.EQUALS, FilterOperator.NOT_EQUALS, FilterOperator.CONTAINS, FilterOperator.STARTS_WITH],
-  },
-  {
     id: UserField.STATUS,
     label: __('Status'),
     type: FilterFieldType.SELECT,
     operators: [FilterOperator.EQUALS, FilterOperator.NOT_EQUALS, FilterOperator.IN, FilterOperator.NOT_IN],
     options: USER_SETUP_STATUS_OPTIONS,
+  },
+  {
+    id: UserField.CREATED_AT,
+    label: __('Created at'),
+    type: FilterFieldType.DATE_RANGE,
+    operators: [FilterOperator.BETWEEN],
+  },
+  {
+    id: UserField.UPDATED_AT,
+    label: __('Updated at'),
+    type: FilterFieldType.DATE_RANGE,
+    operators: [FilterOperator.BETWEEN],
   },
 ]);
 

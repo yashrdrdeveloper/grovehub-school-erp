@@ -77,6 +77,7 @@ type QuerySort struct {
 
 type Cursor[TId any] struct {
 	Value    string
+	SecondaryValues []string
 	CursorId TId
 }
 
@@ -84,6 +85,7 @@ type Query[TId any] struct {
 	SearchTerms []string
 	Filters     []QueryFilter
 	Sort        QuerySort
+	SecondarySorts []QuerySort
 	Cursor      *Cursor[TId]
 	Limit       int
 }
@@ -99,6 +101,8 @@ type CursorPayload struct {
 	Direction Direction `json:"direction"`
 	Value     string    `json:"value"`
 	CursorId  string    `json:"cursorId"`
+	SecondarySorts []Sort `json:"secondarySorts,omitempty"`
+	SecondaryValues []string `json:"secondaryValues,omitempty"`
 }
 
 type ScalarField struct {

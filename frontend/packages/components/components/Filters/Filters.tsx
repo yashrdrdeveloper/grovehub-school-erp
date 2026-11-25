@@ -57,26 +57,26 @@ export const FiltersView = ({ fields, value, disabled, iconOnly, dataTestId, con
               ))}
             </Box>
             <Box className={styles.footer}>
-              <ButtonWithIcon icon={Plus} size={BUTTON_SIZE.SMALL} iconSize={14} variant={BUTTON_VARIANT.GHOST} className={styles.add} disabled={!controls.canAdd} onClick={controls.add}>{__('Add filter')}</ButtonWithIcon>
+              <Tooltip label={controls.addReason} focusable={Boolean(controls.addReason)}><ButtonWithIcon icon={Plus} size={BUTTON_SIZE.SMALL} iconSize={14} variant={BUTTON_VARIANT.GHOST} className={styles.add} disabled={!controls.canAdd} onClick={controls.add}>{__('Add filter')}</ButtonWithIcon></Tooltip>
               <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} onClick={controls.reset}>{__('Reset')}</Button>
-              <Button size={BUTTON_SIZE.SMALL} disabled={!controls.isDraftValid} onClick={controls.apply}>{__('Apply filters')}</Button>
+              <Tooltip label={!controls.isDraftValid && __('Complete all filter fields and values before applying.') || undefined} focusable={Boolean(!controls.isDraftValid && __('Complete all filter fields and values before applying.') || undefined)}><Button size={BUTTON_SIZE.SMALL} disabled={!controls.isDraftValid} onClick={controls.apply}>{__('Apply filters')}</Button></Tooltip>
             </Box>
           </Box>
         )}
         {mobile && editing && (
           <Box className={styles.panel}>
             <Box className={styles.list}>
-              <Select label={__('Field')} value={editing.field || null} options={_map(controls.getAvailableFields(editing.id), (field) => ({ value: field.id, label: field.label }))} onChange={controls.selectField} clearable={false} />
-              <Select<FilterOperator> label={__('Operator')} placeholder={__('Select operator')} value={(selectedField && editing.operator) || null} options={_map(selectedField?.operators ?? [], (operator) => ({ value: operator, label: FILTER_OPERATOR_LABELS[operator] }))} disabled={!selectedField} clearable={false} onChange={(operator) => {
+              <Select label={__('Field')} placeholder={__('Select field')} value={editing.field || null} options={_map(controls.getAvailableFields(editing.id), (field) => ({ value: field.id, label: field.label }))} onChange={controls.selectField} clearable={false} />
+              <Select<FilterOperator> label={__('Operator')} placeholder={__('Select operator')} value={(selectedField && editing.operator) || null} options={_map(selectedField?.operators ?? [], (operator) => ({ value: operator, label: FILTER_OPERATOR_LABELS[operator] }))} disabled={!selectedField} disabledReason={__('Select a field first.')} clearable={false} onChange={(operator) => {
                 if (operator) controls.setEditing({ ...editing, operator, values: [] });
               }} />
-              {!selectedField && <Input label={__('Value')} placeholder={__('Enter value')} value="" disabled />}
+              {!selectedField && <Tooltip label={__('Select a field first.')} focusable fullWidth><Input label={__('Value')} placeholder={__('Enter value')} value="" disabled /></Tooltip>}
               {selectedField && editing.operator !== FilterOperator.EXISTS && editing.operator !== FilterOperator.NOT_EXISTS && <FilterValue field={selectedField} condition={editing} onChange={(values) => controls.setEditing({ ...editing, values })} />}
-              {selectedField && (editing.operator === FilterOperator.EXISTS || editing.operator === FilterOperator.NOT_EXISTS) && <Input label={__('Value')} placeholder={__('Not required')} value="" disabled />}
+              {selectedField && (editing.operator === FilterOperator.EXISTS || editing.operator === FilterOperator.NOT_EXISTS) && <Tooltip label={__('This operator does not require a value.')} focusable fullWidth><Input label={__('Value')} placeholder={__('Not required')} value="" disabled /></Tooltip>}
             </Box>
             <Box className={styles.footer}>
               <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} onClick={controls.back}>{__('Back')}</Button>
-              <Button size={BUTTON_SIZE.SMALL} disabled={!isFilterValid(editing, selectedField)} onClick={controls.save}>{__('Save filter')}</Button>
+              <Tooltip label={!isFilterValid(editing, selectedField) && __('Select a field, operator and valid value before saving.') || undefined} focusable={Boolean(!isFilterValid(editing, selectedField) && __('Select a field, operator and valid value before saving.') || undefined)}><Button size={BUTTON_SIZE.SMALL} disabled={!isFilterValid(editing, selectedField)} onClick={controls.save}>{__('Save filter')}</Button></Tooltip>
             </Box>
           </Box>
         )}

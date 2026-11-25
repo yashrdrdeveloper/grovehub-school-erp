@@ -63,8 +63,13 @@ func sortFields() map[string]coresearch.CursorValueValidator {
 		accountdto.FieldUpdatedAt: coresearch.ValidateTimeCursor,
 		accountdto.FieldAccountID: coresearch.ValidateUUIDv7Cursor,
 		accountdto.FieldStatus: coresearch.ValidateNonEmptyCursor,
-		accountdto.FieldUsername: coresearch.ValidateNonEmptyCursor,
+		accountdto.FieldUsername: validateUsernameCursor,
 	}
+}
+
+func validateUsernameCursor(value string, invalid error) error {
+	if value != strings.ToLower(value) { return invalid }
+	return nil
 }
 
 func filterFields() map[string]coresearch.FieldSpec {
@@ -91,10 +96,10 @@ func NormalizeSearch(request coresearch.Request) (coresearch.Query[string], erro
 		return coresearch.Query[string]{}, err
 	}
 	sorts := sortFields()
-	sort, err := coresearch.NormalizeSort(request.Sort, coresearch.QuerySort{
+	ordered, err := coresearch.NormalizeSorts(request.Sort, coresearch.QuerySort{
 		Field: accountdto.FieldCreatedAt,
 		Direction: coresearch.DirectionDescending,
-	}, sorts, errInvalidSearch)
+	}, sorts, 5, errInvalidSearch)
 	if err != nil {
 		return coresearch.Query[string]{}, err
 	}
@@ -102,14 +107,15 @@ func NormalizeSearch(request coresearch.Request) (coresearch.Query[string], erro
 	if err != nil {
 		return coresearch.Query[string]{}, err
 	}
-	cursor, _, err := coresearch.NormalizeCursor(request.PageInfo.Cursor, sort, sorts[sort.Field], coresearch.ValidateUUIDv7Cursor, errInvalidSearch)
+	cursor, err := coresearch.NormalizeMultiCursor(request.PageInfo.Cursor, ordered, sorts, coresearch.ValidateUUIDv7Cursor, errInvalidSearch)
 	if err != nil {
 		return coresearch.Query[string]{}, err
 	}
 	return coresearch.Query[string]{
 		SearchTerms: terms,
 		Filters: filters,
-		Sort: sort,
+		Sort: ordered[0],
+		SecondarySorts: ordered[1:],
 		Cursor: cursor,
 		Limit: rows,
 	}, nil

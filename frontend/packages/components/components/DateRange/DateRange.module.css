@@ -8,3 +8,13 @@
   justify-content: flex-end;
   gap: var(--gh-space-2);
 }
+
+.trigger.trigger {
+  justify-content: space-between;
+  min-width: 0;
+  font-weight: var(--gh-weight-normal);
+  border-color: var(--gh-color-input);
+}
+.trigger.trigger[data-placeholder='true'] {
+  color: var(--gh-color-muted);
+}

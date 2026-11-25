@@ -15,6 +15,12 @@ export const useFilters = ({ value, onChange, fields, maxFilters }: FiltersProps
   const getAvailableFields = (id?: string) =>
     _filter(fields, (field) => !draft.some((item) => item.id !== id && item.field === field.id));
   const canAdd = draft.length < Math.min(fields.length, maxFilters ?? fields.length);
+  const getAddReason = () => {
+    if (canAdd) return undefined;
+    if (!getAvailableFields().length) return __('All filter fields are selected.');
+    if (maxFilters !== undefined && draft.length >= maxFilters) return __('Maximum of {{count}} filters reached.', { count: maxFilters });
+    return __('Complete an existing filter before adding another.');
+  };
   const isDraftValid =
     new Set(draft.map((item) => item.field)).size === draft.length &&
     draft.every((condition) =>
@@ -88,7 +94,7 @@ export const useFilters = ({ value, onChange, fields, maxFilters }: FiltersProps
   };
 
   return {
-    open, draft, editing, selectedField, getAvailableFields, canAdd, isDraftValid,
+    open, draft, editing, selectedField, getAvailableFields, canAdd, isDraftValid, addReason: getAddReason(),
     onOpenChange, add, addInline, updateInline, edit, remove, selectField, save, apply,
     reset: () => setDraft([]),
     back: () => setEditing(null),

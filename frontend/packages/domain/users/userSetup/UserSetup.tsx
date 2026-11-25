@@ -42,8 +42,8 @@ export const UserSetup = ({ controls }: UserSetupProps) => {
         getRowId={getUserSetupRowId}
         headerProps={USER_SETUP_HEADER}
         searchProps={{ value: state.searchText, placeholder: __('Search by username or email...'), fields: [__('Username'), __('Email address')] }}
-        filterProps={{ fields: USER_SETUP_FILTERS, value: state.filters, maxFilters: 19 }}
-        sortProps={{ fields: USER_SETUP_SORT_FIELDS, value: state.sorting, maxFields: 1 }}
+        filterProps={{ fields: USER_SETUP_FILTERS, value: state.filters, maxFilters: USER_SETUP_FILTERS.length }}
+        sortProps={{ fields: USER_SETUP_SORT_FIELDS, value: state.sorting, maxFields: USER_SETUP_SORT_FIELDS.length }}
         paginationProps={controls.pagination}
         rowActions={USER_SETUP_ROW_ACTIONS}
         actions={controls.actions}
