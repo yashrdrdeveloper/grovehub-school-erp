@@ -11,3 +11,10 @@
 .navigation {
   justify-content: flex-end;
 }
+
+.footer {
+  font-size: var(--gh-text-sm);
+}
+.size {
+  width: 7rem;
+}

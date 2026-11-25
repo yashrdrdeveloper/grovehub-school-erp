@@ -1,3 +1,4 @@
+import { useMobileViewport } from '@Components/hooks/useMobileViewport';
 import { _map } from '@Base/utilities/map';
 import { _find } from '@Base/utilities/find';
 import { Pencil, Plus, Trash2, Filter } from '@Components/icons';
@@ -8,6 +9,7 @@ import { ButtonWithIcon } from '../ButtonWithIcon';
 import { Select } from '../Select';
 import { Popover } from '../Popover';
 
+import { DesktopFilters } from './templates/desktopFilters';
 import { FilterValue } from './components/filterValue';
 import { FILTER_OPERATOR_LABELS } from './constants/filters.copy';
 import { isFilterValid } from './helpers/filters.isValid';
@@ -17,8 +19,10 @@ import type { FiltersProps } from './types/filters.props';
 import type { useFilters } from './hooks/useFilters';
 
 export const FiltersView = ({ fields, value, disabled, maxFilters, dataTestId, controls }: FiltersProps & { readonly controls: ReturnType<typeof useFilters> }) => {
+  const mobile = useMobileViewport();
   const { editing, selectedField } = controls;
   const getTitle = () => {
+    if (!mobile) return __('Manage filters');
     if (editing) return __('Filter condition');
     return __('Manage filters');
   };
@@ -27,12 +31,13 @@ export const FiltersView = ({ fields, value, disabled, maxFilters, dataTestId, c
     return __('Filters');
   };
   return (
-    <Popover open={controls.open} onOpenChange={controls.onOpenChange} title={getTitle()} width={420} trigger={
+    <Popover open={controls.open} onOpenChange={controls.onOpenChange} title={getTitle()} width={520} trigger={
       <ButtonWithIcon icon={Filter} variant={BUTTON_VARIANT.OUTLINE} disabled={disabled} dataTestId={dataTestId} onClick={() => controls.onOpenChange(true)}>
         {getButton()}
       </ButtonWithIcon>
     }>
-        {!editing && (
+        {!mobile && <DesktopFilters fields={fields} maxFilters={maxFilters} controls={controls} />}
+        {mobile && !editing && (
           <Box className={styles.panel}>
             <Box className={styles.list}>
               {!controls.draft.length && <Box>{__('No filters added')}</Box>}
@@ -54,7 +59,7 @@ export const FiltersView = ({ fields, value, disabled, maxFilters, dataTestId, c
             </Box>
           </Box>
         )}
-        {editing && (
+        {mobile && editing && (
           <Box className={styles.panel}>
             <Box className={styles.list}>
               <Select label={__('Field')} value={editing.field || null} options={_map(fields, (field) => ({ value: field.id, label: field.label }))} onChange={controls.selectField} clearable={false} />

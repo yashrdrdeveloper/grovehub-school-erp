@@ -19,3 +19,7 @@
   flex-wrap: wrap;
   gap: var(--gh-space-2);
 }
+
+.description {
+  font-size: var(--gh-text-sm);
+}

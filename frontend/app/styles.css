@@ -6070,3 +6070,28 @@ body {
    preserving user/browser font-size preferences on larger viewports. */
 @media (max-width: 720px) {
 }
+
+/* A fill-workspace route owns its internal scrolling; other routes are unaffected. */
+@media (min-width: 761px) {
+  .shell__content:has([data-workspace-fill='true']) {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .shell__content:has([data-workspace-fill='true']) > .shell__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: none;
+    min-height: 0;
+    padding: var(--gh-space-4);
+    margin: 0;
+    overflow: hidden;
+  }
+  .shell__content:has([data-workspace-fill='true']) > .topbar {
+    flex: 0 0 auto;
+  }
+}

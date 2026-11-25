@@ -1,0 +1,7 @@
+.list {
+  display: grid;
+  min-width: 0;
+}
+.item {
+  min-width: 0;
+}

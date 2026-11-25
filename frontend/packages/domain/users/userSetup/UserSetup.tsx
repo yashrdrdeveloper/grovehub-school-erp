@@ -29,9 +29,11 @@ export const UserSetup = ({ controls }: UserSetupProps) => {
   };
   const showConfirmation = Boolean(dialog?.row && dialog.action !== UserAction.VIEW && dialog.action !== UserAction.EDIT);
   return (
-    <Box className={styles.page}>
+    <Box className={styles.page} data-workspace-fill="true">
       <Table
         id={USER_SETUP_TEST_IDS.TABLE}
+        fillHeight
+        maxPinnedColumns={3}
         type={TableType.DEFAULT}
         dataMode={TableDataMode.SERVER}
         data={controls.data}

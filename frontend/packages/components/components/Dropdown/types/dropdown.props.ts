@@ -14,6 +14,7 @@ export interface DropdownItem {
 
 export interface DropdownProps {
   readonly label: string;
+  readonly iconOnly?: boolean;
   readonly items: readonly DropdownItem[];
   readonly onSelect: (id: string) => void;
   readonly disabled?: boolean;

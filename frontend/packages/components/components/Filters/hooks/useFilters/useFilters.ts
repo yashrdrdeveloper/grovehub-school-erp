@@ -19,6 +19,11 @@ export const useFilters = ({ value, onChange, fields }: FiltersProps) => {
     }
     setOpen(next);
   };
+  const addInline = () => setDraft((items) => [...items, { id: crypto.randomUUID(), field: '', operator: FilterOperator.EQUALS, values: [] }]);
+  const updateInline = (next: FilterCondition) => setDraft((items) => _map(items, (item) => {
+    if (item.id === next.id) return next;
+    return item;
+  }));
   const add = () => setEditing({ id: crypto.randomUUID(), field: '', operator: FilterOperator.EQUALS, values: [] });
   const edit = (condition: FilterCondition) => setEditing(condition);
   const remove = (id: string) => setDraft((items) => _filter(items, (item) => item.id !== id));
@@ -42,11 +47,12 @@ export const useFilters = ({ value, onChange, fields }: FiltersProps) => {
     setEditing(null);
   };
   const apply = () => {
+    if (draft.some((condition) => !isFilterValid(condition, _find(fields, (field) => field.id === condition.field)))) return;
     onChange(draft);
     setOpen(false);
   };
   return {
-    open, draft, editing, selectedField, onOpenChange, add, edit, remove, selectField, save, apply,
+    open, draft, editing, selectedField, onOpenChange, add, addInline, updateInline, edit, remove, selectField, save, apply,
     reset: () => setDraft([]),
     back: () => setEditing(null),
     setEditing,

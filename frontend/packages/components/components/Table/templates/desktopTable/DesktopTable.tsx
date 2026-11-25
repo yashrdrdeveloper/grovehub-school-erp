@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { _map } from '@Base/utilities/map';
 
 import { Box } from '../../../Box';
@@ -8,6 +8,9 @@ import { TableCell } from '../../components/tableCell';
 import { TableRowActions } from '../../components/tableRowActions';
 import { TableSelection } from '../../components/tableSelection';
 import { TableSortHeader } from '../../components/tableSortHeader';
+import { ColumnResizeHandle } from '../../components/columnResizeHandle';
+import { TABLE_DIMENSIONS } from '../../constants/table.dimensions';
+import { getTableFillWidth } from '../../helpers/table.getFillWidth';
 import { TableType } from '../../constants/table.type';
 import { getVirtualWindow } from '../../helpers/table.getVirtualWindow';
 import { getTableCellStyle } from '../../helpers/table.getCellStyle';
@@ -18,6 +21,18 @@ import styles from '../../Table.module.css';
 export const DesktopTable = <T,>(props: DesktopTableProps<T>) => {
   const { controls } = props;
   const [scrollTop, setScrollTop] = useState(0);
+  const frame = useRef<HTMLElement>(null);
+  const [available, setAvailable] = useState(0);
+  useEffect(() => {
+    const element = frame.current;
+    if (!element) return;
+    const measure = () => setAvailable(element.clientWidth);
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
   const virtual = props.type === TableType.VIRTUALIZED || ('virtualizationProps' in props && Boolean(props.virtualizationProps));
   const settings = ('virtualizationProps' in props && props.virtualizationProps) || {};
   const height = Math.max(100, settings.height ?? 480);
@@ -29,10 +44,14 @@ export const DesktopTable = <T,>(props: DesktopTableProps<T>) => {
   };
   const selection = Boolean(props.selectionProps);
   const rowActions = Boolean(props.rowActions?.length);
-  const span = Math.max(1, controls.layout.length + Number(selection) + Number(rowActions));
+  const fixedWidth = Number(selection) * TABLE_DIMENSIONS.selection + Number(rowActions) * TABLE_DIMENSIONS.actions;
+  const columnsWidth = controls.layout.reduce((sum, item) => sum + item.width, 0);
+  const fill = getTableFillWidth(available, columnsWidth, fixedWidth);
+  const filler = fill > 0;
+  const span = Math.max(1, controls.layout.length + Number(selection) + Number(rowActions) + Number(filler));
   const pageChecked = Boolean(controls.selectable.length) && controls.selectable.every((id) => controls.selected.includes(id));
   const someChecked = controls.selectable.some((id) => controls.selected.includes(id));
-  const tableWidth = controls.layout.reduce((sum, item) => sum + item.width, Number(selection) * 52 + Number(rowActions) * 120);
+  const tableWidth = columnsWidth + fixedWidth + fill;
   const frameStyle = () => {
     if (virtual) return { height };
     return undefined;
@@ -42,7 +61,7 @@ export const DesktopTable = <T,>(props: DesktopTableProps<T>) => {
     return undefined;
   };
   return (
-    <Box className={styles.scroll} style={frameStyle()} onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}>
+    <Box ref={frame} className={styles.scroll} style={frameStyle()} onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}>
       <table className={styles.table} data-density={controls.preferences.density} data-virtual={virtual} style={{ width: tableWidth }} aria-busy={props.refreshing} aria-label={props.headerProps?.title ?? __('Table')}>
         <thead>
           <tr>
@@ -50,9 +69,11 @@ export const DesktopTable = <T,>(props: DesktopTableProps<T>) => {
             {_map(controls.layout, (entry) => (
               <th key={entry.column.id} scope="col" style={{ ...getTableCellStyle(entry, selection, rowActions), position: 'sticky', top: 0, zIndex: 3 }}>
                 <TableSortHeader column={entry.column} props={props} />
+                {entry.column.resizable !== false && <ColumnResizeHandle label={__('Resize {{column}}', { column: entry.column.header })} width={entry.width} min={entry.column.minWidth ?? 80} max={entry.column.maxWidth ?? 1200} onResize={(width) => controls.resize(entry.column.id, width)} />}
               </th>
             ))}
-            {rowActions && <th className={styles.actionColumn} scope="col">{__('Actions')}</th>}
+            {filler && <th aria-hidden="true" className={styles.filler} style={{ width: fill }} />}
+            {rowActions && <th className={styles.actionColumn} scope="col" aria-label={__('Actions')} />}
           </tr>
         </thead>
         <tbody>
@@ -86,6 +107,7 @@ export const DesktopTable = <T,>(props: DesktopTableProps<T>) => {
                     </Box>
                   </td>
                 ))}
+                {filler && <td aria-hidden="true" className={styles.filler} />}
                 {rowActions && <td className={styles.actionColumn}><TableRowActions row={row} props={props} /></td>}
               </tr>
             );
