@@ -37,6 +37,7 @@ export const UserSetup = ({ controls }: UserSetupProps) => {
         type={TableType.DEFAULT}
         dataMode={TableDataMode.SERVER}
         data={controls.data}
+        totalRecords={controls.totalRecords}
         columns={USER_SETUP_COLUMNS}
         getRowId={getUserSetupRowId}
         headerProps={USER_SETUP_HEADER}
@@ -51,7 +52,7 @@ export const UserSetup = ({ controls }: UserSetupProps) => {
         error={getError()}
       />
       {dialog && (dialog.action === UserAction.CREATE || dialog.action === UserAction.EDIT) && (
-        <UserForm row={dialog.row} onClose={controls.closeDialog} onCreate={controls.create} onEdit={controls.edit} submitting={controls.submitting} error={controls.submissionError} />
+        <UserForm row={dialog.row} onClose={controls.closeDialog} onCreate={controls.create} onEdit={controls.edit} onAccountAction={(id, row) => controls.actions.ROW_ACTION?.({ id, row })} submitting={controls.submitting} error={controls.submissionError} />
       )}
       {dialog?.action === UserAction.VIEW && dialog.row && (
         <Sheet open title={__('Account details')} onOpenChange={(open) => { if (!open) controls.closeDialog(); }} dataTestId={USER_SETUP_TEST_IDS.DETAILS}>

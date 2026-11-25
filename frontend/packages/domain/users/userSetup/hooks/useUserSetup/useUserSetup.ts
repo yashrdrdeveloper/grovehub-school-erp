@@ -76,6 +76,7 @@ export const useUserSetup = () => {
     HEADER_ACTION: (id) => {
       if (id === UserAction.CREATE) openDialog({ action: UserAction.CREATE });
     },
+    ROW_CLICK: (row) => openDialog({ action: UserAction.EDIT, row }),
     ROW_ACTION: ({ id, row }) => {
       if (id === UserAction.VIEW) openDialog({ action: UserAction.VIEW, row });
       if (id === UserAction.EDIT) openDialog({ action: UserAction.EDIT, row });
@@ -108,6 +109,7 @@ export const useUserSetup = () => {
 
   return {
     state, actions, dialog, closeDialog, create, edit, confirm, pagination,
+    totalRecords: query.data?.pageInfo.totalRecords,
     data: query.data?.items ?? [],
     loading: query.isPending,
     refreshing: query.isFetching,

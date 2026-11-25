@@ -33,11 +33,16 @@ export const MobileTable = <T,>(props: MobileTableProps<T>) => {
         if (entry.kind === 'DETAIL' && props.type === TableType.EXPANDABLE) return <Box key={`detail:${entry.id}`} className={styles.mobileCard}>{props.expansionProps.render(entry.row)}</Box>;
         if (entry.kind !== 'ROW') return null;
         return (
-          <Box key={`row:${entry.id}`} as={BOX_TAG.ARTICLE} role="listitem" className={styles.mobileCard} data-selected={controls.selected.includes(entry.id)}>
+          <Box key={`row:${entry.id}`} as={BOX_TAG.ARTICLE} role="listitem" className={styles.mobileCard} data-clickable={Boolean(props.actions?.ROW_CLICK)} tabIndex={props.actions?.ROW_CLICK && 0} onClick={(event) => {
+            if (!(event.target instanceof Element) || !event.currentTarget.contains(event.target) || event.target.closest('button, input, a, select, textarea, [role="button"], [role="checkbox"]')) return;
+            props.actions?.ROW_CLICK?.(entry.row);
+          }} onKeyDown={(event) => {
+            if (event.target !== event.currentTarget || !props.actions?.ROW_CLICK) return;
+            if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); props.actions.ROW_CLICK(entry.row); }
+          }} data-selected={controls.selected.includes(entry.id)}>
             <Box className={styles.mobileActions}>
               {props.selectionProps && <TableSelection label={__('Select row {{id}}', { id: entry.id })} checked={controls.selected.includes(entry.id)} disabled={!controls.selectable.includes(entry.id)} onChange={() => controls.selectRow(entry.id)} />}
               {entry.expandable && <Button variant={BUTTON_VARIANT.GHOST} aria-expanded={controls.expanded.includes(entry.id)} onClick={() => controls.toggleExpanded(entry.id)}>{__('Details')}</Button>}
-              {props.actions?.ROW_CLICK && <Button variant={BUTTON_VARIANT.GHOST} onClick={() => props.actions?.ROW_CLICK?.(entry.row)}>{__('Open')}</Button>}
               <TableRowActions row={entry.row} props={props} />
             </Box>
             {_map(getVisible(), (layout) => (

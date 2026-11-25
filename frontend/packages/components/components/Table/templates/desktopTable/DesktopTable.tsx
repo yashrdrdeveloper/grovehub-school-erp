@@ -93,7 +93,7 @@ export const DesktopTable = <T,>(props: DesktopTableProps<T>) => {
               </Fragment>
             ))}
             {fillAtEnd && <th aria-hidden="true" className={styles.filler} style={{ width: fill }} />}
-            {rowActions && <th className={styles.actionColumn} scope="col" aria-label={__('Actions')}>{__('Actions')}</th>}
+            {rowActions && <th className={styles.actionColumn} scope="col" aria-label={__('Actions')} />}
           </tr>
         </thead>
         <tbody>
@@ -112,7 +112,13 @@ export const DesktopTable = <T,>(props: DesktopTableProps<T>) => {
             if (entry.kind !== 'ROW') return null;
             const row = entry.row;
             return (
-              <tr key={`row:${entry.id}`} style={rowStyle()} onDoubleClick={() => props.actions?.ROW_DOUBLE_CLICK?.(row)} data-selected={controls.selected.includes(entry.id)}>
+              <tr key={`row:${entry.id}`} style={rowStyle()} data-clickable={Boolean(props.actions?.ROW_CLICK)} tabIndex={props.actions?.ROW_CLICK && 0} onClick={(event) => {
+                if (!(event.target instanceof Element) || !event.currentTarget.contains(event.target) || event.target.closest('button, input, a, select, textarea, [role="button"], [role="checkbox"]')) return;
+                props.actions?.ROW_CLICK?.(row);
+              }} onKeyDown={(event) => {
+                if (event.target !== event.currentTarget || !props.actions?.ROW_CLICK) return;
+                if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); props.actions.ROW_CLICK(row); }
+              }} onDoubleClick={() => props.actions?.ROW_DOUBLE_CLICK?.(row)} data-selected={controls.selected.includes(entry.id)}>
                 {selection && <td className={styles.selection}><TableSelection label={__('Select row {{id}}', { id: entry.id })} checked={controls.selected.includes(entry.id)} disabled={!controls.selectable.includes(entry.id)} onChange={() => controls.selectRow(entry.id)} /></td>}
                 {_map(layout, (layout, index) => (
                   <Fragment key={layout.column.id}>
@@ -124,7 +130,6 @@ export const DesktopTable = <T,>(props: DesktopTableProps<T>) => {
                           {controls.expanded.includes(entry.id) && '▾'}{!controls.expanded.includes(entry.id) && '▸'}
                         </Button>
                       )}
-                      {index === 0 && props.actions?.ROW_CLICK && <Button variant={BUTTON_VARIANT.GHOST} onClick={() => props.actions?.ROW_CLICK?.(row)}>{__('Open')}</Button>}
                       <TableCell row={row} column={layout.column} actions={props.actions} />
                     </Box>
                   </td>

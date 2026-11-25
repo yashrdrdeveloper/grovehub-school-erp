@@ -100,7 +100,22 @@ func (repository *Repository) Search(ctx context.Context, tenantID string, query
 		Table("identity.accounts AS a").
 		Where("a.tenant_id = ?", tenantID)
 
-	return coresearch.Execute[string, entity.Account](db, query, searchconfig.AccountConfig)
+	countQuery := query
+	countQuery.Cursor = nil
+	countDB, err := coresearch.Apply(db.Session(&gorm.Session{}), countQuery, searchconfig.AccountConfig)
+	if err != nil {
+		return coresearch.QueryResult[entity.Account]{}, err
+	}
+	var total int64
+	if err := countDB.Limit(-1).Count(&total).Error; err != nil {
+		return coresearch.QueryResult[entity.Account]{}, err
+	}
+	result, err := coresearch.Execute[string, entity.Account](db.Session(&gorm.Session{}), query, searchconfig.AccountConfig)
+	if err != nil {
+		return coresearch.QueryResult[entity.Account]{}, err
+	}
+	result.TotalRecords = &total
+	return result, nil
 }
 
 func mapWriteError(err error) error {

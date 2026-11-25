@@ -1,0 +1,1 @@
+export { getFormattedNumber } from './getFormattedNumber';

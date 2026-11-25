@@ -46,6 +46,7 @@ type PageRequest struct {
 }
 
 type PageResponse struct {
+	TotalRecords *int64 `json:"totalRecords,omitempty"`
 	Rows       int    `json:"rows"`
 	NextCursor string `json:"nextCursor,omitempty"`
 	HasNext    bool   `json:"hasNext"`
@@ -88,6 +89,7 @@ type Query[TId any] struct {
 }
 
 type QueryResult[T any] struct {
+	TotalRecords *int64
 	Items   []T
 	HasNext bool
 }

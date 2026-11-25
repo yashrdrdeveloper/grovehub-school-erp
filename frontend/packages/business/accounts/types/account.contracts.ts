@@ -21,7 +21,7 @@ export interface SearchRequest {
 
 export interface SearchResult<T> {
   items: T[];
-  pageInfo: { rows: number; hasNext: boolean; nextCursor?: string };
+  pageInfo: { rows: number; hasNext: boolean; nextCursor?: string; totalRecords?: number };
 }
 
 export type AccountSearchResult = SearchResult<Account>;

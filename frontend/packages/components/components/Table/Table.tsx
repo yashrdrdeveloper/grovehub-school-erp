@@ -1,3 +1,4 @@
+import { getFormattedNumber } from '@Base/localization/getFormattedNumber';
 import { _map } from '@Base/utilities/map';
 import { RefreshCw } from '@Components/icons';
 
@@ -30,13 +31,15 @@ export const TableView = <T,>(props: TableViewProps<T>) => {
     return paginationProps;
   };
   const pagination = getPagination();
+  const getTotal = () => {
+    if (pagination?.type === PaginationType.OFFSET) return pagination.totalRecords;
+    if (props.dataMode === TableDataMode.CLIENT) return controls.total;
+    return props.totalRecords;
+  };
+  const total = getTotal();
   const getSummary = () => {
-    if (pagination?.type === PaginationType.OFFSET) {
-      const end = Math.min(pagination.currentPage * pagination.pageSize, pagination.totalRecords);
-      const start = Math.min(end, (pagination.currentPage - 1) * pagination.pageSize + 1);
-      return __('Showing {{start}}–{{end}} of {{total}}', { start, end, total: pagination.totalRecords });
-    }
-    return __('{{count}} records on this page', { count: props.data.length });
+    if (total !== undefined) return __('Total records: {{count}}', { count: getFormattedNumber(total) });
+    return __('Records on this page: {{count}}', { count: getFormattedNumber(props.data.length) });
   };
   const order = Array.from(new Set([...controls.preferences.order, ...columns.map((column) => column.id)]));
   const options = order.flatMap((id) => {
@@ -56,6 +59,7 @@ export const TableView = <T,>(props: TableViewProps<T>) => {
           <Box className={styles.toolbarLeft}>
             {filterProps && <Filters {...filterProps} iconOnly onChange={(value) => actions?.FILTER?.(value)} />}
             {sortProps && <Sort {...sortProps} iconOnly onChange={(value) => actions?.SORT?.(value)} />}
+            {!props.loading && !props.error && <Box className={styles.summary} aria-live="polite">{getSummary()}</Box>}
           </Box>
           <Box className={styles.toolbarRight}>
             {searchProps && <TableSearch {...searchProps} onChange={(value) => actions?.SEARCH?.(value)} />}
@@ -71,9 +75,6 @@ export const TableView = <T,>(props: TableViewProps<T>) => {
             )}
           </Box>
         </Box>
-        {!props.loading && !props.error && <Box className={styles.summary} aria-live="polite">
-          {getSummary()}
-        </Box>}
         {subheaderProps && <TableHeader {...subheaderProps} onAction={actions?.SUBHEADER_ACTION} />}
         {quickFilterProps && <QuickFilters {...quickFilterProps} onChange={(value) => actions?.QUICK_FILTER?.(value)} />}
         {!!controls.selected.length && props.bulkActions && <Box className={styles.toolbar}>

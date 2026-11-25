@@ -123,6 +123,7 @@ type TableCommonProps<T> = {
   readonly id: string;
   readonly dataMode: (typeof TableDataMode)[keyof typeof TableDataMode];
   readonly data: readonly T[];
+  readonly totalRecords?: number;
   readonly columns: readonly TableColumn<T>[];
   readonly getRowId: (row: T) => string;
   readonly actions?: TableActions<T>;

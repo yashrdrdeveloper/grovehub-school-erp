@@ -56,6 +56,7 @@ func (strategy *Search) Hydrate(ctx context.Context, state *flows.Search) chain.
 		result.Items = append(result.Items, strategy.mapper.ToResponse(account))
 	}
 	result.PageInfo = coresearch.PageResponse{
+		TotalRecords: state.Accounts.TotalRecords,
 		Rows: len(result.Items),
 		HasNext: state.Accounts.HasNext,
 	}
