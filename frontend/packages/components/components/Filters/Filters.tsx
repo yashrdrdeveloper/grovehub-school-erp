@@ -33,8 +33,8 @@ export const FiltersView = ({ fields, value, disabled, maxFilters, iconOnly, dat
     return __('Filters');
   };
   return (
-    <Popover open={controls.open} onOpenChange={controls.onOpenChange} title={getTitle()} width={760} compact trigger={
-      <ButtonWithIcon icon={Filter} size={BUTTON_SIZE.SMALL} iconSize={16} variant={BUTTON_VARIANT.OUTLINE} aria-label={getButton()} aria-expanded={controls.open} title={getButton()} disabled={disabled} dataTestId={dataTestId} onClick={() => controls.onOpenChange(true)}>
+    <Popover open={controls.open} onOpenChange={controls.onOpenChange} title={getTitle()} width={760} compact desktopScrollLayout trigger={
+      <ButtonWithIcon icon={Filter} className={styles.trigger} size={BUTTON_SIZE.SMALL} iconSize={14} variant={BUTTON_VARIANT.OUTLINE} aria-label={getButton()} aria-expanded={controls.open} title={getButton()} disabled={disabled} dataTestId={dataTestId} onClick={() => controls.onOpenChange(true)}>
         {!iconOnly && getButton()}
         {iconOnly && !!value.length && value.length}
       </ButtonWithIcon>

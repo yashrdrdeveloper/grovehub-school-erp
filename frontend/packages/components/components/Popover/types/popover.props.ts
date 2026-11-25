@@ -9,5 +9,7 @@ export interface PopoverProps {
   readonly width?: number;
   readonly fullWidth?: boolean;
   readonly compact?: boolean;
+  /** Desktop-only bounded layout for content with its own scrollable body and footer. */
+  readonly desktopScrollLayout?: boolean;
   readonly dataTestId?: string;
 }

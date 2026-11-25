@@ -1,13 +1,23 @@
 .panel {
-  display: grid;
-  gap: var(--gh-space-2);
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  min-height: 0;
   min-width: 0;
+  width: 100%;
 }
 .list {
   display: grid;
+  align-content: start;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
   gap: var(--gh-space-2);
-  max-height: 55dvh;
-  overflow: auto;
+  padding: var(--gh-space-2) var(--gh-space-3);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gh-color-scrollbar-thumb) var(--gh-color-scrollbar-track);
 }
 .row {
   display: grid;
@@ -37,13 +47,24 @@
   gap: var(--gh-space-2);
 }
 .footer {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  width: 100%;
   justify-content: space-between;
   border-top: 1px solid var(--gh-color-border);
-  padding-top: var(--gh-space-2);
+  padding: var(--gh-space-2) var(--gh-space-3);
+  background: var(--gh-color-surface);
 }
 .footer button {
   font-size: var(--gh-text-xs);
   font-weight: var(--gh-weight-medium);
+}
+@media (min-width: 641px) {
+  .footer button[class] {
+    height: var(--gh-control-height-xs);
+    min-height: var(--gh-control-height-xs);
+    padding-inline: var(--gh-space-2);
+  }
 }
 @media (max-width: 800px) {
   .row {

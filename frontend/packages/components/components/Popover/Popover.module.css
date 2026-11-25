@@ -70,3 +70,21 @@
     padding: var(--gh-space-2) var(--gh-space-3);
   }
 }
+
+@media (min-width: 641px) {
+  .panel[data-desktop-scroll-layout='true'] {
+    max-height: min(var(--gh-popover-scroll-max-height), 60dvh, calc(100dvh - 24px));
+    padding: 0;
+  }
+  .panel[data-desktop-scroll-layout='true'] .heading {
+    flex: 0 0 auto;
+    padding: var(--gh-space-2) var(--gh-space-3);
+  }
+  .panel[data-desktop-scroll-layout='true'] .content {
+    display: flex;
+    flex-direction: column;
+    flex: 0 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+}
