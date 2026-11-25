@@ -24,7 +24,7 @@ func New(accounts accountrepo.Repository, invitations registration.InvitationSen
 }
 
 func (op *Service) Execute(ctx context.Context, accountID string) error {
-	actor, err := principal.RequireAdmin(ctx)
+	actor, err := principal.RequireTenant(ctx)
 	if err != nil {
 		return err
 	}

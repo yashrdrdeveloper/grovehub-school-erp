@@ -38,7 +38,7 @@ func Map(err error) error {
 		return coreerrors.NewError(definitions.InvalidCredentials)
 	case errors.Is(err, principal.ErrAuthenticationRequired):
 		return coreerrors.NewError(definitions.Unauthorized)
-	case errors.Is(err, principal.ErrAdminForbidden), errors.Is(err, principal.ErrRecentAuthenticationRequired):
+	case errors.Is(err, principal.ErrTenantForbidden), errors.Is(err, principal.ErrAdminForbidden), errors.Is(err, principal.ErrRecentAuthenticationRequired):
 		return coreerrors.NewError(definitions.Forbidden)
 	}
 

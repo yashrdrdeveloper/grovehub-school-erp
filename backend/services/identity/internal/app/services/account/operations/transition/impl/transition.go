@@ -30,7 +30,7 @@ func New(accounts accountrepo.Repository, sessions sessionrepo.Repository, mappe
 }
 
 func (op *Service) Execute(ctx context.Context, accountID string, action string) (accountdto.Account, error) {
-	actor, err := principal.RequireAdmin(ctx)
+	actor, err := principal.RequireTenant(ctx)
 	if err != nil {
 		return accountdto.Account{}, err
 	}

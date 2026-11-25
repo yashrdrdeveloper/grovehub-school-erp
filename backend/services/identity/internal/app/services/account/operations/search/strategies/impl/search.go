@@ -28,7 +28,7 @@ func New(accounts accountrepo.Repository, accountMapper mapper.Mapper, accountVa
 }
 
 func (strategy *Search) Prepare(ctx context.Context, state *flows.Search) chain.Outcome[coresearch.Result[accountdto.Account]] {
-	actor, err := principal.RequireAdmin(ctx)
+	actor, err := principal.RequireTenant(ctx)
 	if err != nil {
 		return chain.Fail[coresearch.Result[accountdto.Account]](err)
 	}

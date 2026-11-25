@@ -92,7 +92,7 @@ func (operation *RegisterOperation) Execute(ctx context.Context, request account
 }
 
 func (operation *RegisterOperation) authorize(ctx context.Context, flow *flows.Register) error {
-	actor, err := principal.RequireAdmin(ctx)
+	actor, err := principal.RequireTenant(ctx)
 	if err != nil {
 		return err
 	}

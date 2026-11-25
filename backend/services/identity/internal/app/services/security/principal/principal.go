@@ -13,6 +13,7 @@ type Principal = coregateway.Principal
 var (
 	ErrAuthenticationRequired = errors.New("authentication required")
 	ErrAdminForbidden = errors.New("admin access forbidden")
+	ErrTenantForbidden = errors.New("tenant access forbidden")
 	ErrRecentAuthenticationRequired = errors.New("recent authentication required")
 )
 
@@ -30,6 +31,19 @@ func Require(ctx context.Context) (Principal, error) {
 		return Principal{}, ErrAuthenticationRequired
 	}
 	return principal, nil
+}
+
+// RequireTenant enforces authenticated tenant membership without a role check.
+// Account authorization is deferred to the future RBAC policy.
+func RequireTenant(ctx context.Context) (Principal, error) {
+	actor, err := Require(ctx)
+	if err != nil {
+		return Principal{}, err
+	}
+	if actor.TenantID == "" {
+		return Principal{}, ErrTenantForbidden
+	}
+	return actor, nil
 }
 
 func RequireAdmin(ctx context.Context) (Principal, error) {
