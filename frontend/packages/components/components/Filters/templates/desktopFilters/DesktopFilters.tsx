@@ -11,13 +11,11 @@ import { Select } from '../../../Select';
 
 import { FilterValue } from '../../components/filterValue';
 import { FILTER_OPERATOR_LABELS } from '../../constants/filters.copy';
-import { isFilterValid } from '../../helpers/filters.isValid';
 import { FilterOperator } from '../../constants/filter.operator';
 import type { DesktopFiltersProps } from './types/desktopFilters.props';
 import styles from './DesktopFilters.module.css';
 
-export const DesktopFilters = ({ fields, maxFilters, controls }: DesktopFiltersProps) => {
-  const invalid = controls.draft.some((condition) => !isFilterValid(condition, _find(fields, (field) => field.id === condition.field)));
+export const DesktopFilters = ({ fields, controls }: DesktopFiltersProps) => {
   return (
     <Box className={styles.panel}>
       <Box className={styles.list} data-empty={!controls.draft.length}>
@@ -27,8 +25,8 @@ export const DesktopFilters = ({ fields, maxFilters, controls }: DesktopFiltersP
           const needsValue = condition.operator !== FilterOperator.EXISTS && condition.operator !== FilterOperator.NOT_EXISTS;
           return (
             <Box className={styles.row} key={condition.id}>
-              <Select label={__('Field')} hideLabel placeholder={__('Select field')} value={condition.field || null} options={_map(fields, (entry) => ({ value: entry.id, label: entry.label }))} clearable={false} onChange={(id) => {
-                const next = _find(fields, (entry) => entry.id === id);
+              <Select label={__('Field')} hideLabel placeholder={__('Select field')} value={condition.field || null} options={_map(controls.getAvailableFields(condition.id), (entry) => ({ value: entry.id, label: entry.label }))} clearable={false} onChange={(id) => {
+                const next = _find(controls.getAvailableFields(condition.id), (entry) => entry.id === id);
                 if (next && next.operators[0]) controls.updateInline({ ...condition, field: next.id, operator: next.operators[0], values: [] });
               }} />
               <Select<FilterOperator> label={__('Operator')} hideLabel placeholder={__('Operator')} value={(field && condition.operator) || null} options={_map(field?.operators ?? [], (operator) => ({ value: operator, label: FILTER_OPERATOR_LABELS[operator] }))} disabled={!field} searchable={false} clearable={false} onChange={(operator) => {
@@ -45,10 +43,10 @@ export const DesktopFilters = ({ fields, maxFilters, controls }: DesktopFiltersP
         })}
       </Box>
       <Box className={styles.footer}>
-        <ButtonWithIcon icon={Plus} iconSize={14} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} disabled={maxFilters !== undefined && controls.draft.length >= maxFilters} onClick={controls.addInline}>{__('Add filter')}</ButtonWithIcon>
+        <ButtonWithIcon icon={Plus} iconSize={14} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} disabled={!controls.canAdd} onClick={controls.addInline}>{__('Add filter')}</ButtonWithIcon>
         <Box className={styles.actions}>
           <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} onClick={controls.reset}>{__('Reset')}</Button>
-          <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.PRIMARY} disabled={invalid} onClick={controls.apply}>{__('Apply filters')}</Button>
+          <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.PRIMARY} disabled={!controls.isDraftValid} onClick={controls.apply}>{__('Apply filters')}</Button>
         </Box>
       </Box>
     </Box>

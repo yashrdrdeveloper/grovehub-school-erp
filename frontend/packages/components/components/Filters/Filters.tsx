@@ -21,7 +21,7 @@ import { FilterOperator } from './constants/filter.operator';
 import type { FiltersProps } from './types/filters.props';
 import type { useFilters } from './hooks/useFilters';
 
-export const FiltersView = ({ fields, value, disabled, maxFilters, iconOnly, dataTestId, controls }: FiltersProps & { readonly controls: ReturnType<typeof useFilters> }) => {
+export const FiltersView = ({ fields, value, disabled, iconOnly, dataTestId, controls }: FiltersProps & { readonly controls: ReturnType<typeof useFilters> }) => {
   const mobile = useMobileViewport();
   const { editing, selectedField } = controls;
   const getTitle = () => {
@@ -40,7 +40,7 @@ export const FiltersView = ({ fields, value, disabled, maxFilters, iconOnly, dat
         {iconOnly && !!value.length && value.length}
       </ButtonWithIcon></Tooltip>
     }>
-        {!mobile && <DesktopFilters fields={fields} maxFilters={maxFilters} controls={controls} />}
+        {!mobile && <DesktopFilters fields={fields} controls={controls} />}
         {mobile && !editing && (
           <Box className={styles.panel}>
             <Box className={styles.list}>
@@ -57,16 +57,16 @@ export const FiltersView = ({ fields, value, disabled, maxFilters, iconOnly, dat
               ))}
             </Box>
             <Box className={styles.footer}>
-              <ButtonWithIcon icon={Plus} size={BUTTON_SIZE.SMALL} iconSize={14} variant={BUTTON_VARIANT.GHOST} className={styles.add} disabled={maxFilters !== undefined && controls.draft.length >= maxFilters} onClick={controls.add}>{__('Add filter')}</ButtonWithIcon>
+              <ButtonWithIcon icon={Plus} size={BUTTON_SIZE.SMALL} iconSize={14} variant={BUTTON_VARIANT.GHOST} className={styles.add} disabled={!controls.canAdd} onClick={controls.add}>{__('Add filter')}</ButtonWithIcon>
               <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} onClick={controls.reset}>{__('Reset')}</Button>
-              <Button size={BUTTON_SIZE.SMALL} disabled={controls.draft.some((condition) => !isFilterValid(condition, _find(fields, (field) => field.id === condition.field)))} onClick={controls.apply}>{__('Apply filters')}</Button>
+              <Button size={BUTTON_SIZE.SMALL} disabled={!controls.isDraftValid} onClick={controls.apply}>{__('Apply filters')}</Button>
             </Box>
           </Box>
         )}
         {mobile && editing && (
           <Box className={styles.panel}>
             <Box className={styles.list}>
-              <Select label={__('Field')} value={editing.field || null} options={_map(fields, (field) => ({ value: field.id, label: field.label }))} onChange={controls.selectField} clearable={false} />
+              <Select label={__('Field')} value={editing.field || null} options={_map(controls.getAvailableFields(editing.id), (field) => ({ value: field.id, label: field.label }))} onChange={controls.selectField} clearable={false} />
               <Select<FilterOperator> label={__('Operator')} placeholder={__('Select operator')} value={(selectedField && editing.operator) || null} options={_map(selectedField?.operators ?? [], (operator) => ({ value: operator, label: FILTER_OPERATOR_LABELS[operator] }))} disabled={!selectedField} clearable={false} onChange={(operator) => {
                 if (operator) controls.setEditing({ ...editing, operator, values: [] });
               }} />
