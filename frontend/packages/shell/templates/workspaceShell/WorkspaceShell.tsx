@@ -31,7 +31,7 @@ export const WorkspaceShell: WorkspaceShellComponent = ({ model, ...props }) => 
     )}
 
     <Box as={BOX_TAG.DIV} className="shell__content">
-      <Topbar schoolLabel={props.schoolLabel} accountLabel={props.accountLabel} model={model} />
+      <Topbar schoolLabel={props.schoolLabel} model={model} />
       <Box as={BOX_TAG.MAIN} className="shell__main">
         <Outlet />
       </Box>

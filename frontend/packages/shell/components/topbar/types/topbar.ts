@@ -4,7 +4,6 @@ import type { ShellViewModel } from '../../../hooks/useShell';
 
 export interface TopbarProps {
   readonly schoolLabel: ShellProps['schoolLabel'];
-  readonly accountLabel: ShellProps['accountLabel'];
   readonly model: ShellViewModel;
 }
 

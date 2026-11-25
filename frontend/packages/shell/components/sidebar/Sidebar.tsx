@@ -3,7 +3,6 @@ import { Box, BOX_TAG } from '@Components/components/Box';
 import { Grid2X2, Settings2, X } from '@Components/icons';
 import { AppNavLink } from '@Components/components/AppNavLink';
 
-import { SchoolMonogram } from '@Components';
 import { APP_ROUTE } from '@Business/app/routes';
 
 import { PinnedNavigation } from '../pinnedNavigation';
@@ -12,7 +11,7 @@ import { getSidebarCollapseView } from './renderer/sidebar.collapseView';
 import type { SidebarComponent } from './types/sidebar';
 
 /** Stateless sidebar. Interaction and persistence come from the shell model. */
-export const Sidebar: SidebarComponent = ({ accountLabel, schoolLabel, onLogout, model }) => {
+export const Sidebar: SidebarComponent = ({ accountLabel, onLogout, model }) => {
   const { collapsedLabel, collapsedShortLabel, CollapseIcon } = getSidebarCollapseView(
     model.sidebarCollapsed,
   );
@@ -56,13 +55,6 @@ export const Sidebar: SidebarComponent = ({ accountLabel, schoolLabel, onLogout,
         >
           <X size={20} />
         </Button>
-      </Box>
-      <Box as={BOX_TAG.DIV} className="sidebar__school" title={schoolLabel}>
-        <SchoolMonogram />
-        <Box as={BOX_TAG.SPAN} className="sidebar__school-details">
-          <Box as={BOX_TAG.STRONG}>{schoolLabel}</Box>
-          <Box as={BOX_TAG.SMALL}>{__('School operating system')}</Box>
-        </Box>
       </Box>
       <Box as={BOX_TAG.DIV} className="sidebar__section-label">
         {__('PINNED APPS')}

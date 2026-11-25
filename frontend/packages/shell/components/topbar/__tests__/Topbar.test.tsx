@@ -5,20 +5,19 @@ import { Topbar } from '../Topbar';
 import type { TopbarProps } from '../types/topbar';
 
 describe('Topbar', () => {
-  it('delegates menu and account actions to the shell model', () => {
+  it('displays the school monogram without a breadcrumb or account control and retains mobile navigation', () => {
     const openSidebar = jest.fn();
-    const openAccountPreferences = jest.fn();
-    const model = { openSidebar, openAccountPreferences } as unknown as TopbarProps['model'];
+    const model = { openSidebar } as unknown as TopbarProps['model'];
 
-    render(<Topbar model={model} schoolLabel="RDR School" accountLabel="parent@example.test" />);
+    render(<Topbar model={model} schoolLabel="RDR School" />);
 
     expect(screen.getByTestId('workspace-topbar')).toBeTruthy();
-    expect(screen.getByText('RDR School')).toBeTruthy();
+    expect(screen.getByRole('img', { name: 'RDR School' })).toBeTruthy();
+    expect(screen.queryByText('RDR School')).toBeNull();
+    expect(screen.queryByText('Workspace')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Open account preferences' })).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Open account preferences' }));
-
     expect(openSidebar).toHaveBeenCalledTimes(1);
-    expect(openAccountPreferences).toHaveBeenCalledTimes(1);
   });
 });

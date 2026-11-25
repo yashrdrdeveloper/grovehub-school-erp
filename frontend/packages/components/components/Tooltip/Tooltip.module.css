@@ -6,14 +6,19 @@
 .bubble {
   position: fixed;
   z-index: 120;
-  transform: translateX(-50%);
+  transform: translate(-50%, -100%);
+  width: max-content;
+  max-width: min(18rem, calc(100vw - 16px));
+  box-sizing: border-box;
   background: var(--gh-color-text-strong);
   color: var(--gh-color-surface);
   border-radius: var(--gh-control-radius);
   padding: var(--gh-space-1) var(--gh-space-2);
   font-size: var(--gh-text-xs);
   line-height: var(--gh-leading-normal);
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
   pointer-events: none;
   box-shadow: var(--gh-shadow-card);
 }
