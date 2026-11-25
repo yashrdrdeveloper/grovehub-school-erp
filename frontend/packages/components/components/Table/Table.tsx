@@ -29,6 +29,14 @@ export const TableView = <T,>(props: TableViewProps<T>) => {
     return paginationProps;
   };
   const pagination = getPagination();
+  const getSummary = () => {
+    if (pagination?.type === PaginationType.OFFSET) {
+      const end = Math.min(pagination.currentPage * pagination.pageSize, pagination.totalRecords);
+      const start = Math.min(end, (pagination.currentPage - 1) * pagination.pageSize + 1);
+      return __('Showing {{start}}–{{end}} of {{total}}', { start, end, total: pagination.totalRecords });
+    }
+    return __('{{count}} records on this page', { count: props.data.length });
+  };
   const order = Array.from(new Set([...controls.preferences.order, ...columns.map((column) => column.id)]));
   const options = order.flatMap((id) => {
     const column = columns.find((entry) => entry.id === id);
@@ -57,8 +65,7 @@ export const TableView = <T,>(props: TableViewProps<T>) => {
           </Box>
         </Box>
         {!props.loading && !props.error && <Box className={styles.summary} aria-live="polite">
-          {pagination?.type === PaginationType.OFFSET && __('Showing {{start}}–{{end}} of {{total}}', { start: props.data.length && (pagination.currentPage - 1) * pagination.pageSize + 1, end: Math.min(pagination.currentPage * pagination.pageSize, pagination.totalRecords), total: pagination.totalRecords })}
-          {pagination?.type !== PaginationType.OFFSET && __('{{count}} records on this page', { count: props.data.length })}
+          {getSummary()}
         </Box>}
         {subheaderProps && <TableHeader {...subheaderProps} onAction={actions?.SUBHEADER_ACTION} />}
         {quickFilterProps && <QuickFilters {...quickFilterProps} onChange={(value) => actions?.QUICK_FILTER?.(value)} />}
