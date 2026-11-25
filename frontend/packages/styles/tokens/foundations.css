@@ -41,7 +41,7 @@
 
   --gh-control-height-xs: 1.75rem;
   --gh-control-height-sm: 2rem;
-  --gh-popover-scroll-max-height: 26rem;
+  --gh-popover-scroll-max-height: 16.75rem;
   --gh-select-dropdown-max-height: 15rem;
   --gh-control-height-md: 2.5rem;
   --gh-control-height-lg: 3rem;
@@ -55,7 +55,7 @@
   --gh-radius-xl: 1.125rem;
   --gh-radius-full: 9999px;
 
-  --gh-focus-outline-width: 2px;
+  --gh-focus-outline-width: 1px;
   --gh-motion-fast: 120ms;
   --gh-motion-normal: 180ms;
   --gh-motion-slow: 250ms;

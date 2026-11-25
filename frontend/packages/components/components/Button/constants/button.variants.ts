@@ -23,7 +23,7 @@ const sizes = {
 } satisfies Record<ButtonSize, string>;
 
 export const buttonVariants = cva(
-  'button gh-button inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50',
+  'button gh-button inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-0 disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       variant: variants,

@@ -44,3 +44,5 @@
   .rule { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .actions { grid-column: 1 / -1; justify-content: flex-end; }
 }
+
+.rule { min-height: var(--gh-control-height-sm); }

@@ -28,7 +28,7 @@ export const InputControl: InputControlComponent = forwardRef<HTMLInputElement, 
       aria-invalid={invalid ?? ariaInvalid}
       className={cn(
         !unstyled &&
-          'gh-input-control flex w-full min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50',
+          'gh-input-control flex w-full min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50',
         !unstyled && `gh-input-control--${controlSize}`,
         className,
       )}

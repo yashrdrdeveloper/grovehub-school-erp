@@ -25,14 +25,14 @@
   min-width: 0;
   height: auto;
   text-align: start;
-  white-space: normal;
+  white-space: nowrap;
   font-size: var(--gh-text-sm);
   font-weight: var(--gh-weight-normal);
 }
 .optionLabel {
   display: grid;
   text-align: start;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
   font-weight: var(--gh-weight-normal);
 }
 .description {
@@ -55,6 +55,7 @@
   flex: 1 1 auto;
   min-height: 0;
   gap: 0;
+  padding: var(--gh-space-1);
   max-height: none;
   overflow-y: auto;
   scrollbar-width: thin;
@@ -62,7 +63,8 @@
 }
 .content[data-dropdown='true'] .option.option {
   min-height: var(--gh-control-height-xs);
-  padding: var(--gh-space-1) var(--gh-space-2);
+  gap: var(--gh-space-1);
+  padding: var(--gh-space-1) var(--gh-space-1);
   font-size: var(--gh-text-xs);
   font-weight: var(--gh-weight-normal);
   border-radius: var(--gh-radius-sm);
@@ -74,6 +76,7 @@
 .search {
   position: relative;
   flex: 0 0 auto;
+  border-bottom: 1px solid var(--gh-color-border);
 }
 .searchIcon {
   position: absolute;
@@ -89,6 +92,14 @@
   font-size: var(--gh-text-xs);
   min-height: var(--gh-control-height-xs);
   height: var(--gh-control-height-xs);
+  box-shadow: none;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.searchInput.searchInput:focus,
+.searchInput.searchInput:focus-visible {
+  outline: none;
   box-shadow: none;
 }
 .content[data-dropdown='true'] .footer {
@@ -132,4 +143,9 @@
 .optionLabel {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
+.option.option svg { flex-shrink: 0; }
+.content[data-dropdown='true'] .footer { padding: var(--gh-space-1); }

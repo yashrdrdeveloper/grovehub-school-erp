@@ -73,7 +73,7 @@
 }
 .field__input:focus {
   border-color: var(--gh-color-ring);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gh-color-ring) 22%, transparent);
+  box-shadow: none;
 }
 .field__input--error {
   border-color: var(--gh-color-danger);
@@ -125,7 +125,7 @@
 }
 .gh-button:focus-visible,
 .gh-password-field__toggle:focus-visible {
-  outline: 2px solid var(--gh-color-ring);
+  outline: var(--gh-focus-outline-width) solid var(--gh-color-ring);
 }
 .gh-button--sm {
   height: var(--gh-control-height-sm);
@@ -159,7 +159,7 @@
   max-width: 100%;
 }
 .gh-input:focus-visible {
-  outline: 2px solid var(--gh-color-ring);
+  outline: var(--gh-focus-outline-width) solid var(--gh-color-ring);
   outline-offset: 1px;
 }
 .gh-field-required {
@@ -397,4 +397,17 @@
 .gh-input-control:disabled::placeholder,
 .gh-input:disabled::placeholder {
   color: var(--gh-color-muted);
+}
+
+.gh-input-control:focus,
+.gh-input:focus,
+.field__input:focus {
+  border-color: var(--gh-color-ring);
+  outline: none;
+  box-shadow: none;
+}
+.gh-button:focus-visible {
+  outline: var(--gh-focus-outline-width) solid var(--gh-color-ring);
+  outline-offset: 1px;
+  box-shadow: none;
 }

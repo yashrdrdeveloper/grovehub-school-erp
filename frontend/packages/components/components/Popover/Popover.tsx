@@ -1,41 +1,35 @@
-import { useEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { X } from '@Components/icons';
 
 import { Box } from '../Box';
 import { DialogRoot, DialogPortal, DialogContent, DialogTitle, DialogClose } from '../Dialog';
 
+import { getPopoverPosition } from './helpers/popover.getPosition';
 import styles from './Popover.module.css';
 import type { PopoverProps } from './types/popover.props';
 
 export const Popover = ({ open, onOpenChange, title, trigger, children, width = 360, fullWidth, compact = false, desktopScrollLayout = false, desktopDropdown = false, desktopDropdownWidth, dataTestId }: PopoverProps) => {
   const anchor = useRef<HTMLElement>(null);
-  const panel = useRef<HTMLDivElement>(null);
-  const [position, setPosition] = useState({ left: 0, top: 0, width });
-  useEffect(() => {
-    if (!open) return;
+  const [panel, setPanel] = useState<HTMLDivElement | null>(null);
+  const [position, setPosition] = useState({ left: 0, top: 0, width, maxHeight: 0 });
+  useLayoutEffect(() => {
+    if (!open || !panel) return;
     const place = () => {
       const rect = anchor.current?.getBoundingClientRect();
       if (!rect) return;
       const available = Math.max(0, window.innerWidth - 24);
       const getWidth = () => {
-        if (desktopDropdown && window.innerWidth > 640) return Math.max(desktopDropdownWidth ?? 0, rect.width);
+        if (desktopDropdown && window.innerWidth > 640) return Math.max(desktopDropdownWidth ?? 88, rect.width);
         return Math.max(width, rect.width);
       };
       const panelWidth = Math.min(available, getWidth());
-      const panelHeight = Math.min(panel.current?.offsetHeight ?? 320, window.innerHeight - 24);
-      const gap = 4;
-      const left = Math.max(12, Math.min(rect.left, window.innerWidth - panelWidth - 12));
-      const bottomSpace = window.innerHeight - rect.bottom - 12;
-      const top = Math.max(12, Math.min(rect.bottom + gap, window.innerHeight - panelHeight - 12));
-      if (bottomSpace < panelHeight && rect.top > bottomSpace) {
-        setPosition({ left, top: Math.max(12, rect.top - panelHeight - gap), width: panelWidth });
-        return;
-      }
-      setPosition({ left, top, width: panelWidth });
+      panel.style.width = String(panelWidth) + 'px';
+      const panelHeight = panel.offsetHeight;
+      setPosition(getPopoverPosition({ anchor: rect, panelHeight, viewportWidth: window.innerWidth, viewportHeight: window.innerHeight, width: panelWidth }));
     };
     place();
     const observer = typeof ResizeObserver !== 'undefined' && new ResizeObserver(place);
-    if (observer && panel.current) observer.observe(panel.current);
+    if (observer) { observer.observe(panel); if (anchor.current) observer.observe(anchor.current); }
     window.addEventListener('resize', place);
     window.addEventListener('scroll', place, true);
     return () => {
@@ -43,7 +37,7 @@ export const Popover = ({ open, onOpenChange, title, trigger, children, width = 
       window.removeEventListener('resize', place);
       window.removeEventListener('scroll', place, true);
     };
-  }, [open, width, desktopDropdown, desktopDropdownWidth]);
+  }, [open, panel, width, desktopDropdown, desktopDropdownWidth]);
   return (
     <DialogRoot open={open} onOpenChange={onOpenChange}>
       <Box ref={anchor} dataTestId={dataTestId} className={styles.anchor} data-full-width={fullWidth}>
@@ -51,13 +45,20 @@ export const Popover = ({ open, onOpenChange, title, trigger, children, width = 
       </Box>
       <DialogPortal>
         <DialogContent
-          ref={panel}
+          ref={setPanel}
           aria-describedby={undefined}
           className={styles.panel}
           data-compact={compact}
           data-desktop-scroll-layout={desktopScrollLayout}
           data-desktop-dropdown={desktopDropdown}
-          style={position}
+          style={{ left: position.left, top: position.top, width: position.width }}
+          onOpenAutoFocus={(event) => {
+            if (!desktopDropdown || window.innerWidth <= 640) return;
+            event.preventDefault();
+            const selected = panel?.querySelector<HTMLElement>('button[aria-pressed="true"]');
+            (selected ?? panel)?.focus({ preventScroll: true });
+          }}
+          tabIndex={-1}
           onCloseAutoFocus={(event) => {
             event.preventDefault();
             anchor.current?.querySelector('button')?.focus();

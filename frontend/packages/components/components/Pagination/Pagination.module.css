@@ -16,12 +16,14 @@
   white-space: nowrap;
 }
 .size > :last-child {
-  width: 4rem;
+  width: 5rem;
 }
 .navigation {
   justify-content: flex-end;
 }
 .size button {
+  padding-inline: var(--gh-space-2);
+  gap: var(--gh-space-1);
   height: var(--gh-control-height-sm);
   min-height: var(--gh-control-height-sm);
   font-size: var(--gh-text-xs);

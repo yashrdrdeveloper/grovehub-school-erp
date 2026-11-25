@@ -38,8 +38,12 @@ export const SortView = ({ fields, value, maxFields, disabled, iconOnly, dataTes
                 if (direction) controls.update(index, { direction });
               }} />
               <Box className={styles.actions}>
-                <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} aria-label={__('Increase priority')} disabled={index === 0} onClick={() => controls.move(index, -1)}>↑</Button>
-                <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} aria-label={__('Decrease priority')} disabled={index === controls.draft.length - 1} onClick={() => controls.move(index, 1)}>↓</Button>
+                {maxFields !== 1 && controls.draft.length > 1 && (
+                  <>
+                    <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} aria-label={__('Increase priority')} disabled={index === 0} onClick={() => controls.move(index, -1)}>↑</Button>
+                    <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} aria-label={__('Decrease priority')} disabled={index === controls.draft.length - 1} onClick={() => controls.move(index, 1)}>↓</Button>
+                  </>
+                )}
                 <ButtonWithIcon icon={Trash2} iconSize={14} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} aria-label={__('Remove sort')} onClick={() => controls.remove(index)} />
               </Box>
             </Box>

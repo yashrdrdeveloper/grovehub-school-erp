@@ -45,7 +45,7 @@ export const SelectionPanel = <T extends SelectValue>({
   const dropdown = !mobile;
   const getDropdownWidth = () => {
     if (multiple || searchable) return 180;
-    return undefined;
+    return 88;
   };
   const chosen = _filter(displayOptions ?? options, (option) => selected.includes(option.value));
   const getLabel = () => {

@@ -1067,7 +1067,7 @@
 }
 .field__input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+  box-shadow: none;
 }
 .form-row a,
 .back-link {
@@ -1517,8 +1517,8 @@ body {
   background: var(--canvas);
 }
 :focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 3px;
+  outline: var(--gh-focus-outline-width) solid var(--gh-color-ring);
+  outline-offset: 1px;
 }
 .sidebar {
   background: var(--gh-color-shell-surface);
@@ -2257,7 +2257,7 @@ body {
 .catalog-search:focus-within,
 .search-control:focus-within {
   border-color: var(--gh-color-ring);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gh-color-ring) 18%, transparent);
+  box-shadow: none;
 }
 .auth-page {
   background:
@@ -2449,7 +2449,7 @@ body {
 :root[data-theme='dark'] .catalog-search:focus-within,
 :root[data-theme='dark'] .search-control:focus-within {
   border-color: var(--gh-color-ring);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gh-color-ring) 18%, transparent);
+  box-shadow: none;
 }
 
 /* Workspace navigation and catalog — full content overlay beside persistent sidebar. */
@@ -3068,7 +3068,7 @@ body {
 .catalog-search:focus-within,
 .search-control:focus-within {
   border-color: var(--gh-color-ring);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gh-color-ring) 18%, transparent);
+  box-shadow: none;
 }
 .auth-page {
   background:
@@ -3261,7 +3261,7 @@ body {
 :root[data-theme='dark'] .catalog-search:focus-within,
 :root[data-theme='dark'] .search-control:focus-within {
   border-color: var(--gh-color-ring);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gh-color-ring) 18%, transparent);
+  box-shadow: none;
 }
 
 /* Phase 0.2 shell: Home / Apps / Menu are the only mobile destinations. */
@@ -3535,7 +3535,7 @@ body {
 :root .catalog-search:focus-within,
 :root .search-control:focus-within {
   border-color: var(--gh-color-ring);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gh-color-ring) 18%, transparent);
+  box-shadow: none;
 }
 :root .status-pill--positive {
   background: #e7f8ec;

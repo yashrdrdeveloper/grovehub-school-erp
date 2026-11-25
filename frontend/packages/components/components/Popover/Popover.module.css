@@ -93,8 +93,9 @@
 
 @media (min-width: 641px) {
   .panel[data-desktop-dropdown='true'] {
-    padding: var(--gh-space-1);
+    padding: 0;
     max-height: min(var(--gh-select-dropdown-max-height), 45dvh, calc(100dvh - 24px));
+    outline: none;
   }
   .panel[data-desktop-dropdown='true'] .heading {
     position: absolute;
