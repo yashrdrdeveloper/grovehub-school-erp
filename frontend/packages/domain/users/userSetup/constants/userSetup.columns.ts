@@ -1,4 +1,4 @@
-import { getFormattedDate } from '@Base/localization/getFormattedDate';
+import { renderCreatedAt, renderUpdatedAt } from '../renderer/userSetup.timestamps';
 import { Column } from '@Components/components/Table';
 import type { Account } from '@Business/domain/users';
 
@@ -31,18 +31,18 @@ export const USER_SETUP_COLUMNS = Object.freeze([
     .setId(UserField.CREATED_AT)
     .setHeader(__('Created at'))
     .setAccessor('createdAt')
-    .setRenderer((account) => getFormattedDate(account.createdAt))
-    .setWidth(220)
-    .setMinWidth(150)
+    .setRenderer(renderCreatedAt)
+    .setWidth(180)
+    .setMinWidth(140)
     .setSortable(true)
     .build(),
   new Column<Account>()
     .setId(UserField.UPDATED_AT)
     .setHeader(__('Updated at'))
     .setAccessor('updatedAt')
-    .setRenderer((account) => getFormattedDate(account.updatedAt))
-    .setWidth(220)
-    .setMinWidth(150)
+    .setRenderer(renderUpdatedAt)
+    .setWidth(180)
+    .setMinWidth(140)
     .setSortable(true)
     .build(),
 ]);

@@ -1,0 +1,14 @@
+.root {
+  display: grid;
+  gap: var(--gh-space-1);
+  line-height: var(--gh-leading-tight);
+  font-variant-numeric: tabular-nums;
+}
+.date {
+  font-size: var(--gh-text-sm);
+  color: var(--gh-color-text);
+}
+.time {
+  font-size: var(--gh-text-xs);
+  color: var(--gh-color-muted);
+}

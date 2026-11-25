@@ -6,8 +6,9 @@
   height: var(--gh-control-height-md);
   overflow: hidden;
   border-radius: var(--gh-control-radius);
-  background: var(--gh-color-secondary);
-  color: var(--gh-color-secondary-foreground);
+  background: linear-gradient(135deg, hsl(var(--avatar-hue) var(--gh-avatar-saturation) var(--gh-avatar-start)), hsl(calc(var(--avatar-hue) + 28) var(--gh-avatar-saturation) var(--gh-avatar-end)));
+  color: hsl(var(--avatar-hue) var(--gh-avatar-text-saturation) var(--gh-avatar-text-lightness));
+  font-size: var(--gh-text-sm);
   font-weight: var(--gh-weight-semibold);
 }
 .avatar img {

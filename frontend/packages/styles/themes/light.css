@@ -20,7 +20,7 @@
   --gh-color-table-selected: #eaf0ff;
   --gh-color-table-selected-text: #245ac4;
   --gh-color-table-stripe: #fefeff;
-  --gh-color-table-row-hover: #f0f6ff;
+  --gh-color-table-row-hover: #f5f8fc;
   --gh-color-table-footer: #fdfdfe;
   --gh-color-table-divider: #919cac;
   --gh-color-table-rule: #dfe5eb;
@@ -107,4 +107,9 @@
   --gh-color-table-group-admission-text: #065f46;
   --gh-color-table-group-related: #f6f2ff;
   --gh-color-table-group-related-text: #6d28d9;
+  --gh-avatar-saturation: 75%;
+  --gh-avatar-start: 94%;
+  --gh-avatar-end: 83%;
+  --gh-avatar-text-saturation: 60%;
+  --gh-avatar-text-lightness: 25%;
 }
