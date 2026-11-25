@@ -36,7 +36,7 @@ export const DateRange = (props: DateRangeProps) => {
         open={controls.open}
         onOpenChange={controls.onOpenChange}
         title={__('Date range')}
-        width={724}
+        width={560}
         compact
         fullWidth
         trigger={
@@ -60,7 +60,7 @@ export const DateRange = (props: DateRangeProps) => {
                 <Box className={styles.separator} aria-hidden="true">–</Box>
                 <Box className={styles.date} data-placeholder={!controls.draft.endDate}>{getFormattedRangeDate(controls.draft.endDate, __('End date'))}</Box>
               </Box>
-              <Box className={styles.calendars}>
+              <Box className={styles.calendars} key={controls.selectedPreset ?? "custom"}>
                 <Calendar compact hideFooter navigation="previous" month={controls.month} onMonthChange={controls.setMonth} value={controls.draft.startDate} range={controls.preview} onChange={controls.selectDate} onDayHover={controls.setHover} disabled={disabled} />
                 <Calendar compact hideFooter navigation="next" month={controls.nextMonth} onMonthChange={(month) => controls.setMonth(shiftRangeMonth(month, -1))} value={controls.draft.endDate} range={controls.preview} onChange={controls.selectDate} onDayHover={controls.setHover} disabled={disabled} />
               </Box>
