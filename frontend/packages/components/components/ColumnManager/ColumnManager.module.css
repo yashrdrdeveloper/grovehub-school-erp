@@ -1,4 +1,16 @@
-.content {
+.content,
+.option {
   display: grid;
   gap: var(--gh-space-2);
+}
+.option {
+  border: 1px solid var(--gh-color-border);
+  border-radius: var(--gh-control-radius);
+  padding: var(--gh-space-2);
+}
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--gh-space-1);
 }

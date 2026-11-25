@@ -1,7 +1,17 @@
-.root,.panel {
+.root,
+.panel {
   display: grid;
   gap: var(--gh-space-3);
   min-width: 0;
+}
+.root[data-fullscreen='true'] {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  overflow: auto;
+  background: var(--gh-color-surface);
+  padding: var(--gh-space-4);
+  align-content: start;
 }
 .panel {
   border: 1px solid var(--gh-color-border);
@@ -21,20 +31,30 @@
 }
 .scroll {
   min-width: 0;
-  overflow-x: auto;
+  max-height: 70dvh;
+  overflow: auto;
 }
 .table {
-  width: 100%;
-  border-collapse: collapse;
+  min-width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
   text-align: start;
   font-size: var(--gh-text-sm);
 }
-.table th,.table td {
+.table th,
+.table td {
   border-bottom: 1px solid var(--gh-color-border);
   padding: var(--gh-space-2) var(--gh-space-3);
   text-align: start;
+  background: var(--gh-color-surface);
+  box-sizing: border-box;
+  overflow: hidden;
 }
 .table th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
   background: var(--gh-color-surface-subtle);
 }
 .table[data-density='COMPACT'] td {
@@ -43,17 +63,83 @@
 .table[data-density='COMFORTABLE'] td {
   padding-block: var(--gh-space-4);
 }
+.table[data-virtual='true'] .cell {
+  max-height: var(--gh-control-height-lg);
+  overflow: hidden;
+}
+.table .spacer {
+  padding: 0;
+  border: 0;
+}
+.table .selection {
+  width: 52px;
+  min-width: 52px;
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+.table .actionColumn {
+  width: 120px;
+  min-width: 120px;
+  position: sticky;
+  right: 0;
+  z-index: 2;
+}
+.table th.selection,
+.table th.actionColumn {
+  z-index: 4;
+}
+.table .group,
+.table tr[data-selected='true'] td {
+  background: var(--gh-color-surface-subtle);
+}
+.cell {
+  display: flex;
+  align-items: center;
+  gap: var(--gh-space-1);
+  min-width: 0;
+}
 .state {
   display: grid;
   justify-items: center;
   gap: var(--gh-space-3);
   padding: var(--gh-space-6);
 }
+.mobileList {
+  display: grid;
+  gap: var(--gh-space-2);
+  min-width: 0;
+}
+.mobileCard {
+  display: grid;
+  gap: var(--gh-space-2);
+  padding: var(--gh-space-3);
+  border: 1px solid var(--gh-color-border);
+  border-radius: var(--gh-control-radius);
+  min-width: 0;
+}
+.mobileCard[data-selected='true'] {
+  background: var(--gh-color-surface-subtle);
+}
+.mobileField {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  align-items: start;
+  gap: var(--gh-space-2);
+  overflow-wrap: anywhere;
+}
+.mobileLabel {
+  color: var(--gh-color-muted);
+  font-size: var(--gh-text-xs);
+}
+.mobileActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--gh-space-2);
+}
 @media (max-width: 640px) {
   .search {
     flex-basis: 100%;
-  }
-  .table th,.table td {
-    padding-inline: var(--gh-space-2);
   }
 }

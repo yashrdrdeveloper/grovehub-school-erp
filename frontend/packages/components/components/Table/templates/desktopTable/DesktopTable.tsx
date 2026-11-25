@@ -1,0 +1,98 @@
+import { useState } from 'react';
+import { _map } from '@Base/utilities/map';
+
+import { Box } from '../../../Box';
+import { Button, BUTTON_VARIANT } from '../../../Button';
+
+import { TableCell } from '../../components/tableCell';
+import { TableRowActions } from '../../components/tableRowActions';
+import { TableSelection } from '../../components/tableSelection';
+import { TableSortHeader } from '../../components/tableSortHeader';
+import { TableType } from '../../constants/table.type';
+import { getVirtualWindow } from '../../helpers/table.getVirtualWindow';
+import { getTableCellStyle } from '../../helpers/table.getCellStyle';
+
+import type { DesktopTableProps } from './types/desktopTable.props';
+import styles from '../../Table.module.css';
+
+export const DesktopTable = <T,>(props: DesktopTableProps<T>) => {
+  const { controls } = props;
+  const [scrollTop, setScrollTop] = useState(0);
+  const virtual = props.type === TableType.VIRTUALIZED || ('virtualizationProps' in props && Boolean(props.virtualizationProps));
+  const settings = ('virtualizationProps' in props && props.virtualizationProps) || {};
+  const height = Math.max(100, settings.height ?? 480);
+  const rowHeight = Math.max(44, settings.rowHeight ?? 64);
+  const range = getVirtualWindow(controls.entries.length, scrollTop, height, rowHeight, settings.overscan ?? 6);
+  const getEntries = () => {
+    if (virtual) return controls.entries.slice(range.start, range.end);
+    return controls.entries;
+  };
+  const selection = Boolean(props.selectionProps);
+  const rowActions = Boolean(props.rowActions?.length);
+  const span = Math.max(1, controls.layout.length + Number(selection) + Number(rowActions));
+  const pageChecked = Boolean(controls.selectable.length) && controls.selectable.every((id) => controls.selected.includes(id));
+  const someChecked = controls.selectable.some((id) => controls.selected.includes(id));
+  const tableWidth = controls.layout.reduce((sum, item) => sum + item.width, Number(selection) * 52 + Number(rowActions) * 120);
+  const frameStyle = () => {
+    if (virtual) return { height };
+    return undefined;
+  };
+  const rowStyle = () => {
+    if (virtual) return { height: rowHeight };
+    return undefined;
+  };
+  return (
+    <Box className={styles.scroll} style={frameStyle()} onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}>
+      <table className={styles.table} data-density={controls.preferences.density} data-virtual={virtual} style={{ width: tableWidth }} aria-busy={props.refreshing} aria-label={props.headerProps?.title ?? __('Table')}>
+        <thead>
+          <tr>
+            {selection && <th scope="col" className={styles.selection}><TableSelection label={__('Select visible rows')} checked={pageChecked} indeterminate={someChecked && !pageChecked} disabled={!controls.selectable.length} onChange={controls.selectPage} /></th>}
+            {_map(controls.layout, (entry) => (
+              <th key={entry.column.id} scope="col" style={{ ...getTableCellStyle(entry, selection, rowActions), position: 'sticky', top: 0, zIndex: 3 }}>
+                <TableSortHeader column={entry.column} props={props} />
+              </th>
+            ))}
+            {rowActions && <th className={styles.actionColumn} scope="col">{__('Actions')}</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {virtual && range.before > 0 && <tr aria-hidden="true"><td colSpan={span} className={styles.spacer} style={{ height: range.before }} /></tr>}
+          {_map(getEntries(), (entry) => {
+            if (entry.kind === 'GROUP') return (
+              <tr key={`group:${entry.id}`} style={rowStyle()}>
+                <td colSpan={span} className={styles.group}>
+                  <Button variant={BUTTON_VARIANT.GHOST} aria-expanded={entry.expanded} onClick={() => controls.toggleGroup(entry.id)}>
+                    {entry.expanded && '▾ '}{!entry.expanded && '▸ '}{entry.label} ({entry.count})
+                  </Button>
+                </td>
+              </tr>
+            );
+            if (entry.kind === 'DETAIL' && props.type === TableType.EXPANDABLE) return <tr key={`detail:${entry.id}`}><td colSpan={span}>{props.expansionProps.render(entry.row)}</td></tr>;
+            if (entry.kind !== 'ROW') return null;
+            const row = entry.row;
+            return (
+              <tr key={`row:${entry.id}`} style={rowStyle()} onDoubleClick={() => props.actions?.ROW_DOUBLE_CLICK?.(row)} data-selected={controls.selected.includes(entry.id)}>
+                {selection && <td className={styles.selection}><TableSelection label={__('Select row {{id}}', { id: entry.id })} checked={controls.selected.includes(entry.id)} disabled={!controls.selectable.includes(entry.id)} onChange={() => controls.selectRow(entry.id)} /></td>}
+                {_map(controls.layout, (layout, index) => (
+                  <td key={layout.column.id} style={getTableCellStyle(layout, selection, rowActions)}>
+                    <Box className={styles.cell} style={{ paddingInlineStart: Number(index === 0) * entry.depth * 16 }}>
+                      {index === 0 && entry.expandable && (
+                        <Button variant={BUTTON_VARIANT.GHOST} aria-expanded={controls.expanded.includes(entry.id)} aria-label={__('Toggle row details')} onClick={() => controls.toggleExpanded(entry.id)}>
+                          {controls.expanded.includes(entry.id) && '▾'}{!controls.expanded.includes(entry.id) && '▸'}
+                        </Button>
+                      )}
+                      {index === 0 && props.actions?.ROW_CLICK && <Button variant={BUTTON_VARIANT.GHOST} onClick={() => props.actions?.ROW_CLICK?.(row)}>{__('Open')}</Button>}
+                      <TableCell row={row} column={layout.column} actions={props.actions} />
+                    </Box>
+                  </td>
+                ))}
+                {rowActions && <td className={styles.actionColumn}><TableRowActions row={row} props={props} /></td>}
+              </tr>
+            );
+          })}
+          {virtual && range.after > 0 && <tr aria-hidden="true"><td colSpan={span} className={styles.spacer} style={{ height: range.after }} /></tr>}
+        </tbody>
+      </table>
+    </Box>
+  );
+};

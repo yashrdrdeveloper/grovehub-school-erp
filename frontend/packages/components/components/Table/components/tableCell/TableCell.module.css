@@ -1,0 +1,10 @@
+.cell {
+  display: flex;
+  align-items: center;
+  gap: var(--gh-space-1);
+  min-width: 0;
+}
+.value {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
