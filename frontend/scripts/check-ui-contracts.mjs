@@ -28,6 +28,10 @@ for (const unit of await readdir(root, { withFileTypes: true })) {
     /dataTestId=\{dataTestId\}/.test(source);
   const forwardsToInput =
     unit.name === 'TextField' && /<Input\b/.test(source) && /\{\.\.\.props\}/.test(source);
+  // Explicit forwarding through shared controls; each destination is separately checked.
+  const forwardsToSharedControl =
+    /<(?:Input|Button|ButtonWithIcon|Dialog|SelectionPanel)\b/.test(source) &&
+    /dataTestId=\{dataTestId\}/.test(source);
   const forwardsToBox = /<Box\b/.test(source) && /dataTestId=\{/.test(source);
   const forwardsToNativeLeaf =
     unit.name === 'Input' &&
@@ -43,6 +47,7 @@ for (const unit of await readdir(root, { withFileTypes: true })) {
     !forwardsToNativeLeaf &&
     !forwardsToTypography &&
     !forwardsToBox &&
+    !forwardsToSharedControl &&
     !/data-testid/.test(source) &&
     !/['"]data-testid['"]/.test(source)
   ) {

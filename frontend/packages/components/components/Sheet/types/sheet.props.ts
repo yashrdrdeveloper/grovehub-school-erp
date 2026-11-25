@@ -1,3 +1,5 @@
 import type { DialogProps } from '../../Dialog/types/dialog.props';
 
-export type SheetProps = DialogProps;
+export interface SheetProps extends DialogProps {
+  readonly dataTestId?: string;
+}

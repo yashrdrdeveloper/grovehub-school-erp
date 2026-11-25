@@ -22,4 +22,6 @@ export interface AsyncSelectSource<T extends SelectValue> {
 }
 
 export interface AsyncSelectProps<T extends SelectValue = string>
-  extends Omit<SelectProps<T>, 'options'>, AsyncSelectSource<T> {}
+  extends Omit<SelectProps<T>, 'options'>, AsyncSelectSource<T> {
+  readonly dataTestId?: string;
+}

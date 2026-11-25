@@ -3,8 +3,12 @@ import { act, renderHook } from '@testing-library/react';
 import { useDebounce } from '../useDebounce';
 
 describe('useDebounce', () => {
-  beforeEach(() => jest.useFakeTimers());
-  afterEach(() => jest.useRealTimers());
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+  });
 
   it('dispatches only the last value and cancels on unmount', () => {
     const callback = jest.fn();

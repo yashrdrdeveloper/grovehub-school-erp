@@ -9,9 +9,10 @@ export const ButtonWithIcon = ({
   iconPosition = BUTTON_ICON_POSITION.LEFT,
   iconSize,
   children,
+  dataTestId,
   ...props
 }: ButtonWithIconProps) => (
-  <Button {...props}>
+  <Button {...props} dataTestId={dataTestId}>
     {iconPosition === BUTTON_ICON_POSITION.LEFT && <Icon icon={icon} size={iconSize} />}
     {children}
     {iconPosition === BUTTON_ICON_POSITION.RIGHT && <Icon icon={icon} size={iconSize} />}

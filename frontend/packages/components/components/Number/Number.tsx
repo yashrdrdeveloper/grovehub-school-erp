@@ -2,9 +2,10 @@ import { Input } from '../Input';
 
 import type { NumberProps } from './types/number.props';
 
-export const Number = ({ value, onChange, ...props }: NumberProps) => (
+export const Number = ({ value, onChange, dataTestId, ...props }: NumberProps) => (
   <Input
     {...props}
+    dataTestId={dataTestId}
     type="number"
     value={value ?? ''}
     onChange={(event) => {
