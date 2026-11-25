@@ -1,0 +1,13 @@
+.footer,.navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--gh-space-2);
+}
+.size {
+  width: 8rem;
+}
+.navigation {
+  justify-content: flex-end;
+}

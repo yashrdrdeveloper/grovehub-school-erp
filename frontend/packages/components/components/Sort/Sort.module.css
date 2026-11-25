@@ -1,0 +1,18 @@
+.panel {
+  display: grid;
+  gap: var(--gh-space-3);
+}
+.rule {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--gh-space-2);
+  border: 1px solid var(--gh-color-border);
+  border-radius: var(--gh-control-radius);
+  padding: var(--gh-space-2);
+}
+.actions {
+  display: flex;
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+  gap: var(--gh-space-1);
+}

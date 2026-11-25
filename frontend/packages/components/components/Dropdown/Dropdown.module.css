@@ -1,0 +1,7 @@
+.items {
+  display: grid;
+  gap: var(--gh-space-2);
+}
+.items > * {
+  justify-content: flex-start;
+}

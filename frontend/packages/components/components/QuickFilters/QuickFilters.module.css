@@ -1,0 +1,10 @@
+.controls {
+  display: flex;
+  gap: var(--gh-space-2);
+  max-width: 100%;
+  overflow-x: auto;
+  padding-block: var(--gh-space-1);
+}
+.controls > * {
+  flex: 0 0 auto;
+}

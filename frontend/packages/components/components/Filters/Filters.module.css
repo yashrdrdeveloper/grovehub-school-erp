@@ -1,0 +1,31 @@
+.panel,.list {
+  display: grid;
+  gap: var(--gh-space-3);
+  min-width: 0;
+}
+.list {
+  max-height: 55dvh;
+  overflow: auto;
+}
+.condition {
+  display: flex;
+  align-items: center;
+  gap: var(--gh-space-1);
+  padding: var(--gh-space-2);
+  border: 1px solid var(--gh-color-border);
+  border-radius: var(--gh-control-radius);
+}
+.summary {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.muted {
+  color: var(--gh-color-muted);
+  font-size: var(--gh-text-xs);
+}
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--gh-space-2);
+}
