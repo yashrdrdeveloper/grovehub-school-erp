@@ -23,6 +23,7 @@ export const SelectContainer = <T extends SelectValue>({
       {...controls}
       selected={selected}
       multiple={false}
+      displayOptions={options}
       options={searchSelectOptions(options, controls.search)}
     />
   );

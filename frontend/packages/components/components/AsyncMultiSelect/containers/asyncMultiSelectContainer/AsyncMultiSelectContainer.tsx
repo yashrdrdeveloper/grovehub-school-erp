@@ -11,13 +11,14 @@ export const AsyncMultiSelectContainer = <T extends SelectValue>({
   cacheKey,
   loadOptions,
   initialOptions,
+  resolveOptions,
   pageSize,
   debounceMs,
   maxSelections,
   ...props
 }: AsyncMultiSelectProps<T>) => {
   const controls = useSelection({ value, onChange, multiple: true, maxSelections });
-  const source = useAsyncOptions({ cacheKey, loadOptions, initialOptions, pageSize, debounceMs }, controls.open);
+  const source = useAsyncOptions({ cacheKey, loadOptions, initialOptions, resolveOptions, pageSize, debounceMs }, controls.open, value);
   const getSelected = () => {
     if (controls.open) return controls.selected;
     return value;
@@ -30,6 +31,7 @@ export const AsyncMultiSelectContainer = <T extends SelectValue>({
       selected={getSelected()}
       multiple
       options={source.options}
+      displayOptions={source.displayOptions}
       loading={source.loading}
       error={source.error || props.error}
       hasNext={source.hasNext}

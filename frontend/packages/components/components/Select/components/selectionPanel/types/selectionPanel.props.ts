@@ -1,6 +1,7 @@
-import type { SelectCommonProps, SelectValue } from '../../../types/select.props';
+import type { SelectCommonProps, SelectOption, SelectValue } from '../../../types/select.props';
 
 export interface SelectionPanelProps<T extends SelectValue> extends SelectCommonProps<T> {
+  readonly displayOptions?: readonly SelectOption<T>[];
   readonly selected: readonly T[];
   readonly multiple: boolean;
   readonly open: boolean;

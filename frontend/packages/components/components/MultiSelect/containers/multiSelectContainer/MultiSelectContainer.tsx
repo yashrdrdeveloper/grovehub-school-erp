@@ -24,6 +24,7 @@ export const MultiSelectContainer = <T extends SelectValue>({
       {...controls}
       selected={getSelected()}
       multiple
+      displayOptions={options}
       options={searchSelectOptions(options, controls.search)}
     />
   );

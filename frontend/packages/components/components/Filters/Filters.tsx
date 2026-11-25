@@ -1,12 +1,12 @@
 import { _map } from '@Base/utilities/map';
 import { _find } from '@Base/utilities/find';
-import { Pencil, Plus, Trash2, Settings2 } from '@Components/icons';
+import { Pencil, Plus, Trash2, Filter } from '@Components/icons';
 
 import { Box } from '../Box';
 import { Button, BUTTON_VARIANT } from '../Button';
 import { ButtonWithIcon } from '../ButtonWithIcon';
 import { Select } from '../Select';
-import { Sheet } from '../Sheet';
+import { Popover } from '../Popover';
 
 import { FilterValue } from './components/filterValue';
 import { FILTER_OPERATOR_LABELS } from './constants/filters.copy';
@@ -27,11 +27,11 @@ export const FiltersView = ({ fields, value, disabled, maxFilters, dataTestId, c
     return __('Filters');
   };
   return (
-    <>
-      <ButtonWithIcon icon={Settings2} variant={BUTTON_VARIANT.OUTLINE} disabled={disabled} dataTestId={dataTestId} onClick={() => controls.onOpenChange(true)}>
+    <Popover open={controls.open} onOpenChange={controls.onOpenChange} title={getTitle()} width={420} trigger={
+      <ButtonWithIcon icon={Filter} variant={BUTTON_VARIANT.OUTLINE} disabled={disabled} dataTestId={dataTestId} onClick={() => controls.onOpenChange(true)}>
         {getButton()}
       </ButtonWithIcon>
-      <Sheet open={controls.open} onOpenChange={controls.onOpenChange} title={getTitle()}>
+    }>
         {!editing && (
           <Box className={styles.panel}>
             <Box className={styles.list}>
@@ -73,7 +73,6 @@ export const FiltersView = ({ fields, value, disabled, maxFilters, dataTestId, c
             </Box>
           </Box>
         )}
-      </Sheet>
-    </>
+    </Popover>
   );
 };

@@ -1,12 +1,12 @@
 import { _filter } from '@Base/utilities/filter';
 import { _map } from '@Base/utilities/map';
-import { Plus, Trash2, Settings2 } from '@Components/icons';
+import { Plus, Trash2, ArrowUpDown } from '@Components/icons';
 
 import { Box } from '../Box';
 import { Button, BUTTON_VARIANT } from '../Button';
 import { ButtonWithIcon } from '../ButtonWithIcon';
 import { Select } from '../Select';
-import { Sheet } from '../Sheet';
+import { Popover } from '../Popover';
 
 import { SortDirection } from './constants/sort.direction';
 import styles from './Sort.module.css';
@@ -19,9 +19,9 @@ export const SortView = ({ fields, value, maxFields, disabled, dataTestId, contr
     return __('Sort');
   };
   return (
-    <>
-      <ButtonWithIcon icon={Settings2} variant={BUTTON_VARIANT.OUTLINE} disabled={disabled} dataTestId={dataTestId} onClick={() => controls.onOpenChange(true)}>{getLabel()}</ButtonWithIcon>
-      <Sheet open={controls.open} onOpenChange={controls.onOpenChange} title={__('Manage sort')}>
+    <Popover open={controls.open} onOpenChange={controls.onOpenChange} title={__('Manage sort')} width={440} trigger={
+      <ButtonWithIcon icon={ArrowUpDown} variant={BUTTON_VARIANT.OUTLINE} disabled={disabled} dataTestId={dataTestId} onClick={() => controls.onOpenChange(true)}>{getLabel()}</ButtonWithIcon>
+    }>
         <Box className={styles.panel}>
           {_map(controls.draft, (rule, index) => (
             <Box className={styles.rule} key={rule.field}>
@@ -44,7 +44,6 @@ export const SortView = ({ fields, value, maxFields, disabled, dataTestId, contr
             <Button onClick={controls.apply}>{__('Apply sort')}</Button>
           </Box>
         </Box>
-      </Sheet>
-    </>
+    </Popover>
   );
 };

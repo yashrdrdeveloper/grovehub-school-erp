@@ -78,3 +78,6 @@ export { Table, Column, TableType, TableDataMode, TableDensity, TableActionType 
 export type { TableProps, TableColumn, TableActions } from './components/Table';
 export { ColumnManager } from './components/ColumnManager';
 export type { ColumnManagerProps } from './components/ColumnManager';
+
+export { Popover } from './components/Popover';
+export type { PopoverProps } from './components/Popover';

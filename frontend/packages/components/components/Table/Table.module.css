@@ -35,7 +35,6 @@
   overflow: auto;
 }
 .table {
-  min-width: 100%;
   table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
@@ -62,6 +61,9 @@
 }
 .table[data-density='COMFORTABLE'] td {
   padding-block: var(--gh-space-4);
+}
+.table[data-virtual='true'] td:not(.spacer) {
+  padding-block: 0;
 }
 .table[data-virtual='true'] .cell {
   max-height: var(--gh-control-height-lg);

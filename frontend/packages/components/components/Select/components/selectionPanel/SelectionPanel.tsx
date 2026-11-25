@@ -6,7 +6,7 @@ import { Box } from '../../../Box';
 import { Button, BUTTON_VARIANT } from '../../../Button';
 import { ButtonWithIcon, BUTTON_ICON_POSITION } from '../../../ButtonWithIcon';
 import { Input } from '../../../Input';
-import { Sheet } from '../../../Sheet';
+import { Popover } from '../../../Popover';
 
 import styles from './SelectionPanel.module.css';
 import type { SelectValue } from '../../types/select.props';
@@ -14,6 +14,7 @@ import type { SelectionPanelProps } from './types/selectionPanel.props';
 
 export const SelectionPanel = <T extends SelectValue>({
   options,
+  displayOptions,
   selected,
   multiple,
   open,
@@ -35,7 +36,7 @@ export const SelectionPanel = <T extends SelectValue>({
   error,
   dataTestId,
 }: SelectionPanelProps<T>) => {
-  const chosen = _filter(options, (option) => selected.includes(option.value));
+  const chosen = _filter(displayOptions ?? options, (option) => selected.includes(option.value));
   const getLabel = () => {
     if (!selected.length) return placeholder ?? __('Select an option');
     if (multiple) return __('{{count}} selected', { count: selected.length });
@@ -44,6 +45,8 @@ export const SelectionPanel = <T extends SelectValue>({
 
   return (
     <Box className={styles.field}>
+      <Box className={styles.description}>{label}</Box>
+      <Popover open={open} onOpenChange={onOpenChange} title={label} fullWidth dataTestId={dataTestId && `${dataTestId}-options`} trigger={
       <ButtonWithIcon
         icon={ChevronDown}
         iconPosition={BUTTON_ICON_POSITION.RIGHT}
@@ -59,7 +62,7 @@ export const SelectionPanel = <T extends SelectValue>({
       >
         {getLabel()}
       </ButtonWithIcon>
-      <Sheet open={open} onOpenChange={onOpenChange} title={label} dataTestId={dataTestId && `${dataTestId}-options`}>
+      }>
         <Box className={styles.content}>
           {searchable && (
             <Input
@@ -98,7 +101,7 @@ export const SelectionPanel = <T extends SelectValue>({
             {multiple && <Button onClick={onApply}>{__('Apply')}</Button>}
           </Box>
         </Box>
-      </Sheet>
+      </Popover>
     </Box>
   );
 };
