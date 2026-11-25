@@ -30,3 +30,40 @@
   outline: 1px solid var(--gh-color-ring);
   outline-offset: -2px;
 }
+
+.navigation[data-hidden='true'] {
+  visibility: hidden;
+}
+.calendar[data-compact='true'] {
+  gap: var(--gh-space-1);
+  min-width: 0;
+  font-size: var(--gh-text-xs);
+}
+.calendar[data-compact='true'] .heading {
+  font-weight: var(--gh-weight-medium);
+}
+.calendar[data-compact='true'] .navigation {
+  width: var(--gh-control-height-sm);
+  min-width: 0;
+  padding: 0;
+}
+.calendar[data-compact='true'] .day.day {
+  height: var(--gh-control-height-sm);
+  min-height: var(--gh-control-height-sm);
+  font-size: var(--gh-text-xs);
+  font-weight: var(--gh-weight-normal);
+  border-radius: var(--gh-radius-sm);
+}
+.day[data-range-day='true'][data-outside='true'] {
+  visibility: hidden;
+}
+.day.day[data-in-range='true'] {
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-accent);
+  border-radius: 0;
+}
+.day.day[data-range-start='true'],
+.day.day[data-range-end='true'] {
+  background: var(--gh-color-primary);
+  color: var(--gh-color-primary-foreground);
+}
