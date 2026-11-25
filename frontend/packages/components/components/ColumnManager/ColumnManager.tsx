@@ -7,6 +7,7 @@ import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '../Button';
 import { ButtonWithIcon } from '../ButtonWithIcon';
 import { Checkbox } from '../Checkbox';
 import { DragList } from '../DragList';
+import { Tooltip } from '../Tooltip';
 import { Popover } from '../Popover';
 import { Select } from '../Select';
 import { TableDensity, TablePin } from '../Table/constants/table.type';
@@ -21,7 +22,7 @@ export const ColumnManager = ({ options, density, onToggle, onDensityChange, onR
   return (
     <Box dataTestId={dataTestId}>
       <Popover open={open} onOpenChange={setOpen} title={__('Table settings')} width={320} compact trigger={
-        <ButtonWithIcon icon={Settings} iconSize={16} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} aria-label={__('Table settings')} title={__('Table settings')} aria-expanded={open} onClick={() => setOpen(true)} />
+        <Tooltip label={__('Table settings')}><ButtonWithIcon icon={Settings} iconSize={16} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} aria-label={__('Table settings')} aria-expanded={open} onClick={() => setOpen(true)} /></Tooltip>
       }>
         <Box className={styles.content}>
           <Select label={__('View')} value={density} clearable={false} searchable={false} options={[{value: TableDensity.COMPACT, label: __('Compact')}, {value: TableDensity.DEFAULT, label: __('Default')}, {value: TableDensity.COMFORTABLE, label: __('Comfortable')}]} onChange={(value) => { if (value) onDensityChange(value); }} />

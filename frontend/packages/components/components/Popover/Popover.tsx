@@ -24,8 +24,14 @@ export const Popover = ({ open, onOpenChange, title, trigger, children, width = 
       };
       const panelWidth = Math.min(available, getWidth());
       panel.style.width = String(panelWidth) + 'px';
+      panel.style.removeProperty('--popover-available-height');
       const panelHeight = panel.offsetHeight;
-      setPosition(getPopoverPosition({ anchor: rect, panelHeight, viewportWidth: window.innerWidth, viewportHeight: window.innerHeight, width: panelWidth }));
+      const next = getPopoverPosition({ anchor: rect, panelHeight, viewportWidth: window.innerWidth, viewportHeight: window.innerHeight, width: panelWidth });
+      if (window.innerWidth > 640) panel.style.setProperty('--popover-available-height', String(next.maxHeight) + 'px');
+      setPosition((current) => {
+        if (current.left === next.left && current.top === next.top && current.width === next.width && current.maxHeight === next.maxHeight) return current;
+        return next;
+      });
     };
     place();
     const observer = typeof ResizeObserver !== 'undefined' && new ResizeObserver(place);

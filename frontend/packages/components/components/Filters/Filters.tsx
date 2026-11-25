@@ -9,6 +9,7 @@ import { ButtonWithIcon } from '../ButtonWithIcon';
 import { EmptyState } from '../EmptyState';
 import { Input } from '../Input';
 import { Select } from '../Select';
+import { Tooltip } from '../Tooltip';
 import { Popover } from '../Popover';
 
 import { DesktopFilters } from './templates/desktopFilters';
@@ -34,10 +35,10 @@ export const FiltersView = ({ fields, value, disabled, maxFilters, iconOnly, dat
   };
   return (
     <Popover open={controls.open} onOpenChange={controls.onOpenChange} title={getTitle()} width={760} compact desktopScrollLayout trigger={
-      <ButtonWithIcon icon={Filter} className={styles.trigger} size={BUTTON_SIZE.SMALL} iconSize={14} variant={BUTTON_VARIANT.OUTLINE} aria-label={getButton()} aria-expanded={controls.open} title={getButton()} disabled={disabled} dataTestId={dataTestId} onClick={() => controls.onOpenChange(true)}>
+      <Tooltip label={getButton()}><ButtonWithIcon icon={Filter} className={styles.trigger} size={BUTTON_SIZE.SMALL} iconSize={14} variant={BUTTON_VARIANT.OUTLINE} aria-label={getButton()} aria-expanded={controls.open} disabled={disabled} dataTestId={dataTestId} onClick={() => controls.onOpenChange(true)}>
         {!iconOnly && getButton()}
         {iconOnly && !!value.length && value.length}
-      </ButtonWithIcon>
+      </ButtonWithIcon></Tooltip>
     }>
         {!mobile && <DesktopFilters fields={fields} maxFilters={maxFilters} controls={controls} />}
         {mobile && !editing && (

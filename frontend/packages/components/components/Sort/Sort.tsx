@@ -7,6 +7,7 @@ import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '../Button';
 import { ButtonWithIcon } from '../ButtonWithIcon';
 import { EmptyState } from '../EmptyState';
 import { Select } from '../Select';
+import { Tooltip } from '../Tooltip';
 import { Popover } from '../Popover';
 
 import { SortDirection } from './constants/sort.direction';
@@ -21,10 +22,10 @@ export const SortView = ({ fields, value, maxFields, disabled, iconOnly, dataTes
   };
   return (
     <Popover open={controls.open} onOpenChange={controls.onOpenChange} title={__('Manage sort')} width={600} compact desktopScrollLayout trigger={
-      <ButtonWithIcon icon={ArrowUpDown} iconSize={16} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} aria-label={getLabel()} title={getLabel()} aria-expanded={controls.open} disabled={disabled} dataTestId={dataTestId} onClick={() => controls.onOpenChange(true)}>
+      <Tooltip label={getLabel()}><ButtonWithIcon icon={ArrowUpDown} iconSize={16} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} aria-label={getLabel()} aria-expanded={controls.open} disabled={disabled} dataTestId={dataTestId} onClick={() => controls.onOpenChange(true)}>
         {!iconOnly && getLabel()}
         {iconOnly && !!value.length && value.length}
-      </ButtonWithIcon>
+      </ButtonWithIcon></Tooltip>
     }>
         <Box className={styles.panel}>
           <Box className={styles.list} data-empty={!controls.draft.length}>

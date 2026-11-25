@@ -1,0 +1,22 @@
+.anchor {
+  display: inline-flex;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+.bubble {
+  position: fixed;
+  z-index: 120;
+  transform: translateX(-50%);
+  background: var(--gh-color-text-strong);
+  color: var(--gh-color-surface);
+  border-radius: var(--gh-control-radius);
+  padding: var(--gh-space-1) var(--gh-space-2);
+  font-size: var(--gh-text-xs);
+  line-height: var(--gh-leading-normal);
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: var(--gh-shadow-card);
+}
+@media (hover: none) {
+  .bubble { display: none; }
+}

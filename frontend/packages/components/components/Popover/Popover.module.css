@@ -12,7 +12,7 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  max-height: calc(100dvh - 24px);
+  max-height: min(calc(100dvh - 24px), var(--popover-available-height, 100dvh));
   min-width: 0;
   overflow: hidden;
   border: 1px solid var(--gh-color-border);
@@ -73,9 +73,9 @@
 
 @media (min-width: 641px) {
   .panel[data-desktop-scroll-layout='true'] {
-    height: min(var(--gh-popover-scroll-max-height), 60dvh, calc(100dvh - 24px));
-    min-height: min(var(--gh-popover-scroll-max-height), 60dvh, calc(100dvh - 24px));
-    max-height: min(var(--gh-popover-scroll-max-height), 60dvh, calc(100dvh - 24px));
+    height: min(var(--gh-popover-scroll-max-height), 60dvh, calc(100dvh - 24px), var(--popover-available-height, 100dvh));
+    min-height: min(var(--gh-popover-scroll-max-height), 60dvh, calc(100dvh - 24px), var(--popover-available-height, 100dvh));
+    max-height: min(var(--gh-popover-scroll-max-height), 60dvh, calc(100dvh - 24px), var(--popover-available-height, 100dvh));
     padding: 0;
   }
   .panel[data-desktop-scroll-layout='true'] .heading {
@@ -94,7 +94,7 @@
 @media (min-width: 641px) {
   .panel[data-desktop-dropdown='true'] {
     padding: 0;
-    max-height: min(var(--gh-select-dropdown-max-height), 45dvh, calc(100dvh - 24px));
+    max-height: min(var(--gh-select-dropdown-max-height), 45dvh, calc(100dvh - 24px), var(--popover-available-height, 100dvh));
     outline: none;
   }
   .panel[data-desktop-dropdown='true'] .heading {
@@ -115,3 +115,5 @@
     min-height: 0;
   }
 }
+
+.panel[data-desktop-dropdown='true']:focus-visible { outline: none; }

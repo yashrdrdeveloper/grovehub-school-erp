@@ -20,6 +20,7 @@
 
 .items[data-compact='true'] {
   gap: 0;
+  padding: var(--gh-space-1);
 }
 .items[data-compact='true'] button {
   min-height: var(--gh-control-height-xs);

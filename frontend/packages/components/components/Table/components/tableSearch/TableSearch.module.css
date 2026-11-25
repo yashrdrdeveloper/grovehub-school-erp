@@ -66,11 +66,11 @@
 }
 .root .input input:focus,
 .root .input input:focus-visible,
-.root .info:focus-visible {
+.root .info.info:focus-visible {
   border: 0;
   outline: none;
   box-shadow: none;
 }
-.root .info:focus-visible {
+.root .info.info:focus-visible {
   border-inline-start: 1px solid var(--gh-color-table-rule);
 }
