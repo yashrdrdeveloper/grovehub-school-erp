@@ -44,7 +44,7 @@ export const FilterValue = ({ field, condition, onChange, hideLabel }: FilterVal
     if (multiple || field.type === FilterFieldType.MULTI_SELECT) {
       return <MultiSelect label={label} hideLabel={hideLabel} options={field.options ?? []} value={condition.values} onChange={onChange} />;
     }
-    return <Select label={label} hideLabel={hideLabel} options={field.options ?? []} value={first || null} onChange={single} />;
+    return <Select label={label} placeholder={__('Select value')} hideLabel={hideLabel} options={field.options ?? []} value={first || null} onChange={single} />;
   }
   if (field.type === FilterFieldType.DATE_RANGE || (field.type === FilterFieldType.DATE && condition.operator === FilterOperator.BETWEEN)) {
     return <DateRange value={{ startDate: first || null, endDate: second || null }} onChange={(range) => onChange([range.startDate ?? '', range.endDate ?? ''])} />;
@@ -55,5 +55,5 @@ export const FilterValue = ({ field, condition, onChange, hideLabel }: FilterVal
   if (field.type === FilterFieldType.NUMBER) return <NumberInput label={label} value={numeric(first)} onChange={single} />;
   if (field.type === FilterFieldType.DATE) return <DateInput label={label} value={first || null} onChange={single} />;
   if (field.type === FilterFieldType.DATE_TIME) return <DateTime label={label} value={first || null} onChange={single} />;
-  return <Input label={label} value={first} onChange={(event) => single(event.currentTarget.value)} />;
+  return <Input label={label} placeholder={__('Enter value')} value={first} onChange={(event) => single(event.currentTarget.value)} />;
 };

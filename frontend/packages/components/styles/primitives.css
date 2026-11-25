@@ -9,7 +9,7 @@
   border: 1px solid transparent;
   border-radius: var(--gh-control-radius);
   font-size: var(--gh-text-xs);
-  font-weight: var(--gh-weight-bold);
+  font-weight: var(--gh-weight-medium);
   transition:
     background var(--gh-motion-normal),
     box-shadow var(--gh-motion-normal),

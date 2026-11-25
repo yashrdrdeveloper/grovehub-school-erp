@@ -22,13 +22,13 @@
   gap: var(--gh-space-2);
 }
 .actions button {
-  background: var(--gh-color-table-action);
-  color: var(--gh-color-table-action-text);
+  background: var(--gh-color-primary);
+  color: var(--gh-color-primary-foreground);
   border-color: var(--gh-color-table-action);
   font-size: var(--gh-text-sm);
-  font-weight: var(--gh-weight-semibold);
+  font-weight: var(--gh-weight-medium);
 }
 .actions button:hover:not(:disabled) {
-  background: var(--gh-color-table-action-hover);
+  background: var(--gh-color-accent-hover);
   color: var(--gh-color-table-action-text);
 }

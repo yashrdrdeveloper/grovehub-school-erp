@@ -1045,15 +1045,11 @@
 }
 
 /* RDR School design system: deep ink, blue accent, neutral surfaces. */
-.brand-mark,
-.button--primary {
+.brand-mark {
   background: #2563eb;
   color: #fff;
 }
-.button--primary:hover {
-  background: #1d4ed8;
-  color: white;
-}
+
 .brand-period {
   color: #60a5fa;
 }
@@ -1546,14 +1542,11 @@ body {
   background: var(--gh-color-accent-soft);
   color: var(--gh-color-accent);
 }
-.brand-mark,
-.button--primary {
+.brand-mark {
   background: #635bdb;
   color: #fff;
 }
-.button--primary:hover {
-  background: #524ac8;
-}
+
 .brand-period {
   color: #918cff;
 }
@@ -2019,15 +2012,11 @@ body {
 /* RDR School / Atelier theme: creamy neutral foundation, sophisticated ocean teal,
    champagne warmth and selective lively accents instead of loud saturated panels. */
 
-.brand-mark,
-.button--primary {
+.brand-mark {
   background: #147f81;
   color: #fff;
 }
-.button--primary:hover {
-  background: #0d6266;
-  color: #fff;
-}
+
 .brand-period {
   color: #e1a77c;
 }
@@ -2329,14 +2318,11 @@ body {
   background: var(--gh-color-shell-surface);
   border-color: var(--gh-color-border);
 }
-:root[data-theme='dark'] .brand-mark,
-:root[data-theme='dark'] .button--primary {
+:root[data-theme='dark'] .brand-mark {
   background: #188b86;
   color: #ffffff;
 }
-:root[data-theme='dark'] .button--primary:hover {
-  background: #21a99b;
-}
+
 :root[data-theme='dark'] .brand-period {
   color: #efc18d;
 }
@@ -2837,15 +2823,11 @@ body {
 /* RDR School / Atelier theme: creamy neutral foundation, sophisticated ocean teal,
    champagne warmth and selective lively accents instead of loud saturated panels. */
 
-.brand-mark,
-.button--primary {
+.brand-mark {
   background: #147f81;
   color: #fff;
 }
-.button--primary:hover {
-  background: #0d6266;
-  color: #fff;
-}
+
 .brand-period {
   color: #e1a77c;
 }
@@ -3147,14 +3129,11 @@ body {
   background: var(--gh-color-shell-surface);
   border-color: var(--gh-color-border);
 }
-:root[data-theme='dark'] .brand-mark,
-:root[data-theme='dark'] .button--primary {
+:root[data-theme='dark'] .brand-mark {
   background: #168b88;
   color: #fff;
 }
-:root[data-theme='dark'] .button--primary:hover {
-  background: #17a39d;
-}
+
 :root[data-theme='dark'] .brand-period {
   color: #f0bd87;
 }
@@ -3334,27 +3313,19 @@ body {
   color: var(--gh-color-accent);
   background: var(--gh-color-accent-soft);
 }
-:root .brand-mark,
-:root .button--primary {
+:root .brand-mark {
   background: #171720;
   color: #fff;
 }
-:root .button--primary:hover {
-  background: #323244;
-  color: #fff;
-}
+
 :root .brand-period {
   color: #ed399d;
 }
-:root[data-theme='dark'] .brand-mark,
-:root[data-theme='dark'] .button--primary {
+:root[data-theme='dark'] .brand-mark {
   background: #f5f5fa;
   color: #12121c;
 }
-:root[data-theme='dark'] .button--primary:hover {
-  background: #d8d9ee;
-  color: #12121c;
-}
+
 :root .dashboard-welcome h1 span {
   color: #ef399d;
 }
