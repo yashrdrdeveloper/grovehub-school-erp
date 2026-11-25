@@ -14,16 +14,18 @@ import (
 	dto "grovehub/services/identity/internal/app/dto/account"
 	account "grovehub/services/identity/internal/app/services/account"
 	roles "grovehub/services/identity/internal/app/services/account/operations/roles"
+	profile "grovehub/services/identity/internal/app/services/account/operations/profile"
 )
 
 type Controller struct {
 	service account.Service
+	profile profile.Service
 }
 
 var _ protected.AccountController = (*Controller)(nil)
 
-func New(service account.Service) protected.AccountController {
-	return &Controller{service: service}
+func New(service account.Service, profiles profile.Service) protected.AccountController {
+	return &Controller{service: service, profile: profiles}
 }
 
 func (controller *Controller) Create(writer http.ResponseWriter, request *http.Request) {
@@ -45,7 +47,14 @@ func (controller *Controller) Search(writer http.ResponseWriter, request *http.R
 		Fallback: definitions.Internal,
 		Service: func(ctx context.Context, input dto.SearchRequest) (rest.Result[coresearch.Result[dto.Account]], error) {
 			result, err := controller.service.Search(ctx, input.RequestBody)
-			return rest.OK(result), helpers.Map(err)
+			if err != nil {
+				return rest.OK(result), helpers.Map(err)
+			}
+			// Names are optional display enrichment; account search remains usable if Foundation is unavailable.
+			if enriched, profileErr := controller.profile.Enrich(ctx, result.Items); profileErr == nil {
+				result.Items = enriched
+			}
+			return rest.OK(result), nil
 		},
 	})
 }
@@ -66,6 +75,30 @@ func (controller *Controller) Get(writer http.ResponseWriter, request *http.Requ
 		Fallback: definitions.Internal,
 		Service: func(ctx context.Context, input dto.GetRequest) (rest.Result[dto.Account], error) {
 			result, err := controller.service.Get(ctx, input.Params.AccountID)
+			return rest.OK(result), helpers.Map(err)
+		},
+	})
+}
+
+func (controller *Controller) GetProfile(writer http.ResponseWriter, request *http.Request) {
+	rest.RunStruct(writer, request, rest.StructConfig[dto.GetRequest, dto.Profile]{
+		InvalidParams: definitions.InvalidRequest,
+		Fallback: definitions.Internal,
+		Service: func(ctx context.Context, input dto.GetRequest) (rest.Result[dto.Profile], error) {
+			result, err := controller.profile.Get(ctx, input.Params.AccountID)
+			return rest.OK(result), helpers.Map(err)
+		},
+	})
+}
+
+func (controller *Controller) UpdateProfile(writer http.ResponseWriter, request *http.Request) {
+	rest.RunStruct(writer, request, rest.StructConfig[dto.UpdateProfileRequest, dto.Profile]{
+		Decode: httprequest.DecodeStrictJSON,
+		InvalidParams: definitions.InvalidRequest,
+		InvalidRequestBody: definitions.InvalidRequest,
+		Fallback: definitions.Internal,
+		Service: func(ctx context.Context, input dto.UpdateProfileRequest) (rest.Result[dto.Profile], error) {
+			result, err := controller.profile.Update(ctx, input.Params.AccountID, input.RequestBody)
 			return rest.OK(result), helpers.Map(err)
 		},
 	})

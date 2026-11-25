@@ -34,3 +34,9 @@ type SearchRequest struct {
 type RolesRequest struct {
 	request.Request
 }
+
+type UpdateProfileRequest struct {
+	request.Request
+	Params ByID `validate:"valid"`
+	RequestBody UpdateProfile `validate:"valid"`
+}

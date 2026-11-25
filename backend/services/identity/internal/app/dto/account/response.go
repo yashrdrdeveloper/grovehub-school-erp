@@ -6,6 +6,7 @@ type Account struct {
 	AccountID string    `json:"accountId"`
 	PersonGID string    `json:"personGid"`
 	Username  *string   `json:"username"`
+	Profile *Profile `json:"profile,omitempty"`
 	PrimaryRoleID *string `json:"primaryRoleId"`
 	SecondaryRoleIDs []string `json:"secondaryRoleIds"`
 	Email     string    `json:"email"`

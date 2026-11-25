@@ -16,6 +16,12 @@ type AccountController interface {
 	// @GET /{accountId}
 	Get(writer http.ResponseWriter, request *http.Request)
 
+	// @GET /{accountId}/profile
+	GetProfile(writer http.ResponseWriter, request *http.Request)
+
+	// @PATCH /{accountId}/profile
+	UpdateProfile(writer http.ResponseWriter, request *http.Request)
+
 	// @PATCH /{accountId}
 	Update(writer http.ResponseWriter, request *http.Request)
 
