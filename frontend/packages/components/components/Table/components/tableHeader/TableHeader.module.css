@@ -1,0 +1,21 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--gh-space-3);
+}
+.title {
+  margin: 0;
+  font-size: var(--gh-text-2xl);
+  color: var(--gh-color-text-strong);
+}
+.description {
+  margin: 0;
+  color: var(--gh-color-muted);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gh-space-2);
+}
