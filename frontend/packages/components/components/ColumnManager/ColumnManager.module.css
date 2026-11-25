@@ -21,3 +21,11 @@
 .locked {
   color: var(--gh-color-accent);
 }
+
+.heading {
+  font-size: var(--gh-text-sm);
+  font-weight: var(--gh-weight-semibold);
+  color: var(--gh-color-text-strong);
+  padding-top: var(--gh-space-2);
+  border-top: 1px solid var(--gh-color-border);
+}

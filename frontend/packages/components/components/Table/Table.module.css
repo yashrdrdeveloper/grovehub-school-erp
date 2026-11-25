@@ -46,13 +46,23 @@
   color: var(--gh-color-table-selected-text);
   border-color: var(--gh-color-table-divider);
 }
+.toolbarLeft,
 .toolbarRight {
   display: flex;
   align-items: center;
+  gap: var(--gh-space-2);
+}
+.toolbarLeft {
+  flex: 0 0 auto;
+}
+.toolbarRight {
   justify-content: flex-end;
   flex: 1;
   min-width: 0;
-  gap: var(--gh-space-2);
+}
+.toolbarLeft > *,
+.toolbarRight > :not(:first-child) {
+  flex-shrink: 0;
 }
 .summary {
   padding: var(--gh-space-2) var(--gh-space-3);

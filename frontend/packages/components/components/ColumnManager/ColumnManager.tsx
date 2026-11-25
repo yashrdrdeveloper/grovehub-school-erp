@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { _map } from '@Base/utilities/map';
-import { Columns3, Lock, LockOpen } from '@Components/icons';
+import { Settings, Lock, LockOpen } from '@Components/icons';
 
 import { Box } from '../Box';
 import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '../Button';
@@ -20,10 +20,12 @@ export const ColumnManager = ({ options, density, onToggle, onDensityChange, onR
   const lockedCount = options.filter(isLocked).length;
   return (
     <Box dataTestId={dataTestId}>
-      <Popover open={open} onOpenChange={setOpen} title={__('Columns')} width={320} trigger={
-        <ButtonWithIcon icon={Columns3} variant={BUTTON_VARIANT.OUTLINE} onClick={() => setOpen(true)}>{__('Columns')}</ButtonWithIcon>
+      <Popover open={open} onOpenChange={setOpen} title={__('Table settings')} width={320} trigger={
+        <ButtonWithIcon icon={Settings} iconSize={16} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} aria-label={__('Table settings')} title={__('Table settings')} aria-expanded={open} onClick={() => setOpen(true)} />
       }>
         <Box className={styles.content}>
+          <Select label={__('View')} value={density} clearable={false} searchable={false} options={[{value: TableDensity.COMPACT, label: __('Compact')}, {value: TableDensity.DEFAULT, label: __('Default')}, {value: TableDensity.COMFORTABLE, label: __('Comfortable')}]} onChange={(value) => { if (value) onDensityChange(value); }} />
+          <Box className={styles.heading}>{__('Columns')}</Box>
           <Box className={styles.hint}>{__('Drag to reorder · {{count}}/{{max}} locked', { count: lockedCount, max: maxPinnedColumns })}</Box>
           <DragList items={options} getItemId={(option) => option.id} label={__('Column order')} disabled={!onReorder}
             canMove={(item, target) => item.reorderable !== false && target.reorderable !== false}
@@ -36,7 +38,6 @@ export const ColumnManager = ({ options, density, onToggle, onDensityChange, onR
                 {onPin && !isLocked(option) && <ButtonWithIcon icon={LockOpen} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} disabled={!option.visible || lockedCount >= maxPinnedColumns} aria-label={__('Lock {{column}}', { column: option.label })} aria-pressed={false} onClick={() => onPin(option.id, TablePin.LEFT)} />}
               </Box>
             )} />
-          <Select label={__('Density')} value={density} clearable={false} searchable={false} options={[{value: TableDensity.COMPACT, label: __('Compact')}, {value: TableDensity.DEFAULT, label: __('Default')}, {value: TableDensity.COMFORTABLE, label: __('Comfortable')}]} onChange={(value) => { if (value) onDensityChange(value); }} />
           <Button variant={BUTTON_VARIANT.OUTLINE} size={BUTTON_SIZE.SMALL} onClick={onReset}>{__('Reset columns')}</Button>
         </Box>
       </Popover>

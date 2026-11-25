@@ -2,7 +2,7 @@ import { _map } from '@Base/utilities/map';
 import { RefreshCw } from '@Components/icons';
 
 import { Box } from '../Box';
-import { Button, BUTTON_VARIANT } from '../Button';
+import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '../Button';
 import { ButtonWithIcon } from '../ButtonWithIcon';
 import { ColumnManager } from '../ColumnManager';
 import { Filters } from '../Filters';
@@ -52,16 +52,22 @@ export const TableView = <T,>(props: TableViewProps<T>) => {
       {headerProps && <TableHeader {...headerProps} onAction={actions?.HEADER_ACTION} />}
       <Box className={styles.panel}>
         <Box className={styles.toolbar}>
-          {filterProps && <Filters {...filterProps} iconOnly onChange={(value) => actions?.FILTER?.(value)} />}
+          <Box className={styles.toolbarLeft}>
+            {filterProps && <Filters {...filterProps} iconOnly onChange={(value) => actions?.FILTER?.(value)} />}
+            {sortProps && <Sort {...sortProps} iconOnly onChange={(value) => actions?.SORT?.(value)} />}
+          </Box>
           <Box className={styles.toolbarRight}>
             {searchProps && <TableSearch {...searchProps} onChange={(value) => actions?.SEARCH?.(value)} />}
-            <TableOptions>
-              {sortProps && <Sort {...sortProps} onChange={(value) => actions?.SORT?.(value)} />}
-              <ColumnManager options={options} density={controls.preferences.density} onToggle={controls.toggle} onDensityChange={controls.setRowDensity} onReset={controls.reset} onReorder={controls.reorder} onPin={controls.pin} maxPinnedColumns={props.maxPinnedColumns} />
-              {actions?.REFRESH && <ButtonWithIcon icon={RefreshCw} variant={BUTTON_VARIANT.GHOST} onClick={actions.REFRESH} disabled={props.refreshing}>{__('Refresh')}</ButtonWithIcon>}
-              {actions?.EXPORT && <Button variant={BUTTON_VARIANT.GHOST} onClick={actions.EXPORT}>{__('Export')}</Button>}
-              {actions?.FULLSCREEN_CHANGE && <Button variant={BUTTON_VARIANT.GHOST} aria-pressed={controls.fullscreen} onClick={() => controls.changeFullscreen(!controls.fullscreen)}>{!controls.fullscreen && __('Fullscreen')}{controls.fullscreen && __('Exit fullscreen')}</Button>}
-            </TableOptions>
+            {actions?.REFRESH && (
+              <ButtonWithIcon icon={RefreshCw} iconSize={16} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} aria-label={__('Refresh')} title={__('Refresh')} onClick={actions.REFRESH} disabled={props.refreshing} />
+            )}
+            <ColumnManager options={options} density={controls.preferences.density} onToggle={controls.toggle} onDensityChange={controls.setRowDensity} onReset={controls.reset} onReorder={controls.reorder} onPin={controls.pin} maxPinnedColumns={props.maxPinnedColumns} />
+            {(actions?.EXPORT || actions?.FULLSCREEN_CHANGE) && (
+              <TableOptions>
+                {actions?.EXPORT && <Button variant={BUTTON_VARIANT.GHOST} onClick={actions.EXPORT}>{__('Export')}</Button>}
+                {actions?.FULLSCREEN_CHANGE && <Button variant={BUTTON_VARIANT.GHOST} aria-pressed={controls.fullscreen} onClick={() => controls.changeFullscreen(!controls.fullscreen)}>{!controls.fullscreen && __('Fullscreen')}{controls.fullscreen && __('Exit fullscreen')}</Button>}
+              </TableOptions>
+            )}
           </Box>
         </Box>
         {!props.loading && !props.error && <Box className={styles.summary} aria-live="polite">

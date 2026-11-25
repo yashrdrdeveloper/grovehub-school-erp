@@ -15,6 +15,7 @@ export interface SortProps {
   readonly value: readonly SortCondition[];
   readonly onChange: (value: readonly SortCondition[]) => void;
   readonly maxFields?: number;
+  readonly iconOnly?: boolean;
   readonly disabled?: boolean;
   readonly dataTestId?: string;
 }

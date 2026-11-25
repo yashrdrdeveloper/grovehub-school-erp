@@ -3,7 +3,7 @@ import { _map } from '@Base/utilities/map';
 import { Plus, Trash2, ArrowUpDown } from '@Components/icons';
 
 import { Box } from '../Box';
-import { Button, BUTTON_VARIANT } from '../Button';
+import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '../Button';
 import { ButtonWithIcon } from '../ButtonWithIcon';
 import { Select } from '../Select';
 import { Popover } from '../Popover';
@@ -13,14 +13,17 @@ import styles from './Sort.module.css';
 import type { SortProps } from './types/sort.props';
 import type { useSort } from './hooks/useSort';
 
-export const SortView = ({ fields, value, maxFields, disabled, dataTestId, controls }: SortProps & { readonly controls: ReturnType<typeof useSort> }) => {
+export const SortView = ({ fields, value, maxFields, disabled, iconOnly, dataTestId, controls }: SortProps & { readonly controls: ReturnType<typeof useSort> }) => {
   const getLabel = () => {
     if (value.length) return __('Sort ({{count}})', { count: value.length });
     return __('Sort');
   };
   return (
     <Popover open={controls.open} onOpenChange={controls.onOpenChange} title={__('Manage sort')} width={440} trigger={
-      <ButtonWithIcon icon={ArrowUpDown} variant={BUTTON_VARIANT.OUTLINE} disabled={disabled} dataTestId={dataTestId} onClick={() => controls.onOpenChange(true)}>{getLabel()}</ButtonWithIcon>
+      <ButtonWithIcon icon={ArrowUpDown} iconSize={16} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} aria-label={getLabel()} title={getLabel()} aria-expanded={controls.open} disabled={disabled} dataTestId={dataTestId} onClick={() => controls.onOpenChange(true)}>
+        {!iconOnly && getLabel()}
+        {iconOnly && !!value.length && value.length}
+      </ButtonWithIcon>
     }>
         <Box className={styles.panel}>
           {_map(controls.draft, (rule, index) => (

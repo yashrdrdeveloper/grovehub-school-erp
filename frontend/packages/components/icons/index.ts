@@ -71,6 +71,7 @@ export {
   School,
   Search,
   Send,
+  Settings,
   Settings2,
   ShieldCheck,
   ShieldOff,
