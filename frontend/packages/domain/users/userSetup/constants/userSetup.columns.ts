@@ -30,6 +30,7 @@ export const USER_SETUP_COLUMNS = Object.freeze([
     .setId(UserField.CREATED_AT)
     .setHeader(__('Created at'))
     .setAccessor('createdAt')
+    .setWidth(190)
     .setMobileVisible(false)
     .setSortable(true)
     .build(),
@@ -37,8 +38,8 @@ export const USER_SETUP_COLUMNS = Object.freeze([
     .setId(UserField.UPDATED_AT)
     .setHeader(__('Updated at'))
     .setAccessor('updatedAt')
+    .setWidth(190)
     .setMobileVisible(false)
-    .setVisible(false)
     .setSortable(true)
     .build(),
 ]);

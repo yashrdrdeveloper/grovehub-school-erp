@@ -8,3 +8,18 @@
 .controls > * {
   flex: 0 0 auto;
 }
+
+.controls {
+  padding: var(--gh-space-1) var(--gh-space-3) var(--gh-space-2);
+  gap: var(--gh-space-1);
+}
+.filter.filter {
+  font-size: var(--gh-text-xs);
+  font-weight: var(--gh-weight-medium);
+  border-radius: var(--gh-control-radius);
+}
+.filter[aria-pressed='true'] {
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-accent);
+  box-shadow: inset 0 0 0 1px var(--gh-color-border);
+}

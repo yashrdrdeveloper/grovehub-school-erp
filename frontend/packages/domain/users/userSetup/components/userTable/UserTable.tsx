@@ -1,3 +1,4 @@
+import { getFormattedDate } from '@Base/localization/getFormattedDate';
 import { _map } from '@Base/utilities/map';
 import type { Account } from '@Business/domain/users';
 import { Table, TableType, TableDataMode, Column } from '@Components/components/Table';
@@ -34,6 +35,8 @@ export const UserTable = ({ controls }: UserTableProps) => {
   const configured = _map(USER_SETUP_COLUMNS, (column) => {
     if (column.id === UserField.NAME) return { ...column, renderer: (account: Account) => <UserCell account={account} /> };
     if (column.id === UserField.STATUS) return { ...column, renderer: (account: Account) => <StatusPill value={account.status} /> };
+    if (column.id === UserField.CREATED_AT) return { ...column, renderer: (account: Account) => getFormattedDate(account.createdAt) };
+    if (column.id === UserField.UPDATED_AT) return { ...column, renderer: (account: Account) => getFormattedDate(account.updatedAt) };
     return column;
   });
   const columns = [
@@ -59,6 +62,8 @@ export const UserTable = ({ controls }: UserTableProps) => {
   return (
     <Table
       id={USER_SETUP_TEST_IDS.TABLE}
+      fillHeight
+      maxPinnedColumns={3}
       type={TableType.DEFAULT}
       dataMode={TableDataMode.SERVER}
       data={controls.data}

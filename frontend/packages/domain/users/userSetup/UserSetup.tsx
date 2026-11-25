@@ -20,7 +20,7 @@ export const UserSetup = ({ controls }: UserSetupProps) => {
   };
   const showConfirmation = Boolean(dialog?.row && dialog.action !== UserAction.VIEW && dialog.action !== UserAction.EDIT);
   return (
-    <Box className={styles.page}>
+    <Box className={styles.page} data-workspace-fill="true">
       <UserTable controls={controls} />
       {dialog && (dialog.action === UserAction.CREATE || dialog.action === UserAction.EDIT) && (
         <UserForm
