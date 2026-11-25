@@ -1,0 +1,17 @@
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: var(--gh-control-height-md);
+  height: var(--gh-control-height-md);
+  overflow: hidden;
+  border-radius: var(--gh-control-radius);
+  background: var(--gh-color-secondary);
+  color: var(--gh-color-secondary-foreground);
+  font-weight: var(--gh-weight-semibold);
+}
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

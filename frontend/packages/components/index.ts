@@ -31,3 +31,13 @@ export { TextAreaControl } from './components/TextAreaControl';
 export { AppNavLink } from './components/AppNavLink';
 
 export { ErrorBoundary } from './components/ErrorBoundary';
+
+export { Avatar } from './components/Avatar';
+export type { AvatarProps } from './components/Avatar';
+export { Icon } from './components/Icon';
+export type { IconProps } from './components/Icon';
+export { ButtonWithIcon } from './components/ButtonWithIcon';
+export type { ButtonWithIconProps } from './components/ButtonWithIcon';
+export { DebouncedInput } from './components/DebouncedInput';
+export type { DebouncedInputProps } from './components/DebouncedInput';
+export { useDebounce } from './hooks/useDebounce';

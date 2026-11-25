@@ -7,7 +7,7 @@
   min-height: var(--gh-control-height-md);
   padding: var(--gh-space-2) var(--gh-space-4);
   border: 1px solid transparent;
-  border-radius: var(--gh-radius-md);
+  border-radius: var(--gh-control-radius);
   font-size: var(--gh-text-xs);
   font-weight: var(--gh-weight-bold);
   transition:
@@ -63,7 +63,7 @@
   outline: 0;
   background: var(--surface);
   border: 1px solid var(--gh-color-input);
-  border-radius: var(--gh-radius-md);
+  border-radius: var(--gh-control-radius);
   color: var(--gh-color-text-strong);
   height: var(--gh-control-height-md);
   padding: 11px 13px;
@@ -118,6 +118,7 @@
 }
 
 .gh-button {
+  box-sizing: border-box;
   min-width: 0;
   max-width: 100%;
   outline-offset: 3px;
@@ -127,15 +128,19 @@
   outline: 2px solid var(--gh-color-ring);
 }
 .gh-button--sm {
+  height: var(--gh-control-height-sm);
   min-height: var(--gh-control-height-sm);
-  padding: 8px 12px;
+  padding: 0 var(--gh-control-padding-x);
 }
 .gh-button--md {
+  height: var(--gh-control-height-md);
   min-height: var(--gh-control-height-md);
+  padding: 0 var(--gh-control-padding-x);
 }
 .gh-button--lg {
+  height: var(--gh-control-height-lg);
   min-height: var(--gh-control-height-lg);
-  padding: 12px 18px;
+  padding: 0 var(--gh-control-padding-x);
 }
 .gh-button__spinner {
   flex: 0 0 auto;
@@ -339,9 +344,12 @@
   background: var(--gh-color-surface-subtle);
 }
 .gh-input-control {
+  box-sizing: border-box;
+  padding-block: 0;
+  padding-inline: var(--gh-control-padding-x);
   height: var(--gh-control-height-md);
   border-color: var(--gh-color-input);
-  border-radius: var(--gh-radius-md);
+  border-radius: var(--gh-control-radius);
   color: var(--gh-color-text-strong);
   background: var(--gh-color-surface);
 }
