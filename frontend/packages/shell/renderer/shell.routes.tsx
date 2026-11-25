@@ -8,6 +8,7 @@ import { APP_ROUTE_CONFIG, APP_ROUTE_IDS, RouteAccess } from '@Business/app/rout
 
 import { ForgotPasswordPage, LoginV2Page, RecoveryPage } from '@Domain/auth';
 import { DashboardPage } from '@Domain/dashboard';
+import { UserSetup } from '@Domain/users';
 
 /**
  * Route metadata is owned exclusively by Business.
@@ -28,6 +29,7 @@ const authViews: Record<AuthRouteKey, ReactElement> = {
 const workspaceViews: Record<AppRouteKey, ReactElement | null> = {
   [APP_ROUTE_IDS.HOME]: null,
   [APP_ROUTE_IDS.DASHBOARD]: <DashboardPage />,
+  [APP_ROUTE_IDS.USER_SETUP]: <UserSetup />,
 };
 
 export const publicRoutes = _map(AUTH_ROUTE_CONFIG, (route) => ({

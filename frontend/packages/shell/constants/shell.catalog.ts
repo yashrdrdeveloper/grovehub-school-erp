@@ -1,5 +1,5 @@
 import { APP_ROUTE } from '@Business/app/routes';
-import { Building2 } from '@Components/icons';
+import { Building2, UserRound } from '@Components/icons';
 
 export interface CatalogApp {
   readonly name: string;
@@ -17,6 +17,13 @@ export const appCatalog: CatalogApp[] = [
     path: APP_ROUTE.DASHBOARD,
     icon: Building2,
     category: __('Workspace'),
+  },
+  {
+    name: __('User Setup'),
+    description: __('Manage school accounts'),
+    path: APP_ROUTE.USER_SETUP,
+    icon: UserRound,
+    category: __('Administration'),
   },
 ];
 
