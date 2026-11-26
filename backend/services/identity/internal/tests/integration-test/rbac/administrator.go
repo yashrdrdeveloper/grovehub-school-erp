@@ -10,6 +10,7 @@ import (
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/repository/authority"
+	assignmentreplace "grovehub/services/identity/internal/app/services/accountrole/operations/replace"
 	accountrolerepo "grovehub/services/identity/internal/app/repository/accountrole"
 	accountroleimpl "grovehub/services/identity/internal/app/repository/accountrole/impl"
 	"grovehub/services/identity/internal/app/constants/persona"
@@ -122,6 +123,38 @@ func verifyAdministratorGuard(ctx context.Context, db *gorm.DB) {
 	Expect(candidates).To(HaveLen(2))
 	_, err = assignmentsRepo.Candidates(ctx, "foreign-guard-school", []string{grants})
 	Expect(err).To(MatchError(accountrolerepo.ErrNotFound))
+	// Select the sole active administrator after the concurrent suspension test.
+	var survivor string
+	Expect(db.Raw("SELECT account_id::text FROM identity.accounts WHERE tenant_id = ? AND status = 'ACTIVE'", tenant).Scan(&survivor).Error).NotTo(HaveOccurred())
+	before, err := assignmentsRepo.Find(ctx, tenant, survivor)
+	Expect(err).NotTo(HaveOccurred())
+	replacement := accountrolerepo.Replacement{
+		TenantID: tenant, ActorID: survivor, AccountID: survivor, Version: before.Version,
+		PrimaryRoleID: before.PrimaryRoleID, SecondaryRoleIDs: []string{},
+		RoleVersions: []accountrolerepo.RoleVersion{{RoleID: grants, Version: 1}, {RoleID: assignments, Version: 1}},
+	}
+	replaceOperation := assignmentreplace.New(guard, accountroleimpl.NewWriter(db))
+	_, err = replaceOperation.Execute(ctx, replacement)
+	Expect(err).To(MatchError(authority.ErrLastAdministrator))
+	after, err := assignmentsRepo.Find(ctx, tenant, survivor)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(after).To(Equal(before))
+	replacement.PrimaryRoleID = before.SecondaryRoleIDs[0]
+	replacement.SecondaryRoleIDs = []string{before.PrimaryRoleID}
+	after, err = replaceOperation.Execute(ctx, replacement)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(after.Version).To(Equal(before.Version + 1))
+	Expect(after.PrimaryRoleID).To(Equal(replacement.PrimaryRoleID))
+	Expect(after.SecondaryRoleIDs).To(Equal(replacement.SecondaryRoleIDs))
+	_, err = replaceOperation.Execute(ctx, replacement)
+	Expect(err).To(MatchError(accountrolerepo.ErrVersionConflict))
+	replacement.Version = after.Version
+	unchanged, err := replaceOperation.Execute(ctx, replacement)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(unchanged.Version).To(Equal(after.Version))
+	replacement.RoleVersions[0].Version = 99
+	_, err = replaceOperation.Execute(ctx, replacement)
+	Expect(err).To(MatchError(accountrolerepo.ErrVersionConflict))
 	count, err = reader.Count(ctx, "foreign-guard-school")
 	Expect(err).NotTo(HaveOccurred())
 	Expect(count).To(BeZero())
