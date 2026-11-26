@@ -3,13 +3,17 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
 
+import { frontendRelativePath, resolveFrontendSource, sharedPackageSources } from './lib/source-layout.mjs';
+
 const root = process.cwd();
-const files = execFileSync('git', ['ls-files', '--cached', '--', '.'], {
+const pathspecs = ['.', ...sharedPackageSources.map(([, directory]) => path.relative(root, directory))];
+const files = execFileSync('git', ['ls-files', '--cached', '--', ...pathspecs], {
   cwd: root,
   encoding: 'utf8',
 })
   .split('\n')
   .filter(Boolean)
+  .map((file) => frontendRelativePath(path.resolve(root, file)))
   .sort();
 const nativeTags = new Set([
   'div',
@@ -80,7 +84,7 @@ for (const file of files) {
     flag(file, 'EFFECT_COMPONENT', 1);
   if (file === 'packages/shell/layout/AppLauncher.tsx') flag(file, 'MONOLITHIC_LAUNCHER', 1);
   if (!tsSource && !/\.css$/.test(file)) continue;
-  const source = readFileSync(path.join(root, file), 'utf8');
+  const source = readFileSync(resolveFrontendSource(file), 'utf8');
   sourceFilesCounter.current += 1;
   if (tsSource && !test && source.split('\n').length > 155) flag(file, 'LARGE_UNIT', 156);
   if (/\.css$/.test(file)) {

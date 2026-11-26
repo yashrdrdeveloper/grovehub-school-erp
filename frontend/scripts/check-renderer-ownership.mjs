@@ -4,7 +4,7 @@ import path from 'node:path';
 import { validateRendererSource } from './lib/renderer-policy.mjs';
 
 /** Renderer functions are pure JSX selectors with typed contracts and owner-local tests. */
-const root = path.join(process.cwd(), 'packages');
+import { packageSourceRoots, packageRelativePath } from './lib/source-layout.mjs';
 const errors = [];
 const checkedCounter = { current: 0 };
 const exists = async (filename) => {
@@ -23,7 +23,7 @@ const walk = async (folder) => {
       continue;
     }
     if (!filename.endsWith('.tsx')) continue;
-    const relative = path.relative(root, filename).replaceAll(path.sep, '/');
+    const relative = packageRelativePath(filename).replaceAll(path.sep, '/');
     if (!relative.includes('/renderer/') || relative.includes('/__tests__/')) continue;
     checkedCounter.current++;
     const basename = path.basename(filename, '.tsx');
@@ -39,7 +39,7 @@ const walk = async (folder) => {
     }
   }
 };
-await walk(root);
+for (const directory of packageSourceRoots) await walk(directory);
 for (const issue of errors) process.stderr.write(issue + '\n');
 if (errors.length) process.exitCode = 1;
 else

@@ -2,6 +2,8 @@ import { access, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import ts from 'typescript';
 
+import { packageRelativePath, sharedPackageSources } from './lib/source-layout.mjs';
+
 /**
  * Block misplaced business transport contracts, flat compound primitives, and
  * duplicated form normalization without restricting genuine domain route logic.
@@ -68,7 +70,7 @@ const checkOwnerFiles = async (directory) => {
       continue;
     }
 
-    const relative = path.relative(root, filename).replaceAll(path.sep, '/');
+    const relative = packageRelativePath(filename).replaceAll(path.sep, '/');
     if (/\/(?:helpers|constants|renderer)\/index\.ts$/.test(relative)) {
       failures.push(relative + ': helper/constant/renderer barrels are forbidden');
     }
@@ -93,6 +95,7 @@ const checkOwnerFiles = async (directory) => {
 };
 
 await checkOwnerFiles(root);
+for (const [, directory] of sharedPackageSources) await checkOwnerFiles(directory);
 
 const dialogRoot = path.join(root, 'components/components/Dialog');
 if (await exists(path.join(dialogRoot, 'parts.ts'))) {

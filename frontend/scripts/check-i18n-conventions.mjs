@@ -1,6 +1,7 @@
 import { readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import { frontendRelativePath, resolveFrontendSource } from './lib/source-layout.mjs';
 import { analyzeI18nSource } from './lib/i18n-policy.mjs';
 
 const root = process.cwd();
@@ -26,7 +27,7 @@ const walk = async (directory) => {
       continue;
     }
     if (!/\.(?:tsx?|jsx?)$/.test(entry.name) || /\.test\.[jt]sx?$/.test(entry.name)) continue;
-    const relative = path.relative(root, abs).replaceAll(path.sep, '/');
+    const relative = frontendRelativePath(abs);
     const source = await readFile(abs, 'utf8');
     const options = {
       allowRuntimeGlobal: relative === bootstrapInstaller,
@@ -52,7 +53,7 @@ for (const folder of [
   'packages/domain',
   'packages/shell',
 ]) {
-  await walk(path.join(root, folder));
+  await walk(resolveFrontendSource(folder));
 }
 
 if (issues.length) {

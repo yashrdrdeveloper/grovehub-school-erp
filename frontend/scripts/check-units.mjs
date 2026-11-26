@@ -1,6 +1,8 @@
 import { readdir, access, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import { resolvePackageSource, sharedPackageSources } from './lib/source-layout.mjs';
+
 const root = path.join(process.cwd(), 'packages');
 const failures = [];
 
@@ -30,7 +32,7 @@ const units = [
 
 const checkedCounter = { current: 0 };
 for (const [relative, requirePureTests] of units) {
-  const parent = path.join(root, relative);
+  const parent = resolvePackageSource(relative);
   if (!(await exists(parent))) continue;
   for (const item of await readdir(parent, { withFileTypes: true })) {
     if (!item.isDirectory()) continue;
@@ -55,7 +57,7 @@ for (const [relative, requirePureTests] of units) {
 const flatUnits = [];
 const collectFlatUnits = async (directory, relative = '') => {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
-    if (!entry.isDirectory()) continue;
+    if (!entry.isDirectory() || ['node_modules', 'dist', '.generated'].includes(entry.name)) continue;
     const child = path.join(directory, entry.name);
     const childRelative = path.join(relative, entry.name);
     if (['helpers', 'constants', 'renderer'].includes(entry.name)) {
@@ -65,9 +67,10 @@ const collectFlatUnits = async (directory, relative = '') => {
   }
 };
 await collectFlatUnits(root);
+for (const [name, directory] of sharedPackageSources) await collectFlatUnits(directory, name);
 
 for (const relative of flatUnits) {
-  const directory = path.join(root, relative);
+  const directory = resolvePackageSource(relative);
   const entries = await readdir(directory, { withFileTypes: true });
   for (const item of entries) {
     if (item.name === 'index.ts') {

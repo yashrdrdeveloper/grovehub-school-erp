@@ -2,6 +2,8 @@ import { readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import ts from 'typescript';
 
+import { sharedPackageSources } from './lib/source-layout.mjs';
+
 /**
  * One-time owner-safe migration and permanent read-only gate.
  * Converts semantic JSX tag names to existing typed component constants.
@@ -162,6 +164,7 @@ const scan = async (folder) => {
 
 await scan(path.join(root, 'app'));
 await scan(path.join(root, 'packages'));
+for (const [, directory] of sharedPackageSources) await scan(directory);
 if (violations.length) {
   for (const violation of violations) process.stderr.write(violation + '\n');
   process.exitCode = 1;

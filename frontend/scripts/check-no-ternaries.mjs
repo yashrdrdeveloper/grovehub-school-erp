@@ -2,6 +2,8 @@ import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import ts from 'typescript';
 
+import { frontendRelativePath, sharedPackageSources } from './lib/source-layout.mjs';
+
 /** Blocking AST rule for production application code; type annotations are not ternaries. */
 const violations = [];
 const checkedCounter = { current: 0 };
@@ -31,7 +33,7 @@ const visitDir = async (directory) => {
     const check = (node) => {
       if (ts.isConditionalExpression(node)) {
         const location = tree.getLineAndCharacterOfPosition(node.getStart(tree));
-        violations.push(path.relative(process.cwd(), filename) + ':' + (location.line + 1));
+        violations.push(frontendRelativePath(filename) + ':' + (location.line + 1));
       }
       ts.forEachChild(node, check);
     };
@@ -40,6 +42,7 @@ const visitDir = async (directory) => {
 };
 await visitDir(path.join(process.cwd(), 'app'));
 await visitDir(path.join(process.cwd(), 'packages'));
+for (const [, directory] of sharedPackageSources) await visitDir(directory);
 if (violations.length > 0) {
   for (const item of violations)
     process.stderr.write(item + ': conditional expression is forbidden\\n');

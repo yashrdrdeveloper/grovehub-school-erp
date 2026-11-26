@@ -1,8 +1,8 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const project = process.cwd();
-const root = path.join(project, 'packages');
+import { packageSourceRoots, packageRelativePath } from './lib/source-layout.mjs';
+
 const problems = [];
 const sourceExtensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs']);
 
@@ -11,7 +11,9 @@ const walk = async (dir) => {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const absolute = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      results.push(...(await walk(absolute)));
+      if (!['node_modules', 'dist', '.generated'].includes(entry.name)) {
+        results.push(...(await walk(absolute)));
+      }
     } else if (sourceExtensions.has(path.extname(entry.name))) {
       results.push(absolute);
     }
@@ -29,16 +31,25 @@ const forbidden = {
   shell: ['@Auth'],
 };
 
-const files = await walk(root);
+const files = (await Promise.all(packageSourceRoots.map(walk))).flat();
 for (const filename of files) {
   const source = await readFile(filename, 'utf8');
-  const relative = path.relative(root, filename);
+  const relative = packageRelativePath(filename);
   const category = relative.split(path.sep)[0];
   const imports = Array.from(
     source.matchAll(/(?:from\s*|import\s*\(|import\s*)['"]([^'"]+)['"]/g),
     (match) => match[1],
   );
   for (const name of imports) {
+    if (category === 'base') {
+      const allowed = /^(?:lodash-es(?:\/|$)|clsx$|tailwind-merge$)/.test(name);
+      const relativeImport = name.startsWith('.');
+      const resolved = path.resolve(path.dirname(filename), name);
+      const insideBase = packageRelativePath(resolved).startsWith('base' + path.sep);
+      if (!allowed && !(relativeImport && insideBase)) {
+        problems.push(`${relative}: Base cannot depend on ${name}`);
+      }
+    }
     if (
       (forbidden[category] ?? []).some((prefix) => name === prefix || name.startsWith(prefix + '/'))
     ) {

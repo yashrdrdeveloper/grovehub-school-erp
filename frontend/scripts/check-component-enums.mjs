@@ -3,7 +3,7 @@ import path from 'node:path';
 
 import { validateComponentEnums } from './lib/component-enum-policy.mjs';
 
-const root = path.join(process.cwd(), 'packages');
+import { packageSourceRoots, packageRelativePath } from './lib/source-layout.mjs';
 const inspectedCounter = { current: 0 };
 const failures = [];
 const walk = async (folder) => {
@@ -14,7 +14,7 @@ const walk = async (folder) => {
       continue;
     }
     if (!entry.name.endsWith('.tsx') || entry.name.endsWith('.test.tsx')) continue;
-    const relative = path.relative(root, absolute).replaceAll(path.sep, '/');
+    const relative = packageRelativePath(absolute).replaceAll(path.sep, '/');
     const source = await readFile(absolute, 'utf8');
     for (const issue of validateComponentEnums(relative, source)) {
       failures.push(
@@ -33,7 +33,7 @@ const walk = async (folder) => {
     inspectedCounter.current++;
   }
 };
-await walk(root);
+for (const directory of packageSourceRoots) await walk(directory);
 if (failures.length) {
   for (const problem of failures) process.stderr.write(problem + '\n');
   process.exitCode = 1;

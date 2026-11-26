@@ -1,6 +1,7 @@
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
+import { frontendRelativePath, sharedPackageSources } from './lib/source-layout.mjs';
 import { findLetDeclarations } from './lib/no-let-policy.mjs';
 
 const root = process.cwd();
@@ -17,6 +18,7 @@ const walk = async (directory) => {
   }
 };
 for (const folder of ['app', 'packages', 'scripts']) await walk(path.join(root, folder));
+for (const [, directory] of sharedPackageSources) await walk(directory);
 for (const entry of await readdir(root, { withFileTypes: true })) {
   if (entry.isFile() && /\.(?:[cm]?[jt]sx?)$/.test(entry.name)) {
     files.push(path.join(root, entry.name));
@@ -24,7 +26,7 @@ for (const entry of await readdir(root, { withFileTypes: true })) {
 }
 
 for (const absolute of files) {
-  const relative = path.relative(root, absolute).replaceAll(path.sep, '/');
+  const relative = frontendRelativePath(absolute);
   const source = await readFile(absolute, 'utf8');
   for (const issue of findLetDeclarations(relative, source)) {
     failures.push(
