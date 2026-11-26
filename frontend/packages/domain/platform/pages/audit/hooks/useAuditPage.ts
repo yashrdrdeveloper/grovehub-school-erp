@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { auditApi } from '@Business/domain/audit/services/audit';
-import type { AuditActivity } from '@Business/domain/audit/types/contracts';
+import { auditApi } from '@Business/domain/platform/audit/services/audit';
+import type { AuditActivity } from '@Business/domain/platform/audit/types/contracts';
 
 export const useAuditPage = () => {
   const [searchText, setSearchText] = useState('');

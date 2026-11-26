@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { rbacApi } from '@Business/domain/rbac/services/rbac';
-import type { Role } from '@Business/domain/rbac/types/contracts';
+import { rbacApi } from '@Business/domain/users/rbac/services/rbac';
+import type { Role } from '@Business/domain/users/rbac/types/contracts';
 
 export const useRbacPage = () => {
   const [searchText, setSearchText] = useState('');

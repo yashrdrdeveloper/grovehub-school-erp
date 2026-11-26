@@ -8,7 +8,7 @@ import { APP_ROUTE_CONFIG, APP_ROUTE_IDS, RouteAccess } from '@Business/app/rout
 
 import { ForgotPasswordPage, LoginV2Page, RecoveryPage } from '@Domain/auth';
 import { DashboardPage } from '@Domain/dashboard';
-import { UserSetup } from '@Domain/users';
+import { UserSetup, RbacPage } from '@Domain/users';
 
 /**
  * Route metadata is owned exclusively by Business.
@@ -26,8 +26,8 @@ const authViews: Record<AuthRouteKey, ReactElement> = {
   [AUTH_ROUTE_IDS.SETUP_LEGACY]: <RecoveryPage purpose="invitation" />,
 };
 
-import { AuditPage } from '@Domain/audit';
-import { RbacPage } from '@Domain/rbac';
+import { AuditPage } from '@Domain/platform';
+
 
 const workspaceViews: Record<AppRouteKey, ReactElement | null> = {
   [APP_ROUTE_IDS.AUDIT]: <AuditPage />,
