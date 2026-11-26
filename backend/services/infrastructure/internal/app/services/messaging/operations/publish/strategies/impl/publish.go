@@ -2,7 +2,7 @@ package impl
 
 import (
     "context"
-    coreerrors "grovehub/libs/core/errors"
+    coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
     inframessaging "grovehub/libs/infrastructure/messaging"
     client "grovehub/services/infrastructure/client/messaging"
     errorcode "grovehub/services/infrastructure/internal/app/constants/error"

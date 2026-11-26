@@ -1,6 +1,6 @@
 package helpers
 
-import corenormalize "grovehub/libs/core/normalize"
+import corenormalize "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/normalize"
 
 // ValidID applies GrooveHub's standard UUIDv7 validation consistently.
 func ValidID(raw string) bool {

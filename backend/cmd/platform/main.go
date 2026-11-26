@@ -8,7 +8,7 @@ import (
 
 	"grovehub/launcher"
 	"grovehub/launcher/bootstrap"
-	coretelemetry "grovehub/libs/core/telemetry"
+	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
 )
 
 func main() {

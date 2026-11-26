@@ -1,7 +1,7 @@
 package person
 
 import (
-	annotationvalidation "grovehub/libs/core/annotation/validation"
+	annotationvalidation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/validation"
 	persondto "grovehub/services/foundation/internal/app/dto/person"
 )
 

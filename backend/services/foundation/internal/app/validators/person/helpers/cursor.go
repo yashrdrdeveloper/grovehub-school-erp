@@ -1,6 +1,6 @@
 package helpers
 
-import coresearch "grovehub/libs/core/search"
+import coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 
 // Resource-owned sort field allowlist. Generic cursor validators are in core.
 var personSortFields = map[string]coresearch.CursorValueValidator{

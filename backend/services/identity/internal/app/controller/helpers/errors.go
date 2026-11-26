@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	coreerrors "grovehub/libs/core/errors"
+	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
 	definitions "grovehub/services/identity/internal/app/constants/error"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"

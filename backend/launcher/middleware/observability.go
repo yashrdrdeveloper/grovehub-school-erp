@@ -10,9 +10,9 @@ import (
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 
-	httpheaders "grovehub/libs/core/http/headers"
-	httplogging "grovehub/libs/core/http/logging"
-	coretelemetry "grovehub/libs/core/telemetry"
+	httpheaders "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/headers"
+	httplogging "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/logging"
+	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
 )
 
 type statusRecorder struct {

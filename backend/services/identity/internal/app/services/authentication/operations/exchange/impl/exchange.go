@@ -10,7 +10,7 @@ import (
 	authdto "grovehub/services/identity/internal/app/dto/authentication"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	tokenrepo "grovehub/services/identity/internal/app/repository/passwordtoken"
-	transaction "grovehub/libs/core/database/transaction"
+	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
 	exchange "grovehub/services/identity/internal/app/services/authentication/operations/exchange"
 )
 

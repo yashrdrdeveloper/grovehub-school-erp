@@ -1,11 +1,12 @@
 root = "."
-tmp_dir = "../.runtime/air"
+tmp_dir = ".runtime/air"
 
 [build]
-cmd = "bash ../scripts/backend/air-build.sh"
-bin = "../.runtime/bin/groovehub-dev"
+cmd = "bash scripts/backend/air-build.sh"
+bin = ".runtime/bin/groovehub-dev"
 delay = 500
-exclude_dir = ["vendor", ".generated"]
+include_dir = ["backend", "libs/backend/core"]
+exclude_dir = ["vendor", ".generated", ".runtime", "node_modules"]
 include_ext = ["go", "mod", "sum", "sql", "yaml", "yml", "json", "tmpl"]
 kill_delay = "500ms"
 send_interrupt = true

@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	annotationvalidation "grovehub/libs/core/annotation/validation"
+	annotationvalidation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/validation"
 	persondto "grovehub/services/foundation/internal/app/dto/person"
 )
 

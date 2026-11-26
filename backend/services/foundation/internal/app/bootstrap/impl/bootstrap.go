@@ -8,7 +8,7 @@ import (
 
     "gorm.io/gorm"
 
-    coretelemetry "grovehub/libs/core/telemetry"
+    coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
     foundationbootstrap "grovehub/services/foundation/internal/app/bootstrap"
     foundationclient "grovehub/services/foundation/client/person"
     protected "grovehub/services/foundation/internal/app/controller/person/protected"

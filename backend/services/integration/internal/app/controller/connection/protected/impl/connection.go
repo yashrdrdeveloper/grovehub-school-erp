@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"strings"
 
-	coreerrors "grovehub/libs/core/errors"
-	httprequest "grovehub/libs/core/http/request"
-	httpresponse "grovehub/libs/core/http/response"
+	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
+	httprequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/request"
+	httpresponse "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/response"
 	clientprincipal "grovehub/services/integration/client/principal"
 	integrationerrors "grovehub/services/integration/internal/app/constants/error"
 	connectionprotected "grovehub/services/integration/internal/app/controller/connection/protected"

@@ -1,6 +1,6 @@
 package errorcode
 
-import coreerrors "grovehub/libs/core/errors"
+import coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
 
 var (
 	RouteNotFound = coreerrors.NewDefinition(

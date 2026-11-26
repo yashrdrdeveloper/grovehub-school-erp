@@ -4,8 +4,8 @@ package helpers
 import (
     "context"
 
-    coreerrors "grovehub/libs/core/errors"
-    corehelpers "grovehub/libs/core/helpers"
+    coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
+    corehelpers "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/helpers"
     personerror "grovehub/services/foundation/internal/app/constants/error"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     "grovehub/services/foundation/internal/app/entity"

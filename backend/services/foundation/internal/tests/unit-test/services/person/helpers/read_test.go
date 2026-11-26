@@ -7,7 +7,7 @@ import (
     . "github.com/onsi/ginkgo/v2"
     . "github.com/onsi/gomega"
 
-    coreerrors "grovehub/libs/core/errors"
+    coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
     errcode "grovehub/services/foundation/internal/app/constants/error"
     dto "grovehub/services/foundation/internal/app/dto/person"
     "grovehub/services/foundation/internal/app/entity"

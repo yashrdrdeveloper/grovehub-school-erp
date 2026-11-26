@@ -6,8 +6,8 @@ import (
 
 	"gorm.io/gorm"
 
-	coretransaction "grovehub/libs/core/database/transaction"
-	coresearch "grovehub/libs/core/search"
+	coretransaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	"grovehub/services/foundation/internal/app/entity"
 	personrepository "grovehub/services/foundation/internal/app/repository/person"
 	repositoryerrors "grovehub/services/foundation/internal/app/repository/constants/errors"

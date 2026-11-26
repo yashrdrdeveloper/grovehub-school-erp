@@ -5,9 +5,9 @@ import (
     "errors"
     "time"
 
-    annotationvalidation "grovehub/libs/core/annotation/validation"
-    servicepipeline "grovehub/libs/core/pipeline/service"
-    coretransaction "grovehub/libs/core/database/transaction"
+    annotationvalidation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/validation"
+    servicepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
+    coretransaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     foundationevents "grovehub/services/foundation/internal/app/constants/events"
     eventproducers "grovehub/services/foundation/internal/app/events/producers/person"

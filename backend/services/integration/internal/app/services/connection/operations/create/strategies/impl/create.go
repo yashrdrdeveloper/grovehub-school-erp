@@ -7,7 +7,7 @@ import (
     "context"
     connectiondto "grovehub/services/integration/internal/app/dto/connection"
     "time"
-    coreid "grovehub/libs/core/id"
+    coreid "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/id"
     "grovehub/services/integration/internal/app/entity"
     connectionrepo "grovehub/services/integration/internal/app/repository/connection"
     strategies "grovehub/services/integration/internal/app/services/connection/operations/create/strategies"

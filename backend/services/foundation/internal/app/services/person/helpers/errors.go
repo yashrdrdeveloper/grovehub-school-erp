@@ -3,7 +3,7 @@ package helpers
 import (
     "errors"
 
-    coreerrors "grovehub/libs/core/errors"
+    coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
     personerror "grovehub/services/foundation/internal/app/constants/error"
     foundationmappers "grovehub/services/foundation/internal/app/mappers/person"
     repositoryerrors "grovehub/services/foundation/internal/app/repository/constants/errors"

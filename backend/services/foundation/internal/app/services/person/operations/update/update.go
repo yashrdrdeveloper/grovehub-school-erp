@@ -4,7 +4,7 @@ package update
 import (
     "context"
 
-    servicepipeline "grovehub/libs/core/pipeline/service"
+    servicepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     updateflow "grovehub/services/foundation/internal/app/services/person/operations/update/flows"
     updatestrategies "grovehub/services/foundation/internal/app/services/person/operations/update/strategies"

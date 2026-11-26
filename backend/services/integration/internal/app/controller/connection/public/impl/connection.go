@@ -3,10 +3,10 @@ package impl
 import (
 	"net/http"
 	"strings"
-	httpresponse "grovehub/libs/core/http/response"
+	httpresponse "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/response"
 
 		controllerhelpers "grovehub/services/integration/internal/app/controller/helpers"
-	coreerrors "grovehub/libs/core/errors"
+	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
 	connectionpublic "grovehub/services/integration/internal/app/controller/connection/public"
 	integrationerrors "grovehub/services/integration/internal/app/constants/error"
 	integrationservices "grovehub/services/integration/internal/app/services/connection"

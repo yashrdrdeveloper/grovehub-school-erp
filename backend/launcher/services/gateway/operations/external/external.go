@@ -10,8 +10,8 @@ import (
 	"regexp"
 	"strings"
 
-	coregateway "grovehub/libs/core/gateway"
-	httpresponse "grovehub/libs/core/http/response"
+	coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+	httpresponse "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/response"
 	schoolgateway "grovehub/libs/schoolgateway"
 	integrationprincipal "grovehub/services/integration/client/principal"
 )

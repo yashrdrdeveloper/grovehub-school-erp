@@ -1,6 +1,6 @@
 package helpers
 
-import coresearch "grovehub/libs/core/search"
+import coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 
 const (
     maxSearchTextLength = 256

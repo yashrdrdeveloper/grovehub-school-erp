@@ -3,7 +3,7 @@ package helpers_test
 import (
     . "github.com/onsi/ginkgo/v2"
     . "github.com/onsi/gomega"
-    coreerrors "grovehub/libs/core/errors"
+    coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
     validators "grovehub/services/foundation/internal/app/validators/person/helpers"
     ids "grovehub/services/foundation/internal/tests/constants/person"
 )

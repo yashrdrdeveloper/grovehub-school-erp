@@ -1,8 +1,8 @@
 package helpers
 
 import (
-    coreerrors "grovehub/libs/core/errors"
-    corenormalize "grovehub/libs/core/normalize"
+    coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
+    corenormalize "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/normalize"
     personerror "grovehub/services/foundation/internal/app/constants/error"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     "grovehub/services/foundation/internal/app/entity"

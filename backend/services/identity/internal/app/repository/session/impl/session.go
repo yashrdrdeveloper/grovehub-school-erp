@@ -7,7 +7,7 @@ import (
 
 	"gorm.io/gorm"
 
-	transaction "grovehub/libs/core/database/transaction"
+	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
 	"grovehub/services/identity/internal/app/entity"
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"
 )

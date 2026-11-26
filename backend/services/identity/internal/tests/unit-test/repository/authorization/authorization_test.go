@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	mockdatabase "grovehub/libs/core/tests/mocks/database"
+	mockdatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tests/mocks/database"
 	schoolgateway "grovehub/libs/schoolgateway"
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/constants/permission"

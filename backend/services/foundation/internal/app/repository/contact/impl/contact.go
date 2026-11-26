@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
-	coretransaction "grovehub/libs/core/database/transaction"
+	coretransaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
 	"grovehub/services/foundation/internal/app/entity"
 	contactrepository "grovehub/services/foundation/internal/app/repository/contact"
 	contacterrorshelpers "grovehub/services/foundation/internal/app/repository/contact/helpers/errors"

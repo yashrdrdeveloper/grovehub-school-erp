@@ -4,7 +4,7 @@ package deactivate
 import (
     "context"
 
-    servicepipeline "grovehub/libs/core/pipeline/service"
+    servicepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     deactivateflow "grovehub/services/foundation/internal/app/services/person/operations/deactivate/flows"
     deactivatestrategies "grovehub/services/foundation/internal/app/services/person/operations/deactivate/strategies"

@@ -4,7 +4,7 @@ package impl
 import (
 	"context"
 
-	transaction "grovehub/libs/core/database/transaction"
+	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
 	foundation "grovehub/services/foundation/client/person"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
 	accountproducer "grovehub/services/identity/internal/app/events/producers/account"

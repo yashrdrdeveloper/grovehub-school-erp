@@ -4,9 +4,9 @@ import (
     "context"
     "errors"
 
-    coreerrors "grovehub/libs/core/errors"
-    coresearch "grovehub/libs/core/search"
-    servicepipeline "grovehub/libs/core/pipeline/service"
+    coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
+    coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+    servicepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
     personerror "grovehub/services/foundation/internal/app/constants/error"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     foundationmappers "grovehub/services/foundation/internal/app/mappers/person"

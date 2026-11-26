@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	rest "grovehub/libs/core/pipeline/rest"
-	coresearch "grovehub/libs/core/search"
+	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
+	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	personerror "grovehub/services/foundation/internal/app/constants/error"
 	protected "grovehub/services/foundation/internal/app/controller/person/protected"
 	persondto "grovehub/services/foundation/internal/app/dto/person"

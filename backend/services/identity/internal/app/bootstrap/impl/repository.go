@@ -1,7 +1,7 @@
 package impl
 
 import (
-	transaction "grovehub/libs/core/database/transaction"
+	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	accountimpl "grovehub/services/identity/internal/app/repository/account/impl"
 	credentialrepo "grovehub/services/identity/internal/app/repository/credential"

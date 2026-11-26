@@ -9,7 +9,7 @@ import (
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"
 	accountmapper "grovehub/services/identity/internal/app/mappers/account"
-	transaction "grovehub/libs/core/database/transaction"
+	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
 	accountproducer "grovehub/services/identity/internal/app/events/producers/account"
 	transition "grovehub/services/identity/internal/app/services/account/operations/transition"
 	"grovehub/services/identity/internal/app/services/account/helpers"

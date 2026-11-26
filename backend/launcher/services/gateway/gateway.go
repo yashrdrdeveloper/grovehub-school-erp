@@ -6,7 +6,7 @@ import (
 
 	external "grovehub/launcher/services/gateway/operations/external"
 	inprocess "grovehub/launcher/services/gateway/operations/inprocess"
-	coregateway "grovehub/libs/core/gateway"
+	coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
 	schoolgateway "grovehub/libs/schoolgateway"
 )
 

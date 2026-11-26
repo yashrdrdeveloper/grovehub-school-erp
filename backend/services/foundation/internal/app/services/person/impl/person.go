@@ -2,7 +2,7 @@
 package impl
 
 import (
-    coretransaction "grovehub/libs/core/database/transaction"
+    coretransaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
     personrepository "grovehub/services/foundation/internal/app/repository/person"
     contactrepository "grovehub/services/foundation/internal/app/repository/contact"
     foundationmappers "grovehub/services/foundation/internal/app/mappers/person"

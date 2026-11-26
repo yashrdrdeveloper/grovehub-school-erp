@@ -3,7 +3,7 @@ package account
 import (
 	"context"
 
-	coresearch "grovehub/libs/core/search"
+	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	dto "grovehub/services/identity/internal/app/dto/account"
 )
 

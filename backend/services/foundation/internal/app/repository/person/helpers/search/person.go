@@ -1,7 +1,7 @@
 package search
 
 import (
-	coresearch "grovehub/libs/core/search"
+	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	"grovehub/services/foundation/internal/app/entity"
 )
 

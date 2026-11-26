@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	coresearch "grovehub/libs/core/search"
+	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	"grovehub/services/identity/internal/app/entity"
 )
 

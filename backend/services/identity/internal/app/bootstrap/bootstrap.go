@@ -1,7 +1,7 @@
 package bootstrap
 
 import (
-	"grovehub/libs/core/module"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/module"
 	schoolgateway "grovehub/libs/schoolgateway"
 	accountclient "grovehub/services/identity/client/account"
 )

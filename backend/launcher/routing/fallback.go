@@ -3,7 +3,7 @@ package routing
 import (
 	"net/http"
 
-	httpresponse "grovehub/libs/core/http/response"
+	httpresponse "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/response"
 	"grovehub/launcher/constants/errorcode"
 )
 

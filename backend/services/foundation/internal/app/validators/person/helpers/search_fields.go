@@ -3,8 +3,8 @@ package helpers
 import (
     "strings"
 
-    corenormalize "grovehub/libs/core/normalize"
-    coresearch "grovehub/libs/core/search"
+    corenormalize "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/normalize"
+    coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
     "grovehub/services/foundation/internal/app/entity"
 )
 

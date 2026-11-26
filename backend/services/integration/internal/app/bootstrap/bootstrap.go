@@ -4,7 +4,7 @@ package bootstrap
 import (
 	"net/http"
 
-	coregateway "grovehub/libs/core/gateway"
+	coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
 	integrationclient "grovehub/services/integration/client"
 )
 

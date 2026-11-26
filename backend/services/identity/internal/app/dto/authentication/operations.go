@@ -1,6 +1,6 @@
 package authentication
 
-import "grovehub/libs/core/request"
+import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
 
 type LoginRequest struct {
 	request.Request

@@ -17,3 +17,8 @@ log_info "Running backend tests with the generated annotation overlay"
   cd -- "${BACKEND_DIR}"
   go test -vet=off -overlay="${BACKEND_DIR}/.generated/overlay.json" "$@"
 )
+# The school module wildcard no longer includes the independent Core module.
+(
+  cd -- "${CORE_DIR}"
+  go test -vet=off -overlay="${BACKEND_DIR}/.generated/overlay.json" ./...
+)

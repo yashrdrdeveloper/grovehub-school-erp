@@ -4,8 +4,8 @@ import (
 	"errors"
 	"strings"
 
-	corenormalize "grovehub/libs/core/normalize"
-	coresearch "grovehub/libs/core/search"
+	corenormalize "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/normalize"
+	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
 	accountvalidator "grovehub/services/identity/internal/app/validators/account"
 	searchhelpers "grovehub/services/identity/internal/app/validators/account/helpers"

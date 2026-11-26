@@ -5,8 +5,8 @@ import (
     "errors"
     "net/http"
 
-    coreerrors "grovehub/libs/core/errors"
-    httpresponse "grovehub/libs/core/http/response"
+    coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
+    httpresponse "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/response"
     integrationerrors "grovehub/services/integration/internal/app/constants/error"
     integrationrepository "grovehub/services/integration/internal/app/repository/connection"
     serviceimpl "grovehub/services/integration/internal/app/services/connection/impl"

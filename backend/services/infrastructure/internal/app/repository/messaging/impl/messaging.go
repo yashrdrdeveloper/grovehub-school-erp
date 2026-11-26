@@ -8,7 +8,7 @@ import (
     "gorm.io/gorm"
     "gorm.io/gorm/clause"
 
-    coretransaction "grovehub/libs/core/database/transaction"
+    coretransaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
     errorcode "grovehub/services/infrastructure/internal/app/constants/error"
     dto "grovehub/services/infrastructure/internal/app/dto/messaging"
     "grovehub/services/infrastructure/internal/app/entity"

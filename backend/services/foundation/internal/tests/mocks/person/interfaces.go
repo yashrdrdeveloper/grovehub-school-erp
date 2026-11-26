@@ -9,7 +9,7 @@ import (
     search "grovehub/services/foundation/internal/app/services/person/operations/search/strategies"
     deactivate "grovehub/services/foundation/internal/app/services/person/operations/deactivate/strategies"
     protected "grovehub/services/foundation/internal/app/controller/person/protected"
-    "grovehub/libs/core/database/transaction"
+    "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
     eventperson "grovehub/services/foundation/internal/app/events/producers/person"
     mapperperson "grovehub/services/foundation/internal/app/mappers/person"
     "grovehub/services/foundation/internal/app/repository/contact"

@@ -9,7 +9,7 @@ import (
 
 	"gorm.io/gorm"
 
-	corepostgres "grovehub/libs/core/database/postgres"
+	corepostgres "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/postgres"
 )
 
 const databaseURLEnv = "DATABASE_URL"

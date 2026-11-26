@@ -4,14 +4,14 @@ import (
     createhelpers "grovehub/services/foundation/internal/app/services/person/operations/create/helpers"
     "context"
 
-    coreerrors "grovehub/libs/core/errors"
-    servicepipeline "grovehub/libs/core/pipeline/service"
+    coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
+    servicepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
     personerror "grovehub/services/foundation/internal/app/constants/error"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     "grovehub/services/foundation/internal/app/entity"
     repositoryerrors "grovehub/services/foundation/internal/app/repository/constants/errors"
     personflow "grovehub/services/foundation/internal/app/services/person/operations/create/flows"
-    corehelpers "grovehub/libs/core/helpers"
+    corehelpers "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/helpers"
 )
 
 func (strategy *Creator) Idempotency(ctx context.Context, state *personflow.Create) servicepipeline.Outcome[persondto.Person] {

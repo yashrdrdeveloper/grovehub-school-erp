@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	coreid "grovehub/libs/core/id"
+	coreid "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/id"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"
 	authdto "grovehub/services/identity/internal/app/dto/authentication"

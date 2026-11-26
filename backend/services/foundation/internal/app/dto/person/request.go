@@ -1,6 +1,6 @@
 package person
 
-import annotationdto "grovehub/libs/core/annotation/dto"
+import annotationdto "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/dto"
 
 type ContactValue struct {
 	Value     string `json:"value" normalize:"trim" validate:"notblank"`

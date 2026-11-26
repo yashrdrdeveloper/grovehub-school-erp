@@ -3,7 +3,7 @@ package external
 import (
 	"net/http"
 
-	coreerrors "grovehub/libs/core/errors"
+	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
 )
 
 var (

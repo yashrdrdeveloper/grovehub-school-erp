@@ -1,7 +1,7 @@
 package impl
 
 import (
-    coretransaction "grovehub/libs/core/database/transaction"
+    coretransaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
     protected "grovehub/services/foundation/internal/app/controller/person/protected"
     controllerimpl "grovehub/services/foundation/internal/app/controller/person/protected/impl"
     personproducer "grovehub/services/foundation/internal/app/events/producers/person"

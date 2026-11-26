@@ -6,7 +6,7 @@ import (
     . "github.com/onsi/ginkgo/v2"
     . "github.com/onsi/gomega"
     "go.uber.org/mock/gomock"
-    pipeline "grovehub/libs/core/pipeline/service"
+    pipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
     dto "grovehub/services/foundation/internal/app/dto/person"
     deactivate "grovehub/services/foundation/internal/app/services/person/operations/deactivate"
     fixtures "grovehub/services/foundation/internal/tests/helpers/person"

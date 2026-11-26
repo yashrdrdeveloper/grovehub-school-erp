@@ -7,8 +7,8 @@ import (
     . "github.com/onsi/gomega"
     "go.uber.org/mock/gomock"
 
-    httphelpers "grovehub/libs/core/tests/helpers/http"
-    coresearch "grovehub/libs/core/search"
+    httphelpers "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tests/helpers/http"
+    coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
     controller "grovehub/services/foundation/internal/app/controller/person/protected"
     controllerimpl "grovehub/services/foundation/internal/app/controller/person/protected/impl"
     dto "grovehub/services/foundation/internal/app/dto/person"

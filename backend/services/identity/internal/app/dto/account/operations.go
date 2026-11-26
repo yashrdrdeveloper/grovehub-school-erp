@@ -1,8 +1,8 @@
 package account
 
 import (
-	"grovehub/libs/core/request"
-	"grovehub/libs/core/search"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 )
 
 type CreateRequest struct {

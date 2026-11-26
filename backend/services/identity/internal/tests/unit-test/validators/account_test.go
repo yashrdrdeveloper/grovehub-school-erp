@@ -9,7 +9,7 @@ import (
 	"grovehub/services/identity/internal/app/entity"
 	searchconfig "grovehub/services/identity/internal/app/repository/account/helpers/search"
 
-	coresearch "grovehub/libs/core/search"
+	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	validator "grovehub/services/identity/internal/app/validators/account/impl"
 )
 

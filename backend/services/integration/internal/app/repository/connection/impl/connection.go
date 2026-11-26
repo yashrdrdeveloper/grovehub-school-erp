@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm/clause"
 	"time"
 
-	coretransaction "grovehub/libs/core/database/transaction"
+	coretransaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
 	"grovehub/services/integration/internal/app/entity"
 	integrationrepository "grovehub/services/integration/internal/app/repository/connection"
 )

@@ -1,8 +1,8 @@
 package helpers
 
 import (
-    servicepipeline "grovehub/libs/core/pipeline/service"
-    coreerrors "grovehub/libs/core/errors"
+    servicepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
+    coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
     personerror "grovehub/services/foundation/internal/app/constants/error"
     persondto "grovehub/services/foundation/internal/app/dto/person"
 )

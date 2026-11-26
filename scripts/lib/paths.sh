@@ -12,6 +12,8 @@ REPO_ROOT="$(
 )"
 
 BACKEND_DIR="${REPO_ROOT}/backend"
+CORE_DIR="${REPO_ROOT}/libs/backend/core"
+CORE_MODULE="github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core"
 TOOLS_DIR="${REPO_ROOT}/.tools"
 TOOLS_BIN_DIR="${TOOLS_DIR}/bin"
 STATE_DIR="${REPO_ROOT}/.state"

@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 	"go.opentelemetry.io/otel/codes"
 
-	httpheaders "grovehub/libs/core/http/headers"
+	httpheaders "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/headers"
 )
 
 var _ = Describe("Edge request observability", func() {

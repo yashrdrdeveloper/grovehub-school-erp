@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
-	coreevents "grovehub/libs/core/events"
+	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
 	"grovehub/services/identity/internal/app/entity"
 	producer "grovehub/services/identity/internal/app/events/producers/account"
 	changed "grovehub/services/identity/internal/app/events/producers/account/operations/changed"

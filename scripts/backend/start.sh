@@ -46,7 +46,7 @@ if [[ "${HOT_RELOAD}" == "1" ]]; then
   listener_pids="$(listening_tcp_pids "${BACKEND_PORT}")"
   if [[ -n "${listener_pids}" ]]; then
     for listener_pid in ${listener_pids}; do
-      supervisor_pid="$(repo_air_supervisor_for_listener "${listener_pid}" "${AIR_BIN}" "${BACKEND_DIR}" || true)"
+      supervisor_pid="$(repo_air_supervisor_for_listener "${listener_pid}" "${AIR_BIN}" "${REPO_ROOT}" || true)"
       if [[ -n "${supervisor_pid}" ]]; then
         printf '%s\n' "${supervisor_pid}" >"${PID_FILE}"
         log_info "Recovered this repository's existing Air backend (PID ${supervisor_pid}); skipping duplicate startup"
@@ -74,8 +74,8 @@ if [[ "${HOT_RELOAD}" == "1" ]]; then
 
   log_info "Starting GroveHub backend with Air hot reload"
   (
-    cd -- "${BACKEND_DIR}"
-    nohup "${AIR_BIN}" -c .air.toml >>"${LOG_FILE}" 2>&1 &
+    cd -- "${REPO_ROOT}"
+    nohup "${AIR_BIN}" -c backend/.air.toml >>"${LOG_FILE}" 2>&1 &
     printf '%s\n' "$!" >"${PID_FILE}"
   )
 else
