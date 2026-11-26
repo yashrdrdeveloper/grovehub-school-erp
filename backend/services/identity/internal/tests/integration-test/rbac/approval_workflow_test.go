@@ -2,6 +2,7 @@ package rbac_test
 
 import (
 	"context"
+	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	"errors"
 	"time"
 
@@ -82,6 +83,35 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	Expect(err).NotTo(HaveOccurred())
 	Expect(created.Status).To(Equal(kind.Pending))
 	Expect(created.StepCount).To(Equal(2))
+	reads := approvalimpl.NewReader(repository.NewReader(db), repository.New(db, recorder), authorityimpl.New(db), snapshots)
+	query := coresearch.Request{PageInfo: coresearch.PageRequest{PageNumber: 1, RowSize: 25}}
+	history, err := reads.History(requesterCtx, query)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(history.Items).To(HaveLen(1))
+	Expect(history.Items[0].RequestID).To(Equal(created.RequestID))
+	inbox, err := reads.Inbox(reviewerCtx, query)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(inbox.Items).To(HaveLen(1))
+	Expect(inbox.Items[0].RequestID).To(Equal(created.RequestID))
+	pendingCount, err := reads.PendingCount(reviewerCtx)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(pendingCount).To(Equal(int64(1)))
+	pendingCount, err = reads.PendingCount(requesterCtx)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(pendingCount).To(BeZero())
+	foreignInbox, err := reads.Inbox(foreignCtx, query)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(foreignInbox.Items).To(BeEmpty())
+	detail, err := reads.Detail(reviewerCtx, created.RequestID)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(detail.Reason).To(Equal(intent.Reason))
+	_, err = reads.Detail(foreignCtx, created.RequestID)
+	Expect(err).To(MatchError(repo.ErrNotFound))
+	events, err := reads.Audit(requesterCtx, created.RequestID)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(events).To(HaveLen(1))
+	_, err = reads.Audit(reviewerCtx, created.RequestID)
+	Expect(err).To(MatchError(repo.ErrNotFound))
 	replayed, err := service.CreateLifecycle(requesterCtx, intent)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(replayed.RequestID).To(Equal(created.RequestID))
@@ -130,6 +160,11 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	Expect(err).NotTo(HaveOccurred())
 	Expect(approved.Status).To(Equal(kind.Approved))
 	Expect(approved.Version).To(Equal(int64(3)))
+	pendingCount, err = reads.PendingCount(reviewerCtx)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(pendingCount).To(BeZero())
+	_, err = reads.Detail(reviewerCtx, created.RequestID)
+	Expect(err).To(MatchError(repo.ErrNotFound))
 	var count int64
 	Expect(db.Raw("SELECT count(*) FROM identity.approval_decisions WHERE tenant_id = ? AND request_id = ?", tenant, created.RequestID).Scan(&count).Error).NotTo(HaveOccurred())
 	Expect(count).To(Equal(int64(2)))
@@ -314,6 +349,9 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	appliedTarget, err := executor.Execute(requesterCtx, approvedTarget.RequestID, approvedTarget.Version)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(appliedTarget.Status).To(Equal(kind.Applied))
+	events, err = reads.Audit(requesterCtx, appliedTarget.RequestID)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(events).To(HaveLen(4))
 	Expect(db.Raw("SELECT count(*) FROM identity.resource_audit a JOIN infrastructure.messaging m ON m.event_id = a.event_id::text WHERE a.tenant_id = ? AND a.request_id = ? AND a.resource_id = ? AND a.event_payload = convert_from(m.payload, 'UTF8')::jsonb AND a.event_payload->>'eventType' = 'identity.account.authority.changed.v1' AND a.event_payload#>>'{data,old,account,primaryRoleId}' = '' AND a.event_payload#>>'{data,new,account,primaryRoleId}' = ?", tenant, approvedTarget.RequestID, targetAccount, requiredRole).Scan(&auditCount).Error).NotTo(HaveOccurred())
 	Expect(auditCount).To(Equal(int64(1)))
 }
