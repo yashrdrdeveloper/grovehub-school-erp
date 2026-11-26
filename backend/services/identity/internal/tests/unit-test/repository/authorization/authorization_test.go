@@ -39,8 +39,9 @@ var _ = Describe("LoadSnapshot", func() {
 		Expect(err).NotTo(HaveOccurred())
 		mock = driver
 		DeferCleanup(func() {
-			Expect(mock.ExpectationsWereMet()).To(Succeed())
+			mock.ExpectClose()
 			Expect(closeDB()).To(Succeed())
+			Expect(mock.ExpectationsWereMet()).To(Succeed())
 		})
 		repository = authorizationimpl.New(db)
 		query = regexp.QuoteMeta(strings.Replace(strings.Replace(helpers.SnapshotQuery, "?", "$1", 1), "?", "$2", 1))
