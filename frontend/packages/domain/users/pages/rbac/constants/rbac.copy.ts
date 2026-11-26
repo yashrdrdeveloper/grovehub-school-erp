@@ -1,0 +1,18 @@
+export const RBAC_COPY = Object.freeze({
+  label1: __('Roles and permissions'),
+  label2: __('Search'),
+  label3: __('Refresh'),
+  label4: __('Loading…'),
+  label5: __('Unable to load records. Check your access and try again.'),
+  label6: __('No records found'),
+  label7: __('Previous'),
+  label8: __('Next'),
+  label9: __('Details'),
+  label10: __('roleId'),
+  label11: __('name'),
+  label12: __('description'),
+  label13: __('status'),
+  label14: __('version'),
+  label15: __('Permissions'),
+  label16: __('Unable to load permissions'),
+});

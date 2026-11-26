@@ -1,0 +1,1 @@
+export { useRbacPage } from './useRbacPage';

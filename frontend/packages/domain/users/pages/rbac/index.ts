@@ -1,1 +1,1 @@
-export { RbacPage } from './RbacPage';
+export { RbacContainer as RbacPage } from './containers/rbacContainer';

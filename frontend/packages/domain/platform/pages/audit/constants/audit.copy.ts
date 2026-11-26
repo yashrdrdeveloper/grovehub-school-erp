@@ -1,0 +1,18 @@
+export const AUDIT_COPY = Object.freeze({
+  label1: __('Audit logs'),
+  label2: __('Your activity'),
+  label3: __('Search'),
+  label4: __('Refresh'),
+  label5: __('Loading…'),
+  label6: __('Unable to load records. Check your access and try again.'),
+  label7: __('No records found'),
+  label8: __('Previous'),
+  label9: __('Next'),
+  label10: __('Details'),
+  label11: __('auditId'),
+  label12: __('source'),
+  label13: __('assetType'),
+  label14: __('assetId'),
+  label15: __('operation'),
+  label16: __('occurredAt'),
+});
