@@ -27,12 +27,14 @@ func (repository *Repository) Create(ctx context.Context, session entity.Session
 		db := transaction.Database(tx, repository.db)
 		// Serialize session creation with account status changes. A login that
 		// wins first is included in revocation; a later login sees inactive status.
-		var status entity.AccountStatus
-		result := db.Raw("SELECT status FROM identity.accounts WHERE account_id = ? FOR SHARE", session.AccountID).Scan(&status)
+		var account struct {
+			Status entity.AccountStatus
+		}
+		result := db.Raw("SELECT status FROM identity.accounts WHERE account_id = ? FOR SHARE", session.AccountID).Scan(&account)
 		if result.Error != nil {
 			return result.Error
 		}
-		if result.RowsAffected != 1 || status != entity.Active {
+		if result.RowsAffected != 1 || account.Status != entity.Active {
 			return sessionrepo.ErrInvalidSession
 		}
 		return db.Create(&session).Error
