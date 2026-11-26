@@ -37,7 +37,7 @@ export default defineConfig({
     alias: {
       '@Base': path.resolve(root, '../libs/frontend/base'),
       '@Business': path.resolve(root, 'packages/business'),
-      '@Components': path.resolve(root, 'packages/components'),
+      '@Components': path.resolve(root, '../libs/frontend/components'),
       '@Domain': path.resolve(root, 'packages/domain'),
       '@Shell': path.resolve(root, 'packages/shell'),
       '@Styles': path.resolve(root, '../libs/frontend/styles'),

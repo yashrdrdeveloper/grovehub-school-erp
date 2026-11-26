@@ -61,7 +61,7 @@
 .field__input {
   width: 100%;
   outline: 0;
-  background: var(--surface);
+  background: var(--gh-color-surface);
   border: 1px solid var(--gh-color-input);
   border-radius: var(--gh-control-radius);
   color: var(--gh-color-text-strong);
@@ -80,7 +80,7 @@
 }
 .field__hint {
   font-size: 0.6875rem;
-  color: var(--muted);
+  color: var(--gh-color-muted);
 }
 .field__hint--error,
 .form-error {

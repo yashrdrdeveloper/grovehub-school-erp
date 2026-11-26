@@ -1,8 +1,8 @@
 # Shared UI components
 
-**Ownership:** `packages/components` owns all reusable React UI and component-specific styling. It imports design tokens from **`@Styles`** and pure utilities from **`@Base`**; it never imports `@Business`, `@Domain` or `@Shell`.
+**Ownership:** `libs/frontend/components` owns all reusable React UI and component-specific styling. It imports design tokens from **`@Styles`** and pure utilities from **`@Base`**; it never imports `@Business`, `@Domain` , `@Shell` or `@Assets`.
 
-**Theme/typography/spacing:** Colors, light/dark mode, font families, text scales, focus, shadows, radii, control heights and spacing are owned by `frontend/packages/styles`. Shared component CSS in `styles/primitives.css` consumes `--gh-*` variables and should not invent a second palette.
+**Theme/typography/spacing:** Colors, light/dark mode, font families, text scales, focus, shadows, radii, control heights and spacing are owned by `libs/frontend/styles`. Shared component CSS in `styles/primitives.css` consumes `--gh-*` variables and should not invent a second palette.
 
 **Public components:**
 

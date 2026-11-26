@@ -34,7 +34,7 @@
         "packages/business/*"
       ],
       "@Components/*": [
-        "packages/components/*"
+        "../libs/frontend/components/*"
       ],
       "@Domain/*": [
         "packages/domain/*"
@@ -49,7 +49,7 @@
         "packages/business/index.ts"
       ],
       "@Components": [
-        "packages/components/index.ts"
+        "../libs/frontend/components/index.ts"
       ],
       "@Domain": [
         "packages/domain/index.ts"
@@ -76,6 +76,7 @@
     "packages",
     "../libs/frontend/base",
     "../libs/frontend/styles",
+    "../libs/frontend/components",
     "vite.config.ts"
   ]
 }

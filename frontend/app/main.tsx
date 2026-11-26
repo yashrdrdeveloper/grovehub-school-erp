@@ -15,7 +15,7 @@ import {
 
 import './theme/index.css';
 import './styles.css';
-import '../packages/components/styles/primitives.css';
+import '@groovehub/components/styles/primitives.css';
 
 // Install the shell-owned global BEFORE dynamically importing any feature COPY constants.
 // A static import of @Shell here would evaluate eager __('literal') calls too early.
