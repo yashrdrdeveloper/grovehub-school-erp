@@ -2,11 +2,13 @@ module.exports = {
   testEnvironment: 'jsdom',
   setupFiles: ['<rootDir>/scripts/test/polyfills.cjs'],
   setupFilesAfterEnv: ['<rootDir>/scripts/test/setupI18n.ts'],
-  roots: ['<rootDir>', '<rootDir>/../libs/frontend/base'],
+  roots: ['<rootDir>', '<rootDir>/../libs/frontend/base', '<rootDir>/../libs/frontend/components'],
   testMatch: [
     '<rootDir>/packages/**/*.test.ts',
     '<rootDir>/packages/**/*.test.tsx',
     '<rootDir>/../libs/frontend/base/**/*.test.ts',
+    '<rootDir>/../libs/frontend/components/**/*.test.ts',
+    '<rootDir>/../libs/frontend/components/**/*.test.tsx',
   ],
   transform: {
     '^.+\\.tsx?$': [
@@ -22,8 +24,8 @@ module.exports = {
     '^@Base/(.*)$': '<rootDir>/../libs/frontend/base/$1',
     '^@Business$': '<rootDir>/packages/business',
     '^@Business/(.*)$': '<rootDir>/packages/business/$1',
-    '^@Components$': '<rootDir>/packages/components',
-    '^@Components/(.*)$': '<rootDir>/packages/components/$1',
+    '^@Components$': '<rootDir>/../libs/frontend/components',
+    '^@Components/(.*)$': '<rootDir>/../libs/frontend/components/$1',
     '^@Domain$': '<rootDir>/packages/domain',
     '^@Domain/(.*)$': '<rootDir>/packages/domain/$1',
     '^@Assets$': '<rootDir>/packages/assets',
