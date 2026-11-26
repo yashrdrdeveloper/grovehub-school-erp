@@ -22,3 +22,7 @@ Inter-module calls use typed public client facades. `@Proxy` dispatch is in-proc
 Keep generated @GET/@POST/@PATCH controller annotations as the single source of truth for registered methods and resource paths. Define the service prefix once in `routes/http.go`; it should only invoke generated registrations. Generate routes and format changed Go files as part of CI; test exact path, tier, account ownership, Origin, CSRF, wildcard binding, workload verification, and structured errors.
 
 A gateway is a *transport policy boundary*, not a replacement for application resource-level authorization.
+
+## Contract ownership
+
+School session identity, AccessVerifier, legacy Admin/PersonGID claims and browser cookie names belong to `backend/libs/schoolgateway`. Generic route tier and workload verifier contracts remain in `backend/libs/core/gateway`. Verified contexts are established only by the trusted school adapter. This separation does not alter school session or origin/CSRF behavior and does not implement school RBAC enforcement by itself. The internal platform must own a separate session contract and cookie namespace.

@@ -48,3 +48,7 @@ Infrastructure-owned shared contracts, such as broker-delivery DTOs, event-store
 Each owned library has `docs/engineering/README.md`: public entry points, import rules, SRP, initialization, error/timeout semantics, lifecycle, security, usage and tests. Complex capabilities can add topic-specific engineering guides. **Product execution guides belong to consuming services**, not shared libraries.
 
 Breaking library changes must update consumers, generated code, tests, and owner-local docs together.
+
+## 6. School-specific gateway contract
+
+The school module owns `backend/libs/schoolgateway` (verified session principal, AccessVerifier and the school cookie names). `backend/libs/core/gateway` owns only neutral route tiers and workload verification. The legacy school Admin claim is not a universal permission and must never bypass RBAC. Core must not import any school-owned package, including in tests or generated overlays. [Core boundary audit](../../product/internal/CORE_BOUNDARY_AUDIT.md) records the migration inventory. The physical Core module move is still conditional on generator root and standalone module checks.
