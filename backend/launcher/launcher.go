@@ -22,6 +22,7 @@ import (
 	headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
 	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
 	"grovehub/services/foundation"
+	"grovehub/services/audit"
 	"grovehub/services/identity"
 	"grovehub/services/infrastructure"
 	infrastructureconfig "grovehub/services/infrastructure/client/messaging"
@@ -88,6 +89,11 @@ func Run(logger *slog.Logger) error {
 	}
 	defer identityModule.Close()
 	identityModule.RegisterHTTP(mux)
+
+	auditModule, err := audit.New(logger, db, infrastructureModule.MessagingClient(), identityModule)
+	if err != nil { return fmt.Errorf("initialize Audit: %w", err) }
+	defer auditModule.Close()
+	auditModule.RegisterHTTP(mux)
 
 	routing.RegisterFallback(mux)
 

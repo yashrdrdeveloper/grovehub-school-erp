@@ -1,9 +1,6 @@
 package impl
 
 import (
-	auditrepo "grovehub/services/identity/internal/app/repository/auditread/impl"
-	"grovehub/services/identity/internal/app/services/audit"
-	auditimpl "grovehub/services/identity/internal/app/services/audit/impl"
 	accountmetadataaudit "grovehub/services/identity/internal/app/repository/accountmetadataaudit/impl"
 	accountmetadataevent "grovehub/services/identity/internal/app/events/producers/accountmetadata/impl"
 	updateimpl "grovehub/services/identity/internal/app/services/account/operations/update/impl"
@@ -48,7 +45,6 @@ import (
 )
 
 type serviceGraph struct {
-	audit audit.Service
 	capabilities capability.Service
 	accountRoles accountrole.Service
 	approvalReads approval.Reader
@@ -121,7 +117,6 @@ func (b *builder) newServices(repositories repositories, cfg config.Config) serv
 		authentication = authimpl.NewRecoveryGuard(authentication, repositories.accounts, repositories.tokens, repositories.sessions, repositories.authority, invitations)
 	}
 	return serviceGraph{
-		audit: auditimpl.New(auditrepo.New(b.db), repositories.authority, authorizer, cfg.LegacyRBACDevelopment),
 		capabilities: capabilityimpl.New(capabilityrepo.New(b.db), repositories.authority, authorizer, cfg.ApprovalExecutionTenant),
 		approvalExecutor: b.newApprovalExecutor(repositories, cfg, reader, authorizer, gate),
 		accountRoles: accountroleimpl.New(repositories.accountRoles, authorizer),

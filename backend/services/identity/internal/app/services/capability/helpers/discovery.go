@@ -13,7 +13,7 @@ import (
 // UI hints, not resource-specific authorization or approval eligibility.
 func Actions(effective []permission.Code) map[string]bool {
 	patterns := map[string]string{
-		"auditSearch": "POST /identity/protected/audit/search",
+		"auditSearch": "POST /audit/protected/search",
 		"accountSearch": "POST /identity/protected/accounts/search",
 		"accountView": "GET /identity/protected/accounts/{accountId}",
 		"accountCreate": "POST /identity/protected/accounts",

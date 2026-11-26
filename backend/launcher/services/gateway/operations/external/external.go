@@ -100,7 +100,7 @@ func (operation *Operation) ServeHTTP(writer http.ResponseWriter, request *http.
 		}
 
 		ctx := schoolgateway.WithPrincipal(request.Context(), principal)
-		if strings.HasPrefix(route, "/identity/protected/") {
+		if strings.HasPrefix(route, "/identity/protected/") || strings.HasPrefix(route, "/audit/protected/") {
 			policy, ok := operation.access.(schoolgateway.ProtectedRouteAuthorizer)
 			if !ok || policy.AuthorizeProtectedRoute(ctx, pattern) != nil {
 				operation.rejectForbidden(writer, request, "identity_permission_denied")
