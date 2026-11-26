@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { _map } from '@Base/utilities/map';
-import { Ellipsis, Filter, ArrowUpDown, Settings, RefreshCw, Layers2, Download } from '@Components/icons';
+import { Settings2, Filter, ArrowUpDown, Settings, RefreshCw, Layers2, Download } from '@Components/icons';
 import { Box } from '../../../Box';
 import { Button, BUTTON_SIZE, BUTTON_VARIANT } from '../../../Button';
 import { ButtonWithIcon } from '../../../ButtonWithIcon';
@@ -31,7 +31,7 @@ export const MobileTableToolbar = <T,>({ searchProps, filterProps, sortProps, pa
   return (
     <Box className={styles.root}>
       {searchProps && <TableSearch {...searchProps} placeholder={searchProps.mobilePlaceholder ?? searchProps.placeholder} fields={undefined} onChange={(value) => actions?.SEARCH?.(value)} />}
-      <ButtonWithIcon className={styles.trigger} icon={Ellipsis} iconSize={18} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} aria-label={__('Table options')} aria-expanded={panel !== null} onClick={() => setPanel(MobileTablePanel.OPTIONS)} />
+      <ButtonWithIcon className={styles.trigger} icon={Settings2} iconSize={18} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} aria-label={__('Table options')} aria-expanded={panel !== null} onClick={() => setPanel(MobileTablePanel.OPTIONS)} />
       <Sheet open={panel === MobileTablePanel.OPTIONS} onOpenChange={(open) => { if (!open) close(); }} title={__('Table options')}>
         <Box className={styles.options}>
           {filterProps && <ButtonWithIcon icon={Filter} variant={BUTTON_VARIANT.GHOST} onClick={() => setPanel(MobileTablePanel.FILTER)}>{getFilterLabel()}</ButtonWithIcon>}

@@ -383,3 +383,28 @@
   .mobileList { gap: 0; align-content: start; }
   .mobileCard:not([data-compact-row='true']) { margin: var(--gh-space-2); }
 }
+
+/* Custom mobile rows are a native-style list, not a full-height table card. */
+@media (max-width: 640px) {
+  .panel[data-mobile-list='true'] {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .panel[data-mobile-list='true'] .mobileList {
+    background: transparent;
+  }
+
+  .panel[data-mobile-list='true'] .mobileCard[data-compact-row='true'] {
+    padding-inline: 0;
+    background: transparent;
+    border-bottom: 1px solid var(--gh-color-table-rule);
+  }
+
+  .panel[data-mobile-list='true'] .mobileCard[data-compact-row='true'][data-selected='true'],
+  .panel[data-mobile-list='true'] .mobileCard[data-compact-row='true']:active {
+    background: var(--gh-color-table-selected);
+  }
+}

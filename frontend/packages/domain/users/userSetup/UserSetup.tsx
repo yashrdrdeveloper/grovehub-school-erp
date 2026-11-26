@@ -1,5 +1,9 @@
+import { _filter } from '@Base/utilities/filter';
+import { _map } from '@Base/utilities/map';
+import { UserRound } from '@Components/icons';
 import { Box } from '@Components/components/Box';
 import { Button, BUTTON_VARIANT } from '@Components/components/Button';
+import { ButtonWithIcon } from '@Components/components/ButtonWithIcon';
 import { Sheet } from '@Components/components/Sheet';
 import { Table, TableType, TableDataMode } from '@Components/components/Table';
 
@@ -20,6 +24,7 @@ import type { UserSetupProps } from './types/userSetup.props';
 
 export const UserSetup = ({ controls }: UserSetupProps) => {
   const { state, dialog } = controls;
+  const detailRow = dialog?.row;
   const getError = () => {
     if (controls.error) return __('Unable to load users. Check your access and try again.');
     return undefined;
@@ -44,9 +49,9 @@ export const UserSetup = ({ controls }: UserSetupProps) => {
         columns={USER_SETUP_COLUMNS}
         getRowId={getUserSetupRowId}
         headerProps={USER_SETUP_HEADER}
-        mobileRowProps={{ render: renderUserMobileRow, onClick: (row) => controls.actions.ROW_ACTION?.({ id: UserAction.VIEW, row }) }}
+        mobileRowProps={{ render: renderUserMobileRow, rowActions: [], onClick: (row) => controls.actions.ROW_ACTION?.({ id: UserAction.VIEW, row }) }}
         mobileInfiniteProps={controls.mobileInfiniteProps}
-        searchProps={{ value: state.searchText, placeholder: __('Search by username or email...'), mobilePlaceholder: __('Search users...'), fields: [__('Username'), __('Email address')] }}
+        searchProps={{ value: state.searchText, placeholder: __('Search by username or email...'), mobilePlaceholder: __('Search users'), fields: [__('Username'), __('Email address')] }}
         filterProps={{ fields: USER_SETUP_FILTERS, value: state.filters, maxFilters: USER_SETUP_FILTERS.length }}
         sortProps={{ fields: USER_SETUP_SORT_FIELDS, value: state.sorting, maxFields: USER_SETUP_SORT_FIELDS.length }}
         paginationProps={controls.pagination}
@@ -59,15 +64,28 @@ export const UserSetup = ({ controls }: UserSetupProps) => {
       {dialog && (dialog.action === UserAction.CREATE || dialog.action === UserAction.EDIT) && (
         <UserForm row={dialog.row} onClose={controls.closeDialog} onCreate={controls.create} onEdit={controls.edit} onAccountAction={(id, row) => controls.actions.ROW_ACTION?.({ id, row })} submitting={controls.submitting} error={controls.submissionError} />
       )}
-      {dialog?.action === UserAction.VIEW && dialog.row && (
+      {dialog?.action === UserAction.VIEW && detailRow && (
         <Sheet open title={__('Account details')} onOpenChange={(open) => { if (!open) controls.closeDialog(); }} dataTestId={USER_SETUP_TEST_IDS.DETAILS}>
           <Box className={styles.details}>
-            <Box>{dialog.row.email}</Box>
-            <Box>{dialog.row.username ?? '—'}</Box>
-            <Box>{renderUserStatus(dialog.row)}</Box>
-            <Box>{__('Created at')}: {renderCreatedAt(dialog.row)}</Box>
-            <Box>{__('Updated at')}: {renderUpdatedAt(dialog.row)}</Box>
-            <Button onClick={() => { if (dialog.row) controls.actions.ROW_ACTION?.({ id: UserAction.EDIT, row: dialog.row }); }}>{__('Edit user')}</Button>
+            <Box className={styles.detailIdentity}>
+              <Box className={styles.detailName}>{detailRow.username ?? '—'}</Box>
+              <Box className={styles.detailEmail}>{detailRow.email}</Box>
+              <Box>{renderUserStatus(detailRow)}</Box>
+            </Box>
+            <Box className={styles.detailField}>
+              <Box>{__('Created at')}</Box>
+              {renderCreatedAt(detailRow)}
+            </Box>
+            <Box className={styles.detailField}>
+              <Box>{__('Updated at')}</Box>
+              {renderUpdatedAt(detailRow)}
+            </Box>
+            <Box className={styles.detailActions}>
+              <Button onClick={() => controls.actions.ROW_ACTION?.({ id: UserAction.EDIT, row: detailRow })}>{__('Edit user')}</Button>
+              {_map(_filter(USER_SETUP_ROW_ACTIONS, (action) => !action.isVisible || action.isVisible(detailRow)), (action) => (
+                <ButtonWithIcon key={action.id} icon={action.icon ?? UserRound} variant={BUTTON_VARIANT.OUTLINE} disabled={action.disabled} onClick={() => controls.actions.ROW_ACTION?.({ id: action.id, row: detailRow })}>{action.label}</ButtonWithIcon>
+              ))}
+            </Box>
           </Box>
         </Sheet>
       )}

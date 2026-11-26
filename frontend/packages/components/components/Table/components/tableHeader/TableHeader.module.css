@@ -37,13 +37,14 @@
 @media (max-width: 640px) {
   .header { flex-wrap: nowrap; gap: var(--gh-space-2); }
   .header > :first-child { min-width: 0; }
-  .title { font-size: var(--gh-text-lg); }
+  .title { font-size: var(--gh-text-xl); }
   .description, .iconActionLabel { display: none; }
   .actions { flex: 0 0 auto; }
   .actions button:has(.iconActionLabel) {
-    width: var(--gh-control-height-md);
-    min-width: var(--gh-control-height-md);
-    height: var(--gh-control-height-md);
+    width: var(--gh-space-8);
+    min-width: var(--gh-space-8);
+    height: var(--gh-space-8);
+    min-height: var(--gh-space-8);
     padding: 0;
   }
 }

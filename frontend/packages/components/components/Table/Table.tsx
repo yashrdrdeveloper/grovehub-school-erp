@@ -57,7 +57,7 @@ export const TableView = <T,>(props: TableViewProps<T>) => {
   return (
     <Box className={styles.root} dataTestId={props.dataTestId ?? props.id} data-fullscreen={controls.fullscreen} data-fill-height={props.fillHeight}>
       {headerProps && <TableHeader {...headerProps} onAction={actions?.HEADER_ACTION} />}
-      <Box className={styles.panel}>
+      <Box className={styles.panel} data-mobile-list={Boolean(mobile && props.mobileRowProps)}>
         {!mobile && <Box className={styles.toolbar}>
           <Box className={styles.toolbarLeft}>
             {filterProps && <Filters {...filterProps} iconOnly onChange={(value) => actions?.FILTER?.(value)} />}
