@@ -1,0 +1,1 @@
+export { DesktopTableBody } from './DesktopTableBody';
