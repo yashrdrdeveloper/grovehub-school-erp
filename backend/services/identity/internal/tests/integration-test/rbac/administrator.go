@@ -10,6 +10,8 @@ import (
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/repository/authority"
+	accountrolerepo "grovehub/services/identity/internal/app/repository/accountrole"
+	accountroleimpl "grovehub/services/identity/internal/app/repository/accountrole/impl"
 	"grovehub/services/identity/internal/app/constants/persona"
 	"grovehub/services/identity/internal/app/entity"
 	rolerepo "grovehub/services/identity/internal/app/repository/role"
@@ -108,6 +110,18 @@ func verifyAdministratorGuard(ctx context.Context, db *gorm.DB) {
 	transition.Version = 1
 	_, err = operation.Execute(ctx, transition)
 	Expect(err).To(MatchError(rolerepo.ErrAssigned))
+	assignmentsRepo := accountroleimpl.New(db)
+	assignment, err := assignmentsRepo.Find(ctx, tenant, first)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(assignment.PrimaryRoleID).To(Equal(grants))
+	Expect(assignment.SecondaryRoleIDs).To(Equal([]string{assignments}))
+	_, err = assignmentsRepo.Find(ctx, "foreign-guard-school", first)
+	Expect(err).To(MatchError(accountrolerepo.ErrNotFound))
+	candidates, err := assignmentsRepo.Candidates(ctx, tenant, []string{grants, assignments})
+	Expect(err).NotTo(HaveOccurred())
+	Expect(candidates).To(HaveLen(2))
+	_, err = assignmentsRepo.Candidates(ctx, "foreign-guard-school", []string{grants})
+	Expect(err).To(MatchError(accountrolerepo.ErrNotFound))
 	count, err = reader.Count(ctx, "foreign-guard-school")
 	Expect(err).NotTo(HaveOccurred())
 	Expect(count).To(BeZero())
