@@ -24,6 +24,9 @@ export interface ColumnManagerProps {
   readonly onPin?: (id: string, pin: ColumnPin) => void;
   readonly onReset: () => void;
   readonly dataTestId?: string;
+  /** Mount as an already-open mobile editor, with no local trigger. */
+  readonly initialOpen?: boolean;
+  readonly onDismiss?: () => void;
   readonly mobileMenu?: boolean;
   readonly mobileList?: boolean;
 }

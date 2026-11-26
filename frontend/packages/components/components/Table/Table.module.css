@@ -343,27 +343,6 @@
   }
 }
 
-.mobileToolbar {
-  display: flex;
-  align-items: center;
-  gap: var(--gh-space-2);
-  padding: var(--gh-space-2);
-  border-bottom: 1px solid var(--gh-color-table-rule);
-}
-.mobileToolbar > button {
-  flex: 0 0 40px;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-}
-.mobileOptions {
-  display: grid;
-  gap: var(--gh-space-2);
-}
-.mobileOptions button {
-  width: 100%;
-  justify-content: flex-start;
-}
 .mobileRowContent { flex: 1; min-width: 0; }
 .mobileCard[data-compact-row='true'] {
   display: flex;
@@ -392,7 +371,7 @@
     scrollbar-gutter: auto;
     padding: 0;
   }
-  .root[data-fill-height='true'] .mobileToolbar, .root[data-fill-height='true'] .footer { flex: 0 0 auto; }
+  .root[data-fill-height='true'] .footer { flex: 0 0 auto; }
   .mobileList { gap: 0; align-content: start; }
   .mobileCard:not([data-compact-row='true']) { margin: var(--gh-space-2); }
 }

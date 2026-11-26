@@ -12,8 +12,8 @@ export const UserMobileRow = ({ row }: UserMobileRowProps) => {
       <Box className={styles.details}>
         <Box className={styles.name}>{name}</Box>
         <Box className={styles.email}>{row.email}</Box>
-        <Box className={styles.status}><StatusPill value={row.status} /></Box>
       </Box>
+      <Box className={styles.status}><StatusPill value={row.status} /></Box>
     </Box>
   );
 };

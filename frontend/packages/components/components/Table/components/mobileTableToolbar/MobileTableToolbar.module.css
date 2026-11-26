@@ -1,0 +1,18 @@
+.root {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: var(--gh-space-2);
+  padding: var(--gh-space-2);
+  border-bottom: 1px solid var(--gh-color-table-rule);
+}
+.trigger.trigger {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+}
+.options { display: grid; gap: var(--gh-space-1); }
+.options button { width: 100%; justify-content: flex-start; min-height: 44px; }
+.options button[aria-pressed='true'] { color: var(--gh-color-accent); background: var(--gh-color-accent-soft); }
+.root > :not(button):empty { display: none; }

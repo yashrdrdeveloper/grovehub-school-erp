@@ -11,6 +11,8 @@ import type { Account, CreateAccount } from '@Business/domain/users';
 
 import { UserAction } from '../../constants/userSetup.actions';
 import { USER_SETUP_DEFAULT_SORT } from '../../constants/userSetup.sort';
+import { getUserSetupNextPage } from '../../helpers/userSetup.getNextPage';
+import { getUserSetupMobileRows } from '../../helpers/userSetup.getMobileRows';
 import { getUserSetupSearchRequest } from '../../helpers/userSetup.getSearchRequest';
 import type { UserSetupDialog, UserSetupQueryState } from '../../types/userSetup.state';
 
@@ -40,14 +42,27 @@ export const useUserSetup = () => {
     queryKey: [...scope, 'mobile', mobileRequest],
     initialPageParam: { pageNumber: 1, cursor: undefined as string | undefined },
     queryFn: ({ pageParam }) => usersApi.search({ ...mobileRequest, pageInfo: { ...mobileRequest.pageInfo, ...pageParam } }),
-    getNextPageParam: (last, _pages, previous) => {
-      const cursor = last.pageInfo.nextCursor;
-      if (!last.pageInfo.hasNext || !cursor || cursor === previous.cursor) return undefined;
-      return { pageNumber: previous.pageNumber + 1, cursor };
-    },
+    getNextPageParam: getUserSetupNextPage,
     enabled: Boolean(account) && mobile,
   });
-  const mobileRows = Array.from(new Map((mobileQuery.data?.pages ?? []).flatMap((page) => page.items).map((row) => [row.accountId, row])).values());
+  const mobileRows = getUserSetupMobileRows(mobileQuery.data?.pages ?? []);
+  const getActiveQuery = () => {
+    if (mobile) return mobileQuery;
+    return query;
+  };
+  const activeQuery = getActiveQuery();
+  const getData = () => {
+    if (mobile) return mobileRows;
+    return query.data?.items ?? [];
+  };
+  const getTotal = () => {
+    if (mobile) return mobileQuery.data?.pages[0]?.pageInfo.totalRecords;
+    return query.data?.pageInfo.totalRecords;
+  };
+  const getError = () => {
+    if (mobile) return mobileQuery.isError && !mobileQuery.data;
+    return query.isError;
+  };
   const refresh = () => {
     if (mobile) { void mobileQuery.refetch(); return; }
     void query.refetch();
@@ -152,11 +167,11 @@ export const useUserSetup = () => {
 
   return {
     state, actions, dialog, closeDialog, create, edit, confirm, pagination,
-    totalRecords: mobile ? mobileQuery.data?.pages[0]?.pageInfo.totalRecords : query.data?.pageInfo.totalRecords,
-    data: mobile ? mobileRows : query.data?.items ?? [],
-    loading: mobile ? mobileQuery.isPending : query.isPending,
-    refreshing: mobile ? mobileQuery.isFetching : query.isFetching,
-    error: mobile ? mobileQuery.isError && !mobileQuery.data : query.isError,
+    totalRecords: getTotal(),
+    data: getData(),
+    loading: activeQuery.isPending,
+    refreshing: activeQuery.isFetching,
+    error: getError(),
     mobileInfiniteProps: {
       hasNext: mobileQuery.hasNextPage,
       loading: mobileQuery.isFetching,

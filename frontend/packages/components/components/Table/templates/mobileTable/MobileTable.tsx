@@ -19,7 +19,11 @@ export const MobileTable = <T,>(props: MobileTableProps<T>) => {
   const rowClick = props.mobileRowProps?.onClick ?? props.actions?.ROW_CLICK;
   const rowActions = props.mobileRowProps?.rowActions ?? props.rowActions;
   const [limit, setLimit] = useState(40);
-  const entries = props.mobileInfiniteProps ? controls.entries : controls.entries.slice(0, limit);
+  const getEntries = () => {
+    if (props.mobileInfiniteProps) return controls.entries;
+    return controls.entries.slice(0, limit);
+  };
+  const entries = getEntries();
   const visible = _filter(controls.layout, (entry) => entry.column.mobileVisible !== false);
   const getVisible = () => {
     if (visible.length) return visible;

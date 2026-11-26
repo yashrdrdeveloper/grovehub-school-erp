@@ -3,3 +3,9 @@
 .name { font-size: var(--gh-text-sm); font-weight: var(--gh-weight-medium); color: var(--gh-color-text-strong); overflow-wrap: anywhere; }
 .email { font-size: var(--gh-text-xs); color: var(--gh-color-muted); overflow-wrap: anywhere; }
 .status { display: flex; align-items: center; }
+.status { flex: 0 0 auto; }
+.status > * { font-size: var(--gh-text-2xs); }
+@media (max-width: 360px) {
+  .root { flex-wrap: wrap; }
+  .status { margin-inline-start: calc(var(--gh-control-height-md) + var(--gh-space-2)); }
+}

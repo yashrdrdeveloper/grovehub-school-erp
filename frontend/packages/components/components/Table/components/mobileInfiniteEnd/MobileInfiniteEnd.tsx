@@ -5,7 +5,7 @@ import type { MobileInfiniteEndProps } from './types/mobileInfiniteEnd.props';
 import styles from './MobileInfiniteEnd.module.css';
 
 export const MobileInfiniteEnd = ({ hasNext, loading, error, loaded, total, onLoadMore }: MobileInfiniteEndProps) => {
-  const sentinel = useRef<HTMLDivElement>(null);
+  const sentinel = useRef<HTMLElement>(null);
   useEffect(() => {
     if (!hasNext || loading || error || !onLoadMore || !sentinel.current || typeof IntersectionObserver === 'undefined') return;
     const observer = new IntersectionObserver((entries) => {

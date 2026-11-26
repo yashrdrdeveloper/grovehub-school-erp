@@ -15,7 +15,7 @@ import styles from './Sort.module.css';
 import type { SortProps } from './types/sort.props';
 import type { useSort } from './hooks/useSort';
 
-export const SortView = ({ value, maxFields, disabled, iconOnly, dataTestId, controls }: SortProps & { readonly controls: ReturnType<typeof useSort> }) => {
+export const SortView = ({ value, maxFields, disabled, iconOnly, dataTestId, initialOpen, controls }: SortProps & { readonly controls: ReturnType<typeof useSort> }) => {
   const getLabel = () => {
     if (value.length) return __('Sort ({{count}})', { count: value.length });
     return __('Sort');
@@ -24,7 +24,7 @@ export const SortView = ({ value, maxFields, disabled, iconOnly, dataTestId, con
 
   return (
     <Popover open={controls.open} onOpenChange={controls.onOpenChange} title={__('Manage sort')} width={600} compact desktopScrollLayout trigger={
-      <Tooltip label={getLabel()}><ButtonWithIcon icon={ArrowUpDown} iconSize={16} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} aria-label={getLabel()} aria-expanded={controls.open} disabled={disabled} dataTestId={dataTestId} onClick={() => controls.onOpenChange(true)}>
+      !initialOpen && <Tooltip label={getLabel()}><ButtonWithIcon icon={ArrowUpDown} iconSize={16} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} aria-label={getLabel()} aria-expanded={controls.open} disabled={disabled} dataTestId={dataTestId} onClick={() => controls.onOpenChange(true)}>
         {!iconOnly && getLabel()}
         {iconOnly && !!value.length && value.length}
       </ButtonWithIcon></Tooltip>

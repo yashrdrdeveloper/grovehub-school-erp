@@ -24,7 +24,7 @@ import type { FilterCondition } from './types/filters.props';
 import type { FiltersProps } from './types/filters.props';
 import type { useFilters } from './hooks/useFilters';
 
-export const FiltersView = ({ fields, value, disabled, iconOnly, dataTestId, controls }: FiltersProps & { readonly controls: ReturnType<typeof useFilters> }) => {
+export const FiltersView = ({ fields, value, disabled, iconOnly, dataTestId, initialOpen, controls }: FiltersProps & { readonly controls: ReturnType<typeof useFilters> }) => {
   const mobile = useMobileViewport();
   const { editing, selectedField } = controls;
   const getValueSummary = (condition: FilterCondition) => {
@@ -45,7 +45,7 @@ export const FiltersView = ({ fields, value, disabled, iconOnly, dataTestId, con
   };
   return (
     <Popover open={controls.open} onOpenChange={controls.onOpenChange} title={getTitle()} width={760} compact desktopScrollLayout trigger={
-      <Tooltip label={getButton()}><ButtonWithIcon icon={Filter} className={styles.trigger} size={BUTTON_SIZE.SMALL} iconSize={14} variant={BUTTON_VARIANT.OUTLINE} aria-label={getButton()} aria-expanded={controls.open} disabled={disabled} dataTestId={dataTestId} onClick={() => controls.onOpenChange(true)}>
+      !initialOpen && <Tooltip label={getButton()}><ButtonWithIcon icon={Filter} className={styles.trigger} size={BUTTON_SIZE.SMALL} iconSize={14} variant={BUTTON_VARIANT.OUTLINE} aria-label={getButton()} aria-expanded={controls.open} disabled={disabled} dataTestId={dataTestId} onClick={() => controls.onOpenChange(true)}>
         {!iconOnly && getButton()}
         {iconOnly && !!value.length && value.length}
       </ButtonWithIcon></Tooltip>

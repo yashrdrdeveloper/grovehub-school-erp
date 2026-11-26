@@ -5,8 +5,8 @@ import { _map } from '@Base/utilities/map';
 import { SortDirection } from '../../constants/sort.direction';
 import type { SortProps, SortCondition } from '../../types/sort.props';
 
-export const useSort = ({ value, onChange, fields, maxFields }: SortProps) => {
-  const [open, setOpen] = useState(false);
+export const useSort = ({ value, onChange, fields, maxFields, initialOpen, onDismiss }: SortProps) => {
+  const [open, setOpen] = useState(Boolean(initialOpen));
   const [draft, setDraft] = useState<readonly SortCondition[]>(value);
   const getAvailableFields = (index?: number) =>
     _filter(fields, (field) => !draft.some((item, position) => position !== index && item.field === field.id));
@@ -25,6 +25,7 @@ export const useSort = ({ value, onChange, fields, maxFields }: SortProps) => {
   const onOpenChange = (next: boolean) => {
     if (next) setDraft(value);
     setOpen(next);
+    if (!next) onDismiss?.();
   };
   const add = () => {
     setDraft((items) => {
@@ -55,7 +56,7 @@ export const useSort = ({ value, onChange, fields, maxFields }: SortProps) => {
     apply: () => {
       if (!isDraftValid) return;
       onChange(draft);
-      setOpen(false);
+      onOpenChange(false);
     },
   };
 };

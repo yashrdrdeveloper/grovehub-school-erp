@@ -7,8 +7,8 @@ import { FilterOperator } from '../../constants/filter.operator';
 import { isFilterValid } from '../../helpers/filters.isValid';
 import type { FilterCondition, FiltersProps } from '../../types/filters.props';
 
-export const useFilters = ({ value, onChange, fields, maxFilters }: FiltersProps) => {
-  const [open, setOpen] = useState(false);
+export const useFilters = ({ value, onChange, fields, maxFilters, initialOpen, onDismiss }: FiltersProps) => {
+  const [open, setOpen] = useState(Boolean(initialOpen));
   const [draft, setDraft] = useState<readonly FilterCondition[]>(value);
   const [editing, setEditing] = useState<FilterCondition | null>(null);
 
@@ -33,6 +33,7 @@ export const useFilters = ({ value, onChange, fields, maxFilters }: FiltersProps
       setEditing(null);
     }
     setOpen(next);
+    if (!next) onDismiss?.();
   };
 
   const addInline = () => {
@@ -94,7 +95,7 @@ export const useFilters = ({ value, onChange, fields, maxFilters }: FiltersProps
   const apply = () => {
     if (!isDraftValid) return;
     onChange(draft);
-    setOpen(false);
+    onOpenChange(false);
   };
 
   return {
