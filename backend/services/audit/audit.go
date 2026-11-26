@@ -11,6 +11,9 @@ import (
 	"grovehub/services/audit/internal/app/bootstrap"
 	bootstrapimpl "grovehub/services/audit/internal/app/bootstrap/impl"
 	"grovehub/services/audit/internal/resources/migrations"
+	activityrepo "grovehub/services/audit/internal/app/repository/activity/impl"
+	"grovehub/services/audit/internal/app/services/replay"
+	replayimpl "grovehub/services/audit/internal/app/services/replay/impl"
 	"grovehub/services/infrastructure/client/messaging"
 )
 
@@ -31,4 +34,12 @@ func Migrate(ctx context.Context, db *gorm.DB) error {
 // or requiring the Audit database. The caller's outbox transaction is preserved.
 func NewProducer(store messaging.EventStore) producer.Client {
 	return bootstrapimpl.NewProducer(store)
+}
+
+// Replay is an operator-only API, not a registered HTTP route.
+type ReplayRequest = replay.Request
+type ReplayResult = replay.Result
+
+func Replay(ctx context.Context,db *gorm.DB,source messaging.ReplaySource,input ReplayRequest) (ReplayResult,error) {
+	return replayimpl.New(db,source,activityrepo.New(db)).Replay(ctx,input)
 }

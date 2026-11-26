@@ -15,6 +15,7 @@ import (
 	"gorm.io/gorm"
 	"grovehub/libs/schoolgateway"
 	"grovehub/services/audit"
+	"grovehub/services/infrastructure"
 	dto "grovehub/services/audit/internal/app/dto/activity"
 	"grovehub/services/audit/internal/app/events/consumers/activity/helpers"
 	consumer "grovehub/services/audit/internal/app/events/consumers/activity"
@@ -56,6 +57,10 @@ func TestAuditProjectionAndPersistence(t *testing.T) {
 	if err!=nil || first.AuditID!=duplicate.AuditID { t.Fatal("logical replay generated different ID") }
 	if err:=repository.Insert(ctx,first);err!=nil { t.Fatal(err) }
 	if err:=repository.Insert(ctx,duplicate);err!=nil { t.Fatal(err) }
+	reused,_:=helpers.Project(ctx,eventType,raw(duplicate.SourceEventID,tenant,"other revision",99))
+	if err:=repository.Insert(ctx,reused);!errors.Is(err,activity.ErrConflict) { t.Fatalf("alias reuse accepted: %v",err) }
+	var aliasCount int64
+	if err:=db.Raw("SELECT count(*) FROM audit.activities WHERE audit_id = ?",reused.AuditID).Scan(&aliasCount).Error;err!=nil || aliasCount!=0 { t.Fatal("conflicting alias insert did not roll back") }
 	conflict,_:=helpers.Project(ctx,eventType,raw(uuid.NewString(),tenant,"changed",2))
 	if err:=repository.Insert(ctx,conflict);!errors.Is(err,activity.ErrConflict) { t.Fatalf("expected collision: %v",err) }
 	foreign,_:=helpers.Project(ctx,eventType,raw(uuid.NewString(),uuid.NewString(),"name",2))
@@ -105,4 +110,27 @@ func TestAuditProjectionAndPersistence(t *testing.T) {
 	if _,err:=helpers.Project(ctx,client.ActivityOccurred,envelope(failed));err==nil { t.Fatal("anonymous failure accepted authenticated actor") }
 	self,err:=reader.Search(authCtx,dto.Search{Scope:"ME",Request:coresearch.Request{Filters:[]coresearch.Filter{{Field:"operation",Operator:coresearch.OperatorEquals,Values:[]string{"LOGIN_FAILED"}}}}})
 	if err!=nil || len(self.Items)!=1 || self.Items[0].AuditID!=entry.AuditID { t.Fatalf("failed login self visibility: %v",err) }
+	replayEvent:=uuid.NewString()
+	replayPayload:=raw(replayEvent,tenant,"replay",4)
+	if err:=infrastructure.NewEventStore(db).Enqueue(ctx,messaging.Event{EventID:replayEvent,Topic:"identity_account_metadata_changed",Payload:replayPayload,Metadata:map[string]string{}});err!=nil { t.Fatal(err) }
+	source:=infrastructure.NewReplaySource(db)
+	request:=audit.ReplayRequest{TenantID:tenant,EventID:replayEvent}
+	if _,err:=audit.Replay(ctx,db,source,request);err==nil { t.Fatal("unpublished replay accepted") }
+	if err:=db.Exec("UPDATE infrastructure.messaging SET status = 'SENT',published_at=now() WHERE event_id = ?",replayEvent).Error;err!=nil { t.Fatal(err) }
+	preview,err:=audit.Replay(ctx,db,source,request)
+	if err!=nil || preview.Applied || preview.AuditID=="" { t.Fatalf("replay preview: %v",err) }
+	var count int64
+	if err:=db.Raw("SELECT count(*) FROM audit.activities WHERE audit_id = ?",preview.AuditID).Scan(&count).Error;err!=nil || count!=0 { t.Fatal("preview mutated data") }
+	request.Apply=true
+	request.OperatorLabel="integration-test"
+	wrong:=request
+	wrong.TenantID=uuid.NewString()
+	if _,err:=audit.Replay(ctx,db,source,wrong);err==nil { t.Fatal("cross-tenant replay accepted") }
+	for range 2 {
+		applied,err:=audit.Replay(ctx,db,source,request)
+		if err!=nil || !applied.Applied || applied.AuditID!=preview.AuditID || applied.ReplayID=="" { t.Fatalf("replay apply: %v",err) }
+	}
+	if err:=db.Raw("SELECT count(*) FROM audit.activities WHERE audit_id = ?",preview.AuditID).Scan(&count).Error;err!=nil || count!=1 { t.Fatal("replay duplicated activity") }
+	if err:=db.Raw("SELECT count(*) FROM audit.replay_runs WHERE source_event_id = ?",replayEvent).Scan(&count).Error;err!=nil || count!=2 { t.Fatal("missing replay receipts") }
+	if err:=db.Exec("DELETE FROM audit.replay_runs WHERE source_event_id = ?",replayEvent).Error;err==nil { t.Fatal("mutable replay evidence") }
 }

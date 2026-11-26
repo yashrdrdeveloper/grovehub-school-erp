@@ -34,3 +34,8 @@ func Migrate(ctx context.Context, db *gorm.DB) error {
 func NewEventStore(db *gorm.DB) messagingclient.EventStore {
     return repositoryimpl.New(db, validatorimpl.New(), mapperimpl.New())
 }
+
+// NewReplaySource exposes retained published events without broker or mutation access.
+func NewReplaySource(db *gorm.DB) messagingclient.ReplaySource {
+	return repositoryimpl.NewReplaySource(db)
+}

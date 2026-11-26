@@ -3,6 +3,7 @@ package impl
 import (
 	"context"
 	"time"
+	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -19,15 +20,24 @@ func New(db *gorm.DB) activity.Repository {
 }
 
 func (repository *Repository) Insert(ctx context.Context, entry entity.Activity) error {
-	entry.IngestedAt = time.Now().UTC()
-	db := repository.db.WithContext(ctx)
-	result := db.Clauses(clause.OnConflict{DoNothing: true}).Create(&entry)
-	if result.Error != nil { return result.Error }
-	if result.RowsAffected == 1 { return nil }
-	var matches []entity.Activity
-	if err := db.Where("audit_id = ? OR source_event_id = ?", entry.AuditID, entry.SourceEventID).Limit(2).Find(&matches).Error; err != nil { return err }
-	if len(matches) != 1 || matches[0].AuditID != entry.AuditID || matches[0].SemanticHash != entry.SemanticHash { return activity.ErrConflict }
-	return nil
+	return transaction.Run(ctx,repository.db,func(tx context.Context) error {
+		db:=transaction.Database(tx,repository.db)
+		entry.IngestedAt=time.Now().UTC()
+		result:=db.Clauses(clause.OnConflict{DoNothing:true}).Create(&entry)
+		if result.Error!=nil { return result.Error }
+		if result.RowsAffected==0 {
+			var matches []entity.Activity
+			if err:=db.Where("audit_id = ? OR source_event_id = ?",entry.AuditID,entry.SourceEventID).Limit(2).Find(&matches).Error;err!=nil { return err }
+			if len(matches)!=1 || matches[0].AuditID!=entry.AuditID || matches[0].SemanticHash!=entry.SemanticHash { return activity.ErrConflict }
+		}
+		// Reserve every observed source ID, including logically equivalent
+		// events with a different envelope ID, in the same transaction.
+		if err:=db.Exec("INSERT INTO audit.event_receipts(source_event_id,audit_id) VALUES (?,?) ON CONFLICT (source_event_id) DO NOTHING",entry.SourceEventID,entry.AuditID).Error;err!=nil { return err }
+		var receipt struct { AuditID string }
+		if err:=db.Table("audit.event_receipts").Select("audit_id").Where("source_event_id = ?",entry.SourceEventID).Take(&receipt).Error;err!=nil { return err }
+		if receipt.AuditID!=entry.AuditID { return activity.ErrConflict }
+		return nil
+	})
 }
 
 // Tenant and self-visibility predicates must be attached before shared search.

@@ -46,6 +46,7 @@ func (b *builder) Build() (bootstrap.Runtime,error) {
 	if b.logger==nil { b.logger=slog.Default() }
 	if err:=b.db.Exec("SELECT subject_account_id, occurrence_id FROM audit.activities LIMIT 0").Error; err!=nil { return nil,errors.New("audit migrations required") }
 	if err:=b.db.Exec("SELECT fingerprint FROM audit.rejected_events LIMIT 0").Error; err!=nil { return nil,errors.New("audit rejection migrations required") }
+	if err:=b.db.Exec("SELECT source_event_id FROM audit.event_receipts LIMIT 0").Error;err!=nil { return nil,errors.New("audit receipt migrations required") }
 	repo:=repository.New(b.db)
 	handler:=consumer.New(repo,rejection.New(b.db))
 	ctx,stop:=context.WithCancel(context.Background())
