@@ -38,7 +38,7 @@ func verifyRecoveryGuard(ctx context.Context, db *gorm.DB, tenant string, accoun
 	cfg := config.Config{EncryptionKey: make([]byte, 32), ResetURL: "https://school.example/reset-password"}
 	sender := invitation.New(tokens, mailrepo.New(db,audit.NewProducer(infrastructure.NewEventStore(db))), cfg)
 	base := authimpl.New(accounts, sessions, tokens, credentials, sender, mapper.New(), transaction.NewUnitOfWork(db))
-	service := authimpl.NewRecoveryGuard(base, accounts, tokens, sessions, authorityrepo.New(db), sender)
+	service := authimpl.NewRecoveryGuard(base, accounts, tokens, sessions, authorityrepo.New(db), sender, audit.NewProducer(infrastructure.NewEventStore(db)))
 	account, err := accounts.FindByID(ctx, accountID)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(account.TenantID).NotTo(BeNil())
@@ -118,4 +118,7 @@ func verifyRecoveryGuard(ctx context.Context, db *gorm.DB, tenant string, accoun
 	validPassword, err = credentials.Verify(ctx, accountID, "Changed-password-789")
 	Expect(err).NotTo(HaveOccurred())
 	Expect(validPassword).To(BeTrue())
+	var count int64
+	Expect(db.Raw("SELECT count(*) FROM infrastructure.messaging WHERE topic = 'audit_activity_occurred' AND convert_from(payload,'UTF8')::jsonb#>>'{data,assetId}' = ?",accountID).Scan(&count).Error).NotTo(HaveOccurred())
+	Expect(count).To(Equal(int64(4)))
 }

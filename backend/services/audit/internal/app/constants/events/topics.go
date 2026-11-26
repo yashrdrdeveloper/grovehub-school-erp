@@ -3,6 +3,7 @@ package events
 // Explicit allowlist: never subscribe to arbitrary opaque provider payloads.
 func Topics() map[string]string {
 	return map[string]string{
+		"audit_activity_occurred": "audit.activity.occurred.v1",
 		"identity_account_changed": "identity.account.changed.v1",
 		"identity_account_registration_changed": "identity.account.registration.changed.v1",
 		"identity_account_metadata_changed": "identity.account.metadata.changed.v1",

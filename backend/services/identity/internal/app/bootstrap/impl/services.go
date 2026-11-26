@@ -112,7 +112,7 @@ func (b *builder) newServices(repositories repositories, cfg config.Config) serv
 			setupimpl.NewNormalized(reader, accountread.NewSetupWriter(b.db), repositories.tokens, credentials, repositories.authority, readiness, repositories.accountRoles, repositories.authorization, accountEvents), proofs,
 			updateimpl.NewNormalized(reader, accountread.NewMetadataWriter(b.db), repositories.accountRoles, repositories.tokens, repositories.authority, readiness, authorizer, mapper.New(), accountValidator, accountmetadataevent.New(b.audit)))
 		authentication = authimpl.NewOnboarding(authentication, proofs)
-		authentication = authimpl.NewRecoveryGuard(authentication, repositories.accounts, repositories.tokens, repositories.sessions, repositories.authority, invitations)
+		authentication = authimpl.NewRecoveryGuard(authentication, repositories.accounts, repositories.tokens, repositories.sessions, repositories.authority, invitations, b.audit)
 	}
 	return serviceGraph{
 		capabilities: capabilityimpl.New(capabilityrepo.New(b.db), repositories.authority, authorizer, cfg.ApprovalExecutionTenant),

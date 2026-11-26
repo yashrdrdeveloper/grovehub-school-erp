@@ -14,4 +14,6 @@ type Event struct {
 type Client interface {
 	// @Proxy service.Produce
 	Produce(ctx context.Context, event Event) error
+	// @Proxy service.Record
+	Record(ctx context.Context, activity Activity) error
 }

@@ -7,6 +7,7 @@ import (
 
 // Event resolves the public contract's unqualified DTO in generated proxy code.
 type Event = client.Event
+type Activity = client.Activity
 
 type producerClient struct { service producer.Service }
 

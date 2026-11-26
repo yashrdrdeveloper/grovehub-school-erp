@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strings"
 	"time"
+	auditclient "grovehub/services/audit/client/producer"
 
 	dto "grovehub/services/identity/internal/app/dto/authentication"
 	"grovehub/services/identity/internal/app/entity"
@@ -28,10 +29,11 @@ type RecoveryGuard struct {
 	sessions sessionrepo.Repository
 	locker authority.Locker
 	invitations registration.InvitationSender
+	audit auditclient.Client
 }
 
-func NewRecoveryGuard(base authentication.Service, accounts accountrepo.Repository, tokens tokenrepo.Repository, sessions sessionrepo.Repository, locker authority.Locker, invitations registration.InvitationSender) authentication.Service {
-	return &RecoveryGuard{Service: base, accounts: accounts, tokens: tokens, sessions: sessions, locker: locker, invitations: invitations}
+func NewRecoveryGuard(base authentication.Service, accounts accountrepo.Repository, tokens tokenrepo.Repository, sessions sessionrepo.Repository, locker authority.Locker, invitations registration.InvitationSender, audit auditclient.Client) authentication.Service {
+	return &RecoveryGuard{Service: base, accounts: accounts, tokens: tokens, sessions: sessions, locker: locker, invitations: invitations,audit:audit}
 }
 
 func (service *RecoveryGuard) Forgot(ctx context.Context, email string) error {
@@ -117,7 +119,8 @@ func (service *RecoveryGuard) ResetPassword(ctx context.Context, secret string, 
 	if err := service.tokens.ReserveResetAttempt(ctx, hash, time.Now().UTC()); err != nil { return err }
 	return service.withProof(ctx, secret, entity.ResetGrant, func(tx context.Context, account entity.Account) error {
 		if err := service.Service.ResetPassword(tx, secret, password); err != nil { return err }
-		return service.invalidateRecovery(tx, account.AccountID)
+		if err:=service.invalidateRecovery(tx,account.AccountID);err!=nil { return err }
+		return service.record(tx,*account.TenantID,account.AccountID,"PASSWORD_RESET")
 	})
 }
 
@@ -132,7 +135,8 @@ func (service *RecoveryGuard) Login(ctx context.Context, input dto.Login, userAg
 		current, err := service.accounts.FindByEmail(tx, email)
 		if err != nil || current.AccountID != account.AccountID || !eligibleRecoveryAccount(current, tenant) { return authentication.ErrInvalidCredentials }
 		result, err = service.Service.Login(tx, input, userAgent)
-		return err
+		if err!=nil { return err }
+		return service.record(tx,tenant,current.AccountID,"LOGIN_SUCCEEDED")
 	})
 	if err != nil { return authentication.SessionResult{}, err }
 	return result, nil
@@ -154,6 +158,7 @@ func (service *RecoveryGuard) ChangePassword(ctx context.Context, password strin
 			return principal.ErrRecentAuthenticationRequired
 		}
 		if err := service.Service.ChangePassword(tx, password); err != nil { return err }
-		return service.invalidateRecovery(tx, actor.AccountID)
+		if err:=service.invalidateRecovery(tx,actor.AccountID);err!=nil { return err }
+		return service.record(tx,actor.TenantID,actor.AccountID,"PASSWORD_CHANGED")
 	})
 }

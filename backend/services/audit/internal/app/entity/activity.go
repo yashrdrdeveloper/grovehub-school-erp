@@ -15,6 +15,7 @@ type Activity struct {
 	AuditType string `json:"auditType"`
 	Operation string `json:"operation"`
 	Source string `json:"source"`
+	OccurrenceID *string `gorm:"type:uuid" json:"occurrenceId,omitempty"`
 	AssetVersion int64 `json:"assetVersion"`
 	ActorID *string `gorm:"type:uuid" json:"actorId,omitempty"`
 	SubjectAccountID *string `gorm:"type:uuid" json:"subjectAccountId,omitempty"`

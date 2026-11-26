@@ -10,6 +10,7 @@ import (
 
 	"gorm.io/gorm"
 	"grovehub/libs/schoolgateway"
+	inframessaging "grovehub/libs/infrastructure/messaging"
 	"grovehub/services/audit/internal/app/bootstrap"
 	"grovehub/services/audit/internal/app/constants/events"
 	protected "grovehub/services/audit/internal/app/controller/activity/protected"
@@ -43,7 +44,7 @@ type runtime struct {
 func (b *builder) Build() (bootstrap.Runtime,error) {
 	if b.db==nil || b.messaging==nil || b.access==nil { return nil,errors.New("audit requires PostgreSQL, Infrastructure and access policy") }
 	if b.logger==nil { b.logger=slog.Default() }
-	if err:=b.db.Exec("SELECT subject_account_id FROM audit.activities LIMIT 0").Error; err!=nil { return nil,errors.New("audit migrations required") }
+	if err:=b.db.Exec("SELECT subject_account_id, occurrence_id FROM audit.activities LIMIT 0").Error; err!=nil { return nil,errors.New("audit migrations required") }
 	if err:=b.db.Exec("SELECT fingerprint FROM audit.rejected_events LIMIT 0").Error; err!=nil { return nil,errors.New("audit rejection migrations required") }
 	repo:=repository.New(b.db)
 	handler:=consumer.New(repo,rejection.New(b.db))
@@ -59,7 +60,7 @@ func (b *builder) Build() (bootstrap.Runtime,error) {
 func (module *runtime) consume(ctx context.Context, logger *slog.Logger, client messaging.MessagingClient, handler *consumer.Consumer, topic string, eventType string) {
 	defer module.wait.Done()
 	for ctx.Err()==nil {
-		_ = client.Consume(ctx,topic,func(deliveryCtx context.Context,message messaging.Message) error {
+		_ = client.Consume(inframessaging.WithConsumerGroup(ctx,"audit"),topic,func(deliveryCtx context.Context,message messaging.Message) error {
 			if err:=handler.Handle(deliveryCtx,eventType,message); err!=nil {
 				logger.Warn("audit event not persisted","topic",topic)
 				return err

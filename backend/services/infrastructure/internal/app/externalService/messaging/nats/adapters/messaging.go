@@ -6,6 +6,8 @@ import (
 	"net"
 	"net/url"
 	"strings"
+	"regexp"
+	inframessaging "grovehub/libs/infrastructure/messaging"
 
 	"github.com/ThreeDotsLabs/watermill"
 	watermillnats "github.com/ThreeDotsLabs/watermill-nats/v2/pkg/nats"
@@ -32,6 +34,7 @@ type Adapter struct {
 	url        string
 	publisher  message.Publisher
 	subscriber message.Subscriber
+	subscriberConfig watermillnats.SubscriberConfig
 }
 
 func New(config infrastructureconfig.Messaging) (*Adapter, error) {
@@ -53,17 +56,15 @@ func New(config infrastructureconfig.Messaging) (*Adapter, error) {
 		return nil, err
 	}
 
-	subscriber, err := watermillnats.NewSubscriber(
-		watermillnats.SubscriberConfig{
+	subscriberConfig := watermillnats.SubscriberConfig{
 			URL:              config.NATSURL,
 			QueueGroupPrefix: config.QueueGroupPrefix,
 			CloseTimeout:     config.CloseTimeout,
 			AckWaitTimeout:   config.AckWaitTimeout,
 			SubscribeTimeout: config.SubscribeTimeout,
 			JetStream:        jetStream,
-		},
-		watermill.NopLogger{},
-	)
+	}
+	subscriber, err := watermillnats.NewSubscriber(subscriberConfig,watermill.NopLogger{})
 	if err != nil {
 		_ = publisher.Close()
 		return nil, err
@@ -73,6 +74,7 @@ func New(config infrastructureconfig.Messaging) (*Adapter, error) {
 		url:        config.NATSURL,
 		publisher:  publisher,
 		subscriber: subscriber,
+		subscriberConfig:subscriberConfig,
 	}, nil
 }
 
@@ -103,7 +105,125 @@ func (adapter *Adapter) Consume(
 	topic string,
 	handler messagingdto.MessageHandler,
 ) error {
-	messages, err := adapter.subscriber.Subscribe(ctx, topic)
+	subscriber:=adapter.subscriber
+	if group:=inframessaging.ConsumerGroup(ctx);group!="" {
+		if !regexp.MustCompile(`^[a-z][a-z0-9-]{0,31}package adapters
+
+import (
+	"context"
+	"errors"
+	"net"
+	"net/url"
+	"strings"
+	"regexp"
+	inframessaging "grovehub/libs/infrastructure/messaging"
+
+	"github.com/ThreeDotsLabs/watermill"
+	watermillnats "github.com/ThreeDotsLabs/watermill-nats/v2/pkg/nats"
+	"github.com/ThreeDotsLabs/watermill/message"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
+
+	infrastructureconfig "grovehub/services/infrastructure/internal/app/config/messaging"
+	messagingdto "grovehub/services/infrastructure/internal/app/dto/messaging"
+    natscontract "grovehub/services/infrastructure/internal/app/externalService/messaging/nats"
+    messagingstrategies "grovehub/services/infrastructure/internal/app/services/messaging/strategies"
+)
+
+// The vendor adapter is verified against the annotated external service contract.
+// Business services depend on MessagingClient, never on NATS directly.
+
+const traceIDMetadataKey = "X-Trace-ID"
+
+var _ natscontract.Service = (*Adapter)(nil)
+var _ messagingstrategies.Strategy = (*Adapter)(nil)
+
+type Adapter struct {
+	url        string
+	publisher  message.Publisher
+	subscriber message.Subscriber
+	subscriberConfig watermillnats.SubscriberConfig
+}
+
+func New(config infrastructureconfig.Messaging) (*Adapter, error) {
+	jetStream := watermillnats.JetStreamConfig{
+		AutoProvision: true,
+		TrackMsgID:    true,
+		AckAsync:      false,
+		DurablePrefix: config.DurablePrefix,
+	}
+
+	publisher, err := watermillnats.NewPublisher(
+		watermillnats.PublisherConfig{
+			URL:       config.NATSURL,
+			JetStream: jetStream,
+		},
+		watermill.NopLogger{},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	subscriberConfig := watermillnats.SubscriberConfig{
+			URL:              config.NATSURL,
+			QueueGroupPrefix: config.QueueGroupPrefix,
+			CloseTimeout:     config.CloseTimeout,
+			AckWaitTimeout:   config.AckWaitTimeout,
+			SubscribeTimeout: config.SubscribeTimeout,
+			JetStream:        jetStream,
+	}
+	subscriber, err := watermillnats.NewSubscriber(subscriberConfig,watermill.NopLogger{})
+	if err != nil {
+		_ = publisher.Close()
+		return nil, err
+	}
+
+	return &Adapter{
+		url:        config.NATSURL,
+		publisher:  publisher,
+		subscriber: subscriber,
+		subscriberConfig:subscriberConfig,
+	}, nil
+}
+
+func (adapter *Adapter) Publish(
+	ctx context.Context,
+	topic string,
+	payload []byte,
+	metadata map[string]string,
+) error {
+	msg := message.NewMessage(watermill.NewUUID(), payload)
+	msg.SetContext(ctx)
+
+	for key, value := range metadata {
+		msg.Metadata.Set(key, value)
+	}
+
+	otel.GetTextMapPropagator().Inject(ctx, propagation.MapCarrier(msg.Metadata))
+	spanContext := trace.SpanContextFromContext(ctx)
+	if spanContext.IsValid() {
+		msg.Metadata.Set(traceIDMetadataKey, spanContext.TraceID().String())
+	}
+
+	return adapter.publisher.Publish(topic, msg)
+}
+
+func (adapter *Adapter) Consume(
+	ctx context.Context,
+	topic string,
+	handler messagingdto.MessageHandler,
+) error {
+	).MatchString(group) { return errors.New("invalid consumer group") }
+		config:=adapter.subscriberConfig
+		config.QueueGroupPrefix+="-"+group
+		config.JetStream.DurablePrefix+="-"+group
+		var err error
+		subscriber,err=watermillnats.NewSubscriber(config,watermill.NopLogger{})
+		if err!=nil { return err }
+		defer subscriber.Close()
+	}
+	messages, err := subscriber.Subscribe(ctx, topic)
 	if err != nil {
 		return err
 	}
