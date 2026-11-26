@@ -5,6 +5,8 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"encoding/json"
+	"errors"
+	"sync/atomic"
 	"net/url"
 	"time"
 
@@ -13,6 +15,12 @@ import (
 
 	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
 	"grovehub/services/identity/internal/app/config"
+	integrationclient "grovehub/services/integration/client/connection"
+	accountrepo "grovehub/services/identity/internal/app/repository/account"
+	registryrepo "grovehub/services/identity/internal/app/repository/registry/impl"
+	"grovehub/services/identity/internal/app/services/registry"
+	registryimpl "grovehub/services/identity/internal/app/services/registry/impl"
+	"grovehub/services/identity/internal/app/services/security/principal"
 	accountservice "grovehub/services/identity/internal/app/services/account/impl"
 	authservice "grovehub/services/identity/internal/app/services/authentication"
 	authruntime "grovehub/services/identity/internal/app/services/authentication/impl"
@@ -166,6 +174,97 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 		return err
 	})).To(Succeed())
 	Expect(recent).To(BeTrue())
+
+	// Provision resend capability only in this disposable fixture.
+	actor, err := principal.RequireTenant(requesterCtx)
+	Expect(err).NotTo(HaveOccurred())
+	_, err = registryimpl.New(registryrepo.New(db)).Register(ctx, registry.Request{Permissions: []permission.Code{permission.AccountResendInvitation}})
+	Expect(err).NotTo(HaveOccurred())
+	Expect(db.Exec("UPDATE identity.permissions SET active = true WHERE code = ?", permission.AccountResendInvitation).Error).NotTo(HaveOccurred())
+	Expect(db.Exec("INSERT INTO identity.role_permissions(tenant_id, role_id, permission_id) SELECT ar.tenant_id, ar.role_id, p.permission_id FROM identity.account_roles ar CROSS JOIN identity.permissions p WHERE ar.tenant_id = ? AND ar.account_id = ? AND ar.assignment_type = 'PRIMARY' AND p.code = ? ON CONFLICT DO NOTHING", tenant, actor.AccountID, permission.AccountResendInvitation).Error).NotTo(HaveOccurred())
+	Expect(resend.Execute(requesterCtx, accountID)).To(MatchError(accountrepo.ErrConflict))
+	Expect(db.Exec("UPDATE identity.invitations SET created_at = ? WHERE id = ?", time.Now().UTC().Add(-time.Minute), mail.ID).Error).NotTo(HaveOccurred())
+
+	// Concurrent authorized resends are serialized: exactly one rotates the proof.
+	resends := make(chan error, 2)
+	for range 2 {
+		go func() { resends <- resend.Execute(requesterCtx, accountID) }()
+	}
+	successes := 0
+	for range 2 {
+		if err := <-resends; err == nil {
+			successes++
+		} else {
+			Expect(err).To(MatchError(accountrepo.ErrConflict))
+		}
+	}
+	Expect(successes).To(Equal(1))
+	_, err = tokens.Inspect(ctx, hash, entity.SetupGrant, time.Now().UTC())
+	Expect(err).To(MatchError(tokenrepo.ErrInvalidToken))
+	var rotated entity.Invitation
+	Expect(db.Where("account_id = ? AND id <> ?", accountID, mail.ID).Take(&rotated).Error).NotTo(HaveOccurred())
+	rotatedProof := invitationProof(rotated, cfg.EncryptionKey)
+	rotatedHash, err := secrets.Digest(rotatedProof, 32)
+	Expect(err).NotTo(HaveOccurred())
+	rotatedToken, err := tokens.Inspect(ctx, rotatedHash, entity.AccountSetup, time.Now().UTC())
+	Expect(err).NotTo(HaveOccurred())
+	Expect(rotatedToken.AccountVersion).NotTo(BeNil())
+	Expect(*rotatedToken.AccountVersion).To(Equal(before.Version+1))
+
+	// A second authorized resend invalidates a proof that was never exchanged.
+	Expect(db.Exec("UPDATE identity.invitations SET created_at = ? WHERE id = ?", time.Now().UTC().Add(-time.Minute), rotated.ID).Error).NotTo(HaveOccurred())
+	Expect(resend.Execute(requesterCtx, accountID)).To(Succeed())
+	_, err = tokens.Inspect(ctx, rotatedHash, entity.AccountSetup, time.Now().UTC())
+	Expect(err).To(MatchError(tokenrepo.ErrInvalidToken))
+	var current entity.Invitation
+	Expect(db.Where("account_id = ? AND id NOT IN ?", accountID, []string{mail.ID, rotated.ID}).Take(&current).Error).NotTo(HaveOccurred())
+	currentProof := invitationProof(current, cfg.EncryptionKey)
+
+	// Force deterministic claim order without sleeping or touching real transport.
+	Expect(db.Exec("UPDATE identity.invitations SET next_attempt_at = ? WHERE id = ?", time.Now().UTC().Add(-time.Minute), rotated.ID).Error).NotTo(HaveOccurred())
+	transport := &invitationTransport{}
+	transport.fail.Store(true)
+	worker = invitation.NewWorker(mailrepo.New(db), accounts, tokens, locker, assignments, snapshots, transport, cfg)
+	claimed, err = worker.RunOnce(ctx)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(claimed).To(BeTrue())
+	Expect(transport.calls.Load()).To(BeZero())
+	Expect(db.Where("id = ?", rotated.ID).Take(&rotated).Error).NotTo(HaveOccurred())
+	Expect(rotated.SuppressedAt).NotTo(BeNil())
+	Expect(rotated.SentAt).To(BeNil())
+
+	claimed, err = worker.RunOnce(ctx)
+	Expect(claimed).To(BeTrue())
+	Expect(err).To(MatchError(errInvitationTransport))
+	Expect(transport.calls.Load()).To(Equal(int32(1)))
+	Expect(db.Where("id = ?", current.ID).Take(&current).Error).NotTo(HaveOccurred())
+	Expect(current.SentAt).To(BeNil())
+	Expect(current.LeaseUntil).To(BeNil())
+	Expect(current.NextAttemptAt.After(time.Now().UTC())).To(BeTrue())
+	Expect(db.Exec("UPDATE identity.invitations SET next_attempt_at = ? WHERE id = ?", time.Now().UTC().Add(-time.Second), current.ID).Error).NotTo(HaveOccurred())
+	transport.fail.Store(false)
+
+	// Two workers racing for the single due job may send it only once.
+	type deliveryOutcome struct { claimed bool; err error }
+	deliveries := make(chan deliveryOutcome, 2)
+	for range 2 {
+		go func() { claimed, err := worker.RunOnce(ctx); deliveries <- deliveryOutcome{claimed, err} }()
+	}
+	successes = 0
+	for range 2 {
+		result := <-deliveries
+		Expect(result.err).NotTo(HaveOccurred())
+		if result.claimed { successes++ }
+	}
+	Expect(successes).To(Equal(1))
+	Expect(transport.calls.Load()).To(Equal(int32(2)))
+	Expect(db.Where("id = ?", current.ID).Take(&current).Error).NotTo(HaveOccurred())
+	Expect(current.SentAt).NotTo(BeNil())
+	Expect(current.SuppressedAt).To(BeNil())
+	Expect(current.Attempts).To(Equal(2))
+	grant, err = enabledAuth.Exchange(ctx, currentProof, "invitation")
+	Expect(err).NotTo(HaveOccurred())
+
 	stale, err := secrets.NewSecret(32)
 	Expect(err).NotTo(HaveOccurred())
 	staleHash, err := secrets.Digest(stale, 32)
@@ -206,4 +305,36 @@ type setupExchange struct {
 
 func (adapter *setupExchange) Exchange(ctx context.Context, secret string, purpose string) (authservice.Grant, error) {
  return adapter.operation.Execute(ctx, secret, purpose)
+}
+
+var errInvitationTransport = errors.New("injected invitation transport failure")
+
+type invitationTransport struct {
+	integrationclient.Client
+	calls atomic.Int32
+	fail atomic.Bool
+}
+
+func (transport *invitationTransport) ExecuteSystemMail(ctx context.Context, tenantID string, input json.RawMessage) (any, error) {
+	transport.calls.Add(1)
+	if transport.fail.Load() {
+		return nil, errInvitationTransport
+	}
+	return nil, nil
+}
+
+func invitationProof(mail entity.Invitation, key []byte) string {
+	block, err := aes.NewCipher(key)
+	Expect(err).NotTo(HaveOccurred())
+	aead, err := cipher.NewGCM(block)
+	Expect(err).NotTo(HaveOccurred())
+	plain, err := aead.Open(nil, mail.Nonce, mail.Ciphertext, []byte(mail.AccountID))
+	Expect(err).NotTo(HaveOccurred())
+	var content invitation.Encrypted
+	Expect(json.Unmarshal(plain, &content)).To(Succeed())
+	link, err := url.Parse(content.URL)
+	Expect(err).NotTo(HaveOccurred())
+	query, err := url.ParseQuery(link.Fragment)
+	Expect(err).NotTo(HaveOccurred())
+	return query.Get("proof")
 }
