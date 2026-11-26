@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	coregateway "grovehub/libs/core/gateway"
+	schoolgateway "grovehub/libs/schoolgateway"
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/entity"
@@ -12,19 +12,19 @@ import (
 )
 
 func TestAllowed(t *testing.T) {
-	principal := coregateway.Principal{AccountID: "account-1", TenantID: "school-1", SessionID: "session-1"}
-	ctx := coregateway.WithPrincipal(context.Background(), principal)
+	principal := schoolgateway.Principal{AccountID: "account-1", TenantID: "school-1", SessionID: "session-1"}
+	ctx := schoolgateway.WithPrincipal(context.Background(), principal)
 	valid := func() evaluate.Snapshot {
 		return evaluate.Snapshot{
 			AccountID: "account-1",
-			TenantID: "school-1",
-			Status: entity.Active,
+			TenantID:  "school-1",
+			Status:    entity.Active,
 			Roles: []evaluate.RoleGrant{
 				{RoleID: "primary", TenantID: "school-1", Active: true},
 				{RoleID: "secondary", TenantID: "school-1", Active: true, Permissions: []permission.Code{permission.AccountSearch}},
 			},
 			Permissions: map[permission.Code]evaluate.PermissionState{permission.AccountSearch: {Active: true, Feature: feature.AccountManagement}},
-			Features: map[feature.Code]evaluate.FeatureState{feature.AccountManagement: {Active: true, Enabled: true}},
+			Features:    map[feature.Code]evaluate.FeatureState{feature.AccountManagement: {Active: true, Enabled: true}},
 		}
 	}
 
@@ -33,18 +33,26 @@ func TestAllowed(t *testing.T) {
 	}
 
 	cases := map[string]func(*evaluate.Snapshot){
-		"foreign tenant": func(s *evaluate.Snapshot) { s.TenantID = "school-2" },
-		"foreign account": func(s *evaluate.Snapshot) { s.AccountID = "account-2" },
-		"suspended account": func(s *evaluate.Snapshot) { s.Status = entity.Suspended },
+		"foreign tenant":          func(s *evaluate.Snapshot) { s.TenantID = "school-2" },
+		"foreign account":         func(s *evaluate.Snapshot) { s.AccountID = "account-2" },
+		"suspended account":       func(s *evaluate.Snapshot) { s.Status = entity.Suspended },
 		"unregistered permission": func(s *evaluate.Snapshot) { delete(s.Permissions, permission.AccountSearch) },
-		"disabled permission": func(s *evaluate.Snapshot) { s.Permissions[permission.AccountSearch] = evaluate.PermissionState{Feature: feature.AccountManagement} },
-		"missing feature association": func(s *evaluate.Snapshot) { s.Permissions[permission.AccountSearch] = evaluate.PermissionState{Active: true} },
-		"disabled feature": func(s *evaluate.Snapshot) { s.Features[feature.AccountManagement] = evaluate.FeatureState{Active: true} },
-		"inactive feature": func(s *evaluate.Snapshot) { s.Features[feature.AccountManagement] = evaluate.FeatureState{Enabled: true} },
+		"disabled permission": func(s *evaluate.Snapshot) {
+			s.Permissions[permission.AccountSearch] = evaluate.PermissionState{Feature: feature.AccountManagement}
+		},
+		"missing feature association": func(s *evaluate.Snapshot) {
+			s.Permissions[permission.AccountSearch] = evaluate.PermissionState{Active: true}
+		},
+		"disabled feature": func(s *evaluate.Snapshot) {
+			s.Features[feature.AccountManagement] = evaluate.FeatureState{Active: true}
+		},
+		"inactive feature": func(s *evaluate.Snapshot) {
+			s.Features[feature.AccountManagement] = evaluate.FeatureState{Enabled: true}
+		},
 		"missing entitlement": func(s *evaluate.Snapshot) { delete(s.Features, feature.AccountManagement) },
-		"foreign role": func(s *evaluate.Snapshot) { s.Roles[1].TenantID = "school-2" },
-		"inactive role": func(s *evaluate.Snapshot) { s.Roles[1].Active = false },
-		"no matching grant": func(s *evaluate.Snapshot) { s.Roles[1].Permissions = nil },
+		"foreign role":        func(s *evaluate.Snapshot) { s.Roles[1].TenantID = "school-2" },
+		"inactive role":       func(s *evaluate.Snapshot) { s.Roles[1].Active = false },
+		"no matching grant":   func(s *evaluate.Snapshot) { s.Roles[1].Permissions = nil },
 	}
 	for name, mutate := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -72,7 +80,7 @@ func TestAllowed(t *testing.T) {
 		t.Fatal("unexpected feature association must deny access even when enabled")
 	}
 	principal.Admin = true
-	if evaluate.Allowed(coregateway.WithPrincipal(context.Background(), principal), permission.AccountDeactivate, valid()) {
+	if evaluate.Allowed(schoolgateway.WithPrincipal(context.Background(), principal), permission.AccountDeactivate, valid()) {
 		t.Fatal("legacy admin flag must not bypass RBAC")
 	}
 }

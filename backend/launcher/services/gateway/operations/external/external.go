@@ -3,39 +3,40 @@
 package external
 
 import (
-		"crypto/subtle"
+	"crypto/subtle"
+	"log/slog"
 	"net/http"
 	"net/url"
-	"log/slog"
 	"regexp"
 	"strings"
 
 	coregateway "grovehub/libs/core/gateway"
 	httpresponse "grovehub/libs/core/http/response"
+	schoolgateway "grovehub/libs/schoolgateway"
 	integrationprincipal "grovehub/services/integration/client/principal"
 )
 
 var tierPattern = regexp.MustCompile(`^/[a-z][a-z0-9-]*/(public|protected|restricted)(/|$)`)
 
 type Operation struct {
-	mux *http.ServeMux
-	access coregateway.AccessVerifier
+	mux       *http.ServeMux
+	access    schoolgateway.AccessVerifier
 	workloads coregateway.WorkloadVerifier
-	origin string
-	limiter *Limiter
+	origin    string
+	limiter   *Limiter
 }
 
-func New(mux *http.ServeMux, access coregateway.AccessVerifier, workload coregateway.WorkloadVerifier, allowedOrigin string, limits ...map[string]int) *Operation {
+func New(mux *http.ServeMux, access schoolgateway.AccessVerifier, workload coregateway.WorkloadVerifier, allowedOrigin string, limits ...map[string]int) *Operation {
 	configured := map[string]int{}
 	if len(limits) > 0 {
 		configured = limits[0]
 	}
 	return &Operation{
-		mux: mux,
-		access: access,
+		mux:       mux,
+		access:    access,
 		workloads: workload,
-		origin: allowedOrigin,
-		limiter: NewLimiter(configured),
+		origin:    allowedOrigin,
+		limiter:   NewLimiter(configured),
 	}
 }
 
@@ -83,7 +84,7 @@ func (operation *Operation) ServeHTTP(writer http.ResponseWriter, request *http.
 			operation.reject(writer, request, http.StatusUnauthorized)
 			return
 		}
-		token, err := request.Cookie(coregateway.AccessCookie)
+		token, err := request.Cookie(schoolgateway.AccessCookie)
 		if err != nil {
 			operation.reject(writer, request, http.StatusUnauthorized)
 			return
@@ -98,7 +99,7 @@ func (operation *Operation) ServeHTTP(writer http.ResponseWriter, request *http.
 			return
 		}
 
-		ctx := coregateway.WithPrincipal(request.Context(), principal)
+		ctx := schoolgateway.WithPrincipal(request.Context(), principal)
 		if principal.TenantID != "" && principal.PersonGID != "" {
 			ctx = integrationprincipal.WithVerifiedPrincipal(ctx, integrationprincipal.VerifiedPrincipal{
 				TenantID: principal.TenantID,
@@ -164,7 +165,7 @@ func requiresCSRF(request *http.Request) bool {
 }
 
 func validCSRF(request *http.Request) bool {
-	cookie, err := request.Cookie(coregateway.CSRFName)
+	cookie, err := request.Cookie(schoolgateway.CSRFName)
 	if err != nil {
 		return false
 	}
@@ -181,7 +182,6 @@ func (operation *Operation) reject(writer http.ResponseWriter, request *http.Req
 	// writer so the error envelope stays consistent across services.
 	_ = httpresponse.WriteErrorContext(request.Context(), writer, status, gatewayDefinition(status))
 }
-
 
 // rejectForbidden records a diagnostic reason only in backend logs. The HTTP
 // response remains intentionally generic and never reveals policy internals.

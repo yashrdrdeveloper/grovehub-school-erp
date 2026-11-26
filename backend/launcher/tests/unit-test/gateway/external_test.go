@@ -6,20 +6,20 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	coregateway "grovehub/libs/core/gateway"
 	external "grovehub/launcher/services/gateway/operations/external"
+	schoolgateway "grovehub/libs/schoolgateway"
 )
 
 type accessVerifier struct{}
 
-func (accessVerifier) VerifyAccess(_ context.Context, secret string) (coregateway.Principal, error) {
+func (accessVerifier) VerifyAccess(_ context.Context, secret string) (schoolgateway.Principal, error) {
 	if secret != "test-secret" {
-		return coregateway.Principal{}, context.Canceled
+		return schoolgateway.Principal{}, context.Canceled
 	}
-	return coregateway.Principal{
+	return schoolgateway.Principal{
 		AccountID: "account",
 		PersonGID: "person",
-		TenantID: "tenant",
+		TenantID:  "tenant",
 		SessionID: "session",
 	}, nil
 }
@@ -27,7 +27,7 @@ func (accessVerifier) VerifyAccess(_ context.Context, secret string) (coregatewa
 func TestProtectedWildcardRoutingPreservesPathValues(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /foundation/protected/persons/{gid}", func(w http.ResponseWriter, r *http.Request) {
-		principal, ok := coregateway.PrincipalFrom(r.Context())
+		principal, ok := schoolgateway.PrincipalFrom(r.Context())
 		if !ok || principal.AccountID != "account" || r.PathValue("gid") != "p-123" {
 			t.Error("verified principal or wildcard binding was lost")
 		}
@@ -36,7 +36,7 @@ func TestProtectedWildcardRoutingPreservesPathValues(t *testing.T) {
 
 	gateway := external.New(mux, accessVerifier{}, nil, "https://app.example.test")
 	request := httptest.NewRequest(http.MethodGet, "/foundation/protected/persons/p-123", nil)
-	request.AddCookie(&http.Cookie{Name: coregateway.AccessCookie, Value: "test-secret"})
+	request.AddCookie(&http.Cookie{Name: schoolgateway.AccessCookie, Value: "test-secret"})
 	recorder := httptest.NewRecorder()
 	gateway.ServeHTTP(recorder, request)
 
@@ -57,7 +57,7 @@ func TestUnknownAndRestrictedRoutesFailClosed(t *testing.T) {
 	gateway := external.New(mux, accessVerifier{}, nil, "https://app.example.test")
 	for _, tc := range []struct {
 		method string
-		path string
+		path   string
 	}{
 		{http.MethodGet, "/unclassified"},
 		{http.MethodPost, "/integrations/restricted/webhooks/gmail"},
@@ -109,27 +109,31 @@ func TestRateLimitUsesProvidedExactMethodAndRoute(t *testing.T) {
 }
 
 func TestLocalViteLoopbackOriginsShareSamePort(t *testing.T) {
-  mux := http.NewServeMux()
-  mux.HandleFunc("POST /identity/public/auth/invitations/exchange", func(w http.ResponseWriter, _ *http.Request) {
-    w.WriteHeader(http.StatusOK)
-  })
-  gateway := external.New(mux, accessVerifier{}, nil, "http://127.0.0.1:4173")
-  cases := []struct {
-    origin string
-    status int
-  }{
-    {"http://localhost:4173", http.StatusOK},
-    {"http://127.0.0.1:4173", http.StatusOK},
-    {"http://localhost:4174", http.StatusForbidden},
-    {"https://localhost:4173", http.StatusForbidden},
-    {"http://evil.example:4173", http.StatusForbidden},
-    {"", http.StatusForbidden},
-  }
-  for _, tc := range cases {
-    request := httptest.NewRequest(http.MethodPost, "/identity/public/auth/invitations/exchange", nil)
-    if tc.origin != "" { request.Header.Set("Origin", tc.origin) }
-    recorder := httptest.NewRecorder()
-    gateway.ServeHTTP(recorder, request)
-    if recorder.Code != tc.status { t.Errorf("origin %q: expected %d, got %d", tc.origin, tc.status, recorder.Code) }
-  }
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST /identity/public/auth/invitations/exchange", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+	gateway := external.New(mux, accessVerifier{}, nil, "http://127.0.0.1:4173")
+	cases := []struct {
+		origin string
+		status int
+	}{
+		{"http://localhost:4173", http.StatusOK},
+		{"http://127.0.0.1:4173", http.StatusOK},
+		{"http://localhost:4174", http.StatusForbidden},
+		{"https://localhost:4173", http.StatusForbidden},
+		{"http://evil.example:4173", http.StatusForbidden},
+		{"", http.StatusForbidden},
+	}
+	for _, tc := range cases {
+		request := httptest.NewRequest(http.MethodPost, "/identity/public/auth/invitations/exchange", nil)
+		if tc.origin != "" {
+			request.Header.Set("Origin", tc.origin)
+		}
+		recorder := httptest.NewRecorder()
+		gateway.ServeHTTP(recorder, request)
+		if recorder.Code != tc.status {
+			t.Errorf("origin %q: expected %d, got %d", tc.origin, tc.status, recorder.Code)
+		}
+	}
 }

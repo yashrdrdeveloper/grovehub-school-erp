@@ -5,15 +5,15 @@ package cookies
 import (
 	"net/http"
 
-	coregateway "grovehub/libs/core/gateway"
+	schoolgateway "grovehub/libs/schoolgateway"
 )
 
 const (
-	AccessCookie = coregateway.AccessCookie
-	RefreshCookie = coregateway.RefreshCookie
-	CSRFName = coregateway.CSRFName
-	ResetCookie = coregateway.ResetCookie
-	SetupCookie = coregateway.SetupCookie
+	AccessCookie  = schoolgateway.AccessCookie
+	RefreshCookie = schoolgateway.RefreshCookie
+	CSRFName      = schoolgateway.CSRFName
+	ResetCookie   = schoolgateway.ResetCookie
+	SetupCookie   = schoolgateway.SetupCookie
 )
 
 // Manager is the resource transport interface implemented in impl/.

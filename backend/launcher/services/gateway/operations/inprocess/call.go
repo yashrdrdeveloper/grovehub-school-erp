@@ -6,12 +6,12 @@ import (
 	"context"
 	"errors"
 
-	coregateway "grovehub/libs/core/gateway"
+	schoolgateway "grovehub/libs/schoolgateway"
 )
 
 // Authorizer decides whether a verified actor may invoke an internal operation.
 type Authorizer interface {
-	Authorize(ctx context.Context, principal coregateway.Principal, operation string) error
+	Authorize(ctx context.Context, principal schoolgateway.Principal, operation string) error
 }
 
 type Operation struct {
@@ -23,7 +23,7 @@ func New(authorizer Authorizer) *Operation {
 }
 
 func (gateway *Operation) Call(ctx context.Context, name string, invoke func(context.Context) error) error {
-	principal, ok := coregateway.PrincipalFrom(ctx)
+	principal, ok := schoolgateway.PrincipalFrom(ctx)
 	if !ok {
 		return errors.New("trusted gateway principal is required")
 	}
