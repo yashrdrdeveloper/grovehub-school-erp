@@ -10,6 +10,11 @@ import (
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/repository/authority"
+	"grovehub/services/identity/internal/app/constants/persona"
+	"grovehub/services/identity/internal/app/entity"
+	rolerepo "grovehub/services/identity/internal/app/repository/role"
+	roleimpl "grovehub/services/identity/internal/app/repository/role/impl"
+	"grovehub/services/identity/internal/app/services/role/operations/lifecycle"
 	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
 	registryimpl "grovehub/services/identity/internal/app/repository/registry/impl"
 	"grovehub/services/identity/internal/app/services/authorization/operations/protect"
@@ -71,6 +76,38 @@ func verifyAdministratorGuard(ctx context.Context, db *gorm.DB) {
 	count, err = reader.Count(ctx, tenant)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(count).To(Equal(int64(1)))
+	roles := roleimpl.New(db)
+	draft, err := roles.CreateDraft(ctx, rolerepo.Draft{TenantID: tenant, ActorID: first, Name: "Lifecycle fixture", Personas: []persona.Code{persona.Teacher}})
+	Expect(err).NotTo(HaveOccurred())
+	operation := lifecycle.New(guard, roleimpl.NewLifecycleWriter(db))
+	transition := rolerepo.Transition{TenantID: tenant, ActorID: first, RoleID: draft.Role.RoleID, Version: 1, Status: entity.RoleActive}
+	_, err = operation.Execute(ctx, transition)
+	Expect(err).To(MatchError(rolerepo.ErrNotReady))
+	_, err = roleimpl.NewDraftWriter(db).ReplaceDraftPermissions(ctx, rolerepo.DraftPermissionUpdate{TenantID: tenant, ActorID: first, RoleID: draft.Role.RoleID, Version: 1, Codes: []permission.Code{permission.RolePermissionManage}})
+	Expect(err).NotTo(HaveOccurred())
+	transition.Version = 2
+	active, err := operation.Execute(ctx, transition)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(active.Role.Status).To(Equal(entity.RoleActive))
+	Expect(active.Role.Version).To(Equal(int64(3)))
+	_, err = operation.Execute(ctx, transition)
+	Expect(err).To(MatchError(rolerepo.ErrVersionConflict))
+	transition.Version = 3
+	_, err = operation.Execute(ctx, transition)
+	Expect(err).To(MatchError(rolerepo.ErrInvalidTransition))
+	transition.Status = entity.RoleInactive
+	Expect(db.Exec("INSERT INTO identity.account_roles(tenant_id, account_id, role_id, assignment_type) VALUES (?, ?, ?, 'SECONDARY')", tenant, first, transition.RoleID).Error).NotTo(HaveOccurred())
+	_, err = operation.Execute(ctx, transition)
+	Expect(err).To(MatchError(rolerepo.ErrAssigned))
+	Expect(db.Exec("DELETE FROM identity.account_roles WHERE tenant_id = ? AND role_id = ?", tenant, transition.RoleID).Error).NotTo(HaveOccurred())
+	inactive, err := operation.Execute(ctx, transition)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(inactive.Role.Status).To(Equal(entity.RoleInactive))
+	Expect(inactive.Role.Version).To(Equal(int64(4)))
+	transition.RoleID = grants
+	transition.Version = 1
+	_, err = operation.Execute(ctx, transition)
+	Expect(err).To(MatchError(rolerepo.ErrAssigned))
 	count, err = reader.Count(ctx, "foreign-guard-school")
 	Expect(err).NotTo(HaveOccurred())
 	Expect(count).To(BeZero())
