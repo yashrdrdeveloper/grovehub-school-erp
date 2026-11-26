@@ -54,3 +54,18 @@ var _ = Describe("NormalizeID", func() {
 		}
 	})
 })
+
+var _ = Describe("NormalizeUpdateMetadata", func() {
+	It("normalizes complete metadata and preserves the expected version", func() {
+		result, err := rolevalidator.NormalizeUpdateMetadata(roledto.UpdateMetadata{Name: " Teacher ", Personas: []persona.Code{persona.Teacher}, Version: 2})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(result.Name).To(Equal("Teacher"))
+		Expect(result.Version).To(Equal(int64(2)))
+	})
+	It("rejects nonpositive versions and invalid metadata", func() {
+		_, err := rolevalidator.NormalizeUpdateMetadata(roledto.UpdateMetadata{})
+		Expect(err).To(MatchError(rolevalidator.ErrInvalidVersion))
+		_, err = rolevalidator.NormalizeUpdateMetadata(roledto.UpdateMetadata{Version: 1})
+		Expect(err).To(MatchError(rolevalidator.ErrInvalidDraft))
+	})
+})

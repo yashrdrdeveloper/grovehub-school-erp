@@ -45,6 +45,7 @@ func (auth *authorizer) Effective(ctx context.Context) ([]permission.Code, error
 
 type repository struct {
 	draft rolerepo.Draft
+	update rolerepo.MetadataUpdate
 	tenant string
 	id string
 	calls int
@@ -62,6 +63,12 @@ func (repo *repository) FindByID(ctx context.Context, tenantID string, roleID st
 	repo.tenant = tenantID
 	repo.id = roleID
 	return rolerepo.Detail{Role: entity.Role{RoleID: roleID, Status: entity.RoleInactive}}, repo.err
+}
+
+func (repo *repository) UpdateMetadata(ctx context.Context, update rolerepo.MetadataUpdate) (rolerepo.Detail, error) {
+	repo.calls++
+	repo.update = update
+	return rolerepo.Detail{Role: entity.Role{RoleID: update.RoleID, Name: update.Name, Version: update.Version + 1}, Personas: update.Personas}, repo.err
 }
 
 var repo *repository
@@ -132,6 +139,36 @@ var _ = Describe("Get", func() {
 		repo.err = rolerepo.ErrNotFound
 		result, err := service.Get(ctx, roleID)
 		Expect(err).To(MatchError(rolerepo.ErrNotFound))
+		Expect(result).To(Equal(roledto.Detail{}))
+	})
+})
+
+var _ = Describe("UpdateMetadata", func() {
+	It("requires role update and passes scoped metadata and expected version", func() {
+		result, err := service.UpdateMetadata(ctx, roleID, roledto.UpdateMetadata{Name: " Teacher ", Personas: []persona.Code{persona.Teacher}, Version: 4})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(auth.code).To(Equal(permission.RoleUpdate))
+		Expect(repo.update.TenantID).To(Equal("school-a"))
+		Expect(repo.update.ActorID).To(Equal(actorID))
+		Expect(repo.update.Name).To(Equal("Teacher"))
+		Expect(repo.update.Version).To(Equal(int64(4)))
+		Expect(result.Version).To(Equal(int64(5)))
+	})
+	It("rejects forbidden and invalid updates without persistence", func() {
+		request := roledto.UpdateMetadata{Name: "Teacher", Personas: []persona.Code{persona.Teacher}, Version: 1}
+		auth.err = authorization.ErrForbidden
+		_, err := service.UpdateMetadata(ctx, roleID, request)
+		Expect(err).To(MatchError(authorization.ErrForbidden))
+		auth.err = nil
+		request.Version = 0
+		_, err = service.UpdateMetadata(ctx, roleID, request)
+		Expect(err).To(MatchError(rolevalidator.ErrInvalidVersion))
+		Expect(repo.calls).To(BeZero())
+	})
+	It("returns no success response on a stale write", func() {
+		repo.err = rolerepo.ErrVersionConflict
+		result, err := service.UpdateMetadata(ctx, roleID, roledto.UpdateMetadata{Name: "Teacher", Personas: []persona.Code{persona.Teacher}, Version: 1})
+		Expect(err).To(MatchError(rolerepo.ErrVersionConflict))
 		Expect(result).To(Equal(roledto.Detail{}))
 	})
 })

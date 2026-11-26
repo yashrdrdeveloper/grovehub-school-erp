@@ -73,3 +73,29 @@ func (service *Service) Get(ctx context.Context, roleID string) (roledto.Detail,
 	}
 	return rolemapper.ToDetail(detail), nil
 }
+
+func (service *Service) UpdateMetadata(ctx context.Context, roleID string, request roledto.UpdateMetadata) (roledto.Detail, error) {
+	actor, err := service.authorize(ctx, permission.RoleUpdate)
+	if err != nil {
+		return roledto.Detail{}, err
+	}
+	roleID, err = rolevalidator.NormalizeID(roleID)
+	if err != nil {
+		return roledto.Detail{}, err
+	}
+	request, err = rolevalidator.NormalizeUpdateMetadata(request)
+	if err != nil {
+		return roledto.Detail{}, err
+	}
+	detail, err := service.repository.UpdateMetadata(ctx, rolerepo.MetadataUpdate{
+		Draft: rolerepo.Draft{
+			TenantID: actor.TenantID, ActorID: actor.AccountID, Name: request.Name,
+			Description: request.Description, Personas: request.Personas,
+		},
+		RoleID: roleID, Version: request.Version,
+	})
+	if err != nil {
+		return roledto.Detail{}, err
+	}
+	return rolemapper.ToDetail(detail), nil
+}

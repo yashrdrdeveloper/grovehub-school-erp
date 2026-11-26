@@ -12,3 +12,9 @@ const FindDetail = `SELECT r.*, COALESCE(
      FROM identity.role_personas p WHERE p.tenant_id = r.tenant_id AND p.role_id = r.role_id),
     '[]') AS persona_json
 FROM identity.roles r WHERE r.tenant_id = ? AND r.role_id = ?`
+
+const UpdateMetadata = `UPDATE identity.roles SET name = ?, normalized_name = ?, description = ?,
+search_details = ?, updated_by = ?, updated_at = now(), version = version + 1
+WHERE tenant_id = ? AND role_id = ? AND version = ?`
+
+const DeletePersonas = `DELETE FROM identity.role_personas WHERE tenant_id = ? AND role_id = ?`

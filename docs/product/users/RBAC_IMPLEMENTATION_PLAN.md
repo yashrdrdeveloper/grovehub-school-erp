@@ -178,3 +178,7 @@ Added the internal role entity and tenant-scoped repository for atomic, inactive
 ## Role service checkpoint
 
 Added internal CreateDraft and Get operations, separate DTOs, validation, response mapping and bootstrap wiring with the existing live authorization service. Tenant and creator come from verified principal only; create requires IDENTITY_ROLE_CREATE and detail requires IDENTITY_ROLE_VIEW. Name and description limits are provisionally 120 and 1000 Unicode code points. Inactive drafts only; no activation, grants, approval or endpoint exposure. Added service and validator Ginkgo tests. CI verification pending. Next: versioned metadata edits and scoped search; then permission delegation and approval/outbox before exposure.
+
+## Versioned role metadata checkpoint
+
+Internal UpdateMetadata requires IDENTITY_ROLE_UPDATE and a positive expected version. It replaces name, description and complete persona set atomically with a tenant/role/version predicate and version increment. Status, grants and assignments are untouched. Missing or foreign IDs are not found; stale versions conflict. Added service/validator tests and PostgreSQL assertions for tenant boundaries, persona replacement and two concurrent edits with a single winner. Full replacement is internal only, not a final PATCH contract. CI pending. Search, outbox, approval and grant management remain outstanding.

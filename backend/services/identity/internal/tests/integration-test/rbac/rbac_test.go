@@ -85,6 +85,45 @@ var _ = Describe("RBAC persistence against PostgreSQL", func() {
 		Expect(db.Raw("SELECT count(*) FROM identity.role_permissions").Scan(&draftCount).Error).NotTo(HaveOccurred())
 		Expect(draftCount).To(BeZero())
 
+		update := rolerepo.MetadataUpdate{
+			Draft: rolerepo.Draft{TenantID: "school-a", ActorID: actorID, Name: "Lead Teacher", Personas: []persona.Code{persona.Teacher}},
+			RoleID: createdRole.Role.RoleID, Version: 1,
+		}
+		updatedRole, err := roles.UpdateMetadata(ctx, update)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(updatedRole.Role.Version).To(Equal(int64(2)))
+		Expect(updatedRole.Role.Status).To(Equal(entity.RoleInactive))
+		Expect(updatedRole.Personas).To(Equal([]persona.Code{persona.Teacher}))
+		_, err = roles.UpdateMetadata(ctx, update)
+		Expect(err).To(MatchError(rolerepo.ErrVersionConflict))
+		update.TenantID = "school-b"
+		update.Version = 2
+		_, err = roles.UpdateMetadata(ctx, update)
+		Expect(err).To(MatchError(rolerepo.ErrNotFound))
+		update.TenantID = "school-a"
+		update.Name = "Concurrent edit"
+		type outcome struct { err error }
+		outcomes := make(chan outcome, 2)
+		for range 2 {
+			go func() {
+				_, err := roles.UpdateMetadata(ctx, update)
+				outcomes <- outcome{err: err}
+			}()
+		}
+		successes := 0
+		for range 2 {
+			result := <-outcomes
+			if result.err == nil {
+				successes++
+			} else {
+				Expect(result.err).To(MatchError(rolerepo.ErrVersionConflict))
+			}
+		}
+		Expect(successes).To(Equal(1))
+		updatedRole, err = roles.FindByID(ctx, "school-a", createdRole.Role.RoleID)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(updatedRole.Role.Version).To(Equal(int64(3)))
+
 		catalog := registryservice.New(registryimpl.New(db))
 		authorizer := authorizationimpl.New(authorizationrepo.New(db))
 		request := registry.Request{

@@ -46,3 +46,19 @@ func NormalizeID(value string) (string, error) {
 	}
 	return identifier.String(), nil
 }
+
+var ErrInvalidVersion = errors.New("invalid role version")
+
+func NormalizeUpdateMetadata(request roledto.UpdateMetadata) (roledto.UpdateMetadata, error) {
+	if request.Version < 1 {
+		return roledto.UpdateMetadata{}, ErrInvalidVersion
+	}
+	draft, err := NormalizeCreateDraft(roledto.CreateDraft{Name: request.Name, Description: request.Description, Personas: request.Personas})
+	if err != nil {
+		return roledto.UpdateMetadata{}, err
+	}
+	request.Name = draft.Name
+	request.Description = draft.Description
+	request.Personas = draft.Personas
+	return request, nil
+}

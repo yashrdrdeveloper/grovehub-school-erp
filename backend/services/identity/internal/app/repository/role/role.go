@@ -13,6 +13,7 @@ var (
 	ErrInvalidDraft  = errors.New("invalid role draft")
 	ErrNotFound      = errors.New("role not found")
 	ErrConflict      = errors.New("role name already exists")
+	ErrVersionConflict = errors.New("role version conflict")
 )
 
 // Draft cannot carry an active status, permissions or account assignments.
@@ -24,6 +25,13 @@ type Draft struct {
 	Personas    []persona.Code
 }
 
+// MetadataUpdate replaces metadata only; grants and lifecycle are untouched.
+type MetadataUpdate struct {
+	Draft
+	RoleID string
+	Version int64
+}
+
 type Detail struct {
 	Role     entity.Role
 	Personas []persona.Code
@@ -33,4 +41,5 @@ type Detail struct {
 type Repository interface {
 	CreateDraft(ctx context.Context, draft Draft) (Detail, error)
 	FindByID(ctx context.Context, tenantID string, roleID string) (Detail, error)
+	UpdateMetadata(ctx context.Context, update MetadataUpdate) (Detail, error)
 }

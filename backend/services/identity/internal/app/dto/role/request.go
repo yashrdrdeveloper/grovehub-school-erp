@@ -8,3 +8,11 @@ type CreateDraft struct {
 	Description string         `json:"description"`
 	Personas    []persona.Code `json:"personas"`
 }
+
+// UpdateMetadata replaces the complete metadata set at the expected version.
+type UpdateMetadata struct {
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
+	Personas    []persona.Code `json:"personas"`
+	Version     int64          `json:"version"`
+}
