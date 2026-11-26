@@ -15,17 +15,18 @@ import { TableDensity, TablePin } from '../Table/constants/table.type';
 import styles from './ColumnManager.module.css';
 import type { ColumnManagerProps } from './types/columnManager.props';
 
-export const ColumnManager = ({ options, density, onToggle, onDensityChange, onReset, onReorder, onPin, maxPinnedColumns = 3, dataTestId }: ColumnManagerProps) => {
+export const ColumnManager = ({ options, density, onToggle, onDensityChange, onReset, onReorder, onPin, maxPinnedColumns = 3, dataTestId, mobileMenu, mobileList }: ColumnManagerProps) => {
   const [open, setOpen] = useState(false);
   const isLocked = (option: ColumnManagerProps['options'][number]) => Boolean(option.pin && option.pin !== TablePin.NONE);
   const lockedCount = options.filter(isLocked).length;
   return (
     <Box dataTestId={dataTestId}>
       <Popover open={open} onOpenChange={setOpen} title={__('Table settings')} width={320} compact trigger={
-        <Tooltip label={__('Table settings')}><ButtonWithIcon icon={Settings} iconSize={16} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} aria-label={__('Table settings')} aria-expanded={open} onClick={() => setOpen(true)} /></Tooltip>
+        <Tooltip label={__('Table settings')}><ButtonWithIcon icon={Settings} iconSize={16} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} aria-label={__('Table settings')} aria-expanded={open} onClick={() => setOpen(true)}>{mobileMenu && __('Table settings')}</ButtonWithIcon></Tooltip>
       }>
         <Box className={styles.content}>
           <Select label={__('View')} value={density} clearable={false} searchable={false} options={[{value: TableDensity.COMPACT, label: __('Compact')}, {value: TableDensity.DEFAULT, label: __('Default')}, {value: TableDensity.COMFORTABLE, label: __('Comfortable')}]} onChange={(value) => { if (value) onDensityChange(value); }} />
+          {mobileList && <Box className={styles.hint}>{__('Mobile rows use a compact layout. Column settings apply to the desktop table.')}</Box>}
           <Box className={styles.heading}>{__('Columns')}</Box>
           <Box className={styles.hint}>{__('Drag to reorder · {{count}}/{{max}} locked', { count: lockedCount, max: maxPinnedColumns })}</Box>
           <DragList items={options} getItemId={(option) => option.id} label={__('Column order')} disabled={!onReorder}

@@ -33,3 +33,17 @@
   background: var(--gh-color-accent-hover);
   color: var(--gh-color-table-action-text);
 }
+
+@media (max-width: 640px) {
+  .header { flex-wrap: nowrap; gap: var(--gh-space-2); }
+  .header > :first-child { min-width: 0; }
+  .title { font-size: var(--gh-text-lg); }
+  .description, .iconActionLabel { display: none; }
+  .actions { flex: 0 0 auto; }
+  .actions button:has(.iconActionLabel) {
+    width: var(--gh-control-height-md);
+    min-width: var(--gh-control-height-md);
+    height: var(--gh-control-height-md);
+    padding: 0;
+  }
+}

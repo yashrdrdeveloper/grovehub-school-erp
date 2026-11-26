@@ -24,4 +24,6 @@ export interface ColumnManagerProps {
   readonly onPin?: (id: string, pin: ColumnPin) => void;
   readonly onReset: () => void;
   readonly dataTestId?: string;
+  readonly mobileMenu?: boolean;
+  readonly mobileList?: boolean;
 }

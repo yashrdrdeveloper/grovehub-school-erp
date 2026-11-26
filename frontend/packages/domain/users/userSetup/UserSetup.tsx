@@ -11,6 +11,9 @@ import { USER_SETUP_HEADER } from './constants/userSetup.header';
 import { USER_SETUP_ROW_ACTIONS } from './constants/userSetup.rowActions';
 import { USER_SETUP_SORT_FIELDS } from './constants/userSetup.sort';
 import { USER_SETUP_TEST_IDS } from './constants/userSetup.testIds';
+import { renderUserMobileRow } from './renderer/userSetup.mobileRow';
+import { renderCreatedAt, renderUpdatedAt } from './renderer/userSetup.timestamps';
+import { renderUserStatus } from './renderer/userSetup.status';
 import { getUserSetupRowId } from './helpers/userSetup.getRowId';
 import styles from './UserSetup.module.css';
 import type { UserSetupProps } from './types/userSetup.props';
@@ -41,7 +44,9 @@ export const UserSetup = ({ controls }: UserSetupProps) => {
         columns={USER_SETUP_COLUMNS}
         getRowId={getUserSetupRowId}
         headerProps={USER_SETUP_HEADER}
-        searchProps={{ value: state.searchText, placeholder: __('Search by username or email...'), fields: [__('Username'), __('Email address')] }}
+        mobileRowProps={{ render: renderUserMobileRow, onClick: (row) => controls.actions.ROW_ACTION?.({ id: UserAction.VIEW, row }) }}
+        mobileInfiniteProps={controls.mobileInfiniteProps}
+        searchProps={{ value: state.searchText, placeholder: __('Search by username or email...'), mobilePlaceholder: __('Search users...'), fields: [__('Username'), __('Email address')] }}
         filterProps={{ fields: USER_SETUP_FILTERS, value: state.filters, maxFilters: USER_SETUP_FILTERS.length }}
         sortProps={{ fields: USER_SETUP_SORT_FIELDS, value: state.sorting, maxFields: USER_SETUP_SORT_FIELDS.length }}
         paginationProps={controls.pagination}
@@ -59,7 +64,10 @@ export const UserSetup = ({ controls }: UserSetupProps) => {
           <Box className={styles.details}>
             <Box>{dialog.row.email}</Box>
             <Box>{dialog.row.username ?? '—'}</Box>
-            <Box>{dialog.row.status}</Box>
+            <Box>{renderUserStatus(dialog.row)}</Box>
+            <Box>{__('Created at')}: {renderCreatedAt(dialog.row)}</Box>
+            <Box>{__('Updated at')}: {renderUpdatedAt(dialog.row)}</Box>
+            <Button onClick={() => { if (dialog.row) controls.actions.ROW_ACTION?.({ id: UserAction.EDIT, row: dialog.row }); }}>{__('Edit user')}</Button>
           </Box>
         </Sheet>
       )}

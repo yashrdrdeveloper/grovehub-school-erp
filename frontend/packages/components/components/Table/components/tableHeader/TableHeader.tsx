@@ -9,7 +9,7 @@ import type { TableHeaderViewProps } from './types/tableHeader.props';
 
 export const TableHeader = ({ title, description, leftConfig, rightConfig, onAction }: TableHeaderViewProps) => {
   const actions = (items: TableHeaderViewProps['rightConfig']) => _map(items ?? [], (item) => {
-    if (item.icon) return <ButtonWithIcon key={item.id} icon={item.icon} disabled={item.disabled} onClick={() => onAction?.(item.id)}>{item.label}</ButtonWithIcon>;
+    if (item.icon) return <ButtonWithIcon key={item.id} icon={item.icon} disabled={item.disabled} aria-label={item.label} onClick={() => onAction?.(item.id)}><Box as={BOX_TAG.SPAN} className={styles.iconActionLabel}>{item.label}</Box></ButtonWithIcon>;
     return <Button key={item.id} disabled={item.disabled} onClick={() => onAction?.(item.id)}>{item.label}</Button>;
   });
   return (

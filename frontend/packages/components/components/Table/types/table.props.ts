@@ -78,6 +78,7 @@ export interface TableSearchProps {
   readonly value: string;
   readonly placeholder?: string;
   readonly debounceMs?: number;
+  readonly mobilePlaceholder?: string;
   /** Explicit searchable fields for server data; never inferred from visible columns. */
   readonly fields?: readonly string[];
 }
@@ -137,6 +138,18 @@ type TableCommonProps<T> = {
   readonly matchesQuickFilter?: (row: T, values: readonly string[]) => boolean;
   readonly paginationProps?: WithoutChange<PaginationProps>;
   readonly rowActions?: readonly TableRowAction<T>[];
+  readonly mobileRowProps?: {
+    readonly render: (row: T) => ReactNode;
+    readonly onClick?: (row: T) => void;
+    readonly rowActions?: readonly TableRowAction<T>[];
+  };
+  /** Server-owned cursor accumulation; desktop pagination is independent. */
+  readonly mobileInfiniteProps?: {
+    readonly hasNext: boolean;
+    readonly loading: boolean;
+    readonly error?: boolean;
+    readonly resetKey: string;
+  };
   readonly selectionProps?: TableSelectionProps<T>;
   readonly bulkActions?: readonly TableHeaderAction[];
   readonly fillHeight?: boolean;

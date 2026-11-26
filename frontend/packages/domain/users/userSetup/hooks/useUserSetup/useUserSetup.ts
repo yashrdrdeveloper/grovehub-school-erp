@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { usersApi } from '@Business/domain/users';
 import { useAuth } from '@Domain/auth';
+import { useMobileViewport } from '@Components/hooks/useMobileViewport';
 import { PaginationType } from '@Components/components/Pagination';
 import type { PaginationAction, PaginationProps } from '@Components/components/Pagination';
 import type { TableActions } from '@Components/components/Table';
@@ -16,6 +17,7 @@ import type { UserSetupDialog, UserSetupQueryState } from '../../types/userSetup
 export const useUserSetup = () => {
   const { account } = useAuth();
   const queryClient = useQueryClient();
+  const mobile = useMobileViewport();
   const [state, setState] = useState<UserSetupQueryState>({
     searchText: '',
     filters: [],
@@ -31,8 +33,25 @@ export const useUserSetup = () => {
   const query = useQuery({
     queryKey: [...scope, request],
     queryFn: () => usersApi.search(request),
-    enabled: Boolean(account),
+    enabled: Boolean(account) && !mobile,
   });
+  const mobileRequest = getUserSetupSearchRequest({ ...state, pageNumber: 1, cursors: {} });
+  const mobileQuery = useInfiniteQuery({
+    queryKey: [...scope, 'mobile', mobileRequest],
+    initialPageParam: { pageNumber: 1, cursor: undefined as string | undefined },
+    queryFn: ({ pageParam }) => usersApi.search({ ...mobileRequest, pageInfo: { ...mobileRequest.pageInfo, ...pageParam } }),
+    getNextPageParam: (last, _pages, previous) => {
+      const cursor = last.pageInfo.nextCursor;
+      if (!last.pageInfo.hasNext || !cursor || cursor === previous.cursor) return undefined;
+      return { pageNumber: previous.pageNumber + 1, cursor };
+    },
+    enabled: Boolean(account) && mobile,
+  });
+  const mobileRows = Array.from(new Map((mobileQuery.data?.pages ?? []).flatMap((page) => page.items).map((row) => [row.accountId, row])).values());
+  const refresh = () => {
+    if (mobile) { void mobileQuery.refetch(); return; }
+    void query.refetch();
+  };
   const mutation = useMutation({
     mutationFn: async (operation: () => Promise<unknown>) => operation(),
     onSuccess: async () => {
@@ -90,8 +109,11 @@ export const useUserSetup = () => {
     SORT: (sorting) => resetQuery({ sorting }),
     QUICK_FILTER: (quickFilterIds) => resetQuery({ quickFilterIds }),
     PAGINATION: paginate,
-    REFRESH: () => { void query.refetch(); },
-    RETRY: () => { void query.refetch(); },
+    REFRESH: refresh,
+    RETRY: refresh,
+    LOAD_MORE: () => {
+      if (mobile && mobileQuery.hasNextPage && !mobileQuery.isFetching) void mobileQuery.fetchNextPage({ cancelRefetch: false });
+    },
     HEADER_ACTION: (id) => {
       if (id === UserAction.CREATE) openDialog({ action: UserAction.CREATE });
     },
@@ -130,11 +152,17 @@ export const useUserSetup = () => {
 
   return {
     state, actions, dialog, closeDialog, create, edit, confirm, pagination,
-    totalRecords: query.data?.pageInfo.totalRecords,
-    data: query.data?.items ?? [],
-    loading: query.isPending,
-    refreshing: query.isFetching,
-    error: query.isError,
+    totalRecords: mobile ? mobileQuery.data?.pages[0]?.pageInfo.totalRecords : query.data?.pageInfo.totalRecords,
+    data: mobile ? mobileRows : query.data?.items ?? [],
+    loading: mobile ? mobileQuery.isPending : query.isPending,
+    refreshing: mobile ? mobileQuery.isFetching : query.isFetching,
+    error: mobile ? mobileQuery.isError && !mobileQuery.data : query.isError,
+    mobileInfiniteProps: {
+      hasNext: mobileQuery.hasNextPage,
+      loading: mobileQuery.isFetching,
+      error: mobileQuery.isFetchNextPageError,
+      resetKey: JSON.stringify(mobileRequest),
+    },
     submitting: mutation.isPending,
     submissionError: mutation.isError,
   };

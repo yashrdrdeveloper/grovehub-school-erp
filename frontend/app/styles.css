@@ -6083,3 +6083,22 @@ body {
     flex: 0 0 auto;
   }
 }
+
+/* Mobile fill-workspace routes keep the toolbar fixed and only scroll their list. */
+@media (max-width: 640px) {
+  .shell__content:has([data-workspace-fill='true']) {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .shell__content:has([data-workspace-fill='true']) > .shell__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+}
