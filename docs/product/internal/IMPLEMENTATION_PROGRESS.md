@@ -31,3 +31,7 @@ Vite, TS, Jest, package scripts and CI use frontend-relative paths. Core annotat
 4. Follow the school RBAC plan and subsequent internal foundation, approval, registry, execution and UI phases.
 
 No library extraction, schema migration, service implementation or publishing has occurred yet. This log must be updated with exact commit and actual test results at each step.
+
+## A0.2 — Tooltip automation contract
+
+CI [45804844951](https://github.com/yashrdrdeveloper/grovehub-school-erp/actions/runs/45804844951) passed boundary and unit structure checks, then failed Tooltip's automation contract. Added typed dataTestId propagation through the trigger Box and a regression test. Remaining gates and tests are not yet verified.
