@@ -21,7 +21,6 @@ import (
 	"grovehub/launcher/services/gateway"
 	headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
 	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
-	"grovehub/services/accounting"
 	"grovehub/services/foundation"
 	"grovehub/services/audit"
 	"grovehub/services/identity"
@@ -101,13 +100,6 @@ func Run(logger *slog.Logger) error {
 	defer auditModule.Close()
 	auditModule.RegisterHTTP(mux)
 	routing.RegisterReadiness(mux,auditModule.Ready)
-
-	accountingModule, err := accounting.New(logger, db, infrastructureModule.EventStore())
-	if err != nil {
-		return fmt.Errorf("initialize Accounting: %w", err)
-	}
-	defer accountingModule.Close()
-	accountingModule.RegisterHTTP(mux)
 
 	routing.RegisterFallback(mux)
 

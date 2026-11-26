@@ -8,7 +8,6 @@ import (
     "gorm.io/gorm"
 
     "grovehub/launcher/bootstrap"
-    "grovehub/services/accounting"
     "grovehub/services/foundation"
     "grovehub/services/audit"
     "grovehub/services/identity"
@@ -19,12 +18,12 @@ import (
 // runMigrationCommand applies embedded service migrations before app startup.
 func runMigrationCommand() int {
     if len(os.Args)!=3 || os.Args[1]!="migrate" {
-        _,_=fmt.Fprintln(os.Stderr,"usage: groovehub-platform migrate foundation|infrastructure|integration|identity|audit|accounting|all")
+        _,_=fmt.Fprintln(os.Stderr,"usage: groovehub-platform migrate foundation|infrastructure|integration|identity|audit|all")
         return 2
     }
     service:=os.Args[2]
-    if service!="foundation" && service!="infrastructure" && service!="integration" && service!="identity" && service!="audit" && service!="accounting" && service!="all" {
-        _,_=fmt.Fprintln(os.Stderr,"usage: groovehub-platform migrate foundation|infrastructure|integration|identity|audit|accounting|all")
+    if service!="foundation" && service!="infrastructure" && service!="integration" && service!="identity" && service!="audit" && service!="all" {
+        _,_=fmt.Fprintln(os.Stderr,"usage: groovehub-platform migrate foundation|infrastructure|integration|identity|audit|all")
         return 2
     }
     ctx,cancel:=context.WithTimeout(context.Background(),10*time.Minute)
@@ -56,12 +55,6 @@ func runMigrationCommand() int {
     if service=="identity" || service=="all" {
         if err:=identity.Migrate(ctx,db);err!=nil{
             _,_=fmt.Fprintf(os.Stderr,"migrate identity: %v\n",err)
-            return 1
-        }
-    }
-    if service=="accounting" || service=="all" {
-        if err:=accounting.Migrate(ctx,db);err!=nil{
-            _,_=fmt.Fprintf(os.Stderr,"migrate accounting: %v\n",err)
             return 1
         }
     }
