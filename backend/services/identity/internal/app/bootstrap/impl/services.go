@@ -1,6 +1,13 @@
 package impl
 
 import (
+	registrationproducer "grovehub/services/identity/internal/app/events/producers/registration/impl"
+	policyimpl "grovehub/services/identity/internal/app/repository/approvalpolicy/impl"
+	mailrepo "grovehub/services/identity/internal/app/repository/invitation/impl"
+	setupimpl "grovehub/services/identity/internal/app/services/account/operations/setup/impl"
+	"grovehub/services/identity/internal/app/services/account/operations/setup/eligibility"
+	"grovehub/services/identity/internal/app/services/registration/operations/register"
+	resendimpl "grovehub/services/identity/internal/app/services/registration/operations/resend/impl"
 	metadataaudit "grovehub/services/identity/internal/app/repository/rolemetadataaudit/impl"
 	metadataproducer "grovehub/services/identity/internal/app/events/producers/rolemetadata/impl"
 	capabilityrepo "grovehub/services/identity/internal/app/repository/capability/impl"
@@ -94,6 +101,16 @@ func (b *builder) newServices(repositories repositories, cfg config.Config) serv
 	authorizer := authorizationimpl.New(repositories.authorization)
 	gate := cutover.New(cfg.ApprovalExecutionTenant)
 	policy := routepolicy.NewWithExecution(authorizer, cfg.LegacyRBACDevelopment, gate)
+	if !cfg.LegacyRBACDevelopment {
+		readiness := policyimpl.NewReadiness(b.db)
+		proofs := eligibility.NewProofGuard(cfg.ApprovalExecutionTenant, reader, repositories.tokens, repositories.authority, readiness, repositories.accountRoles, repositories.authorization)
+		approved := invitation.NewApproved(reader, repositories.accountRoles, repositories.authorization, invitations)
+		accounts = accountimpl.NewOnboarding(accounts, gate,
+			register.NewNormalized(accountread.NewRegistrationWriter(b.db), b.foundation, accountValidator, repositories.authority, readiness, authorizer, registrationproducer.New(b.events)),
+			resendimpl.NewNormalized(repositories.authority, readiness, authorizer, repositories.accountRoles, approved, mailrepo.NewCooldownReader(b.db)),
+			setupimpl.NewNormalized(reader, accountread.NewSetupWriter(b.db), repositories.tokens, credentials, repositories.authority, readiness, repositories.accountRoles, repositories.authorization, accountEvents), proofs)
+		authentication = authimpl.NewOnboarding(authentication, proofs)
+	}
 	return serviceGraph{
 		capabilities: capabilityimpl.New(capabilityrepo.New(b.db), repositories.authority, authorizer, cfg.ApprovalExecutionTenant),
 		approvalExecutor: b.newApprovalExecutor(repositories, cfg, reader, authorizer, gate),

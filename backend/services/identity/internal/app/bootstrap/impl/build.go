@@ -3,6 +3,7 @@ package impl
 import (
 	"errors"
 	"log/slog"
+	"net/url"
 
 	"gorm.io/gorm"
 
@@ -41,6 +42,12 @@ func (b *builder) Build() (bootstrap.Runtime, error) {
 	}
 	if len(settings.EncryptionKey) != 32 {
 		return nil, errors.New("identity invitation encryption key must be configured")
+	}
+	if settings.ApprovalExecutionTenant != "" {
+		link, err := url.Parse(settings.SetupURL)
+		if err != nil || link.Scheme != "https" || link.Hostname() == "" || link.User != nil || link.Fragment != "" {
+			return nil, errors.New("approval execution requires a trusted HTTPS setup URL")
+		}
 	}
 	if settings.LegacyRBACDevelopment {
 		var migrated bool

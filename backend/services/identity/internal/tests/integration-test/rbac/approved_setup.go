@@ -13,6 +13,13 @@ import (
 
 	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
 	"grovehub/services/identity/internal/app/config"
+	accountservice "grovehub/services/identity/internal/app/services/account/impl"
+	authservice "grovehub/services/identity/internal/app/services/authentication"
+	authruntime "grovehub/services/identity/internal/app/services/authentication/impl"
+	"grovehub/services/identity/internal/app/services/approval/operations/cutover"
+	resendimpl "grovehub/services/identity/internal/app/services/registration/operations/resend/impl"
+	"grovehub/services/identity/internal/app/services/authorization"
+	"grovehub/services/identity/internal/app/services/authentication/operations/exchange"
 	kind "grovehub/services/identity/internal/app/constants/approval"
 	"grovehub/services/identity/internal/app/constants/permission"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
@@ -112,8 +119,14 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	query, err := url.ParseQuery(link.Fragment)
 	Expect(err).NotTo(HaveOccurred())
 	proof := query.Get("proof")
-	exchange := exchangeimpl.New(accountimpl.New(db), tokens, transaction.NewUnitOfWork(db))
-	grant, err := exchange.Execute(ctx, proof, "invitation")
+	exchangeOperation := exchangeimpl.New(accountimpl.New(db), tokens, transaction.NewUnitOfWork(db))
+	proofs := eligibility.NewProofGuard(tenant, accounts, tokens, locker, readiness, assignments, snapshots)
+	disabledProofs := eligibility.NewProofGuard("", accounts, tokens, locker, readiness, assignments, snapshots)
+	disabledAuth := authruntime.NewOnboarding(&setupExchange{operation: exchangeOperation}, disabledProofs)
+	_, err = disabledAuth.Exchange(ctx, proof, "invitation")
+	Expect(err).To(MatchError(tokenrepo.ErrInvalidToken))
+	enabledAuth := authruntime.NewOnboarding(&setupExchange{operation: exchangeOperation}, proofs)
+	grant, err := enabledAuth.Exchange(ctx, proof, "invitation")
 	Expect(err).NotTo(HaveOccurred())
 	hash, err := secrets.Digest(grant.Secret, 32)
 	Expect(err).NotTo(HaveOccurred())
@@ -123,6 +136,24 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	Expect(*token.AccountVersion).To(Equal(before.Version+1))
 
 	setup := setupimpl.NewNormalized(accounts, accountimpl.NewSetupWriter(db), tokens, credentials, locker, readiness, assignments, snapshots, accountproducer.New(store))
+	onboarding := accountservice.NewOnboarding(nil, cutover.New(tenant), nil, nil, setup, proofs)
+	status, err := onboarding.SetupStatus(ctx, grant.Secret)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(status.Verified).To(BeTrue())
+	disabled := accountservice.NewOnboarding(nil, cutover.New(""), nil, nil, setup, disabledProofs)
+	_, err = disabled.SetupStatus(ctx, grant.Secret)
+	Expect(err).To(MatchError(tokenrepo.ErrInvalidToken))
+	_, err = disabled.Setup(ctx, grant.Secret, accountdto.Setup{Password: "Test-setup-password-123"})
+	Expect(err).To(MatchError(tokenrepo.ErrInvalidToken))
+	resend := resendimpl.NewNormalized(locker, readiness, authorizer, assignments, approvedInvitations, mailrepo.NewCooldownReader(db))
+	Expect(resend.Execute(requesterCtx, accountID)).To(MatchError(authorization.ErrForbidden))
+	var recent bool
+	Expect(locker.Run(ctx, tenant, func(tx context.Context) error {
+		var err error
+		recent, err = mailrepo.NewCooldownReader(db).RecentSetup(tx, accountID, time.Now().UTC().Add(-30*time.Second))
+		return err
+	})).To(Succeed())
+	Expect(recent).To(BeTrue())
 	stale, err := secrets.NewSecret(32)
 	Expect(err).NotTo(HaveOccurred())
 	staleHash, err := secrets.Digest(stale, 32)
@@ -139,7 +170,7 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	Expect(db.Exec("UPDATE identity.permissions SET active = true WHERE code = ?", permission.AccountRoleAssign).Error).NotTo(HaveOccurred())
 	Expect(db.Raw("SELECT count(*) FROM identity.password_credentials WHERE account_id = ?", accountID).Scan(&count).Error).NotTo(HaveOccurred())
 	Expect(count).To(BeZero())
-	activated, err := setup.Execute(ctx, grant.Secret, accountdto.Setup{Password: "Test-setup-password-123"})
+	activated, err := onboarding.Setup(ctx, grant.Secret, accountdto.Setup{Password: "Test-setup-password-123"})
 	Expect(err).NotTo(HaveOccurred())
 	Expect(activated.SetupCompleted).To(BeTrue())
 	Expect(activated.Status).To(Equal(string(entity.Active)))
@@ -153,4 +184,14 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	Expect(verified).To(BeTrue())
 	_, err = setup.Execute(ctx, grant.Secret, accountdto.Setup{Password: "Test-setup-password-123"})
 	Expect(err).To(MatchError(tokenrepo.ErrInvalidToken))
+}
+
+// The adapter exercises the actual exchange operation without composing unrelated auth use cases.
+type setupExchange struct {
+ authservice.Service
+ operation exchange.Operation
+}
+
+func (adapter *setupExchange) Exchange(ctx context.Context, secret string, purpose string) (authservice.Grant, error) {
+ return adapter.operation.Execute(ctx, secret, purpose)
 }

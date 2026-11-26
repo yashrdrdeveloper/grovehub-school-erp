@@ -137,3 +137,20 @@ var _ = Describe("Execution cutover", func() {
 		Expect(routepolicy.NewWithExecution(nil, false, cutover.New("school")).Authorize(ctx, "PATCH /identity/protected/accounts/{accountId}/suspend")).To(MatchError(authorization.ErrForbidden))
 	})
 })
+
+var _ = Describe("Onboarding cutover", func() {
+ It("requires exact tenant, recent authentication and the operation permission", func() {
+  actor := schoolgateway.Principal{AccountID: "actor", TenantID: "school", SessionID: "session", AuthenticatedAt: time.Now().UTC()}
+  ctx := schoolgateway.WithPrincipal(context.Background(), actor)
+  auth := &authorizer{}
+  for pattern, code := range map[string]permission.Code{
+   "POST /identity/protected/accounts": permission.AccountCreate,
+   "POST /identity/protected/accounts/{accountId}/resend-invitation": permission.AccountResendInvitation,
+  } {
+   Expect(routepolicy.NewWithExecution(auth, false, cutover.New("school")).Authorize(ctx, pattern)).To(Succeed())
+   Expect(auth.code).To(Equal(code))
+   Expect(routepolicy.NewWithExecution(auth, false, cutover.New("other")).Authorize(ctx, pattern)).To(MatchError(authorization.ErrForbidden))
+   Expect(routepolicy.New(auth, false).Authorize(ctx, pattern)).To(MatchError(authorization.ErrForbidden))
+  }
+ })
+})

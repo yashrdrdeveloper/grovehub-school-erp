@@ -97,10 +97,19 @@ func (policy *Policy) Authorize(ctx context.Context, pattern string) error {
 		return nil
 	}
 	if rule.BlockedUntilCutover {
-		if pattern == "POST /identity/protected/approvals/{requestId}/execute" && policy.execution != nil {
-			return policy.execution.Require(ctx)
+		if policy.execution == nil {
+			return authorization.ErrForbidden
 		}
-		return authorization.ErrForbidden
+		switch pattern {
+		case "POST /identity/protected/approvals/{requestId}/execute":
+			return policy.execution.Require(ctx)
+		case "POST /identity/protected/accounts", "POST /identity/protected/accounts/{accountId}/resend-invitation":
+			if err := policy.execution.Require(ctx); err != nil {
+				return err
+			}
+		default:
+			return authorization.ErrForbidden
+		}
 	}
 	if rule.ScopedRead || rule.ScopedMutation {
 		// The owning approval service enforces live request-specific authority.
