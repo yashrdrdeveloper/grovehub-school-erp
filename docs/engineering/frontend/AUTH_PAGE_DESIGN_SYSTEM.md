@@ -28,7 +28,7 @@ This design standard adapts the [UI/UX Pro Max skill](https://github.com/nextlev
 | CTA | `#2563D9` | `#2563D9` |
 | Focus | `#3E83F6` (1px) | `#3E83F6` (1px) |
 
-The form aliases the workspace semantic tokens. The desktop visual uses theme-owned blue gradient tokens, RDR branding, a centered school-workspace message and four non-interactive feature tiles. No remote artwork is required. On mobile the feature panel is hidden and the original compact school header remains. Preserve the existing form geometry and recovery states.
+The form aliases the workspace semantic tokens. The desktop visual uses theme-owned blue gradient tokens, RDR branding, a centered school-workspace message without feature cards. No remote artwork is required. On mobile the desktop message panel is hidden and the original compact school header remains. Preserve the existing form geometry and recovery states.
 
 ## Layout and state rules
 
@@ -43,7 +43,7 @@ The form aliases the workspace semantic tokens. The desktop visual uses theme-ow
 9. Success / expired / missing-link / checking states use the **same** content and action order on desktop and mobile; only spacing, text size and decorative art vary.
 10. Use accessible `aria-invalid`, `aria-describedby`, and polite announcements for inline errors. Never rely on red alone to communicate failure.
 11. Honor reduced-motion preference and never animate an element's dimensions to reveal errors.
-12. The school feature panel is decorative; it must not replace instructions or use fake stock people.
+12. The school branded panel is decorative; it must not replace instructions or use fake stock people.
 
 ## Responsive verification matrix
 
@@ -67,7 +67,7 @@ The form aliases the workspace semantic tokens. The desktop visual uses theme-ow
 - Reset and invite: token check loading, ready, save error, two-attempt exhaustion, expired link and success.
 - Toggle desktop theme, then resize to mobile; mobile uses the system preference.
 - Test keyboard tab order, focus styles, contrast, and reduced-motion in both themes.
-- Confirm no asset requests are required for the desktop feature panel; keep the RDR logo component unchanged.
+- Confirm no asset requests are required for the desktop branded panel; keep the RDR logo component unchanged.
 
 GitHub Actions typechecking and unit tests are **not** a substitute for these browser viewport checks.
 
