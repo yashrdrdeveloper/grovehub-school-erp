@@ -348,12 +348,20 @@
   display: flex;
   align-items: center;
   gap: var(--gh-space-1);
-  padding: var(--gh-space-3) var(--gh-space-2);
+  padding: var(--gh-space-2);
   border: 0;
   border-bottom: 1px solid var(--gh-color-table-rule);
   border-radius: 0;
 }
-.mobileCard[data-compact-row='true'] .mobileActions { flex: 0 0 auto; }
+.mobileCard[data-compact-row='true'] .mobileActions {
+  flex: 0 0 auto;
+}
+
+.mobileCard[data-compact-row='true'] .mobileActions button[aria-expanded] {
+  width: var(--gh-control-height-md);
+  min-width: var(--gh-control-height-md);
+  padding-inline: 0;
+}
 .mobileCard[data-compact-row='true']:focus-visible {
   outline: var(--gh-focus-outline-width) solid var(--gh-color-ring);
   outline-offset: -1px;

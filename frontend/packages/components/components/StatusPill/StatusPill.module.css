@@ -24,3 +24,18 @@
   background: var(--gh-color-status-warning-bg);
   border-color: var(--gh-color-status-warning-border);
 }
+
+.badge.badge[data-plain='true'] {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  gap: var(--gh-space-1);
+  font-size: var(--gh-text-2xs);
+  line-height: var(--gh-leading-tight);
+}
+
+.badge.badge[data-plain='true'] > span {
+  flex-shrink: 0;
+  width: var(--gh-space-1);
+  height: var(--gh-space-1);
+}

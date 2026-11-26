@@ -8,12 +8,14 @@ export const UserMobileRow = ({ row }: UserMobileRowProps) => {
   const name = row.username?.trim() || row.email;
   return (
     <Box className={styles.root}>
-      <Avatar name={name} />
+      <Avatar name={name} compact />
       <Box className={styles.details}>
-        <Box className={styles.name}>{name}</Box>
-        <Box className={styles.email}>{row.email}</Box>
+        <Box className={styles.heading}>
+          <Box className={styles.name} title={name}>{name}</Box>
+          <Box className={styles.status}><StatusPill value={row.status} plain /></Box>
+        </Box>
+        <Box className={styles.email} title={row.email}>{row.email}</Box>
       </Box>
-      <Box className={styles.status}><StatusPill value={row.status} /></Box>
     </Box>
   );
 };

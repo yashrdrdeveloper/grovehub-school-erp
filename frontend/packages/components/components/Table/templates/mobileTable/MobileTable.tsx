@@ -64,7 +64,7 @@ export const MobileTable = <T,>(props: MobileTableProps<T>) => {
         );
       })}
       {!props.mobileInfiniteProps && controls.entries.length > limit && <Button variant={BUTTON_VARIANT.OUTLINE} onClick={() => setLimit((current) => current + 40)}>{__('Show more rows')}</Button>}
-      {props.mobileInfiniteProps && <MobileInfiniteEnd {...props.mobileInfiniteProps} loaded={props.data.length} total={props.totalRecords} onLoadMore={props.actions?.LOAD_MORE} />}
+      {props.mobileInfiniteProps && <MobileInfiniteEnd {...props.mobileInfiniteProps} onLoadMore={props.actions?.LOAD_MORE} />}
     </Box>
   );
 };
