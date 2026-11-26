@@ -6,9 +6,15 @@ import { defineConfig, type ProxyOptions } from 'vite';
 
 const root = process.cwd();
 const tunnelOrigin = process.env.GROVEHUB_FRONTEND_TUNNEL_URL ?? '';
-const tunnelHost = /^https:\/\/[a-z0-9-]+\.trycloudflare\.com$/.test(tunnelOrigin)
-  ? new URL(tunnelOrigin).hostname
-  : '';
+const getTunnelHost = (origin: string): string => {
+  if (!/^https:\/\/[a-z0-9-]+\.trycloudflare\.com$/.test(origin)) return '';
+  return new URL(origin).hostname;
+};
+const tunnelHost = getTunnelHost(tunnelOrigin);
+const getAllowedHosts = (): string[] => {
+  if (!tunnelHost) return [];
+  return [tunnelHost];
+};
 const localOrigin = process.env.GROVEHUB_FRONTEND_LOCAL_ORIGIN ?? 'http://127.0.0.1:4173';
 
 // Only the managed development tunnel's same-origin browser requests are
@@ -42,7 +48,7 @@ export default defineConfig({
     host: '127.0.0.1',
     port: 4173,
     strictPort: true,
-    allowedHosts: tunnelHost ? [tunnelHost] : [],
+    allowedHosts: getAllowedHosts(),
     proxy: {
       '/identity': createProxy(),
       '/foundation': createProxy(),

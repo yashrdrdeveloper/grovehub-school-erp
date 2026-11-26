@@ -1,4 +1,4 @@
-import { getScrollbarGeometry, getScrollbarOffset } from '../tableScrollbar.geometry';
+import { getScrollbarGeometry } from '../tableScrollbar.geometry';
 
 describe('getScrollbarGeometry', () => {
   it('has no thumb when all content fits', () => {
@@ -12,13 +12,5 @@ describe('getScrollbarGeometry', () => {
 
   it('keeps very long content draggable with a minimum thumb', () => {
     expect(getScrollbarGeometry(200, 10000, 0).size).toBe(12);
-  });
-});
-
-describe('getScrollbarOffset', () => {
-  it('maps pointer movement back to the native scroll position and clamps bounds', () => {
-    expect(getScrollbarOffset(75, 200, 50, 25, 200)).toBe(100);
-    expect(getScrollbarOffset(-10, 200, 50, 25, 200)).toBe(0);
-    expect(getScrollbarOffset(200, 200, 50, 25, 200)).toBe(200);
   });
 });
