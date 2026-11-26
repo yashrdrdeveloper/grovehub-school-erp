@@ -42,3 +42,15 @@
 .mono {
   font-family: var(--gh-font-mono);
 }
+
+/* Resolve dynamic avatar colors on the element that owns its name-derived hue. */
+.gh-avatar-colors {
+  --gh-color-avatar-background: linear-gradient(
+    135deg,
+    hsl(var(--avatar-hue) var(--gh-avatar-saturation) var(--gh-avatar-start)),
+    hsl(calc(var(--avatar-hue) + 28) var(--gh-avatar-saturation) var(--gh-avatar-end))
+  );
+  --gh-color-avatar-text: hsl(
+    var(--avatar-hue) var(--gh-avatar-text-saturation) var(--gh-avatar-text-lightness)
+  );
+}

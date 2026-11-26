@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
 
+import { cn } from '@Base/utilities/cn';
 import { Box } from '../Box';
 
 import { getAvatarHue } from './helpers/avatar.getHue';
@@ -15,7 +16,7 @@ export const Avatar = ({ name, src, fallback, dataTestId, compact }: AvatarProps
 
   return (
     <Box
-      className={styles.avatar}
+      className={cn(styles.avatar, 'gh-avatar-colors')}
       data-compact={compact}
       style={style}
       dataTestId={dataTestId}
