@@ -4,6 +4,7 @@ import (
  "context"
  "errors"
  "strings"
+ "time"
 
  "github.com/google/uuid"
  "grovehub/services/accounting/internal/app/dto"
@@ -32,9 +33,9 @@ func (s *implementation) Create(ctx context.Context, tenantID string, input dto.
  currency := strings.ToUpper(strings.TrimSpace(input.BaseCurrency))
  if currency != "INR" { return entity.AccountingBook{}, errors.New("unsupported base currency") }
  if _, err := s.entities.FindByID(ctx, tenantID, input.EntityID); err != nil { return entity.AccountingBook{}, err }
- value := entity.AccountingBook{BookID: uuid.NewString(), TenantID: tenantID, EntityID: input.EntityID, Code: code, Name: name, BaseCurrency: currency, CurrencyScale: 2, AccountingBasis: "ACCRUAL"}
+ value := entity.AccountingBook{BookID: uuid.NewString(), TenantID: tenantID, EntityID: input.EntityID, Code: code, Name: name, BaseCurrency: currency, CurrencyScale: 2, AccountingBasis: "ACCRUAL", CreatedAt: time.Now().UTC()}
  if err := s.books.Create(ctx, value); err != nil { return entity.AccountingBook{}, err }
- return s.books.FindByID(ctx, tenantID, value.BookID)
+ return value, nil
 }
 
 func (s *implementation) FindByID(ctx context.Context, tenantID, id string) (entity.AccountingBook, error) {

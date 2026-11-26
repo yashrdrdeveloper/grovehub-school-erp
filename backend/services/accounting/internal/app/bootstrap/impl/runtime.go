@@ -5,7 +5,9 @@ import (
  "grovehub/services/accounting/internal/app/bootstrap"
 )
 
-type runtime struct{}
+type runtime struct {
+ services serviceGraph
+}
 
 var _ bootstrap.Runtime = (*runtime)(nil)
 

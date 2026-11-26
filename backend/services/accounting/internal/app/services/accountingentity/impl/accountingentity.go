@@ -3,6 +3,7 @@ package impl
 import (
  "context"
  "strings"
+ "time"
 
  "github.com/google/uuid"
  "grovehub/services/accounting/internal/app/dto"
@@ -23,9 +24,9 @@ func New(repository repo.Repository) service.Service {
 func (s *implementation) Create(ctx context.Context, tenantID string, input dto.CreateAccountingEntity) (entity.AccountingEntity, error) {
  code, name := strings.ToUpper(strings.TrimSpace(input.Code)), strings.TrimSpace(input.Name)
  if err := validators.ValidateIdentity(tenantID, code, name); err != nil { return entity.AccountingEntity{}, err }
- value := entity.AccountingEntity{EntityID: uuid.NewString(), TenantID: tenantID, Code: code, Name: name}
+ value := entity.AccountingEntity{EntityID: uuid.NewString(), TenantID: tenantID, Code: code, Name: name, CreatedAt: time.Now().UTC()}
  if err := s.repository.Create(ctx, value); err != nil { return entity.AccountingEntity{}, err }
- return s.repository.FindByID(ctx, tenantID, value.EntityID)
+ return value, nil
 }
 
 func (s *implementation) FindByID(ctx context.Context, tenantID, id string) (entity.AccountingEntity, error) {

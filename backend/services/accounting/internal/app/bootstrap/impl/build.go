@@ -26,5 +26,6 @@ func (b *builder) Build() (bootstrap.Runtime, error) {
   return nil, errors.New("accounting requires PostgreSQL and Infrastructure")
  }
  if b.logger == nil { b.logger = slog.Default() }
- return &runtime{}, nil
+ repositories := b.newRepository()
+ return &runtime{services: b.newServices(repositories)}, nil
 }
