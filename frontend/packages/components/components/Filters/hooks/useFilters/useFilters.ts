@@ -3,7 +3,6 @@ import { _filter } from '@Base/utilities/filter';
 import { _map } from '@Base/utilities/map';
 import { _find } from '@Base/utilities/find';
 
-import { FilterOperator } from '../../constants/filter.operator';
 import { isFilterValid } from '../../helpers/filters.isValid';
 import type { FilterCondition, FiltersProps } from '../../types/filters.props';
 
@@ -42,8 +41,9 @@ export const useFilters = ({ value, onChange, fields, maxFilters, initialOpen, o
     setDraft((items) => {
       if (items.length >= Math.min(fields.length, maxFilters ?? fields.length)) return items;
       const field = _find(fields, (entry) => entry.operators.length > 0 && !items.some((item) => item.field === entry.id));
-      if (!field) return items;
-      return [...items, { id, field: field.id, operator: field.operators[0], values: [] }];
+      const operator = field?.operators[0];
+      if (!field || !operator) return items;
+      return [...items, { id, field: field.id, operator, values: [] }];
     });
   };
 
@@ -62,8 +62,9 @@ export const useFilters = ({ value, onChange, fields, maxFilters, initialOpen, o
   const add = () => {
     if (!canAdd) return;
     const field = _find(getAvailableFields(), (entry) => entry.operators.length > 0);
-    if (!field) return;
-    setEditing({ id: crypto.randomUUID(), field: field.id, operator: field.operators[0], values: [] });
+    const operator = field?.operators[0];
+    if (!field || !operator) return;
+    setEditing({ id: crypto.randomUUID(), field: field.id, operator, values: [] });
   };
   const edit = (condition: FilterCondition) => setEditing(condition);
   const remove = (id: string) => setDraft((items) => _filter(items, (item) => item.id !== id));
@@ -71,8 +72,9 @@ export const useFilters = ({ value, onChange, fields, maxFilters, initialOpen, o
   const selectField = (id: string | null) => {
     if (!editing || !id) return;
     const field = _find(getAvailableFields(editing.id), (entry) => entry.id === id);
-    if (!field) return;
-    setEditing({ ...editing, field: id, operator: field.operators[0] ?? FilterOperator.EQUALS, values: [], dateRangePresetId: undefined });
+    const operator = field?.operators[0];
+    if (!field || !operator) return;
+    setEditing({ ...editing, field: id, operator, values: [], dateRangePresetId: undefined });
   };
 
   const save = () => {

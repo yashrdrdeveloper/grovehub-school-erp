@@ -29,8 +29,8 @@ describe('useDateRange', () => {
     act(() => result.current.selectCustom());
     expect(onChange).not.toHaveBeenCalled();
     expect(result.current.open).toBe(true);
-    act(() => result.current.selectPreset(DATE_RANGE_PRESETS[0]));
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ presetId: DATE_RANGE_PRESETS[0].id }));
+    act(() => result.current.selectPreset(DATE_RANGE_PRESETS[0]!));
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ presetId: DATE_RANGE_PRESETS[0]!.id }));
     expect(result.current.open).toBe(false);
   });
 
@@ -50,9 +50,9 @@ describe('useDateRange', () => {
     const onChange = jest.fn();
     const { result } = renderHook(() => useDateRange({ value: { startDate: null, endDate: null }, onChange }));
     act(() => result.current.onOpenChange(true));
-    act(() => result.current.selectPreset(DATE_RANGE_PRESETS[0]));
+    act(() => result.current.selectPreset(DATE_RANGE_PRESETS[0]!));
     act(() => result.current.onOutsideClick());
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ presetId: DATE_RANGE_PRESETS[0].id }));
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ presetId: DATE_RANGE_PRESETS[0]!.id }));
     expect(result.current.open).toBe(false);
   });
 

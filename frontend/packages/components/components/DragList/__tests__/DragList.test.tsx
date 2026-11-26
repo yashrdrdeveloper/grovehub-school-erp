@@ -19,9 +19,9 @@ describe('DragList', () => {
     const handles = screen.getAllByRole('button', { name: 'Reorder item; use up and down arrows' });
     const rows = screen.getAllByRole('listitem');
     const dataTransfer = { effectAllowed: '', setData: jest.fn() };
-    fireEvent.dragStart(handles[2], { dataTransfer });
-    fireEvent.dragOver(rows[0].firstElementChild!, { dataTransfer });
-    fireEvent.drop(rows[0].firstElementChild!, { dataTransfer });
+    fireEvent.dragStart(handles[2]!, { dataTransfer });
+    fireEvent.dragOver(rows[0]!.firstElementChild!, { dataTransfer });
+    fireEvent.drop(rows[0]!.firstElementChild!, { dataTransfer });
     expect(onReorder).toHaveBeenCalledWith(['Created at', 'Username', 'Status']);
   });
 
@@ -36,7 +36,7 @@ describe('DragList', () => {
         renderItem={(item) => item}
       />,
     );
-    fireEvent.keyDown(screen.getAllByRole('button', { name: 'Reorder item; use up and down arrows' })[1], { key: 'ArrowUp' });
+    fireEvent.keyDown(screen.getAllByRole('button', { name: 'Reorder item; use up and down arrows' })[1]!, { key: 'ArrowUp' });
     expect(onReorder).toHaveBeenCalledWith(['Status', 'Username']);
   });
 });

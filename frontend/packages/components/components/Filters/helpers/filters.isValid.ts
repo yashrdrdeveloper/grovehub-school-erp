@@ -8,8 +8,9 @@ export const isFilterValid = (condition: FilterCondition, field: FilterField | u
     return condition.values.length === 0;
   }
   if (condition.operator === FilterOperator.BETWEEN) {
-    if (condition.values.length !== 2 || !condition.values.every((value) => value.trim().length > 0)) return false;
-    if (field.type === FilterFieldType.DATE_RANGE || field.type === FilterFieldType.DATE) return condition.values[0] <= condition.values[1];
+    const [start, end] = condition.values;
+    if (condition.values.length !== 2 || !start?.trim() || !end?.trim()) return false;
+    if (field.type === FilterFieldType.DATE_RANGE || field.type === FilterFieldType.DATE) return start <= end;
     return true;
   }
   if (condition.operator === FilterOperator.IN || condition.operator === FilterOperator.NOT_IN) {

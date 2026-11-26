@@ -53,3 +53,10 @@ Moved the ten original styles files to libs/frontend/styles, isolated school-onl
 ## R1 — School RBAC foundation (not enforced)
 
 Verified the existing account tenant column is TEXT and account ID UUID. Added the six fixed personas as the single source for the legacy role catalog, explicit permission and feature vocabularies, a fail-closed pure evaluator and unit tests. Added an additive normalized RBAC schema migration with tenant-safe composite foreign keys, unique primary assignments and inactive/disabled defaults. No grants are seeded, existing role columns are untouched, and the evaluator is not yet wired into the current gateway or service operations. Repository hydration, API/approval workflows, migration backfill, controlled administrator bootstrap and full authorization enforcement are still required. The temporary permissive account access release blocker remains. Migration and tests have not been run here.
+
+### Verification and follow-up
+
+- Frontend run [45808791918](https://github.com/yashrdrdeveloper/grovehub-school-erp/actions/runs/45808791918): frozen install, shared Base typecheck, ESLint and all 191 Jest suites (356 tests) passed. Overall run failed formatting (142 files) and school typechecking; build and browser checks did not run.
+- Corrected all reported unchecked-index diagnostics in DateRange and DragList tests, filter validation and selection, and User Setup date parsing. Reverification is required on the new commit.
+- Full extraction inventory: 473 component sources, 165 Core Go sources, 132 static findings. Components retains a school-brand dependency and theme preference key; Core extraction remains conditional on its domain-neutral dependency audit.
+- RBAC schema and pure authorization evaluator are foundations only: no migration has been applied, no controller or service has been switched to the evaluator, and no permission grants are seeded. Existing temporary authenticated-tenant access remains a production release blocker.
