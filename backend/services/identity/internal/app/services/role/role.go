@@ -14,4 +14,6 @@ type Service interface {
 	Get(ctx context.Context, roleID string) (roledto.Detail, error)
 	UpdateMetadata(ctx context.Context, roleID string, request roledto.UpdateMetadata) (roledto.Detail, error)
 	Search(ctx context.Context, request coresearch.Request) (coresearch.Result[roledto.Detail], error)
+	Permissions(ctx context.Context, roleID string) (roledto.PermissionSet, error)
+	PreviewPermissions(ctx context.Context, roleID string, request roledto.PreviewPermissions) (roledto.PermissionPreview, error)
 }

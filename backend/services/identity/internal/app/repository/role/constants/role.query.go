@@ -19,3 +19,9 @@ search_details = ?, updated_by = ?, updated_at = now(), version = version + 1
 WHERE tenant_id = ? AND role_id = ? AND version = ?`
 
 const DeletePersonas = `DELETE FROM identity.role_personas WHERE tenant_id = ? AND role_id = ?`
+
+const FindPermissions = `SELECT r.role_id::text AS role_id, r.version, COALESCE(
+    (SELECT json_agg(p.code ORDER BY p.code)::text FROM identity.role_permissions rp
+     JOIN identity.permissions p ON p.permission_id = rp.permission_id
+     WHERE rp.tenant_id = r.tenant_id AND rp.role_id = r.role_id), '[]') AS codes_json
+FROM identity.roles r WHERE r.tenant_id = ? AND r.role_id = ?`

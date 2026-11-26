@@ -7,6 +7,7 @@ import (
 	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 
 	"grovehub/services/identity/internal/app/constants/persona"
+	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/entity"
 )
 
@@ -34,6 +35,12 @@ type MetadataUpdate struct {
 	Version int64
 }
 
+type PermissionSet struct {
+	RoleID string
+	Version int64
+	Codes []permission.Code
+}
+
 type Detail struct {
 	Role     entity.Role
 	Personas []persona.Code
@@ -45,4 +52,5 @@ type Repository interface {
 	FindByID(ctx context.Context, tenantID string, roleID string) (Detail, error)
 	UpdateMetadata(ctx context.Context, update MetadataUpdate) (Detail, error)
 	Search(ctx context.Context, tenantID string, query coresearch.Query[string]) (coresearch.QueryResult[Detail], error)
+	Permissions(ctx context.Context, tenantID string, roleID string) (PermissionSet, error)
 }

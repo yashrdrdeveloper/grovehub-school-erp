@@ -2,7 +2,6 @@ package role_test
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
@@ -34,6 +33,7 @@ func TestRoleService(t *testing.T) {
 type authorizer struct {
 	code permission.Code
 	err  error
+	grants []permission.Code
 }
 
 func (auth *authorizer) Require(ctx context.Context, code permission.Code) error {
@@ -42,13 +42,14 @@ func (auth *authorizer) Require(ctx context.Context, code permission.Code) error
 }
 
 func (auth *authorizer) Effective(ctx context.Context) ([]permission.Code, error) {
-	return nil, errors.New("unexpected Effective call")
+	return auth.grants, auth.err
 }
 
 type repository struct {
 	draft rolerepo.Draft
 	update rolerepo.MetadataUpdate
 	query coresearch.Query[string]
+	permissions rolerepo.PermissionSet
 	tenant string
 	id string
 	calls int
@@ -80,6 +81,13 @@ func (repo *repository) Search(ctx context.Context, tenantID string, query cores
 	repo.query = query
 	total := int64(1)
 	return coresearch.QueryResult[rolerepo.Detail]{Items: []rolerepo.Detail{{Role: entity.Role{RoleID: roleID, Name: "Teacher"}}}, TotalRecords: &total}, repo.err
+}
+
+func (repo *repository) Permissions(ctx context.Context, tenantID string, roleID string) (rolerepo.PermissionSet, error) {
+	repo.calls++
+	repo.tenant = tenantID
+	repo.id = roleID
+	return repo.permissions, repo.err
 }
 
 var repo *repository
@@ -202,5 +210,38 @@ var _ = Describe("Search", func() {
 		_, err = service.Search(ctx, coresearch.Request{Filters: []coresearch.Filter{{Field: "tenantId", Operator: coresearch.OperatorEquals, Values: []string{"school-b"}}}})
 		Expect(err).To(MatchError(rolevalidator.ErrInvalidSearch))
 		Expect(repo.calls).To(BeZero())
+	})
+})
+
+var _ = Describe("Permissions", func() {
+	It("requires mapping view and scopes the read to the actor tenant", func() {
+		repo.permissions = rolerepo.PermissionSet{RoleID: roleID, Version: 3}
+		result, err := service.Permissions(ctx, roleID)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(auth.code).To(Equal(permission.RolePermissionView))
+		Expect(repo.tenant).To(Equal("school-a"))
+		Expect(result.Codes).To(BeEmpty())
+		Expect(result.Version).To(Equal(int64(3)))
+	})
+})
+
+var _ = Describe("PreviewPermissions", func() {
+	It("denies a legacy admin without effective mapping management authority", func() {
+		_, err := service.PreviewPermissions(ctx, roleID, roledto.PreviewPermissions{Version: 1, Codes: []permission.Code{}})
+		Expect(err).To(MatchError(authorization.ErrForbidden))
+		Expect(repo.calls).To(BeZero())
+	})
+	It("validates the version and marks changes as requiring approval", func() {
+		auth.grants = []permission.Code{permission.RolePermissionManage, permission.AccountView}
+		repo.permissions = rolerepo.PermissionSet{RoleID: roleID, Version: 2}
+		request := roledto.PreviewPermissions{Version: 1, Codes: []permission.Code{permission.AccountView}}
+		_, err := service.PreviewPermissions(ctx, roleID, request)
+		Expect(err).To(MatchError(rolerepo.ErrVersionConflict))
+		request.Version = 2
+		result, err := service.PreviewPermissions(ctx, roleID, request)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(result.Added).To(Equal(request.Codes))
+		Expect(result.ApprovalRequired).To(BeTrue())
+		Expect(repo.tenant).To(Equal("school-a"))
 	})
 })

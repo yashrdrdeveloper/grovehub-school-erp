@@ -198,6 +198,16 @@ var _ = Describe("RBAC persistence against PostgreSQL", func() {
 		Expect(db.Exec("INSERT INTO identity.account_roles(tenant_id, account_id, role_id, assignment_type) VALUES ('school-a', ?, ?, 'SECONDARY')", actorID, foreignRoleID).Error).To(HaveOccurred())
 		Expect(db.Exec("INSERT INTO identity.role_permissions(tenant_id, role_id, permission_id) SELECT 'school-a', ?, permission_id FROM identity.permissions", roleID).Error).NotTo(HaveOccurred())
 
+		mapping, err := roles.Permissions(ctx, "school-a", roleID)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(mapping.Version).To(Equal(int64(1)))
+		Expect(mapping.Codes).To(Equal([]permission.Code{permission.AccountSearch, permission.AccountSelfView}))
+		_, err = roles.Permissions(ctx, "school-b", roleID)
+		Expect(err).To(MatchError(rolerepo.ErrNotFound))
+		emptyMapping, err := roles.Permissions(ctx, "school-a", createdRole.Role.RoleID)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(emptyMapping.Codes).To(BeEmpty())
+
 		actor := schoolgateway.WithPrincipal(ctx, schoolgateway.Principal{AccountID: actorID, TenantID: "school-a", SessionID: "session", Admin: true})
 		Expect(authorizer.Require(actor, permission.AccountSearch)).To(MatchError(authorization.ErrForbidden))
 		Expect(db.Exec("UPDATE identity.permissions SET active = true").Error).NotTo(HaveOccurred())
