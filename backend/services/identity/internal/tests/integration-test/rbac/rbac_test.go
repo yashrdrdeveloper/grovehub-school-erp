@@ -287,5 +287,6 @@ var _ = Describe("RBAC persistence against PostgreSQL", func() {
 		Expect(err).To(MatchError(registryrepo.ErrConflict))
 		verifyAdministratorGuard(ctx, db)
 		verifyApprovalSchema(db)
+		verifyApprovalWorkflow(ctx, db)
 	})
 })
