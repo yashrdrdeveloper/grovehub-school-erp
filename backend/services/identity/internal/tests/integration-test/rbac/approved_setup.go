@@ -101,6 +101,8 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	var count int64
 	Expect(db.Raw("SELECT count(*) FROM identity.invitations WHERE account_id = ?", accountID).Scan(&count).Error).NotTo(HaveOccurred())
 	Expect(count).To(BeZero())
+	Expect(db.Raw("SELECT count(*) FROM identity.invitation_delivery_audit WHERE account_id = ?", accountID).Scan(&count).Error).NotTo(HaveOccurred())
+	Expect(count).To(BeZero())
 	Expect(db.Raw("SELECT count(*) FROM identity.password_tokens WHERE account_id = ?", accountID).Scan(&count).Error).NotTo(HaveOccurred())
 	Expect(count).To(BeZero())
 	executor := build(effects)
@@ -262,6 +264,7 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	Expect(current.SentAt).NotTo(BeNil())
 	Expect(current.SuppressedAt).To(BeNil())
 	Expect(current.Attempts).To(Equal(2))
+	verifyInvitationDeliveryAudit(db, tenant, accountID, mail.ID, rotated.ID, current.ID)
 	grant, err = enabledAuth.Exchange(ctx, currentProof, "invitation")
 	Expect(err).NotTo(HaveOccurred())
 
@@ -337,4 +340,44 @@ func invitationProof(mail entity.Invitation, key []byte) string {
 	query, err := url.ParseQuery(link.Fragment)
 	Expect(err).NotTo(HaveOccurred())
 	return query.Get("proof")
+}
+
+func verifyInvitationDeliveryAudit(db *gorm.DB, tenant string, accountID string, originalID string, rotatedID string, currentID string) {
+	type auditRow struct {
+		EventType string
+		Attempt int
+		Reason *string
+		NextAttemptAt *time.Time
+	}
+	read := func(id string) []auditRow {
+		var rows []auditRow
+		Expect(db.Raw("SELECT event_type, attempt, reason, next_attempt_at FROM identity.invitation_delivery_audit WHERE tenant_id = ? AND account_id = ? AND invitation_id = ? ORDER BY audit_id", tenant, accountID, id).Scan(&rows).Error).NotTo(HaveOccurred())
+		return rows
+	}
+	invalid := "INVALID_PROOF"
+	for _, id := range []string{originalID, rotatedID} {
+		Expect(read(id)).To(Equal([]auditRow{
+			{EventType: "QUEUED", Attempt: 0},
+			{EventType: "CLAIMED", Attempt: 1},
+			{EventType: "SUPPRESSED", Attempt: 1, Reason: &invalid},
+		}))
+	}
+	rows := read(currentID)
+	Expect(rows).To(HaveLen(5))
+	Expect(rows[0]).To(Equal(auditRow{EventType: "QUEUED", Attempt: 0}))
+	Expect(rows[1]).To(Equal(auditRow{EventType: "CLAIMED", Attempt: 1}))
+	Expect(rows[2].EventType).To(Equal("RETRY_SCHEDULED"))
+	Expect(rows[2].Attempt).To(Equal(1))
+	Expect(rows[2].Reason).NotTo(BeNil())
+	Expect(*rows[2].Reason).To(Equal("DELIVERY_FAILED"))
+	Expect(rows[2].NextAttemptAt).NotTo(BeNil())
+	Expect(rows[3]).To(Equal(auditRow{EventType: "CLAIMED", Attempt: 2}))
+	Expect(rows[4]).To(Equal(auditRow{EventType: "DELIVERED", Attempt: 2}))
+	var count int64
+	Expect(db.Raw("SELECT count(*) FROM identity.invitation_delivery_audit WHERE account_id = ? AND tenant_id IS DISTINCT FROM ?", accountID, tenant).Scan(&count).Error).NotTo(HaveOccurred())
+	Expect(count).To(BeZero())
+	Expect(db.Exec("UPDATE identity.invitation_delivery_audit SET reason = NULL WHERE invitation_id = ?", currentID).Error).To(HaveOccurred())
+	Expect(db.Exec("DELETE FROM identity.invitation_delivery_audit WHERE invitation_id = ?", currentID).Error).To(HaveOccurred())
+	Expect(db.Exec("TRUNCATE identity.invitation_delivery_audit").Error).To(HaveOccurred())
+	Expect(read(currentID)).To(Equal(rows))
 }
