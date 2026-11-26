@@ -419,6 +419,7 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	Expect(auditCount).To(Equal(int64(1)))
 	verifyPolicyProvisioning(ctx, db, tenant, requester, requiredRole, approved.RequestID, policyID)
 	verifyAccountLifecycleCutover(ctx, db, tenant, requester, reviewer, managementRole, targetAccount, service, store, recorder)
+	verifyCapabilityDiscovery(ctx, db, tenant, requester, reviewer, managementRole)
 }
 
 
