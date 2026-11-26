@@ -781,11 +781,13 @@
 }
 @media (max-width: 720px) {
   .sidebar {
+    visibility: hidden;
     transform: translateX(-100%);
-    transition: transform 0.2s;
-    width: 256px;
+    transition: transform 0.2s, visibility 0.2s;
+    width: 100%;
   }
   .sidebar--open {
+    visibility: visible;
     transform: translateX(0);
   }
   .sidebar__close {
@@ -2730,7 +2732,7 @@ body {
     --sidebar-size: 0px;
   }
   .sidebar {
-    width: 256px;
+    width: 100%;
   }
   .shell__content {
     margin-left: 0;
@@ -6100,5 +6102,94 @@ body {
     width: 100%;
     min-height: 0;
     overflow: hidden;
+  }
+}
+
+/* Menu is a complete mobile navigation page; the desktop sidebar is unchanged. */
+@media (max-width: 720px) {
+  .sidebar {
+    inset: 0;
+    width: 100%;
+    max-width: 100%;
+    height: 100dvh;
+    border: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    padding: max(var(--gh-space-4), env(safe-area-inset-top)) var(--gh-space-4)
+      max(var(--gh-space-4), env(safe-area-inset-bottom));
+    transition: none;
+  }
+
+  .shell:has(> .sidebar--open) > .shell__content {
+    visibility: hidden;
+  }
+
+  :root:has(.shell > .sidebar--open) {
+    overflow: hidden;
+  }
+
+  .shell > .sidebar-backdrop {
+    display: none;
+  }
+
+  .sidebar__header,
+  .shell--collapsed .sidebar__header {
+    flex-shrink: 0;
+    justify-content: space-between;
+    gap: var(--gh-space-3);
+    padding: 0;
+    margin-bottom: var(--gh-space-6);
+  }
+
+  .sidebar__header .sidebar__brand,
+  .shell--collapsed .sidebar__header .sidebar__brand {
+    display: flex;
+    font-size: var(--gh-text-xl);
+  }
+
+  .sidebar__close,
+  .sidebar__header .app-switcher-button {
+    width: var(--gh-space-10);
+    height: var(--gh-space-10);
+    flex: 0 0 auto;
+  }
+
+  .sidebar__section-label {
+    padding-inline: var(--gh-space-3);
+    font-size: var(--gh-text-xs);
+  }
+
+  .sidebar__catalog {
+    min-height: var(--gh-control-height-lg);
+    font-size: var(--gh-text-base);
+  }
+
+  .sidebar__bottom {
+    flex-shrink: 0;
+    padding-top: var(--gh-space-6);
+  }
+
+  .sidebar__settings,
+  .shell--collapsed .sidebar__settings {
+    justify-content: flex-start;
+    padding: var(--gh-space-3);
+  }
+
+  .sidebar__settings strong {
+    font-size: var(--gh-text-sm);
+  }
+
+  .sidebar__settings small {
+    font-size: var(--gh-text-xs);
+  }
+
+  .sidebar__bottom .settings-popover,
+  .shell--collapsed .sidebar__bottom .settings-popover {
+    position: static;
+    width: 100%;
+    margin-top: var(--gh-space-2);
+    box-shadow: none;
+    font-size: var(--gh-text-sm);
   }
 }

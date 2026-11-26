@@ -20,7 +20,15 @@ export const MobileNav: MobileNavComponent = ({ model }) => (
       <Grid2X2 size={19} aria-hidden="true" />
       <Box as={BOX_TAG.SPAN}>{__('Apps')}</Box>
     </Button>
-    <Button unstyled type="button" className={styles.item} onClick={model.openSidebar}>
+    <Button
+      unstyled
+      type="button"
+      id="workspace-mobile-menu"
+      className={styles.item}
+      aria-controls="workspace-sidebar"
+      aria-expanded={model.sidebarOpen}
+      onClick={model.openSidebar}
+    >
       <Menu size={19} aria-hidden="true" />
       <Box as={BOX_TAG.SPAN}>{__('Menu')}</Box>
     </Button>

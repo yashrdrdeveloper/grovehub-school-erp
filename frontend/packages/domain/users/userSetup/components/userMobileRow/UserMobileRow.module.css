@@ -31,13 +31,13 @@
 
 .name {
   flex: 0 1 auto;
-  font-size: var(--gh-text-sm);
+  font-size: var(--gh-text-base);
   font-weight: var(--gh-weight-medium);
   color: var(--gh-color-text-strong);
 }
 
 .email {
-  font-size: var(--gh-text-xs);
+  font-size: var(--gh-text-sm);
   color: var(--gh-color-muted);
 }
 
@@ -45,4 +45,8 @@
   display: flex;
   align-items: center;
   flex: 0 0 auto;
+}
+
+.root .status > span[data-plain='true'] {
+  font-size: var(--gh-text-xs);
 }

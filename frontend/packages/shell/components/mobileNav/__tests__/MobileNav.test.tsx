@@ -9,7 +9,7 @@ describe('MobileNav', () => {
   it('retains Home navigation and delegates Apps/Menu events to the shell model', () => {
     const openCatalog = jest.fn();
     const openSidebar = jest.fn();
-    const model = { openCatalog, openSidebar } as unknown as MobileNavProps['model'];
+    const model = { openCatalog, openSidebar, sidebarOpen: false } as unknown as MobileNavProps['model'];
 
     render(
       <MemoryRouter initialEntries={['/dashboard']}>
@@ -22,7 +22,10 @@ describe('MobileNav', () => {
     expect(screen.getByRole('link', { name: 'Home' }).getAttribute('href')).toBe('/dashboard');
 
     fireEvent.click(screen.getByRole('button', { name: 'Apps' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+    const menu = screen.getByRole('button', { name: 'Menu' });
+    expect(menu.getAttribute('aria-controls')).toBe('workspace-sidebar');
+    expect(menu.getAttribute('aria-expanded')).toBe('false');
+    fireEvent.click(menu);
 
     expect(openCatalog).toHaveBeenCalledTimes(1);
     expect(openSidebar).toHaveBeenCalledTimes(1);

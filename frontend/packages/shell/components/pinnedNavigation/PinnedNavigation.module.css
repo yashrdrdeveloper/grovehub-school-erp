@@ -101,6 +101,27 @@
 }
 
 @media (max-width: 720px) {
+  .nav {
+    gap: var(--gh-space-1);
+  }
+
+  .item {
+    min-height: var(--gh-control-height-lg);
+    font-size: var(--gh-text-base);
+  }
+
+  .empty {
+    font-size: var(--gh-text-sm);
+  }
+
+  .unpin,
+  :global(.shell--collapsed) .unpin {
+    display: grid;
+    flex-basis: var(--gh-space-10);
+    height: var(--gh-space-10);
+    opacity: 1;
+  }
+
   :global(.shell--collapsed) .nav {
     padding-inline: 0;
   }

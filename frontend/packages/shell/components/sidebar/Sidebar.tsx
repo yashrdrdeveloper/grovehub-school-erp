@@ -1,3 +1,4 @@
+import { useMobileSidebarFocus } from './hooks/useMobileSidebarFocus';
 import { Button } from '@Components/components/Button';
 import { Box, BOX_TAG } from '@Components/components/Box';
 import { Grid2X2, Settings2, X } from '@Components/icons';
@@ -15,10 +16,23 @@ export const Sidebar: SidebarComponent = ({ accountLabel, onLogout, model }) => 
   const { collapsedLabel, collapsedShortLabel, CollapseIcon } = getSidebarCollapseView(
     model.sidebarCollapsed,
   );
+  const sidebarRef = useMobileSidebarFocus(model.sidebarOpen);
   const sidebarClass = 'sidebar' + ((model.sidebarOpen && ' sidebar--open') || '');
 
   return (
-    <Box as={BOX_TAG.ASIDE} className={sidebarClass} aria-label={__('School workspace sidebar')}>
+    <Box
+      as={BOX_TAG.ASIDE}
+      ref={sidebarRef}
+      id="workspace-sidebar"
+      className={sidebarClass}
+      aria-label={__('School workspace sidebar')}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' && model.sidebarOpen) {
+          event.stopPropagation();
+          model.closeSidebar();
+        }
+      }}
+    >
       <Box as={BOX_TAG.DIV} className="sidebar__header">
         <Button
           unstyled
