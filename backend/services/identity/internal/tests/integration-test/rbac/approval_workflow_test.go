@@ -12,6 +12,8 @@ import (
 	infrastructure "grovehub/services/infrastructure"
 	messaging "grovehub/services/infrastructure/client/messaging"
 	auditimpl "grovehub/services/identity/internal/app/repository/approvalaudit/impl"
+	resourceaudit "grovehub/services/identity/internal/app/repository/resourceaudit/impl"
+	resourceproducer "grovehub/services/identity/internal/app/events/producers/resource/impl"
 	producerimpl "grovehub/services/identity/internal/app/events/producers/approval/impl"
 	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
 	kind "grovehub/services/identity/internal/app/constants/approval"
@@ -208,7 +210,7 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	locker := authorityimpl.New(db)
 	guard := protect.New(locker, authorityimpl.NewAdministratorReader(db))
 	readiness := migrationimpl.NewReadiness(db)
-	effects := approvalimpl.Effects{Permissions: roleimpl.NewDraftWriter(db), Assignment: replace.New(guard, assignmentimpl.NewWriter(db)), RoleLifecycle: lifecycle.New(guard, roleimpl.NewLifecycleWriter(db))}
+	effects := approvalimpl.Effects{Audit: resourceproducer.New(resourceaudit.New(db), store), Permissions: roleimpl.NewDraftWriter(db), Assignment: replace.New(guard, assignmentimpl.NewWriter(db)), RoleLifecycle: lifecycle.New(guard, roleimpl.NewLifecycleWriter(db))}
 	buildExecutor := func(effects approvalimpl.Effects) *approvalimpl.Executor {
 		return approvalimpl.NewExecutor(repository.New(db, recorder), locker, guard, readiness, authimpl.New(snapshots), snapshots, accountimpl.NewNormalizedReader(db), roleimpl.New(db), assignmentimpl.New(db), effects)
 	}
@@ -248,6 +250,19 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	Expect(db.Raw("SELECT * FROM identity.approval_requests WHERE tenant_id = ? AND request_id = ?", tenant, approvedPermission.RequestID).Scan(&persisted).Error).NotTo(HaveOccurred())
 	Expect(persisted.Status).To(Equal(kind.Approved))
 
+	Expect(db.Raw("SELECT count(*) FROM identity.resource_audit WHERE tenant_id = ? AND request_id = ?", tenant, approvedPermission.RequestID).Scan(&auditCount).Error).NotTo(HaveOccurred())
+	Expect(auditCount).To(BeZero())
+	fault = effects
+	fault.Audit = resourceproducer.New(resourceaudit.New(db), failingOutbox{})
+	_, err = buildExecutor(fault).Execute(requesterCtx, approvedPermission.RequestID, approvedPermission.Version)
+	Expect(err).To(MatchError(errInjectedOutbox))
+	grantSet, err = roleimpl.New(db).Permissions(ctx, tenant, draftID)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(grantSet.Version).To(Equal(int64(1)))
+	Expect(grantSet.Codes).To(BeEmpty())
+	Expect(db.Raw("SELECT count(*) FROM identity.resource_audit WHERE tenant_id = ? AND request_id = ?", tenant, approvedPermission.RequestID).Scan(&auditCount).Error).NotTo(HaveOccurred())
+	Expect(auditCount).To(BeZero())
+
 	applied, err := executor.Execute(requesterCtx, approvedPermission.RequestID, approvedPermission.Version)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(applied.Status).To(Equal(kind.Applied))
@@ -261,6 +276,10 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	Expect(err).NotTo(HaveOccurred())
 	Expect(grantSet.Version).To(Equal(int64(2)))
 	Expect(grantSet.Codes).To(Equal([]permission.Code{permission.RoleDeactivate}))
+	Expect(db.Raw("SELECT count(*) FROM identity.resource_audit a JOIN infrastructure.messaging m ON m.event_id = a.event_id::text WHERE a.tenant_id = ? AND a.request_id = ? AND a.resource_id = ? AND a.resource_version = 2 AND a.event_payload = convert_from(m.payload, 'UTF8')::jsonb AND a.event_payload->>'eventType' = 'identity.role.changed.v1' AND a.event_payload->>'causationId' = a.request_id::text AND a.event_payload->>'correlationId' = 'approval-audit-test' AND a.event_payload#>'{data,old,role,permissionCodes}' = '[]'::jsonb AND a.event_payload#>'{data,new,role,permissionCodes}' = jsonb_build_array(CAST(? AS text))", tenant, approvedPermission.RequestID, draftID, permission.RoleDeactivate).Scan(&auditCount).Error).NotTo(HaveOccurred())
+	Expect(auditCount).To(Equal(int64(1)))
+	Expect(db.Exec("UPDATE identity.resource_audit SET operation = 'ROLE_LIFECYCLE_CHANGE' WHERE tenant_id = ? AND request_id = ?", tenant, approvedPermission.RequestID).Error).To(HaveOccurred())
+	Expect(db.Exec("DELETE FROM identity.resource_audit WHERE tenant_id = ? AND request_id = ?", tenant, approvedPermission.RequestID).Error).To(HaveOccurred())
 	staleResult, err := executor.Execute(requesterCtx, approvedStale.RequestID, approvedStale.Version)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(staleResult.Status).To(Equal(kind.Stale))
@@ -277,7 +296,28 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	roleAfter, err := roleimpl.New(db).FindByID(ctx, tenant, targetRole)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(roleAfter.Role.Status).To(Equal(entity.RoleInactive))
+	Expect(db.Raw("SELECT count(*) FROM identity.resource_audit WHERE tenant_id = ? AND request_id = ? AND event_payload#>>'{data,old,role,status}' = 'ACTIVE' AND event_payload#>>'{data,new,role,status}' = 'INACTIVE'", tenant, approved.RequestID).Scan(&auditCount).Error).NotTo(HaveOccurred())
+	Expect(auditCount).To(Equal(int64(1)))
+	Expect(db.Raw("SELECT count(*) FROM identity.resource_audit WHERE tenant_id = ? AND request_id IN ?", tenant, []string{approvedAssignment.RequestID, approvedStale.RequestID}).Scan(&auditCount).Error).NotTo(HaveOccurred())
+	Expect(auditCount).To(BeZero())
+
+	const targetAccount = "10000000-0000-4000-8000-000000000015"
+	Expect(db.Exec("INSERT INTO identity.accounts(account_id, person_gid, tenant_id, email, status) VALUES (?, ?, ?, 'resource-audit-target@approval.test', 'ACTIVE')", targetAccount, targetAccount, tenant).Error).NotTo(HaveOccurred())
+	assignment.Intent.AccountID = targetAccount
+	assignment.Intent.PrimaryRoleID = requiredRole
+	assignment.Intent.RoleVersions = []accountdto.RoleVersion{{RoleID: requiredRole, Version: 1}}
+	assignment.IdempotencyKey = "resource-audit-assignment"
+	pendingTarget, err := service.CreateAssignment(requesterCtx, assignment)
+	Expect(err).NotTo(HaveOccurred())
+	approvedTarget, err := service.Decide(reviewerCtx, dto.Review{RequestID: pendingTarget.RequestID, Version: 1, Decision: kind.Approve})
+	Expect(err).NotTo(HaveOccurred())
+	appliedTarget, err := executor.Execute(requesterCtx, approvedTarget.RequestID, approvedTarget.Version)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(appliedTarget.Status).To(Equal(kind.Applied))
+	Expect(db.Raw("SELECT count(*) FROM identity.resource_audit a JOIN infrastructure.messaging m ON m.event_id = a.event_id::text WHERE a.tenant_id = ? AND a.request_id = ? AND a.resource_id = ? AND a.event_payload = convert_from(m.payload, 'UTF8')::jsonb AND a.event_payload->>'eventType' = 'identity.account.authority.changed.v1' AND a.event_payload#>>'{data,old,account,primaryRoleId}' = '' AND a.event_payload#>>'{data,new,account,primaryRoleId}' = ?", tenant, approvedTarget.RequestID, targetAccount, requiredRole).Scan(&auditCount).Error).NotTo(HaveOccurred())
+	Expect(auditCount).To(Equal(int64(1)))
 }
+
 
 var errInjectedEffect = errors.New("injected failure after draft write")
 

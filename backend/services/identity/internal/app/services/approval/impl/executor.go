@@ -2,6 +2,8 @@ package impl
 
 import (
 	"context"
+	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
+	"grovehub/services/identity/internal/app/events/producers/resource"
 	"errors"
 
 	kind "grovehub/services/identity/internal/app/constants/approval"
@@ -34,6 +36,7 @@ type AssignmentEffect interface {
 }
 
 type Effects struct {
+	Audit resource.Recorder
 	AccountLifecycle AccountLifecycle
 	RoleLifecycle RoleLifecycle
 	Permissions rolerepo.DraftPermissionWriter
@@ -58,7 +61,7 @@ func (executor *Executor) Execute(ctx context.Context, requestID string, version
 	if err != nil {
 		return entity.ApprovalRequest{}, err
 	}
-	if executor.service == nil || !executor.service.available() || executor.guard == nil || executor.readiness == nil {
+	if executor.service == nil || !executor.service.available() || executor.guard == nil || executor.readiness == nil || executor.effects.Audit == nil {
 		return entity.ApprovalRequest{}, authorization.ErrUnavailable
 	}
 	id, err := helpers.NormalizeID(requestID)
@@ -120,7 +123,16 @@ func (executor *Executor) Execute(ctx context.Context, requestID string, version
 			return err
 		}
 		return executor.guard.Run(tx, actor.TenantID, func(effectCtx context.Context) error {
+			effectCtx = coreevents.WithCausationID(effectCtx, current.RequestID)
+			before, err := executor.resourceSnapshot(effectCtx, current)
+			if err != nil {
+				return err
+			}
 			if err := apply(effectCtx); err != nil {
+				return err
+			}
+			after, err := executor.resourceSnapshot(effectCtx, current)
+			if err != nil {
 				return err
 			}
 			finished, err := service.repository.Now(effectCtx)
@@ -130,6 +142,9 @@ func (executor *Executor) Execute(ctx context.Context, requestID string, version
 			// Never commit an effect after its approval deadline.
 			next, err = state.EffectResult(helpers.Snapshot(current), version, kind.Applied, finished)
 			if err != nil {
+				return err
+			}
+			if err := executor.effects.Audit.Record(effectCtx, current, before, after, finished); err != nil {
 				return err
 			}
 			updated = helpers.Advance(current, next, finished)
