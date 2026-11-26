@@ -49,7 +49,7 @@ export const MobileTable = <T,>(props: MobileTableProps<T>) => {
             if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); rowClick(entry.row); }
           }} data-selected={controls.selected.includes(entry.id)}>
             {props.mobileRowProps && <Box className={styles.mobileRowContent}>{props.mobileRowProps.render(entry.row)}</Box>}
-            {(props.selectionProps || entry.expandable || rowActions?.length) && <Box className={styles.mobileActions}>
+            {Boolean(props.selectionProps || entry.expandable || rowActions?.length) && <Box className={styles.mobileActions}>
               {props.selectionProps && <TableSelection label={__('Select row {{id}}', { id: entry.id })} checked={controls.selected.includes(entry.id)} disabled={!controls.selectable.includes(entry.id)} onChange={() => controls.selectRow(entry.id)} />}
               {entry.expandable && <Button variant={BUTTON_VARIANT.GHOST} aria-expanded={controls.expanded.includes(entry.id)} onClick={() => controls.toggleExpanded(entry.id)}>{__('Details')}</Button>}
               <TableRowActions row={entry.row} props={{ ...props, rowActions }} />

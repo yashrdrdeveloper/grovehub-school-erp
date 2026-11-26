@@ -1,12 +1,13 @@
 .root {
   display: flex;
   align-items: center;
-  gap: var(--gh-space-3);
+  gap: var(--gh-space-2);
   min-width: 0;
 }
 
 .details {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--gh-space-1);
   flex: 1;
   min-width: 0;
@@ -23,7 +24,9 @@
 .name,
 .email {
   min-width: 0;
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   line-height: var(--gh-leading-tight);
 }
 
