@@ -19,12 +19,15 @@ The frontend runs at **http://127.0.0.1:4173**. Vite proxies `/identity`, `/foun
 
 ## Modules
 
-- `packages/base`: pure technical utilities. Use `@Base/utilities/isEqual` for the Lodash shim, never import Lodash directly in domain components.
+- `../libs/frontend/base`: pure technical utilities. Use `@Base/utilities/isEqual` for the Lodash shim, never import Lodash directly in domain components.
 - `packages/business`: typed API clients and business contracts shared by domains.
-- `packages/components`: reusable presentational components, no API calls.
+- `../libs/frontend/components`: reusable presentational components, no business API calls; shared UI accepts controlled state and callbacks.
+- `../libs/frontend/styles`: reusable design tokens and theme foundations.
 - `packages/domain/auth/pages`: login, forgot/reset password and invitation setup.
 - `packages/domain`: public domain facade and domain-owned screens.
 - `packages/shell`: provider and route composition, responsive workspace frame, no business logic.
+
+The shared owners are private workspace packages `@groovehub/base`, `@groovehub/components` and `@groovehub/styles`; existing source aliases remain supported. Run `pnpm --filter @groovehub/base typecheck` and `pnpm --filter @groovehub/components typecheck` in addition to app checks. The school-specific theme and global i18n initialization remain owned by the school application.
 
 ## Security and actual backend capabilities
 

@@ -1,5 +1,7 @@
 # AGENT.md
 
+> **Shared frontend workspace update (26 November 2026):** physical reusable owners are `libs/frontend/base`, `libs/frontend/styles` and `libs/frontend/components`. School application-specific packages remain in `frontend/packages/{assets,business,domain,shell}`. Historical logical `packages/base`, `packages/styles`, `packages/components` references below map to these shared locations through `frontend/scripts/lib/source-layout.mjs`; do not recreate old folders. Keep product dependencies outside shared libraries. Validate frozen workspace install, independent Base and Components typechecks, school architecture/typecheck/Jest/lint/build, and browser regression before release.
+
 > **Status:** Mandatory repository context and execution contract for AI coding agents  
 > **Location:** `docs/AGENT.md`  
 > **Applies to:** AI coding agents, code generators, refactoring agents, automated reviewers, and any tool that changes or evaluates Perihellion source  
