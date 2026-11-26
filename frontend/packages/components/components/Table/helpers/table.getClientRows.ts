@@ -20,29 +20,53 @@ const match = (value: unknown, condition: FilterCondition): boolean => {
     return text.localeCompare(target);
   };
   switch (condition.operator) {
-    case FilterOperator.EQUALS: return text === first;
-    case FilterOperator.NOT_EQUALS: return text !== first;
-    case FilterOperator.IN: return values.includes(text);
-    case FilterOperator.NOT_IN: return !values.includes(text);
-    case FilterOperator.EXISTS: return present;
-    case FilterOperator.NOT_EXISTS: return !present;
-    case FilterOperator.CONTAINS: return text.includes(first);
-    case FilterOperator.STARTS_WITH: return text.startsWith(first);
-    case FilterOperator.ENDS_WITH: return text.endsWith(first);
-    case FilterOperator.GREATER_THAN: return present && compare(first) > 0;
-    case FilterOperator.LESS_THAN: return present && compare(first) < 0;
-    case FilterOperator.BETWEEN: return present && compare(first) >= 0 && compare(second) <= 0;
-    default: return false;
+    case FilterOperator.EQUALS:
+      return text === first;
+    case FilterOperator.NOT_EQUALS:
+      return text !== first;
+    case FilterOperator.IN:
+      return values.includes(text);
+    case FilterOperator.NOT_IN:
+      return !values.includes(text);
+    case FilterOperator.EXISTS:
+      return present;
+    case FilterOperator.NOT_EXISTS:
+      return !present;
+    case FilterOperator.CONTAINS:
+      return text.includes(first);
+    case FilterOperator.STARTS_WITH:
+      return text.startsWith(first);
+    case FilterOperator.ENDS_WITH:
+      return text.endsWith(first);
+    case FilterOperator.GREATER_THAN:
+      return present && compare(first) > 0;
+    case FilterOperator.LESS_THAN:
+      return present && compare(first) < 0;
+    case FilterOperator.BETWEEN:
+      return present && compare(first) >= 0 && compare(second) <= 0;
+    default:
+      return false;
   }
 };
 
-export const getTableClientRows = <T,>(props: TableProps<T>) => {
-  if (props.dataMode === TableDataMode.SERVER) return { rows: props.data, total: props.data.length };
+export const getTableClientRows = <T>(props: TableProps<T>) => {
+  if (props.dataMode === TableDataMode.SERVER)
+    return { rows: props.data, total: props.data.length };
   const search = normalize(props.searchProps?.value).trim();
   const columns = new Map(props.columns.map((column) => [column.id, column]));
   const filtered = props.data.filter((row) => {
-    if (search && !props.columns.some((column) => column.searchable !== false && normalize(column.accessor(row)).includes(search))) return false;
-    if (props.matchesQuickFilter && !props.matchesQuickFilter(row, props.quickFilterProps?.value ?? [])) return false;
+    if (
+      search &&
+      !props.columns.some(
+        (column) => column.searchable !== false && normalize(column.accessor(row)).includes(search),
+      )
+    )
+      return false;
+    if (
+      props.matchesQuickFilter &&
+      !props.matchesQuickFilter(row, props.quickFilterProps?.value ?? [])
+    )
+      return false;
     return (props.filterProps?.value ?? []).every((condition) => {
       const column = columns.get(condition.field);
       return Boolean(column && match(column.accessor(row), condition));

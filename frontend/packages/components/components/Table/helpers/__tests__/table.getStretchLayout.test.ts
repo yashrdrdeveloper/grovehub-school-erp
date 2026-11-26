@@ -3,9 +3,24 @@ import type { TableColumnLayout } from '../../types/table.row';
 import { getTableStretchLayout } from '../table.getStretchLayout';
 
 const layout: readonly TableColumnLayout<string>[] = [
-  { column: { id: 'user', header: 'User', accessor: (row) => row, fillRemainingWidth: true }, width: 300, pin: TablePin.LEFT, offset: 0 },
-  { column: { id: 'status', header: 'Status', accessor: (row) => row }, width: 160, pin: TablePin.LEFT, offset: 300 },
-  { column: { id: 'date', header: 'Date', accessor: (row) => row }, width: 220, pin: TablePin.NONE, offset: 0 },
+  {
+    column: { id: 'user', header: 'User', accessor: (row) => row, fillRemainingWidth: true },
+    width: 300,
+    pin: TablePin.LEFT,
+    offset: 0,
+  },
+  {
+    column: { id: 'status', header: 'Status', accessor: (row) => row },
+    width: 160,
+    pin: TablePin.LEFT,
+    offset: 300,
+  },
+  {
+    column: { id: 'date', header: 'Date', accessor: (row) => row },
+    width: 220,
+    pin: TablePin.NONE,
+    offset: 0,
+  },
 ];
 
 describe('getTableStretchLayout', () => {

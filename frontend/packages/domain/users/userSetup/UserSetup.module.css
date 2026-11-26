@@ -21,7 +21,12 @@
 }
 
 @media (max-width: 640px) {
-  .page { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  .page {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
 }
 
 .detailIdentity {

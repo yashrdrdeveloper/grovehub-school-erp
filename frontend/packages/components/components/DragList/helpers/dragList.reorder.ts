@@ -1,4 +1,9 @@
-export const reorderDragList = <T,>(items: readonly T[], from: number, to: number, canMove?: (item: T, target: T) => boolean): readonly T[] => {
+export const reorderDragList = <T>(
+  items: readonly T[],
+  from: number,
+  to: number,
+  canMove?: (item: T, target: T) => boolean,
+): readonly T[] => {
   const item = items[from];
   if (item === undefined || from === to || to < 0 || to >= items.length) return items;
   const start = Math.min(from, to);

@@ -18,7 +18,8 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
- .locked.locked, .unlocked.unlocked {
+.locked.locked,
+.unlocked.unlocked {
   width: var(--gh-control-height-sm);
   padding: 0;
   color: var(--gh-color-muted);

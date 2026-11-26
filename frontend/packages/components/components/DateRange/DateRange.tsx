@@ -20,20 +20,25 @@ export const DateRange = (props: DateRangeProps) => {
   const { value, disabled, dataTestId, showHeader = true, showFooter = true } = props;
   const controls = useDateRange(props);
   const empty = !value.startDate && !value.endDate;
-  const revealSelectedPreset = useCallback((element: HTMLElement | null) => {
-    if (!controls.open) return;
-    const selected = element?.querySelector<HTMLElement>('[aria-pressed="true"]');
-    if (!element || !selected) return;
-    const container = element.getBoundingClientRect();
-    const button = selected.getBoundingClientRect();
-    if (button.bottom > container.bottom) element.scrollTop += button.bottom - container.bottom;
-    if (button.top < container.top) element.scrollTop -= container.top - button.top;
-    if (button.right > container.right) element.scrollLeft += button.right - container.right;
-    if (button.left < container.left) element.scrollLeft -= container.left - button.left;
-  }, [controls.open]);
+  const revealSelectedPreset = useCallback(
+    (element: HTMLElement | null) => {
+      if (!controls.open) return;
+      const selected = element?.querySelector<HTMLElement>('[aria-pressed="true"]');
+      if (!element || !selected) return;
+      const container = element.getBoundingClientRect();
+      const button = selected.getBoundingClientRect();
+      if (button.bottom > container.bottom) element.scrollTop += button.bottom - container.bottom;
+      if (button.top < container.top) element.scrollTop -= container.top - button.top;
+      if (button.right > container.right) element.scrollLeft += button.right - container.right;
+      if (button.left < container.left) element.scrollLeft -= container.left - button.left;
+    },
+    [controls.open],
+  );
   const getSummary = () => {
     if (empty) return __('Select date range');
-    return [getFormattedRangeDate(value.startDate), getFormattedRangeDate(value.endDate)].join(' – ');
+    return [getFormattedRangeDate(value.startDate), getFormattedRangeDate(value.endDate)].join(
+      ' – ',
+    );
   };
   const getApplyReason = () => {
     if (disabled) return __('Date range is disabled.');
@@ -55,41 +60,119 @@ export const DateRange = (props: DateRangeProps) => {
             {!controls.draft.startDate && __('Select date range')}
             {controls.draft.startDate && getFormattedRangeDate(controls.draft.startDate)}
             {controls.draft.startDate && ' – '}
-            {controls.draft.startDate && getFormattedRangeDate(controls.draft.endDate, __('End date'))}
+            {controls.draft.startDate &&
+              getFormattedRangeDate(controls.draft.endDate, __('End date'))}
           </Box>
         }
         width={520}
         compact
         fullWidth
         trigger={
-          <ButtonWithIcon icon={CalendarDays} iconSize={14} iconPosition={BUTTON_ICON_POSITION.RIGHT} variant={BUTTON_VARIANT.OUTLINE} size={BUTTON_SIZE.SMALL} fullWidth className={styles.trigger} data-placeholder={empty} disabled={disabled} aria-label={__('Select date range')} aria-expanded={controls.open} onClick={() => controls.onOpenChange(true)}>
+          <ButtonWithIcon
+            icon={CalendarDays}
+            iconSize={14}
+            iconPosition={BUTTON_ICON_POSITION.RIGHT}
+            variant={BUTTON_VARIANT.OUTLINE}
+            size={BUTTON_SIZE.SMALL}
+            fullWidth
+            className={styles.trigger}
+            data-placeholder={empty}
+            disabled={disabled}
+            aria-label={__('Select date range')}
+            aria-expanded={controls.open}
+            onClick={() => controls.onOpenChange(true)}
+          >
             {getSummary()}
           </ButtonWithIcon>
         }
       >
         <Box className={styles.range}>
           <Box className={styles.layout}>
-            <Box ref={revealSelectedPreset} className={styles.presets} role="group" aria-label={__('Date range presets')}>
-              <Button variant={BUTTON_VARIANT.GHOST} size={BUTTON_SIZE.SMALL} className={styles.preset} aria-pressed={controls.selectedPreset === CUSTOM_DATE_RANGE_PRESET} disabled={disabled} onClick={controls.selectCustom}>{__('Custom')}</Button>
+            <Box
+              ref={revealSelectedPreset}
+              className={styles.presets}
+              role="group"
+              aria-label={__('Date range presets')}
+            >
+              <Button
+                variant={BUTTON_VARIANT.GHOST}
+                size={BUTTON_SIZE.SMALL}
+                className={styles.preset}
+                aria-pressed={controls.selectedPreset === CUSTOM_DATE_RANGE_PRESET}
+                disabled={disabled}
+                onClick={controls.selectCustom}
+              >
+                {__('Custom')}
+              </Button>
               {_map(DATE_RANGE_PRESETS, (preset) => (
-                <Button key={preset.id} variant={BUTTON_VARIANT.GHOST} size={BUTTON_SIZE.SMALL} className={styles.preset} aria-pressed={controls.selectedPreset === preset.id} disabled={disabled} onClick={() => controls.selectPreset(preset)}>
+                <Button
+                  key={preset.id}
+                  variant={BUTTON_VARIANT.GHOST}
+                  size={BUTTON_SIZE.SMALL}
+                  className={styles.preset}
+                  aria-pressed={controls.selectedPreset === preset.id}
+                  disabled={disabled}
+                  onClick={() => controls.selectPreset(preset)}
+                >
                   {preset.label}
                 </Button>
               ))}
             </Box>
             <Box className={styles.selection}>
-              <Box className={styles.calendars} key={controls.selectedPreset ?? CUSTOM_DATE_RANGE_PRESET}>
-                <Calendar compact hideFooter navigation="previous" month={controls.month} onMonthChange={controls.setMonth} value={controls.draft.startDate} range={controls.preview} onChange={controls.selectDate} onDayHover={controls.setHover} disabled={disabled} />
-                <Calendar compact hideFooter navigation="next" month={controls.nextMonth} onMonthChange={(month) => controls.setMonth(shiftRangeMonth(month, -1))} value={controls.draft.endDate} range={controls.preview} onChange={controls.selectDate} onDayHover={controls.setHover} disabled={disabled} />
+              <Box
+                className={styles.calendars}
+                key={controls.selectedPreset ?? CUSTOM_DATE_RANGE_PRESET}
+              >
+                <Calendar
+                  compact
+                  hideFooter
+                  navigation="previous"
+                  month={controls.month}
+                  onMonthChange={controls.setMonth}
+                  value={controls.draft.startDate}
+                  range={controls.preview}
+                  onChange={controls.selectDate}
+                  onDayHover={controls.setHover}
+                  disabled={disabled}
+                />
+                <Calendar
+                  compact
+                  hideFooter
+                  navigation="next"
+                  month={controls.nextMonth}
+                  onMonthChange={(month) => controls.setMonth(shiftRangeMonth(month, -1))}
+                  value={controls.draft.endDate}
+                  range={controls.preview}
+                  onChange={controls.selectDate}
+                  onDayHover={controls.setHover}
+                  disabled={disabled}
+                />
               </Box>
             </Box>
           </Box>
-          {controls.invalid && <Box role="alert" className={styles.hint}>{__('The start date must not exceed the end date.')}</Box>}
+          {controls.invalid && (
+            <Box role="alert" className={styles.hint}>
+              {__('The start date must not exceed the end date.')}
+            </Box>
+          )}
           {showFooter && (
             <Box className={styles.footer}>
-              <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} disabled={disabled} onClick={controls.clear}>{__('Clear')}</Button>
+              <Button
+                size={BUTTON_SIZE.SMALL}
+                variant={BUTTON_VARIANT.GHOST}
+                disabled={disabled}
+                onClick={controls.clear}
+              >
+                {__('Clear')}
+              </Button>
               <Tooltip label={getApplyReason()} focusable={!controls.canApply}>
-                <Button size={BUTTON_SIZE.SMALL} disabled={!controls.canApply} onClick={controls.apply}>{__('Apply')}</Button>
+                <Button
+                  size={BUTTON_SIZE.SMALL}
+                  disabled={!controls.canApply}
+                  onClick={controls.apply}
+                >
+                  {__('Apply')}
+                </Button>
               </Tooltip>
             </Box>
           )}

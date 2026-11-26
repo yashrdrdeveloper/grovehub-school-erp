@@ -24,7 +24,12 @@ export const TableScrollbar = ({ viewport, viewportId, axis }: TableScrollbarPro
         nextOffset,
       );
       setGeometry((current) => {
-        if (current.maximum === next.maximum && current.size === next.size && current.position === next.position) return current;
+        if (
+          current.maximum === next.maximum &&
+          current.size === next.size &&
+          current.position === next.position
+        )
+          return current;
         return next;
       });
       setOffset(nextOffset);
@@ -97,8 +102,8 @@ export const TableScrollbar = ({ viewport, viewportId, axis }: TableScrollbarPro
         if (event.button !== 0) return;
         const rect = event.currentTarget.getBoundingClientRect();
         const { point, length } = getPointer(rect, event.clientX, event.clientY);
-        const thumbStart = geometry.position / 100 * length;
-        const thumbLength = geometry.size / 100 * length;
+        const thumbStart = (geometry.position / 100) * length;
+        const thumbLength = (geometry.size / 100) * length;
         const inside = point >= thumbStart && point <= thumbStart + thumbLength;
         const grab = (inside && point - thumbStart) || (!inside && thumbLength / 2) || 0;
         event.preventDefault();
@@ -106,15 +111,21 @@ export const TableScrollbar = ({ viewport, viewportId, axis }: TableScrollbarPro
         event.currentTarget.setPointerCapture(event.pointerId);
         drag.current = { pointerId: event.pointerId, grab };
         setDragging(true);
-        if (!inside) scrollTo(getScrollbarOffset(point, length, geometry.size, grab, geometry.maximum));
+        if (!inside)
+          scrollTo(getScrollbarOffset(point, length, geometry.size, grab, geometry.maximum));
       }}
       onPointerMove={(event) => {
         if (!drag.current || drag.current.pointerId !== event.pointerId) return;
         const rect = event.currentTarget.getBoundingClientRect();
         const { point, length } = getPointer(rect, event.clientX, event.clientY);
-        scrollTo(getScrollbarOffset(point, length, geometry.size, drag.current.grab, geometry.maximum));
+        scrollTo(
+          getScrollbarOffset(point, length, geometry.size, drag.current.grab, geometry.maximum),
+        );
       }}
-      onLostPointerCapture={() => { drag.current = null; setDragging(false); }}
+      onLostPointerCapture={() => {
+        drag.current = null;
+        setDragging(false);
+      }}
       onKeyDown={(event) => {
         const page = getPage();
         if (event.key === 'Home') scrollTo(0);

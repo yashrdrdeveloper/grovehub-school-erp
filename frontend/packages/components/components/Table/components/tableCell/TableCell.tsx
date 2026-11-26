@@ -26,22 +26,40 @@ export const TableCell = <T,>({ row, column, actions }: TableCellProps<T>) => {
           actions.CELL_EDIT?.({ row, columnId: column.id, value });
           setEditing(false);
         })}
-        <Button variant={BUTTON_VARIANT.OUTLINE} onClick={() => setEditing(false)}>{__('Cancel')}</Button>
+        <Button variant={BUTTON_VARIANT.OUTLINE} onClick={() => setEditing(false)}>
+          {__('Cancel')}
+        </Button>
       </Box>
     );
   }
   return (
     <Box className={styles.cell}>
-      {actions?.CELL_CLICK && <Button variant={BUTTON_VARIANT.GHOST} onClick={(event) => {
-        event.stopPropagation();
-        actions.CELL_CLICK?.({ row, columnId: column.id });
-      }}>{content}</Button>}
-      {!actions?.CELL_CLICK && <Box className={styles.value} title={getTitle()}>{content}</Box>}
+      {actions?.CELL_CLICK && (
+        <Button
+          variant={BUTTON_VARIANT.GHOST}
+          onClick={(event) => {
+            event.stopPropagation();
+            actions.CELL_CLICK?.({ row, columnId: column.id });
+          }}
+        >
+          {content}
+        </Button>
+      )}
+      {!actions?.CELL_CLICK && (
+        <Box className={styles.value} title={getTitle()}>
+          {content}
+        </Box>
+      )}
       {column.editRenderer && actions?.CELL_EDIT && (
-        <ButtonWithIcon icon={Pencil} variant={BUTTON_VARIANT.GHOST} aria-label={__('Edit cell')} onClick={(event) => {
-          event.stopPropagation();
-          setEditing(true);
-        }} />
+        <ButtonWithIcon
+          icon={Pencil}
+          variant={BUTTON_VARIANT.GHOST}
+          aria-label={__('Edit cell')}
+          onClick={(event) => {
+            event.stopPropagation();
+            setEditing(true);
+          }}
+        />
       )}
     </Box>
   );

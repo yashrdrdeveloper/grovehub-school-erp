@@ -25,17 +25,54 @@ export const NumberRange = ({ value, onChange, disabled, dataTestId }: NumberRan
   };
   return (
     <Box dataTestId={dataTestId}>
-      <Popover open={open} onOpenChange={onOpenChange} title={label} fullWidth trigger={<ButtonWithIcon icon={ChevronDown} iconPosition={BUTTON_ICON_POSITION.RIGHT} variant={BUTTON_VARIANT.OUTLINE} fullWidth disabled={disabled} onClick={() => onOpenChange(true)}>{summary()}</ButtonWithIcon>}>
+      <Popover
+        open={open}
+        onOpenChange={onOpenChange}
+        title={label}
+        fullWidth
+        trigger={
+          <ButtonWithIcon
+            icon={ChevronDown}
+            iconPosition={BUTTON_ICON_POSITION.RIGHT}
+            variant={BUTTON_VARIANT.OUTLINE}
+            fullWidth
+            disabled={disabled}
+            onClick={() => onOpenChange(true)}
+          >
+            {summary()}
+          </ButtonWithIcon>
+        }
+      >
         <Box className={styles.range}>
-          <Number label={__('Minimum')} value={draft.min} disabled={disabled} onChange={(next) => setDraft({ ...draft, min: next })} />
-          <Number label={__('Maximum')} value={draft.max} disabled={disabled} onChange={(next) => setDraft({ ...draft, max: next })} />
+          <Number
+            label={__('Minimum')}
+            value={draft.min}
+            disabled={disabled}
+            onChange={(next) => setDraft({ ...draft, min: next })}
+          />
+          <Number
+            label={__('Maximum')}
+            value={draft.max}
+            disabled={disabled}
+            onChange={(next) => setDraft({ ...draft, max: next })}
+          />
           {invalid && <Box role="alert">{__('The start must not exceed the end.')}</Box>}
           <Box className={styles.actions}>
-            <Button variant={BUTTON_VARIANT.OUTLINE} onClick={() => setDraft({ min: null, max: null })}>{__('Clear')}</Button>
-            <Button disabled={invalid} onClick={() => {
-              onChange(draft);
-              setOpen(false);
-            }}>{__('Apply')}</Button>
+            <Button
+              variant={BUTTON_VARIANT.OUTLINE}
+              onClick={() => setDraft({ min: null, max: null })}
+            >
+              {__('Clear')}
+            </Button>
+            <Button
+              disabled={invalid}
+              onClick={() => {
+                onChange(draft);
+                setOpen(false);
+              }}
+            >
+              {__('Apply')}
+            </Button>
           </Box>
         </Box>
       </Popover>

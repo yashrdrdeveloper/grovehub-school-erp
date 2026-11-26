@@ -59,31 +59,47 @@ export const SelectionPanel = <T extends SelectValue>({
   return (
     <Box className={styles.field}>
       {!hideLabel && <Box className={styles.description}>{label}</Box>}
-      <Popover open={open} onOpenChange={onOpenChange} title={label} compact fullWidth desktopDropdown desktopDropdownWidth={getDropdownWidth()} dataTestId={dataTestId && `${dataTestId}-options`} trigger={
-      <Tooltip label={disabled && disabledReason || undefined} focusable={Boolean(disabled && disabledReason)} fullWidth>
-      <ButtonWithIcon
-        icon={ChevronDown}
-        iconPosition={BUTTON_ICON_POSITION.RIGHT}
-        variant={BUTTON_VARIANT.OUTLINE}
+      <Popover
+        open={open}
+        onOpenChange={onOpenChange}
+        title={label}
+        compact
         fullWidth
-        size={BUTTON_SIZE.SMALL}
-        disabled={disabled}
-        aria-label={label}
-        aria-expanded={open}
-        aria-haspopup="dialog"
-        dataTestId={dataTestId}
-        className={styles.trigger}
-        data-placeholder={!selected.length}
-        onClick={() => onOpenChange(true)}
+        desktopDropdown
+        desktopDropdownWidth={getDropdownWidth()}
+        dataTestId={dataTestId && `${dataTestId}-options`}
+        trigger={
+          <Tooltip
+            label={(disabled && disabledReason) || undefined}
+            focusable={Boolean(disabled && disabledReason)}
+            fullWidth
+          >
+            <ButtonWithIcon
+              icon={ChevronDown}
+              iconPosition={BUTTON_ICON_POSITION.RIGHT}
+              variant={BUTTON_VARIANT.OUTLINE}
+              fullWidth
+              size={BUTTON_SIZE.SMALL}
+              disabled={disabled}
+              aria-label={label}
+              aria-expanded={open}
+              aria-haspopup="dialog"
+              dataTestId={dataTestId}
+              className={styles.trigger}
+              data-placeholder={!selected.length}
+              onClick={() => onOpenChange(true)}
+            >
+              {getLabel()}
+            </ButtonWithIcon>
+          </Tooltip>
+        }
       >
-        {getLabel()}
-      </ButtonWithIcon>
-      </Tooltip>
-      }>
         <Box className={styles.content} data-dropdown={dropdown} data-multiple={multiple}>
           {searchable && dropdown && (
             <Box className={styles.search}>
-              <Box className={styles.searchIcon} aria-hidden="true"><Icon icon={Search} size={14} /></Box>
+              <Box className={styles.searchIcon} aria-hidden="true">
+                <Icon icon={Search} size={14} />
+              </Box>
               <InputControl
                 aria-label={__('Search options')}
                 controlSize={INPUT_CONTROL_SIZE.SMALL}
@@ -116,21 +132,46 @@ export const SelectionPanel = <T extends SelectValue>({
                 className={styles.option}
                 dataTestId={dataTestId && `${dataTestId}-option-${option.value}`}
               >
-                {multiple && <Box className={styles.check} data-checked={selected.includes(option.value)} aria-hidden="true">{selected.includes(option.value) && <Icon icon={Check} size={12} />}</Box>}
+                {multiple && (
+                  <Box
+                    className={styles.check}
+                    data-checked={selected.includes(option.value)}
+                    aria-hidden="true"
+                  >
+                    {selected.includes(option.value) && <Icon icon={Check} size={12} />}
+                  </Box>
+                )}
                 <Box className={styles.optionLabel}>
                   {option.label}
-                  {option.description && <Box className={styles.description}>{option.description}</Box>}
+                  {option.description && (
+                    <Box className={styles.description}>{option.description}</Box>
+                  )}
                 </Box>
                 {!multiple && selected.includes(option.value) && <Icon icon={Check} size={14} />}
               </Button>
             ))}
-            {!options.length && !loading && !error && <EmptyState compact icon={Search} title={__('No options found')} description={__('Try a different search or selection.')} />}
+            {!options.length && !loading && !error && (
+              <EmptyState
+                compact
+                icon={Search}
+                title={__('No options found')}
+                description={__('Try a different search or selection.')}
+              />
+            )}
             {loading && <Box role="status">{__('Loading…')}</Box>}
-            {hasNext && <Button disabled={loading} onClick={onLoadMore}>{__('Load more')}</Button>}
+            {hasNext && (
+              <Button disabled={loading} onClick={onLoadMore}>
+                {__('Load more')}
+              </Button>
+            )}
           </Box>
           {(clearable || multiple) && (
             <Box className={styles.footer}>
-              {clearable && <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} onClick={onClear}>{__('Clear')}</Button>}
+              {clearable && (
+                <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} onClick={onClear}>
+                  {__('Clear')}
+                </Button>
+              )}
               {multiple && <Button onClick={onApply}>{__('Apply')}</Button>}
             </Box>
           )}

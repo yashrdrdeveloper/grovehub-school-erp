@@ -14,9 +14,30 @@ interface PaginationBaseProps {
   readonly dataTestId?: string;
 }
 
-export type PaginationProps = PaginationBaseProps & (
-  | { readonly type: typeof PaginationType.CURSOR; readonly currentPage: number; readonly hasNext: boolean; readonly hasPrevious: boolean }
-  | { readonly type: typeof PaginationType.HYBRID; readonly currentPage: number; readonly totalRecords?: number; readonly totalPages?: number; readonly hasNext: boolean; readonly hasPrevious: boolean }
-  | { readonly type: typeof PaginationType.OFFSET; readonly currentPage: number; readonly totalRecords: number }
-  | { readonly type: typeof PaginationType.INFINITE; readonly hasNext: boolean; readonly loadedRecords: number }
-);
+export type PaginationProps = PaginationBaseProps &
+  (
+    | {
+        readonly type: typeof PaginationType.CURSOR;
+        readonly currentPage: number;
+        readonly hasNext: boolean;
+        readonly hasPrevious: boolean;
+      }
+    | {
+        readonly type: typeof PaginationType.HYBRID;
+        readonly currentPage: number;
+        readonly totalRecords?: number;
+        readonly totalPages?: number;
+        readonly hasNext: boolean;
+        readonly hasPrevious: boolean;
+      }
+    | {
+        readonly type: typeof PaginationType.OFFSET;
+        readonly currentPage: number;
+        readonly totalRecords: number;
+      }
+    | {
+        readonly type: typeof PaginationType.INFINITE;
+        readonly hasNext: boolean;
+        readonly loadedRecords: number;
+      }
+  );

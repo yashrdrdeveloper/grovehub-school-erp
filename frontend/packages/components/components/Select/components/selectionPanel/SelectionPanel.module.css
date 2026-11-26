@@ -150,5 +150,9 @@
   text-overflow: ellipsis;
 }
 
-.option.option svg { flex-shrink: 0; }
-.content[data-dropdown='true'] .footer { padding: var(--gh-space-1); }
+.option.option svg {
+  flex-shrink: 0;
+}
+.content[data-dropdown='true'] .footer {
+  padding: var(--gh-space-1);
+}

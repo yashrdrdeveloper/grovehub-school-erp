@@ -783,7 +783,9 @@
   .sidebar {
     visibility: hidden;
     transform: translateX(-100%);
-    transition: transform 0.2s, visibility 0.2s;
+    transition:
+      transform 0.2s,
+      visibility 0.2s;
     width: 100%;
   }
   .sidebar--open {
@@ -6027,7 +6029,9 @@ body {
     max-width: 100%;
     padding-block-start: max(var(--gh-space-4), env(safe-area-inset-top));
     padding-inline: var(--ui-page-gutter);
-    padding-block-end: calc(var(--workspace-mobile-nav-height) + var(--workspace-mobile-nav-offset) + var(--gh-space-4));
+    padding-block-end: calc(
+      var(--workspace-mobile-nav-height) + var(--workspace-mobile-nav-offset) + var(--gh-space-4)
+    );
   }
   .sidebar-backdrop {
     z-index: 35;

@@ -14,7 +14,19 @@
   min-height: 40px;
   padding: 0;
 }
-.options { display: grid; gap: var(--gh-space-1); }
-.options button { width: 100%; justify-content: flex-start; min-height: 44px; }
-.options button[aria-pressed='true'] { color: var(--gh-color-accent); background: var(--gh-color-accent-soft); }
-.root > :not(button):empty { display: none; }
+.options {
+  display: grid;
+  gap: var(--gh-space-1);
+}
+.options button {
+  width: 100%;
+  justify-content: flex-start;
+  min-height: 44px;
+}
+.options button[aria-pressed='true'] {
+  color: var(--gh-color-accent);
+  background: var(--gh-color-accent-soft);
+}
+.root > :not(button):empty {
+  display: none;
+}

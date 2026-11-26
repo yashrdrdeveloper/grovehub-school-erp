@@ -1,6 +1,12 @@
 export { TableContainer as Table } from './containers/tableContainer';
 export { Column } from './builders/column';
-export { TableType, TableDataMode, TableDensity, TablePin, TableAlignment } from './constants/table.type';
+export {
+  TableType,
+  TableDataMode,
+  TableDensity,
+  TablePin,
+  TableAlignment,
+} from './constants/table.type';
 export { TableActionType } from './constants/table.actionType';
 export type {
   TableProps,

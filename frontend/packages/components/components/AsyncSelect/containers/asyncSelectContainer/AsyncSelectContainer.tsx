@@ -24,7 +24,11 @@ export const AsyncSelectContainer = <T extends SelectValue>({
     multiple: false,
     onChange: (values) => onChange(values[0] ?? null),
   });
-  const source = useAsyncOptions({ cacheKey, loadOptions, initialOptions, resolveOptions, pageSize, debounceMs }, controls.open, selected);
+  const source = useAsyncOptions(
+    { cacheKey, loadOptions, initialOptions, resolveOptions, pageSize, debounceMs },
+    controls.open,
+    selected,
+  );
 
   return (
     <AsyncSelectView

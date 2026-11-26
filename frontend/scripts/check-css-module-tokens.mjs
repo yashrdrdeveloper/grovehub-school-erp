@@ -28,50 +28,52 @@ const visit = async (directory, predicate, callback) => {
   }
 };
 
-for (const styles of styleOwners) await visit(
-  styles,
-  (filename) => filename.endsWith('.css'),
-  async (filename) => {
-    const css = await readFile(filename, 'utf8');
-    for (const match of css.matchAll(/(--gh-[\w-]+)\s*:/g)) {
-      declared.add(match[1]);
-    }
-  },
-);
+for (const styles of styleOwners)
+  await visit(
+    styles,
+    (filename) => filename.endsWith('.css'),
+    async (filename) => {
+      const css = await readFile(filename, 'utf8');
+      for (const match of css.matchAll(/(--gh-[\w-]+)\s*:/g)) {
+        declared.add(match[1]);
+      }
+    },
+  );
 
 const checkedCounter = { current: 0 };
-for (const modules of packageSourceRoots) await visit(
-  modules,
-  (filename) => filename.endsWith('.module.css'),
-  async (filename) => {
-    checkedCounter.current += 1;
-    const css = await readFile(filename, 'utf8');
+for (const modules of packageSourceRoots)
+  await visit(
+    modules,
+    (filename) => filename.endsWith('.module.css'),
+    async (filename) => {
+      checkedCounter.current += 1;
+      const css = await readFile(filename, 'utf8');
 
-    for (const match of css.matchAll(/var\((--gh-[\w-]+)/g)) {
-      if (!declared.has(match[1])) {
-        violations.push(`${path.relative(root, filename)}: undefined design token ${match[1]}`);
+      for (const match of css.matchAll(/var\((--gh-[\w-]+)/g)) {
+        if (!declared.has(match[1])) {
+          violations.push(`${path.relative(root, filename)}: undefined design token ${match[1]}`);
+        }
       }
-    }
 
-    if (/:global\(\s*\.\w+\s*\)\s*\{/.test(css)) {
-      violations.push(
-        `${path.relative(root, filename)}: unscoped global classes are not a CSS Module migration`,
-      );
-    }
+      if (/:global\(\s*\.\w+\s*\)\s*\{/.test(css)) {
+        violations.push(
+          `${path.relative(root, filename)}: unscoped global classes are not a CSS Module migration`,
+        );
+      }
 
-    if (/#[0-9a-f]{3,8}\b|\brgba?\(|\bhsla?\(/i.test(css)) {
-      violations.push(
-        `${path.relative(root, filename)}: use semantic theme tokens instead of color literals`,
-      );
-    }
+      if (/#[0-9a-f]{3,8}\b|\brgba?\(|\bhsla?\(/i.test(css)) {
+        violations.push(
+          `${path.relative(root, filename)}: use semantic theme tokens instead of color literals`,
+        );
+      }
 
-    if (/:root\s*\{/.test(css)) {
-      violations.push(
-        `${path.relative(root, filename)}: root design tokens belong to packages/styles`,
-      );
-    }
-  },
-);
+      if (/:root\s*\{/.test(css)) {
+        violations.push(
+          `${path.relative(root, filename)}: root design tokens belong to packages/styles`,
+        );
+      }
+    },
+  );
 
 if (violations.length > 0) {
   violations.forEach((violation) => process.stderr.write(violation + '\n'));

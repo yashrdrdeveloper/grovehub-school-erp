@@ -217,7 +217,9 @@
 .table [data-pin-boundary='RIGHT'] {
   box-shadow: inset 1px 0 var(--gh-color-table-divider);
 }
-.table th[data-pinned='true'] [role='separator']:not(:hover):not(:focus-visible):not([data-resizing='true'])::after {
+.table
+  th[data-pinned='true']
+  [role='separator']:not(:hover):not(:focus-visible):not([data-resizing='true'])::after {
   background: transparent;
 }
 .table .filler {
@@ -343,7 +345,10 @@
   }
 }
 
-.mobileRowContent { flex: 1; min-width: 0; }
+.mobileRowContent {
+  flex: 1;
+  min-width: 0;
+}
 .mobileCard[data-compact-row='true'] {
   display: flex;
   align-items: center;
@@ -366,12 +371,28 @@
   outline: var(--gh-focus-outline-width) solid var(--gh-color-ring);
   outline-offset: -1px;
 }
-.mobileList[data-density='COMPACT'] .mobileCard[data-compact-row='true'] { padding-block: var(--gh-space-2); }
-.mobileList[data-density='COMFORTABLE'] .mobileCard[data-compact-row='true'] { padding-block: var(--gh-space-4); }
+.mobileList[data-density='COMPACT'] .mobileCard[data-compact-row='true'] {
+  padding-block: var(--gh-space-2);
+}
+.mobileList[data-density='COMFORTABLE'] .mobileCard[data-compact-row='true'] {
+  padding-block: var(--gh-space-4);
+}
 @media (max-width: 640px) {
-  .root { gap: var(--gh-space-2); }
-  .root[data-fill-height='true'] { display: flex; flex-direction: column; flex: 1; min-height: 0; }
-  .root[data-fill-height='true'] .panel { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  .root {
+    gap: var(--gh-space-2);
+  }
+  .root[data-fill-height='true'] {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+  .root[data-fill-height='true'] .panel {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
   .root[data-fill-height='true'] .body {
     flex: 1;
     overflow-y: auto;
@@ -379,9 +400,16 @@
     scrollbar-gutter: auto;
     padding: 0;
   }
-  .root[data-fill-height='true'] .footer { flex: 0 0 auto; }
-  .mobileList { gap: 0; align-content: start; }
-  .mobileCard:not([data-compact-row='true']) { margin: var(--gh-space-2); }
+  .root[data-fill-height='true'] .footer {
+    flex: 0 0 auto;
+  }
+  .mobileList {
+    gap: 0;
+    align-content: start;
+  }
+  .mobileCard:not([data-compact-row='true']) {
+    margin: var(--gh-space-2);
+  }
 }
 
 /* Custom mobile rows are a native-style list, not a full-height table card. */

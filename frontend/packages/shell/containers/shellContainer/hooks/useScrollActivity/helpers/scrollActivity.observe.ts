@@ -14,12 +14,15 @@ export const observeScrollActivity = (document: Document): (() => void) => {
 
   const onScroll = (event: Event) => {
     const target = event.target;
-    const element = target === document && document.documentElement || target;
+    const element = (target === document && document.documentElement) || target;
     if (!(element instanceof Element)) return;
     const timeout = pending.get(element);
     if (timeout !== undefined) clearTimeout(timeout);
     element.setAttribute(SCROLL_ACTIVE_ATTRIBUTE, 'true');
-    pending.set(element, setTimeout(() => clear(element), SCROLL_IDLE_DELAY_MS));
+    pending.set(
+      element,
+      setTimeout(() => clear(element), SCROLL_IDLE_DELAY_MS),
+    );
   };
 
   document.addEventListener('scroll', onScroll, { capture: true, passive: true });

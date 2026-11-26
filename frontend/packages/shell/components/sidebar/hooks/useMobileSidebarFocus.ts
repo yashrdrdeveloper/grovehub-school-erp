@@ -5,7 +5,12 @@ export const useMobileSidebarFocus = (open: boolean) => {
   const sidebar = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    if (!open || typeof window.matchMedia !== 'function' || !window.matchMedia('(max-width: 720px)').matches) return;
+    if (
+      !open ||
+      typeof window.matchMedia !== 'function' ||
+      !window.matchMedia('(max-width: 720px)').matches
+    )
+      return;
     const element = sidebar.current;
     if (!element) return;
 

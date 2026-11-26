@@ -2,7 +2,7 @@ import { TableType } from '../constants/table.type';
 import type { TableProps } from '../types/table.props';
 import type { TableEntry } from '../types/table.row';
 
-export const getTableEntries = <T,>(
+export const getTableEntries = <T>(
   props: TableProps<T>,
   rows: readonly T[],
   expanded: readonly string[],
@@ -42,7 +42,13 @@ export const getTableEntries = <T,>(
     }
     for (const [id, group] of groups) {
       const open = !collapsed.includes(id);
-      result.push({ kind: 'GROUP', id, label: group.label, count: group.rows.length, expanded: open });
+      result.push({
+        kind: 'GROUP',
+        id,
+        label: group.label,
+        count: group.rows.length,
+        expanded: open,
+      });
       if (open) for (const row of group.rows) visit(row, 0, new Set());
     }
     return result;

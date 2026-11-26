@@ -9,8 +9,16 @@ describe('Calendar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Choose month' }));
     expect(screen.getByRole('group', { name: 'Select month' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Choose year' }));
-    fireEvent.click(within(screen.getByRole('group', { name: 'Select year' })).getByRole('button', { name: '2024' }));
-    fireEvent.click(within(screen.getByRole('group', { name: 'Select month' })).getByRole('button', { name: 'February 2024' }));
+    fireEvent.click(
+      within(screen.getByRole('group', { name: 'Select year' })).getByRole('button', {
+        name: '2024',
+      }),
+    );
+    fireEvent.click(
+      within(screen.getByRole('group', { name: 'Select month' })).getByRole('button', {
+        name: 'February 2024',
+      }),
+    );
     expect(screen.getByRole('group', { name: 'February 2024' })).toBeTruthy();
     expect(onChange).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Thursday, February 29, 2024' }));

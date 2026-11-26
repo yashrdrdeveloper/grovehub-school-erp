@@ -1,4 +1,5 @@
-.panel,.list {
+.panel,
+.list {
   display: grid;
   gap: var(--gh-space-3);
   min-width: 0;

@@ -12,14 +12,27 @@ describe('useSort', () => {
     const { result } = renderHook(() =>
       useSort({ fields, value: [first, second], onChange: jest.fn() }),
     );
-    expect(result.current.getAvailableFields(0).map((field) => field.id)).toEqual(['email', 'createdAt']);
-    expect(result.current.getAvailableFields(1).map((field) => field.id)).toEqual(['status', 'createdAt']);
+    expect(result.current.getAvailableFields(0).map((field) => field.id)).toEqual([
+      'email',
+      'createdAt',
+    ]);
+    expect(result.current.getAvailableFields(1).map((field) => field.id)).toEqual([
+      'status',
+      'createdAt',
+    ]);
     act(() => result.current.update(1, { field: 'email' }));
     expect(result.current.draft[1]).toEqual(second);
     act(() => result.current.update(1, { field: 'createdAt' }));
-    expect(result.current.getAvailableFields(0).map((field) => field.id)).toEqual(['email', 'status']);
+    expect(result.current.getAvailableFields(0).map((field) => field.id)).toEqual([
+      'email',
+      'status',
+    ]);
     act(() => result.current.remove(0));
-    expect(result.current.getAvailableFields(0).map((field) => field.id)).toEqual(['email', 'status', 'createdAt']);
+    expect(result.current.getAvailableFields(0).map((field) => field.id)).toEqual([
+      'email',
+      'status',
+      'createdAt',
+    ]);
   });
 
   it('adds only unused fields and stops when none remain', () => {
@@ -27,7 +40,11 @@ describe('useSort', () => {
       useSort({ fields, value: [first, second], onChange: jest.fn() }),
     );
     act(() => result.current.add());
-    expect(result.current.draft.map((item) => item.field)).toEqual(['email', 'status', 'createdAt']);
+    expect(result.current.draft.map((item) => item.field)).toEqual([
+      'email',
+      'status',
+      'createdAt',
+    ]);
     expect(result.current.canAdd).toBe(false);
     act(() => result.current.add());
     expect(result.current.draft).toHaveLength(3);

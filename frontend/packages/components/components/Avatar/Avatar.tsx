@@ -14,7 +14,13 @@ export const Avatar = ({ name, src, fallback, dataTestId, compact }: AvatarProps
   const showImage = Boolean(src && src !== failedSource);
 
   return (
-    <Box className={styles.avatar} data-compact={compact} style={style} dataTestId={dataTestId} aria-label={name}>
+    <Box
+      className={styles.avatar}
+      data-compact={compact}
+      style={style}
+      dataTestId={dataTestId}
+      aria-label={name}
+    >
       {showImage && <img src={src} alt="" onError={() => setFailedSource(src)} />}
       {!showImage && (fallback ?? getAvatarInitials(name))}
     </Box>

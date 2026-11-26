@@ -36,7 +36,8 @@
 .footer > :first-child {
   margin-inline-end: auto;
 }
-.footer button, .rule button {
+.footer button,
+.rule button {
   font-size: var(--gh-text-xs);
   font-weight: var(--gh-weight-normal);
 }
@@ -47,4 +48,6 @@
   }
 }
 
-.rule { min-height: var(--gh-control-height-sm); }
+.rule {
+  min-height: var(--gh-control-height-sm);
+}

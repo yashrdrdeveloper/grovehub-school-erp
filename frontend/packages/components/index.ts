@@ -74,7 +74,14 @@ export type { PaginationProps } from './components/Pagination';
 export { Dropdown } from './components/Dropdown';
 export type { DropdownProps } from './components/Dropdown';
 
-export { Table, Column, TableType, TableDataMode, TableDensity, TableActionType } from './components/Table';
+export {
+  Table,
+  Column,
+  TableType,
+  TableDataMode,
+  TableDensity,
+  TableActionType,
+} from './components/Table';
 export type { TableProps, TableColumn, TableActions } from './components/Table';
 export { ColumnManager } from './components/ColumnManager';
 export type { ColumnManagerProps } from './components/ColumnManager';

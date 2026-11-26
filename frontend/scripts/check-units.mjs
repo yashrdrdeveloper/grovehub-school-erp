@@ -57,7 +57,8 @@ for (const [relative, requirePureTests] of units) {
 const flatUnits = [];
 const collectFlatUnits = async (directory, relative = '') => {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
-    if (!entry.isDirectory() || ['node_modules', 'dist', '.generated'].includes(entry.name)) continue;
+    if (!entry.isDirectory() || ['node_modules', 'dist', '.generated'].includes(entry.name))
+      continue;
     const child = path.join(directory, entry.name);
     const childRelative = path.join(relative, entry.name);
     if (['helpers', 'constants', 'renderer'].includes(entry.name)) {

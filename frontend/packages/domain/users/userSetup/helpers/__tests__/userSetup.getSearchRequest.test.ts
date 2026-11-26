@@ -9,8 +9,19 @@ describe('getUserSetupSearchRequest', () => {
       searchText: ' test ',
       filters: [
         { id: '1', field: 'status', operator: FilterOperator.EQUALS, values: ['ACTIVE'] },
-        { id: '2', field: 'createdAt', operator: FilterOperator.BETWEEN, values: ['2026-11-01', '2026-11-03'], dateRangePresetId: 'custom' },
-        { id: '3', field: 'updatedAt', operator: FilterOperator.BETWEEN, values: ['2026-11-05', '2026-11-05'] },
+        {
+          id: '2',
+          field: 'createdAt',
+          operator: FilterOperator.BETWEEN,
+          values: ['2026-11-01', '2026-11-03'],
+          dateRangePresetId: 'custom',
+        },
+        {
+          id: '3',
+          field: 'updatedAt',
+          operator: FilterOperator.BETWEEN,
+          values: ['2026-11-05', '2026-11-05'],
+        },
       ],
       sorting: [
         { field: 'status', direction: SortDirection.ASC },

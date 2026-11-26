@@ -125,5 +125,7 @@
   height: var(--gh-control-height-xs);
 }
 @media (max-width: 543px) {
-  .preset.preset { flex: 0 0 auto; }
+  .preset.preset {
+    flex: 0 0 auto;
+  }
 }
