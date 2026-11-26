@@ -285,5 +285,6 @@ var _ = Describe("RBAC persistence against PostgreSQL", func() {
 		Expect(db.Exec("UPDATE identity.permissions SET feature_id = NULL WHERE code = ?", permission.AccountSearch).Error).NotTo(HaveOccurred())
 		_, err = catalog.Register(ctx, registry.Request{Permissions: []permission.Code{permission.AccountSearch}})
 		Expect(err).To(MatchError(registryrepo.ErrConflict))
+		verifyAdministratorGuard(ctx, db)
 	})
 })
