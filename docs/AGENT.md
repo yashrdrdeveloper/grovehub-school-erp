@@ -1,5 +1,7 @@
 # AGENT.md
 
+> **Backend Core workspace update (26 November 2026):** physical owner `libs/backend/core`; import prefix `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core`. Root go.work includes school backend and Core. School-owned `backend/libs/schoolgateway` stays outside Core. Never recreate the old Core folder or import school contracts from reusable Core. The private monorepo uses the checked-in relative replacement for builds with GOWORK=off. Verify both module roots and generator/coverage boundaries before delivery.
+
 > **Shared frontend workspace update (26 November 2026):** physical reusable owners are `libs/frontend/base`, `libs/frontend/styles` and `libs/frontend/components`. School application-specific packages remain in `frontend/packages/{assets,business,domain,shell}`. Historical logical `packages/base`, `packages/styles`, `packages/components` references below map to these shared locations through `frontend/scripts/lib/source-layout.mjs`; do not recreate old folders. Keep product dependencies outside shared libraries. Validate frozen workspace install, independent Base and Components typechecks, school architecture/typecheck/Jest/lint/build, and browser regression before release.
 
 > **Status:** Mandatory repository context and execution contract for AI coding agents  
@@ -519,7 +521,7 @@ Examples:
 ```text
 backend/services/<service>/
 backend/launcher/
-backend/libs/core/
+libs/backend/core/
 frontend/packages/domain/<domain>/
 frontend/packages/shell/
 providers/<provider>/
@@ -1304,7 +1306,7 @@ Before moving code into:
 frontend/base
 frontend/business
 frontend/components
-backend/libs/core
+libs/backend/core
 provider SDK
 shared script lib
 ```

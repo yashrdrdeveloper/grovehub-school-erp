@@ -15,3 +15,17 @@ Generic policy: [Backend Standard](../../../../../docs/engineering/backend/backe
 Document public facade, contract and error behavior, parameters, concurrency and cancellation rules, allocation/PII risks, tests, owners and reasons the helper cannot live in the consuming service. No capability may import a concrete business module or external provider implementation.
 
 No `docs/product/` is created: library behavior is technical, and actual end-user workflows belong in the consuming service's `docs/product/`.
+
+## Module and validation
+
+Module: `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core`. This module can run its tests with GOWORK=off and never imports the school backend. In this private monorepo, the consuming school module uses a local relative replacement. No public/tagged distribution is claimed.
+
+```bash
+cd libs/backend/core
+export GOWORK=off
+go run ./annotation/generation/testing "$PWD" "$PWD"
+go run ./annotation/generation/overlay "$PWD" "$PWD"
+go test -vet=off -overlay=.generated/overlay.json ./...
+```
+
+Use `make unit-test package=core` from the repository root for report-only coverage; `make unit-coverage package=core` requires 100%.

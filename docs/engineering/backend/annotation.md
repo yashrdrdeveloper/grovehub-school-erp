@@ -18,7 +18,7 @@ A directive documented as Proposed must **not** be added to code expecting enfor
 ## 2. Source layout
 
 ```text
-libs/core/annotation/
+libs/backend/core/annotation/
 ├── annotation.go                    # public lookup / parsing facade
 ├── inventory.go                     # category definitions aggregation
 ├── contract/                        # annotation metadata and targets
@@ -155,3 +155,7 @@ The route generator parses the method's comments, validates the argument and emi
 ## Mandatory client declaration parity
 
 For every controller-backed method on a module's exported `@Client` facade, declare `@RequestLine METHOD /relative/path` with the same method, route parameter names, typed request wrapper and response DTO as the controller. Compose its generated implementation through `bootstrap/impl/client.go`; do not implement that client by forwarding directly to the service from `bootstrap/impl/runtime.go`. Reject unmatched route/controller/client contracts during generation. `@Proxy` is reserved for explicitly reviewed, trusted internal-only actions with their own authorization enforcement.
+
+## Independent generation roots
+
+The generator commands live in the independent Core module. The application orchestration script accepts an application root and a Core root (defaults are the school module and shared Core). Routes/Mappers/Search derive service imports from the application's go.mod; Core capability imports use the canonical module identifier. Testing and overlay commands accept both absolute roots, including the same root for standalone Core verification. Generated paths stay in their owning directories. Do not write into a downloaded, read-only module cache.

@@ -31,11 +31,11 @@ Core must not know vendor names, business entity names, application permissions,
 
 ## 3. Technical infrastructure contracts
 
-Infrastructure-owned shared contracts, such as broker-delivery DTOs, event-store records, publish options and transport configuration, belong in a separate technical library rather than `libs/core/events`. The actual vendor SDK/transport adapter lives in Infrastructure's `externalService/<capability>/<provider>`.
+Infrastructure-owned shared contracts, such as broker-delivery DTOs, event-store records, publish options and transport configuration, belong in a separate technical library rather than `libs/backend/core/events`. The actual vendor SDK/transport adapter lives in Infrastructure's `externalService/<capability>/<provider>`.
 
 ## 4. Avoiding false reuse
 
-- No `libs/core/helpers/` bucket for unrelated routines.
+- No `libs/backend/core/helpers/` bucket for unrelated routines.
 - No service-specific event/error/DTO in core.
 - No generic repository replacing aggregate-specific SQL and lifecycle rules.
 - No external app importing another service's private/internal files.
@@ -51,4 +51,8 @@ Breaking library changes must update consumers, generated code, tests, and owner
 
 ## 6. School-specific gateway contract
 
-The school module owns `backend/libs/schoolgateway` (verified session principal, AccessVerifier and the school cookie names). `backend/libs/core/gateway` owns only neutral route tiers and workload verification. The legacy school Admin claim is not a universal permission and must never bypass RBAC. Core must not import any school-owned package, including in tests or generated overlays. [Core boundary audit](../../product/internal/CORE_BOUNDARY_AUDIT.md) records the migration inventory. The physical Core module move is still conditional on generator root and standalone module checks.
+The school module owns `backend/libs/schoolgateway` (verified session principal, AccessVerifier and the school cookie names). `libs/backend/core/gateway` owns only neutral route tiers and workload verification. The legacy school Admin claim is not a universal permission and must never bypass RBAC. Core must not import any school-owned package, including in tests or generated overlays. [Core boundary audit](../../product/internal/CORE_BOUNDARY_AUDIT.md) records the migration inventory. The Core module has moved and passed standalone build/test checks. Published releases and second-application integration remain pending.
+
+## 7. Independent Core workspace
+
+Core has its own go.mod and go.sum under `libs/backend/core`, with module path `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core`. Root go.work includes the school module and Core. The school uses a checkout-relative replace for reproducible monorepo builds with GOWORK=off; Core itself has no replace back into school. Use the capability import prefix, not the former school module path. A released tag/private module distribution must be designed and validated separately. Application-specific technical adapters remain under that application's libs. The standalone test procedure is documented in Core's owner runbook.

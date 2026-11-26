@@ -123,3 +123,7 @@ Includes production, test and external-test imports from go list with the genera
 ## Remaining gates
 
 Select canonical Go module identity, generalize generation roots and script invocations, validate package ownership and generated overlays across both app targets, migrate Go imports atomically, generate standalone go.mod/go.sum and go.work, verify GOWORK=off build/release dependency resolution and all school tests. No school role/permission policy belongs in Core. See the [internal plan](INTERNAL_PLATFORM_IMPLEMENTATION_PLAN.md).
+
+## Extraction checkpoint (26 November 2026)
+
+The above graph records the pre-relocation import paths for traceability. Core has now moved to `libs/backend/core` and its module path is `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core`. No old physical Core directory remains. The isolated migration passed independent Core tests with GOWORK=off, school builds in both workspace modes, school regression tests, and coverage/inventory generation. See [implementation progress](IMPLEMENTATION_PROGRESS.md) for exact commits, validation and remaining release limitations.

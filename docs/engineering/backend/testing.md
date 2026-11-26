@@ -67,3 +67,17 @@ Check Makefile definitions before running; avoid concurrent generator jobs rewri
 ## 6. Safe delivery
 
 Confirm API/event compatibility, secret handling, database migration history, build/test status for the **exact commit**, background job shutdown, and updated engineering/product docs. Report each of annotation checks, compilation, unit tests, integration tests, database tests and CI as **passed**, **failed**, **pending** or **not run**; don't claim success based on an older commit's green job.
+
+## 7. Independent Core verification
+
+`make backend-test` runs both the school module and Core module test trees; generation continues to emit owner-local files. `make unit-test package=core` and `make unit-coverage package=core` use the separate Core module root. The latter retains the strict 100% requirement. Core-only validation from the monorepo root:
+
+```bash
+cd libs/backend/core
+export GOWORK=off
+go run ./annotation/generation/testing "$PWD" "$PWD"
+go run ./annotation/generation/overlay "$PWD" "$PWD"
+go test -vet=off -overlay=.generated/overlay.json ./...
+```
+
+A Core-only empty overlay is valid; school generation still rejects absent generated application output. CI also builds the school with GOWORK=off using the committed monorepo-relative replacement. Live migration, database and broker integration tests remain separate gates.

@@ -32,3 +32,7 @@ The checker is a safety gate, not a runtime security provider. A `CHECK` directi
 - `@Testing/@Mock`: tests generated under approved test ownership only.
 
 Any proposed annotation must obtain a tested parser/generator and be moved to an executable status **before** callers rely on its effects. Generated code must remain reproducible, overlay-backed and out of maintained source.
+
+## Explicit roots and module identity
+
+Application generator entrypoints take the application root. Testing and overlay accept `<application-directory> <core-directory>`; Core-only mode uses the same directory for both. The application must have its own go.mod. The shell runner at `scripts/backend/generate-annotations.sh` accepts the same two roots, invokes the canonical Core import path and preserves owner-local generated outputs. Coverage accepts explicit Core, generation script and reports paths. The empty-overlay exception is restricted to standalone Core mode.

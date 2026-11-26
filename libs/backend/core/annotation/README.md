@@ -1,6 +1,6 @@
 # Core Annotation Framework
 
-**Owner:** `backend/libs/core/annotation/` • **Purpose:** compile-time metadata, validation and typed Go generation.
+**Owner:** `libs/backend/core/annotation/` • **Purpose:** compile-time metadata, validation and typed Go generation.
 
 - **Generic usage and annotation matrix:** [docs/engineering/backend/annotation.md](../../../../docs/engineering/backend/annotation.md)
 - **Backend architecture:** [docs/engineering/backend/backend.md](../../../../docs/engineering/backend/backend.md)

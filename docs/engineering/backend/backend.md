@@ -256,7 +256,7 @@ A pattern is acceptable only when its owner, failure model, tests, and benefit a
 
 Transport pipeline: normalize -> decode into typed request -> validate technical rules -> authorize with verified context -> business invariant checks -> operation. When normalization is performed before decoding, it must not silently hide malformed JSON or unknown fields; both representations require a consistent policy.
 
-PATCH distinguishes **absent**, **explicit null**, and **supplied value**. Never treat a Go pointer alone as full presence tracking. Preserve nullability, field ownership, idempotency and optimistic concurrency throughout. The common `libs/core/request` contract includes optional `Params`, `Query`, and `RequestBody`, only when needed.
+PATCH distinguishes **absent**, **explicit null**, and **supplied value**. Never treat a Go pointer alone as full presence tracking. Preserve nullability, field ownership, idempotency and optimistic concurrency throughout. The common `libs/backend/core/request` contract includes optional `Params`, `Query`, and `RequestBody`, only when needed.
 
 Mappers transform between meaningful representations. Do not create mappers that simply pass the same struct through. Search uses validated public requests -> resource-owned allowlist/config -> generic cursor/keyset query -> hydrated domain response. No raw field names or untrusted SQL expressions.
 
@@ -347,7 +347,7 @@ The external gateway classifies the **matched ServeMux route pattern**, then enf
 
 The in-process gateway has a separate typed invocation interface. A direct `@Proxy` service client does not pass through HTTP middleware and therefore MUST enforce authorization at its own boundary. Restricted external routes require a workload credential verifier, not a user/browser cookie. Maintain independent verifiers for external providers such as signed webhooks.
 
-Gateway implementation folders follow the same SRP convention: `launcher/services/gateway/operations/{external,internal}`. Shared principal contracts belong in `libs/core/gateway`; domain-specific credential verification remains owned by the authentication service.
+Gateway implementation folders follow the same SRP convention: `launcher/services/gateway/operations/{external,internal}`. Neutral route tiers and workload contracts belong in `libs/backend/core/gateway`; product-specific session principal contracts and credential verification remain application-owned.
 
 Use `gofmt` on all changed Go source files before a change is merged. Keep imports grouped, consistent tab indentation, one-line function signatures, and multiline bodies for control flow. Do not accept dense semicolon-separated statements as a coding convention.
 

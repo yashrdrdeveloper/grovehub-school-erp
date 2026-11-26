@@ -79,13 +79,13 @@ grovehub-school-erp/
 │       └── tooling/                # Shared check configs, only if truly reusable
 ├── scripts/                       # App-specific entrypoints, shared mechanics
 ├── docs/
-├── go.work                        # Proposed local workspace
+├── go.work                        # Local workspace: backend and Core
 ├── pnpm-workspace.yaml
 ├── pnpm-lock.yaml
 └── Makefile
 ~~~
 
-Names proposed: @groovehub/base, @groovehub/styles, @groovehub/components; Go module grovehub/libs/backend/core (final canonical repository-qualified module path to be chosen before publishing). Existing school module name grovehub stays until a separately planned migration. Internal module grovehub/internal-platform, distinct from school and Core. Go module names must not collide; verify Go internal visibility and standalone builds. No empty placeholder directories. Generic workspace primitives may later move from shell to a separate library after proving no domain dependencies; do not move full shell now.
+Current shared libraries: @groovehub/base, @groovehub/styles, @groovehub/components; Core module `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core` (private local-source stage; versioned publishing pending). Existing school module name grovehub stays until a separately planned migration. Internal module grovehub/internal-platform, distinct from school and Core. Go module names must not collide; verify Go internal visibility and standalone builds. No empty placeholder directories. Generic workspace primitives may later move from shell to a separate library after proving no domain dependencies; do not move full shell now.
 
 ## 5. Phase A — extract shared frontend libraries first
 
@@ -317,4 +317,4 @@ Suggested phase labels 2.2 shared libs, 2.3 school RBAC, 2.4 internal foundation
 - [ ] Browser light/dark and real mobile tests; existing architecture checks and backend generated overlay tests pass; coverage target 100% where project requires, report actual gaps.
 - [ ] Exact commit build/test/security/CI evidence and rollback runbook; no public internal Quick Tunnel.
 
-Open before implementation: canonical Go module/registry naming, private publishing permissions, actual L1/L2 targets and credential mechanism, school discovery API owner, internal MFA enrollment/bootstrap and recovery procedure, approval policy owners/risk matrix, audit/response retention and RPO/RTO. Confirm with maintainers; proposed defaults are not deployed facts.
+Open before implementation: private publishing permissions and release tag/version policy, actual L1/L2 targets and credential mechanism, school discovery API owner, internal MFA enrollment/bootstrap and recovery procedure, approval policy owners/risk matrix, audit/response retention and RPO/RTO. Confirm with maintainers; proposed defaults are not deployed facts.
