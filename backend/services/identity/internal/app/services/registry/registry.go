@@ -12,7 +12,7 @@ import (
 var ErrInvalidBatch = errors.New("invalid capability registration batch")
 
 type Request struct {
-	Features []feature.Code
+	Features    []feature.Code
 	Permissions []permission.Code
 }
 

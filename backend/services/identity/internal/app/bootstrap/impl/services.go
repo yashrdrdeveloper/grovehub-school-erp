@@ -2,27 +2,27 @@ package impl
 
 import (
 	"grovehub/services/identity/internal/app/config"
-	authorization "grovehub/services/identity/internal/app/services/authorization"
-	authorizationimpl "grovehub/services/identity/internal/app/services/authorization/impl"
-	registry "grovehub/services/identity/internal/app/services/registry"
-	registryimpl "grovehub/services/identity/internal/app/services/registry/impl"
 	mapper "grovehub/services/identity/internal/app/mappers/account/impl"
-	validator "grovehub/services/identity/internal/app/validators/account/impl"
 	account "grovehub/services/identity/internal/app/services/account"
 	accountimpl "grovehub/services/identity/internal/app/services/account/impl"
 	auth "grovehub/services/identity/internal/app/services/authentication"
 	authimpl "grovehub/services/identity/internal/app/services/authentication/impl"
+	authorization "grovehub/services/identity/internal/app/services/authorization"
+	authorizationimpl "grovehub/services/identity/internal/app/services/authorization/impl"
 	credentialimpl "grovehub/services/identity/internal/app/services/credential/impl"
-	invitation "grovehub/services/identity/internal/app/services/registration/operations/invitation"
 	registrationimpl "grovehub/services/identity/internal/app/services/registration/impl"
+	invitation "grovehub/services/identity/internal/app/services/registration/operations/invitation"
+	registry "grovehub/services/identity/internal/app/services/registry"
+	registryimpl "grovehub/services/identity/internal/app/services/registry/impl"
+	validator "grovehub/services/identity/internal/app/validators/account/impl"
 )
 
 type serviceGraph struct {
-	account account.Service
+	account       account.Service
 	authorization authorization.Service
-	registry registry.Service
-	auth auth.Service
-	worker *invitation.Worker
+	registry      registry.Service
+	auth          auth.Service
+	worker        *invitation.Worker
 }
 
 func (b *builder) newServices(repositories repositories, cfg config.Config) serviceGraph {

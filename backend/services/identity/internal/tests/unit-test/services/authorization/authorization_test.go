@@ -25,10 +25,10 @@ func TestAuthorizationService(t *testing.T) {
 
 type loader struct {
 	snapshot authorizationrepo.Snapshot
-	err error
-	calls int
-	tenant string
-	account string
+	err      error
+	calls    int
+	tenant   string
+	account  string
 }
 
 func (repository *loader) LoadSnapshot(ctx context.Context, tenantID string, accountID string) (authorizationrepo.Snapshot, error) {
@@ -51,7 +51,7 @@ var _ = Describe("Authorization service", func() {
 				{RoleID: "second", TenantID: "school", Active: true, Permissions: []permission.Code{permission.AccountSelfView}},
 			},
 			Permissions: map[permission.Code]authorizationrepo.PermissionState{
-				permission.AccountSearch: {Active: true, Feature: feature.AccountManagement},
+				permission.AccountSearch:   {Active: true, Feature: feature.AccountManagement},
 				permission.AccountSelfView: {Active: true},
 			},
 			Features: map[feature.Code]authorizationrepo.FeatureState{feature.AccountManagement: {Active: true, Enabled: true}},

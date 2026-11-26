@@ -11,8 +11,8 @@ import (
 )
 
 type registeredDefinition struct {
-	ID string
-	Module string
+	ID        string
+	Module    string
 	FeatureID *string
 }
 
