@@ -60,7 +60,6 @@ export const TableView = <T,>(props: TableViewProps<T>) => {
           <Box className={styles.toolbarLeft}>
             {filterProps && <Filters {...filterProps} iconOnly onChange={(value) => actions?.FILTER?.(value)} />}
             {sortProps && <Sort {...sortProps} iconOnly onChange={(value) => actions?.SORT?.(value)} />}
-            {!props.loading && !props.error && <Box className={styles.summary} aria-live="polite">{getSummary()}</Box>}
           </Box>
           <Box className={styles.toolbarRight}>
             {searchProps && <TableSearch {...searchProps} onChange={(value) => actions?.SEARCH?.(value)} />}
@@ -91,13 +90,18 @@ export const TableView = <T,>(props: TableViewProps<T>) => {
         {!!controls.entries.length && mobile && <MobileTable {...props} />}
         </Box>
         <Box className={styles.footer}>
-        {pagination && <Pagination {...pagination} onChange={(action) => {
-          if (action.type === 'LOAD_MORE' && actions?.LOAD_MORE) {
-            actions.LOAD_MORE();
-            return;
-          }
-          actions?.PAGINATION?.(action);
-        }} />}
+        <Box className={styles.footerRow}>
+          <Box className={styles.summary} aria-live="polite">
+            {!props.loading && !props.error && getSummary()}
+          </Box>
+          {pagination && <Pagination {...pagination} onChange={(action) => {
+            if (action.type === 'LOAD_MORE' && actions?.LOAD_MORE) {
+              actions.LOAD_MORE();
+              return;
+            }
+            actions?.PAGINATION?.(action);
+          }} />}
+        </Box>
         {footerProps && <TableHeader {...footerProps} onAction={actions?.FOOTER_ACTION} />}
         </Box>
       </Box>

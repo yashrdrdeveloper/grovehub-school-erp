@@ -1,28 +1,27 @@
 .footer,
-.navigation {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--gh-space-2);
-}
-.footer {
-  font-size: var(--gh-text-xs);
-  color: var(--gh-color-muted);
-}
+.navigation,
 .size {
   display: flex;
   align-items: center;
   gap: var(--gh-space-2);
+}
+
+.footer {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  font-size: var(--gh-text-xs);
+  color: var(--gh-color-muted);
+}
+
+.size {
   white-space: nowrap;
 }
+
 .size > :last-child {
-  width: 5rem;
-  min-width: 5rem;
+  width: 4.5rem;
+  min-width: 4.5rem;
 }
-.navigation {
-  justify-content: flex-end;
-}
+
 .size button {
   padding-inline: var(--gh-space-2);
   gap: var(--gh-space-1);
@@ -30,16 +29,57 @@
   min-height: var(--gh-control-height-sm);
   font-size: var(--gh-text-xs);
 }
-.page {
-  min-width: var(--gh-control-height-sm);
-  height: var(--gh-control-height-sm);
-  display: grid;
-  place-items: center;
-  border-radius: var(--gh-control-radius);
-  background: var(--gh-color-surface-subtle);
-  color: var(--gh-color-text-strong);
-  font-weight: var(--gh-weight-semibold);
+
+.navigation {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
-.navigation button {
-  padding-inline: var(--gh-space-2);
+
+.page,
+.pageButton {
+  font-size: var(--gh-text-xs);
+  font-weight: var(--gh-weight-normal);
+  color: var(--gh-color-muted);
+  white-space: nowrap;
+}
+
+.pageButton {
+  border: 0;
+  background: transparent;
+  padding: var(--gh-space-1);
+  border-radius: var(--gh-control-radius);
+  cursor: pointer;
+}
+
+.pageButton:hover:not(:disabled) {
+  color: var(--gh-color-accent);
+  background: var(--gh-color-surface-subtle);
+}
+
+.pageButton:focus-visible {
+  outline: var(--gh-focus-outline-width) solid var(--gh-color-ring);
+}
+
+.arrow.arrow {
+  width: var(--gh-control-height-xs);
+  min-width: var(--gh-control-height-xs);
+  height: var(--gh-control-height-xs);
+  min-height: var(--gh-control-height-xs);
+  padding: 0;
+  border-color: var(--gh-color-border);
+  color: var(--gh-color-text-secondary);
+  background: var(--gh-color-table-control);
+}
+
+.arrow.arrow:disabled {
+  opacity: 0.45;
+}
+
+@media (max-width: 640px) {
+  .arrow.arrow {
+    width: var(--gh-control-height-sm);
+    min-width: var(--gh-control-height-sm);
+    height: var(--gh-control-height-sm);
+    min-height: var(--gh-control-height-sm);
+  }
 }
