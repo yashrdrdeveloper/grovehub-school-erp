@@ -155,7 +155,7 @@ func (worker *Worker) suppressionReason(ctx context.Context, tenant string, invi
 		return "INVALID_PROOF", nil
 	}
 	if purpose == entity.PasswordReset {
-		if account.Status != entity.Active {
+		if account.Status != entity.Active || (!worker.config.LegacyRBACDevelopment && (proof.AccountVersion == nil || *proof.AccountVersion != account.Version)) {
 			return "ACCOUNT_INELIGIBLE", nil
 		}
 		return "", nil

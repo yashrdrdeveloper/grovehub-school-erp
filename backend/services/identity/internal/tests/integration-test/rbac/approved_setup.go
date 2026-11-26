@@ -298,6 +298,7 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	Expect(verified).To(BeTrue())
 	_, err = setup.Execute(ctx, grant.Secret, accountdto.Setup{Password: "Test-setup-password-123"})
 	Expect(err).To(MatchError(tokenrepo.ErrInvalidToken))
+	verifyRecoveryGuard(ctx, db, tenant, accountID)
 }
 
 // The adapter exercises the actual exchange operation without composing unrelated auth use cases.

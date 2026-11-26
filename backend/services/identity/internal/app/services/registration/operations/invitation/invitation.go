@@ -73,6 +73,15 @@ func (service *Service) Queue(ctx context.Context, account entity.Account, purpo
 	}
 
 	var version *int64
+	if purpose == entity.PasswordReset {
+		if account.Status != entity.Active || account.Version < 1 {
+			return errors.New("invalid password reset state")
+		}
+		version = &account.Version
+		if err := service.Tokens.Invalidate(ctx, account.AccountID, entity.ResetGrant); err != nil {
+			return err
+		}
+	}
 	if purpose == entity.AccountSetup {
 		if account.Status != entity.PendingSetup || account.Version < 1 {
 			return errors.New("invalid account setup state")
