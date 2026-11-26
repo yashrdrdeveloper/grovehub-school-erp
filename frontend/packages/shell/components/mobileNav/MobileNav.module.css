@@ -10,7 +10,7 @@
   justify-content: center;
   gap: 4px;
   min-width: 0;
-  min-height: 49px;
+  min-height: 44px;
   padding: 5px 0;
   border: 0;
   border-radius: var(--gh-radius-md);
@@ -46,13 +46,14 @@
   .root {
     position: fixed;
     z-index: 30;
-    bottom: max(12px, env(safe-area-inset-bottom));
+    bottom: var(--workspace-mobile-nav-offset);
     left: 16px;
     right: 16px;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     width: auto;
-    padding: 6px;
+    padding: var(--gh-space-1);
+    min-height: var(--workspace-mobile-nav-height);
     border: 1px solid var(--gh-color-border);
     border-radius: 18px;
     background: var(--gh-color-surface);

@@ -58,3 +58,22 @@
     scrollbar-width: auto;
   }
 }
+
+/* Phones use the full viewport, including desktop-browser device emulation.
+   Keep document scrolling available without allocating a native scrollbar strip.
+   Component scroll areas and forced-colors accessibility remain independent. */
+@media (max-width: 720px) {
+  :root {
+    scrollbar-gutter: auto;
+  }
+}
+
+@media (max-width: 720px) and (forced-colors: none) {
+  :root {
+    scrollbar-width: none;
+  }
+
+  :root::-webkit-scrollbar {
+    display: none;
+  }
+}

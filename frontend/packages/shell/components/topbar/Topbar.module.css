@@ -74,31 +74,9 @@
   outline-offset: 2px;
 }
 
+/* Home, Apps and Menu are available in the bottom navigation on phones. */
 @media (max-width: 720px) {
   .root {
-    height: 58px;
-    gap: var(--gh-space-2);
-    padding-inline: 12px;
-  }
-
-  .brand {
-    gap: var(--gh-space-1);
-  }
-
-  .logo {
-    width: 40px;
-    height: 22px;
-  }
-
-  .schoolName {
-    font-size: 0.875rem;
-  }
-
-  .menu {
-    display: grid;
-  }
-
-  .left {
-    gap: 10px;
+    display: none;
   }
 }

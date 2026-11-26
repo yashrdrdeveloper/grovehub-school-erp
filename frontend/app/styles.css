@@ -6009,14 +6009,29 @@ body {
   min-width: 0;
 }
 @media (max-width: 720px) {
+  .shell {
+    --workspace-mobile-nav-height: 56px;
+    --workspace-mobile-nav-offset: max(12px, env(safe-area-inset-bottom));
+    min-width: 0;
+    width: 100%;
+  }
   .shell__content {
+    width: 100%;
     max-width: 100%;
     min-width: 0;
   }
   .shell__main {
     min-width: 0;
     max-width: 100%;
+    padding-block-start: max(var(--gh-space-4), env(safe-area-inset-top));
     padding-inline: var(--ui-page-gutter);
+    padding-block-end: calc(var(--workspace-mobile-nav-height) + var(--workspace-mobile-nav-offset) + var(--gh-space-4));
+  }
+  .sidebar-backdrop {
+    z-index: 35;
+  }
+  .sidebar__collapse {
+    display: none;
   }
   .page-heading {
     flex-wrap: wrap;
