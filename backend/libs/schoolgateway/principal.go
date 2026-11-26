@@ -30,3 +30,8 @@ func PrincipalFrom(ctx context.Context) (Principal, bool) {
 	principal, ok := ctx.Value(principalKey{}).(Principal)
 	return principal, ok && principal.AccountID != "" && principal.SessionID != ""
 }
+
+// ProtectedRouteAuthorizer evaluates a registered Identity route using the verified principal.
+type ProtectedRouteAuthorizer interface {
+	AuthorizeProtectedRoute(ctx context.Context, pattern string) error
+}

@@ -2,6 +2,7 @@ package impl
 
 import (
 	"grovehub/services/identity/internal/app/config"
+	"grovehub/services/identity/internal/app/services/security/operations/routepolicy"
 	mapper "grovehub/services/identity/internal/app/mappers/account/impl"
 	account "grovehub/services/identity/internal/app/services/account"
 	accountimpl "grovehub/services/identity/internal/app/services/account/impl"
@@ -22,6 +23,7 @@ import (
 type serviceGraph struct {
 	account       account.Service
 	authorization authorization.Service
+	policy *routepolicy.Policy
 	registry      registry.Service
 	roles         role.Service
 	auth          auth.Service
@@ -61,8 +63,10 @@ func (b *builder) newServices(repositories repositories, cfg config.Config) serv
 	}
 
 	authorizer := authorizationimpl.New(repositories.authorization)
+	policy := routepolicy.New(authorizer, cfg.LegacyRBACDevelopment)
 	return serviceGraph{
-		account: accounts, auth: authentication, worker: worker,
+		account: accountimpl.NewGuarded(accounts, policy), auth: authentication, worker: worker,
+		policy: policy,
 		authorization: authorizer, registry: registryimpl.New(repositories.registry),
 		roles: roleimpl.New(repositories.roles, authorizer),
 	}

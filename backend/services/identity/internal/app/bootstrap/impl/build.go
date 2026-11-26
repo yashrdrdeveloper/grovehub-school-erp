@@ -50,6 +50,7 @@ func (b *builder) Build() (bootstrap.Runtime, error) {
 		routes:   controllers,
 		client:   b.newClient(controllers),
 		verifier: securityimpl.New(repositories.accounts, repositories.sessions, settings.AdminIDs),
+		policy: services.policy,
 	}
 	module.startWorkers(services.worker)
 	return module, nil

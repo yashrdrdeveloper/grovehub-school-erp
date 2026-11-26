@@ -137,3 +137,44 @@ func TestLocalViteLoopbackOriginsShareSamePort(t *testing.T) {
 		}
 	}
 }
+
+type routeAccess struct {
+	accessVerifier
+	allowed bool
+	pattern string
+}
+
+func (access *routeAccess) AuthorizeProtectedRoute(ctx context.Context, pattern string) error {
+	access.pattern = pattern
+	if _, ok := schoolgateway.PrincipalFrom(ctx); !ok || !access.allowed {
+		return context.Canceled
+	}
+	return nil
+}
+
+func TestIdentityProtectedRoutePolicy(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /identity/protected/accounts/{accountId}", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+	access := &routeAccess{}
+	for _, tc := range []struct {
+		verifier schoolgateway.AccessVerifier
+		want int
+	}{
+		{accessVerifier{}, http.StatusForbidden},
+		{access, http.StatusForbidden},
+		{&routeAccess{allowed: true}, http.StatusOK},
+	} {
+		request := httptest.NewRequest(http.MethodGet, "/identity/protected/accounts/target", nil)
+		request.AddCookie(&http.Cookie{Name: schoolgateway.AccessCookie, Value: "test-secret"})
+		recorder := httptest.NewRecorder()
+		external.New(mux, tc.verifier, nil, "").ServeHTTP(recorder, request)
+		if recorder.Code != tc.want {
+			t.Fatalf("expected %d, got %d", tc.want, recorder.Code)
+		}
+	}
+	if access.pattern != "GET /identity/protected/accounts/{accountId}" {
+		t.Fatalf("expected registered pattern, got %q", access.pattern)
+	}
+}

@@ -21,6 +21,14 @@ func Load() (config.Config, error) {
 		AllowedOrigin: os.Getenv("IDENTITY_ALLOWED_ORIGIN"),
 	}
 
+	switch os.Getenv("IDENTITY_RBAC_MODE") {
+	case "", "strict":
+	case "legacy-development":
+		settings.LegacyRBACDevelopment = true
+	default:
+		return config.Config{}, errors.New("invalid IDENTITY_RBAC_MODE")
+	}
+
 	for _, entry := range strings.Split(os.Getenv("IDENTITY_ADMIN_ACCOUNT_IDS"), ",") {
 		accountID, err := uuid.Parse(strings.TrimSpace(entry))
 		if err == nil {

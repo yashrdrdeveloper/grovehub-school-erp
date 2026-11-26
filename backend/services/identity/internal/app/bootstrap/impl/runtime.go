@@ -10,6 +10,7 @@ import (
 	accountclient "grovehub/services/identity/client/account"
 	"grovehub/services/identity/internal/app/bootstrap"
 	security "grovehub/services/identity/internal/app/services/security"
+	"grovehub/services/identity/internal/app/services/security/operations/routepolicy"
 )
 
 type runtime struct {
@@ -17,6 +18,7 @@ type runtime struct {
 	routes   controllerGraph
 	client   accountclient.Client
 	verifier security.AccessVerifier
+	policy *routepolicy.Policy
 	stop     context.CancelFunc
 	done     chan struct{}
 	once     sync.Once
@@ -45,4 +47,8 @@ func (module *runtime) Close() {
 			<-module.done
 		}
 	})
+}
+
+func (module *runtime) AuthorizeProtectedRoute(ctx context.Context, pattern string) error {
+	return module.policy.Authorize(ctx, pattern)
 }

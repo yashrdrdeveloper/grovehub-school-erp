@@ -9,6 +9,7 @@ import (
 type Runtime interface {
 	module.Module
 	schoolgateway.AccessVerifier
+	schoolgateway.ProtectedRouteAuthorizer
 	AccountClient() accountclient.Client
 	RouteLimits() map[string]int
 }
