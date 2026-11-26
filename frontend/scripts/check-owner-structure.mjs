@@ -2,7 +2,11 @@ import { access, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import ts from 'typescript';
 
-import { packageRelativePath, sharedPackageSources } from './lib/source-layout.mjs';
+import {
+  packageRelativePath,
+  resolvePackageSource,
+  sharedPackageSources,
+} from './lib/source-layout.mjs';
 
 /**
  * Block misplaced business transport contracts, flat compound primitives, and
@@ -97,7 +101,7 @@ const checkOwnerFiles = async (directory) => {
 await checkOwnerFiles(root);
 for (const [, directory] of sharedPackageSources) await checkOwnerFiles(directory);
 
-const dialogRoot = path.join(root, 'components/components/Dialog');
+const dialogRoot = resolvePackageSource('components/components/Dialog');
 if (await exists(path.join(dialogRoot, 'parts.ts'))) {
   failures.push('components/Dialog/parts.ts: use one named unit per compound component');
 }
@@ -121,14 +125,14 @@ for (const [unit, component] of [
 const dialogConsumers = [
   path.join(root, 'domain'),
   path.join(root, 'shell'),
-  path.join(root, 'components'),
+  resolvePackageSource('components'),
   path.join(root, 'business'),
 ];
 const checkImports = async (directory) => {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const filename = path.join(directory, entry.name);
     if (entry.isDirectory()) {
-      if (entry.name !== '__tests__') {
+      if (!['__tests__', 'node_modules', 'dist', '.generated'].includes(entry.name)) {
         await checkImports(filename);
       }
       continue;
@@ -147,7 +151,7 @@ const checkImports = async (directory) => {
         /Dialog\/parts$/.test(statement.moduleSpecifier.text)
       ) {
         failures.push(
-          path.relative(root, filename) + ': import Dialog units through Dialog public API',
+          packageRelativePath(filename) + ': import Dialog units through Dialog public API',
         );
       }
     }
@@ -158,7 +162,7 @@ for (const directory of dialogConsumers) {
 }
 
 for (const unit of ['Input', 'PasswordField']) {
-  const filename = path.join(root, 'components/components', unit, `${unit}.tsx`);
+  const filename = resolvePackageSource(`components/components/${unit}/${unit}.tsx`);
   const source = await readFile(filename, 'utf8');
 
   if (/\.replace\s*\(|\.filter\s*\(\s*Boolean\s*\)/.test(source)) {

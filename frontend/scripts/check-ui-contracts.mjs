@@ -1,7 +1,9 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const root = path.join(process.cwd(), 'packages/components/components');
+import { resolvePackageSource } from './lib/source-layout.mjs';
+
+const root = resolvePackageSource('components/components');
 const failures = [];
 const checkedCounter = { current: 0 };
 

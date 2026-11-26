@@ -34,3 +34,29 @@ test('maps an extracted package to its original logical audit owner', () => {
     rmSync(directory, { recursive: true, force: true });
   }
 });
+
+test('retains logical component ownership across a physical workspace move', () => {
+  const directory = mkdtempSync(path.join(tmpdir(), 'groovehub-components-'));
+  try {
+    const app = path.join(directory, 'frontend');
+    const local = path.join(app, 'packages/components');
+    const shared = path.join(directory, 'libs/frontend/components');
+    mkdirSync(local, { recursive: true });
+    const before = createSourceLayout(app, ['components']);
+    assert.equal(before.resolvePackageSource('components/index.ts'), path.join(local, 'index.ts'));
+    rmSync(local, { recursive: true });
+    mkdirSync(shared, { recursive: true });
+    const after = createSourceLayout(app, ['components']);
+    assert.equal(after.resolvePackageSource('components/index.ts'), path.join(shared, 'index.ts'));
+    assert.equal(
+      after.frontendRelativePath(path.join(shared, 'index.ts')),
+      'packages/components/index.ts',
+    );
+    assert.equal(
+      after.packageRelativePath(path.join(shared, 'index.ts')),
+      path.join('components', 'index.ts'),
+    );
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});

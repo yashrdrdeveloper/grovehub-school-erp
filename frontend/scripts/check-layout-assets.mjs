@@ -1,7 +1,9 @@
 import { access, readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const source = async (pathname) => readFile(path.join(process.cwd(), pathname), 'utf8');
+import { resolveFrontendSource } from './lib/source-layout.mjs';
+
+const source = async (pathname) => readFile(resolveFrontendSource(pathname), 'utf8');
 const exists = async (pathname) => {
   try {
     await access(path.join(process.cwd(), pathname));

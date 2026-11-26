@@ -11,7 +11,7 @@ import ts from 'typescript';
 
 import { normalizeJsxText, VISIBLE_TEXT_ATTRIBUTES } from './lib/i18n-policy.mjs';
 
-const root = process.cwd();
+import { frontendRelativePath, resolveFrontendSource } from './lib/source-layout.mjs';
 const directories = ['packages/domain', 'packages/shell', 'packages/components'];
 const skipped = new Set([
   'packages/shell/containers/shellContainer/components/i18nBootstrapFallback/I18nBootstrapFallback.tsx',
@@ -27,11 +27,11 @@ const scan = async (directory) => {
       continue;
     }
     if (!entry.name.endsWith('.tsx') || entry.name.endsWith('.test.tsx')) continue;
-    const relative = path.relative(root, absolute).replaceAll(path.sep, '/');
+    const relative = frontendRelativePath(absolute);
     if (!skipped.has(relative)) allFiles.push({ absolute, relative });
   }
 };
-for (const folder of directories) await scan(path.join(root, folder));
+for (const folder of directories) await scan(resolveFrontendSource(folder));
 
 const changedFilesCounter = { current: 0 };
 const replacedNodesCounter = { current: 0 };
