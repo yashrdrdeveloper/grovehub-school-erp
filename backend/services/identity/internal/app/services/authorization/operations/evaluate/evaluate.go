@@ -53,7 +53,7 @@ func Allowed(ctx context.Context, requested permission.Code, snapshot Snapshot) 
 	if !registered || !state.Active {
 		return false
 	}
-	if definition.Feature != "" && definition.Feature != state.Feature {
+	if definition.Feature != state.Feature {
 		return false
 	}
 	if state.Feature != "" {

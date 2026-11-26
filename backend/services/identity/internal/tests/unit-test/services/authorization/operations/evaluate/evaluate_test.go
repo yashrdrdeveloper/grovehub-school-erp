@@ -61,6 +61,16 @@ func TestAllowed(t *testing.T) {
 	if evaluate.Allowed(ctx, permission.Code("UNKNOWN"), valid()) {
 		t.Fatal("unknown capability must deny access")
 	}
+	self := valid()
+	self.Roles[1].Permissions = []permission.Code{permission.AccountSelfView}
+	self.Permissions[permission.AccountSelfView] = evaluate.PermissionState{Active: true}
+	if !evaluate.Allowed(ctx, permission.AccountSelfView, self) {
+		t.Fatal("registered featureless capability must not require an entitlement")
+	}
+	self.Permissions[permission.AccountSelfView] = evaluate.PermissionState{Active: true, Feature: feature.AccountManagement}
+	if evaluate.Allowed(ctx, permission.AccountSelfView, self) {
+		t.Fatal("unexpected feature association must deny access even when enabled")
+	}
 	principal.Admin = true
 	if evaluate.Allowed(coregateway.WithPrincipal(context.Background(), principal), permission.AccountDeactivate, valid()) {
 		t.Fatal("legacy admin flag must not bypass RBAC")

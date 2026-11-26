@@ -60,3 +60,11 @@ Verified the existing account tenant column is TEXT and account ID UUID. Added t
 - Corrected all reported unchecked-index diagnostics in DateRange and DragList tests, filter validation and selection, and User Setup date parsing. Reverification is required on the new commit.
 - Full extraction inventory: 473 component sources, 165 Core Go sources, 132 static findings. Components retains a school-brand dependency and theme preference key; Core extraction remains conditional on its domain-neutral dependency audit.
 - RBAC schema and pure authorization evaluator are foundations only: no migration has been applied, no controller or service has been switched to the evaluator, and no permission grants are seeded. Existing temporary authenticated-tenant access remains a production release blocker.
+
+## A0.4 — Reverified baseline and exact formatter remediation
+
+Frontend [45809337646](https://github.com/yashrdrdeveloper/grovehub-school-erp/actions/runs/45809337646) at `4fe0cdae38373f849d6344cdc2562b04a14d182c` confirmed frozen install, shared Base and school TypeScript checks, ESLint, and all 191 Jest suites (356 tests) passed. The architecture gate still failed at formatting; build and browser verification were skipped. Added a CI failure diagnostic to generate and upload the exact pinned Prettier diff, restoring the worktree before subsequent validation. The existing formatting and architecture gates remain unchanged; the patch must be reviewed and applied separately. No automatic commit or publishing is enabled.
+
+## R1.1 — Permission feature binding integrity
+
+The pure evaluator now rejects any mismatch between the code-owned feature binding and registered state, including unexpected feature associations on featureless permissions. Added regression assertions for valid featureless grants and mismatched bindings. No grants, migrations, or route enforcement were enabled. Backend tests need verification at the new revision.

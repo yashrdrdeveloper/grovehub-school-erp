@@ -44,6 +44,20 @@ jobs:
         run: pnpm audit:guidelines
       - name: Check architecture
         run: pnpm check:architecture
+      - name: Generate exact formatting remediation patch
+        if: failure()
+        run: |
+          pnpm format
+          git diff --no-ext-diff -- frontend ../libs/frontend > "$RUNNER_TEMP/frontend-format.patch"
+          git diff --stat -- frontend ../libs/frontend
+          git restore --worktree -- frontend ../libs/frontend
+      - name: Upload formatting remediation patch
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-format-remediation
+          path: ${{ runner.temp }}/frontend-format.patch
+          if-no-files-found: ignore
       - name: Typecheck shared Base
         if: success() || failure()
         run: pnpm --filter @groovehub/base typecheck
