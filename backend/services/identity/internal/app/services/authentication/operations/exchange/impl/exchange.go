@@ -54,6 +54,10 @@ func (op *Service) Execute(ctx context.Context, secret string, purpose string) (
 	}
 
 	err = op.unit.Run(ctx, func(transactionCtx context.Context) error {
+		proof, err := op.tokens.Inspect(transactionCtx, digest, tokenPurpose, time.Now().UTC())
+		if err != nil {
+			return err
+		}
 		accountID, err := op.tokens.Consume(transactionCtx, digest, tokenPurpose, time.Now().UTC())
 		if err != nil {
 			return err
@@ -62,7 +66,7 @@ func (op *Service) Execute(ctx context.Context, secret string, purpose string) (
 		if err != nil {
 			return err
 		}
-		if tokenPurpose == entity.AccountSetup && account.Status != entity.PendingSetup {
+		if tokenPurpose == entity.AccountSetup && (account.Status != entity.PendingSetup || (proof.AccountVersion != nil && *proof.AccountVersion != account.Version)) {
 			return errors.New("account setup no longer available")
 		}
 		if tokenPurpose == entity.PasswordReset && account.Status != entity.Active {
@@ -74,6 +78,7 @@ func (op *Service) Execute(ctx context.Context, secret string, purpose string) (
 			TokenHash: grantDigest,
 			AccountID: accountID,
 			Purpose: grantPurpose,
+			AccountVersion: proof.AccountVersion,
 			ExpiresAt: now.Add(10 * time.Minute),
 			CreatedAt: now,
 		})

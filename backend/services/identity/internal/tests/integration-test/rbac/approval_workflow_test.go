@@ -421,7 +421,7 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	verifyAccountLifecycleCutover(ctx, db, tenant, requester, reviewer, managementRole, targetAccount, service, store, recorder)
 	verifyCapabilityDiscovery(ctx, db, tenant, requester, reviewer, managementRole)
 	verifyRoleMetadata(ctx, db, tenant, requester, reviewer, managementRole, store)
-	verifyNormalizedRegistration(ctx, db, tenant, requester, reviewer, managementRole, store)
+	verifyNormalizedRegistration(ctx, db, tenant, requester, reviewer, managementRole, requiredRole, store)
 }
 
 

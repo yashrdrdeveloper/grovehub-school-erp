@@ -126,7 +126,13 @@ func (executor *Executor) prepareAssignment(ctx context.Context, actor principal
 		versions = append(versions, accountrole.RoleVersion{RoleID: item.RoleID, Version: item.Version})
 	}
 	return func(tx context.Context) error {
-		_, err := executor.effects.Assignment.Execute(tx, accountrole.Replacement{TenantID: actor.TenantID, ActorID: actor.AccountID, AccountID: intent.AccountID, Version: intent.Version, PrimaryRoleID: intent.PrimaryRoleID, SecondaryRoleIDs: intent.SecondaryRoleIDs, RoleVersions: versions})
-		return err
+		assignment, err := executor.effects.Assignment.Execute(tx, accountrole.Replacement{TenantID: actor.TenantID, ActorID: actor.AccountID, AccountID: intent.AccountID, Version: intent.Version, PrimaryRoleID: intent.PrimaryRoleID, SecondaryRoleIDs: intent.SecondaryRoleIDs, RoleVersions: versions})
+		if err != nil {
+			return err
+		}
+		if executor.effects.PendingInvitation != nil {
+			return executor.effects.PendingInvitation.Queue(tx, actor.TenantID, assignment)
+		}
+		return nil
 	}, nil
 }

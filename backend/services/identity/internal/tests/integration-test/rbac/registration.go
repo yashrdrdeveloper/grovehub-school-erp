@@ -41,7 +41,7 @@ func (client *registrationFoundation) SearchPersons(ctx context.Context, request
 	return coresearch.Result[foundation.Person]{Items: []foundation.Person{client.person}}, nil
 }
 
-func verifyNormalizedRegistration(ctx context.Context, db *gorm.DB, tenant string, requester string, reviewer string, managementRole string, store messaging.EventStore) {
+func verifyNormalizedRegistration(ctx context.Context, db *gorm.DB, tenant string, requester string, reviewer string, managementRole string, requiredRole string, store messaging.EventStore) {
 	_, err := registryimpl.New(registryrepo.New(db)).Register(ctx, registry.Request{Permissions: []permission.Code{permission.AccountCreate}})
 	Expect(err).NotTo(HaveOccurred())
 	Expect(db.Exec("UPDATE identity.permissions SET active = true WHERE code = ?", permission.AccountCreate).Error).NotTo(HaveOccurred())
@@ -97,9 +97,10 @@ func verifyNormalizedRegistration(ctx context.Context, db *gorm.DB, tenant strin
 	Expect(count).To(Equal(int64(1)))
 	Expect(db.Raw("SELECT count(*) FROM identity.password_tokens WHERE account_id = ?", result.AccountID).Scan(&count).Error).NotTo(HaveOccurred())
 	Expect(count).To(BeZero())
-	Expect(db.Raw("SELECT count(*) FROM identity.invitation_mail WHERE account_id = ?", result.AccountID).Scan(&count).Error).NotTo(HaveOccurred())
+	Expect(db.Raw("SELECT count(*) FROM identity.invitations WHERE account_id = ?", result.AccountID).Scan(&count).Error).NotTo(HaveOccurred())
 	Expect(count).To(BeZero())
 	Expect(db.Raw("SELECT count(*) FROM identity.registration_receipts r JOIN infrastructure.messaging m ON m.event_id = r.event_id::text WHERE r.tenant_id = ? AND r.account_id = ? AND convert_from(m.payload,'UTF8')::jsonb->>'eventType' = 'identity.account.registration.changed.v1'", tenant, result.AccountID).Scan(&count).Error).NotTo(HaveOccurred())
 	Expect(count).To(Equal(int64(1)))
 	Expect(db.Exec("DELETE FROM identity.registration_receipts WHERE tenant_id = ? AND account_id = ?", tenant, result.AccountID).Error).To(HaveOccurred())
+	verifyApprovedSetup(ctx, db, tenant, requesterCtx, reviewerCtx, requiredRole, result.AccountID, store)
 }

@@ -22,7 +22,7 @@ type Registration struct {
 
 type RegistrationReceipt struct {
 	AccountID string
-	PersonGID string
+	PersonGID string `gorm:"column:person_gid"`
 	Email string
 	Digest string
 }

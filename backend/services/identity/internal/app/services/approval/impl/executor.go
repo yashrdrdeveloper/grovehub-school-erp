@@ -35,7 +35,12 @@ type AssignmentEffect interface {
 	Execute(ctx context.Context, request accountrole.Replacement) (accountrole.Assignment, error)
 }
 
+type PendingInvitation interface {
+	Queue(ctx context.Context, tenantID string, assignment accountrole.Assignment) error
+}
+
 type Effects struct {
+	PendingInvitation PendingInvitation
 	Audit resource.Recorder
 	AccountLifecycle AccountLifecycle
 	RoleLifecycle RoleLifecycle

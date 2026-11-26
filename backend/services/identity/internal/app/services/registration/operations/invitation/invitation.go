@@ -72,11 +72,22 @@ func (service *Service) Queue(ctx context.Context, account entity.Account, purpo
 		return err
 	}
 
+	var version *int64
+	if purpose == entity.AccountSetup {
+		if account.Status != entity.PendingSetup || account.Version < 1 {
+			return errors.New("invalid account setup state")
+		}
+		version = &account.Version
+		if err := service.Tokens.Invalidate(ctx, account.AccountID, entity.SetupGrant); err != nil {
+			return err
+		}
+	}
 	now := time.Now().UTC()
 	if err := service.Tokens.Issue(ctx, entity.PasswordToken{
 		TokenHash: tokenHash,
 		AccountID: account.AccountID,
 		Purpose: purpose,
+		AccountVersion: version,
 		ExpiresAt: now.Add(time.Duration(minutes) * time.Minute),
 		CreatedAt: now,
 	}); err != nil {
