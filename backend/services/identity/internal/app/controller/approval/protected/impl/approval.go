@@ -16,12 +16,19 @@ import (
 
 type Controller struct {
 	service approval.Reader
+	mutations approval.Service
+	executor approval.Executor
 }
 
 var _ protected.ApprovalController = (*Controller)(nil)
 
 func New(service approval.Reader) protected.ApprovalController {
-	return &Controller{service: service}
+	return NewWithMutations(service, nil, nil)
+}
+
+// A nil executor intentionally keeps effect execution disabled during cutover.
+func NewWithMutations(service approval.Reader, mutations approval.Service, executor approval.Executor) protected.ApprovalController {
+	return &Controller{service: service, mutations: mutations, executor: executor}
 }
 
 func (controller *Controller) History(writer http.ResponseWriter, request *http.Request) {

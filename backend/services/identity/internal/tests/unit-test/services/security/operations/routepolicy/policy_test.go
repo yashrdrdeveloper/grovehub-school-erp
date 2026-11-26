@@ -92,3 +92,23 @@ var _ = Describe("RBAC read routes", func() {
 		Expect(routepolicy.New(nil, false).Authorize(ctx, "POST /identity/protected/approvals/{requestId}/execute")).To(MatchError(authorization.ErrForbidden))
 	})
 })
+
+var _ = Describe("Approval mutation routes", func() {
+	It("allows strict authenticated request-specific operations, but keeps execution blocked", func() {
+		ctx := schoolgateway.WithPrincipal(context.Background(), schoolgateway.Principal{AccountID: "actor", TenantID: "school", SessionID: "session"})
+		auth := &authorizer{}
+		policy := routepolicy.New(auth, false)
+		for _, path := range []string{"/lifecycle", "/{requestId}/approve", "/{requestId}/reject", "/{requestId}/cancel"} {
+			pattern := "POST /identity/protected/approvals"+path
+			Expect(policy.Authorize(ctx, pattern)).To(Succeed())
+			Expect(policy.Authorize(context.Background(), pattern)).NotTo(Succeed())
+			Expect(routepolicy.New(auth, true).Authorize(ctx, pattern)).To(MatchError(authorization.ErrForbidden))
+		}
+		Expect(policy.Authorize(ctx, "POST /identity/protected/approvals/permissions")).To(Succeed())
+		Expect(auth.code).To(Equal(permission.RolePermissionManage))
+		Expect(policy.Authorize(ctx, "POST /identity/protected/approvals/assignments")).To(Succeed())
+		Expect(auth.code).To(Equal(permission.AccountRoleAssign))
+		Expect(policy.Authorize(ctx, "POST /identity/protected/approvals/{requestId}/execute")).To(MatchError(authorization.ErrForbidden))
+		Expect(routepolicy.New(auth, true).Authorize(ctx, "POST /identity/protected/approvals/{requestId}/execute")).To(MatchError(authorization.ErrForbidden))
+	})
+})

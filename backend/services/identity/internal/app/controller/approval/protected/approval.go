@@ -18,4 +18,25 @@ type ApprovalController interface {
 
 	// @GET /{requestId}/audit
 	Audit(writer http.ResponseWriter, request *http.Request)
+
+	// @POST /lifecycle
+	SubmitLifecycle(writer http.ResponseWriter, request *http.Request)
+
+	// @POST /permissions
+	SubmitPermissions(writer http.ResponseWriter, request *http.Request)
+
+	// @POST /assignments
+	SubmitAssignment(writer http.ResponseWriter, request *http.Request)
+
+	// @POST /{requestId}/approve
+	Approve(writer http.ResponseWriter, request *http.Request)
+
+	// @POST /{requestId}/reject
+	Reject(writer http.ResponseWriter, request *http.Request)
+
+	// @POST /{requestId}/cancel
+	Cancel(writer http.ResponseWriter, request *http.Request)
+
+	// @POST /{requestId}/execute
+	Execute(writer http.ResponseWriter, request *http.Request)
 }

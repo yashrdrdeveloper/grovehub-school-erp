@@ -14,11 +14,19 @@ type Rule struct {
 	SelfService bool
 	BlockedUntilCutover bool
 	ScopedRead bool
+	ScopedMutation bool
 	StrictOnly bool
 }
 
 func Lookup(pattern string) (Rule, bool) {
 	rules := map[string]Rule{
+		"POST /identity/protected/approvals/lifecycle": {ScopedMutation: true, StrictOnly: true},
+		"POST /identity/protected/approvals/permissions": {Permission: permission.RolePermissionManage, StrictOnly: true},
+		"POST /identity/protected/approvals/assignments": {Permission: permission.AccountRoleAssign, StrictOnly: true},
+		"POST /identity/protected/approvals/{requestId}/approve": {ScopedMutation: true, StrictOnly: true},
+		"POST /identity/protected/approvals/{requestId}/reject": {ScopedMutation: true, StrictOnly: true},
+		"POST /identity/protected/approvals/{requestId}/cancel": {ScopedMutation: true, StrictOnly: true},
+		"POST /identity/protected/approvals/{requestId}/execute": {BlockedUntilCutover: true, StrictOnly: true},
 		"POST /identity/protected/roles/search": {Permission: permission.RoleView, StrictOnly: true},
 		"GET /identity/protected/roles/{roleId}": {Permission: permission.RoleView, StrictOnly: true},
 		"GET /identity/protected/roles/{roleId}/permissions": {Permission: permission.RolePermissionView, StrictOnly: true},
@@ -78,12 +86,12 @@ func (policy *Policy) Authorize(ctx context.Context, pattern string) error {
 		}
 		return nil
 	}
-	if rule.ScopedRead {
-		// The approval reader enforces live per-request visibility itself.
-		return nil
-	}
 	if rule.BlockedUntilCutover {
 		return authorization.ErrForbidden
+	}
+	if rule.ScopedRead || rule.ScopedMutation {
+		// The owning approval service enforces live request-specific authority.
+		return nil
 	}
 	if policy.authorizer == nil {
 		return authorization.ErrUnavailable

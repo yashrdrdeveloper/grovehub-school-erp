@@ -2,6 +2,8 @@ package rbac_test
 
 import (
 	"context"
+	"encoding/json"
+	headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -192,6 +194,8 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	Expect(err).NotTo(HaveOccurred())
 	Expect(unchanged.Role.Status).To(Equal(entity.RoleActive))
 	Expect(unchanged.Role.Version).To(Equal(int64(1)))
+	// Restore the active policy after verifying that existing snapshots did not change.
+	Expect(db.Exec("UPDATE identity.approval_policy_steps SET required_permission_code = ? WHERE tenant_id = ? AND policy_id = ?", permission.AccountRoleAssign, tenant, policyID).Error).NotTo(HaveOccurred())
 	intent.IdempotencyKey = "cancel-workflow"
 	cancelRequest, err := service.CreateLifecycle(requesterCtx, intent)
 	Expect(err).NotTo(HaveOccurred())
@@ -206,6 +210,45 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	Expect(db.Exec("UPDATE identity.approval_requests SET created_at = ?, expires_at = ? WHERE request_id = ?", time.Now().UTC().Add(-2*time.Hour), time.Now().UTC().Add(-time.Hour), expired.RequestID).Error).NotTo(HaveOccurred())
 	_, err = service.Decide(reviewerCtx, dto.Review{RequestID: expired.RequestID, Version: 1, Decision: kind.Approve})
 	Expect(err).To(MatchError(state.ErrExpired))
+
+	mutationController := approvalcontroller.NewWithMutations(reads, service, nil)
+	body, err := json.Marshal(intent)
+	Expect(err).NotTo(HaveOccurred())
+	submit := func(key string) *httptest.ResponseRecorder {
+		request := httptest.NewRequest(http.MethodPost, "/identity/protected/approvals/lifecycle", strings.NewReader(string(body))).WithContext(requesterCtx)
+		if key != "" {
+			request.Header.Set("Idempotency-Key", key)
+		}
+		response := httptest.NewRecorder()
+		headercontext.Middleware(http.HandlerFunc(mutationController.SubmitLifecycle)).ServeHTTP(response, request)
+		return response
+	}
+	Expect(submit("").Code).To(Equal(http.StatusBadRequest))
+	submitted := submit("http-approval-1")
+	Expect(submitted.Code).To(Equal(http.StatusCreated))
+	persistedHTTP, err := repository.New(db, recorder).FindByKey(ctx, tenant, requester, "http-approval-1")
+	Expect(err).NotTo(HaveOccurred())
+	Expect(submitted.Body.String()).To(ContainSubstring(persistedHTTP.RequestID))
+	Expect(submitted.Body.String()).NotTo(ContainSubstring("idempotencyKey"))
+	Expect(submit("http-approval-1").Body.String()).To(ContainSubstring(persistedHTTP.RequestID))
+	post := func(handler http.HandlerFunc, actor context.Context, id string, body string) *httptest.ResponseRecorder {
+		request := httptest.NewRequest(http.MethodPost, "/identity/protected/approvals/"+id, strings.NewReader(body)).WithContext(actor)
+		request.SetPathValue("requestId", id)
+		response := httptest.NewRecorder()
+		handler(response, request)
+		return response
+	}
+	Expect(post(mutationController.Approve, requesterCtx, persistedHTTP.RequestID, `{"version":1}`).Code).To(Equal(http.StatusForbidden))
+	Expect(post(mutationController.Approve, foreignCtx, persistedHTTP.RequestID, `{"version":1}`).Code).To(Equal(http.StatusNotFound))
+	Expect(post(mutationController.Approve, reviewerCtx, persistedHTTP.RequestID, `{"version":1}`).Code).To(Equal(http.StatusOK))
+	Expect(post(mutationController.Approve, reviewerCtx, persistedHTTP.RequestID, `{"version":1}`).Code).To(Equal(http.StatusConflict))
+	Expect(post(mutationController.Reject, reviewerCtx, persistedHTTP.RequestID, `{"version":2,"comment":"Rejected in HTTP test"}`).Code).To(Equal(http.StatusOK))
+	Expect(post(mutationController.Execute, requesterCtx, persistedHTTP.RequestID, `{"version":3}`).Code).To(Equal(http.StatusServiceUnavailable))
+	Expect(submit("http-approval-2").Code).To(Equal(http.StatusCreated))
+	cancelHTTP, err := repository.New(db, recorder).FindByKey(ctx, tenant, requester, "http-approval-2")
+	Expect(err).NotTo(HaveOccurred())
+	Expect(post(mutationController.Cancel, reviewerCtx, cancelHTTP.RequestID, `{"version":1}`).Code).To(Equal(http.StatusForbidden))
+	Expect(post(mutationController.Cancel, requesterCtx, cancelHTTP.RequestID, `{"version":1}`).Code).To(Equal(http.StatusOK))
 
 	const draftID = "10000000-0000-4000-8000-000000000010"
 	const permissionPolicy = "10000000-0000-4000-8000-000000000011"

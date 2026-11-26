@@ -1,6 +1,9 @@
 package helpers
 
 import (
+	"grovehub/services/identity/internal/app/services/approval/operations/state"
+	"grovehub/services/identity/internal/app/repository/authority"
+	"grovehub/services/identity/internal/app/repository/rbacmigration"
 	"grovehub/services/identity/internal/app/services/authorization"
 	rolerepo "grovehub/services/identity/internal/app/repository/role"
 	approvalrepo "grovehub/services/identity/internal/app/repository/approval"
@@ -32,7 +35,17 @@ func Map(err error) error {
 	}
 
 	switch {
-	case errors.Is(err, authorization.ErrForbidden):
+	case errors.Is(err, state.ErrExpired):
+		return coreerrors.NewError(definitions.ApprovalExpired)
+	case errors.Is(err, approvalrepo.ErrPolicy):
+		return coreerrors.NewError(definitions.ApprovalPolicyUnavailable)
+	case errors.Is(err, state.ErrVersion), errors.Is(err, state.ErrInvalid):
+		return coreerrors.NewError(definitions.ApprovalStateConflict)
+	case errors.Is(err, authority.ErrLastAdministrator):
+		return coreerrors.NewError(definitions.ApprovalLastAdministrator)
+	case errors.Is(err, authority.ErrBootstrapRequired), errors.Is(err, rbacmigration.ErrNotReady), errors.Is(err, rolerepo.ErrAssigned), errors.Is(err, rolerepo.ErrLiveRole), errors.Is(err, rolerepo.ErrNotReady), errors.Is(err, rolerepo.ErrInvalidTransition):
+		return coreerrors.NewError(definitions.RBACConflict)
+	case errors.Is(err, state.ErrForbidden), errors.Is(err, authorization.ErrForbidden):
 		return coreerrors.NewError(definitions.Forbidden)
 	case errors.Is(err, authorization.ErrUnavailable):
 		return coreerrors.NewError(definitions.Unavailable)

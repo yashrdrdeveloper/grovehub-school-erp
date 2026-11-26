@@ -28,6 +28,9 @@ func (service *Service) Cancel(ctx context.Context, requestID string, version in
 		if err != nil {
 			return err
 		}
+		if current.RequesterID != actor.AccountID {
+			return state.ErrForbidden
+		}
 		snapshot, err := service.snapshots.LoadSnapshot(tx, actor.TenantID, actor.AccountID)
 		if err != nil {
 			return err

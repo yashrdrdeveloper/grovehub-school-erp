@@ -7,6 +7,10 @@ import (
 )
 
 var (
+	ApprovalExpired = coreerrors.NewDefinition("IDENTITY_APPROVAL_EXPIRED", "Approval request expired", http.StatusConflict)
+	ApprovalPolicyUnavailable = coreerrors.NewDefinition("IDENTITY_APPROVAL_POLICY_UNAVAILABLE", "No eligible approval policy is configured", http.StatusConflict)
+	ApprovalStateConflict = coreerrors.NewDefinition("IDENTITY_APPROVAL_STATE_CONFLICT", "Approval state or version does not permit this operation", http.StatusConflict)
+	ApprovalLastAdministrator = coreerrors.NewDefinition("IDENTITY_APPROVAL_LAST_ADMINISTRATOR", "At least one administrator must remain", http.StatusConflict)
 	RBACNotFound = coreerrors.NewDefinition("IDENTITY_RBAC_NOT_FOUND", "Resource not found", http.StatusNotFound)
 	RBACConflict = coreerrors.NewDefinition("IDENTITY_RBAC_CONFLICT", "Resource has changed or is not eligible", http.StatusConflict)
 	InvalidRequest = coreerrors.NewDefinition("IDENTITY_REQUEST_INVALID", "Invalid request", http.StatusBadRequest)

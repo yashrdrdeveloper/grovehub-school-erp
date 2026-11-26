@@ -40,7 +40,7 @@ func (b *builder) newControllers(services serviceGraph) controllerGraph {
 		protectedAccount: accountprotectedimpl.New(services.account, services.catalog),
 		roleController: roleprotectedimpl.New(services.roles),
 		accountroleController: accountroleprotectedimpl.New(services.accountRoles),
-		approvalController: approvalprotectedimpl.New(services.approvalReads),
+		approvalController: approvalprotectedimpl.NewWithMutations(services.approvalReads, services.approvalMutations, nil),
 	}
 }
 

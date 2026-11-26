@@ -31,6 +31,7 @@ import (
 type serviceGraph struct {
 	accountRoles accountrole.Service
 	approvalReads approval.Reader
+	approvalMutations approval.Service
 	account       account.Service
 	authorization authorization.Service
 	policy *routepolicy.Policy
@@ -87,6 +88,7 @@ func (b *builder) newServices(repositories repositories, cfg config.Config) serv
 	return serviceGraph{
 		accountRoles: accountroleimpl.New(repositories.accountRoles, authorizer),
 		approvalReads: approvalimpl.NewReader(repositories.approvalReads, repositories.approval, repositories.authority, repositories.authorization),
+		approvalMutations: approvalimpl.New(repositories.approval, repositories.authority, authorizer, repositories.authorization, reader, repositories.roles, repositories.accountRoles),
 		account: accountimpl.NewGuarded(accounts, policy), auth: authentication, worker: worker,
 		policy: policy, catalog: catalog.New(roleread.NewCatalogReader(b.db), policy, cfg.LegacyRBACDevelopment),
 		authorization: authorizer, registry: registryimpl.New(repositories.registry),
