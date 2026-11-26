@@ -10,6 +10,9 @@ import (
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/repository/authority"
+	accountrepo "grovehub/services/identity/internal/app/repository/account"
+	migrationreadiness "grovehub/services/identity/internal/app/repository/rbacmigration"
+	"time"
 	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
 	accountread "grovehub/services/identity/internal/app/repository/account/impl"
@@ -236,6 +239,23 @@ func verifyAdministratorGuard(ctx context.Context, db *gorm.DB) {
 	Expect(err).NotTo(HaveOccurred())
 	_, err = migrationplan.Build(inventory)
 	Expect(err).To(MatchError(rbacmigration.ErrConflict))
+	readiness := migrationreader.NewReadiness(db)
+	Expect(readiness.Require(ctx, legacyTenant)).To(MatchError(migrationreadiness.ErrNotReady))
+	Expect(db.Exec("INSERT INTO identity.rbac_migration_receipts(receipt_id, tenant_id, operator_id, operation, input_sha256, result) VALUES ('ffffffff-ffff-4fff-8fff-ffffffffffff', ?, ?, 'BACKFILL', repeat('a',64), '{}'::jsonb), ('99999999-9999-4999-8999-999999999999', ?, ?, 'BOOTSTRAP', repeat('b',64), '{}'::jsonb)", legacyTenant, first, legacyTenant, first).Error).NotTo(HaveOccurred())
+	Expect(readiness.Require(ctx, legacyTenant)).To(Succeed())
+	Expect(readiness.Require(ctx, tenant)).To(MatchError(migrationreadiness.ErrNotReady))
+	statusWriter := accountread.NewStatusWriter(db)
+	change := accountrepo.StatusChange{TenantID: legacyTenant, AccountID: legacyAccount, Version: projected.Version, Before: entity.Active, After: entity.Suspended, UpdatedAt: time.Now().UTC()}
+	Expect(guard.Run(ctx, legacyTenant, func(tx context.Context) error {
+		return statusWriter.ChangeStatus(tx, change)
+	})).To(MatchError(authority.ErrLastAdministrator))
+	preserved, err := normalized.FindByID(ctx, legacyAccount)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(preserved.Status).To(Equal(entity.Active))
+	Expect(preserved.Version).To(Equal(projected.Version))
+	Expect(preserved.PrimaryRoleID).To(Equal(projected.PrimaryRoleID))
+	change.Version++
+	Expect(statusWriter.ChangeStatus(ctx, change)).To(MatchError(accountrepo.ErrVersionConflict))
 	count, err = reader.Count(ctx, "foreign-guard-school")
 	Expect(err).NotTo(HaveOccurred())
 	Expect(count).To(BeZero())
