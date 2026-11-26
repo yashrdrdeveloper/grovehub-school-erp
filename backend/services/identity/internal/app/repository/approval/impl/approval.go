@@ -112,3 +112,9 @@ func (repository *Repository) Advance(ctx context.Context, before entity.Approva
 	}
 	return nil
 }
+
+func (repository *Repository) Decisions(ctx context.Context, tenantID string, requestID string) ([]approval.ReviewRecord, error) {
+	var records []approval.ReviewRecord
+	err := repository.dbFor(ctx).Raw(constants.Decisions, tenantID, requestID).Scan(&records).Error
+	return records, err
+}

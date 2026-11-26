@@ -89,7 +89,7 @@ func (service *Service) requireReviewer(ctx context.Context, actor principal.Pri
 			}
 		}
 	}
-	if !evaluate.Allowed(ctx, step.Permission, snapshot) {
+	if !evaluate.AllowedFor(actor.AccountID, actor.TenantID, step.Permission, snapshot) {
 		return authorization.ErrForbidden
 	}
 	return nil

@@ -20,7 +20,16 @@ type Snapshot = authorizationrepo.Snapshot
 
 func Allowed(ctx context.Context, requested permission.Code, snapshot Snapshot) bool {
 	principal, verified := schoolgateway.PrincipalFrom(ctx)
-	if !verified || principal.TenantID == "" || principal.TenantID != snapshot.TenantID || principal.AccountID != snapshot.AccountID || snapshot.Status != entity.Active {
+	if !verified {
+		return false
+	}
+	return AllowedFor(principal.AccountID, principal.TenantID, requested, snapshot)
+}
+
+// AllowedFor evaluates a database-loaded identity, not a browser credential.
+// Only trusted callers may supply the subject; it never authenticates a session.
+func AllowedFor(accountID string, tenantID string, requested permission.Code, snapshot Snapshot) bool {
+	if accountID == "" || tenantID == "" || tenantID != snapshot.TenantID || accountID != snapshot.AccountID || snapshot.Status != entity.Active {
 		return false
 	}
 
@@ -43,7 +52,7 @@ func Allowed(ctx context.Context, requested permission.Code, snapshot Snapshot) 
 	}
 
 	for _, role := range snapshot.Roles {
-		if !role.Active || role.RoleID == "" || role.TenantID != principal.TenantID {
+		if !role.Active || role.RoleID == "" || role.TenantID != tenantID {
 			continue
 		}
 		for _, granted := range role.Permissions {

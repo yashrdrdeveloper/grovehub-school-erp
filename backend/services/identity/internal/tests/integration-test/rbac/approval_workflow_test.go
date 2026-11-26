@@ -2,6 +2,7 @@ package rbac_test
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	. "github.com/onsi/gomega"
@@ -20,6 +21,13 @@ import (
 	repo "grovehub/services/identity/internal/app/repository/approval"
 	repository "grovehub/services/identity/internal/app/repository/approval/impl"
 	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
+	"grovehub/services/identity/internal/app/repository/authority"
+	migrationimpl "grovehub/services/identity/internal/app/repository/rbacmigration/impl"
+	migrationrepo "grovehub/services/identity/internal/app/repository/rbacmigration"
+	rolerepo "grovehub/services/identity/internal/app/repository/role"
+	"grovehub/services/identity/internal/app/services/authorization/operations/protect"
+	"grovehub/services/identity/internal/app/services/accountrole/operations/replace"
+	"grovehub/services/identity/internal/app/services/role/operations/lifecycle"
 	authrepo "grovehub/services/identity/internal/app/repository/authorization/impl"
 	registryrepo "grovehub/services/identity/internal/app/repository/registry/impl"
 	roleimpl "grovehub/services/identity/internal/app/repository/role/impl"
@@ -176,5 +184,83 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	Expect(err).NotTo(HaveOccurred())
 	Expect(originalAssignment.PrimaryRoleID).To(Equal(managementRole))
 	Expect(originalAssignment.Version).To(Equal(int64(1)))
+
+	// Approve a second intent against the original draft version before applying either.
+	permissionRequest.IdempotencyKey = "stale-after-effect"
+	pendingStale, err := service.CreatePermissions(requesterCtx, permissionRequest)
+	Expect(err).NotTo(HaveOccurred())
+	approvedStale, err := service.Decide(reviewerCtx, dto.Review{RequestID: pendingStale.RequestID, Version: 1, Decision: kind.Approve})
+	Expect(err).NotTo(HaveOccurred())
+	locker := authorityimpl.New(db)
+	guard := protect.New(locker, authorityimpl.NewAdministratorReader(db))
+	readiness := migrationimpl.NewReadiness(db)
+	effects := approvalimpl.Effects{Permissions: roleimpl.NewDraftWriter(db), Assignment: replace.New(guard, assignmentimpl.NewWriter(db)), RoleLifecycle: lifecycle.New(guard, roleimpl.NewLifecycleWriter(db))}
+	buildExecutor := func(effects approvalimpl.Effects) *approvalimpl.Executor {
+		return approvalimpl.NewExecutor(repository.New(db), locker, guard, readiness, authimpl.New(snapshots), snapshots, accountimpl.NewNormalizedReader(db), roleimpl.New(db), assignmentimpl.New(db), effects)
+	}
+	executor := buildExecutor(effects)
+	_, err = executor.Execute(requesterCtx, approvedPermission.RequestID, approvedPermission.Version)
+	Expect(err).To(MatchError(migrationrepo.ErrNotReady))
+	Expect(db.Exec("INSERT INTO identity.rbac_migration_receipts(receipt_id, tenant_id, operator_id, operation, input_sha256, result) VALUES ('10000000-0000-4000-8000-000000000013', ?, ?, 'BACKFILL', repeat('c',64), '{}'::jsonb), ('10000000-0000-4000-8000-000000000014', ?, ?, 'BOOTSTRAP', repeat('d',64), '{}'::jsonb)", tenant, requester, tenant, requester).Error).NotTo(HaveOccurred())
+	_, err = executor.Execute(reviewerCtx, approvedPermission.RequestID, approvedPermission.Version)
+	Expect(err).To(MatchError(state.ErrForbidden))
+	Expect(db.Exec("UPDATE identity.roles SET status = 'INACTIVE' WHERE tenant_id = ? AND role_id = ?", tenant, requiredRole).Error).NotTo(HaveOccurred())
+	_, err = executor.Execute(requesterCtx, approvedPermission.RequestID, approvedPermission.Version)
+	Expect(err).To(MatchError(authorization.ErrForbidden))
+	Expect(db.Exec("UPDATE identity.roles SET status = 'ACTIVE' WHERE tenant_id = ? AND role_id = ?", tenant, requiredRole).Error).NotTo(HaveOccurred())
+
+	fault := effects
+	fault.Permissions = failingDraftWriter{DraftPermissionWriter: effects.Permissions}
+	_, err = buildExecutor(fault).Execute(requesterCtx, approvedPermission.RequestID, approvedPermission.Version)
+	Expect(err).To(MatchError(errInjectedEffect))
+	grantSet, err = roleimpl.New(db).Permissions(ctx, tenant, draftID)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(grantSet.Version).To(Equal(int64(1)))
+	Expect(grantSet.Codes).To(BeEmpty())
+	var persisted entity.ApprovalRequest
+	Expect(db.Raw("SELECT * FROM identity.approval_requests WHERE tenant_id = ? AND request_id = ?", tenant, approvedPermission.RequestID).Scan(&persisted).Error).NotTo(HaveOccurred())
+	Expect(persisted.Status).To(Equal(kind.Approved))
+
+	applied, err := executor.Execute(requesterCtx, approvedPermission.RequestID, approvedPermission.Version)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(applied.Status).To(Equal(kind.Applied))
+	Expect(applied.Version).To(Equal(approvedPermission.Version+1))
+	replay, err := executor.Execute(requesterCtx, approvedPermission.RequestID, approvedPermission.Version)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(replay.Version).To(Equal(applied.Version))
+	grantSet, err = roleimpl.New(db).Permissions(ctx, tenant, draftID)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(grantSet.Version).To(Equal(int64(2)))
+	Expect(grantSet.Codes).To(Equal([]permission.Code{permission.RoleDeactivate}))
+	staleResult, err := executor.Execute(requesterCtx, approvedStale.RequestID, approvedStale.Version)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(staleResult.Status).To(Equal(kind.Stale))
+	_, err = executor.Execute(requesterCtx, approvedAssignment.RequestID, approvedAssignment.Version)
+	Expect(err).To(MatchError(authority.ErrLastAdministrator))
+	preservedAssignment, err := assignmentimpl.New(db).Find(ctx, tenant, requester)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(preservedAssignment).To(Equal(originalAssignment))
+	Expect(db.Raw("SELECT * FROM identity.approval_requests WHERE tenant_id = ? AND request_id = ?", tenant, approvedAssignment.RequestID).Scan(&persisted).Error).NotTo(HaveOccurred())
+	Expect(persisted.Status).To(Equal(kind.Approved))
+	roleApplied, err := executor.Execute(requesterCtx, approved.RequestID, approved.Version)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(roleApplied.Status).To(Equal(kind.Applied))
+	roleAfter, err := roleimpl.New(db).FindByID(ctx, tenant, targetRole)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(roleAfter.Role.Status).To(Equal(entity.RoleInactive))
 }
+
+var errInjectedEffect = errors.New("injected failure after draft write")
+
+type failingDraftWriter struct {
+	rolerepo.DraftPermissionWriter
+}
+
+func (writer failingDraftWriter) ReplaceDraftPermissions(ctx context.Context, request rolerepo.DraftPermissionUpdate) (rolerepo.PermissionSet, error) {
+	if _, err := writer.DraftPermissionWriter.ReplaceDraftPermissions(ctx, request); err != nil {
+		return rolerepo.PermissionSet{}, err
+	}
+	return rolerepo.PermissionSet{}, errInjectedEffect
+}
+
 

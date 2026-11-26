@@ -30,3 +30,5 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 
 const Advance = `UPDATE identity.approval_requests SET status = ?, current_step = ?, version = ?, updated_at = ?
 WHERE tenant_id = ? AND request_id = ? AND version = ? AND status = ? AND current_step = ?`
+
+const Decisions = `SELECT requester_id::text AS requester_id, reviewer_id::text AS reviewer_id, decision, comment, step_number AS step, created_at AS at FROM identity.approval_decisions WHERE tenant_id = ? AND request_id = ? ORDER BY step_number`

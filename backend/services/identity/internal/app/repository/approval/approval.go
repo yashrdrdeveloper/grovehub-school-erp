@@ -45,6 +45,7 @@ type Repository interface {
 	FindByKey(ctx context.Context, tenantID string, requesterID string, key string) (entity.ApprovalRequest, error)
 	Lock(ctx context.Context, tenantID string, requestID string) (entity.ApprovalRequest, error)
 	Step(ctx context.Context, tenantID string, requestID string, number int) (Step, error)
+	Decisions(ctx context.Context, tenantID string, requestID string) ([]ReviewRecord, error)
 	Insert(ctx context.Context, request entity.ApprovalRequest, steps []Step) error
 	InsertDecision(ctx context.Context, tenantID string, requestID string, record ReviewRecord) error
 	Advance(ctx context.Context, before entity.ApprovalRequest, next entity.ApprovalRequest) error
