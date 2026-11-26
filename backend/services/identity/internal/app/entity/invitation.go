@@ -14,5 +14,7 @@ type Invitation struct {
 	NextAttemptAt time.Time  `gorm:"column:next_attempt_at"`
 	LeaseUntil    *time.Time `gorm:"column:lease_until"`
 	SentAt        *time.Time `gorm:"column:sent_at"`
+	SuppressedAt  *time.Time `gorm:"column:suppressed_at"`
+	SuppressionReason *string `gorm:"column:suppression_reason"`
 	CreatedAt     time.Time  `gorm:"column:created_at"`
 }

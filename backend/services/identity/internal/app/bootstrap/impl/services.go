@@ -98,7 +98,7 @@ func (b *builder) newServices(repositories repositories, cfg config.Config) serv
 
 	var worker *invitation.Worker
 	if b.integration != nil && len(cfg.EncryptionKey) == 32 {
-		worker = invitation.NewWorker(repositories.mail, repositories.accounts, b.integration, cfg)
+		worker = invitation.NewWorker(repositories.mail, reader, repositories.tokens, repositories.authority, repositories.accountRoles, repositories.authorization, b.integration, cfg)
 	}
 
 	authorizer := authorizationimpl.New(repositories.authorization)

@@ -67,7 +67,7 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	roles := roleimpl.New(db)
 	tokens := tokenimpl.New(db)
 	credentials := credentialimpl.New(credentialrepo.New(db))
-	cfg := config.Config{EncryptionKey: make([]byte, 32), SetupURL: "https://school.example/set-password"}
+	cfg := config.Config{ApprovalExecutionTenant: tenant, EncryptionKey: make([]byte, 32), SetupURL: "https://school.example/set-password"}
 	sender := invitation.New(tokens, mailrepo.New(db), cfg)
 	approvedInvitations := invitation.NewApproved(accounts, assignments, snapshots, sender)
 	repository := approvalrepo.New(db, approvalproducer.New(auditimpl.New(db), store))
@@ -134,6 +134,18 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	Expect(err).NotTo(HaveOccurred())
 	Expect(token.AccountVersion).NotTo(BeNil())
 	Expect(*token.AccountVersion).To(Equal(before.Version+1))
+
+	// The exchanged proof is no longer deliverable, even if the worker never sent it.
+	worker := invitation.NewWorker(mailrepo.New(db), accounts, tokens, locker, assignments, snapshots, nil, cfg)
+	claimed, err := worker.RunOnce(ctx)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(claimed).To(BeTrue())
+	var suppressed entity.Invitation
+	Expect(db.Where("id = ?", mail.ID).Take(&suppressed).Error).NotTo(HaveOccurred())
+	Expect(suppressed.SuppressedAt).NotTo(BeNil())
+	Expect(suppressed.SuppressionReason).NotTo(BeNil())
+	Expect(*suppressed.SuppressionReason).To(Equal("INVALID_PROOF"))
+	Expect(suppressed.SentAt).To(BeNil())
 
 	setup := setupimpl.NewNormalized(accounts, accountimpl.NewSetupWriter(db), tokens, credentials, locker, readiness, assignments, snapshots, accountproducer.New(store))
 	onboarding := accountservice.NewOnboarding(nil, cutover.New(tenant), nil, nil, setup, proofs)

@@ -33,7 +33,7 @@ func (repository *Repository) Claim(ctx context.Context, now time.Time) (entity.
 		WHERE id = (
 			SELECT id
 			FROM identity.invitations
-			WHERE sent_at IS NULL
+			WHERE sent_at IS NULL AND suppressed_at IS NULL
 			  AND next_attempt_at <= ?
 			  AND (lease_until IS NULL OR lease_until < ?)
 			ORDER BY next_attempt_at
@@ -64,4 +64,25 @@ func (repository *Repository) Retry(ctx context.Context, invitationID string, ne
 			"next_attempt_at": nextAttempt,
 			"lease_until":     nil,
 		}).Error
+}
+
+// LockClaim fences a worker whose lease expired while waiting for tenant authority.
+func (repository *Repository) LockClaim(ctx context.Context, invitation entity.Invitation, now time.Time) (bool, error) {
+	if !transaction.Active(ctx) {
+		return false, transaction.ErrMissingDatabase
+	}
+	var row struct { ID string }
+	result := transaction.Database(ctx, repository.db).Raw(`
+		SELECT id FROM identity.invitations
+		WHERE id = ? AND attempts = ? AND lease_until > ?
+		  AND sent_at IS NULL AND suppressed_at IS NULL
+		FOR UPDATE
+	`, invitation.ID, invitation.Attempts, now).Scan(&row)
+	return row.ID != "", result.Error
+}
+
+func (repository *Repository) Suppress(ctx context.Context, invitation entity.Invitation, reason string) error {
+	return transaction.Database(ctx, repository.db).Model(&entity.Invitation{}).
+		Where("id = ? AND attempts = ? AND sent_at IS NULL AND suppressed_at IS NULL", invitation.ID, invitation.Attempts).
+		Updates(map[string]any{"suppressed_at": time.Now().UTC(), "suppression_reason": reason, "lease_until": nil}).Error
 }
