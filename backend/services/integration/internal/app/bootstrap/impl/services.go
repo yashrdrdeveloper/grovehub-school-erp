@@ -2,6 +2,8 @@ package impl
 
 import (
     eventproducer "grovehub/services/integration/internal/app/events/producers/connection"
+    deliveryrepo "grovehub/services/integration/internal/app/repository/maildelivery/impl"
+    "grovehub/services/integration/internal/app/services/connection/operations/action/delivery"
     validatorimpl "grovehub/services/integration/internal/app/validators/connection/impl"
     mapperimpl "grovehub/services/integration/internal/app/mappers/connection/impl"
     connectionservice "grovehub/services/integration/internal/app/services/connection"
@@ -17,6 +19,7 @@ func (b *builder) newServices(providers providerDependencies, producer eventprod
         providers.registry,providers.actions,providers.oauth,
         providers.gmail,providers.outlook,providers.key,
         providers.push.Topic,producer,validatorimpl.NewConnectionValidator(),mapperimpl.NewConnectionMapper(),
+        delivery.New(deliveryrepo.New(b.db)),
     )
     if err!=nil{return nil,nil,err}
     providerService:=providerimpl.NewProviderService(providers.registry,providers.actions,providers.oauth)

@@ -72,10 +72,13 @@ func (worker *Worker) RunOnce(ctx context.Context) (bool, error) {
 			return worker.repository.Suppress(tx, invitation, reason)
 		}
 
-		mail := mailhelpers.Mail{Title: data.Title, Name: data.Name, Description: data.Description, Button: data.Button, URL: data.URL, Minutes: data.Minutes}
+		mail := mailhelpers.Mail{DeliveryID: invitation.ID, Title: data.Title, Name: data.Name, Description: data.Description, Button: data.Button, URL: data.URL, Minutes: data.Minutes}
 		sendCtx, cancel := context.WithTimeout(tx, 10*time.Second)
 		defer cancel()
 		sendErr = mailhelpers.Send(sendCtx, worker.client, tenant, invitation.Email, mail)
+		if errors.Is(sendErr, integrationclient.ErrMailDeliveryUncertain) || errors.Is(sendErr, integrationclient.ErrMailDeliveryConflict) {
+			return worker.repository.Suppress(tx, invitation, "DELIVERY_UNCERTAIN")
+		}
 		if sendErr != nil {
 			delay := time.Duration(1<<min(invitation.Attempts+1, 9)) * time.Second
 			return worker.repository.Retry(tx, invitation.ID, time.Now().UTC().Add(delay))

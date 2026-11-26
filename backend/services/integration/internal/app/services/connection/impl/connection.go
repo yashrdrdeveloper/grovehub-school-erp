@@ -15,6 +15,7 @@ import (
     connectionvalidator "grovehub/services/integration/internal/app/validators/connection"
 
     action "grovehub/services/integration/internal/app/services/connection/operations/action"
+    "grovehub/services/integration/internal/app/services/connection/operations/action/delivery"
     actionimpl "grovehub/services/integration/internal/app/services/connection/operations/action/strategies/impl"
     create "grovehub/services/integration/internal/app/services/connection/operations/create"
     createimpl "grovehub/services/integration/internal/app/services/connection/operations/create/strategies/impl"
@@ -55,7 +56,7 @@ type ConnectionService struct {
 
 var _ connectionservices.ConnectionService = (*ConnectionService)(nil)
 
-func NewConnectionService(repository connectionrepo.ConnectionRepository, watchRepository watchrepo.WatchRepository, registry providercontracts.Registry, actions providercontracts.ActionRegistry, oauthRegistry mailcontracts.OAuthRegistry, gmailClient *gmail.Client, outlookClient *outlook.Client, encryptionKey []byte, pushTopic string, producer eventproducer.ChangedProducer, validator connectionvalidator.ConnectionValidator, mapper connectionmapper.ConnectionMapper) (connectionservices.ConnectionService,error) {
+func NewConnectionService(repository connectionrepo.ConnectionRepository, watchRepository watchrepo.WatchRepository, registry providercontracts.Registry, actions providercontracts.ActionRegistry, oauthRegistry mailcontracts.OAuthRegistry, gmailClient *gmail.Client, outlookClient *outlook.Client, encryptionKey []byte, pushTopic string, producer eventproducer.ChangedProducer, validator connectionvalidator.ConnectionValidator, mapper connectionmapper.ConnectionMapper, dispatchers ...*delivery.Dispatcher) (connectionservices.ConnectionService,error) {
     cipher,err:=helpers.NewTokenCipher(encryptionKey)
     if err!=nil && (gmailClient!=nil || outlookClient!=nil) {return nil,err}
 
@@ -66,7 +67,7 @@ func NewConnectionService(repository connectionrepo.ConnectionRepository, watchR
         ListOperation:list.New(listimpl.New(repository,validator,mapper)),
         DisconnectOperation:disconnect.New(disconnectimpl.New(repository,validator,mapper)),
         OAuthOperation:oauthOperation,
-        ActionOperation:action.New(actionimpl.New(repository,actions,oauthOperation)),
+        ActionOperation:action.New(actionimpl.New(repository,actions,oauthOperation,dispatchers...)),
         TestOperation:test.New(testimpl.New(repository,actions,oauthOperation,mapper)),
         WatchOperation:watch.New(watchimpl.New(repository,watchRepository,gmailClient,pushTopic,producer,oauthOperation)),
     },nil

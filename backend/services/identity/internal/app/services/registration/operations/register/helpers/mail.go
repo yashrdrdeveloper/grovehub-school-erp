@@ -12,6 +12,7 @@ import (
 )
 
 type Mail struct {
+	DeliveryID string
 	Title string
 	Name string
 	Description string
@@ -52,6 +53,9 @@ func Send(ctx context.Context, client integrationclient.Client, tenantID string,
 			"html": html,
 			"text": mail.Description + "\n" + mail.URL,
 		},
+	}
+	if mail.DeliveryID != "" {
+		input["deliveryId"] = mail.DeliveryID
 	}
 	payload, err := json.Marshal(input)
 	if err != nil {
