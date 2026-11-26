@@ -35,3 +35,7 @@ No library extraction, schema migration, service implementation or publishing ha
 ## A0.2 — Tooltip automation contract
 
 CI [45804844951](https://github.com/yashrdrdeveloper/grovehub-school-erp/actions/runs/45804844951) passed boundary and unit structure checks, then failed Tooltip's automation contract. Added typed dataTestId propagation through the trigger Box and a regression test. Remaining gates and tests are not yet verified.
+
+## A0.3 — Calendar and Table conditional expressions
+
+CI [45807088192](https://github.com/yashrdrdeveloper/grovehub-school-erp/actions/runs/45807088192) verified boundaries, units, UI automation contracts, styles and layout/assets, then rejected Calendar and Table ternaries. Replaced the reported branches without changing rendering semantics. Remaining checks require CI verification.

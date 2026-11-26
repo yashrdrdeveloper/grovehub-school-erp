@@ -34,6 +34,10 @@ export const TableView = <T,>(props: TableViewProps<T>) => {
     return paginationProps;
   };
   const pagination = getPagination();
+  const getRefreshLabel = () => {
+    if (props.refreshing) return __('Refreshing…');
+    return __('Refresh');
+  };
   const getTotal = () => {
     if (pagination?.type === PaginationType.OFFSET) return pagination.totalRecords;
     if (props.dataMode === TableDataMode.CLIENT) return controls.total;
@@ -66,7 +70,7 @@ export const TableView = <T,>(props: TableViewProps<T>) => {
           <Box className={styles.toolbarRight}>
             {searchProps && <TableSearch {...searchProps} onChange={(value) => actions?.SEARCH?.(value)} />}
             {actions?.REFRESH && (
-              <Tooltip label={props.refreshing ? __('Refreshing…') : __('Refresh')} focusable={Boolean(props.refreshing)}><ButtonWithIcon icon={RefreshCw} iconSize={16} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} aria-label={__('Refresh')} onClick={actions.REFRESH} disabled={props.refreshing} /></Tooltip>
+              <Tooltip label={getRefreshLabel()} focusable={Boolean(props.refreshing)}><ButtonWithIcon icon={RefreshCw} iconSize={16} size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} aria-label={__('Refresh')} onClick={actions.REFRESH} disabled={props.refreshing} /></Tooltip>
             )}
             <ColumnManager options={options} density={controls.preferences.density} onToggle={controls.toggle} onDensityChange={controls.setRowDensity} onReset={controls.reset} onReorder={controls.reorder} onPin={controls.pin} maxPinnedColumns={props.maxPinnedColumns} />
             {(actions?.EXPORT || actions?.FULLSCREEN_CHANGE) && (

@@ -40,27 +40,44 @@ export const Calendar = ({
     setMode('month');
   };
   const getNavigationLabel = (previous: boolean) => {
-    if (mode === 'year') return previous ? __('Previous decade') : __('Next decade');
-    if (mode === 'month') return previous ? __('Previous year') : __('Next year');
-    return previous ? __('Previous month') : __('Next month');
+    if (previous) {
+      if (mode === 'year') return __('Previous decade');
+      if (mode === 'month') return __('Previous year');
+      return __('Previous month');
+    }
+    if (mode === 'year') return __('Next decade');
+    if (mode === 'month') return __('Next year');
+    return __('Next month');
+  };
+  const getControlSize = () => {
+    if (compact) return BUTTON_SIZE.SMALL;
+    return BUTTON_SIZE.MEDIUM;
+  };
+  const getPeriodVariant = (selected: boolean) => {
+    if (selected) return BUTTON_VARIANT.PRIMARY;
+    return BUTTON_VARIANT.GHOST;
+  };
+  const isSelectedDate = (date: string) => {
+    if (range) return date === range.startDate || date === range.endDate;
+    return date === value;
   };
   const unavailable = (date: string) => Boolean(disabled || (min && date < min) || (max && date > max));
   const dayNames = Array.from({ length: 7 }, (_, index) => new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(new Date(2024, 0, index + 1)));
   return (
     <Box className={styles.calendar} data-compact={compact} dataTestId={dataTestId}>
       <Box className={styles.heading}>
-        <ButtonWithIcon icon={ArrowLeft} size={compact ? BUTTON_SIZE.SMALL : BUTTON_SIZE.MEDIUM} variant={BUTTON_VARIANT.GHOST} className={styles.navigation} data-hidden={mode === 'day' && navigation === 'next'} disabled={disabled} aria-label={getNavigationLabel(true)} onClick={() => shift(-1)} />
+        <ButtonWithIcon icon={ArrowLeft} size={getControlSize()} variant={BUTTON_VARIANT.GHOST} className={styles.navigation} data-hidden={mode === 'day' && navigation === 'next'} disabled={disabled} aria-label={getNavigationLabel(true)} onClick={() => shift(-1)} />
         <Box className={styles.period} aria-live="polite">
           {mode === 'day' && <Button variant={BUTTON_VARIANT.GHOST} size={BUTTON_SIZE.SMALL} className={styles.periodButton} disabled={disabled} aria-label={__('Choose month')} onClick={() => setMode('month')}>{monthLabel}</Button>}
           {mode !== 'year' && <Button variant={BUTTON_VARIANT.GHOST} size={BUTTON_SIZE.SMALL} className={styles.periodButton} disabled={disabled} aria-label={__('Choose year')} onClick={() => setMode('year')}>{year}</Button>}
           {mode === 'year' && <Box>{years[1]} – {years[10]}</Box>}
         </Box>
-        <ButtonWithIcon icon={ArrowRight} size={compact ? BUTTON_SIZE.SMALL : BUTTON_SIZE.MEDIUM} variant={BUTTON_VARIANT.GHOST} className={styles.navigation} data-hidden={mode === 'day' && navigation === 'previous'} disabled={disabled} aria-label={getNavigationLabel(false)} onClick={() => shift(1)} />
+        <ButtonWithIcon icon={ArrowRight} size={getControlSize()} variant={BUTTON_VARIANT.GHOST} className={styles.navigation} data-hidden={mode === 'day' && navigation === 'previous'} disabled={disabled} aria-label={getNavigationLabel(false)} onClick={() => shift(1)} />
       </Box>
       {mode === 'month' && (
         <Box className={styles.periodGrid} role="group" aria-label={__('Select month')}>
           {_map(Array.from({ length: 12 }, (_, index) => new Date(year, index, 1)), (entry, index) => (
-            <Button key={index} size={BUTTON_SIZE.SMALL} variant={index === month.getMonth() ? BUTTON_VARIANT.PRIMARY : BUTTON_VARIANT.GHOST} className={styles.periodCell} aria-label={new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' }).format(entry)} aria-pressed={index === month.getMonth()} disabled={disabled} onClick={() => chooseMonth(index)}>
+            <Button key={index} size={BUTTON_SIZE.SMALL} variant={getPeriodVariant(index === month.getMonth())} className={styles.periodCell} aria-label={new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' }).format(entry)} aria-pressed={index === month.getMonth()} disabled={disabled} onClick={() => chooseMonth(index)}>
               {new Intl.DateTimeFormat(undefined, { month: 'short' }).format(entry)}
             </Button>
           ))}
@@ -69,7 +86,7 @@ export const Calendar = ({
       {mode === 'year' && (
         <Box className={styles.periodGrid} role="group" aria-label={__('Select year')}>
           {_map(years, (entry) => (
-            <Button key={entry} size={BUTTON_SIZE.SMALL} variant={entry === year ? BUTTON_VARIANT.PRIMARY : BUTTON_VARIANT.GHOST} className={styles.periodCell} aria-pressed={entry === year} disabled={disabled} onClick={() => chooseYear(entry)}>{entry}</Button>
+            <Button key={entry} size={BUTTON_SIZE.SMALL} variant={getPeriodVariant(entry === year)} className={styles.periodCell} aria-pressed={entry === year} disabled={disabled} onClick={() => chooseYear(entry)}>{entry}</Button>
           ))}
         </Box>
       )}
@@ -78,13 +95,13 @@ export const Calendar = ({
         {_map(days, (day) => {
           const date = formatCalendarDate(day);
           const outside = day.getMonth() !== month.getMonth();
-          const selected = range ? date === range.startDate || date === range.endDate : date === value;
+          const selected = isSelectedDate(date);
           const inRange = Boolean(range?.startDate && range.endDate && date > range.startDate && date < range.endDate);
           const getVariant = () => {
             if (selected && (!range || !outside)) return BUTTON_VARIANT.PRIMARY;
             return BUTTON_VARIANT.GHOST;
           };
-          return <Button key={date} size={compact ? BUTTON_SIZE.SMALL : BUTTON_SIZE.MEDIUM} variant={getVariant()} className={styles.day} data-outside={outside} data-range-day={Boolean(range)} data-in-range={inRange && !outside} data-range-start={range?.startDate === date && !outside} data-range-end={range?.endDate === date && !outside} aria-label={new Intl.DateTimeFormat(undefined, { dateStyle: 'full' }).format(day)} aria-pressed={selected && (!range || !outside)} aria-current={(date === today && 'date') || undefined} disabled={unavailable(date) || Boolean(range && outside)} onMouseEnter={() => { if (!outside && !unavailable(date)) onDayHover?.(date); }} onClick={() => onChange(date)}>{day.getDate()}</Button>;
+          return <Button key={date} size={getControlSize()} variant={getVariant()} className={styles.day} data-outside={outside} data-range-day={Boolean(range)} data-in-range={inRange && !outside} data-range-start={range?.startDate === date && !outside} data-range-end={range?.endDate === date && !outside} aria-label={new Intl.DateTimeFormat(undefined, { dateStyle: 'full' }).format(day)} aria-pressed={selected && (!range || !outside)} aria-current={(date === today && 'date') || undefined} disabled={unavailable(date) || Boolean(range && outside)} onMouseEnter={() => { if (!outside && !unavailable(date)) onDayHover?.(date); }} onClick={() => onChange(date)}>{day.getDate()}</Button>;
         })}
       </Box>}
       {!hideFooter && (
