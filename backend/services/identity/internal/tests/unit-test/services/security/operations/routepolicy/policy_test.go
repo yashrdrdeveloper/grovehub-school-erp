@@ -3,6 +3,9 @@ package routepolicy_test
 import (
 	"context"
 	"testing"
+	"time"
+	"grovehub/services/identity/internal/app/services/approval/operations/cutover"
+	"grovehub/services/identity/internal/app/services/security/principal"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -110,5 +113,21 @@ var _ = Describe("Approval mutation routes", func() {
 		Expect(auth.code).To(Equal(permission.AccountRoleAssign))
 		Expect(policy.Authorize(ctx, "POST /identity/protected/approvals/{requestId}/execute")).To(MatchError(authorization.ErrForbidden))
 		Expect(routepolicy.New(auth, true).Authorize(ctx, "POST /identity/protected/approvals/{requestId}/execute")).To(MatchError(authorization.ErrForbidden))
+	})
+})
+
+var _ = Describe("Execution cutover", func() {
+	It("allows only the explicitly configured tenant with recent authentication", func() {
+		pattern := "POST /identity/protected/approvals/{requestId}/execute"
+		now := time.Now().UTC()
+		actor := schoolgateway.Principal{AccountID: "actor", TenantID: "school", SessionID: "session", AuthenticatedAt: now}
+		ctx := schoolgateway.WithPrincipal(context.Background(), actor)
+		Expect(routepolicy.NewWithExecution(nil, false, cutover.New("school")).Authorize(ctx, pattern)).To(Succeed())
+		Expect(routepolicy.NewWithExecution(nil, false, cutover.New("")).Authorize(ctx, pattern)).To(MatchError(authorization.ErrForbidden))
+		Expect(routepolicy.NewWithExecution(nil, false, cutover.New("other")).Authorize(ctx, pattern)).To(MatchError(authorization.ErrForbidden))
+		Expect(routepolicy.NewWithExecution(nil, true, cutover.New("school")).Authorize(ctx, pattern)).To(MatchError(authorization.ErrForbidden))
+		actor.AuthenticatedAt = now.Add(-10*time.Minute)
+		Expect(routepolicy.NewWithExecution(nil, false, cutover.New("school")).Authorize(schoolgateway.WithPrincipal(context.Background(), actor), pattern)).To(MatchError(principal.ErrRecentAuthenticationRequired))
+		Expect(routepolicy.NewWithExecution(nil, false, cutover.New("school")).Authorize(ctx, "PATCH /identity/protected/accounts/{accountId}/suspend")).To(MatchError(authorization.ErrForbidden))
 	})
 })

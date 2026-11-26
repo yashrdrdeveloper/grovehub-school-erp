@@ -2,6 +2,7 @@ package login
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"time"
 
@@ -83,6 +84,9 @@ func (operation *LoginOperation) Execute(ctx context.Context, input authdto.Logi
 		UpdatedAt: now,
 	}
 	if err := operation.sessions.Create(ctx, session); err != nil {
+		if errors.Is(err, sessionrepo.ErrInvalidSession) {
+			return auth.SessionResult{}, auth.ErrInvalidCredentials
+		}
 		return auth.SessionResult{}, err
 	}
 

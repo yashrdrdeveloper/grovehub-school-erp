@@ -50,8 +50,8 @@ type Executor struct {
 	effects Effects
 }
 
-// NewExecutor constructs an isolated requester-initiated effect executor.
-// It must not be exposed until audit/outbox and the full cutover policy exist.
+// NewExecutor constructs the transactional effect executor. HTTP callers must
+// pass the explicit tenant cutover gate and use composite policy readiness.
 func NewExecutor(repository repo.Repository, locker authority.Locker, guard authority.Guard, readiness rbacmigration.Readiness, authorizer authorization.Service, snapshots authrepo.Repository, accounts accountrepo.Reader, roles rolerepo.Repository, assignments accountrole.Repository, effects Effects) *Executor {
 	return &Executor{service: &Service{repository: repository, locker: locker, authorizer: authorizer, snapshots: snapshots, accounts: accounts, roles: roles, assignments: assignments}, guard: guard, readiness: readiness, effects: effects}
 }

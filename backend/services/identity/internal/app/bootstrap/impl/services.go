@@ -1,6 +1,7 @@
 package impl
 
 import (
+	"grovehub/services/identity/internal/app/services/approval/operations/cutover"
 	"grovehub/services/identity/internal/app/services/accountrole"
 	accountroleimpl "grovehub/services/identity/internal/app/services/accountrole/impl"
 	"grovehub/services/identity/internal/app/services/approval"
@@ -32,6 +33,7 @@ type serviceGraph struct {
 	accountRoles accountrole.Service
 	approvalReads approval.Reader
 	approvalMutations approval.Service
+	approvalExecutor approval.Executor
 	account       account.Service
 	authorization authorization.Service
 	policy *routepolicy.Policy
@@ -84,8 +86,10 @@ func (b *builder) newServices(repositories repositories, cfg config.Config) serv
 	}
 
 	authorizer := authorizationimpl.New(repositories.authorization)
-	policy := routepolicy.New(authorizer, cfg.LegacyRBACDevelopment)
+	gate := cutover.New(cfg.ApprovalExecutionTenant)
+	policy := routepolicy.NewWithExecution(authorizer, cfg.LegacyRBACDevelopment, gate)
 	return serviceGraph{
+		approvalExecutor: b.newApprovalExecutor(repositories, cfg, reader, authorizer, gate),
 		accountRoles: accountroleimpl.New(repositories.accountRoles, authorizer),
 		approvalReads: approvalimpl.NewReader(repositories.approvalReads, repositories.approval, repositories.authority, repositories.authorization),
 		approvalMutations: approvalimpl.New(repositories.approval, repositories.authority, authorizer, repositories.authorization, reader, repositories.roles, repositories.accountRoles),

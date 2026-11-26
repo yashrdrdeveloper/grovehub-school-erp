@@ -6,6 +6,7 @@ import (
 
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/services/authorization"
+	"grovehub/services/identity/internal/app/services/approval/operations/cutover"
 	"grovehub/services/identity/internal/app/services/security/principal"
 )
 
@@ -62,10 +63,15 @@ func Lookup(pattern string) (Rule, bool) {
 type Policy struct {
 	authorizer authorization.Service
 	legacyDevelopment bool
+	execution *cutover.Gate
 }
 
 func New(authorizer authorization.Service, legacyDevelopment bool) *Policy {
-	return &Policy{authorizer: authorizer, legacyDevelopment: legacyDevelopment}
+	return NewWithExecution(authorizer, legacyDevelopment, nil)
+}
+
+func NewWithExecution(authorizer authorization.Service, legacyDevelopment bool, gate *cutover.Gate) *Policy {
+	return &Policy{authorizer: authorizer, legacyDevelopment: legacyDevelopment, execution: gate}
 }
 
 func (policy *Policy) Authorize(ctx context.Context, pattern string) error {
@@ -87,6 +93,9 @@ func (policy *Policy) Authorize(ctx context.Context, pattern string) error {
 		return nil
 	}
 	if rule.BlockedUntilCutover {
+		if pattern == "POST /identity/protected/approvals/{requestId}/execute" && policy.execution != nil {
+			return policy.execution.Require(ctx)
+		}
 		return authorization.ErrForbidden
 	}
 	if rule.ScopedRead || rule.ScopedMutation {

@@ -42,6 +42,15 @@ func (b *builder) Build() (bootstrap.Runtime, error) {
 	if len(settings.EncryptionKey) != 32 {
 		return nil, errors.New("identity invitation encryption key must be configured")
 	}
+	if settings.LegacyRBACDevelopment {
+		var migrated bool
+		if err := b.db.Raw("SELECT EXISTS (SELECT 1 FROM identity.rbac_migration_receipts)").Scan(&migrated).Error; err != nil {
+			return nil, err
+		}
+		if migrated {
+			return nil, errors.New("legacy-development cannot run against a migrated database")
+		}
+	}
 	repositories := b.newRepository()
 	services := b.newServices(repositories, settings)
 	controllers := b.newControllers(services)

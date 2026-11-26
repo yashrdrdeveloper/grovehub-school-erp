@@ -23,7 +23,20 @@ func New(db *gorm.DB) sessionrepo.Repository {
 }
 
 func (repository *Repository) Create(ctx context.Context, session entity.Session) error {
-	return transaction.Database(ctx, repository.db).Create(&session).Error
+	return transaction.Run(ctx, repository.db, func(tx context.Context) error {
+		db := transaction.Database(tx, repository.db)
+		// Serialize session creation with account status changes. A login that
+		// wins first is included in revocation; a later login sees inactive status.
+		var status entity.AccountStatus
+		result := db.Raw("SELECT status FROM identity.accounts WHERE account_id = ? FOR SHARE", session.AccountID).Scan(&status)
+		if result.Error != nil {
+			return result.Error
+		}
+		if result.RowsAffected != 1 || status != entity.Active {
+			return sessionrepo.ErrInvalidSession
+		}
+		return db.Create(&session).Error
+	})
 }
 
 func (repository *Repository) FindAccess(ctx context.Context, digest string, now time.Time) (entity.Session, error) {

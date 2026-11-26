@@ -29,6 +29,19 @@ func Load() (config.Config, error) {
 		return config.Config{}, errors.New("invalid IDENTITY_RBAC_MODE")
 	}
 
+	// Empty means disabled. A single exact tenant is intentionally required for
+	// controlled rollout; there is no wildcard or global execution switch.
+	settings.ApprovalExecutionTenant = os.Getenv("IDENTITY_APPROVAL_EXECUTION_TENANT")
+	if settings.ApprovalExecutionTenant != "" && (strings.TrimSpace(settings.ApprovalExecutionTenant) != settings.ApprovalExecutionTenant || settings.ApprovalExecutionTenant == "*" || strings.ContainsAny(settings.ApprovalExecutionTenant, ",\x00") || settings.LegacyRBACDevelopment) {
+		return config.Config{}, errors.New("invalid IDENTITY_APPROVAL_EXECUTION_TENANT")
+	}
+	if settings.LegacyRBACDevelopment {
+		origin, err := url.Parse(settings.AllowedOrigin)
+		if err != nil || origin.Scheme != "http" || !trustedOriginScheme(origin) || os.Getenv("OTEL_DEPLOYMENT_ENVIRONMENT") != "development" {
+			return config.Config{}, errors.New("legacy-development requires explicit development environment and HTTP loopback origin")
+		}
+	}
+
 	for _, entry := range strings.Split(os.Getenv("IDENTITY_ADMIN_ACCOUNT_IDS"), ",") {
 		accountID, err := uuid.Parse(strings.TrimSpace(entry))
 		if err == nil {
