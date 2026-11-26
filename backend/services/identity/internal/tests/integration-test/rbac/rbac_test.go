@@ -2,6 +2,8 @@ package rbac_test
 
 import (
 	"context"
+	"errors"
+	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
 	"os"
 	"testing"
 
@@ -216,6 +218,53 @@ var _ = Describe("RBAC persistence against PostgreSQL", func() {
 		Expect(authorizer.Require(actor, permission.AccountSearch)).To(MatchError(authorization.ErrForbidden))
 		Expect(db.Exec("INSERT INTO identity.tenant_features(tenant_id, feature_id, enabled) SELECT 'school-a', feature_id, true FROM identity.features WHERE code = ?", feature.AccountManagement).Error).NotTo(HaveOccurred())
 		Expect(authorizer.Require(actor, permission.AccountSearch)).To(Succeed())
+
+		// Draft mapping writes are deliberately not wired to a service or route.
+		writer := roleimpl.NewDraftWriter(db)
+		grantUpdate := rolerepo.DraftPermissionUpdate{
+			TenantID: "school-a", ActorID: actorID, RoleID: createdRole.Role.RoleID,
+			Version: 3, Codes: []permission.Code{permission.AccountSelfView, permission.AccountSearch},
+		}
+		draftMapping, err := writer.ReplaceDraftPermissions(ctx, grantUpdate)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(draftMapping.Version).To(Equal(int64(4)))
+		Expect(draftMapping.Codes).To(Equal([]permission.Code{permission.AccountSearch, permission.AccountSelfView}))
+		_, err = writer.ReplaceDraftPermissions(ctx, grantUpdate)
+		Expect(err).To(MatchError(rolerepo.ErrVersionConflict))
+		grantUpdate.Version = 4
+		sameMapping, err := writer.ReplaceDraftPermissions(ctx, grantUpdate)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(sameMapping.Version).To(Equal(int64(4)))
+		grantUpdate.Codes = []permission.Code{permission.AccountView}
+		_, err = writer.ReplaceDraftPermissions(ctx, grantUpdate)
+		Expect(err).To(MatchError(rolerepo.ErrInvalidPermissions))
+		grantUpdate.Codes = []permission.Code{}
+		rollback := errors.New("force rollback")
+		Expect(transaction.Run(ctx, db, func(tx context.Context) error {
+			cleared, err := writer.ReplaceDraftPermissions(tx, grantUpdate)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(cleared.Codes).To(BeEmpty())
+			Expect(cleared.Version).To(Equal(int64(5)))
+			return rollback
+		})).To(MatchError(rollback))
+		draftMapping, err = roles.Permissions(ctx, "school-a", grantUpdate.RoleID)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(draftMapping.Version).To(Equal(int64(4)))
+		Expect(draftMapping.Codes).To(HaveLen(2))
+		grantUpdate.TenantID = "school-b"
+		_, err = writer.ReplaceDraftPermissions(ctx, grantUpdate)
+		Expect(err).To(MatchError(rolerepo.ErrNotFound))
+		grantUpdate.TenantID = "school-a"
+		grantUpdate.RoleID = roleID
+		grantUpdate.Version = 1
+		_, err = writer.ReplaceDraftPermissions(ctx, grantUpdate)
+		Expect(err).To(MatchError(rolerepo.ErrLiveRole))
+		grantUpdate.RoleID = createdRole.Role.RoleID
+		grantUpdate.Version = 4
+		Expect(db.Exec("INSERT INTO identity.account_roles(tenant_id, account_id, role_id, assignment_type) VALUES ('school-a', ?, ?, 'SECONDARY')", actorID, grantUpdate.RoleID).Error).NotTo(HaveOccurred())
+		_, err = writer.ReplaceDraftPermissions(ctx, grantUpdate)
+		Expect(err).To(MatchError(rolerepo.ErrLiveRole))
+		Expect(db.Exec("DELETE FROM identity.account_roles WHERE tenant_id = 'school-a' AND role_id = ?", grantUpdate.RoleID).Error).NotTo(HaveOccurred())
 
 		// Re-registration cannot overwrite existing active flags or grants.
 		result, err = catalog.Register(ctx, request)
