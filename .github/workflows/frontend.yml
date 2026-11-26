@@ -38,15 +38,20 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
       - name: Install
         run: pnpm install --frozen-lockfile
+      - name: Shared library dependency inventory
+        run: node scripts/audit-shared-extraction.mjs
       - name: Audit all tracked frontend source (non-blocking report)
         run: pnpm audit:guidelines
       - name: Check architecture
         run: pnpm check:architecture
       - name: Typecheck shared Base
+        if: success() || failure()
         run: pnpm --filter @groovehub/base typecheck
       - name: Typecheck
+        if: success() || failure()
         run: pnpm typecheck
       - name: Test
+        if: success() || failure()
         run: pnpm exec jest --runInBand
       - name: Build and prerender SEO pages
         run: pnpm build
@@ -81,4 +86,5 @@ jobs:
           grep -q 'application/ld+json' dist/index.html
           grep -q 'RDR School' dist/about/director/index.html
       - name: ESLint (entire frontend)
+        if: success() || failure()
         run: pnpm lint
