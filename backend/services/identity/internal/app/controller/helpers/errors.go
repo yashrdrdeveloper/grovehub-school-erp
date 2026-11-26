@@ -1,6 +1,12 @@
 package helpers
 
 import (
+	"grovehub/services/identity/internal/app/services/authorization"
+	rolerepo "grovehub/services/identity/internal/app/repository/role"
+	approvalrepo "grovehub/services/identity/internal/app/repository/approval"
+	accountrole "grovehub/services/identity/internal/app/repository/accountrole"
+	rolevalidator "grovehub/services/identity/internal/app/validators/role"
+	"grovehub/services/identity/internal/app/services/authorization/operations/delegation"
 	"errors"
 	"strings"
 
@@ -26,6 +32,16 @@ func Map(err error) error {
 	}
 
 	switch {
+	case errors.Is(err, authorization.ErrForbidden):
+		return coreerrors.NewError(definitions.Forbidden)
+	case errors.Is(err, authorization.ErrUnavailable):
+		return coreerrors.NewError(definitions.Unavailable)
+	case errors.Is(err, rolerepo.ErrNotFound), errors.Is(err, approvalrepo.ErrNotFound), errors.Is(err, accountrole.ErrNotFound):
+		return coreerrors.NewError(definitions.RBACNotFound)
+	case errors.Is(err, rolerepo.ErrVersionConflict), errors.Is(err, approvalrepo.ErrConflict), errors.Is(err, accountrole.ErrVersionConflict), errors.Is(err, accountrole.ErrIneligible):
+		return coreerrors.NewError(definitions.RBACConflict)
+	case errors.Is(err, rolevalidator.ErrInvalidID), errors.Is(err, rolevalidator.ErrInvalidVersion), errors.Is(err, rolevalidator.ErrInvalidSearch), errors.Is(err, approvalrepo.ErrInvalid), errors.Is(err, accountrole.ErrInvalidAssignment), errors.Is(err, delegation.ErrInvalidSet):
+		return coreerrors.NewError(definitions.InvalidRequest)
 	case errors.Is(err, accountrepo.ErrNotFound):
 		return coreerrors.NewError(definitions.NotFound)
 	case errors.Is(err, accountrepo.ErrConflict), errors.Is(err, accountrepo.ErrVersionConflict):

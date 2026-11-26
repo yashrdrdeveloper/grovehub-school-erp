@@ -1,0 +1,48 @@
+package impl
+
+import (
+	"context"
+	"net/http"
+
+	httprequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/request"
+	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
+	definitions "grovehub/services/identity/internal/app/constants/error"
+	protected "grovehub/services/identity/internal/app/controller/accountrole/protected"
+	"grovehub/services/identity/internal/app/controller/helpers"
+	dto "grovehub/services/identity/internal/app/dto/accountrole"
+	"grovehub/services/identity/internal/app/services/accountrole"
+)
+
+type Controller struct {
+	service accountrole.Service
+}
+
+var _ protected.AccountRoleController = (*Controller)(nil)
+
+func New(service accountrole.Service) protected.AccountRoleController {
+	return &Controller{service: service}
+}
+
+func (controller *Controller) Get(writer http.ResponseWriter, request *http.Request) {
+	rest.RunStruct(writer, request, rest.StructConfig[dto.GetRequest, dto.Assignment]{
+		InvalidParams: definitions.InvalidRequest,
+		Fallback: definitions.Internal,
+		Service: func(ctx context.Context, input dto.GetRequest) (rest.Result[dto.Assignment], error) {
+			result, err := controller.service.Get(ctx, input.Params.AccountID)
+			return rest.OK(dto.Assignment{AccountID: result.AccountID, Status: result.Status, Version: result.Version, PrimaryRoleID: result.PrimaryRoleID, SecondaryRoleIDs: result.SecondaryRoleIDs}), helpers.Map(err)
+		},
+	})
+}
+
+func (controller *Controller) Preview(writer http.ResponseWriter, request *http.Request) {
+	rest.RunStruct(writer, request, rest.StructConfig[dto.PreviewRequest, dto.Preview]{
+		Decode: httprequest.DecodeStrictJSON,
+		InvalidRequestBody: definitions.InvalidRequest,
+		InvalidParams: definitions.InvalidRequest,
+		Fallback: definitions.Internal,
+		Service: func(ctx context.Context, input dto.PreviewRequest) (rest.Result[dto.Preview], error) {
+			result, err := controller.service.Preview(ctx, input.Params.AccountID, input.RequestBody)
+			return rest.OK(result), helpers.Map(err)
+		},
+	})
+}

@@ -2,6 +2,9 @@ package routes
 
 import (
 	"net/http"
+	roleprotected "grovehub/services/identity/internal/app/controller/role/protected"
+	accountroleprotected "grovehub/services/identity/internal/app/controller/accountrole/protected"
+	approvalprotected "grovehub/services/identity/internal/app/controller/approval/protected"
 
 	accountprotected "grovehub/services/identity/internal/app/controller/account/protected"
 	activationpublic "grovehub/services/identity/internal/app/controller/activation/public"
@@ -12,9 +15,12 @@ import (
 // RegisterHTTP only composes annotated, generated route groups.
 // Authentication and authorization are enforced by the Launcher gateway.
 // @Routes /identity
-func RegisterHTTP(mux *http.ServeMux, publicAuth authpublic.AuthenticationController, protectedAuth authprotected.AuthenticationController, publicActivation activationpublic.ActivationController, protectedAccount accountprotected.AccountController) {
+func RegisterHTTP(mux *http.ServeMux, publicAuth authpublic.AuthenticationController, protectedAuth authprotected.AuthenticationController, publicActivation activationpublic.ActivationController, protectedAccount accountprotected.AccountController, roleController roleprotected.RoleController, accountroleController accountroleprotected.AccountRoleController, approvalController approvalprotected.ApprovalController) {
 	registerPublicAuthenticationRoutes(mux, publicAuth)
 	registerProtectedAuthenticationRoutes(mux, protectedAuth)
 	registerPublicActivationRoutes(mux, publicActivation)
 	registerProtectedAccountRoutes(mux, protectedAccount)
+	registerProtectedRoleRoutes(mux, roleController)
+	registerProtectedAccountRoleRoutes(mux, accountroleController)
+	registerProtectedApprovalRoutes(mux, approvalController)
 }

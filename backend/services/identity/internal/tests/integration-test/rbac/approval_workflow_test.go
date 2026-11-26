@@ -2,6 +2,10 @@ package rbac_test
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	approvalcontroller "grovehub/services/identity/internal/app/controller/approval/protected/impl"
 	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	"errors"
 	"time"
@@ -107,6 +111,20 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	detail, err := reads.Detail(reviewerCtx, created.RequestID)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(detail.Reason).To(Equal(intent.Reason))
+	controller := approvalcontroller.New(reads)
+	httpRequest := httptest.NewRequest(http.MethodGet, "/identity/protected/approvals/"+created.RequestID, nil).WithContext(reviewerCtx)
+	httpRequest.SetPathValue("requestId", created.RequestID)
+	response := httptest.NewRecorder()
+	controller.Detail(response, httpRequest)
+	Expect(response.Code).To(Equal(http.StatusOK))
+	Expect(response.Body.String()).To(ContainSubstring(created.RequestID))
+	Expect(response.Body.String()).NotTo(ContainSubstring("idempotencyKey"))
+	response = httptest.NewRecorder()
+	controller.Detail(response, httpRequest.WithContext(foreignCtx))
+	Expect(response.Code).To(Equal(http.StatusNotFound))
+	response = httptest.NewRecorder()
+	controller.Inbox(response, httptest.NewRequest(http.MethodPost, "/identity/protected/approvals/inbox/search", strings.NewReader("{")).WithContext(reviewerCtx))
+	Expect(response.Code).To(Equal(http.StatusBadRequest))
 	_, err = reads.Detail(foreignCtx, created.RequestID)
 	Expect(err).To(MatchError(repo.ErrNotFound))
 	events, err := reads.Audit(requesterCtx, created.RequestID)

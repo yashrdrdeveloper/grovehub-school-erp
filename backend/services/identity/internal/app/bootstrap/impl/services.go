@@ -1,6 +1,10 @@
 package impl
 
 import (
+	"grovehub/services/identity/internal/app/services/accountrole"
+	accountroleimpl "grovehub/services/identity/internal/app/services/accountrole/impl"
+	"grovehub/services/identity/internal/app/services/approval"
+	approvalimpl "grovehub/services/identity/internal/app/services/approval/impl"
 	"grovehub/services/identity/internal/app/config"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	accountread "grovehub/services/identity/internal/app/repository/account/impl"
@@ -25,6 +29,8 @@ import (
 )
 
 type serviceGraph struct {
+	accountRoles accountrole.Service
+	approvalReads approval.Reader
 	account       account.Service
 	authorization authorization.Service
 	policy *routepolicy.Policy
@@ -79,6 +85,8 @@ func (b *builder) newServices(repositories repositories, cfg config.Config) serv
 	authorizer := authorizationimpl.New(repositories.authorization)
 	policy := routepolicy.New(authorizer, cfg.LegacyRBACDevelopment)
 	return serviceGraph{
+		accountRoles: accountroleimpl.New(repositories.accountRoles, authorizer),
+		approvalReads: approvalimpl.NewReader(repositories.approvalReads, repositories.approval, repositories.authority, repositories.authorization),
 		account: accountimpl.NewGuarded(accounts, policy), auth: authentication, worker: worker,
 		policy: policy, catalog: catalog.New(roleread.NewCatalogReader(b.db), policy, cfg.LegacyRBACDevelopment),
 		authorization: authorizer, registry: registryimpl.New(repositories.registry),

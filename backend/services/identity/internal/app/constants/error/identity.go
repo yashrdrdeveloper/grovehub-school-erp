@@ -7,6 +7,8 @@ import (
 )
 
 var (
+	RBACNotFound = coreerrors.NewDefinition("IDENTITY_RBAC_NOT_FOUND", "Resource not found", http.StatusNotFound)
+	RBACConflict = coreerrors.NewDefinition("IDENTITY_RBAC_CONFLICT", "Resource has changed or is not eligible", http.StatusConflict)
 	InvalidRequest = coreerrors.NewDefinition("IDENTITY_REQUEST_INVALID", "Invalid request", http.StatusBadRequest)
 	InvalidCredentials = coreerrors.NewDefinition("IDENTITY_INVALID_CREDENTIALS", "Invalid credentials", http.StatusUnauthorized)
 	Unauthorized = coreerrors.NewDefinition("IDENTITY_UNAUTHORIZED", "Authentication required", http.StatusUnauthorized)

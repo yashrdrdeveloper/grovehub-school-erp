@@ -56,3 +56,39 @@ var _ = Describe("Authorize", func() {
 		Expect(policy.Authorize(ctx, "POST /identity/protected/unknown")).To(MatchError(authorization.ErrForbidden))
 	})
 })
+
+var _ = Describe("RBAC read routes", func() {
+	It("requires the exact capability for role and assignment reads and previews", func() {
+		ctx := schoolgateway.WithPrincipal(context.Background(), schoolgateway.Principal{AccountID: "actor", TenantID: "school", SessionID: "session", Admin: true})
+		auth := &authorizer{}
+		policy := routepolicy.New(auth, false)
+		for pattern, code := range map[string]permission.Code{
+			"POST /identity/protected/roles/search": permission.RoleView,
+			"GET /identity/protected/roles/{roleId}": permission.RoleView,
+			"GET /identity/protected/roles/{roleId}/permissions": permission.RolePermissionView,
+			"POST /identity/protected/roles/{roleId}/permissions/preview": permission.RolePermissionManage,
+			"GET /identity/protected/account-roles/{accountId}": permission.AccountRoleView,
+			"POST /identity/protected/account-roles/{accountId}/preview": permission.AccountRoleAssign,
+		} {
+			Expect(policy.Authorize(ctx, pattern)).To(Succeed())
+			Expect(auth.code).To(Equal(code))
+			Expect(routepolicy.New(auth, true).Authorize(ctx, pattern)).To(MatchError(authorization.ErrForbidden))
+		}
+		Expect(policy.Authorize(ctx, "POST /identity/protected/roles")).To(MatchError(authorization.ErrForbidden))
+	})
+	It("requires tenant authentication and service-level visibility for approval reads", func() {
+		ctx := schoolgateway.WithPrincipal(context.Background(), schoolgateway.Principal{AccountID: "actor", TenantID: "school", SessionID: "session"})
+		for _, pattern := range []string{
+			"POST /identity/protected/approvals/history/search",
+			"POST /identity/protected/approvals/inbox/search",
+			"GET /identity/protected/approvals/inbox/count",
+			"GET /identity/protected/approvals/{requestId}",
+			"GET /identity/protected/approvals/{requestId}/audit",
+		} {
+			Expect(routepolicy.New(nil, false).Authorize(ctx, pattern)).To(Succeed())
+			Expect(routepolicy.New(nil, false).Authorize(context.Background(), pattern)).NotTo(Succeed())
+			Expect(routepolicy.New(nil, true).Authorize(ctx, pattern)).To(MatchError(authorization.ErrForbidden))
+		}
+		Expect(routepolicy.New(nil, false).Authorize(ctx, "POST /identity/protected/approvals/{requestId}/execute")).To(MatchError(authorization.ErrForbidden))
+	})
+})

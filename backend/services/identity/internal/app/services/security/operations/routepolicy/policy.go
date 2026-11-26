@@ -13,10 +13,23 @@ type Rule struct {
 	Permission permission.Code
 	SelfService bool
 	BlockedUntilCutover bool
+	ScopedRead bool
+	StrictOnly bool
 }
 
 func Lookup(pattern string) (Rule, bool) {
 	rules := map[string]Rule{
+		"POST /identity/protected/roles/search": {Permission: permission.RoleView, StrictOnly: true},
+		"GET /identity/protected/roles/{roleId}": {Permission: permission.RoleView, StrictOnly: true},
+		"GET /identity/protected/roles/{roleId}/permissions": {Permission: permission.RolePermissionView, StrictOnly: true},
+		"POST /identity/protected/roles/{roleId}/permissions/preview": {Permission: permission.RolePermissionManage, StrictOnly: true},
+		"GET /identity/protected/account-roles/{accountId}": {Permission: permission.AccountRoleView, StrictOnly: true},
+		"POST /identity/protected/account-roles/{accountId}/preview": {Permission: permission.AccountRoleAssign, StrictOnly: true},
+		"POST /identity/protected/approvals/history/search": {ScopedRead: true, StrictOnly: true},
+		"POST /identity/protected/approvals/inbox/search": {ScopedRead: true, StrictOnly: true},
+		"GET /identity/protected/approvals/inbox/count": {ScopedRead: true, StrictOnly: true},
+		"GET /identity/protected/approvals/{requestId}": {ScopedRead: true, StrictOnly: true},
+		"GET /identity/protected/approvals/{requestId}/audit": {ScopedRead: true, StrictOnly: true},
 		"POST /identity/protected/accounts": {Permission: permission.AccountCreate, BlockedUntilCutover: true},
 		"POST /identity/protected/accounts/search": {Permission: permission.AccountSearch},
 		"GET /identity/protected/accounts/roles": {Permission: permission.RoleView},
@@ -60,6 +73,13 @@ func (policy *Policy) Authorize(ctx context.Context, pattern string) error {
 		return err
 	}
 	if policy.legacyDevelopment {
+		if rule.StrictOnly {
+			return authorization.ErrForbidden
+		}
+		return nil
+	}
+	if rule.ScopedRead {
+		// The approval reader enforces live per-request visibility itself.
 		return nil
 	}
 	if rule.BlockedUntilCutover {

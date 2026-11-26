@@ -2,6 +2,12 @@ package impl
 
 import (
 	"net/http"
+	roleprotected "grovehub/services/identity/internal/app/controller/role/protected"
+	roleprotectedimpl "grovehub/services/identity/internal/app/controller/role/protected/impl"
+	accountroleprotected "grovehub/services/identity/internal/app/controller/accountrole/protected"
+	accountroleprotectedimpl "grovehub/services/identity/internal/app/controller/accountrole/protected/impl"
+	approvalprotected "grovehub/services/identity/internal/app/controller/approval/protected"
+	approvalprotectedimpl "grovehub/services/identity/internal/app/controller/approval/protected/impl"
 
 	accountprotected "grovehub/services/identity/internal/app/controller/account/protected"
 	accountprotectedimpl "grovehub/services/identity/internal/app/controller/account/protected/impl"
@@ -20,6 +26,9 @@ type controllerGraph struct {
 	protectedAuth    authprotected.AuthenticationController
 	publicActivation activationpublic.ActivationController
 	protectedAccount accountprotected.AccountController
+	roleController roleprotected.RoleController
+	accountroleController accountroleprotected.AccountRoleController
+	approvalController approvalprotected.ApprovalController
 }
 
 func (b *builder) newControllers(services serviceGraph) controllerGraph {
@@ -29,11 +38,14 @@ func (b *builder) newControllers(services serviceGraph) controllerGraph {
 		protectedAuth:    authprotectedimpl.New(services.auth, manager),
 		publicActivation: activationpublicimpl.New(services.account, manager),
 		protectedAccount: accountprotectedimpl.New(services.account, services.catalog),
+		roleController: roleprotectedimpl.New(services.roles),
+		accountroleController: accountroleprotectedimpl.New(services.accountRoles),
+		approvalController: approvalprotectedimpl.New(services.approvalReads),
 	}
 }
 
 func (controllers controllerGraph) RegisterHTTP(mux *http.ServeMux) {
-	routes.RegisterHTTP(mux, controllers.publicAuth, controllers.protectedAuth, controllers.publicActivation, controllers.protectedAccount)
+	routes.RegisterHTTP(mux, controllers.publicAuth, controllers.protectedAuth, controllers.publicActivation, controllers.protectedAccount, controllers.roleController, controllers.accountroleController, controllers.approvalController)
 }
 
 func (module *runtime) RouteLimits() map[string]int {

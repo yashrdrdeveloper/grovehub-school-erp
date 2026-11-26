@@ -1,6 +1,14 @@
 package impl
 
 import (
+	accountrolerepo "grovehub/services/identity/internal/app/repository/accountrole"
+	accountroleimpl "grovehub/services/identity/internal/app/repository/accountrole/impl"
+	approvalrepo "grovehub/services/identity/internal/app/repository/approval"
+	approvalimpl "grovehub/services/identity/internal/app/repository/approval/impl"
+	auditimpl "grovehub/services/identity/internal/app/repository/approvalaudit/impl"
+	producerimpl "grovehub/services/identity/internal/app/events/producers/approval/impl"
+	"grovehub/services/identity/internal/app/repository/authority"
+	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
 	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	accountimpl "grovehub/services/identity/internal/app/repository/account/impl"
@@ -21,6 +29,10 @@ import (
 )
 
 type repositories struct {
+	accountRoles accountrolerepo.Repository
+	approval approvalrepo.Repository
+	approvalReads approvalrepo.Reader
+	authority authority.Locker
 	accounts      accountrepo.Repository
 	authorization authorizationrepo.Repository
 	registry      registryrepo.Repository
@@ -34,6 +46,10 @@ type repositories struct {
 
 func (b *builder) newRepository() repositories {
 	return repositories{
+		accountRoles: accountroleimpl.New(b.db),
+		approval: approvalimpl.New(b.db, producerimpl.New(auditimpl.New(b.db), b.events)),
+		approvalReads: approvalimpl.NewReader(b.db),
+		authority: authorityimpl.New(b.db),
 		accounts:      accountimpl.New(b.db),
 		authorization: authorizationimpl.New(b.db),
 		registry:      registryimpl.New(b.db),
