@@ -9,35 +9,14 @@ import (
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/entity"
+	authorizationrepo "grovehub/services/identity/internal/app/repository/authorization"
 )
 
-type RoleGrant struct {
-	RoleID      string
-	TenantID    string
-	Active      bool
-	Permissions []permission.Code
-}
-
-type PermissionState struct {
-	Active  bool
-	Feature feature.Code
-}
-
-type FeatureState struct {
-	Active  bool
-	Enabled bool
-}
-
-// Snapshot must be loaded from the authoritative Identity repositories, never
-// from a request body or browser permission cache.
-type Snapshot struct {
-	AccountID   string
-	TenantID    string
-	Status      entity.AccountStatus
-	Roles       []RoleGrant
-	Permissions map[permission.Code]PermissionState
-	Features    map[feature.Code]FeatureState
-}
+// Aliases preserve the evaluator's existing callers while the snapshot is owned by the repository.
+type RoleGrant = authorizationrepo.RoleGrant
+type PermissionState = authorizationrepo.PermissionState
+type FeatureState = authorizationrepo.FeatureState
+type Snapshot = authorizationrepo.Snapshot
 
 func Allowed(ctx context.Context, requested permission.Code, snapshot Snapshot) bool {
 	principal, verified := coregateway.PrincipalFrom(ctx)
