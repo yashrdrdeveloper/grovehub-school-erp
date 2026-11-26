@@ -1,0 +1,32 @@
+name: Format new Identity RBAC sources
+on:
+  push:
+    branches: [maintenance/rbac-format-2f12006]
+    paths: ['.github/workflows/one-time-rbac-format.yml']
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.3'
+          cache: false
+      - name: Format only RBAC files introduced in this step
+        run: |
+          test "$(git rev-parse HEAD^)" = "2f12006f7a58a9aad12b689749babdf3275ba633"
+          test "$(git diff --name-only HEAD^ HEAD)" = ".github/workflows/one-time-rbac-format.yml"
+          gofmt -w backend/services/identity/internal/app/constants/{feature,permission}/catalog.go backend/services/identity/internal/app/repository/registry backend/services/identity/internal/app/services/registry backend/services/identity/internal/app/services/authorization/{authorization.go,impl} backend/services/identity/internal/tests/unit-test/services/authorization/authorization_test.go backend/services/identity/internal/tests/unit-test/services/registry backend/services/identity/internal/tests/integration-test/rbac backend/services/identity/internal/app/bootstrap/impl/{repository,services}.go
+          git diff --check
+          git diff --exit-code -- .github
+          git add backend/services/identity
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "style(identity): format new RBAC registry and authorization sources"
+          git push origin "HEAD:refs/heads/maintenance/rbac-format-2f12006"
