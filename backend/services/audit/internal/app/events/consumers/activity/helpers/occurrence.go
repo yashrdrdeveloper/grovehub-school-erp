@@ -56,6 +56,8 @@ func registeredOccurrence(data client.Activity) bool {
 		case "CREATED","UPDATED","DEACTIVATED":
 			return true
 		}
+	case "accounting":
+        return (data.AssetType=="ACCOUNTING_ENTITY" || data.AssetType=="ACCOUNTING_BOOK") && data.AssetVersion==1 && data.ActorID!="" && data.PersonID=="" && data.Operation=="CREATED"
 	case "integration":
 		if data.AssetType!="CONNECTION" || data.AssetVersion!=0 || !validID(data.PersonID) { return false }
 		switch data.Operation {
