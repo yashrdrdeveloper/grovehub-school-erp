@@ -14,7 +14,11 @@ describe('Tooltip', () => {
   });
 
   it('opens on hover above the trigger and dismisses on pointer down and mouse leave', () => {
-    render(<Tooltip label="Refresh"><button type="button">Refresh table</button></Tooltip>);
+    render(
+      <Tooltip label="Refresh">
+        <button type="button">Refresh table</button>
+      </Tooltip>,
+    );
 
     const button = screen.getByRole('button', { name: 'Refresh table' });
     expect(screen.queryByRole('tooltip')).toBeNull();

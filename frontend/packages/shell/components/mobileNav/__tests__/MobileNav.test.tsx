@@ -9,7 +9,11 @@ describe('MobileNav', () => {
   it('retains Home navigation and delegates Apps/Menu events to the shell model', () => {
     const openCatalog = jest.fn();
     const openSidebar = jest.fn();
-    const model = { openCatalog, openSidebar, sidebarOpen: false } as unknown as MobileNavProps['model'];
+    const model = {
+      openCatalog,
+      openSidebar,
+      sidebarOpen: false,
+    } as unknown as MobileNavProps['model'];
 
     render(
       <MemoryRouter initialEntries={['/dashboard']}>

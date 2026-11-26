@@ -3,12 +3,25 @@ import { Box } from '../../../Box';
 import type { ColumnResizeHandleProps } from './types/columnResizeHandle.props';
 import styles from './ColumnResizeHandle.module.css';
 
-export const ColumnResizeHandle = ({ label, width, min, max, onResize }: ColumnResizeHandleProps) => {
+export const ColumnResizeHandle = ({
+  label,
+  width,
+  min,
+  max,
+  onResize,
+}: ColumnResizeHandleProps) => {
   const drag = useRef<{ x: number; width: number; pointerId: number } | null>(null);
   const clamp = (next: number) => Math.max(min, Math.min(max, Math.round(next)));
   return (
-    <Box className={styles.handle} role="separator" tabIndex={0} aria-label={label} aria-orientation="vertical"
-      aria-valuemin={min} aria-valuemax={max} aria-valuenow={width}
+    <Box
+      className={styles.handle}
+      role="separator"
+      tabIndex={0}
+      aria-label={label}
+      aria-orientation="vertical"
+      aria-valuemin={min}
+      aria-valuemax={max}
+      aria-valuenow={width}
       onPointerDown={(event) => {
         if (event.button !== 0) return;
         event.preventDefault();

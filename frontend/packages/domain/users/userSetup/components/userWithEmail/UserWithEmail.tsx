@@ -17,8 +17,12 @@ export const UserWithEmail = ({ rowData }: UserWithEmailProps) => {
     <Box className={styles.root}>
       <Avatar name={name} fallback={getFallback()} />
       <Box className={styles.details}>
-        <Box className={styles.name} title={name}>{name}</Box>
-        <Box className={styles.email} title={rowData.email}>{rowData.email}</Box>
+        <Box className={styles.name} title={name}>
+          {name}
+        </Box>
+        <Box className={styles.email} title={rowData.email}>
+          {rowData.email}
+        </Box>
       </Box>
     </Box>
   );

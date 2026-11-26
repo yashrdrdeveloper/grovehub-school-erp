@@ -50,5 +50,14 @@ export const useSelection = <T extends SelectValue>({
     setOpen(false);
   };
 
-  return { open, search, selected: draft, onOpenChange, onSearch: setSearch, onToggle, onClear, onApply };
+  return {
+    open,
+    search,
+    selected: draft,
+    onOpenChange,
+    onSearch: setSearch,
+    onToggle,
+    onClear,
+    onApply,
+  };
 };

@@ -20,13 +20,22 @@ export const TableSortHeader = <T,>({ column, props }: TableSortHeaderProps<T>) 
   const change = () => {
     const next = { field, direction: getDirection() };
     if (current) {
-      props.actions?.SORT?.(rules.map((rule) => {
-        if (rule.field === field) return next;
-        return rule;
-      }));
+      props.actions?.SORT?.(
+        rules.map((rule) => {
+          if (rule.field === field) return next;
+          return rule;
+        }),
+      );
       return;
     }
-    props.actions?.SORT?.([next, ...rules].slice(0, props.sortProps?.maxFields ?? rules.length + 1));
+    props.actions?.SORT?.(
+      [next, ...rules].slice(0, props.sortProps?.maxFields ?? rules.length + 1),
+    );
   };
-  return <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} onClick={change}>{column.header}{getLabel()}</Button>;
+  return (
+    <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} onClick={change}>
+      {column.header}
+      {getLabel()}
+    </Button>
+  );
 };

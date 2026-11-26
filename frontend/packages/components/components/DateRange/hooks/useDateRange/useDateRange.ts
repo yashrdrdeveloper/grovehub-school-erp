@@ -1,6 +1,11 @@
 import { useState } from 'react';
 
-import { formatRangeDate, getRangeMonth, getRangeSelection, shiftRangeMonth } from '../../helpers/dateRange.calendar';
+import {
+  formatRangeDate,
+  getRangeMonth,
+  getRangeSelection,
+  shiftRangeMonth,
+} from '../../helpers/dateRange.calendar';
 import { CUSTOM_DATE_RANGE_PRESET, DATE_RANGE_PRESETS } from '../../constants/dateRange.presets';
 import type { DateRangePreset } from '../../types/dateRange.preset';
 import type { DateRangeProps } from '../../types/dateRange.props';
@@ -47,7 +52,11 @@ export const useDateRange = ({ value, onChange, disabled, showFooter = true }: D
     const today = new Date();
     const start = preset.start(today);
     const end = preset.end(today);
-    const next = { startDate: formatRangeDate(start), endDate: formatRangeDate(end), presetId: preset.id };
+    const next = {
+      startDate: formatRangeDate(start),
+      endDate: formatRangeDate(end),
+      presetId: preset.id,
+    };
     setDraft(next);
     setMonth(shiftRangeMonth(start, 0));
     setHover(null);
@@ -73,12 +82,31 @@ export const useDateRange = ({ value, onChange, disabled, showFooter = true }: D
   };
   const onOutsideClick = () => {
     if (!open) return;
-    const changed = draft.startDate !== value.startDate || draft.endDate !== value.endDate || draft.presetId !== value.presetId;
+    const changed =
+      draft.startDate !== value.startDate ||
+      draft.endDate !== value.endDate ||
+      draft.presetId !== value.presetId;
     if (canApply && changed) onChange(draft);
     setOpen(false);
   };
   return {
-    open, draft, month, nextMonth: shiftRangeMonth(month, 1), selectedPreset, preview: getPreview(),
-    invalid, incomplete, canApply, onOpenChange, onOutsideClick, setMonth, setHover, selectDate, selectPreset, selectCustom, clear, apply,
+    open,
+    draft,
+    month,
+    nextMonth: shiftRangeMonth(month, 1),
+    selectedPreset,
+    preview: getPreview(),
+    invalid,
+    incomplete,
+    canApply,
+    onOpenChange,
+    onOutsideClick,
+    setMonth,
+    setHover,
+    selectDate,
+    selectPreset,
+    selectCustom,
+    clear,
+    apply,
   };
 };

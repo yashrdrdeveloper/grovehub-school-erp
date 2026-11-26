@@ -15,5 +15,8 @@ export const parseCalendarDate = (value: string | null): Date | null => {
 export const getCalendarDays = (month: Date): readonly Date[] => {
   const first = new Date(month.getFullYear(), month.getMonth(), 1);
   const offset = (first.getDay() + 6) % 7;
-  return Array.from({ length: 42 }, (_, index) => new Date(first.getFullYear(), first.getMonth(), index - offset + 1));
+  return Array.from(
+    { length: 42 },
+    (_, index) => new Date(first.getFullYear(), first.getMonth(), index - offset + 1),
+  );
 };

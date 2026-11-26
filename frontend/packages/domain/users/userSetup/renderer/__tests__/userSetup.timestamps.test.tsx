@@ -18,7 +18,9 @@ describe('renderCreatedAt', () => {
   it('renders the creation timestamp in the shared localized format', () => {
     render(renderCreatedAt(account));
 
-    expect(screen.getByText(getFormattedDate(account.createdAt, { includeTime: false }))).toBeTruthy();
+    expect(
+      screen.getByText(getFormattedDate(account.createdAt, { includeTime: false })),
+    ).toBeTruthy();
     expect(screen.getByText(getFormattedDate(account.createdAt, { timeOnly: true }))).toBeTruthy();
   });
 });

@@ -11,7 +11,8 @@ import styles from './PageJump.module.css';
 export const PageJump = ({ currentPage, totalPages, disabled, onChange }: PageJumpProps) => {
   const [draft, setDraft] = useState(String(currentPage));
   const page = Number(draft);
-  const valid = /^\d+$/.test(draft) && Number.isSafeInteger(page) && page >= 1 && page <= totalPages;
+  const valid =
+    /^\d+$/.test(draft) && Number.isSafeInteger(page) && page >= 1 && page <= totalPages;
   const canJump = !disabled && valid && page !== currentPage;
   const getReason = () => {
     if (disabled) return __('Pagination is loading.');
@@ -44,9 +45,18 @@ export const PageJump = ({ currentPage, totalPages, disabled, onChange }: PageJu
           }
         }}
       />
-      <Box as={BOX_TAG.SPAN} aria-live="polite">{__('of {{count}}', { count: totalPages })}</Box>
+      <Box as={BOX_TAG.SPAN} aria-live="polite">
+        {__('of {{count}}', { count: totalPages })}
+      </Box>
       <Tooltip label={getReason()} focusable={!canJump}>
-        <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} disabled={!canJump} onClick={jump}>{__('Go')}</Button>
+        <Button
+          size={BUTTON_SIZE.SMALL}
+          variant={BUTTON_VARIANT.OUTLINE}
+          disabled={!canJump}
+          onClick={jump}
+        >
+          {__('Go')}
+        </Button>
       </Tooltip>
     </Box>
   );

@@ -5,7 +5,13 @@ import { Icon } from '../Icon';
 import type { EmptyStateComponent } from './types/emptyState.props';
 import styles from './EmptyState.module.css';
 
-export const EmptyState: EmptyStateComponent = ({ title, description, icon = Inbox, compact = false, dataTestId }) => (
+export const EmptyState: EmptyStateComponent = ({
+  title,
+  description,
+  icon = Inbox,
+  compact = false,
+  dataTestId,
+}) => (
   <Box className={styles.root} data-compact={compact} dataTestId={dataTestId}>
     <Box className={styles.illustration} aria-hidden="true">
       <Box className={styles.symbol}>

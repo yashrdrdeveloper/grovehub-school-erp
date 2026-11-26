@@ -19,20 +19,24 @@ export const useAsyncOptions = <T extends SelectValue>(
     queryKey: [...scope, 'options', query, source.pageSize],
     enabled,
     initialPageParam: undefined as string | undefined,
-    queryFn: ({ pageParam, signal }) => source.loadOptions({
-      searchText: query,
-      cursor: pageParam,
-      limit: source.pageSize ?? 25,
-      signal,
-    }),
+    queryFn: ({ pageParam, signal }) =>
+      source.loadOptions({
+        searchText: query,
+        cursor: pageParam,
+        limit: source.pageSize ?? 25,
+        signal,
+      }),
     getNextPageParam: (page, _pages, _previous, allParams) => {
-      if (page.hasNext && page.nextCursor && !allParams.includes(page.nextCursor)) return page.nextCursor;
+      if (page.hasNext && page.nextCursor && !allParams.includes(page.nextCursor))
+        return page.nextCursor;
       return undefined;
     },
   });
   const known = new Map<T, SelectOption<T>>();
   for (const option of source.initialOptions ?? []) known.set(option.value, option);
-  for (const [, cached] of client.getQueriesData<InfiniteData<AsyncOptionsResponse<T>>>({ queryKey: [...scope, 'options'] })) {
+  for (const [, cached] of client.getQueriesData<InfiniteData<AsyncOptionsResponse<T>>>({
+    queryKey: [...scope, 'options'],
+  })) {
     for (const page of cached?.pages ?? []) {
       for (const option of page.options) known.set(option.value, option);
     }

@@ -8,7 +8,23 @@ import { getPopoverPosition } from './helpers/popover.getPosition';
 import styles from './Popover.module.css';
 import type { PopoverProps } from './types/popover.props';
 
-export const Popover = ({ open, onOpenChange, onOutsideClick, title, headerContent, showHeader = true, trigger, children, width = 360, fullWidth, compact = false, desktopScrollLayout = false, desktopDropdown = false, desktopDropdownWidth, dataTestId }: PopoverProps) => {
+export const Popover = ({
+  open,
+  onOpenChange,
+  onOutsideClick,
+  title,
+  headerContent,
+  showHeader = true,
+  trigger,
+  children,
+  width = 360,
+  fullWidth,
+  compact = false,
+  desktopScrollLayout = false,
+  desktopDropdown = false,
+  desktopDropdownWidth,
+  dataTestId,
+}: PopoverProps) => {
   const anchor = useRef<HTMLElement>(null);
   const [panel, setPanel] = useState<HTMLDivElement | null>(null);
   const [position, setPosition] = useState({ left: 0, top: 0, width, maxHeight: 0 });
@@ -19,23 +35,40 @@ export const Popover = ({ open, onOpenChange, onOutsideClick, title, headerConte
       if (!rect) return;
       const available = Math.max(0, window.innerWidth - 24);
       const getWidth = () => {
-        if (desktopDropdown && window.innerWidth > 640) return Math.max(desktopDropdownWidth ?? 88, rect.width);
+        if (desktopDropdown && window.innerWidth > 640)
+          return Math.max(desktopDropdownWidth ?? 88, rect.width);
         return Math.max(width, rect.width);
       };
       const panelWidth = Math.min(available, getWidth());
       panel.style.width = String(panelWidth) + 'px';
       panel.style.removeProperty('--popover-available-height');
       const panelHeight = panel.offsetHeight;
-      const next = getPopoverPosition({ anchor: rect, panelHeight, viewportWidth: window.innerWidth, viewportHeight: window.innerHeight, width: panelWidth });
-      if (window.innerWidth > 640) panel.style.setProperty('--popover-available-height', String(next.maxHeight) + 'px');
+      const next = getPopoverPosition({
+        anchor: rect,
+        panelHeight,
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
+        width: panelWidth,
+      });
+      if (window.innerWidth > 640)
+        panel.style.setProperty('--popover-available-height', String(next.maxHeight) + 'px');
       setPosition((current) => {
-        if (current.left === next.left && current.top === next.top && current.width === next.width && current.maxHeight === next.maxHeight) return current;
+        if (
+          current.left === next.left &&
+          current.top === next.top &&
+          current.width === next.width &&
+          current.maxHeight === next.maxHeight
+        )
+          return current;
         return next;
       });
     };
     place();
     const observer = typeof ResizeObserver !== 'undefined' && new ResizeObserver(place);
-    if (observer) { observer.observe(panel); if (anchor.current) observer.observe(anchor.current); }
+    if (observer) {
+      observer.observe(panel);
+      if (anchor.current) observer.observe(anchor.current);
+    }
     window.addEventListener('resize', place);
     window.addEventListener('scroll', place, true);
     return () => {
@@ -46,7 +79,12 @@ export const Popover = ({ open, onOpenChange, onOutsideClick, title, headerConte
   }, [open, panel, width, desktopDropdown, desktopDropdownWidth]);
   return (
     <DialogRoot open={open} onOpenChange={onOpenChange}>
-      <Box ref={anchor} dataTestId={dataTestId} className={styles.anchor} data-full-width={fullWidth}>
+      <Box
+        ref={anchor}
+        dataTestId={dataTestId}
+        className={styles.anchor}
+        data-full-width={fullWidth}
+      >
         {trigger}
       </Box>
       <DialogPortal>
@@ -61,7 +99,8 @@ export const Popover = ({ open, onOpenChange, onOutsideClick, title, headerConte
           onPointerDownOutside={(event) => {
             if (!onOutsideClick) return;
             const pointer = event.detail.originalEvent;
-            if (pointer.button !== 0 || (pointer.pointerType === 'mouse' && pointer.ctrlKey)) return;
+            if (pointer.button !== 0 || (pointer.pointerType === 'mouse' && pointer.ctrlKey))
+              return;
             event.preventDefault();
             onOutsideClick();
           }}
@@ -79,9 +118,13 @@ export const Popover = ({ open, onOpenChange, onOutsideClick, title, headerConte
           {showHeader && (
             <Box className={styles.heading} data-custom-heading={headerContent !== undefined}>
               <DialogTitle className={styles.title}>{title}</DialogTitle>
-              {headerContent !== undefined && <Box className={styles.headerContent}>{headerContent}</Box>}
+              {headerContent !== undefined && (
+                <Box className={styles.headerContent}>{headerContent}</Box>
+              )}
               <DialogClose asChild>
-                <button type="button" className={styles.close} aria-label={__('Close')}><X size={18} aria-hidden="true" /></button>
+                <button type="button" className={styles.close} aria-label={__('Close')}>
+                  <X size={18} aria-hidden="true" />
+                </button>
               </DialogClose>
             </Box>
           )}

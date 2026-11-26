@@ -7,7 +7,9 @@ import { useDateRange } from '../useDateRange';
 describe('useDateRange', () => {
   it('automatically commits a complete manual range only when the footer is hidden', () => {
     const onChange = jest.fn();
-    const { result } = renderHook(() => useDateRange({ value: { startDate: null, endDate: null }, onChange, showFooter: false }));
+    const { result } = renderHook(() =>
+      useDateRange({ value: { startDate: null, endDate: null }, onChange, showFooter: false }),
+    );
     act(() => result.current.onOpenChange(true));
     act(() => result.current.selectDate('2026-11-15'));
     expect(onChange).not.toHaveBeenCalled();
@@ -16,7 +18,11 @@ describe('useDateRange', () => {
     expect(onChange).not.toHaveBeenCalled();
     act(() => result.current.selectDate('2026-11-10'));
     expect(onChange).toHaveBeenCalledTimes(1);
-    expect(onChange).toHaveBeenCalledWith({ startDate: '2026-11-10', endDate: '2026-11-15', presetId: 'custom' });
+    expect(onChange).toHaveBeenCalledWith({
+      startDate: '2026-11-10',
+      endDate: '2026-11-15',
+      presetId: 'custom',
+    });
     expect(result.current.open).toBe(false);
     act(() => result.current.onOutsideClick());
     expect(onChange).toHaveBeenCalledTimes(1);
@@ -24,35 +30,49 @@ describe('useDateRange', () => {
 
   it('automatically commits a selected preset and closes without an additional click', () => {
     const onChange = jest.fn();
-    const { result } = renderHook(() => useDateRange({ value: { startDate: null, endDate: null }, onChange, showFooter: false }));
+    const { result } = renderHook(() =>
+      useDateRange({ value: { startDate: null, endDate: null }, onChange, showFooter: false }),
+    );
     act(() => result.current.onOpenChange(true));
     act(() => result.current.selectCustom());
     expect(onChange).not.toHaveBeenCalled();
     expect(result.current.open).toBe(true);
     act(() => result.current.selectPreset(DATE_RANGE_PRESETS[0]!));
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ presetId: DATE_RANGE_PRESETS[0]!.id }));
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ presetId: DATE_RANGE_PRESETS[0]!.id }),
+    );
     expect(result.current.open).toBe(false);
   });
 
   it('commits a completed manual range when clicking outside', () => {
     const onChange = jest.fn();
-    const { result } = renderHook(() => useDateRange({ value: { startDate: null, endDate: null }, onChange }));
+    const { result } = renderHook(() =>
+      useDateRange({ value: { startDate: null, endDate: null }, onChange }),
+    );
     act(() => result.current.onOpenChange(true));
     act(() => result.current.selectDate('2026-11-10'));
     act(() => result.current.selectDate('2026-11-15'));
     act(() => result.current.onOutsideClick());
     expect(onChange).toHaveBeenCalledTimes(1);
-    expect(onChange).toHaveBeenCalledWith({ startDate: '2026-11-10', endDate: '2026-11-15', presetId: 'custom' });
+    expect(onChange).toHaveBeenCalledWith({
+      startDate: '2026-11-10',
+      endDate: '2026-11-15',
+      presetId: 'custom',
+    });
     expect(result.current.open).toBe(false);
   });
 
   it('commits a preset and retains its identity on outside dismissal', () => {
     const onChange = jest.fn();
-    const { result } = renderHook(() => useDateRange({ value: { startDate: null, endDate: null }, onChange }));
+    const { result } = renderHook(() =>
+      useDateRange({ value: { startDate: null, endDate: null }, onChange }),
+    );
     act(() => result.current.onOpenChange(true));
     act(() => result.current.selectPreset(DATE_RANGE_PRESETS[0]!));
     act(() => result.current.onOutsideClick());
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ presetId: DATE_RANGE_PRESETS[0]!.id }));
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ presetId: DATE_RANGE_PRESETS[0]!.id }),
+    );
     expect(result.current.open).toBe(false);
   });
 
@@ -107,7 +127,12 @@ describe('useDateRange', () => {
 
   it('clears the selected preset along with the dates', () => {
     const onChange = jest.fn();
-    const { result } = renderHook(() => useDateRange({ value: { startDate: '2026-11-01', endDate: '2026-11-30', presetId: 'thisMonth' }, onChange }));
+    const { result } = renderHook(() =>
+      useDateRange({
+        value: { startDate: '2026-11-01', endDate: '2026-11-30', presetId: 'thisMonth' },
+        onChange,
+      }),
+    );
     act(() => result.current.onOpenChange(true));
     act(() => result.current.clear());
     expect(result.current.selectedPreset).toBeNull();
@@ -117,7 +142,9 @@ describe('useDateRange', () => {
 
   it('keeps incomplete ranges in the draft and commits only when applied', () => {
     const onChange = jest.fn();
-    const { result } = renderHook(() => useDateRange({ value: { startDate: null, endDate: null }, onChange }));
+    const { result } = renderHook(() =>
+      useDateRange({ value: { startDate: null, endDate: null }, onChange }),
+    );
     act(() => result.current.onOpenChange(true));
     act(() => result.current.selectDate('2026-11-10'));
     expect(result.current.canApply).toBe(false);
@@ -128,7 +155,11 @@ describe('useDateRange', () => {
     expect(result.current.draft.endDate).toBeNull();
     act(() => result.current.selectDate('2026-11-15'));
     act(() => result.current.apply());
-    expect(onChange).toHaveBeenCalledWith({ startDate: '2026-11-10', endDate: '2026-11-15', presetId: 'custom' });
+    expect(onChange).toHaveBeenCalledWith({
+      startDate: '2026-11-10',
+      endDate: '2026-11-15',
+      presetId: 'custom',
+    });
     expect(result.current.open).toBe(false);
   });
 });

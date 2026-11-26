@@ -18,7 +18,9 @@ describe('renderUpdatedAt', () => {
   it('renders the update timestamp in the shared localized format', () => {
     render(renderUpdatedAt(account));
 
-    expect(screen.getByText(getFormattedDate(account.updatedAt, { includeTime: false }))).toBeTruthy();
+    expect(
+      screen.getByText(getFormattedDate(account.updatedAt, { includeTime: false })),
+    ).toBeTruthy();
     expect(screen.getByText(getFormattedDate(account.updatedAt, { timeOnly: true }))).toBeTruthy();
   });
 });

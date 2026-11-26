@@ -16,13 +16,17 @@ export interface AsyncOptionsResponse<T extends SelectValue> {
 export interface AsyncSelectSource<T extends SelectValue> {
   readonly cacheKey: readonly string[];
   readonly loadOptions: (request: AsyncOptionsRequest) => Promise<AsyncOptionsResponse<T>>;
-  readonly resolveOptions?: (values: readonly T[], signal?: AbortSignal) => Promise<readonly SelectOption<T>[]>;
+  readonly resolveOptions?: (
+    values: readonly T[],
+    signal?: AbortSignal,
+  ) => Promise<readonly SelectOption<T>[]>;
   readonly initialOptions?: readonly SelectOption<T>[];
   readonly pageSize?: number;
   readonly debounceMs?: number;
 }
 
 export interface AsyncSelectProps<T extends SelectValue = string>
-  extends Omit<SelectProps<T>, 'options'>, AsyncSelectSource<T> {
+  extends Omit<SelectProps<T>, 'options'>,
+    AsyncSelectSource<T> {
   readonly dataTestId?: string;
 }

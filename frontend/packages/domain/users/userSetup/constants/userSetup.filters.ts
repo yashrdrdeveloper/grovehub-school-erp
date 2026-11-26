@@ -16,7 +16,12 @@ export const USER_SETUP_FILTERS: readonly FilterField[] = Object.freeze([
     id: UserField.STATUS,
     label: __('Status'),
     type: FilterFieldType.SELECT,
-    operators: [FilterOperator.EQUALS, FilterOperator.NOT_EQUALS, FilterOperator.IN, FilterOperator.NOT_IN],
+    operators: [
+      FilterOperator.EQUALS,
+      FilterOperator.NOT_EQUALS,
+      FilterOperator.IN,
+      FilterOperator.NOT_IN,
+    ],
     options: USER_SETUP_STATUS_OPTIONS,
   },
   {

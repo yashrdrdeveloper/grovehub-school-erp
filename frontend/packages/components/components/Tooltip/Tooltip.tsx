@@ -24,7 +24,10 @@ export const Tooltip = ({ label, children, focusable, fullWidth, dataTestId }: T
   useLayoutEffect(() => {
     if (!position || !bubble.current) return;
     const halfWidth = bubble.current.getBoundingClientRect().width / 2;
-    const left = Math.min(window.innerWidth - halfWidth - 8, Math.max(halfWidth + 8, position.left));
+    const left = Math.min(
+      window.innerWidth - halfWidth - 8,
+      Math.max(halfWidth + 8, position.left),
+    );
     if (left !== position.left) setPosition({ ...position, left });
   }, [position]);
   useEffect(() => {
@@ -40,9 +43,43 @@ export const Tooltip = ({ label, children, focusable, fullWidth, dataTestId }: T
     };
   }, [position]);
   return (
-    <Box dataTestId={dataTestId} ref={anchor} className={styles.anchor} data-tooltip-hover={hovered} data-full-width={fullWidth} tabIndex={getTabIndex()} aria-label={focusable && label || undefined} onMouseEnter={(event) => { setHovered(true); show(event.currentTarget); }} onMouseLeave={() => { setHovered(false); hide(); }} onFocus={(event) => { if (event.target.matches(':focus-visible')) show(event.currentTarget); }} onBlur={hide} onPointerDown={hide} onClick={(event) => { if (focusable) show(event.currentTarget); }} onKeyDown={(event) => { if (event.key === 'Escape') hide(); }}>
+    <Box
+      dataTestId={dataTestId}
+      ref={anchor}
+      className={styles.anchor}
+      data-tooltip-hover={hovered}
+      data-full-width={fullWidth}
+      tabIndex={getTabIndex()}
+      aria-label={(focusable && label) || undefined}
+      onMouseEnter={(event) => {
+        setHovered(true);
+        show(event.currentTarget);
+      }}
+      onMouseLeave={() => {
+        setHovered(false);
+        hide();
+      }}
+      onFocus={(event) => {
+        if (event.target.matches(':focus-visible')) show(event.currentTarget);
+      }}
+      onBlur={hide}
+      onPointerDown={hide}
+      onClick={(event) => {
+        if (focusable) show(event.currentTarget);
+      }}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') hide();
+      }}
+    >
       {children}
-      {label && position && createPortal(<Box ref={bubble} id={id} role="tooltip" className={styles.bubble} style={position}>{label}</Box>, document.body)}
+      {label &&
+        position &&
+        createPortal(
+          <Box ref={bubble} id={id} role="tooltip" className={styles.bubble} style={position}>
+            {label}
+          </Box>,
+          document.body,
+        )}
     </Box>
   );
 };

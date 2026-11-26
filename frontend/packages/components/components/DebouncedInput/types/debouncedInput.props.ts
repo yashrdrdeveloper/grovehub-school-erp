@@ -1,6 +1,7 @@
 import type { InputProps } from '../../Input';
 
-export interface DebouncedInputProps extends Omit<InputProps, 'value' | 'defaultValue' | 'onChange'> {
+export interface DebouncedInputProps
+  extends Omit<InputProps, 'value' | 'defaultValue' | 'onChange'> {
   readonly value: string;
   readonly debounceMs?: number;
   readonly minLength?: number;

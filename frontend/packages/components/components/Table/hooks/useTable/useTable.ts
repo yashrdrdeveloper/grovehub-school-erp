@@ -6,11 +6,15 @@ import { TablePin, TableType } from '../../constants/table.type';
 import { getTableColumnLayout } from '../../helpers/table.getColumnLayout';
 import { getTableClientRows } from '../../helpers/table.getClientRows';
 import { getTableEntries } from '../../helpers/table.getEntries';
-import { getDefaultTablePreferences, getTableColumnWidth, readTablePreferences } from '../../helpers/table.preferences';
+import {
+  getDefaultTablePreferences,
+  getTableColumnWidth,
+  readTablePreferences,
+} from '../../helpers/table.preferences';
 import type { ColumnPin } from '../../types/table.column';
 import type { Density, TablePreferences, TableProps } from '../../types/table.props';
 
-export const useTable = <T,>(props: TableProps<T>) => {
+export const useTable = <T>(props: TableProps<T>) => {
   const { columns, actions, preferencesProps } = props;
   const [localPreferences, setLocalPreferences] = useState(() => readTablePreferences(props));
   const preferences = preferencesProps?.value ?? localPreferences;
@@ -64,14 +68,25 @@ export const useTable = <T,>(props: TableProps<T>) => {
   };
   const reorder = (ids: readonly string[]) => {
     const order = Array.from(new Set(ids));
-    if (order.length !== columns.length || columns.some((column) => !order.includes(column.id))) return;
-    const previous = Array.from(new Set([...preferences.order, ..._map(columns, (column) => column.id)]));
-    if (columns.some((column) => column.reorderable === false && previous.indexOf(column.id) !== order.indexOf(column.id))) return;
+    if (order.length !== columns.length || columns.some((column) => !order.includes(column.id)))
+      return;
+    const previous = Array.from(
+      new Set([...preferences.order, ..._map(columns, (column) => column.id)]),
+    );
+    if (
+      columns.some(
+        (column) =>
+          column.reorderable === false && previous.indexOf(column.id) !== order.indexOf(column.id),
+      )
+    )
+      return;
     update({ ...preferences, order });
     actions?.COLUMN_REORDER?.(order);
   };
   const move = (id: string, delta: number) => {
-    const order = Array.from(new Set([...preferences.order, ..._map(columns, (column) => column.id)]));
+    const order = Array.from(
+      new Set([...preferences.order, ..._map(columns, (column) => column.id)]),
+    );
     const from = order.indexOf(id);
     const target = from + delta;
     const other = order[target];
@@ -91,9 +106,18 @@ export const useTable = <T,>(props: TableProps<T>) => {
     actions?.COLUMN_RESIZE?.({ id, width });
   };
   const pin = (id: string, value: ColumnPin) => {
-    if (!columns.some((column) => column.id === id) || !Object.values(TablePin).includes(value)) return;
-    const locked = _filter(columns, (column) => (preferences.pins[column.id] ?? column.pin ?? TablePin.NONE) !== TablePin.NONE);
-    if (value !== TablePin.NONE && !locked.some((column) => column.id === id) && locked.length >= (props.maxPinnedColumns ?? 3)) return;
+    if (!columns.some((column) => column.id === id) || !Object.values(TablePin).includes(value))
+      return;
+    const locked = _filter(
+      columns,
+      (column) => (preferences.pins[column.id] ?? column.pin ?? TablePin.NONE) !== TablePin.NONE,
+    );
+    if (
+      value !== TablePin.NONE &&
+      !locked.some((column) => column.id === id) &&
+      locked.length >= (props.maxPinnedColumns ?? 3)
+    )
+      return;
     update({ ...preferences, pins: { ...preferences.pins, [id]: value } });
     actions?.COLUMN_PIN?.({ id, pin: value });
   };
@@ -131,9 +155,26 @@ export const useTable = <T,>(props: TableProps<T>) => {
     actions?.FULLSCREEN_CHANGE?.(value);
   };
   return {
-    preferences, layout, entries, total: client.total, expanded, collapsed, selected, selectable,
-    toggle, move, reorder, resize, pin, setRowDensity, toggleExpanded, toggleGroup, selectRow, selectPage,
-    fullscreen, changeFullscreen,
+    preferences,
+    layout,
+    entries,
+    total: client.total,
+    expanded,
+    collapsed,
+    selected,
+    selectable,
+    toggle,
+    move,
+    reorder,
+    resize,
+    pin,
+    setRowDensity,
+    toggleExpanded,
+    toggleGroup,
+    selectRow,
+    selectPage,
+    fullscreen,
+    changeFullscreen,
     reset: () => {
       update(getDefaultTablePreferences(props));
       actions?.RESET?.();

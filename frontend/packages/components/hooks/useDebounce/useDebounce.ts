@@ -2,7 +2,10 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import type { UseDebounceResult } from './types/useDebounce';
 
-export const useDebounce = <T,>(callback: (value: T) => void, delay: number): UseDebounceResult<T> => {
+export const useDebounce = <T>(
+  callback: (value: T) => void,
+  delay: number,
+): UseDebounceResult<T> => {
   const latest = useRef(callback);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const pending = useRef<{ value: T } | undefined>(undefined);

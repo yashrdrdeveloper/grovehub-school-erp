@@ -41,7 +41,8 @@ export const useUserSetup = () => {
   const mobileQuery = useInfiniteQuery({
     queryKey: [...scope, 'mobile', mobileRequest],
     initialPageParam: { pageNumber: 1, cursor: undefined as string | undefined },
-    queryFn: ({ pageParam }) => usersApi.search({ ...mobileRequest, pageInfo: { ...mobileRequest.pageInfo, ...pageParam } }),
+    queryFn: ({ pageParam }) =>
+      usersApi.search({ ...mobileRequest, pageInfo: { ...mobileRequest.pageInfo, ...pageParam } }),
     getNextPageParam: getUserSetupNextPage,
     enabled: Boolean(account) && mobile,
   });
@@ -64,7 +65,10 @@ export const useUserSetup = () => {
     return query.isError;
   };
   const refresh = () => {
-    if (mobile) { void mobileQuery.refetch(); return; }
+    if (mobile) {
+      void mobileQuery.refetch();
+      return;
+    }
     void query.refetch();
   };
   const mutation = useMutation({
@@ -92,11 +96,20 @@ export const useUserSetup = () => {
     if (query.isFetching) return;
     if (action.type === 'PAGE_CHANGE') {
       const totalPages = query.data?.pageInfo.totalPages;
-      if (!Number.isSafeInteger(action.page) || action.page < 1 || (totalPages !== undefined && action.page > totalPages)) return;
+      if (
+        !Number.isSafeInteger(action.page) ||
+        action.page < 1 ||
+        (totalPages !== undefined && action.page > totalPages)
+      )
+        return;
       setState((current) => {
         const nextCursor = query.data?.pageInfo.nextCursor;
         if (action.page === current.pageNumber + 1 && nextCursor) {
-          return { ...current, pageNumber: action.page, cursors: { ...current.cursors, [action.page]: nextCursor } };
+          return {
+            ...current,
+            pageNumber: action.page,
+            cursors: { ...current.cursors, [action.page]: nextCursor },
+          };
         }
         return { ...current, pageNumber: action.page };
       });
@@ -127,7 +140,8 @@ export const useUserSetup = () => {
     REFRESH: refresh,
     RETRY: refresh,
     LOAD_MORE: () => {
-      if (mobile && mobileQuery.hasNextPage && !mobileQuery.isFetching) void mobileQuery.fetchNextPage({ cancelRefetch: false });
+      if (mobile && mobileQuery.hasNextPage && !mobileQuery.isFetching)
+        void mobileQuery.fetchNextPage({ cancelRefetch: false });
     },
     HEADER_ACTION: (id) => {
       if (id === UserAction.CREATE) openDialog({ action: UserAction.CREATE });
@@ -149,10 +163,14 @@ export const useUserSetup = () => {
   const confirm = () => {
     const row = dialog?.row;
     if (!row || !dialog) return;
-    if (dialog.action === UserAction.ACTIVATE) mutation.mutate(() => usersApi.activate(row.accountId));
-    if (dialog.action === UserAction.SUSPEND) mutation.mutate(() => usersApi.suspend(row.accountId));
-    if (dialog.action === UserAction.DEACTIVATE) mutation.mutate(() => usersApi.deactivate(row.accountId));
-    if (dialog.action === UserAction.RESEND) mutation.mutate(() => usersApi.resendInvitation(row.accountId));
+    if (dialog.action === UserAction.ACTIVATE)
+      mutation.mutate(() => usersApi.activate(row.accountId));
+    if (dialog.action === UserAction.SUSPEND)
+      mutation.mutate(() => usersApi.suspend(row.accountId));
+    if (dialog.action === UserAction.DEACTIVATE)
+      mutation.mutate(() => usersApi.deactivate(row.accountId));
+    if (dialog.action === UserAction.RESEND)
+      mutation.mutate(() => usersApi.resendInvitation(row.accountId));
   };
   const pagination = {
     type: PaginationType.HYBRID,
@@ -166,7 +184,14 @@ export const useUserSetup = () => {
   } satisfies Omit<Extract<PaginationProps, { type: typeof PaginationType.HYBRID }>, 'onChange'>;
 
   return {
-    state, actions, dialog, closeDialog, create, edit, confirm, pagination,
+    state,
+    actions,
+    dialog,
+    closeDialog,
+    create,
+    edit,
+    confirm,
+    pagination,
     totalRecords: getTotal(),
     data: getData(),
     loading: activeQuery.isPending,

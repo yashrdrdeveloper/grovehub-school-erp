@@ -19,7 +19,10 @@ export interface FilterField {
   readonly operators: readonly FilterOperator[];
   readonly options?: readonly SelectOption[];
   readonly source?: AsyncSelectSource<string>;
-  readonly renderValue?: (condition: FilterCondition, change: (values: readonly string[]) => void) => ReactNode;
+  readonly renderValue?: (
+    condition: FilterCondition,
+    change: (values: readonly string[]) => void,
+  ) => ReactNode;
 }
 
 export interface FiltersProps {

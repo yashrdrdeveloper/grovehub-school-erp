@@ -11,7 +11,8 @@ const setPhoneViewport = (isPhone: boolean) => {
   Object.defineProperty(window, 'matchMedia', {
     configurable: true,
     value: (query: string) => ({
-      matches: (isPhone && query === '(max-width: 720px)') || (!isPhone && query === '(min-width: 721px)'),
+      matches:
+        (isPhone && query === '(max-width: 720px)') || (!isPhone && query === '(min-width: 721px)'),
       media: query,
       addEventListener: jest.fn(),
       removeEventListener: jest.fn(),
@@ -113,7 +114,9 @@ describe('LoginContainer', () => {
       ),
     ).toBe(true);
     const password = screen.getByLabelText('Password');
-    expect(Boolean(link && password.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+    expect(
+      Boolean(link && password.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING),
+    ).toBe(true);
     expect(screen.getByRole('textbox', { name: 'Email address' })).toBeTruthy();
   });
 

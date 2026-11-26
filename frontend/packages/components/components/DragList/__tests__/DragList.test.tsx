@@ -36,7 +36,10 @@ describe('DragList', () => {
         renderItem={(item) => item}
       />,
     );
-    fireEvent.keyDown(screen.getAllByRole('button', { name: 'Reorder item; use up and down arrows' })[1]!, { key: 'ArrowUp' });
+    fireEvent.keyDown(
+      screen.getAllByRole('button', { name: 'Reorder item; use up and down arrows' })[1]!,
+      { key: 'ArrowUp' },
+    );
     expect(onReorder).toHaveBeenCalledWith(['Status', 'Username']);
   });
 });

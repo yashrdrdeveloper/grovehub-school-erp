@@ -24,12 +24,23 @@ import type { FilterCondition } from './types/filters.props';
 import type { FiltersProps } from './types/filters.props';
 import type { useFilters } from './hooks/useFilters';
 
-export const FiltersView = ({ fields, value, disabled, iconOnly, dataTestId, initialOpen, controls }: FiltersProps & { readonly controls: ReturnType<typeof useFilters> }) => {
+export const FiltersView = ({
+  fields,
+  value,
+  disabled,
+  iconOnly,
+  dataTestId,
+  initialOpen,
+  controls,
+}: FiltersProps & { readonly controls: ReturnType<typeof useFilters> }) => {
   const mobile = useMobileViewport();
   const { editing, selectedField } = controls;
   const getValueSummary = (condition: FilterCondition) => {
     const field = _find(fields, (entry) => entry.id === condition.field);
-    if (field?.type === FilterFieldType.DATE_RANGE || (field?.type === FilterFieldType.DATE && condition.operator === FilterOperator.BETWEEN)) {
+    if (
+      field?.type === FilterFieldType.DATE_RANGE ||
+      (field?.type === FilterFieldType.DATE && condition.operator === FilterOperator.BETWEEN)
+    ) {
       return _map(condition.values, (value) => getFormattedRangeDate(value)).join(' – ');
     }
     return condition.values.join(', ');
@@ -44,52 +55,207 @@ export const FiltersView = ({ fields, value, disabled, iconOnly, dataTestId, ini
     return __('Filters');
   };
   return (
-    <Popover open={controls.open} onOpenChange={controls.onOpenChange} title={getTitle()} width={760} compact desktopScrollLayout trigger={
-      !initialOpen && <Tooltip label={getButton()}><ButtonWithIcon icon={Filter} className={styles.trigger} size={BUTTON_SIZE.SMALL} iconSize={14} variant={BUTTON_VARIANT.OUTLINE} aria-label={getButton()} aria-expanded={controls.open} disabled={disabled} dataTestId={dataTestId} onClick={() => controls.onOpenChange(true)}>
-        {!iconOnly && getButton()}
-        {iconOnly && !!value.length && value.length}
-      </ButtonWithIcon></Tooltip>
-    }>
-        {!mobile && <DesktopFilters fields={fields} controls={controls} />}
-        {mobile && !editing && (
-          <Box className={styles.panel}>
-            <Box className={styles.list}>
-              {!controls.draft.length && <EmptyState compact icon={Filter} title={__('No filters added')} description={__('Add a filter to narrow down your results.')} />}
-              {_map(controls.draft, (condition) => (
-                <Box className={styles.condition} key={condition.id}>
-                  <Box className={styles.summary}>
-                    <Box>{_find(fields, (field) => field.id === condition.field)?.label ?? condition.field}</Box>
-                    <Box className={styles.muted}>{FILTER_OPERATOR_LABELS[condition.operator]} {getValueSummary(condition)}</Box>
+    <Popover
+      open={controls.open}
+      onOpenChange={controls.onOpenChange}
+      title={getTitle()}
+      width={760}
+      compact
+      desktopScrollLayout
+      trigger={
+        !initialOpen && (
+          <Tooltip label={getButton()}>
+            <ButtonWithIcon
+              icon={Filter}
+              className={styles.trigger}
+              size={BUTTON_SIZE.SMALL}
+              iconSize={14}
+              variant={BUTTON_VARIANT.OUTLINE}
+              aria-label={getButton()}
+              aria-expanded={controls.open}
+              disabled={disabled}
+              dataTestId={dataTestId}
+              onClick={() => controls.onOpenChange(true)}
+            >
+              {!iconOnly && getButton()}
+              {iconOnly && !!value.length && value.length}
+            </ButtonWithIcon>
+          </Tooltip>
+        )
+      }
+    >
+      {!mobile && <DesktopFilters fields={fields} controls={controls} />}
+      {mobile && !editing && (
+        <Box className={styles.panel}>
+          <Box className={styles.list}>
+            {!controls.draft.length && (
+              <EmptyState
+                compact
+                icon={Filter}
+                title={__('No filters added')}
+                description={__('Add a filter to narrow down your results.')}
+              />
+            )}
+            {_map(controls.draft, (condition) => (
+              <Box className={styles.condition} key={condition.id}>
+                <Box className={styles.summary}>
+                  <Box>
+                    {_find(fields, (field) => field.id === condition.field)?.label ??
+                      condition.field}
                   </Box>
-                  <ButtonWithIcon icon={Pencil} variant={BUTTON_VARIANT.GHOST} aria-label={__('Edit filter')} onClick={() => controls.edit(condition)} />
-                  <ButtonWithIcon icon={Trash2} variant={BUTTON_VARIANT.GHOST} aria-label={__('Delete filter')} onClick={() => controls.remove(condition.id)} />
+                  <Box className={styles.muted}>
+                    {FILTER_OPERATOR_LABELS[condition.operator]} {getValueSummary(condition)}
+                  </Box>
                 </Box>
-              ))}
-            </Box>
-            <Box className={styles.footer}>
-              <Tooltip label={controls.addReason} focusable={Boolean(controls.addReason)}><ButtonWithIcon icon={Plus} size={BUTTON_SIZE.SMALL} iconSize={14} variant={BUTTON_VARIANT.GHOST} className={styles.add} disabled={!controls.canAdd} onClick={controls.add}>{__('Add filter')}</ButtonWithIcon></Tooltip>
-              <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} onClick={controls.reset}>{__('Reset')}</Button>
-              <Tooltip label={!controls.isDraftValid && __('Complete all filter fields and values before applying.') || undefined} focusable={Boolean(!controls.isDraftValid && __('Complete all filter fields and values before applying.') || undefined)}><Button size={BUTTON_SIZE.SMALL} disabled={!controls.isDraftValid} onClick={controls.apply}>{__('Apply filters')}</Button></Tooltip>
-            </Box>
+                <ButtonWithIcon
+                  icon={Pencil}
+                  variant={BUTTON_VARIANT.GHOST}
+                  aria-label={__('Edit filter')}
+                  onClick={() => controls.edit(condition)}
+                />
+                <ButtonWithIcon
+                  icon={Trash2}
+                  variant={BUTTON_VARIANT.GHOST}
+                  aria-label={__('Delete filter')}
+                  onClick={() => controls.remove(condition.id)}
+                />
+              </Box>
+            ))}
           </Box>
-        )}
-        {mobile && editing && (
-          <Box className={styles.panel}>
-            <Box className={styles.list}>
-              <Select label={__('Field')} placeholder={__('Select field')} value={editing.field || null} options={_map(controls.getAvailableFields(editing.id), (field) => ({ value: field.id, label: field.label }))} onChange={controls.selectField} clearable={false} />
-              <Select<FilterOperator> label={__('Operator')} placeholder={__('Select operator')} value={(selectedField && editing.operator) || null} options={_map(selectedField?.operators ?? [], (operator) => ({ value: operator, label: FILTER_OPERATOR_LABELS[operator] }))} disabled={!selectedField} disabledReason={__('Select a field first.')} clearable={false} onChange={(operator) => {
-                if (operator) controls.setEditing({ ...editing, operator, values: [], dateRangePresetId: undefined });
-              }} />
-              {!selectedField && <Tooltip label={__('Select a field first.')} focusable fullWidth><Input label={__('Value')} placeholder={__('Enter value')} value="" disabled /></Tooltip>}
-              {selectedField && editing.operator !== FilterOperator.EXISTS && editing.operator !== FilterOperator.NOT_EXISTS && <FilterValue field={selectedField} condition={editing} onChange={(values, dateRangePresetId) => controls.setEditing({ ...editing, values, dateRangePresetId })} />}
-              {selectedField && (editing.operator === FilterOperator.EXISTS || editing.operator === FilterOperator.NOT_EXISTS) && <Tooltip label={__('This operator does not require a value.')} focusable fullWidth><Input label={__('Value')} placeholder={__('Not required')} value="" disabled /></Tooltip>}
-            </Box>
-            <Box className={styles.footer}>
-              <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} onClick={controls.back}>{__('Back')}</Button>
-              <Tooltip label={!isFilterValid(editing, selectedField) && __('Select a field, operator and valid value before saving.') || undefined} focusable={Boolean(!isFilterValid(editing, selectedField) && __('Select a field, operator and valid value before saving.') || undefined)}><Button size={BUTTON_SIZE.SMALL} disabled={!isFilterValid(editing, selectedField)} onClick={controls.save}>{__('Save filter')}</Button></Tooltip>
-            </Box>
+          <Box className={styles.footer}>
+            <Tooltip label={controls.addReason} focusable={Boolean(controls.addReason)}>
+              <ButtonWithIcon
+                icon={Plus}
+                size={BUTTON_SIZE.SMALL}
+                iconSize={14}
+                variant={BUTTON_VARIANT.GHOST}
+                className={styles.add}
+                disabled={!controls.canAdd}
+                onClick={controls.add}
+              >
+                {__('Add filter')}
+              </ButtonWithIcon>
+            </Tooltip>
+            <Button
+              size={BUTTON_SIZE.SMALL}
+              variant={BUTTON_VARIANT.GHOST}
+              onClick={controls.reset}
+            >
+              {__('Reset')}
+            </Button>
+            <Tooltip
+              label={
+                (!controls.isDraftValid &&
+                  __('Complete all filter fields and values before applying.')) ||
+                undefined
+              }
+              focusable={Boolean(
+                (!controls.isDraftValid &&
+                  __('Complete all filter fields and values before applying.')) ||
+                  undefined,
+              )}
+            >
+              <Button
+                size={BUTTON_SIZE.SMALL}
+                disabled={!controls.isDraftValid}
+                onClick={controls.apply}
+              >
+                {__('Apply filters')}
+              </Button>
+            </Tooltip>
           </Box>
-        )}
+        </Box>
+      )}
+      {mobile && editing && (
+        <Box className={styles.panel}>
+          <Box className={styles.list}>
+            <Select
+              label={__('Field')}
+              placeholder={__('Select field')}
+              value={editing.field || null}
+              options={_map(controls.getAvailableFields(editing.id), (field) => ({
+                value: field.id,
+                label: field.label,
+              }))}
+              onChange={controls.selectField}
+              clearable={false}
+            />
+            <Select<FilterOperator>
+              label={__('Operator')}
+              placeholder={__('Select operator')}
+              value={(selectedField && editing.operator) || null}
+              options={_map(selectedField?.operators ?? [], (operator) => ({
+                value: operator,
+                label: FILTER_OPERATOR_LABELS[operator],
+              }))}
+              disabled={!selectedField}
+              disabledReason={__('Select a field first.')}
+              clearable={false}
+              onChange={(operator) => {
+                if (operator)
+                  controls.setEditing({
+                    ...editing,
+                    operator,
+                    values: [],
+                    dateRangePresetId: undefined,
+                  });
+              }}
+            />
+            {!selectedField && (
+              <Tooltip label={__('Select a field first.')} focusable fullWidth>
+                <Input label={__('Value')} placeholder={__('Enter value')} value="" disabled />
+              </Tooltip>
+            )}
+            {selectedField &&
+              editing.operator !== FilterOperator.EXISTS &&
+              editing.operator !== FilterOperator.NOT_EXISTS && (
+                <FilterValue
+                  field={selectedField}
+                  condition={editing}
+                  onChange={(values, dateRangePresetId) =>
+                    controls.setEditing({ ...editing, values, dateRangePresetId })
+                  }
+                />
+              )}
+            {selectedField &&
+              (editing.operator === FilterOperator.EXISTS ||
+                editing.operator === FilterOperator.NOT_EXISTS) && (
+                <Tooltip label={__('This operator does not require a value.')} focusable fullWidth>
+                  <Input label={__('Value')} placeholder={__('Not required')} value="" disabled />
+                </Tooltip>
+              )}
+          </Box>
+          <Box className={styles.footer}>
+            <Button
+              size={BUTTON_SIZE.SMALL}
+              variant={BUTTON_VARIANT.OUTLINE}
+              onClick={controls.back}
+            >
+              {__('Back')}
+            </Button>
+            <Tooltip
+              label={
+                (!isFilterValid(editing, selectedField) &&
+                  __('Select a field, operator and valid value before saving.')) ||
+                undefined
+              }
+              focusable={Boolean(
+                (!isFilterValid(editing, selectedField) &&
+                  __('Select a field, operator and valid value before saving.')) ||
+                  undefined,
+              )}
+            >
+              <Button
+                size={BUTTON_SIZE.SMALL}
+                disabled={!isFilterValid(editing, selectedField)}
+                onClick={controls.save}
+              >
+                {__('Save filter')}
+              </Button>
+            </Tooltip>
+          </Box>
+        </Box>
+      )}
     </Popover>
   );
 };

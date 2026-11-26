@@ -114,11 +114,25 @@ export interface TableVirtualizationProps {
 type WithoutChange<T> = T extends unknown ? Omit<T, 'onChange'> : never;
 
 type TableStrategy<T> =
-  | { readonly type: typeof TableType.DEFAULT; readonly virtualizationProps?: TableVirtualizationProps }
-  | { readonly type: typeof TableType.VIRTUALIZED; readonly virtualizationProps?: TableVirtualizationProps }
+  | {
+      readonly type: typeof TableType.DEFAULT;
+      readonly virtualizationProps?: TableVirtualizationProps;
+    }
+  | {
+      readonly type: typeof TableType.VIRTUALIZED;
+      readonly virtualizationProps?: TableVirtualizationProps;
+    }
   | { readonly type: typeof TableType.EXPANDABLE; readonly expansionProps: TableExpansionProps<T> }
-  | { readonly type: typeof TableType.GROUPED; readonly groupingProps: TableGroupingProps<T>; readonly virtualizationProps?: TableVirtualizationProps }
-  | { readonly type: typeof TableType.TREE; readonly treeProps: TableTreeProps<T>; readonly virtualizationProps?: TableVirtualizationProps };
+  | {
+      readonly type: typeof TableType.GROUPED;
+      readonly groupingProps: TableGroupingProps<T>;
+      readonly virtualizationProps?: TableVirtualizationProps;
+    }
+  | {
+      readonly type: typeof TableType.TREE;
+      readonly treeProps: TableTreeProps<T>;
+      readonly virtualizationProps?: TableVirtualizationProps;
+    };
 
 type TableCommonProps<T> = {
   readonly id: string;

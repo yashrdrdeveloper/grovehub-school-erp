@@ -39,5 +39,7 @@
   box-shadow: var(--gh-shadow-card);
 }
 @media (hover: none) {
-  .anchor:not(:focus-within) { touch-action: manipulation; }
+  .anchor:not(:focus-within) {
+    touch-action: manipulation;
+  }
 }

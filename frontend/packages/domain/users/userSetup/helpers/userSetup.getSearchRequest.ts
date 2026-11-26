@@ -25,7 +25,13 @@ export const getUserSetupSearchRequest = (state: UserSetupQueryState): SearchReq
       [FilterOperator.NOT_IN]: 'NIN',
     } as const;
     if (item.operator in operators) {
-      return [{ field: item.field, operator: operators[item.operator as keyof typeof operators], values: [...item.values] }];
+      return [
+        {
+          field: item.field,
+          operator: operators[item.operator as keyof typeof operators],
+          values: [...item.values],
+        },
+      ];
     }
     return [];
   });
@@ -36,6 +42,10 @@ export const getUserSetupSearchRequest = (state: UserSetupQueryState): SearchReq
     searchText: state.searchText.trim(),
     filters,
     sort: _map(state.sorting, (rule) => ({ field: rule.field, direction: rule.direction })),
-    pageInfo: { pageNumber: state.pageNumber, rowSize: state.pageSize, cursor: state.cursors[state.pageNumber] },
+    pageInfo: {
+      pageNumber: state.pageNumber,
+      rowSize: state.pageSize,
+      cursor: state.cursors[state.pageNumber],
+    },
   };
 };

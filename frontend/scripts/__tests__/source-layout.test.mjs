@@ -19,8 +19,14 @@ test('maps an extracted package to its original logical audit owner', () => {
       layout.packageRelativePath(path.join(shared, 'index.ts')),
       path.join('base', 'index.ts'),
     );
-    assert.equal(layout.frontendRelativePath(path.join(shared, 'index.ts')), 'packages/base/index.ts');
-    assert.equal(layout.resolveFrontendSource('packages/base/index.ts'), path.join(shared, 'index.ts'));
+    assert.equal(
+      layout.frontendRelativePath(path.join(shared, 'index.ts')),
+      'packages/base/index.ts',
+    );
+    assert.equal(
+      layout.resolveFrontendSource('packages/base/index.ts'),
+      path.join(shared, 'index.ts'),
+    );
     assert.equal(layout.packageSourceRoots.length, 2);
     mkdirSync(path.join(app, 'packages/base'));
     assert.throws(() => createSourceLayout(app, ['base']), /Duplicate package owner/);

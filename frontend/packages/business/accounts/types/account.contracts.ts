@@ -21,7 +21,16 @@ export interface SearchRequest {
 
 export interface SearchResult<T> {
   items: T[];
-  pageInfo: { rows: number; pageNumber?: number; rowSize?: number; totalPages?: number; hasPrevious?: boolean; hasNext: boolean; nextCursor?: string; totalRecords?: number };
+  pageInfo: {
+    rows: number;
+    pageNumber?: number;
+    rowSize?: number;
+    totalPages?: number;
+    hasPrevious?: boolean;
+    hasNext: boolean;
+    nextCursor?: string;
+    totalRecords?: number;
+  };
 }
 
 export type AccountSearchResult = SearchResult<Account>;

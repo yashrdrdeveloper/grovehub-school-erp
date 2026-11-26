@@ -966,7 +966,8 @@
   white-space: nowrap;
   letter-spacing: -0.055em;
   font-size: clamp(23px, 2.6vw, 36px);
-}.rdr-auth-flow__mobile-success p strong {
+}
+.rdr-auth-flow__mobile-success p strong {
   overflow-wrap: anywhere;
 }
 @media (max-width: 720px) {
