@@ -12,6 +12,9 @@ import (
     bootstrap "grovehub/services/infrastructure/internal/app/bootstrap"
     bootstrapimpl "grovehub/services/infrastructure/internal/app/bootstrap/impl"
     migrations "grovehub/services/infrastructure/internal/resources/migrations"
+    repositoryimpl "grovehub/services/infrastructure/internal/app/repository/messaging/impl"
+    mapperimpl "grovehub/services/infrastructure/internal/app/mappers/messaging/impl"
+    validatorimpl "grovehub/services/infrastructure/internal/app/validators/messaging/impl"
 )
 
 type Module = bootstrap.Runtime
@@ -25,4 +28,9 @@ func Migrate(ctx context.Context, db *gorm.DB) error {
     sqlDB, err := db.DB()
     if err != nil { return fmt.Errorf("access infrastructure migration database: %w", err) }
     return migrations.Migrate(ctx, sqlDB)
+}
+
+// NewEventStore provides the durable store without starting a broker dispatcher.
+func NewEventStore(db *gorm.DB) messagingclient.EventStore {
+    return repositoryimpl.New(db, validatorimpl.New(), mapperimpl.New())
 }

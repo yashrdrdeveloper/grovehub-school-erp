@@ -50,3 +50,9 @@ func Run(ctx context.Context, db *gorm.DB, operation func(context.Context) error
  for _, callback := range s.afterCommit { callback() }
  return nil
 }
+
+// Active reports whether the context carries a shared transaction.
+func Active(ctx context.Context) bool {
+ _, ok := ctx.Value(contextKey{}).(*state)
+ return ok
+}

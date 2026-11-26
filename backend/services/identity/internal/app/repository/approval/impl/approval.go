@@ -9,18 +9,21 @@ import (
 	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
 	kind "grovehub/services/identity/internal/app/constants/approval"
 	"grovehub/services/identity/internal/app/entity"
+	producer "grovehub/services/identity/internal/app/events/producers/approval"
+	producerimpl "grovehub/services/identity/internal/app/events/producers/approval/impl"
 	"grovehub/services/identity/internal/app/repository/approval"
 	"grovehub/services/identity/internal/app/repository/approval/constants"
 )
 
 type Repository struct {
 	db *gorm.DB
+	recorder producer.Recorder
 }
 
 var _ approval.Repository = (*Repository)(nil)
 
-func New(db *gorm.DB) approval.Repository {
-	return &Repository{db: db}
+func New(db *gorm.DB, recorder producer.Recorder) approval.Repository {
+	return &Repository{db: db, recorder: recorder}
 }
 
 func (repository *Repository) dbFor(ctx context.Context) *gorm.DB {
@@ -86,6 +89,9 @@ func (repository *Repository) Step(ctx context.Context, tenantID string, request
 }
 
 func (repository *Repository) Insert(ctx context.Context, request entity.ApprovalRequest, steps []approval.Step) error {
+	if repository.recorder == nil || !transaction.Active(ctx) {
+		return producerimpl.ErrUnavailable
+	}
 	db := repository.dbFor(ctx)
 	if err := db.Exec(constants.InsertRequest, request.RequestID, request.TenantID, request.PolicyID, request.RequesterID, request.RequestType, string(request.Payload), request.PayloadSHA256, request.Reason, request.IdempotencyKey, request.Status, request.CurrentStep, request.StepCount, request.Version, request.ExpiresAt, request.CreatedAt, request.UpdatedAt).Error; err != nil {
 		return err
@@ -95,14 +101,26 @@ func (repository *Repository) Insert(ctx context.Context, request entity.Approva
 			return err
 		}
 	}
-	return nil
+	return repository.recorder.Record(ctx, "CREATED", nil, request)
 }
 
 func (repository *Repository) InsertDecision(ctx context.Context, tenantID string, requestID string, record approval.ReviewRecord) error {
+	if repository.recorder == nil || !transaction.Active(ctx) {
+		return producerimpl.ErrUnavailable
+	}
 	return repository.dbFor(ctx).Exec(constants.InsertDecision, tenantID, requestID, record.RequesterID, record.Step, record.ReviewerID, record.Decision, record.Comment, record.At).Error
 }
 
 func (repository *Repository) Advance(ctx context.Context, before entity.ApprovalRequest, next entity.ApprovalRequest) error {
+	if repository.recorder == nil || !transaction.Active(ctx) {
+		return producerimpl.ErrUnavailable
+	}
+	operation := string(next.Status)
+	if before.Status == kind.Pending && (next.Status == kind.Pending || next.Status == kind.Approved) {
+		operation = "APPROVE"
+	} else if next.Status == kind.Rejected {
+		operation = "REJECT"
+	}
 	result := repository.dbFor(ctx).Exec(constants.Advance, next.Status, next.CurrentStep, next.Version, next.UpdatedAt, before.TenantID, before.RequestID, before.Version, before.Status, before.CurrentStep)
 	if result.Error != nil {
 		return result.Error
@@ -110,7 +128,7 @@ func (repository *Repository) Advance(ctx context.Context, before entity.Approva
 	if result.RowsAffected != 1 {
 		return approval.ErrConflict
 	}
-	return nil
+	return repository.recorder.Record(ctx, operation, &before, next)
 }
 
 func (repository *Repository) Decisions(ctx context.Context, tenantID string, requestID string) ([]approval.ReviewRecord, error) {

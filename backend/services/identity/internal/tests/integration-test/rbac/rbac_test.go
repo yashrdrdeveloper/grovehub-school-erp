@@ -18,6 +18,7 @@ import (
 	"gorm.io/gorm"
 
 	"grovehub/libs/schoolgateway"
+	infrastructure "grovehub/services/infrastructure"
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/constants/persona"
@@ -65,6 +66,7 @@ var _ = Describe("RBAC persistence against PostgreSQL", func() {
 		Expect(existing).To(BeZero(), "integration database must be fresh")
 		ctx := context.Background()
 		Expect(migrations.Migrate(ctx, sqlDB)).To(Succeed())
+		Expect(infrastructure.Migrate(ctx, db)).To(Succeed())
 
 		roles := roleimpl.New(db)
 		draft := rolerepo.Draft{TenantID: "school-a", ActorID: actorID, Name: "  Senior Teacher  ", Personas: []persona.Code{persona.Teacher, persona.Coordinator}}
