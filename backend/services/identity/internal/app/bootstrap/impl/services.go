@@ -1,6 +1,8 @@
 package impl
 
 import (
+	metadataaudit "grovehub/services/identity/internal/app/repository/rolemetadataaudit/impl"
+	metadataproducer "grovehub/services/identity/internal/app/events/producers/rolemetadata/impl"
 	capabilityrepo "grovehub/services/identity/internal/app/repository/capability/impl"
 	"grovehub/services/identity/internal/app/services/capability"
 	capabilityimpl "grovehub/services/identity/internal/app/services/capability/impl"
@@ -101,6 +103,6 @@ func (b *builder) newServices(repositories repositories, cfg config.Config) serv
 		account: accountimpl.NewGuarded(accounts, policy), auth: authentication, worker: worker,
 		policy: policy, catalog: catalog.New(roleread.NewCatalogReader(b.db), policy, cfg.LegacyRBACDevelopment),
 		authorization: authorizer, registry: registryimpl.New(repositories.registry),
-		roles: roleimpl.New(repositories.roles, authorizer),
+		roles: roleimpl.NewAudited(repositories.roles, authorizer, repositories.authority, roleread.NewDraftInspector(b.db), metadataproducer.New(metadataaudit.New(b.db), b.events)),
 	}
 }

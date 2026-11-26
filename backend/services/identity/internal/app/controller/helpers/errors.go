@@ -51,9 +51,9 @@ func Map(err error) error {
 		return coreerrors.NewError(definitions.Unavailable)
 	case errors.Is(err, rolerepo.ErrNotFound), errors.Is(err, approvalrepo.ErrNotFound), errors.Is(err, accountrole.ErrNotFound):
 		return coreerrors.NewError(definitions.RBACNotFound)
-	case errors.Is(err, rolerepo.ErrVersionConflict), errors.Is(err, approvalrepo.ErrConflict), errors.Is(err, accountrole.ErrVersionConflict), errors.Is(err, accountrole.ErrIneligible):
+	case errors.Is(err, rolerepo.ErrConflict), errors.Is(err, rolerepo.ErrVersionConflict), errors.Is(err, approvalrepo.ErrConflict), errors.Is(err, accountrole.ErrVersionConflict), errors.Is(err, accountrole.ErrIneligible):
 		return coreerrors.NewError(definitions.RBACConflict)
-	case errors.Is(err, rolevalidator.ErrInvalidID), errors.Is(err, rolevalidator.ErrInvalidVersion), errors.Is(err, rolevalidator.ErrInvalidSearch), errors.Is(err, approvalrepo.ErrInvalid), errors.Is(err, accountrole.ErrInvalidAssignment), errors.Is(err, delegation.ErrInvalidSet):
+	case errors.Is(err, rolerepo.ErrInvalidDraft), errors.Is(err, rolevalidator.ErrInvalidDraft), errors.Is(err, rolevalidator.ErrInvalidID), errors.Is(err, rolevalidator.ErrInvalidVersion), errors.Is(err, rolevalidator.ErrInvalidSearch), errors.Is(err, approvalrepo.ErrInvalid), errors.Is(err, accountrole.ErrInvalidAssignment), errors.Is(err, delegation.ErrInvalidSet):
 		return coreerrors.NewError(definitions.InvalidRequest)
 	case errors.Is(err, accountrepo.ErrNotFound):
 		return coreerrors.NewError(definitions.NotFound)

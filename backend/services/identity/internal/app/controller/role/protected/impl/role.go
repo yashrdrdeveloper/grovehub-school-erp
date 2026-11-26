@@ -70,3 +70,28 @@ func (controller *Controller) PreviewPermissions(writer http.ResponseWriter, req
 		},
 	})
 }
+
+func (controller *Controller) CreateDraft(writer http.ResponseWriter, request *http.Request) {
+	rest.RunStruct(writer, request, rest.StructConfig[dto.CreateRequest, dto.Detail]{
+		Decode: httprequest.DecodeStrictJSON,
+		InvalidRequestBody: definitions.InvalidRequest,
+		Fallback: definitions.Internal,
+		Service: func(ctx context.Context, input dto.CreateRequest) (rest.Result[dto.Detail], error) {
+			result, err := controller.service.CreateDraft(ctx, input.RequestBody)
+			return rest.Created(result), helpers.Map(err)
+		},
+	})
+}
+
+func (controller *Controller) UpdateMetadata(writer http.ResponseWriter, request *http.Request) {
+	rest.RunStruct(writer, request, rest.StructConfig[dto.UpdateRequest, dto.Detail]{
+		Decode: httprequest.DecodeStrictJSON,
+		InvalidRequestBody: definitions.InvalidRequest,
+		InvalidParams: definitions.InvalidRequest,
+		Fallback: definitions.Internal,
+		Service: func(ctx context.Context, input dto.UpdateRequest) (rest.Result[dto.Detail], error) {
+			result, err := controller.service.UpdateMetadata(ctx, input.Params.RoleID, input.RequestBody)
+			return rest.OK(result), helpers.Map(err)
+		},
+	})
+}

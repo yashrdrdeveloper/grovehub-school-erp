@@ -77,7 +77,13 @@ var _ = Describe("RBAC read routes", func() {
 			Expect(auth.code).To(Equal(code))
 			Expect(routepolicy.New(auth, true).Authorize(ctx, pattern)).To(MatchError(authorization.ErrForbidden))
 		}
-		Expect(policy.Authorize(ctx, "POST /identity/protected/roles")).To(MatchError(authorization.ErrForbidden))
+		Expect(policy.Authorize(ctx, "POST /identity/protected/roles")).To(Succeed())
+		Expect(auth.code).To(Equal(permission.RoleCreate))
+		Expect(policy.Authorize(ctx, "PATCH /identity/protected/roles/{roleId}")).To(Succeed())
+		Expect(auth.code).To(Equal(permission.RoleUpdate))
+		Expect(routepolicy.New(auth, true).Authorize(ctx, "POST /identity/protected/roles")).To(MatchError(authorization.ErrForbidden))
+		Expect(routepolicy.New(auth, true).Authorize(ctx, "PATCH /identity/protected/roles/{roleId}")).To(MatchError(authorization.ErrForbidden))
+		Expect(policy.Authorize(ctx, "DELETE /identity/protected/roles/{roleId}")).To(MatchError(authorization.ErrForbidden))
 	})
 	It("requires tenant authentication and service-level visibility for approval reads", func() {
 		ctx := schoolgateway.WithPrincipal(context.Background(), schoolgateway.Principal{AccountID: "actor", TenantID: "school", SessionID: "session"})

@@ -25,3 +25,14 @@ type PreviewRequest struct {
 	RequestBody PreviewPermissions `validate:"valid"`
 }
 
+
+type CreateRequest struct {
+	request.Request
+	RequestBody CreateDraft `validate:"valid"`
+}
+
+type UpdateRequest struct {
+	request.Request
+	Params ByID `validate:"valid"`
+	RequestBody UpdateMetadata `validate:"valid"`
+}

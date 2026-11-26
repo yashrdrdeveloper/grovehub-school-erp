@@ -21,7 +21,8 @@ var _ = Describe("Actions", func() {
 	It("does not advertise blocked or absent routes even for an actor holding their permissions", func() {
 		actions := helpers.Actions([]permission.Code{permission.AccountCreate, permission.RoleCreate, permission.RolePermissionManage})
 		Expect(actions["accountCreate"]).To(BeFalse())
-		Expect(actions["roleCreate"]).To(BeFalse())
+		Expect(actions["roleCreate"]).To(BeTrue())
+		Expect(actions["roleUpdate"]).To(BeFalse())
 		Expect(actions["rolePermissionsSubmit"]).To(BeTrue())
 		Expect(actions["permissionCatalog"]).To(BeFalse())
 	})

@@ -4,6 +4,12 @@ import "net/http"
 
 // @Routes /roles
 type RoleController interface {
+	// @POST /
+	CreateDraft(writer http.ResponseWriter, request *http.Request)
+
+	// @PATCH /{roleId}
+	UpdateMetadata(writer http.ResponseWriter, request *http.Request)
+
 	// @POST /search
 	Search(writer http.ResponseWriter, request *http.Request)
 
