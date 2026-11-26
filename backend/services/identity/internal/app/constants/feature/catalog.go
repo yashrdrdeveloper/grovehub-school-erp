@@ -8,11 +8,28 @@ const (
 	RoleManagement    Code = "IDENTITY_ROLE_MANAGEMENT"
 )
 
-func Known(code Code) bool {
-	switch code {
-	case AccountManagement, RoleManagement:
-		return true
-	default:
-		return false
+type Definition struct {
+	Code Code
+	Name string
+}
+
+func Catalog() []Definition {
+	return []Definition{
+		{Code: AccountManagement, Name: "Account management"},
+		{Code: RoleManagement, Name: "Role management"},
 	}
+}
+
+func Find(code Code) (Definition, bool) {
+	for _, item := range Catalog() {
+		if item.Code == code {
+			return item, true
+		}
+	}
+	return Definition{}, false
+}
+
+func Known(code Code) bool {
+	_, known := Find(code)
+	return known
 }

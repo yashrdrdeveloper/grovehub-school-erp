@@ -2,6 +2,10 @@ package impl
 
 import (
 	"grovehub/services/identity/internal/app/config"
+	authorization "grovehub/services/identity/internal/app/services/authorization"
+	authorizationimpl "grovehub/services/identity/internal/app/services/authorization/impl"
+	registry "grovehub/services/identity/internal/app/services/registry"
+	registryimpl "grovehub/services/identity/internal/app/services/registry/impl"
 	mapper "grovehub/services/identity/internal/app/mappers/account/impl"
 	validator "grovehub/services/identity/internal/app/validators/account/impl"
 	account "grovehub/services/identity/internal/app/services/account"
@@ -15,6 +19,8 @@ import (
 
 type serviceGraph struct {
 	account account.Service
+	authorization authorization.Service
+	registry registry.Service
 	auth auth.Service
 	worker *invitation.Worker
 }
@@ -51,5 +57,5 @@ func (b *builder) newServices(repositories repositories, cfg config.Config) serv
 		worker = invitation.NewWorker(repositories.mail, repositories.accounts, b.integration, cfg)
 	}
 
-	return serviceGraph{account: accounts, auth: authentication, worker: worker}
+	return serviceGraph{account: accounts, auth: authentication, worker: worker, authorization: authorizationimpl.New(repositories.authorization), registry: registryimpl.New(repositories.registry)}
 }

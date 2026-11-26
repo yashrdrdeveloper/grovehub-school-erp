@@ -33,33 +33,34 @@ const (
 
 type Definition struct {
 	Code    Code
+	Name    string
 	Feature feature.Code
 }
 
 func Catalog() []Definition {
 	return []Definition{
-		{Code: AccountCreate, Feature: feature.AccountManagement},
-		{Code: AccountSearch, Feature: feature.AccountManagement},
-		{Code: AccountView, Feature: feature.AccountManagement},
-		{Code: AccountUpdate, Feature: feature.AccountManagement},
-		{Code: AccountSuspend, Feature: feature.AccountManagement},
-		{Code: AccountActivate, Feature: feature.AccountManagement},
-		{Code: AccountDeactivate, Feature: feature.AccountManagement},
-		{Code: AccountResendInvitation, Feature: feature.AccountManagement},
-		{Code: AccountSelfView},
-		{Code: RoleView, Feature: feature.RoleManagement},
-		{Code: RoleCreate, Feature: feature.RoleManagement},
-		{Code: RoleUpdate, Feature: feature.RoleManagement},
-		{Code: RoleDeactivate, Feature: feature.RoleManagement},
-		{Code: RolePermissionView, Feature: feature.RoleManagement},
-		{Code: RolePermissionManage, Feature: feature.RoleManagement},
-		{Code: AccountRoleView, Feature: feature.RoleManagement},
-		{Code: AccountRoleAssign, Feature: feature.RoleManagement},
-		{Code: PermissionView, Feature: feature.RoleManagement},
-		{Code: PermissionRegister},
-		{Code: FeatureView},
-		{Code: FeatureManage},
-		{Code: FeatureRegister},
+		{Code: AccountCreate, Name: "Create accounts", Feature: feature.AccountManagement},
+		{Code: AccountSearch, Name: "Search accounts", Feature: feature.AccountManagement},
+		{Code: AccountView, Name: "View accounts", Feature: feature.AccountManagement},
+		{Code: AccountUpdate, Name: "Update accounts", Feature: feature.AccountManagement},
+		{Code: AccountSuspend, Name: "Suspend accounts", Feature: feature.AccountManagement},
+		{Code: AccountActivate, Name: "Activate accounts", Feature: feature.AccountManagement},
+		{Code: AccountDeactivate, Name: "Deactivate accounts", Feature: feature.AccountManagement},
+		{Code: AccountResendInvitation, Name: "Resend invitations", Feature: feature.AccountManagement},
+		{Code: AccountSelfView, Name: "View own account"},
+		{Code: RoleView, Name: "View roles", Feature: feature.RoleManagement},
+		{Code: RoleCreate, Name: "Create roles", Feature: feature.RoleManagement},
+		{Code: RoleUpdate, Name: "Update roles", Feature: feature.RoleManagement},
+		{Code: RoleDeactivate, Name: "Deactivate roles", Feature: feature.RoleManagement},
+		{Code: RolePermissionView, Name: "View role permissions", Feature: feature.RoleManagement},
+		{Code: RolePermissionManage, Name: "Manage role permissions", Feature: feature.RoleManagement},
+		{Code: AccountRoleView, Name: "View account roles", Feature: feature.RoleManagement},
+		{Code: AccountRoleAssign, Name: "Assign account roles", Feature: feature.RoleManagement},
+		{Code: PermissionView, Name: "View permissions", Feature: feature.RoleManagement},
+		{Code: PermissionRegister, Name: "Register permissions"},
+		{Code: FeatureView, Name: "View features"},
+		{Code: FeatureManage, Name: "Manage features"},
+		{Code: FeatureRegister, Name: "Register features"},
 	}
 }
 

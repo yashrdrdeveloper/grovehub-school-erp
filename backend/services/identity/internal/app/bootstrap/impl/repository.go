@@ -4,6 +4,10 @@ import (
 	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	accountimpl "grovehub/services/identity/internal/app/repository/account/impl"
+	authorizationrepo "grovehub/services/identity/internal/app/repository/authorization"
+	authorizationimpl "grovehub/services/identity/internal/app/repository/authorization/impl"
+	registryrepo "grovehub/services/identity/internal/app/repository/registry"
+	registryimpl "grovehub/services/identity/internal/app/repository/registry/impl"
 	credentialrepo "grovehub/services/identity/internal/app/repository/credential"
 	credentialimpl "grovehub/services/identity/internal/app/repository/credential/impl"
 	invitationrepo "grovehub/services/identity/internal/app/repository/invitation"
@@ -16,6 +20,8 @@ import (
 
 type repositories struct {
 	accounts accountrepo.Repository
+	authorization authorizationrepo.Repository
+	registry registryrepo.Repository
 	credentials credentialrepo.Repository
 	sessions sessionrepo.Repository
 	tokens passwordtokenrepo.Repository
@@ -26,6 +32,8 @@ type repositories struct {
 func (b *builder) newRepository() repositories {
 	return repositories{
 		accounts: accountimpl.New(b.db),
+		authorization: authorizationimpl.New(b.db),
+		registry: registryimpl.New(b.db),
 		credentials: credentialimpl.New(b.db),
 		sessions: sessionimpl.New(b.db),
 		tokens: passwordtokenimpl.New(b.db),
