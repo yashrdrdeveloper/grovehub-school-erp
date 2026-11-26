@@ -147,8 +147,10 @@ jobs:
           cache-dependency-path: |
             backend/go.sum
             libs/backend/core/go.sum
+      - name: Generate backend annotation overlay
+        run: make backend-build
       - name: Apply real Identity migrations and validate RBAC
         working-directory: backend
         env:
           IDENTITY_RBAC_TEST_DSN: "host=127.0.0.1 port=5432 user=rbac_test password=rbac_test dbname=groovehub_rbac_test sslmode=disable"
-        run: go test -count=1 -v ./services/identity/internal/tests/integration-test/rbac/...
+        run: go test -vet=off -overlay=.generated/overlay.json -count=1 -v ./services/identity/internal/tests/integration-test/rbac/...
