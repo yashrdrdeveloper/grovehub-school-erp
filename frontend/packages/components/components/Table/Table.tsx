@@ -1,26 +1,19 @@
 import { getFormattedNumber } from '@Base/localization/getFormattedNumber';
 import { _map } from '@Base/utilities/map';
-import { RefreshCw } from '@Components/icons';
 
 import { Box } from '../Box';
-import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '../Button';
-import { ButtonWithIcon } from '../ButtonWithIcon';
-import { ColumnManager } from '../ColumnManager';
+import { Button, BUTTON_VARIANT } from '../Button';
 import { EmptyState } from '../EmptyState';
-import { Filters } from '../Filters';
-import { Tooltip } from '../Tooltip';
-import { Sort } from '../Sort';
 import { QuickFilters } from '../QuickFilters';
 import { Pagination, PaginationType } from '../Pagination';
 
+import { DesktopTableToolbar } from './components/desktopTableToolbar';
 import { MobileTableToolbar } from './components/mobileTableToolbar';
-import { TableSearch } from './components/tableSearch';
-import { TableOptions } from './components/tableOptions';
 import { TableHeader } from './components/tableHeader';
 import { DesktopTable } from './templates/desktopTable';
 import { MobileTable } from './templates/mobileTable';
 import { useTableViewport } from './hooks/useTableViewport';
-import { getTableColumnWidth } from './helpers/table.preferences';
+import { getTableColumnOptions } from './helpers/table.getColumnOptions';
 import { TableDataMode } from './constants/table.type';
 import styles from './Table.module.css';
 import type { TableViewProps } from './types/table.view';
@@ -29,13 +22,9 @@ export const TableView = <T,>(props: TableViewProps<T>) => {
   const {
     actions,
     controls,
-    columns,
     headerProps,
     subheaderProps,
     footerProps,
-    searchProps,
-    filterProps,
-    sortProps,
     quickFilterProps,
     paginationProps,
   } = props;
@@ -47,10 +36,6 @@ export const TableView = <T,>(props: TableViewProps<T>) => {
     return paginationProps;
   };
   const pagination = getPagination();
-  const getRefreshLabel = () => {
-    if (props.refreshing) return __('Refreshing…');
-    return __('Refresh');
-  };
   const getTotal = () => {
     if (pagination?.type === PaginationType.OFFSET) return pagination.totalRecords;
     if (props.dataMode === TableDataMode.CLIENT) return controls.total;
@@ -62,25 +47,7 @@ export const TableView = <T,>(props: TableViewProps<T>) => {
       return __('Total records: {{count}}', { count: getFormattedNumber(total) });
     return __('Records on this page: {{count}}', { count: getFormattedNumber(props.data.length) });
   };
-  const order = Array.from(
-    new Set([...controls.preferences.order, ...columns.map((column) => column.id)]),
-  );
-  const options = order.flatMap((id) => {
-    const column = columns.find((entry) => entry.id === id);
-    if (!column) return [];
-    return [
-      {
-        id,
-        label: column.header,
-        visible: controls.layout.some((entry) => entry.column.id === id),
-        disabled: column.hideable === false,
-        width: getTableColumnWidth(column, controls.preferences.widths[id]),
-        pin: controls.preferences.pins[id] ?? column.pin,
-        resizable: column.resizable,
-        reorderable: column.reorderable,
-      },
-    ];
-  });
+  const options = getTableColumnOptions(props);
   return (
     <Box
       className={styles.root}
@@ -90,65 +57,7 @@ export const TableView = <T,>(props: TableViewProps<T>) => {
     >
       {headerProps && <TableHeader {...headerProps} onAction={actions?.HEADER_ACTION} />}
       <Box className={styles.panel} data-mobile-list={Boolean(mobile && props.mobileRowProps)}>
-        {!mobile && (
-          <Box className={styles.toolbar}>
-            <Box className={styles.toolbarLeft}>
-              {filterProps && (
-                <Filters {...filterProps} iconOnly onChange={(value) => actions?.FILTER?.(value)} />
-              )}
-              {sortProps && (
-                <Sort {...sortProps} iconOnly onChange={(value) => actions?.SORT?.(value)} />
-              )}
-            </Box>
-            <Box className={styles.toolbarRight}>
-              {searchProps && (
-                <TableSearch {...searchProps} onChange={(value) => actions?.SEARCH?.(value)} />
-              )}
-              {actions?.REFRESH && (
-                <Tooltip label={getRefreshLabel()} focusable={Boolean(props.refreshing)}>
-                  <ButtonWithIcon
-                    icon={RefreshCw}
-                    iconSize={16}
-                    size={BUTTON_SIZE.SMALL}
-                    variant={BUTTON_VARIANT.OUTLINE}
-                    aria-label={__('Refresh')}
-                    onClick={actions.REFRESH}
-                    disabled={props.refreshing}
-                  />
-                </Tooltip>
-              )}
-              <ColumnManager
-                options={options}
-                density={controls.preferences.density}
-                onToggle={controls.toggle}
-                onDensityChange={controls.setRowDensity}
-                onReset={controls.reset}
-                onReorder={controls.reorder}
-                onPin={controls.pin}
-                maxPinnedColumns={props.maxPinnedColumns}
-              />
-              {(actions?.EXPORT || actions?.FULLSCREEN_CHANGE) && (
-                <TableOptions>
-                  {actions?.EXPORT && (
-                    <Button variant={BUTTON_VARIANT.GHOST} onClick={actions.EXPORT}>
-                      {__('Export')}
-                    </Button>
-                  )}
-                  {actions?.FULLSCREEN_CHANGE && (
-                    <Button
-                      variant={BUTTON_VARIANT.GHOST}
-                      aria-pressed={controls.fullscreen}
-                      onClick={() => controls.changeFullscreen(!controls.fullscreen)}
-                    >
-                      {!controls.fullscreen && __('Fullscreen')}
-                      {controls.fullscreen && __('Exit fullscreen')}
-                    </Button>
-                  )}
-                </TableOptions>
-              )}
-            </Box>
-          </Box>
-        )}
+        {!mobile && <DesktopTableToolbar {...props} options={options} />}
         {mobile && <MobileTableToolbar {...props} options={options} />}
         {subheaderProps && <TableHeader {...subheaderProps} onAction={actions?.SUBHEADER_ACTION} />}
         {quickFilterProps && (

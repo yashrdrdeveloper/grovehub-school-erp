@@ -1,14 +1,6 @@
 import { useState } from 'react';
 import { _map } from '@Base/utilities/map';
-import {
-  Settings2,
-  Filter,
-  ArrowUpDown,
-  Settings,
-  RefreshCw,
-  Layers2,
-  Download,
-} from '@Components/icons';
+import { Settings2 } from '@Components/icons';
 import { Box } from '../../../Box';
 import { Button, BUTTON_SIZE, BUTTON_VARIANT } from '../../../Button';
 import { ButtonWithIcon } from '../../../ButtonWithIcon';
@@ -16,35 +8,27 @@ import { Filters } from '../../../Filters';
 import { Sort } from '../../../Sort';
 import { ColumnManager } from '../../../ColumnManager';
 import { Sheet } from '../../../Sheet';
+import { MobileTableOptions } from './components/mobileTableOptions';
 import { TableSearch } from '../tableSearch';
 import { MobileTablePanel } from './constants/mobileTableToolbar.panel';
 import type { MobileTableToolbarProps } from './types/mobileTableToolbar.props';
 import styles from './MobileTableToolbar.module.css';
 
-export const MobileTableToolbar = <T,>({
-  searchProps,
-  filterProps,
-  sortProps,
-  paginationProps,
-  options,
-  controls,
-  actions,
-  refreshing,
-  mobileRowProps,
-  mobileInfiniteProps,
-  maxPinnedColumns,
-}: MobileTableToolbarProps<T>) => {
+export const MobileTableToolbar = <T,>(props: MobileTableToolbarProps<T>) => {
+  const {
+    searchProps,
+    filterProps,
+    sortProps,
+    paginationProps,
+    options,
+    controls,
+    actions,
+    mobileRowProps,
+    mobileInfiniteProps,
+    maxPinnedColumns,
+  } = props;
   const [panel, setPanel] = useState<MobileTablePanel | null>(null);
   const close = () => setPanel(null);
-  const getFilterLabel = () => {
-    if (filterProps?.value.length)
-      return __('Filters ({{count}})', { count: filterProps.value.length });
-    return __('Filters');
-  };
-  const getSortLabel = () => {
-    if (sortProps?.value.length) return __('Sort ({{count}})', { count: sortProps.value.length });
-    return __('Sort');
-  };
   const getBatchLabel = () => {
     if (mobileInfiniteProps) return __('Records per load');
     return __('Rows per page');
@@ -69,75 +53,13 @@ export const MobileTableToolbar = <T,>({
         aria-expanded={panel !== null}
         onClick={() => setPanel(MobileTablePanel.OPTIONS)}
       />
-      <Sheet
-        open={panel === MobileTablePanel.OPTIONS}
-        onOpenChange={(open) => {
-          if (!open) close();
-        }}
-        title={__('Table options')}
-      >
-        <Box className={styles.options}>
-          {filterProps && (
-            <ButtonWithIcon
-              icon={Filter}
-              variant={BUTTON_VARIANT.GHOST}
-              onClick={() => setPanel(MobileTablePanel.FILTER)}
-            >
-              {getFilterLabel()}
-            </ButtonWithIcon>
-          )}
-          {sortProps && (
-            <ButtonWithIcon
-              icon={ArrowUpDown}
-              variant={BUTTON_VARIANT.GHOST}
-              onClick={() => setPanel(MobileTablePanel.SORT)}
-            >
-              {getSortLabel()}
-            </ButtonWithIcon>
-          )}
-          <ButtonWithIcon
-            icon={Settings}
-            variant={BUTTON_VARIANT.GHOST}
-            onClick={() => setPanel(MobileTablePanel.SETTINGS)}
-          >
-            {__('Table settings')}
-          </ButtonWithIcon>
-          {paginationProps && (
-            <ButtonWithIcon
-              icon={Layers2}
-              variant={BUTTON_VARIANT.GHOST}
-              onClick={() => setPanel(MobileTablePanel.BATCH)}
-            >
-              {getBatchLabel()} · {paginationProps.pageSize}
-            </ButtonWithIcon>
-          )}
-          {actions?.REFRESH && (
-            <ButtonWithIcon
-              icon={RefreshCw}
-              variant={BUTTON_VARIANT.GHOST}
-              disabled={refreshing}
-              onClick={() => {
-                close();
-                actions.REFRESH?.();
-              }}
-            >
-              {__('Refresh')}
-            </ButtonWithIcon>
-          )}
-          {actions?.EXPORT && (
-            <ButtonWithIcon
-              icon={Download}
-              variant={BUTTON_VARIANT.GHOST}
-              onClick={() => {
-                close();
-                actions.EXPORT?.();
-              }}
-            >
-              {__('Export')}
-            </ButtonWithIcon>
-          )}
-        </Box>
-      </Sheet>
+      <MobileTableOptions
+        {...props}
+        panel={panel}
+        setPanel={setPanel}
+        close={close}
+        batchLabel={getBatchLabel()}
+      />
       {panel === MobileTablePanel.FILTER && filterProps && (
         <Filters
           {...filterProps}
