@@ -1,14 +1,14 @@
 package bootstrap
 
 import (
-	coregateway "grovehub/libs/core/gateway"
 	"grovehub/libs/core/module"
+	schoolgateway "grovehub/libs/schoolgateway"
 	accountclient "grovehub/services/identity/client/account"
 )
 
 type Runtime interface {
 	module.Module
-	coregateway.AccessVerifier
+	schoolgateway.AccessVerifier
 	AccountClient() accountclient.Client
 	RouteLimits() map[string]int
 }

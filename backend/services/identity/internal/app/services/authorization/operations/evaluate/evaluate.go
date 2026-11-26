@@ -5,7 +5,7 @@ package evaluate
 import (
 	"context"
 
-	coregateway "grovehub/libs/core/gateway"
+	schoolgateway "grovehub/libs/schoolgateway"
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/entity"
@@ -19,7 +19,7 @@ type FeatureState = authorizationrepo.FeatureState
 type Snapshot = authorizationrepo.Snapshot
 
 func Allowed(ctx context.Context, requested permission.Code, snapshot Snapshot) bool {
-	principal, verified := coregateway.PrincipalFrom(ctx)
+	principal, verified := schoolgateway.PrincipalFrom(ctx)
 	if !verified || principal.TenantID == "" || principal.TenantID != snapshot.TenantID || principal.AccountID != snapshot.AccountID || snapshot.Status != entity.Active {
 		return false
 	}

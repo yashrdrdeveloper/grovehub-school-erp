@@ -5,17 +5,17 @@ import (
 
 	"github.com/google/uuid"
 
-	coregateway "grovehub/libs/core/gateway"
+	schoolgateway "grovehub/libs/schoolgateway"
 	"net/http"
 	"strings"
 
 	coreerrors "grovehub/libs/core/errors"
 	httprequest "grovehub/libs/core/http/request"
-	controllerhelpers "grovehub/services/integration/internal/app/controller/helpers"
-	connectionprotected "grovehub/services/integration/internal/app/controller/connection/protected"
-	clientprincipal "grovehub/services/integration/client/principal"
 	httpresponse "grovehub/libs/core/http/response"
+	clientprincipal "grovehub/services/integration/client/principal"
 	integrationerrors "grovehub/services/integration/internal/app/constants/error"
+	connectionprotected "grovehub/services/integration/internal/app/controller/connection/protected"
+	controllerhelpers "grovehub/services/integration/internal/app/controller/helpers"
 	connectiondto "grovehub/services/integration/internal/app/dto/connection"
 	providerdto "grovehub/services/integration/internal/app/providers/dto"
 	integrationservices "grovehub/services/integration/internal/app/services/connection"
@@ -226,7 +226,7 @@ func (c *Controller) ExecuteAction(w http.ResponseWriter, r *http.Request) {
 
 func (c *Controller) ConfigureSystemMailSender(w http.ResponseWriter, r *http.Request) {
 	p, ok := c.principalFromRequest(r)
-	actor, verified := coregateway.PrincipalFrom(r.Context())
+	actor, verified := schoolgateway.PrincipalFrom(r.Context())
 	if !ok || !verified || !actor.Admin || p.TenantID == "" || actor.TenantID != p.TenantID || actor.PersonGID != p.ActorGID {
 		writeError(w, r, http.StatusForbidden, integrationerrors.Forbidden)
 		return

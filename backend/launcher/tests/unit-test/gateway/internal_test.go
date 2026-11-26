@@ -5,13 +5,13 @@ import (
 	"errors"
 	"testing"
 
-	coregateway "grovehub/libs/core/gateway"
 	internalgateway "grovehub/launcher/services/gateway/operations/inprocess"
+	schoolgateway "grovehub/libs/schoolgateway"
 )
 
 type allowOperation struct{}
 
-func (allowOperation) Authorize(_ context.Context, principal coregateway.Principal, operation string) error {
+func (allowOperation) Authorize(_ context.Context, principal schoolgateway.Principal, operation string) error {
 	if principal.AccountID != "account" || operation != "account.get" {
 		return errors.New("operation denied")
 	}
@@ -33,7 +33,7 @@ func TestInternalGatewayRejectsUnknownPrincipal(t *testing.T) {
 
 func TestInternalGatewayKeepsTypedResult(t *testing.T) {
 	gateway := internalgateway.New(allowOperation{})
-	ctx := coregateway.WithPrincipal(context.Background(), coregateway.Principal{
+	ctx := schoolgateway.WithPrincipal(context.Background(), schoolgateway.Principal{
 		AccountID: "account",
 		SessionID: "session",
 	})
@@ -48,7 +48,7 @@ func TestInternalGatewayKeepsTypedResult(t *testing.T) {
 
 func TestInternalGatewayFailsClosedWithoutAuthorizer(t *testing.T) {
 	gateway := internalgateway.New(nil)
-	ctx := coregateway.WithPrincipal(context.Background(), coregateway.Principal{
+	ctx := schoolgateway.WithPrincipal(context.Background(), schoolgateway.Principal{
 		AccountID: "account",
 		SessionID: "session",
 	})

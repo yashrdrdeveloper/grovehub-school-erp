@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	coregateway "grovehub/libs/core/gateway"
+	schoolgateway "grovehub/libs/schoolgateway"
 	"grovehub/services/identity/internal/app/services/account/operations/roles"
 )
 
@@ -12,20 +12,20 @@ func TestRoleCatalogRequiresAuthenticatedTenant(t *testing.T) {
 	if _, err := roles.List(context.Background()); err == nil {
 		t.Fatal("anonymous role catalog accepted")
 	}
-	noTenant := coregateway.WithPrincipal(context.Background(), coregateway.Principal{
+	noTenant := schoolgateway.WithPrincipal(context.Background(), schoolgateway.Principal{
 		AccountID: "account",
 		SessionID: "session",
-		Admin: true,
+		Admin:     true,
 	})
 	if _, err := roles.List(noTenant); err == nil {
 		t.Fatal("tenantless role catalog accepted")
 	}
 	for _, admin := range []bool{false, true} {
-		ctx := coregateway.WithPrincipal(context.Background(), coregateway.Principal{
+		ctx := schoolgateway.WithPrincipal(context.Background(), schoolgateway.Principal{
 			AccountID: "account",
 			SessionID: "session",
-			TenantID: "tenant",
-			Admin: admin,
+			TenantID:  "tenant",
+			Admin:     admin,
 		})
 		result, err := roles.List(ctx)
 		if err != nil || len(result) == 0 {

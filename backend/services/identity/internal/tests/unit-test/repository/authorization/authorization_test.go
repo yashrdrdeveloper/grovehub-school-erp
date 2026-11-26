@@ -10,8 +10,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	coregateway "grovehub/libs/core/gateway"
 	mockdatabase "grovehub/libs/core/tests/mocks/database"
+	schoolgateway "grovehub/libs/schoolgateway"
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/entity"
@@ -45,7 +45,7 @@ var _ = Describe("LoadSnapshot", func() {
 		})
 		repository = authorizationimpl.New(db)
 		query = regexp.QuoteMeta(strings.Replace(strings.Replace(helpers.SnapshotQuery, "?", "$1", 1), "?", "$2", 1))
-		ctx = coregateway.WithPrincipal(context.Background(), coregateway.Principal{AccountID: accountID, TenantID: tenantID, SessionID: "session-1"})
+		ctx = schoolgateway.WithPrincipal(context.Background(), schoolgateway.Principal{AccountID: accountID, TenantID: tenantID, SessionID: "session-1"})
 	})
 
 	It("loads grants and feature states from one tenant-scoped statement", func() {

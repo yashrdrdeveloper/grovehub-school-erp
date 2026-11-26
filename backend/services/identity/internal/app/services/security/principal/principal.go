@@ -5,24 +5,24 @@ import (
 	"errors"
 	"time"
 
-	coregateway "grovehub/libs/core/gateway"
+	schoolgateway "grovehub/libs/schoolgateway"
 )
 
-type Principal = coregateway.Principal
+type Principal = schoolgateway.Principal
 
 var (
-	ErrAuthenticationRequired = errors.New("authentication required")
-	ErrAdminForbidden = errors.New("admin access forbidden")
-	ErrTenantForbidden = errors.New("tenant access forbidden")
+	ErrAuthenticationRequired       = errors.New("authentication required")
+	ErrAdminForbidden               = errors.New("admin access forbidden")
+	ErrTenantForbidden              = errors.New("tenant access forbidden")
 	ErrRecentAuthenticationRequired = errors.New("recent authentication required")
 )
 
 func With(ctx context.Context, principal Principal) context.Context {
-	return coregateway.WithPrincipal(ctx, principal)
+	return schoolgateway.WithPrincipal(ctx, principal)
 }
 
 func From(ctx context.Context) (Principal, bool) {
-	return coregateway.PrincipalFrom(ctx)
+	return schoolgateway.PrincipalFrom(ctx)
 }
 
 func Require(ctx context.Context) (Principal, error) {
