@@ -79,7 +79,7 @@ var _ = Describe("PrepareBatch", func() {
 				Expect(feature.Known(definition.Feature)).To(BeTrue())
 			}
 		}
-		Expect(seen).To(HaveLen(22))
+		Expect(seen).To(HaveLen(23))
 	})
 })
 

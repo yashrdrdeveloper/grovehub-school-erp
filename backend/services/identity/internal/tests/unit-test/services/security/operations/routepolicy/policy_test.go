@@ -66,6 +66,7 @@ var _ = Describe("RBAC read routes", func() {
 		auth := &authorizer{}
 		policy := routepolicy.New(auth, false)
 		for pattern, code := range map[string]permission.Code{
+			"POST /identity/protected/audit/search": permission.AuditView,
 			"POST /identity/protected/roles/search": permission.RoleView,
 			"GET /identity/protected/roles/{roleId}": permission.RoleView,
 			"GET /identity/protected/roles/{roleId}/permissions": permission.RolePermissionView,

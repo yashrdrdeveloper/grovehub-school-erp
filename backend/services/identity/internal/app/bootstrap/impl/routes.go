@@ -2,6 +2,8 @@ package impl
 
 import (
 	"net/http"
+	auditprotected "grovehub/services/identity/internal/app/controller/audit/protected"
+	auditcontroller "grovehub/services/identity/internal/app/controller/audit/protected/impl"
 	capabilityprotected "grovehub/services/identity/internal/app/controller/capability/protected"
 	capabilityimpl "grovehub/services/identity/internal/app/controller/capability/protected/impl"
 	roleprotected "grovehub/services/identity/internal/app/controller/role/protected"
@@ -24,6 +26,7 @@ import (
 )
 
 type controllerGraph struct {
+	auditController auditprotected.AuditController
 	capabilityController capabilityprotected.CapabilityController
 	publicAuth       authpublic.AuthenticationController
 	protectedAuth    authprotected.AuthenticationController
@@ -37,6 +40,7 @@ type controllerGraph struct {
 func (b *builder) newControllers(services serviceGraph) controllerGraph {
 	manager := cookieimpl.New()
 	return controllerGraph{
+		auditController: auditcontroller.New(services.audit),
 		capabilityController: capabilityimpl.New(services.capabilities),
 		publicAuth:       authpublicimpl.New(services.auth, manager),
 		protectedAuth:    authprotectedimpl.New(services.auth, manager),
@@ -49,7 +53,7 @@ func (b *builder) newControllers(services serviceGraph) controllerGraph {
 }
 
 func (controllers controllerGraph) RegisterHTTP(mux *http.ServeMux) {
-	routes.RegisterHTTP(mux, controllers.publicAuth, controllers.protectedAuth, controllers.publicActivation, controllers.protectedAccount, controllers.roleController, controllers.accountroleController, controllers.approvalController, controllers.capabilityController)
+	routes.RegisterHTTP(mux, controllers.publicAuth, controllers.protectedAuth, controllers.publicActivation, controllers.protectedAccount, controllers.roleController, controllers.accountroleController, controllers.approvalController, controllers.capabilityController, controllers.auditController)
 }
 
 func (module *runtime) RouteLimits() map[string]int {

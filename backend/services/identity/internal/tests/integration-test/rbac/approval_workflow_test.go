@@ -422,6 +422,7 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	verifyCapabilityDiscovery(ctx, db, tenant, requester, reviewer, managementRole)
 	verifyRoleMetadata(ctx, db, tenant, requester, reviewer, managementRole, store)
 	verifyNormalizedRegistration(ctx, db, tenant, requester, reviewer, managementRole, requiredRole, store)
+	verifyAuditSearch(ctx, db, tenant, requester, reviewer, managementRole)
 }
 
 

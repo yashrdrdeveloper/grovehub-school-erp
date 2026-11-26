@@ -9,7 +9,7 @@ func SchoolDelegable(code Code) bool {
 		AccountSuspend, AccountActivate, AccountDeactivate, AccountResendInvitation,
 		AccountSelfView, RoleView, RoleCreate, RoleUpdate, RoleDeactivate,
 		RolePermissionView, RolePermissionManage, AccountRoleView, AccountRoleAssign,
-		PermissionView, FeatureView:
+		PermissionView, FeatureView, AuditView:
 		return true
 	default:
 		return false

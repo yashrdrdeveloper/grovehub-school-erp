@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	auditprotected "grovehub/services/identity/internal/app/controller/audit/protected"
 	capabilityprotected "grovehub/services/identity/internal/app/controller/capability/protected"
 	roleprotected "grovehub/services/identity/internal/app/controller/role/protected"
 	accountroleprotected "grovehub/services/identity/internal/app/controller/accountrole/protected"
@@ -16,7 +17,7 @@ import (
 // RegisterHTTP only composes annotated, generated route groups.
 // Authentication and authorization are enforced by the Launcher gateway.
 // @Routes /identity
-func RegisterHTTP(mux *http.ServeMux, publicAuth authpublic.AuthenticationController, protectedAuth authprotected.AuthenticationController, publicActivation activationpublic.ActivationController, protectedAccount accountprotected.AccountController, roleController roleprotected.RoleController, accountroleController accountroleprotected.AccountRoleController, approvalController approvalprotected.ApprovalController, capabilityController capabilityprotected.CapabilityController) {
+func RegisterHTTP(mux *http.ServeMux, publicAuth authpublic.AuthenticationController, protectedAuth authprotected.AuthenticationController, publicActivation activationpublic.ActivationController, protectedAccount accountprotected.AccountController, roleController roleprotected.RoleController, accountroleController accountroleprotected.AccountRoleController, approvalController approvalprotected.ApprovalController, capabilityController capabilityprotected.CapabilityController, auditController auditprotected.AuditController) {
 	registerPublicAuthenticationRoutes(mux, publicAuth)
 	registerProtectedAuthenticationRoutes(mux, protectedAuth)
 	registerPublicActivationRoutes(mux, publicActivation)
@@ -25,4 +26,5 @@ func RegisterHTTP(mux *http.ServeMux, publicAuth authpublic.AuthenticationContro
 	registerProtectedAccountRoleRoutes(mux, accountroleController)
 	registerProtectedApprovalRoutes(mux, approvalController)
 	registerProtectedCapabilityRoutes(mux, capabilityController)
+	registerProtectedAuditRoutes(mux, auditController)
 }

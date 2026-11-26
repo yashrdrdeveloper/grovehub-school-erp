@@ -6,6 +6,7 @@ type Code string
 const (
 	AccountManagement Code = "IDENTITY_ACCOUNT_MANAGEMENT"
 	RoleManagement    Code = "IDENTITY_ROLE_MANAGEMENT"
+	AuditManagement   Code = "IDENTITY_AUDIT_MANAGEMENT"
 )
 
 type Definition struct {
@@ -17,6 +18,7 @@ func Catalog() []Definition {
 	return []Definition{
 		{Code: AccountManagement, Name: "Account management"},
 		{Code: RoleManagement, Name: "Role management"},
+		{Code: AuditManagement, Name: "Audit management"},
 	}
 }
 

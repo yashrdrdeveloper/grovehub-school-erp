@@ -24,6 +24,7 @@ const (
 	RolePermissionManage    Code = "IDENTITY_ROLE_PERMISSION_MANAGE"
 	AccountRoleView         Code = "IDENTITY_ACCOUNT_ROLE_VIEW"
 	AccountRoleAssign       Code = "IDENTITY_ACCOUNT_ROLE_ASSIGN"
+	AuditView               Code = "IDENTITY_AUDIT_VIEW"
 	PermissionView          Code = "IDENTITY_PERMISSION_VIEW"
 	PermissionRegister      Code = "IDENTITY_PERMISSION_REGISTER"
 	FeatureView             Code = "IDENTITY_FEATURE_VIEW"
@@ -56,6 +57,7 @@ func Catalog() []Definition {
 		{Code: RolePermissionManage, Name: "Manage role permissions", Feature: feature.RoleManagement},
 		{Code: AccountRoleView, Name: "View account roles", Feature: feature.RoleManagement},
 		{Code: AccountRoleAssign, Name: "Assign account roles", Feature: feature.RoleManagement},
+		{Code: AuditView, Name: "View tenant RBAC audit history", Feature: feature.AuditManagement},
 		{Code: PermissionView, Name: "View permissions", Feature: feature.RoleManagement},
 		{Code: PermissionRegister, Name: "Register permissions"},
 		{Code: FeatureView, Name: "View features"},
