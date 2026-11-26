@@ -1,23 +1,20 @@
 import { useState } from 'react';
-import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { usersApi } from '@Business/domain/users';
-import { useAuth } from '@Domain/auth';
 import { useMobileViewport } from '@Components/hooks/useMobileViewport';
 import { PaginationType } from '@Components/components/Pagination';
-import type { PaginationAction, PaginationProps } from '@Components/components/Pagination';
+import type { PaginationProps } from '@Components/components/Pagination';
 import type { TableActions } from '@Components/components/Table';
 import type { Account, CreateAccount } from '@Business/domain/users';
 
+import { useUserSetupQueries } from '../useUserSetupQueries';
+import { useUserSetupPagination } from '../useUserSetupPagination';
 import { UserAction } from '../../constants/userSetup.actions';
 import { USER_SETUP_DEFAULT_SORT } from '../../constants/userSetup.sort';
-import { getUserSetupNextPage } from '../../helpers/userSetup.getNextPage';
-import { getUserSetupMobileRows } from '../../helpers/userSetup.getMobileRows';
-import { getUserSetupSearchRequest } from '../../helpers/userSetup.getSearchRequest';
 import type { UserSetupDialog, UserSetupQueryState } from '../../types/userSetup.state';
 
 export const useUserSetup = () => {
-  const { account } = useAuth();
   const queryClient = useQueryClient();
   const mobile = useMobileViewport();
   const [state, setState] = useState<UserSetupQueryState>({
@@ -30,47 +27,8 @@ export const useUserSetup = () => {
     cursors: {},
   });
   const [dialog, setDialog] = useState<UserSetupDialog | null>(null);
-  const request = getUserSetupSearchRequest(state);
-  const scope = ['user-setup', account?.accountId];
-  const query = useQuery({
-    queryKey: [...scope, request],
-    queryFn: () => usersApi.search(request),
-    enabled: Boolean(account) && !mobile,
-  });
-  const mobileRequest = getUserSetupSearchRequest({ ...state, pageNumber: 1, cursors: {} });
-  const mobileQuery = useInfiniteQuery({
-    queryKey: [...scope, 'mobile', mobileRequest],
-    initialPageParam: { pageNumber: 1, cursor: undefined as string | undefined },
-    queryFn: ({ pageParam }) =>
-      usersApi.search({ ...mobileRequest, pageInfo: { ...mobileRequest.pageInfo, ...pageParam } }),
-    getNextPageParam: getUserSetupNextPage,
-    enabled: Boolean(account) && mobile,
-  });
-  const mobileRows = getUserSetupMobileRows(mobileQuery.data?.pages ?? []);
-  const getActiveQuery = () => {
-    if (mobile) return mobileQuery;
-    return query;
-  };
-  const activeQuery = getActiveQuery();
-  const getData = () => {
-    if (mobile) return mobileRows;
-    return query.data?.items ?? [];
-  };
-  const getTotal = () => {
-    if (mobile) return mobileQuery.data?.pages[0]?.pageInfo.totalRecords;
-    return query.data?.pageInfo.totalRecords;
-  };
-  const getError = () => {
-    if (mobile) return mobileQuery.isError && !mobileQuery.data;
-    return query.isError;
-  };
-  const refresh = () => {
-    if (mobile) {
-      void mobileQuery.refetch();
-      return;
-    }
-    void query.refetch();
-  };
+  const { scope, query, mobileQuery, mobileRequest, activeQuery, getData, getTotal, getError, refresh } =
+    useUserSetupQueries(state, mobile);
   const mutation = useMutation({
     mutationFn: async (operation: () => Promise<unknown>) => operation(),
     onSuccess: async () => {
@@ -88,49 +46,7 @@ export const useUserSetup = () => {
   const resetQuery = (change: Partial<UserSetupQueryState>) => {
     setState((current) => ({ ...current, ...change, pageNumber: 1, cursors: {} }));
   };
-  const paginate = (action: PaginationAction) => {
-    if (action.type === 'PAGE_SIZE_CHANGE') {
-      resetQuery({ pageSize: action.pageSize });
-      return;
-    }
-    if (query.isFetching) return;
-    if (action.type === 'PAGE_CHANGE') {
-      const totalPages = query.data?.pageInfo.totalPages;
-      if (
-        !Number.isSafeInteger(action.page) ||
-        action.page < 1 ||
-        (totalPages !== undefined && action.page > totalPages)
-      )
-        return;
-      setState((current) => {
-        const nextCursor = query.data?.pageInfo.nextCursor;
-        if (action.page === current.pageNumber + 1 && nextCursor) {
-          return {
-            ...current,
-            pageNumber: action.page,
-            cursors: { ...current.cursors, [action.page]: nextCursor },
-          };
-        }
-        return { ...current, pageNumber: action.page };
-      });
-      return;
-    }
-    if (action.type === 'PREVIOUS') {
-      setState((current) => {
-        if (current.pageNumber <= 1) return current;
-        return { ...current, pageNumber: current.pageNumber - 1 };
-      });
-      return;
-    }
-    const nextCursor = query.data?.pageInfo.nextCursor;
-    if (action.type === 'NEXT' && query.data?.pageInfo.hasNext && nextCursor) {
-      setState((current) => ({
-        ...current,
-        pageNumber: current.pageNumber + 1,
-        cursors: { ...current.cursors, [current.pageNumber + 1]: nextCursor },
-      }));
-    }
-  };
+  const paginate = useUserSetupPagination({ query, setState, resetQuery });
   const actions: TableActions<Account> = {
     SEARCH: (searchText) => resetQuery({ searchText }),
     FILTER: (filters) => resetQuery({ filters }),
