@@ -2,9 +2,28 @@ import path from 'node:path';
 
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
-import { defineConfig } from 'vite';
+import { defineConfig, type ProxyOptions } from 'vite';
 
 const root = process.cwd();
+const tunnelOrigin = process.env.GROVEHUB_FRONTEND_TUNNEL_URL ?? '';
+const tunnelHost = /^https:\/\/[a-z0-9-]+\.trycloudflare\.com$/.test(tunnelOrigin)
+  ? new URL(tunnelOrigin).hostname
+  : '';
+const localOrigin = process.env.GROVEHUB_FRONTEND_LOCAL_ORIGIN ?? 'http://127.0.0.1:4173';
+
+// Only the managed development tunnel's same-origin browser requests are
+// translated to the existing loopback origin. Never forward arbitrary origins
+// as trusted, and never alter cookies, CSRF proofs or gateway permissions.
+const createProxy = (): ProxyOptions => ({
+  target: 'http://127.0.0.1:8080',
+  changeOrigin: false,
+  configure: (proxy) => {
+    proxy.on('proxyReq', (proxyReq, request) => {
+      if (!tunnelHost || request.headers.host !== tunnelHost || request.headers.origin !== tunnelOrigin) return;
+      proxyReq.setHeader('Origin', localOrigin);
+    });
+  },
+});
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
@@ -23,11 +42,12 @@ export default defineConfig({
     host: '127.0.0.1',
     port: 4173,
     strictPort: true,
+    allowedHosts: tunnelHost ? [tunnelHost] : [],
     proxy: {
-      '/identity': { target: 'http://127.0.0.1:8080', changeOrigin: false },
-      '/foundation': { target: 'http://127.0.0.1:8080', changeOrigin: false },
-      '/integrations': { target: 'http://127.0.0.1:8080', changeOrigin: false },
-      '/health': { target: 'http://127.0.0.1:8080', changeOrigin: false },
+      '/identity': createProxy(),
+      '/foundation': createProxy(),
+      '/integrations': createProxy(),
+      '/health': createProxy(),
     },
   },
 });

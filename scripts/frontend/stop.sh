@@ -5,5 +5,9 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../lib/paths.sh"
 source "${SCRIPT_DIR}/../lib/common.sh"
 source "${SCRIPT_DIR}/../lib/process.sh"
+source "${SCRIPT_DIR}/tunnel.sh"
+
+stop_frontend_tunnel
+rm -f -- "${RUNTIME_PID_DIR}/frontend-tunnel-vite.url"
 
 stop_owned_process_any "${RUNTIME_PID_DIR}/frontend.pid" "GrooveHub frontend" "${REPO_ROOT}/frontend/node_modules/vite/bin/vite.js"

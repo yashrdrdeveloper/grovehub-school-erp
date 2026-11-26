@@ -7,7 +7,8 @@ FORMAT_SCOPE ?= all
 LINT_SCOPE ?= foundation-repository
 DB_SERVICE ?= all
 SANITY_SCOPE ?= ./tests/sanity/...
-export SWAGGER_PORT
+FRONTEND_TUNNEL ?= 1
+export SWAGGER_PORT FRONTEND_TUNNEL
 
 .PHONY: help
 help:

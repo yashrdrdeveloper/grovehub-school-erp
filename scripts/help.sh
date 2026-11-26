@@ -50,7 +50,10 @@ Swagger
   make swagger-status   Show Swagger UI status
 
 Development
-  make dev-start            Start NATS, initialize all schemas (including Integration), start Air backend, Swagger, and Vite frontend
+  make frontend-start       Start Vite and print local and Cloudflare HTTPS URLs (if cloudflared is installed)
+  make frontend-stop        Stop managed Vite and Cloudflare tunnel
+  make frontend-status      Show managed frontend and tunnel URL
+  make dev-start            Start NATS, schemas, Air backend, Swagger, Vite and frontend Cloudflare tunnel
   make dev-start-with-logs  Same as dev-start plus the local OTEL collector
   make dev-stop             Stop frontend, Swagger UI, backend, NATS, and optional OTEL collector
   make dev-status           Show NATS, backend, frontend, and Swagger UI status
@@ -62,4 +65,6 @@ Container runtime used by dev-start
 
 Overrides
   make swagger-start SWAGGER_PORT=8082
+  make frontend-start FRONTEND_TUNNEL=0  # local only; also supported by dev-start
+  macOS: brew install cloudflared  # optional public development preview
 EOF
