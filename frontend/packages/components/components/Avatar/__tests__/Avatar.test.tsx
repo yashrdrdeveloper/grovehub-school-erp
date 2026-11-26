@@ -9,7 +9,9 @@ describe('Avatar', () => {
 
     const avatar = screen.getByTestId('avatar');
     expect(avatar.classList.contains('gh-avatar-colors')).toBe(true);
-    expect(avatar.style.getPropertyValue('--avatar-hue')).toBe(String(getAvatarHue('Alex Example')));
+    expect(avatar.style.getPropertyValue('--avatar-hue')).toBe(
+      String(getAvatarHue('Alex Example')),
+    );
     expect(avatar.getAttribute('data-compact')).toBe('true');
     expect(avatar.textContent).toBe('AE');
   });
