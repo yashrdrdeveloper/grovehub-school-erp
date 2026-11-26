@@ -14,6 +14,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"grovehub/services/identity/internal/app/repository/approvalpolicy"
+	policyimpl "grovehub/services/identity/internal/app/repository/approvalpolicy/impl"
+	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
 	"gorm.io/gorm"
 
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/postgres"
@@ -36,7 +39,7 @@ type options struct {
 
 func Run(args []string, output io.Writer, diagnostics io.Writer) error {
 	if len(args) == 0 {
-		return errors.New("expected plan, backfill or bootstrap")
+		return errors.New("expected plan, backfill, bootstrap or policies")
 	}
 	opts, err := parse(args, diagnostics)
 	if err != nil {
@@ -82,7 +85,7 @@ func Run(args []string, output io.Writer, diagnostics io.Writer) error {
 
 func parse(args []string, diagnostics io.Writer) (options, error) {
 	opts := options{operation: args[0]}
-	if opts.operation != "plan" && opts.operation != "backfill" && opts.operation != "bootstrap" {
+	if opts.operation != "plan" && opts.operation != "backfill" && opts.operation != "bootstrap" && opts.operation != "policies" {
 		return options{}, errors.New("unknown migration operation")
 	}
 	flags := flag.NewFlagSet(opts.operation, flag.ContinueOnError)
@@ -116,6 +119,23 @@ func apply(ctx context.Context, db *gorm.DB, opts options, output io.Writer) err
 	data, err := helpers.ReadReviewed(opts.input, opts.digest)
 	if err != nil {
 		return err
+	}
+	if opts.operation == "policies" {
+		var manifest approvalpolicy.Manifest
+		if err := helpers.Decode(data, &manifest); err != nil {
+			return err
+		}
+		if manifest.TenantID != opts.tenant {
+			return errors.New("reviewed input tenant does not match --tenant-id")
+		}
+		receipt, err := policyimpl.New(db, migrationimpl.NewReadiness(db), authorityimpl.NewAdministratorReader(db)).Apply(ctx, manifest, opts.operator, opts.digest)
+		if err != nil {
+			return err
+		}
+		if err := json.NewEncoder(output).Encode(receipt); err != nil {
+			return fmt.Errorf("policies committed (receipt %s), but output failed: %w", receipt.ReceiptID, err)
+		}
+		return nil
 	}
 	var reviewed rbacmigration.Plan
 	var manifest rbacmigration.Manifest

@@ -44,3 +44,15 @@ Success returns a receipt UUID; query identity.rbac_migration_receipts by tenant
 ## Cutover and recovery
 
 Legacy fields and runtime permission policy remain unchanged. Do not enable normal school access based on completion of these commands. Live endpoint permission enforcement, compatibility, approval, audit/outbox, and explicit migration readiness checks remain release blockers. Keep writers stopped if a failure requires restore; verify backup and reconciliation with the database operator. There is no destructive automatic rollback after a committed bootstrap.
+
+## Approval policy provisioning (offline only)
+
+After backfill and administrator bootstrap receipts exist, review a manifest with exact tenantId, authorId (an active account in that tenant, used for policy attribution), and policies. Include exactly one revision for each of ACCOUNT_LIFECYCLE_CHANGE, ROLE_LIFECYCLE_CHANGE, ROLE_PERMISSION_CHANGE, ROLE_ASSIGNMENT_CHANGE. Each revision has requestType, expectedVersion (0 only for a new type, otherwise the highest stored revision), and ordered steps (1–20 objects with permissionCode and optional roleId). Choose school-delegable permissions and role constraints explicitly; there are no default grants or automatic approvals. Each step must currently have at least two distinct eligible active accounts. Assignment beneficiary exclusion may require a third; review actual workflow liveness separately. Policy author is not a substitute for the trusted offline operator's authorization.
+
+```bash
+bash scripts/identity/rbac-migrate.sh policies --tenant-id "$TENANT_ID" --database "$DB_NAME" \
+  --operator-id "$OPERATOR_ID" --input "$POLICY_FILE" --sha256 "$REVIEWED_POLICY_SHA" \
+  --confirm-offline-maintenance
+```
+
+The batch atomically deactivates previous policy revisions and inserts new ones with immutable provisioning receipt in identity.approval_policy_receipts. Old requests retain their snapshotted criteria. Stale revisions or unavailable reviewers abort the entire batch. Review the receipt before retrying an uncertain outcome. Do not use online; this command uses table locks and requires all other writers stopped. This does not activate execution routes or establish full cutover readiness.

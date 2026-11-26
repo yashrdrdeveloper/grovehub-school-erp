@@ -417,6 +417,7 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	Expect(events).To(HaveLen(4))
 	Expect(db.Raw("SELECT count(*) FROM identity.resource_audit a JOIN infrastructure.messaging m ON m.event_id = a.event_id::text WHERE a.tenant_id = ? AND a.request_id = ? AND a.resource_id = ? AND a.event_payload = convert_from(m.payload, 'UTF8')::jsonb AND a.event_payload->>'eventType' = 'identity.account.authority.changed.v1' AND a.event_payload#>>'{data,old,account,primaryRoleId}' = '' AND a.event_payload#>>'{data,new,account,primaryRoleId}' = ?", tenant, approvedTarget.RequestID, targetAccount, requiredRole).Scan(&auditCount).Error).NotTo(HaveOccurred())
 	Expect(auditCount).To(Equal(int64(1)))
+	verifyPolicyProvisioning(ctx, db, tenant, requester, requiredRole, approved.RequestID, policyID)
 }
 
 
