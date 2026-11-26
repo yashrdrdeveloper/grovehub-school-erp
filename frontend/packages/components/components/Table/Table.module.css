@@ -348,7 +348,7 @@
   display: flex;
   align-items: center;
   gap: var(--gh-space-1);
-  padding: var(--gh-space-2);
+  padding: var(--gh-space-3) var(--gh-space-2);
   border: 0;
   border-bottom: 1px solid var(--gh-color-table-rule);
   border-radius: 0;

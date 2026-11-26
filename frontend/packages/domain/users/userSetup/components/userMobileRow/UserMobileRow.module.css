@@ -16,7 +16,6 @@
 .heading {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
   gap: var(--gh-space-2);
   min-width: 0;
 }
@@ -31,6 +30,7 @@
 }
 
 .name {
+  flex: 0 1 auto;
   font-size: var(--gh-text-sm);
   font-weight: var(--gh-weight-medium);
   color: var(--gh-color-text-strong);
@@ -45,9 +45,4 @@
   display: flex;
   align-items: center;
   flex: 0 0 auto;
-}
-
-.chevron {
-  flex: 0 0 auto;
-  color: var(--gh-color-muted);
 }

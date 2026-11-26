@@ -1,4 +1,3 @@
-import { ChevronRight } from '@Components/icons';
 import { Avatar } from '@Components/components/Avatar';
 import { Box } from '@Components/components/Box';
 import { StatusPill } from '@Components/components/StatusPill';
@@ -17,7 +16,6 @@ export const UserMobileRow = ({ row }: UserMobileRowProps) => {
         </Box>
         <Box className={styles.email} title={row.email}>{row.email}</Box>
       </Box>
-      <ChevronRight className={styles.chevron} size={16} aria-hidden="true" />
     </Box>
   );
 };
