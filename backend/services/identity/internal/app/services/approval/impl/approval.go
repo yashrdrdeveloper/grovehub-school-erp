@@ -9,6 +9,8 @@ import (
 	kind "grovehub/services/identity/internal/app/constants/approval"
 	dto "grovehub/services/identity/internal/app/dto/approval"
 	"grovehub/services/identity/internal/app/entity"
+	"grovehub/services/identity/internal/app/constants/permission"
+	"grovehub/services/identity/internal/app/repository/accountrole"
 	repo "grovehub/services/identity/internal/app/repository/approval"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	authrepo "grovehub/services/identity/internal/app/repository/authorization"
@@ -28,12 +30,17 @@ type Service struct {
 	snapshots authrepo.Repository
 	accounts accountrepo.Reader
 	roles rolerepo.Repository
+	assignments accountrole.Repository
 }
 
 var _ approval.Service = (*Service)(nil)
 
-func New(repository repo.Repository, locker authority.Locker, authorizer authorization.Service, snapshots authrepo.Repository, accounts accountrepo.Reader, roles rolerepo.Repository) approval.Service {
-	return &Service{repository: repository, locker: locker, authorizer: authorizer, snapshots: snapshots, accounts: accounts, roles: roles}
+func New(repository repo.Repository, locker authority.Locker, authorizer authorization.Service, snapshots authrepo.Repository, accounts accountrepo.Reader, roles rolerepo.Repository, assignments ...accountrole.Repository) approval.Service {
+	service := &Service{repository: repository, locker: locker, authorizer: authorizer, snapshots: snapshots, accounts: accounts, roles: roles}
+	if len(assignments) == 1 {
+		service.assignments = assignments[0]
+	}
+	return service
 }
 
 func (service *Service) available() bool {
@@ -52,15 +59,24 @@ func (service *Service) CreateLifecycle(ctx context.Context, request dto.CreateL
 	if err != nil {
 		return entity.ApprovalRequest{}, err
 	}
+	return service.create(ctx, actor, request.Type, code, request.Reason, request.IdempotencyKey, payload, digest, func(tx context.Context) error {
+		return service.validateTarget(tx, actor.TenantID, request)
+	})
+}
+
+func (service *Service) create(ctx context.Context, actor principal.Principal, requestType kind.RequestType, code permission.Code, reason string, key string, payload []byte, digest string, validate func(context.Context) error) (entity.ApprovalRequest, error) {
 	var created entity.ApprovalRequest
-	err = service.locker.Run(ctx, actor.TenantID, func(tx context.Context) error {
+	err := service.locker.Run(ctx, actor.TenantID, func(tx context.Context) error {
 		if err := service.authorizer.Require(tx, code); err != nil {
 			return err
 		}
-		existing, err := service.repository.FindByKey(tx, actor.TenantID, actor.AccountID, request.IdempotencyKey)
+		existing, err := service.repository.FindByKey(tx, actor.TenantID, actor.AccountID, key)
 		if err == nil {
-			if existing.RequestType != request.Type || existing.PayloadSHA256 != digest || existing.Reason != request.Reason {
+			if existing.RequestType != requestType || existing.PayloadSHA256 != digest || existing.Reason != reason {
 				return repo.ErrConflict
+			}
+			if err := helpers.VerifyIntent(existing); err != nil {
+				return err
 			}
 			created = existing
 			return nil
@@ -68,10 +84,10 @@ func (service *Service) CreateLifecycle(ctx context.Context, request dto.CreateL
 		if !errors.Is(err, repo.ErrNotFound) {
 			return err
 		}
-		if err := service.validateTarget(tx, actor.TenantID, request); err != nil {
+		if err := validate(tx); err != nil {
 			return err
 		}
-		policy, err := service.repository.ActivePolicy(tx, actor.TenantID, request.Type)
+		policy, err := service.repository.ActivePolicy(tx, actor.TenantID, requestType)
 		if err != nil {
 			return err
 		}
@@ -86,7 +102,7 @@ func (service *Service) CreateLifecycle(ctx context.Context, request dto.CreateL
 		if err != nil {
 			return err
 		}
-		created = entity.ApprovalRequest{RequestID: id, TenantID: actor.TenantID, PolicyID: policy.PolicyID, RequesterID: actor.AccountID, RequestType: request.Type, Payload: payload, PayloadSHA256: digest, Reason: request.Reason, IdempotencyKey: request.IdempotencyKey, Status: kind.Pending, CurrentStep: 1, StepCount: len(policy.Steps), Version: 1, ExpiresAt: now.Add(24*time.Hour), CreatedAt: now, UpdatedAt: now}
+		created = entity.ApprovalRequest{RequestID: id, TenantID: actor.TenantID, PolicyID: policy.PolicyID, RequesterID: actor.AccountID, RequestType: requestType, Payload: payload, PayloadSHA256: digest, Reason: reason, IdempotencyKey: key, Status: kind.Pending, CurrentStep: 1, StepCount: len(policy.Steps), Version: 1, ExpiresAt: now.Add(24*time.Hour), CreatedAt: now, UpdatedAt: now}
 		return service.repository.Insert(tx, created, policy.Steps)
 	})
 	if err != nil {

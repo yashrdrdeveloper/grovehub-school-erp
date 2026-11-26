@@ -13,6 +13,9 @@ import (
 	"grovehub/services/identity/internal/app/constants/permission"
 	dto "grovehub/services/identity/internal/app/dto/approval"
 	"grovehub/services/identity/internal/app/entity"
+	accountdto "grovehub/services/identity/internal/app/dto/accountrole"
+	assignmentrepo "grovehub/services/identity/internal/app/repository/accountrole"
+	assignmentimpl "grovehub/services/identity/internal/app/repository/accountrole/impl"
 	accountimpl "grovehub/services/identity/internal/app/repository/account/impl"
 	repo "grovehub/services/identity/internal/app/repository/approval"
 	repository "grovehub/services/identity/internal/app/repository/approval/impl"
@@ -49,7 +52,7 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	Expect(db.Exec("INSERT INTO identity.role_permissions(tenant_id, role_id, permission_id) SELECT ?, ?, permission_id FROM identity.permissions WHERE code = ?", tenant, requiredRole, permission.AccountRoleAssign).Error).NotTo(HaveOccurred())
 	Expect(db.Exec("INSERT INTO identity.account_roles(tenant_id, account_id, role_id, assignment_type) VALUES (?, ?, ?, 'PRIMARY'), (?, ?, ?, 'PRIMARY')", tenant, requester, managementRole, tenant, reviewer, requiredRole).Error).NotTo(HaveOccurred())
 	snapshots := authrepo.New(db)
-	service := approvalimpl.New(repository.New(db), authorityimpl.New(db), authimpl.New(snapshots), snapshots, accountimpl.NewNormalizedReader(db), roleimpl.New(db))
+	service := approvalimpl.New(repository.New(db), authorityimpl.New(db), authimpl.New(snapshots), snapshots, accountimpl.NewNormalizedReader(db), roleimpl.New(db), assignmentimpl.New(db))
 	requesterCtx := schoolgateway.WithPrincipal(ctx, schoolgateway.Principal{TenantID: tenant, AccountID: requester, SessionID: "requester-session"})
 	reviewerCtx := schoolgateway.WithPrincipal(ctx, schoolgateway.Principal{TenantID: tenant, AccountID: reviewer, SessionID: "reviewer-session"})
 	foreignCtx := schoolgateway.WithPrincipal(ctx, schoolgateway.Principal{TenantID: "foreign-approval-school", AccountID: foreign, SessionID: "foreign-session"})
@@ -124,4 +127,54 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	Expect(db.Exec("UPDATE identity.approval_requests SET created_at = ?, expires_at = ? WHERE request_id = ?", time.Now().UTC().Add(-2*time.Hour), time.Now().UTC().Add(-time.Hour), expired.RequestID).Error).NotTo(HaveOccurred())
 	_, err = service.Decide(reviewerCtx, dto.Review{RequestID: expired.RequestID, Version: 1, Decision: kind.Approve})
 	Expect(err).To(MatchError(state.ErrExpired))
+
+	const draftID = "10000000-0000-4000-8000-000000000010"
+	const permissionPolicy = "10000000-0000-4000-8000-000000000011"
+	const assignmentPolicy = "10000000-0000-4000-8000-000000000012"
+	Expect(db.Exec("INSERT INTO identity.roles(role_id, tenant_id, name, normalized_name, status) VALUES (?, ?, 'Draft', 'draft', 'INACTIVE')", draftID, tenant).Error).NotTo(HaveOccurred())
+	Expect(db.Exec("UPDATE identity.permissions SET active = true WHERE code = ?", permission.RolePermissionManage).Error).NotTo(HaveOccurred())
+	Expect(db.Exec("INSERT INTO identity.role_permissions(tenant_id, role_id, permission_id) SELECT ?, ?, permission_id FROM identity.permissions WHERE code IN ?", tenant, managementRole, []permission.Code{permission.RolePermissionManage, permission.AccountRoleAssign}).Error).NotTo(HaveOccurred())
+	Expect(db.Exec("INSERT INTO identity.approval_policies(policy_id, tenant_id, request_type, version, active, created_by) VALUES (?, ?, 'ROLE_PERMISSION_CHANGE', 1, true, ?), (?, ?, 'ROLE_ASSIGNMENT_CHANGE', 2, true, ?)", permissionPolicy, tenant, requester, assignmentPolicy, tenant, requester).Error).NotTo(HaveOccurred())
+	Expect(db.Exec("INSERT INTO identity.approval_policy_steps(tenant_id, policy_id, step_number, required_permission_code, required_role_id) VALUES (?, ?, 1, ?, ?), (?, ?, 1, ?, ?)", tenant, permissionPolicy, permission.AccountRoleAssign, requiredRole, tenant, assignmentPolicy, permission.AccountRoleAssign, requiredRole).Error).NotTo(HaveOccurred())
+	permissionRequest := dto.CreatePermissions{Intent: dto.PermissionIntent{RoleID: draftID, Version: 1, Codes: []permission.Code{permission.RoleDeactivate}}, Reason: "Draft capability", IdempotencyKey: "permission-change"}
+	pendingPermission, err := service.CreatePermissions(requesterCtx, permissionRequest)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(pendingPermission.RequestType).To(Equal(kind.RolePermissionChange))
+	approvedPermission, err := service.Decide(reviewerCtx, dto.Review{RequestID: pendingPermission.RequestID, Version: 1, Decision: kind.Approve})
+	Expect(err).NotTo(HaveOccurred())
+	Expect(approvedPermission.Status).To(Equal(kind.Approved))
+	grantSet, err := roleimpl.New(db).Permissions(ctx, tenant, draftID)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(grantSet.Codes).To(BeEmpty())
+	permissionRequest.IdempotencyKey = "tampered-permission"
+	tampered, err := service.CreatePermissions(requesterCtx, permissionRequest)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(db.Exec("UPDATE identity.approval_requests SET payload = jsonb_set(payload, '{version}', '2'::jsonb) WHERE request_id = ?", tampered.RequestID).Error).NotTo(HaveOccurred())
+	_, err = service.Decide(reviewerCtx, dto.Review{RequestID: tampered.RequestID, Version: 1, Decision: kind.Approve})
+	Expect(err).To(MatchError(repo.ErrConflict))
+
+	assignment := dto.CreateAssignment{Intent: dto.AssignmentIntent{AccountID: reviewer, Version: 1, PrimaryRoleID: managementRole, SecondaryRoleIDs: []string{}, RoleVersions: []accountdto.RoleVersion{{RoleID: managementRole, Version: 1}, {RoleID: requiredRole, Version: 1}}}, Reason: "Change reviewer assignment", IdempotencyKey: "assignment-change"}
+	pendingAssignment, err := service.CreateAssignment(requesterCtx, assignment)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(pendingAssignment.RequestType).To(Equal(kind.RoleAssignmentChange))
+	_, err = service.Decide(reviewerCtx, dto.Review{RequestID: pendingAssignment.RequestID, Version: 1, Decision: kind.Approve})
+	Expect(err).To(MatchError(state.ErrForbidden))
+	assignment.IdempotencyKey = "stale-assignment"
+	assignment.Intent.RoleVersions[0].Version++
+	_, err = service.CreateAssignment(requesterCtx, assignment)
+	Expect(err).To(MatchError(assignmentrepo.ErrVersionConflict))
+	assignment.IdempotencyKey = "requester-assignment"
+	assignment.Intent.AccountID = requester
+	assignment.Intent.PrimaryRoleID = requiredRole
+	assignment.Intent.RoleVersions[0].Version--
+	pendingAssignment, err = service.CreateAssignment(requesterCtx, assignment)
+	Expect(err).NotTo(HaveOccurred())
+	approvedAssignment, err := service.Decide(reviewerCtx, dto.Review{RequestID: pendingAssignment.RequestID, Version: 1, Decision: kind.Approve})
+	Expect(err).NotTo(HaveOccurred())
+	Expect(approvedAssignment.Status).To(Equal(kind.Approved))
+	originalAssignment, err := assignmentimpl.New(db).Find(ctx, tenant, requester)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(originalAssignment.PrimaryRoleID).To(Equal(managementRole))
+	Expect(originalAssignment.Version).To(Equal(int64(1)))
 }
+

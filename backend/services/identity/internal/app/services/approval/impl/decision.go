@@ -2,6 +2,8 @@ package impl
 
 import (
 	"context"
+	"encoding/json"
+	kind "grovehub/services/identity/internal/app/constants/approval"
 
 	dto "grovehub/services/identity/internal/app/dto/approval"
 	"grovehub/services/identity/internal/app/entity"
@@ -38,6 +40,19 @@ func (service *Service) Decide(ctx context.Context, request dto.Review) (entity.
 		next, err := state.Decide(helpers.Snapshot(current), state.Actor{TenantID: actor.TenantID, AccountID: actor.AccountID}, request.Version, request.Decision, request.Comment, now)
 		if err != nil {
 			return err
+		}
+		if err := helpers.VerifyIntent(current); err != nil {
+			return err
+		}
+		if current.RequestType == kind.RoleAssignmentChange {
+			var intent dto.AssignmentIntent
+			if err := json.Unmarshal(current.Payload, &intent); err != nil {
+				return err
+			}
+			target, err := helpers.NormalizeID(intent.AccountID)
+			if err != nil || target == actor.AccountID {
+				return state.ErrForbidden
+			}
 		}
 		step, err := service.repository.Step(tx, actor.TenantID, current.RequestID, current.CurrentStep)
 		if err != nil {
