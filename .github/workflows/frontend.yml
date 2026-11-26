@@ -4,11 +4,19 @@ on:
   push:
     paths:
       - 'frontend/**'
+      - 'libs/frontend/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
       - 'scripts/frontend/**'
       - '.github/workflows/frontend.yml'
   pull_request:
     paths:
       - 'frontend/**'
+      - 'libs/frontend/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
       - 'scripts/frontend/**'
       - '.github/workflows/frontend.yml'
 
@@ -27,13 +35,15 @@ jobs:
         with:
           node-version: '22'
           cache: 'pnpm'
-          cache-dependency-path: frontend/pnpm-lock.yaml
+          cache-dependency-path: pnpm-lock.yaml
       - name: Install
         run: pnpm install --frozen-lockfile
       - name: Audit all tracked frontend source (non-blocking report)
         run: pnpm audit:guidelines
       - name: Check architecture
         run: pnpm check:architecture
+      - name: Typecheck shared Base
+        run: pnpm --filter @groovehub/base typecheck
       - name: Typecheck
         run: pnpm typecheck
       - name: Test

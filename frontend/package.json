@@ -10,12 +10,12 @@
     "preview": "vite preview --host 127.0.0.1 --port 4173",
     "typecheck": "tsc --noEmit",
     "test": "jest --passWithNoTests",
-    "lint": "eslint .",
+    "lint": "cd .. && frontend/node_modules/.bin/eslint --config frontend/eslint.config.mjs frontend libs/frontend/base",
     "check:architecture": "node scripts/check-boundaries.mjs && node scripts/check-units.mjs && node scripts/check-ui-contracts.mjs && node scripts/check-styles.mjs && node scripts/check-layout-assets.mjs && node scripts/check-no-ternaries.mjs && node scripts/check-no-let.mjs && node scripts/check-semantic-html.mjs && node scripts/migrate-semantic-tags.mjs --check && node scripts/check-component-enums.mjs && node scripts/check-renderer-ownership.mjs && node scripts/check-i18n-conventions.mjs && node scripts/check-router-imports.mjs && pnpm format:check && node scripts/check-formatter-debt.mjs && node scripts/check-owner-structure.mjs && node scripts/check-audit-regressions.mjs && node scripts/check-css-module-tokens.mjs && pnpm test:architecture",
     "assets:school": "node scripts/download-school-images.mjs",
     "audit:guidelines": "node scripts/audit-guidelines.mjs",
-    "format": "prettier --write \"{app,packages,scripts}/**/*.{ts,tsx,js,jsx,mjs,css,scss,json,md}\"",
-    "format:check": "prettier --check \"{app,packages,scripts}/**/*.{ts,tsx,js,jsx,mjs,css,scss,json,md}\"",
+    "format": "prettier --write \"{app,packages,scripts}/**/*.{ts,tsx,js,jsx,mjs,css,scss,json,md}\" && prettier --write --config .prettierrc.json \"../libs/frontend/base/**/*.{ts,tsx,js,jsx,mjs,css,scss,json,md}\"",
+    "format:check": "prettier --check \"{app,packages,scripts}/**/*.{ts,tsx,js,jsx,mjs,css,scss,json,md}\" && prettier --check --config .prettierrc.json \"../libs/frontend/base/**/*.{ts,tsx,js,jsx,mjs,css,scss,json,md}\"",
     "format:check:core": "prettier --check packages/components/components/Button/Button.tsx packages/components/hooks/useBoolean/useBoolean.ts packages/components/hooks/useWorkspaceTheme/useWorkspaceTheme.ts packages/shell/components/topbar/Topbar.tsx packages/shell/hooks/useShell/useShell.ts packages/shell/templates/workspaceShell/WorkspaceShell.tsx \"packages/**/*.module.css\"",
     "test:architecture": "node --test scripts/__tests__/*.test.mjs",
     "check:i18n": "node scripts/check-i18n-conventions.mjs",
@@ -23,6 +23,7 @@
     "check:no-let": "node scripts/check-no-let.mjs"
   },
   "dependencies": {
+    "@groovehub/base": "workspace:*",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-label": "^2.1.8",

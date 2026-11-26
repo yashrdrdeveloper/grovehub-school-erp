@@ -28,7 +28,7 @@
     "baseUrl": ".",
     "paths": {
       "@Base/*": [
-        "packages/base/*"
+        "../libs/frontend/base/*"
       ],
       "@Business/*": [
         "packages/business/*"
@@ -43,7 +43,7 @@
         "packages/shell/*"
       ],
       "@Base": [
-        "packages/base/index.ts"
+        "../libs/frontend/base/index.ts"
       ],
       "@Business": [
         "packages/business/index.ts"
@@ -74,6 +74,7 @@
   "include": [
     "app",
     "packages",
+    "../libs/frontend/base",
     "vite.config.ts"
   ]
 }

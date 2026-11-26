@@ -22,7 +22,7 @@ if ! owned_pid_is_running "${PID_FILE}" "${VITE_ENTRY}" && curl --silent --fail 
   die "Port ${FRONTEND_PORT} is occupied by an unmanaged HTTP process; refusing to adopt it"
 fi
 
-if [[ ! -f "${VITE_ENTRY}" ]]; then
+if [[ ! -f "${VITE_ENTRY}" || ! -d "${FRONTEND_DIR}/node_modules/@groovehub/base" ]]; then
   bash "${SCRIPT_DIR}/setup.sh"
 fi
 

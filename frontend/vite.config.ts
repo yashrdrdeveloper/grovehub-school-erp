@@ -35,7 +35,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      '@Base': path.resolve(root, 'packages/base'),
+      '@Base': path.resolve(root, '../libs/frontend/base'),
       '@Business': path.resolve(root, 'packages/business'),
       '@Components': path.resolve(root, 'packages/components'),
       '@Domain': path.resolve(root, 'packages/domain'),

@@ -12,3 +12,11 @@ frontend/dist/
 frontend/.vite/
 frontend/coverage/
 frontend/.env.local
+
+# Shared pnpm workspace and independent internal application
+node_modules/
+libs/frontend/*/dist/
+internal/frontend/dist/
+internal/frontend/.vite/
+internal/frontend/coverage/
+internal/frontend/.env.local

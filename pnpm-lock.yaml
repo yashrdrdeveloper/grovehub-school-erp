@@ -6,8 +6,13 @@ settings:
 
 importers:
 
-  .:
+  .: {}
+
+  frontend:
     dependencies:
+      '@groovehub/base':
+        specifier: workspace:*
+        version: link:../libs/frontend/base
       '@radix-ui/react-dialog':
         specifier: ^1.1.15
         version: 1.3.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -114,6 +119,28 @@ importers:
       vite:
         specifier: ^7.1.0
         version: 7.3.8(@types/node@22.20.5)(jiti@2.7.0)(lightningcss@1.33.0)
+
+  libs/frontend/base:
+    dependencies:
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      lodash-es:
+        specifier: ^4.17.21
+        version: 4.18.1
+      tailwind-merge:
+        specifier: ^3.3.1
+        version: 3.7.0
+    devDependencies:
+      '@types/jest':
+        specifier: ^29.5.14
+        version: 29.5.14
+      '@types/lodash-es':
+        specifier: ^4.17.12
+        version: 4.17.12
+      typescript:
+        specifier: ~5.9.3
+        version: 5.9.3
 
 packages:
 

@@ -2,9 +2,11 @@ module.exports = {
   testEnvironment: 'jsdom',
   setupFiles: ['<rootDir>/scripts/test/polyfills.cjs'],
   setupFilesAfterEnv: ['<rootDir>/scripts/test/setupI18n.ts'],
+  roots: ['<rootDir>', '<rootDir>/../libs/frontend/base'],
   testMatch: [
     '<rootDir>/packages/**/*.test.ts',
     '<rootDir>/packages/**/*.test.tsx',
+    '<rootDir>/../libs/frontend/base/**/*.test.ts',
   ],
   transform: {
     '^.+\\.tsx?$': [
@@ -16,8 +18,8 @@ module.exports = {
   transformIgnorePatterns: ['/node_modules/(?!\\.pnpm/lodash-es@|lodash-es/)'],
   moduleNameMapper: {
     '^.+\\.(css|scss)$': '<rootDir>/scripts/test/styleMock.cjs',
-    '^@Base$': '<rootDir>/packages/base',
-    '^@Base/(.*)$': '<rootDir>/packages/base/$1',
+    '^@Base$': '<rootDir>/../libs/frontend/base',
+    '^@Base/(.*)$': '<rootDir>/../libs/frontend/base/$1',
     '^@Business$': '<rootDir>/packages/business',
     '^@Business/(.*)$': '<rootDir>/packages/business/$1',
     '^@Components$': '<rootDir>/packages/components',

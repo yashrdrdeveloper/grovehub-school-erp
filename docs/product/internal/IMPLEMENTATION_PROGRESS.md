@@ -39,3 +39,7 @@ CI [45804844951](https://github.com/yashrdrdeveloper/grovehub-school-erp/actions
 ## A0.3 — Calendar and Table conditional expressions
 
 CI [45807088192](https://github.com/yashrdrdeveloper/grovehub-school-erp/actions/runs/45807088192) verified boundaries, units, UI automation contracts, styles and layout/assets, then rejected Calendar and Table ternaries. Replaced the reported branches without changing rendering semantics. Remaining checks require CI verification.
+
+## A1 — Base source migration
+
+Inspected all 80 TypeScript source/test files in the 81-file Base package: imports are confined to relative Base modules and lodash-es, clsx and tailwind-merge. School-name strings appeared only in two generic fixture tests, not runtime logic. Moved the 81 tracked files to libs/frontend/base (no source duplication), with a private workspace package manifest and independent TypeScript check. Added a root pnpm workspace/lockfile, preserved existing dependency resolutions, rewired school Vite/TypeScript/Jest/format/lint and CI, and adapted owner checks to retain coverage of extracted files. Existing @Base aliases are retained as source compatibility during the workspace transition. Private registry publishing and production ESM/declaration packaging remain future work. CI and runtime verification are pending; the prior baseline still had later unverified checks.

@@ -1,0 +1,29 @@
+{
+  "name": "@groovehub/base",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./i18n": "./i18n/index.ts",
+    "./events": "./events/index.ts",
+    "./readers": "./readers/index.ts",
+    "./utilities": "./utilities/index.ts",
+    "./utilities/*": "./utilities/*/index.ts",
+    "./localization/*": "./localization/*/index.ts",
+    "./constants/*": "./constants/*.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "lodash-es": "^4.17.21",
+    "tailwind-merge": "^3.3.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/lodash-es": "^4.17.12",
+    "typescript": "~5.9.3"
+  }
+}
