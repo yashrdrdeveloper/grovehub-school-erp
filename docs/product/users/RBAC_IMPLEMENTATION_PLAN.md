@@ -1,0 +1,162 @@
+# School Identity — RBAC Implementation Plan
+
+Status: PROPOSED. Owner: School Identity engineering. Audience: backend/frontend/security engineers.
+Baseline: phase-2.1-identity-account @ 9fa83d6ca850069d9243e67a1a4d4355adce483b (26 November 2026).
+Related [internal platform plan](../internal/INTERNAL_PLATFORM_IMPLEMENTATION_PLAN.md), [current interim authorization](ACCOUNT_AUTHORIZATION.md), [Identity architecture](../../../backend/services/identity/docs/engineering/architecture.md), [backend standard](../../engineering/backend/backend.md), [frontend standard](../../engineering/frontend/FRONTEND_CODE_GUIDELINES.md), [gateway](../../engineering/backend/gateway.md), [hybrid pagination](../../engineering/backend/HYBRID_SEARCH_PAGINATION.md), [persistence](../../engineering/backend/persistence.md), [security](../../engineering/security/SECURITY_GUIDELINES.md).
+
+## 1. Existing contract and release blocker
+
+Verified current sources: backend/services/identity/internal/app/entity/account.go; constants/role/catalog.go; dto/account/{roles,request,response,search_fields}.go; validators/account/helpers/roles.go; repository/account/helpers/search/config.go; controller/account/protected/account.go; migration 202611250001_account_role_assignment.sql. Existing Account UUID, PersonGID, tenant, nullable primary_role_id TEXT and secondary_role_ids JSONB array, status/version/search_details/timestamps. Role catalog GET /identity/protected/accounts/roles returns six ID/name pairs. Current assignment accepts only hardcoded codes, validates primary and distinct secondary role set, orders secondary roles deterministically. Existing account create/update accept roleAssignment; response primaryRoleId/secondaryRoleIds. Search has primaryRoleId filter and uses AccountConfig with stable account ID cursor.
+The current temporary policy allows any authenticated tenant member to manage accounts in the tenant. Do not release to actual school users until all protected operations enforce permission and tenant ownership. Older Identity architecture prose about admin allowlist may not reflect the newer interim policy. Inspect implementation and tests rather than assume legacy Admin flag enforces access.
+
+## 2. Model and vocabulary
+
+Persona is fixed school job category, not a permission or assignable role. Role is a school/tenant-owned dynamic named bundle of permissions, linked to one or more personas (proposed multiple allowed). Permission is code-defined enum representing one backend capability, registered globally via restricted API; registration alone grants nobody access. Feature flag definition is global, tenant enablement is separate. Account has one primary and zero/more secondary roles; primary is for UX/default context, effective grants union across active assignments. No implicit permission from persona, role name or primary priority. Roles have explicit permission mappings, no runtime inheritance from similar role. Optional similarRoleId is copy-on-create within tenant, not a live parent. User-selected explicit permission list wins; if omitted on copy, snapshot source grants and authorize every copied grant. Reject ambiguity/duplicates; preview source version.
+
+### Initial hardcoded personas
+Preserve existing six codes as first catalog: SCHOOL_ADMINISTRATION, TEACHER, COORDINATOR, ACCOUNTANT, LIBRARIAN, RECEPTIONIST. Proposed future additions PRINCIPAL, VICE_PRINCIPAL, ADMISSIONS, HR, TRANSPORT, IT_SUPPORT, COUNSELLOR, SUPPORT_STAFF, STUDENT, PARENT_GUARDIAN only when actual modules/actors are introduced. Do not seed future personas as active privileges. Expose id/name/description from constants/persona, frontend uses server catalog, no persona DB CRUD. Existing role IDs are legacy role codes; migration creates real tenant-specific role IDs with same display names.
+
+## 3. Persistence design (proposed)
+
+All tables in school identity schema except school approval engine tables in approval schema or Identity-owned approval schema per ownership ADR. Use UUIDs for new aggregate IDs; tenant foreign-key boundaries via composite (tenant_id, role_id/account_id) constraints. Existing tenant data/type must be inspected before DDL; no assumptions that tenant_id is UUID.
+
+| Table | Fields / constraints |
+|---|---|
+| permissions | permission_id UUID, code enum unique, module, name, description, optional feature_id, status, risk/grant policy metadata, version, created/updated; code immutable |
+| features | feature_id UUID, code enum unique, module, name/description, defaultEnabled (safe false for new protected capability), status/version/timestamps |
+| tenant_features | tenant_id + feature_id unique, enabled, version, actor/timestamps; explicit enablement, disabled/inactive denies |
+| roles | role_id UUID, tenant_id non-null, name, normalized_name unique per tenant (choose inactive reuse policy), description, status, version, search_details, created_by/updated_by/timestamps |
+| role_personas | role_id + tenant_id + persona_code unique; validate enum, at least one on role creation |
+| role_permissions | tenant_id + role_id + permission_id unique, granted_by/time; permission global, role tenant-scoped |
+| account_roles | tenant_id + account_id + role_id unique, assignment_type PRIMARY/SECONDARY, grant metadata, optional expiry only if requirement; partial unique primary per account, no secondary without primary enforced in operation and DB where possible |
+| authorization_revisions | tenant/account revision or equivalent transactional version source for cache/session invalidation; design after measuring |
+| approval policies/steps/requests/request_steps/decisions | school-local typed requests and tenant-scoped approvers, immutable decisions; follow shared workflow semantics in companion plan |
+
+Normalize account_roles to enforce tenant-safe FKs and uniqueness. Existing text/jsonb columns remain during migration compatibility; don't maintain two independent sources permanently. No direct account_permissions grants in MVP: all permissions come through roles, including access requests, unless explicitly approved design later. Permission/feature code definitions owned by Identity or domain-owned public contract contribution via checked registration manifests; use typed Permission enum and module/feature mapping, never accept arbitrary strings as new runtime capability. For featureless permission, check active registration and role; for associated feature, require enabled tenant flag. Register only known code and correct metadata, immutable binding changes separately reviewed. Feature toggle is not a grant. Show disabled permissions in administrative matrix as disabled with reason (subject to management read permission); hide unusable actions in ordinary UI.
+
+## 4. API contracts (proposed paths)
+
+Existing prefix /identity/{public,protected,restricted}. Preserve existing account endpoints and envelope; update OpenAPI, DTOs, clients, tests and frontend together. All reads authenticated and scoped except public auth unchanged. Every command has explicit capability, expected version when modifying, idempotency where retriable, structured errors. Restricted means verified workload, not browser admin.
+
+| Method | Route | Required capability/behavior |
+|---|---|---|
+| GET | /identity/protected/personas | role catalog view; fixed enum |
+| POST | /identity/restricted/permissions | register known enum definitions, batch supported, idempotent |
+| POST | /identity/restricted/features | register known feature enum definitions, batch supported |
+| PATCH | /identity/restricted/permissions/{permissionId} | controlled metadata/lifecycle with version, no arbitrary enum |
+| PATCH | /identity/restricted/features/{featureId} | controlled definition lifecycle |
+| POST | /identity/protected/permissions/search | permission catalog view; feature/module/status filters |
+| GET | /identity/protected/permissions/{permissionId} | catalog detail |
+| POST | /identity/protected/features/search | feature list with effective tenant state |
+| GET | /identity/protected/features/{featureId} | detail |
+| PATCH | /identity/protected/features/{featureId}/state | tenant enable/disable with approval when policy requires; school or internal workload policy explicit |
+| POST | /identity/protected/roles | create tenant role, personas, permissions, optional similarRoleId |
+| POST | /identity/protected/roles/search | role view |
+| GET | /identity/protected/roles/{roleId} | role detail |
+| PATCH | /identity/protected/roles/{roleId} | name/persona/description changes, expected version |
+| PATCH | /identity/protected/roles/{roleId}/deactivate | reject active assignments or approved reassignment plan |
+| GET | /identity/protected/roles/{roleId}/permissions | whole role permission set, no per-permission API calls |
+| PUT | /identity/protected/roles/{roleId}/permissions | atomic replacement of complete set, expected version |
+| GET | /identity/protected/role-permissions | whole authorized tenant role-to-permission matrix in one response |
+| GET | /identity/protected/accounts/roles | existing compatibility assignable role catalog now dynamic |
+| GET | /identity/protected/accounts/{accountId}/roles | account assignment detail |
+| PUT | /identity/protected/accounts/{accountId}/roles | replace primary/secondary assignment with approval policy |
+| GET | /identity/protected/accounts/{accountId}/permissions | effective permissions for authorized management |
+| GET | /identity/protected/auth/permissions | current user's effective capabilities/features/revision |
+
+PUT new method is proposed; generator supports it, follow current API standard or use PATCH if replacement contract mandates it. For tenant feature toggles distinguish internal restricted entitlement administration from school-managed features; school cannot enable purchased/platform-restricted entitlement simply by possessing local ROLE_ADMIN. Default denies when entitlement off. Batch registry input bounded, deterministic, reject unknown enums, same key/different payload conflict; DB uniqueness and one transaction. No production registration via arbitrary console unless workload has exact registry capability and approval.
+
+Role create request example (proposed):
+~~~json
+{
+  "name": "Senior Teacher",
+  "description": "Teaching and attendance responsibilities",
+  "personas": ["TEACHER"],
+  "permissions": ["ACCOUNT_SELF_VIEW", "ATTENDANCE_VIEW"],
+  "similarRoleId": null
+}
+~~~
+ATTENDANCE_VIEW is future illustrative permission, not registered until its actual backend operation exists. Optional similarRoleId uses same-tenant approved source and no hidden inheritance; source changes after creation do not affect copy. For role mapping replacement use permissionCodes + version, no incremental partial update ambiguity. Return whole role detail including assigned permission codes, persona codes and version. Matrix example payload:
+~~~json
+{
+  "roles": [{"roleId":"11111111-1111-4111-8111-111111111111","name":"Teacher","version":2}],
+  "permissions": [{"code":"ACCOUNT_SELF_VIEW","module":"IDENTITY","enabled":true}],
+  "mappings": [{"roleId":"11111111-1111-4111-8111-111111111111","permissionCodes":["ACCOUNT_SELF_VIEW"]}]
+}
+~~~
+Use batch reads and compact mapping arrays, no N+1; bound tenant role/permission catalog sizes or reject oversized request with explicit alternative. Do not silently truncate matrix. Exclude other tenants even for shared global permission list. Ordinary users cannot enumerate other roles unless authorized.
+
+## 5. Permission inventory and enforcement
+
+Start from actual existing account controller methods: Create, Search, Roles, Get, Update, Suspend, Activate, Deactivate, Resend. Define service-owned enum names (proposed) IDENTITY_ACCOUNT_CREATE, IDENTITY_ACCOUNT_SEARCH, IDENTITY_ACCOUNT_VIEW, IDENTITY_ACCOUNT_UPDATE, IDENTITY_ACCOUNT_SUSPEND, IDENTITY_ACCOUNT_ACTIVATE, IDENTITY_ACCOUNT_DEACTIVATE, IDENTITY_ACCOUNT_RESEND_INVITATION, IDENTITY_ACCOUNT_SELF_VIEW, IDENTITY_ROLE_VIEW/CREATE/UPDATE/DEACTIVATE, IDENTITY_ROLE_PERMISSION_VIEW/MANAGE, IDENTITY_ACCOUNT_ROLE_VIEW/ASSIGN, IDENTITY_PERMISSION_VIEW/REGISTER, IDENTITY_FEATURE_VIEW/MANAGE/REGISTER, APPROVAL_REQUEST_CREATE/VIEW, APPROVAL_VIEW/APPROVE/REJECT/POLICY_MANAGE. Example payload abbreviations above must be reconciled to final enum; prefer explicit prefix (ACCOUNT_SELF_VIEW -> IDENTITY_ACCOUNT_SELF_VIEW). Do not register permissions for nonimplemented routes except explicit disabled declarations. Audit ALL protected and restricted routes across school modules, not just Identity; route-to-capability map uses registered method+pattern, service-level invariant and tenant predicate. Public authentication/refresh/setup/reset semantics remain unchanged, limited grant context cannot access normal protected operations. Self/profile operations explicitly own account only; never use generic management permission for own profile.
+Decision order: verified active principal/session -> authorized tenant scope -> registered operation permission -> active role assignments and active permission -> effective feature/entitlement -> resource ownership and business policy -> approval when required. Unknown missing context/permission/policy/feature fail closed. No trusted principal from request body or header. Workload identity separate, explicit allowed operation/tenant and no universal -1 bypass. Internal in-process typed callers also enforce equivalent capability. Deny by default for unmapped protected operations (explicitly enumerate safe self-service routes).
+Privilege escalation: role creators/managers must possess delegable grants or a distinct constrained delegation capability, cannot assign privileges they cannot grant; sensitive grants independently approved. Enforce checks on copy, bulk, account create/update role assignment and matrix replace. Last active authorized administrator protection; lock tenant authority changes so concurrent requests cannot remove both last admins. Revalidate on approval apply. Role assignment, permission or feature changes immediately affect existing sessions (authoritative evaluation per request for first release; optional revision-keyed cache later, no stale grant window). Token/session refresh must not restore revoked access. Return 401 unauthenticated, 403 forbidden, 404 for hidden cross-tenant resource as established contract, 409 stale/duplicate conflicting changes, validation errors in existing envelope. Never leak other tenants via counts/search.
+
+## 6. Universal school requests and approval management
+
+School approval service is separate from internal platform (own DB/tenant and actors). Generic typed workflow, resource owners apply effects; no arbitrary approval payload from frontend. Request types proposed ROLE_ACCESS, PERMISSION_ACCESS, ROLE_ASSIGNMENT_CHANGE, ROLE_PERMISSION_CHANGE, FEATURE_FLAG_CHANGE and APPROVAL_POLICY_CHANGE. Permission access request resolves to a role-based assignment or approved role change; do not silently add direct grants. Policy selector can depend on tenant, operation, role, permission risk; manual/auto-if-eligible/automatic explicit. If requester is authorized approver for exact policy stage and self-approval allowed, auto decision recorded; own privileged access or policy changes require independent approver. Reject unknown policy; expiry, version checks, eligibility at decision and effect, immutable decisions and actor/time. Approved does not mean effect applied; track applied/failed/stale separately. No cross-tenant approval. Request creation by typed owner or universal protected request dispatcher with registered typed validators.
+
+| Method | Route (school /approval/protected) |
+|---|---|
+| POST | /requests (typed request type and payload, reason, idempotency) |
+| POST | /requests/search (own requests, scoped audit access separately) |
+| GET | /requests/{requestId} |
+| PATCH | /requests/{requestId}/cancel |
+| POST | /approvals/search (eligible inbox and authorized history) |
+| GET | /approvals/{requestId} |
+| POST | /approvals/bulk |
+| GET | /approvals/summary |
+| POST | /policies and /policies/search |
+| GET/PATCH | /policies/{policyId} |
+
+Bulk example:
+~~~json
+{
+  "decisions":[
+    {"requestId":"22222222-2222-4222-8222-222222222222","version":1,"decision":"APPROVE","comment":"Reviewed"}
+  ]
+}
+~~~
+Return per-item result and updated status, not blanket success. Bulk max size configurable; verify each item tenant, policy stage, active reviewer and version. Unique decision constraints and transaction, no duplicate side effect. Rejection reason mandatory. Owner records intent and outbox atomically; approval outcome idempotently applied only to exact payload/version. Initial policies bootstrapped through controlled deployment; no empty permissive default. School-local approval implementation can share neutral mechanics after duplication proves useful, not a dependency on internal service database.
+
+## 7. Search, persistence and backend implementation details
+
+Use current resource-first structure under backend/services/identity/internal/app:
+- constants/{persona,permission,feature,error,events}; existing role catalog becomes legacy migration adapter then remove when no consumers.
+- entity/{role,role_persona,permission,feature,tenant_feature,role_permission,account_role,...}.go annotated @Entity.
+- dto/{persona,permission,feature,role,rolepermission,accountrole}/ relevant request,response,params,operations,search_fields. Validators syntax/type/enum; services perform active/ownership/delegation/approval policy; mappers expose safe response.
+- repository/<resource> interface, impl GORM, resource search config, tenant predicate, joined or batch hydration. Add indexes normalized name, tenant/role, tenant/account, active assignment lookup, feature lookup and stable search/order. Do not put authorization in generic Core.
+- services/<resource>/operations/{create,search,get,update,replace,deactivate,...} with explicit transaction and multistep flows only where needed. Typed client façade, generated annotated controllers/routes. Gateway injected authorizer and service enforcement, no duplicate permission lists in controller implementations.
+- New migrations and OpenAPI. Event producers for role, permission mapping, account assignment and feature changes with versioned envelope, old/new safe data or references, outbox same transaction, audit record actor/approval; events idempotent. No passwords/secrets.
+- Search exact Phase 2.1 contract: pageInfo.pageNumber,rowSize,cursor, rowSize default25 max100, legacy rows alias; searchText, existing filter operator enum, stable multi-sort + ID tie-breaker. Role name/persona/status/createdAt/updatedAt; permission code/module/feature/status; approval type/status/requester/date; account existing fields and primaryRoleId, update SQL mapping with migration. Tenant/eligibility applied before totalRecords. Validate search allowlist, no interpolated SQL. Mobile load more cursor dedup/reset. Use actual request/response shape from shared code, not invented copies.
+
+## 8. Migration and rollout (critical)
+
+1. Inventory live tenant values, legacy codes, null primary and secondary arrays; take backup and rehearse restore. Record existing schema/history; never alter 202611250001 or destructive initial migration.
+2. Add new tables, indexes, constraints, disabled feature/permission registry definitions and revision mechanism. Create six seeded tenant roles per actual tenant with explicit legacy-code-to-new-UUID mapping; personas preserve old role names. Do not auto-grant admin permission based only on SCHOOL_ADMINISTRATION label or all authenticated accounts.
+3. Backfill account_roles deterministically using mapping, quarantine unknown/invalid roles/null tenant and report; verify counts, duplicates and one-primary invariant. Approved explicit per-tenant initial admin assignment via controlled bootstrap and known operator identity, protect against removing last administrator. Other roles start least privilege, approve mapping with school owner.
+4. Compatibility: existing Account DTO uses strings for role IDs; during transition translate allowed legacy IDs at boundary for deployed clients if necessary, return existing shape; migrate frontend role catalog to dynamic IDs and assignment endpoints together. Temporary dual read/write only one transaction/source-of-truth, parity checks and cutover deadline. No separate uncoordinated mutation paths.
+5. Deploy authorization in test/staging, dry-run decision logging without PII, validate role access and deny paths. Switch all operations to fail-closed RBAC and remove temporary permissive policy/legacy Admin authority. Do not deploy dry-run to real school users as security enforcement. Revoke/invalidate stale sessions and verify audit.
+6. After compatible release and parity, remove legacy hardcoded assignability and unused columns via separate forward migration only when no clients/readers need them. Rollback to secured compatible build; never restore tenant-wide permissive access to production. DB restore plan tested.
+
+## 9. School frontend scope
+
+Reuse extracted Base/Components/Styles; school blue theme. Existing User Setup desktop/mobile layouts, search, create and details retained; primary/secondary role select uses dynamic role catalog. Role assignment changes that need approval show request status, not optimistic privilege. Show effective permissions in authorized detail, disabled-feature explanation.
+Pages: Identity > User Setup, Roles table/create/edit/detail/duplicate (similar role select + persona multiselect + permission selector grouped module/feature), Permissions read-only catalog/search/details, Role Permission Matrix (roles vs permissions, bulk draft changes and atomic save with version; mobile role selector + compact permission list rather than horizontal matrix), Personas catalog, Feature flags state list/detail/confirmation, Access Requests and Approval Dashboard. Approval dashboard title and Create request above Approvals / Requests tabs; typed request form changes per request type. Pending, approved, rejected, auto-approved history, bulk selection, detail exact request and effect status, cancellation. Only show actions allowed by fetched current permission snapshot and flags; API denies regardless of UI. Update auth/session cache on changes or forbidden responses; no token storage in localStorage. Navigation catalog filters permissions/features, pinned unauthorized app removed/hidden safely. Same universal table, bottom sheets and mobile infinite list behavior, full-screen menu. Follow existing frontend owner structure, translation, types, hooks, renderer, CSS Modules and tests. No raw role-name comparison as authorization.
+
+## 10. Test and delivery checklist
+
+- [ ] Inventory every gateway method pattern and protected service/in-process operation; tests prove default deny, missing mapping, tenant A/B search/count, self vs management, public and restricted separation.
+- [ ] Enum registration idempotency, unknown code, immutable code, feature off/on/retired and tenant scope, no grant by registration.
+- [ ] Dynamic role create/copy, duplicate names, multiple personas, invalid source tenant/version, copy permission escalation, primary/secondary duplicate rejection, union, disabled role/permission.
+- [ ] Whole role-permission matrix and replace concurrency, no N+1, atomic rollback/outbox, stale version.
+- [ ] Account create/update cannot bypass role assignment policy; last-admin concurrent protection, revoked access in live session, workload -1 cannot spoof.
+- [ ] Approval manual/auto eligibility, independent high-risk review, self escalation denied, bulk partial results, duplicate decisions, expiry/cancel/stale payload, effect retry and audit.
+- [ ] Clean and upgrade DB migration, backfill parity and restore; real PostgreSQL constraint/concurrency tests, real outbox/broker integration.
+- [ ] Annotated generation/overlay, go build/lint, Ginkgo/Gomega tests mirrored, test target 100% coverage where required (report actual coverage and gaps). Use make unit-coverage package=identity if confirmed in Makefile.
+- [ ] Contract/OpenAPI, existing account/activation/forgot/reset/login/session regression, frontend architecture/audit/typecheck/Jest/lint/build, desktop and real mobile light/dark/browser.
+- [ ] Remove temporary authorization warning only when actual tested enforcement replaces it; update owning Identity docs, API workflows and release notes.
+
+Order: permission/persona/feature registry -> role and mappings -> account migration and assignment -> gateway/service enforcement and safe bootstrap -> school approval workflows (required for sensitive changes before release) -> frontend -> end-to-end hardening. Coordinate with shared library work, but do not delay security fix behind internal UI. Internal platform executes school restricted registrations only through the scoped workload bridge after this plan's enforcement exists.
+
+Open decisions: actual tenant ID type/directory, final permission naming and grant policy, approved initial administrator mapping, feature entitlement owner and defaults, school approval service location, exact API compatibility window, cache strategy and approval risk policy. No implementation or test execution is claimed by this plan.
