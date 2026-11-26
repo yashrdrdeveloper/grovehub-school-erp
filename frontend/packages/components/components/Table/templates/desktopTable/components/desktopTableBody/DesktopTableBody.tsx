@@ -118,11 +118,7 @@ export const DesktopTableBody = <T,>({
                         {!controls.expanded.includes(entry.id) && '▸'}
                       </Button>
                     )}
-                    <TableCell
-                      row={row}
-                      column={columnLayout.column}
-                      actions={props.actions}
-                    />
+                    <TableCell row={row} column={columnLayout.column} actions={props.actions} />
                   </Box>
                 </td>
               </Fragment>

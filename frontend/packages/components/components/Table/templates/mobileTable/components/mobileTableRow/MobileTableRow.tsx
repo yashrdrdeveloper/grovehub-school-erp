@@ -47,9 +47,7 @@ export const MobileTableRow = <T,>({ props, entry }: MobileTableRowProps<T>) => 
       data-selected={controls.selected.includes(entry.id)}
     >
       {props.mobileRowProps && (
-        <Box className={styles.mobileRowContent}>
-          {props.mobileRowProps.render(entry.row)}
-        </Box>
+        <Box className={styles.mobileRowContent}>{props.mobileRowProps.render(entry.row)}</Box>
       )}
       {Boolean(props.selectionProps || entry.expandable || rowActions?.length) && (
         <Box className={styles.mobileActions}>

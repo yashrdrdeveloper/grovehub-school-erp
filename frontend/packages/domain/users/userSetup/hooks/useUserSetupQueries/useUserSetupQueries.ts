@@ -50,5 +50,15 @@ export const useUserSetupQueries = (state: UserSetupQueryState, mobile: boolean)
     }
     void query.refetch();
   };
-  return { scope, query, mobileQuery, mobileRequest, activeQuery, getData, getTotal, getError, refresh };
+  return {
+    scope,
+    query,
+    mobileQuery,
+    mobileRequest,
+    activeQuery,
+    getData,
+    getTotal,
+    getError,
+    refresh,
+  };
 };

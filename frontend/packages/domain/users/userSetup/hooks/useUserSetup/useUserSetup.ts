@@ -27,8 +27,17 @@ export const useUserSetup = () => {
     cursors: {},
   });
   const [dialog, setDialog] = useState<UserSetupDialog | null>(null);
-  const { scope, query, mobileQuery, mobileRequest, activeQuery, getData, getTotal, getError, refresh } =
-    useUserSetupQueries(state, mobile);
+  const {
+    scope,
+    query,
+    mobileQuery,
+    mobileRequest,
+    activeQuery,
+    getData,
+    getTotal,
+    getError,
+    refresh,
+  } = useUserSetupQueries(state, mobile);
   const mutation = useMutation({
     mutationFn: async (operation: () => Promise<unknown>) => operation(),
     onSuccess: async () => {

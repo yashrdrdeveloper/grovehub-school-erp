@@ -24,9 +24,7 @@ export const DesktopTableToolbar = <T,>(props: DesktopTableToolbarProps<T>) => {
         {filterProps && (
           <Filters {...filterProps} iconOnly onChange={(value) => actions?.FILTER?.(value)} />
         )}
-        {sortProps && (
-          <Sort {...sortProps} iconOnly onChange={(value) => actions?.SORT?.(value)} />
-        )}
+        {sortProps && <Sort {...sortProps} iconOnly onChange={(value) => actions?.SORT?.(value)} />}
       </Box>
       <Box className={styles.toolbarRight}>
         {searchProps && (

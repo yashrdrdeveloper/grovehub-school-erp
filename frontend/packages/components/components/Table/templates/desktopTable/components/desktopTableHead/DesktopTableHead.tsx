@@ -65,9 +65,7 @@ export const DesktopTableHead = <T,>({
             </th>
           </Fragment>
         ))}
-        {fillAtEnd && (
-          <th aria-hidden="true" className={styles.filler} style={{ width: fill }} />
-        )}
+        {fillAtEnd && <th aria-hidden="true" className={styles.filler} style={{ width: fill }} />}
         {rowActions && (
           <th className={styles.actionColumn} scope="col" aria-label={__('Actions')} />
         )}
