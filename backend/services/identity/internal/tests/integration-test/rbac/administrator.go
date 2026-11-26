@@ -187,6 +187,26 @@ func verifyAdministratorGuard(ctx context.Context, db *gorm.DB) {
 	count, err = reader.Count(ctx, legacyTenant)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(count).To(BeZero())
+	bootstrap := migrationreader.NewBootstrap(db)
+	manifest := rbacmigration.Manifest{
+		Plan: migration, AdministratorID: legacyAccount,
+		Grants: []rbacmigration.RoleGrant{{RoleID: migrated.PrimaryRoleID, Codes: permission.AdministratorRecoveryCapabilities()}},
+	}
+	// Feature entitlement must be explicitly enabled before bootstrap.
+	_, err = bootstrap.Apply(ctx, manifest, first)
+	Expect(err).To(MatchError(rolerepo.ErrNotReady))
+	count, err = reader.Count(ctx, legacyTenant)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(count).To(BeZero())
+	Expect(db.Exec("INSERT INTO identity.tenant_features(tenant_id, feature_id, enabled) SELECT ?, feature_id, true FROM identity.features WHERE code = ?", legacyTenant, feature.RoleManagement).Error).NotTo(HaveOccurred())
+	bootstrapped, err := bootstrap.Apply(ctx, manifest, first)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(bootstrapped).To(Equal(rbacmigration.BootstrapResult{AdministratorID: legacyAccount, RolesActivated: 1, PermissionsGranted: 2}))
+	count, err = reader.Count(ctx, legacyTenant)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(count).To(Equal(int64(1)))
+	_, err = bootstrap.Apply(ctx, manifest, first)
+	Expect(err).To(HaveOccurred())
 	inventory, err = migrationreader.New(db).Inventory(ctx, tenant)
 	Expect(err).NotTo(HaveOccurred())
 	_, err = migrationplan.Build(inventory)

@@ -52,7 +52,7 @@ func loadInventory(tx *gorm.DB, tenantID string, inventory *rbacmigration.Invent
 		return err
 	}
 	for _, row := range rows {
-		account := rbacmigration.LegacyAccount{AccountID: row.AccountID, Version: row.Version, Primary: row.Primary}
+		account := rbacmigration.LegacyAccount{AccountID: row.AccountID, Version: row.Version, Primary: row.PrimaryCode}
 		if err := json.Unmarshal([]byte(row.SecondaryJSON), &account.Secondary); err != nil {
 			return rbacmigration.ErrInvalidInventory
 		}
