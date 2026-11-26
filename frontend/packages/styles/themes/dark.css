@@ -50,6 +50,14 @@
   --gh-color-home-amber: #fde68a;
   --gh-color-hero-start: #101a2c;
   --gh-color-hero-end: #1e3a65;
+  --gh-color-auth-panel-start: #09090b;
+  --gh-color-auth-panel-end: #172554;
+  --gh-color-auth-panel-glow: #1e40af;
+  --gh-color-auth-panel-text: #f8fafc;
+  --gh-color-auth-panel-muted: #cbd5e1;
+  --gh-color-auth-panel-accent: #bfdbfe;
+  --gh-color-auth-panel-border: #ffffff29;
+  --gh-color-auth-panel-tile: #ffffff0d;
   --gh-color-auth-art-foreground: #5fa8c8;
   --gh-color-auth-art-halo: #294056;
   --gh-color-auth-art-error: #b84a55;

@@ -4,18 +4,18 @@
  * Do not import loginV2.css or mobileAuth.css alongside this file.
  */
 .rdr-login-v2 {
-  --auth-bg: #fff;
-  --auth-ink: #1f2a44;
-  --auth-muted: #5f6b7d;
-  --auth-field: #f8fafc;
-  --auth-border: #bac6d6;
-  --auth-primary: #1f2a44;
-  --auth-link: #465f8a;
-  --auth-secondary: #5e6c7e;
-  --auth-error: #b32743;
-  --auth-focus: #506e9b;
-  --auth-placeholder: #637186;
-  --auth-accent: #876247;
+  --auth-bg: var(--gh-color-surface);
+  --auth-ink: var(--gh-color-text-strong);
+  --auth-muted: var(--gh-color-muted);
+  --auth-field: var(--gh-color-surface);
+  --auth-border: var(--gh-color-border);
+  --auth-primary: var(--gh-color-primary);
+  --auth-link: var(--gh-color-accent);
+  --auth-secondary: var(--gh-color-text-secondary);
+  --auth-error: var(--gh-color-danger);
+  --auth-focus: var(--gh-color-ring);
+  --auth-placeholder: var(--gh-color-muted);
+  --auth-accent: var(--gh-color-accent);
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
@@ -48,12 +48,12 @@
 }
 /* Inputs use the parent shell's :focus-within ring; do not outline them twice. */
 .rdr-login-v2 :is(button, a):focus-visible {
-  outline: 2px solid var(--auth-focus);
+  outline: var(--gh-focus-outline-width) solid var(--auth-focus);
   outline-offset: 3px;
 }
 .rdr-login-v2__frame {
   display: grid;
-  grid-template-columns: minmax(0, 46fr) minmax(0, 54fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -70,11 +70,10 @@
   min-height: 0;
   height: 100%;
   overflow: hidden;
-  color: #272b3c;
+  color: var(--gh-color-auth-panel-text);
   background:
-    radial-gradient(ellipse at 88% 16%, rgba(255, 255, 255, 0.92), transparent 58%),
-    radial-gradient(ellipse at 15% 80%, rgba(157, 174, 182, 0.22), transparent 62%),
-    linear-gradient(148deg, #f8f6f0 0%, #f1eee7 47%, #e7e8e6 100%);
+    radial-gradient(ellipse at 10% 90%, var(--gh-color-auth-panel-glow), transparent 55%),
+    linear-gradient(145deg, var(--gh-color-auth-panel-start), var(--gh-color-auth-panel-end));
 }
 .rdr-login-v2__visual-brand {
   display: flex;
@@ -112,13 +111,13 @@
 .rdr-login-v2__visual-brand strong {
   font-weight: 800;
   font-size: clamp(13px, 1.4vw, 17px);
-  color: #1f2a44;
+  color: var(--gh-color-auth-panel-text);
   letter-spacing: -0.04em;
   line-height: 1.14;
 }
 .rdr-login-v2__visual-brand small {
   font-size: clamp(9px, 0.82vw, 11px);
-  color: #7e8795;
+  color: var(--gh-color-auth-panel-muted);
   line-height: 1.3;
 }
 /* Abstract academic network. The desktop artwork has no cards, stock images or animations. */
@@ -167,13 +166,15 @@
   z-index: 2;
   flex-shrink: 0;
   min-width: 0;
-  padding: 0 clamp(20px, 3.4vw, 48px) clamp(24px, 3.6dvh, 46px);
+  width: 100%;
+  max-width: 42rem;
+  padding: var(--gh-space-4) clamp(20px, 3.4vw, 48px);
 }
 .rdr-login-v2__visual-kicker {
   display: flex;
   gap: 0;
   align-items: center;
-  color: #8a7556;
+  color: var(--gh-color-auth-panel-accent);
   font-size: clamp(9px, 0.85vw, 11px);
   font-weight: 800;
   letter-spacing: 0.13em;
@@ -183,39 +184,35 @@
 }
 .rdr-login-v2__visual-copy h2 {
   font-weight: 800;
-  font-size: clamp(24px, 3.3vw, 48px);
+  font-size: clamp(26px, 3.2vw, 42px);
   line-height: 1.08;
   letter-spacing: -0.06em;
-  color: #272b3c;
+  color: var(--gh-color-auth-panel-text);
   margin: 10px 0 10px;
   text-wrap: balance;
   overflow-wrap: break-word;
 }
-.rdr-login-v2__visual-copy h2 em {
-  font:
-    italic 400 1em/1.08 Georgia,
-    'Times New Roman',
-    serif;
-  color: #987e55;
+.rdr-login-v2__visual-copy h2 span {
+  color: var(--gh-color-auth-panel-text);
 }
 .rdr-login-v2__visual-copy > p {
   max-width: 390px;
   font-size: clamp(11px, 1vw, 13px);
   line-height: 1.6;
-  color: #565f74;
+  color: var(--gh-color-auth-panel-muted);
   margin: 0;
 }
 .rdr-login-v2__visual-footer {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 20px;
-  padding-top: 12px;
-  border-top: 1px solid #8d887c47;
+  margin: 0 clamp(20px, 3.4vw, 48px) clamp(18px, 3.6dvh, 42px);
+  padding-top: var(--gh-space-3);
+  border-top: 1px solid var(--gh-color-auth-panel-border);
   font-size: 10px;
   letter-spacing: 0.14em;
   font-weight: 750;
-  color: #716c64;
+  color: var(--gh-color-auth-panel-muted);
   flex-wrap: wrap;
 }
 .rdr-login-v2__visual-footer i {
@@ -448,7 +445,7 @@
   margin: 22px 0 0;
   padding: 10px 16px;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--gh-control-radius);
   background: var(--auth-primary);
   color: #fff !important;
   font-size: 13px;
@@ -687,52 +684,7 @@
 .rdr-recovery__back {
   margin-top: 17px;
 }
-/* Dark reference: charcoal form panel, dusk gradient art, no saturated neon. */
-:root[data-theme='dark'] .rdr-login-v2 {
-  --auth-bg: #171e2a;
-  --auth-ink: #f3f6ff;
-  --auth-muted: #bdc8d7;
-  --auth-field: #222e40;
-  --auth-border: #596a82;
-  --auth-primary: #202b49;
-  --auth-link: #a8bde2;
-  --auth-secondary: #b2c0d1;
-  --auth-error: #ff9aab;
-  --auth-focus: #acc7ed;
-  --auth-placeholder: #a9b8cb;
-  --auth-accent: #edbe9c;
-}
-:root[data-theme='dark'] .rdr-login-v2__visual {
-  background:
-    radial-gradient(ellipse at 82% 15%, rgba(144, 139, 116, 0.19), transparent 55%),
-    radial-gradient(ellipse at 15% 83%, rgba(84, 104, 117, 0.2), transparent 62%),
-    linear-gradient(150deg, #252a32 0%, #202834 56%, #182330 100%);
-}
-:root[data-theme='dark'] .rdr-login-v2__visual-brand strong,
-:root[data-theme='dark'] .rdr-login-v2__visual-copy h2 {
-  color: #fff;
-}
-:root[data-theme='dark'] .rdr-login-v2__visual-brand small,
-:root[data-theme='dark'] .rdr-login-v2__visual-copy > p,
-:root[data-theme='dark'] .rdr-login-v2__visual-kicker,
-:root[data-theme='dark'] .rdr-login-v2__visual-footer {
-  color: #d7d2e0;
-}
-:root[data-theme='dark'] .rdr-auth-art {
-  color: #9aabba;
-}
-:root[data-theme='dark'] .rdr-auth-art__svg {
-  --art-node-bg: #273342;
-}
-:root[data-theme='dark'] .rdr-auth-art__caption {
-  color: #b6b9c0;
-}
-:root[data-theme='dark'] .rdr-login-v2__visual-copy h2 em {
-  color: #e3cba8;
-}
-:root[data-theme='dark'] .rdr-login-v2__appearance button.is-active {
-  background: #303e54;
-}
+/* Recovery notices retain their semantic dark-mode status colors. */
 :root[data-theme='dark'] .rdr-auth-flow__notice {
   background: #202f42;
   border-color: #42536d;
@@ -769,7 +721,7 @@
     padding: 15px 23px;
   }
   .rdr-login-v2__visual-copy {
-    padding: 0 22px 18px;
+    padding: var(--gh-space-2) 22px;
   }
   .rdr-login-v2__visual-copy h2 {
     font-size: clamp(21px, 2.75vw, 33px);
@@ -805,6 +757,7 @@
   }
   .rdr-login-v2__visual-brand,
   .rdr-login-v2__visual-copy,
+  .rdr-login-v2__visual-footer,
   .rdr-auth-art {
     display: none;
   }

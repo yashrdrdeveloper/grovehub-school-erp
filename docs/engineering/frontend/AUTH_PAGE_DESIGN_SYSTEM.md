@@ -12,7 +12,7 @@ This design standard adapts the [UI/UX Pro Max skill](https://github.com/nextlev
 
 - **Original** `SchoolMonogram` for both desktop and mobile; never redraw it.
 - No username or public self-registration; preserve all auth, refresh, invitation, reset, and two-attempt flows.
-- Charcoal mobile dark mode (`#171E2A`), ivory/white light mode, RDR navy (`#1F2A44`) primary, and restrained gold text accent.
+- Blue primary and zinc form surfaces shared with the workspace; desktop uses a deep blue branded feature panel in both themes. The original RDR monogram remains unchanged.
 - One shared `LoginLayout`; identical labels, success/error actions, and security messaging across devices. The responsive layout may rearrange control positions, not change behavior.
 - Security footer: lock icon + “A secure workspace for RDR School” on one line when space permits, followed by “© RDR School” and “Haluhera · Rewari”.
 - Keep headings and action text untruncated, including “Forgot your password?”.
@@ -22,18 +22,13 @@ This design standard adapts the [UI/UX Pro Max skill](https://github.com/nextlev
 
 | Layer | Light | Dark |
 |---|---|---|
-| Form surface | `#FFFFFF` | `#171E2A` |
-| Main text | `#1F2A44` | `#F3F6FF` |
-| Secondary text | `#5F6B7D` | `#BDC8D7` |
-| Input | `#F8FAFC` | `#222E40` |
-| Border | `#BAC6D6` | `#596A82` |
-| CTA | `#1F2A44` | `#202B49` |
-| Focus outline | `#506E9B` | `#ACC7ED` |
-| Link | `#465F8A` | `#A8BDE2` |
+| Form surface | `#FFFFFF` | `#101012` |
+| Main text | `#18181B` | `#FAFAFA` |
+| Input border | `#E4E4E7` | `#29292D` |
+| CTA | `#2563D9` | `#2563D9` |
+| Focus | `#3E83F6` (1px) | `#3E83F6` (1px) |
 
-These values are **auth-specific semantic tokens** in `optionOneAuth.css` and should not create a second competing global theme.
-
-Choose the skill's **Accessible & Ethical** + **Minimalism & Swiss Style** characteristics for hierarchy and restraint; treat **Trust & Authority** as a content priority. Avoid generic dashboard/glassmorphism cards, neon gradients, and ornamental layouts that interfere with the form. The desktop SVG is decorative and hidden on mobile.
+The form aliases the workspace semantic tokens. The desktop visual uses theme-owned blue gradient tokens, RDR branding, a centered school-workspace message and four non-interactive feature tiles. No remote artwork is required. On mobile the feature panel is hidden and the original compact school header remains. Preserve the existing form geometry and recovery states.
 
 ## Layout and state rules
 
@@ -48,7 +43,7 @@ Choose the skill's **Accessible & Ethical** + **Minimalism & Swiss Style** chara
 9. Success / expired / missing-link / checking states use the **same** content and action order on desktop and mobile; only spacing, text size and decorative art vary.
 10. Use accessible `aria-invalid`, `aria-describedby`, and polite announcements for inline errors. Never rely on red alone to communicate failure.
 11. Honor reduced-motion preference and never animate an element's dimensions to reveal errors.
-12. The original school artwork may be decorative; it must not replace instructions or use fake stock people.
+12. The school feature panel is decorative; it must not replace instructions or use fake stock people.
 
 ## Responsive verification matrix
 
@@ -57,7 +52,7 @@ Choose the skill's **Accessible & Ethical** + **Minimalism & Swiss Style** chara
 | Small phone | 320×568 | No horizontal overflow, CTA remains reachable; scroll only if necessary |
 | iPhone 14 Pro | 393×852 | Sign-in, empty-field errors, forgot, forgot-success, reset and invitation actions visible without routine scrolling |
 | Android phone | 360×800 | Same action order and system-derived dark/light palette |
-| iPad Air portrait | 820×1180 | Compact split layout; academic art, form and footer never clip |
+| iPad Air portrait | 820×1180 | Compact split layout; feature panel, form and footer never clip |
 | Tablet landscape | 1180×820 | Form max 440px; no clipped success/error messaging |
 | Desktop | 1440×900 | Split visual hierarchy, centered readable form |
 | Accessibility | 200% text zoom / software keyboard / landscape | Scrolling permitted so focus and controls stay reachable |
@@ -72,7 +67,7 @@ Choose the skill's **Accessible & Ethical** + **Minimalism & Swiss Style** chara
 - Reset and invite: token check loading, ready, save error, two-attempt exhaustion, expired link and success.
 - Toggle desktop theme, then resize to mobile; mobile uses the system preference.
 - Test keyboard tab order, focus styles, contrast, and reduced-motion in both themes.
-- Confirm no asset requests are required for the desktop illustration; keep the RDR logo component unchanged.
+- Confirm no asset requests are required for the desktop feature panel; keep the RDR logo component unchanged.
 
 GitHub Actions typechecking and unit tests are **not** a substitute for these browser viewport checks.
 
