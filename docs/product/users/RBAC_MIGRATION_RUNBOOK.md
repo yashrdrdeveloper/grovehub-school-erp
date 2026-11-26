@@ -64,3 +64,22 @@ Cooperating online tenant writers must acquire shared global authority lock befo
 ## Controlled execution opt-in
 
 Leave IDENTITY_APPROVAL_EXECUTION_TENANT unset until the rollout is independently reviewed and CI is green. For a disposable staging database only, set it to one exact tenant identifier in strict mode, restart every runtime consistently, and verify migration/policy receipts, independent reviewers, audit/outbox delivery and session revocation. No wildcard or legacy combination is accepted. The requester must have authenticated within five minutes; the executor still revalidates the approved request, requester/reviewer authority and composite readiness inside its transaction. Unset the variable and restart all instances to disable execution; this does not undo committed effects. Legacy-development requires OTEL_DEPLOYMENT_ENVIRONMENT=development and HTTP loopback allowed origin, and refuses a database containing migration receipts; never use it behind a public tunnel or against real school data. No production cutover is authorized by this runbook alone.
+
+## Invitation delivery reconciliation (read-only operator diagnostic)
+
+Use a database credential authorized for read-only access to the two mail schemas, with both services' migrations applied. Confirm the exact database and tenant before running from the repository root:
+
+```bash
+umask 077
+cd backend
+go run ./cmd/identity-mail-reconcile --tenant-id "$TENANT_ID" --database "$DB_NAME" --limit 100
+```
+
+If nextCursor is present, pass it as --after for the next page. Pages are live snapshots, not a frozen export; repeat review after concurrent work settles. Output contains account and delivery UUIDs, not email addresses or secrets. Keep it private.
+
+- REVIEW_UNCERTAIN or STALE_DISPATCH: provider may have accepted the mail. Inspect provider-side records using authorized operator access. Do not replay the same ID, delete reservations, or edit audit history.
+- ACCEPTED_WITHOUT_SENT: provider acceptance is recorded; it does not prove inbox delivery. A still-valid queued job may naturally reconcile through the existing no-send replay path. A suppressed job must remain suppressed; review manually.
+- SENT_WITHOUT_ACCEPTANCE or RECEIPT_WITHOUT_JOB: investigate discrepancy; do not infer that no email was sent.
+- If a pending setup account needs another link, use the existing authorized resend endpoint with recent authentication and current delegation. A new proof and delivery UUID are issued; the old proof is invalidated. For an active account, use the normal forgot-password workflow. Never manually restore the old proof. No blanket retry or force-delivery operation is provided.
+
+Independent Integration reservations and receipts require an available pool connection while Identity holds its transaction. A pool capped at one connection cannot support this path. Two connections suffice for one isolated dispatch, not for simultaneous tenants or production load. Size and measure the shared pool against competing requests, connection wait duration and database capacity; review before enabling real school traffic.

@@ -6,6 +6,8 @@ import (
 	"os"
 	"sync/atomic"
 	"testing"
+	"time"
+	"grovehub/operations/mailreconcile"
 
 	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
@@ -56,4 +58,31 @@ func TestDurableDispatch(t *testing.T) {
 	if _, err := dispatcher.Dispatch(ctx, tenant, unknown, []byte("synthetic mail"), func()(any,error){calls.Add(1); return nil,errors.New("timeout")}); !errors.Is(err,client.ErrMailDeliveryUncertain) { t.Fatalf("expected uncertainty: %v",err) }
 	if _, err := dispatcher.Dispatch(ctx, tenant, unknown, []byte("synthetic mail"), send); !errors.Is(err,client.ErrMailDeliveryUncertain) { t.Fatalf("expected persistent uncertainty: %v",err) }
 	if calls.Load() != 2 { t.Fatal("uncertain delivery was repeated") }
+
+	// No matching Identity jobs exist for these synthetic Integration receipts.
+	report, err := mailreconcile.Read(ctx, db, tenant, "", 1)
+	if err != nil { t.Fatal(err) }
+	if len(report.Rows) != 1 || report.Rows[0].Disposition != "RECEIPT_WITHOUT_JOB" || report.Rows[0].AccountID != nil || report.NextCursor == "" { t.Fatal("unexpected first reconciliation page") }
+	next, err := mailreconcile.Read(ctx, db, tenant, report.NextCursor, 1)
+	if err != nil || len(next.Rows) != 1 || next.Rows[0].DeliveryID == report.Rows[0].DeliveryID || next.NextCursor != "" { t.Fatalf("invalid continuation page: %v", err) }
+	foreign, err := mailreconcile.Read(ctx, db, uuid.NewString(), "", 100)
+	if err != nil || len(foreign.Rows) != 0 { t.Fatalf("tenant scope leaked: %v",err) }
+
+	// Independent reservation requires a spare connection while the caller holds
+	// its transaction. Verify bounded failure with one connection, then success with two.
+	sqlDB.SetMaxOpenConns(1)
+	blockedID := uuid.NewString()
+	bounded, cancel := context.WithTimeout(ctx, 250*time.Millisecond)
+	err = transaction.Run(ctx, db, func(tx context.Context) error {
+		_, err := dispatcher.Dispatch(bounded, tenant, blockedID, []byte("pool test"), send)
+		return err
+	})
+	cancel()
+	if err == nil || calls.Load() != 2 { t.Fatal("single-connection pool must fail before sending") }
+	sqlDB.SetMaxOpenConns(2)
+	err = transaction.Run(ctx, db, func(tx context.Context) error {
+		_, err := dispatcher.Dispatch(tx, tenant, blockedID, []byte("pool test"), send)
+		return err
+	})
+	if err != nil || calls.Load() != 3 { t.Fatalf("two-connection dispatch failed: %v",err) }
 }
