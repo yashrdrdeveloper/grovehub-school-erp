@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
+import { SCHOOL_THEME_STORAGE_KEY } from '@Domain/preferences';
 import { installShellI18n } from '@Shell/containers/shellContainer/helpers/shellContainer.installI18n';
 import {
   readThemePreference,
@@ -23,7 +24,7 @@ const applyInitialTheme = (): void => {
     const dark = window.matchMedia(WORKSPACE_THEME_DARK_QUERY);
     const phone = window.matchMedia(WORKSPACE_THEME_PHONE_QUERY);
     const apply = () => {
-      const preference = readThemePreference();
+      const preference = readThemePreference(SCHOOL_THEME_STORAGE_KEY);
       const resolved = resolveWorkspaceTheme({
         preference,
         systemDark: dark.matches,

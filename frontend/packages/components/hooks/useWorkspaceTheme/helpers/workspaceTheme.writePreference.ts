@@ -1,12 +1,7 @@
-import { WORKSPACE_THEME_STORAGE_KEY } from '../constants/workspaceTheme.storage';
-
 import type { WriteThemePreference } from './types/workspaceTheme.writePreference';
 
 /** Local storage is best-effort. State updates remain available when storage is blocked. */
-export const writeThemePreference: WriteThemePreference = (
-  preference,
-  storageKey = WORKSPACE_THEME_STORAGE_KEY,
-) => {
+export const writeThemePreference: WriteThemePreference = (preference, storageKey) => {
   try {
     window.localStorage.setItem(storageKey, preference);
   } catch {

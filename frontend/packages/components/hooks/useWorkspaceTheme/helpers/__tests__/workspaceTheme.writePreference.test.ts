@@ -3,14 +3,14 @@ import { writeThemePreference } from '../workspaceTheme.writePreference';
 
 describe('writeThemePreference', () => {
   it('persists one of the named theme enum values', () => {
-    writeThemePreference(ThemePreference.LIGHT);
-    expect(window.localStorage.getItem('groovehub.theme')).toBe(ThemePreference.LIGHT);
+    writeThemePreference(ThemePreference.LIGHT, 'app-one.theme');
+    expect(window.localStorage.getItem('app-one.theme')).toBe(ThemePreference.LIGHT);
   });
 
   it('writes only the requested application namespace', () => {
-    window.localStorage.setItem('groovehub.theme', ThemePreference.DARK);
-    writeThemePreference(ThemePreference.LIGHT, 'internal.theme');
-    expect(window.localStorage.getItem('internal.theme')).toBe(ThemePreference.LIGHT);
-    expect(window.localStorage.getItem('groovehub.theme')).toBe(ThemePreference.DARK);
+    window.localStorage.setItem('app-one.theme', ThemePreference.DARK);
+    writeThemePreference(ThemePreference.LIGHT, 'app-two.theme');
+    expect(window.localStorage.getItem('app-two.theme')).toBe(ThemePreference.LIGHT);
+    expect(window.localStorage.getItem('app-one.theme')).toBe(ThemePreference.DARK);
   });
 });

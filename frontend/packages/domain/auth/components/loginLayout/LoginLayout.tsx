@@ -5,6 +5,7 @@ import { AppLink } from '@Components/components/AppLink';
 import { APP_ROUTE } from '@Business/app/routes';
 
 import { useWorkspaceTheme } from '@Components/hooks/useWorkspaceTheme';
+import { SCHOOL_THEME_STORAGE_KEY } from '@Domain/preferences';
 import { LOGIN_LAYOUT_APPEARANCES } from './constants/loginLayout.appearances';
 import { LOGIN_LAYOUT_TEST_IDS } from './constants/loginLayout.testIds';
 import { LoginLayoutVariant } from './constants/loginLayout.variant';
@@ -32,7 +33,7 @@ export const LoginLayout: LoginLayoutComponent = ({
   variant = LoginLayoutVariant.LOGIN,
   eyebrow = LOGIN_LAYOUT_COPY.DEFAULT_EYEBROW,
 }) => {
-  const { preference, setPreference } = useWorkspaceTheme();
+  const { preference, setPreference } = useWorkspaceTheme(SCHOOL_THEME_STORAGE_KEY);
   const { contentRef, toolbarRef, mainRef, isMobile } = useAuthViewportFit();
 
   return (

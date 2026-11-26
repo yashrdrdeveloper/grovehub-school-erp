@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useBoolean } from '@Components/hooks/useBoolean';
 import { useWorkspaceTheme } from '@Components/hooks/useWorkspaceTheme';
+import { SCHOOL_THEME_STORAGE_KEY } from '@Domain/preferences';
 
 import {
   readPinnedApps,
@@ -21,7 +22,7 @@ export const useShell: UseShell = () => {
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(readSidebarCollapsed);
   const [pinned, setPinned] = useState<string[]>(readPinnedApps);
-  const theme = useWorkspaceTheme();
+  const theme = useWorkspaceTheme(SCHOOL_THEME_STORAGE_KEY);
 
   useEffect(() => {
     writeSidebarCollapsed(sidebarCollapsed);
