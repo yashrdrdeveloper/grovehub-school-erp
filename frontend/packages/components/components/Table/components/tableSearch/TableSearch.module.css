@@ -3,7 +3,7 @@
   align-items: stretch;
   min-width: 0;
   flex: 1 1 18rem;
-  max-width: 22rem;
+  max-width: 19rem;
   border: 1px solid var(--gh-color-input);
   border-radius: var(--gh-control-radius);
   background: var(--gh-color-table-control);
@@ -47,7 +47,7 @@
   border-inline-start: 1px solid var(--gh-color-table-rule);
   border-radius: 0 var(--gh-control-radius) var(--gh-control-radius) 0;
   color: var(--gh-color-muted);
-  background: var(--gh-color-surface-subtle);
+  background: var(--gh-color-table-control);
 }
 @media (max-width: 640px) {
   .root {

@@ -7,17 +7,18 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--gh-space-3);
-  height: 66px;
+  height: 52px;
+  flex-shrink: 0;
   padding-inline: 16px;
   border-bottom: 1px solid var(--gh-color-border);
-  background: var(--gh-color-canvas);
+  background: var(--gh-color-shell-surface);
   color: var(--gh-color-text);
 }
 
 .left {
   display: flex;
   align-items: center;
-  gap: 19px;
+  gap: var(--gh-space-3);
   min-width: 0;
 }
 
@@ -30,7 +31,7 @@
 }
 
 .schoolName {
-  font-size: 1rem;
+  font-size: var(--gh-text-sm);
   font-weight: var(--gh-weight-semibold);
   line-height: 1;
 }

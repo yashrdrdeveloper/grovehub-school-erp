@@ -26,14 +26,14 @@
   display: flex;
   flex: 1 1 auto;
   align-items: center;
-  gap: 13px;
+  gap: var(--gh-space-2);
   min-width: 0;
-  padding: 11px 13px;
+  padding: var(--gh-space-2) var(--gh-space-3);
   border-radius: var(--gh-control-radius);
   text-decoration: none;
   font-size: var(--gh-text-xs);
-  font-weight: var(--gh-weight-semibold);
-  color: var(--gh-color-muted);
+  font-weight: var(--gh-weight-medium);
+  color: var(--gh-color-text);
   transition: background var(--gh-motion-normal);
 }
 
@@ -55,7 +55,7 @@
 .active {
   background: var(--gh-color-accent-soft);
   color: var(--gh-color-accent);
-  font-weight: var(--gh-weight-bold);
+  font-weight: var(--gh-weight-semibold);
 }
 
 .label {
@@ -107,7 +107,7 @@
 
   :global(.shell--collapsed) .item {
     justify-content: flex-start;
-    padding: 11px 13px;
+    padding: var(--gh-space-2) var(--gh-space-3);
   }
 
   :global(.shell--collapsed) .label {

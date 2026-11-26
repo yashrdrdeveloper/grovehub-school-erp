@@ -21,7 +21,7 @@
   gap: 0;
   overflow: hidden;
   border: 1px solid var(--gh-color-table-rule);
-  border-radius: var(--gh-radius-md);
+  border-radius: var(--gh-control-radius);
   background: var(--gh-color-surface);
   box-shadow: none;
 }
@@ -30,14 +30,14 @@
   align-items: center;
   gap: var(--gh-space-2);
   flex-wrap: wrap;
-  padding: var(--gh-space-2) var(--gh-space-3);
+  padding: var(--gh-space-3);
   border-bottom: 1px solid var(--gh-color-table-rule);
   background: var(--gh-color-table-footer);
 }
 .toolbar button {
   font-size: var(--gh-text-xs);
   font-weight: var(--gh-weight-medium);
-  color: var(--gh-color-text-secondary);
+  color: var(--gh-color-text);
   border-color: var(--gh-color-table-rule);
   background: var(--gh-color-table-control);
 }
@@ -111,7 +111,7 @@
   border-collapse: separate;
   border-spacing: 0;
   text-align: start;
-  font-size: var(--gh-text-sm);
+  font-size: var(--gh-text-xs);
 }
 .table th,
 .table td {
@@ -130,11 +130,11 @@
   z-index: 3;
   background: var(--gh-color-table-heading);
   color: var(--gh-color-table-heading-text);
-  font-weight: var(--gh-weight-semibold);
+  font-weight: var(--gh-weight-medium);
   padding-block: var(--gh-space-1);
   padding-inline-end: var(--gh-space-3);
   height: var(--gh-table-heading-height);
-  font-size: var(--gh-text-table-heading);
+  font-size: var(--gh-text-xs);
   border-bottom-color: var(--gh-color-table-heading-border);
 }
 .table th button {
@@ -232,7 +232,8 @@
   padding: var(--gh-space-2) var(--gh-space-3);
   border-top: 1px solid var(--gh-color-table-rule);
   background: var(--gh-color-table-footer);
-  font-size: var(--gh-text-sm);
+  font-size: var(--gh-text-xs);
+  color: var(--gh-color-muted);
 }
 .footer:empty {
   display: none;
@@ -305,6 +306,7 @@
     max-height: none;
     min-height: 0;
   }
+  .root[data-fill-height='true'] .toolbar,
   .root[data-fill-height='true'] .footer {
     flex: 0 0 auto;
   }
@@ -331,5 +333,7 @@
   cursor: pointer;
 }
 @media (max-width: 640px) {
-  .toolbarLeft { flex-wrap: wrap; }
+  .toolbarLeft {
+    flex-wrap: wrap;
+  }
 }

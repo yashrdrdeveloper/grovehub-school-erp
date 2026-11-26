@@ -2457,10 +2457,10 @@ body {
 
 /* Workspace navigation and catalog — full content overlay beside persistent sidebar. */
 .shell {
-  --sidebar-size: 244px;
+  --sidebar-size: 222px;
 }
 .shell--collapsed {
-  --sidebar-size: 76px;
+  --sidebar-size: 64px;
 }
 .sidebar {
   width: var(--sidebar-size);
@@ -2706,8 +2706,8 @@ body {
 }
 .catalog-app-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: var(--gh-space-3);
 }
 .catalog-empty {
   font-size: 0.8125rem;

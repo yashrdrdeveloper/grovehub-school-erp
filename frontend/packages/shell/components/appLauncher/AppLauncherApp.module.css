@@ -1,61 +1,61 @@
-/* Component-owned catalog cards; legacy shared selectors stay with their owners. */
+/* Compact, owner-scoped catalog cards with a separate pin action. */
 .catalog-app {
   position: relative;
   min-width: 0;
-  min-height: 162px;
-  border: 1px solid var(--border);
-  border-radius: 15px;
-  background: var(--surface);
-  box-shadow: var(--shadow);
-  transition:
-    border-color 0.18s,
-    transform 0.18s,
-    box-shadow 0.18s;
+  border: 1px solid var(--gh-color-border);
+  border-radius: var(--gh-control-radius);
+  background: var(--gh-color-surface);
+  transition: border-color var(--gh-motion-fast);
 }
 
 .catalog-app:not(.catalog-app--planned):hover {
-  border-color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: var(--gh-shadow-card);
+  border-color: var(--gh-color-accent);
 }
 
 .catalog-app__link {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 7px;
-  padding: 20px;
+  min-height: 6rem;
+  display: grid;
+  grid-template-columns: var(--gh-control-height-md) minmax(0, 1fr);
+  align-content: start;
+  align-items: start;
+  column-gap: var(--gh-space-3);
+  row-gap: var(--gh-space-1);
+  padding: var(--gh-space-3);
+  padding-inline-end: var(--gh-control-height-lg);
 }
 
 .catalog-app__icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  grid-row: 1 / span 3;
+  width: var(--gh-control-height-md);
+  height: var(--gh-control-height-md);
+  border-radius: var(--gh-control-radius);
   display: grid;
   place-items: center;
-  color: var(--accent);
-  background: var(--accent-pale);
-  margin-bottom: 7px;
+  color: var(--gh-color-accent);
+  background: var(--gh-color-accent-soft);
 }
 
 .catalog-app strong {
-  font-size: 0.8125rem;
-  font-weight: 800;
-  color: var(--ink-strong);
+  grid-column: 2;
+  font-size: var(--gh-text-sm);
+  font-weight: var(--gh-weight-semibold);
+  color: var(--gh-color-text-strong);
+  overflow-wrap: anywhere;
 }
 
 .catalog-app small {
-  font-size: 0.6875rem;
-  line-height: 1.5;
-  color: var(--muted);
+  grid-column: 2;
+  font-size: var(--gh-text-xs);
+  line-height: var(--gh-leading-normal);
+  color: var(--gh-color-muted);
+  overflow-wrap: anywhere;
 }
 
 .catalog-app__status {
-  margin-top: auto;
-  font-size: 0.625rem;
-  font-weight: 700;
-  color: var(--accent);
+  grid-column: 2;
+  font-size: var(--gh-text-2xs);
+  font-weight: var(--gh-weight-medium);
+  color: var(--gh-color-accent);
 }
 
 .catalog-app--planned {
@@ -63,100 +63,50 @@
 }
 
 .catalog-app--planned .catalog-app__status {
-  color: var(--muted);
+  color: var(--gh-color-muted);
 }
 
 .catalog-app__pin {
   position: absolute;
-  right: 12px;
-  top: 12px;
+  inset-inline-end: var(--gh-space-2);
+  inset-block-start: var(--gh-space-2);
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  background: var(--surface);
-  color: var(--muted);
+  width: var(--gh-control-height-xs);
+  height: var(--gh-control-height-xs);
+  border: 1px solid transparent;
+  border-radius: var(--gh-control-radius);
+  background: transparent;
+  color: var(--gh-color-muted);
 }
 
 .catalog-app__pin--active {
-  color: var(--accent);
-  background: var(--accent-pale);
-  border-color: var(--accent-pale);
+  color: var(--gh-color-catalog-pin-foreground);
+  background: var(--gh-color-catalog-pin-background);
 }
 
 .catalog-app__pin:hover {
-  border-color: var(--accent);
-  color: var(--accent);
+  color: var(--gh-color-accent);
+  background: var(--gh-color-surface-subtle);
 }
 
-@media (max-width: 720px) {
-  .catalog-app {
-    min-height: 150px;
-  }
+.catalog-app__link:focus-visible,
+.catalog-app__pin:focus-visible {
+  outline: var(--gh-focus-outline-width) solid var(--gh-color-ring);
+  outline-offset: -1px;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 640px) {
   .catalog-app__link {
-    padding: 15px;
+    grid-template-columns: minmax(0, 1fr);
+    padding-inline-end: var(--gh-space-3);
   }
-}
 
-@media (max-width: 720px) {
-  .catalog-app__icon {
-    width: 39px;
-    height: 39px;
+  .catalog-app__icon,
+  .catalog-app strong,
+  .catalog-app small,
+  .catalog-app__status {
+    grid-column: 1;
+    grid-row: auto;
   }
-}
-
-@media (max-width: 375px) {
-  .catalog-app__link {
-    padding: 12px;
-  }
-}
-
-:global(:root[data-theme='dark']) .catalog-app__pin--active {
-  background: var(--gh-color-catalog-pin-background);
-  color: var(--gh-color-catalog-pin-foreground);
-  border-color: var(--gh-color-catalog-pin-border);
-}
-
-:global(:root) .catalog-app {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  box-shadow: none;
-}
-
-:global(:root) .catalog-app:not(.catalog-app--planned):hover {
-  border-color: var(--muted);
-  background: var(--surface-subtle);
-  box-shadow: none;
-}
-
-:global(:root) .catalog-app__icon {
-  background: var(--accent-pale);
-  color: var(--accent);
-}
-
-:global(:root) .catalog-app__pin--active {
-  background: var(--accent-pale);
-  color: var(--accent);
-}
-
-:global(:root[data-theme='dark']) .catalog-app {
-  background: var(--surface);
-  border-color: var(--border);
-  box-shadow: none;
-}
-
-:global(:root[data-theme='dark']) .catalog-app:not(.catalog-app--planned):hover {
-  background: var(--surface-subtle);
-  border-color: var(--gh-color-catalog-hover-border);
-  box-shadow: none;
-}
-
-:global(:root[data-theme='dark']) .catalog-app__icon {
-  background: var(--accent-pale);
-  color: var(--accent);
 }
