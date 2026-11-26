@@ -1,0 +1,195 @@
+name: Isolated school gateway boundary
+on:
+  push:
+    branches: [maintenance/core-boundary-a411524-v2]
+    paths: ['.github/workflows/one-time-core-boundary.yml']
+permissions:
+  contents: write
+jobs:
+  separate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Verify isolated source
+        run: |
+          test "$(git rev-parse HEAD^)" = "a411524c6fb8371a3d91b63988a68e3e8c05db66"
+          test "$(git diff --name-only HEAD^ HEAD)" = ".github/workflows/one-time-core-boundary.yml"
+          test "$(git branch --show-current)" = "maintenance/core-boundary-a411524-v2"
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.3'
+          cache-dependency-path: backend/go.sum
+      - name: Separate school session contract from reusable transport
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          import subprocess
+
+          root = Path('backend')
+          core = root / 'libs/core/gateway/gateway.go'
+          original = core.read_text()
+          assert 'type Principal struct' in original and 'AccessCookie = "__Host-gh_access"' in original
+          start = original.index('// Principal is created')
+          workload = original.index('type WorkloadVerifier interface')
+          context_key = original.index('type principalKey struct')
+          school = root / 'libs/schoolgateway'
+          school.mkdir()
+          (school / 'principal.go').write_text(
+              '// Package schoolgateway owns the school ERP authenticated session contract.\n'
+              'package schoolgateway\n\nimport ("context"; "time")\n\n'
+              + original[start:workload] + original[context_key:original.index('const (', context_key)]
+          )
+          (school / 'cookies.go').write_text('package schoolgateway\n\n' + original[original.index('const (', context_key):])
+          core.write_text(
+              '// Package gateway owns application-neutral route tiers and workload verification.\n'
+              'package gateway\n\nimport ("context"; "net/http")\n\n'
+              + original[original.index('type Tier string'):start]
+              + original[workload:context_key]
+          )
+          paths = subprocess.check_output(['git','ls-files','-z','backend'], text=True).split('\0')
+          school_symbols = {'Principal', 'AccessVerifier', 'WithPrincipal', 'PrincipalFrom', 'AccessCookie', 'RefreshCookie', 'CSRFName', 'ResetCookie', 'SetupCookie'}
+          neutral_symbols = {'Tier', 'Public', 'Protected', 'Restricted', 'WorkloadVerifier'}
+          rewritten = []
+          for filename in paths:
+              if not filename.endswith('.go') or filename == str(core):
+                  continue
+              path = Path(filename)
+              source = path.read_text()
+              if '"grovehub/libs/core/gateway"' not in source:
+                  continue
+              match = re.search(r'(?m)^([ \t]*)(import[ \t]+)?(?:(\w+)\s+)?"grovehub/libs/core/gateway"[ \t]*$', source)
+              if not match:
+                  raise SystemExit(f'Review nonstandard gateway import: {filename}')
+              alias = match.group(3) or 'gateway'
+              selected = set(re.findall(r'\b' + re.escape(alias) + r'\.([A-Z][A-Za-z0-9_]*)\b', source))
+              unknown = selected - school_symbols - neutral_symbols
+              if unknown:
+                  raise SystemExit(f'Review gateway selectors {filename}: {unknown}')
+              if not selected & school_symbols:
+                  continue
+              if filename.startswith('backend/libs/core/'):
+                  raise SystemExit(f'Core source depends on school session contract: {filename}')
+              if re.search(r'\bschoolgateway\.', source):
+                  raise SystemExit(f'Existing schoolgateway alias: {filename}')
+              school_import = match.group(1) + 'schoolgateway "grovehub/libs/schoolgateway"'
+              if selected & neutral_symbols:
+                  replacement = match.group(0) + '\n' + school_import
+                  if match.group(2):
+                      replacement = 'import (\n' + match.group(0).replace('import ', '', 1) + '\n' + school_import + '\n)'
+              else:
+                  replacement = (match.group(2) or '') + school_import
+              updated = source[:match.start()] + replacement + source[match.end():]
+              updated = re.sub(r'\b' + re.escape(alias) + r'\.(' + '|'.join(sorted(school_symbols)) + r')\b', r'schoolgateway.\1', updated)
+              path.write_text(updated)
+              rewritten.append(filename)
+          rewritten += [str(core), str(school / 'principal.go'), str(school / 'cookies.go')]
+          subprocess.run(['gofmt','-w',*rewritten], check=True)
+          print('School session consumers migrated:', len(rewritten)-3)
+          for path in rewritten:
+              print('GW_MOVE|' + path)
+          PY
+          git grep -n 'grovehub/libs/schoolgateway' -- backend/libs/core && exit 1 || test "$?" = 1
+          git grep -nE '__Host-gh_access|__Secure-gh_refresh|gh_csrf|__Secure-gh_reset|__Secure-gh_setup' -- backend/libs/core && exit 1 || test "$?" = 1
+          git add -- backend
+          git diff --cached --check
+      - name: Generate and build school backend
+        run: make backend-build
+      - name: Run school and core unit tests
+        working-directory: backend
+        run: |
+          go test -vet=off -overlay=.generated/overlay.json ./libs/core/tests/unit-test/... ./launcher/tests/unit-test/... ./services/identity/internal/tests/unit-test/... ./services/integration/internal/tests/unit-test/...
+      - name: Record complete Core package dependency inventory
+        working-directory: backend
+        run: |
+          go list -e -json -overlay=.generated/overlay.json ./libs/core/... > "$RUNNER_TEMP/core-packages.json"
+          python3 - "$RUNNER_TEMP/core-packages.json" <<'PY'
+          import json, sys
+          data = open(sys.argv[1]).read()
+          decoder = json.JSONDecoder()
+          index = 0
+          while index < len(data):
+              while index < len(data) and data[index].isspace(): index += 1
+              if index == len(data): break
+              package, index = decoder.raw_decode(data, index)
+              imports = sorted(set(package.get('Imports', []) + package.get('TestImports', []) + package.get('XTestImports', [])))
+              print('CORE_PACKAGE|' + json.dumps({'path':package['ImportPath'], 'imports':imports, 'error':package.get('Error')}))
+              if any(item.startswith(('grovehub/services/', 'grovehub/launcher/', 'grovehub/libs/schoolgateway')) for item in imports):
+                  raise SystemExit('Product dependency in Core: ' + package['ImportPath'])
+          PY
+          git grep -nE 'grovehub/(services|libs/core)|filepath.Join\([^\n]*"services"|filepath.Join\([^\n]*"libs"' -- libs/core/annotation/generation | grep -v '_test.go:' || true
+      - name: Commit validated school boundary
+        run: |
+          git diff --cached --name-only | awk '!/^backend\// { print; bad=1 } END { exit bad }'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "refactor(backend): isolate school gateway session and cookie contracts"
+          git push origin "HEAD:refs/heads/maintenance/core-boundary-a411524-v2"
+, source)
+              if not match:
+                  raise SystemExit(f'Review nonstandard gateway import: {filename}')
+              alias = match.group(2) or 'gateway'
+              selected = set(re.findall(r'\b' + re.escape(alias) + r'\.([A-Z][A-Za-z0-9_]*)\b', source))
+              unknown = selected - school_symbols - neutral_symbols
+              if unknown:
+                  raise SystemExit(f'Review gateway selectors {filename}: {unknown}')
+              if not selected & school_symbols:
+                  continue
+              if filename.startswith('backend/libs/core/'):
+                  raise SystemExit(f'Core source depends on school session contract: {filename}')
+              if re.search(r'\bschoolgateway\.', source):
+                  raise SystemExit(f'Existing schoolgateway alias: {filename}')
+              school_import = match.group(1) + 'schoolgateway "grovehub/libs/schoolgateway"'
+              if selected & neutral_symbols:
+                  replacement = match.group(0) + '\n' + school_import
+              else:
+                  replacement = school_import
+              updated = source[:match.start()] + replacement + source[match.end():]
+              updated = re.sub(r'\b' + re.escape(alias) + r'\.(' + '|'.join(sorted(school_symbols)) + r')\b', r'schoolgateway.\1', updated)
+              path.write_text(updated)
+              rewritten.append(filename)
+          rewritten += [str(core), str(school / 'principal.go'), str(school / 'cookies.go')]
+          subprocess.run(['gofmt','-w',*rewritten], check=True)
+          print('School session consumers migrated:', len(rewritten)-3)
+          for path in rewritten:
+              print('GW_MOVE|' + path)
+          PY
+          git grep -n 'grovehub/libs/schoolgateway' -- backend/libs/core && exit 1 || test "$?" = 1
+          git grep -nE '__Host-gh_access|__Secure-gh_refresh|gh_csrf|__Secure-gh_reset|__Secure-gh_setup' -- backend/libs/core && exit 1 || test "$?" = 1
+          git add -- backend
+          git diff --cached --check
+      - name: Generate and build school backend
+        run: make backend-build
+      - name: Run school and core unit tests
+        working-directory: backend
+        run: |
+          go test -vet=off -overlay=.generated/overlay.json ./libs/core/tests/unit-test/... ./launcher/tests/unit-test/... ./services/identity/internal/tests/unit-test/... ./services/integration/internal/tests/unit-test/...
+      - name: Record complete Core package dependency inventory
+        working-directory: backend
+        run: |
+          go list -e -json -overlay=.generated/overlay.json ./libs/core/... > "$RUNNER_TEMP/core-packages.json"
+          python3 - "$RUNNER_TEMP/core-packages.json" <<'PY'
+          import json, sys
+          data = open(sys.argv[1]).read()
+          decoder = json.JSONDecoder()
+          index = 0
+          while index < len(data):
+              while index < len(data) and data[index].isspace(): index += 1
+              if index == len(data): break
+              package, index = decoder.raw_decode(data, index)
+              imports = sorted(set(package.get('Imports', []) + package.get('TestImports', []) + package.get('XTestImports', [])))
+              print('CORE_PACKAGE|' + json.dumps({'path':package['ImportPath'], 'imports':imports, 'error':package.get('Error')}))
+              if any(item.startswith(('grovehub/services/', 'grovehub/launcher/', 'grovehub/libs/schoolgateway')) for item in imports):
+                  raise SystemExit('Product dependency in Core: ' + package['ImportPath'])
+          PY
+          git grep -nE 'grovehub/(services|libs/core)|filepath.Join\([^\n]*"services"|filepath.Join\([^\n]*"libs"' -- libs/core/annotation/generation | grep -v '_test.go:' || true
+      - name: Commit validated school boundary
+        run: |
+          git diff --cached --name-only | awk '!/^backend\// { print; bad=1 } END { exit bad }'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "refactor(backend): isolate school gateway session and cookie contracts"
+          git push origin "HEAD:refs/heads/maintenance/core-boundary-a411524-v2"
