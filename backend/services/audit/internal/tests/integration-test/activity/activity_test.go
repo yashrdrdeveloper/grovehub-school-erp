@@ -15,6 +15,9 @@ import (
 	"grovehub/services/audit"
 	dto "grovehub/services/audit/internal/app/dto/activity"
 	"grovehub/services/audit/internal/app/events/consumers/activity/helpers"
+	consumer "grovehub/services/audit/internal/app/events/consumers/activity"
+	rejection "grovehub/services/audit/internal/app/repository/rejection/impl"
+	"grovehub/services/infrastructure/client/messaging"
 	repo "grovehub/services/audit/internal/app/repository/activity/impl"
 	"grovehub/services/audit/internal/app/repository/activity"
 	service "grovehub/services/audit/internal/app/services/activity/impl"
@@ -69,4 +72,11 @@ func TestAuditProjectionAndPersistence(t *testing.T) {
 	if err:=db.Raw("SELECT EXISTS (SELECT 1 FROM audit.activities WHERE data::text LIKE '%never-store%')").Scan(&leaked).Error;err!=nil || leaked { t.Fatal("secret leaked into audit") }
 	if _,err:=service.New(repository,access{deny:true}).Search(authCtx,dto.Search{});err==nil { t.Fatal("unauthorized search") }
 	if err:=db.Exec("DELETE FROM audit.activities WHERE audit_id = ?",first.AuditID).Error;err==nil { t.Fatal("audit was mutable") }
+	handler:=consumer.New(repository,rejection.New(db))
+	malformed:=messaging.Message{Payload:[]byte("never-store invalid data")}
+	for range 2 { if err:=handler.Handle(ctx,eventType,malformed);err!=nil { t.Fatal(err) } }
+	if err:=handler.Handle(ctx,eventType,messaging.Message{Payload:raw(uuid.NewString(),tenant,"changed",2)});err!=nil { t.Fatal(err) }
+	var rejected int64
+	if err:=db.Raw("SELECT count(*) FROM audit.rejected_events").Scan(&rejected).Error;err!=nil || rejected!=2 { t.Fatalf("invalid rejection count %d: %v",rejected,err) }
+	if err:=db.Exec("TRUNCATE audit.rejected_events").Error;err==nil { t.Fatal("rejection evidence was mutable") }
 }

@@ -66,7 +66,8 @@ func optionalID(value string) *string {
 	return &value
 }
 
-func Project(_ context.Context, expectedType string, raw []byte) (entity.Activity, error) {
+func Project(ctx context.Context, expectedType string, raw []byte) (entity.Activity, error) {
+	if expectedType == "identity.invitation.delivery.changed.v1" { return projectInvitation(ctx, raw) }
 	var event coreevents.Envelope[payload]
 	if len(raw) > 512*1024 || json.Unmarshal(raw, &event) != nil || event.EventType != expectedType || event.Version != 1 || !validID(event.EventID) || !validID(event.AggregateID) || event.OccurredAt.IsZero() || event.Data.New == nil || event.Data.New.Version < 1 {
 		return entity.Activity{}, ErrInvalidEvent

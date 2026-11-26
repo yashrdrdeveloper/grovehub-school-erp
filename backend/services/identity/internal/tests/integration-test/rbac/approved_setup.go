@@ -75,7 +75,7 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	tokens := tokenimpl.New(db)
 	credentials := credentialimpl.New(credentialrepo.New(db))
 	cfg := config.Config{ApprovalExecutionTenant: tenant, EncryptionKey: make([]byte, 32), SetupURL: "https://school.example/set-password"}
-	sender := invitation.New(tokens, mailrepo.New(db), cfg)
+	sender := invitation.New(tokens, mailrepo.New(db,audit.NewProducer(store)), cfg)
 	approvedInvitations := invitation.NewApproved(accounts, assignments, snapshots, sender)
 	repository := approvalrepo.New(db, approvalproducer.New(audit.NewProducer(store)))
 	service := approvalimpl.New(repository, locker, authorizer, snapshots, accounts, roles, assignments)
@@ -100,7 +100,7 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	var count int64
 	Expect(db.Raw("SELECT count(*) FROM identity.invitations WHERE account_id = ?", accountID).Scan(&count).Error).NotTo(HaveOccurred())
 	Expect(count).To(BeZero())
-	Expect(db.Raw("SELECT count(*) FROM identity.invitation_delivery_audit WHERE account_id = ?", accountID).Scan(&count).Error).NotTo(HaveOccurred())
+	Expect(db.Raw("SELECT count(*) FROM (SELECT event_id, (p#>>'{data,tenantId}') AS tenant_id, (p#>>'{data,accountId}')::uuid AS account_id, (p->>'aggregateId')::uuid AS invitation_id, p#>>'{data,operation}' AS event_type, (p#>>'{data,attempt}')::int AS attempt, p#>>'{data,reason}' AS reason, (p#>>'{data,nextAttemptAt}')::timestamptz AS next_attempt_at, (p->>'occurredAt')::timestamptz AS occurred_at FROM (SELECT event_id,convert_from(payload,'UTF8')::jsonb AS p FROM infrastructure.messaging) m WHERE p->>'eventType' = 'identity.invitation.delivery.changed.v1') a WHERE account_id = ?", accountID).Scan(&count).Error).NotTo(HaveOccurred())
 	Expect(count).To(BeZero())
 	Expect(db.Raw("SELECT count(*) FROM identity.password_tokens WHERE account_id = ?", accountID).Scan(&count).Error).NotTo(HaveOccurred())
 	Expect(count).To(BeZero())
@@ -145,7 +145,7 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	Expect(*token.AccountVersion).To(Equal(before.Version+1))
 
 	// The exchanged proof is no longer deliverable, even if the worker never sent it.
-	worker := invitation.NewWorker(mailrepo.New(db), accounts, tokens, locker, assignments, snapshots, nil, cfg)
+	worker := invitation.NewWorker(mailrepo.New(db,audit.NewProducer(store)), accounts, tokens, locker, assignments, snapshots, nil, cfg)
 	claimed, err := worker.RunOnce(ctx)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(claimed).To(BeTrue())
@@ -225,7 +225,7 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	Expect(db.Exec("UPDATE identity.invitations SET next_attempt_at = ? WHERE id = ?", time.Now().UTC().Add(-time.Minute), rotated.ID).Error).NotTo(HaveOccurred())
 	transport := &invitationTransport{}
 	transport.fail.Store(true)
-	worker = invitation.NewWorker(mailrepo.New(db), accounts, tokens, locker, assignments, snapshots, transport, cfg)
+	worker = invitation.NewWorker(mailrepo.New(db,audit.NewProducer(store)), accounts, tokens, locker, assignments, snapshots, transport, cfg)
 	claimed, err = worker.RunOnce(ctx)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(claimed).To(BeTrue())
@@ -351,7 +351,7 @@ func verifyInvitationDeliveryAudit(db *gorm.DB, tenant string, accountID string,
 	}
 	read := func(id string) []auditRow {
 		var rows []auditRow
-		Expect(db.Raw("SELECT event_type, attempt, reason, next_attempt_at FROM identity.invitation_delivery_audit WHERE tenant_id = ? AND account_id = ? AND invitation_id = ? ORDER BY audit_id", tenant, accountID, id).Scan(&rows).Error).NotTo(HaveOccurred())
+		Expect(db.Raw("SELECT event_type, attempt, reason, next_attempt_at FROM (SELECT event_id, (p#>>'{data,tenantId}') AS tenant_id, (p#>>'{data,accountId}')::uuid AS account_id, (p->>'aggregateId')::uuid AS invitation_id, p#>>'{data,operation}' AS event_type, (p#>>'{data,attempt}')::int AS attempt, p#>>'{data,reason}' AS reason, (p#>>'{data,nextAttemptAt}')::timestamptz AS next_attempt_at, (p->>'occurredAt')::timestamptz AS occurred_at FROM (SELECT event_id,convert_from(payload,'UTF8')::jsonb AS p FROM infrastructure.messaging) m WHERE p->>'eventType' = 'identity.invitation.delivery.changed.v1') a WHERE tenant_id = ? AND account_id = ? AND invitation_id = ? ORDER BY occurred_at,event_id", tenant, accountID, id).Scan(&rows).Error).NotTo(HaveOccurred())
 		return rows
 	}
 	invalid := "INVALID_PROOF"
@@ -374,10 +374,7 @@ func verifyInvitationDeliveryAudit(db *gorm.DB, tenant string, accountID string,
 	Expect(rows[3]).To(Equal(auditRow{EventType: "CLAIMED", Attempt: 2}))
 	Expect(rows[4]).To(Equal(auditRow{EventType: "DELIVERED", Attempt: 2}))
 	var count int64
-	Expect(db.Raw("SELECT count(*) FROM identity.invitation_delivery_audit WHERE account_id = ? AND tenant_id IS DISTINCT FROM ?", accountID, tenant).Scan(&count).Error).NotTo(HaveOccurred())
+	Expect(db.Raw("SELECT count(*) FROM (SELECT event_id, (p#>>'{data,tenantId}') AS tenant_id, (p#>>'{data,accountId}')::uuid AS account_id, (p->>'aggregateId')::uuid AS invitation_id, p#>>'{data,operation}' AS event_type, (p#>>'{data,attempt}')::int AS attempt, p#>>'{data,reason}' AS reason, (p#>>'{data,nextAttemptAt}')::timestamptz AS next_attempt_at, (p->>'occurredAt')::timestamptz AS occurred_at FROM (SELECT event_id,convert_from(payload,'UTF8')::jsonb AS p FROM infrastructure.messaging) m WHERE p->>'eventType' = 'identity.invitation.delivery.changed.v1') a WHERE account_id = ? AND tenant_id IS DISTINCT FROM ?", accountID, tenant).Scan(&count).Error).NotTo(HaveOccurred())
 	Expect(count).To(BeZero())
-	Expect(db.Exec("UPDATE identity.invitation_delivery_audit SET reason = NULL WHERE invitation_id = ?", currentID).Error).To(HaveOccurred())
-	Expect(db.Exec("DELETE FROM identity.invitation_delivery_audit WHERE invitation_id = ?", currentID).Error).To(HaveOccurred())
-	Expect(db.Exec("TRUNCATE identity.invitation_delivery_audit").Error).To(HaveOccurred())
 	Expect(read(currentID)).To(Equal(rows))
 }

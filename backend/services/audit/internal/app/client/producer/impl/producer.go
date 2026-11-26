@@ -5,6 +5,9 @@ import (
 	"grovehub/services/audit/internal/app/services/producer"
 )
 
+// Event resolves the public contract's unqualified DTO in generated proxy code.
+type Event = client.Event
+
 type producerClient struct { service producer.Service }
 
 func NewProducerClient(service producer.Service) client.Client {

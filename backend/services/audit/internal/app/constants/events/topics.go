@@ -10,6 +10,7 @@ func Topics() map[string]string {
 		"identity_role_changed": "identity.role.changed.v1",
 		"identity_role_metadata_changed": "identity.role.metadata.changed.v1",
 		"identity_approval_changed": "identity.approval.changed.v1",
+		"identity_invitation_delivery_changed": "identity.invitation.delivery.changed.v1",
 	}
 }
 

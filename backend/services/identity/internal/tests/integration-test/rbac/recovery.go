@@ -2,6 +2,8 @@ package rbac_test
 
 import (
 	"context"
+	"grovehub/services/audit"
+	"grovehub/services/infrastructure"
 	"time"
 
 	. "github.com/onsi/gomega"
@@ -34,7 +36,7 @@ func verifyRecoveryGuard(ctx context.Context, db *gorm.DB, tenant string, accoun
 	sessions := sessionimpl.New(db)
 	credentials := credentialimpl.New(credentialrepo.New(db))
 	cfg := config.Config{EncryptionKey: make([]byte, 32), ResetURL: "https://school.example/reset-password"}
-	sender := invitation.New(tokens, mailrepo.New(db), cfg)
+	sender := invitation.New(tokens, mailrepo.New(db,audit.NewProducer(infrastructure.NewEventStore(db))), cfg)
 	base := authimpl.New(accounts, sessions, tokens, credentials, sender, mapper.New(), transaction.NewUnitOfWork(db))
 	service := authimpl.NewRecoveryGuard(base, accounts, tokens, sessions, authorityrepo.New(db), sender)
 	account, err := accounts.FindByID(ctx, accountID)

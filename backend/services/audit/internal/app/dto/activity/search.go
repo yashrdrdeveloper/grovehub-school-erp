@@ -14,6 +14,7 @@ type Cursor struct {
 type Search struct {
 	AssetType string `json:"assetType,omitempty"`
 	AssetID string `json:"assetId,omitempty"`
+	SubjectAccountID string `json:"subjectAccountId,omitempty"`
 	ActorID string `json:"actorId,omitempty"`
 	PersonID string `json:"personId,omitempty"`
 	AuditType string `json:"auditType,omitempty"`

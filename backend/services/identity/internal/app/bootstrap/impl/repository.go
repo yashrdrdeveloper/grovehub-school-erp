@@ -56,7 +56,7 @@ func (b *builder) newRepository() repositories {
 		credentials:   credentialimpl.New(b.db),
 		sessions:      sessionimpl.New(b.db),
 		tokens:        passwordtokenimpl.New(b.db),
-		mail:          invitationimpl.New(b.db),
+		mail:          invitationimpl.New(b.db,b.audit),
 		unit:          transaction.NewUnitOfWork(b.db),
 	}
 }

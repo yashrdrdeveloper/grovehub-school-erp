@@ -32,10 +32,10 @@ func (repository *Repository) Insert(ctx context.Context, entry entity.Activity)
 func (repository *Repository) Search(ctx context.Context, tenantID string, selfAccountID string, query dto.Search) ([]entity.Activity, error) {
 	db := repository.db.WithContext(ctx).Model(&entity.Activity{}).Where("tenant_id = ?", tenantID)
 	if selfAccountID != "" {
-		db = db.Where("(actor_id = ? OR (asset_type = 'ACCOUNT' AND asset_id = ?))", selfAccountID, selfAccountID)
+		db = db.Where("(actor_id = ? OR subject_account_id = ? OR (asset_type = 'ACCOUNT' AND asset_id = ?))", selfAccountID, selfAccountID, selfAccountID)
 	}
 	for _, filter := range []struct{ column string; value string }{
-		{"asset_type",query.AssetType},{"asset_id",query.AssetID},{"actor_id",query.ActorID},{"person_id",query.PersonID},{"audit_type",query.AuditType},{"operation",query.Operation},{"source",query.Source},
+		{"subject_account_id",query.SubjectAccountID},{"asset_type",query.AssetType},{"asset_id",query.AssetID},{"actor_id",query.ActorID},{"person_id",query.PersonID},{"audit_type",query.AuditType},{"operation",query.Operation},{"source",query.Source},
 	} {
 		if filter.value != "" { db = db.Where(filter.column+" = ?", filter.value) }
 	}

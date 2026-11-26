@@ -17,6 +17,7 @@ type Activity struct {
 	Source string `json:"source"`
 	AssetVersion int64 `json:"assetVersion"`
 	ActorID *string `gorm:"type:uuid" json:"actorId,omitempty"`
+	SubjectAccountID *string `gorm:"type:uuid" json:"subjectAccountId,omitempty"`
 	PersonID *string `gorm:"type:uuid" json:"personId,omitempty"`
 	Data json.RawMessage `gorm:"type:jsonb" json:"data"`
 	SemanticHash string `json:"-"`
