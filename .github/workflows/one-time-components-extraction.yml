@@ -1,0 +1,130 @@
+name: Isolated Components workspace migration
+on:
+  push:
+    branches: [maintenance/components-extraction-fb4a265]
+    paths: ['.github/workflows/one-time-components-extraction.yml']
+permissions:
+  contents: write
+jobs:
+  migrate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Verify isolated source
+        run: |
+          test "$(git rev-parse HEAD^)" = "fb4a265f46237de076cb35664450c267332476c5"
+          test "$(git diff --name-only HEAD^ HEAD)" = ".github/workflows/one-time-components-extraction.yml"
+          test "$(git branch --show-current)" = "maintenance/components-extraction-fb4a265"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Relocate shared source and rewire consumers
+        run: |
+          git mv frontend/packages/components libs/frontend/components
+          mkdir -p libs/frontend/components/types
+          git mv frontend/app/types/i18n.global.d.ts libs/frontend/components/types/i18n.global.d.ts
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+
+          def replace(file, before, after):
+              path = Path(file)
+              source = path.read_text()
+              assert before in source, (file, before)
+              path.write_text(source.replace(before, after))
+
+          replace('frontend/vite.config.ts', "path.resolve(root, 'packages/components')", "path.resolve(root, '../libs/frontend/components')")
+          replace('frontend/app/main.tsx', "'../packages/components/styles/primitives.css'", "'@groovehub/components/styles/primitives.css'")
+          replace('frontend/jest.config.cjs', "<rootDir>/packages/components", "<rootDir>/../libs/frontend/components")
+          replace('frontend/jest.config.cjs', "'<rootDir>/../libs/frontend/base'],", "'<rootDir>/../libs/frontend/base', '<rootDir>/../libs/frontend/components'],")
+          replace('frontend/jest.config.cjs', "'<rootDir>/../libs/frontend/base/**/*.test.ts',", "'<rootDir>/../libs/frontend/base/**/*.test.ts',\n    '<rootDir>/../libs/frontend/components/**/*.test.ts',\n    '<rootDir>/../libs/frontend/components/**/*.test.tsx',")
+          replace('frontend/tsconfig.json', '"packages/components', '"../libs/frontend/components')
+          replace('frontend/tsconfig.json', '"../libs/frontend/styles",', '"../libs/frontend/styles",\n    "../libs/frontend/components",')
+          app_path = Path('frontend/package.json')
+          app = json.loads(app_path.read_text())
+          deps = app['dependencies']
+          dev = app['devDependencies']
+          external = ['@radix-ui/react-dialog', '@radix-ui/react-label', '@radix-ui/react-slot', '@tanstack/react-table', 'class-variance-authority', 'lucide-react']
+          peers = ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query']
+          tests = ['@testing-library/react', '@testing-library/jest-dom', '@types/jest', '@types/react', '@types/react-dom', 'typescript', 'vite']
+          package = {
+              'name': '@groovehub/components', 'version': '0.1.0', 'private': True, 'type': 'module',
+              'exports': {'.': './index.ts', './components/*': './components/*/index.ts', './hooks/*': './hooks/*/index.ts', './icons': './icons/index.ts', './router': './router/index.ts', './styles/primitives.css': './styles/primitives.css'},
+              'scripts': {'typecheck': 'tsc --noEmit'},
+              'dependencies': {'@groovehub/base': 'workspace:*', '@groovehub/styles': 'workspace:*', **{key: deps[key] for key in external}},
+              'peerDependencies': {key: deps[key] for key in peers},
+              'devDependencies': {**{key: deps[key] for key in peers}, **{key: dev[key] for key in tests}},
+          }
+          for key in ['dependencies', 'peerDependencies', 'devDependencies']:
+              package[key] = dict(sorted(package[key].items()))
+          Path('libs/frontend/components/package.json').write_text(json.dumps(package, indent=2) + '\n')
+          deps['@groovehub/components'] = 'workspace:*'
+          app['dependencies'] = dict(sorted(deps.items()))
+          for key in ['format', 'format:check']:
+              app['scripts'][key] = app['scripts'][key].replace('{base,styles}', '{base,styles,components}')
+          app['scripts']['lint'] += ' libs/frontend/components'
+          app['scripts']['format:check:core'] = app['scripts']['format:check:core'].replace('packages/components/', '../libs/frontend/components/')
+          app['scripts']['format:check:core'] += ' "../libs/frontend/components/**/*.module.css"'
+          app_path.write_text(json.dumps(app, indent=2) + '\n')
+          compiler = json.loads(Path('frontend/tsconfig.json').read_text())['compilerOptions']
+          compiler['paths'] = {
+              '@Base': ['../base/index.ts'], '@Base/*': ['../base/*'],
+              '@Styles': ['../styles/index.ts'], '@Styles/*': ['../styles/*'],
+              '@Components': ['./index.ts'], '@Components/*': ['./*'],
+          }
+          compiler['types'] = ['vite/client', 'jest']
+          Path('libs/frontend/components/tsconfig.json').write_text(json.dumps({'compilerOptions': compiler, 'include': ['**/*.ts', '**/*.tsx'], 'exclude': ['node_modules', 'dist']}, indent=2) + '\n')
+          replace('libs/frontend/components/RUNBOOK.md', '`packages/components` owns', '`libs/frontend/components` owns')
+          replace('libs/frontend/components/RUNBOOK.md', '`frontend/packages/styles`', '`libs/frontend/styles`')
+          replace('libs/frontend/components/RUNBOOK.md', 'or `@Shell`.', ', `@Shell` or `@Assets`.')
+          replace('libs/frontend/components/styles/primitives.css', 'var(--surface)', 'var(--gh-color-surface)')
+          replace('libs/frontend/components/styles/primitives.css', 'var(--muted)', 'var(--gh-color-muted)')
+          PY
+          echo 'Physical path references:'
+          git grep -n 'packages/components' -- ':!docs' ':!frontend/scripts' ':!libs/frontend/components/RUNBOOK.md' ':!frontend/README.md' || true
+          echo 'All remaining legacy component variable references:'
+          grep -RhoE 'var\(--[a-zA-Z0-9_-]+' libs/frontend/components --include='*.css' | sort -u | grep -v '^var(--gh-' || true
+      - name: Resolve and freeze workspace
+        run: |
+          pnpm install --no-frozen-lockfile
+          pnpm install --frozen-lockfile
+      - name: Format and stage migration
+        working-directory: frontend
+        run: |
+          pnpm format
+          git -C .. add -- frontend libs/frontend pnpm-lock.yaml
+          pnpm format:check
+          git -C .. diff --cached --check
+      - name: Commit only isolated workspace source
+        run: |
+          test ! -e frontend/packages/components
+          git diff --cached --name-only | awk '!/^(frontend\/|libs\/frontend\/|pnpm-lock\.yaml$)/ { print; bad=1 } END { exit bad }'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "refactor(frontend): extract reusable Components workspace"
+          git push origin "HEAD:refs/heads/maintenance/components-extraction-fb4a265"
+      - name: Verify extracted Components type contract
+        run: pnpm --filter @groovehub/components typecheck
+      - name: Validate all existing school architecture gates
+        working-directory: frontend
+        run: pnpm check:architecture
+      - name: Typecheck Base and school app
+        working-directory: frontend
+        if: success() || failure()
+        run: pnpm --filter @groovehub/base typecheck && pnpm typecheck
+      - name: Run full Jest suite
+        working-directory: frontend
+        if: success() || failure()
+        run: pnpm exec jest --runInBand
+      - name: ESLint all app and library source
+        working-directory: frontend
+        if: success() || failure()
+        run: pnpm lint
+      - name: Build and prerender school site
+        working-directory: frontend
+        run: pnpm build
