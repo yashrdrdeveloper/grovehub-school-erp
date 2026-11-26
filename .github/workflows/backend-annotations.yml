@@ -120,3 +120,35 @@ jobs:
         run: |
           test -s backend/.generated/unit-coverage/foundation.out
           test -s .runtime/reports/unit-coverage/foundation.html
+
+  rbac-postgres:
+    name: Validate Identity RBAC against disposable PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: rbac_test
+          POSTGRES_PASSWORD: rbac_test
+          POSTGRES_DB: groovehub_rbac_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rbac_test -d groovehub_rbac_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.27.3"
+          cache-dependency-path: |
+            backend/go.sum
+            libs/backend/core/go.sum
+      - name: Apply real Identity migrations and validate RBAC
+        working-directory: backend
+        env:
+          IDENTITY_RBAC_TEST_DSN: "host=127.0.0.1 port=5432 user=rbac_test password=rbac_test dbname=groovehub_rbac_test sslmode=disable"
+        run: go test -count=1 -v ./services/identity/internal/tests/integration-test/rbac/...
