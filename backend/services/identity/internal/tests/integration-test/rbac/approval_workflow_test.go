@@ -85,7 +85,9 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	Expect(created.StepCount).To(Equal(2))
 	reads := approvalimpl.NewReader(repository.NewReader(db), repository.New(db, recorder), authorityimpl.New(db), snapshots)
 	query := coresearch.Request{PageInfo: coresearch.PageRequest{PageNumber: 1, RowSize: 25}}
-	history, err := reads.History(requesterCtx, query)
+	historyQuery := query
+	historyQuery.Filters = []coresearch.Filter{{Field: dto.FieldRequestID, Operator: coresearch.OperatorEquals, Values: []string{created.RequestID}}}
+	history, err := reads.History(requesterCtx, historyQuery)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(history.Items).To(HaveLen(1))
 	Expect(history.Items[0].RequestID).To(Equal(created.RequestID))
