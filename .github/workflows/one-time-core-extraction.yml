@@ -1,0 +1,185 @@
+name: Isolated Core module extraction
+on:
+  push:
+    branches: [maintenance/core-extraction-924d3b5]
+    paths: ['.github/workflows/one-time-core-extraction.yml']
+permissions:
+  contents: write
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Verify isolated source
+        run: |
+          test "$(git rev-parse HEAD^)" = "924d3b53e2659c5268854ce6d1726b65789219e9"
+          test "$(git diff --name-only HEAD^ HEAD)" = ".github/workflows/one-time-core-extraction.yml"
+          test "$(git branch --show-current)" = "maintenance/core-extraction-924d3b5"
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.3'
+          cache-dependency-path: backend/go.sum
+      - name: Relocate Core and rewire Go import owners
+        run: |
+          mkdir -p libs/backend
+          git mv backend/libs/core libs/backend/core
+          cp backend/go.mod backend/go.sum libs/backend/core/
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+
+          module = 'github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core'
+          core = Path('libs/backend/core')
+          generation = core / 'annotation/generation'
+
+          def edit(path, old, new):
+              p = Path(path)
+              s = p.read_text()
+              assert old in s, (str(p), old)
+              p.write_text(s.replace(old, new))
+
+          for path in subprocess.check_output(['git','ls-files','-z'], text=True).split('\0'):
+              if not path.endswith('.go'):
+                  continue
+              p = Path(path)
+              if not p.is_file():
+                  continue
+              s = p.read_text()
+              n = s.replace('grovehub/libs/core', module)
+              if n != s:
+                  p.write_text(n)
+
+          # Explicit application and Core roots; the same root means Core-only.
+          p = generation / 'testing/main.go'
+          edit(p, 'if len(os.Args) != 2 {', 'if len(os.Args) != 3 {')
+          edit(p, 'usage: testing <backend-directory>', 'usage: testing <application-directory> <core-directory>')
+          edit(p, 'generateAll(os.Args[1])', 'generateAll(os.Args[1], os.Args[2])')
+          edit(p, 'func generateAll(backend string) error {', 'func generateAll(backend, core string) error {')
+          edit(p, '    roots := []struct{ owner, tests string }{', '    core, err = filepath.Abs(core)\n    if err != nil { return err }\n    roots := []struct{ owner, tests string }{')
+          edit(p, '{filepath.Join(backend,"libs","core"), filepath.Join(backend,"libs","core","tests")}', '{core, filepath.Join(core,"tests")}')
+          edit(p, '    services, err := os.ReadDir(filepath.Join(backend,"services"))', '    if backend != core {\n    services, err := os.ReadDir(filepath.Join(backend,"services"))')
+          edit(p, '    for _, root := range roots {', '    }\n    for _, root := range roots {')
+          edit(p, 'generateDir(backend,root.owner,dir)', 'generateDir(core,root.owner,dir)')
+
+          p = generation / 'overlay/main.go'
+          edit(p, 'len(os.Args)!=2', 'len(os.Args)!=3')
+          edit(p, 'usage: overlay <backend-directory>', 'usage: overlay <application-directory> <core-directory>')
+          edit(p, 'writeOverlay(os.Args[1])', 'writeOverlay(os.Args[1],os.Args[2])')
+          edit(p, 'func writeOverlay(backend string)error {', 'func writeOverlay(backend, core string)error {')
+          edit(p, '    replacement:=map[string]string{}', '    core,err=filepath.Abs(core);if err!=nil{return err}\n    replacement:=map[string]string{}')
+          edit(p, '    services,err:=os.ReadDir(filepath.Join(root,"services"));if err!=nil{return err}', '    if root!=core {\n    services,err:=os.ReadDir(filepath.Join(root,"services"));if err!=nil{return err}')
+          edit(p, '    if err:=scan(filepath.Join(root,"libs","core"));err!=nil{return err}', '    }\n    if err:=scan(core);err!=nil{return err}')
+
+          p = generation / 'testing/coverage/main.go'
+          edit(p, '    mode := flag.String', '    coreDirectory := flag.String("core", "", "standalone Core module directory")\n    generator := flag.String("generator-script", "", "application annotation generation script")\n    reportDirectory := flag.String("reports", "", "coverage report directory")\n    mode := flag.String')
+          edit(p, '    targets, err := resolve(root, *single, *multiple)', '    if *coreDirectory == "" || *generator == "" || *reportDirectory == "" { return errors.New("core, generator-script and reports are required") }\n    core, err := filepath.Abs(*coreDirectory)\n    if err != nil { return err }\n    targets, err := resolve(root, core, *single, *multiple)')
+          edit(p, '"./libs/core/annotation/generation/testing/inventory"', '"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/generation/testing/inventory"')
+          edit(p, 'recoverGenerated(staleManifest, root)', 'recoverGenerated(staleManifest, root, core)')
+          edit(p, 'filepath.Join(filepath.Dir(root), "scripts", "backend", "generate-annotations.sh")', '*generator')
+          edit(p, 'reports := filepath.Join(filepath.Dir(root), ".runtime", "reports", "unit-coverage")', 'reports := *reportDirectory')
+          edit(p, 'func resolve(root, single, multiple string)', 'func resolve(root, core, single, multiple string)')
+          edit(p, 'item.owner, item.pattern = filepath.Join(root, "libs", "core"), "./libs/core/..."', 'item.owner, item.pattern = core, "./..."')
+          edit(p, 'func recoverGenerated(manifest, root string)', 'func recoverGenerated(manifest string, roots ...string)')
+          edit(p, '        if !within(root, line)', '        allowed := false\n        for _, root := range roots { if within(root, line) { allowed = true; break } }\n        if !allowed')
+          edit(p, '    production, err := listProduction(root, item)', '    if item.name == "core" { root = item.owner }\n    production, err := listProduction(root, item)')
+          p = generation / 'testing/coverage/main_test.go'
+          edit(p, 'resolve(backend, ', 'resolve(backend, filepath.Join(backend, "libs", "core"), ')
+
+          # Build tooling uses the module import rather than a path within school.
+          p = Path('scripts/lib/paths.sh')
+          edit(p, 'BACKEND_DIR="${REPO_ROOT}/backend"', 'BACKEND_DIR="${REPO_ROOT}/backend"\nCORE_DIR="${REPO_ROOT}/libs/backend/core"\nCORE_github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core="github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core"')
+          p = Path('scripts/backend/generate-annotations.sh')
+          edit(p, 'require_command go\n', 'require_command go\n\n# Explicit roots let the same processors serve another application.\nBACKEND_DIR="${1:-${BACKEND_DIR}}"\nCORE_DIR="${2:-${CORE_DIR}}"\nBACKEND_DIR="$(cd -- "$BACKEND_DIR" && pwd)"\nCORE_DIR="$(cd -- "$CORE_DIR" && pwd)"\n')
+          edit(p, '  go mod download go.uber.org/mock github.com/DATA-DOG/go-sqlmock\n)', ')\n(\n  cd -- "${CORE_DIR}"\n  go mod download\n  go mod download go.uber.org/mock github.com/DATA-DOG/go-sqlmock\n)')
+          edit(p, '"${BACKEND_DIR}/libs/core"', '"${CORE_DIR}"')
+          edit(p, 'go run ./libs/core/annotation/generation/', 'go run "${CORE_github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core}/annotation/generation/"')
+          edit(p, 'generation/"testing "${BACKEND_DIR}"', 'generation/"testing "${BACKEND_DIR}" "${CORE_DIR}"')
+          edit(p, 'generation/"overlay "${BACKEND_DIR}"', 'generation/"overlay "${BACKEND_DIR}" "${CORE_DIR}"')
+          p = Path('scripts/testing/unit-coverage.sh')
+          edit(p, 'go run ./libs/core/annotation/generation/testing/coverage', 'go run "${CORE_github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core}/annotation/generation/testing/coverage"')
+          edit(p, '    -backend "${BACKEND_DIR}"', '    -core "${CORE_DIR}" \\\n    -generator-script "${REPO_ROOT}/scripts/backend/generate-annotations.sh" \\\n    -reports "${RUNTIME_DIR}/reports/unit-coverage" \\\n    -backend "${BACKEND_DIR}"')
+          p = Path('scripts/lib/go.sh')
+          edit(p, '  (\n    cd -- "${BACKEND_DIR}"', '  (\n    cd -- "${CORE_DIR}"\n    GOWORK=off go mod tidy\n  )\n  (\n    cd -- "${BACKEND_DIR}"')
+          p = Path('scripts/backend/test.sh')
+          edit(p, '  go test -vet=off -overlay="${BACKEND_DIR}/.generated/overlay.json" "$@"', '  go test -vet=off -overlay="${BACKEND_DIR}/.generated/overlay.json" "$@"\n)\n# The school module wildcard no longer includes the independent Core module.\n(\n  cd -- "${CORE_DIR}"\n  go test -vet=off -overlay="${BACKEND_DIR}/.generated/overlay.json" ./...')
+          p = Path('scripts/backend/format.sh')
+          edit(p, '    path="${BACKEND_DIR}"', '    path="${BACKEND_DIR}"') # school scope remains stable
+          edit(p, '  integration)', '  core)\n    path="${CORE_DIR}"\n    ;;\n  integration)')
+          edit(p, 'Expected all, foundation, foundation-repository, or integration.', 'Expected all, core, foundation, foundation-repository, or integration.')
+          edit(p, '    log_info "GroveHub formatting lint passed', '    if [[ "$scope" == all ]]; then go run "${SCRIPT_DIR}/groovefmt/main.go" -check "${CORE_DIR}"; fi\n    log_info "GroveHub formatting lint passed')
+          edit(p, '    log_info "Formatted Go code', '    if [[ "$scope" == all ]]; then go run "${SCRIPT_DIR}/groovefmt/main.go" "${CORE_DIR}"; fi\n    log_info "Formatted Go code')
+
+          # Air watches both module roots, with existing runtime binary location.
+          p = Path('backend/.air.toml')
+          edit(p, 'tmp_dir = "../.runtime/air"', 'tmp_dir = ".runtime/air"')
+          edit(p, 'bash ../scripts/backend/air-build.sh', 'bash scripts/backend/air-build.sh')
+          edit(p, 'bin = "../.runtime/bin/groovehub-dev"', 'bin = ".runtime/bin/groovehub-dev"')
+          edit(p, 'exclude_dir = ["vendor", ".generated"]', 'include_dir = ["backend", "libs/backend/core"]\nexclude_dir = ["vendor", ".generated", ".runtime", "node_modules"]')
+          p = Path('scripts/backend/dev.sh')
+          edit(p, 'cd -- "${BACKEND_DIR}"\nexec "${AIR_BIN}" -c .air.toml', 'cd -- "${REPO_ROOT}"\nexec "${AIR_BIN}" -c backend/.air.toml')
+
+          # Normal CI continues to exercise the old test scopes plus all Core tests.
+          p = Path('.github/workflows/backend-annotations.yml')
+          edit(p, '      - "backend/**"', '      - "backend/**"\n      - "libs/backend/core/**"\n      - "go.work"\n      - "go.work.sum"')
+          edit(p, 'cache-dependency-path: backend/go.sum', 'cache-dependency-path: |\n            backend/go.sum\n            libs/backend/core/go.sum')
+          edit(p, 'go list -overlay=.generated/overlay.json ./libs/core/annotation/...', 'go list -overlay=.generated/overlay.json github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/...')
+          edit(p, "' ./libs/core/... >", "' github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/... >")
+          edit(p, 'if ($i ~ /^grovehub\\// && $i !~ /^grovehub\\/libs\\/core(\\/|$)/)', 'if ($i ~ /^grovehub\\//)')
+          edit(p, 'run: go test ./libs/core/annotation/generation/layout ./libs/core/annotation/generation/patchdto ./libs/core/annotation/generation/search ./libs/core/annotation/generation/routes ./libs/core/annotation/generation/clients ./libs/core/annotation/generation/mappers ./libs/core/annotation/generation/testing/coverage', 'run: go test github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/generation/...')
+          edit(p, 'suites=(./libs/core/tests/unit-test/... ', 'suites=(github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tests/unit-test/... ')
+          edit(p, 'if [[ -d services/foundation/tests/unit-test ]]; then', 'if [[ -d services/foundation/internal/tests/unit-test ]]; then\n            suites+=(./services/foundation/internal/tests/unit-test/...)\n          fi\n          if [[ -d services/foundation/tests/unit-test ]]; then')
+          edit(p, '      - name: Verify canonical Identity resource packages compile', '      - name: Verify Core standalone build and tests\n        working-directory: libs/backend/core\n        run: GOWORK=off go test -vet=off -overlay=../../../backend/.generated/overlay.json ./...\n      - name: Verify school build without workspace\n        working-directory: backend\n        run: GOWORK=off go build -overlay=.generated/overlay.json -o "$RUNNER_TEMP/school-platform" ./cmd/platform\n      - name: Verify canonical Identity resource packages compile')
+
+          # Inventory the new physical path in frontend's existing extraction audit.
+          p = Path('frontend/scripts/audit-shared-extraction.mjs')
+          assert "'libs/backend/core/'" in p.read_text()
+
+          # Format modified Go tooling only; do not reformat every consumer.
+          for path in [generation/'testing/main.go',generation/'overlay/main.go',generation/'testing/coverage/main.go',generation/'testing/coverage/main_test.go']:
+              subprocess.run(['gofmt','-w',str(path)],check=True)
+          PY
+          echo 'Remaining physical or import path references outside historical docs:'
+          git grep -nE 'grovehub/libs/core|backend/libs/core|[.]/libs/core|BACKEND_DIR.*/libs/core' -- ':!docs' ':!**/*.md' ':!frontend/scripts/audit-shared-extraction.mjs' ':!.github/workflows/one-time-core-extraction.yml' || true
+          (cd libs/backend/core && GOWORK=off go mod edit -module=github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core -tool=go.uber.org/mock/mockgen && GOWORK=off go mod tidy)
+          (cd backend && GOWORK=off go mod edit -require=github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core@v0.0.0 -replace=github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core=../libs/backend/core && GOWORK=off go mod tidy)
+          go work init ./backend ./libs/backend/core
+          go work sync
+      - name: Build school backend with generated annotations
+        run: make backend-lint && make backend-build
+      - name: Verify school module without workspace
+        working-directory: backend
+        run: GOWORK=off go build -overlay=.generated/overlay.json -o "$RUNNER_TEMP/school-platform" ./cmd/platform
+      - name: Verify standalone Core module
+        working-directory: libs/backend/core
+        run: |
+          export GOWORK=off
+          go run ./annotation/generation/testing "$PWD" "$PWD"
+          go run ./annotation/generation/overlay "$PWD" "$PWD"
+          go test -vet=off -overlay=.generated/overlay.json ./...
+          go list -overlay=.generated/overlay.json -f '{{.ImportPath}} {{join .Imports " "}} {{join .TestImports " "}} {{join .XTestImports " "}}' ./... > "$RUNNER_TEMP/core-imports.txt"
+          awk '{ for (i=2;i<=NF;i++) if ($i ~ /^grovehub\//) { print $1 ": forbidden dependency " $i; bad=1 } } END { exit bad }' "$RUNNER_TEMP/core-imports.txt"
+      - name: School regression suites
+        working-directory: backend
+        run: |
+          go test -vet=off -overlay=.generated/overlay.json ./launcher/tests/unit-test/... ./services/foundation/internal/tests/unit-test/... ./services/identity/internal/tests/unit-test/... ./services/integration/internal/tests/unit-test/... ./services/infrastructure/internal/app/services/messaging/...
+      - name: Verify coverage and inventory through relocated generator
+        run: |
+          make test-inventory packages='["core","foundation"]'
+          make unit-test packages='["core","foundation","identity"]'
+          test -s backend/.generated/unit-coverage/core.out
+          test -s .runtime/reports/unit-coverage/core.html
+          test -s .runtime/reports/unit-coverage/identity.html
+      - name: Commit validated migration
+        run: |
+          test ! -e backend/libs/core
+          git add -- backend libs/backend/core scripts .github/workflows/backend-annotations.yml go.work
+          if [[ -f go.work.sum ]]; then git add go.work.sum; fi
+          git diff --cached --check
+          git diff --cached --name-only | awk '!/^(backend\/|libs\/backend\/core\/|scripts\/|go\.work($|\.sum$)|\.github\/workflows\/backend-annotations\.yml$)/ { print; bad=1 } END { exit bad }'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "refactor(core): relocate independent Go module and rewire build pipeline"
+          git push origin "HEAD:refs/heads/maintenance/core-extraction-924d3b5"
