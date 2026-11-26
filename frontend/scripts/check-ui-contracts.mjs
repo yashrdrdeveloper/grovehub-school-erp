@@ -6,14 +6,6 @@ const failures = [];
 const checkedCounter = { current: 0 };
 
 for (const unit of await readdir(root, { withFileTypes: true })) {
-  if (unit.isFile() && unit.name === 'SchoolMonogram.tsx') {
-    const source = await readFile(path.join(root, unit.name), 'utf8');
-    checkedCounter.current++;
-    if (!/dataTestId/.test(source) || !/data-testid/.test(source)) {
-      failures.push('SchoolMonogram: dataTestId must reach its native root');
-    }
-    continue;
-  }
   if (!unit.isDirectory()) continue;
 
   const folder = path.join(root, unit.name);
@@ -69,6 +61,14 @@ for (const unit of await readdir(root, { withFileTypes: true })) {
   } catch {
     failures.push(`${unit.name}: missing typed prop contract`);
   }
+}
+
+const brandSource = await readFile(
+  path.join(process.cwd(), 'packages/domain/brand/components/schoolMonogram/SchoolMonogram.tsx'),
+  'utf8',
+);
+if (!/<Box\b/.test(brandSource) || !/dataTestId=\{dataTestId\}/.test(brandSource)) {
+  failures.push('SchoolMonogram: dataTestId must reach its native root through Box');
 }
 
 if (failures.length) {

@@ -24,7 +24,7 @@ const walk = async (dir) => {
 const forbidden = {
   base: ['@Business', '@Components', '@Domain', '@Shell', '@Styles', '@Assets', '@Auth'],
   business: ['@Components', '@Domain', '@Shell', '@Styles', '@Assets', '@Auth'],
-  components: ['@Business', '@Domain', '@Shell', '@Auth'],
+  components: ['@Business', '@Domain', '@Shell', '@Assets', '@Auth'],
   styles: ['@Base', '@Business', '@Components', '@Domain', '@Shell', '@Assets', '@Auth'],
   assets: ['@Base', '@Business', '@Components', '@Domain', '@Shell', '@Styles', '@Auth'],
   domain: ['@Shell', '@Auth/'],

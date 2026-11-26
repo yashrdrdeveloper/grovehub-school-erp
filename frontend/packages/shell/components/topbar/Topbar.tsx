@@ -1,7 +1,7 @@
 import { Box, BOX_TAG } from '@Components/components/Box';
 import { Button } from '@Components/components/Button';
 import { Menu } from '@Components/icons';
-import { SchoolMonogram } from '@Components';
+import { SchoolMonogram } from '@Domain/brand';
 
 import { ThemeChoices } from '../themeChoices';
 

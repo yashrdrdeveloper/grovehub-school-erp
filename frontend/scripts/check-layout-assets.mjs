@@ -50,7 +50,7 @@ const [
   guide,
 ] = await Promise.all([
   source('packages/domain/auth/components/authAmbientGraphic/AuthAmbientGraphic.tsx'),
-  source('packages/components/components/SchoolMonogram.tsx'),
+  source('packages/domain/brand/components/schoolMonogram/SchoolMonogram.tsx'),
   source('packages/components/components/SVGRenderer/SVGRenderer.tsx'),
   source('packages/shell/components/appRoutes/AppRoutes.tsx'),
   source('packages/shell/components/protectedLayout/ProtectedLayout.tsx'),

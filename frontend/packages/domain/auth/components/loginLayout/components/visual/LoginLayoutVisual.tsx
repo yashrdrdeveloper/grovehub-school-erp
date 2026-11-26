@@ -1,5 +1,5 @@
 import { Box, BOX_TAG } from '@Components/components/Box';
-import { SchoolMonogram } from '@Components';
+import { SchoolMonogram } from '@Domain/brand';
 
 import { LOGIN_LAYOUT_LEGACY_CLASSES } from '../../constants/loginLayout.legacyClasses';
 import type { LoginLayoutVisualComponent } from './types/loginLayoutVisual';

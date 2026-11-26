@@ -1255,7 +1255,7 @@ A shared renderer `@Components/components/SVGRenderer` receives either `src` for
 
 Do **not** leave `AuthAmbientGraphic.tsx`, `LoginLayout.tsx`, `RecoveryFlowBoundary.tsx`, random SVG elements, or compatibility stubs at `auth/pages/` root. Only true routing page files go under their own `pages/<page>/`. Existing tests at old flat locations must be relocated to the owning unit's `__tests__` during migration.
 
-`@Assets` has no business, hooks, styles, or renderer logic; `@Components` can import `@Assets`; `@Domain` can import `@Components` and `@Assets`. `@Styles`, `@Base` and `@Business` must not depend on `@Assets`. Vite, TypeScript and Jest must resolve every new alias consistently. Never expose sensitive or user-created content as public static files.
+`@Assets` has no business, hooks, styles, or renderer logic; `@Components` must not import application-owned `@Assets`; `@Domain` can import `@Components` and `@Assets`. Application artwork is passed to reusable renderers by its domain owner. The RDR monogram is exposed by `@Domain/brand` and uses the shared Box and SVGRenderer primitives. `@Styles`, `@Base` and `@Business` must not depend on `@Assets`. Vite, TypeScript and Jest must resolve every new alias consistently. Never expose sensitive or user-created content as public static files.
 
 ### 21.3 Public routes have **no workspace layout**
 

@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { AppLink } from '@Components/components/AppLink';
 import { useLocation } from '@Components/router';
 import { ArrowRight, ArrowUpRight, MapPin, X } from '@Components/icons';
-import { SchoolMonogram } from '@Components';
+import { SchoolMonogram } from '@Domain/brand';
 import { APP_ROUTE } from '@Business/app/routes';
 import { AUTH_ROUTE } from '@Business/auth/routes';
 import { getSiteNavClassName } from './helpers/siteChrome.getNavClassName';
