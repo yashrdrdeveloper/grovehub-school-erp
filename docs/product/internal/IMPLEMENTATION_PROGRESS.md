@@ -68,3 +68,15 @@ Frontend [45809337646](https://github.com/yashrdrdeveloper/grovehub-school-erp/a
 ## R1.1 — Permission feature binding integrity
 
 The pure evaluator now rejects any mismatch between the code-owned feature binding and registered state, including unexpected feature associations on featureless permissions. Added regression assertions for valid featureless grants and mismatched bindings. No grants, migrations, or route enforcement were enabled. Backend tests need verification at the new revision.
+
+## A0.5 — Full formatter remediation and verification
+
+Applied the four Base blobs from the first CI artifact, matching every generated blob hash. A later run revealed remaining school frontend formatting debt. On isolated branch `maintenance/frontend-format-073c903`, [workflow 45810539101](https://github.com/yashrdrdeveloper/grovehub-school-erp/actions/runs/45810539101) ran frozen pnpm installation, the pinned formatter, format:check and git diff --check successfully. Verified all 144 resulting changed files were tracked frontend/library files and transferred the formatter tree to the implementation branch at `09e7eb784c1b4a89516c5ccd02cd2c6afcf94b0f`, excluding the temporary workflow. No architecture, test or lint gate has been relaxed. Full normal frontend CI on the new tree remains required; passing formatting alone is not a release signal.
+
+## A3.1 — Theme namespace preparation
+
+Commit `073c9030ca02cb43da3c26aee64b806220c3d61a` allows Components theme storage readers, writers and hook to receive an explicit stable application storage key, with two isolation tests. The legacy school default is retained temporarily to preserve current preferences. Still required: move the school default into the school owner, inject the key consistently in all consumers, audit table preference keys and remove the school artwork dependency before moving Components. Internal application and extracted Core remain unimplemented.
+
+## R1.2 — Backend verification
+
+[Backend run 45810062545](https://github.com/yashrdrdeveloper/grovehub-school-erp/actions/runs/45810062545) at `2cac9c6a5b25fb4722e3969690e0c5d2c2345aba` passed Linux annotation build, available service/core unit suites, coverage-report generation, and macOS generated-source verification. This does not prove complete coverage, migration execution, production authorization or end-to-end RBAC. Repository hydration and controlled bootstrap are prerequisites for enforcement; interim permissive account authorization remains a release blocker.
