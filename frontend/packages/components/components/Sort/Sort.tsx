@@ -1,8 +1,8 @@
 import { _map } from '@Base/utilities/map';
-import { Plus, Trash2, ArrowUpDown } from '@Components/icons';
+import { Trash2, ArrowUpDown } from '@Components/icons';
 
 import { Box } from '../Box';
-import { Button, BUTTON_VARIANT, BUTTON_SIZE } from '../Button';
+import { BUTTON_VARIANT, BUTTON_SIZE } from '../Button';
 import { ButtonWithIcon } from '../ButtonWithIcon';
 import { DragList } from '../DragList';
 import { EmptyState } from '../EmptyState';
@@ -10,6 +10,7 @@ import { Select } from '../Select';
 import { Tooltip } from '../Tooltip';
 import { Popover } from '../Popover';
 
+import { SortActions } from './components/sortActions';
 import { SortDirection } from './constants/sort.direction';
 import styles from './Sort.module.css';
 import type { SortProps } from './types/sort.props';
@@ -28,8 +29,6 @@ export const SortView = ({
     if (value.length) return __('Sort ({{count}})', { count: value.length });
     return __('Sort');
   };
-  const invalidReason =
-    (!controls.isDraftValid && __('Choose a unique field for each sort rule.')) || undefined;
 
   return (
     <Popover
@@ -123,33 +122,7 @@ export const SortView = ({
             />
           )}
         </Box>
-        <Box className={styles.footer}>
-          <Tooltip label={controls.addReason} focusable={Boolean(controls.addReason)}>
-            <ButtonWithIcon
-              icon={Plus}
-              iconSize={14}
-              size={BUTTON_SIZE.SMALL}
-              variant={BUTTON_VARIANT.GHOST}
-              className={styles.add}
-              disabled={!controls.canAdd}
-              onClick={controls.add}
-            >
-              {__('Add sort')}
-            </ButtonWithIcon>
-          </Tooltip>
-          <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} onClick={controls.reset}>
-            {__('Reset')}
-          </Button>
-          <Tooltip label={invalidReason} focusable={Boolean(invalidReason)}>
-            <Button
-              size={BUTTON_SIZE.SMALL}
-              disabled={!controls.isDraftValid}
-              onClick={controls.apply}
-            >
-              {__('Apply sort')}
-            </Button>
-          </Tooltip>
-        </Box>
+        <SortActions controls={controls} />
       </Box>
     </Popover>
   );

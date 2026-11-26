@@ -1,18 +1,17 @@
-import { _map } from '@Base/utilities/map';
 import { _filter } from '@Base/utilities/filter';
-import { ChevronDown, Check, Search } from '@Components/icons';
+import { ChevronDown, Search } from '@Components/icons';
 
 import { useMobileViewport } from '@Components/hooks/useMobileViewport';
 import { Box } from '../../../Box';
 import { Button, BUTTON_SIZE, BUTTON_VARIANT } from '../../../Button';
 import { ButtonWithIcon, BUTTON_ICON_POSITION } from '../../../ButtonWithIcon';
-import { EmptyState } from '../../../EmptyState';
 import { Input } from '../../../Input';
 import { InputControl, INPUT_CONTROL_SIZE } from '../../../InputControl';
 import { Icon } from '../../../Icon';
 import { Popover } from '../../../Popover';
 import { Tooltip } from '../../../Tooltip';
 
+import { SelectionOptions } from './components/selectionOptions';
 import styles from './SelectionPanel.module.css';
 import type { SelectValue } from '../../types/select.props';
 import type { SelectionPanelProps } from './types/selectionPanel.props';
@@ -120,51 +119,18 @@ export const SelectionPanel = <T extends SelectValue>({
           )}
           {error && <Box role="alert">{error}</Box>}
           {error && onRetry && <Button onClick={onRetry}>{__('Retry')}</Button>}
-          <Box className={styles.options} role="group" aria-label={label}>
-            {_map(options, (option) => (
-              <Button
-                key={option.value}
-                variant={BUTTON_VARIANT.GHOST}
-                size={BUTTON_SIZE.SMALL}
-                disabled={option.disabled}
-                aria-pressed={selected.includes(option.value)}
-                onClick={() => onToggle(option.value)}
-                className={styles.option}
-                dataTestId={dataTestId && `${dataTestId}-option-${option.value}`}
-              >
-                {multiple && (
-                  <Box
-                    className={styles.check}
-                    data-checked={selected.includes(option.value)}
-                    aria-hidden="true"
-                  >
-                    {selected.includes(option.value) && <Icon icon={Check} size={12} />}
-                  </Box>
-                )}
-                <Box className={styles.optionLabel}>
-                  {option.label}
-                  {option.description && (
-                    <Box className={styles.description}>{option.description}</Box>
-                  )}
-                </Box>
-                {!multiple && selected.includes(option.value) && <Icon icon={Check} size={14} />}
-              </Button>
-            ))}
-            {!options.length && !loading && !error && (
-              <EmptyState
-                compact
-                icon={Search}
-                title={__('No options found')}
-                description={__('Try a different search or selection.')}
-              />
-            )}
-            {loading && <Box role="status">{__('Loading…')}</Box>}
-            {hasNext && (
-              <Button disabled={loading} onClick={onLoadMore}>
-                {__('Load more')}
-              </Button>
-            )}
-          </Box>
+          <SelectionOptions
+            options={options}
+            selected={selected}
+            multiple={multiple}
+            label={label}
+            loading={loading}
+            error={error}
+            hasNext={hasNext}
+            dataTestId={dataTestId}
+            onToggle={onToggle}
+            onLoadMore={onLoadMore}
+          />
           {(clearable || multiple) && (
             <Box className={styles.footer}>
               {clearable && (

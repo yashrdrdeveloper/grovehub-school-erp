@@ -1,5 +1,3 @@
-import { useCallback } from 'react';
-import { _map } from '@Base/utilities/map';
 import { CalendarDays } from '@Components/icons';
 
 import { Box } from '../Box';
@@ -9,7 +7,8 @@ import { Calendar } from '../Calendar';
 import { Popover } from '../Popover';
 import { Tooltip } from '../Tooltip';
 
-import { CUSTOM_DATE_RANGE_PRESET, DATE_RANGE_PRESETS } from './constants/dateRange.presets';
+import { CUSTOM_DATE_RANGE_PRESET } from './constants/dateRange.presets';
+import { DateRangePresets } from './components/dateRangePresets';
 import { shiftRangeMonth } from './helpers/dateRange.calendar';
 import { getFormattedRangeDate } from './helpers/dateRange.getFormattedDate';
 import { useDateRange } from './hooks/useDateRange';
@@ -20,20 +19,6 @@ export const DateRange = (props: DateRangeProps) => {
   const { value, disabled, dataTestId, showHeader = true, showFooter = true } = props;
   const controls = useDateRange(props);
   const empty = !value.startDate && !value.endDate;
-  const revealSelectedPreset = useCallback(
-    (element: HTMLElement | null) => {
-      if (!controls.open) return;
-      const selected = element?.querySelector<HTMLElement>('[aria-pressed="true"]');
-      if (!element || !selected) return;
-      const container = element.getBoundingClientRect();
-      const button = selected.getBoundingClientRect();
-      if (button.bottom > container.bottom) element.scrollTop += button.bottom - container.bottom;
-      if (button.top < container.top) element.scrollTop -= container.top - button.top;
-      if (button.right > container.right) element.scrollLeft += button.right - container.right;
-      if (button.left < container.left) element.scrollLeft -= container.left - button.left;
-    },
-    [controls.open],
-  );
   const getSummary = () => {
     if (empty) return __('Select date range');
     return [getFormattedRangeDate(value.startDate), getFormattedRangeDate(value.endDate)].join(
@@ -88,36 +73,7 @@ export const DateRange = (props: DateRangeProps) => {
       >
         <Box className={styles.range}>
           <Box className={styles.layout}>
-            <Box
-              ref={revealSelectedPreset}
-              className={styles.presets}
-              role="group"
-              aria-label={__('Date range presets')}
-            >
-              <Button
-                variant={BUTTON_VARIANT.GHOST}
-                size={BUTTON_SIZE.SMALL}
-                className={styles.preset}
-                aria-pressed={controls.selectedPreset === CUSTOM_DATE_RANGE_PRESET}
-                disabled={disabled}
-                onClick={controls.selectCustom}
-              >
-                {__('Custom')}
-              </Button>
-              {_map(DATE_RANGE_PRESETS, (preset) => (
-                <Button
-                  key={preset.id}
-                  variant={BUTTON_VARIANT.GHOST}
-                  size={BUTTON_SIZE.SMALL}
-                  className={styles.preset}
-                  aria-pressed={controls.selectedPreset === preset.id}
-                  disabled={disabled}
-                  onClick={() => controls.selectPreset(preset)}
-                >
-                  {preset.label}
-                </Button>
-              ))}
-            </Box>
+            <DateRangePresets controls={controls} disabled={disabled} />
             <Box className={styles.selection}>
               <Box
                 className={styles.calendars}
