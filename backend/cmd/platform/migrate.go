@@ -5,6 +5,7 @@ import (
     "fmt"
     "os"
     "time"
+    "gorm.io/gorm"
 
     "grovehub/launcher/bootstrap"
     "grovehub/services/foundation"
@@ -27,6 +28,7 @@ func runMigrationCommand() int {
     }
     ctx,cancel:=context.WithTimeout(context.Background(),10*time.Minute)
     defer cancel()
+    if service=="audit" { return migrateAudit(ctx,nil) }
     db,err:=bootstrap.NewPostgresDB(ctx)
     if err!=nil{_,_=fmt.Fprintf(os.Stderr,"open migration database: %v\n",err);return 1}
     sqlDB,err:=db.DB()
@@ -56,11 +58,14 @@ func runMigrationCommand() int {
             return 1
         }
     }
-    if service=="audit" || service=="all" {
-        if err:=audit.Migrate(ctx,db);err!=nil{
-            _,_=fmt.Fprintf(os.Stderr,"migrate audit: %v\n",err)
-            return 1
-        }
-    }
+    if service=="all" { return migrateAudit(ctx,db) }
     return 0
+}
+
+func migrateAudit(ctx context.Context,shared *gorm.DB) int {
+	db,closeDB,err:=bootstrap.NewAuditPostgresDB(ctx,shared)
+	if err!=nil { _,_=fmt.Fprintln(os.Stderr,"open Audit migration database:",err);return 1 }
+	defer closeDB()
+	if err:=audit.Migrate(ctx,db);err!=nil { _,_=fmt.Fprintln(os.Stderr,"migrate audit:",err);return 1 }
+	return 0
 }

@@ -167,8 +167,12 @@ jobs:
           INTEGRATION_MAIL_TEST_DSN: "host=127.0.0.1 port=5432 user=rbac_test password=rbac_test dbname=groovehub_rbac_test sslmode=disable"
         run: go test -vet=off -overlay=.generated/overlay.json -count=1 -v ./services/integration/internal/tests/integration-test/maildelivery/...
 
+      - name: Create isolated Audit database
+        run: docker exec ${{ job.services.postgres.id }} createdb -U rbac_test groovehub_audit_test
+
       - name: Validate Audit projection and deduplication against PostgreSQL
         working-directory: backend
         env:
           AUDIT_TEST_DSN: "host=127.0.0.1 port=5432 user=rbac_test password=rbac_test dbname=groovehub_rbac_test sslmode=disable"
+          AUDIT_SPLIT_TEST_DSN: "host=127.0.0.1 port=5432 user=rbac_test password=rbac_test dbname=groovehub_audit_test sslmode=disable"
         run: go test -vet=off -overlay=.generated/overlay.json -count=1 -v ./services/audit/internal/tests/integration-test/...

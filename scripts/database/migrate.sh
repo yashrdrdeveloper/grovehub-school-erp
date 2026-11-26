@@ -23,16 +23,23 @@ case "${command_name}" in
 esac
 
 case "${service_name}" in
-  all|foundation|infrastructure|identity|integration)
+  all|foundation|infrastructure|identity|integration|audit)
     ;;
   *)
-    die "Unsupported database service: ${service_name}. Expected all, foundation, infrastructure, identity, or integration."
+    die "Unsupported database service: ${service_name}. Expected all, foundation, infrastructure, identity, integration, or audit."
     ;;
 esac
 
 load_backend_runtime_env
 
-[[ -n "${DATABASE_URL:-}" ]] || die "DATABASE_URL is required. Add the Aiven Service URI to the repository root .env file."
+if [[ "${command_name}" == "reset" && ( "${service_name}" == "all" || "${service_name}" == "audit" ) ]]; then
+  die "Audit history cannot be reset. Use an explicit development-only business service reset or a fresh disposable database."
+fi
+if [[ "${service_name}" == "audit" ]]; then
+  [[ -n "${AUDIT_DATABASE_URL:-${DATABASE_URL:-}}" ]] || die "AUDIT_DATABASE_URL or DATABASE_URL is required."
+else
+  [[ -n "${DATABASE_URL:-}" ]] || die "DATABASE_URL is required."
+fi
 
 ensure_goose
 
@@ -42,6 +49,7 @@ schema_state_table() {
     identity) printf '%s\n' "identity_schema_state" ;;
     integration) printf '%s\n' "integration_schema_state" ;;
     infrastructure) printf '%s\n' "infrastructure_schema_state" ;;
+    audit) printf '%s\n' "audit_schema_state" ;;
   esac
 }
 
@@ -49,7 +57,7 @@ run_service_schema() {
   local service="$1"
   local action="$2"
   local schema_dir="${BACKEND_DIR}/services/${service}/migrations"
-  if [[ "${service}" == "foundation" || "${service}" == "infrastructure" || "${service}" == "integration" || "${service}" == "identity" ]]; then
+  if [[ "${service}" == "foundation" || "${service}" == "infrastructure" || "${service}" == "integration" || "${service}" == "identity" || "${service}" == "audit" ]]; then
     schema_dir="${BACKEND_DIR}/services/${service}/internal/resources/migrations"
   fi
   local state_table
@@ -72,8 +80,12 @@ run_service_schema() {
 
   log_info "Running ${service} database schema command: ${action}"
 
+  local dsn="${DATABASE_URL:-}"
+  if [[ "${service}" == "audit" ]]; then
+    dsn="${AUDIT_DATABASE_URL:-${dsn}}"
+  fi
   GOOSE_DRIVER="postgres" \
-  GOOSE_DBSTRING="${DATABASE_URL}" \
+  GOOSE_DBSTRING="${dsn}" \
   GOOSE_MIGRATION_DIR="${schema_dir}" \
   GOOSE_TABLE="${state_table}" \
     "${GOOSE_BIN}" -env=none "${action}"
@@ -108,6 +120,7 @@ case "${command_name}" in
     init_service infrastructure
     init_service identity
     init_service integration
+    init_service audit
     ;;
   reset)
     run_service_schema integration reset
@@ -123,5 +136,6 @@ case "${command_name}" in
     status_service infrastructure
     status_service identity
     status_service integration
+    status_service audit
     ;;
 esac

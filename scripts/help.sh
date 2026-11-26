@@ -18,13 +18,14 @@ Backend
 Database
   make db-schema-status                           Show current GroveHub schema baseline state
   make db-schema-init                             Initialize all service schemas from the current baseline
-  make db-schema-reset                            Destructively reset all service schemas to the current baseline
+  make db-schema-init DB_SERVICE=audit            Apply Audit schema migrations
   make db-schema-reset DB_SERVICE=foundation      Reset only the Foundation schema
   make db-schema-init DB_SERVICE=infrastructure         Apply Infrastructure messaging/outbox migration
   make db-schema-reset DB_SERVICE=integration     Reset only the Integration schema (dev data lost)
 
-  DB_SERVICE can be: all, foundation, infrastructure, identity, or integration.
-  Schema reset is development-only and deletes data in the selected service schema.
+  DB_SERVICE can be: all, foundation, infrastructure, identity, integration, or audit.
+  Reset requires an explicit business service and is development-only. Audit and all resets are refused to preserve history.
+  AUDIT_DATABASE_URL is optional; empty uses the shared business database.
 
 Messaging / NATS JetStream
   make nats-start     Start local NATS JetStream with persistent storage

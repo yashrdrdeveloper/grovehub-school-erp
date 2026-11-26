@@ -90,7 +90,12 @@ func Run(logger *slog.Logger) error {
 	defer identityModule.Close()
 	identityModule.RegisterHTTP(mux)
 
-	auditModule, err := audit.New(logger, db, infrastructureModule.MessagingClient(), identityModule)
+	auditCtx,cancelAudit:=context.WithTimeout(context.Background(),5*time.Second)
+	auditDB,closeAuditDB,err:=bootstrap.NewAuditPostgresDB(auditCtx,db)
+	cancelAudit()
+	if err!=nil { return err }
+	defer closeAuditDB()
+	auditModule, err := audit.New(logger, auditDB, infrastructureModule.MessagingClient(), identityModule)
 	if err != nil { return fmt.Errorf("initialize Audit: %w", err) }
 	defer auditModule.Close()
 	auditModule.RegisterHTTP(mux)

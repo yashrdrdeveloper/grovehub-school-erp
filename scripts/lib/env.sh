@@ -13,6 +13,7 @@ load_backend_runtime_env() {
   local name
   for name in \
     DATABASE_URL \
+    AUDIT_DATABASE_URL \
     GROVEHUB_MESSAGING_PROVIDER \
     GROVEHUB_NATS_URL \
     GROVEHUB_NATS_QUEUE_GROUP_PREFIX \
