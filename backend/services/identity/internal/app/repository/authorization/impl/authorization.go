@@ -32,5 +32,12 @@ func (repository *Repository) LoadSnapshot(ctx context.Context, tenantID string,
 	if result.Error != nil {
 		return authorizationrepo.Snapshot{}, result.Error
 	}
-	return helpers.HydrateSnapshot(rows)
+	snapshot, err := helpers.HydrateSnapshot(rows)
+	if err != nil {
+		return authorizationrepo.Snapshot{}, err
+	}
+	if snapshot.AccountID != accountID || snapshot.TenantID != tenantID {
+		return authorizationrepo.Snapshot{}, authorizationrepo.ErrInvalidSnapshot
+	}
+	return snapshot, nil
 }
