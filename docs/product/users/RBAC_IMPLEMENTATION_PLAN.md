@@ -182,3 +182,7 @@ Added internal CreateDraft and Get operations, separate DTOs, validation, respon
 ## Versioned role metadata checkpoint
 
 Internal UpdateMetadata requires IDENTITY_ROLE_UPDATE and a positive expected version. It replaces name, description and complete persona set atomically with a tenant/role/version predicate and version increment. Status, grants and assignments are untouched. Missing or foreign IDs are not found; stale versions conflict. Added service/validator tests and PostgreSQL assertions for tenant boundaries, persona replacement and two concurrent edits with a single winner. Full replacement is internal only, not a final PATCH contract. CI pending. Search, outbox, approval and grant management remain outstanding.
+
+## Role search checkpoint
+
+Added internal RoleView-authorized search using the shared core search framework with tenant-scoped totals, name/description search text, role ID/name/status/personas/timestamp filters, stable multi-sort and numbered or legacy cursor pagination. Persona filtering uses tenant-correlated EXISTS; list hydration returns persona sets in the same select, not N+1 queries. Added validator/service tests and real PostgreSQL pagination and tenant isolation assertions. No HTTP route exposed. CI pending. Next: permission delegation, versioned grant replacement, approval and outbox.

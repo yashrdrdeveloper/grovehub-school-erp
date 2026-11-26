@@ -7,11 +7,12 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 const InsertPersona = `INSERT INTO identity.role_personas (tenant_id, role_id, persona_code)
 VALUES (?, ?, ?)`
 
-const FindDetail = `SELECT r.*, COALESCE(
+const DetailProjection = `r.*, COALESCE(
     (SELECT json_agg(p.persona_code ORDER BY p.persona_code)::text
      FROM identity.role_personas p WHERE p.tenant_id = r.tenant_id AND p.role_id = r.role_id),
-    '[]') AS persona_json
-FROM identity.roles r WHERE r.tenant_id = ? AND r.role_id = ?`
+    '[]') AS persona_json`
+
+const FindDetail = `SELECT ` + DetailProjection + ` FROM identity.roles r WHERE r.tenant_id = ? AND r.role_id = ?`
 
 const UpdateMetadata = `UPDATE identity.roles SET name = ?, normalized_name = ?, description = ?,
 search_details = ?, updated_by = ?, updated_at = now(), version = version + 1

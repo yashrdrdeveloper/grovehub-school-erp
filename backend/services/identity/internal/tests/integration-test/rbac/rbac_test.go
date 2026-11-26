@@ -5,6 +5,11 @@ import (
 	"os"
 	"testing"
 
+	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	roledto "grovehub/services/identity/internal/app/dto/role"
+	searchoperation "grovehub/services/identity/internal/app/services/role/operations/search"
+	rolevalidator "grovehub/services/identity/internal/app/validators/role"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"gorm.io/driver/postgres"
@@ -123,6 +128,42 @@ var _ = Describe("RBAC persistence against PostgreSQL", func() {
 		updatedRole, err = roles.FindByID(ctx, "school-a", createdRole.Role.RoleID)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(updatedRole.Role.Version).To(Equal(int64(3)))
+
+		_, err = roles.CreateDraft(ctx, rolerepo.Draft{TenantID: "school-a", ActorID: actorID, Name: "Zulu Teacher", Personas: []persona.Code{persona.Teacher}})
+		Expect(err).NotTo(HaveOccurred())
+		requestSearch := coresearch.Request{
+			PageInfo: coresearch.PageRequest{PageNumber: 1, RowSize: 1},
+			Sort: []coresearch.Sort{{Field: roledto.FieldName, Direction: coresearch.DirectionAscending}, {Field: roledto.FieldCreatedAt, Direction: coresearch.DirectionDescending}},
+			Filters: []coresearch.Filter{{Field: roledto.FieldPersonas, Operator: coresearch.OperatorEquals, Values: []string{"TEACHER"}}},
+		}
+		query, err := rolevalidator.NormalizeSearch(requestSearch)
+		Expect(err).NotTo(HaveOccurred())
+		pageRows, err := roles.Search(ctx, "school-a", query)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(*pageRows.TotalRecords).To(Equal(int64(2)))
+		Expect(pageRows.Items).To(HaveLen(1))
+		Expect(pageRows.Items[0].Role.Name).To(Equal("Concurrent edit"))
+		Expect(pageRows.Items[0].Personas).To(Equal([]persona.Code{persona.Teacher}))
+		page, err := searchoperation.Hydrate(query, pageRows)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(page.PageInfo.NextCursor).NotTo(BeEmpty())
+		requestSearch.PageInfo.PageNumber = 2
+		requestSearch.PageInfo.Cursor = page.PageInfo.NextCursor
+		query, err = rolevalidator.NormalizeSearch(requestSearch)
+		Expect(err).NotTo(HaveOccurred())
+		pageRows, err = roles.Search(ctx, "school-a", query)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(*pageRows.TotalRecords).To(Equal(int64(2)))
+		Expect(pageRows.Items).To(HaveLen(1))
+		Expect(pageRows.Items[0].Role.Name).To(Equal("Zulu Teacher"))
+		Expect(pageRows.HasNext).To(BeFalse())
+		requestSearch.PageInfo = coresearch.PageRequest{Rows: 25}
+		query, err = rolevalidator.NormalizeSearch(requestSearch)
+		Expect(err).NotTo(HaveOccurred())
+		pageRows, err = roles.Search(ctx, "school-b", query)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(*pageRows.TotalRecords).To(Equal(int64(1)))
+		Expect(pageRows.Items).To(HaveLen(1))
 
 		catalog := registryservice.New(registryimpl.New(db))
 		authorizer := authorizationimpl.New(authorizationrepo.New(db))

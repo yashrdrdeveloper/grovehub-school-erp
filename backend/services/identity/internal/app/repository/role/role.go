@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+
 	"grovehub/services/identity/internal/app/constants/persona"
 	"grovehub/services/identity/internal/app/entity"
 )
@@ -42,4 +44,5 @@ type Repository interface {
 	CreateDraft(ctx context.Context, draft Draft) (Detail, error)
 	FindByID(ctx context.Context, tenantID string, roleID string) (Detail, error)
 	UpdateMetadata(ctx context.Context, update MetadataUpdate) (Detail, error)
+	Search(ctx context.Context, tenantID string, query coresearch.Query[string]) (coresearch.QueryResult[Detail], error)
 }

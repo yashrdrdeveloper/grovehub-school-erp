@@ -5,6 +5,8 @@ import (
 	"errors"
 	"testing"
 
+	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -46,6 +48,7 @@ func (auth *authorizer) Effective(ctx context.Context) ([]permission.Code, error
 type repository struct {
 	draft rolerepo.Draft
 	update rolerepo.MetadataUpdate
+	query coresearch.Query[string]
 	tenant string
 	id string
 	calls int
@@ -69,6 +72,14 @@ func (repo *repository) UpdateMetadata(ctx context.Context, update rolerepo.Meta
 	repo.calls++
 	repo.update = update
 	return rolerepo.Detail{Role: entity.Role{RoleID: update.RoleID, Name: update.Name, Version: update.Version + 1}, Personas: update.Personas}, repo.err
+}
+
+func (repo *repository) Search(ctx context.Context, tenantID string, query coresearch.Query[string]) (coresearch.QueryResult[rolerepo.Detail], error) {
+	repo.calls++
+	repo.tenant = tenantID
+	repo.query = query
+	total := int64(1)
+	return coresearch.QueryResult[rolerepo.Detail]{Items: []rolerepo.Detail{{Role: entity.Role{RoleID: roleID, Name: "Teacher"}}}, TotalRecords: &total}, repo.err
 }
 
 var repo *repository
@@ -170,5 +181,26 @@ var _ = Describe("UpdateMetadata", func() {
 		result, err := service.UpdateMetadata(ctx, roleID, roledto.UpdateMetadata{Name: "Teacher", Personas: []persona.Code{persona.Teacher}, Version: 1})
 		Expect(err).To(MatchError(rolerepo.ErrVersionConflict))
 		Expect(result).To(Equal(roledto.Detail{}))
+	})
+})
+
+var _ = Describe("Search", func() {
+	It("uses verified tenant and role view permission", func() {
+		result, err := service.Search(ctx, coresearch.Request{PageInfo: coresearch.PageRequest{PageNumber: 1}})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(auth.code).To(Equal(permission.RoleView))
+		Expect(repo.tenant).To(Equal("school-a"))
+		Expect(repo.query.Limit).To(Equal(25))
+		Expect(result.Items).To(HaveLen(1))
+		Expect(*result.PageInfo.TotalRecords).To(Equal(int64(1)))
+	})
+	It("rejects denied or unknown filters before persistence", func() {
+		auth.err = authorization.ErrForbidden
+		_, err := service.Search(ctx, coresearch.Request{})
+		Expect(err).To(MatchError(authorization.ErrForbidden))
+		auth.err = nil
+		_, err = service.Search(ctx, coresearch.Request{Filters: []coresearch.Filter{{Field: "tenantId", Operator: coresearch.OperatorEquals, Values: []string{"school-b"}}}})
+		Expect(err).To(MatchError(rolevalidator.ErrInvalidSearch))
+		Expect(repo.calls).To(BeZero())
 	})
 })
