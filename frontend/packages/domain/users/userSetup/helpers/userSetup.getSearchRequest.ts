@@ -1,5 +1,7 @@
 import { FilterOperator } from '@Components/components/Filters';
 import { _map } from '@Base/utilities/map';
+import { _flatMap } from '@Base/utilities/flatMap';
+import { _trim } from '@Base/utilities/trim';
 import type { SearchRequest } from '@Business/domain/users';
 
 import { UserField } from '../constants/userSetup.fields';
@@ -8,7 +10,7 @@ import type { UserSetupQueryState } from '../types/userSetup.state';
 
 export const getUserSetupSearchRequest = (state: UserSetupQueryState): SearchRequest => {
   const quickStatus = state.quickFilterIds[0];
-  const filters: NonNullable<SearchRequest['filters']> = state.filters.flatMap((item) => {
+  const filters: NonNullable<SearchRequest['filters']> = _flatMap<(typeof state.filters)[number], NonNullable<SearchRequest['filters']>[number]>(state.filters, (item) => {
     if (item.operator === FilterOperator.BETWEEN) {
       const start = getUserSetupDateBoundary(item.values[0], 0);
       const end = getUserSetupDateBoundary(item.values[1], 1);
@@ -39,7 +41,7 @@ export const getUserSetupSearchRequest = (state: UserSetupQueryState): SearchReq
     filters.push({ field: UserField.STATUS, operator: 'EQUALS', values: [quickStatus] });
   }
   return {
-    searchText: state.searchText.trim(),
+    searchText: _trim(state.searchText),
     filters,
     sort: _map(state.sorting, (rule) => ({ field: rule.field, direction: rule.direction })),
     pageInfo: {

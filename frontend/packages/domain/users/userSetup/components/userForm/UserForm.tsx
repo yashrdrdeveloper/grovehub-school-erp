@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { _trim } from '@Base/utilities/trim';
 
 import { UserStatus } from '@Business/domain/users';
 import { UserAction } from '../../constants/userSetup.actions';
@@ -30,17 +31,17 @@ export const UserForm = ({
   const attempt = useRef<{ key: string; hash: string } | null>(null);
   const submit = () => {
     if (row) {
-      onEdit(row, username.trim() || null);
+      onEdit(row, _trim(username) || null);
       return;
     }
     const input = {
       person: {
-        firstName: firstName.trim(),
-        middleName: middleName.trim() || null,
-        lastName: lastName.trim(),
+        firstName: _trim(firstName),
+        middleName: _trim(middleName) || null,
+        lastName: _trim(lastName),
       },
-      email: email.trim(),
-      phoneNumber: phoneNumber.trim() || undefined,
+      email: _trim(email),
+      phoneNumber: _trim(phoneNumber) || undefined,
     };
     const hash = JSON.stringify(input);
     if (attempt.current?.hash !== hash) attempt.current = { key: crypto.randomUUID(), hash };
@@ -151,7 +152,7 @@ export const UserForm = ({
           <Button
             type="submit"
             loading={submitting}
-            disabled={!row && (!firstName.trim() || !lastName.trim() || !email.trim())}
+            disabled={!row && (!_trim(firstName) || !_trim(lastName) || !_trim(email))}
           >
             {getLabel()}
           </Button>

@@ -1,3 +1,4 @@
+import { _trim } from '@Base/utilities/trim';
 import { Avatar } from '@Components/components/Avatar';
 import { Box } from '@Components/components/Box';
 import { StatusPill } from '@Components/components/StatusPill';
@@ -5,7 +6,7 @@ import type { UserMobileRowProps } from './types/userMobileRow.props';
 import styles from './UserMobileRow.module.css';
 
 export const UserMobileRow = ({ row }: UserMobileRowProps) => {
-  const name = row.username?.trim() || row.email;
+  const name = _trim(row.username ?? '') || row.email;
   return (
     <Box className={styles.root}>
       <Avatar name={name} compact />
