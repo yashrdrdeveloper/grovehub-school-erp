@@ -25,6 +25,8 @@ export const appCatalog: CatalogApp[] = [
     icon: UserRound,
     category: __('Administration'),
   },
+  { name: __('Audit logs'), description: __('Review activity'), path: APP_ROUTE.AUDIT, icon: Building2, category: __('Administration') },
+  { name: __('Roles and permissions'), description: __('Review access roles'), path: APP_ROUTE.RBAC, icon: UserRound, category: __('Administration') },
 ];
 
 export const defaultPinnedApps = [APP_ROUTE.DASHBOARD];

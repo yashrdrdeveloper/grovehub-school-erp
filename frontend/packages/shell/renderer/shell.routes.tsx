@@ -26,7 +26,12 @@ const authViews: Record<AuthRouteKey, ReactElement> = {
   [AUTH_ROUTE_IDS.SETUP_LEGACY]: <RecoveryPage purpose="invitation" />,
 };
 
+import { AuditPage } from '@Domain/audit';
+import { RbacPage } from '@Domain/rbac';
+
 const workspaceViews: Record<AppRouteKey, ReactElement | null> = {
+  [APP_ROUTE_IDS.AUDIT]: <AuditPage />,
+  [APP_ROUTE_IDS.RBAC]: <RbacPage />,
   [APP_ROUTE_IDS.HOME]: null,
   [APP_ROUTE_IDS.DASHBOARD]: <DashboardPage />,
   [APP_ROUTE_IDS.USER_SETUP]: <UserSetup />,
