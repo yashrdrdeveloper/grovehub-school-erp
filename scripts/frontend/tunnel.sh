@@ -54,11 +54,11 @@ prepare_frontend_tunnel() {
   printf '%s\n' "$!" >"$FRONTEND_TUNNEL_PID_FILE"
 
   for ((attempt = 1; attempt <= 30; attempt++)); do
-    if ! frontend_tunnel_running; then
+    if ! pid_is_running "$(cat "$FRONTEND_TUNNEL_PID_FILE")"; then
       break
     fi
     url="$(grep -Eo 'https://[a-z0-9-]+\.trycloudflare\.com' "$FRONTEND_TUNNEL_LOG_FILE" | head -n 1 || true)"
-    if [[ -n "$url" ]]; then
+    if [[ -n "$url" ]] && frontend_tunnel_running; then
       printf '%s\n' "$url" >"$FRONTEND_TUNNEL_URL_FILE"
       return 0
     fi

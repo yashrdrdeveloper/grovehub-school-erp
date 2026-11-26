@@ -68,5 +68,8 @@ if ! wait_for_http "${FRONTEND_URL}" "Frontend" 30; then
 fi
 log_info "Frontend URL: ${FRONTEND_URL}"
 log_info "Frontend log: ${LOG_FILE}"
+if [[ -n "${TUNNEL_URL}" ]] && ! wait_for_http "${TUNNEL_URL}" "Cloudflare tunnel" 10; then
+  log_warn "Cloudflare URL assigned, but HTTPS readiness was not confirmed. Check the tunnel log."
+fi
 printf '%s\n' "${TUNNEL_URL}" >"${VITE_TUNNEL_FILE}"
 report_frontend_tunnel
