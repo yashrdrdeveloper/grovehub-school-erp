@@ -1,6 +1,9 @@
 package impl
 
 import (
+	accountmetadataaudit "grovehub/services/identity/internal/app/repository/accountmetadataaudit/impl"
+	accountmetadataevent "grovehub/services/identity/internal/app/events/producers/accountmetadata/impl"
+	updateimpl "grovehub/services/identity/internal/app/services/account/operations/update/impl"
 	registrationproducer "grovehub/services/identity/internal/app/events/producers/registration/impl"
 	policyimpl "grovehub/services/identity/internal/app/repository/approvalpolicy/impl"
 	mailrepo "grovehub/services/identity/internal/app/repository/invitation/impl"
@@ -108,7 +111,8 @@ func (b *builder) newServices(repositories repositories, cfg config.Config) serv
 		accounts = accountimpl.NewOnboarding(accounts, gate,
 			register.NewNormalized(accountread.NewRegistrationWriter(b.db), b.foundation, accountValidator, repositories.authority, readiness, authorizer, registrationproducer.New(b.events)),
 			resendimpl.NewNormalized(repositories.authority, readiness, authorizer, repositories.accountRoles, approved, mailrepo.NewCooldownReader(b.db)),
-			setupimpl.NewNormalized(reader, accountread.NewSetupWriter(b.db), repositories.tokens, credentials, repositories.authority, readiness, repositories.accountRoles, repositories.authorization, accountEvents), proofs)
+			setupimpl.NewNormalized(reader, accountread.NewSetupWriter(b.db), repositories.tokens, credentials, repositories.authority, readiness, repositories.accountRoles, repositories.authorization, accountEvents), proofs,
+			updateimpl.NewNormalized(reader, accountread.NewMetadataWriter(b.db), repositories.accountRoles, repositories.tokens, repositories.authority, readiness, authorizer, mapper.New(), accountValidator, accountmetadataevent.New(accountmetadataaudit.New(b.db), b.events)))
 		authentication = authimpl.NewOnboarding(authentication, proofs)
 	}
 	return serviceGraph{

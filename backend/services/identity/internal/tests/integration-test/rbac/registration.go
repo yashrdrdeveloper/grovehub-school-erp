@@ -103,4 +103,5 @@ func verifyNormalizedRegistration(ctx context.Context, db *gorm.DB, tenant strin
 	Expect(count).To(Equal(int64(1)))
 	Expect(db.Exec("DELETE FROM identity.registration_receipts WHERE tenant_id = ? AND account_id = ?", tenant, result.AccountID).Error).To(HaveOccurred())
 	verifyApprovedSetup(ctx, db, tenant, requesterCtx, reviewerCtx, requiredRole, result.AccountID, store)
+	verifyAccountMetadata(ctx, db, tenant, requester, reviewer, managementRole, result.AccountID, store)
 }

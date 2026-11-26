@@ -47,6 +47,7 @@ func (service *Service) Discover(ctx context.Context) (dto.Discovery, error) {
 		result.ExecutionConfigured = service.executionTenant != "" && service.executionTenant == actor.TenantID
 		result.ExecutionRequiresReauthentication = result.ExecutionConfigured && cutover.New(service.executionTenant).Require(tx) != nil
 		result.Actions["accountCreate"] = result.ExecutionConfigured && slices.Contains(effective, permission.AccountCreate)
+		result.Actions["accountUpdate"] = result.ExecutionConfigured && slices.Contains(effective, permission.AccountUpdate)
 		result.Actions["accountResendInvitation"] = result.ExecutionConfigured && slices.Contains(effective, permission.AccountResendInvitation)
 		return nil
 	})

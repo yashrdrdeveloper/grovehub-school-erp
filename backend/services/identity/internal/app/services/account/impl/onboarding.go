@@ -9,6 +9,8 @@ import (
 	tokens "grovehub/services/identity/internal/app/repository/passwordtoken"
 	"grovehub/services/identity/internal/app/services/account"
 	"grovehub/services/identity/internal/app/services/account/operations/setup"
+	"grovehub/services/identity/internal/app/services/account/operations/update"
+	"grovehub/services/identity/internal/app/services/authorization"
 	"grovehub/services/identity/internal/app/services/account/operations/setup/eligibility"
 	"grovehub/services/identity/internal/app/services/approval/operations/cutover"
 	"grovehub/services/identity/internal/app/services/registration/operations/register"
@@ -22,12 +24,15 @@ type Onboarding struct {
 	resend resend.Operation
 	setup setup.Operation
 	proofs *eligibility.ProofGuard
+	update update.Operation
 }
 
 var _ account.Service = (*Onboarding)(nil)
 
-func NewOnboarding(base account.Service, gate *cutover.Gate, registration register.Operation, resend resend.Operation, setup setup.Operation, proofs *eligibility.ProofGuard) account.Service {
-	return &Onboarding{Service: base, gate: gate, registration: registration, resend: resend, setup: setup, proofs: proofs}
+func NewOnboarding(base account.Service, gate *cutover.Gate, registration register.Operation, resend resend.Operation, setup setup.Operation, proofs *eligibility.ProofGuard, updates ...update.Operation) account.Service {
+	service := &Onboarding{Service: base, gate: gate, registration: registration, resend: resend, setup: setup, proofs: proofs}
+	if len(updates) == 1 { service.update = updates[0] }
+	return service
 }
 
 func (service *Onboarding) Create(ctx context.Context, request dto.Create, key string) (dto.CreateResult, error) {
@@ -63,4 +68,14 @@ func (service *Onboarding) SetupStatus(ctx context.Context, grant string) (dto.S
 		return nil
 	})
 	return result, err
+}
+
+func (service *Onboarding) Update(ctx context.Context, id string, request dto.Update) (dto.Account, error) {
+	if err := service.gate.Require(ctx); err != nil {
+		return dto.Account{}, err
+	}
+	if service.update == nil {
+		return dto.Account{}, authorization.ErrUnavailable
+	}
+	return service.update.Execute(ctx, id, request)
 }

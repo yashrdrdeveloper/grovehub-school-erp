@@ -103,7 +103,7 @@ func (policy *Policy) Authorize(ctx context.Context, pattern string) error {
 		switch pattern {
 		case "POST /identity/protected/approvals/{requestId}/execute":
 			return policy.execution.Require(ctx)
-		case "POST /identity/protected/accounts", "POST /identity/protected/accounts/{accountId}/resend-invitation":
+		case "POST /identity/protected/accounts", "POST /identity/protected/accounts/{accountId}/resend-invitation", "PATCH /identity/protected/accounts/{accountId}":
 			if err := policy.execution.Require(ctx); err != nil {
 				return err
 			}

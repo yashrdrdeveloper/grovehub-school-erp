@@ -146,6 +146,7 @@ var _ = Describe("Onboarding cutover", func() {
   for pattern, code := range map[string]permission.Code{
    "POST /identity/protected/accounts": permission.AccountCreate,
    "POST /identity/protected/accounts/{accountId}/resend-invitation": permission.AccountResendInvitation,
+   "PATCH /identity/protected/accounts/{accountId}": permission.AccountUpdate,
   } {
    Expect(routepolicy.NewWithExecution(auth, false, cutover.New("school")).Authorize(ctx, pattern)).To(Succeed())
    Expect(auth.code).To(Equal(code))
