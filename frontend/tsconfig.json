@@ -58,10 +58,10 @@
         "packages/shell/index.ts"
       ],
       "@Styles": [
-        "packages/styles/index.ts"
+        "../libs/frontend/styles/index.ts"
       ],
       "@Styles/*": [
-        "packages/styles/*"
+        "../libs/frontend/styles/*"
       ],
       "@Assets/*": [
         "packages/assets/*"
@@ -75,6 +75,7 @@
     "app",
     "packages",
     "../libs/frontend/base",
+    "../libs/frontend/styles",
     "vite.config.ts"
   ]
 }

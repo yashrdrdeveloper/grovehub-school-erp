@@ -12,7 +12,7 @@ import {
   WORKSPACE_THEME_PHONE_QUERY,
 } from '@Components/hooks/useWorkspaceTheme/constants/workspaceTheme.storage';
 
-import '@Styles/index.css';
+import './theme/index.css';
 import './styles.css';
 import '../packages/components/styles/primitives.css';
 

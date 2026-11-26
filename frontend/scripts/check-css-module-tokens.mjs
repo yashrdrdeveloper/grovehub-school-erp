@@ -1,13 +1,14 @@
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
+import { packageSourceRoots, resolvePackageSource } from './lib/source-layout.mjs';
+
 /**
  * CSS Modules are only valid when they use published semantic design tokens.
  * Keeps theme and responsive extraction from introducing undeclared CSS vars.
  */
 const root = process.cwd();
-const styles = path.join(root, 'packages/styles');
-const modules = path.join(root, 'packages');
+const styleOwners = [resolvePackageSource('styles'), path.join(root, 'app/theme')];
 const declared = new Set();
 const violations = [];
 
@@ -15,7 +16,9 @@ const visit = async (directory, predicate, callback) => {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const filename = path.join(directory, entry.name);
     if (entry.isDirectory()) {
-      await visit(filename, predicate, callback);
+      if (!['node_modules', 'dist', '.generated'].includes(entry.name)) {
+        await visit(filename, predicate, callback);
+      }
       continue;
     }
 
@@ -25,7 +28,7 @@ const visit = async (directory, predicate, callback) => {
   }
 };
 
-await visit(
+for (const styles of styleOwners) await visit(
   styles,
   (filename) => filename.endsWith('.css'),
   async (filename) => {
@@ -37,7 +40,7 @@ await visit(
 );
 
 const checkedCounter = { current: 0 };
-await visit(
+for (const modules of packageSourceRoots) await visit(
   modules,
   (filename) => filename.endsWith('.module.css'),
   async (filename) => {

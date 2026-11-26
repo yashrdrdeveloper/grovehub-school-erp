@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 
 /** Keep logical package owners stable when a package moves outside the app. */
-export const createSourceLayout = (appRoot, packageNames = ['base']) => {
+export const createSourceLayout = (appRoot, packageNames = ['base', 'styles']) => {
   const localRoot = path.join(appRoot, 'packages');
   const sharedRoot = path.resolve(appRoot, '../libs/frontend');
   const sharedPackages = packageNames.flatMap((name) => {

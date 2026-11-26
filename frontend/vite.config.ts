@@ -40,7 +40,7 @@ export default defineConfig({
       '@Components': path.resolve(root, 'packages/components'),
       '@Domain': path.resolve(root, 'packages/domain'),
       '@Shell': path.resolve(root, 'packages/shell'),
-      '@Styles': path.resolve(root, 'packages/styles'),
+      '@Styles': path.resolve(root, '../libs/frontend/styles'),
       '@Assets': path.resolve(root, 'packages/assets'),
     },
   },

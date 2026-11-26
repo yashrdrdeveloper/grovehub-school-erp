@@ -62,7 +62,7 @@ for (const file of files) {
   const feature = file.startsWith('packages/domain/') || file.startsWith('packages/shell/');
   const base = file.startsWith('packages/base/');
   const components = file.startsWith('packages/components/');
-  const styles = file.startsWith('packages/styles/');
+  const styles = file.startsWith('packages/styles/') || /^app\/theme\/(?:index|school-light|school-dark|compatibility)\.css$/.test(file);
   if (/^packages\/domain\/(accounts|people|integrations|settings)\//.test(file))
     flag(file, 'UNUSED_DOMAIN_REVIEW', 1);
   if (file.startsWith('packages/') && /\/config\//.test(file)) flag(file, 'CONFIG_FOLDER', 1);

@@ -1,0 +1,8 @@
+/* School application theme: shared design system, school palette extensions and scan roots. */
+@import '@groovehub/styles/index.css';
+@import './school-light.css';
+@import './school-dark.css';
+@import './compatibility.css';
+
+@source '../';
+@source '../../packages';

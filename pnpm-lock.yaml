@@ -13,6 +13,9 @@ importers:
       '@groovehub/base':
         specifier: workspace:*
         version: link:../libs/frontend/base
+      '@groovehub/styles':
+        specifier: workspace:*
+        version: link:../libs/frontend/styles
       '@radix-ui/react-dialog':
         specifier: ^1.1.15
         version: 1.3.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -141,6 +144,15 @@ importers:
       typescript:
         specifier: ~5.9.3
         version: 5.9.3
+
+  libs/frontend/styles:
+    dependencies:
+      tailwindcss:
+        specifier: ^4.1.0
+        version: 4.3.5
+      tw-animate-css:
+        specifier: ^1.4.0
+        version: 1.4.0
 
 packages:
 

@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
-import path from 'node:path';
+import { resolveFrontendSource } from './lib/source-layout.mjs';
 
-const fromProject = (filename) => readFile(path.join(process.cwd(), filename), 'utf8');
+const fromProject = (filename) => readFile(resolveFrontendSource(filename), 'utf8');
 const paths = [
   'packages/styles/index.css',
   'packages/styles/tokens/foundations.css',
@@ -11,15 +11,31 @@ const paths = [
   'app/styles.css',
   'app/main.tsx',
   'components.json',
+  'app/theme/index.css',
+  'app/theme/school-light.css',
+  'app/theme/school-dark.css',
+  'app/theme/compatibility.css',
 ];
 const sources = await Promise.all(paths.map(fromProject));
-const [entry, foundations, light, dark, base, legacy, main, shadcn] = sources;
+const [entry, foundations, light, dark, base, legacy, main, shadcn, schoolEntry, schoolLight, schoolDark, compatibility] = sources;
 const errors = [];
 
 const definitions = (css) =>
   new Set([...css.matchAll(/--(gh-(?:color|shadow)-[\w-]+)\s*:/g)].map((match) => match[1]));
-const lightTokens = definitions(light);
-const darkTokens = definitions(dark);
+const lightTokens = definitions(light + schoolLight);
+const darkTokens = definitions(dark + schoolDark);
+for (const [shared, school] of [[light, schoolLight], [dark, schoolDark]]) {
+  const sharedTokens = definitions(shared);
+  for (const name of definitions(school)) {
+    if (!name.startsWith('gh-color-public-') || sharedTokens.has(name)) {
+      errors.push(`school-only token has invalid ownership: --${name}`);
+    }
+  }
+  if (shared.includes('--gh-color-public-')) errors.push('public-site colors belong to school');
+}
+if (foundations.includes('--rdr-') || !compatibility.includes('--rdr-primary:')) {
+  errors.push('school legacy aliases belong in the application theme');
+}
 for (const name of lightTokens) {
   if (!darkTokens.has(name)) errors.push(`missing dark theme token --${name}`);
 }
@@ -45,10 +61,12 @@ if (/(^|\n)\s*:root(?:\[data-theme=[^\]]+\])?\s*\{/m.test(legacy)) {
 if (/--(?:canvas|surface|accent|gh-color-[\w-]+)\s*:/.test(legacy)) {
   errors.push('legacy app/styles.css must not redeclare shared color tokens');
 }
-if ((main.match(/@Styles\/index\.css/g) ?? []).length !== 1) {
-  errors.push('import the shared style entry exactly once from app/main.tsx');
+if ((main.match(/\.\/theme\/index\.css/g) ?? []).length !== 1 ||
+    (schoolEntry.match(/@groovehub\/styles\/index\.css/g) ?? []).length !== 1) {
+  errors.push('import the shared stylesheet exactly once through the school theme entry');
 }
-if (JSON.parse(shadcn).tailwind.css !== 'packages/styles/index.css') {
+if (!schoolEntry.includes("@source '../../packages'")) errors.push('Tailwind must scan school packages');
+if (JSON.parse(shadcn).tailwind.css !== 'app/theme/index.css') {
   errors.push('shadcn must point at the canonical @Styles entry CSS');
 }
 if (errors.length) {

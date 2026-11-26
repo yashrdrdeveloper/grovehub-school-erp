@@ -2,11 +2,11 @@
 
 `@Styles` owns **generic design decisions**: typography families and sizes, semantic light/dark colors, spacing, control heights, radii, shadows, focus, motion, breakpoints and Tailwind utilities.
 
-Import `@Styles/index.css` **once** in `frontend/app/main.tsx`. Use `@Styles/tokens/breakpoints` only in browser-aware hooks to share viewport values. CSS files are deliberately separate from React so styles can be used by CSS Modules, Tailwind and plain CSS without importing components.
+Import `@groovehub/styles/index.css` once through each application's owned theme entry. The school theme entry is `frontend/app/theme/index.css`. Use `@Styles/tokens/breakpoints` only in browser-aware hooks to share viewport values. CSS files are deliberately separate from React so styles can be used by CSS Modules, Tailwind and plain CSS without importing components.
 
 The canonical root theme overrides were removed from the legacy app stylesheet. The architecture check now verifies light/dark token parity and single style ownership.
 
-The central theme is the document `data-theme="light" | "dark"`. The existing theme resolver respects the OS on mobile and a desktop preference elsewhere. No design token changes that behavior. The `--gh-*` variables are authoritative; `--canvas`, `--surface`, `--accent`, and `--rdr-*` are temporary aliases for legacy CSS during migration.
+The central theme is the document `data-theme="light" | "dark"`. The existing theme resolver respects the OS on mobile and a desktop preference elsewhere. No design token changes that behavior. The `--gh-*` variables are authoritative; `--canvas`, `--surface`, `--accent`, are temporary aliases for legacy CSS during migration. The school-specific `--rdr-*` aliases and public-site color tokens stay in the school theme, not this shared library.
 
 `@Components` owns actual `Button`, `Input`, `FormField`, `Typography`, `Card`, `Container` and other reusable controls, their prop variants, accessibility, native leaf `dataTestId` and component-specific styles. `@Styles` never imports React, business data, domain pages or component code. Domains should use `@Components` rather than copy dimensions and colors.
 
@@ -33,3 +33,7 @@ Use native overflow on scroll owners, and `scrollbar-gutter: stable` for vertica
 Verify wheel/trackpad, thumb dragging, keyboard scrolling, nested dialog scroll, table horizontal/vertical scrolling, dark/light themes, and content width before/after thumb reveal in browsers. No third-party scroll library is needed.
 
 Desktop data tables are an intentional exception to stable gutters: their native scroll viewport hides native scrollbar painting on fine-pointer, non-forced-colors environments, and the table-owned `TableScrollbar` renders draggable overlay tracks as siblings of the viewport. This preserves full-width column layout, sticky headers and native scroll offsets without consuming horizontal or vertical space. Touch and forced-colors environments retain native scrollbars. Do not add a gutter to the table scroll viewport.
+
+## Workspace package
+
+This private source package exposes the shared stylesheet and breakpoints. It owns zinc surfaces and default blue semantic accents; applications select their own theme overrides. App-specific theme files and Tailwind source roots must remain in the consuming application. Package publishing and standalone visual verification are separate release gates.

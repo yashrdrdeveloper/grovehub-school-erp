@@ -13,7 +13,7 @@ test('maps an extracted package to its original logical audit owner', () => {
     const shared = path.join(directory, 'libs/frontend/base');
     mkdirSync(path.join(app, 'packages'), { recursive: true });
     mkdirSync(shared, { recursive: true });
-    const layout = createSourceLayout(app);
+    const layout = createSourceLayout(app, ['base']);
     assert.equal(layout.resolvePackageSource('base/index.ts'), path.join(shared, 'index.ts'));
     assert.equal(
       layout.packageRelativePath(path.join(shared, 'index.ts')),
@@ -23,7 +23,7 @@ test('maps an extracted package to its original logical audit owner', () => {
     assert.equal(layout.resolveFrontendSource('packages/base/index.ts'), path.join(shared, 'index.ts'));
     assert.equal(layout.packageSourceRoots.length, 2);
     mkdirSync(path.join(app, 'packages/base'));
-    assert.throws(() => createSourceLayout(app), /Duplicate package owner/);
+    assert.throws(() => createSourceLayout(app, ['base']), /Duplicate package owner/);
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
