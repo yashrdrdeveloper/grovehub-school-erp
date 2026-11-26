@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+	auditclient "grovehub/services/audit/client/producer"
 	"errors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -12,14 +13,19 @@ import (
 	integrationrepository "grovehub/services/integration/internal/app/repository/connection"
 )
 
-type ConnectionRepository struct{ db *gorm.DB }
+type ConnectionRepository struct { db *gorm.DB; audit auditclient.Client }
 
-func NewConnectionRepository(db *gorm.DB) integrationrepository.ConnectionRepository {
-	return &ConnectionRepository{db: db}
+func NewConnectionRepository(db *gorm.DB, clients ...auditclient.Client) integrationrepository.ConnectionRepository {
+	repository:=&ConnectionRepository{db:db}
+	if len(clients)>0 { repository.audit=clients[0] }
+	return repository
 }
 
 func (r *ConnectionRepository) Create(ctx context.Context, c entity.Connection) error {
-	return coretransaction.Database(ctx, r.db).Create(&c).Error
+	return coretransaction.Run(ctx,r.db,func(tx context.Context) error {
+		if err:=coretransaction.Database(tx,r.db).Create(&c).Error;err!=nil { return err }
+		return r.recordActivity(tx,c,"CREATED",c.CreatedAt)
+	})
 }
 
 func (r *ConnectionRepository) Get(ctx context.Context, tenantID, id string) (entity.Connection, error) {
@@ -46,26 +52,26 @@ func (r *ConnectionRepository) List(ctx context.Context, tenantID, ownerGID stri
 	return rows, err
 }
 
-func (r *ConnectionRepository) Disconnect(ctx context.Context, tenantID, id string) (entity.Connection, error) {
-	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		result := tx.Model(&entity.Connection{}).Where("tenant_id = ? AND id = ?", tenantID, id).Updates(map[string]any{
-			"status": entity.StatusDisconnected, "credential_ref": nil, "updated_at": time.Now().UTC(),
-		})
-		if result.Error != nil {
-			return result.Error
-		}
-		if result.RowsAffected == 0 {
-			return integrationrepository.ErrConnectionNotFound
-		}
-		if err := tx.Where("connection_id = ?", id).Delete(&entity.OAuthCredential{}).Error; err != nil {
+func (r *ConnectionRepository) Disconnect(ctx context.Context,tenantID string,id string) (entity.Connection,error) {
+	var entry entity.Connection
+	err:=coretransaction.Run(ctx,r.db,func(tx context.Context) error {
+		db:=coretransaction.Database(tx,r.db)
+		if err:=db.Clauses(clause.Locking{Strength:"UPDATE"}).Where("tenant_id = ? AND id = ?",tenantID,id).Take(&entry).Error;err!=nil {
+			if errors.Is(err,gorm.ErrRecordNotFound) { return integrationrepository.ErrConnectionNotFound }
 			return err
 		}
-		return tx.Where("connection_id = ?", id).Delete(&entity.OAuthState{}).Error
+		if entry.Status==entity.StatusDisconnected { return nil }
+		now:=time.Now().UTC()
+		if err:=db.Model(&entity.Connection{}).Where("tenant_id = ? AND id = ?",tenantID,id).Updates(map[string]any{"status":entity.StatusDisconnected,"credential_ref":nil,"updated_at":now}).Error;err!=nil { return err }
+		if err:=db.Where("connection_id = ?",id).Delete(&entity.OAuthCredential{}).Error;err!=nil { return err }
+		if err:=db.Where("connection_id = ?",id).Delete(&entity.OAuthState{}).Error;err!=nil { return err }
+		entry.Status=entity.StatusDisconnected
+		entry.CredentialRef=nil
+		entry.UpdatedAt=now
+		return r.recordActivity(tx,entry,"DISCONNECTED",now)
 	})
-	if err != nil {
-		return entity.Connection{}, err
-	}
-	return r.Get(ctx, tenantID, id)
+	if err!=nil { return entity.Connection{},err }
+	return entry,nil
 }
 
 func (r *ConnectionRepository) SaveOAuthState(ctx context.Context, state entity.OAuthState) error {
@@ -86,17 +92,17 @@ func (r *ConnectionRepository) ConsumeOAuthState(ctx context.Context, hash strin
 	return state, nil
 }
 
-func (r *ConnectionRepository) Activate(ctx context.Context, connectionID, provider, externalID string, ciphertext []byte) error {
-	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		result := tx.Model(&entity.Connection{}).Where("id = ? AND provider = ? AND status = ?", connectionID, provider, entity.StatusPendingSetup).
-			Updates(map[string]any{"external_id": externalID, "status": entity.StatusActive, "updated_at": time.Now().UTC()})
-		if result.Error != nil {
-			return result.Error
-		}
-		if result.RowsAffected == 0 {
-			return integrationrepository.ErrConnectionNotFound
-		}
-		return tx.Create(&entity.OAuthCredential{ConnectionID: connectionID, Ciphertext: ciphertext, UpdatedAt: time.Now().UTC()}).Error
+func (r *ConnectionRepository) Activate(ctx context.Context,connectionID string,provider string,externalID string,ciphertext []byte) error {
+	return coretransaction.Run(ctx,r.db,func(tx context.Context) error {
+		db:=coretransaction.Database(tx,r.db)
+		now:=time.Now().UTC()
+		result:=db.Model(&entity.Connection{}).Where("id = ? AND provider = ? AND status = ?",connectionID,provider,entity.StatusPendingSetup).Updates(map[string]any{"external_id":externalID,"status":entity.StatusActive,"updated_at":now})
+		if result.Error!=nil { return result.Error }
+		if result.RowsAffected!=1 { return integrationrepository.ErrConnectionNotFound }
+		if err:=db.Create(&entity.OAuthCredential{ConnectionID:connectionID,Ciphertext:ciphertext,UpdatedAt:now}).Error;err!=nil { return err }
+		entry,err:=r.GetByID(tx,connectionID)
+		if err!=nil { return err }
+		return r.recordActivity(tx,entry,"ACTIVATED",now)
 	})
 }
 
@@ -114,13 +120,14 @@ func (r *ConnectionRepository) UpdateCredential(ctx context.Context, connectionI
 		Updates(map[string]any{"ciphertext": ciphertext, "updated_at": time.Now().UTC()}).Error
 }
 
-func (r *ConnectionRepository) SaveTest(ctx context.Context, test entity.ConnectionTest) error {
-	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.Create(&test).Error; err != nil {
-			return err
-		}
-		return tx.Model(&entity.Connection{}).Where("id = ? AND (last_tested_at IS NULL OR last_tested_at <= ?)", test.ConnectionID, test.CompletedAt).
-			Updates(map[string]any{"last_tested_at": test.CompletedAt, "last_test_status": test.Status, "updated_at": time.Now().UTC()}).Error
+func (r *ConnectionRepository) SaveTest(ctx context.Context,test entity.ConnectionTest) error {
+	return coretransaction.Run(ctx,r.db,func(tx context.Context) error {
+		db:=coretransaction.Database(tx,r.db)
+		if err:=db.Create(&test).Error;err!=nil { return err }
+		if err:=db.Model(&entity.Connection{}).Where("id = ? AND (last_tested_at IS NULL OR last_tested_at <= ?)",test.ConnectionID,test.CompletedAt).Updates(map[string]any{"last_tested_at":test.CompletedAt,"last_test_status":test.Status,"updated_at":time.Now().UTC()}).Error;err!=nil { return err }
+		entry,err:=r.GetByID(tx,test.ConnectionID)
+		if err!=nil { return err }
+		return r.recordActivity(tx,entry,"TESTED",test.CompletedAt)
 	})
 }
 
@@ -145,7 +152,8 @@ func (r *ConnectionRepository) SystemMailSender(ctx context.Context, tenantID st
 }
 
 func (r *ConnectionRepository) ConfigureSystemMailSender(ctx context.Context, tenantID string, connectionID string) error {
-	result := coretransaction.Database(ctx, r.db).Exec(
+	return coretransaction.Run(ctx,r.db,func(tx context.Context) error {
+	result := coretransaction.Database(tx, r.db).Exec(
 		`INSERT INTO integration.system_mail_senders (tenant_id, connection_id, updated_at)
 		SELECT c.tenant_id, c.id, CURRENT_TIMESTAMP
 		FROM integration.connections AS c
@@ -160,5 +168,8 @@ func (r *ConnectionRepository) ConfigureSystemMailSender(ctx context.Context, te
 	if result.RowsAffected != 1 {
 		return integrationrepository.ErrConnectionNotFound
 	}
-	return nil
+	entry,err:=r.Get(tx,tenantID,connectionID)
+	if err!=nil { return err }
+	return r.recordActivity(tx,entry,"SYSTEM_MAIL_SENDER_CONFIGURED",time.Now().UTC())
+	})
 }

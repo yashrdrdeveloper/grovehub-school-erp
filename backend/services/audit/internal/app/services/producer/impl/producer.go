@@ -38,6 +38,7 @@ func (service *Service) Produce(ctx context.Context, event client.Event) error {
 }
 
 func (service *Service) Record(ctx context.Context, activity client.Activity) error {
+	if activity.AssetVersion>0 && activity.OccurrenceID=="" { activity.OccurrenceID=helpers.VersionEventID(activity) }
 	envelope:=coreevents.NewEnvelope(ctx,coreevents.Metadata{EventID:activity.OccurrenceID,EventType:client.ActivityOccurred,Version:1,AggregateID:activity.AssetID,OccurredAt:activity.OccurredAt},activity)
 	payload,err:=json.Marshal(envelope)
 	if err!=nil { return err }
