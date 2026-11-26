@@ -15,4 +15,5 @@ export interface WorkspaceThemeController {
   readonly setPreference: (next: ThemePreference) => void;
 }
 
-export type UseWorkspaceTheme = () => WorkspaceThemeController;
+/** The storage key is fixed for the lifetime of the mounted application. */
+export type UseWorkspaceTheme = (storageKey?: string) => WorkspaceThemeController;

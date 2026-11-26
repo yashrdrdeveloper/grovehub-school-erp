@@ -1,3 +1,3 @@
 import type { ThemePreference } from '../../types/useWorkspaceTheme';
 
-export type ReadThemePreference = () => ThemePreference;
+export type ReadThemePreference = (storageKey?: string) => ThemePreference;

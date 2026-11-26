@@ -16,4 +16,12 @@ describe('readThemePreference', () => {
     window.localStorage.setItem('groovehub.theme', ThemePreference.DARK);
     expect(readThemePreference()).toBe(ThemePreference.DARK);
   });
+
+  it('reads only the requested application namespace', () => {
+    window.localStorage.setItem('groovehub.theme', ThemePreference.DARK);
+    expect(readThemePreference('internal.theme')).toBe(ThemePreference.SYSTEM);
+    window.localStorage.setItem('internal.theme', ThemePreference.LIGHT);
+    expect(readThemePreference('internal.theme')).toBe(ThemePreference.LIGHT);
+    expect(readThemePreference()).toBe(ThemePreference.DARK);
+  });
 });
