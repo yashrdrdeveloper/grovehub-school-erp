@@ -72,8 +72,8 @@ func validateUsernameCursor(value string, invalid error) error {
 	return nil
 }
 
-func filterFields() map[string]coresearch.FieldSpec {
-	return map[string]coresearch.FieldSpec{
+func filterFields(normalized bool) map[string]coresearch.FieldSpec {
+	fields := map[string]coresearch.FieldSpec{
 		accountdto.FieldAccountID: {Operators: coresearch.EqualityOperators(), Normalizer: normalizeUUID},
 		accountdto.FieldPersonGID: {Operators: coresearch.EqualityOperators(), Normalizer: normalizeUUID},
 		accountdto.FieldUsername: {Operators: coresearch.TextOperators(), Normalizer: normalizeText},
@@ -83,10 +83,30 @@ func filterFields() map[string]coresearch.FieldSpec {
 		accountdto.FieldCreatedAt: {Operators: coresearch.TimeOperators(), Normalizer: normalizeTime},
 		accountdto.FieldUpdatedAt: {Operators: coresearch.TimeOperators(), Normalizer: normalizeTime},
 	}
+	if normalized {
+		fields[accountdto.FieldPrimaryRoleID] = coresearch.FieldSpec{Operators: coresearch.EqualityOperators(), Normalizer: normalizeNormalizedRole}
+	}
+	return fields
+}
+
+func normalizeNormalizedRole(_ coresearch.Operator, value string) (string, error) {
+	id, err := uuid.Parse(value)
+	if err != nil || id == uuid.Nil {
+		return "", errInvalidSearch
+	}
+	return id.String(), nil
 }
 
 // NormalizeSearch validates all public search keys, values, sorts and cursors.
 func NormalizeSearch(request coresearch.Request) (coresearch.Query[string], error) {
+	return normalizeSearch(request, false)
+}
+
+func NormalizeNormalizedSearch(request coresearch.Request) (coresearch.Query[string], error) {
+	return normalizeSearch(request, true)
+}
+
+func normalizeSearch(request coresearch.Request, normalized bool) (coresearch.Query[string], error) {
 	terms, err := coresearch.NormalizeSearchTerms(request.SearchText, 256, 10, errInvalidSearch)
 	if err != nil {
 		return coresearch.Query[string]{}, err
@@ -103,7 +123,7 @@ func NormalizeSearch(request coresearch.Request) (coresearch.Query[string], erro
 	if err != nil {
 		return coresearch.Query[string]{}, err
 	}
-	filters, err := coresearch.NormalizeFilters(request.Filters, filterFields(), 20, 50, errInvalidSearch)
+	filters, err := coresearch.NormalizeFilters(request.Filters, filterFields(normalized), 20, 50, errInvalidSearch)
 	if err != nil {
 		return coresearch.Query[string]{}, err
 	}

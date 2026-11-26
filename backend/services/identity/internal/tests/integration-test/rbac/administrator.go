@@ -10,6 +10,10 @@ import (
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/repository/authority"
+	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	accountdto "grovehub/services/identity/internal/app/dto/account"
+	accountread "grovehub/services/identity/internal/app/repository/account/impl"
+	accountvalidator "grovehub/services/identity/internal/app/validators/account/impl"
 	migrationreader "grovehub/services/identity/internal/app/repository/rbacmigration/impl"
 	"grovehub/services/identity/internal/app/services/rbacmigration"
 	migrationplan "grovehub/services/identity/internal/app/services/rbacmigration/operations/plan"
@@ -207,6 +211,27 @@ func verifyAdministratorGuard(ctx context.Context, db *gorm.DB) {
 	Expect(count).To(Equal(int64(1)))
 	_, err = bootstrap.Apply(ctx, manifest, first)
 	Expect(err).To(HaveOccurred())
+	normalized := accountread.NewNormalizedReader(db)
+	projected, err := normalized.FindByID(ctx, legacyAccount)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(projected.PrimaryRoleID).NotTo(BeNil())
+	Expect(*projected.PrimaryRoleID).To(Equal(migrated.PrimaryRoleID))
+	query, err := accountvalidator.NewNormalized().Search(coresearch.Request{
+		Filters: []coresearch.Filter{{Field: accountdto.FieldPrimaryRoleID, Operator: coresearch.OperatorEquals, Values: []string{migrated.PrimaryRoleID}}},
+		PageInfo: coresearch.PageRequest{PageNumber: 1, RowSize: 25},
+	})
+	Expect(err).NotTo(HaveOccurred())
+	page, err := normalized.Search(ctx, legacyTenant, query)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(page.Items).To(HaveLen(1))
+	Expect(*page.Items[0].PrimaryRoleID).To(Equal(migrated.PrimaryRoleID))
+	Expect(*page.TotalRecords).To(Equal(int64(1)))
+	page, err = normalized.Search(ctx, tenant, query)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(page.Items).To(BeEmpty())
+	catalogRoles, err := roleimpl.NewCatalogReader(db).ListActive(ctx, legacyTenant)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(catalogRoles).To(Equal([]accountdto.Role{{ID: migrated.PrimaryRoleID, Name: "Teacher"}}))
 	inventory, err = migrationreader.New(db).Inventory(ctx, tenant)
 	Expect(err).NotTo(HaveOccurred())
 	_, err = migrationplan.Build(inventory)

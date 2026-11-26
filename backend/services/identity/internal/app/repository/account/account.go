@@ -25,3 +25,9 @@ type Repository interface {
 	Update(ctx context.Context, account entity.Account) error
 	Search(ctx context.Context, tenantID string, query coresearch.Query[string]) (coresearch.QueryResult[entity.Account], error)
 }
+
+// Reader is the account projection boundary. Normalized readers never write legacy columns.
+type Reader interface {
+	FindByID(ctx context.Context, accountID string) (entity.Account, error)
+	Search(ctx context.Context, tenantID string, query coresearch.Query[string]) (coresearch.QueryResult[entity.Account], error)
+}

@@ -12,7 +12,9 @@ import (
 )
 
 // @Validator
-type Validator struct{}
+type Validator struct {
+	normalizedSearch bool
+}
 
 var _ accountvalidator.Validator = Validator{}
 
@@ -71,6 +73,13 @@ func (Validator) NormalizeUsername(username string) (string, error) {
 	return username, nil
 }
 
-func (Validator) Search(request coresearch.Request) (coresearch.Query[string], error) {
+func NewNormalized() accountvalidator.Validator {
+	return Validator{normalizedSearch: true}
+}
+
+func (validator Validator) Search(request coresearch.Request) (coresearch.Query[string], error) {
+	if validator.normalizedSearch {
+		return searchhelpers.NormalizeNormalizedSearch(request)
+	}
 	return searchhelpers.NormalizeSearch(request)
 }

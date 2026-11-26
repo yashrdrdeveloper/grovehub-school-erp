@@ -28,7 +28,7 @@ func (b *builder) newControllers(services serviceGraph) controllerGraph {
 		publicAuth:       authpublicimpl.New(services.auth, manager),
 		protectedAuth:    authprotectedimpl.New(services.auth, manager),
 		publicActivation: activationpublicimpl.New(services.account, manager),
-		protectedAccount: accountprotectedimpl.New(services.account),
+		protectedAccount: accountprotectedimpl.New(services.account, services.catalog),
 	}
 }
 

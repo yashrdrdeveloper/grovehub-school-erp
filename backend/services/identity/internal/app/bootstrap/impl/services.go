@@ -2,6 +2,10 @@ package impl
 
 import (
 	"grovehub/services/identity/internal/app/config"
+	accountrepo "grovehub/services/identity/internal/app/repository/account"
+	accountread "grovehub/services/identity/internal/app/repository/account/impl"
+	roleread "grovehub/services/identity/internal/app/repository/role/impl"
+	catalog "grovehub/services/identity/internal/app/services/account/operations/roles"
 	"grovehub/services/identity/internal/app/services/security/operations/routepolicy"
 	mapper "grovehub/services/identity/internal/app/mappers/account/impl"
 	account "grovehub/services/identity/internal/app/services/account"
@@ -24,6 +28,7 @@ type serviceGraph struct {
 	account       account.Service
 	authorization authorization.Service
 	policy *routepolicy.Policy
+	catalog *catalog.Operation
 	registry      registry.Service
 	roles         role.Service
 	auth          auth.Service
@@ -36,6 +41,13 @@ func (b *builder) newServices(repositories repositories, cfg config.Config) serv
 	accountEvents := b.newEvents()
 	registrations := registrationimpl.New(repositories.accounts, b.foundation, validator.New(), invitations, repositories.unit, accountEvents)
 
+	var reader accountrepo.Reader = repositories.accounts
+	accountValidator := validator.New()
+	if !cfg.LegacyRBACDevelopment {
+		reader = accountread.NewNormalizedReader(b.db)
+		accountValidator = validator.NewNormalized()
+	}
+
 	accounts := accountimpl.New(
 		repositories.accounts,
 		repositories.tokens,
@@ -43,9 +55,10 @@ func (b *builder) newServices(repositories repositories, cfg config.Config) serv
 		credentials,
 		registrations,
 		mapper.New(),
-		validator.New(),
+		accountValidator,
 		repositories.unit,
 		accountEvents,
+		reader,
 	)
 	authentication := authimpl.New(
 		repositories.accounts,
@@ -55,6 +68,7 @@ func (b *builder) newServices(repositories repositories, cfg config.Config) serv
 		invitations,
 		mapper.New(),
 		repositories.unit,
+		reader,
 	)
 
 	var worker *invitation.Worker
@@ -66,7 +80,7 @@ func (b *builder) newServices(repositories repositories, cfg config.Config) serv
 	policy := routepolicy.New(authorizer, cfg.LegacyRBACDevelopment)
 	return serviceGraph{
 		account: accountimpl.NewGuarded(accounts, policy), auth: authentication, worker: worker,
-		policy: policy,
+		policy: policy, catalog: catalog.New(roleread.NewCatalogReader(b.db), policy, cfg.LegacyRBACDevelopment),
 		authorization: authorizer, registry: registryimpl.New(repositories.registry),
 		roles: roleimpl.New(repositories.roles, authorizer),
 	}

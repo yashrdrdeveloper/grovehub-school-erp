@@ -11,6 +11,7 @@ import (
 	definitions "grovehub/services/identity/internal/app/constants/error"
 	protected "grovehub/services/identity/internal/app/controller/account/protected"
 	"grovehub/services/identity/internal/app/controller/helpers"
+	"grovehub/services/identity/internal/app/services/authorization"
 	dto "grovehub/services/identity/internal/app/dto/account"
 	account "grovehub/services/identity/internal/app/services/account"
 	roles "grovehub/services/identity/internal/app/services/account/operations/roles"
@@ -18,12 +19,17 @@ import (
 
 type Controller struct {
 	service account.Service
+	catalog *roles.Operation
 }
 
 var _ protected.AccountController = (*Controller)(nil)
 
-func New(service account.Service) protected.AccountController {
-	return &Controller{service: service}
+func New(service account.Service, catalogs ...*roles.Operation) protected.AccountController {
+	controller := &Controller{service: service}
+	if len(catalogs) == 1 {
+		controller.catalog = catalogs[0]
+	}
+	return controller
 }
 
 func (controller *Controller) Create(writer http.ResponseWriter, request *http.Request) {
@@ -54,7 +60,10 @@ func (controller *Controller) Roles(writer http.ResponseWriter, request *http.Re
 	rest.RunStruct(writer, request, rest.StructConfig[dto.RolesRequest, []dto.Role]{
 		Fallback: definitions.Internal,
 		Service: func(ctx context.Context, input dto.RolesRequest) (rest.Result[[]dto.Role], error) {
-			result, err := roles.List(ctx)
+			if controller.catalog == nil {
+				return rest.Result[[]dto.Role]{}, helpers.Map(authorization.ErrUnavailable)
+			}
+			result, err := controller.catalog.Execute(ctx)
 			return rest.OK(result), helpers.Map(err)
 		},
 	})

@@ -10,13 +10,13 @@ import (
 )
 
 type Service struct {
-	accounts accountrepo.Repository
+	accounts accountrepo.Reader
 	mapper accountmapper.Mapper
 }
 
 var _ get.Operation = (*Service)(nil)
 
-func New(accounts accountrepo.Repository, mapper accountmapper.Mapper) get.Operation {
+func New(accounts accountrepo.Reader, mapper accountmapper.Mapper) get.Operation {
 	return &Service{accounts: accounts, mapper: mapper}
 }
 

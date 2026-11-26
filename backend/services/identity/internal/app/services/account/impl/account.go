@@ -44,13 +44,17 @@ type Service struct {
 
 var _ account.Service = (*Service)(nil)
 
-func New(accounts accountrepo.Repository, tokens tokenrepo.Repository, sessions sessionrepo.Repository, credentials credential.Service, registrations registration.Service, mapper accountmapper.Mapper, validator accountvalidator.Validator, unit transaction.UnitOfWork, events accountproducer.ChangedProducer) account.Service {
+func New(accounts accountrepo.Repository, tokens tokenrepo.Repository, sessions sessionrepo.Repository, credentials credential.Service, registrations registration.Service, mapper accountmapper.Mapper, validator accountvalidator.Validator, unit transaction.UnitOfWork, events accountproducer.ChangedProducer, readers ...accountrepo.Reader) account.Service {
+	var reader accountrepo.Reader = accounts
+	if len(readers) == 1 && readers[0] != nil {
+		reader = readers[0]
+	}
 	return &Service{
 		accounts: accounts,
 		tokens: tokens,
 		registrations: registrations,
-		search: search.New(searchimpl.New(accounts, mapper, validator)),
-		get: getimpl.New(accounts, mapper),
+		search: search.New(searchimpl.New(reader, mapper, validator)),
+		get: getimpl.New(reader, mapper),
 		update: updateimpl.New(accounts, mapper, validator, unit, events),
 		transition: transitionimpl.New(accounts, sessions, mapper, unit, events),
 		setup: setupimpl.New(accounts, tokens, credentials, unit, events),

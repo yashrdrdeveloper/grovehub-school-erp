@@ -62,7 +62,11 @@ type Service struct {
 
 var _ auth.Service = (*Service)(nil)
 
-func New(accounts accountrepo.Repository, sessions sessionrepo.Repository, tokens tokenrepo.Repository, credentials credential.Service, invitations registration.InvitationSender, mapper accountmapper.Mapper, unit transaction.UnitOfWork) auth.Service {
+func New(accounts accountrepo.Repository, sessions sessionrepo.Repository, tokens tokenrepo.Repository, credentials credential.Service, invitations registration.InvitationSender, mapper accountmapper.Mapper, unit transaction.UnitOfWork, readers ...accountrepo.Reader) auth.Service {
+	var reader accountrepo.Reader = accounts
+	if len(readers) == 1 && readers[0] != nil {
+		reader = readers[0]
+	}
 	return &Service{
 		accounts: accounts,
 		tokens: tokens,
@@ -77,7 +81,7 @@ func New(accounts accountrepo.Repository, sessions sessionrepo.Repository, token
 		logoutall: logoutallimpl.New(sessions),
 		sessions: sessionsimpl.New(sessions),
 		revokesession: revokesessionimpl.New(sessions),
-		me: meimpl.New(accounts, mapper),
+		me: meimpl.New(reader, mapper),
 	}
 }
 

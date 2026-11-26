@@ -100,6 +100,10 @@ func (repository *Repository) Search(ctx context.Context, tenantID string, query
 		Table("identity.accounts AS a").
 		Where("a.tenant_id = ?", tenantID)
 
+	return searchAccounts(db, query)
+}
+
+func searchAccounts(db *gorm.DB, query coresearch.Query[string]) (coresearch.QueryResult[entity.Account], error) {
 	if query.PageNumber > 0 {
 		return coresearch.Execute[string, entity.Account](db, query, searchconfig.AccountConfig)
 	}

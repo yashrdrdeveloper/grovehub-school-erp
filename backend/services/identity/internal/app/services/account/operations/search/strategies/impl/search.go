@@ -18,14 +18,14 @@ import (
 )
 
 type Search struct {
-	accounts accountrepo.Repository
+	accounts accountrepo.Reader
 	mapper mapper.Mapper
 	validator validator.Validator
 }
 
 var _ strategies.SearchStrategy = (*Search)(nil)
 
-func New(accounts accountrepo.Repository, accountMapper mapper.Mapper, accountValidator validator.Validator) strategies.SearchStrategy {
+func New(accounts accountrepo.Reader, accountMapper mapper.Mapper, accountValidator validator.Validator) strategies.SearchStrategy {
 	return &Search{accounts: accounts, mapper: accountMapper, validator: accountValidator}
 }
 
