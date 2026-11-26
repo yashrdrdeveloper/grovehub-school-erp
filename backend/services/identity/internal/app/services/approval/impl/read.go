@@ -127,20 +127,3 @@ func (service *ReadService) Detail(ctx context.Context, requestID string) (dto.D
 	}
 	return detail, nil
 }
-
-func (service *ReadService) Audit(ctx context.Context, requestID string) ([]dto.AuditEvent, error) {
-	id, err := helpers.NormalizeID(requestID)
-	if err != nil {
-		return nil, err
-	}
-	var rows []dto.AuditEvent
-	err = service.read(ctx, func(tx context.Context, scope repo.Visibility) error {
-		var err error
-		rows, err = service.reader.Audit(tx, scope, id)
-		return err
-	})
-	if err != nil {
-		return nil, err
-	}
-	return rows, nil
-}

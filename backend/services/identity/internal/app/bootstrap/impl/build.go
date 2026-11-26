@@ -6,6 +6,8 @@ import (
 	"net/url"
 
 	"gorm.io/gorm"
+	"grovehub/services/audit"
+	auditclient "grovehub/services/audit/client/producer"
 
 	foundationclient "grovehub/services/foundation/client/person"
 	"grovehub/services/identity/internal/app/bootstrap"
@@ -21,12 +23,13 @@ type builder struct {
 	foundation  foundationclient.Client
 	integration integrationclient.Client
 	events      infrastructure.EventStore
+	audit       auditclient.Client
 }
 
 var _ bootstrap.Bootstrap = (*builder)(nil)
 
 func New(logger *slog.Logger, db *gorm.DB, foundation foundationclient.Client, integration integrationclient.Client, events infrastructure.EventStore) bootstrap.Bootstrap {
-	return &builder{logger: logger, db: db, foundation: foundation, integration: integration, events: events}
+	return &builder{logger: logger, db: db, foundation: foundation, integration: integration, events: events, audit: audit.NewProducer(events)}
 }
 
 func (b *builder) Build() (bootstrap.Runtime, error) {

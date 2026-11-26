@@ -12,9 +12,8 @@ import (
 	"grovehub/services/identity/internal/app/entity"
 	producer "grovehub/services/identity/internal/app/events/producers/approval"
 	"grovehub/services/identity/internal/app/events/producers/approval/operations/changed"
-	"grovehub/services/identity/internal/app/repository/approvalaudit"
 	"grovehub/services/identity/internal/app/services/security/principal"
-	infrastructure "grovehub/services/infrastructure/client/messaging"
+	auditclient "grovehub/services/audit/client/producer"
 )
 
 const EventType = "identity.approval.changed.v1"
@@ -23,14 +22,13 @@ const Topic = "identity_approval_changed"
 var ErrUnavailable = errors.New("approval audit unavailable")
 
 type Recorder struct {
-	audit approvalaudit.Writer
-	events infrastructure.EventStore
+	events auditclient.Client
 }
 
 var _ producer.Recorder = (*Recorder)(nil)
 
-func New(audit approvalaudit.Writer, events infrastructure.EventStore) producer.Recorder {
-	return &Recorder{audit: audit, events: events}
+func New(events auditclient.Client) producer.Recorder {
+	return &Recorder{events: events}
 }
 
 func snapshot(request entity.ApprovalRequest) changed.Snapshot {
@@ -38,7 +36,7 @@ func snapshot(request entity.ApprovalRequest) changed.Snapshot {
 }
 
 func (recorder *Recorder) Record(ctx context.Context, operation string, before *entity.ApprovalRequest, after entity.ApprovalRequest) error {
-	if recorder.audit == nil || recorder.events == nil || !transaction.Active(ctx) {
+	if recorder.events == nil || !transaction.Active(ctx) {
 		return ErrUnavailable
 	}
 	actor, err := principal.RequireTenant(ctx)
@@ -72,8 +70,5 @@ func (recorder *Recorder) Record(ctx context.Context, operation string, before *
 	if err != nil {
 		return err
 	}
-	if err := recorder.audit.Insert(ctx, approvalaudit.Entry{EventID: envelope.EventID, TenantID: after.TenantID, RequestID: after.RequestID, ActorID: actor.AccountID, Version: after.Version, Operation: operation, Payload: payload, OccurredAt: after.UpdatedAt}); err != nil {
-		return err
-	}
-	return recorder.events.Enqueue(ctx, infrastructure.Event{EventID: envelope.EventID, Topic: Topic, Payload: payload, Metadata: map[string]string{"event-id": envelope.EventID, "event-type": EventType, "source": "identity", "correlation-id": envelope.CorrelationID, "causation-id": envelope.CausationID}})
+	return recorder.events.Produce(ctx, auditclient.Event{Type: envelope.EventType, Payload: payload})
 }

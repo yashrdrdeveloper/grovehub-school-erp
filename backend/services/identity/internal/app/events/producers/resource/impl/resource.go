@@ -14,26 +14,24 @@ import (
 	"grovehub/services/identity/internal/app/entity"
 	"grovehub/services/identity/internal/app/events/producers/resource"
 	"grovehub/services/identity/internal/app/events/producers/resource/operations/changed"
-	"grovehub/services/identity/internal/app/repository/resourceaudit"
 	"grovehub/services/identity/internal/app/services/security/principal"
-	infrastructure "grovehub/services/infrastructure/client/messaging"
+	auditclient "grovehub/services/audit/client/producer"
 )
 
 var ErrInvalid = errors.New("invalid resource audit transition")
 
 type Recorder struct {
-	audit resourceaudit.Writer
-	events infrastructure.EventStore
+	events auditclient.Client
 }
 
 var _ resource.Recorder = (*Recorder)(nil)
 
-func New(audit resourceaudit.Writer, events infrastructure.EventStore) resource.Recorder {
-	return &Recorder{audit: audit, events: events}
+func New(events auditclient.Client) resource.Recorder {
+	return &Recorder{events: events}
 }
 
 func (recorder *Recorder) Record(ctx context.Context, request entity.ApprovalRequest, before changed.Snapshot, after changed.Snapshot, at time.Time) error {
-	if recorder.audit == nil || recorder.events == nil || !transaction.Active(ctx) {
+	if recorder.events == nil || !transaction.Active(ctx) {
 		return ErrInvalid
 	}
 	actor, err := principal.RequireTenant(ctx)
@@ -43,7 +41,7 @@ func (recorder *Recorder) Record(ctx context.Context, request entity.ApprovalReq
 	if actor.TenantID != request.TenantID || actor.AccountID != request.RequesterID || request.Status != kind.Approved || before.ID == "" || before.ID != after.ID || before.Version < 1 || after.Version <= before.Version || after.Version-before.Version != 1 || at.IsZero() {
 		return ErrInvalid
 	}
-	resourceType, eventType, topic, err := eventContract(request.RequestType, before, after)
+	resourceType, eventType, _, err := eventContract(request.RequestType, before, after)
 	if err != nil {
 		return err
 	}
@@ -60,10 +58,7 @@ func (recorder *Recorder) Record(ctx context.Context, request entity.ApprovalReq
 	if err != nil {
 		return err
 	}
-	if err := recorder.audit.Insert(ctx, resourceaudit.Entry{EventID: envelope.EventID, TenantID: request.TenantID, RequestID: request.RequestID, ActorID: actor.AccountID, ResourceType: resourceType, ResourceID: after.ID, Version: after.Version, Operation: string(request.RequestType), Payload: payload, OccurredAt: at}); err != nil {
-		return err
-	}
-	return recorder.events.Enqueue(ctx, infrastructure.Event{EventID: envelope.EventID, Topic: topic, Payload: payload, Metadata: map[string]string{"event-id": envelope.EventID, "event-type": eventType, "source": "identity", "correlation-id": envelope.CorrelationID, "causation-id": envelope.CausationID}})
+	return recorder.events.Produce(ctx, auditclient.Event{Type: envelope.EventType, Payload: payload})
 }
 
 func eventContract(operation kind.RequestType, before changed.Snapshot, after changed.Snapshot) (string, string, string, error) {

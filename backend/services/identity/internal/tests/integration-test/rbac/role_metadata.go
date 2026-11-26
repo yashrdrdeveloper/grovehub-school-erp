@@ -2,6 +2,7 @@ package rbac_test
 
 import (
 	"context"
+	"grovehub/services/audit"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -22,7 +23,6 @@ import (
 	registryrepo "grovehub/services/identity/internal/app/repository/registry/impl"
 	repo "grovehub/services/identity/internal/app/repository/role"
 	roleimpl "grovehub/services/identity/internal/app/repository/role/impl"
-	auditimpl "grovehub/services/identity/internal/app/repository/rolemetadataaudit/impl"
 	"grovehub/services/identity/internal/app/services/authorization"
 	authimpl "grovehub/services/identity/internal/app/services/authorization/impl"
 	capabilityimpl "grovehub/services/identity/internal/app/services/capability/impl"
@@ -43,8 +43,8 @@ func verifyRoleMetadata(ctx context.Context, db *gorm.DB, tenant string, request
 	authorizer := authimpl.New(authrepo.New(db))
 	locker := authorityimpl.New(db)
 	roles := roleimpl.New(db)
-	service := roleservice.NewAudited(roles, authorizer, locker, roleimpl.NewDraftInspector(db), producer.New(auditimpl.New(db), store))
-	failing := roleservice.NewAudited(roles, authorizer, locker, roleimpl.NewDraftInspector(db), producer.New(auditimpl.New(db), failingOutbox{}))
+	service := roleservice.NewAudited(roles, authorizer, locker, roleimpl.NewDraftInspector(db), producer.New(audit.NewProducer(store)))
+	failing := roleservice.NewAudited(roles, authorizer, locker, roleimpl.NewDraftInspector(db), producer.New(audit.NewProducer(failingOutbox{})))
 	draft := dto.CreateDraft{Name: "Audited role draft", Description: "Initial metadata", Personas: []persona.Code{persona.Teacher}}
 	_, err = service.CreateDraft(reviewerCtx, draft)
 	Expect(err).To(MatchError(authorization.ErrForbidden))
@@ -53,7 +53,7 @@ func verifyRoleMetadata(ctx context.Context, db *gorm.DB, tenant string, request
 	var count int64
 	Expect(db.Raw("SELECT count(*) FROM identity.roles WHERE tenant_id = ? AND normalized_name = 'audited role draft'", tenant).Scan(&count).Error).NotTo(HaveOccurred())
 	Expect(count).To(BeZero())
-	Expect(db.Raw("SELECT count(*) FROM identity.role_metadata_audit WHERE tenant_id = ?", tenant).Scan(&count).Error).NotTo(HaveOccurred())
+	Expect(db.Raw("SELECT count(*) FROM (SELECT event_id::uuid AS event_id, p#>>'{data,tenantId}' AS tenant_id, (p->>'aggregateId')::uuid AS role_id, p#>>'{data,operation}' AS operation, p AS event_payload FROM (SELECT event_id, convert_from(payload,'UTF8')::jsonb AS p FROM infrastructure.messaging) x WHERE p->>'eventType' = 'identity.role.metadata.changed.v1') a WHERE tenant_id = ?", tenant).Scan(&count).Error).NotTo(HaveOccurred())
 	Expect(count).To(BeZero())
 
 	created, err := service.CreateDraft(requesterCtx, draft)
@@ -91,11 +91,10 @@ func verifyRoleMetadata(ctx context.Context, db *gorm.DB, tenant string, request
 	Expect(err).NotTo(HaveOccurred())
 	Expect(grants.Codes).To(BeEmpty())
 
-	Expect(db.Raw("SELECT count(*) FROM identity.role_metadata_audit a JOIN infrastructure.messaging m ON m.event_id = a.event_id::text WHERE a.tenant_id = ? AND a.role_id = ? AND a.event_payload = convert_from(m.payload, 'UTF8')::jsonb AND a.event_payload->>'eventType' = 'identity.role.metadata.changed.v1'", tenant, created.RoleID).Scan(&count).Error).NotTo(HaveOccurred())
+	Expect(db.Raw("SELECT count(*) FROM (SELECT event_id::uuid AS event_id, p#>>'{data,tenantId}' AS tenant_id, (p->>'aggregateId')::uuid AS role_id, p#>>'{data,operation}' AS operation, p AS event_payload FROM (SELECT event_id, convert_from(payload,'UTF8')::jsonb AS p FROM infrastructure.messaging) x WHERE p->>'eventType' = 'identity.role.metadata.changed.v1') a WHERE a.tenant_id = ? AND a.role_id = ? AND a.event_payload->>'eventType' = 'identity.role.metadata.changed.v1'", tenant, created.RoleID).Scan(&count).Error).NotTo(HaveOccurred())
 	Expect(count).To(Equal(int64(2)))
-	Expect(db.Raw("SELECT count(*) FROM identity.role_metadata_audit WHERE tenant_id = ? AND role_id = ? AND operation = 'UPDATED' AND event_payload#>>'{data,old,role,name}' = ? AND event_payload#>>'{data,new,role,name}' = ?", tenant, created.RoleID, created.Name, update.Name).Scan(&count).Error).NotTo(HaveOccurred())
+	Expect(db.Raw("SELECT count(*) FROM (SELECT event_id::uuid AS event_id, p#>>'{data,tenantId}' AS tenant_id, (p->>'aggregateId')::uuid AS role_id, p#>>'{data,operation}' AS operation, p AS event_payload FROM (SELECT event_id, convert_from(payload,'UTF8')::jsonb AS p FROM infrastructure.messaging) x WHERE p->>'eventType' = 'identity.role.metadata.changed.v1') a WHERE tenant_id = ? AND role_id = ? AND operation = 'UPDATED' AND event_payload#>>'{data,old,role,name}' = ? AND event_payload#>>'{data,new,role,name}' = ?", tenant, created.RoleID, created.Name, update.Name).Scan(&count).Error).NotTo(HaveOccurred())
 	Expect(count).To(Equal(int64(1)))
-	Expect(db.Exec("DELETE FROM identity.role_metadata_audit WHERE tenant_id = ? AND role_id = ?", tenant, created.RoleID).Error).To(HaveOccurred())
 	response = httptest.NewRecorder()
 	api.CreateDraft(response, httptest.NewRequest(http.MethodPost, "/identity/protected/roles", strings.NewReader(`{"name":"No bypass","personas":["TEACHER"],"status":"ACTIVE"}`)).WithContext(requesterCtx))
 	Expect(response.Code).To(Equal(http.StatusBadRequest))

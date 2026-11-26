@@ -2,6 +2,7 @@ package rbac_test
 
 import (
 	"context"
+	"grovehub/services/audit"
 
 	"github.com/google/uuid"
 	. "github.com/onsi/gomega"
@@ -55,7 +56,7 @@ func verifyNormalizedRegistration(ctx context.Context, db *gorm.DB, tenant strin
 	readiness := policyimpl.NewReadiness(db)
 	authorizer := authimpl.New(authrepo.New(db))
 	build := func(store messaging.EventStore) register.Operation {
-		return register.NewNormalized(writer, client, validator.NewNormalized(), locker, readiness, authorizer, producer.New(store))
+		return register.NewNormalized(writer, client, validator.NewNormalized(), locker, readiness, authorizer, producer.New(audit.NewProducer(store)))
 	}
 	operation := build(store)
 	request := dto.Create{Person: dto.PersonNames{FirstName: "New", LastName: "Account"}, Email: email}

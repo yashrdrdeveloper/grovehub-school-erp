@@ -1,7 +1,6 @@
 package impl
 
 import (
-	accountmetadataaudit "grovehub/services/identity/internal/app/repository/accountmetadataaudit/impl"
 	accountmetadataevent "grovehub/services/identity/internal/app/events/producers/accountmetadata/impl"
 	updateimpl "grovehub/services/identity/internal/app/services/account/operations/update/impl"
 	registrationproducer "grovehub/services/identity/internal/app/events/producers/registration/impl"
@@ -11,7 +10,6 @@ import (
 	"grovehub/services/identity/internal/app/services/account/operations/setup/eligibility"
 	"grovehub/services/identity/internal/app/services/registration/operations/register"
 	resendimpl "grovehub/services/identity/internal/app/services/registration/operations/resend/impl"
-	metadataaudit "grovehub/services/identity/internal/app/repository/rolemetadataaudit/impl"
 	metadataproducer "grovehub/services/identity/internal/app/events/producers/rolemetadata/impl"
 	capabilityrepo "grovehub/services/identity/internal/app/repository/capability/impl"
 	"grovehub/services/identity/internal/app/services/capability"
@@ -109,10 +107,10 @@ func (b *builder) newServices(repositories repositories, cfg config.Config) serv
 		proofs := eligibility.NewProofGuard(cfg.ApprovalExecutionTenant, reader, repositories.tokens, repositories.authority, readiness, repositories.accountRoles, repositories.authorization)
 		approved := invitation.NewApproved(reader, repositories.accountRoles, repositories.authorization, invitations)
 		accounts = accountimpl.NewOnboarding(accounts, gate,
-			register.NewNormalized(accountread.NewRegistrationWriter(b.db), b.foundation, accountValidator, repositories.authority, readiness, authorizer, registrationproducer.New(b.events)),
+			register.NewNormalized(accountread.NewRegistrationWriter(b.db), b.foundation, accountValidator, repositories.authority, readiness, authorizer, registrationproducer.New(b.audit)),
 			resendimpl.NewNormalized(repositories.authority, readiness, authorizer, repositories.accountRoles, approved, mailrepo.NewCooldownReader(b.db)),
 			setupimpl.NewNormalized(reader, accountread.NewSetupWriter(b.db), repositories.tokens, credentials, repositories.authority, readiness, repositories.accountRoles, repositories.authorization, accountEvents), proofs,
-			updateimpl.NewNormalized(reader, accountread.NewMetadataWriter(b.db), repositories.accountRoles, repositories.tokens, repositories.authority, readiness, authorizer, mapper.New(), accountValidator, accountmetadataevent.New(accountmetadataaudit.New(b.db), b.events)))
+			updateimpl.NewNormalized(reader, accountread.NewMetadataWriter(b.db), repositories.accountRoles, repositories.tokens, repositories.authority, readiness, authorizer, mapper.New(), accountValidator, accountmetadataevent.New(b.audit)))
 		authentication = authimpl.NewOnboarding(authentication, proofs)
 		authentication = authimpl.NewRecoveryGuard(authentication, repositories.accounts, repositories.tokens, repositories.sessions, repositories.authority, invitations)
 	}
@@ -125,6 +123,6 @@ func (b *builder) newServices(repositories repositories, cfg config.Config) serv
 		account: accountimpl.NewGuarded(accounts, policy), auth: authentication, worker: worker,
 		policy: policy, catalog: catalog.New(roleread.NewCatalogReader(b.db), policy, cfg.LegacyRBACDevelopment),
 		authorization: authorizer, registry: registryimpl.New(repositories.registry),
-		roles: roleimpl.NewAudited(repositories.roles, authorizer, repositories.authority, roleread.NewDraftInspector(b.db), metadataproducer.New(metadataaudit.New(b.db), b.events)),
+		roles: roleimpl.NewAudited(repositories.roles, authorizer, repositories.authority, roleread.NewDraftInspector(b.db), metadataproducer.New(b.audit)),
 	}
 }

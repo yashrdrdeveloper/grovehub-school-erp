@@ -12,5 +12,4 @@ type Reader interface {
 	Inbox(ctx context.Context, request coresearch.Request) (coresearch.Result[dto.Summary], error)
 	PendingCount(ctx context.Context) (int64, error)
 	Detail(ctx context.Context, requestID string) (dto.Detail, error)
-	Audit(ctx context.Context, requestID string) ([]dto.AuditEvent, error)
 }

@@ -2,6 +2,7 @@ package rbac_test
 
 import (
 	"context"
+	"grovehub/services/audit"
 	"encoding/json"
 	headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
 	"net/http"
@@ -18,8 +19,6 @@ import (
 	"grovehub/libs/schoolgateway"
 	infrastructure "grovehub/services/infrastructure"
 	messaging "grovehub/services/infrastructure/client/messaging"
-	auditimpl "grovehub/services/identity/internal/app/repository/approvalaudit/impl"
-	resourceaudit "grovehub/services/identity/internal/app/repository/resourceaudit/impl"
 	resourceproducer "grovehub/services/identity/internal/app/events/producers/resource/impl"
 	producerimpl "grovehub/services/identity/internal/app/events/producers/approval/impl"
 	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
@@ -75,7 +74,7 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	Expect(db.Exec("INSERT INTO identity.account_roles(tenant_id, account_id, role_id, assignment_type) VALUES (?, ?, ?, 'PRIMARY'), (?, ?, ?, 'PRIMARY')", tenant, requester, managementRole, tenant, reviewer, requiredRole).Error).NotTo(HaveOccurred())
 	snapshots := authrepo.New(db)
 	store := infrastructure.NewEventStore(db)
-	recorder := producerimpl.New(auditimpl.New(db), store)
+	recorder := producerimpl.New(audit.NewProducer(store))
 	service := approvalimpl.New(repository.New(db, recorder), authorityimpl.New(db), authimpl.New(snapshots), snapshots, accountimpl.NewNormalizedReader(db), roleimpl.New(db), assignmentimpl.New(db))
 	requesterCtx := schoolgateway.WithPrincipal(coreevents.WithCorrelationID(ctx, "approval-audit-test"), schoolgateway.Principal{TenantID: tenant, AccountID: requester, SessionID: "requester-session"})
 	reviewerCtx := schoolgateway.WithPrincipal(ctx, schoolgateway.Principal{TenantID: tenant, AccountID: reviewer, SessionID: "reviewer-session"})
@@ -129,22 +128,15 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	Expect(response.Code).To(Equal(http.StatusBadRequest))
 	_, err = reads.Detail(foreignCtx, created.RequestID)
 	Expect(err).To(MatchError(repo.ErrNotFound))
-	events, err := reads.Audit(requesterCtx, created.RequestID)
-	Expect(err).NotTo(HaveOccurred())
-	Expect(events).To(HaveLen(1))
-	_, err = reads.Audit(reviewerCtx, created.RequestID)
-	Expect(err).To(MatchError(repo.ErrNotFound))
 	replayed, err := service.CreateLifecycle(requesterCtx, intent)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(replayed.RequestID).To(Equal(created.RequestID))
 	Expect(replayed.PayloadSHA256).To(Equal(created.PayloadSHA256))
 	var auditCount int64
-	Expect(db.Raw("SELECT count(*) FROM identity.approval_audit WHERE tenant_id = ? AND request_id = ?", tenant, created.RequestID).Scan(&auditCount).Error).NotTo(HaveOccurred())
+	Expect(db.Raw("SELECT count(*) FROM (SELECT event_id::uuid AS event_id, p#>>'{data,tenantId}' AS tenant_id, (p#>>'{data,requestId}')::uuid AS request_id, p#>>'{data,operation}' AS operation, p AS event_payload FROM (SELECT event_id, convert_from(payload,'UTF8')::jsonb AS p FROM infrastructure.messaging) x WHERE p->>'eventType' = 'identity.approval.changed.v1') a WHERE tenant_id = ? AND request_id = ?", tenant, created.RequestID).Scan(&auditCount).Error).NotTo(HaveOccurred())
 	Expect(auditCount).To(Equal(int64(1)))
-	Expect(db.Raw("SELECT count(*) FROM identity.approval_audit a JOIN infrastructure.messaging m ON m.event_id = a.event_id::text WHERE a.tenant_id = ? AND a.request_id = ? AND a.event_payload = convert_from(m.payload, 'UTF8')::jsonb AND a.event_payload->>'correlationId' = 'approval-audit-test' AND a.event_payload->>'causationId' = a.request_id::text", tenant, created.RequestID).Scan(&auditCount).Error).NotTo(HaveOccurred())
+	Expect(db.Raw("SELECT count(*) FROM (SELECT event_id::uuid AS event_id, p#>>'{data,tenantId}' AS tenant_id, (p#>>'{data,requestId}')::uuid AS request_id, p#>>'{data,operation}' AS operation, p AS event_payload FROM (SELECT event_id, convert_from(payload,'UTF8')::jsonb AS p FROM infrastructure.messaging) x WHERE p->>'eventType' = 'identity.approval.changed.v1') a WHERE a.tenant_id = ? AND a.request_id = ? AND a.event_payload->>'correlationId' = 'approval-audit-test' AND a.event_payload->>'causationId' = a.request_id::text", tenant, created.RequestID).Scan(&auditCount).Error).NotTo(HaveOccurred())
 	Expect(auditCount).To(Equal(int64(1)))
-	Expect(db.Exec("UPDATE identity.approval_audit SET operation = 'CANCELLED' WHERE tenant_id = ? AND request_id = ?", tenant, created.RequestID).Error).To(HaveOccurred())
-	Expect(db.Exec("DELETE FROM identity.approval_audit WHERE tenant_id = ? AND request_id = ?", tenant, created.RequestID).Error).To(HaveOccurred())
 	conflicting := intent
 	conflicting.Reason = "Different reason"
 	_, err = service.CreateLifecycle(requesterCtx, conflicting)
@@ -308,7 +300,7 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	locker := authorityimpl.New(db)
 	guard := protect.New(locker, authorityimpl.NewAdministratorReader(db))
 	readiness := migrationimpl.NewReadiness(db)
-	effects := approvalimpl.Effects{Audit: resourceproducer.New(resourceaudit.New(db), store), Permissions: roleimpl.NewDraftWriter(db), Assignment: replace.New(guard, assignmentimpl.NewWriter(db)), RoleLifecycle: lifecycle.New(guard, roleimpl.NewLifecycleWriter(db))}
+	effects := approvalimpl.Effects{Audit: resourceproducer.New(audit.NewProducer(store)), Permissions: roleimpl.NewDraftWriter(db), Assignment: replace.New(guard, assignmentimpl.NewWriter(db)), RoleLifecycle: lifecycle.New(guard, roleimpl.NewLifecycleWriter(db))}
 	buildExecutor := func(effects approvalimpl.Effects) *approvalimpl.Executor {
 		return approvalimpl.NewExecutor(repository.New(db, recorder), locker, guard, readiness, authimpl.New(snapshots), snapshots, accountimpl.NewNormalizedReader(db), roleimpl.New(db), assignmentimpl.New(db), effects)
 	}
@@ -335,7 +327,7 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	Expect(db.Raw("SELECT * FROM identity.approval_requests WHERE tenant_id = ? AND request_id = ?", tenant, approvedPermission.RequestID).Scan(&persisted).Error).NotTo(HaveOccurred())
 	Expect(persisted.Status).To(Equal(kind.Approved))
 
-	failingRecorder := producerimpl.New(auditimpl.New(db), failingOutbox{})
+	failingRecorder := producerimpl.New(audit.NewProducer(failingOutbox{}))
 	failingExecutor := approvalimpl.NewExecutor(repository.New(db, failingRecorder), locker, guard, readiness, authimpl.New(snapshots), snapshots, accountimpl.NewNormalizedReader(db), roleimpl.New(db), assignmentimpl.New(db), effects)
 	_, err = failingExecutor.Execute(requesterCtx, approvedPermission.RequestID, approvedPermission.Version)
 	Expect(err).To(MatchError(errInjectedOutbox))
@@ -343,22 +335,22 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	Expect(err).NotTo(HaveOccurred())
 	Expect(grantSet.Version).To(Equal(int64(1)))
 	Expect(grantSet.Codes).To(BeEmpty())
-	Expect(db.Raw("SELECT count(*) FROM identity.approval_audit WHERE tenant_id = ? AND request_id = ? AND operation = 'APPLIED'", tenant, approvedPermission.RequestID).Scan(&auditCount).Error).NotTo(HaveOccurred())
+	Expect(db.Raw("SELECT count(*) FROM (SELECT event_id::uuid AS event_id, p#>>'{data,tenantId}' AS tenant_id, (p#>>'{data,requestId}')::uuid AS request_id, p#>>'{data,operation}' AS operation, p AS event_payload FROM (SELECT event_id, convert_from(payload,'UTF8')::jsonb AS p FROM infrastructure.messaging) x WHERE p->>'eventType' = 'identity.approval.changed.v1') a WHERE tenant_id = ? AND request_id = ? AND operation = 'APPLIED'", tenant, approvedPermission.RequestID).Scan(&auditCount).Error).NotTo(HaveOccurred())
 	Expect(auditCount).To(BeZero())
 	Expect(db.Raw("SELECT * FROM identity.approval_requests WHERE tenant_id = ? AND request_id = ?", tenant, approvedPermission.RequestID).Scan(&persisted).Error).NotTo(HaveOccurred())
 	Expect(persisted.Status).To(Equal(kind.Approved))
 
-	Expect(db.Raw("SELECT count(*) FROM identity.resource_audit WHERE tenant_id = ? AND request_id = ?", tenant, approvedPermission.RequestID).Scan(&auditCount).Error).NotTo(HaveOccurred())
+	Expect(db.Raw("SELECT count(*) FROM (SELECT event_id::uuid AS event_id, p#>>'{data,tenantId}' AS tenant_id, (p#>>'{data,requestId}')::uuid AS request_id, (p->>'aggregateId')::uuid AS resource_id, (p#>>'{data,new,version}')::bigint AS resource_version, p#>>'{data,operation}' AS operation, p AS event_payload FROM (SELECT event_id, convert_from(payload,'UTF8')::jsonb AS p FROM infrastructure.messaging) x WHERE p->>'eventType' IN ('identity.role.changed.v1','identity.account.authority.changed.v1')) a WHERE tenant_id = ? AND request_id = ?", tenant, approvedPermission.RequestID).Scan(&auditCount).Error).NotTo(HaveOccurred())
 	Expect(auditCount).To(BeZero())
 	fault = effects
-	fault.Audit = resourceproducer.New(resourceaudit.New(db), failingOutbox{})
+	fault.Audit = resourceproducer.New(audit.NewProducer(failingOutbox{}))
 	_, err = buildExecutor(fault).Execute(requesterCtx, approvedPermission.RequestID, approvedPermission.Version)
 	Expect(err).To(MatchError(errInjectedOutbox))
 	grantSet, err = roleimpl.New(db).Permissions(ctx, tenant, draftID)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(grantSet.Version).To(Equal(int64(1)))
 	Expect(grantSet.Codes).To(BeEmpty())
-	Expect(db.Raw("SELECT count(*) FROM identity.resource_audit WHERE tenant_id = ? AND request_id = ?", tenant, approvedPermission.RequestID).Scan(&auditCount).Error).NotTo(HaveOccurred())
+	Expect(db.Raw("SELECT count(*) FROM (SELECT event_id::uuid AS event_id, p#>>'{data,tenantId}' AS tenant_id, (p#>>'{data,requestId}')::uuid AS request_id, (p->>'aggregateId')::uuid AS resource_id, (p#>>'{data,new,version}')::bigint AS resource_version, p#>>'{data,operation}' AS operation, p AS event_payload FROM (SELECT event_id, convert_from(payload,'UTF8')::jsonb AS p FROM infrastructure.messaging) x WHERE p->>'eventType' IN ('identity.role.changed.v1','identity.account.authority.changed.v1')) a WHERE tenant_id = ? AND request_id = ?", tenant, approvedPermission.RequestID).Scan(&auditCount).Error).NotTo(HaveOccurred())
 	Expect(auditCount).To(BeZero())
 
 	applied, err := executor.Execute(requesterCtx, approvedPermission.RequestID, approvedPermission.Version)
@@ -368,16 +360,14 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	replay, err := executor.Execute(requesterCtx, approvedPermission.RequestID, approvedPermission.Version)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(replay.Version).To(Equal(applied.Version))
-	Expect(db.Raw("SELECT count(*) FROM identity.approval_audit a JOIN infrastructure.messaging m ON m.event_id = a.event_id::text WHERE a.tenant_id = ? AND a.request_id = ? AND a.operation = 'APPLIED'", tenant, approvedPermission.RequestID).Scan(&auditCount).Error).NotTo(HaveOccurred())
+	Expect(db.Raw("SELECT count(*) FROM (SELECT event_id::uuid AS event_id, p#>>'{data,tenantId}' AS tenant_id, (p#>>'{data,requestId}')::uuid AS request_id, p#>>'{data,operation}' AS operation, p AS event_payload FROM (SELECT event_id, convert_from(payload,'UTF8')::jsonb AS p FROM infrastructure.messaging) x WHERE p->>'eventType' = 'identity.approval.changed.v1') a WHERE a.tenant_id = ? AND a.request_id = ? AND a.operation = 'APPLIED'", tenant, approvedPermission.RequestID).Scan(&auditCount).Error).NotTo(HaveOccurred())
 	Expect(auditCount).To(Equal(int64(1)))
 	grantSet, err = roleimpl.New(db).Permissions(ctx, tenant, draftID)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(grantSet.Version).To(Equal(int64(2)))
 	Expect(grantSet.Codes).To(Equal([]permission.Code{permission.RoleDeactivate}))
-	Expect(db.Raw("SELECT count(*) FROM identity.resource_audit a JOIN infrastructure.messaging m ON m.event_id = a.event_id::text WHERE a.tenant_id = ? AND a.request_id = ? AND a.resource_id = ? AND a.resource_version = 2 AND a.event_payload = convert_from(m.payload, 'UTF8')::jsonb AND a.event_payload->>'eventType' = 'identity.role.changed.v1' AND a.event_payload->>'causationId' = a.request_id::text AND a.event_payload->>'correlationId' = 'approval-audit-test' AND a.event_payload#>'{data,old,role,permissionCodes}' = '[]'::jsonb AND a.event_payload#>'{data,new,role,permissionCodes}' = jsonb_build_array(CAST(? AS text))", tenant, approvedPermission.RequestID, draftID, permission.RoleDeactivate).Scan(&auditCount).Error).NotTo(HaveOccurred())
+	Expect(db.Raw("SELECT count(*) FROM (SELECT event_id::uuid AS event_id, p#>>'{data,tenantId}' AS tenant_id, (p#>>'{data,requestId}')::uuid AS request_id, (p->>'aggregateId')::uuid AS resource_id, (p#>>'{data,new,version}')::bigint AS resource_version, p#>>'{data,operation}' AS operation, p AS event_payload FROM (SELECT event_id, convert_from(payload,'UTF8')::jsonb AS p FROM infrastructure.messaging) x WHERE p->>'eventType' IN ('identity.role.changed.v1','identity.account.authority.changed.v1')) a WHERE a.tenant_id = ? AND a.request_id = ? AND a.resource_id = ? AND a.resource_version = 2 AND a.event_payload->>'eventType' = 'identity.role.changed.v1' AND a.event_payload->>'causationId' = a.request_id::text AND a.event_payload->>'correlationId' = 'approval-audit-test' AND a.event_payload#>'{data,old,role,permissionCodes}' = '[]'::jsonb AND a.event_payload#>'{data,new,role,permissionCodes}' = jsonb_build_array(CAST(? AS text))", tenant, approvedPermission.RequestID, draftID, permission.RoleDeactivate).Scan(&auditCount).Error).NotTo(HaveOccurred())
 	Expect(auditCount).To(Equal(int64(1)))
-	Expect(db.Exec("UPDATE identity.resource_audit SET operation = 'ROLE_LIFECYCLE_CHANGE' WHERE tenant_id = ? AND request_id = ?", tenant, approvedPermission.RequestID).Error).To(HaveOccurred())
-	Expect(db.Exec("DELETE FROM identity.resource_audit WHERE tenant_id = ? AND request_id = ?", tenant, approvedPermission.RequestID).Error).To(HaveOccurred())
 	staleResult, err := executor.Execute(requesterCtx, approvedStale.RequestID, approvedStale.Version)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(staleResult.Status).To(Equal(kind.Stale))
@@ -394,9 +384,9 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	roleAfter, err := roleimpl.New(db).FindByID(ctx, tenant, targetRole)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(roleAfter.Role.Status).To(Equal(entity.RoleInactive))
-	Expect(db.Raw("SELECT count(*) FROM identity.resource_audit WHERE tenant_id = ? AND request_id = ? AND event_payload#>>'{data,old,role,status}' = 'ACTIVE' AND event_payload#>>'{data,new,role,status}' = 'INACTIVE'", tenant, approved.RequestID).Scan(&auditCount).Error).NotTo(HaveOccurred())
+	Expect(db.Raw("SELECT count(*) FROM (SELECT event_id::uuid AS event_id, p#>>'{data,tenantId}' AS tenant_id, (p#>>'{data,requestId}')::uuid AS request_id, (p->>'aggregateId')::uuid AS resource_id, (p#>>'{data,new,version}')::bigint AS resource_version, p#>>'{data,operation}' AS operation, p AS event_payload FROM (SELECT event_id, convert_from(payload,'UTF8')::jsonb AS p FROM infrastructure.messaging) x WHERE p->>'eventType' IN ('identity.role.changed.v1','identity.account.authority.changed.v1')) a WHERE tenant_id = ? AND request_id = ? AND event_payload#>>'{data,old,role,status}' = 'ACTIVE' AND event_payload#>>'{data,new,role,status}' = 'INACTIVE'", tenant, approved.RequestID).Scan(&auditCount).Error).NotTo(HaveOccurred())
 	Expect(auditCount).To(Equal(int64(1)))
-	Expect(db.Raw("SELECT count(*) FROM identity.resource_audit WHERE tenant_id = ? AND request_id IN ?", tenant, []string{approvedAssignment.RequestID, approvedStale.RequestID}).Scan(&auditCount).Error).NotTo(HaveOccurred())
+	Expect(db.Raw("SELECT count(*) FROM (SELECT event_id::uuid AS event_id, p#>>'{data,tenantId}' AS tenant_id, (p#>>'{data,requestId}')::uuid AS request_id, (p->>'aggregateId')::uuid AS resource_id, (p#>>'{data,new,version}')::bigint AS resource_version, p#>>'{data,operation}' AS operation, p AS event_payload FROM (SELECT event_id, convert_from(payload,'UTF8')::jsonb AS p FROM infrastructure.messaging) x WHERE p->>'eventType' IN ('identity.role.changed.v1','identity.account.authority.changed.v1')) a WHERE tenant_id = ? AND request_id IN ?", tenant, []string{approvedAssignment.RequestID, approvedStale.RequestID}).Scan(&auditCount).Error).NotTo(HaveOccurred())
 	Expect(auditCount).To(BeZero())
 
 	const targetAccount = "10000000-0000-4000-8000-000000000015"
@@ -412,10 +402,7 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	appliedTarget, err := executor.Execute(requesterCtx, approvedTarget.RequestID, approvedTarget.Version)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(appliedTarget.Status).To(Equal(kind.Applied))
-	events, err = reads.Audit(requesterCtx, appliedTarget.RequestID)
-	Expect(err).NotTo(HaveOccurred())
-	Expect(events).To(HaveLen(4))
-	Expect(db.Raw("SELECT count(*) FROM identity.resource_audit a JOIN infrastructure.messaging m ON m.event_id = a.event_id::text WHERE a.tenant_id = ? AND a.request_id = ? AND a.resource_id = ? AND a.event_payload = convert_from(m.payload, 'UTF8')::jsonb AND a.event_payload->>'eventType' = 'identity.account.authority.changed.v1' AND a.event_payload#>>'{data,old,account,primaryRoleId}' = '' AND a.event_payload#>>'{data,new,account,primaryRoleId}' = ?", tenant, approvedTarget.RequestID, targetAccount, requiredRole).Scan(&auditCount).Error).NotTo(HaveOccurred())
+	Expect(db.Raw("SELECT count(*) FROM (SELECT event_id::uuid AS event_id, p#>>'{data,tenantId}' AS tenant_id, (p#>>'{data,requestId}')::uuid AS request_id, (p->>'aggregateId')::uuid AS resource_id, (p#>>'{data,new,version}')::bigint AS resource_version, p#>>'{data,operation}' AS operation, p AS event_payload FROM (SELECT event_id, convert_from(payload,'UTF8')::jsonb AS p FROM infrastructure.messaging) x WHERE p->>'eventType' IN ('identity.role.changed.v1','identity.account.authority.changed.v1')) a WHERE a.tenant_id = ? AND a.request_id = ? AND a.resource_id = ? AND a.event_payload->>'eventType' = 'identity.account.authority.changed.v1' AND a.event_payload#>>'{data,old,account,primaryRoleId}' = '' AND a.event_payload#>>'{data,new,account,primaryRoleId}' = ?", tenant, approvedTarget.RequestID, targetAccount, requiredRole).Scan(&auditCount).Error).NotTo(HaveOccurred())
 	Expect(auditCount).To(Equal(int64(1)))
 	verifyPolicyProvisioning(ctx, db, tenant, requester, requiredRole, approved.RequestID, policyID)
 	verifyAccountLifecycleCutover(ctx, db, tenant, requester, reviewer, managementRole, targetAccount, service, store, recorder)

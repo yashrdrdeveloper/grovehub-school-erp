@@ -29,5 +29,4 @@ type Reader interface {
 	Search(ctx context.Context, visibility Visibility, query coresearch.Query[string]) (coresearch.QueryResult[dto.Summary], error)
 	CountInbox(ctx context.Context, visibility Visibility) (int64, error)
 	Get(ctx context.Context, visibility Visibility, requestID string) (entity.ApprovalRequest, error)
-	Audit(ctx context.Context, visibility Visibility, requestID string) ([]dto.AuditEvent, error)
 }

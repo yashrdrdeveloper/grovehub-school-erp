@@ -9,7 +9,7 @@ import (
 	"grovehub/services/identity/internal/app/entity"
 	producer "grovehub/services/identity/internal/app/events/producers/registration"
 	repo "grovehub/services/identity/internal/app/repository/account"
-	messaging "grovehub/services/infrastructure/client/messaging"
+	auditclient "grovehub/services/audit/client/producer"
 )
 
 const EventType = "identity.account.registration.changed.v1"
@@ -31,10 +31,10 @@ type Changed struct {
 }
 
 type Producer struct {
-	store messaging.EventStore
+	store auditclient.Client
 }
 
-func New(store messaging.EventStore) producer.Producer {
+func New(store auditclient.Client) producer.Producer {
 	return &Producer{store: store}
 }
 
@@ -51,5 +51,5 @@ func (producer *Producer) Enqueue(ctx context.Context, registration repo.Registr
 	if err != nil {
 		return err
 	}
-	return producer.store.Enqueue(ctx, messaging.Event{EventID: envelope.EventID, Topic: Topic, Payload: payload, Metadata: map[string]string{"event-id": envelope.EventID, "event-type": EventType, "source": "identity", "correlation-id": envelope.CorrelationID, "causation-id": envelope.CausationID}})
+	return producer.store.Produce(ctx, auditclient.Event{Type: envelope.EventType, Payload: payload})
 }

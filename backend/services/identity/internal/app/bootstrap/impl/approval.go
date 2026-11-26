@@ -10,7 +10,6 @@ import (
 	assignmentimpl "grovehub/services/identity/internal/app/repository/accountrole/impl"
 	policyimpl "grovehub/services/identity/internal/app/repository/approvalpolicy/impl"
 	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
-	resourceaudit "grovehub/services/identity/internal/app/repository/resourceaudit/impl"
 	roleimpl "grovehub/services/identity/internal/app/repository/role/impl"
 	"grovehub/services/identity/internal/app/services/account/operations/transition"
 	"grovehub/services/identity/internal/app/services/accountrole/operations/replace"
@@ -30,7 +29,7 @@ func (b *builder) newApprovalExecutor(repositories repositories, cfg config.Conf
 	readiness := policyimpl.NewReadiness(b.db)
 	effects := approvalimpl.Effects{
 		PendingInvitation: invitation.NewApproved(reader, repositories.accountRoles, repositories.authorization, invitation.New(repositories.tokens, repositories.mail, cfg)),
-		Audit: resourceproducer.New(resourceaudit.New(b.db), b.events),
+		Audit: resourceproducer.New(b.audit),
 		AccountLifecycle: transition.NewNormalized(guard, readiness, authorizer, reader, accountimpl.NewStatusWriter(b.db), repositories.accountRoles, repositories.sessions, mapper.New(), b.newEvents()),
 		RoleLifecycle: lifecycle.New(guard, roleimpl.NewLifecycleWriter(b.db)),
 		Permissions: roleimpl.NewDraftWriter(b.db),

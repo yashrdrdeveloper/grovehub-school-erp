@@ -75,14 +75,3 @@ func (controller *Controller) Detail(writer http.ResponseWriter, request *http.R
 		},
 	})
 }
-
-func (controller *Controller) Audit(writer http.ResponseWriter, request *http.Request) {
-	rest.RunStruct(writer, request, rest.StructConfig[dto.GetRequest, []dto.AuditEvent]{
-		InvalidParams: definitions.InvalidRequest,
-		Fallback: definitions.Internal,
-		Service: func(ctx context.Context, input dto.GetRequest) (rest.Result[[]dto.AuditEvent], error) {
-			result, err := controller.service.Audit(ctx, input.Params.RequestID)
-			return rest.OK(result), helpers.Map(err)
-		},
-	})
-}

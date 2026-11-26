@@ -43,7 +43,6 @@ func Lookup(pattern string) (Rule, bool) {
 		"POST /identity/protected/approvals/inbox/search": {ScopedRead: true, StrictOnly: true},
 		"GET /identity/protected/approvals/inbox/count": {ScopedRead: true, StrictOnly: true},
 		"GET /identity/protected/approvals/{requestId}": {ScopedRead: true, StrictOnly: true},
-		"GET /identity/protected/approvals/{requestId}/audit": {ScopedRead: true, StrictOnly: true},
 		"POST /identity/protected/accounts": {Permission: permission.AccountCreate, BlockedUntilCutover: true},
 		"POST /identity/protected/accounts/search": {Permission: permission.AccountSearch},
 		"GET /identity/protected/accounts/roles": {Permission: permission.RoleView},

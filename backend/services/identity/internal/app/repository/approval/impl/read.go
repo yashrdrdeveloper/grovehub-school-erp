@@ -93,13 +93,3 @@ func (reader *Reader) Get(ctx context.Context, visibility approval.Visibility, r
 	}
 	return request, nil
 }
-
-func (reader *Reader) Audit(ctx context.Context, visibility approval.Visibility, requestID string) ([]dto.AuditEvent, error) {
-	visibility.Inbox = false
-	if _, err := reader.Get(ctx, visibility, requestID); err != nil {
-		return nil, err
-	}
-	rows := make([]dto.AuditEvent, 0)
-	err := transaction.Database(ctx, reader.db).Raw(constants.OwnAudit, visibility.TenantID, requestID, visibility.AccountID, visibility.TenantID, requestID, visibility.AccountID).Scan(&rows).Error
-	return rows, err
-}

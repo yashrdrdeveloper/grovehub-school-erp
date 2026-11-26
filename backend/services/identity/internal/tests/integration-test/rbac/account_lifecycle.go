@@ -2,6 +2,7 @@ package rbac_test
 
 import (
 	"context"
+	"grovehub/services/audit"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -29,7 +30,6 @@ import (
 	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
 	authrepo "grovehub/services/identity/internal/app/repository/authorization/impl"
 	registryrepo "grovehub/services/identity/internal/app/repository/registry/impl"
-	resourceaudit "grovehub/services/identity/internal/app/repository/resourceaudit/impl"
 	roleimpl "grovehub/services/identity/internal/app/repository/role/impl"
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"
 	sessionimpl "grovehub/services/identity/internal/app/repository/session/impl"
@@ -65,7 +65,7 @@ func verifyAccountLifecycleCutover(ctx context.Context, db *gorm.DB, tenant stri
 	authorizer := authimpl.New(snapshots)
 	sessions := sessionimpl.New(db)
 	effects := approvalimpl.Effects{
-		Audit: resourceproducer.New(resourceaudit.New(db), store),
+		Audit: resourceproducer.New(audit.NewProducer(store)),
 		AccountLifecycle: transition.NewNormalized(guard, readiness, authorizer, accounts, accountimpl.NewStatusWriter(db), assignments, sessions, mapper.New(), accountproducer.New(store)),
 	}
 	build := func(effects approvalimpl.Effects) approval.Executor {
@@ -87,7 +87,7 @@ func verifyAccountLifecycleCutover(ctx context.Context, db *gorm.DB, tenant stri
 	Expect(err).NotTo(HaveOccurred())
 	suspended := submit("suspend", before.Version)
 	fault := effects
-	fault.Audit = resourceproducer.New(resourceaudit.New(db), failingOutbox{})
+	fault.Audit = resourceproducer.New(audit.NewProducer(failingOutbox{}))
 	_, err = build(fault).Execute(requesterCtx, suspended.RequestID, suspended.Version)
 	Expect(err).To(MatchError(errInjectedOutbox))
 	preserved, err := accounts.FindByID(ctx, target)
@@ -118,7 +118,7 @@ func verifyAccountLifecycleCutover(ctx context.Context, db *gorm.DB, tenant stri
 	secondSession.RefreshHash = strings.Repeat("d",64)
 	Expect(sessions.Create(ctx, secondSession)).To(MatchError(sessionrepo.ErrInvalidSession))
 	var count int64
-	Expect(db.Raw("SELECT count(*) FROM identity.resource_audit WHERE tenant_id = ? AND request_id = ? AND event_payload#>>'{data,old,account,status}' = 'ACTIVE' AND event_payload#>>'{data,new,account,status}' = 'SUSPENDED'", tenant, suspended.RequestID).Scan(&count).Error).NotTo(HaveOccurred())
+	Expect(db.Raw("SELECT count(*) FROM (SELECT event_id::uuid AS event_id, p#>>'{data,tenantId}' AS tenant_id, (p#>>'{data,requestId}')::uuid AS request_id, (p->>'aggregateId')::uuid AS resource_id, (p#>>'{data,new,version}')::bigint AS resource_version, p#>>'{data,operation}' AS operation, p AS event_payload FROM (SELECT event_id, convert_from(payload,'UTF8')::jsonb AS p FROM infrastructure.messaging) x WHERE p->>'eventType' IN ('identity.role.changed.v1','identity.account.authority.changed.v1')) a WHERE tenant_id = ? AND request_id = ? AND event_payload#>>'{data,old,account,status}' = 'ACTIVE' AND event_payload#>>'{data,new,account,status}' = 'SUSPENDED'", tenant, suspended.RequestID).Scan(&count).Error).NotTo(HaveOccurred())
 	Expect(count).To(Equal(int64(1)))
 	activated := submit("activate", after.Version)
 	applied, err := executor.Execute(requesterCtx, activated.RequestID, activated.Version)

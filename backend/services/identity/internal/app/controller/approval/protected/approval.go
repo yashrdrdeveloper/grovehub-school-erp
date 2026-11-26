@@ -16,9 +16,6 @@ type ApprovalController interface {
 	// @GET /{requestId}
 	Detail(writer http.ResponseWriter, request *http.Request)
 
-	// @GET /{requestId}/audit
-	Audit(writer http.ResponseWriter, request *http.Request)
-
 	// @POST /lifecycle
 	SubmitLifecycle(writer http.ResponseWriter, request *http.Request)
 

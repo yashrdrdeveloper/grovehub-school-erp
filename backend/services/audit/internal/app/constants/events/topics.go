@@ -12,3 +12,10 @@ func Topics() map[string]string {
 		"identity_approval_changed": "identity.approval.changed.v1",
 	}
 }
+
+func Topic(eventType string) (string, bool) {
+	for topic, kind := range Topics() {
+		if kind == eventType { return topic, true }
+	}
+	return "", false
+}

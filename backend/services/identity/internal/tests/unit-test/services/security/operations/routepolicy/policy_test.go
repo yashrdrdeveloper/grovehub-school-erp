@@ -93,7 +93,6 @@ var _ = Describe("RBAC read routes", func() {
 			"POST /identity/protected/approvals/inbox/search",
 			"GET /identity/protected/approvals/inbox/count",
 			"GET /identity/protected/approvals/{requestId}",
-			"GET /identity/protected/approvals/{requestId}/audit",
 		} {
 			Expect(routepolicy.New(nil, false).Authorize(ctx, pattern)).To(Succeed())
 			Expect(routepolicy.New(nil, false).Authorize(context.Background(), pattern)).NotTo(Succeed())

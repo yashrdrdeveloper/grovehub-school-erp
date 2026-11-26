@@ -13,21 +13,19 @@ import (
 	"grovehub/services/identity/internal/app/events/producers/accountmetadata"
 	"grovehub/services/identity/internal/app/events/producers/accountmetadata/operations/changed"
 	"grovehub/services/identity/internal/app/repository/account"
-	"grovehub/services/identity/internal/app/repository/accountmetadataaudit"
 	"grovehub/services/identity/internal/app/services/security/principal"
-	messaging "grovehub/services/infrastructure/client/messaging"
+	auditclient "grovehub/services/audit/client/producer"
 )
 
 const EventType = "identity.account.metadata.changed.v1"
 const Topic = "identity_account_metadata_changed"
 
 type Recorder struct {
-	audit accountmetadataaudit.Writer
-	events messaging.EventStore
+	events auditclient.Client
 }
 
-func New(audit accountmetadataaudit.Writer, events messaging.EventStore) accountmetadata.Recorder {
-	return &Recorder{audit: audit, events: events}
+func New(events auditclient.Client) accountmetadata.Recorder {
+	return &Recorder{events: events}
 }
 
 func (recorder *Recorder) Record(ctx context.Context, before entity.Account, after entity.Account) error {
@@ -35,7 +33,7 @@ func (recorder *Recorder) Record(ctx context.Context, before entity.Account, aft
 	if err != nil {
 		return err
 	}
-	if recorder.audit == nil || recorder.events == nil || !transaction.Active(ctx) || before.TenantID == nil || after.TenantID == nil || *before.TenantID != actor.TenantID || *after.TenantID != actor.TenantID || before.AccountID == "" || before.AccountID != after.AccountID || before.Version < 1 || after.Version <= before.Version || after.Version-before.Version != 1 || after.UpdatedAt.IsZero() || after.Username == nil || reflect.DeepEqual(before.Username, after.Username) {
+	if recorder.events == nil || !transaction.Active(ctx) || before.TenantID == nil || after.TenantID == nil || *before.TenantID != actor.TenantID || *after.TenantID != actor.TenantID || before.AccountID == "" || before.AccountID != after.AccountID || before.Version < 1 || after.Version <= before.Version || after.Version-before.Version != 1 || after.UpdatedAt.IsZero() || after.Username == nil || reflect.DeepEqual(before.Username, after.Username) {
 		return account.ErrConflict
 	}
 	// Metadata changes must not change the projected identity or authority.
@@ -56,8 +54,5 @@ func (recorder *Recorder) Record(ctx context.Context, before entity.Account, aft
 	if err != nil {
 		return err
 	}
-	if err := recorder.audit.Insert(ctx, accountmetadataaudit.Entry{EventID: envelope.EventID, TenantID: actor.TenantID, ActorID: actor.AccountID, AccountID: after.AccountID, Version: after.Version, Payload: payload, OccurredAt: after.UpdatedAt}); err != nil {
-		return err
-	}
-	return recorder.events.Enqueue(ctx, messaging.Event{EventID: envelope.EventID, Topic: Topic, Payload: payload, Metadata: map[string]string{"event-id": envelope.EventID, "event-type": EventType, "source": "identity", "correlation-id": envelope.CorrelationID, "causation-id": envelope.CausationID}})
+	return recorder.events.Produce(ctx, auditclient.Event{Type: envelope.EventType, Payload: payload})
 }

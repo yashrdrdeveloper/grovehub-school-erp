@@ -5,7 +5,6 @@ import (
 	accountroleimpl "grovehub/services/identity/internal/app/repository/accountrole/impl"
 	approvalrepo "grovehub/services/identity/internal/app/repository/approval"
 	approvalimpl "grovehub/services/identity/internal/app/repository/approval/impl"
-	auditimpl "grovehub/services/identity/internal/app/repository/approvalaudit/impl"
 	producerimpl "grovehub/services/identity/internal/app/events/producers/approval/impl"
 	"grovehub/services/identity/internal/app/repository/authority"
 	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
@@ -47,7 +46,7 @@ type repositories struct {
 func (b *builder) newRepository() repositories {
 	return repositories{
 		accountRoles: accountroleimpl.New(b.db),
-		approval: approvalimpl.New(b.db, producerimpl.New(auditimpl.New(b.db), b.events)),
+		approval: approvalimpl.New(b.db, producerimpl.New(b.audit)),
 		approvalReads: approvalimpl.NewReader(b.db),
 		authority: authorityimpl.New(b.db),
 		accounts:      accountimpl.New(b.db),

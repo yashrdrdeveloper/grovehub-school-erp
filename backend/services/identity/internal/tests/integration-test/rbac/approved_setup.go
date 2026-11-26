@@ -2,6 +2,7 @@ package rbac_test
 
 import (
 	"context"
+	"grovehub/services/audit"
 	"crypto/aes"
 	"crypto/cipher"
 	"encoding/json"
@@ -41,7 +42,6 @@ import (
 	assignmentimpl "grovehub/services/identity/internal/app/repository/accountrole/impl"
 	assignmentrepo "grovehub/services/identity/internal/app/repository/accountrole"
 	approvalrepo "grovehub/services/identity/internal/app/repository/approval/impl"
-	auditimpl "grovehub/services/identity/internal/app/repository/approvalaudit/impl"
 	policyimpl "grovehub/services/identity/internal/app/repository/approvalpolicy/impl"
 	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
 	authrepo "grovehub/services/identity/internal/app/repository/authorization/impl"
@@ -49,7 +49,6 @@ import (
 	mailrepo "grovehub/services/identity/internal/app/repository/invitation/impl"
 	tokenrepo "grovehub/services/identity/internal/app/repository/passwordtoken"
 	tokenimpl "grovehub/services/identity/internal/app/repository/passwordtoken/impl"
-	resourceaudit "grovehub/services/identity/internal/app/repository/resourceaudit/impl"
 	roleimpl "grovehub/services/identity/internal/app/repository/role/impl"
 	setupimpl "grovehub/services/identity/internal/app/services/account/operations/setup/impl"
 	"grovehub/services/identity/internal/app/services/account/operations/setup/eligibility"
@@ -78,7 +77,7 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	cfg := config.Config{ApprovalExecutionTenant: tenant, EncryptionKey: make([]byte, 32), SetupURL: "https://school.example/set-password"}
 	sender := invitation.New(tokens, mailrepo.New(db), cfg)
 	approvedInvitations := invitation.NewApproved(accounts, assignments, snapshots, sender)
-	repository := approvalrepo.New(db, approvalproducer.New(auditimpl.New(db), store))
+	repository := approvalrepo.New(db, approvalproducer.New(audit.NewProducer(store)))
 	service := approvalimpl.New(repository, locker, authorizer, snapshots, accounts, roles, assignments)
 
 	before, err := accounts.FindByID(ctx, accountID)
@@ -90,12 +89,12 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	Expect(err).NotTo(HaveOccurred())
 	approved, err := service.Decide(reviewerCtx, dto.Review{RequestID: pending.RequestID, Version: pending.Version, Decision: kind.Approve})
 	Expect(err).NotTo(HaveOccurred())
-	effects := approvalimpl.Effects{Assignment: replace.New(guard, assignmentimpl.NewWriter(db)), PendingInvitation: approvedInvitations, Audit: resourceproducer.New(resourceaudit.New(db), store)}
+	effects := approvalimpl.Effects{Assignment: replace.New(guard, assignmentimpl.NewWriter(db)), PendingInvitation: approvedInvitations, Audit: resourceproducer.New(audit.NewProducer(store))}
 	build := func(effects approvalimpl.Effects) *approvalimpl.Executor {
 		return approvalimpl.NewExecutor(repository, locker, guard, readiness, authorizer, snapshots, accounts, roles, assignments, effects)
 	}
 	fault := effects
-	fault.Audit = resourceproducer.New(resourceaudit.New(db), failingOutbox{})
+	fault.Audit = resourceproducer.New(audit.NewProducer(failingOutbox{}))
 	_, err = build(fault).Execute(requesterCtx, approved.RequestID, approved.Version)
 	Expect(err).To(MatchError(errInjectedOutbox))
 	var count int64

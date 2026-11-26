@@ -2,6 +2,7 @@ package rbac_test
 
 import (
 	"context"
+	"grovehub/services/audit"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -20,7 +21,6 @@ import (
 	mapper "grovehub/services/identity/internal/app/mappers/account/impl"
 	repo "grovehub/services/identity/internal/app/repository/account"
 	accountimpl "grovehub/services/identity/internal/app/repository/account/impl"
-	auditimpl "grovehub/services/identity/internal/app/repository/accountmetadataaudit/impl"
 	assignmentimpl "grovehub/services/identity/internal/app/repository/accountrole/impl"
 	policyimpl "grovehub/services/identity/internal/app/repository/approvalpolicy/impl"
 	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
@@ -53,7 +53,7 @@ func verifyAccountMetadata(ctx context.Context, db *gorm.DB, tenant string, requ
 	locker := authorityimpl.New(db)
 	authorizer := authimpl.New(authrepo.New(db))
 	build := func(events messaging.EventStore) update.Operation {
-		return updateimpl.NewNormalized(accounts, accountimpl.NewMetadataWriter(db), assignmentimpl.New(db), tokens, locker, policyimpl.NewReadiness(db), authorizer, mapper.New(), validator.NewNormalized(), eventimpl.New(auditimpl.New(db), events))
+		return updateimpl.NewNormalized(accounts, accountimpl.NewMetadataWriter(db), assignmentimpl.New(db), tokens, locker, policyimpl.NewReadiness(db), authorizer, mapper.New(), validator.NewNormalized(), eventimpl.New(audit.NewProducer(events)))
 	}
 	operation := build(store)
 	before, err := accounts.FindByID(ctx, target)
@@ -97,9 +97,8 @@ func verifyAccountMetadata(ctx context.Context, db *gorm.DB, tenant string, requ
 	Expect(err).NotTo(HaveOccurred())
 	Expect(replayed.Version).To(Equal(updated.Version))
 	var count int64
-	Expect(db.Raw("SELECT count(*) FROM identity.account_metadata_audit a JOIN infrastructure.messaging m ON m.event_id = a.event_id::text WHERE a.tenant_id = ? AND a.account_id = ? AND a.event_payload = convert_from(m.payload,'UTF8')::jsonb AND a.event_payload#>>'{data,new,username}' = 'updated.account'", tenant, target).Scan(&count).Error).NotTo(HaveOccurred())
+	Expect(db.Raw("SELECT count(*) FROM (SELECT event_id::uuid AS event_id, p#>>'{data,tenantId}' AS tenant_id, (p->>'aggregateId')::uuid AS account_id, p#>>'{data,operation}' AS operation, p AS event_payload FROM (SELECT event_id, convert_from(payload,'UTF8')::jsonb AS p FROM infrastructure.messaging) x WHERE p->>'eventType' = 'identity.account.metadata.changed.v1') a WHERE a.tenant_id = ? AND a.account_id = ? AND a.event_payload#>>'{data,new,username}' = 'updated.account'", tenant, target).Scan(&count).Error).NotTo(HaveOccurred())
 	Expect(count).To(Equal(int64(1)))
-	Expect(db.Exec("DELETE FROM identity.account_metadata_audit WHERE tenant_id = ? AND account_id = ?", tenant, target).Error).To(HaveOccurred())
 
 	pending := uuid.NewString()
 	Expect(db.Exec("INSERT INTO identity.accounts(account_id,person_gid,tenant_id,email,status) VALUES (?,?,?,?, 'PENDING_SETUP')", pending, uuid.NewString(), tenant, "metadata-pending@approval.test").Error).NotTo(HaveOccurred())
