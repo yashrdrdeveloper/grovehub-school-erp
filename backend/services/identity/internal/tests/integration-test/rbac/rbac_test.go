@@ -13,6 +13,10 @@ import (
 	"grovehub/libs/schoolgateway"
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/constants/permission"
+	"grovehub/services/identity/internal/app/constants/persona"
+	"grovehub/services/identity/internal/app/entity"
+	rolerepo "grovehub/services/identity/internal/app/repository/role"
+	roleimpl "grovehub/services/identity/internal/app/repository/role/impl"
 	authorizationrepo "grovehub/services/identity/internal/app/repository/authorization/impl"
 	registryrepo "grovehub/services/identity/internal/app/repository/registry"
 	registryimpl "grovehub/services/identity/internal/app/repository/registry/impl"
@@ -54,6 +58,32 @@ var _ = Describe("RBAC persistence against PostgreSQL", func() {
 		Expect(existing).To(BeZero(), "integration database must be fresh")
 		ctx := context.Background()
 		Expect(migrations.Migrate(ctx, sqlDB)).To(Succeed())
+
+		roles := roleimpl.New(db)
+		draft := rolerepo.Draft{TenantID: "school-a", ActorID: actorID, Name: "  Senior Teacher  ", Personas: []persona.Code{persona.Teacher, persona.Coordinator}}
+		createdRole, err := roles.CreateDraft(ctx, draft)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(createdRole.Role.Name).To(Equal("Senior Teacher"))
+		Expect(createdRole.Role.Status).To(Equal(entity.RoleInactive))
+		Expect(createdRole.Role.Version).To(Equal(int64(1)))
+		Expect(createdRole.Personas).To(Equal([]persona.Code{persona.Coordinator, persona.Teacher}))
+		_, err = roles.FindByID(ctx, "school-b", createdRole.Role.RoleID)
+		Expect(err).To(MatchError(rolerepo.ErrNotFound))
+		draft.Name = "senior teacher"
+		_, err = roles.CreateDraft(ctx, draft)
+		Expect(err).To(MatchError(rolerepo.ErrConflict))
+		draft.TenantID = "school-b"
+		_, err = roles.CreateDraft(ctx, draft)
+		Expect(err).NotTo(HaveOccurred())
+		draft.Name = "Invalid role"
+		draft.Personas = []persona.Code{persona.Teacher, persona.Teacher}
+		_, err = roles.CreateDraft(ctx, draft)
+		Expect(err).To(MatchError(rolerepo.ErrInvalidDraft))
+		var draftCount int64
+		Expect(db.Raw("SELECT count(*) FROM identity.roles").Scan(&draftCount).Error).NotTo(HaveOccurred())
+		Expect(draftCount).To(Equal(int64(2)))
+		Expect(db.Raw("SELECT count(*) FROM identity.role_permissions").Scan(&draftCount).Error).NotTo(HaveOccurred())
+		Expect(draftCount).To(BeZero())
 
 		catalog := registryservice.New(registryimpl.New(db))
 		authorizer := authorizationimpl.New(authorizationrepo.New(db))
