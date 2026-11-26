@@ -1,5 +1,4 @@
-// Package rbacmigration plans the legacy-to-normalized role migration. It does
-// not write to the database, enable permissions or establish administrator access.
+// Package rbacmigration owns the staged legacy-to-normalized migration contracts.
 package rbacmigration
 
 import (
@@ -56,4 +55,19 @@ type Plan struct {
 
 type Reader interface {
 	Inventory(ctx context.Context, tenantID string) (Inventory, error)
+}
+
+var ErrStalePlan = errors.New("reviewed migration plan is stale")
+var ErrParity = errors.New("migration parity check failed")
+
+type BackfillResult struct {
+	RolesCreated int
+	AssignmentsCreated int
+	UnassignedAccounts int
+}
+
+// Backfill is an offline operator primitive, never a school API. It creates
+// only inactive role records and inert normalized assignments.
+type Backfill interface {
+	Apply(ctx context.Context, reviewed Plan, operatorID string) (BackfillResult, error)
 }

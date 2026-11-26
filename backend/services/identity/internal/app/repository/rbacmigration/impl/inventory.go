@@ -25,7 +25,7 @@ func New(db *gorm.DB) rbacmigration.Reader {
 type accountRow struct {
 	AccountID string
 	Version int64
-	Primary *string
+	PrimaryCode *string
 	SecondaryJSON string
 }
 
@@ -38,24 +38,28 @@ func (reader *Reader) Inventory(ctx context.Context, tenantID string) (rbacmigra
 	}
 	inventory := rbacmigration.Inventory{TenantID: tenantID}
 	err := reader.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		var rows []accountRow
-		if err := tx.Raw(constants.Accounts, tenantID).Scan(&rows).Error; err != nil {
-			return err
-		}
-		for _, row := range rows {
-			account := rbacmigration.LegacyAccount{AccountID: row.AccountID, Version: row.Version, Primary: row.Primary}
-			if err := json.Unmarshal([]byte(row.SecondaryJSON), &account.Secondary); err != nil {
-				return rbacmigration.ErrInvalidInventory
-			}
-			inventory.Accounts = append(inventory.Accounts, account)
-		}
-		if err := tx.Raw(constants.Roles, tenantID).Scan(&inventory.Roles).Error; err != nil {
-			return err
-		}
-		return tx.Raw(constants.AssignmentCount, tenantID).Scan(&inventory.NormalizedAssignments).Error
+		return loadInventory(tx, tenantID, &inventory)
 	}, &sql.TxOptions{Isolation: sql.LevelRepeatableRead, ReadOnly: true})
 	if err != nil {
 		return rbacmigration.Inventory{}, err
 	}
 	return inventory, nil
+}
+
+func loadInventory(tx *gorm.DB, tenantID string, inventory *rbacmigration.Inventory) error {
+	var rows []accountRow
+	if err := tx.Raw(constants.Accounts, tenantID).Scan(&rows).Error; err != nil {
+		return err
+	}
+	for _, row := range rows {
+		account := rbacmigration.LegacyAccount{AccountID: row.AccountID, Version: row.Version, Primary: row.Primary}
+		if err := json.Unmarshal([]byte(row.SecondaryJSON), &account.Secondary); err != nil {
+			return rbacmigration.ErrInvalidInventory
+		}
+		inventory.Accounts = append(inventory.Accounts, account)
+	}
+	if err := tx.Raw(constants.Roles, tenantID).Scan(&inventory.Roles).Error; err != nil {
+		return err
+	}
+	return tx.Raw(constants.AssignmentCount, tenantID).Scan(&inventory.NormalizedAssignments).Error
 }

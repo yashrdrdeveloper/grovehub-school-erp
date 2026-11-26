@@ -1,6 +1,6 @@
 package constants
 
-const Accounts = `SELECT account_id::text AS account_id, version, primary_role_id AS primary,
+const Accounts = `SELECT account_id::text AS account_id, version, primary_role_id AS primary_code,
 secondary_role_ids::text AS secondary_json FROM identity.accounts
 WHERE tenant_id = ? ORDER BY account_id`
 

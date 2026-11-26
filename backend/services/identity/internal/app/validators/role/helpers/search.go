@@ -73,7 +73,7 @@ func validateStatusCursor(value string, invalid error) error {
 
 func SortFields() map[string]coresearch.CursorValueValidator {
 	return map[string]coresearch.CursorValueValidator{
-		roledto.FieldRoleID:    coresearch.ValidateUUIDv7Cursor,
+		roledto.FieldRoleID:    ValidateRoleCursor,
 		roledto.FieldName:      validateNameCursor,
 		roledto.FieldStatus:    validateStatusCursor,
 		roledto.FieldCreatedAt: coresearch.ValidateTimeCursor,
@@ -91,4 +91,12 @@ func FilterFields() map[string]coresearch.FieldSpec {
 		roledto.FieldCreatedAt: {Operators: coresearch.OperatorSet(coresearch.OperatorEquals, coresearch.OperatorNotEquals, coresearch.OperatorGreaterThan, coresearch.OperatorGTE, coresearch.OperatorLessThan, coresearch.OperatorLTE), Normalizer: normalizeTime},
 		roledto.FieldUpdatedAt: {Operators: coresearch.OperatorSet(coresearch.OperatorEquals, coresearch.OperatorNotEquals, coresearch.OperatorGreaterThan, coresearch.OperatorGTE, coresearch.OperatorLessThan, coresearch.OperatorLTE), Normalizer: normalizeTime},
 	}
+}
+
+func ValidateRoleCursor(value string, invalid error) error {
+	id, err := uuid.Parse(value)
+	if err != nil || id == uuid.Nil || id.String() != value || (id.Version() != 5 && id.Version() != 7) {
+		return invalid
+	}
+	return nil
 }

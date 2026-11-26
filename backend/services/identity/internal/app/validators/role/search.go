@@ -33,7 +33,7 @@ func NormalizeSearch(request coresearch.Request) (coresearch.Query[string], erro
 	if err != nil {
 		return coresearch.Query[string]{}, err
 	}
-	cursor, err := coresearch.NormalizeMultiCursor(request.PageInfo.Cursor, ordered, sorts, coresearch.ValidateUUIDv7Cursor, ErrInvalidSearch)
+	cursor, err := coresearch.NormalizeMultiCursor(request.PageInfo.Cursor, ordered, sorts, helpers.ValidateRoleCursor, ErrInvalidSearch)
 	if err != nil {
 		return coresearch.Query[string]{}, err
 	}
