@@ -1,27 +1,19 @@
 import { Box } from '@Components/components/Box';
-import { Button } from '@Components/components/Button';
 import { Sheet } from '@Components/components/Sheet';
+import { Table, TableType, TableDataMode } from '@Components/components/Table';
 import type { RbacControls } from '../../hooks/useRbacPage/types/useRbacPage';
 import { RBAC_COPY } from '../../constants/rbac.copy';
 import { RBAC_TEST_IDS } from '../../constants/rbac.testIds';
+import { RBAC_COLUMNS } from '../../constants/rbac.columns';
+import { RBAC_FILTERS } from '../../constants/rbac.filters';
+import { RBAC_SORT_FIELDS } from '../../constants/rbac.sort';
+import { renderRbacMobileRow } from '../../renderer/rbac.mobileRow';
 import styles from '../../page.module.css';
 
 export const RbacContent = ({ controls: state }: { controls: RbacControls }) => {
-  const rows = state.query.data?.items ?? [];
+  const getError = () => { if (state.error) return RBAC_COPY.label4; return undefined; };
   return <Box className={styles.page} data-workspace-fill="true">
-    <h1>{RBAC_COPY.label1}</h1>
-    
-    <Box className={styles.toolbar}>
-      <input data-testid={RBAC_TEST_IDS.search} aria-label={RBAC_COPY.label2} placeholder={RBAC_COPY.label2} value={state.searchText} onChange={(event) => state.search(event.target.value)} />
-      <Button onClick={() => void state.query.refetch()}>{RBAC_COPY.label3}</Button>
-    </Box>
-    {state.query.isPending && <p role="status">{RBAC_COPY.label4}</p>}
-    {state.query.isError && <p role="alert">{RBAC_COPY.label5}</p>}
-    {state.query.isSuccess && rows.length === 0 && <p>{RBAC_COPY.label6}</p>}
-    <Box className={styles.list}>
-      {rows.map((row) => <button className={styles.row} key={row.roleId} data-testid={RBAC_TEST_IDS.row} onClick={() => state.setSelected(row)}><strong>{row.name}</strong><span>{row.status}</span><span>{row.description}</span></button>)}
-    </Box>
-    <Box className={styles.toolbar}><Button disabled={state.page === 1 || state.query.isFetching} onClick={() => state.setPage(state.page - 1)}>{RBAC_COPY.label7}</Button><span>{state.page}</span><Button disabled={!state.query.data?.pageInfo.hasNext || state.query.isFetching} onClick={() => state.setPage(state.page + 1)}>{RBAC_COPY.label8}</Button></Box>
+    <Table id={RBAC_TEST_IDS.row} fillHeight type={TableType.DEFAULT} dataMode={TableDataMode.SERVER} data={state.rows} columns={RBAC_COLUMNS} getRowId={(row) => row.roleId} headerProps={{ title: RBAC_COPY.label1 }} searchProps={{ value: state.searchText, placeholder: RBAC_COPY.label2 }} filterProps={{ fields: RBAC_FILTERS, value: state.filters }} sortProps={{ fields: RBAC_SORT_FIELDS, value: state.sorting }} paginationProps={state.pagination} mobileRowProps={{ render: renderRbacMobileRow, onClick: state.setSelected }} mobileInfiniteProps={state.mobileInfiniteProps} actions={state.actions} loading={state.loading} refreshing={state.refreshing} error={getError()} />
     {state.selected && <Sheet open title={RBAC_COPY.label9} dataTestId={RBAC_TEST_IDS.details} onOpenChange={(open) => { if (!open) state.setSelected(null); }}>
       <p><strong>{RBAC_COPY.label10}</strong> {state.selected.roleId}</p>
       <p><strong>{RBAC_COPY.label11}</strong> {state.selected.name}</p>
