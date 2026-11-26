@@ -1,0 +1,48 @@
+name: One-time isolated frontend formatting
+on:
+  push:
+    branches:
+      - maintenance/frontend-format-073c903
+    paths:
+      - '.github/workflows/one-time-frontend-format.yml'
+permissions:
+  contents: write
+jobs:
+  format:
+    if: github.ref == 'refs/heads/maintenance/frontend-format-073c903'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Verify isolated branch baseline
+        run: |
+          test "$(git rev-parse HEAD^)" = '073c9030ca02cb43da3c26aee64b806220c3d61a'
+          test "$(git diff --name-only HEAD^ HEAD)" = '.github/workflows/one-time-frontend-format.yml'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Format with pinned workspace tools
+        working-directory: frontend
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm format
+          pnpm format:check
+      - name: Commit only tracked formatter output to isolated branch
+        run: |
+          git diff --check
+          if git diff --name-only | grep -vE '^(frontend/|libs/frontend/)'; then
+            echo 'Unexpected file changed'; exit 1
+          fi
+          git diff --stat
+          git add -u -- frontend libs/frontend
+          if git diff --cached --quiet; then
+            echo 'No formatting changes'; exit 0
+          fi
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'style(frontend): apply pinned Prettier formatting'
+          git push origin HEAD:refs/heads/maintenance/frontend-format-073c903
