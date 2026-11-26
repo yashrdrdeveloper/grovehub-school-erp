@@ -127,6 +127,9 @@ func (adapter *Adapter) Consume(
 		return err
 	}
 
+	inframessaging.NotifySubscription(ctx,true)
+	defer inframessaging.NotifySubscription(ctx,false)
+
 	for msg := range messages {
 		messageContext := otel.GetTextMapPropagator().Extract(
 			ctx,

@@ -16,16 +16,22 @@ func New(repository activity.Repository, rejected rejection.Repository) *Consume
 }
 
 func (consumer *Consumer) Handle(ctx context.Context, eventType string, message messaging.Message) error {
+	_,err:=consumer.Process(ctx,eventType,message)
+	return err
+}
+
+// Process distinguishes persisted activities from quarantined events.
+func (consumer *Consumer) Process(ctx context.Context,eventType string,message messaging.Message) (string,error) {
 	entry, err := helpers.Project(ctx,eventType,message.Payload)
 	if errors.Is(err,helpers.ErrInvalidEvent) {
-		return consumer.reject(ctx,eventType,message.Payload,"INVALID_EVENT",err)
+		return "invalid_event",consumer.reject(ctx,eventType,message.Payload,"INVALID_EVENT",err)
 	}
-	if err!=nil { return err }
+	if err!=nil { return "retry",err }
 	err=consumer.repository.Insert(ctx,entry)
 	if errors.Is(err,activity.ErrConflict) {
-		return consumer.reject(ctx,eventType,message.Payload,"IDENTITY_CONFLICT",err)
+		return "identity_conflict",consumer.reject(ctx,eventType,message.Payload,"IDENTITY_CONFLICT",err)
 	}
-	return err
+	return "accepted",err
 }
 
 func (consumer *Consumer) reject(ctx context.Context,eventType string,payload []byte,reason string,original error) error {

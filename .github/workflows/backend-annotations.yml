@@ -57,6 +57,9 @@ jobs:
       - name: Verify school build without workspace
         working-directory: backend
         run: GOWORK=off go build -overlay=.generated/overlay.json -o "$RUNNER_TEMP/school-platform" ./cmd/platform
+      - name: Test Audit monitoring
+        working-directory: backend
+        run: go test -race -vet=off -overlay=.generated/overlay.json ./services/audit/internal/tests/unit-test/services/monitoring/...
       - name: Compile Audit replay operator command
         working-directory: backend
         run: go build -overlay=.generated/overlay.json -o "$RUNNER_TEMP/audit-replay" ./cmd/audit-replay

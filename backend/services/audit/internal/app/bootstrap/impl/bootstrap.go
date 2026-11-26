@@ -19,6 +19,7 @@ import (
 	repository "grovehub/services/audit/internal/app/repository/activity/impl"
 	rejection "grovehub/services/audit/internal/app/repository/rejection/impl"
 	"grovehub/services/audit/internal/app/routes"
+	"grovehub/services/audit/internal/app/services/monitoring"
 	service "grovehub/services/audit/internal/app/services/activity/impl"
 	"grovehub/services/infrastructure/client/messaging"
 )
@@ -39,6 +40,7 @@ type runtime struct {
 	stop context.CancelFunc
 	wait sync.WaitGroup
 	once sync.Once
+	monitor *monitoring.Monitor
 }
 
 func (b *builder) Build() (bootstrap.Runtime,error) {
@@ -49,8 +51,12 @@ func (b *builder) Build() (bootstrap.Runtime,error) {
 	if err:=b.db.Exec("SELECT source_event_id FROM audit.event_receipts LIMIT 0").Error;err!=nil { return nil,errors.New("audit receipt migrations required") }
 	repo:=repository.New(b.db)
 	handler:=consumer.New(repo,rejection.New(b.db))
+	monitor,err:=monitoring.New(events.Topics())
+	if err!=nil { return nil,errors.New("audit monitoring initialization failed") }
 	ctx,stop:=context.WithCancel(context.Background())
-	module:=&runtime{controller:controllerimpl.New(service.New(repo,b.access)),stop:stop}
+	module:=&runtime{controller:controllerimpl.New(service.New(repo,b.access)),stop:stop,monitor:monitor}
+	module.wait.Add(1)
+	go module.probe(ctx,b.db,b.messaging)
 	for topic,eventType:=range events.Topics() {
 		module.wait.Add(1)
 		go module.consume(ctx,b.logger,b.messaging,handler,topic,eventType)
@@ -61,18 +67,24 @@ func (b *builder) Build() (bootstrap.Runtime,error) {
 func (module *runtime) consume(ctx context.Context, logger *slog.Logger, client messaging.MessagingClient, handler *consumer.Consumer, topic string, eventType string) {
 	defer module.wait.Done()
 	for ctx.Err()==nil {
-		_ = client.Consume(inframessaging.WithConsumerGroup(ctx,"audit"),topic,func(deliveryCtx context.Context,message messaging.Message) error {
-			if err:=handler.Handle(deliveryCtx,eventType,message); err!=nil {
+		subscription:=inframessaging.WithSubscriptionObserver(inframessaging.WithConsumerGroup(ctx,"audit"),func(ready bool){module.monitor.Subscription(topic,ready)})
+		_ = client.Consume(subscription,topic,func(deliveryCtx context.Context,message messaging.Message) error {
+			started:=time.Now()
+			outcome,err:=handler.Process(deliveryCtx,eventType,message)
+			module.monitor.Delivery(deliveryCtx,topic,outcome,time.Since(started),err)
+			if err!=nil {
 				logger.Warn("audit event not persisted","topic",topic)
 				return err
 			}
 			return nil
 		})
+ 		module.monitor.Subscription(topic,false)
 		if ctx.Err()!=nil { return }
+		module.monitor.Interrupted(ctx,topic)
 		logger.Warn("audit subscription interrupted","topic",topic)
 		select { case <-ctx.Done(): return; case <-time.After(time.Second): }
 	}
 }
 
 func (module *runtime) RegisterHTTP(mux *http.ServeMux) { routes.RegisterHTTP(mux,module.controller) }
-func (module *runtime) Close() { module.once.Do(func(){module.stop();module.wait.Wait()}) }
+func (module *runtime) Close() { module.once.Do(func(){module.monitor.Close();module.stop();module.wait.Wait()}) }

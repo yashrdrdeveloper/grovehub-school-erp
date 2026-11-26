@@ -45,7 +45,7 @@ func (operation *Operation) ServeHTTP(writer http.ResponseWriter, request *http.
 	request.Pattern = pattern
 
 	// Only explicitly registered health endpoints may live outside an access tier.
-	if pattern == "GET /health" {
+	if pattern == "GET /health" || pattern == "GET /ready" {
 		operation.mux.ServeHTTP(writer, request)
 		return
 	}

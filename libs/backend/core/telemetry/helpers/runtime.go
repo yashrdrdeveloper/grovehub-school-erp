@@ -64,6 +64,7 @@ func Initialize(ctx context.Context, logger *slog.Logger) contracts.Shutdown {
 		contracts.ServiceLauncherEdge,
 		contracts.ServiceFoundation,
 		contracts.ServiceIdentity,
+		contracts.ServiceAudit,
 	}
 
 	runtime := &Runtime{services: make(map[string]*serviceRuntime, len(services))}

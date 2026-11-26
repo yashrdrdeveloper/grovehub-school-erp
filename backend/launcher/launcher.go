@@ -94,6 +94,7 @@ func Run(logger *slog.Logger) error {
 	if err != nil { return fmt.Errorf("initialize Audit: %w", err) }
 	defer auditModule.Close()
 	auditModule.RegisterHTTP(mux)
+	routing.RegisterReadiness(mux,auditModule.Ready)
 
 	routing.RegisterFallback(mux)
 

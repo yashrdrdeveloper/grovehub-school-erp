@@ -23,6 +23,7 @@ var (
 	ServiceLauncherEdge = contracts.ServiceLauncherEdge
 	ServiceFoundation   = contracts.ServiceFoundation
 	ServiceIdentity     = contracts.ServiceIdentity
+	ServiceAudit        = contracts.ServiceAudit
 )
 
 func ResolveService(value string) Service {
