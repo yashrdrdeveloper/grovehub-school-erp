@@ -24,7 +24,7 @@ func TestRegistryService(t *testing.T) {
 type recorder struct {
 	calls int
 	batch registryrepo.Batch
-	err error
+	err   error
 }
 
 func (repo *recorder) Register(ctx context.Context, batch registryrepo.Batch) (registryrepo.Result, error) {
@@ -39,7 +39,7 @@ func (repo *recorder) Register(ctx context.Context, batch registryrepo.Batch) (r
 var _ = Describe("PrepareBatch", func() {
 	It("resolves canonical metadata and deterministic order without modifying input", func() {
 		request := registry.Request{
-			Features: []feature.Code{feature.RoleManagement, feature.AccountManagement},
+			Features:    []feature.Code{feature.RoleManagement, feature.AccountManagement},
 			Permissions: []permission.Code{permission.RoleView, permission.AccountSearch, permission.AccountSelfView},
 		}
 		batch, err := helpers.PrepareBatch(request)

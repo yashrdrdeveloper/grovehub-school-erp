@@ -9,19 +9,19 @@ import (
 )
 
 var (
-	ErrConflict = errors.New("registered capability has a conflicting module or feature binding")
+	ErrConflict       = errors.New("registered capability has a conflicting module or feature binding")
 	ErrFeatureMissing = errors.New("permission feature is not registered")
 )
 
 // Batch contains validated, code-owned definitions. No lifecycle or grant state
 // is supplied by the caller.
 type Batch struct {
-	Features []feature.Definition
+	Features    []feature.Definition
 	Permissions []permission.Definition
 }
 
 type Result struct {
-	FeaturesCreated int
+	FeaturesCreated    int
 	PermissionsCreated int
 }
 

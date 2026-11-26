@@ -58,7 +58,7 @@ var _ = Describe("RBAC persistence against PostgreSQL", func() {
 		catalog := registryservice.New(registryimpl.New(db))
 		authorizer := authorizationimpl.New(authorizationrepo.New(db))
 		request := registry.Request{
-			Features: []feature.Code{feature.AccountManagement},
+			Features:    []feature.Code{feature.AccountManagement},
 			Permissions: []permission.Code{permission.AccountSearch, permission.AccountSelfView},
 		}
 		result, err := catalog.Register(ctx, request)

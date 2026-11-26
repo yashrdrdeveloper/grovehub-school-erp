@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ErrForbidden = errors.New("permission forbidden")
+	ErrForbidden   = errors.New("permission forbidden")
 	ErrUnavailable = errors.New("authorization unavailable")
 )
 
