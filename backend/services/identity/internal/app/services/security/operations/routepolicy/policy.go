@@ -21,7 +21,8 @@ type Rule struct {
 
 func Lookup(pattern string) (Rule, bool) {
 	rules := map[string]Rule{
-		"POST /audit/protected/search": {Permission: permission.AuditView, StrictOnly: true},
+		"POST /audit/protected/search": {ScopedRead: true, StrictOnly: true},
+		"AUDIT tenant search": {Permission: permission.AuditView, StrictOnly: true},
 		"POST /identity/protected/roles": {Permission: permission.RoleCreate, StrictOnly: true},
 		"PATCH /identity/protected/roles/{roleId}": {Permission: permission.RoleUpdate, StrictOnly: true},
 		"GET /identity/protected/capabilities/me": {ScopedRead: true, StrictOnly: true},

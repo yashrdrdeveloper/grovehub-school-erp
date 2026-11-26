@@ -2,6 +2,7 @@ package activity_test
 
 import (
 	"context"
+	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	"encoding/json"
 	"errors"
 	"os"
@@ -23,9 +24,9 @@ import (
 	service "grovehub/services/audit/internal/app/services/activity/impl"
 )
 
-type access struct { deny bool }
+type access struct { deny bool; tenantDeny bool }
 func (auth access) AuthorizeProtectedRoute(ctx context.Context, pattern string) error {
-	if auth.deny || pattern!="POST /audit/protected/search" { return errors.New("denied") }
+	if auth.deny || (pattern!="POST /audit/protected/search" && pattern!="AUDIT tenant search") || (auth.tenantDeny && pattern=="AUDIT tenant search") { return errors.New("denied") }
 	return nil
 }
 
@@ -61,13 +62,22 @@ func TestAuditProjectionAndPersistence(t *testing.T) {
 	second,_:=helpers.Project(ctx,eventType,raw(uuid.NewString(),tenant,"new",3))
 	if err:=repository.Insert(ctx,second);err!=nil { t.Fatal(err) }
 	if _,err:=helpers.Project(ctx,eventType,raw(uuid.NewString(),"","name",2));err==nil { t.Fatal("unscoped event accepted") }
-	authCtx:=schoolgateway.WithPrincipal(ctx,schoolgateway.Principal{TenantID:tenant,AccountID:actor,SessionID:"verified"})
-	reader:=service.New(repository,access{})
-	page,err:=reader.Search(authCtx,dto.Search{Scope:"ME",Limit:1})
-	if err!=nil || len(page.Items)!=1 || page.NextCursor==nil { t.Fatalf("first page failed: %v",err) }
-	next,err:=reader.Search(authCtx,dto.Search{Scope:"ME",Limit:1,Cursor:page.NextCursor})
-	if err!=nil || len(next.Items)!=1 || next.Items[0].AuditID!=first.AuditID || next.NextCursor!=nil { t.Fatalf("next page failed: %v",err) }
+	authCtx:=schoolgateway.WithPrincipal(ctx,schoolgateway.Principal{TenantID:tenant,AccountID:account,SessionID:"verified"})
+	reader:=service.New(repository,access{tenantDeny:true})
+	page,err:=reader.Search(authCtx,dto.Search{Scope:"ME",Request:coresearch.Request{PageInfo:coresearch.PageRequest{PageNumber:1,RowSize:1}}})
+	if err!=nil || len(page.Items)!=1 || page.PageInfo.NextCursor=="" { t.Fatalf("first page failed: %v",err) }
+	next,err:=reader.Search(authCtx,dto.Search{Scope:"ME",Request:coresearch.Request{PageInfo:coresearch.PageRequest{PageNumber:2,RowSize:1,Cursor:page.PageInfo.NextCursor}}})
+	if err!=nil || len(next.Items)!=1 || next.Items[0].AuditID!=first.AuditID || next.PageInfo.NextCursor!="" { t.Fatalf("next page failed: %v",err) }
 	if string(next.Items[0].Data)=="" || string(next.Items[0].Data)=="null" { t.Fatal("missing projection") }
+	if page.PageInfo.TotalRecords==nil || *page.PageInfo.TotalRecords!=2 { t.Fatal("scope count incorrect") }
+	if _,err:=reader.Search(authCtx,dto.Search{});err==nil { t.Fatal("self-only principal can search tenant") }
+	admin:=service.New(repository,access{})
+	filtered,err:=admin.Search(authCtx,dto.Search{Request:coresearch.Request{SearchText:"UPDATED",Filters:[]coresearch.Filter{{Field:"assetId",Operator:coresearch.OperatorEquals,Values:[]string{account}}},Sort:[]coresearch.Sort{{Field:"operation",Direction:coresearch.DirectionAscending},{Field:"occurredAt",Direction:coresearch.DirectionAscending}},PageInfo:coresearch.PageRequest{PageNumber:1,RowSize:1}}})
+	if err!=nil || len(filtered.Items)!=1 || filtered.Items[0].AuditID!=first.AuditID || filtered.PageInfo.NextCursor=="" { t.Fatalf("filtered sort failed: %v",err) }
+	if _,err:=admin.Search(authCtx,dto.Search{Request:coresearch.Request{Filters:[]coresearch.Filter{{Field:"tenantId",Operator:coresearch.OperatorEquals,Values:[]string{tenant}}}}});err==nil { t.Fatal("tenant override accepted") }
+	other:=schoolgateway.WithPrincipal(ctx,schoolgateway.Principal{TenantID:tenant,AccountID:actor,SessionID:"verified"})
+	empty,err:=reader.Search(other,dto.Search{Scope:"ME"})
+	if err!=nil || len(empty.Items)!=0 { t.Fatal("actor-only access exposed another account") }
 	var leaked bool
 	if err:=db.Raw("SELECT EXISTS (SELECT 1 FROM audit.activities WHERE data::text LIKE '%never-store%')").Scan(&leaked).Error;err!=nil || leaked { t.Fatal("secret leaked into audit") }
 	if _,err:=service.New(repository,access{deny:true}).Search(authCtx,dto.Search{});err==nil { t.Fatal("unauthorized search") }

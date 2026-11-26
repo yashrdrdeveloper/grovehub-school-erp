@@ -66,7 +66,7 @@ var _ = Describe("RBAC read routes", func() {
 		auth := &authorizer{}
 		policy := routepolicy.New(auth, false)
 		for pattern, code := range map[string]permission.Code{
-			"POST /audit/protected/search": permission.AuditView,
+			"AUDIT tenant search": permission.AuditView,
 			"POST /identity/protected/roles/search": permission.RoleView,
 			"GET /identity/protected/roles/{roleId}": permission.RoleView,
 			"GET /identity/protected/roles/{roleId}/permissions": permission.RolePermissionView,
@@ -89,6 +89,7 @@ var _ = Describe("RBAC read routes", func() {
 	It("requires tenant authentication and service-level visibility for approval reads", func() {
 		ctx := schoolgateway.WithPrincipal(context.Background(), schoolgateway.Principal{AccountID: "actor", TenantID: "school", SessionID: "session"})
 		for _, pattern := range []string{
+			"POST /audit/protected/search",
 			"POST /identity/protected/approvals/history/search",
 			"POST /identity/protected/approvals/inbox/search",
 			"GET /identity/protected/approvals/inbox/count",

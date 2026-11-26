@@ -6,7 +6,8 @@ import (
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	dto "grovehub/services/audit/internal/app/dto/activity"
+	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	searchconfig "grovehub/services/audit/internal/app/repository/activity/helpers/search"
 	"grovehub/services/audit/internal/app/entity"
 	"grovehub/services/audit/internal/app/repository/activity"
 )
@@ -29,20 +30,13 @@ func (repository *Repository) Insert(ctx context.Context, entry entity.Activity)
 	return nil
 }
 
-func (repository *Repository) Search(ctx context.Context, tenantID string, selfAccountID string, query dto.Search) ([]entity.Activity, error) {
-	db := repository.db.WithContext(ctx).Model(&entity.Activity{}).Where("tenant_id = ?", tenantID)
+// Tenant and self-visibility predicates must be attached before shared search.
+// Do not expose an unscoped generated repository method.
+func (repository *Repository) Search(ctx context.Context, tenantID string, selfAccountID string, query coresearch.Query[string]) (coresearch.QueryResult[entity.Activity], error) {
+	if tenantID == "" { return coresearch.QueryResult[entity.Activity]{}, coresearch.ErrInvalidQuery }
+	db := repository.db.WithContext(ctx).Table("audit.activities AS a").Where("a.tenant_id = ?", tenantID)
 	if selfAccountID != "" {
-		db = db.Where("(actor_id = ? OR subject_account_id = ? OR (asset_type = 'ACCOUNT' AND asset_id = ?))", selfAccountID, selfAccountID, selfAccountID)
+		db = db.Where("((a.asset_type = 'ACCOUNT' AND a.asset_id = ?) OR (a.asset_type = 'INVITATION' AND a.subject_account_id = ?))", selfAccountID, selfAccountID)
 	}
-	for _, filter := range []struct{ column string; value string }{
-		{"subject_account_id",query.SubjectAccountID},{"asset_type",query.AssetType},{"asset_id",query.AssetID},{"actor_id",query.ActorID},{"person_id",query.PersonID},{"audit_type",query.AuditType},{"operation",query.Operation},{"source",query.Source},
-	} {
-		if filter.value != "" { db = db.Where(filter.column+" = ?", filter.value) }
-	}
-	if query.From != nil { db = db.Where("occurred_at >= ?", *query.From) }
-	if query.To != nil { db = db.Where("occurred_at < ?", *query.To) }
-	if query.Cursor != nil { db = db.Where("(occurred_at, audit_id) < (?, CAST(? AS uuid))", query.Cursor.OccurredAt, query.Cursor.AuditID) }
-	rows := make([]entity.Activity,0)
-	err := db.Order("occurred_at DESC, audit_id DESC").Limit(query.Limit+1).Find(&rows).Error
-	return rows, err
+	return coresearch.Execute[string,entity.Activity](db,query,searchconfig.Config)
 }
