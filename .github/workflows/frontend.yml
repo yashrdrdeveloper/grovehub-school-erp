@@ -48,9 +48,9 @@ jobs:
         if: failure()
         run: |
           pnpm format
-          git diff --no-ext-diff -- frontend ../libs/frontend > "$RUNNER_TEMP/frontend-format.patch"
-          git diff --stat -- frontend ../libs/frontend
-          git restore --worktree -- frontend ../libs/frontend
+          git -C .. diff --no-ext-diff -- frontend libs/frontend > "$RUNNER_TEMP/frontend-format.patch"
+          git -C .. diff --stat -- frontend libs/frontend
+          git -C .. restore --worktree -- frontend libs/frontend
       - name: Upload formatting remediation patch
         if: failure()
         uses: actions/upload-artifact@v4
