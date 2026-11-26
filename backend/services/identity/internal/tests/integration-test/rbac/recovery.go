@@ -9,6 +9,7 @@ import (
 
 	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
 	"grovehub/services/identity/internal/app/config"
+	"grovehub/services/identity/internal/app/services/security/principal"
 	dto "grovehub/services/identity/internal/app/dto/authentication"
 	"grovehub/services/identity/internal/app/entity"
 	mapper "grovehub/services/identity/internal/app/mappers/account/impl"
@@ -82,6 +83,37 @@ func verifyRecoveryGuard(ctx context.Context, db *gorm.DB, tenant string, accoun
 	Expect(err).To(MatchError(sessionrepo.ErrInvalidSession))
 	_, err = service.Login(ctx, dto.Login{Identifier: account.Email, Password: "Test-setup-password-123"}, "recovery-test")
 	Expect(err).To(MatchError(auth.ErrInvalidCredentials))
-	_, err = service.Login(ctx, dto.Login{Identifier: account.Email, Password: "Recovery-password-456"}, "recovery-test")
+	currentLogin, err := service.Login(ctx, dto.Login{Identifier: account.Email, Password: "Recovery-password-456"}, "recovery-test")
 	Expect(err).NotTo(HaveOccurred())
+
+	// Failed credential replacement rolls back without refunding the attempt.
+	Expect(service.Forgot(ctx, account.Email)).To(Succeed())
+	var last entity.Invitation
+	Expect(db.Where("account_id = ? AND purpose = ?", accountID, entity.PasswordReset).Order("created_at DESC").Take(&last).Error).NotTo(HaveOccurred())
+	grant, err = service.Exchange(ctx, invitationProof(last, cfg.EncryptionKey), "recovery")
+	Expect(err).NotTo(HaveOccurred())
+	grantHash, err := secrets.Digest(grant.Secret, 32)
+	Expect(err).NotTo(HaveOccurred())
+	for attempt := 1; attempt <= 2; attempt++ {
+		Expect(service.ResetPassword(ctx, grant.Secret, "short")).To(HaveOccurred())
+		stored, err := tokens.Inspect(ctx, grantHash, entity.ResetGrant, time.Now().UTC())
+		Expect(err).NotTo(HaveOccurred())
+		Expect(stored.Attempts).To(Equal(attempt))
+	}
+	_, err = service.InspectProof(ctx, grant.Secret, "reset-grant")
+	Expect(err).To(MatchError(tokenrepo.ErrResetAttemptsExceeded))
+	Expect(service.ResetPassword(ctx, grant.Secret, "Another-password-789")).To(MatchError(tokenrepo.ErrResetAttemptsExceeded))
+	validPassword, err := credentials.Verify(ctx, accountID, "Recovery-password-456")
+	Expect(err).NotTo(HaveOccurred())
+	Expect(validPassword).To(BeTrue())
+
+	// Exact session validation replaces the bounded session listing.
+	authenticated := principal.With(ctx, principal.Principal{TenantID: tenant, AccountID: accountID, SessionID: currentLogin.Data.SessionID, AuthenticatedAt: time.Now().UTC()})
+	Expect(service.ChangePassword(authenticated, "Changed-password-789")).To(Succeed())
+	Expect(service.ChangePassword(authenticated, "Should-not-change-123")).To(MatchError(principal.ErrAuthenticationRequired))
+	_, err = service.InspectProof(ctx, grant.Secret, "reset-grant")
+	Expect(err).To(MatchError(tokenrepo.ErrInvalidToken))
+	validPassword, err = credentials.Verify(ctx, accountID, "Changed-password-789")
+	Expect(err).NotTo(HaveOccurred())
+	Expect(validPassword).To(BeTrue())
 }

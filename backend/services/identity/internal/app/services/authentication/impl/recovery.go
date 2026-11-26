@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"time"
 
@@ -86,6 +87,13 @@ func (service *RecoveryGuard) InspectProof(ctx context.Context, secret string, p
 	var result dto.GrantResult
 	err := service.withProof(ctx, secret, tokenPurpose, func(tx context.Context, _ entity.Account) error {
 		var err error
+		if tokenPurpose == entity.ResetGrant {
+			hash, err := secrets.Digest(secret, 32)
+			if err != nil { return tokenrepo.ErrInvalidToken }
+			proof, err := service.tokens.Inspect(tx, hash, tokenPurpose, time.Now().UTC())
+			if err != nil { return err }
+			if proof.Attempts >= 2 { return tokenrepo.ErrResetAttemptsExceeded }
+		}
 		result, err = service.Service.InspectProof(tx, secret, purpose)
 		return err
 	})
@@ -99,6 +107,14 @@ func (service *RecoveryGuard) invalidateRecovery(ctx context.Context, accountID 
 }
 
 func (service *RecoveryGuard) ResetPassword(ctx context.Context, secret string, password string) error {
+	// Validate tenant and version before consuming an attempt. The actual reset
+	// rechecks them under the same authority protocol after reservation.
+	if err := service.withProof(ctx, secret, entity.ResetGrant, func(tx context.Context, _ entity.Account) error { return nil }); err != nil {
+		return err
+	}
+	hash, err := secrets.Digest(secret, 32)
+	if err != nil { return tokenrepo.ErrInvalidToken }
+	if err := service.tokens.ReserveResetAttempt(ctx, hash, time.Now().UTC()); err != nil { return err }
 	return service.withProof(ctx, secret, entity.ResetGrant, func(tx context.Context, account entity.Account) error {
 		if err := service.Service.ResetPassword(tx, secret, password); err != nil { return err }
 		return service.invalidateRecovery(tx, account.AccountID)
@@ -130,14 +146,14 @@ func (service *RecoveryGuard) ChangePassword(ctx context.Context, password strin
 	return service.locker.Run(ctx, actor.TenantID, func(tx context.Context) error {
 		account, err := service.accounts.FindByID(tx, actor.AccountID)
 		if err != nil || !eligibleRecoveryAccount(account, actor.TenantID) { return principal.ErrAuthenticationRequired }
-		sessions, err := service.sessions.List(tx, actor.AccountID)
-		if err != nil { return err }
 		now := time.Now().UTC()
-		for _, session := range sessions {
-			if session.SessionID != actor.SessionID || !session.AccessExpiresAt.After(now) || session.ReauthenticatedAt == nil || session.ReauthenticatedAt.After(now) || now.Sub(*session.ReauthenticatedAt) > 5*time.Minute { continue }
-			if err := service.Service.ChangePassword(tx, password); err != nil { return err }
-			return service.invalidateRecovery(tx, actor.AccountID)
+		session, err := service.sessions.LockActive(tx, actor.AccountID, actor.SessionID, now)
+		if errors.Is(err, sessionrepo.ErrInvalidSession) { return principal.ErrAuthenticationRequired }
+		if err != nil { return err }
+		if session.ReauthenticatedAt == nil || session.ReauthenticatedAt.After(now) || now.Sub(*session.ReauthenticatedAt) > 5*time.Minute {
+			return principal.ErrRecentAuthenticationRequired
 		}
-		return principal.ErrRecentAuthenticationRequired
+		if err := service.Service.ChangePassword(tx, password); err != nil { return err }
+		return service.invalidateRecovery(tx, actor.AccountID)
 	})
 }

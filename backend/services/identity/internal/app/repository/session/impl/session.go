@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
 	"grovehub/services/identity/internal/app/entity"
@@ -126,4 +127,21 @@ func (repository *Repository) RevokeAll(ctx context.Context, accountID string) (
 		Where("account_id = ? AND revoked_at IS NULL", accountID).
 		Update("revoked_at", time.Now().UTC())
 	return result.RowsAffected, result.Error
+}
+
+// LockActive validates the exact session and keeps its row locked until the
+// caller's credential transaction completes. It must not run outside a transaction.
+func (repository *Repository) LockActive(ctx context.Context, accountID string, sessionID string, now time.Time) (entity.Session, error) {
+	if !transaction.Active(ctx) {
+		return entity.Session{}, transaction.ErrMissingDatabase
+	}
+	var session entity.Session
+	err := transaction.Database(ctx, repository.db).
+		Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("account_id = ? AND session_id = ? AND revoked_at IS NULL AND access_expires_at > ? AND refresh_expires_at > ?", accountID, sessionID, now, now).
+		Take(&session).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return entity.Session{}, sessionrepo.ErrInvalidSession
+	}
+	return session, err
 }

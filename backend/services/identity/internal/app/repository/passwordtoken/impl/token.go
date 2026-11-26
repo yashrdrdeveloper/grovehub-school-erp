@@ -75,3 +75,30 @@ func (repository *Repository) Invalidate(ctx context.Context, accountID string, 
 		Where("account_id = ? AND purpose = ? AND used_at IS NULL", accountID, purpose).
 		Update("used_at", time.Now().UTC()).Error
 }
+
+// ReserveResetAttempt persists the attempt before the credential transaction.
+// Failed password replacement must not restore the attempt budget.
+func (repository *Repository) ReserveResetAttempt(ctx context.Context, hash string, now time.Time) error {
+	result := repository.db.WithContext(ctx).Exec(`
+		UPDATE identity.password_tokens SET attempts = attempts + 1
+		WHERE token_hash = ? AND purpose = ? AND used_at IS NULL
+		  AND expires_at > ? AND attempts < 2 AND account_version IS NOT NULL
+	`, hash, entity.ResetGrant, now)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 1 {
+		return nil
+	}
+	proof, err := repository.Inspect(ctx, hash, entity.ResetGrant, time.Now().UTC())
+	if err != nil {
+		return err
+	}
+	if proof.AccountVersion == nil {
+		return tokenrepo.ErrInvalidToken
+	}
+	if proof.Attempts >= 2 {
+		return tokenrepo.ErrResetAttemptsExceeded
+	}
+	return tokenrepo.ErrInvalidToken
+}

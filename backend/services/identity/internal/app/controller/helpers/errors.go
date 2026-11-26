@@ -59,6 +59,8 @@ func Map(err error) error {
 		return coreerrors.NewError(definitions.NotFound)
 	case errors.Is(err, accountrepo.ErrConflict), errors.Is(err, accountrepo.ErrVersionConflict):
 		return coreerrors.NewErrorWithMetadata(definitions.Conflict, map[string]any{"resource": "account"})
+	case errors.Is(err, tokenrepo.ErrResetAttemptsExceeded):
+		return coreerrors.NewError(definitions.ResetAttemptsExceeded)
 	case errors.Is(err, tokenrepo.ErrAttemptsExceeded):
 		return coreerrors.NewError(definitions.SetupAttemptsExceeded)
 	case errors.Is(err, sessionrepo.ErrInvalidSession), errors.Is(err, tokenrepo.ErrInvalidToken):
