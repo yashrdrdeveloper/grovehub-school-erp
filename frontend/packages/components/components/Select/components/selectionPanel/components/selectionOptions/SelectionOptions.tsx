@@ -44,9 +44,7 @@ export const SelectionOptions = <T extends SelectValue>({
         )}
         <Box className={styles.optionLabel}>
           {option.label}
-          {option.description && (
-            <Box className={styles.description}>{option.description}</Box>
-          )}
+          {option.description && <Box className={styles.description}>{option.description}</Box>}
         </Box>
         {!multiple && selected.includes(option.value) && <Icon icon={Check} size={14} />}
       </Button>

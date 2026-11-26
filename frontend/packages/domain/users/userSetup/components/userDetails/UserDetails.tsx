@@ -39,9 +39,7 @@ export const UserDetails = ({ controls, detailRow }: UserDetailsProps) => (
       </Box>
       <Box className={styles.detailActions}>
         <Button
-          onClick={() =>
-            controls.actions.ROW_ACTION?.({ id: UserAction.EDIT, row: detailRow })
-          }
+          onClick={() => controls.actions.ROW_ACTION?.({ id: UserAction.EDIT, row: detailRow })}
         >
           {__('Edit user')}
         </Button>

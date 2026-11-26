@@ -29,11 +29,7 @@ export const SortActions = ({ controls }: SortActionsProps) => {
         {__('Reset')}
       </Button>
       <Tooltip label={invalidReason} focusable={Boolean(invalidReason)}>
-        <Button
-          size={BUTTON_SIZE.SMALL}
-          disabled={!controls.isDraftValid}
-          onClick={controls.apply}
-        >
+        <Button size={BUTTON_SIZE.SMALL} disabled={!controls.isDraftValid} onClick={controls.apply}>
           {__('Apply sort')}
         </Button>
       </Tooltip>

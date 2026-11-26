@@ -4,7 +4,11 @@ import { Button, BUTTON_VARIANT } from '@Components/components/Button';
 import { UserAction } from '../../../../constants/userSetup.actions';
 import type { UserAccountActionsProps } from './types/userAccountActions.props';
 
-export const UserAccountActions = ({ row, submitting, onAccountAction }: UserAccountActionsProps) => (
+export const UserAccountActions = ({
+  row,
+  submitting,
+  onAccountAction,
+}: UserAccountActionsProps) => (
   <>
     {row?.status === UserStatus.SUSPENDED && (
       <Button

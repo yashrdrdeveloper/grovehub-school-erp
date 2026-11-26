@@ -74,11 +74,7 @@ export const MobileFilterEditor = ({ controls, editing }: MobileFilterEditorProp
           )}
       </Box>
       <Box className={styles.footer}>
-        <Button
-          size={BUTTON_SIZE.SMALL}
-          variant={BUTTON_VARIANT.OUTLINE}
-          onClick={controls.back}
-        >
+        <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.OUTLINE} onClick={controls.back}>
           {__('Back')}
         </Button>
         <Tooltip

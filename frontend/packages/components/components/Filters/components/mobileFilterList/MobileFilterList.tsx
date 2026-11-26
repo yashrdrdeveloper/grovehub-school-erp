@@ -42,8 +42,7 @@ export const MobileFilterList = ({ fields, controls }: MobileFilterListProps) =>
           <Box className={styles.condition} key={condition.id}>
             <Box className={styles.summary}>
               <Box>
-                {_find(fields, (field) => field.id === condition.field)?.label ??
-                  condition.field}
+                {_find(fields, (field) => field.id === condition.field)?.label ?? condition.field}
               </Box>
               <Box className={styles.muted}>
                 {FILTER_OPERATOR_LABELS[condition.operator]} {getValueSummary(condition)}
@@ -78,11 +77,7 @@ export const MobileFilterList = ({ fields, controls }: MobileFilterListProps) =>
             {__('Add filter')}
           </ButtonWithIcon>
         </Tooltip>
-        <Button
-          size={BUTTON_SIZE.SMALL}
-          variant={BUTTON_VARIANT.GHOST}
-          onClick={controls.reset}
-        >
+        <Button size={BUTTON_SIZE.SMALL} variant={BUTTON_VARIANT.GHOST} onClick={controls.reset}>
           {__('Reset')}
         </Button>
         <Tooltip
