@@ -16,6 +16,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"grovehub/libs/core/annotation/generation/layout"
 )
 
 type mappingMethod struct {
@@ -35,6 +37,8 @@ func main() {
 }
 
 func generateAll(backend string) error {
+	modulePath, err := layout.ReadModulePath(backend)
+	if err != nil { return err }
 	services,err:=os.ReadDir(filepath.Join(backend,"services"));if err!=nil{return err}
 	for _,entry:=range services {
 		if !entry.IsDir(){continue}
@@ -54,7 +58,7 @@ func generateAll(backend string) error {
 			}
 		}
 		for _,resourceDir:=range directories {
-			group,found,err:=discover(backend,resourceDir)
+			group,found,err:=discover(backend,modulePath,resourceDir)
 			if err!=nil{return fmt.Errorf("%s mapper %s: %w",entry.Name(),resourceDir,err)}
 			rel,err:=filepath.Rel(dir,resourceDir)
 			if err!=nil{return err}
@@ -73,7 +77,7 @@ func generateAll(backend string) error {
 	return nil
 }
 
-func discover(backend,dir string)(mappingGroup,bool,error) {
+func discover(backend,modulePath,dir string)(mappingGroup,bool,error) {
 	files,err:=filepath.Glob(filepath.Join(dir,"*.go"));if err!=nil{return mappingGroup{},false,err}
 	sort.Strings(files)
 	var result mappingGroup
@@ -103,7 +107,7 @@ func discover(backend,dir string)(mappingGroup,bool,error) {
 					if !ok||fn.Params==nil||len(fn.Params.List)!=1||len(fn.Params.List[0].Names)!=1||fn.Results==nil||len(fn.Results.List)!=1 {
 						return result,false,fmt.Errorf("%s: @Mapping requires one named input and one struct result",member.Names[0].Name)
 					}
-					destination,err:=destinationType(backend,file.Imports,fn.Results.List[0].Type)
+					destination,err:=destinationType(backend,modulePath,file.Imports,fn.Results.List[0].Type)
 					if err!=nil{return result,false,fmt.Errorf("%s: %w",member.Names[0].Name,err)}
 					if len(rules)!=len(destination){return result,false,fmt.Errorf("%s: mapped %d fields, destination requires %d",member.Names[0].Name,len(rules),len(destination))}
 					ordered:=make([]fieldMapping,0,len(destination))
@@ -162,7 +166,7 @@ func mappingRules(doc *ast.CommentGroup)(map[string]string,error) {
 	return rules,nil
 }
 
-func destinationType(backend string,imports []*ast.ImportSpec,expr ast.Expr)([]string,error) {
+func destinationType(backend,modulePath string,imports []*ast.ImportSpec,expr ast.Expr)([]string,error) {
 	sel,ok:=expr.(*ast.SelectorExpr);if !ok{return nil,fmt.Errorf("mapped return type must be an imported DTO struct")}
 	alias,ok:=sel.X.(*ast.Ident);if !ok{return nil,fmt.Errorf("unsupported destination type")}
 	var importPath string
@@ -171,8 +175,9 @@ func destinationType(backend string,imports []*ast.ImportSpec,expr ast.Expr)([]s
 		id:=path.Base(p);if entry.Name!=nil{id=entry.Name.Name}
 		if id==alias.Name{importPath=p;break}
 	}
-	if !strings.HasPrefix(importPath,"grovehub/services/"){return nil,fmt.Errorf("destination %s is not a service DTO import",alias.Name)}
-	dir:=filepath.Join(backend,strings.TrimPrefix(importPath,"grovehub/"))
+	if !strings.HasPrefix(importPath,modulePath+"/services/"){return nil,fmt.Errorf("destination %s is not a service DTO import",alias.Name)}
+	dir,err:=layout.ResolveImport(backend,modulePath,importPath)
+	if err!=nil{return nil,err}
 	files,err:=filepath.Glob(filepath.Join(dir,"*.go"));if err!=nil{return nil,err}
 	sort.Strings(files)
 	for _,file:=range files {

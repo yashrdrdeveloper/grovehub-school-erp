@@ -35,7 +35,7 @@ jobs:
         run: go list -overlay=.generated/overlay.json ./libs/core/annotation/...
       - name: Test annotation source generators
         working-directory: backend
-        run: go test ./libs/core/annotation/generation/patchdto ./libs/core/annotation/generation/search ./libs/core/annotation/generation/routes ./libs/core/annotation/generation/clients ./libs/core/annotation/generation/mappers ./libs/core/annotation/generation/testing/coverage
+        run: go test ./libs/core/annotation/generation/layout ./libs/core/annotation/generation/patchdto ./libs/core/annotation/generation/search ./libs/core/annotation/generation/routes ./libs/core/annotation/generation/clients ./libs/core/annotation/generation/mappers ./libs/core/annotation/generation/testing/coverage
       - name: Verify canonical Identity resource packages compile
         working-directory: backend
         run: go test -vet=off -overlay=.generated/overlay.json ./services/identity/internal/tests/unit-test/...

@@ -47,6 +47,7 @@ var PersonConfig = coresearch.Config{
 func searchFixture(t *testing.T, iface, impl string) (string, string) {
 	t.Helper()
 	backend := t.TempDir()
+	if err := os.WriteFile(filepath.Join(backend, "go.mod"), []byte("module grovehub\n"), 0644); err != nil { t.Fatal(err) }
 	repo := filepath.Join(backend, "services", "demo", "repository")
 	for rel, content := range map[string]string{
 		"person.go": iface,
@@ -125,4 +126,19 @@ func TestSearchGeneratorRemovesStaleOutput(t *testing.T) {
 	if err := os.WriteFile(file, []byte(source), 0644); err != nil { t.Fatal(err) }
 	if err := generateAll(root); err != nil { t.Fatal(err) }
 	if _, err := os.Stat(output); !os.IsNotExist(err) { t.Fatalf("stale generator output retained: %v", err) }
+}
+
+func TestSearchImportsUseTargetModulePath(t *testing.T) {
+	root, output := searchFixture(t, searchTestInterface, searchTestImpl)
+	if err := os.WriteFile(filepath.Join(root, "go.mod"), []byte("module example.org/internal-platform\n"), 0644); err != nil { t.Fatal(err) }
+	if err := generateAll(root); err != nil { t.Fatal(err) }
+	data, err := os.ReadFile(output)
+	if err != nil { t.Fatal(err) }
+	content := string(data)
+	if !strings.Contains(content, "example.org/internal-platform/services/demo/entity") {
+		t.Fatal("generated entity import must use target module")
+	}
+	if strings.Contains(content, "grovehub/services/") {
+		t.Fatal("generated search imports contain the school module")
+	}
 }

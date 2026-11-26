@@ -46,6 +46,7 @@ func writeTestFile(t *testing.T, filename, value string) {
 func testBackend(t *testing.T) (string, string) {
 	t.Helper()
 	backend := t.TempDir()
+	writeTestFile(t, filepath.Join(backend, "go.mod"), "module grovehub\n")
 	owner := filepath.Join(backend, "services", "foundation")
 	writeTestFile(t, filepath.Join(owner, "routes", "http.go"), serviceRoutes)
 	writeTestFile(t, filepath.Join(owner, "controller", "protected", "person.go"), personController)
@@ -127,6 +128,7 @@ func TestServicePrefixIsOwnedByRouteComposition(t *testing.T) {
 
 func TestLegacyUncategorizedRoutesStayCompatible(t *testing.T) {
 	backend := t.TempDir()
+	writeTestFile(t, filepath.Join(backend, "go.mod"), "module grovehub\n")
 	owner := filepath.Join(backend, "services", "identity")
 	writeTestFile(t, filepath.Join(owner, "routes", "http.go"), `package routes
 import "net/http"
@@ -254,5 +256,17 @@ func TestRouteLimitRejectsMalformedLimits(t *testing.T) {
 				t.Fatalf("expected invalid limit rejection; got %v", err)
 			}
 		})
+	}
+}
+
+func TestRoutesUseTargetModulePath(t *testing.T) {
+	backend, output := testBackend(t)
+	writeTestFile(t, filepath.Join(backend, "go.mod"), "module example.org/internal-platform\n")
+	content := generatedRoutes(t, backend, output)
+	if !strings.Contains(content, "example.org/internal-platform/services/foundation/controller/protected") {
+		t.Fatal("generated controller import must use target module")
+	}
+	if strings.Contains(content, "grovehub/services/") {
+		t.Fatal("generated controller import contains the school module")
 	}
 }

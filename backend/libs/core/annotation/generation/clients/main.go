@@ -17,6 +17,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"grovehub/libs/core/annotation/generation/layout"
 )
 
 type endpointMethod struct {
@@ -301,7 +303,7 @@ func writeProxies(proxies []clientProxy,output string) error {
 		if imp.Name!=nil {fmt.Fprintf(&b,"%s ",imp.Name.Name)}
 		fmt.Fprintf(&b,"%s\n",imp.Path.Value)
 	}
-	if usesEndpoints {b.WriteString("httpendpoint \"grovehub/libs/core/http/endpoint\"\n")}
+	if usesEndpoints {fmt.Fprintf(&b,"httpendpoint %q\n",layout.CoreImportPath+"/http/endpoint")}
 	b.WriteString(")\n\n")
 	for _,m:=range proxy.methods {
 		fmt.Fprintf(&b,"func (c *%s) %s%s {\n",proxy.receiver,m.name,m.signature)

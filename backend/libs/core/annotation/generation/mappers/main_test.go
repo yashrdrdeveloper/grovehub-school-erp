@@ -9,12 +9,13 @@ import (
 
 func TestGenerateResourceOwnedMapper(t *testing.T) {
 	backend:=t.TempDir()
+	if err:=os.WriteFile(filepath.Join(backend,"go.mod"),[]byte("module example.org/internal-platform\n"),0644);err!=nil{t.Fatal(err)}
 	owner:=filepath.Join(backend,"services","foundation")
 	files:=map[string]string{
 		filepath.Join(owner,"dto","person","response.go"): `package person
 type PersonErrorMetadata struct { GID string }`,
 		filepath.Join(owner,"mappers","person","person.go"): `package person
-import persondto "grovehub/services/foundation/dto/person"
+import persondto "example.org/internal-platform/services/foundation/dto/person"
 // @Mapper PersonMapper
 type PersonMapper interface {
 	// @Mapping GID=gid
