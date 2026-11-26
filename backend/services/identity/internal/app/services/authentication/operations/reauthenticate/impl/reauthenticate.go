@@ -2,7 +2,7 @@ package impl
 
 import (
 	"context"
-	"errors"
+	auth "grovehub/services/identity/internal/app/services/authentication"
 	"time"
 	"grovehub/services/identity/internal/app/services/security/principal"
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"
@@ -28,7 +28,7 @@ func (op *Service) Execute(ctx context.Context, password string) error {
 	}
 	valid, err := op.credential.Verify(ctx, actor.AccountID, password)
 	if err != nil || !valid {
-		return errors.New("invalid credentials")
+		return auth.ErrInvalidCredentials
 	}
 	return op.sessions.Reauthenticate(ctx, actor.SessionID, time.Now().UTC())
 }

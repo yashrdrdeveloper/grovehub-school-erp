@@ -120,5 +120,8 @@ func verifyRecoveryGuard(ctx context.Context, db *gorm.DB, tenant string, accoun
 	Expect(validPassword).To(BeTrue())
 	var count int64
 	Expect(db.Raw("SELECT count(*) FROM infrastructure.messaging WHERE topic = 'audit_activity_occurred' AND convert_from(payload,'UTF8')::jsonb#>>'{data,assetId}' = ?",accountID).Scan(&count).Error).NotTo(HaveOccurred())
-	Expect(count).To(Equal(int64(4)))
+	Expect(count).To(Equal(int64(5)))
+	var failed int64
+	Expect(db.Raw("SELECT count(*) FROM infrastructure.messaging WHERE topic = 'audit_activity_occurred' AND convert_from(payload,'UTF8')::jsonb#>>'{data,assetId}' = ? AND convert_from(payload,'UTF8')::jsonb#>>'{data,operation}' = 'LOGIN_FAILED' AND convert_from(payload,'UTF8')::jsonb#>>'{data,actorId}' IS NULL",accountID).Scan(&failed).Error).NotTo(HaveOccurred())
+	Expect(failed).To(Equal(int64(1)))
 }

@@ -127,7 +127,11 @@ func (service *RecoveryGuard) ResetPassword(ctx context.Context, secret string, 
 func (service *RecoveryGuard) Login(ctx context.Context, input dto.Login, userAgent string) (authentication.SessionResult, error) {
 	email := strings.ToLower(strings.TrimSpace(input.Identifier))
 	account, err := service.accounts.FindByEmail(ctx, email)
-	if err != nil || account.Status != entity.Active { return authentication.SessionResult{}, authentication.ErrInvalidCredentials }
+	if err != nil { return authentication.SessionResult{}, authentication.ErrInvalidCredentials }
+	if account.Status != entity.Active {
+		service.recordRejectedLogin(ctx,account,email)
+		return authentication.SessionResult{}, authentication.ErrInvalidCredentials
+	}
 	if account.TenantID == nil || *account.TenantID == "" { return service.Service.Login(ctx, input, userAgent) }
 	tenant := *account.TenantID
 	var result authentication.SessionResult
@@ -138,8 +142,11 @@ func (service *RecoveryGuard) Login(ctx context.Context, input dto.Login, userAg
 		if err!=nil { return err }
 		return service.record(tx,tenant,current.AccountID,"LOGIN_SUCCEEDED")
 	})
-	if err != nil { return authentication.SessionResult{}, err }
-	return result, nil
+	if err != nil {
+		if errors.Is(err,authentication.ErrInvalidCredentials) { service.recordRejectedLogin(ctx,account,email) }
+		return authentication.SessionResult{},err
+	}
+	return result,nil
 }
 
 func (service *RecoveryGuard) ChangePassword(ctx context.Context, password string) error {

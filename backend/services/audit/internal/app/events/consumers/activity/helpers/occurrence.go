@@ -43,9 +43,11 @@ func VersionEventID(data client.Activity) string {
 func registeredOccurrence(data client.Activity) bool {
 	switch data.Source {
 	case "identity":
-		if data.AssetType!="ACCOUNT" || data.AssetVersion!=0 || data.PersonID!="" || data.ActorID!=data.AssetID { return false }
+		if data.AssetType!="ACCOUNT" || data.AssetVersion!=0 || data.PersonID!="" { return false }
+		if data.Operation=="LOGIN_FAILED" { return data.ActorID=="" }
+		if data.ActorID!=data.AssetID { return false }
 		switch data.Operation {
-		case "LOGIN_SUCCEEDED","PASSWORD_RESET","PASSWORD_CHANGED","LOGOUT","LOGOUT_ALL","SESSION_REVOKED","REAUTHENTICATED":
+		case "LOGIN_SUCCEEDED","PASSWORD_RESET","PASSWORD_CHANGED","LOGOUT","LOGOUT_ALL","SESSION_REVOKED","REAUTHENTICATED","REAUTHENTICATION_FAILED":
 			return true
 		}
 	case "foundation":

@@ -2,6 +2,7 @@ package activity_test
 
 import (
 	"context"
+	client "grovehub/services/audit/client/producer"
 	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	"encoding/json"
 	"errors"
@@ -89,4 +90,19 @@ func TestAuditProjectionAndPersistence(t *testing.T) {
 	var rejected int64
 	if err:=db.Raw("SELECT count(*) FROM audit.rejected_events").Scan(&rejected).Error;err!=nil || rejected!=2 { t.Fatalf("invalid rejection count %d: %v",rejected,err) }
 	if err:=db.Exec("TRUNCATE audit.rejected_events").Error;err==nil { t.Fatal("rejection evidence was mutable") }
+	now:=time.Now().UTC()
+	occurrence:=uuid.NewString()
+	failed:=client.Activity{OccurrenceID:occurrence,TenantID:tenant,Source:"identity",AssetType:"ACCOUNT",AssetID:account,Operation:"LOGIN_FAILED",OccurredAt:now}
+	envelope:=func(value client.Activity) []byte {
+		raw,err:=json.Marshal(map[string]any{"eventId":value.OccurrenceID,"eventType":client.ActivityOccurred,"version":1,"aggregateId":value.AssetID,"occurredAt":value.OccurredAt,"data":value})
+		if err!=nil { t.Fatal(err) }
+		return raw
+	}
+	entry,err:=helpers.Project(ctx,client.ActivityOccurred,envelope(failed))
+	if err!=nil || entry.ActorID!=nil || entry.SubjectAccountID==nil || *entry.SubjectAccountID!=account { t.Fatalf("failed login projection: %v",err) }
+	for range 2 { if err:=handler.Handle(ctx,client.ActivityOccurred,messaging.Message{Payload:envelope(failed)});err!=nil { t.Fatal(err) } }
+	failed.ActorID=account
+	if _,err:=helpers.Project(ctx,client.ActivityOccurred,envelope(failed));err==nil { t.Fatal("anonymous failure accepted authenticated actor") }
+	self,err:=reader.Search(authCtx,dto.Search{Scope:"ME",Request:coresearch.Request{Filters:[]coresearch.Filter{{Field:"operation",Operator:coresearch.OperatorEquals,Values:[]string{"LOGIN_FAILED"}}}}})
+	if err!=nil || len(self.Items)!=1 || self.Items[0].AuditID!=entry.AuditID { t.Fatalf("failed login self visibility: %v",err) }
 }
