@@ -10,6 +10,9 @@ import (
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/repository/authority"
+	migrationreader "grovehub/services/identity/internal/app/repository/rbacmigration/impl"
+	"grovehub/services/identity/internal/app/services/rbacmigration"
+	migrationplan "grovehub/services/identity/internal/app/services/rbacmigration/operations/plan"
 	assignmentreplace "grovehub/services/identity/internal/app/services/accountrole/operations/replace"
 	accountrolerepo "grovehub/services/identity/internal/app/repository/accountrole"
 	accountroleimpl "grovehub/services/identity/internal/app/repository/accountrole/impl"
@@ -155,6 +158,20 @@ func verifyAdministratorGuard(ctx context.Context, db *gorm.DB) {
 	replacement.RoleVersions[0].Version = 99
 	_, err = replaceOperation.Execute(ctx, replacement)
 	Expect(err).To(MatchError(accountrolerepo.ErrVersionConflict))
+	const legacyTenant = "legacy-school"
+	const legacyAccount = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee"
+	Expect(db.Exec("INSERT INTO identity.accounts(account_id, person_gid, tenant_id, email, status, primary_role_id, secondary_role_ids) VALUES (?, ?, ?, 'legacy@guard.test', 'ACTIVE', 'TEACHER', '[\"COORDINATOR\"]'::jsonb)", legacyAccount, legacyAccount, legacyTenant).Error).NotTo(HaveOccurred())
+	inventory, err := migrationreader.New(db).Inventory(ctx, legacyTenant)
+	Expect(err).NotTo(HaveOccurred())
+	migration, err := migrationplan.Build(inventory)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(migration.Assignments).To(HaveLen(1))
+	Expect(migration.Assignments[0].PrimaryRoleID).To(Equal(migrationplan.RoleID(legacyTenant, persona.Teacher)))
+	Expect(migration.Roles).To(HaveLen(6))
+	inventory, err = migrationreader.New(db).Inventory(ctx, tenant)
+	Expect(err).NotTo(HaveOccurred())
+	_, err = migrationplan.Build(inventory)
+	Expect(err).To(MatchError(rbacmigration.ErrConflict))
 	count, err = reader.Count(ctx, "foreign-guard-school")
 	Expect(err).NotTo(HaveOccurred())
 	Expect(count).To(BeZero())
