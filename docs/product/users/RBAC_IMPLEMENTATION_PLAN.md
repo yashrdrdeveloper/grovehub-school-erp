@@ -174,3 +174,7 @@ The authorization service provides Require and Effective, loads a fresh scoped s
 ## Role persistence checkpoint
 
 Added the internal role entity and tenant-scoped repository for atomic, inactive draft creation with fixed personas and single-query detail retrieval. Drafts cannot accept permission grants, activation, or assignments; duplicate normalized names are rejected within a tenant. Added PostgreSQL integration assertions for scope, duplicate names, persona validation and absence of grants. No endpoint or live authorization policy changes. CI verification is pending. Next: verified-principal service, delegation and permission mapping, versioned edits, search, outbox and approval enforcement before route exposure.
+
+## Role service checkpoint
+
+Added internal CreateDraft and Get operations, separate DTOs, validation, response mapping and bootstrap wiring with the existing live authorization service. Tenant and creator come from verified principal only; create requires IDENTITY_ROLE_CREATE and detail requires IDENTITY_ROLE_VIEW. Name and description limits are provisionally 120 and 1000 Unicode code points. Inactive drafts only; no activation, grants, approval or endpoint exposure. Added service and validator Ginkgo tests. CI verification pending. Next: versioned metadata edits and scoped search; then permission delegation and approval/outbox before exposure.

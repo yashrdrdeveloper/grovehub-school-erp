@@ -14,6 +14,8 @@ import (
 	passwordtokenimpl "grovehub/services/identity/internal/app/repository/passwordtoken/impl"
 	registryrepo "grovehub/services/identity/internal/app/repository/registry"
 	registryimpl "grovehub/services/identity/internal/app/repository/registry/impl"
+	rolerepo "grovehub/services/identity/internal/app/repository/role"
+	roleimpl "grovehub/services/identity/internal/app/repository/role/impl"
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"
 	sessionimpl "grovehub/services/identity/internal/app/repository/session/impl"
 )
@@ -22,6 +24,7 @@ type repositories struct {
 	accounts      accountrepo.Repository
 	authorization authorizationrepo.Repository
 	registry      registryrepo.Repository
+	roles         rolerepo.Repository
 	credentials   credentialrepo.Repository
 	sessions      sessionrepo.Repository
 	tokens        passwordtokenrepo.Repository
@@ -34,6 +37,7 @@ func (b *builder) newRepository() repositories {
 		accounts:      accountimpl.New(b.db),
 		authorization: authorizationimpl.New(b.db),
 		registry:      registryimpl.New(b.db),
+		roles:         roleimpl.New(b.db),
 		credentials:   credentialimpl.New(b.db),
 		sessions:      sessionimpl.New(b.db),
 		tokens:        passwordtokenimpl.New(b.db),
