@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	authorityconstants "grovehub/services/identity/internal/app/repository/authority/constants"
 	accountroleimpl "grovehub/services/identity/internal/app/repository/accountrole/impl"
 	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
 	"grovehub/services/identity/internal/app/entity"
@@ -40,6 +41,10 @@ func (writer *Bootstrap) Apply(ctx context.Context, request rbacmigration.Manife
 	var result rbacmigration.BootstrapResult
 	err = transaction.Run(ctx, writer.db, func(tx context.Context) error {
 		db := transaction.Database(tx, writer.db)
+		// Offline only; caller must not already hold tenant authority locks.
+		if err := db.Exec(authorityconstants.LockGlobalExclusive).Error; err != nil {
+			return err
+		}
 		if err := db.Exec(constants.LockTables).Error; err != nil {
 			return err
 		}

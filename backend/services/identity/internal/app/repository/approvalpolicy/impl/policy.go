@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	authorityconstants "grovehub/services/identity/internal/app/repository/authority/constants"
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/repository/approvalpolicy"
 	"grovehub/services/identity/internal/app/repository/approvalpolicy/constants"
@@ -42,6 +43,10 @@ func (writer *Provisioner) Apply(ctx context.Context, manifest approvalpolicy.Ma
 	receipt := approvalpolicy.Receipt{ReceiptID: id.String(), Policies: make([]approvalpolicy.Activated, 0, len(manifest.Policies))}
 	err = transaction.Run(ctx, writer.db, func(tx context.Context) error {
 		db := transaction.Database(tx, writer.db)
+		// Offline only; caller must not already hold tenant authority locks.
+		if err := db.Exec(authorityconstants.LockGlobalExclusive).Error; err != nil {
+			return err
+		}
 		if err := db.Exec(constants.Lock).Error; err != nil {
 			return err
 		}

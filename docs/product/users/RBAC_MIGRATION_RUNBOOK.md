@@ -56,3 +56,7 @@ bash scripts/identity/rbac-migrate.sh policies --tenant-id "$TENANT_ID" --databa
 ```
 
 The batch atomically deactivates previous policy revisions and inserts new ones with immutable provisioning receipt in identity.approval_policy_receipts. Old requests retain their snapshotted criteria. Stale revisions or unavailable reviewers abort the entire batch. Review the receipt before retrying an uncertain outcome. Do not use online; this command uses table locks and requires all other writers stopped. This does not activate execution routes or establish full cutover readiness.
+
+## Authority lock protocol
+
+Cooperating online tenant writers must acquire shared global authority lock before the tenant lock. Future global permission/feature/entitlement mutation entrypoints must use the fresh-transaction exclusive GlobalGuard and preserve every protected school's effective administrator. Offline migration and policy commands acquire exclusive global lock before table locks, but must still run with all writers stopped. Do not perform ad hoc SQL capability changes: database owners can bypass application safeguards. Composite execution readiness now checks live administrators, all four active policy revision IDs against the latest receipt, and live eligible reviewers. This is not a production cutover approval.

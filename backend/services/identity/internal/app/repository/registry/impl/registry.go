@@ -7,6 +7,7 @@ import (
 
 	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
 	"grovehub/services/identity/internal/app/repository/registry"
+	authorityconstants "grovehub/services/identity/internal/app/repository/authority/constants"
 	"grovehub/services/identity/internal/app/repository/registry/helpers"
 )
 
@@ -24,6 +25,10 @@ func (repository *Repository) Register(ctx context.Context, batch registry.Batch
 	var result registry.Result
 	err := transaction.Run(ctx, repository.db, func(tx context.Context) error {
 		db := transaction.Database(tx, repository.db)
+		// Registration inserts inactive definitions only; it cannot remove authority.
+		if err := db.Exec(authorityconstants.LockGlobalShared).Error; err != nil {
+			return err
+		}
 		for _, definition := range batch.Features {
 			created, err := helpers.RegisterFeature(db, definition)
 			if err != nil {

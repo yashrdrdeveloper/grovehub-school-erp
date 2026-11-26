@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm"
 
 	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	authorityconstants "grovehub/services/identity/internal/app/repository/authority/constants"
 	accountroleimpl "grovehub/services/identity/internal/app/repository/accountrole/impl"
 	"grovehub/services/identity/internal/app/repository/rbacmigration/constants"
 	"grovehub/services/identity/internal/app/services/rbacmigration"
@@ -38,6 +39,10 @@ func (writer *Backfill) Apply(ctx context.Context, reviewed rbacmigration.Plan, 
 	// The runtime must be stopped before an operator calls this primitive.
 	err = transaction.Run(ctx, writer.db, func(tx context.Context) error {
 		db := transaction.Database(tx, writer.db)
+		// Offline only; caller must not already hold tenant authority locks.
+		if err := db.Exec(authorityconstants.LockGlobalExclusive).Error; err != nil {
+			return err
+		}
 		if err := db.Exec(constants.LockTables).Error; err != nil {
 			return err
 		}

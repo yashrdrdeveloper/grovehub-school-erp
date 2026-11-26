@@ -8,6 +8,7 @@ import (
 
 	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
 	"grovehub/services/identity/internal/app/repository/authority"
+	"grovehub/services/identity/internal/app/repository/authority/constants"
 )
 
 const lockTenant = `SELECT pg_advisory_xact_lock(hashtextextended('identity:authority:' || CAST(? AS text), 0))`
@@ -27,6 +28,9 @@ func (locker *Locker) Run(ctx context.Context, tenantID string, operation func(c
 		return authority.ErrScopeRequired
 	}
 	return transaction.Run(ctx, locker.db, func(tx context.Context) error {
+		if err := transaction.Database(tx, locker.db).Exec(constants.LockGlobalShared).Error; err != nil {
+			return err
+		}
 		if err := transaction.Database(tx, locker.db).Exec(lockTenant, tenantID).Error; err != nil {
 			return err
 		}

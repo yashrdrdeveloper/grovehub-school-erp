@@ -19,3 +19,11 @@ type AdministratorReader interface {
 type Guard interface {
 	Run(ctx context.Context, tenantID string, operation func(context.Context) error) error
 }
+
+var ErrLockOrder = errors.New("global authority guard requires a fresh transaction")
+
+// GlobalGuard is an internal invariant for capability and entitlement writers.
+// It does not authorize a caller or expose arbitrary SQL through a service.
+type GlobalGuard interface {
+	Run(ctx context.Context, operation func(context.Context) error) error
+}
