@@ -10,6 +10,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	annotationdto "grovehub/libs/core/annotation/dto"
 	corenormalize "grovehub/libs/core/normalize"
 )
 
@@ -300,7 +301,7 @@ func isPatch(value reflect.Value) bool {
 		return false
 	}
 	typ := value.Type()
-	return typ.PkgPath() == "grovehub/libs/core/annotation/dto" &&
+	return typ.PkgPath() == reflect.TypeOf(annotationdto.Patch[struct{}]{}).PkgPath() &&
 		strings.HasPrefix(typ.Name(), "Patch[")
 }
 
