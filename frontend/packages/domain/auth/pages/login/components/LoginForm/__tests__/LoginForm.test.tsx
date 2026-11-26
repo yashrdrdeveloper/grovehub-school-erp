@@ -48,7 +48,7 @@ describe('LoginForm', () => {
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps mobile forgot password between email and password and shows the complete API error', () => {
+  it('keeps mobile forgot password below both fields and shows the complete API error', () => {
     const message = 'Unable to sign in right now. Please try again.';
     const { container } = render(
       <MemoryRouter>
@@ -66,7 +66,7 @@ describe('LoginForm', () => {
       Boolean(emailField!.compareDocumentPosition(forgot) & Node.DOCUMENT_POSITION_FOLLOWING),
     ).toBe(true);
     expect(
-      Boolean(forgot.compareDocumentPosition(passwordField!) & Node.DOCUMENT_POSITION_FOLLOWING),
+      Boolean(passwordField!.compareDocumentPosition(forgot) & Node.DOCUMENT_POSITION_FOLLOWING),
     ).toBe(true);
     expect(screen.getByRole('alert').textContent).toContain(message);
   });

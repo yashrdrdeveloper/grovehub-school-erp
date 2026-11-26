@@ -80,3 +80,7 @@ The message resolver is currently English-only. It is not a complete locale sele
 ## Copy and renderer implementation (Revision 14)
 
 Authentication presentation constants such as `LOGIN_COPY.desktopTitle` call `__('literal')` at their declaration and are used as `{LOGIN_COPY.desktopTitle}`; never call `__(LOGIN_COPY.desktopTitle)`. Runtime variant selectors, password visibility controls, link-state messages and desktop/mobile template choice live in owner-local pure renderer/helpers with tests, not mutable `let` assignments. The shell's installer runs before the dynamically imported route tree evaluates and its hook confirms readiness afterward. `pnpm check:i18n` and `pnpm check:no-let` enforce these rules.
+
+## Mobile sign-in alignment
+
+Authentication owns the viewport without a reserved document or mobile form scrollbar gutter. The scrollable form retains its theme-colored surface and remains reachable at short heights. Align the mobile monogram, heading, credential fields and primary action to the same horizontal gutter. Email and password are equal-height 44px controls with compact reserved validation rows; the recovery link follows both fields and precedes the primary action. Mobile labels remain accessible but visually hidden; inputs remain 16px to avoid Safari zoom. Do not change desktop link placement.

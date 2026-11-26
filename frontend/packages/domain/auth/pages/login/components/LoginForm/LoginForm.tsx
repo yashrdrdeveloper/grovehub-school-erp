@@ -21,7 +21,7 @@ export const LoginForm: LoginFormComponent = ({
   onPasswordChange,
   onTogglePassword,
   passwordLabelAction,
-  betweenFields,
+  afterFields,
 }) => {
   const handleEmailChange: ChangeEventHandler<HTMLInputElement> = (event) => {
     onEmailChange(event.currentTarget.value);
@@ -59,8 +59,6 @@ export const LoginForm: LoginFormComponent = ({
         onChange={handleEmailChange}
       />
 
-      {betweenFields}
-
       <CredentialField
         dataTestId={LOGIN_TEST_IDS.PASSWORD}
         id={fieldId + '-' + LoginField.PASSWORD}
@@ -88,6 +86,8 @@ export const LoginForm: LoginFormComponent = ({
           </Button>
         }
       />
+
+      {afterFields}
 
       <Button
         type="submit"

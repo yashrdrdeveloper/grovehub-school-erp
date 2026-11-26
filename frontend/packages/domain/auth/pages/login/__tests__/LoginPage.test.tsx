@@ -11,7 +11,7 @@ const setPhoneViewport = (isPhone: boolean) => {
   Object.defineProperty(window, 'matchMedia', {
     configurable: true,
     value: (query: string) => ({
-      matches: isPhone && query === '(max-width: 720px)',
+      matches: (isPhone && query === '(max-width: 720px)') || (!isPhone && query === '(min-width: 721px)'),
       media: query,
       addEventListener: jest.fn(),
       removeEventListener: jest.fn(),
@@ -41,14 +41,14 @@ describe('LoginContainer', () => {
     Object.defineProperty(window, 'matchMedia', { configurable: true, value: originalMatchMedia });
   });
 
-  it('renders the original RDR identity and self-contained abstract academic artwork', () => {
+  it('renders the original RDR identity and minimal branded panel', () => {
     render(
       <MemoryRouter>
         <LoginV2Page />
       </MemoryRouter>,
     );
     expect(screen.getByRole('heading', { name: 'Welcome back.' })).toBeTruthy();
-    expect(screen.getByTestId('auth-ambient-svg')).not.toBeNull();
+    expect(screen.queryByTestId('auth-ambient-svg')).toBeNull();
     expect(document.querySelector('.rdr-campus-art')).toBeNull();
     expect(document.querySelector('.rdr-login-v2__visual svg.rdr-o1-art__book')).toBeNull();
     expect(document.querySelectorAll('.rdr-login-v2 img')).toHaveLength(0);
@@ -112,6 +112,8 @@ describe('LoginContainer', () => {
         link && submit && link.compareDocumentPosition(submit) & Node.DOCUMENT_POSITION_FOLLOWING,
       ),
     ).toBe(true);
+    const password = screen.getByLabelText('Password');
+    expect(Boolean(link && password.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
     expect(screen.getByRole('textbox', { name: 'Email address' })).toBeTruthy();
   });
 
@@ -193,7 +195,7 @@ describe('LoginContainer', () => {
     expect(screen.getByRole('button', { name: /^sign in$/i })).toBeTruthy();
   });
 
-  it('uses abstract pathways without photographs, book or campus drawings', () => {
+  it('uses a minimal branded panel without feature cards or illustrations', () => {
     render(
       <MemoryRouter>
         <LoginV2Page />
@@ -203,7 +205,7 @@ describe('LoginContainer', () => {
     expect(visual).not.toBeNull();
     expect(visual?.querySelectorAll('img,picture,video,source')).toHaveLength(0);
     expect(visual?.querySelectorAll('svg.rdr-o1-art__book')).toHaveLength(0);
-    expect(visual?.querySelectorAll('[data-testid="auth-ambient-svg"]')).toHaveLength(1);
+    expect(visual?.querySelectorAll('[data-testid="auth-ambient-svg"]')).toHaveLength(0);
     expect(visual?.querySelectorAll('.rdr-campus-art')).toHaveLength(0);
     expect(visual?.textContent).toContain('RDR School');
   });

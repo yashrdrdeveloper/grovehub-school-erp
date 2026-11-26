@@ -15,7 +15,7 @@ export interface LoginProps {
 /** Optional slots allow desktop/mobile composition without duplicating controls. */
 export interface LoginFormProps extends LoginProps {
   readonly passwordLabelAction?: ReactNode;
-  readonly betweenFields?: ReactNode;
+  readonly afterFields?: ReactNode;
 }
 
 /** Pure page composition props supplied by LoginContainer. */

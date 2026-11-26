@@ -3,6 +3,15 @@
  * Covers login, forgot, reset, invitation, invalid/expired links, loading and success.
  * Do not import loginV2.css or mobileAuth.css alongside this file.
  */
+/* Authentication owns the viewport; do not reserve the document scrollbar gutter. */
+:root:has(.rdr-login-v2) {
+  scrollbar-gutter: auto;
+  background: var(--gh-color-surface);
+}
+:root:has(.rdr-login-v2) body {
+  overflow: hidden;
+  background: var(--gh-color-surface);
+}
 .rdr-login-v2 {
   --auth-bg: var(--gh-color-surface);
   --auth-ink: var(--gh-color-text-strong);
@@ -745,6 +754,9 @@
   }
 }
 @media (max-width: 720px) {
+  .rdr-login-v2 {
+    --auth-mobile-gutter: clamp(20px, 6vw, 24px);
+  }
   .rdr-login-v2__frame {
     display: flex;
     flex-direction: column;
@@ -774,8 +786,8 @@
     gap: 11px;
     position: absolute;
     top: calc(env(safe-area-inset-top) + 17px);
-    left: clamp(20px, 6vw, 28px);
-    max-width: calc(100% - 40px);
+    left: max(var(--auth-mobile-gutter), calc((100% - 380px) / 2));
+    max-width: calc(100% - 2 * var(--auth-mobile-gutter));
   }
   .rdr-login-v2__mobile-identity > .school-monogram {
     display: inline-flex;
@@ -815,12 +827,14 @@
     flex: 1 1 0;
     height: auto;
     min-height: 0;
-    padding: 0 clamp(20px, 6vw, 27px) max(13px, env(safe-area-inset-bottom));
+    padding: 0 var(--auth-mobile-gutter) max(13px, env(safe-area-inset-bottom));
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     overflow-x: hidden;
     overflow-y: auto;
-    scrollbar-gutter: stable;
+    scrollbar-gutter: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gh-color-scrollbar-thumb) var(--auth-bg);
   }
   .rdr-login-v2__toolbar {
     display: none;
@@ -861,9 +875,9 @@
     align-self: flex-end;
     align-items: center;
     justify-content: flex-end;
-    min-height: 32px;
-    margin: 0 0 3px;
-    padding: 0 2px;
+    min-height: 24px;
+    margin: 0;
+    padding: 0;
     color: var(--auth-link) !important;
     font-size: 12px;
     font-weight: 700;
@@ -965,7 +979,7 @@
   }
   .rdr-login-v2__feedback-slot--signin {
     height: auto;
-    min-height: 52px;
+    min-height: 24px;
     max-height: none;
     overflow: visible;
   }
@@ -1036,7 +1050,7 @@
   .rdr-login-v2__content {
     justify-content: flex-start;
     overflow-y: auto;
-    scrollbar-gutter: stable;
+    scrollbar-gutter: auto;
   }
   .rdr-login-v2__main {
     margin-top: 0;
@@ -1219,5 +1233,19 @@
 @media (prefers-reduced-motion: reduce) {
   .rdr-login-v2__submit {
     transition: none;
+  }
+}
+
+/* Mobile sign-in: one aligned column with the recovery link after both fields. */
+@media (max-width: 720px) {
+  .rdr-login-v2__form--signin .rdr-login-v2__submit {
+    margin-top: var(--gh-space-3);
+  }
+  .rdr-login-v2__form--signin .rdr-login-v2__feedback-slot--signin {
+    min-height: 36px;
+  }
+  .rdr-login-v2__content::-webkit-scrollbar-track,
+  .rdr-login-v2__content::-webkit-scrollbar-corner {
+    background: var(--auth-bg);
   }
 }
