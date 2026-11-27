@@ -11,16 +11,17 @@ import (
 
  auth "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/identity/client/authentication"
  client "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/platform/client"
+ integration "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/integration/client/connection"
 )
 
 // Register exposes only explicitly enumerated operations. Platform remains
 // responsible for live session verification, RBAC and resource authorization.
-func Register(mux *http.ServeMux,platform *auth.Client,activity *audit.Client,origin string){
+func Register(mux *http.ServeMux,platform *auth.Client,activity *audit.Client,connections *integration.Client,origin string){
  for _,operation:=range client.Operations(){
   op:=operation
   mux.HandleFunc(op.Method+" "+op.Path,func(w http.ResponseWriter,r *http.Request){
    w.Header().Set("Cache-Control","no-store")
-   target,ok:=op.Resolve(r)
+   _,ok:=op.Resolve(r)
    if !ok || r.URL.RawQuery!=""{http.Error(w,"invalid request",400);return}
    if r.Method!=http.MethodGet{
     csrf,err:=r.Cookie("gh_csrf")
@@ -65,7 +66,8 @@ func Register(mux *http.ServeMux,platform *auth.Client,activity *audit.Client,or
     _,_=w.Write(result.Body)
     return
    }
-   result,err:=platform.CallBusiness(r.Context(),op.Method,target,input,token.Value)
+   result,err:=connections.Business(r.Context(),op.Scope,r.PathValue("id"),r.PathValue("provider"),r.PathValue("action"),input,token.Value)
+   if errors.Is(err,integration.ErrInvalidRequest){http.Error(w,"invalid integration request",400);return}
    if err!=nil{http.Error(w,"service unavailable",503);return}
    w.Header().Set("Content-Type","application/json")
    w.WriteHeader(result.Status)
@@ -76,7 +78,7 @@ func Register(mux *http.ServeMux,platform *auth.Client,activity *audit.Client,or
 
 // RegisterOAuthCallback is the explicitly permitted provider ingress. The
 // Platform consumes the one-time state and binds it to the pending connection.
-func RegisterOAuthCallback(mux *http.ServeMux,platform *auth.Client){
+func RegisterOAuthCallback(mux *http.ServeMux,platform *integration.Client){
  mux.HandleFunc("GET /integrations/public/connections/oauth/{provider}/callback",func(w http.ResponseWriter,r *http.Request){
   w.Header().Set("Cache-Control","no-store")
   w.Header().Set("Referrer-Policy","no-referrer")
