@@ -7,6 +7,7 @@ import (
  "testing"
 
  "github.com/google/uuid"
+ "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/entity"
  "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/postgres"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/client/audit"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/resources/migrations"
@@ -44,4 +45,15 @@ func TestDurableRelay(t *testing.T){
  if worked,err:=w.Step(ctx);worked||err!=nil||calls!=2{t.Fatal("delivered row retried",worked,err,calls)}
  var attempts int;var delivered bool
  if err=db.QueryRowContext(ctx,"SELECT attempts,delivered_at IS NOT NULL FROM internal_tool.audit_outbox WHERE workflow_event_id=$1",id).Scan(&attempts,&delivered);err!=nil||attempts!=2||!delivered{t.Fatal("delivery receipt",attempts,delivered,err)}
+ var blockedID string
+ if err=db.QueryRowContext(ctx,"INSERT INTO internal_tool.workflow_events(actor_id,resource_id,action) VALUES($1,$2,'REQUEST_REJECTED') RETURNING id",actor,resource).Scan(&id);err!=nil{t.Fatal(err)}
+ blockedWorker:=New(db,func(_ context.Context,a audit.Activity)(int,error){blockedID=a.EventID;return 409,nil})
+ if worked,err:=blockedWorker.Step(ctx);!worked||err!=nil{t.Fatal("block",worked,err)}
+ m:=NewMonitor(db,true)
+ summary,err:=m.Summary(ctx);if err!=nil||summary.Blocked!=1||!summary.Enabled{t.Fatal("summary",summary,err)}
+ page,err:=m.Blocked(ctx,entity.PageRequest{PageNumber:1,RowSize:25});if err!=nil||len(page.Records)!=1||page.Records[0].EventID!=blockedID{t.Fatal("blocked search",page,err)}
+ if err=m.Retry(ctx,actor,blockedID);err!=nil{t.Fatal("retry",err)}
+ if err=m.Retry(ctx,actor,blockedID);!errors.Is(err,ErrConflict){t.Fatal("duplicate retry accepted",err)}
+ var original string
+ if err=db.QueryRowContext(ctx,"SELECT event_id,attempts FROM internal_tool.audit_outbox WHERE workflow_event_id=$1",id).Scan(&original,&attempts);err!=nil||original!=blockedID||attempts!=1{t.Fatal("retry changed identity",original,attempts,err)}
 }

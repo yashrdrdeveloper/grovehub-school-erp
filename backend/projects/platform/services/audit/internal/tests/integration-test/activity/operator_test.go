@@ -31,5 +31,10 @@ func TestOperatorAuditImmutableDelivery(t *testing.T){
  var count int
  if err=db.Raw("SELECT count(*) FROM audit.operator_activities WHERE event_id=?",a.EventID).Scan(&count).Error;err!=nil||count!=1{t.Fatal("duplicate record",count,err)}
  if err=db.Raw("SELECT count(*) FROM audit.activities WHERE source_event_id=?",a.EventID).Scan(&count).Error;err!=nil||count!=0{t.Fatal("operator record leaked into school activities",count,err)}
+ page,err:=operator.Search(ctx,db,operator.SearchInput{PageNumber:1,RowSize:100})
+ if err!=nil{t.Fatal(err)}
+ found:=false
+ for _,row:=range page.Records{if row.EventID==a.EventID{found=true}}
+ if !found{t.Fatal("centralized record not found")}
  if err=db.Exec("DELETE FROM audit.operator_activities WHERE event_id=?",a.EventID).Error;err==nil{t.Fatal("audit deletion accepted")}
 }
