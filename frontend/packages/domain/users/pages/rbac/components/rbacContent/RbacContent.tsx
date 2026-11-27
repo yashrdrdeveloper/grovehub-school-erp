@@ -11,7 +11,7 @@ import { renderRbacMobileRow } from '../../renderer/rbac.mobileRow';
 import styles from '../../page.module.css';
 
 export const RbacContent = ({ controls: state }: { controls: RbacControls }) => {
-  const getError = () => { if (state.error) return RBAC_COPY.label4; return undefined; };
+  const getError = () => { if (state.error) return RBAC_COPY.label5; return undefined; };
   return <Box className={styles.page} data-workspace-fill="true">
     <Table id={RBAC_TEST_IDS.row} fillHeight type={TableType.DEFAULT} dataMode={TableDataMode.SERVER} data={state.rows} columns={RBAC_COLUMNS} getRowId={(row) => row.roleId} headerProps={{ title: RBAC_COPY.label1 }} searchProps={{ value: state.searchText, placeholder: RBAC_COPY.label2 }} filterProps={{ fields: RBAC_FILTERS, value: state.filters }} sortProps={{ fields: RBAC_SORT_FIELDS, value: state.sorting }} paginationProps={state.pagination} mobileRowProps={{ render: renderRbacMobileRow, onClick: state.setSelected }} mobileInfiniteProps={state.mobileInfiniteProps} actions={state.actions} loading={state.loading} refreshing={state.refreshing} error={getError()} />
     {state.selected && <Sheet open title={RBAC_COPY.label9} dataTestId={RBAC_TEST_IDS.details} onOpenChange={(open) => { if (!open) state.setSelected(null); }}>

@@ -51,6 +51,7 @@ export default defineConfig({
     allowedHosts: getAllowedHosts(),
     proxy: {
       '/identity': createProxy(),
+      '/audit': createProxy(),
       '/foundation': createProxy(),
       '/integrations': createProxy(),
       '/health': createProxy(),
