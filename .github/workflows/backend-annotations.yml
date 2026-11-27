@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - phase-2.1-identity-account
+      - phase-2.1-multi-project-refactor
     paths:
       - "backend/**"
       - "libs/backend/core/**"
