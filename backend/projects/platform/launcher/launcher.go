@@ -106,10 +106,12 @@ func Run(logger *slog.Logger) error {
 
 	// Both external HTTP access tiers and restricted provider webhooks
 	// are verified before dispatch into a service-specific controller.
+	workloads, err := gateway.NewPlatformWorkloads(os.Getenv("PLATFORM_WORKLOAD_CONFIG"), identityModule, integrationModule)
+	if err != nil { return fmt.Errorf("initialize workload gateway: %w", err) }
 	gatewayRuntime := gateway.New(
 		mux,
 		identityModule,
-		integrationModule,
+		workloads,
 		os.Getenv("IDENTITY_ALLOWED_ORIGIN"),
 		nil, // Unconfigured privileged internal invocation fails closed.
 		identityModule.RouteLimits(),
