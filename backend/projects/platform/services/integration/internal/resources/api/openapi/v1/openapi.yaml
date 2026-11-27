@@ -8,21 +8,24 @@ security:
 paths:
   /integrations/restricted/providers:
     get:
+      operationId: listProviders
       security: [{ workloadBearer: [], identityProof: [] }]
       summary: List registered provider descriptors
       responses:
-        "200": { description: Provider catalog }
+        "200": {"description":"Provider catalog","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"type":["array","null"],"items":{"$ref":"#/components/schemas/ProviderDescriptor"}}},"required":["success","data"]}}}}
   /integrations/restricted/providers/{provider}:
     parameters:
       - { in: path, name: provider, required: true, schema: { type: string } }
     get:
+      operationId: getProvider
       security: [{ workloadBearer: [], identityProof: [] }]
       summary: Discover provider capabilities and currently configured executable actions
       responses:
-        "200": { description: Provider descriptor with availableActions and oauthConfigured }
-        "400": { description: Unknown provider }
+        "200": {"description":"Provider descriptor with availableActions and oauthConfigured","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/ProviderDetails"}},"required":["success","data"]}}}}
+        "400": {"description":"Unknown provider","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}
   /integrations/restricted/connections:
     post:
+      operationId: createConnection
       security: [{ workloadBearer: [], identityProof: [] }]
       summary: Create PENDING_SETUP provider connection
       requestBody:
@@ -37,47 +40,53 @@ paths:
                 provider: { type: string, enum: [GMAIL, OUTLOOK] }
                 ownerGid: { type: string, format: uuid }
       responses:
-        "201": { description: Pending connection }
-        "403": { description: Authorization unavailable }
+        "201": {"description":"Pending connection","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/Connection"}},"required":["success","data"]}}}}
+        "403": {"description":"Authorization unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}
     get:
+      operationId: listConnections
       security: [{ workloadBearer: [], identityProof: [] }]
       summary: List current actor's connections
       responses:
-        "200": { description: Connections with latest connectivity test }
+        "200": {"description":"Connections with latest connectivity test","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"type":["array","null"],"items":{"$ref":"#/components/schemas/Connection"}}},"required":["success","data"]}}}}
   /integrations/restricted/connections/{id}:
     parameters:
       - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
     get:
+      operationId: getConnection
       security: [{ workloadBearer: [], identityProof: [] }]
       summary: Get connection
       responses:
-        "200": { description: Connection }
+        "200": {"description":"Connection","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/Connection"}},"required":["success","data"]}}}}
     delete:
+      operationId: disconnectConnection
       security: [{ workloadBearer: [], identityProof: [] }]
       summary: Disconnect and erase stored OAuth token
       responses:
-        "200": { description: Disconnected connection }
+        "200": {"description":"Disconnected connection","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/Connection"}},"required":["success","data"]}}}}
   /integrations/restricted/connections/{id}/oauth/start:
     parameters:
       - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
     post:
+      operationId: beginOAuth
       security: [{ workloadBearer: [], identityProof: [] }]
       summary: Start Gmail or Outlook OAuth connection authorization
       responses:
-        "200": { description: Authorization URL }
+        "200": {"description":"Authorization URL","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/OAuthStart"}},"required":["success","data"]}}}}
   /integrations/restricted/connections/oauth/{provider}/callback:
     get:
+      operationId: finishOAuth
       summary: Exchange Gmail or Outlook authorization code with a one-time OAuth state
       parameters:
         - { in: path, name: provider, required: true, schema: { type: string, enum: [gmail, outlook] } }
         - { in: query, name: state, required: true, schema: { type: string } }
         - { in: query, name: code, required: true, schema: { type: string } }
       responses:
-        "200": { description: Connection activated }
+        "200": {"description":"Connection activated","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/OAuthCompletion"}},"required":["success","data"]}}}}
   /integrations/restricted/connections/{id}/test:
     parameters:
       - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
     post:
+      operationId: testConnection
       security: [{ workloadBearer: [], identityProof: [] }]
       summary: Persist Gmail or Outlook inbound-access or self-addressed outbound test
       requestBody:
@@ -91,28 +100,31 @@ paths:
               properties:
                 direction: { type: string, enum: [INBOUND, OUTBOUND] }
       responses:
-        "200": { description: Saved test result (not a delivery receipt) }
+        "200": {"description":"Saved test result (not a delivery receipt)","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/ConnectionTest"}},"required":["success","data"]}}}}
   /integrations/restricted/connections/{id}/tests:
     parameters:
       - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
     get:
+      operationId: listConnectionTests
       security: [{ workloadBearer: [], identityProof: [] }]
       summary: Connection test history
       responses:
-        "200": { description: Latest 100 results }
+        "200": {"description":"Latest 100 results","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"type":["array","null"],"items":{"$ref":"#/components/schemas/ConnectionTest"}}},"required":["success","data"]}}}}
   /integrations/restricted/connections/{id}/watch:
     parameters:
       - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
     post:
+      operationId: watchConnection
       security: [{ workloadBearer: [], identityProof: [] }]
       summary: Register or renew Gmail provider subscription
       responses:
-        "200": { description: Watch expiry }
+        "200": {"description":"Watch expiry","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/Watch"}},"required":["success","data"]}}}}
   /integrations/restricted/connections/{id}/actions/{action}:
     parameters:
       - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
       - { in: path, name: action, required: true, schema: { type: string, example: mail.send } }
     post:
+      operationId: executeProviderAction
       summary: Execute a registered provider capability using the connection's encrypted credentials
       description: >
         Available actions depend on provider configuration. Gmail supports mail.profile,
@@ -146,7 +158,7 @@ paths:
                 summary: Send a plain-text email using the connected mailbox
                 value:
                   input:
-                    to: ["yashrdrdeveloper@gmail.com"]
+                    to: ["recipient@example.com"]
                     cc: []
                     bcc: []
                     subject: "GrooveHub Integration Test"
@@ -156,7 +168,7 @@ paths:
                 summary: Send HTML and text with a small attachment
                 value:
                   input:
-                    to: ["yashrdrdeveloper@gmail.com"]
+                    to: ["recipient@example.com"]
                     cc: ["copy@example.com"]
                     bcc: []
                     replyTo: []
@@ -169,17 +181,18 @@ paths:
                         contentType: "text/plain"
                         contentBase64: "SGVsbG8gZnJvbSBHcm9vdmVIdWIhCg=="
       responses:
-        "200": { description: Provider action output; Graph sendMail only returns accepted status }
-        "400": { description: Invalid action input; malformed recipients, message or attachment }
-        "403": { description: Access denied or connection not owned }
-        "409": { description: Connection not active }
-        "429": { description: Provider rate limited }
-        "501": { description: Unsupported action }
-        "503": { description: Provider not configured }
+        "200": {"description":"Provider action output; Graph sendMail only returns accepted status","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{}},"required":["success","data"]}}}}
+        "400": {"description":"Invalid action input; malformed recipients, message or attachment","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}
+        "403": {"description":"Access denied or connection not owned","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}
+        "409": {"description":"Connection not active","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}
+        "429": {"description":"Provider rate limited","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}
+        "501": {"description":"Unsupported action","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}
+        "503": {"description":"Provider not configured","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}
   /integrations/restricted/connections/{id}/actions/mail.send:
     parameters:
       - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
     post:
+      operationId: sendMailAction
       summary: Send structured email through the connected Gmail or Outlook account
       description: >
         Convenience documented endpoint for mail.send. The generic actions/{action}
@@ -201,14 +214,14 @@ paths:
               plainText:
                 value:
                   input:
-                    to: ["yashrdrdeveloper@gmail.com"]
+                    to: ["recipient@example.com"]
                     subject: "GrooveHub Integration Test"
                     body:
                       text: "Hello from GrooveHub!"
               withHTMLAndAttachment:
                 value:
                   input:
-                    to: ["yashrdrdeveloper@gmail.com"]
+                    to: ["recipient@example.com"]
                     cc: []
                     bcc: []
                     subject: "GrooveHub HTML Test"
@@ -220,22 +233,45 @@ paths:
                         contentType: text/plain
                         contentBase64: SGVsbG8gZnJvbSBHcm9vdmVIdWIhCg==
       responses:
-        "200": { description: Gmail message identifier or Outlook accepted status }
-        "400": { description: Invalid recipients, message body, or attachments }
-        "403": { description: Connection access denied }
-        "409": { description: Connection not active }
-        "429": { description: Mail provider rate limited }
+        "200": {"description":"Gmail message identifier or Outlook accepted status","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{}},"required":["success","data"]}}}}
+        "400": {"description":"Invalid recipients, message body, or attachments","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}
+        "403": {"description":"Connection access denied","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}
+        "409": {"description":"Connection not active","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}
+        "429": {"description":"Mail provider rate limited","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}
   /integrations/restricted/webhooks/gmail:
     post:
+      operationId: gmailPush
       security: [{ googlePushJWT: [] }]
       summary: Verify Gmail Pub/Sub notification and publish mailbox-change event
       description: Publishes integration.mailbox.changed.v1 to NATS for each matched active provider connection. No message sync or persistence. Returns retryable failure on publish error.
       responses:
         "204": { description: Notification published to configured messaging transport }
-        "401": { description: Google push JWT authentication failed }
-        "503": { description: Event publishing failed, Pub/Sub should retry }
+        "401": {"description":"Google push JWT authentication failed","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}
+        "503": {"description":"Event publishing failed, Pub/Sub should retry","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}
+  /integrations/restricted/connections/system-mail/sender:
+    post:
+      operationId: configureSystemMailSender
+      security: [{workloadBearer: [], identityProof: []}]
+      summary: Configure tenant system mail sender (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/SystemMailSender'}
+      responses:
+        "200": {"description":"Configured sender","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/SystemMailSender"}},"required":["success","data"]}}}}
+        default: {"description":"Operation rejected","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}
 components:
   schemas:
+    ProviderDescriptor: {"type":"object","properties":{"id":{"type":"string"},"displayName":{"type":"string"},"capabilities":{"type":["array","null"],"items":{"type":"string"}},"authType":{"type":"string"}},"required":["id","displayName","capabilities","authType"]}
+    ProviderDetails: {"type":"object","properties":{"provider":{"$ref":"#/components/schemas/ProviderDescriptor"},"availableActions":{"type":["array","null"],"items":{"type":"string"}},"oauthConfigured":{"type":"boolean"}},"required":["provider","availableActions","oauthConfigured"]}
+    Connection: {"type":"object","properties":{"id":{"type":"string","format":"uuid"},"tenantId":{"type":"string","format":"uuid"},"ownerGid":{"type":"string","format":"uuid"},"provider":{"type":"string"},"externalId":{"type":"string"},"status":{"type":"string"},"lastTestedAt":{"type":"string","format":"date-time"},"lastTestStatus":{"type":"string"},"createdAt":{"type":"string","format":"date-time"},"updatedAt":{"type":"string","format":"date-time"}},"required":["id","tenantId","ownerGid","provider","status","createdAt","updatedAt"]}
+    ConnectionTest: {"type":"object","properties":{"id":{"type":"string","format":"uuid"},"connectionId":{"type":"string","format":"uuid"},"direction":{"type":"string"},"status":{"type":"string"},"detail":{"type":"string"},"startedAt":{"type":"string","format":"date-time"},"completedAt":{"type":"string","format":"date-time"}},"required":["id","connectionId","direction","status","detail","startedAt","completedAt"]}
+    OAuthStart: {"type":"object","properties":{"authorizationUrl":{"type":"string","format":"uri"}},"required":["authorizationUrl"]}
+    OAuthCompletion: {"type":"object","properties":{"status":{"type":"string"}},"required":["status"]}
+    Watch: {"type":"object","properties":{"connectionId":{"type":"string","format":"uuid"},"expiresAt":{"type":"string","format":"date-time"}},"required":["connectionId","expiresAt"]}
+    SystemMailSender: {"type":"object","properties":{"connectionId":{"type":"string","format":"uuid"}},"required":["connectionId"]}
+    ErrorResponse: {"type":"object","properties":{"success":{"type":"boolean","const":false},"errorCode":{"type":"string"},"errorMessage":{"type":"string"},"httpErrorCode":{"type":"integer"},"errorMetaData":{}},"required":["success","errorCode","errorMessage","httpErrorCode","errorMetaData"]}
     MailSendInput:
       type: object
       additionalProperties: false

@@ -9,8 +9,8 @@ import { createSourceLayout } from '../lib/source-layout.mjs';
 test('maps an extracted package to its original logical audit owner', () => {
   const directory = mkdtempSync(path.join(tmpdir(), 'groovehub-source-'));
   try {
-    const app = path.join(directory, 'frontend');
-    const shared = path.join(directory, 'libs/frontend/base');
+    const app = path.join(directory, 'frontend/projects/school');
+    const shared = path.join(directory, 'frontend/libs/base');
     mkdirSync(path.join(app, 'packages'), { recursive: true });
     mkdirSync(shared, { recursive: true });
     const layout = createSourceLayout(app, ['base']);
@@ -38,9 +38,9 @@ test('maps an extracted package to its original logical audit owner', () => {
 test('retains logical component ownership across a physical workspace move', () => {
   const directory = mkdtempSync(path.join(tmpdir(), 'groovehub-components-'));
   try {
-    const app = path.join(directory, 'frontend');
+    const app = path.join(directory, 'frontend/projects/school');
     const local = path.join(app, 'packages/components');
-    const shared = path.join(directory, 'libs/frontend/components');
+    const shared = path.join(directory, 'frontend/libs/components');
     mkdirSync(local, { recursive: true });
     const before = createSourceLayout(app, ['components']);
     assert.equal(before.resolvePackageSource('components/index.ts'), path.join(local, 'index.ts'));
