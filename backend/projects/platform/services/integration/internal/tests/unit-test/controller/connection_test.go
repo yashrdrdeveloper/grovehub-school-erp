@@ -98,7 +98,7 @@ var _ = Describe("Integration access-tier controllers", func() {
 
 	It("serves public provider discovery independently of connection ownership", func() {
 		recorder := httptest.NewRecorder()
-		request := httptest.NewRequest(http.MethodGet, "/integrations/public/providers", nil)
+		request := httptest.NewRequest(http.MethodGet, "/integrations/restricted/providers", nil)
 
 		providerscontroller.NewProviderController(service).Providers(recorder, request)
 
@@ -112,11 +112,11 @@ var _ = Describe("Integration access-tier controllers", func() {
 			path string
 			handler http.HandlerFunc
 		}{
-			{"/integrations/protected/connections/abc/oauth/start", controller.BeginOAuth},
-			{"/integrations/protected/connections/abc/test", controller.RunTest},
-			{"/integrations/protected/connections/abc/tests", controller.ListTests},
-			{"/integrations/protected/connections/abc/actions/mail.send", controller.ExecuteAction},
-			{"/integrations/protected/connections/abc/watch", controller.Watch},
+			{"/integrations/restricted/connections/abc/oauth/start", controller.BeginOAuth},
+			{"/integrations/restricted/connections/abc/test", controller.RunTest},
+			{"/integrations/restricted/connections/abc/tests", controller.ListTests},
+			{"/integrations/restricted/connections/abc/actions/mail.send", controller.ExecuteAction},
+			{"/integrations/restricted/connections/abc/watch", controller.Watch},
 		} {
 			recorder := httptest.NewRecorder()
 			request := httptest.NewRequest(http.MethodPost, testCase.path, nil)
@@ -143,7 +143,7 @@ var _ = Describe("Integration access-tier controllers", func() {
 		Expect(recorder.Code).To(Equal(http.StatusUnauthorized))
 	})
 
-	It("registers only the annotated public, protected, and restricted endpoints", func() {
+	It("registers only restricted Platform endpoints", func() {
 		mux := http.NewServeMux()
 		routes.RegisterHTTP(
 			mux,
@@ -157,14 +157,16 @@ var _ = Describe("Integration access-tier controllers", func() {
 			path string
 			status int
 		}{
-			{http.MethodGet, "/integrations/public/providers", http.StatusOK},
-			{http.MethodGet, "/integrations/public/connections/oauth/gmail/callback", http.StatusOK},
-			{http.MethodGet, "/integrations/public/connections/oauth/outlook/callback", http.StatusOK},
-			{http.MethodPost, "/integrations/protected/connections/example/oauth/start", http.StatusForbidden},
-			{http.MethodPost, "/integrations/protected/connections/example/actions/mail.send", http.StatusForbidden},
-			{http.MethodPost, "/integrations/protected/connections/example/test", http.StatusForbidden},
-			{http.MethodPost, "/integrations/protected/connections/example/watch", http.StatusForbidden},
+			{http.MethodGet, "/integrations/restricted/providers", http.StatusOK},
+			{http.MethodGet, "/integrations/restricted/connections/oauth/gmail/callback", http.StatusOK},
+			{http.MethodGet, "/integrations/restricted/connections/oauth/outlook/callback", http.StatusOK},
+			{http.MethodPost, "/integrations/restricted/connections/example/oauth/start", http.StatusForbidden},
+			{http.MethodPost, "/integrations/restricted/connections/example/actions/mail.send", http.StatusForbidden},
+			{http.MethodPost, "/integrations/restricted/connections/example/test", http.StatusForbidden},
+			{http.MethodPost, "/integrations/restricted/connections/example/watch", http.StatusForbidden},
 			{http.MethodGet, "/integrations/connections/oauth/gmail/callback", http.StatusNotFound},
+			{http.MethodGet, "/integrations/public/providers", http.StatusNotFound},
+			{http.MethodPost, "/integrations/protected/connections/example/test", http.StatusNotFound},
 		} {
 			recorder := httptest.NewRecorder()
 			mux.ServeHTTP(recorder, httptest.NewRequest(testCase.method, testCase.path, nil))
@@ -178,7 +180,7 @@ var _ = Describe("Integration access-tier controllers", func() {
 
 		verified := httptest.NewRequest(
 			http.MethodPost,
-			"/integrations/protected/connections",
+			"/integrations/restricted/connections",
 			strings.NewReader(requestBody),
 		)
 		verified = verified.WithContext(clientprincipal.WithVerifiedPrincipal(
@@ -194,7 +196,7 @@ var _ = Describe("Integration access-tier controllers", func() {
 
 		forged := httptest.NewRequest(
 			http.MethodPost,
-			"/integrations/protected/connections",
+			"/integrations/restricted/connections",
 			strings.NewReader(requestBody),
 		)
 		forged.Header.Set("X-Tenant-ID", "018f5d04-315c-75a9-b890-df0d02e787c1")

@@ -16,7 +16,7 @@ import (
 // @Testing suite=FoundationRoutes
 func Specs(){
     Describe("RegisterHTTP",func(){
-        It("registers the annotated Person controller under /foundation/protected",func(){
+        It("registers the annotated Person controller under /foundation/restricted",func(){
             controller:=mocks.NewMockPersonController(gomock.NewController(GinkgoT()))
             controller.EXPECT().GetByGID(gomock.Any(),gomock.Any()).DoAndReturn(func(w http.ResponseWriter,r *http.Request){
                 Expect(r.PathValue("gid")).To(Equal(ids.GID))
@@ -24,7 +24,7 @@ func Specs(){
             })
             mux:=http.NewServeMux()
             routes.RegisterHTTP(mux,controller)
-            request:=httptest.NewRequest(http.MethodGet,"/foundation/protected/persons/"+ids.GID,nil)
+            request:=httptest.NewRequest(http.MethodGet,"/foundation/restricted/persons/"+ids.GID,nil)
             rec:=httptest.NewRecorder()
             mux.ServeHTTP(rec,request)
             Expect(rec.Code).To(Equal(http.StatusNoContent))
@@ -33,7 +33,7 @@ func Specs(){
             controller:=mocks.NewMockPersonController(gomock.NewController(GinkgoT()))
             mux:=http.NewServeMux()
             routes.RegisterHTTP(mux,controller)
-            request:=httptest.NewRequest(http.MethodGet,"/foundation/unrecognized",nil)
+            request:=httptest.NewRequest(http.MethodGet,"/foundation/protected/persons/"+ids.GID,nil)
             rec:=httptest.NewRecorder()
             mux.ServeHTTP(rec,request)
             Expect(rec.Code).To(Equal(http.StatusNotFound))
