@@ -62,9 +62,8 @@ func(s *Service) Execute(ctx context.Context,actor entity.Operator,id string,in 
  if a.Status!="APPROVED"||a.Version!=in.Version{return entity.Execution{},ErrConflict}
  t,err:=s.repo.Template(ctx,a.TemplateID);if err!=nil{return entity.Execution{},err}
  env,err:=s.repo.Environment(ctx,a.EnvironmentID);if err!=nil{return entity.Execution{},err}
- adapter:=s.bindings[BindingKey{env.Code,t.ID}]
- if adapter==nil{return entity.Execution{},ErrExecutionUnavailable}
  call,err:=resolve(t,a);if err!=nil{return entity.Execution{},err}
+ adapter,err:=s.executionAdapter(env.Code,t,a,actor,call);if err!=nil{return entity.Execution{},err}
  e,err:=s.repo.ClaimExecution(ctx,actor,id,uuid.NewString(),in.Version);if err!=nil{return e,err}
  call.ExecutionID=e.ID
  // At-most-one dispatch claim: ambiguous outcomes are never retried automatically.
@@ -73,7 +72,7 @@ func(s *Service) Execute(ctx context.Context,actor entity.Operator,id string,in 
  outcome:="UNKNOWN";var response *int
  if callErr==nil&&status>=200&&status<=599{
   response=&status
-  if status<300{outcome="SUCCEEDED"}else{outcome="FAILED"}
+  if status<300{outcome="SUCCEEDED"}else if status<500{outcome="FAILED"}
  }
  finish,stop:=context.WithTimeout(context.WithoutCancel(ctx),5*time.Second);defer stop()
  return s.repo.FinishExecution(finish,e,outcome,response)

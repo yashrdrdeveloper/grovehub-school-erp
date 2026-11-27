@@ -50,7 +50,23 @@ func Run() error {
   PrivateKey:os.Getenv("INTERNAL_TOOL_WORKLOAD_PRIVATE_KEY"),
  })
  if err!=nil{return err}
- workflowController.New(workflow.NewWithBindings(db,bindings),authController).Register(mux)
+ schoolConfig:=platform.SchoolConfig{
+  EnvironmentCode:os.Getenv("INTERNAL_TOOL_SCHOOL_ENVIRONMENT"),
+  TemplateID:os.Getenv("INTERNAL_TOOL_SCHOOL_TEMPLATE_ID"),
+  SchoolID:os.Getenv("INTERNAL_TOOL_SCHOOL_ID"),
+  Origin:os.Getenv("INTERNAL_TOOL_SCHOOL_ORIGIN"),
+  KeyID:os.Getenv("INTERNAL_TOOL_SCHOOL_KEY_ID"),
+  PrivateKey:os.Getenv("INTERNAL_TOOL_SCHOOL_PRIVATE_KEY"),
+  OperatorIDs:os.Getenv("INTERNAL_TOOL_SCHOOL_OPERATOR_IDS"),
+ }
+ schoolBindings,err:=platform.SchoolBindings(schoolConfig)
+ if err!=nil{return err}
+ if len(schoolBindings)>0{
+  for _,prefix:=range []string{"INTERNAL_TOOL_WORKLOAD","INTERNAL_TOOL_AUDIT","INTERNAL_TOOL_AUDIT_READ"}{
+   if schoolConfig.KeyID==os.Getenv(prefix+"_KEY_ID")||schoolConfig.PrivateKey==os.Getenv(prefix+"_PRIVATE_KEY"){return errors.New("school execution key must be independent")}
+  }
+ }
+ workflowController.New(workflow.NewWithSchoolBindings(db,bindings,schoolBindings),authController).Register(mux)
  publisher,err:=auditclient.New(auditclient.Config{Origin:os.Getenv("INTERNAL_TOOL_AUDIT_ORIGIN"),KeyID:os.Getenv("INTERNAL_TOOL_AUDIT_KEY_ID"),PrivateKey:os.Getenv("INTERNAL_TOOL_AUDIT_PRIVATE_KEY")})
  if err!=nil{return err}
  reader,err:=auditclient.NewReader(auditclient.Config{Origin:os.Getenv("INTERNAL_TOOL_AUDIT_READ_ORIGIN"),KeyID:os.Getenv("INTERNAL_TOOL_AUDIT_READ_KEY_ID"),PrivateKey:os.Getenv("INTERNAL_TOOL_AUDIT_READ_PRIVATE_KEY")})
@@ -85,6 +101,9 @@ func Run() error {
   upstream,err:=readiness.HTTP(os.Getenv("INTERNAL_TOOL_PLATFORM_ORIGIN"),"/ready")
   if err!=nil{return err}
   checks=append(checks,upstream)
+ }
+ if len(schoolBindings)>0{
+  upstream,err:=readiness.HTTP(schoolConfig.Origin,"/ready");if err!=nil{return err};checks=append(checks,upstream)
  }
  mux.HandleFunc("GET /health/ready",readiness.Handler(&draining,checks...))
  server := &http.Server{Addr: addr, Handler: correlation.Ingress(mux), ReadHeaderTimeout: 5*time.Second, ReadTimeout: 15*time.Second, WriteTimeout: 30*time.Second, IdleTimeout: 60*time.Second, MaxHeaderBytes: 1<<20}

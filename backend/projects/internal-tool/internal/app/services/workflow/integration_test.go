@@ -43,11 +43,11 @@ func TestApprovalLifecycle(t *testing.T){
  cancelled,err:=s.Decide(ctx,l1,pending.ID,"CANCELLED",DecisionInput{Version:1});if err!=nil||cancelled.Status!="CANCELLED"{t.Fatal("cancel failed",err)}
  if _,err=s.Execute(ctx,l1,a.ID,ExecutionInput{Version:2});!errors.Is(err,ErrExecutionUnavailable){t.Fatal("unbound execution not denied",err)}
  calls:=0
- bound:=NewWithBindings(db,map[BindingKey]Adapter{{EnvironmentCode:env.Code,TemplateID:v1.ID}:func(_ context.Context,call Invocation)(int,error){
+ bound:=NewWithSchoolBindings(db,nil,map[SchoolBindingKey]SchoolBinding{{EnvironmentCode:env.Code,TemplateID:v1.ID,SchoolID:school}:{Operators:[]string{l1.ID,l2.ID},Validate:func(Invocation)bool{return true},Adapter:func(_ context.Context,call Invocation)(int,error){
   calls++
   if call.RequestID!=a.ID||call.ExecutionID==""||call.Path!="/identity/restricted/accounts/test"||call.SchoolID==nil||*call.SchoolID!=school{t.Error("approved invocation changed")}
   return 200,nil
- }})
+ }}})
  if _,err=bound.Execute(ctx,other,a.ID,ExecutionInput{Version:2});err==nil{t.Fatal("other operator executed request")}
  execution,err:=bound.Execute(ctx,l1,a.ID,ExecutionInput{Version:2});if err!=nil||execution.Status!="SUCCEEDED"||execution.ResponseStatus==nil||*execution.ResponseStatus!=200{t.Fatal("execution failed",execution,err)}
  if _,err=bound.Execute(ctx,l2,a.ID,ExecutionInput{Version:2});!errors.Is(err,ErrConflict)||calls!=1{t.Fatal("duplicate dispatch accepted",err,calls)}
@@ -61,7 +61,7 @@ func TestApprovalLifecycle(t *testing.T){
  if _,err=s.BulkApprove(ctx,l1,bulk);!errors.Is(err,ErrForbidden){t.Fatal("L1 bulk accepted")}
  approved,err:=s.BulkApprove(ctx,l2,bulk);if err!=nil||len(approved)!=2||approved[0].Status!="APPROVED"||approved[1].Status!="APPROVED"{t.Fatal("bulk approval failed",err)}
  uncertain,err:=s.Submit(ctx,l2,req);if err!=nil{t.Fatal(err)}
- unknown:=NewWithBindings(db,map[BindingKey]Adapter{{EnvironmentCode:env.Code,TemplateID:v1.ID}:func(context.Context,Invocation)(int,error){return 0,errors.New("timeout")}})
+ unknown:=NewWithSchoolBindings(db,nil,map[SchoolBindingKey]SchoolBinding{{EnvironmentCode:env.Code,TemplateID:v1.ID,SchoolID:school}:{Operators:[]string{l2.ID},Validate:func(Invocation)bool{return true},Adapter:func(context.Context,Invocation)(int,error){return 0,errors.New("timeout")}}})
  ex,err:=unknown.Execute(ctx,l2,uncertain.ID,ExecutionInput{Version:uncertain.Version});if err!=nil||ex.Status!="UNKNOWN"{t.Fatal("expected unknown execution",ex,err)}
  evidence:=ReconcileInput{Outcome:"CONFIRMED_FAILED",Evidence:"Verified upstream record"}
  if _,err=s.Reconcile(ctx,l1,uncertain.ID,evidence);!errors.Is(err,ErrForbidden){t.Fatal("L1 reconciled execution")}

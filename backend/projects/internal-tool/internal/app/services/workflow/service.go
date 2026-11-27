@@ -21,7 +21,7 @@ var codePattern=regexp.MustCompile("^[a-z][a-z0-9_-]{1,63}$")
 var fieldPattern=regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{0,63}$")
 var endpointPattern=regexp.MustCompile("^/[a-z][a-z0-9-]*/restricted(/[a-zA-Z0-9_.-]+|/\\$\\{[a-zA-Z][a-zA-Z0-9_]*\\})+$")
 var placeholderPattern=regexp.MustCompile("\\$\\{([a-zA-Z][a-zA-Z0-9_]*)\\}")
-type Service struct{repo *repo.Repository;bindings map[BindingKey]Adapter}
+type Service struct{repo *repo.Repository;bindings map[BindingKey]Adapter;schoolBindings map[SchoolBindingKey]SchoolBinding}
 func New(db *sql.DB)*Service{return &Service{repo:repo.New(db)}}
 
 type EnvironmentInput struct{Code string `json:"code"`;Name string `json:"name"`}
