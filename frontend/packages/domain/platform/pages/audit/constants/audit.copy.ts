@@ -1,4 +1,6 @@
 export const AUDIT_COPY = Object.freeze({
+  personalScope: __('My activity'),
+  tenantScope: __('School activity'),
   label1: __('Audit logs'),
   label2: __('Your activity'),
   label3: __('Search'),
