@@ -42,11 +42,16 @@ func Configure(raw string,legacy Config,workloadID,workloadPrivate,readRaw,renam
   for _,k:=range statusKeys{reserve(k.KeyID,k.PublicKey)}
  }
  for _,c:=range configs{
+  operation:=c.Operation
+  if operation==""{operation="rename"}
+  if operation!="rename"&&operation!="status"{return nil,errors.New("invalid receipt operation")}
   private,err:=base64.RawURLEncoding.DecodeString(c.PrivateKey)
-  if err!=nil||len(private)!=ed25519.PrivateKeySize||schools[c.SchoolID]{return nil,errors.New("invalid or duplicate receipt publisher")}
+  if err!=nil||len(private)!=ed25519.PrivateKeySize||schools[c.SchoolID+":"+operation]{return nil,errors.New("invalid or duplicate receipt publisher")}
   pub:=base64.RawURLEncoding.EncodeToString(private[32:])
   if ids[c.KeyID]||keys[pub]{return nil,errors.New("receipt publisher credential must be independent")}
-  if publisher,err:=Client(c);err!=nil||publisher==nil{return nil,errors.New("invalid receipt publisher")}
+  if operation=="status"{
+   if publisher,err:=StatusClient(c);err!=nil||publisher==nil{return nil,errors.New("invalid status receipt publisher")}
+  }else if publisher,err:=Client(c);err!=nil||publisher==nil{return nil,errors.New("invalid rename receipt publisher")}
   reserve(c.KeyID,pub);schools[c.SchoolID]=true
  }
  return configs,nil

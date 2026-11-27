@@ -22,12 +22,13 @@ import (
 const path="/audit/restricted/school-rename-receipts"
 const scope="internal.audit.school.rename-receipt.write"
 const issuer="school-registry-audit"
-type Config struct{Origin,SchoolID,KeyID,PrivateKey string}
+type Config struct{Origin,SchoolID,KeyID,PrivateKey,Operation string}
 type Publisher func(context.Context,sdk.SchoolRenameReceipt)(int,error)
 type Worker struct{db *sql.DB;schoolID string;publish Publisher}
 func New(db *sql.DB,school string,publish Publisher)*Worker{return &Worker{db:db,schoolID:school,publish:publish}}
 func Client(c Config)(Publisher,error){
  if c==(Config{}){return nil,nil}
+ if c.Operation!=""&&c.Operation!="rename"{return nil,errors.New("invalid rename publisher operation")}
  origin,err:=url.Parse(c.Origin)
  if err!=nil||origin.Hostname()==""||origin.User!=nil||origin.RawQuery!=""||origin.ForceQuery||origin.Fragment!=""||origin.RawPath!=""||(origin.Path!=""&&origin.Path!="/")||(origin.Scheme!="https"&&!(origin.Scheme=="http"&&(origin.Hostname()=="127.0.0.1"||origin.Hostname()=="::1"))){return nil,errors.New("invalid receipt origin")}
  key,err:=base64.RawURLEncoding.DecodeString(c.PrivateKey)

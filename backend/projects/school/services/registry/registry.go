@@ -39,8 +39,12 @@ func DeliveryHealth(db *sql.DB,configs []DeliveryConfig)http.HandlerFunc{return 
 // workers. A worker has a dedicated school credential and cannot select
 // another school's outbox rows.
 func StartDeliveries(ctx context.Context,db *sql.DB,configs []DeliveryConfig)(func(),error){
- workers:=make([]*delivery.Worker,0,len(configs))
+ workers:=make([]interface{Step(context.Context)(bool,error)},0,len(configs))
  for _,c:=range configs{
+  if c.Operation=="status"{
+   publisher,err:=delivery.StatusClient(c);if err!=nil{return nil,err}
+   workers=append(workers,delivery.NewStatus(db,c.SchoolID,publisher));continue
+  }
   publisher,err:=delivery.Client(c);if err!=nil{return nil,err}
   if publisher!=nil{workers=append(workers,delivery.New(db,c.SchoolID,publisher))}
  }
