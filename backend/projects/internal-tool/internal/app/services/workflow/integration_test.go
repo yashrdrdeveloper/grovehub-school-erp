@@ -48,9 +48,12 @@ func TestApprovalLifecycle(t *testing.T){
   if call.RequestID!=a.ID||call.ExecutionID==""||call.Path!="/identity/restricted/accounts/test"||call.SchoolID==nil||*call.SchoolID!=school{t.Error("approved invocation changed")}
   return 200,nil
  }}})
+ caps,err:=bound.Capabilities(ctx,l1,a.ID);if err!=nil||!caps.CanExecute||caps.Version!=2{t.Fatal("bound execution capability",caps,err)}
+ caps,err=s.Capabilities(ctx,l1,a.ID);if err!=nil||caps.CanExecute{t.Fatal("unbound execution advertised",caps,err)}
  if _,err=bound.Execute(ctx,other,a.ID,ExecutionInput{Version:2});err==nil{t.Fatal("other operator executed request")}
  execution,err:=bound.Execute(ctx,l1,a.ID,ExecutionInput{Version:2});if err!=nil||execution.Status!="SUCCEEDED"||execution.ResponseStatus==nil||*execution.ResponseStatus!=200{t.Fatal("execution failed",execution,err)}
  if _,err=bound.Execute(ctx,l2,a.ID,ExecutionInput{Version:2});!errors.Is(err,ErrConflict)||calls!=1{t.Fatal("duplicate dispatch accepted",err,calls)}
+ caps,err=bound.Capabilities(ctx,l1,a.ID);if err!=nil||caps.CanExecute{t.Fatal("duplicate execution advertised",caps,err)}
  saved,err:=bound.Execution(ctx,l2,a.ID);if err!=nil||saved.ID!=execution.ID{t.Fatal("execution history failed",err)}
  first,err:=s.Submit(ctx,l1,req);if err!=nil{t.Fatal(err)}
  second,err:=s.Submit(ctx,l1,req);if err!=nil{t.Fatal(err)}

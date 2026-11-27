@@ -17,3 +17,12 @@ export interface SchoolGrant {
   canReview: boolean;
   canExecute: boolean;
 }
+
+export interface RequestCapabilities {
+  version: number;
+  canApprove: boolean;
+  canReject: boolean;
+  canCancel: boolean;
+  canExecute: boolean;
+  canReconcile: boolean;
+}

@@ -43,6 +43,7 @@ func(c *Controller) Register(mux *http.ServeMux){
  bind("GET /internal/protected/approvals",false,func(w http.ResponseWriter,r *http.Request,a entity.Operator){v,err:=c.svc.List(r.Context(),a,true);respond(w,200,v,err)})
  bind("GET /internal/protected/requests/{id}",false,func(w http.ResponseWriter,r *http.Request,a entity.Operator){v,err:=c.svc.Get(r.Context(),a,r.PathValue("id"));respond(w,200,v,err)})
  bind("POST /internal/protected/requests/{id}/execute",true,func(w http.ResponseWriter,r *http.Request,a entity.Operator){in,ok:=decode[service.ExecutionInput](w,r);if !ok{return};v,err:=c.svc.Execute(r.Context(),a,r.PathValue("id"),in);respond(w,200,v,err)})
+ bind("GET /internal/protected/requests/{id}/capabilities",false,func(w http.ResponseWriter,r *http.Request,a entity.Operator){v,err:=c.svc.Capabilities(r.Context(),a,r.PathValue("id"));respond(w,200,v,err)})
  bind("GET /internal/protected/requests/{id}/execution",false,func(w http.ResponseWriter,r *http.Request,a entity.Operator){v,err:=c.svc.Execution(r.Context(),a,r.PathValue("id"));respond(w,200,v,err)})
  bind("POST /internal/protected/requests/{id}/reconcile",true,func(w http.ResponseWriter,r *http.Request,a entity.Operator){in,ok:=decode[service.ReconcileInput](w,r);if !ok{return};v,err:=c.svc.Reconcile(r.Context(),a,r.PathValue("id"),in);respond(w,200,v,err)})
  bind("GET /internal/protected/requests/{id}/reconciliation",false,func(w http.ResponseWriter,r *http.Request,a entity.Operator){v,err:=c.svc.Reconciliation(r.Context(),a,r.PathValue("id"));respond(w,200,v,err)})
