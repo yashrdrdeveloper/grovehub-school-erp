@@ -47,8 +47,8 @@ func ParseSchoolGrants(raw string,legacy SchoolConfig,reserved []ReservedCredent
   if b,err:=base64.RawURLEncoding.DecodeString(r.PrivateKey);err==nil&&len(b)==64{usedKeys[string(b[32:])]=true}
  }
  for _,g:=range grants{
-  if g.Operation!="audit.activity-check"&&g.Operation!="registry.rename"{return nil,nil,errors.New("unsupported school operation")}
-  if g.Operation=="registry.rename"&&(len(directoryOrigin)!=1||directoryOrigin[0]==""||strings.TrimRight(g.Origin,"/")!=strings.TrimRight(directoryOrigin[0],"/")){return nil,nil,errors.New("rename requires matching authoritative directory origin")}
+  if g.Operation!="audit.activity-check"&&g.Operation!="registry.rename"&&g.Operation!="registry.status"{return nil,nil,errors.New("unsupported school operation")}
+  if (g.Operation=="registry.rename"||g.Operation=="registry.status")&&(len(directoryOrigin)!=1||directoryOrigin[0]==""||strings.TrimRight(g.Origin,"/")!=strings.TrimRight(directoryOrigin[0],"/")){return nil,nil,errors.New("rename requires matching authoritative directory origin")}
   key,err:=base64.RawURLEncoding.DecodeString(g.PrivateKey)
   if err!=nil||len(key)!=64||usedIDs[g.KeyID]||usedKeys[string(key[32:])]{return nil,nil,errors.New("school grant credential must be independent")}
   usedIDs[g.KeyID]=true;usedKeys[string(key[32:])]=true
@@ -61,6 +61,7 @@ func ParseSchoolGrants(raw string,legacy SchoolConfig,reserved []ReservedCredent
   ids:=make([]string,0,len(union));for id:=range union{ids=append(ids,id)};sort.Strings(ids)
   factory:=SchoolBindings
   if g.Operation=="registry.rename"{factory=RenameBindings}
+  if g.Operation=="registry.status"{factory=StatusBindings}
   one,err:=factory(SchoolConfig{EnvironmentCode:g.EnvironmentCode,TemplateID:g.TemplateID,SchoolID:g.SchoolID,Origin:g.Origin,KeyID:g.KeyID,PrivateKey:g.PrivateKey,OperatorIDs:strings.Join(ids,",")})
   if err!=nil{return nil,nil,err}
   for k,b:=range one{

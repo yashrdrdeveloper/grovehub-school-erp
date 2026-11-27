@@ -14,6 +14,7 @@ type SchoolBindingKey struct{EnvironmentCode,TemplateID,SchoolID string}
 type SchoolBinding struct{
  Adapter Adapter
  Mutation bool
+ Lifecycle bool
  Validate func(Invocation)bool
  Operators []string
  Requesters,Reviewers,Executors []string
@@ -59,6 +60,8 @@ type SchoolGrantView struct{
  SchoolName string `json:"schoolName,omitempty"`
  SchoolCode string `json:"schoolCode,omitempty"`
  SchoolVersion string `json:"schoolVersion,omitempty"`
+ SchoolStatus string `json:"schoolStatus,omitempty"`
+ Lifecycle bool `json:"lifecycle"`
  CanRequest bool `json:"canRequest"`
  CanReview bool `json:"canReview"`
  CanExecute bool `json:"canExecute"`
@@ -69,7 +72,7 @@ type SchoolGrantView struct{
 func(s *Service) SchoolGrants(actor entity.Operator)[]SchoolGrantView{
  result:=[]SchoolGrantView{}
  for key,b:=range s.schoolBindings{
-  v:=SchoolGrantView{EnvironmentCode:key.EnvironmentCode,TemplateID:key.TemplateID,SchoolID:key.SchoolID,CanRequest:allowedOperator(b.Requesters,actor.ID),CanReview:actor.Persona==entity.L2&&allowedOperator(b.Reviewers,actor.ID),CanExecute:allowedOperator(b.Executors,actor.ID)}
+  v:=SchoolGrantView{EnvironmentCode:key.EnvironmentCode,TemplateID:key.TemplateID,SchoolID:key.SchoolID,Lifecycle:b.Lifecycle,CanRequest:allowedOperator(b.Requesters,actor.ID),CanReview:actor.Persona==entity.L2&&allowedOperator(b.Reviewers,actor.ID),CanExecute:allowedOperator(b.Executors,actor.ID)}
   if v.CanRequest||v.CanReview||v.CanExecute{result=append(result,v)}
  }
  sort.Slice(result,func(i,j int)bool{
@@ -90,5 +93,5 @@ func(s *Service) checkSchoolReview(ctx context.Context,actor entity.Operator,id 
  binding,ok:=s.schoolBindings[SchoolBindingKey{env.Code,a.TemplateID,*a.SchoolID}]
  if !ok{return nil}
  if !allowedOperator(binding.Reviewers,actor.ID)||!allowedOperator(binding.Requesters,a.RequesterID){return ErrForbidden}
- return s.checkDirectory(ctx,*a.SchoolID)
+ return s.checkDirectoryForBinding(ctx,*a.SchoolID,binding)
 }

@@ -64,7 +64,7 @@ func(s *Service) Execute(ctx context.Context,actor entity.Operator,id string,in 
  env,err:=s.repo.Environment(ctx,a.EnvironmentID);if err!=nil{return entity.Execution{},err}
  call,err:=resolve(t,a);if err!=nil{return entity.Execution{},err}
  adapter,err:=s.executionAdapter(env.Code,t,a,actor,call);if err!=nil{return entity.Execution{},err}
- if a.SchoolID!=nil{if err:=s.checkDirectory(ctx,*a.SchoolID);err!=nil{return entity.Execution{},err}}
+ if a.SchoolID!=nil{if err:=s.checkDirectoryForBinding(ctx,*a.SchoolID,s.schoolBindings[SchoolBindingKey{env.Code,t.ID,*a.SchoolID}]);err!=nil{return entity.Execution{},err}}
  e,err:=s.repo.ClaimExecution(ctx,actor,id,uuid.NewString(),in.Version);if err!=nil{return e,err}
  call.ExecutionID=e.ID
  // At-most-one dispatch claim: ambiguous outcomes are never retried automatically.

@@ -79,7 +79,7 @@ func(s *Service) Submit(ctx context.Context,actor entity.Operator,in SubmitInput
   env,err:=s.repo.Environment(ctx,a.EnvironmentID);if err!=nil{return entity.Approval{},err}
   if binding,ok:=s.schoolBindings[SchoolBindingKey{env.Code,t.ID,*a.SchoolID}];ok{
    if !allowedOperator(binding.Requesters,actor.ID)||!binding.Validate(call){return entity.Approval{},ErrForbidden}
-   if err:=s.checkDirectory(ctx,*a.SchoolID);err!=nil{return entity.Approval{},err}
+   if err:=s.checkDirectoryForBinding(ctx,*a.SchoolID,binding);err!=nil{return entity.Approval{},err}
    auto=auto&&allowedOperator(binding.Reviewers,actor.ID)
   }
  }

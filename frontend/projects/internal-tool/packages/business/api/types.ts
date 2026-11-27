@@ -16,6 +16,8 @@ export interface SchoolGrant {
   schoolName?: string;
   schoolCode?: string;
   schoolVersion?: string;
+  schoolStatus?: 'ACTIVE' | 'DISABLED';
+  lifecycle?: boolean;
   canRequest: boolean;
   canReview: boolean;
   canExecute: boolean;

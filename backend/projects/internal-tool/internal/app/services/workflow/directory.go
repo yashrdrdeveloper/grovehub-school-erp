@@ -25,15 +25,16 @@ func(s *Service) ResolvedSchoolGrants(ctx context.Context,actor entity.Operator)
  result:=[]SchoolGrantView{}
  for _,grant:=range grants{
   row,ok:=records[grant.SchoolID]
-  if !ok||row.Status!="ACTIVE"{continue}
-  grant.SchoolName=row.Name;grant.SchoolCode=row.Code;grant.SchoolVersion=strconv.FormatInt(row.Version,10);result=append(result,grant)
+  if !ok||(row.Status!="ACTIVE"&&!(grant.Lifecycle&&row.Status=="DISABLED")){continue}
+  grant.SchoolStatus=row.Status;grant.SchoolName=row.Name;grant.SchoolCode=row.Code;grant.SchoolVersion=strconv.FormatInt(row.Version,10);result=append(result,grant)
  }
  return result,nil
 }
-func(s *Service) checkDirectory(ctx context.Context,id string)error{
- if s.directory==nil{return nil}
+func(s *Service) checkDirectory(ctx context.Context,id string)error{return s.checkDirectoryForBinding(ctx,id,SchoolBinding{})}
+func(s *Service) checkDirectoryForBinding(ctx context.Context,id string,binding SchoolBinding)error{
+ if s.directory==nil{if binding.Lifecycle{return ErrForbidden};return nil}
  probe,cancel:=context.WithTimeout(ctx,4*time.Second);defer cancel()
  rows,err:=s.directory(probe,[]string{id});if err!=nil{return err}
- if rows[id].ID!=id||rows[id].Status!="ACTIVE"{return ErrForbidden}
+ if rows[id].ID!=id||(rows[id].Status!="ACTIVE"&&!(binding.Lifecycle&&rows[id].Status=="DISABLED")){return ErrForbidden}
  return nil
 }

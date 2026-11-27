@@ -21,9 +21,11 @@ export function RequestForm({ close, success }: RequestFormProps) {
   const schools = getRequestSchoolIds(template, environment, grants);
   const schoolScoped = template?.scope === 'SCHOOL';
   const rename = schoolScoped && template?.method === 'PATCH' && template.endpoint === '/school/restricted/registry/schools/${schoolId}/name';
+  const lifecycle = schoolScoped && template?.method === 'PATCH' && template.endpoint === '/school/restricted/registry/schools/${schoolId}/status';
   const selectedGrant = grants.find((grant) => grant.canRequest && grant.schoolId === schoolId && grant.templateId === templateId && grant.environmentCode === environment?.code);
   const hasSnapshot = Boolean(selectedGrant?.schoolName && selectedGrant?.schoolVersion && /^[1-9][0-9]*$/.test(selectedGrant.schoolVersion));
-  const targetReady = Boolean(ready && template && environment && (!schoolScoped || schools.includes(schoolId)) && (!rename || hasSnapshot));
+  const hasLifecycleSnapshot = Boolean(hasSnapshot && selectedGrant?.schoolStatus && selectedGrant.lifecycle);
+  const targetReady = Boolean(ready && template && environment && (!schoolScoped || schools.includes(schoolId)) && (!rename || hasSnapshot) && (!lifecycle || hasLifecycleSnapshot));
 
   function changeTemplate(value: string | null) {
     setTemplateId(value ?? '');
@@ -49,6 +51,16 @@ export function RequestForm({ close, success }: RequestFormProps) {
       data.set('value:expectedName', selectedGrant.schoolName);
       data.set('mode:expectedVersion', 'value');
       data.set('value:expectedVersion', selectedGrant.schoolVersion);
+    }
+    if (lifecycle) {
+      if (!selectedGrant?.schoolStatus || !selectedGrant.schoolVersion) throw new ApiError(400, 'INVALID_REQUEST');
+      data.set('mode:expectedStatus', 'value');
+      data.set('value:expectedStatus', selectedGrant.schoolStatus);
+      data.set('mode:expectedVersion', 'value');
+      data.set('value:expectedVersion', selectedGrant.schoolVersion);
+      data.set('mode:status', 'value');
+      if (selectedGrant.schoolStatus === 'ACTIVE') data.set('value:status', 'DISABLED');
+      else data.set('value:status', 'ACTIVE');
     }
     const raw = serializeRequest(template.id, schoolScoped, template.bodySchema, data);
     return requestJSON('/internal/protected/requests', 'POST', raw);
@@ -78,8 +90,15 @@ export function RequestForm({ close, success }: RequestFormProps) {
       <p className="muted">{__('The approved request is valid only for this exact school version.')}</p>
     </section>}
     {rename && schoolId && !hasSnapshot && <p role="alert">{__('Current school details are unavailable. Reopen the request form.')}</p>}
+    {lifecycle && selectedGrant && hasLifecycleSnapshot && <section data-testid="request-school-status-snapshot">
+      <p>{__('Current school status')}: {selectedGrant.schoolStatus}</p>
+      <p>{__('Requested status')}: {selectedGrant.schoolStatus === 'ACTIVE' && __('DISABLED')}{selectedGrant.schoolStatus === 'DISABLED' && __('ACTIVE')}</p>
+      <p className="muted">{__('School version')}: {selectedGrant.schoolVersion}</p>
+      <p className="muted">{__('Independent approval is required. This changes registry status only; it does not revoke existing user sessions.')}</p>
+    </section>}
+    {lifecycle && schoolId && !hasLifecycleSnapshot && <p role="alert">{__('Current school details are unavailable. Reopen the request form.')}</p>}
     {template && <details><summary>{__('Input schema')}</summary><pre>{JSON.stringify(template.bodySchema, null, 2)}</pre></details>}
-    {targetReady && template && Object.entries(template.bodySchema).filter(([name]) => (!schoolScoped || name !== 'schoolId') && (!rename || (name !== 'expectedName' && name !== 'expectedVersion'))).map(([name, field]) =>
+    {targetReady && template && Object.entries(template.bodySchema).filter(([name]) => (!schoolScoped || name !== 'schoolId') && (!rename || (name !== 'expectedName' && name !== 'expectedVersion')) && (!lifecycle || (name !== 'expectedStatus' && name !== 'expectedVersion' && name !== 'status'))).map(([name, field]) =>
       <SchemaField key={[template.id, environmentId, schoolId, name].join(':')} name={name} field={field} />)}
     <label>{__('Reason')}<TextAreaControl name="reason" required maxLength={1000} rows={3} dataTestId="request-reason" /></label>
   </ActionForm>;
