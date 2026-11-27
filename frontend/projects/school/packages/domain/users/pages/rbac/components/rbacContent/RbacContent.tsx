@@ -1,3 +1,4 @@
+import { _map } from '@Base/utilities/map';
 import { Typography, TYPOGRAPHY_TAG } from '@Components/components/Typography';
 import { Box } from '@Components/components/Box';
 import { Sheet } from '@Components/components/Sheet';
@@ -76,7 +77,7 @@ export const RbacContent = ({ controls: state }: { controls: RbacControls }) => 
               {RBAC_COPY.label16}
             </Typography>
           )}
-          {state.permissions.data?.permissionCodes.map((code) => (
+          {_map(state.permissions.data?.permissionCodes ?? [], (code) => (
             <Typography as={TYPOGRAPHY_TAG.P} key={code}>
               {code}
             </Typography>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { _flatMap } from '@Base/utilities/flatMap';
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { useAuth } from '@Domain/auth';
 import { useMobileViewport } from '@Components/hooks/useMobileViewport';
@@ -84,7 +85,7 @@ export const useRbacPage = () => {
     },
   };
   const getRows = () => {
-    if (mobile) return mobileQuery.data?.pages.flatMap((result) => result.items ?? []) ?? [];
+    if (mobile) return _flatMap(mobileQuery.data?.pages ?? [], (result) => result.items ?? []);
     return query.data?.items ?? [];
   };
   const getActiveQuery = () => {

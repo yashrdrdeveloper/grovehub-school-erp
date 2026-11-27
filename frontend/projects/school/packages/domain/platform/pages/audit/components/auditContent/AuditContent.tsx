@@ -22,14 +22,14 @@ export const AuditContent = ({ controls: state }: { controls: AuditControls }) =
       {state.canViewTenant && (
         <Box>
           <Button
-            dataTestId="audit-personal-scope"
+            dataTestId={AUDIT_TEST_IDS.personalScope}
             disabled={!state.tenantScope}
             onClick={() => state.changeScope(false)}
           >
             {AUDIT_COPY.personalScope}
           </Button>
           <Button
-            dataTestId="audit-tenant-scope"
+            dataTestId={AUDIT_TEST_IDS.tenantScope}
             disabled={state.tenantScope}
             onClick={() => state.changeScope(true)}
           >
