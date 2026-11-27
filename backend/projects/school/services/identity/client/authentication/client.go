@@ -26,10 +26,13 @@ func (c *Client) ForgotPassword(ctx context.Context,input ForgotPassword)(Result
  return c.call(ctx,http.MethodPost,"/identity/restricted/auth/forgot-password",input,"")
 }
 func (c *Client) call(ctx context.Context,method,path string,input any,proof string)(Result,error) {
+ return c.callQuery(ctx,method,path,input,proof,nil)
+}
+func (c *Client) callQuery(ctx context.Context,method,path string,input any,proof string,query url.Values)(Result,error) {
  var payload []byte
  if input!=nil {var err error;payload,err=json.Marshal(input);if err!=nil{return Result{},err}}
  ctx=context.WithValue(ctx,proofKey{},proof)
- target:=c.origin.ResolveReference(&url.URL{Path:path})
+ target:=c.origin.ResolveReference(&url.URL{Path:path,RawQuery:query.Encode()})
  req,err:=http.NewRequestWithContext(ctx,method,target.String(),bytes.NewReader(payload))
  if err!=nil {return Result{},err}
  req.Header.Set("Content-Type","application/json")
@@ -89,4 +92,9 @@ func ValidSessionID(s string)bool {
 func(c *Client) CallBusiness(ctx context.Context,method,path string,input json.RawMessage,proof string)(Result,error){
  if len(input)==0{return c.call(ctx,method,path,nil,proof)}
  return c.call(ctx,method,path,input,proof)
+}
+
+func(c *Client) FinishOAuth(ctx context.Context,provider,code,state string)(Result,error){
+ if provider!="gmail" && provider!="outlook" {return Result{},fmt.Errorf("invalid provider")}
+ return c.callQuery(ctx,http.MethodGet,"/integrations/restricted/connections/oauth/"+provider+"/callback",nil,"",url.Values{"code":{code},"state":{state}})
 }

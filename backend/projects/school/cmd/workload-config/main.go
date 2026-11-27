@@ -20,6 +20,7 @@ func run(dir string)error{
  if err:=os.Mkdir(dir,0700);err!=nil{return err}
  pub,priv,err:=ed25519.GenerateKey(rand.Reader);if err!=nil{return err}
  routes:=map[string]policy{
+ "GET /integrations/restricted/connections/oauth/{provider}/callback":{"integration.oauth.callback",false},
  "POST /identity/restricted/auth/login":{"identity.auth.login",false},
  "POST /identity/restricted/auth/forgot-password":{"identity.auth.forgot",false},
  "POST /identity/restricted/auth/refresh":{"identity.auth.refresh",false},

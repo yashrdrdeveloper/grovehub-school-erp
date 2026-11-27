@@ -58,7 +58,7 @@ func NewPlatformWorkloads(raw string, identity delegatedIdentity, webhook core.W
    }
   } else {
    switch pattern {
-   case "POST /identity/restricted/auth/login", "POST /identity/restricted/auth/forgot-password",
+   case "GET /integrations/restricted/connections/oauth/{provider}/callback", "POST /identity/restricted/auth/login", "POST /identity/restricted/auth/forgot-password",
     "POST /identity/restricted/auth/refresh",
     "GET /identity/restricted/auth/recovery/validate",
     "GET /identity/restricted/auth/invitations/validate",

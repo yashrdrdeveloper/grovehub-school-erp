@@ -43,3 +43,21 @@ func Register(mux *http.ServeMux,platform *auth.Client,origin string){
   })
  }
 }
+
+// RegisterOAuthCallback is the explicitly permitted provider ingress. The
+// Platform consumes the one-time state and binds it to the pending connection.
+func RegisterOAuthCallback(mux *http.ServeMux,platform *auth.Client){
+ mux.HandleFunc("GET /integrations/public/connections/oauth/{provider}/callback",func(w http.ResponseWriter,r *http.Request){
+  w.Header().Set("Cache-Control","no-store")
+  w.Header().Set("Referrer-Policy","no-referrer")
+  if len(r.URL.RawQuery)>8192{http.Error(w,"invalid OAuth callback",400);return}
+  q:=r.URL.Query()
+  provider:=strings.ToLower(r.PathValue("provider"))
+  if (provider!="gmail"&&provider!="outlook")||q.Get("error")!=""||len(q["code"])!=1||len(q["state"])!=1||len(q.Get("code"))==0||len(q.Get("code"))>4096||len(q.Get("state"))!=43{http.Error(w,"invalid OAuth callback",400);return}
+  for _,c:=range q.Get("state"){if !(c>='a'&&c<='z'||c>='A'&&c<='Z'||c>='0'&&c<='9'||c=='_'||c=='-'){http.Error(w,"invalid OAuth callback",400);return}}
+  result,err:=platform.FinishOAuth(r.Context(),provider,q.Get("code"),q.Get("state"))
+  if err!=nil{http.Error(w,"OAuth completion unavailable",503);return}
+  w.Header().Set("Content-Type","application/json")
+  w.WriteHeader(result.Status);_,_=w.Write(result.Body)
+ })
+}

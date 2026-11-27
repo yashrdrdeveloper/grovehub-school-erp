@@ -43,6 +43,7 @@ func registerIdentity(mux *http.ServeMux) error {
   case "POST /identity/restricted/auth/reauthenticate": return core.WorkloadClaims{Scopes:[]string{"identity.auth.reauthenticate"}},nil
   case "GET /identity/restricted/auth/sessions": return core.WorkloadClaims{Scopes:[]string{"identity.auth.sessions"}},nil
   case "GET /identity/restricted/auth/me": return core.WorkloadClaims{Scopes:[]string{"identity.auth.me"}},nil
+  case "GET /integrations/restricted/connections/oauth/gmail/callback", "GET /integrations/restricted/connections/oauth/outlook/callback": return core.WorkloadClaims{Scopes:[]string{"integration.oauth.callback"}},nil
   default:
    if r.Method=="DELETE" && strings.HasPrefix(r.URL.Path,"/identity/restricted/auth/sessions/") && client.ValidSessionID(strings.TrimPrefix(r.URL.Path,"/identity/restricted/auth/sessions/")) {return core.WorkloadClaims{Scopes:[]string{"identity.auth.sessions.revoke"}},nil}
    if scope,ok:=business.Scope(r);ok {return core.WorkloadClaims{Scopes:[]string{scope}},nil}
@@ -55,5 +56,6 @@ func registerIdentity(mux *http.ServeMux) error {
  controller.New(platform,browserOrigin).Register(mux)
  protected.New(platform,browserOrigin).Register(mux)
  businesscontroller.Register(mux,platform,browserOrigin)
+ businesscontroller.RegisterOAuthCallback(mux,platform)
  return nil
 }
