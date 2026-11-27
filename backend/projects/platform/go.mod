@@ -73,3 +73,7 @@ require (
 )
 
 replace github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core => ../../libs/core
+
+require github.com/yashrdrdeveloper/grovehub-school-erp/backend/libs/contracts v0.0.0
+
+replace github.com/yashrdrdeveloper/grovehub-school-erp/backend/libs/contracts => ../../libs/contracts
