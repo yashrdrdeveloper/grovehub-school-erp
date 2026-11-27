@@ -3,6 +3,9 @@ package registry_test
 import (
  "bytes"
  "context"
+ "errors"
+ sdk "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/internal/generated/audit"
+ "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/registry/internal/app/services/delivery"
  "crypto/ed25519"
  "crypto/rand"
  "encoding/base64"
@@ -33,8 +36,9 @@ func TestSchoolRename(t *testing.T){
  mux:=http.NewServeMux()
  if err=registry.RegisterHTTP(mux,db,"",string(raw));err!=nil{t.Fatal(err)}
  token,err:=core.SignWorkload(key.KeyID,key.Issuer,priv,core.WorkloadClaims{Subject:key.Subject,Audience:"school",Scopes:key.Scopes,ExpiresAt:time.Now().Add(time.Minute)});if err!=nil{t.Fatal(err)}
+ correlationID:=uuid.NewString()
  call:=func(id,execution,expected,name string,version int64,auth bool)int{
-  body,_:=json.Marshal(map[string]any{"expectedName":expected,"name":name,"expectedVersion":version})
+  body,_:=json.Marshal(map[string]any{"expectedName":expected,"name":name,"expectedVersion":version,"correlationId":correlationID})
   r:=httptest.NewRequest("PATCH","/school/restricted/registry/schools/"+id+"/name",bytes.NewReader(body))
   r.Header.Set("Idempotency-Key",execution)
   if auth{r.Header.Set("Authorization","Bearer "+token)}
@@ -60,4 +64,22 @@ func TestSchoolRename(t *testing.T){
  if _,err=db.ExecContext(ctx,"DELETE FROM school_registry.rename_events WHERE execution_id=$1",execution);err==nil{t.Fatal("immutable receipt deleted")}
  if _,err=db.ExecContext(ctx,"UPDATE school_registry.schools SET status='DISABLED' WHERE id=$1",school);err!=nil{t.Fatal(err)}
  if got:=call(school,uuid.NewString(),"Original","Disabled change",5,true);got!=403{t.Fatal("disabled school mutated",got)}
+ // A successful rename creates one outbox entry, not one entry per retry.
+ if err=db.QueryRowContext(ctx,"SELECT count(*) FROM school_registry.rename_outbox o JOIN school_registry.rename_events e USING(execution_id) WHERE e.school_id=$1",school).Scan(&count);err!=nil||count!=3{t.Fatal("outbox receipt count",count,err)}
+ calls:=0
+ var first string
+ worker:=delivery.New(db,school,func(_ context.Context,a sdk.SchoolRenameReceipt)(int,error){
+  calls++
+  if a.SchoolId!=school||a.CorrelationId==nil||*a.CorrelationId!=correlationID||a.PreviousVersion<1{t.Error("incorrect receipt")}
+  if calls==1{first=a.ExecutionId;return 0,errors.New("temporary failure")}
+  if calls==2&&a.ExecutionId!=first{t.Error("retry identity changed")}
+  return 204,nil
+ })
+ if worked,err:=worker.Step(ctx);!worked||err!=nil{t.Fatal("relay step",worked,err)}
+ var attempts int
+ if err=db.QueryRowContext(ctx,"SELECT attempts FROM school_registry.rename_outbox WHERE execution_id=$1 AND delivered_at IS NULL AND next_attempt_at>now()",first).Scan(&attempts);err!=nil||attempts!=1{t.Fatal("retry not scheduled",attempts,err)}
+ if _,err=db.ExecContext(ctx,"UPDATE school_registry.rename_outbox SET next_attempt_at='2000-01-01' WHERE execution_id=$1",first);err!=nil{t.Fatal(err)}
+ for n:=0;n<3;n++{if worked,err:=worker.Step(ctx);!worked||err!=nil{t.Fatal("relay delivery",worked,err)}}
+ if worked,err:=worker.Step(ctx);worked||err!=nil{t.Fatal("delivered events retried",worked,err)}
+ if err=db.QueryRowContext(ctx,"SELECT count(*) FROM school_registry.rename_outbox o JOIN school_registry.rename_events e USING(execution_id) WHERE e.school_id=$1 AND o.delivered_at IS NOT NULL",school).Scan(&count);err!=nil||count!=3{t.Fatal("delivery count",count,err)}
 }
