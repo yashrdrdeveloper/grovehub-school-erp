@@ -54,6 +54,16 @@ func TestOperatorAuthentication(t *testing.T){
  if err:=db.QueryRowContext(ctx,"SELECT count(*) FROM internal_tool.sessions WHERE revoked_at IS NOT NULL").Scan(&count);err!=nil||count!=1{t.Fatal("revocation not persisted")}
  for i:=0;i<5;i++{if _,err:=service.Login(ctx,"unknown@example.com","wrong");err!=authentication.ErrInvalid{t.Fatalf("unknown account attempt %d: %v",i,err)}}
  if _,err:=service.Login(ctx,"unknown@example.com","wrong");err!=authentication.ErrLimited{t.Fatal("attempt budget not enforced")}
+ // Operator administration uses a live L2 session and revokes disabled sessions.
+ current,err:=service.Login(ctx,"operator@example.com","test-only-password-123");if err!=nil{t.Fatal(err)}
+ created,err:=service.CreateOperator(ctx,current.Operator,"new-l1@example.com","initial-password-123","L1");if err!=nil{t.Fatal(err)}
+ child,err:=service.Login(ctx,created.Email,"initial-password-123");if err!=nil{t.Fatal(err)}
+ if _,err=service.CreateOperator(ctx,child.Operator,"unauthorized@example.com","initial-password-123","L2");err==nil{t.Fatal("L1 created operator")}
+ if err=service.SetOperatorStatus(ctx,current.Operator,current.Operator.ID,"DISABLED");err==nil{t.Fatal("self-disable accepted")}
+ if err=service.SetOperatorStatus(ctx,current.Operator,created.ID,"DISABLED");err!=nil{t.Fatal(err)}
+ if _,err=service.Verify(ctx,child.Token);err!=authentication.ErrInvalid{t.Fatal("disabled operator session accepted")}
+ if err=service.SetOperatorStatus(ctx,current.Operator,created.ID,"ACTIVE");err!=nil{t.Fatal(err)}
+ if _,err=service.Verify(ctx,child.Token);err!=authentication.ErrInvalid{t.Fatal("old session restored on activation")}
  // Disable a live operator and ensure existing sessions are immediately invalid.
  result,err:=service.Login(ctx,"operator@example.com","test-only-password-123");if err!=nil{t.Fatal(err)}
  if _,err=db.ExecContext(ctx,"UPDATE internal_tool.operators SET status='DISABLED' WHERE email='operator@example.com'");err!=nil{t.Fatal(err)}
