@@ -73,7 +73,9 @@ func(s *Service) Submit(ctx context.Context,actor entity.Operator,in SubmitInput
  if (t.Scope=="GLOBAL"&&in.SchoolID!=nil)||(t.Scope=="SCHOOL"&&(in.SchoolID==nil||!validID(*in.SchoolID)))||!validInput(in.Input,t.BodySchema){return entity.Approval{},ErrInvalid}
  a:=entity.Approval{ID:uuid.NewString(),TemplateID:t.ID,EnvironmentID:in.EnvironmentID,SchoolID:in.SchoolID,Input:in.Input,Reason:in.Reason,RequesterID:actor.ID}
  if _,err:=resolve(t,a);err!=nil{return entity.Approval{},err}
- return s.repo.Submit(ctx,a,actor.Persona==entity.L2)
+ // School mutations may be proposed but must never be self-approved.
+ auto:=actor.Persona==entity.L2&&!(t.Scope=="SCHOOL"&&t.Method!="GET")
+ return s.repo.Submit(ctx,a,auto)
 }
 func(s *Service) List(ctx context.Context,actor entity.Operator,inbox bool)([]entity.Approval,error){return s.repo.List(ctx,actor,inbox)}
 func(s *Service) Get(ctx context.Context,actor entity.Operator,id string)(entity.Approval,error){if !validID(id){return entity.Approval{},ErrInvalid};return s.repo.Get(ctx,actor,id)}

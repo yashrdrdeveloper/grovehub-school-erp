@@ -90,6 +90,14 @@ func decide(ctx context.Context,tx *sql.Tx,actor entity.Operator,id string,versi
  a,err:=scanApproval(tx.QueryRowContext(ctx,"SELECT "+approvalFields+" FROM internal_tool.approval_requests WHERE id=$1 FOR UPDATE",id));if err!=nil{return a,err}
  if status=="CANCELLED" {if actor.ID!=a.RequesterID{return entity.Approval{},ErrForbidden}} else if actor.Persona!=entity.L2{return entity.Approval{},ErrForbidden}
  if a.Status!="PENDING"||a.Version!=version{return entity.Approval{},ErrConflict}
+ var active bool
+ if err=tx.QueryRowContext(ctx,"SELECT EXISTS(SELECT 1 FROM internal_tool.operators WHERE id=$1 AND persona=$2 AND status='ACTIVE')",actor.ID,string(actor.Persona)).Scan(&active);err!=nil{return entity.Approval{},err}
+ if !active{return entity.Approval{},ErrForbidden}
+ if status=="APPROVED"&&actor.ID==a.RequesterID&&a.SchoolID!=nil{
+  var method string
+  if err=tx.QueryRowContext(ctx,"SELECT method FROM internal_tool.api_templates WHERE id=$1",a.TemplateID).Scan(&method);err!=nil{return entity.Approval{},err}
+  if method!="GET"{return entity.Approval{},ErrForbidden}
+ }
  a,err=scanApproval(tx.QueryRowContext(ctx,"UPDATE internal_tool.approval_requests SET status=$2,version=version+1,reviewer_id=$3,decision_comment=$4,decided_at=now() WHERE id=$1 RETURNING "+approvalFields,id,status,actor.ID,comment));if err!=nil{return a,err}
  if err=event(ctx,tx,actor.ID,id,"REQUEST_"+status);err!=nil{return a,err};return a,nil
 }

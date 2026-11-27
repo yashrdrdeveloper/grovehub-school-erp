@@ -3,6 +3,7 @@ package workflow
 import (
  "context"
  "database/sql"
+ "sort"
 
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/entity"
 )
@@ -26,6 +27,19 @@ func(r *Repository) ClaimExecution(ctx context.Context,actor entity.Operator,req
  var active bool
  if err=tx.QueryRowContext(ctx,"SELECT EXISTS(SELECT 1 FROM internal_tool.operators WHERE id=$1 AND persona=$2 AND status='ACTIVE')",actor.ID,string(actor.Persona)).Scan(&active);err!=nil{return entity.Execution{},err}
  if !active{return entity.Execution{},ErrForbidden}
+ if a.SchoolID!=nil{
+  if a.ReviewerID==nil{return entity.Execution{},ErrForbidden}
+  ids:=[]string{actor.ID,a.RequesterID,*a.ReviewerID}
+  sort.Strings(ids)
+  previous:=""
+  for _,id:=range ids{
+   if id==previous{continue};previous=id
+   var status,persona string
+   err=tx.QueryRowContext(ctx,"SELECT status,persona FROM internal_tool.operators WHERE id=$1 FOR SHARE",id).Scan(&status,&persona)
+   if err==sql.ErrNoRows{return entity.Execution{},ErrForbidden};if err!=nil{return entity.Execution{},err}
+   if status!="ACTIVE"||(id==*a.ReviewerID&&persona!="L2")||(id==actor.ID&&persona!=string(actor.Persona)){return entity.Execution{},ErrForbidden}
+  }
+ }
  e,err:=scanExecution(tx.QueryRowContext(ctx,"INSERT INTO internal_tool.executions(id,request_id,operator_id,status) VALUES($1,$2,$3,'RUNNING') ON CONFLICT(request_id) DO NOTHING RETURNING "+executionFields,id,requestID,actor.ID))
  if err==sql.ErrNoRows{return entity.Execution{},ErrConflict};if err!=nil{return e,err}
  if err=event(ctx,tx,actor.ID,requestID,"EXECUTION_STARTED");err!=nil{return e,err}

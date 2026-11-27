@@ -73,6 +73,12 @@ func TestApprovalLifecycle(t *testing.T){
  if _,err=s.SearchApprovals(ctx,l1,entity.PageRequest{},true);!errors.Is(err,ErrForbidden){t.Fatal("L1 accessed inbox search")}
  if _,err=s.SearchEvents(ctx,l1,entity.PageRequest{});!errors.Is(err,ErrForbidden){t.Fatal("L1 accessed event history")}
  ev,err:=s.SearchEvents(ctx,l2,entity.PageRequest{RowSize:1});if err!=nil||len(ev.Records)!=1||!ev.HasMore||ev.Records[0].Action!="EXECUTION_RECONCILED"{t.Fatal("event history",ev,err)}
+ mutation:=tpl;mutation.Code="account-patch";mutation.Method="PATCH"
+ mutationTemplate,err:=s.CreateTemplate(ctx,l2,mutation);if err!=nil{t.Fatal(err)}
+ mutationRequest:=req;mutationRequest.TemplateID=mutationTemplate.ID
+ proposal,err:=s.Submit(ctx,l2,mutationRequest);if err!=nil||proposal.Status!="PENDING"{t.Fatal("mutation self-approved",proposal,err)}
+ if _,err=s.Decide(ctx,l2,proposal.ID,"APPROVED",DecisionInput{Version:1});!errors.Is(err,ErrForbidden){t.Fatal("mutation self-review accepted",err)}
+ if _,err=s.BulkApprove(ctx,l2,BulkApprovalInput{Items:[]repo.BulkItem{{ID:proposal.ID,Version:1}}});!errors.Is(err,ErrForbidden){t.Fatal("bulk mutation self-review accepted",err)}
  var n int
  if err=db.QueryRowContext(ctx,"SELECT count(*) FROM internal_tool.workflow_events WHERE resource_id=$1",a.ID).Scan(&n);err!=nil||n!=4{t.Fatal("audit events missing",n,err)}
 }
