@@ -10,6 +10,7 @@ import (
  "syscall"
  "sync/atomic"
  auditclient "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/client/audit"
+ auditcontroller "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/controller/audit"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/services/auditdelivery"
  "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/readiness"
  "time"
@@ -51,6 +52,10 @@ func Run() error {
  workflowController.New(workflow.NewWithBindings(db,bindings),authController).Register(mux)
  publisher,err:=auditclient.New(auditclient.Config{Origin:os.Getenv("INTERNAL_TOOL_AUDIT_ORIGIN"),KeyID:os.Getenv("INTERNAL_TOOL_AUDIT_KEY_ID"),PrivateKey:os.Getenv("INTERNAL_TOOL_AUDIT_PRIVATE_KEY")})
  if err!=nil{return err}
+ reader,err:=auditclient.NewReader(auditclient.Config{Origin:os.Getenv("INTERNAL_TOOL_AUDIT_READ_ORIGIN"),KeyID:os.Getenv("INTERNAL_TOOL_AUDIT_READ_KEY_ID"),PrivateKey:os.Getenv("INTERNAL_TOOL_AUDIT_READ_PRIVATE_KEY")})
+ if err!=nil{return err}
+ if reader!=nil&&publisher!=nil&&(os.Getenv("INTERNAL_TOOL_AUDIT_READ_KEY_ID")==os.Getenv("INTERNAL_TOOL_AUDIT_KEY_ID")||os.Getenv("INTERNAL_TOOL_AUDIT_READ_PRIVATE_KEY")==os.Getenv("INTERNAL_TOOL_AUDIT_PRIVATE_KEY")){return errors.New("audit reader and writer must use independent keys")}
+ auditcontroller.Register(mux,authController,auditdelivery.NewMonitor(db,publisher!=nil),reader)
  if publisher!=nil{
   workerCtx,workerStop:=context.WithCancel(ctx)
   workerDone:=make(chan struct{})

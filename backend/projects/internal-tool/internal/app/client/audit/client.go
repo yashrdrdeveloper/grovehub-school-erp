@@ -25,16 +25,20 @@ type Activity struct {
 }
 type Publisher func(context.Context,Activity)(int,error)
 
-func New(c Config)(Publisher,error){
+func buildClient(c Config,subject string,authorize func(*http.Request)(core.WorkloadClaims,error))(*sdk.APIClient,error){
  if c==(Config{}){return nil,nil}
  origin,err:=url.Parse(c.Origin)
  if err!=nil||origin.Hostname()==""||origin.User!=nil||origin.RawQuery!=""||origin.ForceQuery||origin.Fragment!=""||origin.RawPath!=""||(origin.Path!=""&&origin.Path!="/")||(origin.Scheme!="https"&&!(origin.Scheme=="http"&&(origin.Hostname()=="127.0.0.1"||origin.Hostname()=="::1"))){return nil,errors.New("invalid audit origin")}
  key,err:=base64.RawURLEncoding.DecodeString(c.PrivateKey)
  if err!=nil||len(key)!=ed25519.PrivateKeySize||c.KeyID==""{return nil,errors.New("invalid audit workload key")}
- transport:=&core.WorkloadTransport{Origin:origin,KeyID:c.KeyID,Issuer:"internal-tool-audit",Subject:"internal-tool-audit",Audience:"platform",PrivateKey:ed25519.PrivateKey(key),Policy:policy}
+ transport:=&core.WorkloadTransport{Origin:origin,KeyID:c.KeyID,Issuer:subject,Subject:subject,Audience:"platform",PrivateKey:ed25519.PrivateKey(key),Policy:authorize}
  httpClient,err:=core.NewWorkloadHTTPClient(transport);if err!=nil{return nil,err}
  cfg:=sdk.NewConfiguration();cfg.Servers=sdk.ServerConfigurations{{URL:strings.TrimRight(origin.String(),"/")}};cfg.HTTPClient=httpClient
- api:=sdk.NewAPIClient(cfg)
+ return sdk.NewAPIClient(cfg),nil
+}
+func New(c Config)(Publisher,error){
+ api,err:=buildClient(c,"internal-tool-audit",policy)
+ if err!=nil||api==nil{return nil,err}
  return func(ctx context.Context,a Activity)(int,error){
   body:=sdk.OperatorActivity{EventId:a.EventID,ActorId:a.ActorID,ResourceId:a.ResourceID,Operation:a.Operation,OccurredAt:a.OccurredAt}
   resp,err:=api.DefaultAPI.RecordOperatorActivity(ctx).OperatorActivity(body).Execute()
