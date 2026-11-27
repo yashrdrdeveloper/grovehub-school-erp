@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Button, BUTTON_VARIANT } from '@Components/components/Button';
 import { Input } from '@Components/components/Input';
-import { __ } from '@Base/i18n';
 import { ApiError, errorText, request, search } from '../../../business/api/client';
 import { formatDate, parseObject } from '../../../business/api/helpers';
 import type { Approval, Environment, Execution, Operator, Reconciliation, Template } from '../../../business/api/types';
 import { ActionForm } from '../../../shell/components/ActionForm';
-import { PagedRecords } from '../../../shell/components/PagedRecords';
+import { PagedRecords } from '../../../shell/components/pagedRecords/PagedRecords';
 
 function RequestForm({ close, success }: { close:()=>void; success:()=>void }) {
  const [templates,setTemplates]=useState<Template[]>([]);
@@ -78,7 +77,7 @@ export function RequestsPage({ inbox, operator }: { inbox:boolean; operator:Oper
  return <><header className="page-heading"><div><span className="eyebrow">{__('OPERATIONS')}</span><h1>{title()}</h1><p className="muted">{__('Review requests, decisions and approved executions.')}</p></div><div className="inline">{!inbox&&<Button onClick={()=>setCreate(true)} dataTestId="request-create">{__('New request')}</Button>}{inbox&&<Button disabled={!chosen.length} onClick={()=>setBulk(true)} dataTestId="bulk-approve">{__('Approve selected')} ({chosen.length})</Button>}</div></header>
  {create&&!inbox&&<RequestForm close={close} success={success}/>}
  {bulk&&inbox&&<ActionForm title={__('Confirm bulk approval')} onClose={close} onSuccess={success} submit={(data)=>request('/internal/protected/approvals/bulk-approve','POST',{items:chosen.map((r)=>({id:r.id,version:r.version})),comment:data.get('comment')})}><p>{chosen.length} {__('pending requests selected')}</p><label>{__('Comment')}<textarea name="comment" maxLength={1000} rows={3} data-testid="bulk-comment"/></label></ActionForm>}
- <PagedRecords<Approval> resource={(inbox&&'approvals')||'requests'} title={title()} revision={revision} rowKey={(r)=>r.id} onSelect={setSelected} columns={[{title:__('Select'),cell:(r)=>inbox&&<input type="checkbox" checked={chosen.some((item)=>item.id===r.id)} onChange={()=>toggle(r)} aria-label={__('Select request')+' '+r.id} data-testid={'select-request-'+r.id}/>},{title:__('Reason'),cell:(r)=>r.reason},{title:__('Status'),cell:(r)=><span className="status">{r.status}</span>},{title:__('Version'),cell:(r)=>r.version},{title:__('Created'),cell:(r)=>formatDate(r.createdAt)}]}/>
+ <PagedRecords<Approval> resource={(inbox&&'approvals')||'requests'} title={title()} revision={revision} rowKey={(r)=>r.id} onSelect={setSelected} columns={[{id:'select',title:__('Select'),cell:(r)=>inbox&&<input type="checkbox" checked={chosen.some((item)=>item.id===r.id)} onChange={()=>toggle(r)} aria-label={__('Select request')+' '+r.id} data-testid={'select-request-'+r.id}/>},{id:'reason',title:__('Reason'),cell:(r)=>r.reason},{id:'status',title:__('Status'),cell:(r)=><span className="status">{r.status}</span>},{id:'version',title:__('Version'),cell:(r)=>r.version},{id:'created',title:__('Created'),cell:(r)=>formatDate(r.createdAt)}]}/>
  {selected&&<RequestDetail key={selected.id} approval={selected} operator={operator} close={close} success={success}/>}
  </>;
 }

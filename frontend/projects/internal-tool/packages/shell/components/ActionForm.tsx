@@ -1,6 +1,5 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { Button, BUTTON_VARIANT } from '@Components/components/Button';
-import { __ } from '@Base/i18n';
 import { errorText } from '../../business/api/client';
 
 export function ActionForm({ title, children, submit, onClose, onSuccess }: { title: string; children: ReactNode; submit: (data: FormData) => Promise<unknown>; onClose: () => void; onSuccess: () => void }) {

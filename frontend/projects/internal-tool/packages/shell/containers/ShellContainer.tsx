@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, NavLink } from '@Components/router';
 import { Button, BUTTON_VARIANT } from '@Components/components/Button';
 import { ShieldCheck, Menu, X, LogOut, FileCheck, Workflow, Users, Server, Code2, History, Sun, Moon } from 'lucide-react';
-import { __ } from '@Base/i18n';
 import { ApiError, errorText, request } from '../../business/api/client';
 import type { Operator } from '../../business/api/types';
 import { LoginPage } from '../../domain/auth/pages/login/LoginPage';

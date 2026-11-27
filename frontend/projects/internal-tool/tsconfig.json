@@ -37,6 +37,7 @@
   "include": [
     "app",
     "packages",
-    "vite.config.ts"
+    "vite.config.ts",
+    "../../libs/components/types/i18n.global.d.ts"
   ]
 }

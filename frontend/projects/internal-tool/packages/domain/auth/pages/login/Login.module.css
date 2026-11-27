@@ -1,0 +1,43 @@
+.layout {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.brand {
+  background: var(--gh-color-primary);
+  color: var(--gh-color-primary-foreground);
+  padding: clamp(32px, 7vw, 100px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 24px;
+}
+.brandEyebrow, .eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+}
+.eyebrow, .muted, .note { color: var(--gh-color-muted); }
+.brandTitle { font-size: clamp(32px, 4vw, 56px); font-weight: 700; line-height: 1.15; max-width: 480px; }
+.brandDescription, .muted { line-height: 1.6; }
+.brandDescription { max-width: 420px; }
+.panel { display: grid; place-items: center; padding: 32px; }
+.card {
+  width: min(100%, 390px);
+  display: grid;
+  gap: 16px;
+  padding: 32px;
+  border: 1px solid var(--gh-color-border);
+  border-radius: var(--gh-radius-lg);
+  background: var(--gh-color-surface);
+}
+.form { display: grid; gap: 16px; }
+.error { color: var(--gh-color-danger); overflow-wrap: anywhere; }
+.note { font-size: 12px; }
+.mobileBrand { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 20px; color: var(--gh-color-primary); font-weight: 600; font-size: 12px; }
+@media (max-width: 760px) {
+  .layout { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+  .panel { padding: 16px; }
+  .card { border: none; padding: 16px; }
+  .form { gap: 12px; }
+}

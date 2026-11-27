@@ -1,10 +1,10 @@
 import { createRoot } from 'react-dom/client';
-import { __ as translate } from '@Base/i18n';
+import { installShellI18n } from '../packages/shell/containers/shellContainer/helpers/shellContainer.installI18n';
 import '@groovehub/styles/index.css';
 import '@groovehub/components/styles/primitives.css';
 import './styles.css';
 
-Object.assign(window, { __: translate });
+installShellI18n();
 const root = document.getElementById('root');
 if (!root) throw new Error('Missing application mount');
 void import('../packages/shell/containers/ShellContainer').then(({ ShellContainer }) => {
