@@ -3,6 +3,7 @@ package registry
 
 import (
  "context"
+ "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/registry/internal/app/services/delivery"
  "database/sql"
  "net/http"
 
@@ -20,4 +21,13 @@ func RegisterHTTP(mux *http.ServeMux,db *sql.DB,grants string,renameGrants ...st
  mux.HandleFunc(restricted.Pattern,handler)
  mux.HandleFunc(restricted.RenamePattern,rename)
  return nil
+}
+
+type DeliveryConfig=delivery.Config
+func StartDelivery(ctx context.Context,db *sql.DB,c DeliveryConfig)(func(),error){
+ publisher,err:=delivery.Client(c);if err!=nil{return nil,err}
+ if publisher==nil{return func(){},nil}
+ run,stop:=context.WithCancel(ctx);done:=make(chan struct{})
+ go func(){defer close(done);delivery.New(db,c.SchoolID,publisher).Run(run)}()
+ return func(){stop();<-done},nil
 }

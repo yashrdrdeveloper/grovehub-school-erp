@@ -44,12 +44,12 @@ func NewRename(db *sql.DB,raw,readRaw string)(http.HandlerFunc,error){
   if !ok||claims.Subject!=RenameIssuer+":"+school||len(claims.Scopes)!=1||claims.Scopes[0]!=RenameScope||claims.ActorGID!=""||claims.TenantID!=""||claims.SessionID!=""{w.WriteHeader(403);return}
   keys:=r.Header.Values("Idempotency-Key")
   if len(keys)!=1||!services.ValidID(keys[0]){w.WriteHeader(400);return}
-  var in struct{ExpectedVersion int64 `json:"expectedVersion"`;ExpectedName string `json:"expectedName"`;Name string `json:"name"`}
+  var in struct{CorrelationID *string `json:"correlationId"`;ExpectedVersion int64 `json:"expectedVersion"`;ExpectedName string `json:"expectedName"`;Name string `json:"name"`}
   d:=json.NewDecoder(http.MaxBytesReader(w,r.Body,4096));d.DisallowUnknownFields()
   var extra any
-  if d.Decode(&in)!=nil||d.Decode(&extra)!=io.EOF||in.ExpectedVersion<1||!services.ValidName(in.ExpectedName)||!services.ValidName(in.Name)||in.ExpectedName==in.Name{w.WriteHeader(400);return}
+  if d.Decode(&in)!=nil||d.Decode(&extra)!=io.EOF||(in.CorrelationID!=nil&&!services.ValidID(*in.CorrelationID))||in.ExpectedVersion<1||!services.ValidName(in.ExpectedName)||!services.ValidName(in.Name)||in.ExpectedName==in.Name{w.WriteHeader(400);return}
   probe,cancel:=context.WithTimeout(ctx,5*time.Second);defer cancel()
-  err=repository.Rename(probe,db,school,keys[0],claims.Subject,in.ExpectedName,in.Name,in.ExpectedVersion)
+  err=repository.Rename(probe,db,school,keys[0],claims.Subject,in.ExpectedName,in.Name,in.ExpectedVersion,in.CorrelationID)
   switch{
   case errors.Is(err,sql.ErrNoRows):w.WriteHeader(404)
   case errors.Is(err,repository.ErrInactive):w.WriteHeader(403)

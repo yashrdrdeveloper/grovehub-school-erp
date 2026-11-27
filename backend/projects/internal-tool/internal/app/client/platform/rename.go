@@ -2,6 +2,7 @@ package platform
 
 import (
  "context"
+ "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/correlation"
  "crypto/ed25519"
  "encoding/base64"
  "encoding/json"
@@ -50,6 +51,7 @@ func RenameBindings(c SchoolConfig)(map[workflow.SchoolBindingKey]workflow.Schoo
  api:=sdk.NewAPIClient(cfg)
  adapter:=func(ctx context.Context,call workflow.Invocation)(int,error){
   body,ok:=renameInput(call,c.SchoolID,path);if !ok||!canonicalID(call.ExecutionID){return 0,core.ErrWorkloadDenied}
+  if id:=correlation.ID(ctx);id!=""{body.CorrelationId=&id}
   resp,err:=api.DefaultAPI.RenameSchool(ctx,c.SchoolID).IdempotencyKey(call.ExecutionID).SchoolRenameInput(body).Execute()
   if resp==nil{return 0,errors.New("rename unavailable")}
   if resp.Body!=nil{defer resp.Body.Close()}
