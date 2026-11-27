@@ -25,6 +25,7 @@ type delegatedIdentity interface {
 type platformWorkloads struct {
  scoped core.ScopedWorkloadVerifier
  internalCatalog core.ScopedWorkloadVerifier
+ operatorAudit core.ScopedWorkloadVerifier
  policies map[string]core.RoutePolicy
  identity delegatedIdentity
  webhook core.WorkloadVerifier
@@ -33,6 +34,7 @@ type platformWorkloads struct {
 type workloadConfig struct {
  Keys []core.WorkloadKeyConfig
  InternalToolKeys []core.WorkloadKeyConfig
+ OperatorAuditKeys []core.WorkloadKeyConfig
  Routes map[string]core.RoutePolicy
 }
 
@@ -52,7 +54,12 @@ func NewPlatformWorkloads(raw string, identity delegatedIdentity, webhook core.W
   if err!=nil{return nil,err}
   v.internalCatalog=catalog
  }
- if len(cfg.Keys)==0&&len(cfg.Routes)==0&&len(cfg.InternalToolKeys)>0{return v,nil}
+ if len(cfg.OperatorAuditKeys)>0{
+  other:=append(append([]core.WorkloadKeyConfig(nil),cfg.Keys...),cfg.InternalToolKeys...)
+  audit,err:=newOperatorAuditVerifier(cfg.OperatorAuditKeys,other)
+  if err!=nil{return nil,err};v.operatorAudit=audit
+ }
+ if len(cfg.Keys)==0&&len(cfg.Routes)==0&&(len(cfg.InternalToolKeys)>0||len(cfg.OperatorAuditKeys)>0){return v,nil}
  credentials,err:=core.NewEd25519Credentials(cfg.Keys)
  if err!=nil {return nil,err}
  if len(cfg.Routes)==0 {return nil,errors.New("no workload route policies")}
@@ -79,6 +86,7 @@ func (v *platformWorkloads) VerifyWorkload(ctx context.Context,r *http.Request)(
   if v.webhook==nil {return nil,core.ErrWorkloadDenied}
   return v.webhook.VerifyWorkload(ctx,r)
  }
+ if r.Pattern==operatorAuditRoute{return v.verifyOperatorAudit(ctx,r)}
  if r.Pattern==internalCatalogRoute {
   if verified,err:=v.verifyInternalCatalog(ctx,r);err==nil{return verified,nil}
  }

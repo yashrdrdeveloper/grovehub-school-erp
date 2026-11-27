@@ -7,6 +7,24 @@ security:
   - workloadBearer: []
     identityProof: []
 paths:
+  /audit/restricted/operator-activities:
+    post:
+      operationId: recordOperatorActivity
+      summary: Persist an immutable Internal Tool operator activity
+      description: Dedicated internal.audit.operator.write workload only. No tenant or browser actor is accepted. Identical occurrence retries return 204.
+      security: [{workloadBearer: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OperatorActivity'
+      responses:
+        '204': {description: Persisted or identical duplicate}
+        '400': {description: Invalid activity}
+        '403': {description: Access denied}
+        '409': {description: Conflicting occurrence}
+        '503': {description: Audit unavailable}
   /audit/restricted/search:
     post:
       operationId: searchAuditActivities
@@ -52,6 +70,16 @@ components:
       in: header
       name: X-GH-Identity-Proof
   schemas:
+    OperatorActivity:
+      type: object
+      additionalProperties: false
+      required: [eventId, actorId, resourceId, operation, occurredAt]
+      properties:
+        eventId: {type: string, format: uuid}
+        actorId: {type: string, format: uuid}
+        resourceId: {type: string, format: uuid}
+        operation: {type: string}
+        occurredAt: {type: string, format: date-time}
     Filter:
       type: object
       required: [field, operator]
