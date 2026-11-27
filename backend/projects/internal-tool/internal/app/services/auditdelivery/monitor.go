@@ -12,6 +12,9 @@ import (
 var ErrConflict=errors.New("audit delivery not blocked")
 type Summary struct{
  Enabled bool `json:"enabled"`
+ Health string `json:"health"`
+ RejectedLast24Hours int64 `json:"rejectedLast24Hours"`
+ LimitedLast24Hours int64 `json:"limitedLast24Hours"`
  Pending int64 `json:"pending"`
  Blocked int64 `json:"blocked"`
  Delivered int64 `json:"delivered"`
@@ -31,7 +34,11 @@ func NewMonitor(db *sql.DB,enabled bool)*Monitor{return &Monitor{db:db,enabled:e
 func(m *Monitor) Summary(ctx context.Context)(Summary,error){
  v:=Summary{Enabled:m.enabled}
  err:=m.db.QueryRowContext(ctx,"SELECT count(*) FILTER(WHERE delivered_at IS NULL AND blocked_at IS NULL), count(*) FILTER(WHERE blocked_at IS NOT NULL), count(*) FILTER(WHERE delivered_at IS NOT NULL), min(e.occurred_at) FILTER(WHERE o.delivered_at IS NULL AND o.blocked_at IS NULL), max(o.delivered_at) FROM internal_tool.audit_outbox o JOIN internal_tool.workflow_events e ON e.id=o.workflow_event_id").Scan(&v.Pending,&v.Blocked,&v.Delivered,&v.OldestPendingAt,&v.LastDeliveredAt)
- return v,err
+ if err!=nil{return v,err}
+ err=m.db.QueryRowContext(ctx,"SELECT COALESCE(sum(attempts) FILTER(WHERE outcome='REJECTED'),0),COALESCE(sum(attempts) FILTER(WHERE outcome='LIMITED'),0) FROM internal_tool.authentication_counters WHERE bucket>=date_trunc('hour',now())-interval '23 hours'").Scan(&v.RejectedLast24Hours,&v.LimitedLast24Hours)
+ if err!=nil{return v,err}
+ v.Health=DeliveryHealth(v,time.Now())
+ return v,nil
 }
 func(m *Monitor) Blocked(ctx context.Context,p entity.PageRequest)(entity.Page[BlockedEvent],error){
  rows,err:=m.db.QueryContext(ctx,"SELECT o.event_id,e.actor_id,e.resource_id,e.action,o.attempts,o.blocked_at FROM internal_tool.audit_outbox o JOIN internal_tool.workflow_events e ON e.id=o.workflow_event_id WHERE o.blocked_at IS NOT NULL ORDER BY o.blocked_at DESC,o.event_id DESC LIMIT $1 OFFSET $2",p.RowSize+1,p.Offset())

@@ -56,7 +56,9 @@ func Run() error {
  reader,err:=auditclient.NewReader(auditclient.Config{Origin:os.Getenv("INTERNAL_TOOL_AUDIT_READ_ORIGIN"),KeyID:os.Getenv("INTERNAL_TOOL_AUDIT_READ_KEY_ID"),PrivateKey:os.Getenv("INTERNAL_TOOL_AUDIT_READ_PRIVATE_KEY")})
  if err!=nil{return err}
  if reader!=nil&&publisher!=nil&&(os.Getenv("INTERNAL_TOOL_AUDIT_READ_KEY_ID")==os.Getenv("INTERNAL_TOOL_AUDIT_KEY_ID")||os.Getenv("INTERNAL_TOOL_AUDIT_READ_PRIVATE_KEY")==os.Getenv("INTERNAL_TOOL_AUDIT_PRIVATE_KEY")){return errors.New("audit reader and writer must use independent keys")}
- auditcontroller.Register(mux,authController,auditdelivery.NewMonitor(db,publisher!=nil),reader)
+ monitor:=auditdelivery.NewMonitor(db,publisher!=nil)
+ auditcontroller.Register(mux,authController,monitor,reader)
+ mux.HandleFunc("GET /health/audit-delivery",monitor.HealthHandler)
  if publisher!=nil{
   workerCtx,workerStop:=context.WithCancel(ctx)
   workerDone:=make(chan struct{})

@@ -8,6 +8,9 @@ export interface OperatorActivity {
 }
 export interface DeliverySummary {
   enabled: boolean;
+  health: 'DISABLED' | 'HEALTHY' | 'DEGRADED';
+  rejectedLast24Hours: number;
+  limitedLast24Hours: number;
   pending: number;
   blocked: number;
   delivered: number;

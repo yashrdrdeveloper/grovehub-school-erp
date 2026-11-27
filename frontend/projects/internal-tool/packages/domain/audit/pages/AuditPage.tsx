@@ -31,6 +31,8 @@ export function AuditPage() {
       {!summary && !error && <p role="status">{__('Loading delivery status…')}</p>}
       {summary && <>
         <span className="status">{summary.enabled && __('Delivery enabled')}{!summary.enabled && __('Delivery not configured')}</span>
+        <p role="status">{__('Delivery health')}: {summary.health}</p>
+        <div className="inline"><span>{__('Rejected logins (24 hourly buckets)')}: {summary.rejectedLast24Hours}</span><span>{__('Rate-limited logins (24 hourly buckets)')}: {summary.limitedLast24Hours}</span></div>
         <div className="inline"><span>{__('Pending')}: {summary.pending}</span><span>{__('Blocked')}: {summary.blocked}</span><span>{__('Delivered')}: {summary.delivered}</span></div>
         <p className="muted">{__('Oldest pending')}: {formatDate(summary.oldestPendingAt)} · {__('Last delivered')}: {formatDate(summary.lastDeliveredAt)}</p>
       </>}
