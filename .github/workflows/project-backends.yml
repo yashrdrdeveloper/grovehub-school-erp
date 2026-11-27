@@ -90,4 +90,6 @@ jobs:
         working-directory: backend/projects/internal-tool
         env:
           INTERNAL_TOOL_AUTH_TEST_DSN: postgres://internal_test:internal_test@127.0.0.1:5432/internal_test?sslmode=disable
-        run: go test -mod=mod -count=1 -v ./internal/app/controller/authentication
+        run: |
+          go test -mod=mod -count=1 -v ./internal/app/controller/authentication
+          go test -mod=mod -count=1 -v ./internal/app/services/workflow
