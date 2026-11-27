@@ -16,7 +16,10 @@ var approvalRegistry string
 //go:embed 003_execution.sql
 var executionSchema string
 
-const Version = 3
+//go:embed 004_execution_reconciliation.sql
+var reconciliationSchema string
+
+const Version = 4
 
 // Apply is an explicit operator command, never an implicit startup migration.
 func Apply(ctx context.Context, db *sql.DB) error {
@@ -39,6 +42,10 @@ func Apply(ctx context.Context, db *sql.DB) error {
  if version<3 {
   if _,err=tx.ExecContext(ctx,executionSchema);err!=nil{return err}
   if _,err=tx.ExecContext(ctx,"INSERT INTO internal_tool.schema_version(version) VALUES (3)");err!=nil{return err}
+ }
+ if version<4 {
+  if _,err=tx.ExecContext(ctx,reconciliationSchema);err!=nil{return err}
+  if _,err=tx.ExecContext(ctx,"INSERT INTO internal_tool.schema_version(version) VALUES (4)");err!=nil{return err}
  }
  return tx.Commit()
 }

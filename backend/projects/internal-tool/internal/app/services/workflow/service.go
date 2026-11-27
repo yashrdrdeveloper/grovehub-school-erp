@@ -48,16 +48,14 @@ func validateTemplate(in TemplateInput)bool{
  switch in.Method{case "GET","POST","PATCH","DELETE":default:return false}
  if in.Scope!="GLOBAL"&&in.Scope!="SCHOOL"{return false}
  if len(in.Headers)>3||len(in.BodySchema)>32{return false}
- for key,field:=range in.BodySchema{
-  if !fieldPattern.MatchString(key){return false}
-  switch field.Type{case "string","integer","boolean":default:return false}
- }
+ budget:=128
+ if !validFields(in.BodySchema,0,&budget){return false}
  for name,value:=range in.Headers{
   switch name{case "Content-Type":if value!="application/json"{return false};case "Idempotency-Key":if len(value)>128||!placeholderPattern.MatchString(value){return false};default:return false}
   if strings.ContainsAny(value,"\r\n"){return false}
-  if name=="Idempotency-Key"{m:=placeholderPattern.FindStringSubmatch(value);if m[0]!=value||!in.BodySchema[m[1]].Required||in.BodySchema[m[1]].Type!="string"{return false}}
+  if name=="Idempotency-Key"{m:=placeholderPattern.FindStringSubmatch(value);if m[0]!=value||!in.BodySchema[m[1]].Required||in.BodySchema[m[1]].Type!="string"||in.BodySchema[m[1]].Nullable{return false}}
  }
- for _,m:=range placeholderPattern.FindAllStringSubmatch(in.Endpoint,-1){if !in.BodySchema[m[1]].Required||in.BodySchema[m[1]].Type!="string"{return false}}
+ for _,m:=range placeholderPattern.FindAllStringSubmatch(in.Endpoint,-1){if !in.BodySchema[m[1]].Required||in.BodySchema[m[1]].Type!="string"||in.BodySchema[m[1]].Nullable{return false}}
  return true
 }
 func(s *Service) CreateTemplate(ctx context.Context,actor entity.Operator,in TemplateInput)(entity.Template,error){
@@ -67,29 +65,15 @@ func(s *Service) CreateTemplate(ctx context.Context,actor entity.Operator,in Tem
  t:=entity.Template{ID:uuid.NewString(),Code:in.Code,Module:in.Module,Method:in.Method,Endpoint:in.Endpoint,Scope:in.Scope,Headers:in.Headers,BodySchema:in.BodySchema}
  err:=s.repo.CreateTemplate(ctx,actor.ID,&t);return t,err
 }
-func validInput(raw json.RawMessage,schema map[string]entity.Field)bool{
- if len(raw)==0||len(raw)>16384{return false}
- var values map[string]json.RawMessage
- if json.Unmarshal(raw,&values)!=nil||values==nil{return false}
- for key,value:=range values{
-  field,ok:=schema[key];if !ok||string(value)=="null"{return false}
-  switch field.Type{
-  case "string":var v string;if json.Unmarshal(value,&v)!=nil||len(v)>4096{return false}
-  case "integer":var v int64;if json.Unmarshal(value,&v)!=nil{return false}
-  case "boolean":var v bool;if json.Unmarshal(value,&v)!=nil{return false}
-  default:return false
-  }
- }
- for key,field:=range schema{if field.Required{if _,ok:=values[key];!ok{return false}}}
- return true
-}
 func(s *Service) Submit(ctx context.Context,actor entity.Operator,in SubmitInput)(entity.Approval,error){
  if actor.Persona!=entity.L1&&actor.Persona!=entity.L2{return entity.Approval{},ErrForbidden}
  in.Reason=strings.TrimSpace(in.Reason)
  if !validID(in.TemplateID)||!validID(in.EnvironmentID)||in.Reason==""||len(in.Reason)>1000{return entity.Approval{},ErrInvalid}
  t,err:=s.repo.Template(ctx,in.TemplateID);if err!=nil{return entity.Approval{},err}
  if (t.Scope=="GLOBAL"&&in.SchoolID!=nil)||(t.Scope=="SCHOOL"&&(in.SchoolID==nil||!validID(*in.SchoolID)))||!validInput(in.Input,t.BodySchema){return entity.Approval{},ErrInvalid}
- return s.repo.Submit(ctx,entity.Approval{ID:uuid.NewString(),TemplateID:t.ID,EnvironmentID:in.EnvironmentID,SchoolID:in.SchoolID,Input:in.Input,Reason:in.Reason,RequesterID:actor.ID},actor.Persona==entity.L2)
+ a:=entity.Approval{ID:uuid.NewString(),TemplateID:t.ID,EnvironmentID:in.EnvironmentID,SchoolID:in.SchoolID,Input:in.Input,Reason:in.Reason,RequesterID:actor.ID}
+ if _,err:=resolve(t,a);err!=nil{return entity.Approval{},err}
+ return s.repo.Submit(ctx,a,actor.Persona==entity.L2)
 }
 func(s *Service) List(ctx context.Context,actor entity.Operator,inbox bool)([]entity.Approval,error){return s.repo.List(ctx,actor,inbox)}
 func(s *Service) Get(ctx context.Context,actor entity.Operator,id string)(entity.Approval,error){if !validID(id){return entity.Approval{},ErrInvalid};return s.repo.Get(ctx,actor,id)}

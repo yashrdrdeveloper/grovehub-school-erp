@@ -24,6 +24,9 @@ type Template struct {
 type Field struct {
  Type string `json:"type"`
  Required bool `json:"required"`
+ Properties map[string]Field `json:"properties,omitempty"`
+ Items *Field `json:"items,omitempty"`
+ Nullable bool `json:"nullable,omitempty"`
 }
 type Approval struct {
  ID string `json:"id"`

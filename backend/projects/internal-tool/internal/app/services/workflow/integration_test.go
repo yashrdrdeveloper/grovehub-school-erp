@@ -60,6 +60,14 @@ func TestApprovalLifecycle(t *testing.T){
  bulk.Items[1].Version=1
  if _,err=s.BulkApprove(ctx,l1,bulk);!errors.Is(err,ErrForbidden){t.Fatal("L1 bulk accepted")}
  approved,err:=s.BulkApprove(ctx,l2,bulk);if err!=nil||len(approved)!=2||approved[0].Status!="APPROVED"||approved[1].Status!="APPROVED"{t.Fatal("bulk approval failed",err)}
+ uncertain,err:=s.Submit(ctx,l2,req);if err!=nil{t.Fatal(err)}
+ unknown:=NewWithBindings(db,map[BindingKey]Adapter{{EnvironmentCode:env.Code,TemplateID:v1.ID}:func(context.Context,Invocation)(int,error){return 0,errors.New("timeout")}})
+ ex,err:=unknown.Execute(ctx,l2,uncertain.ID,ExecutionInput{Version:uncertain.Version});if err!=nil||ex.Status!="UNKNOWN"{t.Fatal("expected unknown execution",ex,err)}
+ evidence:=ReconcileInput{Outcome:"CONFIRMED_FAILED",Evidence:"Verified upstream record"}
+ if _,err=s.Reconcile(ctx,l1,uncertain.ID,evidence);!errors.Is(err,ErrForbidden){t.Fatal("L1 reconciled execution")}
+ review,err:=s.Reconcile(ctx,l2,uncertain.ID,evidence);if err!=nil||review.ExecutionID!=ex.ID{t.Fatal("reconciliation failed",review,err)}
+ if _,err=s.Reconcile(ctx,l2,uncertain.ID,evidence);!errors.Is(err,ErrConflict){t.Fatal("duplicate reconciliation",err)}
+ if _,err=unknown.Execute(ctx,l2,uncertain.ID,ExecutionInput{Version:uncertain.Version});!errors.Is(err,ErrConflict){t.Fatal("reconciled execution redispatched",err)}
  var n int
  if err=db.QueryRowContext(ctx,"SELECT count(*) FROM internal_tool.workflow_events WHERE resource_id=$1",a.ID).Scan(&n);err!=nil||n!=4{t.Fatal("audit events missing",n,err)}
 }
