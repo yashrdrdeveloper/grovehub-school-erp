@@ -7,6 +7,23 @@ security:
   - workloadBearer: []
     identityProof: []
 paths:
+  /audit/restricted/school-rename-receipts:
+    post:
+      operationId: recordSchoolRenameReceipt
+      description: Persist a committed School rename receipt from its dedicated school-bound publisher.
+      security: [{workloadBearer: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchoolRenameReceipt'
+      responses:
+        '204': {description: Persisted or identical duplicate}
+        '400': {description: Invalid receipt}
+        '403': {description: School or credential denied}
+        '409': {description: Conflicting receipt}
+        '503': {description: Audit unavailable}
   /audit/restricted/schools/{schoolId}/activity-check:
     get:
       operationId: checkSchoolAuditActivity
@@ -104,6 +121,16 @@ components:
       in: header
       name: X-GH-Identity-Proof
   schemas:
+    SchoolRenameReceipt:
+      type: object
+      additionalProperties: false
+      required: [executionId, schoolId, previousVersion, occurredAt]
+      properties:
+        executionId: {type: string, format: uuid}
+        schoolId: {type: string, format: uuid}
+        previousVersion: {type: integer, format: int64, minimum: 1}
+        correlationId: {type: string, format: uuid}
+        occurredAt: {type: string, format: date-time}
     OperatorSearchInput:
       type: object
       additionalProperties: false
