@@ -46,6 +46,25 @@ func Register(mux *http.ServeMux,platform *auth.Client,activity *audit.Client,or
     _,_=w.Write(result.Body)
     return
    }
+   if strings.HasPrefix(op.Scope,"identity.") {
+    id:=r.PathValue("accountId")
+    if id=="" {id=r.PathValue("roleId")}
+    if id=="" {id=r.PathValue("requestId")}
+    key:=""
+    switch op.Scope {
+    case "identity.accounts.create","identity.approvals.lifecycle","identity.approvals.permissions","identity.approvals.assignments":
+     values:=r.Header.Values("Idempotency-Key")
+     if len(values)>1 {http.Error(w,"invalid idempotency key",400);return}
+     if len(values)==1 {key=values[0]}
+    }
+    result,err:=platform.Business(r.Context(),op.Scope,id,input,token.Value,key)
+    if errors.Is(err,auth.ErrInvalidBusinessRequest){http.Error(w,"invalid identity request",400);return}
+    if err!=nil{http.Error(w,"service unavailable",503);return}
+    w.Header().Set("Content-Type","application/json")
+    w.WriteHeader(result.Status)
+    _,_=w.Write(result.Body)
+    return
+   }
    result,err:=platform.CallBusiness(r.Context(),op.Method,target,input,token.Value)
    if err!=nil{http.Error(w,"service unavailable",503);return}
    w.Header().Set("Content-Type","application/json")
