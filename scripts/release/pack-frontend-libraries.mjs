@@ -44,6 +44,8 @@ try {
       if (!pinned) throw new Error('Unknown workspace dependency: ' + dependency);
       return [dependency, pinned];
     }));
+    // Source packages need declaration dependencies at consumer typecheck time.
+    if (name === 'base') dependencies['@types/lodash-es'] = original.devDependencies['@types/lodash-es'];
     const manifest = {
       name: original.name, version: versions.get(original.name), private: true,
       type: original.type, exports: original.exports, dependencies,
