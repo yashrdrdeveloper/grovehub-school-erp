@@ -8,6 +8,9 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/signal"
+	"sync/atomic"
+	"syscall"
 	"strings"
 	"time"
 
@@ -32,6 +35,9 @@ import (
 
 // Run assembles the backend modules behind one verified gateway.
 func Run(logger *slog.Logger) error {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	var draining atomic.Bool
 	databaseCtx, cancelDatabase := context.WithTimeout(context.Background(), 5*time.Second)
 	db, err := bootstrap.NewPostgresDB(databaseCtx)
 	cancelDatabase()
@@ -100,7 +106,15 @@ func Run(logger *slog.Logger) error {
 	if err != nil { return fmt.Errorf("initialize Audit: %w", err) }
 	defer auditModule.Close()
 	auditModule.RegisterHTTP(mux)
-	routing.RegisterReadiness(mux,auditModule.Ready)
+	auditSQL,err:=auditDB.DB()
+	if err!=nil{return err}
+	routing.RegisterReadiness(mux,func() bool {
+		if draining.Load() || !auditModule.Ready() { return false }
+		probe,cancel:=context.WithTimeout(context.Background(),2*time.Second)
+		defer cancel()
+		if sqlDB.PingContext(probe)!=nil || auditSQL.PingContext(probe)!=nil { return false }
+		return infrastructureModule.MessagingClient().Health(probe)==nil && !draining.Load()
+	})
 
 	routing.RegisterFallback(mux)
 
@@ -159,6 +173,7 @@ func Run(logger *slog.Logger) error {
 		Addr: httpAddress,
 		Handler: edgeHandler,
 		ReadHeaderTimeout: 5 * time.Second,
+		IdleTimeout: 60 * time.Second,
 	}
 	listener, err := net.Listen("tcp", httpAddress)
 	if err != nil {
@@ -172,8 +187,17 @@ func Run(logger *slog.Logger) error {
 		"address", listener.Addr().String(),
 	)
 
-	if err := server.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		return fmt.Errorf("serve HTTP: %w", err)
+	done:=make(chan error,1)
+	go func(){done<-server.Serve(listener)}()
+	select {
+	case err:=<-done:
+		if err!=nil&&!errors.Is(err,http.ErrServerClosed){return fmt.Errorf("serve HTTP: %w",err)}
+		return nil
+	case <-ctx.Done():
+		draining.Store(true)
+		shutdown,cancel:=context.WithTimeout(context.Background(),15*time.Second)
+		defer cancel()
+		if err:=server.Shutdown(shutdown);err!=nil{_ = server.Close();return err}
+		return nil
 	}
-	return nil
 }

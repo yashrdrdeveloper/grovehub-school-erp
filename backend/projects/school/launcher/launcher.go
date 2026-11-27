@@ -8,13 +8,14 @@ import (
  "os"
  "os/signal"
  "syscall"
+ "sync/atomic"
+ "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/readiness"
  "time"
 
  "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/postgres"
 )
 
-// Run starts a private migration-stage listener. Readiness remains false
-// until application authentication and dependencies are configured.
+// Run starts the private application listener with bounded readiness checks.
 func Run() error {
  ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
  defer stop()
@@ -32,7 +33,12 @@ func Run() error {
   if err:=db.PingContext(probe);err!=nil {http.Error(w,"database unavailable",http.StatusServiceUnavailable);return}
   w.WriteHeader(http.StatusNoContent)
  })
- mux.HandleFunc("GET /health/ready", func(w http.ResponseWriter, r *http.Request) { http.Error(w, "application dependencies not initialized", http.StatusServiceUnavailable) })
+ var draining atomic.Bool
+ checks:=[]readiness.Check{db.PingContext}
+ upstream,err:=readiness.HTTP(os.Getenv("PLATFORM_ORIGIN"),"/ready")
+ if err!=nil{return err}
+ checks=append(checks,upstream)
+ mux.HandleFunc("GET /health/ready",readiness.Handler(&draining,checks...))
  server := &http.Server{Addr: addr, Handler: mux, ReadHeaderTimeout: 5*time.Second, ReadTimeout: 15*time.Second, WriteTimeout: 30*time.Second, IdleTimeout: 60*time.Second, MaxHeaderBytes: 1<<20}
  done := make(chan error, 1)
  go func() { done <- server.ListenAndServe() }()
@@ -41,6 +47,7 @@ func Run() error {
   if errors.Is(err, http.ErrServerClosed) { return nil }
   return err
  case <-ctx.Done():
+  draining.Store(true)
   shutdown, cancel := context.WithTimeout(context.Background(), 10*time.Second)
   defer cancel()
   return server.Shutdown(shutdown)
