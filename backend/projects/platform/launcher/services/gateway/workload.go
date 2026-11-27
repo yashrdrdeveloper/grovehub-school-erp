@@ -49,28 +49,11 @@ func NewPlatformWorkloads(raw string, identity delegatedIdentity, webhook core.W
  if err!=nil {return nil,err}
  if len(cfg.Routes)==0 {return nil,errors.New("no workload route policies")}
  for pattern,policy:=range cfg.Routes {
-  if policy.Scope=="" || strings.TrimSpace(policy.Scope)!=policy.Scope || pattern==gmailWebhook {
-   return nil,errors.New("invalid workload route policy")
+  if !validRoutePolicy(pattern,policy) {
+   return nil,fmt.Errorf("invalid workload route policy: %s",pattern)
   }
-  if policy.RequireActor {
-   if identity==nil || (!strings.Contains(pattern," /identity/restricted/") && !strings.Contains(pattern," /audit/restricted/") && !integrationRoute(pattern)) {
-    return nil,errors.New("delegated route has no supported identity authorization boundary")
-   }
-  } else {
-   switch pattern {
-   case "GET /integrations/restricted/connections/oauth/{provider}/callback", "POST /identity/restricted/auth/login", "POST /identity/restricted/auth/forgot-password",
-    "POST /identity/restricted/auth/refresh",
-    "GET /identity/restricted/auth/recovery/validate",
-    "GET /identity/restricted/auth/invitations/validate",
-    "POST /identity/restricted/auth/recovery/exchange",
-    "POST /identity/restricted/auth/invitations/exchange",
-    "GET /identity/restricted/auth/reset-password/status",
-    "POST /identity/restricted/auth/reset-password",
-    "GET /identity/restricted/accounts/setup/status",
-    "POST /identity/restricted/accounts/setup":
-   default:
-    if !foundationRoute(pattern) {return nil,errors.New("service-only route is not enabled for migration")}
-   }
+  if policy.RequireActor && identity==nil {
+   return nil,errors.New("delegated route has no supported identity authorization boundary")
   }
  }
  // The proof-based School boundary independently enforces actor presence.
@@ -92,7 +75,8 @@ func (v *platformWorkloads) VerifyWorkload(ctx context.Context,r *http.Request)(
  if err!=nil {return nil,err}
  claims,ok:=core.WorkloadFrom(verified)
  if !ok {return nil,core.ErrWorkloadDenied}
- policy:=v.policies[r.Pattern]
+ policy,ok:=v.policies[r.Pattern]
+ if !ok || len(claims.Scopes)!=1 || claims.Scopes[0]!=policy.Scope {return nil,core.ErrWorkloadDenied}
  if !policy.RequireActor {
   if (foundationRoute(r.Pattern) && claims.Subject!="school-foundation") || (!foundationRoute(r.Pattern) && claims.Subject!="school") || claims.ActorGID!="" || claims.TenantID!="" || claims.SessionID!="" {return nil,core.ErrWorkloadDenied}
   return verified,nil
