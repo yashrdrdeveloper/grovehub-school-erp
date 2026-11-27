@@ -1,4 +1,5 @@
 export interface OperatorActivity {
+  correlationId?: string;
   eventId: string;
   actorId: string;
   resourceId: string;

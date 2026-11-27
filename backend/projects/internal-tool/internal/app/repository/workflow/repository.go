@@ -2,6 +2,7 @@ package workflow
 
 import (
  "context"
+ "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/correlation"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/repository/activity"
  "database/sql"
  "encoding/json"
@@ -51,6 +52,7 @@ func(r *Repository) Templates(ctx context.Context)([]entity.Template,error){
  result:=[]entity.Template{};for rows.Next(){t,err:=scanTemplate(rows);if err!=nil{return nil,err};result=append(result,t)};return result,rows.Err()
 }
 func(r *Repository) Submit(ctx context.Context,a entity.Approval,auto bool) (entity.Approval,error){
+ ctx=correlation.Ensure(ctx)
  tx,err:=r.db.BeginTx(ctx,nil);if err!=nil{return a,err};defer tx.Rollback()
  var exists bool
  if err=tx.QueryRowContext(ctx,"SELECT EXISTS(SELECT 1 FROM internal_tool.environments WHERE id=$1)",a.EnvironmentID).Scan(&exists);err!=nil{return a,err};if !exists{return a,sql.ErrNoRows}

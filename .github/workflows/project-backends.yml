@@ -56,7 +56,7 @@ jobs:
         with:
           go-version: '1.27.3'
           cache: false
-      - run: go test ./gateway ./annotation/generation/routes ./http/readiness
+      - run: go test ./gateway ./annotation/generation/routes ./http/readiness ./http/correlation
   project-databases:
     runs-on: ubuntu-latest
     services:

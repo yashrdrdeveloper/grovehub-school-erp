@@ -36,7 +36,7 @@ func(r *Repository) SearchApprovals(ctx context.Context,actor entity.Operator,p 
 }
 func(r *Repository) SearchEvents(ctx context.Context,actor entity.Operator,p entity.PageRequest)(entity.Page[entity.WorkflowEvent],error){
  if actor.Persona!=entity.L2{return entity.Page[entity.WorkflowEvent]{},ErrForbidden}
- rows,err:=r.db.QueryContext(ctx,"SELECT id,actor_id,resource_id,action,occurred_at FROM internal_tool.workflow_events ORDER BY id DESC LIMIT $1 OFFSET $2",p.RowSize+1,p.Offset())
+ rows,err:=r.db.QueryContext(ctx,"SELECT id,actor_id,resource_id,action,occurred_at,correlation_id FROM internal_tool.workflow_events ORDER BY id DESC LIMIT $1 OFFSET $2",p.RowSize+1,p.Offset())
  if err!=nil{return entity.Page[entity.WorkflowEvent]{},err}
- return readPage(rows,p,func(row scanner)(entity.WorkflowEvent,error){var e entity.WorkflowEvent;err:=row.Scan(&e.ID,&e.ActorID,&e.ResourceID,&e.Action,&e.OccurredAt);return e,err})
+ return readPage(rows,p,func(row scanner)(entity.WorkflowEvent,error){var e entity.WorkflowEvent;err:=row.Scan(&e.ID,&e.ActorID,&e.ResourceID,&e.Action,&e.OccurredAt,&e.CorrelationID);return e,err})
 }

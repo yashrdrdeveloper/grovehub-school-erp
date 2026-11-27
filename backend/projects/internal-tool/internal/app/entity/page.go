@@ -30,5 +30,6 @@ type WorkflowEvent struct{
  ActorID string `json:"actorId"`
  ResourceID string `json:"resourceId"`
  Action string `json:"action"`
+ CorrelationID *string `json:"correlationId,omitempty"`
  OccurredAt time.Time `json:"occurredAt"`
 }
