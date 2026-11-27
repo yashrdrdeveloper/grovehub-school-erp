@@ -627,7 +627,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StatusDataSuccess'
+                $ref: '#/components/schemas/SessionRevokedDataSuccess'
         '400':
           description: "Invalid request"
           content:
@@ -1290,7 +1290,11 @@ components:
       properties:
         newPassword: {type: string, format: password}
     ChangePasswordBody:
-      $ref: '#/components/schemas/ResetBody'
+      type: object
+      additionalProperties: false
+      required: [newPassword]
+      properties:
+        newPassword: {type: string, format: password}
     ReauthenticationBody:
       type: object
       additionalProperties: false
@@ -1300,9 +1304,8 @@ components:
     SetupBody:
       type: object
       additionalProperties: false
-      required: [username, password]
+      required: [password]
       properties:
-        username: {type: string}
         password: {type: string, format: password}
     PersonNames:
       type: object
@@ -1414,14 +1417,13 @@ components:
       type: object
       properties:
         verified: {type: boolean}
-        purpose: {type: string, enum: [PASSWORD_RESET, ACCOUNT_SETUP]}
+        purpose: {type: string, enum: [PASSWORD_RESET, ACCOUNT_SETUP, RESET_GRANT]}
         expiresIn: {type: integer}
     SetupData:
       type: object
       properties:
         accountId: {type: string, format: uuid}
         personGid: {type: string, format: uuid}
-        username: {type: string}
         status: {type: string}
         setupCompleted: {type: boolean}
     InvitationData:
@@ -1496,6 +1498,17 @@ components:
         success: {type: boolean, const: true}
         data:
           $ref: '#/components/schemas/GrantData'
+    SessionRevokedDataSuccess:
+      type: object
+      required: [success, data]
+      properties:
+        success: {type: boolean, const: true}
+        data:
+          type: object
+          required: [sessionId, status]
+          properties:
+            sessionId: {type: string, format: uuid}
+            status: {type: string}
     StatusDataSuccess:
       type: object
       required: [success, data]
