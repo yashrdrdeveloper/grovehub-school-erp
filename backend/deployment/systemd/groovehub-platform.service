@@ -1,0 +1,36 @@
+[Unit]
+Description=GrooveHub platform
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=gh-platform
+Group=gh-platform
+EnvironmentFile=/etc/groovehub/platform.env
+StateDirectory=groovehub-platform
+StateDirectoryMode=0700
+WorkingDirectory=/var/lib/groovehub-platform
+ExecStart=/usr/bin/env GROOVEHUB_HTTP_ADDR=127.0.0.1:8080 MAIL_INFRASTRUCTURE_DKIM_STATE_DIR=/var/lib/groovehub-platform/dkim /opt/groovehub/platform/current/payload/platform
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=25
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

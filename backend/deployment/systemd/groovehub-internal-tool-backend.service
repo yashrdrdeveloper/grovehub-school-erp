@@ -1,0 +1,36 @@
+[Unit]
+Description=GrooveHub internal-tool-backend
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=gh-internal-tool-backend
+Group=gh-internal-tool-backend
+EnvironmentFile=/etc/groovehub/internal-tool-backend.env
+StateDirectory=groovehub-internal-tool-backend
+StateDirectoryMode=0700
+WorkingDirectory=/var/lib/groovehub-internal-tool-backend
+ExecStart=/usr/bin/env GROOVEHUB_HTTP_ADDR=127.0.0.1:8082 /opt/groovehub/internal-tool-backend/current/payload/internal-tool-backend
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=25
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

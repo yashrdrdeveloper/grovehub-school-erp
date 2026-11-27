@@ -1,0 +1,36 @@
+[Unit]
+Description=GrooveHub school-backend
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=gh-school-backend
+Group=gh-school-backend
+EnvironmentFile=/etc/groovehub/school-backend.env
+StateDirectory=groovehub-school-backend
+StateDirectoryMode=0700
+WorkingDirectory=/var/lib/groovehub-school-backend
+ExecStart=/usr/bin/env GROOVEHUB_HTTP_ADDR=127.0.0.1:8081 /opt/groovehub/school-backend/current/payload/school-backend
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=25
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target
