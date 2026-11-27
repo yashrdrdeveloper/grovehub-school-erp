@@ -3,23 +3,27 @@ info:
   title: GrooveHub Integration API
   version: 0.6.0
   description: Generic capability-based Integration service with Gmail and Outlook OAuth, provider actions, connection tests and Gmail webhook watch. Communication owns message storage and synchronization. All HTTP routes are now tiered by the Launcher gateway.
+security:
+  - workloadBearer: []
 paths:
-  /integrations/public/providers:
+  /integrations/restricted/providers:
     get:
+      security: [{ workloadBearer: [], identityProof: [] }]
       summary: List registered provider descriptors
       responses:
         "200": { description: Provider catalog }
-  /integrations/public/providers/{provider}:
+  /integrations/restricted/providers/{provider}:
     parameters:
       - { in: path, name: provider, required: true, schema: { type: string } }
     get:
+      security: [{ workloadBearer: [], identityProof: [] }]
       summary: Discover provider capabilities and currently configured executable actions
       responses:
         "200": { description: Provider descriptor with availableActions and oauthConfigured }
         "400": { description: Unknown provider }
-  /integrations/protected/connections:
+  /integrations/restricted/connections:
     post:
-      security: [{ cookieSession: [] }]
+      security: [{ workloadBearer: [], identityProof: [] }]
       summary: Create PENDING_SETUP provider connection
       requestBody:
         required: true
@@ -36,32 +40,32 @@ paths:
         "201": { description: Pending connection }
         "403": { description: Authorization unavailable }
     get:
-      security: [{ cookieSession: [] }]
+      security: [{ workloadBearer: [], identityProof: [] }]
       summary: List current actor's connections
       responses:
         "200": { description: Connections with latest connectivity test }
-  /integrations/protected/connections/{id}:
+  /integrations/restricted/connections/{id}:
     parameters:
       - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
     get:
-      security: [{ cookieSession: [] }]
+      security: [{ workloadBearer: [], identityProof: [] }]
       summary: Get connection
       responses:
         "200": { description: Connection }
     delete:
-      security: [{ cookieSession: [] }]
+      security: [{ workloadBearer: [], identityProof: [] }]
       summary: Disconnect and erase stored OAuth token
       responses:
         "200": { description: Disconnected connection }
-  /integrations/protected/connections/{id}/oauth/start:
+  /integrations/restricted/connections/{id}/oauth/start:
     parameters:
       - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
     post:
-      security: [{ cookieSession: [] }]
+      security: [{ workloadBearer: [], identityProof: [] }]
       summary: Start Gmail or Outlook OAuth connection authorization
       responses:
         "200": { description: Authorization URL }
-  /integrations/public/connections/oauth/{provider}/callback:
+  /integrations/restricted/connections/oauth/{provider}/callback:
     get:
       summary: Exchange Gmail or Outlook authorization code with a one-time OAuth state
       parameters:
@@ -70,11 +74,11 @@ paths:
         - { in: query, name: code, required: true, schema: { type: string } }
       responses:
         "200": { description: Connection activated }
-  /integrations/protected/connections/{id}/test:
+  /integrations/restricted/connections/{id}/test:
     parameters:
       - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
     post:
-      security: [{ cookieSession: [] }]
+      security: [{ workloadBearer: [], identityProof: [] }]
       summary: Persist Gmail or Outlook inbound-access or self-addressed outbound test
       requestBody:
         required: true
@@ -88,23 +92,23 @@ paths:
                 direction: { type: string, enum: [INBOUND, OUTBOUND] }
       responses:
         "200": { description: Saved test result (not a delivery receipt) }
-  /integrations/protected/connections/{id}/tests:
+  /integrations/restricted/connections/{id}/tests:
     parameters:
       - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
     get:
-      security: [{ cookieSession: [] }]
+      security: [{ workloadBearer: [], identityProof: [] }]
       summary: Connection test history
       responses:
         "200": { description: Latest 100 results }
-  /integrations/protected/connections/{id}/watch:
+  /integrations/restricted/connections/{id}/watch:
     parameters:
       - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
     post:
-      security: [{ cookieSession: [] }]
+      security: [{ workloadBearer: [], identityProof: [] }]
       summary: Register or renew Gmail provider subscription
       responses:
         "200": { description: Watch expiry }
-  /integrations/protected/connections/{id}/actions/{action}:
+  /integrations/restricted/connections/{id}/actions/{action}:
     parameters:
       - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
       - { in: path, name: action, required: true, schema: { type: string, example: mail.send } }
@@ -119,7 +123,7 @@ paths:
         and the adapters build MIME and provider-specific encoding. mail.get and mail.list return
         normalized messages. Attachment downloads return standard base64 content.
         Mailbox data and cursors are not stored by Integration.
-      security: [{ cookieSession: [] }]
+      security: [{ workloadBearer: [], identityProof: [] }]
       requestBody:
         required: true
         content:
@@ -172,7 +176,7 @@ paths:
         "429": { description: Provider rate limited }
         "501": { description: Unsupported action }
         "503": { description: Provider not configured }
-  /integrations/protected/connections/{id}/actions/mail.send:
+  /integrations/restricted/connections/{id}/actions/mail.send:
     parameters:
       - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
     post:
@@ -181,7 +185,7 @@ paths:
         Convenience documented endpoint for mail.send. The generic actions/{action}
         route accepts the exact same JSON. From is inferred from the OAuth mailbox.
         Attachments contain standard padded base64, never provider-specific raw MIME.
-      security: [{ cookieSession: [] }]
+      security: [{ workloadBearer: [], identityProof: [] }]
       requestBody:
         required: true
         content:
@@ -268,8 +272,12 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: Google-signed Pub/Sub push OIDC JWT
-    cookieSession:
+    workloadBearer:
+      type: http
+      scheme: bearer
+      description: Signed Platform workload credential with operation scope.
+    identityProof:
       type: apiKey
-      in: cookie
-      name: __Host-gh_access
-      description: Opaque Identity access cookie verified by the Launcher gateway; unsafe methods also require Origin and CSRF.
+      in: header
+      name: X-GH-Identity-Proof
+      description: Opaque School access credential verified by Platform against live Identity state.

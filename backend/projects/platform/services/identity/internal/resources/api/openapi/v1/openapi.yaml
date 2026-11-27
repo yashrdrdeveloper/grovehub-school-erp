@@ -8,8 +8,10 @@ info:
     the platform libs/core/http response writer; no separate Identity envelope.
 servers:
   - url: /
+security:
+  - workloadBearer: []
 paths:
-  /identity/public/auth/login:
+  /identity/restricted/auth/login:
     post:
       operationId: login
       summary: "Login with email and password"
@@ -20,7 +22,7 @@ paths:
             schema:
               $ref: '#/components/schemas/LoginBody'
       security:
-        []
+        - workloadBearer: []
       responses:
         '200':
           description: "Login with email and password"
@@ -64,12 +66,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /identity/public/auth/refresh:
+  /identity/restricted/auth/refresh:
     post:
       operationId: refresh
       summary: "Rotate the HttpOnly refresh cookie"
       security:
-        - refreshCookie: []
+        - workloadBearer: []
+          identityProof: []
       responses:
         '200':
           description: "Rotate the HttpOnly refresh cookie"
@@ -113,7 +116,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /identity/public/auth/forgot-password:
+  /identity/restricted/auth/forgot-password:
     post:
       operationId: forgotPassword
       summary: "Accept an account recovery request without enumeration"
@@ -124,7 +127,7 @@ paths:
             schema:
               $ref: '#/components/schemas/ForgotBody'
       security:
-        []
+        - workloadBearer: []
       responses:
         '202':
           description: "Accept an account recovery request without enumeration"
@@ -162,12 +165,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /identity/public/auth/recovery/exchange:
+  /identity/restricted/auth/recovery/exchange:
     post:
       operationId: exchangeRecovery
       summary: "Exchange a one-time Recovery Authorization proof"
       security:
-        - recoveryProof: []
+        - workloadBearer: []
+          identityProof: []
       responses:
         '200':
           description: "Exchange a one-time Recovery Authorization proof"
@@ -211,7 +215,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /identity/public/auth/reset-password:
+  /identity/restricted/auth/reset-password:
     post:
       operationId: resetPassword
       summary: "Reset password using a short-lived reset grant cookie"
@@ -222,7 +226,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ResetBody'
       security:
-        - resetGrantCookie: []
+        - workloadBearer: []
+          identityProof: []
       responses:
         '200':
           description: "Reset password using a short-lived reset grant cookie"
@@ -263,12 +268,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /identity/public/auth/invitations/exchange:
+  /identity/restricted/auth/invitations/exchange:
     post:
       operationId: exchangeInvitation
       summary: "Exchange an Invitation Authorization proof"
       security:
-        - invitationProof: []
+        - workloadBearer: []
+          identityProof: []
       responses:
         '200':
           description: "Exchange an Invitation Authorization proof"
@@ -312,7 +318,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /identity/public/accounts/setup:
+  /identity/restricted/accounts/setup:
     post:
       operationId: setupAccount
       summary: "Finish account onboarding with a one-time setup grant"
@@ -323,7 +329,8 @@ paths:
             schema:
               $ref: '#/components/schemas/SetupBody'
       security:
-        - setupGrantCookie: []
+        - workloadBearer: []
+          identityProof: []
       responses:
         '200':
           description: "Finish account onboarding with a one-time setup grant"
@@ -364,12 +371,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /identity/protected/auth/logout:
+  /identity/restricted/auth/logout:
     post:
       operationId: logout
       summary: "Revoke the current session"
       security:
-        - accessCookie: []
+        - workloadBearer: []
+          identityProof: []
       responses:
         '200':
           description: "Revoke the current session"
@@ -410,12 +418,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /identity/protected/auth/logout-all:
+  /identity/restricted/auth/logout-all:
     post:
       operationId: logoutAll
       summary: "Revoke all sessions after recent authentication"
       security:
-        - accessCookie: []
+        - workloadBearer: []
+          identityProof: []
       responses:
         '200':
           description: "Revoke all sessions after recent authentication"
@@ -456,7 +465,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /identity/protected/auth/change-password:
+  /identity/restricted/auth/change-password:
     post:
       operationId: changePassword
       summary: "Change password after recent authentication"
@@ -467,7 +476,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ChangePasswordBody'
       security:
-        - accessCookie: []
+        - workloadBearer: []
+          identityProof: []
       responses:
         '200':
           description: "Change password after recent authentication"
@@ -505,7 +515,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /identity/protected/auth/reauthenticate:
+  /identity/restricted/auth/reauthenticate:
     post:
       operationId: reauthenticate
       summary: "Complete a fresh password reauthentication"
@@ -516,7 +526,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ReauthenticationBody'
       security:
-        - accessCookie: []
+        - workloadBearer: []
+          identityProof: []
       responses:
         '200':
           description: "Complete a fresh password reauthentication"
@@ -554,12 +565,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /identity/protected/auth/sessions:
+  /identity/restricted/auth/sessions:
     get:
       operationId: listSessions
       summary: "List the current account sessions"
       security:
-        - accessCookie: []
+        - workloadBearer: []
+          identityProof: []
       responses:
         '200':
           description: "List the current account sessions"
@@ -597,7 +609,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /identity/protected/auth/sessions/{sessionId}:
+  /identity/restricted/auth/sessions/{sessionId}:
     delete:
       operationId: revokeSession
       summary: "Revoke one owned session"
@@ -607,7 +619,8 @@ paths:
           required: true
           schema: {type: string, format: uuid}
       security:
-        - accessCookie: []
+        - workloadBearer: []
+          identityProof: []
       responses:
         '200':
           description: "Revoke one owned session"
@@ -645,12 +658,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /identity/protected/auth/me:
+  /identity/restricted/auth/me:
     get:
       operationId: me
       summary: "Read the authenticated account"
       security:
-        - accessCookie: []
+        - workloadBearer: []
+          identityProof: []
       responses:
         '200':
           description: "Read the authenticated account"
@@ -688,7 +702,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /identity/protected/accounts:
+  /identity/restricted/accounts:
     post:
       operationId: createAccount
       summary: "Admin-only account invitation linked to Foundation PersonGID"
@@ -699,7 +713,8 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateAccountBody'
       security:
-        - accessCookie: []
+        - workloadBearer: []
+          identityProof: []
       responses:
         '201':
           description: "Admin-only account invitation linked to Foundation PersonGID"
@@ -737,7 +752,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /identity/protected/accounts/search:
+  /identity/restricted/accounts/search:
     post:
       operationId: searchAccounts
       summary: "Tenant-scoped SearchDetails with coresearch cursor pagination"
@@ -748,7 +763,8 @@ paths:
             schema:
               $ref: '#/components/schemas/SearchBody'
       security:
-        - accessCookie: []
+        - workloadBearer: []
+          identityProof: []
       responses:
         '200':
           description: "Tenant-scoped SearchDetails with coresearch cursor pagination"
@@ -786,7 +802,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /identity/protected/accounts/{accountId}:
+  /identity/restricted/accounts/{accountId}:
     get:
       operationId: getAccount
       summary: "Get account by ID in authorized tenant"
@@ -796,7 +812,8 @@ paths:
           required: true
           schema: {type: string, format: uuid}
       security:
-        - accessCookie: []
+        - workloadBearer: []
+          identityProof: []
       responses:
         '200':
           description: "Get account by ID in authorized tenant"
@@ -849,7 +866,8 @@ paths:
             schema:
               $ref: '#/components/schemas/UpdateAccountBody'
       security:
-        - accessCookie: []
+        - workloadBearer: []
+          identityProof: []
       responses:
         '200':
           description: "Update a scoped account with optimistic concurrency"
@@ -887,7 +905,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /identity/protected/accounts/{accountId}/suspend:
+  /identity/restricted/accounts/{accountId}/suspend:
     patch:
       operationId: suspendAccount
       summary: "Suspend account and revoke sessions"
@@ -897,7 +915,8 @@ paths:
           required: true
           schema: {type: string, format: uuid}
       security:
-        - accessCookie: []
+        - workloadBearer: []
+          identityProof: []
       responses:
         '200':
           description: "Suspend account and revoke sessions"
@@ -935,7 +954,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /identity/protected/accounts/{accountId}/activate:
+  /identity/restricted/accounts/{accountId}/activate:
     patch:
       operationId: activateAccount
       summary: "Reactivate a suspended account"
@@ -945,7 +964,8 @@ paths:
           required: true
           schema: {type: string, format: uuid}
       security:
-        - accessCookie: []
+        - workloadBearer: []
+          identityProof: []
       responses:
         '200':
           description: "Reactivate a suspended account"
@@ -983,7 +1003,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /identity/protected/accounts/{accountId}/deactivate:
+  /identity/restricted/accounts/{accountId}/deactivate:
     patch:
       operationId: deactivateAccount
       summary: "Deactivate account and revoke sessions"
@@ -993,7 +1013,8 @@ paths:
           required: true
           schema: {type: string, format: uuid}
       security:
-        - accessCookie: []
+        - workloadBearer: []
+          identityProof: []
       responses:
         '200':
           description: "Deactivate account and revoke sessions"
@@ -1031,7 +1052,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /identity/protected/accounts/{accountId}/resend-invitation:
+  /identity/restricted/accounts/{accountId}/resend-invitation:
     post:
       operationId: resendInvitation
       summary: "Queue a new password setup link for a pending account"
@@ -1041,7 +1062,8 @@ paths:
           required: true
           schema: {type: string, format: uuid}
       security:
-        - accessCookie: []
+        - workloadBearer: []
+          identityProof: []
       responses:
         '202':
           description: "Queue a new password setup link for a pending account"
@@ -1081,32 +1103,15 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 components:
   securitySchemes:
-    accessCookie:
-      type: apiKey
-      in: cookie
-      name: __Host-gh_access
-    refreshCookie:
-      type: apiKey
-      in: cookie
-      name: __Secure-gh_refresh
-    resetGrantCookie:
-      type: apiKey
-      in: cookie
-      name: __Secure-gh_reset
-    setupGrantCookie:
-      type: apiKey
-      in: cookie
-      name: __Secure-gh_setup
-    recoveryProof:
+    workloadBearer:
+      type: http
+      scheme: bearer
+      description: Signed Platform workload credential with operation scope.
+    identityProof:
       type: apiKey
       in: header
-      name: Authorization
-      description: 'Authorization: Recovery <one-time-proof>'
-    invitationProof:
-      type: apiKey
-      in: header
-      name: Authorization
-      description: 'Authorization: Invitation <one-time-proof>'
+      name: X-GH-Identity-Proof
+      description: Route-specific opaque access, refresh, recovery, invitation or grant proof supplied by the trusted School adapter.
   schemas:
     LoginBody:
       type: object
