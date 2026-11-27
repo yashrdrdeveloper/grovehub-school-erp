@@ -69,7 +69,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U provisioner"
+          --health-cmd "pg_isready -U provisioner -d postgres"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
@@ -103,6 +103,7 @@ jobs:
           INTERNAL_TOOL_AUTH_TEST_DSN: postgres://internal_test:internal_test@127.0.0.1:5432/internal_test?sslmode=disable
           INTERNAL_TOOL_DATABASE_URL: postgres://internal_test:internal_test@127.0.0.1:5432/internal_test?sslmode=disable
         run: |
+          make generate-clients
           go run -mod=mod ./cmd/internal-tool migrate
           go run -mod=mod ./cmd/internal-tool migrate
           go test -mod=mod -count=1 -v ./internal/app/controller/authentication
