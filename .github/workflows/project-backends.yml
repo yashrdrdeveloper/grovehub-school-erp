@@ -97,6 +97,15 @@ jobs:
           REVOKE CONNECT ON DATABASE school_test, internal_test FROM PUBLIC;
           SQL
       - run: go test -count=1 -v ./database/postgres
+      - name: Verify School registry migration and restricted lookup
+        working-directory: backend/projects/school
+        env:
+          SCHOOL_DATABASE_URL: postgres://school_test:school_test@127.0.0.1:5432/school_test?sslmode=disable
+        run: |
+          make generate-clients
+          go run -mod=mod ./cmd/school migrate
+          go run -mod=mod ./cmd/school migrate
+          go test -mod=mod -count=1 -v ./services/registry
       - name: Verify Internal Tool operator authentication against its owned database
         working-directory: backend/projects/internal-tool
         env:

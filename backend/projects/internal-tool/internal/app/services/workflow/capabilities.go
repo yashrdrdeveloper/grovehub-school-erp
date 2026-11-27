@@ -55,5 +55,11 @@ func(s *Service) Capabilities(ctx context.Context,actor entity.Operator,id strin
  _,err=s.executionAdapter(env.Code,t,a,actor,invocation)
  if err!=nil&&!errors.Is(err,ErrForbidden)&&!errors.Is(err,ErrExecutionUnavailable){return RequestCapabilities{},err}
  result.CanExecute=err==nil
+ if result.CanExecute&&a.SchoolID!=nil{
+  if err=s.checkDirectory(ctx,*a.SchoolID);err!=nil{
+   if !errors.Is(err,ErrForbidden){return RequestCapabilities{},err}
+   result.CanExecute=false
+  }
+ }
  return result,nil
 }
