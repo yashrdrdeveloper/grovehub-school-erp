@@ -30,14 +30,14 @@ type (
 
 // @Client personClient
 type Client interface {
-	// @RequestLine POST /protected/persons
+	// @RequestLine POST /restricted/persons
 	CreatePerson(ctx context.Context, request persondto.CreatePersonRequest) (persondto.Person, bool, error)
-	// @RequestLine GET /protected/persons/{gid}
+	// @RequestLine GET /restricted/persons/{gid}
 	GetPersonByGID(ctx context.Context, request persondto.GetPersonByGIDRequest) (persondto.Person, error)
-	// @RequestLine PATCH /protected/persons/{gid}
+	// @RequestLine PATCH /restricted/persons/{gid}
 	UpdatePerson(ctx context.Context, request persondto.UpdatePersonRequest) (persondto.Person, error)
-	// @RequestLine POST /protected/persons/search
+	// @RequestLine POST /restricted/persons/search
 	SearchPersons(ctx context.Context, request persondto.SearchPersonsRequest) (coresearch.Result[persondto.Person], error)
-	// @RequestLine PATCH /protected/persons/{gid}/deactivate
+	// @RequestLine PATCH /restricted/persons/{gid}/deactivate
 	DeactivatePerson(ctx context.Context, request persondto.DeactivatePersonRequest) (persondto.Person, error)
 }

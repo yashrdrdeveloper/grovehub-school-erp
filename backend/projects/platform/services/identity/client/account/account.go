@@ -18,9 +18,9 @@ type (
 
 // @Client identityAccountClient
 type Client interface {
-	// @RequestLine GET /protected/accounts/{accountId}
+	// @RequestLine GET /restricted/accounts/{accountId}
 	Get(ctx context.Context, request dto.GetRequest) (dto.Account, error)
 
-	// @RequestLine POST /protected/accounts/search
+	// @RequestLine POST /restricted/accounts/search
 	Search(ctx context.Context, request dto.SearchRequest) (coresearch.Result[dto.Account], error)
 }

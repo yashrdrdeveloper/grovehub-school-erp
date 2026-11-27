@@ -60,7 +60,7 @@ const [
   source('packages/shell/containers/workspaceShellContainer/WorkspaceShellContainer.tsx'),
   source('packages/shell/constants/shell.catalog.ts'),
   source('packages/domain/publicSite/index.ts'),
-  source('../docs/engineering/frontend/FRONTEND_CODE_GUIDELINES.md'),
+  source('../../../docs/engineering/frontend/FRONTEND_CODE_GUIDELINES.md'),
 ]);
 
 if (!art.includes('@Assets/auth') || !art.includes('SVGRenderer')) {
@@ -121,7 +121,7 @@ for (const pathname of catalogPaths) {
   if (!implemented.has(pathname))
     violations.push(`catalog path ${pathname} has no implemented protected route`);
 }
-if (await exists('../docs/engineering/frontend/FRONTEND_REFACTOR_MIGRATION.md')) {
+if (await exists('../../../docs/engineering/frontend/FRONTEND_REFACTOR_MIGRATION.md')) {
   violations.push('migration rules must remain merged into the single frontend guideline');
 }
 if (!guide.includes('## 21. Assets') || !guide.includes('## 22. Unified migration inventory')) {

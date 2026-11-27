@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-service="backend/services/identity"
+service="backend/projects/platform/services/identity"
 app="$service/internal/app"
 
 for forbidden in \
@@ -24,7 +24,7 @@ for required in \
   "$app/validators/account/helpers/search.go" \
   "$app/controller/activation/public/activation.go" \
   "$app/client/account/impl/account.go" \
-  "backend/cmd/identity-bootstrap-admin/main.go"; do
+  "backend/projects/platform/cmd/identity-bootstrap-admin/main.go"; do
   if [[ ! -f "$required" ]]; then
     printf '[ERROR] Required Identity architecture path is missing: %s\n' "$required" >&2
     exit 1
