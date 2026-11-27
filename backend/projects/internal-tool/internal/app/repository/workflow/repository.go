@@ -2,6 +2,7 @@ package workflow
 
 import (
  "context"
+ "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/repository/activity"
  "database/sql"
  "encoding/json"
  "errors"
@@ -15,7 +16,7 @@ type Repository struct{db *sql.DB}
 func New(db *sql.DB)*Repository{return &Repository{db}}
 
 func event(ctx context.Context,tx *sql.Tx,actor,id,action string)error{
- _,err:=tx.ExecContext(ctx,"INSERT INTO internal_tool.workflow_events(actor_id,resource_id,action) VALUES($1,$2,$3)",actor,id,action);return err
+ return activity.Record(ctx,tx,actor,id,action)
 }
 func(r *Repository) CreateEnvironment(ctx context.Context,actor string,e entity.Environment)error{
  tx,err:=r.db.BeginTx(ctx,nil);if err!=nil{return err};defer tx.Rollback()

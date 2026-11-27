@@ -2,6 +2,7 @@ package auditdelivery
 
 import (
  "context"
+ "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/repository/activity"
  "database/sql"
  "errors"
  "time"
@@ -49,6 +50,6 @@ func(m *Monitor) Retry(ctx context.Context,actor,id string)error{
  if !active{return ErrConflict}
  result,err:=tx.ExecContext(ctx,"UPDATE internal_tool.audit_outbox SET blocked_at=NULL,next_attempt_at=now() WHERE event_id=$1 AND blocked_at IS NOT NULL AND delivered_at IS NULL",id)
  if err!=nil{return err};n,err:=result.RowsAffected();if err!=nil{return err};if n!=1{return ErrConflict}
- if _,err=tx.ExecContext(ctx,"INSERT INTO internal_tool.workflow_events(actor_id,resource_id,action) VALUES($1,$2,'AUDIT_DELIVERY_REQUEUED')",actor,id);err!=nil{return err}
+ if err=activity.Record(ctx,tx,actor,id,"AUDIT_DELIVERY_REQUEUED");err!=nil{return err}
  return tx.Commit()
 }

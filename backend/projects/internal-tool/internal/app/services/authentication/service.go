@@ -2,6 +2,8 @@ package authentication
 
 import (
  "context"
+ "log/slog"
+ "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/correlation"
  "crypto/rand"
  "crypto/sha256"
  "crypto/subtle"
@@ -53,7 +55,15 @@ func(s *Service) Bootstrap(ctx context.Context,email,password string)error{
 }
 
 type LoginResult struct{Operator entity.Operator; Token,CSRF string}
-func(s *Service) Login(ctx context.Context,email,password string)(LoginResult,error){
+func(s *Service) Login(ctx context.Context,email,password string)(result LoginResult,loginErr error){
+ ctx=correlation.Ensure(ctx)
+ defer func(){
+  outcome:=""
+  if errors.Is(loginErr,ErrInvalid){outcome="REJECTED"}else if errors.Is(loginErr,ErrLimited){outcome="LIMITED"}
+  if outcome==""{return}
+  record,cancel:=context.WithTimeout(context.WithoutCancel(ctx),time.Second);defer cancel()
+  if err:=s.sessions.CountAuthenticationOutcome(record,outcome);err!=nil{slog.Warn("authentication counter unavailable")}
+ }()
  email,ok:=normalizeEmail(email)
  if !ok||len(password)==0||len(password)>256{return LoginResult{},ErrInvalid}
  select {case s.hashing<-struct{}{}:defer func(){<-s.hashing}();default:return LoginResult{},ErrLimited}
@@ -67,7 +77,7 @@ func(s *Service) Login(ctx context.Context,email,password string)(LoginResult,er
  match:=subtle.ConstantTimeCompare(hashPassword(password,salt),expected)==1
  if err!=nil||!credential.Active||!match{return LoginResult{},ErrInvalid}
  token,err:=secret();if err!=nil{return LoginResult{},err};csrf,err:=secret();if err!=nil{return LoginResult{},err}
- if err=s.sessions.Create(ctx,credential.Operator.ID,digest(token),digest(csrf),time.Now().Add(SessionTTL));err!=nil{return LoginResult{},err}
+ if err=s.sessions.Create(ctx,credential.Operator.ID,digest(token),digest(csrf),time.Now().Add(SessionTTL));err!=nil{if errors.Is(err,sql.ErrNoRows){return LoginResult{},ErrInvalid};return LoginResult{},err}
  return LoginResult{credential.Operator,token,csrf},nil
 }
 func(s *Service) Verify(ctx context.Context,token string)(entity.Operator,error){

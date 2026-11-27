@@ -2,6 +2,7 @@ package launcher
 
 import (
  "context"
+ "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/correlation"
  "errors"
  "fmt"
  "net/http"
@@ -84,7 +85,7 @@ func Run() error {
   checks=append(checks,upstream)
  }
  mux.HandleFunc("GET /health/ready",readiness.Handler(&draining,checks...))
- server := &http.Server{Addr: addr, Handler: mux, ReadHeaderTimeout: 5*time.Second, ReadTimeout: 15*time.Second, WriteTimeout: 30*time.Second, IdleTimeout: 60*time.Second, MaxHeaderBytes: 1<<20}
+ server := &http.Server{Addr: addr, Handler: correlation.Ingress(mux), ReadHeaderTimeout: 5*time.Second, ReadTimeout: 15*time.Second, WriteTimeout: 30*time.Second, IdleTimeout: 60*time.Second, MaxHeaderBytes: 1<<20}
  done := make(chan error, 1)
  go func() { done <- server.ListenAndServe() }()
  select {

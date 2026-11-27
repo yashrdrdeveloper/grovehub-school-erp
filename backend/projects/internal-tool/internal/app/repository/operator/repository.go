@@ -2,6 +2,7 @@ package operator
 
 import (
  "context"
+ "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/repository/activity"
  "database/sql"
  "errors"
 
@@ -26,5 +27,6 @@ func(r *Repository) Bootstrap(ctx context.Context,c entity.Credential)error{
  if err=tx.QueryRowContext(ctx,"SELECT EXISTS(SELECT 1 FROM internal_tool.operators)").Scan(&exists);err!=nil{return err}
  if exists{return ErrBootstrapClosed}
  if _,err=tx.ExecContext(ctx,"INSERT INTO internal_tool.operators(id,email,persona,password_salt,password_hash) VALUES($1,$2,$3,$4,$5)",c.Operator.ID,c.Operator.Email,c.Operator.Persona,c.Salt,c.Hash);err!=nil{return err}
+ if err=activity.Record(ctx,tx,c.Operator.ID,c.Operator.ID,"OPERATOR_BOOTSTRAPPED");err!=nil{return err}
  return tx.Commit()
 }

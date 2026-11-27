@@ -2,6 +2,7 @@ package operator
 
 import (
  "context"
+ "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/repository/activity"
  "database/sql"
  "errors"
 
@@ -37,7 +38,7 @@ func(r *Repository) Create(ctx context.Context,actor entity.Operator,c entity.Cr
  tx,err:=management(ctx,r.db,actor);if err!=nil{return err};defer tx.Rollback()
  result,err:=tx.ExecContext(ctx,"INSERT INTO internal_tool.operators(id,email,persona,password_salt,password_hash) VALUES($1,$2,$3,$4,$5) ON CONFLICT(email) DO NOTHING",c.Operator.ID,c.Operator.Email,c.Operator.Persona,c.Salt,c.Hash)
  if err!=nil{return err};n,err:=result.RowsAffected();if err!=nil{return err};if n!=1{return ErrConflict}
- if _,err=tx.ExecContext(ctx,"INSERT INTO internal_tool.workflow_events(actor_id,resource_id,action) VALUES($1,$2,'OPERATOR_CREATED')",actor.ID,c.Operator.ID);err!=nil{return err}
+ if err=activity.Record(ctx,tx,actor.ID,c.Operator.ID,"OPERATOR_CREATED");err!=nil{return err}
  return tx.Commit()
 }
 func(r *Repository) SetStatus(ctx context.Context,actor entity.Operator,id,status string)error{
@@ -53,7 +54,7 @@ func(r *Repository) SetStatus(ctx context.Context,actor entity.Operator,id,statu
  }
  if _,err=tx.ExecContext(ctx,"UPDATE internal_tool.operators SET status=$2 WHERE id=$1",id,status);err!=nil{return err}
  if _,err=tx.ExecContext(ctx,"UPDATE internal_tool.sessions SET revoked_at=now() WHERE operator_id=$1 AND revoked_at IS NULL",id);err!=nil{return err}
- if _,err=tx.ExecContext(ctx,"INSERT INTO internal_tool.workflow_events(actor_id,resource_id,action) VALUES($1,$2,$3)",actor.ID,id,"OPERATOR_"+status);err!=nil{return err}
+ if err=activity.Record(ctx,tx,actor.ID,id,"OPERATOR_"+status);err!=nil{return err}
  return tx.Commit()
 }
 

@@ -2,6 +2,7 @@ package authentication
 
 import (
  "context"
+ "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/correlation"
  "database/sql"
  "net/http"
  "net/http/httptest"
@@ -30,7 +31,7 @@ func TestOperatorAuthentication(t *testing.T){
  loginBody:=`{"email":"operator@example.com","password":"test-only-password-123"}`
  request:=func(method,path,body,origin string,cookies []*http.Cookie,csrf string)*httptest.ResponseRecorder{
   r:=httptest.NewRequest(method,path,strings.NewReader(body));if origin!=""{r.Header.Set("Origin",origin)};if csrf!=""{r.Header.Set("X-CSRF-Token",csrf)};for _,c:=range cookies{r.AddCookie(c)}
-  w:=httptest.NewRecorder();mux.ServeHTTP(w,r);return w
+  w:=httptest.NewRecorder();correlation.Ingress(mux).ServeHTTP(w,r);return w
  }
  const login="/internal/public/auth/login"
  const me="/internal/protected/auth/me"
@@ -51,9 +52,11 @@ func TestOperatorAuthentication(t *testing.T){
  if w:=request("POST",logout,"","https://internal.example.com",cookies,csrf);w.Code!=200{t.Fatalf("logout failed: %d",w.Code)}
  if w:=request("GET",me,"","",cookies,"");w.Code!=401{t.Fatal("revoked session accepted")}
  var count int
+ if err:=db.QueryRowContext(ctx,"SELECT count(*) FROM internal_tool.workflow_events e JOIN internal_tool.audit_outbox o ON o.workflow_event_id=e.id WHERE e.action IN (\x27AUTH_LOGIN_SUCCEEDED\x27,\x27AUTH_LOGOUT_SUCCEEDED\x27) AND e.correlation_id IS NOT NULL").Scan(&count);err!=nil||count!=2{t.Fatal("authentication audit not committed",count,err)}
  if err:=db.QueryRowContext(ctx,"SELECT count(*) FROM internal_tool.sessions WHERE revoked_at IS NOT NULL").Scan(&count);err!=nil||count!=1{t.Fatal("revocation not persisted")}
  for i:=0;i<5;i++{if _,err:=service.Login(ctx,"unknown@example.com","wrong");err!=authentication.ErrInvalid{t.Fatalf("unknown account attempt %d: %v",i,err)}}
  if _,err:=service.Login(ctx,"unknown@example.com","wrong");err!=authentication.ErrLimited{t.Fatal("attempt budget not enforced")}
+ if err:=db.QueryRowContext(ctx,"SELECT COALESCE(sum(attempts),0) FROM internal_tool.authentication_counters WHERE outcome=\x27REJECTED\x27").Scan(&count);err!=nil||count!=6{t.Fatal("rejected attempt counter",count,err)}
  // Operator administration uses a live L2 session and revokes disabled sessions.
  current,err:=service.Login(ctx,"operator@example.com","test-only-password-123");if err!=nil{t.Fatal(err)}
  created,err:=service.CreateOperator(ctx,current.Operator,"new-l1@example.com","initial-password-123","L1");if err!=nil{t.Fatal(err)}
