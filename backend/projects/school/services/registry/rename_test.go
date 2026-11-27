@@ -1,0 +1,61 @@
+package registry_test
+
+import (
+ "bytes"
+ "context"
+ "crypto/ed25519"
+ "crypto/rand"
+ "encoding/base64"
+ "encoding/json"
+ "net/http"
+ "net/http/httptest"
+ "os"
+ "testing"
+ "time"
+
+ "github.com/google/uuid"
+ "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/postgres"
+ core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+ "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/registry"
+)
+func TestSchoolRename(t *testing.T){
+ dsn:=os.Getenv("PROJECT_SCHOOL_TEST_DSN");if dsn==""{t.Skip("requires disposable School database")}
+ ctx:=context.Background()
+ db,err:=postgres.OpenProjectPool(ctx,dsn);if err!=nil{t.Fatal(err)};defer db.Close()
+ var database string
+ if err=db.QueryRowContext(ctx,"SELECT current_database()").Scan(&database);err!=nil||database!="school_test"{t.Fatal("disposable database required")}
+ if err=registry.Migrate(ctx,db);err!=nil{t.Fatal(err)}
+ school,other:=uuid.NewString(),uuid.NewString()
+ for _,id:=range []string{school,other}{if err=registry.RegisterSchool(ctx,db,id,"school-"+id,"Original");err!=nil{t.Fatal(err)}}
+ pub,priv,err:=ed25519.GenerateKey(rand.Reader);if err!=nil{t.Fatal(err)}
+ key:=core.WorkloadKeyConfig{KeyID:"rename-test",PublicKey:base64.RawURLEncoding.EncodeToString(pub),Issuer:"internal-tool-school-rename",Subject:"internal-tool-school-rename:"+school,Scopes:[]string{"internal.school.registry.rename"}}
+ raw,_:=json.Marshal([]core.WorkloadKeyConfig{key})
+ mux:=http.NewServeMux()
+ if err=registry.RegisterHTTP(mux,db,"",string(raw));err!=nil{t.Fatal(err)}
+ token,err:=core.SignWorkload(key.KeyID,key.Issuer,priv,core.WorkloadClaims{Subject:key.Subject,Audience:"school",Scopes:key.Scopes,ExpiresAt:time.Now().Add(time.Minute)});if err!=nil{t.Fatal(err)}
+ call:=func(id,execution,expected,name string,auth bool)int{
+  body,_:=json.Marshal(map[string]string{"expectedName":expected,"name":name})
+  r:=httptest.NewRequest("PATCH","/school/restricted/registry/schools/"+id+"/name",bytes.NewReader(body))
+  r.Header.Set("Idempotency-Key",execution)
+  if auth{r.Header.Set("Authorization","Bearer "+token)}
+  w:=httptest.NewRecorder();mux.ServeHTTP(w,r);return w.Code
+ }
+ execution:=uuid.NewString()
+ for _,tc:=range []struct{id,execution,expected,name string;auth bool;want int}{
+  {other,execution,"Original","Renamed",true,403},
+  {school,execution,"Original","Renamed",false,403},
+  {school,execution,"Wrong","Renamed",true,409},
+  {school,execution,"Original","Renamed",true,204},
+  {school,execution,"Original","Renamed",true,204},
+  {school,execution,"Original","Different",true,409},
+  {school,uuid.NewString(),"Original","Different",true,409},
+  {school,uuid.NewString(),"Renamed","Final",true,204},
+  {school,execution,"Original","Renamed",true,204},
+ }{if got:=call(tc.id,tc.execution,tc.expected,tc.name,tc.auth);got!=tc.want{t.Fatal("unexpected rename result",tc.want,got)}}
+ var name string;var count int
+ if err=db.QueryRowContext(ctx,"SELECT name FROM school_registry.schools WHERE id=$1",school).Scan(&name);err!=nil||name!="Final"{t.Fatal("replay changed name",name,err)}
+ if err=db.QueryRowContext(ctx,"SELECT count(*) FROM school_registry.rename_events WHERE school_id=$1",school).Scan(&count);err!=nil||count!=2{t.Fatal("wrong receipt count",count,err)}
+ if _,err=db.ExecContext(ctx,"DELETE FROM school_registry.rename_events WHERE execution_id=$1",execution);err==nil{t.Fatal("immutable receipt deleted")}
+ if _,err=db.ExecContext(ctx,"UPDATE school_registry.schools SET status='DISABLED' WHERE id=$1",school);err!=nil{t.Fatal(err)}
+ if got:=call(school,uuid.NewString(),"Final","Disabled change",true);got!=403{t.Fatal("disabled school mutated",got)}
+}
