@@ -31,5 +31,10 @@ func TestSchoolReceiptLedger(t *testing.T){
  if err=operator.StoreSchoolReceipt(ctx,db,changed);!errors.Is(err,operator.ErrConflict){t.Fatal("different version accepted",err)}
  var n int
  if err=db.Raw("SELECT count(*) FROM audit.school_mutation_receipts WHERE execution_id=?",a.ExecutionID).Scan(&n).Error;err!=nil||n!=1{t.Fatal("duplicate receipt",n,err)}
+ page,err:=operator.SearchReceipts(ctx,db,operator.SearchInput{PageNumber:1,RowSize:100})
+ if err!=nil{t.Fatal(err)}
+ found:=false
+ for _,row:=range page.Records{if row.ExecutionID==a.ExecutionID{found=row.SchoolID==a.SchoolID&&row.PreviousVersion=="1"&&row.CorrelationID!=nil&&*row.CorrelationID==correlation}}
+ if !found{t.Fatal("missing committed receipt")}
  if err=db.Exec("DELETE FROM audit.school_mutation_receipts WHERE execution_id=?",a.ExecutionID).Error;err==nil{t.Fatal("receipt deleted")}
 }

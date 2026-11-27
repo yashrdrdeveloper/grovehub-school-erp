@@ -66,6 +66,13 @@ func TestSchoolRename(t *testing.T){
  if got:=call(school,uuid.NewString(),"Original","Disabled change",5,true);got!=403{t.Fatal("disabled school mutated",got)}
  // A successful rename creates one outbox entry, not one entry per retry.
  if err=db.QueryRowContext(ctx,"SELECT count(*) FROM school_registry.rename_outbox o JOIN school_registry.rename_events e USING(execution_id) WHERE e.school_id=$1",school).Scan(&count);err!=nil||count!=3{t.Fatal("outbox receipt count",count,err)}
+ health:=func(configs []registry.DeliveryConfig)int{
+  w:=httptest.NewRecorder()
+  registry.DeliveryHealth(db,configs).ServeHTTP(w,httptest.NewRequest("GET","/health/audit-delivery",nil))
+  return w.Code
+ }
+ if got:=health(nil);got!=503{t.Fatal("disabled health",got)}
+ if got:=health([]registry.DeliveryConfig{{SchoolID:other}});got!=503{t.Fatal("unconfigured backlog health",got)}
  calls:=0
  var first string
  worker:=delivery.New(db,school,func(_ context.Context,a sdk.SchoolRenameReceipt)(int,error){

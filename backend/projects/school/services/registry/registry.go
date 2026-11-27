@@ -6,6 +6,7 @@ import (
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/registry/internal/app/services/delivery"
  "database/sql"
  "net/http"
+ "log/slog"
  "sync"
  "time"
 
@@ -51,7 +52,9 @@ func StartDeliveries(ctx context.Context,db *sql.DB,configs []DeliveryConfig)(fu
    for run.Err()==nil{
     worked:=false
     for index:=start;index<len(workers)&&run.Err()==nil;index+=n{
-     if ok,err:=workers[index].Step(run);err==nil&&ok{worked=true}
+     ok,err:=workers[index].Step(run)
+     if err!=nil&&run.Err()==nil{slog.Warn("school receipt relay step failed")}
+     if err==nil&&ok{worked=true}
     }
     if worked{continue}
     select{case <-run.Done():return;case <-time.After(time.Second):}
