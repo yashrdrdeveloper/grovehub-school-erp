@@ -11,6 +11,9 @@ import (
  "time"
 
  "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/postgres"
+ auth "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/services/authentication"
+ controller "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/controller/authentication"
+ "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/resources/migrations"
 )
 
 // Run starts a private migration-stage listener. Readiness remains false
@@ -23,7 +26,14 @@ func Run() error {
  defer db.Close()
  addr := os.Getenv("GROOVEHUB_HTTP_ADDR")
  if addr == "" { addr = "127.0.0.1:8082" }
+ check,cancel:=context.WithTimeout(ctx,5*time.Second)
+ err=migrations.Check(check,db)
+ cancel()
+ if err!=nil{return err}
+ authController,err:=controller.New(auth.New(db),os.Getenv("INTERNAL_TOOL_ALLOWED_ORIGIN"))
+ if err!=nil{return err}
  mux := http.NewServeMux()
+ authController.Register(mux)
  mux.HandleFunc("GET /health/live", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusNoContent) })
  mux.HandleFunc("GET /health/database",func(w http.ResponseWriter,r *http.Request){
   probe,cancel:=context.WithTimeout(r.Context(),2*time.Second)
