@@ -39,6 +39,7 @@ func New(logger *slog.Logger, db *gorm.DB, client messaging.MessagingClient, acc
 type runtime struct {
 	controller protected.ActivityController
  operator http.HandlerFunc
+ operatorSearch http.HandlerFunc
 	stop context.CancelFunc
 	wait sync.WaitGroup
 	once sync.Once
@@ -57,7 +58,7 @@ func (b *builder) Build() (bootstrap.Runtime,error) {
 	monitor,err:=monitoring.New(events.Topics())
 	if err!=nil { return nil,errors.New("audit monitoring initialization failed") }
 	ctx,stop:=context.WithCancel(context.Background())
-	module:=&runtime{controller:controllerimpl.New(service.New(repo,b.access)),operator:operator.Handler(b.db),stop:stop,monitor:monitor}
+	module:=&runtime{controller:controllerimpl.New(service.New(repo,b.access)),operator:operator.Handler(b.db),operatorSearch:operator.SearchHandler(b.db),stop:stop,monitor:monitor}
 	module.wait.Add(1)
 	go module.probe(ctx,b.db,b.messaging)
 	for topic,eventType:=range events.Topics() {
@@ -89,5 +90,5 @@ func (module *runtime) consume(ctx context.Context, logger *slog.Logger, client 
 	}
 }
 
-func (module *runtime) RegisterHTTP(mux *http.ServeMux) { routes.RegisterHTTP(mux,module.controller); mux.HandleFunc(operator.Pattern,module.operator) }
+func (module *runtime) RegisterHTTP(mux *http.ServeMux) { routes.RegisterHTTP(mux,module.controller); mux.HandleFunc(operator.Pattern,module.operator); mux.HandleFunc(operator.SearchPattern,module.operatorSearch) }
 func (module *runtime) Close() { module.once.Do(func(){module.monitor.Close();module.stop();module.wait.Wait()}) }

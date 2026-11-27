@@ -7,6 +7,27 @@ security:
   - workloadBearer: []
     identityProof: []
 paths:
+  /audit/restricted/operator-activities/search:
+    post:
+      operationId: searchOperatorActivities
+      summary: Search centralized global operator occurrences
+      security: [{workloadBearer: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OperatorSearchInput'
+      responses:
+        '200':
+          description: Operator activity page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorActivityPage'
+        '400': {description: Invalid pagination}
+        '403': {description: Access denied}
+        '503': {description: Audit unavailable}
   /audit/restricted/operator-activities:
     post:
       operationId: recordOperatorActivity
@@ -70,6 +91,24 @@ components:
       in: header
       name: X-GH-Identity-Proof
   schemas:
+    OperatorSearchInput:
+      type: object
+      additionalProperties: false
+      required: [pageNumber, rowSize]
+      properties:
+        pageNumber: {type: integer, format: int32, minimum: 1, maximum: 10000}
+        rowSize: {type: integer, format: int32, minimum: 1, maximum: 100}
+    OperatorActivityPage:
+      type: object
+      required: [records, pageNumber, rowSize, hasMore]
+      properties:
+        records:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperatorActivity'
+        pageNumber: {type: integer, format: int32}
+        rowSize: {type: integer, format: int32}
+        hasMore: {type: boolean}
     OperatorActivity:
       type: object
       additionalProperties: false

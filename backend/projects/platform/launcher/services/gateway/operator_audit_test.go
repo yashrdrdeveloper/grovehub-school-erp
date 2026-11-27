@@ -36,3 +36,17 @@ func TestOperatorAuditBoundary(t *testing.T){
  if _,err:=newOperatorAuditVerifier([]core.WorkloadKeyConfig{bad},nil);err==nil{t.Fatal("overbroad key accepted")}
  if _,err:=newOperatorAuditVerifier([]core.WorkloadKeyConfig{key},[]core.WorkloadKeyConfig{key});err==nil{t.Fatal("shared key accepted")}
 }
+
+func TestOperatorAuditReadIsolation(t *testing.T){
+ pub,priv,err:=ed25519.GenerateKey(rand.Reader);if err!=nil{t.Fatal(err)}
+ key:=core.WorkloadKeyConfig{KeyID:"read-test",PublicKey:base64.RawURLEncoding.EncodeToString(pub),Issuer:"internal-tool-audit-reader",Subject:"internal-tool-audit-reader",Scopes:[]string{operatorAuditReadScope}}
+ raw,_:=json.Marshal(workloadConfig{OperatorAuditReadKeys:[]core.WorkloadKeyConfig{key}})
+ verifier,err:=NewPlatformWorkloads(string(raw),nil,nil);if err!=nil{t.Fatal(err)}
+ token,err:=core.SignWorkload(key.KeyID,key.Issuer,priv,core.WorkloadClaims{Subject:key.Subject,Audience:"platform",Scopes:key.Scopes,ExpiresAt:time.Now().Add(time.Minute)});if err!=nil{t.Fatal(err)}
+ for _,path:=range []string{"/audit/restricted/operator-activities/search","/audit/restricted/operator-activities","/audit/restricted/search"}{
+  r:=httptest.NewRequest("POST",path,nil);r.Pattern="POST "+path;r.Header.Set("Authorization","Bearer "+token)
+  _,err=verifier.VerifyWorkload(context.Background(),r)
+  if (err==nil)!=(r.Pattern==operatorAuditReadRoute){t.Fatal("wrong grant",path,err)}
+ }
+ if _,err:=newOperatorAuditReadVerifier([]core.WorkloadKeyConfig{key},[]core.WorkloadKeyConfig{key});err==nil{t.Fatal("shared key accepted")}
+}
