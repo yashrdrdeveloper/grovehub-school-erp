@@ -9,6 +9,7 @@ import (
  "strings"
 
  service "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/services/authentication"
+ "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/entity"
 )
 
 const sessionCookie="__Host-gh_internal_session"
@@ -64,4 +65,20 @@ func(c *Controller) logout(w http.ResponseWriter,r *http.Request){
  if err:=c.service.Logout(r.Context(),cookie(r,sessionCookie),csrf);err!=nil{fail(w,err);return}
  setCookie(w,sessionCookie,"",true,-1);setCookie(w,csrfCookie,"",false,-1)
  write(w,200,map[string]any{"success":true,"data":map[string]string{"status":"LOGGED_OUT"}})
+}
+
+// Protected resolves the live operator from the dedicated session cookie.
+// Mutations require both the origin and session-bound CSRF proof.
+func(c *Controller) Protected(mutate bool,next func(http.ResponseWriter,*http.Request,entity.Operator))http.HandlerFunc{
+ return func(w http.ResponseWriter,r *http.Request){
+  if r.URL.RawQuery!=""{write(w,400,map[string]any{"success":false,"errorCode":"INVALID_REQUEST"});return}
+  var op entity.Operator;var err error
+  if mutate{
+   values:=r.Header.Values("X-CSRF-Token");csrf:=cookie(r,csrfCookie)
+   if !c.mutationAllowed(r)||len(values)!=1||csrf==""||values[0]!=csrf{write(w,403,map[string]any{"success":false,"errorCode":"FORBIDDEN"});return}
+   op,err=c.service.VerifyMutation(r.Context(),cookie(r,sessionCookie),csrf)
+  }else{op,err=c.service.Verify(r.Context(),cookie(r,sessionCookie))}
+  if err!=nil{fail(w,err);return}
+  next(w,r,op)
+ }
 }

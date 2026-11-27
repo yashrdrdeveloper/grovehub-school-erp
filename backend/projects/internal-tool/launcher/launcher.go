@@ -14,6 +14,8 @@ import (
  auth "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/services/authentication"
  controller "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/controller/authentication"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/resources/migrations"
+ workflow "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/services/workflow"
+ workflowController "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/controller/workflow"
 )
 
 // Run starts a private migration-stage listener. Readiness remains false
@@ -34,6 +36,7 @@ func Run() error {
  if err!=nil{return err}
  mux := http.NewServeMux()
  authController.Register(mux)
+ workflowController.New(workflow.New(db),authController).Register(mux)
  mux.HandleFunc("GET /health/live", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusNoContent) })
  mux.HandleFunc("GET /health/database",func(w http.ResponseWriter,r *http.Request){
   probe,cancel:=context.WithTimeout(r.Context(),2*time.Second)
