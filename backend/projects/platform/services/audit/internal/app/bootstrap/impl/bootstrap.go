@@ -42,6 +42,7 @@ type runtime struct {
  operatorSearch http.HandlerFunc
  schoolCheck http.HandlerFunc
  schoolReceipt http.HandlerFunc
+ schoolReceiptSearch http.HandlerFunc
 	stop context.CancelFunc
 	wait sync.WaitGroup
 	once sync.Once
@@ -61,7 +62,7 @@ func (b *builder) Build() (bootstrap.Runtime,error) {
 	monitor,err:=monitoring.New(events.Topics())
 	if err!=nil { return nil,errors.New("audit monitoring initialization failed") }
 	ctx,stop:=context.WithCancel(context.Background())
-	module:=&runtime{controller:controllerimpl.New(service.New(repo,b.access)),operator:operator.Handler(b.db),operatorSearch:operator.SearchHandler(b.db),schoolCheck:operator.SchoolCheckHandler(b.db),schoolReceipt:operator.ReceiptHandler(b.db),stop:stop,monitor:monitor}
+	module:=&runtime{controller:controllerimpl.New(service.New(repo,b.access)),operator:operator.Handler(b.db),operatorSearch:operator.SearchHandler(b.db),schoolCheck:operator.SchoolCheckHandler(b.db),schoolReceipt:operator.ReceiptHandler(b.db),schoolReceiptSearch:operator.ReceiptSearchHandler(b.db),stop:stop,monitor:monitor}
 	module.wait.Add(1)
 	go module.probe(ctx,b.db,b.messaging)
 	for topic,eventType:=range events.Topics() {
@@ -93,5 +94,5 @@ func (module *runtime) consume(ctx context.Context, logger *slog.Logger, client 
 	}
 }
 
-func (module *runtime) RegisterHTTP(mux *http.ServeMux) { routes.RegisterHTTP(mux,module.controller); mux.HandleFunc(operator.Pattern,module.operator); mux.HandleFunc(operator.SearchPattern,module.operatorSearch); mux.HandleFunc(operator.SchoolCheckPattern,module.schoolCheck); mux.HandleFunc(operator.ReceiptPattern,module.schoolReceipt) }
+func (module *runtime) RegisterHTTP(mux *http.ServeMux) { routes.RegisterHTTP(mux,module.controller); mux.HandleFunc(operator.Pattern,module.operator); mux.HandleFunc(operator.SearchPattern,module.operatorSearch); mux.HandleFunc(operator.SchoolCheckPattern,module.schoolCheck); mux.HandleFunc(operator.ReceiptPattern,module.schoolReceipt); mux.HandleFunc(operator.ReceiptSearchPattern,module.schoolReceiptSearch) }
 func (module *runtime) Close() { module.once.Do(func(){module.monitor.Close();module.stop();module.wait.Wait()}) }

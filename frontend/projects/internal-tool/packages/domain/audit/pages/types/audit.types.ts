@@ -25,3 +25,11 @@ export interface BlockedEvent {
   attempts: number;
   blockedAt: string;
 }
+
+export interface SchoolReceipt {
+  executionId: string;
+  schoolId: string;
+  previousVersion: string;
+  correlationId?: string;
+  occurredAt: string;
+}

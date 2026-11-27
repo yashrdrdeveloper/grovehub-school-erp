@@ -28,7 +28,7 @@ func page(w http.ResponseWriter,r *http.Request)(entity.PageRequest,bool){
  if d.Decode(&p)!=nil||d.Decode(&extra)!=io.EOF{return p,false}
  return p.Normalize()
 }
-func Register(mux *http.ServeMux,a *auth.Controller,monitor *auditdelivery.Monitor,reader client.Reader){
+func Register(mux *http.ServeMux,a *auth.Controller,monitor *auditdelivery.Monitor,reader client.Reader,receiptReaders ...client.ReceiptReader){
  bind:=func(pattern string,mutate bool,h func(http.ResponseWriter,*http.Request,entity.Operator)){
   mux.HandleFunc(pattern,a.Protected(mutate,func(w http.ResponseWriter,r *http.Request,op entity.Operator){
    if op.Persona!=entity.L2{response(w,403,nil);return}
@@ -40,6 +40,11 @@ func Register(mux *http.ServeMux,a *auth.Controller,monitor *auditdelivery.Monit
   p,ok:=page(w,r);if !ok{response(w,400,nil);return}
   if reader==nil{response(w,503,nil);return}
   v,err:=reader(r.Context(),p);if err!=nil{response(w,503,nil);return};response(w,200,v)
+ })
+ bind("POST /internal/protected/school-rename-receipts/search",true,func(w http.ResponseWriter,r *http.Request,_ entity.Operator){
+  p,ok:=page(w,r);if !ok{response(w,400,nil);return}
+  if len(receiptReaders)!=1||receiptReaders[0]==nil{response(w,503,nil);return}
+  v,err:=receiptReaders[0](r.Context(),p);if err!=nil{response(w,503,nil);return};response(w,200,v)
  })
  bind("GET /internal/protected/audit-delivery/summary",false,func(w http.ResponseWriter,r *http.Request,_ entity.Operator){
   v,err:=monitor.Summary(r.Context());if err!=nil{response(w,503,nil);return};response(w,200,v)

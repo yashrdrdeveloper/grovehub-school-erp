@@ -61,9 +61,13 @@ func Run() error {
  }
  directoryConfig:=platform.DirectoryConfig{Origin:os.Getenv("INTERNAL_TOOL_DIRECTORY_ORIGIN"),KeyID:os.Getenv("INTERNAL_TOOL_DIRECTORY_KEY_ID"),PrivateKey:os.Getenv("INTERNAL_TOOL_DIRECTORY_PRIVATE_KEY"),ReaderID:os.Getenv("INTERNAL_TOOL_DIRECTORY_READER_ID")}
  directory,err:=platform.NewDirectory(directoryConfig);if err!=nil{return err}
- reserved:=[]platform.ReservedCredential{{KeyID:directoryConfig.KeyID,PrivateKey:directoryConfig.PrivateKey}}
+ receiptConfig:=auditclient.Config{Origin:os.Getenv("INTERNAL_TOOL_RECEIPT_READ_ORIGIN"),KeyID:os.Getenv("INTERNAL_TOOL_RECEIPT_READ_KEY_ID"),PrivateKey:os.Getenv("INTERNAL_TOOL_RECEIPT_READ_PRIVATE_KEY")}
+ receiptReader,err:=auditclient.NewReceiptReader(receiptConfig);if err!=nil{return err}
+ if receiptReader!=nil&&directory!=nil&&(receiptConfig.KeyID==directoryConfig.KeyID||receiptConfig.PrivateKey==directoryConfig.PrivateKey){return errors.New("receipt reader key must be independent")}
+ reserved:=[]platform.ReservedCredential{{KeyID:directoryConfig.KeyID,PrivateKey:directoryConfig.PrivateKey},{KeyID:receiptConfig.KeyID,PrivateKey:receiptConfig.PrivateKey}}
  for _,prefix:=range []string{"INTERNAL_TOOL_WORKLOAD","INTERNAL_TOOL_AUDIT","INTERNAL_TOOL_AUDIT_READ"}{
   if directory!=nil&&(directoryConfig.KeyID==os.Getenv(prefix+"_KEY_ID")||directoryConfig.PrivateKey==os.Getenv(prefix+"_PRIVATE_KEY")){return errors.New("school directory key must be independent")}
+  if receiptReader!=nil&&(receiptConfig.KeyID==os.Getenv(prefix+"_KEY_ID")||receiptConfig.PrivateKey==os.Getenv(prefix+"_PRIVATE_KEY")){return errors.New("receipt reader key must be independent")}
   reserved=append(reserved,platform.ReservedCredential{KeyID:os.Getenv(prefix+"_KEY_ID"),PrivateKey:os.Getenv(prefix+"_PRIVATE_KEY")})
  }
  schoolBindings,schoolOrigins,err:=platform.ParseSchoolGrants(os.Getenv("INTERNAL_TOOL_SCHOOL_GRANTS"),schoolConfig,reserved,directoryConfig.Origin)
@@ -75,7 +79,7 @@ func Run() error {
  if err!=nil{return err}
  if reader!=nil&&publisher!=nil&&(os.Getenv("INTERNAL_TOOL_AUDIT_READ_KEY_ID")==os.Getenv("INTERNAL_TOOL_AUDIT_KEY_ID")||os.Getenv("INTERNAL_TOOL_AUDIT_READ_PRIVATE_KEY")==os.Getenv("INTERNAL_TOOL_AUDIT_PRIVATE_KEY")){return errors.New("audit reader and writer must use independent keys")}
  monitor:=auditdelivery.NewMonitor(db,publisher!=nil)
- auditcontroller.Register(mux,authController,monitor,reader)
+ auditcontroller.Register(mux,authController,monitor,reader,receiptReader)
  mux.HandleFunc("GET /health/audit-delivery",monitor.HealthHandler)
  if publisher!=nil{
   workerCtx,workerStop:=context.WithCancel(ctx)
