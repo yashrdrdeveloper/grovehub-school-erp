@@ -30,6 +30,8 @@ jobs:
         run: make generate-clients
       - run: go test -mod=mod ./...
       - run: go build -mod=mod ./...
+      - name: Enforce independent project dependency graph
+        run: bash ../../deployment/check-project-dependencies.sh
   core-security:
     runs-on: ubuntu-latest
     defaults:
@@ -44,3 +46,43 @@ jobs:
           go-version: '1.27.3'
           cache: false
       - run: go test ./gateway ./annotation/generation/routes
+  project-databases:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: provisioner
+          POSTGRES_PASSWORD: provisioner
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U provisioner"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: backend/libs/core
+    env:
+      GOWORK: 'off'
+      PROJECT_SCHOOL_TEST_DSN: postgres://school_test:school_test@127.0.0.1:5432/school_test?sslmode=disable
+      PROJECT_INTERNAL_TEST_DSN: postgres://internal_test:internal_test@127.0.0.1:5432/internal_test?sslmode=disable
+      PROJECT_CROSS_TEST_DSN: postgres://school_test:school_test@127.0.0.1:5432/internal_test?sslmode=disable
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.3'
+          cache: false
+      - name: Provision isolated disposable databases and roles
+        run: |
+          docker exec -i ${{ job.services.postgres.id }} psql -v ON_ERROR_STOP=1 -U provisioner -d postgres <<'SQL'
+          CREATE ROLE school_test LOGIN PASSWORD 'school_test';
+          CREATE ROLE internal_test LOGIN PASSWORD 'internal_test';
+          CREATE DATABASE school_test OWNER school_test;
+          CREATE DATABASE internal_test OWNER internal_test;
+          REVOKE CONNECT ON DATABASE school_test, internal_test FROM PUBLIC;
+          SQL
+      - run: go test -count=1 -v ./database/postgres

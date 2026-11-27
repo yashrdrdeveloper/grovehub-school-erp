@@ -3,11 +3,14 @@ package launcher
 import (
  "context"
  "errors"
+ "fmt"
  "net/http"
  "os"
  "os/signal"
  "syscall"
  "time"
+
+ "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/postgres"
 )
 
 // Run starts a private migration-stage listener. Readiness remains false
@@ -15,11 +18,20 @@ import (
 func Run() error {
  ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
  defer stop()
+ db,err:=postgres.OpenProjectPool(ctx,os.Getenv("SCHOOL_DATABASE_URL"))
+ if err!=nil {return fmt.Errorf("SCHOOL_DATABASE_URL: %w",err)}
+ defer db.Close()
  addr := os.Getenv("GROOVEHUB_HTTP_ADDR")
  if addr == "" { addr = "127.0.0.1:8081" }
  mux := http.NewServeMux()
  if err := registerIdentity(mux); err != nil { return err }
  mux.HandleFunc("GET /health/live", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusNoContent) })
+ mux.HandleFunc("GET /health/database",func(w http.ResponseWriter,r *http.Request){
+  probe,cancel:=context.WithTimeout(r.Context(),2*time.Second)
+  defer cancel()
+  if err:=db.PingContext(probe);err!=nil {http.Error(w,"database unavailable",http.StatusServiceUnavailable);return}
+  w.WriteHeader(http.StatusNoContent)
+ })
  mux.HandleFunc("GET /health/ready", func(w http.ResponseWriter, r *http.Request) { http.Error(w, "application dependencies not initialized", http.StatusServiceUnavailable) })
  server := &http.Server{Addr: addr, Handler: mux, ReadHeaderTimeout: 5*time.Second, ReadTimeout: 15*time.Second, WriteTimeout: 30*time.Second, IdleTimeout: 60*time.Second, MaxHeaderBytes: 1<<20}
  done := make(chan error, 1)
