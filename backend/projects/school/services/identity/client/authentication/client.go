@@ -1,5 +1,5 @@
 // Package authentication adapts the Platform Identity SDK to School ingress.
-// The transitional transport is retained only for business wrappers and Integration OAuth.
+// The transitional transport is retained only for Integration wrappers and OAuth.
 package authentication
 
 import (
@@ -35,7 +35,7 @@ type identityResponseTransport struct { base http.RoundTripper }
 func (t identityResponseTransport) RoundTrip(req *http.Request) (*http.Response,error) {
  base := t.base
  if base == nil { base = http.DefaultTransport }
- resp,err := base.RoundTrip(req)
+ resp,err := base.RoundTrip(preserveBusinessBody(req))
  if err != nil { return nil,err }
  if resp == nil || resp.Body == nil { return nil,fmt.Errorf("empty platform response") }
  defer resp.Body.Close()
