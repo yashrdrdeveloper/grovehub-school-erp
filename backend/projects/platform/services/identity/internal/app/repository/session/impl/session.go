@@ -145,3 +145,13 @@ func (repository *Repository) LockActive(ctx context.Context, accountID string, 
 	}
 	return session, err
 }
+
+ // FindDelegated validates the referenced session without exposing session secrets.
+func (repository *Repository) FindDelegated(ctx context.Context, sessionID string, now time.Time) (entity.Session, error) {
+ var session entity.Session
+ err := transaction.Database(ctx, repository.db).
+  Where("session_id = ? AND revoked_at IS NULL AND access_expires_at > ? AND refresh_expires_at > ?", sessionID, now, now).
+  Take(&session).Error
+ if errors.Is(err, gorm.ErrRecordNotFound) { return entity.Session{}, sessionrepo.ErrInvalidSession }
+ return session, err
+}

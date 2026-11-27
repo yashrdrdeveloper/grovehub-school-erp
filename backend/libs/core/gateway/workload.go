@@ -19,6 +19,7 @@ type WorkloadClaims struct {
 	Scopes []string
 	TenantID string
 	ActorGID string
+	SessionID string
 }
 
 // CredentialVerifier verifies credential authenticity, issuer and algorithm.

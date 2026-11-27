@@ -20,6 +20,7 @@ type signedClaims struct {
 	Scopes []string `json:"scopes"`
 	TenantID string `json:"tenant,omitempty"`
 	ActorGID string `json:"actor,omitempty"`
+	SessionID string `json:"session,omitempty"`
 }
 
 type TrustedWorkloadKey struct {
@@ -41,7 +42,7 @@ func SignWorkload(keyID, issuer string, key ed25519.PrivateKey, claims WorkloadC
 	if keyID == "" || len(keyID) > 128 || strings.ContainsAny(keyID, ". \t\r\n,") || issuer == "" || len(key) != ed25519.PrivateKeySize || claims.Subject == "" || claims.Audience == "" || !claims.ExpiresAt.After(now) || claims.ExpiresAt.After(now.Add(maxCredentialLifetime)) || (claims.TenantID == "") != (claims.ActorGID == "") {
 		return "", ErrWorkloadDenied
 	}
-	payload, err := json.Marshal(signedClaims{Issuer: issuer, Subject: claims.Subject, Audience: claims.Audience, IssuedAt: now.Unix(), ExpiresAt: claims.ExpiresAt.Unix(), Scopes: claims.Scopes, TenantID: claims.TenantID, ActorGID: claims.ActorGID})
+	payload, err := json.Marshal(signedClaims{Issuer: issuer, Subject: claims.Subject, Audience: claims.Audience, IssuedAt: now.Unix(), ExpiresAt: claims.ExpiresAt.Unix(), Scopes: claims.Scopes, TenantID: claims.TenantID, ActorGID: claims.ActorGID, SessionID: claims.SessionID})
 	if err != nil {
 		return "", err
 	}
@@ -78,7 +79,7 @@ func (v Ed25519Credentials) VerifyCredential(ctx context.Context, token string) 
 	if claims.Issuer != key.Issuer || claims.Subject != key.Subject || claims.Audience == "" || claims.IssuedAt <= 0 || claims.IssuedAt > now || claims.ExpiresAt <= now || claims.ExpiresAt <= claims.IssuedAt || claims.ExpiresAt-claims.IssuedAt > int64(maxCredentialLifetime/time.Second) {
 		return WorkloadClaims{}, ErrWorkloadDenied
 	}
-	if (claims.TenantID == "") != (claims.ActorGID == "") || (claims.ActorGID != "" && !key.AllowDelegation) {
+	if (claims.TenantID == "") != (claims.ActorGID == "") || ((claims.ActorGID != "" || claims.SessionID != "") && !key.AllowDelegation) {
 		return WorkloadClaims{}, ErrWorkloadDenied
 	}
 	for _, scope := range claims.Scopes {
@@ -93,5 +94,5 @@ func (v Ed25519Credentials) VerifyCredential(ctx context.Context, token string) 
 			return WorkloadClaims{}, ErrWorkloadDenied
 		}
 	}
-	return WorkloadClaims{Subject: claims.Subject, Audience: claims.Audience, ExpiresAt: time.Unix(claims.ExpiresAt, 0), Scopes: claims.Scopes, TenantID: claims.TenantID, ActorGID: claims.ActorGID}, nil
+	return WorkloadClaims{Subject: claims.Subject, Audience: claims.Audience, ExpiresAt: time.Unix(claims.ExpiresAt, 0), Scopes: claims.Scopes, TenantID: claims.TenantID, ActorGID: claims.ActorGID, SessionID: claims.SessionID}, nil
 }

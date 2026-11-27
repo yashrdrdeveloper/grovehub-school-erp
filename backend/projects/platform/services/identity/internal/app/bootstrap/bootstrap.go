@@ -1,6 +1,7 @@
 package bootstrap
 
 import (
+	"context"
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/module"
 	schoolgateway "grovehub/libs/schoolgateway"
 	accountclient "grovehub/services/identity/client/account"
@@ -9,6 +10,7 @@ import (
 type Runtime interface {
 	module.Module
 	schoolgateway.AccessVerifier
+	VerifyDelegatedSession(context.Context, string) (schoolgateway.Principal, error)
 	schoolgateway.ProtectedRouteAuthorizer
 	AccountClient() accountclient.Client
 	RouteLimits() map[string]int

@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"net/http"
 	"sync"
@@ -51,4 +52,12 @@ func (module *runtime) Close() {
 
 func (module *runtime) AuthorizeProtectedRoute(ctx context.Context, pattern string) error {
 	return module.policy.Authorize(ctx, pattern)
+}
+
+func (module *runtime) VerifyDelegatedSession(ctx context.Context, sessionID string) (schoolgateway.Principal, error) {
+ verifier, ok := module.verifier.(interface {
+  VerifyDelegatedSession(context.Context,string)(schoolgateway.Principal,error)
+ })
+ if !ok { return schoolgateway.Principal{}, errors.New("delegated session unavailable") }
+ return verifier.VerifyDelegatedSession(ctx, sessionID)
 }

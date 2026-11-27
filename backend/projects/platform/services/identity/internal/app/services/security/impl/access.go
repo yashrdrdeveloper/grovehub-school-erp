@@ -36,6 +36,20 @@ func (verifier *Verifier) VerifyAccess(ctx context.Context, accessSecret string)
 		return schoolgateway.Principal{}, errors.New("session is invalid")
 	}
 
+	return verifier.principalForSession(ctx, session)
+}
+
+func (verifier *Verifier) VerifyDelegatedSession(ctx context.Context, sessionID string) (schoolgateway.Principal, error) {
+ reader, ok := verifier.sessions.(interface {
+  FindDelegated(context.Context, string, time.Time) (entity.Session, error)
+ })
+ if !ok || sessionID == "" { return schoolgateway.Principal{}, errors.New("delegated session unavailable") }
+ session, err := reader.FindDelegated(ctx, sessionID, time.Now().UTC())
+ if err != nil { return schoolgateway.Principal{}, errors.New("session is invalid") }
+ return verifier.principalForSession(ctx, session)
+}
+
+func (verifier *Verifier) principalForSession(ctx context.Context, session entity.Session) (schoolgateway.Principal, error) {
 	account, err := verifier.accounts.FindByID(ctx, session.AccountID)
 	if err != nil || account.Status != entity.Active {
 		return schoolgateway.Principal{}, errors.New("account is not active")
