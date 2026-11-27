@@ -8,8 +8,6 @@ on:
     paths:
       - "backend/**"
       - "backend/libs/core/**"
-      - "go.work"
-      - "go.work.sum"
       - "scripts/**"
       - "Makefile"
       - ".github/workflows/backend-annotations.yml"
@@ -17,6 +15,9 @@ on:
 
 permissions:
   contents: read
+
+env:
+  GOWORK: 'off'
 
 jobs:
   annotation-build:

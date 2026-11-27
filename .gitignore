@@ -15,12 +15,16 @@ frontend/.env.local
 
 # Shared pnpm workspace and independent internal application
 node_modules/
-libs/frontend/*/dist/
-internal/frontend/dist/
-internal/frontend/.vite/
-internal/frontend/coverage/
-internal/frontend/.env.local
+frontend/libs/*/dist/
+frontend/projects/*/dist/
+frontend/projects/*/.vite/
+frontend/projects/*/coverage/
+frontend/projects/*/.env.local
 
 # Consumer-local generated OpenAPI SDKs
 /backend/projects/school/internal/generated/
 /backend/projects/internal-tool/internal/generated/
+
+# Developer-local Go workspaces are not part of the build contract.
+/go.work
+/go.work.sum

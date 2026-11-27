@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../lib/paths.sh"
 source "${SCRIPT_DIR}/../lib/common.sh"
 
-FRONTEND_DIR="${REPO_ROOT}/frontend/projects/school"
+FRONTEND_DIR="${REPO_ROOT}/frontend"
 export COREPACK_HOME="${TOOLS_DIR}/corepack"
 
 require_command node
@@ -25,5 +25,5 @@ run_pnpm() {
 ensure_tool_dirs
 cd -- "${FRONTEND_DIR}"
 log_info "Installing frontend dependencies with pinned pnpm"
-run_pnpm install --frozen-lockfile
+run_pnpm --filter groovehub-frontend... install --frozen-lockfile
 log_info "Frontend dependencies installed"

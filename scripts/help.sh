@@ -15,6 +15,13 @@ Backend
   make backend-status   Show backend process, hot-reload mode, and health status
   make backend-dev      Run backend with Air hot reload in the foreground
 
+Independent projects (run with their own environment)
+  make school-backend-build / school-backend-test / school-backend-start
+  make internal-backend-build / internal-backend-test / internal-backend-start
+  make internal-db-migrate
+  make internal-frontend-build / internal-frontend-test / internal-frontend-dev
+  cd frontend && pnpm install --frozen-lockfile
+
 Database
   make db-schema-status                           Show current GroveHub schema baseline state
   make db-schema-init                             Initialize all service schemas from the current baseline

@@ -1,0 +1,4 @@
+packages:
+  - projects/school
+  - 'libs/*'
+  - projects/internal-tool

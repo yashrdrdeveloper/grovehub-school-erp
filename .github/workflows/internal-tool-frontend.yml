@@ -4,8 +4,8 @@ on:
     paths:
       - 'frontend/projects/internal-tool/**'
       - 'frontend/libs/**'
-      - 'pnpm-lock.yaml'
-      - 'pnpm-workspace.yaml'
+      - 'frontend/pnpm-lock.yaml'
+      - 'frontend/pnpm-workspace.yaml'
       - '.github/workflows/internal-tool-frontend.yml'
   workflow_dispatch:
 permissions:
@@ -22,9 +22,13 @@ jobs:
         with:
           node-version: '22'
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm --filter @groovehub/internal-tool... install --frozen-lockfile
+        working-directory: frontend
       - run: pnpm --filter @groovehub/internal-tool test
+        working-directory: frontend
       - run: pnpm --filter @groovehub/internal-tool build
+        working-directory: frontend
       - name: Enforce independent application imports
         run: |
           if grep -R -nE 'frontend/projects/school|/projects/school|@Domain/|@Shell/|@Business/' frontend/projects/internal-tool/app frontend/projects/internal-tool/packages; then exit 1; fi

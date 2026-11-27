@@ -8,7 +8,7 @@ importers:
 
   .: {}
 
-  frontend/projects/internal-tool:
+  projects/internal-tool:
     dependencies:
       '@groovehub/base':
         specifier: workspace:*
@@ -60,7 +60,7 @@ importers:
         specifier: ^7.1.0
         version: 7.3.8(@types/node@22.20.5)(jiti@2.7.0)(lightningcss@1.33.0)
 
-  frontend/projects/school:
+  projects/school:
     dependencies:
       '@groovehub/base':
         specifier: workspace:*
@@ -178,7 +178,7 @@ importers:
         specifier: ^7.1.0
         version: 7.3.8(@types/node@22.20.5)(jiti@2.7.0)(lightningcss@1.33.0)
 
-  frontend/libs/base:
+  libs/base:
     dependencies:
       clsx:
         specifier: ^2.1.1
@@ -200,7 +200,7 @@ importers:
         specifier: ~5.9.3
         version: 5.9.3
 
-  frontend/libs/components:
+  libs/components:
     dependencies:
       '@groovehub/base':
         specifier: workspace:*
@@ -261,7 +261,7 @@ importers:
         specifier: ^7.1.0
         version: 7.3.8(@types/node@22.20.5)(jiti@2.7.0)(lightningcss@1.33.0)
 
-  frontend/libs/styles:
+  libs/styles:
     dependencies:
       tailwindcss:
         specifier: ^4.1.0

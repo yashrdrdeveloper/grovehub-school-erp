@@ -118,12 +118,35 @@ frontend-build:
 	@bash ./scripts/frontend/build.sh
 
 frontend-test:
-	@cd frontend && node node_modules/jest/bin/jest.js --passWithNoTests
+	@cd frontend/projects/school && pnpm test
 
 frontend-dev:
-	@cd frontend && node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 4173 --strictPort
+	@cd frontend/projects/school && pnpm dev
 
 # Operator-only, one-time first account bootstrap. Prompts for password securely.
 .PHONY: identity-bootstrap-admin
 identity-bootstrap-admin:
 	@bash ./scripts/identity/bootstrap-admin.sh "$(EMAIL)" "$(FIRST_NAME)" "$(LAST_NAME)" "$(TENANT_ID)" $(if $(PERSON_GID),"$(PERSON_GID)")
+
+# Explicit project entrypoints. Each command uses its own environment.
+.PHONY: school-backend-build school-backend-test school-backend-start internal-backend-build internal-backend-test internal-backend-start internal-db-migrate internal-frontend-build internal-frontend-test internal-frontend-dev
+school-backend-build:
+	@$(MAKE) -C backend/projects/school build
+school-backend-test:
+	@$(MAKE) -C backend/projects/school test
+school-backend-start:
+	@$(MAKE) -C backend/projects/school start
+internal-backend-build:
+	@$(MAKE) -C backend/projects/internal-tool build
+internal-backend-test:
+	@$(MAKE) -C backend/projects/internal-tool test
+internal-backend-start:
+	@$(MAKE) -C backend/projects/internal-tool start
+internal-db-migrate:
+	@$(MAKE) -C backend/projects/internal-tool migrate
+internal-frontend-build:
+	@cd frontend && pnpm --filter @groovehub/internal-tool build
+internal-frontend-test:
+	@cd frontend && pnpm --filter @groovehub/internal-tool test
+internal-frontend-dev:
+	@cd frontend && pnpm --filter @groovehub/internal-tool dev

@@ -1,4 +1,0 @@
-packages:
-  - frontend/projects/school
-  - 'frontend/libs/*'
-  - frontend/projects/internal-tool
