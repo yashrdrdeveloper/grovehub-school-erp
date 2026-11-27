@@ -28,7 +28,6 @@ const authViews: Record<AuthRouteKey, ReactElement> = {
 
 import { AuditPage } from '@Domain/platform';
 
-
 const workspaceViews: Record<AppRouteKey, ReactElement | null> = {
   [APP_ROUTE_IDS.AUDIT]: <AuditPage />,
   [APP_ROUTE_IDS.RBAC]: <RbacPage />,

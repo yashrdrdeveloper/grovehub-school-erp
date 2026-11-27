@@ -4,5 +4,9 @@ import type { SearchRequest, SearchResult } from '@Business/accounts/types';
 import type { AuditActivity } from '../types/contracts';
 
 export const auditApi = {
-  search: (request: SearchRequest & { scope?: 'ME' }) => apiRequest<SearchResult<AuditActivity>>('/audit/protected/search', { method: HTTP_METHOD.POST, body: request }),
+  search: (request: SearchRequest & { scope?: 'ME' }) =>
+    apiRequest<SearchResult<AuditActivity>>('/audit/protected/search', {
+      method: HTTP_METHOD.POST,
+      body: request,
+    }),
 };

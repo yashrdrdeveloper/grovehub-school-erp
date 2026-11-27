@@ -14,6 +14,16 @@ export const APP_ROUTE_CONFIG = [
     path: '/users/setup',
     type: RouteType.PROTECTED,
   },
-  { id: APP_ROUTE_IDS.AUDIT, name: 'Audit logs', path: '/platform/audit', type: RouteType.PROTECTED },
-  { id: APP_ROUTE_IDS.RBAC, name: 'Roles and permissions', path: '/users/rbac', type: RouteType.PROTECTED },
+  {
+    id: APP_ROUTE_IDS.AUDIT,
+    name: 'Audit logs',
+    path: '/platform/audit',
+    type: RouteType.PROTECTED,
+  },
+  {
+    id: APP_ROUTE_IDS.RBAC,
+    name: 'Roles and permissions',
+    path: '/users/rbac',
+    type: RouteType.PROTECTED,
+  },
 ] as const satisfies readonly RouteEntity<AppRouteId>[];
