@@ -11,8 +11,8 @@ REPO_ROOT="$(
   pwd
 )"
 
-BACKEND_DIR="${REPO_ROOT}/backend"
-CORE_DIR="${REPO_ROOT}/libs/backend/core"
+BACKEND_DIR="${REPO_ROOT}/backend/projects/platform"
+CORE_DIR="${REPO_ROOT}/backend/libs/core"
 CORE_MODULE="github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core"
 TOOLS_DIR="${REPO_ROOT}/.tools"
 TOOLS_BIN_DIR="${TOOLS_DIR}/bin"

@@ -1,4 +1,4 @@
 packages:
-  - frontend
-  - 'libs/frontend/*'
-  - internal/frontend
+  - frontend/projects/school
+  - 'frontend/libs/*'
+  - frontend/projects/internal-tool

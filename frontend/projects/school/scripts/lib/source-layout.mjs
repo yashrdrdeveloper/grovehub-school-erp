@@ -4,7 +4,7 @@ import path from 'node:path';
 /** Keep logical package owners stable when a package moves outside the app. */
 export const createSourceLayout = (appRoot, packageNames = ['base', 'styles', 'components']) => {
   const localRoot = path.join(appRoot, 'packages');
-  const sharedRoot = path.resolve(appRoot, '../libs/frontend');
+  const sharedRoot = path.resolve(appRoot, '../../libs');
   const sharedPackages = packageNames.flatMap((name) => {
     const local = path.join(localRoot, name);
     const shared = path.join(sharedRoot, name);

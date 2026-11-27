@@ -72,4 +72,4 @@ require (
 	gorm.io/driver/postgres v1.6.0 // indirect
 )
 
-replace github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core => ../libs/backend/core
+replace github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core => ../../libs/core

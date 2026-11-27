@@ -28,13 +28,13 @@
     "baseUrl": ".",
     "paths": {
       "@Base/*": [
-        "../libs/frontend/base/*"
+        "../../libs/base/*"
       ],
       "@Business/*": [
         "packages/business/*"
       ],
       "@Components/*": [
-        "../libs/frontend/components/*"
+        "../../libs/components/*"
       ],
       "@Domain/*": [
         "packages/domain/*"
@@ -43,13 +43,13 @@
         "packages/shell/*"
       ],
       "@Base": [
-        "../libs/frontend/base/index.ts"
+        "../../libs/base/index.ts"
       ],
       "@Business": [
         "packages/business/index.ts"
       ],
       "@Components": [
-        "../libs/frontend/components/index.ts"
+        "../../libs/components/index.ts"
       ],
       "@Domain": [
         "packages/domain/index.ts"
@@ -58,10 +58,10 @@
         "packages/shell/index.ts"
       ],
       "@Styles": [
-        "../libs/frontend/styles/index.ts"
+        "../../libs/styles/index.ts"
       ],
       "@Styles/*": [
-        "../libs/frontend/styles/*"
+        "../../libs/styles/*"
       ],
       "@Assets/*": [
         "packages/assets/*"
@@ -74,9 +74,9 @@
   "include": [
     "app",
     "packages",
-    "../libs/frontend/base",
-    "../libs/frontend/styles",
-    "../libs/frontend/components",
+    "../../libs/base",
+    "../../libs/styles",
+    "../../libs/components",
     "vite.config.ts"
   ]
 }

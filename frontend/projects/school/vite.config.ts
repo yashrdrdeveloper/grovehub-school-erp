@@ -35,12 +35,12 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      '@Base': path.resolve(root, '../libs/frontend/base'),
+      '@Base': path.resolve(root, '../../libs/base'),
       '@Business': path.resolve(root, 'packages/business'),
-      '@Components': path.resolve(root, '../libs/frontend/components'),
+      '@Components': path.resolve(root, '../../libs/components'),
       '@Domain': path.resolve(root, 'packages/domain'),
       '@Shell': path.resolve(root, 'packages/shell'),
-      '@Styles': path.resolve(root, '../libs/frontend/styles'),
+      '@Styles': path.resolve(root, '../../libs/styles'),
       '@Assets': path.resolve(root, 'packages/assets'),
     },
   },
