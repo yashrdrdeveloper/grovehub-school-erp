@@ -58,7 +58,7 @@ type SchoolGrantView struct{
  SchoolID string `json:"schoolId"`
  SchoolName string `json:"schoolName,omitempty"`
  SchoolCode string `json:"schoolCode,omitempty"`
- SchoolVersion int64 `json:"schoolVersion,omitempty"`
+ SchoolVersion string `json:"schoolVersion,omitempty"`
  CanRequest bool `json:"canRequest"`
  CanReview bool `json:"canReview"`
  CanExecute bool `json:"canExecute"`

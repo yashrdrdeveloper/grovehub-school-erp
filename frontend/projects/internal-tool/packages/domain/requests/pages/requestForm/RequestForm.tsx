@@ -20,7 +20,10 @@ export function RequestForm({ close, success }: RequestFormProps) {
   const environment = availableEnvironments.find((item) => item.id === environmentId);
   const schools = getRequestSchoolIds(template, environment, grants);
   const schoolScoped = template?.scope === 'SCHOOL';
-  const targetReady = Boolean(ready && template && environment && (!schoolScoped || schools.includes(schoolId)));
+  const rename = schoolScoped && template?.method === 'PATCH' && template.endpoint === '/school/restricted/registry/schools/${schoolId}/name';
+  const selectedGrant = grants.find((grant) => grant.canRequest && grant.schoolId === schoolId && grant.templateId === templateId && grant.environmentCode === environment?.code);
+  const hasSnapshot = Boolean(selectedGrant?.schoolName && selectedGrant?.schoolVersion && /^[1-9][0-9]*$/.test(selectedGrant.schoolVersion));
+  const targetReady = Boolean(ready && template && environment && (!schoolScoped || schools.includes(schoolId)) && (!rename || hasSnapshot));
 
   function changeTemplate(value: string | null) {
     setTemplateId(value ?? '');
@@ -39,6 +42,13 @@ export function RequestForm({ close, success }: RequestFormProps) {
       // The pilot's schoolId placeholder comes from the same authorized target.
       data.set('mode:schoolId', 'value');
       data.set('value:schoolId', schoolId);
+    }
+    if (rename) {
+      if (!selectedGrant?.schoolName || !selectedGrant.schoolVersion) throw new ApiError(400, 'INVALID_REQUEST');
+      data.set('mode:expectedName', 'value');
+      data.set('value:expectedName', selectedGrant.schoolName);
+      data.set('mode:expectedVersion', 'value');
+      data.set('value:expectedVersion', selectedGrant.schoolVersion);
     }
     const raw = serializeRequest(template.id, schoolScoped, template.bodySchema, data);
     return requestJSON('/internal/protected/requests', 'POST', raw);
@@ -62,8 +72,14 @@ export function RequestForm({ close, success }: RequestFormProps) {
       disabled={!environment || !schools.length} searchable clearable={false}
       onChange={(value) => setSchoolId(value ?? '')} dataTestId="request-school" />}
     {schoolScoped && environment && !schools.length && <p role="status">{__('No authorized school for this template and environment.')}</p>}
+    {rename && selectedGrant && hasSnapshot && <section data-testid="request-school-snapshot">
+      <p>{__('Current school name')}: {selectedGrant.schoolName}</p>
+      <p className="muted">{__('School version')}: {selectedGrant.schoolVersion}</p>
+      <p className="muted">{__('The approved request is valid only for this exact school version.')}</p>
+    </section>}
+    {rename && schoolId && !hasSnapshot && <p role="alert">{__('Current school details are unavailable. Reopen the request form.')}</p>}
     {template && <details><summary>{__('Input schema')}</summary><pre>{JSON.stringify(template.bodySchema, null, 2)}</pre></details>}
-    {targetReady && template && Object.entries(template.bodySchema).filter(([name]) => !schoolScoped || name !== 'schoolId').map(([name, field]) =>
+    {targetReady && template && Object.entries(template.bodySchema).filter(([name]) => (!schoolScoped || name !== 'schoolId') && (!rename || (name !== 'expectedName' && name !== 'expectedVersion'))).map(([name, field]) =>
       <SchemaField key={[template.id, environmentId, schoolId, name].join(':')} name={name} field={field} />)}
     <label>{__('Reason')}<TextAreaControl name="reason" required maxLength={1000} rows={3} dataTestId="request-reason" /></label>
   </ActionForm>;

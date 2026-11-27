@@ -3,6 +3,7 @@ package workflow
 import (
  "context"
  "sort"
+ "strconv"
  "time"
 
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/entity"
@@ -25,7 +26,7 @@ func(s *Service) ResolvedSchoolGrants(ctx context.Context,actor entity.Operator)
  for _,grant:=range grants{
   row,ok:=records[grant.SchoolID]
   if !ok||row.Status!="ACTIVE"{continue}
-  grant.SchoolName=row.Name;grant.SchoolCode=row.Code;grant.SchoolVersion=row.Version;result=append(result,grant)
+  grant.SchoolName=row.Name;grant.SchoolCode=row.Code;grant.SchoolVersion=strconv.FormatInt(row.Version,10);result=append(result,grant)
  }
  return result,nil
 }

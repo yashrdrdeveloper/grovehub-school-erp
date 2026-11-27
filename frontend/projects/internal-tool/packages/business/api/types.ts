@@ -15,6 +15,7 @@ export interface SchoolGrant {
   schoolId: string;
   schoolName?: string;
   schoolCode?: string;
+  schoolVersion?: string;
   canRequest: boolean;
   canReview: boolean;
   canExecute: boolean;
