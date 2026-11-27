@@ -23,6 +23,9 @@ func RegisterHTTP(mux *http.ServeMux,db *sql.DB,grants string,renameGrants ...st
  rename,err:=restricted.NewRename(db,raw,grants);if err!=nil{return err}
  statusRaw:="";if len(renameGrants)>1{statusRaw=renameGrants[1]}
  status,err:=restricted.NewStatus(db,statusRaw,grants,raw);if err!=nil{return err}
+ accessRaw:="";if len(renameGrants)>2{accessRaw=renameGrants[2]}
+ access,err:=restricted.NewAccess(db,accessRaw,grants,raw,statusRaw);if err!=nil{return err}
+ mux.HandleFunc(restricted.AccessPattern,access)
  mux.HandleFunc(restricted.StatusPattern,status)
  mux.HandleFunc(restricted.Pattern,handler)
  mux.HandleFunc(restricted.RenamePattern,rename)

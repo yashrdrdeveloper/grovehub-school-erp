@@ -3,6 +3,17 @@ info:
   title: School Registry
   version: 1.0.0
 paths:
+  /school/restricted/registry/schools/{schoolId}/access-check:
+    get:
+      operationId: checkSchoolAccess
+      summary: Check active registry status for an authenticated Platform workload
+      security: [{workloadBearer: []}]
+      parameters:
+        - {in: path, name: schoolId, required: true, schema: {type: string, format: uuid}}
+      responses:
+        '204': {description: Active school}
+        '403': {description: Missing, disabled or unauthorized school}
+        '503': {description: Registry unavailable}
   /school/restricted/registry/schools/{schoolId}/status:
     patch:
       operationId: changeSchoolStatus

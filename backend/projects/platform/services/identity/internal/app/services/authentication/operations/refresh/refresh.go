@@ -2,6 +2,7 @@ package refresh
 
 import (
 	"context"
+ "grovehub/libs/schoolgateway"
 	"time"
 
 	authdto "grovehub/services/identity/internal/app/dto/authentication"
@@ -39,6 +40,10 @@ func (operation *RefreshOperation) Execute(ctx context.Context, token string) (a
 	if err != nil || account.Status != entity.Active {
 		return auth.RefreshResult{}, auth.ErrInvalidRefreshToken
 	}
+
+	tenant:=""
+	if account.TenantID!=nil{tenant=*account.TenantID}
+	if schoolgateway.CheckTenant(ctx,tenant)!=nil{return auth.RefreshResult{},auth.ErrInvalidRefreshToken}
 
 	access, err := secrets.NewSecret(32)
 	if err != nil {

@@ -120,7 +120,10 @@ func Run(logger *slog.Logger) error {
 
 	// Both external HTTP access tiers and restricted provider webhooks
 	// are verified before dispatch into a service-specific controller.
-	workloads, err := gateway.NewPlatformWorkloads(os.Getenv("PLATFORM_WORKLOAD_CONFIG"), identityModule, integrationModule)
+	tenantCheck,err:=gateway.NewTenantAccess(gateway.TenantAccessConfig{Origin:os.Getenv("PLATFORM_TENANT_ACCESS_ORIGIN"),KeyID:os.Getenv("PLATFORM_TENANT_ACCESS_KEY_ID"),PrivateKey:os.Getenv("PLATFORM_TENANT_ACCESS_PRIVATE_KEY")})
+	if err!=nil{return err}
+	if os.Getenv("PLATFORM_TENANT_ACCESS_REQUIRED")=="true"&&tenantCheck==nil{return errors.New("tenant access verifier required")}
+	workloads, err := gateway.NewPlatformWorkloads(os.Getenv("PLATFORM_WORKLOAD_CONFIG"), identityModule, integrationModule,tenantCheck)
 	if err != nil { return fmt.Errorf("initialize workload gateway: %w", err) }
 	gatewayRuntime := gateway.New(
 		mux,

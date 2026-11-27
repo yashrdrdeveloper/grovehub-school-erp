@@ -34,6 +34,7 @@ type platformWorkloads struct {
  policies map[string]core.RoutePolicy
  identity delegatedIdentity
  webhook core.WorkloadVerifier
+ tenantCheck school.TenantCheck
 }
 
 type workloadConfig struct {
@@ -50,8 +51,9 @@ type workloadConfig struct {
 
 // NewPlatformWorkloads uses explicit route grants. Empty config grants no
 // service-to-service access. The existing Gmail webhook verifier stays isolated.
-func NewPlatformWorkloads(raw string, identity delegatedIdentity, webhook core.WorkloadVerifier) (core.WorkloadVerifier,error) {
+func NewPlatformWorkloads(raw string, identity delegatedIdentity, webhook core.WorkloadVerifier,checks ...school.TenantCheck) (core.WorkloadVerifier,error) {
  v:=&platformWorkloads{identity:identity,webhook:webhook}
+ if len(checks)>0{v.tenantCheck=checks[0]}
  if strings.TrimSpace(raw)=="" { return v,nil }
  var cfg workloadConfig
  decoder:=json.NewDecoder(strings.NewReader(raw))
@@ -126,6 +128,7 @@ func (v *platformWorkloads) VerifyWorkload(ctx context.Context,r *http.Request)(
  if r.Pattern==internalCatalogRoute {
   if verified,err:=v.verifyInternalCatalog(ctx,r);err==nil{return verified,nil}
  }
+ ctx=school.WithTenantCheck(ctx,v.tenantCheck)
  verified,err:=v.scoped.VerifyWorkload(ctx,r)
  if err!=nil {return nil,err}
  claims,ok:=core.WorkloadFrom(verified)
@@ -144,6 +147,12 @@ func (v *platformWorkloads) VerifyWorkload(ctx context.Context,r *http.Request)(
  if claims.SessionID!="" || claims.ActorGID!="" || claims.TenantID!="" {return nil,core.ErrWorkloadDenied}
  actor,err:=v.identity.VerifyAccess(verified,values[0])
  if err!=nil || actor.SessionID=="" || actor.AccountID=="" {return nil,core.ErrWorkloadDenied}
+ // Logout and revocation remain available to disabled users.
+ switch r.Pattern {
+ case "POST /identity/restricted/auth/logout","POST /identity/restricted/auth/logout-all","DELETE /identity/restricted/auth/sessions/{sessionId}":
+ default:
+  if school.CheckTenant(verified,actor.TenantID)!=nil{return nil,core.ErrWorkloadDenied}
+ }
  r.Header.Del("X-GH-Identity-Proof")
  verified=school.WithPrincipal(verified,actor)
  // Reuse existing route policy during migration; unknown routes deny.

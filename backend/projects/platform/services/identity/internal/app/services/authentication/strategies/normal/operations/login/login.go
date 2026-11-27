@@ -2,6 +2,7 @@ package login
 
 import (
 	"context"
+ "grovehub/libs/schoolgateway"
 	"errors"
 	"strings"
 	"time"
@@ -45,6 +46,10 @@ func (operation *LoginOperation) Execute(ctx context.Context, input authdto.Logi
 	if err != nil || !valid {
 		return auth.SessionResult{}, auth.ErrInvalidCredentials
 	}
+
+	tenant:=""
+	if account.TenantID!=nil{tenant=*account.TenantID}
+	if schoolgateway.CheckTenant(ctx,tenant)!=nil{return auth.SessionResult{},auth.ErrInvalidCredentials}
 
 	access, err := secrets.NewSecret(32)
 	if err != nil {
