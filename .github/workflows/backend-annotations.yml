@@ -43,8 +43,11 @@ jobs:
         working-directory: backend/projects/platform
         run: |
           go list -overlay=.generated/overlay.json -f '{{.ImportPath}} {{join .Imports " "}} {{join .TestImports " "}} {{join .XTestImports " "}}' github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/... > "$RUNNER_TEMP/core-imports.txt"
-          awk '{ for (i=2;i<=NF;i++) if ($i ~ /^grovehub\//) { print $1 ": forbidden dependency " $i; bad=1 } } END { exit bad }' "$RUNNER_TEMP/core-imports.txt"
+          awk '{ for (i=2;i<=NF;i++) if ($i ~ /^grovehub\// || $i ~ /^github\.com\/yashrdrdeveloper\/grovehub-school-erp\/backend\/projects\//) { print $1 ": forbidden dependency " $i; bad=1 } } END { exit bad }' "$RUNNER_TEMP/core-imports.txt"
           wc -l "$RUNNER_TEMP/core-imports.txt"
+      - name: Test canonical Platform workload policy
+        working-directory: backend/projects/platform
+        run: GOWORK=off go test -vet=off -overlay=.generated/overlay.json ./launcher/services/gateway
       - name: Test annotation source generators
         working-directory: backend/projects/platform
         run: go test github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/generation/...
