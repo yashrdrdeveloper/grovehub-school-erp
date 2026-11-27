@@ -66,7 +66,7 @@ func Run() error {
   if directory!=nil&&(directoryConfig.KeyID==os.Getenv(prefix+"_KEY_ID")||directoryConfig.PrivateKey==os.Getenv(prefix+"_PRIVATE_KEY")){return errors.New("school directory key must be independent")}
   reserved=append(reserved,platform.ReservedCredential{KeyID:os.Getenv(prefix+"_KEY_ID"),PrivateKey:os.Getenv(prefix+"_PRIVATE_KEY")})
  }
- schoolBindings,schoolOrigins,err:=platform.ParseSchoolGrants(os.Getenv("INTERNAL_TOOL_SCHOOL_GRANTS"),schoolConfig,reserved)
+ schoolBindings,schoolOrigins,err:=platform.ParseSchoolGrants(os.Getenv("INTERNAL_TOOL_SCHOOL_GRANTS"),schoolConfig,reserved,directoryConfig.Origin)
  if err!=nil{return err}
  workflowController.New(workflow.NewWithSchoolBindings(db,bindings,schoolBindings).WithDirectory(directory),authController).Register(mux)
  publisher,err:=auditclient.New(auditclient.Config{Origin:os.Getenv("INTERNAL_TOOL_AUDIT_ORIGIN"),KeyID:os.Getenv("INTERNAL_TOOL_AUDIT_KEY_ID"),PrivateKey:os.Getenv("INTERNAL_TOOL_AUDIT_PRIVATE_KEY")})

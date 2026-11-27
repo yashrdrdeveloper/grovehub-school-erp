@@ -13,6 +13,7 @@ import (
 type SchoolBindingKey struct{EnvironmentCode,TemplateID,SchoolID string}
 type SchoolBinding struct{
  Adapter Adapter
+ Mutation bool
  Validate func(Invocation)bool
  Operators []string
  Requesters,Reviewers,Executors []string
@@ -37,11 +38,11 @@ func(s *Service) executionAdapter(environment string,t entity.Template,a entity.
   return adapter,nil
  }
  if t.Scope!="SCHOOL"||a.SchoolID==nil||!validID(*a.SchoolID){return nil,ErrForbidden}
- // Until a separately reviewed mutation policy is implemented, school
- // execution is read-only, regardless of what a template declares.
- if t.Method!="GET"||call.Method!="GET"{return nil,ErrForbidden}
  binding,ok:=s.schoolBindings[SchoolBindingKey{environment,t.ID,*a.SchoolID}]
  if !ok{return nil,ErrExecutionUnavailable}
+ if binding.Mutation{
+  if t.Method!="PATCH"||call.Method!="PATCH"||a.ReviewerID==nil||*a.ReviewerID==a.RequesterID||s.directory==nil{return nil,ErrForbidden}
+ }else if t.Method!="GET"||call.Method!="GET"{return nil,ErrForbidden}
  if !allowedOperator(binding.Executors,actor.ID)||!allowedOperator(binding.Requesters,a.RequesterID)||a.ReviewerID==nil||!allowedOperator(binding.Reviewers,*a.ReviewerID)||!binding.Validate(call){return nil,ErrForbidden}
  return binding.Adapter,nil
 }
