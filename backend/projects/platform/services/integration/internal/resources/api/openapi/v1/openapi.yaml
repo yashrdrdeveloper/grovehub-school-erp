@@ -9,8 +9,9 @@ paths:
   /integrations/restricted/providers:
     get:
       operationId: listProviders
-      security: [{ workloadBearer: [], identityProof: [] }]
+      security: [{ workloadBearer: [], identityProof: [] }, { workloadBearer: [] }]
       summary: List registered provider descriptors
+      description: School requires its live identity proof. Independently configured Internal Tool workloads may use only the internal.integration.catalog.read scope for this global, non-tenant catalog.
       responses:
         "200": {"description":"Provider catalog","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"type":["array","null"],"items":{"$ref":"#/components/schemas/ProviderDescriptor"}}},"required":["success","data"]}}}}
   /integrations/restricted/providers/{provider}:

@@ -15,6 +15,7 @@ import (
  controller "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/controller/authentication"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/resources/migrations"
  workflow "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/services/workflow"
+ platform "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/client/platform"
  workflowController "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/controller/workflow"
 )
 
@@ -36,7 +37,15 @@ func Run() error {
  if err!=nil{return err}
  mux := http.NewServeMux()
  authController.Register(mux)
- workflowController.New(workflow.New(db),authController).Register(mux)
+ bindings,err:=platform.Bindings(platform.Config{
+  EnvironmentCode:os.Getenv("INTERNAL_TOOL_CATALOG_ENVIRONMENT"),
+  TemplateID:os.Getenv("INTERNAL_TOOL_CATALOG_TEMPLATE_ID"),
+  Origin:os.Getenv("INTERNAL_TOOL_PLATFORM_ORIGIN"),
+  KeyID:os.Getenv("INTERNAL_TOOL_WORKLOAD_KEY_ID"),
+  PrivateKey:os.Getenv("INTERNAL_TOOL_WORKLOAD_PRIVATE_KEY"),
+ })
+ if err!=nil{return err}
+ workflowController.New(workflow.NewWithBindings(db,bindings),authController).Register(mux)
  mux.HandleFunc("GET /health/live", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusNoContent) })
  mux.HandleFunc("GET /health/database",func(w http.ResponseWriter,r *http.Request){
   probe,cancel:=context.WithTimeout(r.Context(),2*time.Second)

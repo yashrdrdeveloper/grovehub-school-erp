@@ -7,3 +7,7 @@ The provider-owned restrictedPolicies table is authoritative: configured routes 
 Foundation uses the separate school-foundation subject and explicit foundation.persons.create/get/update/search/deactivate scopes; no School browser wrapper or ordinary school workload is allowed. Gmail push cannot be configured as a school workload operation.
 
 School constructs separate Identity, Audit and Integration HTTP clients, each restricted to its own operation policy. For development these clients share the existing School signing identity and key; this is client-side policy isolation, not independent cryptographic identities. Keep private keys in consumers. Existing environment configuration must use the canonical scopes in the table. Do not deploy until full application verification passes.
+
+## Internal Tool catalog access
+
+Optional InternalToolKeys in PLATFORM_WORKLOAD_CONFIG is a separate list of public keys. Each must have Issuer and Subject equal to internal-tool, AllowDelegation=false, and exactly one scope internal.integration.catalog.read. Key IDs and public keys may not overlap School keys. It authorizes only GET /integrations/restricted/providers, without cookies, identity proof, actor claims or query parameters. The existing School route policy still requires live actor authorization. No tenant-specific operations or mutations are enabled. Configure keys separately for each Platform environment.
