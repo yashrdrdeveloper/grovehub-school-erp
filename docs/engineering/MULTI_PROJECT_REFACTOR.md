@@ -33,3 +33,8 @@ No root package.json, node_modules, pnpm lock/workspace, go.work or go.work.sum.
 
 ## Status
 Branch initialized; documentation only. No source migration, package release, namespace transfer, or executed build/test yet.
+
+## Verified CI baseline (2026-11-27)
+- Frontend run 45955769607: install, shared dependency inventory, guideline audit, Base/Components/application typecheck, Jest and ESLint passed. Architecture check failed; build, prerender and browser regression skipped. Formatting remediation artifact generated. Exact failure logs unavailable through connector; inspect run before modifying architecture rules.
+- Backend run 45955765539: PostgreSQL integration/RBAC job passed; annotation and macOS coverage jobs pending at inspection.
+- Do not disable architecture checks to make migration appear green. No physical migration yet.
