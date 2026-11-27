@@ -8,6 +8,7 @@ import (
  "errors"
  "net/http"
  "net/url"
+ "io"
  "regexp"
  "strings"
 
@@ -42,7 +43,8 @@ func SchoolBindings(c SchoolConfig)(map[workflow.SchoolBindingKey]workflow.Schoo
  }
  transport:=&core.WorkloadTransport{Origin:origin,KeyID:c.KeyID,Issuer:schoolIssuer,Subject:schoolIssuer+":"+c.SchoolID,Audience:"platform",PrivateKey:ed25519.PrivateKey(key),Policy:policy}
  client,err:=core.NewWorkloadHTTPClient(transport);if err!=nil{return nil,err}
- cfg:=sdk.NewConfiguration();cfg.Servers=sdk.ServerConfigurations{{URL:strings.TrimRight(origin.String(),"/")}};cfg.HTTPClient=client
+ cfg:=sdk.NewConfiguration();cfg.Servers=sdk.ServerConfigurations{{URL:strings.TrimRight(origin.String(),"/")}};client.Transport=schoolResponseTransport{base:client.Transport}
+ cfg.HTTPClient=client
  api:=sdk.NewAPIClient(cfg)
  adapter:=func(ctx context.Context,call workflow.Invocation)(int,error){
   if !validate(call){return 0,core.ErrWorkloadDenied}
@@ -64,4 +66,15 @@ func schoolCheckInvocation(school,path string)func(workflow.Invocation)bool{
   var value string
   return json.Unmarshal(input["schoolId"],&value)==nil&&value==school
  }
+}
+
+type schoolResponseTransport struct{base http.RoundTripper}
+func(t schoolResponseTransport) RoundTrip(r *http.Request)(*http.Response,error){
+ resp,err:=t.base.RoundTrip(r);if err!=nil{return nil,err}
+ if resp==nil||resp.Body==nil{return nil,errors.New("missing school audit response")}
+ defer resp.Body.Close()
+ raw,err:=io.ReadAll(io.LimitReader(resp.Body,4097))
+ if err!=nil||len(raw)>4096||(resp.StatusCode==204&&len(raw)!=0){return nil,errors.New("invalid school audit response")}
+ resp.Body=io.NopCloser(strings.NewReader(string(raw)))
+ return resp,nil
 }

@@ -24,7 +24,7 @@ func TestSchoolExecutionBoundary(t *testing.T){
   {school,"GET","","",true},{other,"GET","","",false},{school,"GET","?tenant="+other,"",false},{school,"POST","","",false},{school,"GET","","Cookie",false},{school,"GET","","X-GH-Identity-Proof",false},
  }{
   r:=httptest.NewRequest(tc.method,"/audit/restricted/schools/"+tc.school+"/activity-check"+tc.suffix,nil)
-  r.Pattern=schoolAuditCheckRoute;r.SetPathValue("schoolId",tc.school);r.Header.Set("Authorization","Bearer "+token)
+  r.Pattern=schoolAuditCheckRoute;r.Header.Set("Authorization","Bearer "+token)
   if tc.header!=""{r.Header.Set(tc.header,"forged")}
   _,err=verifier.VerifyWorkload(context.Background(),r)
   if (err==nil)!=tc.allow{t.Fatal("unexpected authorization",tc,err)}
