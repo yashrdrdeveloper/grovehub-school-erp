@@ -33,12 +33,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: false
-              required: [provider, ownerGid]
-              properties:
-                provider: { type: string, enum: [GMAIL, OUTLOOK] }
-                ownerGid: { type: string, format: uuid }
+              $ref: '#/components/schemas/CreateConnectionBody'
       responses:
         "201": {"description":"Pending connection","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/Connection"}},"required":["success","data"]}}}}
         "403": {"description":"Authorization unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}
@@ -94,11 +89,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: false
-              required: [direction]
-              properties:
-                direction: { type: string, enum: [INBOUND, OUTBOUND] }
+              $ref: '#/components/schemas/TestConnectionBody'
       responses:
         "200": {"description":"Saved test result (not a delivery receipt)","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/ConnectionTest"}},"required":["success","data"]}}}}
   /integrations/restricted/connections/{id}/tests:
@@ -141,13 +132,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required: [input]
-              additionalProperties: false
-              properties:
-                input:
-                  type: object
-                  additionalProperties: true
+              $ref: '#/components/schemas/ProviderActionBody'
             examples:
               gmailList: { value: { input: { pageToken: "" } } }
               gmailHistory: { value: { input: { startHistoryId: "123456" } } }
@@ -204,12 +189,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required: [input]
-              additionalProperties: false
-              properties:
-                input:
-                  $ref: '#/components/schemas/MailSendInput'
+              $ref: '#/components/schemas/MailSendBody'
             examples:
               plainText:
                 value:
@@ -263,6 +243,32 @@ paths:
         default: {"description":"Operation rejected","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}
 components:
   schemas:
+    CreateConnectionBody:
+      type: object
+      additionalProperties: false
+      required: [provider, ownerGid]
+      properties:
+        provider: { type: string, enum: [GMAIL, OUTLOOK] }
+        ownerGid: { type: string, format: uuid }
+    TestConnectionBody:
+      type: object
+      additionalProperties: false
+      required: [direction]
+      properties:
+        direction: { type: string, enum: [INBOUND, OUTBOUND] }
+    ProviderActionBody:
+      type: object
+      required: [input]
+      additionalProperties: false
+      properties:
+        input: { type: object, additionalProperties: true }
+    MailSendBody:
+      type: object
+      required: [input]
+      additionalProperties: false
+      properties:
+        input:
+          $ref: '#/components/schemas/MailSendInput'
     ProviderDescriptor: {"type":"object","properties":{"id":{"type":"string"},"displayName":{"type":"string"},"capabilities":{"type":["array","null"],"items":{"type":"string"}},"authType":{"type":"string"}},"required":["id","displayName","capabilities","authType"]}
     ProviderDetails: {"type":"object","properties":{"provider":{"$ref":"#/components/schemas/ProviderDescriptor"},"availableActions":{"type":["array","null"],"items":{"type":"string"}},"oauthConfigured":{"type":"boolean"}},"required":["provider","availableActions","oauthConfigured"]}
     Connection: {"type":"object","properties":{"id":{"type":"string","format":"uuid"},"tenantId":{"type":"string","format":"uuid"},"ownerGid":{"type":"string","format":"uuid"},"provider":{"type":"string"},"externalId":{"type":"string"},"status":{"type":"string"},"lastTestedAt":{"type":"string","format":"date-time"},"lastTestStatus":{"type":"string"},"createdAt":{"type":"string","format":"date-time"},"updatedAt":{"type":"string","format":"date-time"}},"required":["id","tenantId","ownerGid","provider","status","createdAt","updatedAt"]}
