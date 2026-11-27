@@ -7,6 +7,19 @@ security:
   - workloadBearer: []
     identityProof: []
 paths:
+  /audit/restricted/schools/{schoolId}/activity-check:
+    get:
+      operationId: checkSchoolAuditActivity
+      summary: Check if a single authorized school has recorded audit activity
+      description: Requires a school-bound Internal Tool workload. 404 means no recorded activity, not necessarily a nonexistent school.
+      security: [{workloadBearer: []}]
+      parameters:
+        - {in: path, name: schoolId, required: true, schema: {type: string, format: uuid}}
+      responses:
+        '204': {description: Activity exists}
+        '403': {description: Access denied}
+        '404': {description: No recorded activity}
+        '503': {description: Audit unavailable}
   /audit/restricted/operator-activities/search:
     post:
       operationId: searchOperatorActivities

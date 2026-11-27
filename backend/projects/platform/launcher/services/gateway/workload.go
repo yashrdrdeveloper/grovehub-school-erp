@@ -27,6 +27,7 @@ type platformWorkloads struct {
  internalCatalog core.ScopedWorkloadVerifier
  operatorAudit core.ScopedWorkloadVerifier
  operatorAuditRead core.ScopedWorkloadVerifier
+ schoolExecution core.ScopedWorkloadVerifier
  policies map[string]core.RoutePolicy
  identity delegatedIdentity
  webhook core.WorkloadVerifier
@@ -37,6 +38,7 @@ type workloadConfig struct {
  InternalToolKeys []core.WorkloadKeyConfig
  OperatorAuditKeys []core.WorkloadKeyConfig
  OperatorAuditReadKeys []core.WorkloadKeyConfig
+ SchoolExecutionKeys []core.WorkloadKeyConfig
  Routes map[string]core.RoutePolicy
 }
 
@@ -66,7 +68,11 @@ func NewPlatformWorkloads(raw string, identity delegatedIdentity, webhook core.W
   reader,err:=newOperatorAuditReadVerifier(cfg.OperatorAuditReadKeys,other)
   if err!=nil{return nil,err};v.operatorAuditRead=reader
  }
- if len(cfg.Keys)==0&&len(cfg.Routes)==0&&(len(cfg.InternalToolKeys)>0||len(cfg.OperatorAuditKeys)>0||len(cfg.OperatorAuditReadKeys)>0){return v,nil}
+ if len(cfg.SchoolExecutionKeys)>0{
+  other:=append(append(append(append([]core.WorkloadKeyConfig(nil),cfg.Keys...),cfg.InternalToolKeys...),cfg.OperatorAuditKeys...),cfg.OperatorAuditReadKeys...)
+  school,err:=newSchoolExecutionVerifier(cfg.SchoolExecutionKeys,other);if err!=nil{return nil,err};v.schoolExecution=school
+ }
+ if len(cfg.Keys)==0&&len(cfg.Routes)==0&&(len(cfg.InternalToolKeys)>0||len(cfg.OperatorAuditKeys)>0||len(cfg.OperatorAuditReadKeys)>0||len(cfg.SchoolExecutionKeys)>0){return v,nil}
  credentials,err:=core.NewEd25519Credentials(cfg.Keys)
  if err!=nil {return nil,err}
  if len(cfg.Routes)==0 {return nil,errors.New("no workload route policies")}
@@ -93,6 +99,7 @@ func (v *platformWorkloads) VerifyWorkload(ctx context.Context,r *http.Request)(
   if v.webhook==nil {return nil,core.ErrWorkloadDenied}
   return v.webhook.VerifyWorkload(ctx,r)
  }
+ if r.Pattern==schoolAuditCheckRoute{return v.verifySchoolExecution(ctx,r)}
  if r.Pattern==operatorAuditReadRoute{return v.verifyOperatorAuditRead(ctx,r)}
  if r.Pattern==operatorAuditRoute{return v.verifyOperatorAudit(ctx,r)}
  if r.Pattern==internalCatalogRoute {
