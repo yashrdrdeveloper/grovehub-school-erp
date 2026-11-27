@@ -1,3 +1,4 @@
+.DEFAULT_GOAL := build
 .PHONY: generate-clients build test start
 generate-clients:
 	bash scripts/generate-clients.sh
