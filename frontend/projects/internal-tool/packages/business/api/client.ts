@@ -13,7 +13,13 @@ export function csrfFromCookie(cookie: string): string {
   return values[0]?.slice(prefix.length) ?? '';
 }
 
-export async function request<T>(path: string, method = 'GET', body?: unknown, signal?: AbortSignal): Promise<T> {
+export function request<T>(path: string, method = 'GET', body?: unknown, signal?: AbortSignal): Promise<T> {
+  if (body === undefined) return requestJSON<T>(path, method, undefined, signal);
+  return requestJSON<T>(path, method, JSON.stringify(body), signal);
+}
+
+// A schema-owned serializer may supply JSON text to preserve numeric precision.
+export async function requestJSON<T>(path: string, method: string, body?: string, signal?: AbortSignal): Promise<T> {
   if (!/^\/internal\/(public|protected)\/[a-zA-Z0-9_/-]+$/.test(path)) throw new ApiError(400, 'INVALID_PATH');
   const headers: Record<string, string> = { Accept: 'application/json' };
   if (method !== 'GET') {
@@ -22,7 +28,7 @@ export async function request<T>(path: string, method = 'GET', body?: unknown, s
     if (body !== undefined) headers['Content-Type'] = 'application/json';
   }
   const options: RequestInit = { method, headers, credentials: 'same-origin', redirect: 'error', cache: 'no-store', signal };
-  if (body !== undefined) options.body = JSON.stringify(body);
+  if (body !== undefined) options.body = body;
   const response = await fetch(path, options);
   if (response.status === 401 && path.startsWith('/internal/protected/')) window.dispatchEvent(new Event('internal-session-expired'));
   const result = await response.json().catch(() => null) as { success?: boolean; data?: T; errorCode?: string } | null;

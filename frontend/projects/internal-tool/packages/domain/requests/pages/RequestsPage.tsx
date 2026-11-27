@@ -1,34 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Button, BUTTON_VARIANT } from '@Components/components/Button';
-import { Input } from '@Components/components/Input';
-import { ApiError, errorText, request, search } from '../../../business/api/client';
-import { formatDate, parseObject } from '../../../business/api/helpers';
-import type { Approval, Environment, Execution, Operator, Reconciliation, Template } from '../../../business/api/types';
+import { Checkbox } from '@Components/components/Checkbox';
+import { RequestForm } from './requestForm/RequestForm';
+import { ApiError, errorText, request } from '../../../business/api/client';
+import { formatDate } from '../../../business/api/helpers';
+import type { Approval, Execution, Operator, Reconciliation } from '../../../business/api/types';
 import { ActionForm } from '../../../shell/components/ActionForm';
 import { PagedRecords } from '../../../shell/components/pagedRecords/PagedRecords';
 
-function RequestForm({ close, success }: { close:()=>void; success:()=>void }) {
- const [templates,setTemplates]=useState<Template[]>([]);
- const [environments,setEnvironments]=useState<Environment[]>([]);
- const [templateId,setTemplateId]=useState('');
- const [error,setError]=useState('');
- const [ready,setReady]=useState(false);
- useEffect(()=>{
-  const abort=new AbortController();
-  void Promise.all([search<Template>('api-templates',1,100,abort.signal),search<Environment>('environments',1,100,abort.signal)]).then(([t,e])=>{if(!abort.signal.aborted){setTemplates(t.records);setEnvironments(e.records);setReady(true);}}).catch((failure)=>{if(!abort.signal.aborted)setError(errorText(failure));});
-  return ()=>abort.abort();
- },[]);
- const template=templates.find((t)=>t.id===templateId);
- return <ActionForm title={__('Submit approval request')} onClose={close} onSuccess={success} submit={(data)=>{if(!ready||!template)throw new ApiError(400,'INVALID_REQUEST');return request('/internal/protected/requests','POST',{templateId,environmentId:data.get('environmentId'),schoolId:data.get('schoolId')||null,input:parseObject(String(data.get('input'))),reason:data.get('reason')});}}>
-  {error && <p role="alert" className="error">{error}</p>}
-  <label>{__('Template revision')}<select value={templateId} onChange={(event)=>setTemplateId(event.target.value)} required data-testid="request-template"><option value="">—</option>{templates.map((t)=><option key={t.id} value={t.id}>{t.code} · v{t.version}</option>)}</select></label>
-  <label>{__('Environment')}<select name="environmentId" required data-testid="request-environment"><option value="">—</option>{environments.map((e)=><option key={e.id} value={e.id}>{e.name}</option>)}</select></label>
-  {template?.scope==='SCHOOL' && <Input name="schoolId" label={__('School ID')} required dataTestId="request-school"/>}
-  {template && <details><summary>{__('Input schema')}</summary><pre>{JSON.stringify(template.bodySchema,null,2)}</pre></details>}
-  <label>{__('Input (JSON object)')}<textarea name="input" required defaultValue="{}" rows={5} data-testid="request-input"/></label>
-  <label>{__('Reason')}<textarea name="reason" required maxLength={1000} rows={3} data-testid="request-reason"/></label>
- </ActionForm>;
-}
 function RequestDetail({ approval, operator, close, success }: { approval:Approval; operator:Operator; close:()=>void; success:()=>void }) {
  const [execution,setExecution]=useState<Execution|null>(null);
  const [review,setReview]=useState<Reconciliation|null>(null);
@@ -77,7 +56,7 @@ export function RequestsPage({ inbox, operator }: { inbox:boolean; operator:Oper
  return <><header className="page-heading"><div><span className="eyebrow">{__('OPERATIONS')}</span><h1>{title()}</h1><p className="muted">{__('Review requests, decisions and approved executions.')}</p></div><div className="inline">{!inbox&&<Button onClick={()=>setCreate(true)} dataTestId="request-create">{__('New request')}</Button>}{inbox&&<Button disabled={!chosen.length} onClick={()=>setBulk(true)} dataTestId="bulk-approve">{__('Approve selected')} ({chosen.length})</Button>}</div></header>
  {create&&!inbox&&<RequestForm close={close} success={success}/>}
  {bulk&&inbox&&<ActionForm title={__('Confirm bulk approval')} onClose={close} onSuccess={success} submit={(data)=>request('/internal/protected/approvals/bulk-approve','POST',{items:chosen.map((r)=>({id:r.id,version:r.version})),comment:data.get('comment')})}><p>{chosen.length} {__('pending requests selected')}</p><label>{__('Comment')}<textarea name="comment" maxLength={1000} rows={3} data-testid="bulk-comment"/></label></ActionForm>}
- <PagedRecords<Approval> resource={(inbox&&'approvals')||'requests'} title={title()} revision={revision} rowKey={(r)=>r.id} onSelect={setSelected} columns={[{id:'select',title:__('Select'),cell:(r)=>inbox&&<input type="checkbox" checked={chosen.some((item)=>item.id===r.id)} onChange={()=>toggle(r)} aria-label={__('Select request')+' '+r.id} data-testid={'select-request-'+r.id}/>},{id:'reason',title:__('Reason'),cell:(r)=>r.reason},{id:'status',title:__('Status'),cell:(r)=><span className="status">{r.status}</span>},{id:'version',title:__('Version'),cell:(r)=>r.version},{id:'created',title:__('Created'),cell:(r)=>formatDate(r.createdAt)}]}/>
+ <PagedRecords<Approval> resource={(inbox&&'approvals')||'requests'} title={title()} revision={revision} rowKey={(r)=>r.id} onSelect={setSelected} columns={[{id:'select',title:__('Select'),cell:(r)=>inbox&&<Checkbox checked={chosen.some((item)=>item.id===r.id)} onChange={()=>toggle(r)} label={__('Select request {{id}}', { id: r.id })} dataTestId={'select-request-'+r.id}/>},{id:'reason',title:__('Reason'),cell:(r)=>r.reason},{id:'status',title:__('Status'),cell:(r)=><span className="status">{r.status}</span>},{id:'version',title:__('Version'),cell:(r)=>r.version},{id:'created',title:__('Created'),cell:(r)=>formatDate(r.createdAt)}]}/>
  {selected&&<RequestDetail key={selected.id} approval={selected} operator={operator} close={close} success={success}/>}
  </>;
 }
