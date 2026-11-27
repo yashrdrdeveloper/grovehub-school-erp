@@ -4,6 +4,7 @@ on:
     paths:
       - 'backend/**'
       - '.github/workflows/project-backends.yml'
+      - 'scripts/release/**'
   workflow_dispatch:
 permissions:
   contents: read
@@ -31,6 +32,17 @@ jobs:
       - run: go build -mod=mod ./...
       - name: Enforce independent project dependency graph
         run: bash ../../deployment/check-project-dependencies.sh
+      - name: Build project executable
+        run: |
+          mkdir -p "$RUNNER_TEMP/project-bin"
+          go build -mod=mod -trimpath -o "$RUNNER_TEMP/project-bin/${{ matrix.project }}" ./cmd/${{ matrix.project }}
+      - name: Package independent backend
+        run: bash ../../../scripts/release/package-artifact.sh "${{ matrix.project }}-backend" "$RUNNER_TEMP/project-bin/${{ matrix.project }}" "$RUNNER_TEMP/release" "$GITHUB_SHA"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.project }}-backend-${{ github.sha }}
+          path: ${{ runner.temp }}/release/
+          if-no-files-found: error
   core-security:
     runs-on: ubuntu-latest
     defaults:

@@ -111,6 +111,14 @@ jobs:
           test -s backend/projects/platform/services/foundation/.generated/internal/app/events/producers/person/operations/changed/zz_events.gen.go
           test -s backend/projects/platform/services/integration/.generated/internal/app/events/producers/connection/operations/mailbox/zz_events.gen.go
 
+      - name: Package independently deployable Platform executable
+        run: bash scripts/release/package-artifact.sh platform .runtime/bin/groovehub-platform "$RUNNER_TEMP/release" "$GITHUB_SHA"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: platform-${{ github.sha }}
+          path: ${{ runner.temp }}/release/
+          if-no-files-found: error
+
   generated-coverage-macos:
     name: Validate generated-source unit coverage on macOS
     runs-on: macos-latest

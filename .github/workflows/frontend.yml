@@ -10,6 +10,7 @@ on:
       - 'frontend/pnpm-lock.yaml'
       - 'frontend/pnpm-workspace.yaml'
       - 'scripts/frontend/**'
+      - 'scripts/release/**'
       - '.github/workflows/frontend.yml'
   pull_request:
     paths:
@@ -19,6 +20,7 @@ on:
       - 'frontend/pnpm-lock.yaml'
       - 'frontend/pnpm-workspace.yaml'
       - 'scripts/frontend/**'
+      - 'scripts/release/**'
       - '.github/workflows/frontend.yml'
 
 jobs:
@@ -106,3 +108,10 @@ jobs:
       - name: ESLint (entire frontend)
         if: success() || failure()
         run: pnpm lint
+      - name: Package School frontend
+        run: bash ../../../scripts/release/package-artifact.sh school-frontend dist "$RUNNER_TEMP/release" "$GITHUB_SHA"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: school-frontend-${{ github.sha }}
+          path: ${{ runner.temp }}/release/
+          if-no-files-found: error
