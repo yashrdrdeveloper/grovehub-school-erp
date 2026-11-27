@@ -25,6 +25,9 @@ jobs:
         with:
           go-version: '1.27.3'
           cache: false
+      - name: Generate pinned School API clients
+        if: matrix.project == 'school'
+        run: make generate-clients
       - run: go test -mod=mod ./...
       - run: go build -mod=mod ./...
   core-security:

@@ -15,6 +15,7 @@ import (
  "strings"
  business "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/platform/client"
  businesscontroller "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/platform/controller/protected"
+ audit "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/audit/client/activity"
 )
 
 func registerIdentity(mux *http.ServeMux) error {
@@ -55,7 +56,7 @@ func registerIdentity(mux *http.ServeMux) error {
  platform:=client.New(origin,httpClient)
  controller.New(platform,browserOrigin).Register(mux)
  protected.New(platform,browserOrigin).Register(mux)
- businesscontroller.Register(mux,platform,browserOrigin)
+ businesscontroller.Register(mux,platform,audit.New(origin,httpClient),browserOrigin)
  businesscontroller.RegisterOAuthCallback(mux,platform)
  return nil
 }

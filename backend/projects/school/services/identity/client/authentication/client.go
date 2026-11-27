@@ -31,7 +31,7 @@ func (c *Client) call(ctx context.Context,method,path string,input any,proof str
 func (c *Client) callQuery(ctx context.Context,method,path string,input any,proof string,query url.Values)(Result,error) {
  var payload []byte
  if input!=nil {var err error;payload,err=json.Marshal(input);if err!=nil{return Result{},err}}
- ctx=context.WithValue(ctx,proofKey{},proof)
+ ctx=WithIdentityProof(ctx,proof)
  target:=c.origin.ResolveReference(&url.URL{Path:path,RawQuery:query.Encode()})
  req,err:=http.NewRequestWithContext(ctx,method,target.String(),bytes.NewReader(payload))
  if err!=nil {return Result{},err}
@@ -47,6 +47,11 @@ func (c *Client) callQuery(ctx context.Context,method,path string,input any,proo
 }
 
 type proofKey struct{}
+
+// WithIdentityProof passes the route-selected credential to the signed transport.
+func WithIdentityProof(ctx context.Context, proof string) context.Context {
+ return context.WithValue(ctx,proofKey{},proof)
+}
 // ProofTransport attaches a single route-selected credential after workload
 // signing. It never copies incoming browser headers or cookies.
 type ProofTransport struct { Base http.RoundTripper }

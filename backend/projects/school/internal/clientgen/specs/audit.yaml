@@ -1,0 +1,149 @@
+openapi: 3.1.0
+info:
+  title: GrooveHub Audit API
+  version: 1.0.0
+  description: Tenant-scoped audit search. The verified actor and existing Identity policies determine visibility.
+security:
+  - workloadBearer: []
+    identityProof: []
+paths:
+  /audit/restricted/search:
+    post:
+      operationId: searchAuditActivities
+      summary: Search audit activities visible to the authenticated actor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'
+      responses:
+        '200':
+          description: Audit activity page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+        '400':
+          description: Invalid search
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  securitySchemes:
+    workloadBearer:
+      type: http
+      scheme: bearer
+    identityProof:
+      type: apiKey
+      in: header
+      name: X-GH-Identity-Proof
+  schemas:
+    Filter:
+      type: object
+      required: [field, operator]
+      properties:
+        field: {type: string}
+        operator:
+          type: string
+          enum: [EQUALS, NOT_EQUALS, IN, NIN, EXISTS, NOT_EXISTS, GT, GTE, LT, LTE, CONTAINS, STARTS_WITH]
+        values:
+          type: array
+          items: {type: string}
+    Sort:
+      type: object
+      required: [field, direction]
+      properties:
+        field: {type: string}
+        direction: {type: string, enum: [ASC, DESC]}
+    SearchRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        scope:
+          type: string
+          description: ME limits results to the current actor; other scopes require tenant audit authorization and validation.
+        searchText: {type: string}
+        filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/Filter'
+        sort:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sort'
+        pageInfo:
+          type: object
+          properties:
+            rows: {type: integer, maximum: 100}
+            rowSize: {type: integer, maximum: 100}
+            pageNumber: {type: integer}
+            cursor: {type: string}
+    Activity:
+      type: object
+      required: [auditId, sourceEventId, assetType, assetId, auditType, operation, source, assetVersion, data, occurredAt, ingestedAt]
+      properties:
+        auditId: {type: string, format: uuid}
+        sourceEventId: {type: string, format: uuid}
+        assetType: {type: string}
+        assetId: {type: string, format: uuid}
+        auditType: {type: string}
+        operation: {type: string}
+        source: {type: string}
+        occurrenceId: {type: string, format: uuid}
+        assetVersion: {type: integer, format: int64}
+        actorId: {type: string, format: uuid}
+        subjectAccountId: {type: string, format: uuid}
+        personId: {type: string, format: uuid}
+        data: {}
+        occurredAt: {type: string, format: date-time}
+        ingestedAt: {type: string, format: date-time}
+    PageInfo:
+      type: object
+      required: [rows, hasPrevious, hasNext]
+      properties:
+        rows: {type: integer}
+        totalRecords: {type: integer, format: int64}
+        pageNumber: {type: integer}
+        rowSize: {type: integer}
+        totalPages: {type: integer, format: int64}
+        hasPrevious: {type: boolean}
+        hasNext: {type: boolean}
+        nextCursor: {type: string}
+    SearchResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: {type: boolean, const: true}
+        data:
+          type: object
+          required: [items, pageInfo]
+          properties:
+            items:
+              type: [array, 'null']
+              items:
+                $ref: '#/components/schemas/Activity'
+            pageInfo:
+              $ref: '#/components/schemas/PageInfo'
+    Error:
+      type: object
+      required: [success, errorCode, errorMessage, httpErrorCode, errorMetaData]
+      properties:
+        success: {type: boolean, const: false}
+        errorCode: {type: string}
+        errorMessage: {type: string}
+        httpErrorCode: {type: integer}
+        errorMetaData: {}

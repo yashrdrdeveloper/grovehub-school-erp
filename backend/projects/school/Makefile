@@ -1,7 +1,9 @@
-.PHONY: build test start
-build:
+.PHONY: generate-clients build test start
+generate-clients:
+	bash scripts/generate-clients.sh
+build: generate-clients
 	GOWORK=off go build ./...
-test:
+test: generate-clients
 	GOWORK=off go test ./...
-start:
+start: generate-clients
 	GOWORK=off go run ./cmd/school

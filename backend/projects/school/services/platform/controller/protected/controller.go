@@ -3,6 +3,8 @@ package protected
 import (
  "crypto/subtle"
  "encoding/json"
+ "errors"
+ audit "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/audit/client/activity"
  "io"
  "net/http"
  "strings"
@@ -13,7 +15,7 @@ import (
 
 // Register exposes only explicitly enumerated operations. Platform remains
 // responsible for live session verification, RBAC and resource authorization.
-func Register(mux *http.ServeMux,platform *auth.Client,origin string){
+func Register(mux *http.ServeMux,platform *auth.Client,activity *audit.Client,origin string){
  for _,operation:=range client.Operations(){
   op:=operation
   mux.HandleFunc(op.Method+" "+op.Path,func(w http.ResponseWriter,r *http.Request){
@@ -34,6 +36,15 @@ func Register(mux *http.ServeMux,platform *auth.Client,origin string){
      if !json.Valid(body)||!strings.HasPrefix(strings.TrimSpace(string(body)),"{"){http.Error(w,"invalid request",400);return}
      input=json.RawMessage(body)
     }
+   }
+   if op.Method=="POST" && op.Path=="/audit/protected/search" {
+    result,err:=activity.Search(r.Context(),input,token.Value)
+    if errors.Is(err,audit.ErrInvalidRequest){http.Error(w,"invalid audit request",400);return}
+    if err!=nil{http.Error(w,"service unavailable",503);return}
+    w.Header().Set("Content-Type","application/json")
+    w.WriteHeader(result.Status)
+    _,_=w.Write(result.Body)
+    return
    }
    result,err:=platform.CallBusiness(r.Context(),op.Method,target,input,token.Value)
    if err!=nil{http.Error(w,"service unavailable",503);return}
