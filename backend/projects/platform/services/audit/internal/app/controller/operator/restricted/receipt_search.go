@@ -12,13 +12,14 @@ import (
  core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
 )
 
-const ReceiptSearchPattern="POST /audit/restricted/school-rename-receipts/search"
-const ReceiptReadScope="internal.audit.school.rename-receipt.read"
+const ReceiptSearchPattern="POST /audit/restricted/school-mutation-receipts/search"
+const ReceiptReadScope="internal.audit.school.mutation-receipt.read"
 const ReceiptReader="internal-tool-school-receipt-reader"
 
 type ReceiptView struct {
  ExecutionID string `json:"executionId"`
  SchoolID string `json:"schoolId"`
+ Operation string `json:"operation"`
  PreviousVersion string `json:"previousVersion"`
  CorrelationID *string `json:"correlationId,omitempty"`
  OccurredAt time.Time `json:"occurredAt"`
@@ -30,12 +31,12 @@ type ReceiptPage struct {
  HasMore bool `json:"hasMore"`
 }
 func SearchReceipts(ctx context.Context,db *gorm.DB,in SearchInput)(ReceiptPage,error){
- rows,err:=db.WithContext(ctx).Raw("SELECT execution_id,school_id,previous_version,correlation_id,occurred_at FROM audit.school_mutation_receipts ORDER BY occurred_at DESC,execution_id DESC LIMIT ? OFFSET ?",in.RowSize+1,(in.PageNumber-1)*in.RowSize).Rows()
+ rows,err:=db.WithContext(ctx).Raw("SELECT execution_id,school_id,previous_version,correlation_id,occurred_at,operation FROM audit.school_mutation_receipts ORDER BY occurred_at DESC,execution_id DESC LIMIT ? OFFSET ?",in.RowSize+1,(in.PageNumber-1)*in.RowSize).Rows()
  if err!=nil{return ReceiptPage{},err};defer rows.Close()
  p:=ReceiptPage{Records:[]ReceiptView{},PageNumber:in.PageNumber,RowSize:in.RowSize}
  for rows.Next(){
   var v ReceiptView;var version int64
-  if err=rows.Scan(&v.ExecutionID,&v.SchoolID,&version,&v.CorrelationID,&v.OccurredAt);err!=nil{return ReceiptPage{},err}
+  if err=rows.Scan(&v.ExecutionID,&v.SchoolID,&version,&v.CorrelationID,&v.OccurredAt,&v.Operation);err!=nil{return ReceiptPage{},err}
   v.PreviousVersion=strconv.FormatInt(version,10);p.Records=append(p.Records,v)
  }
  if err=rows.Err();err!=nil{return ReceiptPage{},err}

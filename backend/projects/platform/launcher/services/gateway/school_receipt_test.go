@@ -32,7 +32,7 @@ func TestSchoolReceiptReaderWorkload(t *testing.T){
  raw,_:=json.Marshal(workloadConfig{SchoolReceiptReadKeys:[]core.WorkloadKeyConfig{k}})
  v,err:=NewPlatformWorkloads(string(raw),nil,nil);if err!=nil{t.Fatal(err)}
  token,err:=core.SignWorkload(k.KeyID,k.Issuer,priv,core.WorkloadClaims{Subject:k.Subject,Audience:"platform",Scopes:k.Scopes,ExpiresAt:time.Now().Add(time.Minute)});if err!=nil{t.Fatal(err)}
- for _,path:=range []string{"/audit/restricted/school-rename-receipts/search","/audit/restricted/school-rename-receipts","/audit/restricted/operator-activities/search","/audit/restricted/search"}{
+ for _,path:=range []string{"/audit/restricted/school-mutation-receipts/search","/audit/restricted/school-rename-receipts","/audit/restricted/operator-activities/search","/audit/restricted/search"}{
   r:=httptest.NewRequest("POST",path,nil);r.Pattern="POST "+path;r.Header.Set("Authorization","Bearer "+token)
   _,err=v.VerifyWorkload(context.Background(),r)
   if (err==nil)!=(r.Pattern==receiptReadRoute){t.Fatal("wrong reader grant",path,err)}

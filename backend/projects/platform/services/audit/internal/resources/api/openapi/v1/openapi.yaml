@@ -7,9 +7,26 @@ security:
   - workloadBearer: []
     identityProof: []
 paths:
-  /audit/restricted/school-rename-receipts/search:
+  /audit/restricted/school-status-receipts:
     post:
-      operationId: searchSchoolRenameReceipts
+      operationId: recordSchoolStatusReceipt
+      summary: Persist a committed school activation or disabling receipt
+      security: [{workloadBearer: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchoolStatusReceipt'
+      responses:
+        '204': {description: Persisted or identical replay}
+        '400': {description: Invalid receipt}
+        '403': {description: Denied}
+        '409': {description: Conflicting receipt}
+        '503': {description: Audit unavailable}
+  /audit/restricted/school-mutation-receipts/search:
+    post:
+      operationId: searchSchoolMutationReceipts
       description: Global receipt metadata for the dedicated Internal Tool receipt reader only.
       security: [{workloadBearer: []}]
       requestBody:
@@ -142,10 +159,22 @@ components:
       in: header
       name: X-GH-Identity-Proof
   schemas:
+    SchoolStatusReceipt:
+      type: object
+      additionalProperties: false
+      required: [executionId, schoolId, previousVersion, occurredAt, operation]
+      properties:
+        executionId: {type: string, format: uuid}
+        schoolId: {type: string, format: uuid}
+        previousVersion: {type: integer, format: int64, minimum: 1}
+        correlationId: {type: string, format: uuid}
+        occurredAt: {type: string, format: date-time}
+        operation: {type: string}
     SchoolReceiptView:
       type: object
-      required: [executionId, schoolId, previousVersion, occurredAt]
+      required: [executionId, schoolId, previousVersion, occurredAt, operation]
       properties:
+        operation: {type: string}
         executionId: {type: string, format: uuid}
         schoolId: {type: string, format: uuid}
         previousVersion: {type: string, pattern: '^[1-9][0-9]*$'}

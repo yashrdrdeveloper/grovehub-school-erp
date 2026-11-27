@@ -41,7 +41,7 @@ func Register(mux *http.ServeMux,a *auth.Controller,monitor *auditdelivery.Monit
   if reader==nil{response(w,503,nil);return}
   v,err:=reader(r.Context(),p);if err!=nil{response(w,503,nil);return};response(w,200,v)
  })
- bind("POST /internal/protected/school-rename-receipts/search",true,func(w http.ResponseWriter,r *http.Request,_ entity.Operator){
+ bind("POST /internal/protected/school-mutation-receipts/search",true,func(w http.ResponseWriter,r *http.Request,_ entity.Operator){
   p,ok:=page(w,r);if !ok{response(w,400,nil);return}
   if len(receiptReaders)!=1||receiptReaders[0]==nil{response(w,503,nil);return}
   v,err:=receiptReaders[0](r.Context(),p);if err!=nil{response(w,503,nil);return};response(w,200,v)

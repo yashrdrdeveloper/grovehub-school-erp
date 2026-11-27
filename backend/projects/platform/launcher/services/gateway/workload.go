@@ -29,6 +29,7 @@ type platformWorkloads struct {
  operatorAuditRead core.ScopedWorkloadVerifier
  schoolExecution core.ScopedWorkloadVerifier
  schoolReceipt core.ScopedWorkloadVerifier
+ schoolStatusReceipt core.ScopedWorkloadVerifier
  receiptRead core.ScopedWorkloadVerifier
  policies map[string]core.RoutePolicy
  identity delegatedIdentity
@@ -42,6 +43,7 @@ type workloadConfig struct {
  OperatorAuditReadKeys []core.WorkloadKeyConfig
  SchoolExecutionKeys []core.WorkloadKeyConfig
  SchoolReceiptKeys []core.WorkloadKeyConfig
+ SchoolStatusReceiptKeys []core.WorkloadKeyConfig
  SchoolReceiptReadKeys []core.WorkloadKeyConfig
  Routes map[string]core.RoutePolicy
 }
@@ -84,7 +86,11 @@ func NewPlatformWorkloads(raw string, identity delegatedIdentity, webhook core.W
   other:=append(append(append(append(append(append([]core.WorkloadKeyConfig(nil),cfg.Keys...),cfg.InternalToolKeys...),cfg.OperatorAuditKeys...),cfg.OperatorAuditReadKeys...),cfg.SchoolExecutionKeys...),cfg.SchoolReceiptKeys...)
   reader,err:=newReceiptReadVerifier(cfg.SchoolReceiptReadKeys,other);if err!=nil{return nil,err};v.receiptRead=reader
  }
- if len(cfg.Keys)==0&&len(cfg.Routes)==0&&(len(cfg.InternalToolKeys)>0||len(cfg.OperatorAuditKeys)>0||len(cfg.OperatorAuditReadKeys)>0||len(cfg.SchoolExecutionKeys)>0||len(cfg.SchoolReceiptKeys)>0||len(cfg.SchoolReceiptReadKeys)>0){return v,nil}
+ if len(cfg.SchoolStatusReceiptKeys)>0{
+  other:=append(append(append(append(append(append(append([]core.WorkloadKeyConfig(nil),cfg.Keys...),cfg.InternalToolKeys...),cfg.OperatorAuditKeys...),cfg.OperatorAuditReadKeys...),cfg.SchoolExecutionKeys...),cfg.SchoolReceiptKeys...),cfg.SchoolReceiptReadKeys...)
+  status,err:=newStatusReceiptVerifier(cfg.SchoolStatusReceiptKeys,other);if err!=nil{return nil,err};v.schoolStatusReceipt=status
+ }
+ if len(cfg.Keys)==0&&len(cfg.Routes)==0&&(len(cfg.InternalToolKeys)>0||len(cfg.OperatorAuditKeys)>0||len(cfg.OperatorAuditReadKeys)>0||len(cfg.SchoolExecutionKeys)>0||len(cfg.SchoolReceiptKeys)>0||len(cfg.SchoolReceiptReadKeys)>0||len(cfg.SchoolStatusReceiptKeys)>0){return v,nil}
  credentials,err:=core.NewEd25519Credentials(cfg.Keys)
  if err!=nil {return nil,err}
  if len(cfg.Routes)==0 {return nil,errors.New("no workload route policies")}
@@ -111,6 +117,7 @@ func (v *platformWorkloads) VerifyWorkload(ctx context.Context,r *http.Request)(
   if v.webhook==nil {return nil,core.ErrWorkloadDenied}
   return v.webhook.VerifyWorkload(ctx,r)
  }
+ if r.Pattern==statusReceiptRoute{return v.verifyStatusReceipt(ctx,r)}
  if r.Pattern==receiptReadRoute{return v.verifyReceiptRead(ctx,r)}
  if r.Pattern==receiptRoute{return v.verifyReceipt(ctx,r)}
  if r.Pattern==schoolAuditCheckRoute{return v.verifySchoolExecution(ctx,r)}

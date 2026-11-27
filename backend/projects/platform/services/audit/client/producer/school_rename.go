@@ -10,3 +10,12 @@ type SchoolRenameReceipt struct{
  CorrelationID *string `json:"correlationId,omitempty"`
  OccurredAt time.Time `json:"occurredAt"`
 }
+
+type SchoolStatusReceipt struct{
+ ExecutionID string `json:"executionId"`
+ SchoolID string `json:"schoolId"`
+ PreviousVersion int64 `json:"previousVersion"`
+ CorrelationID *string `json:"correlationId,omitempty"`
+ OccurredAt time.Time `json:"occurredAt"`
+ Operation string `json:"operation"`
+}

@@ -15,11 +15,18 @@ const ReceiptPattern="POST /audit/restricted/school-rename-receipts"
 const ReceiptScope="internal.audit.school.rename-receipt.write"
 const ReceiptIssuer="school-registry-audit"
 func StoreSchoolReceipt(ctx context.Context,db *gorm.DB,a producer.SchoolRenameReceipt)error{
+ return storeReceipt(ctx,db,a,"RENAME")
+}
+func StoreStatusReceipt(ctx context.Context,db *gorm.DB,a producer.SchoolStatusReceipt)error{
+ if a.Operation!="ACTIVATE"&&a.Operation!="DISABLE"{return errors.New("invalid lifecycle operation")}
+ return storeReceipt(ctx,db,producer.SchoolRenameReceipt{ExecutionID:a.ExecutionID,SchoolID:a.SchoolID,PreviousVersion:a.PreviousVersion,CorrelationID:a.CorrelationID,OccurredAt:a.OccurredAt},a.Operation)
+}
+func storeReceipt(ctx context.Context,db *gorm.DB,a producer.SchoolRenameReceipt,operation string)error{
  return db.WithContext(ctx).Transaction(func(tx *gorm.DB)error{
-  result:=tx.Exec("INSERT INTO audit.school_mutation_receipts(execution_id,school_id,previous_version,correlation_id,occurred_at) VALUES(?,?,?,?,?) ON CONFLICT(execution_id) DO NOTHING",a.ExecutionID,a.SchoolID,a.PreviousVersion,a.CorrelationID,a.OccurredAt)
+  result:=tx.Exec("INSERT INTO audit.school_mutation_receipts(execution_id,school_id,previous_version,correlation_id,occurred_at,operation) VALUES(?,?,?,?,?,?) ON CONFLICT(execution_id) DO NOTHING",a.ExecutionID,a.SchoolID,a.PreviousVersion,a.CorrelationID,a.OccurredAt,operation)
   if result.Error!=nil{return result.Error};if result.RowsAffected==1{return nil}
   var same bool
-  if err:=tx.Raw("SELECT EXISTS(SELECT 1 FROM audit.school_mutation_receipts WHERE execution_id=? AND school_id=? AND previous_version=? AND correlation_id IS NOT DISTINCT FROM CAST(? AS uuid) AND occurred_at=?)",a.ExecutionID,a.SchoolID,a.PreviousVersion,a.CorrelationID,a.OccurredAt).Scan(&same).Error;err!=nil{return err}
+  if err:=tx.Raw("SELECT EXISTS(SELECT 1 FROM audit.school_mutation_receipts WHERE execution_id=? AND school_id=? AND previous_version=? AND correlation_id IS NOT DISTINCT FROM CAST(? AS uuid) AND occurred_at=? AND operation=?)",a.ExecutionID,a.SchoolID,a.PreviousVersion,a.CorrelationID,a.OccurredAt,operation).Scan(&same).Error;err!=nil{return err}
   if !same{return ErrConflict};return nil
  })
 }

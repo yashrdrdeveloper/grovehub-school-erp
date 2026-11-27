@@ -27,6 +27,7 @@ export interface BlockedEvent {
 }
 
 export interface SchoolReceipt {
+  operation: 'RENAME' | 'ACTIVATE' | 'DISABLE';
   executionId: string;
   schoolId: string;
   previousVersion: string;
