@@ -1,6 +1,5 @@
-// Package authentication owns the transitional typed Platform auth client.
-// Replace its wire request types with generated types when the restricted
-// OpenAPI specification is verified.
+// Package authentication adapts the Platform Identity SDK to School ingress.
+// Operations whose contracts have not been reconciled retain the transitional transport.
 package authentication
 
 import (
@@ -11,19 +10,56 @@ import (
  "io"
  "net/http"
  "net/url"
+ "strings"
+
+ sdk "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/internal/generated/identity"
 )
 
 type Login struct { Identifier string `json:"identifier"`; Password string `json:"password"` }
 type ForgotPassword struct { Email string `json:"email"` }
 type Result struct { Status int; Body []byte; Cookies []*http.Cookie }
-type Client struct { origin *url.URL; http *http.Client }
+type Client struct { origin *url.URL; http *http.Client; api *sdk.APIClient }
 
-func New(origin *url.URL, client *http.Client) *Client { return &Client{origin:origin,http:client} }
+func New(origin *url.URL, client *http.Client) *Client {
+ cfg := sdk.NewConfiguration()
+ cfg.Servers = sdk.ServerConfigurations{{URL: strings.TrimRight(origin.String(), "/")}}
+ bounded := *client
+ bounded.Transport = identityResponseTransport{base: client.Transport}
+ cfg.HTTPClient = &bounded
+ return &Client{origin:origin,http:client,api:sdk.NewAPIClient(cfg)}
+}
+
+// Bound and validate responses before the generated SDK consumes them.
+// Preserve the original response body and Set-Cookie headers for School ingress.
+type identityResponseTransport struct { base http.RoundTripper }
+func (t identityResponseTransport) RoundTrip(req *http.Request) (*http.Response,error) {
+ base := t.base
+ if base == nil { base = http.DefaultTransport }
+ resp,err := base.RoundTrip(req)
+ if err != nil { return nil,err }
+ if resp == nil || resp.Body == nil { return nil,fmt.Errorf("empty platform response") }
+ defer resp.Body.Close()
+ if resp.StatusCode < 200 || resp.StatusCode >= 600 || (resp.StatusCode >= 300 && resp.StatusCode < 400) { return nil,fmt.Errorf("unexpected platform response") }
+ body,err := io.ReadAll(io.LimitReader(resp.Body,(1<<20)+1))
+ if err != nil || len(body)>1<<20 || !json.Valid(body) { return nil,fmt.Errorf("invalid platform response") }
+ resp.Body = io.NopCloser(bytes.NewReader(body))
+ return resp,nil
+}
+func sdkResult(resp *http.Response, callErr error) (Result,error) {
+ if resp == nil { return Result{},fmt.Errorf("platform unavailable") }
+ defer resp.Body.Close()
+ if resp.StatusCode < 300 && callErr != nil { return Result{},fmt.Errorf("invalid platform success response") }
+ body,err := io.ReadAll(io.LimitReader(resp.Body,(1<<20)+1))
+ if err != nil || len(body)>1<<20 || !json.Valid(body) { return Result{},fmt.Errorf("invalid platform response") }
+ return Result{Status:resp.StatusCode,Body:body,Cookies:resp.Cookies()},nil
+}
 func (c *Client) Login(ctx context.Context, input Login)(Result,error) {
- return c.call(ctx,http.MethodPost,"/identity/restricted/auth/login",input,"")
+ _,resp,err := c.api.DefaultAPI.Login(WithIdentityProof(ctx,"")).LoginBody(sdk.LoginBody{Identifier:input.Identifier,Password:input.Password}).Execute()
+ return sdkResult(resp,err)
 }
 func (c *Client) ForgotPassword(ctx context.Context,input ForgotPassword)(Result,error) {
- return c.call(ctx,http.MethodPost,"/identity/restricted/auth/forgot-password",input,"")
+ _,resp,err := c.api.DefaultAPI.ForgotPassword(WithIdentityProof(ctx,"")).ForgotBody(sdk.ForgotBody{Email:input.Email}).Execute()
+ return sdkResult(resp,err)
 }
 func (c *Client) call(ctx context.Context,method,path string,input any,proof string)(Result,error) {
  return c.callQuery(ctx,method,path,input,proof,nil)
