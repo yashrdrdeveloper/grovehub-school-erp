@@ -72,9 +72,16 @@ func(s *Service) Submit(ctx context.Context,actor entity.Operator,in SubmitInput
  t,err:=s.repo.Template(ctx,in.TemplateID);if err!=nil{return entity.Approval{},err}
  if (t.Scope=="GLOBAL"&&in.SchoolID!=nil)||(t.Scope=="SCHOOL"&&(in.SchoolID==nil||!validID(*in.SchoolID)))||!validInput(in.Input,t.BodySchema){return entity.Approval{},ErrInvalid}
  a:=entity.Approval{ID:uuid.NewString(),TemplateID:t.ID,EnvironmentID:in.EnvironmentID,SchoolID:in.SchoolID,Input:in.Input,Reason:in.Reason,RequesterID:actor.ID}
- if _,err:=resolve(t,a);err!=nil{return entity.Approval{},err}
+ call,err:=resolve(t,a);if err!=nil{return entity.Approval{},err}
  // School mutations may be proposed but must never be self-approved.
  auto:=actor.Persona==entity.L2&&!(t.Scope=="SCHOOL"&&t.Method!="GET")
+ if a.SchoolID!=nil&&len(s.schoolBindings)>0{
+  env,err:=s.repo.Environment(ctx,a.EnvironmentID);if err!=nil{return entity.Approval{},err}
+  if binding,ok:=s.schoolBindings[SchoolBindingKey{env.Code,t.ID,*a.SchoolID}];ok{
+   if !allowedOperator(binding.Requesters,actor.ID)||!binding.Validate(call){return entity.Approval{},ErrForbidden}
+   auto=auto&&allowedOperator(binding.Reviewers,actor.ID)
+  }
+ }
  return s.repo.Submit(ctx,a,auto)
 }
 func(s *Service) List(ctx context.Context,actor entity.Operator,inbox bool)([]entity.Approval,error){return s.repo.List(ctx,actor,inbox)}
@@ -82,5 +89,8 @@ func(s *Service) Get(ctx context.Context,actor entity.Operator,id string)(entity
 func(s *Service) Decide(ctx context.Context,actor entity.Operator,id,status string,in DecisionInput)(entity.Approval,error){
  in.Comment=strings.TrimSpace(in.Comment)
  if !validID(id)||in.Version<1||len(in.Comment)>1000||(status!="APPROVED"&&status!="REJECTED"&&status!="CANCELLED")||(status=="REJECTED"&&in.Comment==""){return entity.Approval{},ErrInvalid}
+ if status=="APPROVED"{
+  if err:=s.checkSchoolReview(ctx,actor,id);err!=nil{return entity.Approval{},err}
+ }
  return s.repo.Decide(ctx,actor,id,in.Version,status,in.Comment)
 }

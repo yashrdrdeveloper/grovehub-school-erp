@@ -73,6 +73,11 @@ func TestApprovalLifecycle(t *testing.T){
  if _,err=s.SearchApprovals(ctx,l1,entity.PageRequest{},true);!errors.Is(err,ErrForbidden){t.Fatal("L1 accessed inbox search")}
  if _,err=s.SearchEvents(ctx,l1,entity.PageRequest{});!errors.Is(err,ErrForbidden){t.Fatal("L1 accessed event history")}
  ev,err:=s.SearchEvents(ctx,l2,entity.PageRequest{RowSize:1});if err!=nil||len(ev.Records)!=1||!ev.HasMore||ev.Records[0].Action!="EXECUTION_RECONCILED"{t.Fatal("event history",ev,err)}
+ restricted:=NewWithSchoolBindings(db,nil,map[SchoolBindingKey]SchoolBinding{{EnvironmentCode:env.Code,TemplateID:v1.ID,SchoolID:school}:{Operators:[]string{l1.ID,l2.ID},Requesters:[]string{l2.ID},Reviewers:[]string{l1.ID},Executors:[]string{l2.ID},Validate:func(Invocation)bool{return true},Adapter:func(context.Context,Invocation)(int,error){return 204,nil}}})
+ if _,err=restricted.Submit(ctx,l1,req);!errors.Is(err,ErrForbidden){t.Fatal("unauthorized requester accepted",err)}
+ restrictedProposal,err:=restricted.Submit(ctx,l2,req);if err!=nil||restrictedProposal.Status!="PENDING"{t.Fatal("requester without review role auto-approved",restrictedProposal,err)}
+ if _,err=restricted.Decide(ctx,l2,restrictedProposal.ID,"APPROVED",DecisionInput{Version:1});!errors.Is(err,ErrForbidden){t.Fatal("unauthorized reviewer accepted",err)}
+ if _,err=restricted.BulkApprove(ctx,l2,BulkApprovalInput{Items:[]repo.BulkItem{{ID:restrictedProposal.ID,Version:1}}});!errors.Is(err,ErrForbidden){t.Fatal("unauthorized bulk reviewer accepted",err)}
  mutation:=tpl;mutation.Code="account-patch";mutation.Method="PATCH"
  mutationTemplate,err:=s.CreateTemplate(ctx,l2,mutation);if err!=nil{t.Fatal(err)}
  mutationRequest:=req;mutationRequest.TemplateID=mutationTemplate.ID

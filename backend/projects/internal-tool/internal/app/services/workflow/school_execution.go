@@ -1,6 +1,7 @@
 package workflow
 
 import (
+ "context"
  "database/sql"
  "sort"
 
@@ -74,4 +75,16 @@ func(s *Service) SchoolGrants(actor entity.Operator)[]SchoolGrantView{
   return a.TemplateID<b.TemplateID
  })
  return result
+}
+
+func(s *Service) checkSchoolReview(ctx context.Context,actor entity.Operator,id string)error{
+ if actor.Persona!=entity.L2{return ErrForbidden}
+ if len(s.schoolBindings)==0{return nil}
+ a,err:=s.repo.Get(ctx,actor,id);if err!=nil{return err}
+ if a.SchoolID==nil{return nil}
+ env,err:=s.repo.Environment(ctx,a.EnvironmentID);if err!=nil{return err}
+ binding,ok:=s.schoolBindings[SchoolBindingKey{env.Code,a.TemplateID,*a.SchoolID}]
+ if !ok{return nil}
+ if !allowedOperator(binding.Reviewers,actor.ID)||!allowedOperator(binding.Requesters,a.RequesterID){return ErrForbidden}
+ return nil
 }

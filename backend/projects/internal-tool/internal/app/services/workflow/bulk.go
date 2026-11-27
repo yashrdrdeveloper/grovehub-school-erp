@@ -20,6 +20,7 @@ func(s *Service) BulkApprove(ctx context.Context,actor entity.Operator,in BulkAp
  for _,item:=range in.Items{
   if !validID(item.ID)||item.Version<1||seen[item.ID]{return nil,ErrInvalid}
   seen[item.ID]=true
+  if err:=s.checkSchoolReview(ctx,actor,item.ID);err!=nil{return nil,err}
  }
  return s.repo.BulkApprove(ctx,actor,in.Items,in.Comment)
 }
