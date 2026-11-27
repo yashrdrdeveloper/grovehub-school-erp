@@ -56,7 +56,7 @@ jobs:
         with:
           go-version: '1.27.3'
           cache: false
-      - run: go test ./gateway ./annotation/generation/routes
+      - run: go test ./gateway ./annotation/generation/routes ./http/readiness
   project-databases:
     runs-on: ubuntu-latest
     services:
@@ -101,6 +101,9 @@ jobs:
         working-directory: backend/projects/internal-tool
         env:
           INTERNAL_TOOL_AUTH_TEST_DSN: postgres://internal_test:internal_test@127.0.0.1:5432/internal_test?sslmode=disable
+          INTERNAL_TOOL_DATABASE_URL: postgres://internal_test:internal_test@127.0.0.1:5432/internal_test?sslmode=disable
         run: |
+          go run -mod=mod ./cmd/internal-tool migrate
+          go run -mod=mod ./cmd/internal-tool migrate
           go test -mod=mod -count=1 -v ./internal/app/controller/authentication
           go test -mod=mod -count=1 -v ./internal/app/services/workflow

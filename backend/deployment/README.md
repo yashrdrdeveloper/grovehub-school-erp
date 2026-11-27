@@ -2,7 +2,7 @@
 
 Platform: 8080 private; School: 8081 private behind School ingress; Internal Tool: 8082 private behind its own ingress; Swagger: 8090 development only. Use independent credentials for each project and separate PostgreSQL databases. Existing Platform DATABASE_URL and AUDIT_DATABASE_URL remain authoritative. School and Internal Tool open independently owned pools at startup using SCHOOL_DATABASE_URL and INTERNAL_TOOL_DATABASE_URL respectively. Internal Tool has explicit business migrations; School business migrations are not implemented yet. The nginx example is not a complete TLS configuration. No production deployment is enabled by this change.
 
-Generate local School workload credentials from `backend/projects/school` with `GOWORK=off go run ./cmd/workload-config /absolute/path/to/new-private-directory`. Source the resulting platform.env in the Platform process environment and school.env in School's process environment. Never commit these files. The generator intentionally grants no global Foundation access. School readiness remains false until end-to-end verification is implemented.
+Generate local School workload credentials from `backend/projects/school` with `GOWORK=off go run ./cmd/workload-config /absolute/path/to/new-private-directory`. Source the resulting platform.env in the Platform process environment and school.env in School's process environment. Never commit these files. The generator intentionally grants no global Foundation access. School readiness checks its database and Platform readiness; it does not validate every workload grant.
 
 ## Database provisioning
 
@@ -14,7 +14,7 @@ No root Go workspace is required. The Platform, School, Internal Tool and Core m
 
 ## CI deployment artifacts
 
-The existing project CI workflows package five independent Linux amd64 build outputs after their applicable tests/build checks: platform, school-backend, internal-tool-backend, school-frontend, internal-tool-frontend. Each GitHub Actions artifact is named with the exact commit SHA and contains a tar.gz plus an outer SHA-256 checksum. Each archive contains manifest.json, SHA256SUMS and payload/. Verify the outer checksum before extraction and run sha256sum -c SHA256SUMS inside the extracted directory. Backend payloads contain only the executable; frontend payloads contain only the static dist assets. Database migrations and server configuration are separate deployment steps. No env files, database credentials or signing keys are packaged. CI does not publish registry libraries, push production images or deploy to a server. Actual deployment approval, service units, health gating and rollback remain separate work.
+The existing project CI workflows package five independent Linux amd64 build outputs after their applicable tests/build checks: platform, school-backend, internal-tool-backend, school-frontend, internal-tool-frontend. Each GitHub Actions artifact is named with the exact commit SHA and contains a tar.gz plus an outer SHA-256 checksum. Each archive contains manifest.json, SHA256SUMS and payload/. Verify the outer checksum before extraction and run sha256sum -c SHA256SUMS inside the extracted directory. Backend payloads contain only the executable; frontend payloads contain only the static dist assets. Database migrations and server configuration are separate deployment steps. No env files, database credentials or signing keys are packaged. CI does not publish registry libraries, push production images or deploy to a server. Deployment approval and actual host provisioning remain separate work.
 
 ## Host installation and activation (Linux amd64)
 
@@ -28,5 +28,21 @@ Download an artifact from the approved CI run, confirm the expected commit and o
 
 The verifier rejects path traversal, duplicate entries, links, special files, unexpected files and checksum/identity mismatches. It creates a new immutable-by-convention root-owned release directory and switches only that project's current pointer. Activation restarts the corresponding service and checks full readiness. If a gate fails, the previous pointer and service active/stopped state are restored; old application health still needs checking. Frontend activation validates nginx configuration and the matching private backend's health, not a full public browser transaction. To roll back manually, invoke the same command with the original approved artifact and its commit/digest. Keep prior artifacts and compatible database migrations. This is binary/static rollback, not database rollback.
 
-School and Internal Tool currently return 503 for full readiness. Normal activation therefore fails closed. The explicit --staging flag uses liveness plus database probes (Platform liveness only); use only on an isolated staging host. Do not use this flag as production readiness. No migration is run by activation. The current backend release artifacts contain only service executables; Platform migration files/tools and Internal Tool operator-admin must be separately built/provisioned from the same approved revision before startup. Verify migration compatibility and backups before any activation or rollback. This implementation does not yet verify host-level systemd runtime behavior or public HTTPS end-to-end.
+Normal activation checks dependency readiness: Platform checks both PostgreSQL pools, broker health and Audit readiness; School checks its owned database and Platform /ready; Internal Tool checks its owned database, exact schema version, an active L2 operator and Platform /ready if its optional catalog adapter is enabled. These are availability checks, not end-to-end authorization or browser checks. Health endpoints remain private. The explicit --staging flag checks liveness (and consumer database probes) only; never use it for production. Platform handles SIGTERM/SIGINT with graceful HTTP shutdown before closing dependencies.
+
+## Explicit database migration using packaged binaries
+
+No Go toolchain or separate SQL checkout is required for the embedded migration commands. First prepare a verified release without switching the current pointer or starting services:
+
+    sudo bash scripts/deploy-release.sh platform COMMIT TRUSTED_SHA256 /path/to/platform.tar.gz --prepare-only
+
+With the previous application stopped or the migration independently verified to be backward-compatible, run the staged executable using a dedicated systemd transient unit and a root-owned migration environment file. The migration environment must target only the appropriate database(s), with credentials scoped to schema changes. For example (replace COMMIT and provision the env file first):
+
+    sudo systemd-run --wait --pipe --collect --property=User=gh-platform --property=Group=gh-platform --property=EnvironmentFile=/etc/groovehub/platform-migration.env /opt/groovehub/platform/releases/COMMIT/payload/platform migrate all
+
+Platform already embeds Foundation, Infrastructure, Integration, Identity and Audit migrations and uses the existing Goose histories. Internal Tool now embeds its existing explicit migration and bootstrap command in the deployed executable:
+
+    sudo systemd-run --wait --pipe --collect --property=User=gh-internal-tool-backend --property=Group=gh-internal-tool-backend --property=EnvironmentFile=/etc/groovehub/internal-tool-migration.env /opt/groovehub/internal-tool-backend/releases/COMMIT/payload/internal-tool-backend migrate
+
+Prepare the Internal Tool release using its own commit and digest first. Bootstrap the initial L2 using the same executable with bootstrap EMAIL and a password supplied on stdin (never argv or a committed file), using the appropriate Internal Tool database environment. School has no business migrations yet. No migration is run by activation. After successful migration and initialization, rerun deploy-release.sh without --prepare-only to activate. Database grants, backup/restore, cross-version migration compatibility, service runtime behavior and public HTTPS end-to-end still require host validation. A failed migration must be investigated before activation; application rollback never reverses schema changes.
 

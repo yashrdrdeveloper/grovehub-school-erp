@@ -6,7 +6,7 @@ Set INTERNAL_TOOL_DATABASE_URL and INTERNAL_TOOL_ALLOWED_ORIGIN. Provision a sep
 
 Operator login, me and logout are exposed at /internal/public/auth/login and /internal/protected/auth/{me,logout}. Session and CSRF cookies use the distinct __Host-gh_internal_* namespace, Secure and SameSite=Strict. Use HTTPS ingress (localhost development behavior depends on browser). Operator sessions expire after eight hours; logout revokes the stored digest. Login has a persistent per-email attempt budget and bounded Argon2 concurrency. Configure ingress rate limits and periodic cleanup of expired sessions and old attempt records before deployment.
 
-GET /health/database checks the owned database; /health/ready remains false while execution authorization and full application readiness are unfinished. L1/L2 are the initial personas; L2 can register, list, activate and disable operators. Platform execution credentials are optional and catalog-only.
+GET /health/database checks the owned database; /health/ready requires the owned database, current schema, an active L2 and Platform readiness when the catalog adapter is configured. L1/L2 are the initial personas; L2 can register, list, activate and disable operators. Platform execution credentials are optional and catalog-only.
 
 ## Registry and approval workflow
 
@@ -29,3 +29,5 @@ Bulk approval is available at POST /internal/protected/approvals/bulk-approve wi
 POST /internal/protected/{environments,api-templates,requests,approvals,operators,workflow-events}/search accepts {pageNumber,rowSize} (defaults 1 and 25, maximum page 10000 and row size 100). Returns records, pageNumber, rowSize and hasMore; no total count or stable snapshot guarantee. Requests remain owner-scoped; approval inbox, operator search and event history require L2. POST searches require session-bound CSRF. Nested fields support properties, items and nullable; schema depth is bounded, unknown and duplicate payload keys are rejected, and placeholders must be required non-null strings. This is not full JSON Schema.
 
 Migration 4 adds execution_reconciliations. POST /internal/protected/requests/{id}/reconcile accepts outcome CONFIRMED_SUCCEEDED, CONFIRMED_FAILED or UNRESOLVED and mandatory evidence, only from L2. UNKNOWN executions or RUNNING claims older than five minutes can be reviewed once. A stale RUNNING claim is marked UNKNOWN; a separate immutable review preserves the original uncertain status and does not enable redispatch. GET /internal/protected/requests/{id}/reconciliation exposes the review only to owner or L2. Workflow event search is local history; central Platform Audit transport is not implemented.
+
+The deployed internal-tool executable accepts `migrate` and `bootstrap EMAIL` (password on stdin) without starting HTTP. The standalone operator-admin command remains a development-compatible entrypoint to the same implementation.

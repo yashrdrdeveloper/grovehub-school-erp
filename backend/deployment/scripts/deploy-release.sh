@@ -2,13 +2,13 @@
 set -Eeuo pipefail
 umask 077
 
-# Usage: deploy-release.sh PROJECT COMMIT TRUSTED_SHA256 ARCHIVE [--staging]
-# Rollback: deploy-release.sh PROJECT PREVIOUS_COMMIT TRUSTED_SHA256 ORIGINAL_ARCHIVE [--staging]
+# Usage: deploy-release.sh PROJECT COMMIT TRUSTED_SHA256 ARCHIVE [--staging|--prepare-only]
+# Rollback: deploy-release.sh PROJECT PREVIOUS_COMMIT TRUSTED_SHA256 ORIGINAL_ARCHIVE [--staging|--prepare-only]
 # The digest must come from a separately trusted CI release record.
-[[ $# -eq 4 || $# -eq 5 ]] || { echo "Usage: $0 PROJECT COMMIT TRUSTED_SHA256 ARCHIVE [--staging]" >&2; exit 2; }
+[[ $# -eq 4 || $# -eq 5 ]] || { echo "Usage: $0 PROJECT COMMIT TRUSTED_SHA256 ARCHIVE [--staging|--prepare-only]" >&2; exit 2; }
 [[ "$(id -u)" == 0 ]] || { echo "Root required" >&2; exit 2; }
 project="$1"; commit="$2"; digest="$3"; archive="$4"; mode="${5:-}"
-[[ "$mode" == "" || "$mode" == "--staging" ]] || exit 2
+[[ "$mode" == "" || "$mode" == "--staging" || "$mode" == "--prepare-only" ]] || exit 2
 [[ "$commit" =~ ^[0-9a-f]{40}$ && "$digest" =~ ^[0-9a-f]{64}$ ]] || exit 2
 case "$project" in
   platform) port=8080; ready=/ready; live=/health; backend=1 ;;
@@ -45,6 +45,10 @@ if [[ -e "$target" || -L "$target" ]]; then
   if ((backend)); then [[ -x "$target/payload/$project" ]] || exit 2; fi
 else
   mv -T -- "$work/verified" "$target"
+fi
+if [[ "$mode" == "--prepare-only" ]]; then
+  printf 'Verified release prepared: %s\\n' "$target"
+  exit 0
 fi
 old=""
 if [[ -L "$root/current" ]]; then
