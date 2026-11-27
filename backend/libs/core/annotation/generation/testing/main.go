@@ -80,7 +80,7 @@ func generateAll(backend, core string) error {
 			if entry.Name() == ".generated" || entry.Name() == "vendor" {
 				return filepath.SkipDir
 			}
-			return generateDir(core, root.owner, dir)
+			return generateDir(root.owner, dir)
 		}); err != nil {
 			return err
 		}
@@ -88,7 +88,7 @@ func generateAll(backend, core string) error {
 	return nil
 }
 
-func generateDir(backend, owner, dir string) error {
+func generateDir(owner, dir string) error {
 	paths, err := filepath.Glob(filepath.Join(dir, "*.go"))
 	if err != nil {
 		return err
@@ -207,7 +207,12 @@ func generateDir(backend, owner, dir string) error {
 			return err
 		}
 		cmd := exec.Command("go", "run", "go.uber.org/mock/mockgen", "-source="+mockSource, "-destination="+mockOutput, "-package="+f.Name.Name)
-		cmd.Dir = backend
+		// Resolve embedded interfaces against the source owner's module, not Core.
+		moduleDir, err := findModuleDir(filepath.Dir(mockSource))
+		if err != nil {
+			return err
+		}
+		cmd.Dir = moduleDir
 		if output, err := cmd.CombinedOutput(); err != nil {
 			return fmt.Errorf("%s: generate mocks: %w: %s", mockSource, err, output)
 		}
@@ -234,6 +239,24 @@ func generateDir(backend, owner, dir string) error {
 		return err
 	}
 	return nil
+}
+
+// findModuleDir locates the closest module without relying on a Go workspace.
+func findModuleDir(dir string) (string, error) {
+	for {
+		info, err := os.Stat(filepath.Join(dir, "go.mod"))
+		if err == nil && !info.IsDir() {
+			return dir, nil
+		}
+		if err != nil && !os.IsNotExist(err) {
+			return "", err
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return "", fmt.Errorf("no owning Go module for mock source")
+		}
+		dir = parent
+	}
 }
 
 func directive(group *ast.CommentGroup, name string) (string, bool, error) {
