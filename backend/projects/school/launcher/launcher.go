@@ -18,6 +18,7 @@ func Run() error {
  addr := os.Getenv("GROOVEHUB_HTTP_ADDR")
  if addr == "" { addr = "127.0.0.1:8081" }
  mux := http.NewServeMux()
+ if err := registerIdentity(mux); err != nil { return err }
  mux.HandleFunc("GET /health/live", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusNoContent) })
  mux.HandleFunc("GET /health/ready", func(w http.ResponseWriter, r *http.Request) { http.Error(w, "application dependencies not initialized", http.StatusServiceUnavailable) })
  server := &http.Server{Addr: addr, Handler: mux, ReadHeaderTimeout: 5*time.Second, ReadTimeout: 15*time.Second, WriteTimeout: 30*time.Second, IdleTimeout: 60*time.Second, MaxHeaderBytes: 1<<20}
