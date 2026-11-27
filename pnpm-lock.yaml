@@ -8,17 +8,17 @@ importers:
 
   .: {}
 
-  frontend:
+  frontend/projects/school:
     dependencies:
       '@groovehub/base':
         specifier: workspace:*
-        version: link:../libs/frontend/base
+        version: link:../../libs/base
       '@groovehub/components':
         specifier: workspace:*
-        version: link:../libs/frontend/components
+        version: link:../../libs/components
       '@groovehub/styles':
         specifier: workspace:*
-        version: link:../libs/frontend/styles
+        version: link:../../libs/styles
       '@radix-ui/react-dialog':
         specifier: ^1.1.15
         version: 1.3.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -126,7 +126,7 @@ importers:
         specifier: ^7.1.0
         version: 7.3.8(@types/node@22.20.5)(jiti@2.7.0)(lightningcss@1.33.0)
 
-  libs/frontend/base:
+  frontend/libs/base:
     dependencies:
       clsx:
         specifier: ^2.1.1
@@ -148,7 +148,7 @@ importers:
         specifier: ~5.9.3
         version: 5.9.3
 
-  libs/frontend/components:
+  frontend/libs/components:
     dependencies:
       '@groovehub/base':
         specifier: workspace:*
@@ -209,7 +209,7 @@ importers:
         specifier: ^7.1.0
         version: 7.3.8(@types/node@22.20.5)(jiti@2.7.0)(lightningcss@1.33.0)
 
-  libs/frontend/styles:
+  frontend/libs/styles:
     dependencies:
       tailwindcss:
         specifier: ^4.1.0
