@@ -13,10 +13,10 @@ import (
 	"strings"
 
 	sdk "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/internal/generated/audit"
-	auth "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/identity/client/authentication"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/internal/platformhttp"
 )
 
-const maxResponseBytes = 1 << 20
+const maxResponseBytes = platformhttp.MaxResponseBytes
 
 var ErrInvalidRequest = errors.New("invalid audit search request")
 
@@ -34,30 +34,8 @@ type Result struct {
 func New(origin *url.URL, client *http.Client) *Client {
 	cfg := sdk.NewConfiguration()
 	cfg.Servers = sdk.ServerConfigurations{{URL: strings.TrimRight(origin.String(), "/")}}
-	bounded := *client
-	bounded.Transport = boundedTransport{base: client.Transport}
-	cfg.HTTPClient = &bounded
+	cfg.HTTPClient = platformhttp.BoundedClient(client)
 	return &Client{api: sdk.NewAPIClient(cfg)}
-}
-
-type boundedTransport struct { base http.RoundTripper }
-
-func (t boundedTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	base := t.base
-	if base == nil { base = http.DefaultTransport }
-	resp, err := base.RoundTrip(req)
-	if err != nil { return nil, err }
-	if resp == nil || resp.Body == nil { return nil, fmt.Errorf("empty audit response") }
-	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode >= 600 || (resp.StatusCode >= 300 && resp.StatusCode < 400) {
-		return nil, fmt.Errorf("unexpected audit response")
-	}
-	raw, err := io.ReadAll(io.LimitReader(resp.Body, maxResponseBytes+1))
-	if err != nil || len(raw) > maxResponseBytes || !json.Valid(raw) {
-		return nil, fmt.Errorf("invalid audit response")
-	}
-	resp.Body = io.NopCloser(bytes.NewReader(raw))
-	return resp, nil
 }
 
 // Search validates against consumer-local generated types, delegates all
@@ -77,7 +55,7 @@ func (c *Client) Search(ctx context.Context, input json.RawMessage, proof string
 	if err := decoder.Decode(&extra); err != io.EOF {
 		return Result{}, ErrInvalidRequest
 	}
-	ctx = auth.WithIdentityProof(ctx, proof)
+	ctx = platformhttp.WithIdentityProof(ctx, proof)
 	result, resp, err := c.api.DefaultAPI.SearchAuditActivities(ctx).SearchRequest(request).Execute()
 	if resp == nil { return Result{}, fmt.Errorf("audit unavailable") }
 	defer resp.Body.Close()
