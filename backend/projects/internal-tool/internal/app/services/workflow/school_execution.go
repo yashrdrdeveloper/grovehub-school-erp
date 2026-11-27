@@ -2,6 +2,7 @@ package workflow
 
 import (
  "database/sql"
+ "sort"
 
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/entity"
 )
@@ -13,6 +14,7 @@ type SchoolBinding struct{
  Adapter Adapter
  Validate func(Invocation)bool
  Operators []string
+ Requesters,Reviewers,Executors []string
 }
 func NewWithSchoolBindings(db *sql.DB,global map[BindingKey]Adapter,school map[SchoolBindingKey]SchoolBinding)*Service{
  s:=NewWithBindings(db,global)
@@ -20,6 +22,9 @@ func NewWithSchoolBindings(db *sql.DB,global map[BindingKey]Adapter,school map[S
  for key,binding:=range school{
   if binding.Adapter==nil||binding.Validate==nil||len(binding.Operators)==0||!validID(key.SchoolID)||!validID(key.TemplateID)||!codePattern.MatchString(key.EnvironmentCode){continue}
   binding.Operators=append([]string(nil),binding.Operators...)
+  if len(binding.Requesters)==0&&len(binding.Reviewers)==0&&len(binding.Executors)==0{binding.Requesters=binding.Operators;binding.Reviewers=binding.Operators;binding.Executors=binding.Operators}
+  if len(binding.Requesters)==0||len(binding.Reviewers)==0||len(binding.Executors)==0{continue}
+  binding.Requesters=append([]string(nil),binding.Requesters...);binding.Reviewers=append([]string(nil),binding.Reviewers...);binding.Executors=append([]string(nil),binding.Executors...)
   s.schoolBindings[key]=binding
  }
  return s
@@ -36,10 +41,37 @@ func(s *Service) executionAdapter(environment string,t entity.Template,a entity.
  if t.Method!="GET"||call.Method!="GET"{return nil,ErrForbidden}
  binding,ok:=s.schoolBindings[SchoolBindingKey{environment,t.ID,*a.SchoolID}]
  if !ok{return nil,ErrExecutionUnavailable}
- allowed:=func(id string)bool{
-  for _,operator:=range binding.Operators{if operator==id{return true}}
-  return false
- }
- if !allowed(actor.ID)||!allowed(a.RequesterID)||a.ReviewerID==nil||!allowed(*a.ReviewerID)||!binding.Validate(call){return nil,ErrForbidden}
+ if !allowedOperator(binding.Executors,actor.ID)||!allowedOperator(binding.Requesters,a.RequesterID)||a.ReviewerID==nil||!allowedOperator(binding.Reviewers,*a.ReviewerID)||!binding.Validate(call){return nil,ErrForbidden}
  return binding.Adapter,nil
+}
+
+func allowedOperator(ids []string,id string)bool{
+ for _,candidate:=range ids{if candidate==id{return true}}
+ return false
+}
+
+type SchoolGrantView struct{
+ EnvironmentCode string `json:"environmentCode"`
+ TemplateID string `json:"templateId"`
+ SchoolID string `json:"schoolId"`
+ CanRequest bool `json:"canRequest"`
+ CanReview bool `json:"canReview"`
+ CanExecute bool `json:"canExecute"`
+}
+
+// SchoolGrants lists only the authenticated operator's configured capabilities.
+// No credentials, origin, or other operator identities are exposed.
+func(s *Service) SchoolGrants(actor entity.Operator)[]SchoolGrantView{
+ result:=[]SchoolGrantView{}
+ for key,b:=range s.schoolBindings{
+  v:=SchoolGrantView{EnvironmentCode:key.EnvironmentCode,TemplateID:key.TemplateID,SchoolID:key.SchoolID,CanRequest:allowedOperator(b.Requesters,actor.ID),CanReview:actor.Persona==entity.L2&&allowedOperator(b.Reviewers,actor.ID),CanExecute:allowedOperator(b.Executors,actor.ID)}
+  if v.CanRequest||v.CanReview||v.CanExecute{result=append(result,v)}
+ }
+ sort.Slice(result,func(i,j int)bool{
+  a,b:=result[i],result[j]
+  if a.EnvironmentCode!=b.EnvironmentCode{return a.EnvironmentCode<b.EnvironmentCode}
+  if a.SchoolID!=b.SchoolID{return a.SchoolID<b.SchoolID}
+  return a.TemplateID<b.TemplateID
+ })
+ return result
 }

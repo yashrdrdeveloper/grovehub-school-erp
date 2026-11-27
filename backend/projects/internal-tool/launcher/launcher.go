@@ -59,13 +59,12 @@ func Run() error {
   PrivateKey:os.Getenv("INTERNAL_TOOL_SCHOOL_PRIVATE_KEY"),
   OperatorIDs:os.Getenv("INTERNAL_TOOL_SCHOOL_OPERATOR_IDS"),
  }
- schoolBindings,err:=platform.SchoolBindings(schoolConfig)
- if err!=nil{return err}
- if len(schoolBindings)>0{
-  for _,prefix:=range []string{"INTERNAL_TOOL_WORKLOAD","INTERNAL_TOOL_AUDIT","INTERNAL_TOOL_AUDIT_READ"}{
-   if schoolConfig.KeyID==os.Getenv(prefix+"_KEY_ID")||schoolConfig.PrivateKey==os.Getenv(prefix+"_PRIVATE_KEY"){return errors.New("school execution key must be independent")}
-  }
+ reserved:=[]platform.ReservedCredential{}
+ for _,prefix:=range []string{"INTERNAL_TOOL_WORKLOAD","INTERNAL_TOOL_AUDIT","INTERNAL_TOOL_AUDIT_READ"}{
+  reserved=append(reserved,platform.ReservedCredential{KeyID:os.Getenv(prefix+"_KEY_ID"),PrivateKey:os.Getenv(prefix+"_PRIVATE_KEY")})
  }
+ schoolBindings,schoolOrigins,err:=platform.ParseSchoolGrants(os.Getenv("INTERNAL_TOOL_SCHOOL_GRANTS"),schoolConfig,reserved)
+ if err!=nil{return err}
  workflowController.New(workflow.NewWithSchoolBindings(db,bindings,schoolBindings),authController).Register(mux)
  publisher,err:=auditclient.New(auditclient.Config{Origin:os.Getenv("INTERNAL_TOOL_AUDIT_ORIGIN"),KeyID:os.Getenv("INTERNAL_TOOL_AUDIT_KEY_ID"),PrivateKey:os.Getenv("INTERNAL_TOOL_AUDIT_PRIVATE_KEY")})
  if err!=nil{return err}
@@ -102,8 +101,9 @@ func Run() error {
   if err!=nil{return err}
   checks=append(checks,upstream)
  }
- if len(schoolBindings)>0{
-  upstream,err:=readiness.HTTP(schoolConfig.Origin,"/ready");if err!=nil{return err};checks=append(checks,upstream)
+ for _,origin:=range schoolOrigins{
+  if len(bindings)>0&&origin==os.Getenv("INTERNAL_TOOL_PLATFORM_ORIGIN"){continue}
+  upstream,err:=readiness.HTTP(origin,"/ready");if err!=nil{return err};checks=append(checks,upstream)
  }
  mux.HandleFunc("GET /health/ready",readiness.Handler(&draining,checks...))
  server := &http.Server{Addr: addr, Handler: correlation.Ingress(mux), ReadHeaderTimeout: 5*time.Second, ReadTimeout: 15*time.Second, WriteTimeout: 30*time.Second, IdleTimeout: 60*time.Second, MaxHeaderBytes: 1<<20}
