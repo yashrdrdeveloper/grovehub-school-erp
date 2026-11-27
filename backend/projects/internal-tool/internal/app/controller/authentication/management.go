@@ -25,6 +25,11 @@ func managementResponse(w http.ResponseWriter,status int,data any,err error){
  write(w,status,map[string]any{"success":false,"errorCode":code})
 }
 func(c *Controller) registerManagement(mux *http.ServeMux){
+ mux.HandleFunc("POST /internal/protected/operators/search",c.Protected(true,func(w http.ResponseWriter,r *http.Request,a entity.Operator){
+  var in entity.PageRequest;var extra any;d:=json.NewDecoder(http.MaxBytesReader(w,r.Body,4096));d.DisallowUnknownFields()
+  if d.Decode(&in)!=nil||d.Decode(&extra)!=io.EOF{managementResponse(w,400,nil,service.ErrInvalid);return}
+  v,err:=c.service.SearchOperators(r.Context(),a,in);managementResponse(w,200,v,err)
+ }))
  mux.HandleFunc("GET /internal/protected/operators",c.Protected(false,func(w http.ResponseWriter,r *http.Request,a entity.Operator){
   rows,err:=c.service.ListOperators(r.Context(),a);managementResponse(w,200,rows,err)
  }))

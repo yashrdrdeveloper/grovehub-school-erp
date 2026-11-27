@@ -68,6 +68,11 @@ func TestApprovalLifecycle(t *testing.T){
  review,err:=s.Reconcile(ctx,l2,uncertain.ID,evidence);if err!=nil||review.ExecutionID!=ex.ID{t.Fatal("reconciliation failed",review,err)}
  if _,err=s.Reconcile(ctx,l2,uncertain.ID,evidence);!errors.Is(err,ErrConflict){t.Fatal("duplicate reconciliation",err)}
  if _,err=unknown.Execute(ctx,l2,uncertain.ID,ExecutionInput{Version:uncertain.Version});!errors.Is(err,ErrConflict){t.Fatal("reconciled execution redispatched",err)}
+ p,err:=s.SearchTemplates(ctx,entity.PageRequest{PageNumber:1,RowSize:1});if err!=nil||len(p.Records)!=1||!p.HasMore||p.Records[0].ID!=v2.ID{t.Fatal("template first page",p,err)}
+ p,err=s.SearchTemplates(ctx,entity.PageRequest{PageNumber:2,RowSize:1});if err!=nil||len(p.Records)!=1||p.HasMore||p.Records[0].ID!=v1.ID{t.Fatal("template second page",p,err)}
+ if _,err=s.SearchApprovals(ctx,l1,entity.PageRequest{},true);!errors.Is(err,ErrForbidden){t.Fatal("L1 accessed inbox search")}
+ if _,err=s.SearchEvents(ctx,l1,entity.PageRequest{});!errors.Is(err,ErrForbidden){t.Fatal("L1 accessed event history")}
+ ev,err:=s.SearchEvents(ctx,l2,entity.PageRequest{RowSize:1});if err!=nil||len(ev.Records)!=1||!ev.HasMore||ev.Records[0].Action!="EXECUTION_RECONCILED"{t.Fatal("event history",ev,err)}
  var n int
  if err=db.QueryRowContext(ctx,"SELECT count(*) FROM internal_tool.workflow_events WHERE resource_id=$1",a.ID).Scan(&n);err!=nil||n!=4{t.Fatal("audit events missing",n,err)}
 }

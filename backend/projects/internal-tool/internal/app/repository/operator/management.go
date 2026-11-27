@@ -56,3 +56,12 @@ func(r *Repository) SetStatus(ctx context.Context,actor entity.Operator,id,statu
  if _,err=tx.ExecContext(ctx,"INSERT INTO internal_tool.workflow_events(actor_id,resource_id,action) VALUES($1,$2,$3)",actor.ID,id,"OPERATOR_"+status);err!=nil{return err}
  return tx.Commit()
 }
+
+func(r *Repository) Search(ctx context.Context,actor entity.Operator,p entity.PageRequest)(entity.Page[Summary],error){
+ if actor.Persona!=entity.L2{return entity.Page[Summary]{},ErrForbidden}
+ rows,err:=r.db.QueryContext(ctx,"SELECT id,email,persona,status FROM internal_tool.operators ORDER BY email LIMIT $1 OFFSET $2",p.RowSize+1,p.Offset());if err!=nil{return entity.Page[Summary]{},err};defer rows.Close()
+ result:=[]Summary{}
+ for rows.Next(){var row Summary;if err=rows.Scan(&row.ID,&row.Email,&row.Persona,&row.Status);err!=nil{return entity.Page[Summary]{},err};result=append(result,row)}
+ if err=rows.Err();err!=nil{return entity.Page[Summary]{},err}
+ return entity.NewPage(p,result),nil
+}

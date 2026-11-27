@@ -24,7 +24,7 @@ func validField(f entity.Field,depth int,budget *int)bool{
  case "string","integer","boolean","number":
   return f.Items==nil&&len(f.Properties)==0
  case "object":
-  return f.Items==nil&&f.Properties!=nil&&validFields(f.Properties,depth+1,budget)
+  return f.Items==nil&&validFields(f.Properties,depth+1,budget)
  case "array":
   return f.Items!=nil&&len(f.Properties)==0&&!f.Items.Required&&validField(*f.Items,depth+1,budget)
  default:return false

@@ -30,6 +30,7 @@ func decode[T any](w http.ResponseWriter,r *http.Request)(T,bool){
 }
 type handler func(http.ResponseWriter,*http.Request,entity.Operator)
 func(c *Controller) Register(mux *http.ServeMux){
+ c.registerSearch(mux)
  bind:=func(pattern string,mutate bool,h handler){mux.HandleFunc(pattern,c.auth.Protected(mutate,h))}
  bind("POST /internal/protected/environments",true,func(w http.ResponseWriter,r *http.Request,a entity.Operator){in,ok:=decode[service.EnvironmentInput](w,r);if !ok{return};v,err:=c.svc.CreateEnvironment(r.Context(),a,in);respond(w,201,v,err)})
  bind("GET /internal/protected/environments",false,func(w http.ResponseWriter,r *http.Request,a entity.Operator){v,err:=c.svc.Environments(r.Context());respond(w,200,v,err)})

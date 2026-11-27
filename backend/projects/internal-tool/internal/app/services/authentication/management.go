@@ -27,3 +27,8 @@ func(s *Service) SetOperatorStatus(ctx context.Context,actor entity.Operator,id,
  if err!=nil||v==uuid.Nil||v.String()!=id||(status!="ACTIVE"&&status!="DISABLED"){return ErrInvalid}
  return s.operators.SetStatus(ctx,actor,id,status)
 }
+
+func(s *Service) SearchOperators(ctx context.Context,actor entity.Operator,p entity.PageRequest)(entity.Page[operators.Summary],error){
+ p,ok:=p.Normalize();if !ok{return entity.Page[operators.Summary]{},ErrInvalid}
+ return s.operators.Search(ctx,actor,p)
+}
