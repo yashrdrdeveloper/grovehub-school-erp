@@ -2,7 +2,7 @@
 
 Owns browser-facing School and Identity use-case APIs. Platform calls use the restricted authenticated generated SDK clients. No direct Platform database access.
 
-Startup requires SCHOOL_DATABASE_URL for a separately provisioned PostgreSQL database and least-privilege role. No fallback to DATABASE_URL or other project credentials. GET /health/database checks only the owned database; /health/ready checks the owned database and Platform /ready after successful local configuration validation; workload grant and browser verification are separate. School registry migration version 4 is required before startup.
+Startup requires SCHOOL_DATABASE_URL for a separately provisioned PostgreSQL database and least-privilege role. No fallback to DATABASE_URL or other project credentials. GET /health/database checks only the owned database; /health/ready checks the owned database and Platform /ready after successful local configuration validation; workload grant and browser verification are separate. School registry migration version 5 is required before startup.
 
 ## School registry
 
@@ -21,3 +21,5 @@ Migration 4 atomically enqueues versioned rename receipts in rename_outbox, back
 ### Multi-school receipt delivery
 
 Use SCHOOL_RECEIPT_PUBLISHERS instead of the legacy single-school settings for a JSON array of up to 100 objects containing origin, schoolId, keyId and privateKey. Each school requires a distinct matching Platform SchoolReceiptKeys entry. Duplicate school IDs and reused key IDs/public keys (including the School outbound workload, directory readers and rename credentials) are rejected before launch. Four round-robin shards bound concurrent delivery and each worker reads only its assigned school. No credential or event content is logged. GET /health/audit-delivery is a private aggregate 204/503 probe, independent of normal readiness. It returns 503 for disabled configuration, any blocked or unconfigured pending receipt, any pending receipt at least five minutes old or a database error. External alerting is not configured. This probe covers rename receipts only.
+
+Migration 5 adds immutable status_events. PATCH /school/restricted/registry/schools/{schoolId}/status requires an independent per-school public key (SCHOOL_REGISTRY_STATUS_KEYS, issuer internal-tool-school-status, subject internal-tool-school-status:<school UUID>, scope internal.school.registry.status, no delegation). Expected status and version must match the locked row, and ACTIVE↔DISABLED changes increment the existing school version. Execution UUIDs cannot be reused across rename and status operations. Registry status is not a complete access suspension: existing Identity sessions and School business endpoints are unchanged. Status receipts stay local pending a centralized status receipt contract and relay.
