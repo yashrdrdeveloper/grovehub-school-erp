@@ -107,3 +107,4 @@ jobs:
           go run -mod=mod ./cmd/internal-tool migrate
           go test -mod=mod -count=1 -v ./internal/app/controller/authentication
           go test -mod=mod -count=1 -v ./internal/app/services/workflow
+          go test -mod=mod -count=1 -v ./internal/app/services/auditdelivery

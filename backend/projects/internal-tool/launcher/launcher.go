@@ -9,6 +9,8 @@ import (
  "os/signal"
  "syscall"
  "sync/atomic"
+ auditclient "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/client/audit"
+ "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/services/auditdelivery"
  "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/readiness"
  "time"
 
@@ -47,6 +49,14 @@ func Run() error {
  })
  if err!=nil{return err}
  workflowController.New(workflow.NewWithBindings(db,bindings),authController).Register(mux)
+ publisher,err:=auditclient.New(auditclient.Config{Origin:os.Getenv("INTERNAL_TOOL_AUDIT_ORIGIN"),KeyID:os.Getenv("INTERNAL_TOOL_AUDIT_KEY_ID"),PrivateKey:os.Getenv("INTERNAL_TOOL_AUDIT_PRIVATE_KEY")})
+ if err!=nil{return err}
+ if publisher!=nil{
+  workerCtx,workerStop:=context.WithCancel(ctx)
+  workerDone:=make(chan struct{})
+  go func(){defer close(workerDone);auditdelivery.New(db,publisher).Run(workerCtx)}()
+  defer func(){workerStop();<-workerDone}()
+ }
  mux.HandleFunc("GET /health/live", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusNoContent) })
  mux.HandleFunc("GET /health/database",func(w http.ResponseWriter,r *http.Request){
   probe,cancel:=context.WithTimeout(r.Context(),2*time.Second)
