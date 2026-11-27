@@ -3,17 +3,30 @@ set -euo pipefail
 
 project="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 generator="$project/../../libs/core/tools/clientgen/generate.sh"
-spec="$project/internal/clientgen/specs/audit.yaml"
+providers="$project/../platform/services"
 parent="$project/internal/generated"
-output="$parent/audit"
 mkdir -p "$parent"
-if [[ -f "$output/api_default.go" && -f "$output/.source.yaml" ]] && cmp -s "$spec" "$output/.source.yaml"; then
-  exit 0
-fi
 stage="$(mktemp -d "$parent/.generate.XXXXXX")"
 trap 'rm -rf -- "$stage"' EXIT
-bash "$generator" "$spec" "$stage/audit" auditclient
-cp "$spec" "$stage/audit/.source.yaml"
-# Do not remove the prior generated client until generation succeeds.
-rm -rf -- "$output"
-mv "$stage/audit" "$output"
+
+# Providers own contracts. Do not maintain consumer-local copies of the specs.
+for service in audit identity foundation integration; do
+  spec="$providers/$service/internal/resources/api/openapi/v1/openapi.yaml"
+  output="$parent/$service"
+  if [[ -f "$output/client.go" && -f "$output/.source.yaml" && -f "$output/.generator.sh" ]] &&
+    cmp -s "$spec" "$output/.source.yaml" &&
+    cmp -s "$generator" "$output/.generator.sh"; then
+    continue
+  fi
+  bash "$generator" "$spec" "$stage/$service" "${service}client"
+  cp "$spec" "$stage/$service/.source.yaml"
+  cp "$generator" "$stage/$service/.generator.sh"
+done
+
+# Generation of every changed SDK must succeed before replacing any existing SDK.
+for service in audit identity foundation integration; do
+  if [[ -d "$stage/$service" ]]; then
+    rm -rf -- "$parent/$service"
+    mv -- "$stage/$service" "$parent/$service"
+  fi
+done
