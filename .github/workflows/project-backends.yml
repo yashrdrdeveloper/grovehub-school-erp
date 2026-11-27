@@ -1,0 +1,43 @@
+name: Independent project backends
+on:
+  push:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/project-backends.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [school, internal-tool]
+    defaults:
+      run:
+        working-directory: backend/projects/${{ matrix.project }}
+    env:
+      GOWORK: 'off'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.3'
+          cache: false
+      - run: go test -mod=mod ./...
+      - run: go build -mod=mod ./...
+  core-security:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/libs/core
+    env:
+      GOWORK: 'off'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.3'
+          cache: false
+      - run: go test ./gateway ./annotation/generation/routes

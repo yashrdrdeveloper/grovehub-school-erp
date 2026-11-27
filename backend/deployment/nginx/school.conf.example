@@ -1,0 +1,15 @@
+# Include inside an HTTPS server block after configuring TLS and static root.
+# No browser route is forwarded to Platform (8080).
+location ~ ^/(identity|audit|foundation|integrations)/(public|protected)(/|$) {
+    proxy_pass http://127.0.0.1:8081;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-GH-Identity-Proof "";
+}
+location ~ ^/(identity|audit|foundation|integrations)/restricted(/|$) {
+    return 403;
+}
+location / {
+    try_files $uri $uri/ /index.html;
+}

@@ -1,0 +1,5 @@
+# Multi-project deployment (migration)
+
+Platform: 8080 private; School: 8081 private behind School ingress; Internal Tool: 8082 private behind its own ingress; Swagger: 8090 development only. Use independent credentials for each project and separate PostgreSQL databases. Existing Platform DATABASE_URL and AUDIT_DATABASE_URL remain authoritative. School/Internal Tool business database initialization is not implemented; do not claim those databases are in use yet. The nginx example is not a complete TLS configuration. No production deployment is enabled by this change.
+
+Generate local School workload credentials from `backend/projects/school` with `GOWORK=off go run ./cmd/workload-config /absolute/path/to/new-private-directory`. Source the resulting platform.env in the Platform process environment and school.env in School's process environment. Never commit these files. The generator intentionally grants no global Foundation access. School readiness remains false until end-to-end verification is implemented.
