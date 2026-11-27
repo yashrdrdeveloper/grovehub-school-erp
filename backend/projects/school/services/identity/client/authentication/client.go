@@ -83,3 +83,10 @@ func ValidSessionID(s string)bool {
  }
  return true
 }
+
+// CallBusiness is an internal transport adapter; the configured workload policy
+// rejects any method and destination outside the explicit operation allowlist.
+func(c *Client) CallBusiness(ctx context.Context,method,path string,input json.RawMessage,proof string)(Result,error){
+ if len(input)==0{return c.call(ctx,method,path,nil,proof)}
+ return c.call(ctx,method,path,input,proof)
+}

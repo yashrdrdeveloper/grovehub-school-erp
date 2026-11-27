@@ -13,6 +13,8 @@ import (
  controller "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/identity/controller/authentication/public"
  protected "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/identity/controller/authentication/protected"
  "strings"
+ business "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/platform/client"
+ businesscontroller "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/platform/controller/protected"
 )
 
 func registerIdentity(mux *http.ServeMux) error {
@@ -43,6 +45,7 @@ func registerIdentity(mux *http.ServeMux) error {
   case "GET /identity/restricted/auth/me": return core.WorkloadClaims{Scopes:[]string{"identity.auth.me"}},nil
   default:
    if r.Method=="DELETE" && strings.HasPrefix(r.URL.Path,"/identity/restricted/auth/sessions/") && client.ValidSessionID(strings.TrimPrefix(r.URL.Path,"/identity/restricted/auth/sessions/")) {return core.WorkloadClaims{Scopes:[]string{"identity.auth.sessions.revoke"}},nil}
+   if scope,ok:=business.Scope(r);ok {return core.WorkloadClaims{Scopes:[]string{scope}},nil}
    return core.WorkloadClaims{},core.ErrWorkloadDenied
   }
  }}
@@ -51,5 +54,6 @@ func registerIdentity(mux *http.ServeMux) error {
  platform:=client.New(origin,httpClient)
  controller.New(platform,browserOrigin).Register(mux)
  protected.New(platform,browserOrigin).Register(mux)
+ businesscontroller.Register(mux,platform,browserOrigin)
  return nil
 }
