@@ -56,7 +56,16 @@ func NewPlatformWorkloads(raw string, identity delegatedIdentity, webhook core.W
    }
   } else {
    switch pattern {
-   case "POST /identity/restricted/auth/login", "POST /identity/restricted/auth/forgot-password":
+   case "POST /identity/restricted/auth/login", "POST /identity/restricted/auth/forgot-password",
+    "POST /identity/restricted/auth/refresh",
+    "GET /identity/restricted/auth/recovery/validate",
+    "GET /identity/restricted/auth/invitations/validate",
+    "POST /identity/restricted/auth/recovery/exchange",
+    "POST /identity/restricted/auth/invitations/exchange",
+    "GET /identity/restricted/auth/reset-password/status",
+    "POST /identity/restricted/auth/reset-password",
+    "GET /identity/restricted/accounts/setup/status",
+    "POST /identity/restricted/accounts/setup":
    default: return nil,errors.New("service-only route is not enabled for migration")
    }
   }
@@ -77,7 +86,7 @@ func (v *platformWorkloads) VerifyWorkload(ctx context.Context,r *http.Request)(
  if !ok {return nil,core.ErrWorkloadDenied}
  policy:=v.scoped.Routes[r.Pattern]
  if !policy.RequireActor {
-  if claims.ActorGID!="" || claims.TenantID!="" || claims.SessionID!="" {return nil,core.ErrWorkloadDenied}
+  if claims.Subject!="school" || claims.ActorGID!="" || claims.TenantID!="" || claims.SessionID!="" {return nil,core.ErrWorkloadDenied}
   return verified,nil
  }
  if v.identity==nil || claims.SessionID=="" {return nil,core.ErrWorkloadDenied}

@@ -126,7 +126,12 @@ func (operation *Operation) ServeHTTP(writer http.ResponseWriter, request *http.
 			operation.rejectForbidden(writer, request, "workload_verification_failed")
 			return
 		}
-		operation.mux.ServeHTTP(writer, request.WithContext(ctx))
+		request = request.WithContext(ctx)
+		if !adaptIdentityProof(request) {
+			operation.rejectForbidden(writer, request, "invalid_identity_proof")
+			return
+		}
+		operation.mux.ServeHTTP(writer, request)
 
 	default:
 		operation.rejectForbidden(writer, request, "unsupported_access_tier")
