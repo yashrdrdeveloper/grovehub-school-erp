@@ -52,7 +52,7 @@ func Configure(raw string,legacy Config,workloadID,workloadPrivate,readRaw,renam
   if operation=="status"{
    if publisher,err:=StatusClient(c);err!=nil||publisher==nil{return nil,errors.New("invalid status receipt publisher")}
   }else if publisher,err:=Client(c);err!=nil||publisher==nil{return nil,errors.New("invalid rename receipt publisher")}
-  reserve(c.KeyID,pub);schools[c.SchoolID]=true
+  reserve(c.KeyID,pub);schools[c.SchoolID+":"+operation]=true
  }
  return configs,nil
 }
