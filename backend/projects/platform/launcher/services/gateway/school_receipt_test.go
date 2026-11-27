@@ -39,3 +39,16 @@ func TestSchoolReceiptReaderWorkload(t *testing.T){
  }
  if _,err:=newReceiptReadVerifier([]core.WorkloadKeyConfig{k},[]core.WorkloadKeyConfig{k});err==nil{t.Fatal("reused key accepted")}
 }
+
+func TestStatusReceiptWorkload(t *testing.T){
+ pub,priv,err:=ed25519.GenerateKey(rand.Reader);if err!=nil{t.Fatal(err)}
+ k:=core.WorkloadKeyConfig{KeyID:"status-receipt-test",PublicKey:base64.RawURLEncoding.EncodeToString(pub),Issuer:statusReceiptIssuer,Subject:statusReceiptIssuer+":"+uuid.NewString(),Scopes:[]string{statusReceiptScope}}
+ raw,_:=json.Marshal(workloadConfig{SchoolStatusReceiptKeys:[]core.WorkloadKeyConfig{k}})
+ v,err:=NewPlatformWorkloads(string(raw),nil,nil);if err!=nil{t.Fatal(err)}
+ token,err:=core.SignWorkload(k.KeyID,k.Issuer,priv,core.WorkloadClaims{Subject:k.Subject,Audience:"platform",Scopes:k.Scopes,ExpiresAt:time.Now().Add(time.Minute)});if err!=nil{t.Fatal(err)}
+ for _,path:=range []string{"/audit/restricted/school-status-receipts","/audit/restricted/school-rename-receipts","/audit/restricted/school-mutation-receipts/search"}{
+  r:=httptest.NewRequest("POST",path,nil);r.Pattern="POST "+path;r.Header.Set("Authorization","Bearer "+token)
+  _,err=v.VerifyWorkload(context.Background(),r)
+  if (err==nil)!=(r.Pattern==statusReceiptRoute){t.Fatal("wrong status publisher grant",path,err)}
+ }
+}

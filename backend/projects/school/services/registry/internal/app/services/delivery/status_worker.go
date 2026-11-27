@@ -1,5 +1,3 @@
-// Package delivery relays committed School rename receipts through the
-// provider-owned Audit SDK. The source database owns delivery state.
 package delivery
 
 import (
@@ -8,7 +6,6 @@ import (
  "database/sql"
  "encoding/base64"
  "errors"
- "io"
  "log/slog"
  "net/http"
  "net/url"

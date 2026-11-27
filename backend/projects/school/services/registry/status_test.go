@@ -3,6 +3,9 @@ package registry_test
 import (
  "bytes"
  "context"
+ "errors"
+ sdk "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/internal/generated/audit"
+ "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/registry/internal/app/services/delivery"
  "crypto/ed25519"
  "crypto/rand"
  "encoding/base64"
@@ -58,4 +61,19 @@ func TestSchoolStatus(t *testing.T){
  if err=db.QueryRowContext(ctx,"SELECT status,version FROM school_registry.schools WHERE id=$1",school).Scan(&status,&version);err!=nil||status!="ACTIVE"||version!=3{t.Fatal("incorrect status/version",status,version,err)}
  if err=db.QueryRowContext(ctx,"SELECT count(*) FROM school_registry.status_events WHERE school_id=$1 AND correlation_id=$2",school,correlationID).Scan(&count);err!=nil||count!=2{t.Fatal("incorrect receipts",count,err)}
  if _,err=db.ExecContext(ctx,"DELETE FROM school_registry.status_events WHERE execution_id=$1",execution);err==nil{t.Fatal("receipt deleted")}
+ if err=db.QueryRowContext(ctx,"SELECT count(*) FROM school_registry.status_outbox o JOIN school_registry.status_events e USING(execution_id) WHERE e.school_id=$1",school).Scan(&count);err!=nil||count!=2{t.Fatal("status outbox count",count,err)}
+ calls:=0;var first string
+ worker:=delivery.NewStatus(db,school,func(_ context.Context,a sdk.SchoolStatusReceipt)(int,error){
+  calls++
+  if a.SchoolId!=school||a.CorrelationId==nil||*a.CorrelationId!=correlationID{t.Error("receipt identity mismatch")}
+  if (a.PreviousVersion==1&&a.Operation!="DISABLE")||(a.PreviousVersion==2&&a.Operation!="ACTIVATE"){t.Error("incorrect transition")}
+  if calls==1{first=a.ExecutionId;return 0,errors.New("temporary failure")}
+  if calls==2&&a.ExecutionId!=first{t.Error("retry identity changed")}
+  return 204,nil
+ })
+ if worked,err:=worker.Step(ctx);!worked||err!=nil{t.Fatal("first delivery",worked,err)}
+ if _,err=db.ExecContext(ctx,"UPDATE school_registry.status_outbox SET next_attempt_at='2000-01-01' WHERE execution_id=$1",first);err!=nil{t.Fatal(err)}
+ for n:=0;n<2;n++{if worked,err:=worker.Step(ctx);!worked||err!=nil{t.Fatal("delivery",worked,err)}}
+ if worked,err:=worker.Step(ctx);worked||err!=nil{t.Fatal("unexpected replay",worked,err)}
+ if err=db.QueryRowContext(ctx,"SELECT count(*) FROM school_registry.status_outbox o JOIN school_registry.status_events e USING(execution_id) WHERE e.school_id=$1 AND o.delivered_at IS NOT NULL",school).Scan(&count);err!=nil||count!=2{t.Fatal("delivered count",count,err)}
 }

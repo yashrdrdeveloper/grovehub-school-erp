@@ -37,4 +37,15 @@ func TestSchoolReceiptLedger(t *testing.T){
  for _,row:=range page.Records{if row.ExecutionID==a.ExecutionID{found=row.SchoolID==a.SchoolID&&row.PreviousVersion=="1"&&row.CorrelationID!=nil&&*row.CorrelationID==correlation}}
  if !found{t.Fatal("missing committed receipt")}
  if err=db.Exec("DELETE FROM audit.school_mutation_receipts WHERE execution_id=?",a.ExecutionID).Error;err==nil{t.Fatal("receipt deleted")}
+ status:=producer.SchoolStatusReceipt{ExecutionID:a.ExecutionID,SchoolID:a.SchoolID,PreviousVersion:a.PreviousVersion,CorrelationID:a.CorrelationID,OccurredAt:a.OccurredAt,Operation:"DISABLE"}
+ if err=operator.StoreStatusReceipt(ctx,db,status);!errors.Is(err,operator.ErrConflict){t.Fatal("cross-operation reuse accepted",err)}
+ status.ExecutionID=uuid.NewString()
+ if err=operator.StoreStatusReceipt(ctx,db,status);err!=nil{t.Fatal(err)}
+ if err=operator.StoreStatusReceipt(ctx,db,status);err!=nil{t.Fatal("status replay",err)}
+ page,err=operator.SearchReceipts(ctx,db,operator.SearchInput{PageNumber:1,RowSize:100});if err!=nil{t.Fatal(err)}
+ found=false
+ for _,row:=range page.Records{if row.ExecutionID==status.ExecutionID&&row.Operation=="DISABLE"{found=true}}
+ if !found{t.Fatal("missing status receipt")}
+ status.Operation="ACTIVATE"
+ if err=operator.StoreStatusReceipt(ctx,db,status);!errors.Is(err,operator.ErrConflict){t.Fatal("changed transition accepted",err)}
 }
