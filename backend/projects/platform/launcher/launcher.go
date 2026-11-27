@@ -115,6 +115,7 @@ func Run(logger *slog.Logger) error {
 		identityModule.RouteLimits(),
 	)
 
+	restrictedHandler := coregateway.RestrictedOnly(mux, gatewayRuntime.External)
 	edgeService := coretelemetry.ServiceLauncherEdge
 	edgeHandler := otelhttp.NewHandler(
 		middleware.RequestObservability(
@@ -125,7 +126,7 @@ func Run(logger *slog.Logger) error {
 					gatewayRuntime.External.ServeHTTP(w, r)
 					return
 				}
-				coregateway.RestrictedOnly(mux, gatewayRuntime.External).ServeHTTP(w, r)
+				restrictedHandler.ServeHTTP(w, r)
 			})),
 		),
 		"grovehub.edge",
