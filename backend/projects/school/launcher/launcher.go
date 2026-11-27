@@ -30,8 +30,10 @@ func Run() error {
  if err := registerIdentity(mux); err != nil { return err }
  if err:=registry.RegisterHTTP(mux,db,os.Getenv("SCHOOL_REGISTRY_READ_GRANTS"),os.Getenv("SCHOOL_REGISTRY_RENAME_KEYS"));err!=nil{return err}
  deliveryConfig:=registry.DeliveryConfig{Origin:os.Getenv("SCHOOL_RECEIPT_ORIGIN"),SchoolID:os.Getenv("SCHOOL_RECEIPT_SCHOOL_ID"),KeyID:os.Getenv("SCHOOL_RECEIPT_KEY_ID"),PrivateKey:os.Getenv("SCHOOL_RECEIPT_PRIVATE_KEY")}
- if deliveryConfig!=(registry.DeliveryConfig{})&&(deliveryConfig.KeyID==os.Getenv("SCHOOL_WORKLOAD_KEY_ID")||deliveryConfig.PrivateKey==os.Getenv("SCHOOL_WORKLOAD_PRIVATE_KEY")){return errors.New("school receipt key must be independent")}
- stopDelivery,err:=registry.StartDelivery(ctx,db,deliveryConfig);if err!=nil{return err};defer stopDelivery()
+ configs,err:=registry.ConfigureDelivery(os.Getenv("SCHOOL_RECEIPT_PUBLISHERS"),deliveryConfig,os.Getenv("SCHOOL_WORKLOAD_KEY_ID"),os.Getenv("SCHOOL_WORKLOAD_PRIVATE_KEY"),os.Getenv("SCHOOL_REGISTRY_READ_GRANTS"),os.Getenv("SCHOOL_REGISTRY_RENAME_KEYS"))
+ if err!=nil{return err}
+ stopDelivery,err:=registry.StartDeliveries(ctx,db,configs);if err!=nil{return err};defer stopDelivery()
+ mux.HandleFunc("GET /health/audit-delivery",registry.DeliveryHealth(db,configs))
  mux.HandleFunc("GET /health/live", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusNoContent) })
  mux.HandleFunc("GET /health/database",func(w http.ResponseWriter,r *http.Request){
   probe,cancel:=context.WithTimeout(r.Context(),2*time.Second)

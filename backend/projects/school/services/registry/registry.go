@@ -6,6 +6,8 @@ import (
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/registry/internal/app/services/delivery"
  "database/sql"
  "net/http"
+ "sync"
+ "time"
 
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/registry/internal/app/controller/restricted"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/registry/internal/app/services"
@@ -24,10 +26,40 @@ func RegisterHTTP(mux *http.ServeMux,db *sql.DB,grants string,renameGrants ...st
 }
 
 type DeliveryConfig=delivery.Config
+func ConfigureDelivery(raw string,legacy DeliveryConfig,workloadID,workloadPrivate,readRaw,renameRaw string)([]DeliveryConfig,error){
+ return delivery.Configure(raw,legacy,workloadID,workloadPrivate,readRaw,renameRaw)
+}
+func DeliveryHealth(db *sql.DB,configs []DeliveryConfig)http.HandlerFunc{return delivery.Health(db,configs)}
+
+// StartDeliveries builds every client before launching a bounded set of
+// workers. A worker has a dedicated school credential and cannot select
+// another school's outbox rows.
+func StartDeliveries(ctx context.Context,db *sql.DB,configs []DeliveryConfig)(func(),error){
+ workers:=make([]*delivery.Worker,0,len(configs))
+ for _,c:=range configs{
+  publisher,err:=delivery.Client(c);if err!=nil{return nil,err}
+  if publisher!=nil{workers=append(workers,delivery.New(db,c.SchoolID,publisher))}
+ }
+ run,stop:=context.WithCancel(ctx)
+ var wait sync.WaitGroup
+ // Round-robin shards bound database and network concurrency to four.
+ n:=len(workers);if n>4{n=4}
+ for shard:=0;shard<n;shard++{
+  wait.Add(1)
+  go func(start int){
+   defer wait.Done()
+   for run.Err()==nil{
+    worked:=false
+    for index:=start;index<len(workers)&&run.Err()==nil;index+=n{
+     if ok,err:=workers[index].Step(run);err==nil&&ok{worked=true}
+    }
+    if worked{continue}
+    select{case <-run.Done():return;case <-time.After(time.Second):}
+   }
+  }(shard)
+ }
+ return func(){stop();wait.Wait()},nil
+}
 func StartDelivery(ctx context.Context,db *sql.DB,c DeliveryConfig)(func(),error){
- publisher,err:=delivery.Client(c);if err!=nil{return nil,err}
- if publisher==nil{return func(){},nil}
- run,stop:=context.WithCancel(ctx);done:=make(chan struct{})
- go func(){defer close(done);delivery.New(db,c.SchoolID,publisher).Run(run)}()
- return func(){stop();<-done},nil
+ return StartDeliveries(ctx,db,[]DeliveryConfig{c})
 }
