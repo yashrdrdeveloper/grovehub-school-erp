@@ -78,9 +78,15 @@ func(r *Repository) Get(ctx context.Context,actor entity.Operator,id string)(ent
 }
 func(r *Repository) Decide(ctx context.Context,actor entity.Operator,id string,version int64,status,comment string)(entity.Approval,error){
  tx,err:=r.db.BeginTx(ctx,nil);if err!=nil{return entity.Approval{},err};defer tx.Rollback()
+ a,err:=decide(ctx,tx,actor,id,version,status,comment)
+ if err!=nil{return a,err}
+ return a,tx.Commit()
+}
+
+func decide(ctx context.Context,tx *sql.Tx,actor entity.Operator,id string,version int64,status,comment string)(entity.Approval,error){
  a,err:=scanApproval(tx.QueryRowContext(ctx,"SELECT "+approvalFields+" FROM internal_tool.approval_requests WHERE id=$1 FOR UPDATE",id));if err!=nil{return a,err}
  if status=="CANCELLED" {if actor.ID!=a.RequesterID{return entity.Approval{},ErrForbidden}} else if actor.Persona!=entity.L2{return entity.Approval{},ErrForbidden}
  if a.Status!="PENDING"||a.Version!=version{return entity.Approval{},ErrConflict}
  a,err=scanApproval(tx.QueryRowContext(ctx,"UPDATE internal_tool.approval_requests SET status=$2,version=version+1,reviewer_id=$3,decision_comment=$4,decided_at=now() WHERE id=$1 RETURNING "+approvalFields,id,status,actor.ID,comment));if err!=nil{return a,err}
- if err=event(ctx,tx,actor.ID,id,"REQUEST_"+status);err!=nil{return a,err};return a,tx.Commit()
+ if err=event(ctx,tx,actor.ID,id,"REQUEST_"+status);err!=nil{return a,err};return a,nil
 }

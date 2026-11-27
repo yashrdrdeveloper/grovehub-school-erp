@@ -8,6 +8,7 @@ import (
  "testing"
 
  "github.com/google/uuid"
+ repo "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/repository/workflow"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/entity"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/resources/migrations"
  "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/postgres"
@@ -51,6 +52,14 @@ func TestApprovalLifecycle(t *testing.T){
  execution,err:=bound.Execute(ctx,l1,a.ID,ExecutionInput{Version:2});if err!=nil||execution.Status!="SUCCEEDED"||execution.ResponseStatus==nil||*execution.ResponseStatus!=200{t.Fatal("execution failed",execution,err)}
  if _,err=bound.Execute(ctx,l2,a.ID,ExecutionInput{Version:2});!errors.Is(err,ErrConflict)||calls!=1{t.Fatal("duplicate dispatch accepted",err,calls)}
  saved,err:=bound.Execution(ctx,l2,a.ID);if err!=nil||saved.ID!=execution.ID{t.Fatal("execution history failed",err)}
+ first,err:=s.Submit(ctx,l1,req);if err!=nil{t.Fatal(err)}
+ second,err:=s.Submit(ctx,l1,req);if err!=nil{t.Fatal(err)}
+ bulk:=BulkApprovalInput{Items:[]repo.BulkItem{{ID:first.ID,Version:1},{ID:second.ID,Version:2}}}
+ if _,err=s.BulkApprove(ctx,l2,bulk);!errors.Is(err,ErrConflict){t.Fatal("stale bulk accepted",err)}
+ check,err:=s.Get(ctx,l1,first.ID);if err!=nil||check.Status!="PENDING"{t.Fatal("bulk rollback failed",err)}
+ bulk.Items[1].Version=1
+ if _,err=s.BulkApprove(ctx,l1,bulk);!errors.Is(err,ErrForbidden){t.Fatal("L1 bulk accepted")}
+ approved,err:=s.BulkApprove(ctx,l2,bulk);if err!=nil||len(approved)!=2||approved[0].Status!="APPROVED"||approved[1].Status!="APPROVED"{t.Fatal("bulk approval failed",err)}
  var n int
  if err=db.QueryRowContext(ctx,"SELECT count(*) FROM internal_tool.workflow_events WHERE resource_id=$1",a.ID).Scan(&n);err!=nil||n!=4{t.Fatal("audit events missing",n,err)}
 }

@@ -37,6 +37,7 @@ func(c *Controller) Register(mux *http.ServeMux){
  bind("GET /internal/protected/api-templates",false,func(w http.ResponseWriter,r *http.Request,a entity.Operator){v,err:=c.svc.Templates(r.Context());respond(w,200,v,err)})
  bind("POST /internal/protected/requests",true,func(w http.ResponseWriter,r *http.Request,a entity.Operator){in,ok:=decode[service.SubmitInput](w,r);if !ok{return};v,err:=c.svc.Submit(r.Context(),a,in);respond(w,201,v,err)})
  bind("GET /internal/protected/requests",false,func(w http.ResponseWriter,r *http.Request,a entity.Operator){v,err:=c.svc.List(r.Context(),a,false);respond(w,200,v,err)})
+ bind("POST /internal/protected/approvals/bulk-approve",true,func(w http.ResponseWriter,r *http.Request,a entity.Operator){in,ok:=decode[service.BulkApprovalInput](w,r);if !ok{return};v,err:=c.svc.BulkApprove(r.Context(),a,in);respond(w,200,v,err)})
  bind("GET /internal/protected/approvals",false,func(w http.ResponseWriter,r *http.Request,a entity.Operator){v,err:=c.svc.List(r.Context(),a,true);respond(w,200,v,err)})
  bind("GET /internal/protected/requests/{id}",false,func(w http.ResponseWriter,r *http.Request,a entity.Operator){v,err:=c.svc.Get(r.Context(),a,r.PathValue("id"));respond(w,200,v,err)})
  bind("POST /internal/protected/requests/{id}/execute",true,func(w http.ResponseWriter,r *http.Request,a entity.Operator){in,ok:=decode[service.ExecutionInput](w,r);if !ok{return};v,err:=c.svc.Execute(r.Context(),a,r.PathValue("id"),in);respond(w,200,v,err)})
