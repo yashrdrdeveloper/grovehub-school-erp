@@ -8,3 +8,12 @@ export interface Execution { id: string; requestId: string; operatorId: string; 
 export interface Reconciliation { executionId: string; reviewerId: string; outcome: string; evidence: string; createdAt: string }
 export interface WorkflowEvent { correlationId?: string; id: number; actorId: string; resourceId: string; action: string; occurredAt: string }
 export interface Page<T> { records: T[]; pageNumber: number; rowSize: number; hasMore: boolean }
+
+export interface SchoolGrant {
+  environmentCode: string;
+  templateId: string;
+  schoolId: string;
+  canRequest: boolean;
+  canReview: boolean;
+  canExecute: boolean;
+}

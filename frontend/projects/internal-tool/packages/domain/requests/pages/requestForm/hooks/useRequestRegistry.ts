@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { errorText, search } from '../../../../../business/api/client';
-import type { Environment, Template } from '../../../../../business/api/types';
+import { errorText, request, search } from '../../../../../business/api/client';
+import type { Environment, SchoolGrant, Template } from '../../../../../business/api/types';
 
 async function loadRegistry<T>(resource: string, signal: AbortSignal, pageNumber = 1, records: T[] = []): Promise<T[]> {
   const page = await search<T>(resource, pageNumber, 100, signal);
@@ -14,6 +14,7 @@ async function loadRegistry<T>(resource: string, signal: AbortSignal, pageNumber
 export function useRequestRegistry() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [environments, setEnvironments] = useState<Environment[]>([]);
+  const [grants, setGrants] = useState<SchoolGrant[]>([]);
   const [error, setError] = useState('');
   const [ready, setReady] = useState(false);
   useEffect(() => {
@@ -21,15 +22,17 @@ export function useRequestRegistry() {
     void Promise.all([
       loadRegistry<Template>('api-templates', abort.signal),
       loadRegistry<Environment>('environments', abort.signal),
-    ]).then(([templateRows, environmentRows]) => {
+      request<SchoolGrant[]>('/internal/protected/school-grants', 'GET', undefined, abort.signal),
+    ]).then(([templateRows, environmentRows, grantRows]) => {
       if (abort.signal.aborted) return;
       setTemplates(templateRows);
       setEnvironments(environmentRows);
+      setGrants(grantRows);
       setReady(true);
     }).catch((failure: unknown) => {
       if (!abort.signal.aborted) setError(errorText(failure));
     });
     return () => abort.abort();
   }, []);
-  return { templates, environments, error, ready };
+  return { templates, environments, grants, error, ready };
 }
