@@ -19,7 +19,10 @@ var versionSchema string
 //go:embed 004_rename_delivery.sql
 var deliverySchema string
 
-const Version=4
+//go:embed 005_school_status.sql
+var statusSchema string
+
+const Version=5
 
 func Apply(ctx context.Context,db *sql.DB)error{
  tx,err:=db.BeginTx(ctx,nil);if err!=nil{return err};defer tx.Rollback()
@@ -43,6 +46,10 @@ func Apply(ctx context.Context,db *sql.DB)error{
  if version<4{
   if _,err=tx.ExecContext(ctx,deliverySchema);err!=nil{return err}
   if _,err=tx.ExecContext(ctx,"INSERT INTO school_registry.schema_version(version) VALUES(4)");err!=nil{return err}
+ }
+ if version<5{
+  if _,err=tx.ExecContext(ctx,statusSchema);err!=nil{return err}
+  if _,err=tx.ExecContext(ctx,"INSERT INTO school_registry.schema_version(version) VALUES(5)");err!=nil{return err}
  }
  return tx.Commit()
 }

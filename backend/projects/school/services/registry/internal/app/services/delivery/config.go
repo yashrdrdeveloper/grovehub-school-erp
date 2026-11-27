@@ -15,7 +15,7 @@ type ReaderGrant struct{Key core.WorkloadKeyConfig `json:"key"`}
 
 // Configure validates all credentials before any worker starts. The relay
 // must never reuse an ingress credential or another school's publisher key.
-func Configure(raw string,legacy Config,workloadID,workloadPrivate,readRaw,renameRaw string)([]Config,error){
+func Configure(raw string,legacy Config,workloadID,workloadPrivate,readRaw,renameRaw string,statusRaw ...string)([]Config,error){
  configs:=[]Config{}
  if strings.TrimSpace(raw)!=""{
   if legacy!=(Config{})||len(raw)>256*1024{return nil,errors.New("conflicting receipt configuration")}
@@ -36,6 +36,11 @@ func Configure(raw string,legacy Config,workloadID,workloadPrivate,readRaw,renam
  var renamers []core.WorkloadKeyConfig
  if strings.TrimSpace(renameRaw)!=""&&json.Unmarshal([]byte(renameRaw),&renamers)!=nil{return nil,errors.New("invalid registry rename configuration")}
  for _,k:=range renamers{reserve(k.KeyID,k.PublicKey)}
+ for _,raw:=range statusRaw{
+  var statusKeys []core.WorkloadKeyConfig
+  if strings.TrimSpace(raw)!=""&&json.Unmarshal([]byte(raw),&statusKeys)!=nil{return nil,errors.New("invalid registry status configuration")}
+  for _,k:=range statusKeys{reserve(k.KeyID,k.PublicKey)}
+ }
  for _,c:=range configs{
   private,err:=base64.RawURLEncoding.DecodeString(c.PrivateKey)
   if err!=nil||len(private)!=ed25519.PrivateKeySize||schools[c.SchoolID]{return nil,errors.New("invalid or duplicate receipt publisher")}

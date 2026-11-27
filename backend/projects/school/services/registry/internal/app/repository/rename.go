@@ -12,6 +12,10 @@ var ErrInactive=errors.New("school inactive")
 // acknowledge the original execution without changing the current school name.
 func Rename(ctx context.Context,db *sql.DB,school,execution,subject,expected,name string,version int64,correlationID *string)error{
  tx,err:=db.BeginTx(ctx,nil);if err!=nil{return err};defer tx.Rollback()
+ if err=lockExecution(ctx,tx,execution);err!=nil{return err}
+ var occupied bool
+ if err=tx.QueryRowContext(ctx,"SELECT EXISTS(SELECT 1 FROM school_registry.status_events WHERE execution_id=$1)",execution).Scan(&occupied);err!=nil{return err}
+ if occupied{return ErrConflict}
  var current,status string
  var currentVersion int64
  if err=tx.QueryRowContext(ctx,"SELECT name,status,version FROM school_registry.schools WHERE id=$1 FOR UPDATE",school).Scan(&current,&status,&currentVersion);err!=nil{return err}

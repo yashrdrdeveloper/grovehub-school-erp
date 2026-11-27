@@ -21,14 +21,17 @@ func RegisterHTTP(mux *http.ServeMux,db *sql.DB,grants string,renameGrants ...st
  handler,err:=restricted.New(db,grants);if err!=nil{return err}
  raw:="";if len(renameGrants)>0{raw=renameGrants[0]}
  rename,err:=restricted.NewRename(db,raw,grants);if err!=nil{return err}
+ statusRaw:="";if len(renameGrants)>1{statusRaw=renameGrants[1]}
+ status,err:=restricted.NewStatus(db,statusRaw,grants,raw);if err!=nil{return err}
+ mux.HandleFunc(restricted.StatusPattern,status)
  mux.HandleFunc(restricted.Pattern,handler)
  mux.HandleFunc(restricted.RenamePattern,rename)
  return nil
 }
 
 type DeliveryConfig=delivery.Config
-func ConfigureDelivery(raw string,legacy DeliveryConfig,workloadID,workloadPrivate,readRaw,renameRaw string)([]DeliveryConfig,error){
- return delivery.Configure(raw,legacy,workloadID,workloadPrivate,readRaw,renameRaw)
+func ConfigureDelivery(raw string,legacy DeliveryConfig,workloadID,workloadPrivate,readRaw,renameRaw string,statusRaw ...string)([]DeliveryConfig,error){
+ return delivery.Configure(raw,legacy,workloadID,workloadPrivate,readRaw,renameRaw,statusRaw...)
 }
 func DeliveryHealth(db *sql.DB,configs []DeliveryConfig)http.HandlerFunc{return delivery.Health(db,configs)}
 

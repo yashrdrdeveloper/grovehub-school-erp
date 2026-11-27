@@ -3,6 +3,27 @@ info:
   title: School Registry
   version: 1.0.0
 paths:
+  /school/restricted/registry/schools/{schoolId}/status:
+    patch:
+      operationId: changeSchoolStatus
+      summary: Change registry lifecycle status with an exact version precondition
+      security: [{workloadBearer: []}]
+      parameters:
+        - {in: path, name: schoolId, required: true, schema: {type: string, format: uuid}}
+        - {in: header, name: Idempotency-Key, required: true, schema: {type: string, format: uuid}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchoolStatusInput'
+      responses:
+        '204': {description: Committed or identical replay}
+        '400': {description: Invalid input}
+        '403': {description: Denied}
+        '404': {description: Missing school}
+        '409': {description: Precondition or idempotency conflict}
+        '503': {description: Registry unavailable}
   /school/restricted/registry/schools/{schoolId}/name:
     patch:
       operationId: renameSchool
@@ -51,6 +72,15 @@ components:
       type: http
       scheme: bearer
   schemas:
+    SchoolStatusInput:
+      type: object
+      additionalProperties: false
+      required: [expectedVersion, expectedStatus, status]
+      properties:
+        expectedVersion: {type: integer, format: int64, minimum: 1}
+        expectedStatus: {type: string}
+        status: {type: string}
+        correlationId: {type: string, format: uuid}
     SchoolRenameInput:
       type: object
       additionalProperties: false

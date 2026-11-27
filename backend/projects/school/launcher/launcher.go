@@ -28,9 +28,9 @@ func Run() error {
  if addr == "" { addr = "127.0.0.1:8081" }
  mux := http.NewServeMux()
  if err := registerIdentity(mux); err != nil { return err }
- if err:=registry.RegisterHTTP(mux,db,os.Getenv("SCHOOL_REGISTRY_READ_GRANTS"),os.Getenv("SCHOOL_REGISTRY_RENAME_KEYS"));err!=nil{return err}
+ if err:=registry.RegisterHTTP(mux,db,os.Getenv("SCHOOL_REGISTRY_READ_GRANTS"),os.Getenv("SCHOOL_REGISTRY_RENAME_KEYS"),os.Getenv("SCHOOL_REGISTRY_STATUS_KEYS"));err!=nil{return err}
  deliveryConfig:=registry.DeliveryConfig{Origin:os.Getenv("SCHOOL_RECEIPT_ORIGIN"),SchoolID:os.Getenv("SCHOOL_RECEIPT_SCHOOL_ID"),KeyID:os.Getenv("SCHOOL_RECEIPT_KEY_ID"),PrivateKey:os.Getenv("SCHOOL_RECEIPT_PRIVATE_KEY")}
- configs,err:=registry.ConfigureDelivery(os.Getenv("SCHOOL_RECEIPT_PUBLISHERS"),deliveryConfig,os.Getenv("SCHOOL_WORKLOAD_KEY_ID"),os.Getenv("SCHOOL_WORKLOAD_PRIVATE_KEY"),os.Getenv("SCHOOL_REGISTRY_READ_GRANTS"),os.Getenv("SCHOOL_REGISTRY_RENAME_KEYS"))
+ configs,err:=registry.ConfigureDelivery(os.Getenv("SCHOOL_RECEIPT_PUBLISHERS"),deliveryConfig,os.Getenv("SCHOOL_WORKLOAD_KEY_ID"),os.Getenv("SCHOOL_WORKLOAD_PRIVATE_KEY"),os.Getenv("SCHOOL_REGISTRY_READ_GRANTS"),os.Getenv("SCHOOL_REGISTRY_RENAME_KEYS"),os.Getenv("SCHOOL_REGISTRY_STATUS_KEYS"))
  if err!=nil{return err}
  stopDelivery,err:=registry.StartDeliveries(ctx,db,configs);if err!=nil{return err};defer stopDelivery()
  mux.HandleFunc("GET /health/audit-delivery",registry.DeliveryHealth(db,configs))
