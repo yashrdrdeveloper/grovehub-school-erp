@@ -73,7 +73,7 @@ def unpack(archive, destination, project, commit, expected_sha256):
                 raise ValueError("duplicate checksum")
             checks[name] = checksum
         files = {p.relative_to(destination).as_posix() for p in destination.rglob("*")
-                 if p.is_file() and p.name != "SHA256SUMS"}
+                 if p.is_file() and p.relative_to(destination).as_posix() != "SHA256SUMS"}
         if set(checks) != files:
             raise ValueError("checksum coverage mismatch")
         for name, checksum in checks.items():

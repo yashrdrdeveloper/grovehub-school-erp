@@ -1,0 +1,40 @@
+name: Deployment configuration
+on:
+  push:
+    paths:
+      - 'backend/deployment/**'
+      - 'scripts/release/package-artifact.sh'
+      - '.github/workflows/deployment-config.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate release scripts and malicious archive regression tests
+        run: |
+          bash -n backend/deployment/scripts/deploy-release.sh
+          python3 -m unittest discover -s backend/deployment/scripts -p 'test_*.py' -v
+      - name: Verify CI packaging compatibility
+        run: |
+          mkdir -p "$RUNNER_TEMP/dist/assets"
+          printf '<html>test</html>' > "$RUNNER_TEMP/dist/index.html"
+          printf 'test' > "$RUNNER_TEMP/dist/assets/test.js"
+          bash scripts/release/package-artifact.sh school-frontend "$RUNNER_TEMP/dist" "$RUNNER_TEMP/release" "$GITHUB_SHA"
+          digest="$(sha256sum "$RUNNER_TEMP/release/school-frontend.tar.gz" | cut -d' ' -f1)"
+          python3 backend/deployment/scripts/verify-release.py "$RUNNER_TEMP/release/school-frontend.tar.gz" "$RUNNER_TEMP/extracted" school-frontend "$GITHUB_SHA" "$digest"
+          cmp "$RUNNER_TEMP/dist/index.html" "$RUNNER_TEMP/extracted/payload/index.html"
+      - name: Validate Nginx configuration
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y nginx-light
+          cat > "$RUNNER_TEMP/nginx.conf" <<EOF
+          events {}
+          http {
+            server { listen 127.0.0.1:18080; include $PWD/backend/deployment/nginx/school.conf.example; }
+            server { listen 127.0.0.1:18081; include $PWD/backend/deployment/nginx/internal-tool.conf.example; }
+          }
+          EOF
+          sudo nginx -t -c "$RUNNER_TEMP/nginx.conf"
