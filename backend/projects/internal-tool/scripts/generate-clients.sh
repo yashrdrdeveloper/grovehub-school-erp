@@ -2,8 +2,9 @@
 set -euo pipefail
 
 project="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-generator="$project/../../libs/core/tools/clientgen/generate.sh"
-providers="$project/../platform/services"
+generator="${GROOVEHUB_CLIENT_GENERATOR:-$project/../../libs/core/tools/clientgen/generate.sh}"
+providers="${GROOVEHUB_CONTRACT_ROOT:-$project/../platform/services}"
+[[ -f "$generator" && -d "$providers" ]] || { echo "Missing pinned client generator or provider contracts" >&2; exit 1; }
 parent="$project/internal/generated"
 mkdir -p "$parent"
 stage="$(mktemp -d "$parent/.generate.XXXXXX")"
