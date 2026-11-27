@@ -7,7 +7,7 @@ source "${SCRIPT_DIR}/../lib/common.sh"
 source "${SCRIPT_DIR}/../lib/process.sh"
 source "${SCRIPT_DIR}/tunnel.sh"
 
-FRONTEND_DIR="${REPO_ROOT}/frontend"
+FRONTEND_DIR="${REPO_ROOT}/frontend/projects/school"
 PID_FILE="${RUNTIME_PID_DIR}/frontend.pid"
 LOG_FILE="${RUNTIME_LOG_DIR}/frontend.log"
 FRONTEND_PORT="${FRONTEND_PORT:-4173}"

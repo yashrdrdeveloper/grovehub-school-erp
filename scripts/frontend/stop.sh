@@ -10,4 +10,4 @@ source "${SCRIPT_DIR}/tunnel.sh"
 stop_frontend_tunnel
 rm -f -- "${RUNTIME_PID_DIR}/frontend-tunnel-vite.url"
 
-stop_owned_process_any "${RUNTIME_PID_DIR}/frontend.pid" "GrooveHub frontend" "${REPO_ROOT}/frontend/node_modules/vite/bin/vite.js"
+stop_owned_process_any "${RUNTIME_PID_DIR}/frontend.pid" "GrooveHub frontend" "${REPO_ROOT}/frontend/projects/school/node_modules/vite/bin/vite.js"

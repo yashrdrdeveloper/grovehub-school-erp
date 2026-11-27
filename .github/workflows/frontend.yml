@@ -5,7 +5,7 @@ on:
   push:
     paths:
       - 'frontend/**'
-      - 'libs/frontend/**'
+      - 'frontend/libs/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
@@ -14,7 +14,7 @@ on:
   pull_request:
     paths:
       - 'frontend/**'
-      - 'libs/frontend/**'
+      - 'frontend/libs/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-24.04
     defaults:
       run:
-        working-directory: frontend
+        working-directory: frontend/projects/school
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -49,9 +49,9 @@ jobs:
         if: failure()
         run: |
           pnpm format
-          git -C .. diff --no-ext-diff -- frontend libs/frontend > "$RUNNER_TEMP/frontend-format.patch"
-          git -C .. diff --stat -- frontend libs/frontend
-          git -C .. restore --worktree -- frontend libs/frontend
+          git -C ../../.. diff --no-ext-diff -- frontend/projects/school frontend/libs > "$RUNNER_TEMP/frontend-format.patch"
+          git -C ../../.. diff --stat -- frontend/projects/school frontend/libs
+          git -C ../../.. restore --worktree -- frontend/projects/school frontend/libs
       - name: Upload formatting remediation patch
         if: failure()
         uses: actions/upload-artifact@v4

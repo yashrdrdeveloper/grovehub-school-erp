@@ -7,7 +7,7 @@ on:
       - phase-2.1-multi-project-refactor
     paths:
       - "backend/**"
-      - "libs/backend/core/**"
+      - "backend/libs/core/**"
       - "go.work"
       - "go.work.sum"
       - "scripts/**"
@@ -30,51 +30,51 @@ jobs:
         with:
           go-version: "1.27.3"
           cache-dependency-path: |
-            backend/go.sum
-            libs/backend/core/go.sum
+            backend/projects/platform/go.sum
+            backend/libs/core/go.sum
       - name: Lint Foundation repository formatting and function signatures
         run: make backend-lint
       - name: Compile the complete backend with generated annotations
         run: make backend-build
       - name: Verify annotation packages resolve after folder refactor
-        working-directory: backend
+        working-directory: backend/projects/platform
         run: go list -overlay=.generated/overlay.json github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/...
       - name: Enforce Core package independence (including test imports)
-        working-directory: backend
+        working-directory: backend/projects/platform
         run: |
           go list -overlay=.generated/overlay.json -f '{{.ImportPath}} {{join .Imports " "}} {{join .TestImports " "}} {{join .XTestImports " "}}' github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/... > "$RUNNER_TEMP/core-imports.txt"
           awk '{ for (i=2;i<=NF;i++) if ($i ~ /^grovehub\//) { print $1 ": forbidden dependency " $i; bad=1 } } END { exit bad }' "$RUNNER_TEMP/core-imports.txt"
           wc -l "$RUNNER_TEMP/core-imports.txt"
       - name: Test annotation source generators
-        working-directory: backend
+        working-directory: backend/projects/platform
         run: go test github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/generation/...
       - name: Verify Core standalone build and tests
-        working-directory: libs/backend/core
+        working-directory: backend/libs/core
         run: |
           export GOWORK=off
           go run ./annotation/generation/testing "$PWD" "$PWD"
           go run ./annotation/generation/overlay "$PWD" "$PWD"
           go test -vet=off -overlay=.generated/overlay.json ./...
       - name: Verify school build without workspace
-        working-directory: backend
+        working-directory: backend/projects/platform
         run: GOWORK=off go build -overlay=.generated/overlay.json -o "$RUNNER_TEMP/school-platform" ./cmd/platform
       - name: Test Audit monitoring
-        working-directory: backend
+        working-directory: backend/projects/platform
         run: go test -race -vet=off -overlay=.generated/overlay.json ./services/audit/internal/tests/unit-test/services/monitoring/...
       - name: Compile Audit replay operator command
-        working-directory: backend
+        working-directory: backend/projects/platform
         run: go build -overlay=.generated/overlay.json -o "$RUNNER_TEMP/audit-replay" ./cmd/audit-replay
       - name: Verify canonical Identity resource packages compile
-        working-directory: backend
+        working-directory: backend/projects/platform
         run: go test -vet=off -overlay=.generated/overlay.json ./services/identity/internal/tests/unit-test/...
       - name: Test Infrastructure messaging persistence options
-        working-directory: backend
+        working-directory: backend/projects/platform
         run: go test -vet=off -overlay=.generated/overlay.json ./services/infrastructure/internal/app/services/messaging/...
       - name: Verify Integration resource packages compile with generated overlays
-        working-directory: backend
+        working-directory: backend/projects/platform
         run: go test -vet=off -overlay=.generated/overlay.json ./services/integration/internal/tests/unit-test/...
       - name: Run available core, launcher and service unit suites
-        working-directory: backend
+        working-directory: backend/projects/platform
         run: |
           suites=(github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tests/unit-test/... ./launcher/tests/unit-test/... ./services/identity/internal/tests/unit-test/... ./services/integration/internal/tests/unit-test/...)
           # Some services intentionally have no unit-test directory.
@@ -92,20 +92,20 @@ jobs:
       - name: Validate generated source on a clean checkout
         shell: bash
         run: |
-          test -s backend/.generated/overlay.json
-          test -s backend/services/infrastructure/.generated/internal/app/entity/zz_tables.gen.go
-          test -s backend/services/infrastructure/.generated/internal/app/client/messaging/impl/zz_clients.gen.go
-          test -s backend/services/foundation/.generated/internal/app/routes/zz_routes.gen.go
-          test -s backend/services/foundation/.generated/internal/app/entity/zz_tables.gen.go
-          test -s backend/services/foundation/.generated/internal/app/client/person/impl/zz_clients.gen.go
-          test -s backend/services/integration/.generated/internal/app/routes/zz_routes.gen.go
-          test -s backend/services/integration/.generated/internal/app/client/connection/impl/zz_clients.gen.go
-          test -s backend/services/foundation/.generated/internal/app/mappers/person/impl/zz_mappers.gen.go
-          test -s backend/services/foundation/.generated/internal/app/repository/person/impl/zz_search.gen.go
-          test -s backend/services/foundation/.generated/internal/app/dto/person/zz_patchdto.gen.go
-          test -s backend/services/integration/.generated/internal/app/entity/zz_tables.gen.go
-          test -s backend/services/foundation/.generated/internal/app/events/producers/person/operations/changed/zz_events.gen.go
-          test -s backend/services/integration/.generated/internal/app/events/producers/connection/operations/mailbox/zz_events.gen.go
+          test -s backend/projects/platform/.generated/overlay.json
+          test -s backend/projects/platform/services/infrastructure/.generated/internal/app/entity/zz_tables.gen.go
+          test -s backend/projects/platform/services/infrastructure/.generated/internal/app/client/messaging/impl/zz_clients.gen.go
+          test -s backend/projects/platform/services/foundation/.generated/internal/app/routes/zz_routes.gen.go
+          test -s backend/projects/platform/services/foundation/.generated/internal/app/entity/zz_tables.gen.go
+          test -s backend/projects/platform/services/foundation/.generated/internal/app/client/person/impl/zz_clients.gen.go
+          test -s backend/projects/platform/services/integration/.generated/internal/app/routes/zz_routes.gen.go
+          test -s backend/projects/platform/services/integration/.generated/internal/app/client/connection/impl/zz_clients.gen.go
+          test -s backend/projects/platform/services/foundation/.generated/internal/app/mappers/person/impl/zz_mappers.gen.go
+          test -s backend/projects/platform/services/foundation/.generated/internal/app/repository/person/impl/zz_search.gen.go
+          test -s backend/projects/platform/services/foundation/.generated/internal/app/dto/person/zz_patchdto.gen.go
+          test -s backend/projects/platform/services/integration/.generated/internal/app/entity/zz_tables.gen.go
+          test -s backend/projects/platform/services/foundation/.generated/internal/app/events/producers/person/operations/changed/zz_events.gen.go
+          test -s backend/projects/platform/services/integration/.generated/internal/app/events/producers/connection/operations/mailbox/zz_events.gen.go
 
   generated-coverage-macos:
     name: Validate generated-source unit coverage on macOS
@@ -119,13 +119,13 @@ jobs:
         with:
           go-version: "1.27.3"
           cache-dependency-path: |
-            backend/go.sum
-            libs/backend/core/go.sum
+            backend/projects/platform/go.sum
+            backend/libs/core/go.sum
       - name: Verify generated Foundation suites and mocks compile under macOS coverage
         run: make unit-test package=foundation
       - name: Verify the generated coverage report exists
         run: |
-          test -s backend/.generated/unit-coverage/foundation.out
+          test -s backend/projects/platform/.generated/unit-coverage/foundation.out
           test -s .runtime/reports/unit-coverage/foundation.html
 
   rbac-postgres:
@@ -152,18 +152,18 @@ jobs:
         with:
           go-version: "1.27.3"
           cache-dependency-path: |
-            backend/go.sum
-            libs/backend/core/go.sum
+            backend/projects/platform/go.sum
+            backend/libs/core/go.sum
       - name: Generate backend annotation overlay
         run: make backend-build
       - name: Apply real Identity migrations and validate RBAC
-        working-directory: backend
+        working-directory: backend/projects/platform
         env:
           IDENTITY_RBAC_TEST_DSN: "host=127.0.0.1 port=5432 user=rbac_test password=rbac_test dbname=groovehub_rbac_test sslmode=disable"
         run: go test -vet=off -overlay=.generated/overlay.json -count=1 -v ./services/identity/internal/tests/integration-test/rbac/...
 
       - name: Validate durable Integration mail dispatch against PostgreSQL
-        working-directory: backend
+        working-directory: backend/projects/platform
         env:
           INTEGRATION_MAIL_TEST_DSN: "host=127.0.0.1 port=5432 user=rbac_test password=rbac_test dbname=groovehub_rbac_test sslmode=disable"
         run: go test -vet=off -overlay=.generated/overlay.json -count=1 -v ./services/integration/internal/tests/integration-test/maildelivery/...
@@ -172,7 +172,7 @@ jobs:
         run: docker exec ${{ job.services.postgres.id }} createdb -U rbac_test groovehub_audit_test
 
       - name: Validate Audit projection and deduplication against PostgreSQL
-        working-directory: backend
+        working-directory: backend/projects/platform
         env:
           AUDIT_TEST_DSN: "host=127.0.0.1 port=5432 user=rbac_test password=rbac_test dbname=groovehub_rbac_test sslmode=disable"
           AUDIT_SPLIT_TEST_DSN: "host=127.0.0.1 port=5432 user=rbac_test password=rbac_test dbname=groovehub_audit_test sslmode=disable"

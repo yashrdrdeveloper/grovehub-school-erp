@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../lib/paths.sh"
 source "${SCRIPT_DIR}/../lib/common.sh"
 
-FRONTEND_DIR="${REPO_ROOT}/frontend"
+FRONTEND_DIR="${REPO_ROOT}/frontend/projects/school"
 export COREPACK_HOME="${TOOLS_DIR}/corepack"
 
 require_command node
