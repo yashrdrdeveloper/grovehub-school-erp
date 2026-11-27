@@ -3,6 +3,27 @@ info:
   title: School Registry
   version: 1.0.0
 paths:
+  /school/restricted/registry/schools/{schoolId}/name:
+    patch:
+      operationId: renameSchool
+      description: Rename one active school with an execution UUID and expected previous name. Identical committed replays return 204.
+      security: [{workloadBearer: []}]
+      parameters:
+        - {in: path, name: schoolId, required: true, schema: {type: string, format: uuid}}
+        - {in: header, name: Idempotency-Key, required: true, schema: {type: string, format: uuid}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchoolRenameInput'
+      responses:
+        '204': {description: Committed or identical replay}
+        '400': {description: Invalid input}
+        '403': {description: Denied or inactive school}
+        '404': {description: Missing school}
+        '409': {description: Precondition or idempotency conflict}
+        '503': {description: Registry unavailable}
   /school/restricted/registry/lookup:
     post:
       operationId: lookupSchools
@@ -30,6 +51,13 @@ components:
       type: http
       scheme: bearer
   schemas:
+    SchoolRenameInput:
+      type: object
+      additionalProperties: false
+      required: [expectedName, name]
+      properties:
+        expectedName: {type: string, minLength: 1, maxLength: 150}
+        name: {type: string, minLength: 1, maxLength: 150}
     SchoolLookupInput:
       type: object
       required: [schoolIds]

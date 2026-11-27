@@ -10,7 +10,10 @@ import (
 //go:embed 001_schools.sql
 var schema string
 
-const Version=1
+//go:embed 002_school_rename.sql
+var renameSchema string
+
+const Version=2
 
 func Apply(ctx context.Context,db *sql.DB)error{
  tx,err:=db.BeginTx(ctx,nil);if err!=nil{return err};defer tx.Rollback()
@@ -22,6 +25,10 @@ func Apply(ctx context.Context,db *sql.DB)error{
  if version==0{
   if _,err=tx.ExecContext(ctx,schema);err!=nil{return err}
   if _,err=tx.ExecContext(ctx,"INSERT INTO school_registry.schema_version(version) VALUES(1)");err!=nil{return err}
+ }
+ if version<2{
+  if _,err=tx.ExecContext(ctx,renameSchema);err!=nil{return err}
+  if _,err=tx.ExecContext(ctx,"INSERT INTO school_registry.schema_version(version) VALUES(2)");err!=nil{return err}
  }
  return tx.Commit()
 }

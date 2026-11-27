@@ -28,7 +28,7 @@ func Run() error {
  if addr == "" { addr = "127.0.0.1:8081" }
  mux := http.NewServeMux()
  if err := registerIdentity(mux); err != nil { return err }
- if err:=registry.RegisterHTTP(mux,db,os.Getenv("SCHOOL_REGISTRY_READ_GRANTS"));err!=nil{return err}
+ if err:=registry.RegisterHTTP(mux,db,os.Getenv("SCHOOL_REGISTRY_READ_GRANTS"),os.Getenv("SCHOOL_REGISTRY_RENAME_KEYS"));err!=nil{return err}
  mux.HandleFunc("GET /health/live", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusNoContent) })
  mux.HandleFunc("GET /health/database",func(w http.ResponseWriter,r *http.Request){
   probe,cancel:=context.WithTimeout(r.Context(),2*time.Second)

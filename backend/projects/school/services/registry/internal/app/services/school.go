@@ -20,3 +20,5 @@ func Register(ctx context.Context,db *sql.DB,id,code,name string)error{
  if !ValidID(id)||!codePattern.MatchString(code)||!utf8.ValidString(name)||utf8.RuneCountInString(name)<1||utf8.RuneCountInString(name)>150||strings.ContainsFunc(name,unicode.IsControl){return errors.New("invalid school registration")}
  return repository.Register(ctx,db,entity.School{ID:id,Code:code,Name:name})
 }
+
+func ValidName(name string)bool{return name==strings.TrimSpace(name)&&utf8.ValidString(name)&&utf8.RuneCountInString(name)>=1&&utf8.RuneCountInString(name)<=150&&!strings.ContainsFunc(name,unicode.IsControl)}
