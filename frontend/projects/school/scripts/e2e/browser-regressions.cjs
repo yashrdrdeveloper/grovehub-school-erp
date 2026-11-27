@@ -38,7 +38,16 @@ async function visit(browser, pathname, viewport, options = {}) {
   const response = await page.goto(origin + pathname, { waitUntil: 'domcontentloaded' });
   assert.ok(response && response.status() < 400, pathname + ': page was not served');
   await page.locator('#root').waitFor({ state: 'visible' });
-  await page.waitForTimeout(120);
+  // A visible root may still contain the async boot view. Wait for the actual
+  // initialization contract instead of assuming dynamic imports finish in 120ms.
+  await page.waitForFunction(() =>
+    typeof window.__ === 'function' &&
+    !document.querySelector('[data-testid="i18n-boot-status"]') &&
+    Boolean(document.querySelector('#root > *')),
+  );
+  if (authPaths.includes(pathname)) {
+    await page.locator('[data-testid="auth-layout-root"]').waitFor({ state: 'visible' });
+  }
   assert.deepEqual(exceptions, [], pathname + ': unhandled browser exceptions');
   const i18n = await page.evaluate(() => ({
     installed: typeof window.__ === 'function',
