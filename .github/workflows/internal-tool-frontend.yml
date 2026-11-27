@@ -1,0 +1,30 @@
+name: Internal Tool frontend
+on:
+  push:
+    paths:
+      - 'frontend/projects/internal-tool/**'
+      - 'frontend/libs/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/internal-tool-frontend.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @groovehub/internal-tool test
+      - run: pnpm --filter @groovehub/internal-tool build
+      - name: Enforce independent application imports
+        run: |
+          if grep -R -nE 'frontend/projects/school|/projects/school|@Domain/|@Shell/|@Business/' frontend/projects/internal-tool/app frontend/projects/internal-tool/packages; then exit 1; fi
