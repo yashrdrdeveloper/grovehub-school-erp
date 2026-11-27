@@ -1101,6 +1101,163 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /identity/restricted/auth/recovery/validate:
+    get:
+      operationId: "validateRecovery"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/GrantData"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+  /identity/restricted/auth/invitations/validate:
+    get:
+      operationId: "validateInvitation"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/GrantData"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+  /identity/restricted/auth/reset-password/status:
+    get:
+      operationId: "resetGrantStatus"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/GrantData"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+  /identity/restricted/accounts/setup/status:
+    get:
+      operationId: "setupStatus"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/SetupStatusData"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+  /identity/restricted/accounts/roles:
+    get:
+      operationId: "listAssignableRoles"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"type":"array","items":{"$ref":"#/components/schemas/AssignableRole"}}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+  /identity/restricted/roles:
+    post:
+      operationId: "createRoleDraft"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"201":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/RoleDetail"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+      requestBody: {"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateRoleBody"}}}}
+  /identity/restricted/roles/{roleId}:
+    patch:
+      operationId: "updateRoleMetadata"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/RoleDetail"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+      parameters: [{"name":"roleId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}]
+      requestBody: {"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UpdateRoleBody"}}}}
+    get:
+      operationId: "getRole"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/RoleDetail"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+      parameters: [{"name":"roleId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}]
+  /identity/restricted/roles/search:
+    post:
+      operationId: "searchRoles"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/RoleSearchData"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+      requestBody: {"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/SearchBody"}}}}
+  /identity/restricted/roles/{roleId}/permissions:
+    get:
+      operationId: "getRolePermissions"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/RolePermissions"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+      parameters: [{"name":"roleId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}]
+  /identity/restricted/roles/{roleId}/permissions/preview:
+    post:
+      operationId: "previewRolePermissions"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/PermissionPreview"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+      parameters: [{"name":"roleId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}]
+      requestBody: {"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/PreviewPermissionsBody"}}}}
+  /identity/restricted/account-roles/{accountId}:
+    get:
+      operationId: "getAccountRoles"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/AccountRoleAssignment"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+      parameters: [{"name":"accountId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}]
+  /identity/restricted/account-roles/{accountId}/preview:
+    post:
+      operationId: "previewAccountRoles"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/AccountRolePreview"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+      parameters: [{"name":"accountId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}]
+      requestBody: {"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ReplaceAccountRolesBody"}}}}
+  /identity/restricted/capabilities/me:
+    get:
+      operationId: "discoverCapabilities"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/CapabilityDiscovery"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+  /identity/restricted/capabilities/permissions:
+    get:
+      operationId: "getPermissionCatalog"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/PermissionCatalog"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+  /identity/restricted/approvals/history/search:
+    post:
+      operationId: "searchApprovalHistory"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/ApprovalSearchData"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+      requestBody: {"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/SearchBody"}}}}
+  /identity/restricted/approvals/inbox/search:
+    post:
+      operationId: "searchApprovalInbox"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/ApprovalSearchData"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+      requestBody: {"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/SearchBody"}}}}
+  /identity/restricted/approvals/inbox/count:
+    get:
+      operationId: "countPendingApprovals"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/ApprovalCount"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+  /identity/restricted/approvals/{requestId}:
+    get:
+      operationId: "getApproval"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/ApprovalDetail"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+      parameters: [{"name":"requestId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}]
+  /identity/restricted/approvals/lifecycle:
+    post:
+      operationId: "submitLifecycleApproval"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"201":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/ApprovalSummary"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+      parameters: [{"name":"Idempotency-Key","in":"header","schema":{"type":"string"}}]
+      requestBody: {"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/LifecycleApprovalBody"}}}}
+  /identity/restricted/approvals/permissions:
+    post:
+      operationId: "submitPermissionApproval"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"201":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/ApprovalSummary"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+      parameters: [{"name":"Idempotency-Key","in":"header","schema":{"type":"string"}}]
+      requestBody: {"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/PermissionApprovalBody"}}}}
+  /identity/restricted/approvals/assignments:
+    post:
+      operationId: "submitAssignmentApproval"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"201":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/ApprovalSummary"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+      parameters: [{"name":"Idempotency-Key","in":"header","schema":{"type":"string"}}]
+      requestBody: {"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/AssignmentApprovalBody"}}}}
+  /identity/restricted/approvals/{requestId}/approve:
+    post:
+      operationId: "approveRequest"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/ApprovalSummary"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+      parameters: [{"name":"requestId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}]
+      requestBody: {"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ApprovalDecisionBody"}}}}
+  /identity/restricted/approvals/{requestId}/reject:
+    post:
+      operationId: "rejectRequest"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/ApprovalSummary"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+      parameters: [{"name":"requestId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}]
+      requestBody: {"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ApprovalDecisionBody"}}}}
+  /identity/restricted/approvals/{requestId}/cancel:
+    post:
+      operationId: "cancelRequest"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/ApprovalSummary"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+      parameters: [{"name":"requestId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}]
+      requestBody: {"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ApprovalVersionBody"}}}}
+  /identity/restricted/approvals/{requestId}/execute:
+    post:
+      operationId: "executeRequest"
+      security: [{"workloadBearer":[],"identityProof":[]}]
+      responses: {"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","const":true},"data":{"$ref":"#/components/schemas/ApprovalSummary"}},"required":["success","data"]}}}},"default":{"description":"Operation rejected or unavailable","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorResponse"}}}}}
+      parameters: [{"name":"requestId","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}]
+      requestBody: {"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ApprovalVersionBody"}}}}
 components:
   securitySchemes:
     workloadBearer:
@@ -1197,6 +1354,8 @@ components:
           type: object
           properties:
             rows: {type: integer, minimum: 1, maximum: 100}
+            rowSize: {type: integer, minimum: 1, maximum: 100}
+            pageNumber: {type: integer, minimum: 1}
             cursor: {type: string}
     Account:
       type: object
@@ -1204,6 +1363,8 @@ components:
         accountId: {type: string, format: uuid}
         personGid: {type: string, format: uuid}
         username: {type: [string, 'null']}
+        primaryRoleId: {type: [string, 'null'], format: uuid}
+        secondaryRoleIds: {type: [array, 'null'], items: {type: string, format: uuid}}
         email: {type: string, format: email}
         status: {type: string, enum: [PENDING_SETUP, ACTIVE, SUSPENDED, DEACTIVATED]}
         version: {type: integer}
@@ -1292,7 +1453,12 @@ components:
           properties:
             rows: {type: integer}
             hasNext: {type: boolean}
+            hasPrevious: {type: boolean}
             nextCursor: {type: string}
+            pageNumber: {type: integer}
+            rowSize: {type: integer}
+            totalRecords: {type: integer, format: int64}
+            totalPages: {type: integer, format: int64}
     ErrorResponse:
       type: object
       required: [success, errorCode, errorMessage, httpErrorCode, errorMetaData]
@@ -1386,3 +1552,49 @@ components:
         success: {type: boolean, const: true}
         data:
           $ref: '#/components/schemas/InvitationData'
+
+    SetupStatusData: {"type":"object","properties":{"verified":{"type":"boolean"},"expiresIn":{"type":"integer","format":"int64"}},"required":["verified","expiresIn"]}
+
+    AssignableRole: {"type":"object","properties":{"id":{"type":"string","format":"uuid"},"name":{"type":"string"}},"required":["id","name"]}
+
+    RoleDetail: {"type":"object","properties":{"roleId":{"type":"string","format":"uuid"},"name":{"type":"string"},"description":{"type":"string"},"personas":{"type":"array","items":{"type":"string"}},"status":{"type":"string"},"version":{"type":"integer","format":"int64"},"createdAt":{"type":"string","format":"date-time"},"updatedAt":{"type":"string","format":"date-time"}},"required":["roleId","name","description","personas","status","version","createdAt","updatedAt"]}
+
+    CreateRoleBody: {"type":"object","properties":{"name":{"type":"string"},"description":{"type":"string"},"personas":{"type":"array","items":{"type":"string"}}},"required":["name","description","personas"],"additionalProperties":false}
+
+    UpdateRoleBody: {"type":"object","properties":{"name":{"type":"string"},"description":{"type":"string"},"personas":{"type":"array","items":{"type":"string"}},"version":{"type":"integer","format":"int64"}},"required":["name","description","personas","version"],"additionalProperties":false}
+
+    RolePermissions: {"type":"object","properties":{"roleId":{"type":"string","format":"uuid"},"version":{"type":"integer","format":"int64"},"permissionCodes":{"type":["array","null"],"items":{"type":"string"}}},"required":["roleId","version","permissionCodes"]}
+
+    PreviewPermissionsBody: {"type":"object","properties":{"version":{"type":"integer","format":"int64"},"permissionCodes":{"type":"array","items":{"type":"string"}}},"required":["version","permissionCodes"],"additionalProperties":false}
+
+    PermissionPreview: {"type":"object","properties":{"roleId":{"type":"string","format":"uuid"},"version":{"type":"integer","format":"int64"},"added":{"type":["array","null"],"items":{"type":"string"}},"removed":{"type":["array","null"],"items":{"type":"string"}},"approvalRequired":{"type":"boolean"}},"required":["roleId","version","added","removed","approvalRequired"]}
+
+    AccountRoleAssignment: {"type":"object","properties":{"accountId":{"type":"string","format":"uuid"},"status":{"type":"string"},"version":{"type":"integer","format":"int64"},"primaryRoleId":{"type":"string","format":"uuid"},"secondaryRoleIds":{"type":["array","null"],"items":{"type":"string","format":"uuid"}}},"required":["accountId","status","version","primaryRoleId","secondaryRoleIds"]}
+
+    ReplaceAccountRolesBody: {"type":"object","properties":{"version":{"type":"integer","format":"int64"},"primaryRoleId":{"type":"string","format":"uuid"},"secondaryRoleIds":{"type":["array","null"],"items":{"type":"string","format":"uuid"}}},"required":["version","primaryRoleId","secondaryRoleIds"],"additionalProperties":false}
+
+    AccountRolePreview: {"type":"object","properties":{"accountId":{"type":"string","format":"uuid"},"version":{"type":"integer","format":"int64"},"primaryRoleId":{"type":"string","format":"uuid"},"secondaryRoleIds":{"type":["array","null"],"items":{"type":"string","format":"uuid"}},"roleVersions":{"type":["array","null"],"items":{"type":"object","properties":{"roleId":{"type":"string","format":"uuid"},"version":{"type":"integer","format":"int64"}},"required":["roleId","version"]}},"approvalRequired":{"type":"boolean"}},"required":["accountId","version","primaryRoleId","secondaryRoleIds","roleVersions","approvalRequired"]}
+
+    CapabilityDiscovery: {"type":"object","properties":{"permissions":{"type":["array","null"],"items":{"type":"string"}},"actions":{"type":"object","additionalProperties":{"type":"boolean"}},"executionConfigured":{"type":"boolean"},"executionRequiresReauthentication":{"type":"boolean"}},"required":["permissions","actions","executionConfigured","executionRequiresReauthentication"]}
+
+    PermissionCatalog: {"type":"object","properties":{"permissions":{"type":["array","null"],"items":{"type":"object","properties":{"code":{"type":"string"},"name":{"type":"string"},"feature":{"type":"string"},"canDelegate":{"type":"boolean"}},"required":["code","name","feature","canDelegate"]}}},"required":["permissions"]}
+
+    ApprovalSummary: {"type":"object","properties":{"requestId":{"type":"string","format":"uuid"},"requesterId":{"type":"string","format":"uuid"},"requestType":{"type":"string"},"status":{"type":"string"},"currentStep":{"type":"integer","format":"int64"},"stepCount":{"type":"integer","format":"int64"},"version":{"type":"integer","format":"int64"},"createdAt":{"type":"string","format":"date-time"},"updatedAt":{"type":"string","format":"date-time"},"expiresAt":{"type":"string","format":"date-time"}},"required":["requestId","requesterId","requestType","status","currentStep","stepCount","version","createdAt","updatedAt","expiresAt"]}
+
+    ApprovalDetail: {"type":"object","properties":{"requestId":{"type":"string","format":"uuid"},"requesterId":{"type":"string","format":"uuid"},"requestType":{"type":"string"},"status":{"type":"string"},"currentStep":{"type":"integer","format":"int64"},"stepCount":{"type":"integer","format":"int64"},"version":{"type":"integer","format":"int64"},"createdAt":{"type":"string","format":"date-time"},"updatedAt":{"type":"string","format":"date-time"},"expiresAt":{"type":"string","format":"date-time"},"policyId":{"type":"string","format":"uuid"},"intent":{},"reason":{"type":"string"}},"required":["requestId","requesterId","requestType","status","currentStep","stepCount","version","createdAt","updatedAt","expiresAt","policyId","intent","reason"]}
+
+    ApprovalCount: {"type":"object","properties":{"pending":{"type":"integer","format":"int64"}},"required":["pending"]}
+
+    LifecycleApprovalBody: {"type":"object","properties":{"type":{"type":"string"},"intent":{"type":"object","properties":{"targetId":{"type":"string","format":"uuid"},"version":{"type":"integer","format":"int64"},"action":{"type":"string"}},"required":["targetId","version","action"],"additionalProperties":false},"reason":{"type":"string"}},"required":["type","intent","reason"],"additionalProperties":false}
+
+    PermissionApprovalBody: {"type":"object","properties":{"intent":{"type":"object","properties":{"roleId":{"type":"string","format":"uuid"},"version":{"type":"integer","format":"int64"},"permissionCodes":{"type":"array","items":{"type":"string"}}},"required":["roleId","version","permissionCodes"],"additionalProperties":false},"reason":{"type":"string"}},"required":["intent","reason"],"additionalProperties":false}
+
+    AssignmentApprovalBody: {"type":"object","properties":{"intent":{"type":"object","properties":{"accountId":{"type":"string","format":"uuid"},"version":{"type":"integer","format":"int64"},"primaryRoleId":{"type":"string","format":"uuid"},"secondaryRoleIds":{"type":["array","null"],"items":{"type":"string","format":"uuid"}},"roleVersions":{"type":"array","items":{"type":"object","properties":{"roleId":{"type":"string","format":"uuid"},"version":{"type":"integer","format":"int64"}},"required":["roleId","version"]}}},"required":["accountId","version","primaryRoleId","secondaryRoleIds","roleVersions"],"additionalProperties":false},"reason":{"type":"string"}},"required":["intent","reason"],"additionalProperties":false}
+
+    ApprovalDecisionBody: {"type":"object","properties":{"version":{"type":"integer","format":"int64"},"comment":{"type":"string"}},"required":["version"],"additionalProperties":false}
+
+    ApprovalVersionBody: {"type":"object","properties":{"version":{"type":"integer","format":"int64"}},"required":["version"],"additionalProperties":false}
+
+    RoleSearchData: {"type":"object","properties":{"items":{"type":["array","null"],"items":{"$ref":"#/components/schemas/RoleDetail"}},"pageInfo":{"type":"object","properties":{"rows":{"type":"integer"},"hasNext":{"type":"boolean"},"hasPrevious":{"type":"boolean"},"nextCursor":{"type":"string"},"pageNumber":{"type":"integer","format":"int64"},"rowSize":{"type":"integer","format":"int64"},"totalRecords":{"type":"integer","format":"int64"},"totalPages":{"type":"integer","format":"int64"}},"required":["rows","hasNext","hasPrevious"]}},"required":["items","pageInfo"]}
+
+    ApprovalSearchData: {"type":"object","properties":{"items":{"type":["array","null"],"items":{"$ref":"#/components/schemas/ApprovalSummary"}},"pageInfo":{"type":"object","properties":{"rows":{"type":"integer"},"hasNext":{"type":"boolean"},"hasPrevious":{"type":"boolean"},"nextCursor":{"type":"string"},"pageNumber":{"type":"integer","format":"int64"},"rowSize":{"type":"integer","format":"int64"},"totalRecords":{"type":"integer","format":"int64"},"totalPages":{"type":"integer","format":"int64"}},"required":["rows","hasNext","hasPrevious"]}},"required":["items","pageInfo"]}
