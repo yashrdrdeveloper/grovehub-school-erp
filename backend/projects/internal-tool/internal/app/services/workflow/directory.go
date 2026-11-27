@@ -8,7 +8,7 @@ import (
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/entity"
 )
 
-type SchoolRecord struct{ID,Code,Name,Status string}
+type SchoolRecord struct{ID,Code,Name,Status string;Version int64}
 type Directory func(context.Context,[]string)(map[string]SchoolRecord,error)
 
 // WithDirectory is called once at startup, before serving requests.
@@ -25,7 +25,7 @@ func(s *Service) ResolvedSchoolGrants(ctx context.Context,actor entity.Operator)
  for _,grant:=range grants{
   row,ok:=records[grant.SchoolID]
   if !ok||row.Status!="ACTIVE"{continue}
-  grant.SchoolName=row.Name;grant.SchoolCode=row.Code;result=append(result,grant)
+  grant.SchoolName=row.Name;grant.SchoolCode=row.Code;grant.SchoolVersion=row.Version;result=append(result,grant)
  }
  return result,nil
 }

@@ -21,9 +21,9 @@ func Register(ctx context.Context,db *sql.DB,s entity.School)error{
 
 func Lookup(ctx context.Context,db *sql.DB,ids []string)([]entity.School,error){
  // Bound by the caller to 100 canonical UUIDs; no unrestricted listing.
- rows,err:=db.QueryContext(ctx,"SELECT id,code,name,status FROM school_registry.schools WHERE id=ANY($1::uuid[]) ORDER BY id",ids)
+ rows,err:=db.QueryContext(ctx,"SELECT id,code,name,status,version FROM school_registry.schools WHERE id=ANY($1::uuid[]) ORDER BY id",ids)
  if err!=nil{return nil,err};defer rows.Close()
  result:=[]entity.School{}
- for rows.Next(){var school entity.School;if err=rows.Scan(&school.ID,&school.Code,&school.Name,&school.Status);err!=nil{return nil,err};result=append(result,school)}
+ for rows.Next(){var school entity.School;if err=rows.Scan(&school.ID,&school.Code,&school.Name,&school.Status,&school.Version);err!=nil{return nil,err};result=append(result,school)}
  return result,rows.Err()
 }

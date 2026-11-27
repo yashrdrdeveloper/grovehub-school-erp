@@ -2,7 +2,7 @@
 
 Owns browser-facing School and Identity use-case APIs. Platform calls use the restricted authenticated generated SDK clients. No direct Platform database access.
 
-Startup requires SCHOOL_DATABASE_URL for a separately provisioned PostgreSQL database and least-privilege role. No fallback to DATABASE_URL or other project credentials. GET /health/database checks only the owned database; /health/ready checks the owned database and Platform /ready after successful local configuration validation; workload grant and browser verification are separate. School registry migration version 2 is required before startup.
+Startup requires SCHOOL_DATABASE_URL for a separately provisioned PostgreSQL database and least-privilege role. No fallback to DATABASE_URL or other project credentials. GET /health/database checks only the owned database; /health/ready checks the owned database and Platform /ready after successful local configuration validation; workload grant and browser verification are separate. School registry migration version 3 is required before startup.
 
 ## School registry
 
@@ -13,3 +13,5 @@ The School-owned OpenAPI contract is in services/registry/internal/resources/api
 ## School name mutation
 
 Migration 2 adds immutable school_registry.rename_events. Configure SCHOOL_REGISTRY_RENAME_KEYS as a JSON array of independent WorkloadKeyConfig public keys with issuer internal-tool-school-rename, subject internal-tool-school-rename:<school UUID>, only internal.school.registry.rename and no delegation. PATCH /school/restricted/registry/schools/{schoolId}/name accepts expectedName and name plus the execution UUID in Idempotency-Key. New writes require ACTIVE status and the exact current name; identical committed retries return 204 without modifying the current name. Conflicting retries return 409. The local audit receipt is written in the same transaction. This is name-only mutation; no school status, deletion, tenant creation or code changes are enabled. Local receipts do not yet replicate to centralized Audit.
+
+Migration 3 adds a monotonic school version, incremented on name, code or status changes, and a previous_version on new rename receipts. Rename now requires expectedVersion (positive int64) along with expectedName. Pre-version receipts remain immutable and cannot be replayed under the new versioned contract. Development rename templates must be registered as a new revision with required integer expectedVersion.

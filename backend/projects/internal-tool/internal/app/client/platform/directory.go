@@ -45,8 +45,8 @@ func NewDirectory(c DirectoryConfig)(workflow.Directory,error){
   if resp!=nil&&resp.Body!=nil{defer resp.Body.Close()}
   if err!=nil||resp==nil||resp.StatusCode!=200||rows==nil{return nil,errors.New("school directory unavailable")}
   for _,row:=range rows.Records{
-   if !requested[row.Id]||result[row.Id].ID!=""||row.Code==""||row.Name==""||(row.Status!="ACTIVE"&&row.Status!="DISABLED"){return nil,errors.New("invalid school directory response")}
-   result[row.Id]=workflow.SchoolRecord{ID:row.Id,Code:row.Code,Name:row.Name,Status:row.Status}
+   if !requested[row.Id]||result[row.Id].ID!=""||row.Code==""||row.Name==""||row.Version<1||(row.Status!="ACTIVE"&&row.Status!="DISABLED"){return nil,errors.New("invalid school directory response")}
+   result[row.Id]=workflow.SchoolRecord{ID:row.Id,Code:row.Code,Name:row.Name,Status:row.Status,Version:row.Version}
   }
   return result,nil
  },nil

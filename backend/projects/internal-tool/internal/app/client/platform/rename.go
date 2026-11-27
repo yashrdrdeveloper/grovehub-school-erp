@@ -24,10 +24,10 @@ func renameInput(call workflow.Invocation,school,path string)(sdk.SchoolRenameIn
  var body sdk.SchoolRenameInput
  if call.SchoolID==nil||*call.SchoolID!=school||call.Method!="PATCH"||call.Path!=path||len(call.Headers)!=0{return body,false}
  var raw map[string]json.RawMessage
- if json.Unmarshal(call.Input,&raw)!=nil||len(raw)!=3{return body,false}
+ if json.Unmarshal(call.Input,&raw)!=nil||len(raw)!=4{return body,false}
  var id string
- if json.Unmarshal(raw["schoolId"],&id)!=nil||id!=school||json.Unmarshal(raw["expectedName"],&body.ExpectedName)!=nil||json.Unmarshal(raw["name"],&body.Name)!=nil{return body,false}
- return body,validSchoolName(body.ExpectedName)&&validSchoolName(body.Name)&&body.ExpectedName!=body.Name
+ if json.Unmarshal(raw["schoolId"],&id)!=nil||id!=school||json.Unmarshal(raw["expectedName"],&body.ExpectedName)!=nil||json.Unmarshal(raw["name"],&body.Name)!=nil||json.Unmarshal(raw["expectedVersion"],&body.ExpectedVersion)!=nil{return body,false}
+ return body,body.ExpectedVersion>0&&validSchoolName(body.ExpectedName)&&validSchoolName(body.Name)&&body.ExpectedName!=body.Name
 }
 
 func RenameBindings(c SchoolConfig)(map[workflow.SchoolBindingKey]workflow.SchoolBinding,error){
@@ -50,7 +50,7 @@ func RenameBindings(c SchoolConfig)(map[workflow.SchoolBindingKey]workflow.Schoo
  api:=sdk.NewAPIClient(cfg)
  adapter:=func(ctx context.Context,call workflow.Invocation)(int,error){
   body,ok:=renameInput(call,c.SchoolID,path);if !ok||!canonicalID(call.ExecutionID){return 0,core.ErrWorkloadDenied}
-  resp,err:=api.DefaultAPI.RenameSchool(ctx,c.SchoolID,call.ExecutionID).SchoolRenameInput(body).Execute()
+  resp,err:=api.DefaultAPI.RenameSchool(ctx,c.SchoolID).IdempotencyKey(call.ExecutionID).SchoolRenameInput(body).Execute()
   if resp==nil{return 0,errors.New("rename unavailable")}
   if resp.Body!=nil{defer resp.Body.Close()}
   if resp.StatusCode==204&&err!=nil{return 0,errors.New("invalid rename acknowledgment")}
