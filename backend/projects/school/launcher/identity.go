@@ -16,6 +16,8 @@ import (
  business "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/platform/client"
  businesscontroller "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/platform/controller/protected"
  audit "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/audit/client/activity"
+ integration "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/integration/client/connection"
+ "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/internal/platformhttp"
 )
 
 func registerIdentity(mux *http.ServeMux) error {
@@ -25,7 +27,7 @@ func registerIdentity(mux *http.ServeMux) error {
  if browserOrigin=="" {return fmt.Errorf("School origin required")}
  key,err:=base64.RawURLEncoding.DecodeString(os.Getenv("SCHOOL_WORKLOAD_PRIVATE_KEY"))
  if err!=nil || len(key)!=ed25519.PrivateKeySize {return fmt.Errorf("invalid School workload key")}
- transport:=&core.WorkloadTransport{Origin:origin,KeyID:os.Getenv("SCHOOL_WORKLOAD_KEY_ID"),Issuer:"school",Subject:"school",Audience:"platform",PrivateKey:ed25519.PrivateKey(key),Base:client.ProofTransport{},Policy:func(r *http.Request)(core.WorkloadClaims,error){
+ transport:=&core.WorkloadTransport{Origin:origin,KeyID:os.Getenv("SCHOOL_WORKLOAD_KEY_ID"),Issuer:"school",Subject:"school",Audience:"platform",PrivateKey:ed25519.PrivateKey(key),Base:platformhttp.ProofTransport{},Policy:func(r *http.Request)(core.WorkloadClaims,error){
   switch r.Method+" "+r.URL.Path {
   case "POST /identity/restricted/auth/login": return core.WorkloadClaims{Scopes:[]string{"identity.auth.login"}},nil
   case "POST /identity/restricted/auth/forgot-password": return core.WorkloadClaims{Scopes:[]string{"identity.auth.forgot"}},nil
@@ -56,7 +58,8 @@ func registerIdentity(mux *http.ServeMux) error {
  platform:=client.New(origin,httpClient)
  controller.New(platform,browserOrigin).Register(mux)
  protected.New(platform,browserOrigin).Register(mux)
- businesscontroller.Register(mux,platform,audit.New(origin,httpClient),browserOrigin)
- businesscontroller.RegisterOAuthCallback(mux,platform)
+ connections:=integration.New(origin,httpClient)
+ businesscontroller.Register(mux,platform,audit.New(origin,httpClient),connections,browserOrigin)
+ businesscontroller.RegisterOAuthCallback(mux,connections)
  return nil
 }
