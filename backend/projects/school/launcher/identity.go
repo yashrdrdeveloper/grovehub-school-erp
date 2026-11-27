@@ -11,6 +11,8 @@ import (
  core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
  client "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/identity/client/authentication"
  controller "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/identity/controller/authentication/public"
+ protected "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/identity/controller/authentication/protected"
+ "strings"
 )
 
 func registerIdentity(mux *http.ServeMux) error {
@@ -33,11 +35,21 @@ func registerIdentity(mux *http.ServeMux) error {
   case "POST /identity/restricted/auth/reset-password": return core.WorkloadClaims{Scopes:[]string{"identity.auth.reset"}},nil
   case "GET /identity/restricted/accounts/setup/status": return core.WorkloadClaims{Scopes:[]string{"identity.auth.setup.status"}},nil
   case "POST /identity/restricted/accounts/setup": return core.WorkloadClaims{Scopes:[]string{"identity.auth.setup"}},nil
-  default: return core.WorkloadClaims{},core.ErrWorkloadDenied
+  case "POST /identity/restricted/auth/logout": return core.WorkloadClaims{Scopes:[]string{"identity.auth.logout"}},nil
+  case "POST /identity/restricted/auth/logout-all": return core.WorkloadClaims{Scopes:[]string{"identity.auth.logout.all"}},nil
+  case "POST /identity/restricted/auth/change-password": return core.WorkloadClaims{Scopes:[]string{"identity.auth.change.password"}},nil
+  case "POST /identity/restricted/auth/reauthenticate": return core.WorkloadClaims{Scopes:[]string{"identity.auth.reauthenticate"}},nil
+  case "GET /identity/restricted/auth/sessions": return core.WorkloadClaims{Scopes:[]string{"identity.auth.sessions"}},nil
+  case "GET /identity/restricted/auth/me": return core.WorkloadClaims{Scopes:[]string{"identity.auth.me"}},nil
+  default:
+   if r.Method=="DELETE" && strings.HasPrefix(r.URL.Path,"/identity/restricted/auth/sessions/") && client.ValidSessionID(strings.TrimPrefix(r.URL.Path,"/identity/restricted/auth/sessions/")) {return core.WorkloadClaims{Scopes:[]string{"identity.auth.sessions.revoke"}},nil}
+   return core.WorkloadClaims{},core.ErrWorkloadDenied
   }
  }}
  httpClient,err:=core.NewWorkloadHTTPClient(transport)
  if err!=nil {return err}
- controller.New(client.New(origin,httpClient),browserOrigin).Register(mux)
+ platform:=client.New(origin,httpClient)
+ controller.New(platform,browserOrigin).Register(mux)
+ protected.New(platform,browserOrigin).Register(mux)
  return nil
 }

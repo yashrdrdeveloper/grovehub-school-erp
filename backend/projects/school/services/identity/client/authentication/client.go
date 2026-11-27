@@ -65,3 +65,21 @@ func(c *Client) ResetStatus(ctx context.Context,proof string)(Result,error){retu
 func(c *Client) ResetPassword(ctx context.Context,input ResetPassword,proof string)(Result,error){return c.call(ctx,"POST","/identity/restricted/auth/reset-password",input,proof)}
 func(c *Client) SetupStatus(ctx context.Context,proof string)(Result,error){return c.call(ctx,"GET","/identity/restricted/accounts/setup/status",nil,proof)}
 func(c *Client) Setup(ctx context.Context,input Setup,proof string)(Result,error){return c.call(ctx,"POST","/identity/restricted/accounts/setup",input,proof)}
+
+type ChangePassword struct { NewPassword string `json:"newPassword"` }
+type Reauthenticate struct { Password string `json:"password"` }
+func(c *Client) Logout(ctx context.Context,proof string)(Result,error){return c.call(ctx,"POST","/identity/restricted/auth/logout",nil,proof)}
+func(c *Client) LogoutAll(ctx context.Context,proof string)(Result,error){return c.call(ctx,"POST","/identity/restricted/auth/logout-all",nil,proof)}
+func(c *Client) ChangePassword(ctx context.Context,input ChangePassword,proof string)(Result,error){return c.call(ctx,"POST","/identity/restricted/auth/change-password",input,proof)}
+func(c *Client) Reauthenticate(ctx context.Context,input Reauthenticate,proof string)(Result,error){return c.call(ctx,"POST","/identity/restricted/auth/reauthenticate",input,proof)}
+func(c *Client) Sessions(ctx context.Context,proof string)(Result,error){return c.call(ctx,"GET","/identity/restricted/auth/sessions",nil,proof)}
+func(c *Client) RevokeSession(ctx context.Context,sessionID string,proof string)(Result,error){if !ValidSessionID(sessionID){return Result{},fmt.Errorf("invalid session ID")};return c.call(ctx,"DELETE","/identity/restricted/auth/sessions"+"/"+sessionID,nil,proof)}
+func(c *Client) Me(ctx context.Context,proof string)(Result,error){return c.call(ctx,"GET","/identity/restricted/auth/me",nil,proof)}
+func ValidSessionID(s string)bool {
+ if len(s)!=36{return false}
+ for i,c:=range s {
+  if i==8||i==13||i==18||i==23 {if c!='-'{return false};continue}
+  if !(c>='0'&&c<='9'||c>='a'&&c<='f'||c>='A'&&c<='F'){return false}
+ }
+ return true
+}

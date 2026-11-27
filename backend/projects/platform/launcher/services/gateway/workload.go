@@ -19,10 +19,12 @@ const gmailWebhook = "POST /integration/restricted/webhooks/gmail"
 type delegatedIdentity interface {
  VerifyDelegatedSession(context.Context,string)(school.Principal,error)
  school.ProtectedRouteAuthorizer
+ school.AccessVerifier
 }
 
 type platformWorkloads struct {
  scoped core.ScopedWorkloadVerifier
+ policies map[string]core.RoutePolicy
  identity delegatedIdentity
  webhook core.WorkloadVerifier
 }
@@ -70,7 +72,12 @@ func NewPlatformWorkloads(raw string, identity delegatedIdentity, webhook core.W
    }
   }
  }
- v.scoped=core.ScopedWorkloadVerifier{Credentials:credentials,Audience:"platform",Routes:cfg.Routes}
+ // The proof-based School boundary independently enforces actor presence.
+ // The generic verifier must not require an unverified actor assertion.
+ routes:=make(map[string]core.RoutePolicy,len(cfg.Routes))
+ for pattern,policy:=range cfg.Routes {routes[pattern]=core.RoutePolicy{Scope:policy.Scope}}
+ v.scoped=core.ScopedWorkloadVerifier{Credentials:credentials,Audience:"platform",Routes:routes}
+ v.policies=cfg.Routes
  return v,nil
 }
 
@@ -84,14 +91,20 @@ func (v *platformWorkloads) VerifyWorkload(ctx context.Context,r *http.Request)(
  if err!=nil {return nil,err}
  claims,ok:=core.WorkloadFrom(verified)
  if !ok {return nil,core.ErrWorkloadDenied}
- policy:=v.scoped.Routes[r.Pattern]
+ policy:=v.policies[r.Pattern]
  if !policy.RequireActor {
   if claims.Subject!="school" || claims.ActorGID!="" || claims.TenantID!="" || claims.SessionID!="" {return nil,core.ErrWorkloadDenied}
   return verified,nil
  }
- if v.identity==nil || claims.SessionID=="" {return nil,core.ErrWorkloadDenied}
- actor,err:=v.identity.VerifyDelegatedSession(verified,claims.SessionID)
- if err!=nil || actor.SessionID!=claims.SessionID || actor.PersonGID!=claims.ActorGID || actor.TenantID!=claims.TenantID || actor.AccountID=="" {return nil,core.ErrWorkloadDenied}
+ if v.identity==nil || claims.Subject!="school" {return nil,core.ErrWorkloadDenied}
+ // School must prove possession of the actual access secret. A session ID
+ // or a signed assertion alone cannot authenticate a browser user.
+ values:=r.Header.Values("X-GH-Identity-Proof")
+ if len(values)!=1 || len(values[0])==0 || len(values[0])>2048 || strings.ContainsAny(values[0]," \t\r\n,;") {return nil,core.ErrWorkloadDenied}
+ if claims.SessionID!="" || claims.ActorGID!="" || claims.TenantID!="" {return nil,core.ErrWorkloadDenied}
+ actor,err:=v.identity.VerifyAccess(verified,values[0])
+ if err!=nil || actor.SessionID=="" || actor.AccountID=="" {return nil,core.ErrWorkloadDenied}
+ r.Header.Del("X-GH-Identity-Proof")
  verified=school.WithPrincipal(verified,actor)
  // Reuse existing route policy during migration; unknown routes deny.
  oldPattern:=strings.Replace(r.Pattern,"/restricted/","/protected/",1)
