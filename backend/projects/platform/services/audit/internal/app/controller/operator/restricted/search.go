@@ -26,10 +26,10 @@ type SearchPage struct{
  HasMore bool `json:"hasMore"`
 }
 func Search(ctx context.Context,db *gorm.DB,in SearchInput)(SearchPage,error){
- rows,err:=db.WithContext(ctx).Raw("SELECT event_id,actor_id,resource_id,operation,occurred_at FROM audit.operator_activities ORDER BY occurred_at DESC,event_id DESC LIMIT ? OFFSET ?",in.RowSize+1,(in.PageNumber-1)*in.RowSize).Rows()
+ rows,err:=db.WithContext(ctx).Raw("SELECT event_id,actor_id,resource_id,operation,occurred_at,correlation_id FROM audit.operator_activities ORDER BY occurred_at DESC,event_id DESC LIMIT ? OFFSET ?",in.RowSize+1,(in.PageNumber-1)*in.RowSize).Rows()
  if err!=nil{return SearchPage{},err};defer rows.Close()
  p:=SearchPage{Records:[]producer.OperatorActivity{},PageNumber:in.PageNumber,RowSize:in.RowSize}
- for rows.Next(){var a producer.OperatorActivity;if err=rows.Scan(&a.EventID,&a.ActorID,&a.ResourceID,&a.Operation,&a.OccurredAt);err!=nil{return SearchPage{},err};p.Records=append(p.Records,a)}
+ for rows.Next(){var a producer.OperatorActivity;if err=rows.Scan(&a.EventID,&a.ActorID,&a.ResourceID,&a.Operation,&a.OccurredAt,&a.CorrelationID);err!=nil{return SearchPage{},err};p.Records=append(p.Records,a)}
  if err=rows.Err();err!=nil{return SearchPage{},err}
  if len(p.Records)>in.RowSize{p.HasMore=true;p.Records=p.Records[:in.RowSize]}
  return p,nil

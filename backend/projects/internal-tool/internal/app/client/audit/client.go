@@ -21,6 +21,7 @@ const scope="internal.audit.operator.write"
 type Config struct{ Origin,KeyID,PrivateKey string }
 type Activity struct {
  EventID,ActorID,ResourceID,Operation string
+ CorrelationID *string
  OccurredAt time.Time
 }
 type Publisher func(context.Context,Activity)(int,error)
@@ -40,7 +41,7 @@ func New(c Config)(Publisher,error){
  api,err:=buildClient(c,"internal-tool-audit",policy)
  if err!=nil||api==nil{return nil,err}
  return func(ctx context.Context,a Activity)(int,error){
-  body:=sdk.OperatorActivity{EventId:a.EventID,ActorId:a.ActorID,ResourceId:a.ResourceID,Operation:a.Operation,OccurredAt:a.OccurredAt}
+  body:=sdk.OperatorActivity{EventId:a.EventID,ActorId:a.ActorID,ResourceId:a.ResourceID,Operation:a.Operation,OccurredAt:a.OccurredAt,CorrelationId:a.CorrelationID}
   resp,err:=api.DefaultAPI.RecordOperatorActivity(ctx).OperatorActivity(body).Execute()
   if resp==nil{return 0,errors.New("audit unavailable")}
   if resp.Body!=nil{defer resp.Body.Close()}

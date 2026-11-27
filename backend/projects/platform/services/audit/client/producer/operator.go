@@ -9,5 +9,6 @@ type OperatorActivity struct {
  ActorID string `json:"actorId"`
  ResourceID string `json:"resourceId"`
  Operation string `json:"operation"`
+ CorrelationID *string `json:"correlationId,omitempty"`
  OccurredAt time.Time `json:"occurredAt"`
 }

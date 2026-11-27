@@ -114,6 +114,7 @@ components:
       additionalProperties: false
       required: [eventId, actorId, resourceId, operation, occurredAt]
       properties:
+        correlationId: {type: string, format: uuid}
         eventId: {type: string, format: uuid}
         actorId: {type: string, format: uuid}
         resourceId: {type: string, format: uuid}

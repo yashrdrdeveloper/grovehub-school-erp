@@ -19,7 +19,7 @@ func(w *Worker) Step(ctx context.Context)(bool,error){
  ctx,cancel:=context.WithTimeout(ctx,10*time.Second);defer cancel()
  tx,err:=w.db.BeginTx(ctx,nil);if err!=nil{return false,err};defer tx.Rollback()
  var id int64;var a audit.Activity
- err=tx.QueryRowContext(ctx,"SELECT o.workflow_event_id,o.event_id,e.actor_id,e.resource_id,e.action,e.occurred_at FROM internal_tool.audit_outbox o JOIN internal_tool.workflow_events e ON e.id=o.workflow_event_id WHERE o.delivered_at IS NULL AND o.blocked_at IS NULL AND o.next_attempt_at<=now() ORDER BY o.next_attempt_at,o.workflow_event_id LIMIT 1 FOR UPDATE OF o SKIP LOCKED").Scan(&id,&a.EventID,&a.ActorID,&a.ResourceID,&a.Operation,&a.OccurredAt)
+ err=tx.QueryRowContext(ctx,"SELECT o.workflow_event_id,o.event_id,e.actor_id,e.resource_id,e.action,e.occurred_at,e.correlation_id FROM internal_tool.audit_outbox o JOIN internal_tool.workflow_events e ON e.id=o.workflow_event_id WHERE o.delivered_at IS NULL AND o.blocked_at IS NULL AND o.next_attempt_at<=now() ORDER BY o.next_attempt_at,o.workflow_event_id LIMIT 1 FOR UPDATE OF o SKIP LOCKED").Scan(&id,&a.EventID,&a.ActorID,&a.ResourceID,&a.Operation,&a.OccurredAt,&a.CorrelationID)
  if errors.Is(err,sql.ErrNoRows){return false,nil};if err!=nil{return false,err}
  call,stop:=context.WithTimeout(ctx,5*time.Second)
  status,sendErr:=w.publish(call,a);stop()

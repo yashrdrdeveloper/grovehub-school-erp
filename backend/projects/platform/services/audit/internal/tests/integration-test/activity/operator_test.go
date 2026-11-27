@@ -23,9 +23,12 @@ func TestOperatorAuditImmutableDelivery(t *testing.T){
  var database string
  if err:=db.Raw("SELECT current_database()").Scan(&database).Error;err!=nil||database!="groovehub_rbac_test"{t.Fatal("disposable database required")}
  if err=audit.Migrate(ctx,db);err!=nil{t.Fatal(err)}
- a:=producer.OperatorActivity{EventID:uuid.NewString(),ActorID:uuid.NewString(),ResourceID:uuid.NewString(),Operation:"REQUEST_APPROVED",OccurredAt:time.Now().UTC().Truncate(time.Microsecond)}
+ correlationID:=uuid.NewString()
+ a:=producer.OperatorActivity{CorrelationID:&correlationID,EventID:uuid.NewString(),ActorID:uuid.NewString(),ResourceID:uuid.NewString(),Operation:"REQUEST_APPROVED",OccurredAt:time.Now().UTC().Truncate(time.Microsecond)}
  if err=operator.Store(ctx,db,a);err!=nil{t.Fatal(err)}
  if err=operator.Store(ctx,db,a);err!=nil{t.Fatal("identical retry",err)}
+ otherID:=uuid.NewString();changedCorrelation:=a;changedCorrelation.CorrelationID=&otherID
+ if err=operator.Store(ctx,db,changedCorrelation);!errors.Is(err,operator.ErrConflict){t.Fatal("conflicting correlation accepted",err)}
  changed:=a;changed.Operation="REQUEST_REJECTED"
  if err=operator.Store(ctx,db,changed);!errors.Is(err,operator.ErrConflict){t.Fatal("conflicting occurrence accepted",err)}
  var count int
@@ -34,7 +37,7 @@ func TestOperatorAuditImmutableDelivery(t *testing.T){
  page,err:=operator.Search(ctx,db,operator.SearchInput{PageNumber:1,RowSize:100})
  if err!=nil{t.Fatal(err)}
  found:=false
- for _,row:=range page.Records{if row.EventID==a.EventID{found=true}}
+ for _,row:=range page.Records{if row.EventID==a.EventID{found=row.CorrelationID!=nil&&*row.CorrelationID==correlationID}}
  if !found{t.Fatal("centralized record not found")}
  if err=db.Exec("DELETE FROM audit.operator_activities WHERE event_id=?",a.EventID).Error;err==nil{t.Fatal("audit deletion accepted")}
 }

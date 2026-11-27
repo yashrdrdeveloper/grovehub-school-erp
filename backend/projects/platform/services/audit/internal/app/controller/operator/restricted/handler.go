@@ -29,7 +29,7 @@ func validOperation(op string)bool{
  return false
 }
 func valid(a producer.OperatorActivity)bool{
- return validID(a.EventID)&&validID(a.ActorID)&&validID(a.ResourceID)&&validOperation(a.Operation)&&!a.OccurredAt.IsZero()&&!a.OccurredAt.After(time.Now().Add(5*time.Minute))
+ return validID(a.EventID)&&validID(a.ActorID)&&validID(a.ResourceID)&&validOperation(a.Operation)&&(a.CorrelationID==nil||validID(*a.CorrelationID))&&!a.OccurredAt.IsZero()&&!a.OccurredAt.After(time.Now().Add(5*time.Minute))
 }
 var ErrConflict=errors.New("operator occurrence conflict")
 
@@ -37,11 +37,11 @@ var ErrConflict=errors.New("operator occurrence conflict")
 // exactly the same immutable identity and semantic fields.
 func Store(ctx context.Context,db *gorm.DB,a producer.OperatorActivity)error{
  return db.WithContext(ctx).Transaction(func(tx *gorm.DB)error{
-  result:=tx.Exec("INSERT INTO audit.operator_activities(event_id,source,actor_id,resource_id,operation,occurred_at) VALUES(?,'internal-tool',?,?,?,?) ON CONFLICT(event_id) DO NOTHING",a.EventID,a.ActorID,a.ResourceID,a.Operation,a.OccurredAt.UTC())
+  result:=tx.Exec("INSERT INTO audit.operator_activities(event_id,source,actor_id,resource_id,operation,occurred_at,correlation_id) VALUES(?,'internal-tool',?,?,?,?,?) ON CONFLICT(event_id) DO NOTHING",a.EventID,a.ActorID,a.ResourceID,a.Operation,a.OccurredAt.UTC(),a.CorrelationID)
   if result.Error!=nil{return result.Error}
   if result.RowsAffected==1{return nil}
   var identical bool
-  if err:=tx.Raw("SELECT EXISTS(SELECT 1 FROM audit.operator_activities WHERE event_id=? AND source='internal-tool' AND actor_id=? AND resource_id=? AND operation=? AND occurred_at=?)",a.EventID,a.ActorID,a.ResourceID,a.Operation,a.OccurredAt.UTC()).Scan(&identical).Error;err!=nil{return err}
+  if err:=tx.Raw("SELECT EXISTS(SELECT 1 FROM audit.operator_activities WHERE event_id=? AND source='internal-tool' AND actor_id=? AND resource_id=? AND operation=? AND occurred_at=? AND correlation_id IS NOT DISTINCT FROM CAST(? AS uuid))",a.EventID,a.ActorID,a.ResourceID,a.Operation,a.OccurredAt.UTC(),a.CorrelationID).Scan(&identical).Error;err!=nil{return err}
   if !identical{return ErrConflict};return nil
  })
 }
