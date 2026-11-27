@@ -55,7 +55,10 @@ export function RequestForm({ close, success }: RequestFormProps) {
       options={availableEnvironments.map((item) => ({ value: item.id, label: item.name }))}
       disabled={!template || !availableEnvironments.length} searchable clearable={false} onChange={changeEnvironment} dataTestId="request-environment" />
     {schoolScoped && <Select label={__('Authorized school')} value={schoolId || null}
-      options={schools.map((id) => ({ value: id, label: id }))}
+      options={schools.map((id) => {
+        const grant = grants.find((item) => item.schoolId === id && item.templateId === templateId && item.environmentCode === environment?.code && item.canRequest);
+        return { value: id, label: grant?.schoolName ? grant.schoolName + ' · ' + grant.schoolCode : id };
+      })}
       disabled={!environment || !schools.length} searchable clearable={false}
       onChange={(value) => setSchoolId(value ?? '')} dataTestId="request-school" />}
     {schoolScoped && environment && !schools.length && <p role="status">{__('No authorized school for this template and environment.')}</p>}

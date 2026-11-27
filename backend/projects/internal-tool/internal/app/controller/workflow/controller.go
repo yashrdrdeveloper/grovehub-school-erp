@@ -33,7 +33,7 @@ func(c *Controller) Register(mux *http.ServeMux){
  c.registerSearch(mux)
  bind:=func(pattern string,mutate bool,h handler){mux.HandleFunc(pattern,c.auth.Protected(mutate,h))}
  bind("POST /internal/protected/environments",true,func(w http.ResponseWriter,r *http.Request,a entity.Operator){in,ok:=decode[service.EnvironmentInput](w,r);if !ok{return};v,err:=c.svc.CreateEnvironment(r.Context(),a,in);respond(w,201,v,err)})
- bind("GET /internal/protected/school-grants",false,func(w http.ResponseWriter,r *http.Request,a entity.Operator){respond(w,200,c.svc.SchoolGrants(a),nil)})
+ bind("GET /internal/protected/school-grants",false,func(w http.ResponseWriter,r *http.Request,a entity.Operator){v,err:=c.svc.ResolvedSchoolGrants(r.Context(),a);respond(w,200,v,err)})
  bind("GET /internal/protected/environments",false,func(w http.ResponseWriter,r *http.Request,a entity.Operator){v,err:=c.svc.Environments(r.Context());respond(w,200,v,err)})
  bind("POST /internal/protected/api-templates",true,func(w http.ResponseWriter,r *http.Request,a entity.Operator){in,ok:=decode[service.TemplateInput](w,r);if !ok{return};v,err:=c.svc.CreateTemplate(r.Context(),a,in);respond(w,201,v,err)})
  bind("GET /internal/protected/api-templates",false,func(w http.ResponseWriter,r *http.Request,a entity.Operator){v,err:=c.svc.Templates(r.Context());respond(w,200,v,err)})

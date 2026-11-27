@@ -55,6 +55,8 @@ type SchoolGrantView struct{
  EnvironmentCode string `json:"environmentCode"`
  TemplateID string `json:"templateId"`
  SchoolID string `json:"schoolId"`
+ SchoolName string `json:"schoolName,omitempty"`
+ SchoolCode string `json:"schoolCode,omitempty"`
  CanRequest bool `json:"canRequest"`
  CanReview bool `json:"canReview"`
  CanExecute bool `json:"canExecute"`
@@ -86,5 +88,5 @@ func(s *Service) checkSchoolReview(ctx context.Context,actor entity.Operator,id 
  binding,ok:=s.schoolBindings[SchoolBindingKey{env.Code,a.TemplateID,*a.SchoolID}]
  if !ok{return nil}
  if !allowedOperator(binding.Reviewers,actor.ID)||!allowedOperator(binding.Requesters,a.RequesterID){return ErrForbidden}
- return nil
+ return s.checkDirectory(ctx,*a.SchoolID)
 }

@@ -14,7 +14,7 @@ location ~ ^/(identity|audit|foundation|integrations)/(public|protected)(/|$) {
     proxy_read_timeout 35s;
 }
 # Deny every other API tier, cross-product route and private health probe.
-location ~ ^/(identity|audit|foundation|integrations|integration|infrastructure|internal|health|ready)(/|$) {
+location ~ ^/(identity|audit|foundation|integrations|integration|infrastructure|school|internal|health|ready)(/|$) {
     return 404;
 }
 location ~ ^/(\.env|\.git)(/|$) { return 404; }

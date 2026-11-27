@@ -18,14 +18,16 @@ for service in audit foundation identity integration; do
   mkdir -p "$stage/services/$(dirname "$relative")"
   git -C "$root" show "$revision:backend/projects/platform/services/$relative" > "$stage/services/$relative"
 done
+mkdir -p "$stage/school"
+git -C "$root" show "$revision:backend/projects/school/services/registry/internal/resources/api/openapi/v1/openapi.yaml" > "$stage/school/registry.yaml"
 mkdir -p "$stage/tools"
 git -C "$root" show "$revision:backend/libs/core/tools/clientgen/generate.sh" > "$stage/tools/generate.sh"
 printf '{"commit":"%s","generator":"openapitools/openapi-generator-cli:v7.15.0"}\n' "$revision" > "$stage/manifest.json"
 (
   cd "$stage"
-  find services tools -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum > SHA256SUMS
+  find services tools school -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum > SHA256SUMS
   sha256sum manifest.json >> SHA256SUMS
   sha256sum -c SHA256SUMS
 )
-tar -C "$stage" -czf "$destination/platform-contracts.tar.gz" manifest.json SHA256SUMS services tools
+tar -C "$stage" -czf "$destination/platform-contracts.tar.gz" manifest.json SHA256SUMS services tools school
 (cd "$destination" && sha256sum platform-contracts.tar.gz > platform-contracts.tar.gz.sha256)

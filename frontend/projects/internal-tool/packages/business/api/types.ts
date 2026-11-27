@@ -13,6 +13,8 @@ export interface SchoolGrant {
   environmentCode: string;
   templateId: string;
   schoolId: string;
+  schoolName?: string;
+  schoolCode?: string;
   canRequest: boolean;
   canReview: boolean;
   canExecute: boolean;

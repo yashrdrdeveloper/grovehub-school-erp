@@ -59,13 +59,16 @@ func Run() error {
   PrivateKey:os.Getenv("INTERNAL_TOOL_SCHOOL_PRIVATE_KEY"),
   OperatorIDs:os.Getenv("INTERNAL_TOOL_SCHOOL_OPERATOR_IDS"),
  }
- reserved:=[]platform.ReservedCredential{}
+ directoryConfig:=platform.DirectoryConfig{Origin:os.Getenv("INTERNAL_TOOL_DIRECTORY_ORIGIN"),KeyID:os.Getenv("INTERNAL_TOOL_DIRECTORY_KEY_ID"),PrivateKey:os.Getenv("INTERNAL_TOOL_DIRECTORY_PRIVATE_KEY"),ReaderID:os.Getenv("INTERNAL_TOOL_DIRECTORY_READER_ID")}
+ directory,err:=platform.NewDirectory(directoryConfig);if err!=nil{return err}
+ reserved:=[]platform.ReservedCredential{{KeyID:directoryConfig.KeyID,PrivateKey:directoryConfig.PrivateKey}}
  for _,prefix:=range []string{"INTERNAL_TOOL_WORKLOAD","INTERNAL_TOOL_AUDIT","INTERNAL_TOOL_AUDIT_READ"}{
+  if directory!=nil&&(directoryConfig.KeyID==os.Getenv(prefix+"_KEY_ID")||directoryConfig.PrivateKey==os.Getenv(prefix+"_PRIVATE_KEY")){return errors.New("school directory key must be independent")}
   reserved=append(reserved,platform.ReservedCredential{KeyID:os.Getenv(prefix+"_KEY_ID"),PrivateKey:os.Getenv(prefix+"_PRIVATE_KEY")})
  }
  schoolBindings,schoolOrigins,err:=platform.ParseSchoolGrants(os.Getenv("INTERNAL_TOOL_SCHOOL_GRANTS"),schoolConfig,reserved)
  if err!=nil{return err}
- workflowController.New(workflow.NewWithSchoolBindings(db,bindings,schoolBindings),authController).Register(mux)
+ workflowController.New(workflow.NewWithSchoolBindings(db,bindings,schoolBindings).WithDirectory(directory),authController).Register(mux)
  publisher,err:=auditclient.New(auditclient.Config{Origin:os.Getenv("INTERNAL_TOOL_AUDIT_ORIGIN"),KeyID:os.Getenv("INTERNAL_TOOL_AUDIT_KEY_ID"),PrivateKey:os.Getenv("INTERNAL_TOOL_AUDIT_PRIVATE_KEY")})
  if err!=nil{return err}
  reader,err:=auditclient.NewReader(auditclient.Config{Origin:os.Getenv("INTERNAL_TOOL_AUDIT_READ_ORIGIN"),KeyID:os.Getenv("INTERNAL_TOOL_AUDIT_READ_KEY_ID"),PrivateKey:os.Getenv("INTERNAL_TOOL_AUDIT_READ_PRIVATE_KEY")})

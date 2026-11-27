@@ -57,6 +57,7 @@ jobs:
           export GOPROXY="file://$RUNNER_TEMP/core-proxy,https://proxy.golang.org"
           export GONOSUMDB="$CORE_MODULE"
           export GROOVEHUB_CONTRACT_ROOT="$RUNNER_TEMP/contracts/services"
+          export GROOVEHUB_SCHOOL_CONTRACT="$RUNNER_TEMP/contracts/school/registry.yaml"
           export GROOVEHUB_CLIENT_GENERATOR="$RUNNER_TEMP/contracts/tools/generate.sh"
           for project in school internal-tool; do
             mkdir "$RUNNER_TEMP/go-consumers/$project"
