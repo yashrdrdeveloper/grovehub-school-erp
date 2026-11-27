@@ -1,5 +1,5 @@
 // Package authentication adapts the Platform Identity SDK to School ingress.
-// Operations whose contracts have not been reconciled retain the transitional transport.
+// The transitional transport is retained only for business wrappers and Integration OAuth.
 package authentication
 
 import (
@@ -100,25 +100,74 @@ func (t ProofTransport) RoundTrip(r *http.Request)(*http.Response,error) {
 }
 type ResetPassword struct { NewPassword string `json:"newPassword"` }
 type Setup struct { Password string `json:"password"` }
-func(c *Client) Refresh(ctx context.Context,proof string)(Result,error){return c.call(ctx,"POST","/identity/restricted/auth/refresh",nil,proof)}
-func(c *Client) RecoveryValidate(ctx context.Context,proof string)(Result,error){return c.call(ctx,"GET","/identity/restricted/auth/recovery/validate",nil,proof)}
-func(c *Client) InvitationValidate(ctx context.Context,proof string)(Result,error){return c.call(ctx,"GET","/identity/restricted/auth/invitations/validate",nil,proof)}
-func(c *Client) RecoveryExchange(ctx context.Context,proof string)(Result,error){return c.call(ctx,"POST","/identity/restricted/auth/recovery/exchange",nil,proof)}
-func(c *Client) InvitationExchange(ctx context.Context,proof string)(Result,error){return c.call(ctx,"POST","/identity/restricted/auth/invitations/exchange",nil,proof)}
-func(c *Client) ResetStatus(ctx context.Context,proof string)(Result,error){return c.call(ctx,"GET","/identity/restricted/auth/reset-password/status",nil,proof)}
-func(c *Client) ResetPassword(ctx context.Context,input ResetPassword,proof string)(Result,error){return c.call(ctx,"POST","/identity/restricted/auth/reset-password",input,proof)}
-func(c *Client) SetupStatus(ctx context.Context,proof string)(Result,error){return c.call(ctx,"GET","/identity/restricted/accounts/setup/status",nil,proof)}
-func(c *Client) Setup(ctx context.Context,input Setup,proof string)(Result,error){return c.call(ctx,"POST","/identity/restricted/accounts/setup",input,proof)}
+func (c *Client) Refresh(ctx context.Context, proof string) (Result,error) {
+ _,resp,err := c.api.DefaultAPI.Refresh(WithIdentityProof(ctx,proof)).Execute()
+ return sdkResult(resp,err)
+}
+func (c *Client) RecoveryValidate(ctx context.Context, proof string) (Result,error) {
+ _,resp,err := c.api.DefaultAPI.ValidateRecovery(WithIdentityProof(ctx,proof)).Execute()
+ return sdkResult(resp,err)
+}
+func (c *Client) InvitationValidate(ctx context.Context, proof string) (Result,error) {
+ _,resp,err := c.api.DefaultAPI.ValidateInvitation(WithIdentityProof(ctx,proof)).Execute()
+ return sdkResult(resp,err)
+}
+func (c *Client) RecoveryExchange(ctx context.Context, proof string) (Result,error) {
+ _,resp,err := c.api.DefaultAPI.ExchangeRecovery(WithIdentityProof(ctx,proof)).Execute()
+ return sdkResult(resp,err)
+}
+func (c *Client) InvitationExchange(ctx context.Context, proof string) (Result,error) {
+ _,resp,err := c.api.DefaultAPI.ExchangeInvitation(WithIdentityProof(ctx,proof)).Execute()
+ return sdkResult(resp,err)
+}
+func (c *Client) ResetStatus(ctx context.Context, proof string) (Result,error) {
+ _,resp,err := c.api.DefaultAPI.ResetGrantStatus(WithIdentityProof(ctx,proof)).Execute()
+ return sdkResult(resp,err)
+}
+func (c *Client) ResetPassword(ctx context.Context, input ResetPassword, proof string) (Result,error) {
+ _,resp,err := c.api.DefaultAPI.ResetPassword(WithIdentityProof(ctx,proof)).ResetBody(sdk.ResetBody{NewPassword:input.NewPassword}).Execute()
+ return sdkResult(resp,err)
+}
+func (c *Client) SetupStatus(ctx context.Context, proof string) (Result,error) {
+ _,resp,err := c.api.DefaultAPI.SetupStatus(WithIdentityProof(ctx,proof)).Execute()
+ return sdkResult(resp,err)
+}
+func (c *Client) Setup(ctx context.Context, input Setup, proof string) (Result,error) {
+ _,resp,err := c.api.DefaultAPI.SetupAccount(WithIdentityProof(ctx,proof)).SetupBody(sdk.SetupBody{Password:input.Password}).Execute()
+ return sdkResult(resp,err)
+}
 
 type ChangePassword struct { NewPassword string `json:"newPassword"` }
 type Reauthenticate struct { Password string `json:"password"` }
-func(c *Client) Logout(ctx context.Context,proof string)(Result,error){return c.call(ctx,"POST","/identity/restricted/auth/logout",nil,proof)}
-func(c *Client) LogoutAll(ctx context.Context,proof string)(Result,error){return c.call(ctx,"POST","/identity/restricted/auth/logout-all",nil,proof)}
-func(c *Client) ChangePassword(ctx context.Context,input ChangePassword,proof string)(Result,error){return c.call(ctx,"POST","/identity/restricted/auth/change-password",input,proof)}
-func(c *Client) Reauthenticate(ctx context.Context,input Reauthenticate,proof string)(Result,error){return c.call(ctx,"POST","/identity/restricted/auth/reauthenticate",input,proof)}
-func(c *Client) Sessions(ctx context.Context,proof string)(Result,error){return c.call(ctx,"GET","/identity/restricted/auth/sessions",nil,proof)}
-func(c *Client) RevokeSession(ctx context.Context,sessionID string,proof string)(Result,error){if !ValidSessionID(sessionID){return Result{},fmt.Errorf("invalid session ID")};return c.call(ctx,"DELETE","/identity/restricted/auth/sessions"+"/"+sessionID,nil,proof)}
-func(c *Client) Me(ctx context.Context,proof string)(Result,error){return c.call(ctx,"GET","/identity/restricted/auth/me",nil,proof)}
+func (c *Client) Logout(ctx context.Context, proof string) (Result,error) {
+ _,resp,err := c.api.DefaultAPI.Logout(WithIdentityProof(ctx,proof)).Execute()
+ return sdkResult(resp,err)
+}
+func (c *Client) LogoutAll(ctx context.Context, proof string) (Result,error) {
+ _,resp,err := c.api.DefaultAPI.LogoutAll(WithIdentityProof(ctx,proof)).Execute()
+ return sdkResult(resp,err)
+}
+func (c *Client) ChangePassword(ctx context.Context, input ChangePassword, proof string) (Result,error) {
+ _,resp,err := c.api.DefaultAPI.ChangePassword(WithIdentityProof(ctx,proof)).ChangePasswordBody(sdk.ChangePasswordBody{NewPassword:input.NewPassword}).Execute()
+ return sdkResult(resp,err)
+}
+func (c *Client) Reauthenticate(ctx context.Context, input Reauthenticate, proof string) (Result,error) {
+ _,resp,err := c.api.DefaultAPI.Reauthenticate(WithIdentityProof(ctx,proof)).ReauthenticationBody(sdk.ReauthenticationBody{Password:input.Password}).Execute()
+ return sdkResult(resp,err)
+}
+func (c *Client) Sessions(ctx context.Context, proof string) (Result,error) {
+ _,resp,err := c.api.DefaultAPI.ListSessions(WithIdentityProof(ctx,proof)).Execute()
+ return sdkResult(resp,err)
+}
+func (c *Client) RevokeSession(ctx context.Context, sessionID string, proof string) (Result,error) {
+ if !ValidSessionID(sessionID) { return Result{},fmt.Errorf("invalid session ID") }
+ _,resp,err := c.api.DefaultAPI.RevokeSession(WithIdentityProof(ctx,proof),sessionID).Execute()
+ return sdkResult(resp,err)
+}
+func (c *Client) Me(ctx context.Context, proof string) (Result,error) {
+ _,resp,err := c.api.DefaultAPI.Me(WithIdentityProof(ctx,proof)).Execute()
+ return sdkResult(resp,err)
+}
 func ValidSessionID(s string)bool {
  if len(s)!=36{return false}
  for i,c:=range s {
