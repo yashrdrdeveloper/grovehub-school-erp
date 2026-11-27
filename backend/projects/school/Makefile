@@ -8,3 +8,7 @@ test: generate-clients
 	GOWORK=off go test ./...
 start: generate-clients
 	GOWORK=off go run ./cmd/school
+
+.PHONY: migrate
+migrate: generate-clients
+	GOWORK=off go run ./cmd/school migrate
