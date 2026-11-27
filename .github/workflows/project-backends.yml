@@ -86,3 +86,8 @@ jobs:
           REVOKE CONNECT ON DATABASE school_test, internal_test FROM PUBLIC;
           SQL
       - run: go test -count=1 -v ./database/postgres
+      - name: Verify Internal Tool operator authentication against its owned database
+        working-directory: backend/projects/internal-tool
+        env:
+          INTERNAL_TOOL_AUTH_TEST_DSN: postgres://internal_test:internal_test@127.0.0.1:5432/internal_test?sslmode=disable
+        run: go test -mod=mod -count=1 -v ./internal/app/controller/authentication
