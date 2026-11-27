@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var restrictedPattern = regexp.MustCompile(`^/[a-z][a-z0-9-]*/restricted(?:/|$)`)
+var restrictedPattern = regexp.MustCompile(`^/[a-z][a-z0-9-]*/restricted(/|$)`)
 
 // RestrictedOnly rejects non-restricted routes before invoking the downstream
 // gateway. The downstream handler must independently verify workload identity

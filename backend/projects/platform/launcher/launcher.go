@@ -19,6 +19,7 @@ import (
 	"grovehub/launcher/middleware"
 	"grovehub/launcher/routing"
 	"grovehub/launcher/services/gateway"
+	coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
 	headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
 	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
 	"grovehub/services/foundation"
@@ -118,7 +119,14 @@ func Run(logger *slog.Logger) error {
 	edgeHandler := otelhttp.NewHandler(
 		middleware.RequestObservability(
 			logger,
-			headercontext.Middleware(gatewayRuntime.External),
+			headercontext.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				_, pattern := mux.Handler(r)
+				if pattern == "GET /health" || pattern == "GET /ready" {
+					gatewayRuntime.External.ServeHTTP(w, r)
+					return
+				}
+				coregateway.RestrictedOnly(mux, gatewayRuntime.External).ServeHTTP(w, r)
+			})),
 		),
 		"grovehub.edge",
 		otelhttp.WithTracerProvider(coretelemetry.TracerProvider(edgeService.Key)),

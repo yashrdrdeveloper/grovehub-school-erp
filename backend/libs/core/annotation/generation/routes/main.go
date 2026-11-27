@@ -57,6 +57,9 @@ func main() {
 func generateAll(backend string) error {
 	modulePath, err := layout.ReadModulePath(backend)
 	if err != nil { return err }
+	_, markerErr := os.Stat(filepath.Join(backend, ".restricted-routes"))
+	if markerErr != nil && !os.IsNotExist(markerErr) { return markerErr }
+	restrictedOnly := markerErr == nil
 	services, err := os.ReadDir(filepath.Join(backend, "services"))
 	if err != nil {
 		return err
@@ -84,7 +87,7 @@ func generateAll(backend string) error {
 		if err != nil {
 			return fmt.Errorf("%s routes: %w", name, err)
 		}
-		groups, err := discover(controllerDir, servicePath, configured)
+		groups, err := discoverWithTier(controllerDir, servicePath, configured, restrictedOnly)
 		if err != nil {
 			return fmt.Errorf("%s routes: %w", name, err)
 		}
@@ -146,6 +149,10 @@ func servicePrefix(filename string) (string, bool, error) {
 }
 
 func discover(dir, servicePath string, configured bool) ([]routeGroup, error) {
+	return discoverWithTier(dir, servicePath, configured, false)
+}
+
+func discoverWithTier(dir, servicePath string, configured, restrictedOnly bool) ([]routeGroup, error) {
 	// Support both legacy controller/<tier> and resource-owned
 	// controller/<resource>/<tier> packages.
 	type category struct{ dir, tier, resource string }
@@ -251,7 +258,12 @@ func discover(dir, servicePath string, configured bool) ([]routeGroup, error) {
 						if err := validatePath(item.path); err != nil {
 							return nil, fmt.Errorf("%s.%s: %w", group.name, item.method, err)
 						}
-						item.path = joinPaths(servicePath, directory.tier, resourcePath, item.path)
+						routeTier := directory.tier
+						if restrictedOnly {
+							if !configured || routeTier == "" { return nil, fmt.Errorf("%s: restricted project requires categorized service routes", filename) }
+							routeTier = "restricted"
+						}
+						item.path = joinPaths(servicePath, routeTier, resourcePath, item.path)
 						key := item.verb + " " + item.path
 						if owner, duplicate := patterns[key]; duplicate {
 							return nil, fmt.Errorf("duplicate route %s: %s and %s.%s", key, owner, group.name, item.method)
