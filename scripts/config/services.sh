@@ -13,7 +13,7 @@ BACKEND_HEALTH_ENDPOINTS=(
 # Swagger UI is intentionally pinned; upgrade this version deliberately.
 SWAGGER_IMAGE="swaggerapi/swagger-ui:v5.33.3"
 SWAGGER_CONTAINER_NAME="groovehub-swagger"
-SWAGGER_PORT="${SWAGGER_PORT:-8081}"
+SWAGGER_PORT="${SWAGGER_PORT:-8090}"
 SWAGGER_BASE_URL="http://127.0.0.1:${SWAGGER_PORT}"
 SWAGGER_SPECS=(
   "Identity API v1|identity/internal/resources/api/openapi/v1/openapi.yaml"

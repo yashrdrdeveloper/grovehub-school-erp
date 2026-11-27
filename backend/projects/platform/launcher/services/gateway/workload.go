@@ -14,7 +14,7 @@ import (
  integration "grovehub/services/integration/client/principal"
 )
 
-const gmailWebhook = "POST /integration/restricted/webhooks/gmail"
+const gmailWebhook = "POST /integrations/restricted/webhooks/gmail"
 
 type delegatedIdentity interface {
  VerifyDelegatedSession(context.Context,string)(school.Principal,error)
@@ -53,7 +53,7 @@ func NewPlatformWorkloads(raw string, identity delegatedIdentity, webhook core.W
    return nil,errors.New("invalid workload route policy")
   }
   if policy.RequireActor {
-   if identity==nil || (!strings.Contains(pattern," /identity/restricted/") && !strings.Contains(pattern," /audit/restricted/")) {
+   if identity==nil || (!strings.Contains(pattern," /identity/restricted/") && !strings.Contains(pattern," /audit/restricted/") && !integrationRoute(pattern)) {
     return nil,errors.New("delegated route has no supported identity authorization boundary")
    }
   } else {
@@ -68,7 +68,8 @@ func NewPlatformWorkloads(raw string, identity delegatedIdentity, webhook core.W
     "POST /identity/restricted/auth/reset-password",
     "GET /identity/restricted/accounts/setup/status",
     "POST /identity/restricted/accounts/setup":
-   default: return nil,errors.New("service-only route is not enabled for migration")
+   default:
+    if !foundationRoute(pattern) {return nil,errors.New("service-only route is not enabled for migration")}
    }
   }
  }
@@ -93,7 +94,7 @@ func (v *platformWorkloads) VerifyWorkload(ctx context.Context,r *http.Request)(
  if !ok {return nil,core.ErrWorkloadDenied}
  policy:=v.policies[r.Pattern]
  if !policy.RequireActor {
-  if claims.Subject!="school" || claims.ActorGID!="" || claims.TenantID!="" || claims.SessionID!="" {return nil,core.ErrWorkloadDenied}
+  if (foundationRoute(r.Pattern) && claims.Subject!="school-foundation") || (!foundationRoute(r.Pattern) && claims.Subject!="school") || claims.ActorGID!="" || claims.TenantID!="" || claims.SessionID!="" {return nil,core.ErrWorkloadDenied}
   return verified,nil
  }
  if v.identity==nil || claims.Subject!="school" {return nil,core.ErrWorkloadDenied}
@@ -108,7 +109,35 @@ func (v *platformWorkloads) VerifyWorkload(ctx context.Context,r *http.Request)(
  verified=school.WithPrincipal(verified,actor)
  // Reuse existing route policy during migration; unknown routes deny.
  oldPattern:=strings.Replace(r.Pattern,"/restricted/","/protected/",1)
- if err:=v.identity.AuthorizeProtectedRoute(verified,oldPattern);err!=nil {return nil,core.ErrWorkloadDenied}
+ if integrationRoute(r.Pattern) {
+  // Integration controllers enforce tenant + owner on each resource and
+  // independently require admin for system-mail configuration.
+  if actor.TenantID=="" || actor.PersonGID=="" {return nil,core.ErrWorkloadDenied}
+ } else if err:=v.identity.AuthorizeProtectedRoute(verified,oldPattern);err!=nil {return nil,core.ErrWorkloadDenied}
  verified=integration.WithVerifiedPrincipal(verified,integration.VerifiedPrincipal{TenantID:actor.TenantID,ActorGID:actor.PersonGID})
  return verified,nil
+}
+
+func integrationRoute(pattern string) bool {
+ switch pattern {
+ case "POST /integrations/restricted/connections": return true
+ case "GET /integrations/restricted/connections/{id}": return true
+ case "GET /integrations/restricted/connections": return true
+ case "DELETE /integrations/restricted/connections/{id}": return true
+ case "POST /integrations/restricted/connections/{id}/oauth/start": return true
+ case "POST /integrations/restricted/connections/{id}/test": return true
+ case "GET /integrations/restricted/connections/{id}/tests": return true
+ case "POST /integrations/restricted/connections/{id}/watch": return true
+ case "POST /integrations/restricted/connections/system-mail/sender": return true
+ case "POST /integrations/restricted/connections/{id}/actions/{action}": return true
+ case "GET /integrations/restricted/providers": return true
+ case "GET /integrations/restricted/providers/{provider}": return true
+ default: return false
+ }
+}
+func foundationRoute(pattern string) bool {
+ switch pattern {
+ case "POST /foundation/restricted/persons", "GET /foundation/restricted/persons/{gid}", "PATCH /foundation/restricted/persons/{gid}", "POST /foundation/restricted/persons/search", "PATCH /foundation/restricted/persons/{gid}/deactivate": return true
+ default: return false
+ }
 }

@@ -11,6 +11,18 @@ import (
 type Operation struct { Method, Path, Scope string }
 
 var operations=[]Operation{
+ {"POST","/integrations/protected/connections","integration.create"},
+ {"GET","/integrations/protected/connections/{id}","integration.get"},
+ {"GET","/integrations/protected/connections","integration.list"},
+ {"DELETE","/integrations/protected/connections/{id}","integration.disconnect"},
+ {"POST","/integrations/protected/connections/{id}/oauth/start","integration.oauth.start"},
+ {"POST","/integrations/protected/connections/{id}/test","integration.test"},
+ {"GET","/integrations/protected/connections/{id}/tests","integration.tests"},
+ {"POST","/integrations/protected/connections/{id}/watch","integration.watch"},
+ {"POST","/integrations/protected/connections/system-mail/sender","integration.systemmail"},
+ {"POST","/integrations/protected/connections/{id}/actions/{action}","integration.action"},
+ {"GET","/integrations/protected/providers","integration.providers"},
+ {"GET","/integrations/protected/providers/{provider}","integration.provider"},
  {"POST","/identity/protected/accounts","identity.accounts.create"},
  {"POST","/identity/protected/accounts/search","identity.accounts.search"},
  {"GET","/identity/protected/accounts/roles","identity.accounts.roles"},
@@ -56,7 +68,15 @@ func (o Operation) Resolve(r *http.Request)(string,bool) {
  if len(parts)!=len(actual){return "",false}
  for i,part:=range parts{
   if strings.HasPrefix(part,"{") && strings.HasSuffix(part,"}"){
-   if !auth.ValidSessionID(actual[i]){return "",false}
+   switch part {
+   case "{provider}":
+    if actual[i]!="gmail" && actual[i]!="outlook" && actual[i]!="GMAIL" && actual[i]!="OUTLOOK" {return "",false}
+   case "{action}":
+    if len(actual[i])==0 || len(actual[i])>100 {return "",false}
+    for _,c:=range actual[i] {if !(c>='a'&&c<='z'||c>='A'&&c<='Z'||c>='0'&&c<='9'||c=='.'||c=='_'||c=='-'){return "",false}}
+   default:
+    if !auth.ValidSessionID(actual[i]){return "",false}
+   }
    continue
   }
   if part!=actual[i]{return "",false}

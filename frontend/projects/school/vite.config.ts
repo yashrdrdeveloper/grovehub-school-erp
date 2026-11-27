@@ -21,7 +21,7 @@ const localOrigin = process.env.GROVEHUB_FRONTEND_LOCAL_ORIGIN ?? 'http://127.0.
 // translated to the existing loopback origin. Never forward arbitrary origins
 // as trusted, and never alter cookies, CSRF proofs or gateway permissions.
 const createProxy = (): ProxyOptions => ({
-  target: 'http://127.0.0.1:8080',
+  target: 'http://127.0.0.1:8081',
   changeOrigin: false,
   configure: (proxy) => {
     proxy.on('proxyReq', (proxyReq, request) => {

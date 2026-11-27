@@ -44,7 +44,7 @@ separator=""
 for spec in "${SWAGGER_SPECS[@]}"; do
   IFS='|' read -r spec_name spec_path <<<"${spec}"
   [[ -n "${spec_name}" && -n "${spec_path}" ]] || die "Invalid Swagger spec registration: ${spec}"
-  [[ -f "${REPO_ROOT}/backend/services/${spec_path}" ]] || die "Swagger spec not found: backend/services/${spec_path}"
+  [[ -f "${BACKEND_DIR}/services/${spec_path}" ]] || die "Swagger spec not found: backend/projects/platform/services/${spec_path}"
   swagger_urls+="${separator}{url:\"/specs/${spec_path}\",name:\"${spec_name}\"}"
   separator=","
 done
@@ -57,7 +57,7 @@ docker run --detach \
   --env "PORT=8080" \
   --env "URLS=${swagger_urls}" \
   --env "DEEP_LINKING=true" \
-  --volume "${REPO_ROOT}/backend/services:/usr/share/nginx/html/specs:ro" \
+  --volume "${BACKEND_DIR}/services:/usr/share/nginx/html/specs:ro" \
   "${SWAGGER_IMAGE}" >/dev/null
 
 swagger_ready=0
@@ -95,7 +95,7 @@ for spec in "${SWAGGER_SPECS[@]}"; do
   IFS='|' read -r spec_name spec_path <<<"${spec}"
   if ! curl --noproxy '*' --fail --silent --max-time 5 "${SWAGGER_BASE_URL}/specs/${spec_path}" >/dev/null; then
     log_error "Swagger UI is reachable, but the OpenAPI spec is not: ${spec_name} (${spec_path})"
-    log_error "Verify the bind mount under ${REPO_ROOT}/backend/services and the container file path"
+    log_error "Verify the bind mount under ${BACKEND_DIR}/services and the container file path"
     die "Swagger OpenAPI specification readiness failed; container retained for diagnosis."
   fi
 done
