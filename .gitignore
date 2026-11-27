@@ -20,3 +20,6 @@ internal/frontend/dist/
 internal/frontend/.vite/
 internal/frontend/coverage/
 internal/frontend/.env.local
+
+# Consumer-local generated OpenAPI SDKs
+/backend/projects/school/internal/generated/
