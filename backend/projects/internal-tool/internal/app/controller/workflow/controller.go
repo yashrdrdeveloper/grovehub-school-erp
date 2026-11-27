@@ -18,7 +18,7 @@ func respond(w http.ResponseWriter,status int,data any,err error){
  w.Header().Set("Content-Type","application/json");w.Header().Set("Cache-Control","no-store")
  if err!=nil{
   code:="UNAVAILABLE";status=503
-  switch{case errors.Is(err,service.ErrInvalid):status=400;code="INVALID_REQUEST";case errors.Is(err,service.ErrForbidden):status=403;code="FORBIDDEN";case errors.Is(err,service.ErrConflict):status=409;code="CONFLICT";case errors.Is(err,sql.ErrNoRows):status=404;code="NOT_FOUND"}
+  switch{case errors.Is(err,service.ErrInvalid):status=400;code="INVALID_REQUEST";case errors.Is(err,service.ErrForbidden):status=403;code="FORBIDDEN";case errors.Is(err,service.ErrConflict):status=409;code="CONFLICT";case errors.Is(err,sql.ErrNoRows):status=404;code="NOT_FOUND";case errors.Is(err,service.ErrExecutionUnavailable):status=503;code="EXECUTION_UNAVAILABLE"}
   w.WriteHeader(status);_ =json.NewEncoder(w).Encode(map[string]any{"success":false,"errorCode":code});return
  }
  w.WriteHeader(status);_ =json.NewEncoder(w).Encode(map[string]any{"success":true,"data":data})
@@ -39,6 +39,8 @@ func(c *Controller) Register(mux *http.ServeMux){
  bind("GET /internal/protected/requests",false,func(w http.ResponseWriter,r *http.Request,a entity.Operator){v,err:=c.svc.List(r.Context(),a,false);respond(w,200,v,err)})
  bind("GET /internal/protected/approvals",false,func(w http.ResponseWriter,r *http.Request,a entity.Operator){v,err:=c.svc.List(r.Context(),a,true);respond(w,200,v,err)})
  bind("GET /internal/protected/requests/{id}",false,func(w http.ResponseWriter,r *http.Request,a entity.Operator){v,err:=c.svc.Get(r.Context(),a,r.PathValue("id"));respond(w,200,v,err)})
+ bind("POST /internal/protected/requests/{id}/execute",true,func(w http.ResponseWriter,r *http.Request,a entity.Operator){in,ok:=decode[service.ExecutionInput](w,r);if !ok{return};v,err:=c.svc.Execute(r.Context(),a,r.PathValue("id"),in);respond(w,200,v,err)})
+ bind("GET /internal/protected/requests/{id}/execution",false,func(w http.ResponseWriter,r *http.Request,a entity.Operator){v,err:=c.svc.Execution(r.Context(),a,r.PathValue("id"));respond(w,200,v,err)})
  for _,action:=range []struct{path,status string}{{"approve","APPROVED"},{"reject","REJECTED"},{"cancel","CANCELLED"}}{
   bind("POST /internal/protected/requests/{id}/"+action.path,true,func(w http.ResponseWriter,r *http.Request,a entity.Operator){in,ok:=decode[service.DecisionInput](w,r);if !ok{return};v,err:=c.svc.Decide(r.Context(),a,r.PathValue("id"),action.status,in);respond(w,200,v,err)})
  }

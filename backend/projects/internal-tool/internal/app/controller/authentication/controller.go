@@ -25,6 +25,7 @@ func(c *Controller) Register(mux *http.ServeMux){
  mux.HandleFunc("POST /internal/public/auth/login",c.login)
  mux.HandleFunc("GET /internal/protected/auth/me",c.me)
  mux.HandleFunc("POST /internal/protected/auth/logout",c.logout)
+ c.registerManagement(mux)
 }
 func write(w http.ResponseWriter,status int,data any){
  w.Header().Set("Content-Type","application/json")
