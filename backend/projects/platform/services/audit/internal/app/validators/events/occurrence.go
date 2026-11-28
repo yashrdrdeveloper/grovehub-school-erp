@@ -30,5 +30,9 @@ func Occurrence(raw []byte) (coreevents.Envelope[client.Activity], error) {
 		return event, ErrInvalidEvent
 	}
 
+	if data.AssetVersion > 0 && data.OccurrenceID != helpers.VersionEventID(data) {
+		return event, ErrInvalidEvent
+	}
+
 	return event, nil
 }

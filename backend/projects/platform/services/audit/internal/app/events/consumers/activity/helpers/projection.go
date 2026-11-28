@@ -16,10 +16,12 @@ import (
 )
 
 var ErrInvalidEvent = validator.ErrInvalidEvent
-var namespace = uuid.MustParse("bca86488-355c-4c40-a2cf-41121835ed83")
+var namespace = uuid.MustParse(validationhelpers.NamespaceID)
 
 func optionalID(value string) *string {
-	if !validationhelpers.ValidID(value) { return nil }
+	if !validationhelpers.ValidID(value) {
+		return nil
+	}
 	return &value
 }
 
@@ -48,7 +50,9 @@ func Project(ctx context.Context, expectedType string, raw []byte) (entity.Activ
 		RequestID *string `json:"requestId,omitempty"`
 		RequestType string `json:"requestType,omitempty"`
 	}{data.Old, data.New, optionalID(data.RequestID), data.RequestType})
-	if err != nil { return entity.Activity{}, ErrInvalidEvent }
+	if err != nil {
+		return entity.Activity{}, ErrInvalidEvent
+	}
 	key, _ := json.Marshal([]any{tenant, assetType, event.AggregateID, expectedType, data.Operation, data.New.Version})
 	auditID := uuid.NewSHA1(namespace, key).String()
 	semantic, _ := json.Marshal([]any{string(key), optionalID(data.ActorID), json.RawMessage(projected)})

@@ -3,7 +3,6 @@ package impl
 import (
 	"context"
 	"net/http"
-	"time"
 
 	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
@@ -54,7 +53,7 @@ func (c *controller) Write(w http.ResponseWriter, r *http.Request) {
 			return nil
 		},
 		Service: func(ctx context.Context, input dto.WriteRequest) (pipeline.Result[pipeline.Empty], error) {
-			ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+			ctx, cancel := context.WithTimeout(ctx, constants.RequestTimeout)
 			defer cancel()
 
 			return noContent(c.service.Store(ctx, input.RequestBody))
@@ -82,7 +81,7 @@ func (c *controller) Receipt(w http.ResponseWriter, r *http.Request) {
 			if !helpers.Authorized(r, constants.ReceiptIssuer+":"+input.RequestBody.SchoolID, constants.ReceiptScope) {
 				return noContent(coreerrors.NewError(definitions.OperatorForbidden))
 			}
-			ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+			ctx, cancel := context.WithTimeout(ctx, constants.RequestTimeout)
 			defer cancel()
 
 			return noContent(c.service.StoreSchoolReceipt(ctx, input.RequestBody))
@@ -110,7 +109,7 @@ func (c *controller) StatusReceipt(w http.ResponseWriter, r *http.Request) {
 			if !helpers.Authorized(r, constants.StatusReceiptIssuer+":"+input.RequestBody.SchoolID, constants.StatusReceiptScope) {
 				return noContent(coreerrors.NewError(definitions.OperatorForbidden))
 			}
-			ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+			ctx, cancel := context.WithTimeout(ctx, constants.RequestTimeout)
 			defer cancel()
 
 			return noContent(c.service.StoreStatusReceipt(ctx, input.RequestBody))
@@ -135,7 +134,7 @@ func (c *controller) Search(w http.ResponseWriter, r *http.Request) {
 			return nil
 		},
 		Service: func(ctx context.Context, input dto.SearchRequest) (pipeline.Result[dto.SearchPage], error) {
-			ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+			ctx, cancel := context.WithTimeout(ctx, constants.RequestTimeout)
 			defer cancel()
 
 			page, err := c.service.Search(ctx, input.RequestBody)
@@ -161,7 +160,7 @@ func (c *controller) ReceiptSearch(w http.ResponseWriter, r *http.Request) {
 			return nil
 		},
 		Service: func(ctx context.Context, input dto.ReceiptSearchRequest) (pipeline.Result[dto.ReceiptPage], error) {
-			ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+			ctx, cancel := context.WithTimeout(ctx, constants.RequestTimeout)
 			defer cancel()
 
 			page, err := c.service.SearchFilteredReceipts(ctx, input.RequestBody)
@@ -175,21 +174,31 @@ func (c *controller) SchoolCheck(w http.ResponseWriter, r *http.Request) {
 	if !authorize(w, r, constants.SchoolSubject+school, constants.SchoolCheckScope) {
 		return
 	}
-	if !validator.ValidID(school) {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
 
-	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
-	defer cancel()
-	exists, err := c.service.SchoolCheck(ctx, school)
-	if err != nil {
-		w.WriteHeader(http.StatusServiceUnavailable)
-		return
-	}
-	if !exists {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-	w.WriteHeader(http.StatusNoContent)
+	pipeline.RunStruct(w, r, pipeline.StructConfig[dto.SchoolCheckRequest, pipeline.Empty]{
+		InvalidParams: definitions.OperatorForbidden,
+		Fallback: definitions.OperatorUnavailable,
+		Writer: helpers.Writer[pipeline.Empty](),
+		Validate: func(input dto.SchoolCheckRequest) error {
+			if !validator.ValidID(input.Params.SchoolID) {
+				return coreerrors.NewError(definitions.OperatorForbidden)
+			}
+
+			return nil
+		},
+		Service: func(ctx context.Context, input dto.SchoolCheckRequest) (pipeline.Result[pipeline.Empty], error) {
+			ctx, cancel := context.WithTimeout(ctx, constants.SchoolCheckTimeout)
+			defer cancel()
+
+			exists, err := c.service.SchoolCheck(ctx, input.Params.SchoolID)
+			if err != nil {
+				return noContent(err)
+			}
+			if !exists {
+				return noContent(coreerrors.NewError(definitions.SchoolActivityNotFound))
+			}
+
+			return noContent(nil)
+		},
+	})
 }

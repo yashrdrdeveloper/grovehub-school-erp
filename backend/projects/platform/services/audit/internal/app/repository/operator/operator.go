@@ -2,12 +2,12 @@ package operator
 
 import (
 	"context"
-	"errors"
 
 	"grovehub/services/audit/internal/app/entity"
+	"grovehub/services/audit/internal/app/repository/operator/constants"
 )
 
-var ErrConflict = errors.New("operator occurrence conflict")
+var ErrConflict = constants.ErrConflict
 
 // Repository owns immutable writes, existence checks and bounded reads.
 type Repository interface {

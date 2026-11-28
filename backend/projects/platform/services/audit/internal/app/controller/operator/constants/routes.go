@@ -1,5 +1,7 @@
 package constants
 
+import "time"
+
 const (
 	Pattern = "POST /audit/restricted/operator-activities"
 	SearchPattern = "POST /audit/restricted/operator-activities/search"
@@ -23,4 +25,6 @@ const (
 	ReceiptReader = "internal-tool-school-receipt-reader"
 	SchoolIDParam = "schoolId"
 	MaxBodyBytes = 4096
+	RequestTimeout = 5 * time.Second
+	SchoolCheckTimeout = 3 * time.Second
 )

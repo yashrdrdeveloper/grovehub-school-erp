@@ -172,6 +172,16 @@ jobs:
       - name: Test unified Platform command strategies
         working-directory: backend/projects/platform
         run: go test -vet=off -overlay=.generated/overlay.json ./cmd/... ./launcher/internal/resources/tests/unit-test/operations/command/... ./services/audit/internal/resources/tests/unit-test/strategies/command/... ./services/identity/internal/resources/tests/unit-test/strategies/command/...
+      - name: Run Audit unit tests and measure coverage
+        working-directory: backend/projects/platform
+        run: |
+          go test -race -vet=off -overlay=.generated/overlay.json -count=1 -covermode=atomic -coverpkg=./services/audit/internal/app/... -coverprofile="$RUNNER_TEMP/audit-coverage.out" ./services/audit/internal/resources/tests/unit-test/...
+          go tool cover -func="$RUNNER_TEMP/audit-coverage.out"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audit-coverage
+          path: ${{ runner.temp }}/audit-coverage.out
       - name: Measure Launcher coverage with generated annotations
         # The Core runner materializes generated source and checks exact statement coverage.
         run: make unit-coverage package=launcher
@@ -231,7 +241,7 @@ jobs:
       - name: Run package-local tenant lifecycle regression tests
         working-directory: backend/projects/platform
         run: |
-          go test -vet=off -overlay=.generated/overlay.json ./launcher/internal/resources/tests/unit-test/bootstrap/... ./services/identity/internal/app/services/authentication/operations/reconciletenant ./services/identity/internal/app/services/registration/operations/invitation ./services/identity/internal/app/services/account/operations/personprofile ./services/integration/internal/app/services/connection/impl ./services/integration/internal/app/services/connection/operations/oauth/strategies/impl ./services/audit/internal/app/controller/operator/restricted
+          go test -vet=off -overlay=.generated/overlay.json ./launcher/internal/resources/tests/unit-test/bootstrap/... ./services/identity/internal/app/services/authentication/operations/reconciletenant ./services/identity/internal/app/services/registration/operations/invitation ./services/identity/internal/app/services/account/operations/personprofile ./services/integration/internal/app/services/connection/impl ./services/integration/internal/app/services/connection/operations/oauth/strategies/impl ./services/audit/internal/resources/tests/unit-test/validators/operator/...
       - name: Verify Integration resource packages compile with generated overlays
         working-directory: backend/projects/platform
         run: go test -vet=off -overlay=.generated/overlay.json ./services/integration/internal/resources/tests/unit-test/...

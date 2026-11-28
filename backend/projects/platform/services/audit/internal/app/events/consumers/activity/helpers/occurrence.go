@@ -10,6 +10,7 @@ import (
 	client "grovehub/services/audit/client/producer"
 	"grovehub/services/audit/internal/app/entity"
 	validator "grovehub/services/audit/internal/app/validators/events"
+	validationhelpers "grovehub/services/audit/internal/app/validators/events/helpers"
 )
 
 func projectOccurrence(raw []byte) (entity.Activity, error) {
@@ -23,9 +24,6 @@ func projectOccurrence(raw []byte) (entity.Activity, error) {
 	occurrence := &data.OccurrenceID
 
 	if data.AssetVersion > 0 {
-		if data.OccurrenceID != VersionEventID(data) {
-			return entity.Activity{}, ErrInvalidEvent
-		}
 		identity = data.AssetVersion
 		occurrence = nil
 	}
@@ -60,8 +58,7 @@ func projectOccurrence(raw []byte) (entity.Activity, error) {
 	}, nil
 }
 
-// VersionEventID derives an independent stable outbox ID, not a random UUID.
+// VersionEventID preserves the producer-facing deterministic ID helper.
 func VersionEventID(data client.Activity) string {
-	key, _ := json.Marshal([]any{"versioned-source", data.TenantID, data.Source, data.AssetType, data.AssetID, data.Operation, data.AssetVersion})
-	return uuid.NewSHA1(namespace, key).String()
+	return validationhelpers.VersionEventID(data)
 }
