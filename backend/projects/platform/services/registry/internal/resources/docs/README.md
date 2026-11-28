@@ -16,3 +16,11 @@ they do not authenticate credentials themselves. Repositories are internal.
 
 Next: provisioning writes, key/grant lifecycle, live credential verification,
 annotation-owned restricted APIs and gateway cutover. Runtime authorization is not changed by merely creating these tables.
+
+Project creation requires a platform capability; tenant creation requires a
+project capability. Both start disabled. Lifecycle writes require an explicit
+resource scope and expected version, and reject stale or no-op transitions.
+Disabling a tenant increments its session generation; disabling a project
+atomically increments every existing tenant generation. Tenant activation
+locks the project and requires it to be active. The gateway must still check
+live project and tenant state when it is cut over.

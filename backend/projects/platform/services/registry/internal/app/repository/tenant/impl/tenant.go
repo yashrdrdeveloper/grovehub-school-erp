@@ -7,8 +7,10 @@ import (
 	"gorm.io/gorm"
 
 	coredatabase "grovehub/libs/core/database"
+	"grovehub/services/registry/internal/app/constants/status"
 	"grovehub/services/registry/internal/app/entity"
 	"grovehub/services/registry/internal/app/repository/constants"
+	"grovehub/services/registry/internal/app/repository/helpers"
 	"grovehub/services/registry/internal/app/repository/tenant"
 	queries "grovehub/services/registry/internal/app/repository/tenant/constants"
 )
@@ -32,4 +34,20 @@ func (r *TenantRepository) Find(ctx context.Context, projectID, tenantID string)
 	}
 
 	return result, nil
+}
+
+func (r *TenantRepository) Create(ctx context.Context, value entity.Tenant) (entity.Tenant, error) {
+	if err := coredatabase.TransactionDB(ctx, r.db).Create(&value).Error; err != nil {
+		return entity.Tenant{}, helpers.WriteError(err)
+	}
+	return value, nil
+}
+
+func (r *TenantRepository) ChangeStatus(ctx context.Context, projectID, tenantID string, expectedVersion int64, next status.Status) (entity.Tenant, error) {
+	var value entity.Tenant
+	result := coredatabase.TransactionDB(ctx, r.db).Raw(queries.ChangeStatus, projectID, next, next, tenantID, expectedVersion, next, next).Scan(&value)
+	if err := helpers.UpdateError(result); err != nil {
+		return entity.Tenant{}, err
+	}
+	return value, nil
 }

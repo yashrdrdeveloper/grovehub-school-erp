@@ -364,7 +364,7 @@ jobs:
         working-directory: backend/projects/platform
         env:
           REGISTRY_TEST_DSN: "host=127.0.0.1 port=5432 user=rbac_test password=rbac_test dbname=groovehub_registry_test sslmode=disable"
-        run: go test -count=1 -v ./services/registry/internal/resources/tests/integration-test/...
+        run: go test -vet=off -overlay=.generated/overlay.json -count=1 -v ./services/registry/internal/resources/tests/integration-test/...
 
       - name: Apply real Identity migrations and validate RBAC
         working-directory: backend/projects/platform
