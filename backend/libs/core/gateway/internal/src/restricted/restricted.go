@@ -1,4 +1,4 @@
-package gateway
+package restricted
 
 import (
 	"net/http"
