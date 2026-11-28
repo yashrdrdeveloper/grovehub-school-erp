@@ -5,6 +5,7 @@ import (
     execute "grovehub/services/integration/internal/app/providers/operations/execute"
     oauth "grovehub/services/integration/internal/app/providers/mailprovider/operations/oauth"
 	"context"
+    "grovehub/libs/schoolgateway"
 	"encoding/json"
     "errors"
 	"time"
@@ -168,4 +169,42 @@ var _ = Describe("Provider push event ownership", func() {
         Expect(transport.published).To(BeEmpty())
     })
 
+})
+
+var _ = Describe("School lifecycle for provider push",func(){
+ It("skips disabled tenants and retries lookup failures without blocking active tenants",func(){
+  registry,err:=register.NewRegistry(gmail.New())
+  Expect(err).NotTo(HaveOccurred())
+  transport:=&messagingFake{}
+  producer:=producerimpl.New(changed.NewChangedPipeline(changedimpl.New(),transport))
+  service,err:=integrationimpl.NewConnectionService(
+   &connectionRepositoryFake{},&watchRepositoryFake{},
+   registry,execute.NewActionRegistry(),oauth.NewRegistry(),
+   gmail.NewClient(integrationconfig.Gmail{}),nil,
+   []byte("01234567890123456789012345678901"),
+   "projects/test/topics/gmail",producer,
+   validatorimpl.NewConnectionValidator(),mapperimpl.NewConnectionMapper(),
+  )
+  Expect(err).NotTo(HaveOccurred())
+  unavailable:=false
+  sentinel:=errors.New("registry unavailable")
+  guarded:=integrationimpl.WithTenantState(service,func(_ context.Context,id string)(schoolgateway.TenantState,error){
+   if id=="tenant-1"{
+    if unavailable{return schoolgateway.TenantState{},sentinel}
+    return schoolgateway.TenantState{Generation:2,Active:false},nil
+   }
+   return schoolgateway.TenantState{Generation:1,Active:true},nil
+  })
+  push:=gmail.PushNotification{EmailAddress:"one@gmail.com",HistoryID:"10001"}
+  Expect(guarded.ProcessPush(context.Background(),push)).To(Succeed())
+  Expect(transport.published).To(HaveLen(1))
+  var envelope mailboxevents.Changed
+  Expect(json.Unmarshal(transport.published[0].data,&envelope)).To(Succeed())
+  Expect(envelope.Data.ConnectionID).To(Equal("connection-2"))
+  unavailable=true
+  Expect(guarded.ProcessPush(context.Background(),push)).To(MatchError(ContainSubstring("registry unavailable")))
+  Expect(transport.published).To(HaveLen(2))
+  Expect(json.Unmarshal(transport.published[1].data,&envelope)).To(Succeed())
+  Expect(envelope.Data.ConnectionID).To(Equal("connection-2"))
+ })
 })

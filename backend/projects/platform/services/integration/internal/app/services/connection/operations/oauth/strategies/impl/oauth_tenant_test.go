@@ -19,6 +19,8 @@ type tenantOAuthRepository struct {
  state entity.OAuthState
  connection entity.Connection
  activated bool
+ encrypted []byte
+ credentialReads, updates int
 }
 
 func (r *tenantOAuthRepository) Get(_ context.Context, tenant, id string) (entity.Connection,error) {
@@ -44,6 +46,8 @@ type tenantOAuthProvider struct {
  mailcontracts.OAuthStrategy
  exchanges int
  onExchange func()
+ refreshes int
+ onRefresh func()
 }
 func (p *tenantOAuthProvider) AuthorizationURL(state string)string{return state}
 func (p *tenantOAuthProvider) Exchange(context.Context,string)(maildto.OAuthToken,error){
@@ -111,4 +115,44 @@ func TestTenantOAuthBeginDeniesStaleActor(t *testing.T){
  ctx=schoolgateway.WithPrincipal(ctx,schoolgateway.Principal{AccountID:"account",SessionID:"session",TenantID:"school",SessionGeneration:1})
  if _,err:=operation.BeginOAuth(ctx,"school","connection");!errors.Is(err,helpers.ErrOAuthInvalid){t.Fatal("stale actor accepted",err)}
  if repo.state.Hash!=""{t.Fatal("state issued for stale actor")}
+}
+
+func(r *tenantOAuthRepository) Credential(context.Context,string)([]byte,error){r.credentialReads++;return r.encrypted,nil}
+func(r *tenantOAuthRepository) UpdateCredential(_ context.Context,_ string,encrypted []byte)error{r.updates++;r.encrypted=encrypted;return nil}
+func(p *tenantOAuthProvider) Refresh(context.Context,maildto.OAuthToken)(maildto.OAuthToken,error){
+ p.refreshes++
+ if p.onRefresh!=nil{p.onRefresh()}
+ return maildto.OAuthToken{AccessToken:"refreshed",RefreshToken:"test-refresh",Expiry:time.Now().Add(time.Hour)},nil
+}
+
+func TestProviderTokenTenantLifecycle(t *testing.T){
+ for _,tc:=range []struct{name string;disabled,staleActor,wrongProvider,changeDuringRefresh,cached bool;reads,refreshes,updates int;allow bool}{
+  {name:"disabled",disabled:true},
+  {name:"stale actor",staleActor:true},
+  {name:"wrong provider",wrongProvider:true},
+  {name:"cached active credential",cached:true,reads:1,allow:true},
+  {name:"active refresh",reads:1,refreshes:1,updates:1,allow:true},
+  {name:"disabled and reactivated during refresh",changeDuringRefresh:true,reads:1,refreshes:1},
+ }{
+  t.Run(tc.name,func(t *testing.T){
+   cipher,err:=helpers.NewTokenCipher(make([]byte,32));if err!=nil{t.Fatal(err)}
+   expiry:=time.Now().Add(-time.Hour)
+   if tc.cached{expiry=time.Now().Add(time.Hour)}
+   encrypted,err:=cipher.Seal(maildto.OAuthToken{AccessToken:"cached",RefreshToken:"test-refresh",Expiry:expiry});if err!=nil{t.Fatal(err)}
+   repo:=&tenantOAuthRepository{connection:entity.Connection{ID:"connection",TenantID:"school",Provider:"GMAIL",Status:entity.StatusActive},encrypted:encrypted}
+   generation:=int64(2)
+   provider:=&tenantOAuthProvider{}
+   if tc.changeDuringRefresh{provider.onRefresh=func(){generation++}}
+   operation:=New(repo,tenantOAuthRegistry{provider:provider},cipher)
+   ctx:=helpers.WithTenantState(context.Background(),func(_ context.Context,tenant string)(schoolgateway.TenantState,error){
+    if tenant!="school"{t.Fatal("untrusted tenant",tenant)}
+    return schoolgateway.TenantState{Generation:generation,Active:!tc.disabled},nil
+   })
+   if tc.staleActor{ctx=schoolgateway.WithPrincipal(ctx,schoolgateway.Principal{AccountID:"account",SessionID:"session",TenantID:"school",SessionGeneration:1})}
+   providerID:="GMAIL";if tc.wrongProvider{providerID="OUTLOOK"}
+   token,err:=operation.ValidProviderToken(ctx,"connection",providerID)
+   if tc.allow{if err!=nil||token.AccessToken==""{t.Fatal("valid token denied",err)}}else if !errors.Is(err,helpers.ErrConnectionInactive)||token.AccessToken!=""{t.Fatal("credential exposed",err)}
+   if repo.credentialReads!=tc.reads||provider.refreshes!=tc.refreshes||repo.updates!=tc.updates{t.Fatal("unexpected side effects",repo.credentialReads,provider.refreshes,repo.updates)}
+  })
+ }
 }
