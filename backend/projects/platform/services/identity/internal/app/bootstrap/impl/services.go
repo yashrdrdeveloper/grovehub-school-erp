@@ -1,6 +1,7 @@
 package impl
 
 import (
+	"grovehub/libs/schoolgateway"
 	accountmetadataevent "grovehub/services/identity/internal/app/events/producers/accountmetadata/impl"
 	updateimpl "grovehub/services/identity/internal/app/services/account/operations/update/impl"
 	registrationproducer "grovehub/services/identity/internal/app/events/producers/registration/impl"
@@ -101,7 +102,7 @@ func (b *builder) newServices(repositories repositories, cfg config.Config) serv
 
 	authorizer := authorizationimpl.New(repositories.authorization)
 	gate := cutover.New(cfg.ApprovalExecutionTenant)
-	policy := routepolicy.NewWithExecution(authorizer, cfg.LegacyRBACDevelopment, gate)
+	policy := routepolicy.NewWithExecution(authorizer, cfg.LegacyRBACDevelopment, gate, schoolgateway.ActiveTenantCheck(b.tenantState))
 	if !cfg.LegacyRBACDevelopment {
 		readiness := policyimpl.NewReadiness(b.db)
 		proofs := eligibility.NewProofGuard(cfg.ApprovalExecutionTenant, reader, repositories.tokens, repositories.authority, readiness, repositories.accountRoles, repositories.authorization)

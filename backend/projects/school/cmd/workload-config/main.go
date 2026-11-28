@@ -19,6 +19,7 @@ type config struct { Keys []keyConfig; Routes map[string]policy }
 func run(dir string)error{
  if err:=os.Mkdir(dir,0700);err!=nil{return err}
  pub,priv,err:=ed25519.GenerateKey(rand.Reader);if err!=nil{return err}
+ accessPub,accessPriv,err:=ed25519.GenerateKey(rand.Reader);if err!=nil{return err}
  routes:=map[string]policy{
  "GET /integrations/restricted/connections/oauth/{provider}/callback":{"integration.oauth.callback",false},
  "POST /identity/restricted/auth/login":{"identity.auth.login",false},
@@ -44,8 +45,12 @@ func run(dir string)error{
  scopes:=make([]string,0,len(routes));for _,p:=range routes{scopes=append(scopes,p.Scope)};sort.Strings(scopes)
  const id="school-dev"
  raw,err:=json.Marshal(config{Keys:[]keyConfig{{KeyID:id,PublicKey:base64.RawURLEncoding.EncodeToString(pub),Issuer:"school",Subject:"school",Scopes:scopes}},Routes:routes});if err!=nil{return err}
- if err:=os.WriteFile(filepath.Join(dir,"platform.env"),[]byte("PLATFORM_WORKLOAD_CONFIG='"+string(raw)+"'\n"),0600);err!=nil{return err}
+ const accessID="platform-tenant-access-dev"
+ accessRaw,err:=json.Marshal([]keyConfig{{KeyID:accessID,PublicKey:base64.RawURLEncoding.EncodeToString(accessPub),Issuer:"platform-tenant-access",Subject:"platform-tenant-access",Scopes:[]string{"platform.school.access-check"}}});if err!=nil{return err}
+ platform:="PLATFORM_WORKLOAD_CONFIG='"+string(raw)+"'\nPLATFORM_TENANT_ACCESS_ORIGIN=http://127.0.0.1:8081\nPLATFORM_TENANT_ACCESS_KEY_ID="+accessID+"\nPLATFORM_TENANT_ACCESS_PRIVATE_KEY="+base64.RawURLEncoding.EncodeToString(accessPriv)+"\nPLATFORM_TENANT_ACCESS_REQUIRED=true\n"
+ if err:=os.WriteFile(filepath.Join(dir,"platform.env"),[]byte(platform),0600);err!=nil{return err}
  school:="PLATFORM_ORIGIN=http://127.0.0.1:8080\nSCHOOL_ALLOWED_ORIGIN=http://127.0.0.1:4173\nSCHOOL_WORKLOAD_KEY_ID="+id+"\nSCHOOL_WORKLOAD_PRIVATE_KEY="+base64.RawURLEncoding.EncodeToString(priv)+"\n"
+ school+="SCHOOL_REGISTRY_ACCESS_KEYS='"+string(accessRaw)+"'\n"
  return os.WriteFile(filepath.Join(dir,"school.env"),[]byte(school),0600)
 }
 func main(){if len(os.Args)!=2{log.Fatal("usage: workload-config NEW_DIRECTORY")};if err:=run(os.Args[1]);err!=nil{log.Fatal(err)};fmt.Println("Development configuration created in",os.Args[1])}

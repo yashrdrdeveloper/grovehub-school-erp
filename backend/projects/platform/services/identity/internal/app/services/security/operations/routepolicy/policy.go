@@ -4,6 +4,8 @@ package routepolicy
 import (
 	"context"
 
+	"grovehub/libs/schoolgateway"
+
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/services/authorization"
 	"grovehub/services/identity/internal/app/services/approval/operations/cutover"
@@ -69,14 +71,17 @@ type Policy struct {
 	authorizer authorization.Service
 	legacyDevelopment bool
 	execution *cutover.Gate
+	tenantCheck schoolgateway.TenantCheck
 }
 
 func New(authorizer authorization.Service, legacyDevelopment bool) *Policy {
 	return NewWithExecution(authorizer, legacyDevelopment, nil)
 }
 
-func NewWithExecution(authorizer authorization.Service, legacyDevelopment bool, gate *cutover.Gate) *Policy {
-	return &Policy{authorizer: authorizer, legacyDevelopment: legacyDevelopment, execution: gate}
+func NewWithExecution(authorizer authorization.Service, legacyDevelopment bool, gate *cutover.Gate, checks ...schoolgateway.TenantCheck) *Policy {
+	policy := &Policy{authorizer: authorizer, legacyDevelopment: legacyDevelopment, execution: gate}
+	if len(checks) == 1 { policy.tenantCheck = checks[0] }
+	return policy
 }
 
 func (policy *Policy) Authorize(ctx context.Context, pattern string) error {
@@ -84,13 +89,21 @@ func (policy *Policy) Authorize(ctx context.Context, pattern string) error {
 	if !known {
 		return authorization.ErrForbidden
 	}
-	if rule.SelfService {
-		_, err := principal.Require(ctx)
-		return err
+	actor, err := principal.Require(ctx)
+	if err != nil { return err }
+	// Preserve cleanup even if School is disabled or the registry is unavailable.
+	// All other protected operations, including in-process account clients and
+	// Audit authorization, must use the original session generation.
+	switch pattern {
+	case "POST /identity/protected/auth/logout", "POST /identity/protected/auth/logout-all", "DELETE /identity/protected/auth/sessions/{sessionId}":
+		return nil
 	}
-	if _, err := principal.RequireTenant(ctx); err != nil {
-		return err
+	ctx = schoolgateway.WithTenantCheck(ctx, policy.tenantCheck)
+	if schoolgateway.CheckTenantSession(ctx, actor.TenantID, actor.SessionGeneration) != nil {
+		return authorization.ErrForbidden
 	}
+	if rule.SelfService { return nil }
+	if actor.TenantID == "" { return principal.ErrTenantForbidden }
 	if policy.legacyDevelopment {
 		if rule.StrictOnly {
 			return authorization.ErrForbidden

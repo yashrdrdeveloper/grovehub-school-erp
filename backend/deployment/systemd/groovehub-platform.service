@@ -13,7 +13,7 @@ EnvironmentFile=/etc/groovehub/platform.env
 StateDirectory=groovehub-platform
 StateDirectoryMode=0700
 WorkingDirectory=/var/lib/groovehub-platform
-ExecStart=/usr/bin/env GROOVEHUB_HTTP_ADDR=127.0.0.1:8080 MAIL_INFRASTRUCTURE_DKIM_STATE_DIR=/var/lib/groovehub-platform/dkim /opt/groovehub/platform/current/payload/platform
+ExecStart=/usr/bin/env GROOVEHUB_HTTP_ADDR=127.0.0.1:8080 PLATFORM_TENANT_ACCESS_REQUIRED=true MAIL_INFRASTRUCTURE_DKIM_STATE_DIR=/var/lib/groovehub-platform/dkim /opt/groovehub/platform/current/payload/platform
 Restart=on-failure
 RestartSec=3
 TimeoutStopSec=25

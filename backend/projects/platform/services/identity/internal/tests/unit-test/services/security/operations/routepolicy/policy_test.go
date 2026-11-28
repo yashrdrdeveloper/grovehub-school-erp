@@ -156,3 +156,45 @@ var _ = Describe("Onboarding cutover", func() {
   }
  })
 })
+
+func TestConfiguredTenantPolicyForDirectCallers(t *testing.T) {
+ active, available := true, true
+ generation := int64(2)
+ calls := 0
+ policy := routepolicy.NewWithExecution(&authorizer{}, false, cutover.New("school"), func(_ context.Context, tenant string)(int64,error){
+  calls++
+  if tenant!="school" || !active || !available { return 0,schoolgateway.ErrTenantDenied }
+  return generation,nil
+ })
+ actor := schoolgateway.Principal{AccountID:"actor",TenantID:"school",SessionID:"session",SessionGeneration:2,AuthenticatedAt:time.Now().UTC()}
+ ctx := schoolgateway.WithPrincipal(context.Background(),actor)
+ paths := []string{
+  "GET /identity/protected/auth/me",
+  "GET /identity/protected/auth/sessions",
+  "POST /identity/protected/auth/change-password",
+  "GET /identity/protected/accounts/{accountId}",
+  "POST /identity/protected/accounts/search",
+  "POST /identity/protected/roles/search",
+  "POST /identity/protected/approvals/{requestId}/execute",
+  "POST /audit/protected/search",
+  "AUDIT tenant search",
+ }
+ for _,path:=range paths{if err:=policy.Authorize(ctx,path);err!=nil{t.Fatal(path,err)}}
+ active=false
+ for _,path:=range paths{if err:=policy.Authorize(ctx,path);err!=authorization.ErrForbidden{t.Fatal("disabled tenant accepted",path,err)}}
+ active=true;generation++
+ for _,path:=range paths{if err:=policy.Authorize(ctx,path);err!=authorization.ErrForbidden{t.Fatal("stale session accepted",path,err)}}
+ // A caller cannot override the configured policy with a permissive context.
+ forged:=schoolgateway.WithTenantCheck(ctx,func(context.Context,string)(int64,error){return 2,nil})
+ if err:=policy.Authorize(forged,paths[0]);err!=authorization.ErrForbidden{t.Fatal("caller policy overrode configuration",err)}
+ actor.SessionGeneration=3
+ ctx=schoolgateway.WithPrincipal(context.Background(),actor)
+ available=false
+ if err:=policy.Authorize(ctx,paths[0]);err!=authorization.ErrForbidden{t.Fatal("unavailable registry accepted",err)}
+ before:=calls
+ for _,path:=range []string{"POST /identity/protected/auth/logout","POST /identity/protected/auth/logout-all","DELETE /identity/protected/auth/sessions/{sessionId}"}{
+  if err:=policy.Authorize(ctx,path);err!=nil{t.Fatal("cleanup denied",err)}
+  if err:=policy.Authorize(context.Background(),path);err==nil{t.Fatal("anonymous cleanup accepted")}
+ }
+ if calls!=before{t.Fatal("cleanup depends on registry")}
+}
