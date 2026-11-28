@@ -34,7 +34,7 @@ jobs:
           else
             test "$?" -eq 1
           fi
-          test -z "$(git ls-files 'backend/libs/core/annotation/**' | grep '_test\.go
+          test -z "$(git ls-files 'backend/libs/core/annotation/**' | grep '_test[.]go$' | grep -v '/internal/resources/tests/unit-test/' || true)"
   annotation-build:
     runs-on: ubuntu-latest
     timeout-minutes: 20

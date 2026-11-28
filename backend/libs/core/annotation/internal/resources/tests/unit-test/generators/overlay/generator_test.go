@@ -1,7 +1,7 @@
 package overlay_test
 
 import (
-	"fmt"
+
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -38,9 +38,9 @@ var _ = Describe("WriteOverlay", func() {
 	Expect(err).NotTo(HaveOccurred())
 	var config overlay.Configuration
 	Expect(json.Unmarshal(data, &config)).To(Succeed())
-	Expect(len(config.Replace) != len(want)).To(BeFalse(), fmt.Sprintf("got %v, want %v", config.Replace, want))
+	Expect(config.Replace).To(HaveLen(len(want)))
 	for logical, generated := range want {
-		Expect(config.Replace[logical] != generated).To(BeFalse(), fmt.Sprintf("missing mapping for %s", logical))
+		Expect(config.Replace).To(HaveKeyWithValue(logical, generated))
 	}
 
 	})

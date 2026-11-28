@@ -102,7 +102,7 @@ type MaintenanceController interface {
 	Expect(content).NotTo(ContainSubstring("GET /foundation/persons/"))
 	{
 		next := generatedRoutes(t, backend, output)
-		Expect(next != content).To(BeFalse(), "generator is not deterministic")
+		Expect(next).To(Equal(content))
 	}
 
 	})
@@ -116,9 +116,7 @@ var _ = Describe("GenerateAll", func() {
 	filename := filepath.Join(backend, "services", "foundation", "routes", "http.go")
 	writeTestFile(t, filename, strings.Replace(serviceRoutes, "/foundation", "/school", 1))
 	content := generatedRoutes(t, backend, output)
-	if !strings.Contains(content, "GET /school/protected/persons/{gid}") {
-		Expect(false).To(BeTrue(), "changing service @Routes must update every generated endpoint")
-	}
+	Expect(content).To(ContainSubstring("GET /school/protected/persons/{gid}"))
 	Expect(strings.Contains(content, "GET /foundation/") || strings.Contains(content, "POST /foundation/") || strings.Contains(content, "PATCH /foundation/")).To(BeFalse(), "stale service prefix retained")
 
 	})

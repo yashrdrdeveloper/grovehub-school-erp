@@ -1,7 +1,7 @@
 package patchdto_test
 
 import (
-	"fmt"
+
 	"os"
 	"path/filepath"
 	"strings"
@@ -49,7 +49,8 @@ var _ = Describe("GenerateAll", func() {
 	}
 	Expect(patchdto.GenerateAll(root)).To(Succeed())
 	again, err := os.ReadFile(output)
-	Expect(err != nil || string(again) != string(generated)).To(BeFalse(), fmt.Sprintf("generator not idempotent: %v", err))
+	Expect(err).NotTo(HaveOccurred())
+	Expect(again).To(Equal(generated))
 
 	})
 })

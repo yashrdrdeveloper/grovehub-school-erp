@@ -1,7 +1,7 @@
 package search_test
 
 import (
-	"fmt"
+
 	"os"
 	"path/filepath"
 	"strings"
@@ -83,7 +83,8 @@ var _ = Describe("GenerateAll", func() {
 	Expect(string(compiled)).NotTo(ContainSubstring("func (repository *PersonRepository) Search("))
 	Expect(search.GenerateAll(root)).To(Succeed())
 	repeated, err := os.ReadFile(output)
-	Expect(err != nil || string(repeated) != string(compiled)).To(BeFalse(), fmt.Sprintf("generation is not idempotent: %v", err))
+	Expect(err).NotTo(HaveOccurred())
+	Expect(repeated).To(Equal(compiled))
 
 	})
 })

@@ -1,7 +1,7 @@
 package testgen_test
 
 import (
-	"fmt"
+
 	"os"
 	"path/filepath"
 	. "github.com/onsi/ginkgo/v2"
@@ -19,7 +19,8 @@ var _ = Describe("FindModuleDir", func() {
 	Expect(os.MkdirAll(child, 0755)).To(Succeed())
 	Expect(os.WriteFile(filepath.Join(module, "go.mod"), []byte("module example.test/project\n"), 0600)).To(Succeed())
 	got, err := testgen.FindModuleDir(child)
-	Expect(err != nil || got != module).To(BeFalse(), fmt.Sprintf("module = %q, error = %v", got, err))
+	Expect(err).NotTo(HaveOccurred())
+	Expect(got).To(Equal(module))
 
 	})
 })

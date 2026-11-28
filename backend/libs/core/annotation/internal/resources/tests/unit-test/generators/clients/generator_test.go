@@ -73,7 +73,7 @@ var _ = Describe("GenerateAll", func() {
 	}
 	Expect(clients.GenerateAll(root)).To(Succeed())
 	again,_:=os.ReadFile(out)
-	Expect(string(again)!=generated).To(BeFalse(), "generation must be deterministic")
+	Expect(string(again)).To(Equal(generated))
 
 	})
 })
@@ -84,9 +84,7 @@ var _ = Describe("GenerateAll", func() {
 	root,_,out:=fixture(t,sourceClient,"/school")
 	Expect(clients.GenerateAll(root)).To(Succeed())
 	data,_:=os.ReadFile(out)
-	if !strings.Contains(string(data),"\"/school/protected/persons/{gid}\""){
-		Expect(false).To(BeTrue(), "client did not inherit service prefix from generated controller routes")
-	}
+	Expect(string(data)).To(ContainSubstring("\"/school/protected/persons/{gid}\""))
 	Expect(string(data)).NotTo(ContainSubstring("\"/foundation/"))
 
 	})
@@ -154,7 +152,7 @@ type Client interface {
 	root,_,out:=fixture(t,client,"/foundation")
 	Expect(clients.GenerateAll(root)).To(Succeed())
 	b,_:=os.ReadFile(out)
-	Expect(string(b),"return c.personService.Get(ctx).To(ContainSubstring(id)"))
+	Expect(string(b)).To(ContainSubstring("return c.personService.Get(ctx, id)"))
 	Expect(string(b)).NotTo(ContainSubstring("httpendpoint"))
 
 	})

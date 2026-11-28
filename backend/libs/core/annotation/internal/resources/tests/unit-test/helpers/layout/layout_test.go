@@ -1,7 +1,7 @@
 package layout_test
 
 import (
-	"fmt"
+
 	"os"
 	"path/filepath"
 	. "github.com/onsi/ginkgo/v2"
@@ -30,7 +30,8 @@ var _ = Describe("ReadModulePath", func() {
 			Expect(err).To(HaveOccurred())
 			continue
 		}
-		Expect(err != nil || got != entry.want).To(BeFalse(), fmt.Sprintf("got %q (%v), want %q", got, err, entry.want))
+		Expect(err).NotTo(HaveOccurred())
+		Expect(got).To(Equal(entry.want))
 	}
 
 	})
@@ -42,7 +43,8 @@ var _ = Describe("ResolveImport", func() {
 	root := t.TempDir()
 	modulePath := "example.org/internal-platform"
 	resolved, err := layout.ResolveImport(root, modulePath, modulePath+"/services/demo/dto")
-	Expect(err != nil || resolved != filepath.Join(root, "services", "demo", "dto")).To(BeFalse(), fmt.Sprintf("unexpected import resolution: %q (%v)", resolved, err))
+	Expect(err).NotTo(HaveOccurred())
+	Expect(resolved).To(Equal(filepath.Join(root, "services", "demo", "dto")))
 	for _, invalid := range []string{"grovehub/services/demo/dto", modulePath + "/../escape", modulePath + "-other/services/demo"} {
 		{
 		_, err := layout.ResolveImport(root, modulePath, invalid)
