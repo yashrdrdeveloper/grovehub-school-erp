@@ -21,7 +21,7 @@ bash "${SCRIPT_DIR}/generate-annotations.sh"
 log_info "Building GroveHub backend"
 (
   cd -- "${BACKEND_DIR}"
-  go build -overlay="${BACKEND_DIR}/.generated/overlay.json" -o "${OUTPUT}" ./cmd/platform
+  go build -overlay="${BACKEND_DIR}/.generated/overlay.json" -o "${OUTPUT}" ./cmd
 )
 
 log_info "Backend binary ready: ${OUTPUT}"

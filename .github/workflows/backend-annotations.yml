@@ -169,6 +169,9 @@ jobs:
       - name: Test gateway security contracts and context operations
         working-directory: backend/projects/platform
         run: go test -race -vet=off -overlay=.generated/overlay.json ./launcher/internal/resources/tests/unit-test/session
+      - name: Test unified Platform command strategies
+        working-directory: backend/projects/platform
+        run: go test -vet=off -overlay=.generated/overlay.json ./cmd/...
       - name: Measure Launcher coverage with generated annotations
         # The Core runner materializes generated source and checks exact statement coverage.
         run: make unit-coverage package=launcher
@@ -195,13 +198,13 @@ jobs:
           go test -vet=off -overlay=.generated/overlay.json ./...
       - name: Verify school build without workspace
         working-directory: backend/projects/platform
-        run: GOWORK=off go build -overlay=.generated/overlay.json -o "$RUNNER_TEMP/school-platform" ./cmd/platform
+        run: GOWORK=off go build -overlay=.generated/overlay.json -o "$RUNNER_TEMP/school-platform" ./cmd
       - name: Test Audit monitoring
         working-directory: backend/projects/platform
         run: go test -race -vet=off -overlay=.generated/overlay.json ./services/audit/internal/tests/unit-test/services/monitoring/...
       - name: Compile Audit replay operator command
         working-directory: backend/projects/platform
-        run: go build -overlay=.generated/overlay.json -o "$RUNNER_TEMP/audit-replay" ./cmd/audit-replay
+        run: go build -overlay=.generated/overlay.json -o "$RUNNER_TEMP/audit-replay" ./cmd
       - name: Verify canonical Identity resource packages compile
         working-directory: backend/projects/platform
         run: go test -vet=off -overlay=.generated/overlay.json ./services/identity/internal/tests/unit-test/...
@@ -221,7 +224,7 @@ jobs:
         run: go test -race -vet=off -overlay=.generated/overlay.json ./services/integration/internal/tests/unit-test/services/mail/... ./services/integration/internal/tests/unit-test/controller/mail/...
       - name: Compile local mail reconciliation operator client
         working-directory: backend/projects/platform
-        run: go build -overlay=.generated/overlay.json -o "$RUNNER_TEMP/mail-reconciliation" ./cmd/identity-mail-reconcile
+        run: go build -overlay=.generated/overlay.json -o "$RUNNER_TEMP/mail-reconciliation" ./cmd
       - name: Test Infrastructure messaging persistence options
         working-directory: backend/projects/platform
         run: go test -vet=off -overlay=.generated/overlay.json ./services/infrastructure/internal/app/services/messaging/...

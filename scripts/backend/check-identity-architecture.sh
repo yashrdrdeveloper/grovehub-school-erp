@@ -24,7 +24,7 @@ for required in \
   "$app/validators/account/helpers/search.go" \
   "$app/controller/activation/public/activation.go" \
   "$app/client/account/impl/account.go" \
-  "backend/projects/platform/cmd/identity-bootstrap-admin/main.go"; do
+  "backend/projects/platform/cmd/internal/src/strategies/bootstrapadmin/bootstrapadmin.go"; do
   if [[ ! -f "$required" ]]; then
     printf '[ERROR] Required Identity architecture path is missing: %s\n' "$required" >&2
     exit 1

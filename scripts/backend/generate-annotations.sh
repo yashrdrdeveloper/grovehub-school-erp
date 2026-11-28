@@ -35,7 +35,7 @@ log_info "Preparing pinned Go modules for generated source and unit tests"
 # referring to packages deleted by a refactor (e.g. client/person/dto/).
 # The overlay generator still fails closed on genuine output/source conflicts.
 log_info "Cleaning stale generated annotation outputs"
-for owner in "${BACKEND_DIR}"/services/* "${BACKEND_DIR}"/launcher "${CORE_DIR}"; do
+for owner in "${BACKEND_DIR}"/services/* "${BACKEND_DIR}"/launcher "${BACKEND_DIR}"/cmd "${CORE_DIR}"; do
   [[ -d "${owner}" ]] || continue
   generated="${owner}/.generated"
   [[ ! -L "${generated}" ]] || die "Refusing to clean symlinked generated directory: ${generated}"

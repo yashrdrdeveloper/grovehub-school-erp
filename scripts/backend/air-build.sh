@@ -20,5 +20,5 @@ OUTPUT="${RUNTIME_BIN_DIR}/groovehub-dev"
 log_info "Building GroveHub backend for Air"
 (
   cd -- "${BACKEND_DIR}"
-  go build -overlay="${BACKEND_DIR}/.generated/overlay.json" -o "${OUTPUT}" ./cmd/platform
+  go build -overlay="${BACKEND_DIR}/.generated/overlay.json" -o "${OUTPUT}" ./cmd
 )

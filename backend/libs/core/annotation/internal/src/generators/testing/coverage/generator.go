@@ -38,7 +38,7 @@ func Run(args []string) error {
 	generator := flags.String("generator-script", "", "application annotation generation script")
 	reportDirectory := flags.String("reports", "", "coverage report directory")
 	mode := flags.String("mode", "--strict", "strict, report-only, or inventory")
-	single := flags.String("package", "", "one service/core/launcher name")
+	single := flags.String("package", "", "one service/core/launcher/cmd name")
 	multiple := flags.String("packages", "", "comma separated or bracketed names")
 	if err := flags.Parse(args); err != nil {
 		return err
@@ -172,6 +172,8 @@ func Resolve(root, core, single, multiple string) ([]target, error) {
 			item.owner, item.pattern = core, "./..."
 		case "launcher":
 			item.owner, item.pattern = filepath.Join(root, "launcher"), "./launcher/..."
+		case "cmd":
+			item.owner, item.pattern = filepath.Join(root, "cmd"), "./cmd/..."
 		}
 		info, err := os.Stat(item.owner)
 		if err != nil || !info.IsDir() {

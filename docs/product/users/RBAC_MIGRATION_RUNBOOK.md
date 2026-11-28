@@ -72,7 +72,7 @@ Use a database credential authorized for read-only access to the two mail schema
 ```bash
 umask 077
 cd backend
-go run ./cmd/identity-mail-reconcile --tenant-id "$TENANT_ID" --database "$DB_NAME" --limit 100
+go run ./cmd identity-mail-reconcile --tenant-id "$TENANT_ID" --database "$DB_NAME" --limit 100
 ```
 
 If nextCursor is present, pass it as --after for the next page. Pages are live snapshots, not a frozen export; repeat review after concurrent work settles. Output contains account and delivery UUIDs, not email addresses or secrets. Keep it private.

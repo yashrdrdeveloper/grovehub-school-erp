@@ -1,25 +1,32 @@
-package main
+package serve
 
 import (
 	"context"
 	"fmt"
-	"os"
+	"io"
 	"time"
 
-	"grovehub/launcher"
-
 	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
+	"grovehub/cmd/internal/src/command"
+	"grovehub/launcher"
 )
 
-func main() {
-	if len(os.Args) > 1 { os.Exit(runMigrationCommand()) }
-    os.Exit(run())
+// @Strategy
+type strategy struct{}
+
+func New() command.Command {
+	return strategy{}
 }
 
-func run() int {
-	logger, err := launcher.NewLogger(os.Stdout)
+func (strategy) Run(args []string, output, diagnostics io.Writer) int {
+	if len(args) != 0 {
+		_, _ = fmt.Fprintln(diagnostics, "usage: groovehub-platform serve")
+		return 2
+	}
+
+	logger, err := launcher.NewLogger(output)
 	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "invalid GROVEHUB_LOG_LEVELS: %v\n", err)
+		_, _ = fmt.Fprintf(diagnostics, "invalid GROVEHUB_LOG_LEVELS: %v\n", err)
 		return 1
 	}
 

@@ -24,22 +24,24 @@ import (
 
 // Run is a privileged operator entrypoint, never an HTTP handler.
 func Run() error {
-	return run()
+	return RunArgs(os.Args[1:], os.Stdin, os.Stdout, os.Stderr)
 }
 
-func run() error {
+func RunArgs(args []string, input io.Reader, output, diagnostics io.Writer) error {
+    flags := flag.NewFlagSet("identity-bootstrap-admin", flag.ContinueOnError)
+    flags.SetOutput(diagnostics)
     var email, first, last, tenant, personGID string
     var passwordStdin, confirm bool
-    flag.StringVar(&email, "email", "", "Initial administrator email")
-    flag.StringVar(&first, "first-name", "", "First name for a new Foundation Person")
-    flag.StringVar(&last, "last-name", "", "Last name for a new Foundation Person")
-    flag.StringVar(&tenant, "tenant-id", "", "Non-empty tenant scope")
-    flag.StringVar(&personGID, "person-gid", "", "Optional existing ACTIVE Foundation Person UUID")
-    flag.BoolVar(&passwordStdin, "password-stdin", false, "Read the password from stdin (never from flags)")
-    flag.BoolVar(&confirm, "confirm-bootstrap", false, "Explicitly authorize one-time provisioning")
-    flag.Parse()
+    flags.StringVar(&email, "email", "", "Initial administrator email")
+    flags.StringVar(&first, "first-name", "", "First name for a new Foundation Person")
+    flags.StringVar(&last, "last-name", "", "Last name for a new Foundation Person")
+    flags.StringVar(&tenant, "tenant-id", "", "Non-empty tenant scope")
+    flags.StringVar(&personGID, "person-gid", "", "Optional existing ACTIVE Foundation Person UUID")
+    flags.BoolVar(&passwordStdin, "password-stdin", false, "Read the password from stdin (never from flags)")
+    flags.BoolVar(&confirm, "confirm-bootstrap", false, "Explicitly authorize one-time provisioning")
+    if err := flags.Parse(args); err != nil { return err }
 
-    if !confirm || !passwordStdin || len(flag.Args()) != 0 {
+    if !confirm || !passwordStdin || len(flags.Args()) != 0 {
         return errors.New("required: --confirm-bootstrap --password-stdin --email --tenant-id (and --first-name/--last-name for a new person)")
     }
     email = strings.ToLower(strings.TrimSpace(email))
@@ -65,7 +67,7 @@ func run() error {
         return errors.New("DATABASE_URL is missing")
     }
 
-    reader := bufio.NewReaderSize(os.Stdin, 512)
+    reader := bufio.NewReaderSize(input, 512)
     password, err := reader.ReadString('\n')
     if err != nil && !errors.Is(err, io.EOF) {
         return errors.New("could not read password from stdin")
@@ -124,8 +126,8 @@ func run() error {
         return nil
     })
     if err != nil { return fmt.Errorf("transaction rolled back: %w", err) }
-    fmt.Printf("First account created successfully.\nAccount ID: %s\nTenant ID: %s\n", accountID, tenant)
-    fmt.Println("To grant admin privileges set IDENTITY_ADMIN_ACCOUNT_IDS to the Account ID and RESTART the backend.")
-    fmt.Println("No password or session secret was printed.")
+    fmt.Fprintf(output, "First account created successfully.\nAccount ID: %s\nTenant ID: %s\n", accountID, tenant)
+    fmt.Fprintln(output, "To grant admin privileges set IDENTITY_ADMIN_ACCOUNT_IDS to the Account ID and RESTART the backend.")
+    fmt.Fprintln(output, "No password or session secret was printed.")
     return nil
 }
