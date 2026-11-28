@@ -176,7 +176,7 @@ func CompositionSpecs(){
 			call:=func(path string)int{
 				w:=httptest.NewRecorder()
 				request:=httptest.NewRequest(http.MethodGet,path,nil)
-				request.Pattern="GET "+path
+				if path!="/missing"{request.Pattern="GET "+path}
 				fixture.handler.ServeHTTP(w,request)
 				return w.Code
 			}
