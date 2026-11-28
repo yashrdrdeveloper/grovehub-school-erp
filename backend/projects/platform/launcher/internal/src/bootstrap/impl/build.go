@@ -14,20 +14,32 @@ import (
  "grovehub/launcher/internal/src/bootstrap"
  "grovehub/launcher/internal/src/bootstrap/helpers"
  "grovehub/launcher/internal/src/config"
- serverimpl "grovehub/launcher/internal/src/server/impl"
 )
 
 type builder struct {
  logger *slog.Logger
  config config.Config
  configErr error
+ dependencies bootstrap.Dependencies
 }
 var _ bootstrap.Bootstrap = (*builder)(nil)
 
 func New(logger *slog.Logger) bootstrap.Bootstrap {
- if logger==nil {logger=slog.Default()}
  configuration,err:=config.FromEnv()
- return &builder{logger:logger,config:configuration,configErr:err}
+ b:=newBuilder(logger,configuration,DefaultDependencies())
+ b.configErr=err
+ return b
+}
+
+// NewWithDependencies composes the launcher with explicitly supplied runtime
+// adapters. Production uses DefaultDependencies; callers own alternate adapters.
+func NewWithDependencies(logger *slog.Logger,configuration config.Config,dependencies bootstrap.Dependencies) bootstrap.Bootstrap {
+ return newBuilder(logger,configuration,dependencies)
+}
+
+func newBuilder(logger *slog.Logger,configuration config.Config,dependencies bootstrap.Dependencies)*builder {
+ if logger==nil {logger=slog.Default()}
+ return &builder{logger:logger,config:configuration,dependencies:dependencies}
 }
 
 func(b *builder) Build()(result bootstrap.Runtime,err error){
@@ -41,7 +53,7 @@ func(b *builder) Build()(result bootstrap.Runtime,err error){
  if err!=nil{return nil,err}
 
  databaseCtx,cancelDatabase:=context.WithTimeout(ctx,5*time.Second)
- db,err:=NewPostgresDB(databaseCtx)
+ db,err:=b.dependencies.OpenDatabase(databaseCtx)
  cancelDatabase()
  if err!=nil{return nil,fmt.Errorf("bootstrap PostgreSQL: %w",err)}
  sqlDB,err:=db.DB()
@@ -57,5 +69,5 @@ func(b *builder) Build()(result bootstrap.Runtime,err error){
  gateway,err:=b.newGateway(mux,modules,tenantCheck)
  if err!=nil{return nil,err}
  handler:=newEdgeHandler(b.logger,mux,gateway.External())
- return &runtime{ctx:ctx,server:serverimpl.New(b.config.Address,handler,b.logger,draining),cleanup:cleanup},nil
+ return &runtime{ctx:ctx,server:b.dependencies.NewServer(b.config.Address,handler,b.logger,draining),cleanup:cleanup},nil
 }

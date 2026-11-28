@@ -11,21 +11,19 @@ import (
  "grovehub/launcher/internal/src/services/gateway/operations/workload"
  tenantaccess "grovehub/launcher/internal/src/services/gateway/operations/tenant/access"
  "gorm.io/gorm"
- bootstrap "grovehub/launcher/internal/src/bootstrap/impl"
+ "grovehub/launcher/internal/src/bootstrap"
+ bootstrapimpl "grovehub/launcher/internal/src/bootstrap/impl"
 )
 
 func Run(logger *slog.Logger) error {
- runtime,err:=bootstrap.New(logger).Build()
- if err!=nil{return err}
- defer runtime.Close()
- return runtime.Run()
+ return bootstrap.Run(bootstrapimpl.New(logger))
 }
 
 // Operator commands share the same Platform-owned database and logger setup.
-func NewLogger(output io.Writer)(*slog.Logger,error){return bootstrap.NewLogger(output)}
-func NewPostgresDB(ctx context.Context)(*gorm.DB,error){return bootstrap.NewPostgresDB(ctx)}
-func NewAuditPostgresDB(ctx context.Context,shared *gorm.DB)(*gorm.DB,func(),error){return bootstrap.NewAuditPostgresDB(ctx,shared)}
-var ErrDatabaseURLRequired=bootstrap.ErrDatabaseURLRequired
+func NewLogger(output io.Writer)(*slog.Logger,error){return bootstrapimpl.NewLogger(output)}
+func NewPostgresDB(ctx context.Context)(*gorm.DB,error){return bootstrapimpl.NewPostgresDB(ctx)}
+func NewAuditPostgresDB(ctx context.Context,shared *gorm.DB)(*gorm.DB,func(),error){return bootstrapimpl.NewAuditPostgresDB(ctx,shared)}
+var ErrDatabaseURLRequired=bootstrapimpl.ErrDatabaseURLRequired
 
  // Public composition contracts alias the Platform-private session boundary.
  type Principal = session.Principal
