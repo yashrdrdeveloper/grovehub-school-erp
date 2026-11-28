@@ -49,6 +49,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Reject legacy Core module references
+        shell: bash
+        run: |
+          legacy='github.com/yashrdrdeveloper/grovehub-school-erp/'"libs/"'backend/core'
+          if git grep -nIF "$legacy" -- .; then
+            echo "Use grovehub/libs/core."
+            exit 1
+          fi
+          test "$(sed -n 's/^module //p' backend/libs/core/go.mod)" = "grovehub/libs/core"
       - name: Reject legacy Platform libraries and imports
         shell: bash
         run: |
@@ -173,15 +182,14 @@ jobs:
         working-directory: backend/projects/platform
         run: go test -vet=off -overlay=.generated/overlay.json ./cmd/... ./launcher/internal/resources/tests/unit-test/operations/command/... ./services/audit/internal/resources/tests/unit-test/strategies/command/... ./services/identity/internal/resources/tests/unit-test/strategies/command/...
       - name: Run Audit unit tests and measure coverage
-        working-directory: backend/projects/platform
-        run: |
-          go test -race -vet=off -overlay=.generated/overlay.json -count=1 -covermode=atomic -coverpkg=./services/audit/internal/app/... -coverprofile="$RUNNER_TEMP/audit-coverage.out" ./services/audit/internal/resources/tests/unit-test/...
-          go tool cover -func="$RUNNER_TEMP/audit-coverage.out"
+        # The shared runner materializes generated source before instrumentation.
+        run: make unit-test package=audit
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: audit-coverage
-          path: ${{ runner.temp }}/audit-coverage.out
+          path: backend/projects/platform/.generated/unit-coverage/audit.out
+          if-no-files-found: error
       - name: Measure Launcher coverage with generated annotations
         # The Core runner materializes generated source and checks exact statement coverage.
         run: make unit-coverage package=launcher
