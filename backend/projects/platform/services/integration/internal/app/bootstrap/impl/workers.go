@@ -15,16 +15,14 @@ func (b *builder) newWatchRenewal(service connections.ConnectionService, enabled
     if !enabled {close(done);return cancel,done}
     go func(){
         defer close(done)
-        ticker:=time.NewTicker(6*time.Hour)
-        defer ticker.Stop()
-        for {
-            select {
-            case <-ctx.Done():return
-            case <-ticker.C:
-                renewalCtx,stopRenewal:=context.WithTimeout(ctx,5*time.Minute)
-                if err:=service.RenewExpiring(renewalCtx);err!=nil&&ctx.Err()==nil {b.logger.Warn("integration watch renewal failed","error",err)}
-                stopRenewal()
-            }
+        // Run immediately after restart, then make bounded progress every
+        // five minutes. The cursor advances past disabled/failing schools.
+        for ctx.Err()==nil {
+            renewalCtx,stopRenewal:=context.WithTimeout(ctx,4*time.Minute)
+            if err:=service.RenewExpiring(renewalCtx);err!=nil&&ctx.Err()==nil {b.logger.Warn("integration watch renewal incomplete")}
+            stopRenewal()
+            timer:=time.NewTimer(5*time.Minute)
+            select {case <-ctx.Done():timer.Stop();return;case <-timer.C:}
         }
     }()
     return cancel,done

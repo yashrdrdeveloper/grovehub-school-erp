@@ -3,6 +3,7 @@ package impl
 import (
     "context"
     "errors"
+    "sync"
     "time"
 
     providerconstants "grovehub/services/integration/internal/app/constants/providers"
@@ -25,6 +26,8 @@ type watchStrategy struct {
     pushTopic string
     events changedproducer.ChangedProducer
     tokens oauth.TokenProvider
+    renewalMu sync.Mutex
+    renewalCursor string
 }
 
 var _ watchstrategies.Strategy = (*watchStrategy)(nil)
@@ -101,13 +104,21 @@ func (s *watchStrategy) RenewExpiring(ctx context.Context) error {
 	if s.gmail == nil || s.pushTopic == "" {
 		return nil
 	}
-	rows, err := s.watchRepository.ExpiringWatches(ctx, time.Now().UTC().Add(24*time.Hour))
+	s.renewalMu.Lock()
+ defer s.renewalMu.Unlock()
+ before:=time.Now().UTC().Add(24*time.Hour)
+ const limit=100
+ var rows []entity.Connection
+ var err error
+ paged,ok:=s.watchRepository.(interface{ExpiringWatchesAfter(context.Context,time.Time,string,int)([]entity.Connection,error)})
+ if ok{rows,err=paged.ExpiringWatchesAfter(ctx,before,s.renewalCursor,limit)}else{rows,err=s.watchRepository.ExpiringWatches(ctx,before)}
 	if err != nil {
 		return err
 	}
 	var failures error
 	for _, c := range rows {
 		if ctx.Err()!=nil {return ctx.Err()}
+        if ok{s.renewalCursor=c.ID}
 		active, err := connectionhelpers.TenantActive(ctx, c.TenantID)
 		if err != nil {failures=errors.Join(failures,err);continue}
 		if !active {continue}
@@ -115,5 +126,6 @@ func (s *watchStrategy) RenewExpiring(ctx context.Context) error {
 			failures=errors.Join(failures,err)
 		}
 	}
+    if ok && len(rows)<limit{s.renewalCursor=""}
 	return failures
 }

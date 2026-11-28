@@ -14,7 +14,7 @@ var _ connection.ConnectionValidator = (*connectionValidator)(nil)
 func NewConnectionValidator() connection.ConnectionValidator {return &connectionValidator{}}
 
 func (v *connectionValidator) ValidatePair(tenantID string, resourceID string) error {
-    if !helpers.ValidID(tenantID)||!helpers.ValidID(resourceID) {return errorcode.ErrInvalidConnection}
+    if !helpers.ValidTenantID(tenantID)||!helpers.ValidID(resourceID) {return errorcode.ErrInvalidConnection}
     return nil
 }
 

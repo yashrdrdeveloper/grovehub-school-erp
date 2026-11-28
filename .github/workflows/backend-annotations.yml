@@ -77,7 +77,7 @@ jobs:
       - name: Run package-local tenant lifecycle regression tests
         working-directory: backend/projects/platform
         run: |
-          go test -vet=off -overlay=.generated/overlay.json ./libs/schoolgateway ./services/identity/internal/app/services/authentication/operations/reconciletenant ./services/identity/internal/app/services/registration/operations/invitation ./services/identity/internal/app/services/account/operations/personprofile ./services/integration/internal/app/services/connection/impl ./services/integration/internal/app/services/connection/operations/oauth/strategies/impl ./services/audit/internal/app/controller/operator/restricted
+          go test -vet=off -overlay=.generated/overlay.json ./launcher/bootstrap ./libs/schoolgateway ./services/identity/internal/app/services/authentication/operations/reconciletenant ./services/identity/internal/app/services/registration/operations/invitation ./services/identity/internal/app/services/account/operations/personprofile ./services/integration/internal/app/services/connection/impl ./services/integration/internal/app/services/connection/operations/oauth/strategies/impl ./services/audit/internal/app/controller/operator/restricted
       - name: Verify Integration resource packages compile with generated overlays
         working-directory: backend/projects/platform
         run: go test -vet=off -overlay=.generated/overlay.json ./services/integration/internal/tests/unit-test/...

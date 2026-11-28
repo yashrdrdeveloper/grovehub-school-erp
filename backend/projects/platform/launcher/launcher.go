@@ -183,7 +183,10 @@ func Run(logger *slog.Logger) error {
 		Addr: httpAddress,
 		Handler: edgeHandler,
 		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout: 15 * time.Second,
+		WriteTimeout: 45 * time.Second,
 		IdleTimeout: 60 * time.Second,
+		MaxHeaderBytes: 1 << 20,
 	}
 	listener, err := net.Listen("tcp", httpAddress)
 	if err != nil {

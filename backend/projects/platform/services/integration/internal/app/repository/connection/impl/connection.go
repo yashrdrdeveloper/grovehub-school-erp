@@ -48,7 +48,7 @@ func (r *ConnectionRepository) GetByID(ctx context.Context, id string) (entity.C
 
 func (r *ConnectionRepository) List(ctx context.Context, tenantID, ownerGID string) ([]entity.Connection, error) {
 	rows := make([]entity.Connection, 0)
-	err := coretransaction.Database(ctx, r.db).Where(&entity.Connection{TenantID: tenantID, OwnerGID: ownerGID}).Order("created_at DESC, id DESC").Limit(200).Find(&rows).Error
+	err := coretransaction.Database(ctx, r.db).Where("tenant_id = ? AND owner_gid = ?", tenantID, ownerGID).Order("created_at DESC, id DESC").Limit(200).Find(&rows).Error
 	return rows, err
 }
 

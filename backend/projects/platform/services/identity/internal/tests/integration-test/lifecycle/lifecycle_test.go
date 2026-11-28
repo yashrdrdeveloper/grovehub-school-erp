@@ -98,6 +98,8 @@ func TestCrossProjectSchoolLifecycle(t *testing.T){
 
  school,other,readerID:=uuid.NewString(),uuid.NewString(),uuid.NewString()
  accountID,otherAccount:=uuid.NewString(),uuid.NewString()
+ personID,err:=uuid.NewV7();must(t,err)
+ otherPersonID,err:=uuid.NewV7();must(t,err)
  statusKey:=newKey(t,"lifecycle-status","internal-tool-school-status","internal-tool-school-status:"+school,"internal.school.registry.status")
  directoryKey:=newKey(t,"lifecycle-directory","internal-tool-school-directory","internal-tool-school-directory:"+readerID,"internal.school.registry.read")
  tenantKey:=newKey(t,"lifecycle-access","platform-tenant-access","platform-tenant-access","platform.school.access-check")
@@ -127,8 +129,8 @@ func TestCrossProjectSchoolLifecycle(t *testing.T){
  ar,sr,tr:=accounts.New(db),sessions.New(db),tokens.New(db)
  cred:=credentials.New(credentialrepo.New(db))
  const password="Lifecycle-test-password-123"
- for _,row:=range []struct{id,tenant string}{{accountID,school},{otherAccount,other}}{
-  must(t,db.Exec("INSERT INTO identity.accounts(account_id,person_gid,tenant_id,email,status) VALUES (?,?,?,?,'ACTIVE')",row.id,uuid.NewString(),row.tenant,row.id+"@example.test").Error)
+ for _,row:=range []struct{id,tenant,person string}{{accountID,school,personID.String()},{otherAccount,other,otherPersonID.String()}}{
+  must(t,db.Exec("INSERT INTO identity.accounts(account_id,person_gid,tenant_id,email,status) VALUES (?,?,?,?,'ACTIVE')",row.id,row.person,row.tenant,row.id+"@example.test").Error)
   must(t,cred.Set(ctx,row.id,password))
  }
  eventStore:=infrastructure.NewEventStore(db)
@@ -220,6 +222,7 @@ func TestCrossProjectSchoolLifecycle(t *testing.T){
  refresh:=func(jar cookies,want int){call("POST","/identity/public/auth/refresh","","",jar,want)}
  active,unrelated:=login(accountID,200),login(otherAccount,200)
  me(active,200);mailbox(active,200);me(unrelated,200)
+ if _,err=integrationModule.Client().ListConnections(ctx,school,personID.String());err!=nil{t.Fatal("active direct mailbox listing failed",err)}
  // Test known proofs at generation 1 independently of asynchronous email.
  issue:=func(purpose entity.TokenPurpose,generation int64)string{
   secret,err:=secrets.NewSecret(32);must(t,err);hash,err:=secrets.Digest(secret,32);must(t,err)
@@ -243,9 +246,9 @@ func TestCrossProjectSchoolLifecycle(t *testing.T){
  call("GET","/identity/public/auth/recovery/validate","",oldProof,nil,401)
  call("GET","/identity/public/auth/reset-password/status","","",grantJar,401)
  call("POST","/identity/public/auth/forgot-password",jsonText(t,map[string]string{"email":accountID+"@example.test"}),"",nil,202)
- var count int64;must(t,db.Raw("SELECT count(*) FROM identity.invitation_mail WHERE account_id=?",accountID).Scan(&count).Error)
+ var count int64;must(t,db.Raw("SELECT count(*) FROM identity.invitations WHERE account_id=?",accountID).Scan(&count).Error)
  if count!=0{t.Fatal("disabled school queued reset mail")}
- if _,err=integrationModule.Client().ListConnections(ctx,school,"");err==nil{t.Fatal("direct Integration client bypassed registry")}
+ if _,err=integrationModule.Client().ListConnections(ctx,school,personID.String());err==nil{t.Fatal("direct Integration client bypassed registry")}
  transition("DISABLED","ACTIVE")
  state,err=lookup(ctx,school);must(t,err);if !state.Active||state.Generation!=2{t.Fatal("activation generation",state)}
  me(active,403);refresh(active,401);mailbox(active,403)
@@ -278,7 +281,7 @@ func TestCrossProjectSchoolLifecycle(t *testing.T){
  // Stop the real registry and verify the configured direct service boundary
  // fails closed. Restart with the same database and credentials.
  must(t,schoolProcess.Process.Kill());_ = schoolProcess.Wait()
- if _,err=integrationModule.Client().ListConnections(ctx,school,"");err==nil{t.Fatal("registry outage accepted")}
+ if _,err=integrationModule.Client().ListConnections(ctx,school,personID.String());err==nil{t.Fatal("registry outage accepted")}
  if _,err=lookup(ctx,school);err==nil{t.Fatal("registry outage returned a state")}
  _=startSchool()
  me(fresh,200);me(unrelated,200);mailbox(fresh,200)

@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+ "fmt"
 	"strings"
 	"time"
 
@@ -66,4 +67,17 @@ func (r *WatchRepository) ExpiringWatches(ctx context.Context, before time.Time)
 		}
 	}
 	return result, nil
+}
+
+// ExpiringWatchesAfter scans active Gmail connections in stable keyset order.
+// Filter before LIMIT so disconnected rows cannot starve eligible watches.
+func(r *WatchRepository) ExpiringWatchesAfter(ctx context.Context,before time.Time,after string,limit int)([]entity.Connection,error){
+ if limit<1||limit>500{return nil,fmt.Errorf("invalid watch page size")}
+ rows:=make([]entity.Connection,0,limit)
+ query:=r.db.WithContext(ctx).Table("integration.connections AS c").Select("c.*").
+  Joins("JOIN integration.webhook_subscriptions AS w ON w.connection_id=c.id").
+  Where("c.provider=? AND c.status=? AND w.resource=? AND w.status=? AND w.expires_at<?",providerconstants.Gmail,entity.StatusActive,connectionconstants.GmailMailboxResource,connectionconstants.Active,before)
+ if after!=""{query=query.Where("c.id > ?",after)}
+ err:=query.Order("c.id").Limit(limit).Find(&rows).Error
+ return rows,err
 }

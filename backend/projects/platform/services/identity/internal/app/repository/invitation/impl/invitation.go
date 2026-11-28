@@ -43,7 +43,7 @@ func (repository *Repository) Claim(ctx context.Context, now time.Time) (entity.
 			WHERE sent_at IS NULL AND suppressed_at IS NULL
 			  AND next_attempt_at <= ?
 			  AND (lease_until IS NULL OR lease_until < ?)
-			ORDER BY next_attempt_at
+			ORDER BY next_attempt_at, id
 			FOR UPDATE SKIP LOCKED
 			LIMIT 1
 		)
