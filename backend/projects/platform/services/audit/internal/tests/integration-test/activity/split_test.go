@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/launcher/bootstrap"
 	"grovehub/services/audit"
 	client "grovehub/services/audit/client/producer"
@@ -45,13 +45,13 @@ func TestSeparateAuditDatabase(t *testing.T) {
 	producer:=audit.NewProducer(infrastructure.NewEventStore(business))
 	activity:=client.Activity{OccurrenceID:event,TenantID:tenant,Source:"identity",AssetType:"ACCOUNT",AssetID:account,ActorID:account,Operation:"LOGIN_SUCCEEDED",OccurredAt:time.Now().UTC()}
 	rollback:=errors.New("injected rollback")
-	if err:=transaction.Run(ctx,business,func(tx context.Context) error {
+	if err:=coredatabase.RunTransaction(ctx,business,func(tx context.Context) error {
 		if err:=producer.Record(tx,activity);err!=nil { return err }
 		return rollback
 	});!errors.Is(err,rollback) { t.Fatalf("producer transaction rollback: %v",err) }
 	var count int64
 	if err:=business.Raw("SELECT count(*) FROM infrastructure.messaging WHERE event_id = ?",event).Scan(&count).Error;err!=nil || count!=0 { t.Fatal("rolled-back outbox persisted") }
-	if err:=transaction.Run(ctx,business,func(tx context.Context) error { return producer.Record(tx,activity) });err!=nil { t.Fatal(err) }
+	if err:=coredatabase.RunTransaction(ctx,business,func(tx context.Context) error { return producer.Record(tx,activity) });err!=nil { t.Fatal(err) }
 	if err:=business.Exec("UPDATE infrastructure.messaging SET status='SENT',published_at=now() WHERE event_id = ?",event).Error;err!=nil { t.Fatal(err) }
 	result,err:=audit.Replay(ctx,target,infrastructure.NewReplaySource(business),audit.ReplayRequest{TenantID:tenant,EventID:event,Apply:true,OperatorLabel:"split-test"})
 	if err!=nil || !result.Applied { t.Fatalf("split replay: %v",err) }

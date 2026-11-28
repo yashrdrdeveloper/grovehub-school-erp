@@ -6,7 +6,7 @@ import (
     "time"
 
     servicepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
-    coretransaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+    coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
     foundationevents "grovehub/services/foundation/internal/app/constants/events"
     eventproducers "grovehub/services/foundation/internal/app/events/producers/person"
     persondto "grovehub/services/foundation/internal/app/dto/person"
@@ -24,14 +24,14 @@ import (
 type Deactivator struct {
     persons personrepository.PersonRepository
     contacts contactrepository.ContactRepository
-    unitOfWork coretransaction.UnitOfWork
+    unitOfWork coredatabase.UnitOfWork
     mapper foundationmappers.PersonMapper
     events eventproducers.ChangedProducer
 }
 
 var _ deactivatestrategies.DeactivateStrategy = (*Deactivator)(nil)
 
-func New(persons personrepository.PersonRepository, contacts contactrepository.ContactRepository, unit coretransaction.UnitOfWork, mapper foundationmappers.PersonMapper, events eventproducers.ChangedProducer) deactivatestrategies.DeactivateStrategy {
+func New(persons personrepository.PersonRepository, contacts contactrepository.ContactRepository, unit coredatabase.UnitOfWork, mapper foundationmappers.PersonMapper, events eventproducers.ChangedProducer) deactivatestrategies.DeactivateStrategy {
     return &Deactivator{persons: persons, contacts: contacts, unitOfWork: unit, mapper: mapper, events: events}
 }
 

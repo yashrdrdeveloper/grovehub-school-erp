@@ -6,7 +6,7 @@ import (
     "context"
 
     coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-    coretransaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+    coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
     createstrategies "grovehub/services/foundation/internal/app/services/person/operations/create/strategies"
     servicepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
     personerror "grovehub/services/foundation/internal/app/constants/error"
@@ -23,14 +23,14 @@ import (
 type Creator struct {
     persons personrepository.PersonRepository
     contacts contactrepository.ContactRepository
-    unitOfWork coretransaction.UnitOfWork
+    unitOfWork coredatabase.UnitOfWork
     mapper foundationmappers.PersonMapper
     events eventproducers.ChangedProducer
 }
 
 var _ createstrategies.CreateStrategy = (*Creator)(nil)
 
-func NewCreateStrategy(persons personrepository.PersonRepository, contacts contactrepository.ContactRepository, unit coretransaction.UnitOfWork, mapper foundationmappers.PersonMapper, events eventproducers.ChangedProducer) createstrategies.CreateStrategy {
+func NewCreateStrategy(persons personrepository.PersonRepository, contacts contactrepository.ContactRepository, unit coredatabase.UnitOfWork, mapper foundationmappers.PersonMapper, events eventproducers.ChangedProducer) createstrategies.CreateStrategy {
     return &Creator{persons: persons, contacts: contacts, unitOfWork: unit, mapper: mapper, events: events}
 }
 

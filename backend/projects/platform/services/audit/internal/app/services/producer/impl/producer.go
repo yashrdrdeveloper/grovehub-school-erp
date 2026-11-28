@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
 	client "grovehub/services/audit/client/producer"
 	"grovehub/services/audit/internal/app/constants/events"
@@ -23,7 +23,7 @@ func New(store messaging.EventStore) producer.Service {
 }
 
 func (service *Service) Produce(ctx context.Context, event client.Event) error {
-	if service.store == nil || !transaction.Active(ctx) {
+	if service.store == nil || !coredatabase.TransactionActive(ctx) {
 		return errors.New("audit producer requires a transactional outbox")
 	}
 	topic, known := events.Topic(event.Type)

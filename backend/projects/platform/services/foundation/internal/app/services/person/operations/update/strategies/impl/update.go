@@ -7,7 +7,7 @@ import (
 
     coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
     servicepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
-    coretransaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+    coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     foundationevents "grovehub/services/foundation/internal/app/constants/events"
     eventproducers "grovehub/services/foundation/internal/app/events/producers/person"
@@ -26,7 +26,7 @@ import (
 type Updater struct {
     persons personrepository.PersonRepository
     contacts contactrepository.ContactRepository
-    unitOfWork coretransaction.UnitOfWork
+    unitOfWork coredatabase.UnitOfWork
     mapper foundationmappers.PersonMapper
     validator foundationvalidators.PersonValidator
     events eventproducers.ChangedProducer
@@ -34,7 +34,7 @@ type Updater struct {
 
 var _ updatestrategies.UpdateStrategy = (*Updater)(nil)
 
-func New(persons personrepository.PersonRepository, contacts contactrepository.ContactRepository, unit coretransaction.UnitOfWork, mapper foundationmappers.PersonMapper, validator foundationvalidators.PersonValidator, events eventproducers.ChangedProducer) updatestrategies.UpdateStrategy {
+func New(persons personrepository.PersonRepository, contacts contactrepository.ContactRepository, unit coredatabase.UnitOfWork, mapper foundationmappers.PersonMapper, validator foundationvalidators.PersonValidator, events eventproducers.ChangedProducer) updatestrategies.UpdateStrategy {
     return &Updater{persons: persons, contacts: contacts, unitOfWork: unit, mapper: mapper, validator: validator, events: events}
 }
 

@@ -2,7 +2,7 @@
 package impl
 
 import (
-    coretransaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+    coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
     personrepository "grovehub/services/foundation/internal/app/repository/person"
     contactrepository "grovehub/services/foundation/internal/app/repository/contact"
     foundationmappers "grovehub/services/foundation/internal/app/mappers/person"
@@ -33,7 +33,7 @@ type PersonService struct {
 
 var _ foundationservices.PersonService = (*PersonService)(nil)
 
-func NewPersonService(personRepository personrepository.PersonRepository, contactRepository contactrepository.ContactRepository, unitOfWork coretransaction.UnitOfWork, mapper foundationmappers.PersonMapper, validator foundationvalidators.PersonValidator, publisher eventproducers.ChangedProducer) foundationservices.PersonService {
+func NewPersonService(personRepository personrepository.PersonRepository, contactRepository contactrepository.ContactRepository, unitOfWork coredatabase.UnitOfWork, mapper foundationmappers.PersonMapper, validator foundationvalidators.PersonValidator, publisher eventproducers.ChangedProducer) foundationservices.PersonService {
     if publisher == nil { panic("foundation PersonService requires an event producer") }
     return &PersonService{
         CreateOperation: createoperation.New(createimpl.NewCreateStrategy(personRepository, contactRepository, unitOfWork, mapper, publisher)),

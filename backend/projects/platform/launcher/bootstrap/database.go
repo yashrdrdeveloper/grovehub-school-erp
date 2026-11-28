@@ -11,7 +11,7 @@ import (
 
 	"gorm.io/gorm"
 
-	corepostgres "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/postgres"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 )
 
 const databaseURLEnv = "DATABASE_URL"
@@ -39,7 +39,7 @@ func poolLimits(prefix string, defaultOpen,defaultIdle int)(int,int,error){
 }
 func openPostgres(ctx context.Context,databaseURL,prefix string,defaultOpen,defaultIdle int) (*gorm.DB,error) {
  open,idle,err:=poolLimits(prefix,defaultOpen,defaultIdle);if err!=nil{return nil,err}
-	db, err := corepostgres.NewDB(databaseURL)
+	db, err := coredatabase.NewDB(databaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("create postgres gorm db: %w", err)
 	}

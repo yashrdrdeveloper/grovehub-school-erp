@@ -3,7 +3,7 @@ package impl
 import (
 	"context"
 	"time"
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -20,8 +20,8 @@ func New(db *gorm.DB) activity.Repository {
 }
 
 func (repository *Repository) Insert(ctx context.Context, entry entity.Activity) error {
-	return transaction.Run(ctx,repository.db,func(tx context.Context) error {
-		db:=transaction.Database(tx,repository.db)
+	return coredatabase.RunTransaction(ctx,repository.db,func(tx context.Context) error {
+		db:=coredatabase.TransactionDB(tx,repository.db)
 		entry.IngestedAt=time.Now().UTC()
 		result:=db.Clauses(clause.OnConflict{DoNothing:true}).Create(&entry)
 		if result.Error!=nil { return result.Error }

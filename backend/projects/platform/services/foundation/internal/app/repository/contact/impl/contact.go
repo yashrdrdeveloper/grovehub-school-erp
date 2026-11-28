@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
-	coretransaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/foundation/internal/app/entity"
 	contactrepository "grovehub/services/foundation/internal/app/repository/contact"
 	contacterrorshelpers "grovehub/services/foundation/internal/app/repository/contact/helpers/errors"
@@ -32,7 +32,7 @@ func (repository *ContactRepository) FindByPersonGIDs(ctx context.Context, gids 
 		return contactsByGID, nil
 	}
 	contacts := make([]entity.Contact, 0)
-	if err := coretransaction.Database(ctx, repository.db).
+	if err := coredatabase.TransactionDB(ctx, repository.db).
 		Where("person_gid IN ?", gids).
 		Order("person_gid, type, is_primary DESC, normalized_value").
 		Find(&contacts).Error; err != nil {
@@ -55,7 +55,7 @@ func (repository *ContactRepository) FindPersonGIDsByContacts(ctx context.Contex
 		args = append(args, contact.Type, contact.NormalizedValue)
 	}
 	gids := make([]string, 0)
-	err := coretransaction.Database(ctx, repository.db).
+	err := coredatabase.TransactionDB(ctx, repository.db).
 		Model(&entity.Contact{}).
 		Distinct("person_gid").
 		Where(strings.Join(conditions, " OR "), args...).
@@ -71,8 +71,8 @@ func (repository *ContactRepository) FindPersonGIDsByContacts(ctx context.Contex
 // It joins the outer PersonService transaction or creates its own transaction
 // when called without one, so primary-reset, upsert, and deletion never partially commit.
 func (repository *ContactRepository) ReplaceForPerson(ctx context.Context, gid string, contacts []entity.Contact) error {
-	return coretransaction.Run(ctx, repository.db, func(txCtx context.Context) error {
-		db := coretransaction.Database(txCtx, repository.db)
+	return coredatabase.RunTransaction(ctx, repository.db, func(txCtx context.Context) error {
+		db := coredatabase.TransactionDB(txCtx, repository.db)
 		if err := db.Model(&entity.Contact{}).
 			Where("person_gid = ?", gid).
 			Update("is_primary", false).Error; err != nil {

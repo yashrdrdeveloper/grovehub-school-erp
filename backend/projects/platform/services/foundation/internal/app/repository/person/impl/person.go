@@ -6,7 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
-	coretransaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	"grovehub/services/foundation/internal/app/entity"
 	personrepository "grovehub/services/foundation/internal/app/repository/person"
@@ -23,12 +23,12 @@ func NewPersonRepository(db *gorm.DB) personrepository.PersonRepository {
 }
 
 func (repository *PersonRepository) Create(ctx context.Context, person entity.Person) error {
-	return personerrorshelpers.MapPersonWriteError(coretransaction.Database(ctx, repository.db).Create(&person).Error)
+	return personerrorshelpers.MapPersonWriteError(coredatabase.TransactionDB(ctx, repository.db).Create(&person).Error)
 }
 
 func (repository *PersonRepository) FindByGID(ctx context.Context, gid string) (entity.Person, error) {
 	var person entity.Person
-	if err := coretransaction.Database(ctx, repository.db).Where("gid = ?", gid).Take(&person).Error; err != nil {
+	if err := coredatabase.TransactionDB(ctx, repository.db).Where("gid = ?", gid).Take(&person).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return entity.Person{}, repositoryerrors.ErrPersonNotFound
 		}
@@ -39,7 +39,7 @@ func (repository *PersonRepository) FindByGID(ctx context.Context, gid string) (
 
 func (repository *PersonRepository) FindByIdempotencyKey(ctx context.Context, key string) (entity.Person, error) {
 	var person entity.Person
-	if err := coretransaction.Database(ctx, repository.db).Where(&entity.Person{IdempotencyKey: &key}).Take(&person).Error; err != nil {
+	if err := coredatabase.TransactionDB(ctx, repository.db).Where(&entity.Person{IdempotencyKey: &key}).Take(&person).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return entity.Person{}, repositoryerrors.ErrPersonNotFound
 		}
@@ -50,7 +50,7 @@ func (repository *PersonRepository) FindByIdempotencyKey(ctx context.Context, ke
 
 func (repository *PersonRepository) Update(ctx context.Context, person entity.Person) error {
 	expectedVersion := person.Version - 1
-	result := coretransaction.Database(ctx, repository.db).
+	result := coredatabase.TransactionDB(ctx, repository.db).
 		Model(&entity.Person{}).
 		Where("gid = ? AND version = ?", person.GID, expectedVersion).
 		Updates(map[string]any{

@@ -1,7 +1,7 @@
 package impl
 
 import (
-    coretransaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+    coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
     protected "grovehub/services/foundation/internal/app/controller/person/protected"
     controllerimpl "grovehub/services/foundation/internal/app/controller/person/protected/impl"
     personproducer "grovehub/services/foundation/internal/app/events/producers/person"
@@ -17,7 +17,7 @@ import (
 func (bootstrap *builder) newRoutes(producer personproducer.ChangedProducer) protected.PersonController {
     persons := personrepositoryimpl.NewPersonRepository(bootstrap.db)
     contacts := contactrepositoryimpl.NewContactRepository(bootstrap.db)
-    unitOfWork := coretransaction.NewUnitOfWork(bootstrap.db)
+    unitOfWork := coredatabase.NewUnitOfWork(bootstrap.db)
     mapper := mapperimpl.NewPersonMapper()
     validator := validatorimpl.NewPersonValidator()
     service := serviceimpl.NewPersonService(persons, contacts, unitOfWork, mapper, validator, producer)

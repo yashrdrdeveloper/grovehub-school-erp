@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/audit/internal/app/constants/events"
 	"grovehub/services/audit/internal/app/events/consumers/activity/helpers"
 	"grovehub/services/audit/internal/app/repository/activity"
@@ -29,7 +29,7 @@ func New(db *gorm.DB,source messaging.ReplaySource,repository activity.Repositor
 
 func (service *Service) Replay(ctx context.Context,input replay.Request) (replay.Result,error) {
 	id,err:=uuid.Parse(input.EventID)
-	if err!=nil || id==uuid.Nil || id.String()!=input.EventID || input.TenantID=="" || len(input.TenantID)>128 || strings.TrimSpace(input.TenantID)!=input.TenantID || (input.Apply && (strings.TrimSpace(input.OperatorLabel)=="" || len(input.OperatorLabel)>128 || strings.TrimSpace(input.OperatorLabel)!=input.OperatorLabel)) || service.db==nil || service.source==nil || service.repository==nil || transaction.Active(ctx) { return replay.Result{},errInvalid }
+	if err!=nil || id==uuid.Nil || id.String()!=input.EventID || input.TenantID=="" || len(input.TenantID)>128 || strings.TrimSpace(input.TenantID)!=input.TenantID || (input.Apply && (strings.TrimSpace(input.OperatorLabel)=="" || len(input.OperatorLabel)>128 || strings.TrimSpace(input.OperatorLabel)!=input.OperatorLabel)) || service.db==nil || service.source==nil || service.repository==nil || coredatabase.TransactionActive(ctx) { return replay.Result{},errInvalid }
 	event,err:=service.source.Published(ctx,input.EventID)
 	if err!=nil { return replay.Result{},err }
 	eventType,known:=events.Topics()[event.Topic]
@@ -39,9 +39,9 @@ func (service *Service) Replay(ctx context.Context,input replay.Request) (replay
 	result:=replay.Result{EventID:input.EventID,AuditID:entry.AuditID,Operation:entry.Operation}
 	if !input.Apply { return result,nil }
 	replayID:=uuid.NewString()
-	err=transaction.Run(ctx,service.db,func(tx context.Context) error {
+	err=coredatabase.RunTransaction(ctx,service.db,func(tx context.Context) error {
 		if err:=service.repository.Insert(tx,entry);err!=nil { return err }
-		return transaction.Database(tx,service.db).Exec("INSERT INTO audit.replay_runs(replay_id,tenant_id,source_event_id,audit_id,operator_label) VALUES (?,?,?,?,?)",replayID,input.TenantID,input.EventID,entry.AuditID,input.OperatorLabel).Error
+		return coredatabase.TransactionDB(tx,service.db).Exec("INSERT INTO audit.replay_runs(replay_id,tenant_id,source_event_id,audit_id,operator_label) VALUES (?,?,?,?,?)",replayID,input.TenantID,input.EventID,entry.AuditID,input.OperatorLabel).Error
 	})
 	if err!=nil { return replay.Result{},err }
 	result.Applied=true

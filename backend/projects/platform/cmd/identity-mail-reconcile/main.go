@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/postgres"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/operations/mailreconcile"
 )
 
@@ -34,7 +34,7 @@ func run() error {
 	if dsn == "" {
 		return errors.New("DATABASE_URL is required")
 	}
-	db, err := postgres.NewDB(dsn)
+	db, err := coredatabase.NewDB(dsn)
 	if err != nil {
 		return errors.New("could not connect to configured database")
 	}
