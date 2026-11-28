@@ -57,6 +57,7 @@ jobs:
         if: always()
         with:
           name: platform-command-coverage
+          include-hidden-files: true
           path: |
             backend/projects/platform/.generated/unit-coverage/cmd.out
             .runtime/reports/unit-coverage/cmd.html

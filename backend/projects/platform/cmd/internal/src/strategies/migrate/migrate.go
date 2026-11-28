@@ -19,7 +19,7 @@ var order = [...]string{"foundation", "infrastructure", "integration", "identity
 
 // @Strategy
 type strategy struct {
-	database database.Database
+	database   database.Database
 	migrations map[string]migration.Migration
 }
 
