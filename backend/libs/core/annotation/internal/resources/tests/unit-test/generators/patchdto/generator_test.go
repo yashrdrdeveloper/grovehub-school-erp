@@ -1,6 +1,7 @@
 package patchdto_test
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,9 +25,9 @@ func fixture(t GinkgoTInterface, source string) (string, string) {
 	t.Helper()
 	root := t.TempDir()
 	dir := filepath.Join(root, "services", "demo", "dto", "request", "widget")
-	if err := os.MkdirAll(dir, 0755); err != nil { t.Fatal(err) }
+	Expect(os.MkdirAll(dir, 0755)).To(Succeed())
 	file := filepath.Join(dir, "widget.go")
-	if err := os.WriteFile(file, []byte(source), 0644); err != nil { t.Fatal(err) }
+	Expect(os.WriteFile(file, []byte(source), 0644)).To(Succeed())
 	return root, filepath.Join(root, "services", "demo", ".generated", "dto", "request", "widget", "zz_patchdto.gen.go")
 }
 
@@ -34,9 +35,9 @@ var _ = Describe("GenerateAll", func() {
 	It("Generate Patch Request DTO", func() {
 		t := GinkgoT()
 	root, output := fixture(t, patchSource)
-	if err := patchdto.GenerateAll(root); err != nil { t.Fatal(err) }
+	Expect(patchdto.GenerateAll(root)).To(Succeed())
 	generated, err := os.ReadFile(output)
-	if err != nil { t.Fatal(err) }
+	Expect(err).NotTo(HaveOccurred())
 	for _, expected := range []string{
 		"package widget",
 		"func (request UpdateWidget) MarshalJSON() ([]byte, error)",
@@ -44,11 +45,11 @@ var _ = Describe("GenerateAll", func() {
 		"fields[\"title\"] = request.Title.Value",
 		"fields[\"count\"] = request.Count.Value",
 	} {
-		if !strings.Contains(string(generated), expected) { t.Fatalf("missing %q: %s", expected, generated) }
+		Expect(string(generated)).To(ContainSubstring(expected))
 	}
-	if err := patchdto.GenerateAll(root); err != nil { t.Fatal(err) }
+	Expect(patchdto.GenerateAll(root)).To(Succeed())
 	again, err := os.ReadFile(output)
-	if err != nil || string(again) != string(generated) { t.Fatalf("generator not idempotent: %v", err) }
+	Expect(err != nil || string(again) != string(generated)).To(BeFalse(), fmt.Sprintf("generator not idempotent: %v", err))
 
 	})
 })
@@ -72,7 +73,7 @@ func (UpdateWidget) MarshalJSON() ([]byte, error) { return nil, nil }`,
 		By(name)
 		{
 			root, _ := fixture(t, src)
-			if err := patchdto.GenerateAll(root); err == nil { t.Fatal("expected generator to reject invalid PATCH DTO") }
+			Expect(patchdto.GenerateAll(root)).To(HaveOccurred())
 		}
 	}
 
@@ -83,12 +84,15 @@ var _ = Describe("GenerateAll", func() {
 	It("Remove Stale Generated Patch Method", func() {
 		t := GinkgoT()
 	root, output := fixture(t, patchSource)
-	if err := patchdto.GenerateAll(root); err != nil { t.Fatal(err) }
+	Expect(patchdto.GenerateAll(root)).To(Succeed())
 	src := strings.Replace(patchSource, "// @PatchRequestDto", "// no annotation", 1)
 	path := filepath.Join(root, "services", "demo", "dto", "request", "widget", "widget.go")
-	if err := os.WriteFile(path, []byte(src), 0644); err != nil { t.Fatal(err) }
-	if err := patchdto.GenerateAll(root); err != nil { t.Fatal(err) }
-	if _, err := os.Stat(output); !os.IsNotExist(err) { t.Fatalf("stale generated output retained: %v", err) }
+	Expect(os.WriteFile(path, []byte(src), 0644)).To(Succeed())
+	Expect(patchdto.GenerateAll(root)).To(Succeed())
+	{
+		_, err := os.Stat(output)
+		Expect(os.IsNotExist(err)).To(BeTrue())
+	}
 
 	})
 })

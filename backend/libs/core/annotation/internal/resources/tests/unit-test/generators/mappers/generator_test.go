@@ -3,8 +3,8 @@ package mappers_test
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/mappers"
 )
@@ -13,7 +13,7 @@ var _ = Describe("GenerateAll", func() {
 	It("Generate Resource Owned Mapper", func() {
 		t := GinkgoT()
 	backend:=t.TempDir()
-	if err:=os.WriteFile(filepath.Join(backend,"go.mod"),[]byte("module example.org/internal-platform\n"),0644);err!=nil{t.Fatal(err)}
+	Expect(os.WriteFile(filepath.Join(backend,"go.mod"),[]byte("module example.org/internal-platform\n"),0644)).To(Succeed())
 	owner:=filepath.Join(backend,"services","foundation")
 	files:=map[string]string{
 		filepath.Join(owner,"dto","person","response.go"): `package person
@@ -27,22 +27,23 @@ type PersonMapper interface {
 }`,
 	}
 	for path,source:=range files {
-		if err:=os.MkdirAll(filepath.Dir(path),0755);err!=nil{t.Fatal(err)}
-		if err:=os.WriteFile(path,[]byte(source),0644);err!=nil{t.Fatal(err)}
+		Expect(os.MkdirAll(filepath.Dir(path),0755)).To(Succeed())
+		Expect(os.WriteFile(path,[]byte(source),0644)).To(Succeed())
 	}
-	if err:=mappers.GenerateAll(backend);err!=nil{t.Fatal(err)}
+	Expect(mappers.GenerateAll(backend)).To(Succeed())
 	output:=filepath.Join(owner,".generated","mappers","person","impl","zz_mappers.gen.go")
 	code,err:=os.ReadFile(output)
-	if err!=nil{t.Fatal(err)}
+	Expect(err).NotTo(HaveOccurred())
 	for _,expected:=range []string{
 		"func (mapper *PersonMapper) ToPersonErrorMetadata(",
 		"persondto.PersonErrorMetadata{",
 		"GID: gid,",
 	}{
-		if !strings.Contains(string(code),expected){t.Fatalf("resource mapper output missing %q:\n%s",expected,code)}
+		Expect(string(code)).To(ContainSubstring(expected))
 	}
-	if _,err:=os.Stat(filepath.Join(owner,".generated","mappers","impl","zz_mappers.gen.go"));!os.IsNotExist(err) {
-		t.Fatalf("unexpected flat mapper output: %v",err)
+	{
+		_,err:=os.Stat(filepath.Join(owner,".generated","mappers","impl","zz_mappers.gen.go"))
+		Expect(os.IsNotExist(err)).To(BeTrue())
 	}
 
 	})

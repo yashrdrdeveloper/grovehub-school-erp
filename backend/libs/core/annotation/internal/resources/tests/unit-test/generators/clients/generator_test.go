@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/clients"
 )
@@ -48,8 +49,8 @@ mux.Handle("PATCH `+prefix+`/protected/persons/{gid}/deactivate", nil)
 }
 `,
 	} {
-		if err := os.MkdirAll(filepath.Dir(path),0755);err!=nil{t.Fatal(err)}
-		if err := os.WriteFile(path,[]byte(content),0644);err!=nil{t.Fatal(err)}
+		Expect(os.MkdirAll(filepath.Dir(path),0755)).To(Succeed())
+		Expect(os.WriteFile(path,[]byte(content),0644)).To(Succeed())
 	}
 	return root, client, output
 }
@@ -58,8 +59,8 @@ var _ = Describe("GenerateAll", func() {
 	It("Request Line Generates Full Controller Dispatch", func() {
 		t := GinkgoT()
 	root,_,out := fixture(t,sourceClient,"/foundation")
-	if err:=clients.GenerateAll(root);err!=nil{t.Fatal(err)}
-	data,err:=os.ReadFile(out);if err!=nil{t.Fatal(err)}
+	Expect(clients.GenerateAll(root)).To(Succeed())
+	data,err:=os.ReadFile(out);Expect(err).NotTo(HaveOccurred())
 	generated:=string(data)
 	for _,expected:=range []string{
 		"httpendpoint.CallStruct[Person](ctx, c.handler, \"POST\", \"/foundation/protected/persons\", request)",
@@ -68,11 +69,11 @@ var _ = Describe("GenerateAll", func() {
 		"httpendpoint.CallStruct[SearchResult](ctx, c.handler, \"POST\", \"/foundation/protected/persons/search\", request)",
 		"status == 201 && err == nil",
 	} {
-		if !strings.Contains(generated,expected){t.Errorf("generated client missing %q\n%s",expected,generated)}
+		Expect(generated).To(ContainSubstring(expected))
 	}
-	if err:=clients.GenerateAll(root);err!=nil{t.Fatal(err)}
+	Expect(clients.GenerateAll(root)).To(Succeed())
 	again,_:=os.ReadFile(out)
-	if string(again)!=generated{t.Fatal("generation must be deterministic")}
+	Expect(string(again)!=generated).To(BeFalse(), "generation must be deterministic")
 
 	})
 })
@@ -81,12 +82,12 @@ var _ = Describe("GenerateAll", func() {
 	It("Service Prefix Changes Only In Generated Routes", func() {
 		t := GinkgoT()
 	root,_,out:=fixture(t,sourceClient,"/school")
-	if err:=clients.GenerateAll(root);err!=nil{t.Fatal(err)}
+	Expect(clients.GenerateAll(root)).To(Succeed())
 	data,_:=os.ReadFile(out)
 	if !strings.Contains(string(data),"\"/school/protected/persons/{gid}\""){
-		t.Fatal("client did not inherit service prefix from generated controller routes")
+		Expect(false).To(BeTrue(), "client did not inherit service prefix from generated controller routes")
 	}
-	if strings.Contains(string(data),"\"/foundation/"){t.Fatal("stale service path")}
+	Expect(string(data)).NotTo(ContainSubstring("\"/foundation/"))
 
 	})
 })
@@ -95,8 +96,9 @@ var _ = Describe("GenerateAll", func() {
 	It("Request Line Missing Controller Route Fails Closed", func() {
 		t := GinkgoT()
 	root,_,_:=fixture(t,strings.Replace(sourceClient,"GET /protected/persons/{gid}","DELETE /protected/persons/{gid}",1),"/foundation")
-	if err:=clients.GenerateAll(root);err==nil||!strings.Contains(err.Error(),"no matching generated controller route"){
-		t.Fatalf("expected route mismatch error; got %v",err)
+	{
+		err:=clients.GenerateAll(root)
+		Expect(err).To(MatchError(ContainSubstring("no matching generated controller route")))
 	}
 
 	})
@@ -109,9 +111,10 @@ var _ = Describe("GenerateAll", func() {
 	routes:=filepath.Join(root,"services","foundation",".generated","routes","zz_routes.gen.go")
 	data,_:=os.ReadFile(routes)
 	src:=strings.Replace(string(data), "mux.Handle(\"GET /foundation/protected/persons/{gid}\", nil)", "mux.Handle(\"GET /foundation/protected/persons/{gid}\", nil)\nmux.Handle(\"GET /new/protected/persons/{gid}\", nil)",1)
-	if err:=os.WriteFile(routes,[]byte(src),0644);err!=nil{t.Fatal(err)}
-	if err:=clients.GenerateAll(root);err==nil||!strings.Contains(err.Error(),"matches multiple routes"){
-		t.Fatalf("expected ambiguous matching error; got %v",err)
+	Expect(os.WriteFile(routes,[]byte(src),0644)).To(Succeed())
+	{
+		err:=clients.GenerateAll(root)
+		Expect(err).To(MatchError(ContainSubstring("matches multiple routes")))
 	}
 
 	})
@@ -128,9 +131,10 @@ var _ = Describe("GenerateAll", func() {
 	}
 	for _,item:=range cases{
 		root,_,_:=fixture(t,item.source,"/foundation")
-		if err:=clients.GenerateAll(root);err==nil||!strings.Contains(err.Error(),item.errorFragment){
-			t.Fatalf("expected %q; got %v",item.errorFragment,err)
-		}
+		{
+		err:=clients.GenerateAll(root)
+		Expect(err).To(MatchError(ContainSubstring(item.errorFragment)))
+	}
 	}
 
 	})
@@ -148,10 +152,10 @@ type Client interface {
 }
 `
 	root,_,out:=fixture(t,client,"/foundation")
-	if err:=clients.GenerateAll(root);err!=nil{t.Fatal(err)}
+	Expect(clients.GenerateAll(root)).To(Succeed())
 	b,_:=os.ReadFile(out)
-	if !strings.Contains(string(b),"return c.personService.Get(ctx, id)") {t.Fatal("legacy @Proxy forwarder was changed")}
-	if strings.Contains(string(b),"httpendpoint"){t.Fatal("unused endpoint import")}
+	Expect(string(b),"return c.personService.Get(ctx).To(ContainSubstring(id)"))
+	Expect(string(b)).NotTo(ContainSubstring("httpendpoint"))
 
 	})
 })
@@ -162,17 +166,16 @@ var _ = Describe("GenerateAll", func() {
 	root,original,_:=fixture(t,sourceClient,"/foundation")
 	owner:=filepath.Join(root,"services","foundation")
 	resource:=filepath.Join(owner,"client","person","person.go")
-	if err:=os.MkdirAll(filepath.Dir(resource),0755);err!=nil{t.Fatal(err)}
-	if err:=os.Rename(original,resource);err!=nil{t.Fatal(err)}
-	if err:=clients.GenerateAll(root);err!=nil{t.Fatal(err)}
+	Expect(os.MkdirAll(filepath.Dir(resource),0755)).To(Succeed())
+	Expect(os.Rename(original,resource)).To(Succeed())
+	Expect(clients.GenerateAll(root)).To(Succeed())
 	output:=filepath.Join(owner,".generated","client","person","impl","zz_clients.gen.go")
 	data,err:=os.ReadFile(output)
-	if err!=nil{t.Fatal(err)}
-	if !strings.Contains(string(data),"httpendpoint.CallStruct[Person]("){
-		t.Fatalf("resource client was not generated at %s:\n%s",output,data)
-	}
-	if _,err:=os.Stat(filepath.Join(owner,".generated","client","impl","zz_clients.gen.go"));!os.IsNotExist(err){
-		t.Fatalf("unexpected flat client generated in resource-only fixture: %v",err)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(string(data)).To(ContainSubstring("httpendpoint.CallStruct[Person]("))
+	{
+		_,err:=os.Stat(filepath.Join(owner,".generated","client","impl","zz_clients.gen.go"))
+		Expect(os.IsNotExist(err)).To(BeTrue())
 	}
 
 	})

@@ -1,9 +1,11 @@
 package testgen_test
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/testing"
 )
@@ -14,16 +16,10 @@ var _ = Describe("FindModuleDir", func() {
 	root := t.TempDir()
 	module := filepath.Join(root, "project")
 	child := filepath.Join(module, "services", "example", "internal", "tests", "mocks")
-	if err := os.MkdirAll(child, 0755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(module, "go.mod"), []byte("module example.test/project\n"), 0600); err != nil {
-		t.Fatal(err)
-	}
+	Expect(os.MkdirAll(child, 0755)).To(Succeed())
+	Expect(os.WriteFile(filepath.Join(module, "go.mod"), []byte("module example.test/project\n"), 0600)).To(Succeed())
 	got, err := testgen.FindModuleDir(child)
-	if err != nil || got != module {
-		t.Fatalf("module = %q, error = %v", got, err)
-	}
+	Expect(err != nil || got != module).To(BeFalse(), fmt.Sprintf("module = %q, error = %v", got, err))
 
 	})
 })

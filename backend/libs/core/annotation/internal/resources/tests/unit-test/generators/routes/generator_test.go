@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/routes"
 )
@@ -37,12 +38,8 @@ func RegisterHTTP(mux *http.ServeMux) {}
 
 func writeTestFile(t GinkgoTInterface, filename, value string) {
 	t.Helper()
-	if err := os.MkdirAll(filepath.Dir(filename), 0755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filename, []byte(value), 0644); err != nil {
-		t.Fatal(err)
-	}
+	Expect(os.MkdirAll(filepath.Dir(filename), 0755)).To(Succeed())
+	Expect(os.WriteFile(filename, []byte(value), 0644)).To(Succeed())
 }
 
 func testBackend(t GinkgoTInterface) (string, string) {
@@ -57,13 +54,9 @@ func testBackend(t GinkgoTInterface) (string, string) {
 
 func generatedRoutes(t GinkgoTInterface, backend, output string) string {
 	t.Helper()
-	if err := routes.GenerateAll(backend); err != nil {
-		t.Fatal(err)
-	}
+	Expect(routes.GenerateAll(backend)).To(Succeed())
 	data, err := os.ReadFile(output)
-	if err != nil {
-		t.Fatal(err)
-	}
+	Expect(err).NotTo(HaveOccurred())
 	return string(data)
 }
 
@@ -104,15 +97,12 @@ type MaintenanceController interface {
 		"public.HealthController",
 		"restricted.MaintenanceController",
 	} {
-		if !strings.Contains(content, want) {
-			t.Errorf("generated routes missing %q", want)
-		}
+		Expect(content).To(ContainSubstring(want))
 	}
-	if strings.Contains(content, "GET /foundation/persons/") {
-		t.Fatal("generated routes retain old unclassified person path")
-	}
-	if next := generatedRoutes(t, backend, output); next != content {
-		t.Fatal("generator is not deterministic")
+	Expect(content).NotTo(ContainSubstring("GET /foundation/persons/"))
+	{
+		next := generatedRoutes(t, backend, output)
+		Expect(next != content).To(BeFalse(), "generator is not deterministic")
 	}
 
 	})
@@ -127,11 +117,9 @@ var _ = Describe("GenerateAll", func() {
 	writeTestFile(t, filename, strings.Replace(serviceRoutes, "/foundation", "/school", 1))
 	content := generatedRoutes(t, backend, output)
 	if !strings.Contains(content, "GET /school/protected/persons/{gid}") {
-		t.Fatal("changing service @Routes must update every generated endpoint")
+		Expect(false).To(BeTrue(), "changing service @Routes must update every generated endpoint")
 	}
-	if strings.Contains(content, "GET /foundation/") || strings.Contains(content, "POST /foundation/") || strings.Contains(content, "PATCH /foundation/") {
-		t.Fatal("stale service prefix retained")
-	}
+	Expect(strings.Contains(content, "GET /foundation/") || strings.Contains(content, "POST /foundation/") || strings.Contains(content, "PATCH /foundation/")).To(BeFalse(), "stale service prefix retained")
 
 	})
 })
@@ -156,12 +144,8 @@ type AuthController interface {
 `)
 	output := filepath.Join(owner, ".generated", "routes", "zz_routes.gen.go")
 	content := generatedRoutes(t, backend, output)
-	if !strings.Contains(content, "POST /auth/register") || !strings.Contains(content, "registerAuthRoutes(") {
-		t.Fatal("legacy Identity routes must remain unchanged")
-	}
-	if strings.Contains(content, "POST /identity/") {
-		t.Fatal("legacy service prefix must not be inferred")
-	}
+	Expect(!strings.Contains(content, "POST /auth/register") || !strings.Contains(content, "registerAuthRoutes(")).To(BeFalse(), "legacy Identity routes must remain unchanged")
+	Expect(content).NotTo(ContainSubstring("POST /identity/"))
 
 	})
 })
@@ -175,8 +159,9 @@ var _ = Describe("GenerateAll", func() {
 import "net/http"
 func RegisterHTTP(mux *http.ServeMux) {}
 `)
-	if err := routes.GenerateAll(backend); err == nil || !strings.Contains(err.Error(), "requires a service @Routes") {
-		t.Fatalf("expected missing service prefix error, got %v", err)
+	{
+		err := routes.GenerateAll(backend)
+		Expect(err).To(MatchError(ContainSubstring("requires a service @Routes")))
 	}
 
 	})
@@ -195,8 +180,9 @@ type LegacyController interface {
 	Get(http.ResponseWriter, *http.Request)
 }
 `)
-	if err := routes.GenerateAll(backend); err == nil || !strings.Contains(err.Error(), "must live in public/") {
-		t.Fatalf("expected uncategorized controller error, got %v", err)
+	{
+		err := routes.GenerateAll(backend)
+		Expect(err).To(MatchError(ContainSubstring("must live in public/")))
 	}
 
 	})
@@ -215,8 +201,9 @@ type DuplicateController interface {
 	Create(http.ResponseWriter, *http.Request)
 }
 `)
-	if err := routes.GenerateAll(backend); err == nil || !strings.Contains(err.Error(), "duplicate route") {
-		t.Fatalf("expected duplicate route error, got %v", err)
+	{
+		err := routes.GenerateAll(backend)
+		Expect(err).To(MatchError(ContainSubstring("duplicate route")))
 	}
 
 	})
@@ -228,8 +215,9 @@ var _ = Describe("GenerateAll", func() {
 	backend, _ := testBackend(t)
 	filename := filepath.Join(backend, "services", "foundation", "routes", "http.go")
 	writeTestFile(t, filename, strings.Replace(serviceRoutes, "func RegisterHTTP", "func Configure", 1))
-	if err := routes.GenerateAll(backend); err == nil || !strings.Contains(err.Error(), "RegisterHTTP function") {
-		t.Fatalf("expected misplaced service @Routes error, got %v", err)
+	{
+		err := routes.GenerateAll(backend)
+		Expect(err).To(MatchError(ContainSubstring("RegisterHTTP function")))
 	}
 
 	})
@@ -241,8 +229,9 @@ var _ = Describe("GenerateAll", func() {
 	backend, _ := testBackend(t)
 	filename := filepath.Join(backend, "services", "foundation", "routes", "http.go")
 	writeTestFile(t, filename, strings.Replace(serviceRoutes, "/foundation", "/foundation//admin", 1))
-	if err := routes.GenerateAll(backend); err == nil || !strings.Contains(err.Error(), "invalid route path") {
-		t.Fatalf("expected invalid prefix error, got %v", err)
+	{
+		err := routes.GenerateAll(backend)
+		Expect(err).To(MatchError(ContainSubstring("invalid route path")))
 	}
 
 	})
@@ -254,7 +243,7 @@ var _ = Describe("GenerateAll", func() {
 	backend,output:=testBackend(t)
 	owner:=filepath.Join(backend,"services","foundation")
 	legacy:=filepath.Join(owner,"controller","protected","person.go")
-	if err:=os.Remove(legacy);err!=nil {t.Fatal(err)}
+	Expect(os.Remove(legacy)).To(Succeed())
 	writeTestFile(t,filepath.Join(owner,"controller","person","protected","person.go"),personController)
 	content:=generatedRoutes(t,backend,output)
 	for _,required:=range []string{
@@ -263,7 +252,7 @@ var _ = Describe("GenerateAll", func() {
 		"c personprotected.PersonController",
 		"GET /foundation/protected/persons/{gid}",
 	}{
-		if !strings.Contains(content,required){t.Errorf("missing resource route %q:\n%s",required,content)}
+		Expect(content).To(ContainSubstring(required))
 	}
 
 	})
@@ -278,10 +267,8 @@ var _ = Describe("GenerateAll", func() {
 		"// @POST /search",
 		"// @POST /search\n\t// @RouteLimit 30", 1))
 	content := generatedRoutes(t, backend, output)
-	if !strings.Contains(content, "`POST /foundation/protected/persons/search`") &&
-		!strings.Contains(content, "\"POST /foundation/protected/persons/search\": 30") {
-		t.Fatal("annotated method policy missing from generated routes")
-	}
+	Expect(!strings.Contains(content, "`POST /foundation/protected/persons/search`") &&
+		!strings.Contains(content, "\"POST /foundation/protected/persons/search\": 30")).To(BeFalse(), "annotated method policy missing from generated routes")
 
 	})
 })
@@ -297,9 +284,10 @@ var _ = Describe("GenerateAll", func() {
 			writeTestFile(t, controller, strings.Replace(personController,
 				"// @POST /search",
 				"// @POST /search\n\t// @RouteLimit "+value, 1))
-			if err := routes.GenerateAll(backend); err == nil || !strings.Contains(err.Error(), "@RouteLimit") {
-				t.Fatalf("expected invalid limit rejection; got %v", err)
-			}
+			{
+		err := routes.GenerateAll(backend)
+		Expect(err).To(MatchError(ContainSubstring("@RouteLimit")))
+	}
 		}
 	}
 
@@ -312,12 +300,8 @@ var _ = Describe("GenerateAll", func() {
 	backend, output := testBackend(t)
 	writeTestFile(t, filepath.Join(backend, "go.mod"), "module example.org/internal-platform\n")
 	content := generatedRoutes(t, backend, output)
-	if !strings.Contains(content, "example.org/internal-platform/services/foundation/controller/protected") {
-		t.Fatal("generated controller import must use target module")
-	}
-	if strings.Contains(content, "grovehub/services/") {
-		t.Fatal("generated controller import contains the school module")
-	}
+	Expect(content).To(ContainSubstring("example.org/internal-platform/services/foundation/controller/protected"))
+	Expect(content).NotTo(ContainSubstring("grovehub/services/"))
 
 	})
 })
