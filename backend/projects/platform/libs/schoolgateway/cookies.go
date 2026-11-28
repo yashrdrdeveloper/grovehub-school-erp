@@ -1,9 +1,11 @@
 package schoolgateway
 
+import "grovehub/launcher/services/gateway/session"
+
 const (
-	AccessCookie  = "__Host-gh_access"
-	RefreshCookie = "__Secure-gh_refresh"
-	CSRFName      = "gh_csrf"
-	ResetCookie   = "__Secure-gh_reset"
-	SetupCookie   = "__Secure-gh_setup"
+ AccessCookie = session.AccessCookie
+ RefreshCookie = session.RefreshCookie
+ CSRFName = session.CSRFName
+ ResetCookie = session.ResetCookie
+ SetupCookie = session.SetupCookie
 )

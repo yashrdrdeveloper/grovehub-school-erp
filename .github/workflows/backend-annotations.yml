@@ -25,6 +25,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Inventory remaining School Gateway compatibility imports
+        shell: bash
+        run: |
+          git grep -lF 'grovehub/libs/schoolgateway' -- '*.go' || true
+          git grep -lF 'libs/schoolgateway' -- '*.md' '*.sh' '*.yml' 'Makefile' '**/Makefile' || true
       - name: Reject legacy annotation imports and adjacent unit tests
         shell: bash
         run: |
@@ -103,6 +108,9 @@ jobs:
           go list -overlay=.generated/overlay.json -f '{{.ImportPath}} {{join .Imports " "}} {{join .TestImports " "}} {{join .XTestImports " "}}' github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/... > "$RUNNER_TEMP/core-imports.txt"
           awk '{ for (i=2;i<=NF;i++) if ($i ~ /^grovehub\// || $i ~ /^github\.com\/yashrdrdeveloper\/grovehub-school-erp\/backend\/projects\//) { print $1 ": forbidden dependency " $i; bad=1 } } END { exit bad }' "$RUNNER_TEMP/core-imports.txt"
           wc -l "$RUNNER_TEMP/core-imports.txt"
+      - name: Test gateway security contracts and context operations
+        working-directory: backend/projects/platform
+        run: go test -race -coverpkg=./launcher/services/gateway/session,./launcher/services/gateway/operations/principal,./launcher/services/gateway/operations/tenant ./launcher/services/gateway/internal/tests/unit-test/session
       - name: Test canonical Platform workload policy
         working-directory: backend/projects/platform
         run: GOWORK=off go test -vet=off -overlay=.generated/overlay.json ./launcher/services/gateway

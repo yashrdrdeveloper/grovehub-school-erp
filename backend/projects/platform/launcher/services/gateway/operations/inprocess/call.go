@@ -6,7 +6,7 @@ import (
 	"context"
 	"errors"
 
-	schoolgateway "grovehub/libs/schoolgateway"
+	schoolgateway "grovehub/launcher/services/gateway/session"
 )
 
 // Authorizer decides whether a verified actor may invoke an internal operation.

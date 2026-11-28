@@ -7,7 +7,7 @@ import (
 	external "grovehub/launcher/services/gateway/operations/external"
 	inprocess "grovehub/launcher/services/gateway/operations/inprocess"
 	coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
-	schoolgateway "grovehub/libs/schoolgateway"
+	schoolgateway "grovehub/launcher/services/gateway/session"
 )
 
 type Gateway struct {

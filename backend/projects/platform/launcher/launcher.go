@@ -22,7 +22,7 @@ import (
 	"grovehub/launcher/middleware"
 	"grovehub/launcher/routing"
 	"grovehub/launcher/services/gateway"
- schoolgateway "grovehub/libs/schoolgateway"
+ schoolgateway "grovehub/launcher/services/gateway/session"
 	coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
 	headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
 	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
