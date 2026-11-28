@@ -20,8 +20,7 @@ func Discover(dir string)([]eventDefinition,string,error){
         if pkg==""{pkg=tree.Name.Name}else if pkg!=tree.Name.Name{return nil,"",fmt.Errorf("mixed packages")}
         for _,decl:=range tree.Decls {
             group,ok:=decl.(*ast.GenDecl);if !ok||group.Tok!=token.TYPE{continue}
-            for _,node:=range group.Specs {
-                spec,ok:=node.(*ast.TypeSpec);if !ok{continue}
+            for _, spec := range layout.TypeSpecs(group) {
                 doc:=spec.Doc;if doc==nil{doc=group.Doc}
                 def,found,err:=annotation(doc,spec.Name.Name);if err!=nil{return nil,"",err}
                 if found{defs=append(defs,def)}

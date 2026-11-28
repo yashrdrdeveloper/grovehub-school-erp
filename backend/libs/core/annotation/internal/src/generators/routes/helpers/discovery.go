@@ -67,11 +67,7 @@ func DiscoverWithTier(dir, servicePath string, configured, restrictedOnly bool) 
 				if !ok || gen.Tok != token.TYPE {
 					continue
 				}
-				for _, node := range gen.Specs {
-					typ, ok := node.(*ast.TypeSpec)
-					if !ok {
-						continue
-					}
+				for _, typ := range layout.TypeSpecs(gen) {
 					doc := typ.Doc
 					if doc == nil {
 						doc = gen.Doc

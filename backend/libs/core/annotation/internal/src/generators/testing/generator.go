@@ -88,11 +88,7 @@ func generateDir(owner, dir, rel string) error {
 		isTest := strings.HasSuffix(path, "_test.go")
 		for _, declaration := range f.Decls {
 			if group, ok := declaration.(*ast.GenDecl); ok && group.Tok == token.TYPE {
-				for _, item := range group.Specs {
-					spec, ok := item.(*ast.TypeSpec)
-					if !ok {
-						continue
-					}
+				for _, spec := range layout.TypeSpecs(group) {
 					doc := spec.Doc
 					if doc == nil {
 						doc = group.Doc

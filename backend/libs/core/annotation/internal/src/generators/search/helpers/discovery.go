@@ -91,9 +91,7 @@ func repositoryInterfaces(dir string) ([]*ast.File,error) {
 		for _, decl := range file.Decls {
 			gen, ok := decl.(*ast.GenDecl)
 			if !ok || gen.Tok != token.TYPE { continue }
-			for _, node := range gen.Specs {
-				t, ok := node.(*ast.TypeSpec)
-				if !ok { continue }
+			for _, t := range layout.TypeSpecs(gen) {
 				iface, ok := t.Type.(*ast.InterfaceType)
 				if !ok { continue }
 				for _, member := range iface.Methods.List {
@@ -114,9 +112,8 @@ func repositoryEntity(files []*ast.File, receiver string) (string, error) {
 		for _, decl := range file.Decls {
 			group, ok := decl.(*ast.GenDecl)
 			if !ok || group.Tok != token.TYPE { continue }
-			for _, node := range group.Specs {
-				typ, ok := node.(*ast.TypeSpec)
-				if !ok || typ.Name.Name != receiver { continue }
+			for _, typ := range layout.TypeSpecs(group) {
+				if typ.Name.Name != receiver { continue }
 				iface, ok := typ.Type.(*ast.InterfaceType)
 				if !ok { continue }
 				doc := typ.Doc
@@ -127,9 +124,6 @@ func repositoryEntity(files []*ast.File, receiver string) (string, error) {
 				for _, member := range iface.Methods.List {
 					if len(member.Names) != 1 { continue }
 					if member.Names[0].Name != "Search" { continue }
-					if hasDirective(member.Doc, "Searchable") {
-						return "", fmt.Errorf("move @Searchable from interface to %s.Search implementation", receiver)
-					}
 					if err := validateSignature(member.Type, entity); err != nil { return "", err }
 					return entity, nil
 				}

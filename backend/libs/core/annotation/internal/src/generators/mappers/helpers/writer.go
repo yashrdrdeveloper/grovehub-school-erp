@@ -3,8 +3,6 @@ package helpers
 import (
 	generatedoutput "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/output"
 	"fmt"
-	"path"
-	"strconv"
 	"strings"
 )
 
@@ -20,11 +18,9 @@ func Write(group mappingGroup,out string)error {
 	// Only retain imports used in generated method signatures/bodies.
 	b.WriteString("import (\n")
 	for _,imp:=range group.imports {
-		importPath,err:=strconv.Unquote(imp.Path.Value);if err!=nil{return err}
-		name:=path.Base(importPath)
-		if imp.Name!=nil{name=imp.Name.Name}
+		importPath,name:=imp.Path,imp.Name
 		if !strings.Contains(body.String(),name+"."){continue}
-		if imp.Name!=nil{fmt.Fprintf(&b,"%s ",name)}
+		if imp.Explicit{fmt.Fprintf(&b,"%s ",name)}
 		fmt.Fprintf(&b,"%q\n",importPath)
 	}
 	b.WriteString(")\n\n")

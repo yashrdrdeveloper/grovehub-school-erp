@@ -26,9 +26,7 @@ func DiscoverWithRenderer(dir,generatedRoutes string,render layout.Renderer)([]c
 		for _,decl := range file.Decls {
 			group,ok := decl.(*ast.GenDecl)
 			if !ok || group.Tok != token.TYPE { continue }
-			for _,node := range group.Specs {
-				spec,ok := node.(*ast.TypeSpec)
-				if !ok { continue }
+			for _, spec := range layout.TypeSpecs(group) {
 				iface,ok := spec.Type.(*ast.InterfaceType)
 				if !ok { continue }
 				doc := spec.Doc

@@ -1,10 +1,10 @@
 package helpers
 
 import (
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
 	"fmt"
 	"go/ast"
 	goparser "go/parser"
-	"go/token"
 	"reflect"
 	"slices"
 	"strconv"
@@ -15,14 +15,14 @@ import (
 )
 
 func CheckValidationTags(path string) error {
-	file, err := goparser.ParseFile(token.NewFileSet(), path, nil, goparser.ParseComments)
+	source, err := layout.ParseSource(path,goparser.ParseComments)
 	if err != nil {
 		return err
 	}
 
 	var validationError error
 
-	ast.Inspect(file, func(node ast.Node) bool {
+	ast.Inspect(source.Tree, func(node ast.Node) bool {
 		if validationError != nil {
 			return false
 		}
@@ -32,7 +32,7 @@ func CheckValidationTags(path string) error {
 			return true
 		}
 
-		validationError = validateFieldTags(path, field)
+		validationError = validateFieldTags(path, field, source.Tags[field])
 
 		return validationError == nil
 	})
@@ -40,11 +40,8 @@ func CheckValidationTags(path string) error {
 	return validationError
 }
 
-func validateFieldTags(path string, field *ast.Field) error {
-	tags, err := validationTags(field)
-	if err != nil {
-		return err
-	}
+func validateFieldTags(path string, field *ast.Field,raw string) error {
+	tags := strings.Split(reflect.StructTag(raw).Get("validate"),",")
 
 	for _, comment := range field.Doc.List {
 		directive, found, err := registry.ParseComment(comment.Text)
@@ -68,19 +65,6 @@ func validateFieldTags(path string, field *ast.Field) error {
 	}
 
 	return nil
-}
-
-func validationTags(field *ast.Field) ([]string, error) {
-	if field.Tag == nil {
-		return nil, nil
-	}
-
-	raw, err := strconv.Unquote(field.Tag.Value)
-	if err != nil {
-		return nil, err
-	}
-
-	return strings.Split(reflect.StructTag(raw).Get("validate"), ","), nil
 }
 
 func validationRule(path string, directive contract.Directive) (string, error) {

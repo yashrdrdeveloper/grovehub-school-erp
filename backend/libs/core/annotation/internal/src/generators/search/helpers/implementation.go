@@ -20,9 +20,7 @@ func ValidateImplementation(dir string, specs []spec) error {
 			switch node := decl.(type) {
 			case *ast.GenDecl:
 				if node.Tok != token.TYPE { continue }
-				for _, item := range node.Specs {
-					typeSpec, ok := item.(*ast.TypeSpec)
-					if !ok { continue }
+				for _, typeSpec := range layout.TypeSpecs(node) {
 					st, ok := typeSpec.Type.(*ast.StructType)
 					if !ok { continue }
 					for _, field := range st.Fields.List {

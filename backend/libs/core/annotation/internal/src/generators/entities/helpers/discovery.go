@@ -1,11 +1,11 @@
 package helpers
 
 import (
+	"go/token"
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
 	"fmt"
 	"go/ast"
 	"go/parser"
-	"go/token"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,19 +20,19 @@ func GenerateWithRenderer(sourceDir,outputDir string,render layout.Renderer)erro
 	if err!=nil{return err}
 	type parsedFile struct {
 		name string
-		fset *token.FileSet
-		tree *ast.File
+		source layout.ParsedSource
+		
 	}
 	var parsed []parsedFile
 	methods:=methodIndex{}
 	var packageName string
 	for _,file:=range files {
 		if strings.HasSuffix(file,"_test.go")||strings.HasSuffix(file,"_gombok.go")||strings.HasSuffix(file,".gen.go"){continue}
-		fset:=token.NewFileSet()
-		tree,err:=parser.ParseFile(fset,file,nil,parser.ParseComments)
+		source,err:=layout.ParseSource(file,parser.ParseComments)
 		if err!=nil{return err}
+		tree:=source.Tree
 		if packageName==""{packageName=tree.Name.Name}else if packageName!=tree.Name.Name{return fmt.Errorf("mixed packages in %s",sourceDir)}
-		parsed=append(parsed,parsedFile{name:file,fset:fset,tree:tree})
+		parsed=append(parsed,parsedFile{name:file,source:source})
 		for _,decl:=range tree.Decls {
 			fn,ok:=decl.(*ast.FuncDecl)
 			if !ok||fn.Recv==nil||len(fn.Recv.List)!=1{continue}
@@ -46,12 +46,11 @@ func GenerateWithRenderer(sourceDir,outputDir string,render layout.Renderer)erro
 
 	created:=map[string]bool{}
 	for _,file:=range parsed {
-		src:=sourceFile{name:filepath.Base(file.name),pkg:packageName,imports:file.tree.Imports}
-		for _,decl:=range file.tree.Decls {
+		src:=sourceFile{name:filepath.Base(file.name),pkg:packageName,imports:file.source.Imports}
+		for _,decl:=range file.source.Tree.Decls {
 			group,ok:=decl.(*ast.GenDecl)
 			if !ok||group.Tok!=token.TYPE{continue}
-			for _,node:=range group.Specs {
-				spec,ok:=node.(*ast.TypeSpec);if !ok{continue}
+			for _,spec:=range layout.TypeSpecs(group) {
 				typ,ok:=spec.Type.(*ast.StructType);if !ok{continue}
 				doc:=spec.Doc;if doc==nil{doc=group.Doc}
 				flags:=annotations(doc)
@@ -73,7 +72,7 @@ func GenerateWithRenderer(sourceDir,outputDir string,render layout.Renderer)erro
 				}
 				for _,field:=range typ.Fields.List {
 					if len(field.Names)==0{return fmt.Errorf("%s.%s: embedded fields are not supported",src.name,e.name)}
-					rendered,err:=render(file.fset,field.Type);if err!=nil{return err}
+					rendered,err:=render(file.source.Set,field.Type);if err!=nil{return err}
 					for _,name:=range field.Names{
 						if !name.IsExported(){return fmt.Errorf("%s.%s: unexported field %s cannot be generated",src.name,e.name,name.Name)}
 						e.fields=append(e.fields,fieldSpec{name:name.Name,typ:rendered})

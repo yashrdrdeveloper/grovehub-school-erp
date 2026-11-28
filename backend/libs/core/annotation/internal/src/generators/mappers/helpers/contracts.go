@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	"go/ast"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
 )
 
 type mappingMethod struct {
@@ -13,7 +13,7 @@ type fieldMapping struct {name, expression string}
 
 type mappingGroup struct {
 	receiver string
-	imports []*ast.ImportSpec
+	imports []layout.ImportBinding
 	methods []mappingMethod
 }
 

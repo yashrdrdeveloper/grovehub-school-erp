@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	"go/ast"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
 )
 
 type entitySpec struct {
@@ -16,7 +16,7 @@ type fieldSpec struct {
 
 type sourceFile struct {
 	name, pkg string
-	imports []*ast.ImportSpec
+	imports []layout.ImportBinding
 	entities []entitySpec
 }
 

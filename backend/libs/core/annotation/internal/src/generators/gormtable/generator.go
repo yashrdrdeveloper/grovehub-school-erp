@@ -2,6 +2,7 @@
 package gormtable
 
 import (
+"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
 	generatedoutput "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/output"
  "fmt"
  "go/ast"
@@ -40,8 +41,7 @@ func GenerateInto(dir, output string)error {
     if id,ok:=recv.(*ast.Ident);ok {existing[id.Name]=true}
    case *ast.GenDecl:
     if d.Tok!=token.TYPE {continue}
-    for _,spec:=range d.Specs {
-     ts,ok:=spec.(*ast.TypeSpec);if !ok {continue}
+    for _, ts := range layout.TypeSpecs(d) {
      if _,ok:=ts.Type.(*ast.StructType);!ok {continue}
      doc:=ts.Doc;if doc==nil {doc=d.Doc}
      if doc==nil {continue}

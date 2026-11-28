@@ -1,14 +1,12 @@
 package helpers
 
 import (
+	"go/token"
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
 	"fmt"
 	"go/ast"
 	"go/parser"
-	"go/token"
-	"path"
 	"reflect"
-	"strconv"
 	"strings"
 )
 
@@ -21,19 +19,14 @@ func Discover(dir string) ([]patchType, string, error) {
 	var pkg string
 	for _, filename := range names {
 		if strings.HasSuffix(filename, "_test.go") || strings.HasSuffix(filename, ".gen.go") { continue }
-		file, err := parser.ParseFile(token.NewFileSet(), filename, nil, parser.ParseComments)
-		if err != nil { return nil, "", err }
+		source,err:=layout.ParseSource(filename,parser.ParseComments)
+		if err!=nil{return nil,"",err}
+		file:=source.Tree
 		if pkg == "" { pkg = file.Name.Name } else if file.Name.Name != pkg {
 			return nil, "", fmt.Errorf("mixed packages in %s", dir)
 		}
 		aliases := make(map[string]string)
-		for _, imp := range file.Imports {
-			name, err := strconv.Unquote(imp.Path.Value)
-			if err != nil { return nil, "", err }
-			alias := path.Base(name)
-			if imp.Name != nil { alias = imp.Name.Name }
-			aliases[alias] = name
-		}
+		for _,imp:=range source.Imports{aliases[imp.Name]=imp.Path}
 		for _, decl := range file.Decls {
 			if fn, ok := decl.(*ast.FuncDecl); ok && fn.Recv != nil && fn.Name.Name == "MarshalJSON" {
 				recv := fn.Recv.List[0].Type
@@ -42,9 +35,7 @@ func Discover(dir string) ([]patchType, string, error) {
 			}
 			group, ok := decl.(*ast.GenDecl)
 			if !ok || group.Tok != token.TYPE { continue }
-			for _, node := range group.Specs {
-				spec, ok := node.(*ast.TypeSpec)
-				if !ok { continue }
+			for _,spec:=range layout.TypeSpecs(group){
 				doc := spec.Doc
 				if doc == nil { doc = group.Doc }
 				found, err := annotated(doc)
@@ -64,8 +55,7 @@ func Discover(dir string) ([]patchType, string, error) {
 						return nil, "", fmt.Errorf("%s.%s: must use %s.Patch[T]", result.name, field.Names[0].Name, patchImport)
 					}
 					if field.Tag == nil { return nil, "", fmt.Errorf("%s.%s: missing json tag", result.name, field.Names[0].Name) }
-					raw, err := strconv.Unquote(field.Tag.Value)
-					if err != nil { return nil, "", err }
+					raw:=source.Tags[field]
 					jsonName := strings.Split(reflect.StructTag(raw).Get("json"), ",")[0]
 					if jsonName == "" || jsonName == "-" || used[jsonName] {
 						return nil, "", fmt.Errorf("%s.%s: invalid or duplicate json field %q", result.name, field.Names[0].Name, jsonName)

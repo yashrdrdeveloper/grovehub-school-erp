@@ -44,8 +44,7 @@ func Expand(dir string) error {
   var edits []edit
   for _,decl:=range file.Decls {
    group,ok:=decl.(*ast.GenDecl);if !ok||group.Tok!=token.TYPE {continue}
-   for _,spec:=range group.Specs {
-    typ,ok:=spec.(*ast.TypeSpec);if !ok {continue}
+   for _, typ := range layout.TypeSpecs(group) {
     if _,ok:=typ.Type.(*ast.StructType);!ok {continue}
     doc:=typ.Doc;if doc==nil {doc=group.Doc};if doc==nil {continue}
     for _,comment:=range doc.List {
