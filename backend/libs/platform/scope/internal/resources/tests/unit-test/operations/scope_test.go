@@ -34,10 +34,10 @@ func TestTargets(t *testing.T) {
 
 func TestExecution(t *testing.T) {
 	target := scope.Target{Level: scope.Tenant, ProjectID: "target", TenantID: "tenant"}
-	workload := scope.Execution{Target: target, CallerProjectID: "caller", PrincipalType: scope.Workload, PrincipalID: "w", WorkloadID: "w"}
+	workload := scope.Execution{Capability: "audit.write", Target: target, CallerProjectID: "caller", PrincipalType: scope.Workload, PrincipalID: "w", WorkloadID: "w"}
 	user := workload
 	user.PrincipalType, user.PrincipalID, user.SessionID = scope.User, "u", "s"
-	system := scope.Execution{Target: scope.Target{Level: scope.Platform}, PrincipalType: scope.System, PrincipalID: "system"}
+	system := scope.Execution{Capability: "audit.write", Target: scope.Target{Level: scope.Platform}, PrincipalType: scope.System, PrincipalID: "system"}
 	for _, value := range []scope.Execution{workload, user, system} {
 		if err := scope.ValidateExecution(value); err != nil {
 			t.Fatal(err)
@@ -49,16 +49,17 @@ func TestExecution(t *testing.T) {
 		if actual, ok := scope.From(ctx); !ok || actual != value {
 			t.Fatal("context was not preserved")
 		}
-		if actual, err := scope.Require(ctx, value.Target); err != nil || actual != value {
+		if actual, err := scope.Require(ctx, value.Target, value.Capability); err != nil || actual != value {
 			t.Fatal("authorized target denied")
 		}
-		if _, err := scope.Require(ctx, scope.Target{}); !errors.Is(err, scope.ErrDenied) {
+		if _, err := scope.Require(ctx, scope.Target{}, value.Capability); !errors.Is(err, scope.ErrDenied) {
 			t.Fatal("invalid target allowed")
 		}
 	}
 	for _, change := range []func(*scope.Execution){
 		func(v *scope.Execution) { v.Target = scope.Target{} },
 		func(v *scope.Execution) { v.PrincipalID = "" },
+		func(v *scope.Execution) { v.Capability = "" },
 		func(v *scope.Execution) { v.CallerProjectID = " bad" },
 		func(v *scope.Execution) { v.PrincipalType = "unknown" },
 		func(v *scope.Execution) { v.WorkloadID = "other" },
@@ -78,17 +79,20 @@ func TestExecution(t *testing.T) {
 	if _, ok := scope.From(nil); ok {
 		t.Fatal("nil context accepted")
 	}
-	if _, err := scope.Require(context.Background(), target); !errors.Is(err, scope.ErrDenied) {
+	if _, err := scope.Require(context.Background(), target, "audit.write"); !errors.Is(err, scope.ErrDenied) {
 		t.Fatal("missing context accepted")
 	}
 	ctx, _ := scope.WithVerifiedExecution(context.Background(), workload)
+	if _, err := scope.Require(ctx, target, "audit.read"); !errors.Is(err, scope.ErrDenied) {
+		t.Fatal("different capability accepted")
+	}
 	for _, other := range []scope.Target{
 		{Level: scope.Tenant, ProjectID: "other", TenantID: "tenant"},
 		{Level: scope.Tenant, ProjectID: "target", TenantID: "other"},
 		{Level: scope.Project, ProjectID: "target"},
 		{Level: scope.Platform},
 	} {
-		if _, err := scope.Require(ctx, other); !errors.Is(err, scope.ErrDenied) {
+		if _, err := scope.Require(ctx, other, "audit.write"); !errors.Is(err, scope.ErrDenied) {
 			t.Fatalf("cross-scope access accepted: %+v", other)
 		}
 	}
@@ -96,7 +100,7 @@ func TestExecution(t *testing.T) {
 
 func TestGrants(t *testing.T) {
 	target := scope.Target{Level: scope.Tenant, ProjectID: "target", TenantID: "tenant"}
-	value := scope.Execution{Target: target, CallerProjectID: "caller", PrincipalType: scope.Workload, PrincipalID: "w", WorkloadID: "w"}
+	value := scope.Execution{Capability: "audit.write", Target: target, CallerProjectID: "caller", PrincipalType: scope.Workload, PrincipalID: "w", WorkloadID: "w"}
 	grant := scope.Grant{Target: target, CallerProjectID: "caller", WorkloadID: "w", Capability: "audit.write"}
 	if !scope.Allows(grant, value, "audit.write") {
 		t.Fatal("valid workload denied")
@@ -127,7 +131,7 @@ func TestGrants(t *testing.T) {
 	if !scope.Allows(grant, value, "audit.write") {
 		t.Fatal("allowed delegation denied")
 	}
-	system := scope.Execution{Target: scope.Target{Level: scope.Platform}, PrincipalType: scope.System, PrincipalID: "system"}
+	system := scope.Execution{Capability: "audit.write", Target: scope.Target{Level: scope.Platform}, PrincipalType: scope.System, PrincipalID: "system"}
 	if scope.Allows(grant, system, "audit.write") {
 		t.Fatal("system received workload grant")
 	}

@@ -47,8 +47,8 @@ func From(ctx context.Context) (Execution, bool) {
 
 // Require denies absent contexts and nonmatching targets. A project grant
 // never implicitly authorizes a tenant operation.
-func Require(ctx context.Context, target Target) (Execution, error) {
-	return operations.Require(ctx, target)
+func Require(ctx context.Context, target Target, capability string) (Execution, error) {
+	return operations.Require(ctx, target, capability)
 }
 
 // Allows checks one already verified grant; it never grants broader scope.

@@ -32,7 +32,7 @@ func ValidateTarget(target contracts.Target) error {
 }
 
 func ValidateExecution(value contracts.Execution) error {
-	if ValidateTarget(value.Target) != nil || !valid(value.PrincipalID) {
+	if ValidateTarget(value.Target) != nil || !valid(value.PrincipalID) || !valid(value.Capability) {
 		return contracts.ErrInvalid
 	}
 	if value.CallerProjectID != "" && !valid(value.CallerProjectID) {
@@ -70,9 +70,9 @@ func From(ctx context.Context) (contracts.Execution, bool) {
 	return value, ok
 }
 
-func Require(ctx context.Context, target contracts.Target) (contracts.Execution, error) {
+func Require(ctx context.Context, target contracts.Target, capability string) (contracts.Execution, error) {
 	value, ok := From(ctx)
-	if !ok || ValidateTarget(target) != nil || value.Target != target {
+	if !ok || ValidateTarget(target) != nil || value.Target != target || !valid(capability) || value.Capability != capability {
 		return contracts.Execution{}, contracts.ErrDenied
 	}
 	return value, nil
@@ -80,17 +80,13 @@ func Require(ctx context.Context, target contracts.Target) (contracts.Execution,
 
 func Allows(grant contracts.Grant, value contracts.Execution, capability string) bool {
 	if ValidateExecution(value) != nil || ValidateTarget(grant.Target) != nil ||
-		!valid(capability) || !valid(grant.WorkloadID) || grant.Capability != capability ||
+		!valid(capability) || !valid(grant.WorkloadID) || grant.Capability != capability || value.Capability != capability ||
 		grant.Target != value.Target || grant.CallerProjectID != value.CallerProjectID ||
 		grant.WorkloadID != value.WorkloadID {
 		return false
 	}
-	switch value.PrincipalType {
-	case contracts.User:
+	if value.PrincipalType == contracts.User {
 		return grant.AllowDelegation
-	case contracts.Workload:
-		return true
-	default:
-		return false
 	}
+	return value.PrincipalType == contracts.Workload
 }

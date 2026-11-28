@@ -35,6 +35,7 @@ type Target struct {
 // System and platform-owned workloads may have no caller project.
 type Execution struct {
 	Target Target
+	Capability string
 	CallerProjectID string
 	PrincipalType PrincipalType
 	PrincipalID string
