@@ -21,6 +21,14 @@ env:
   GOWORK: 'off'
 
 jobs:
+  annotation-import-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: List remaining annotation compatibility imports
+        shell: bash
+        run: |
+          git grep -nE 'libs/backend/core/annotation/(chain|composition|configuration|contract|dto|entity|event|external|http|mapping|messaging|middleware|observability|patterns|persistence|security|server|strategy|testing|utilities|validation|generation/(layout|parser))"' -- '*.go' || test "$?" -eq 1
   annotation-build:
     runs-on: ubuntu-latest
     timeout-minutes: 20
