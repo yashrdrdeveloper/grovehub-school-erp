@@ -20,7 +20,7 @@ backend/libs/
     └── docs/engineering/
 ```
 
-Create only folders with real responsibilities. Services import the public capability facade, **never** a library's private helpers, contracts, mappers or validators unless explicitly part of its API. Libraries must follow Go `internal` import restrictions.
+For core capabilities, use the standard internal/src categories operations, helpers, constants, contracts and config when needed. Do not create empty categories. Expose a single root facade. Create only folders with real responsibilities. Services import the public capability facade, **never** a library's private helpers, contracts, mappers or validators unless explicitly part of its API. Libraries must follow Go `internal` import restrictions.
 
 ## 2. Core capabilities
 
@@ -34,7 +34,7 @@ Infrastructure-owned shared contracts, such as broker-delivery DTOs, event-store
 
 ## 4. Avoiding false reuse
 
-- No `libs/backend/core/helpers/` bucket for unrelated routines.
+- Shared, cohesive, domain-agnostic conversions belong in `libs/backend/core/utils` and are exposed exclusively through `utils.go`. Do not use a public core/helpers bucket or move capability-local helpers into utils.
 - No service-specific event/error/DTO in core.
 - No generic repository replacing aggregate-specific SQL and lifecycle rules.
 - No external app importing another service's private/internal files.

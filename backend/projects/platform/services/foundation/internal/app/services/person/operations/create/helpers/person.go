@@ -4,7 +4,7 @@ package helpers
 import (
     "time"
 
-    corehelpers "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/helpers"
+    coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     "grovehub/services/foundation/internal/app/entity"
 )
@@ -14,7 +14,7 @@ func NewPerson(gid string, input persondto.CreatePerson, now time.Time) entity.P
 	return entity.Person{
 		GID: gid,
 		FirstName: input.FirstName,
-		MiddleName: corehelpers.OptionalString(input.MiddleName),
+		MiddleName: coreutils.OptionalString(input.MiddleName),
 		LastName: input.LastName,
 		Status: entity.PersonStatusActive,
 		Version: 1,

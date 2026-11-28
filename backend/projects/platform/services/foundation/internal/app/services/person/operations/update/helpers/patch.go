@@ -5,7 +5,7 @@ import (
     "context"
 
     coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-    corehelpers "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/helpers"
+    coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
     personerror "grovehub/services/foundation/internal/app/constants/error"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     "grovehub/services/foundation/internal/app/entity"
@@ -28,8 +28,8 @@ func ApplyPersonUpdate(ctx context.Context, person entity.Person, contacts []ent
 				updatedPerson.MiddleName = nil
 				changed = true
 			}
-		} else if *request.MiddleName.Value != corehelpers.NullableString(person.MiddleName) {
-			updatedPerson.MiddleName = corehelpers.OptionalString(*request.MiddleName.Value)
+		} else if *request.MiddleName.Value != coreutils.NullableString(person.MiddleName) {
+			updatedPerson.MiddleName = coreutils.OptionalString(*request.MiddleName.Value)
 			changed = true
 		}
 	}

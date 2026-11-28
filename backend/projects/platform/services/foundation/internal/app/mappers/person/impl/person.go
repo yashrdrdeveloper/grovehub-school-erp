@@ -1,7 +1,7 @@
 package impl
 
 import (
-	corehelpers "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/helpers"
+	coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
 	persondto "grovehub/services/foundation/internal/app/dto/person"
 	"grovehub/services/foundation/internal/app/entity"
 	foundationmappers "grovehub/services/foundation/internal/app/mappers/person"
@@ -44,7 +44,7 @@ func (mapper *PersonMapper) ToPersonResponse(person entity.Person, personContact
 		})
 	}
 
-	middleName := corehelpers.NullableString(person.MiddleName)
+	middleName := coreutils.NullableString(person.MiddleName)
 	return persondto.Person{
 		GID:        person.GID,
 		FirstName:  person.FirstName,
