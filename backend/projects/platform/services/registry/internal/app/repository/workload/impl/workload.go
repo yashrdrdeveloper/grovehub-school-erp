@@ -12,15 +12,15 @@ import (
 	"grovehub/services/registry/internal/app/repository/workload"
 )
 
-type repository struct {
+type WorkloadRepository struct {
 	db *gorm.DB
 }
 
-func New(db *gorm.DB) workload.Repository {
-	return &repository{db: db}
+func NewWorkloadRepository(db *gorm.DB) workload.WorkloadRepository {
+	return &WorkloadRepository{db: db}
 }
 
-func (r *repository) Find(ctx context.Context, workloadID string) (entity.Workload, error) {
+func (r *WorkloadRepository) Find(ctx context.Context, workloadID string) (entity.Workload, error) {
 	var result entity.Workload
 	err := coredatabase.TransactionDB(ctx, r.db).Where("workload_id = ?", workloadID).Take(&result).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {

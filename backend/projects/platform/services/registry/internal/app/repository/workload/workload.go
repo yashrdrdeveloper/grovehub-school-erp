@@ -7,6 +7,6 @@ import (
 )
 
 // @Repository entity=Workload
-type Repository interface {
+type WorkloadRepository interface {
 	Find(ctx context.Context, workloadID string) (entity.Workload, error)
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	coreerrors "grovehub/libs/core/errors"
-	"grovehub/libs/core/utils"
 	"grovehub/libs/platform/scope"
 	"grovehub/services/registry/internal/app/constants/capability"
 	definitions "grovehub/services/registry/internal/app/constants/error"
@@ -12,20 +11,21 @@ import (
 	repository "grovehub/services/registry/internal/app/repository/project"
 	"grovehub/services/registry/internal/app/services/helpers"
 	"grovehub/services/registry/internal/app/services/project"
+	validator "grovehub/services/registry/internal/app/validators/project"
 )
 
 // @Service
-type service struct {
-	repository repository.Repository
+type ProjectService struct {
+	repository repository.ProjectRepository
 }
 
-func New(repo repository.Repository) project.Service {
-	return &service{repository: repo}
+func NewProjectService(repo repository.ProjectRepository) project.ProjectService {
+	return &ProjectService{repository: repo}
 }
 
-func (s *service) Get(ctx context.Context, projectID string) (entity.Project, error) {
-	if utils.ValidateUUID(projectID) != nil {
-		return entity.Project{}, coreerrors.NewError(definitions.Invalid)
+func (s *ProjectService) Get(ctx context.Context, projectID string) (entity.Project, error) {
+	if err := validator.Validate(projectID); err != nil {
+		return entity.Project{}, err
 	}
 
 	target := scope.Target{Level: scope.Project, ProjectID: projectID}

@@ -12,15 +12,15 @@ import (
 	"grovehub/services/registry/internal/app/repository/project"
 )
 
-type repository struct {
+type ProjectRepository struct {
 	db *gorm.DB
 }
 
-func New(db *gorm.DB) project.Repository {
-	return &repository{db: db}
+func NewProjectRepository(db *gorm.DB) project.ProjectRepository {
+	return &ProjectRepository{db: db}
 }
 
-func (r *repository) Find(ctx context.Context, projectID string) (entity.Project, error) {
+func (r *ProjectRepository) Find(ctx context.Context, projectID string) (entity.Project, error) {
 	var result entity.Project
 	err := coredatabase.TransactionDB(ctx, r.db).Where("project_id = ?", projectID).Take(&result).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {

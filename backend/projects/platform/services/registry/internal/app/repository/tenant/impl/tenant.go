@@ -12,15 +12,15 @@ import (
 	"grovehub/services/registry/internal/app/repository/tenant"
 )
 
-type repository struct {
+type TenantRepository struct {
 	db *gorm.DB
 }
 
-func New(db *gorm.DB) tenant.Repository {
-	return &repository{db: db}
+func NewTenantRepository(db *gorm.DB) tenant.TenantRepository {
+	return &TenantRepository{db: db}
 }
 
-func (r *repository) Find(ctx context.Context, projectID, tenantID string) (entity.Tenant, error) {
+func (r *TenantRepository) Find(ctx context.Context, projectID, tenantID string) (entity.Tenant, error) {
 	var result entity.Tenant
 	err := coredatabase.TransactionDB(ctx, r.db).Where("project_id = ? AND tenant_id = ?", projectID, tenantID).Take(&result).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {

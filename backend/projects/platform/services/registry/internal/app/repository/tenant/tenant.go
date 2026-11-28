@@ -7,6 +7,6 @@ import (
 )
 
 // @Repository entity=Tenant
-type Repository interface {
+type TenantRepository interface {
 	Find(ctx context.Context, projectID, tenantID string) (entity.Tenant, error)
 }

@@ -6,6 +6,6 @@ import (
 	"grovehub/services/registry/internal/app/entity"
 )
 
-type Service interface {
+type TenantService interface {
 	Get(ctx context.Context, projectID, tenantID string) (entity.Tenant, error)
 }
