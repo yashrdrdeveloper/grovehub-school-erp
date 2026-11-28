@@ -11,6 +11,8 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
+	"grovehub/services/registry/internal/app/constants/status"
+	"grovehub/services/registry/internal/app/entity"
 	"grovehub/services/registry/internal/app/repository/constants"
 	projectrepo "grovehub/services/registry/internal/app/repository/project/impl"
 	tenantrepo "grovehub/services/registry/internal/app/repository/tenant/impl"
@@ -82,19 +84,21 @@ func TestRegistryConstraints(t *testing.T) {
 	reject(insertGrant, grant2, workload, p1, tenant, "TENANT", "audit.read")
 	exec(insertGrant, grant2, workload, p1, nil, "PROJECT", "audit.read")
 
-	var status string
+	var initialStatus string
 	var generation int64
-	if err := tx.QueryRowContext(ctx, "SELECT status, session_generation FROM registry.tenants WHERE tenant_id=$1", tenant).Scan(&status, &generation); err != nil || status != "DISABLED" || generation != 1 {
-		t.Fatalf("unsafe tenant defaults: %q %d %v", status, generation, err)
+	if err := tx.QueryRowContext(ctx, "SELECT status, session_generation FROM registry.tenants WHERE tenant_id=$1", tenant).Scan(&initialStatus, &generation); err != nil || initialStatus != "DISABLED" || generation != 1 {
+		t.Fatalf("unsafe tenant defaults: %q %d %v", initialStatus, generation, err)
 	}
 	// Run GORM repository reads inside the same transaction as the fixtures.
 	gormDB, err := gorm.Open(postgres.New(postgres.Config{Conn: tx}), &gorm.Config{
 		DisableAutomaticPing: true,
+		SkipDefaultTransaction: true,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	project, err := projectrepo.NewProjectRepository(gormDB).Find(ctx, p1)
+	projects := projectrepo.NewProjectRepository(gormDB)
+	project, err := projects.Find(ctx, p1)
 	if err != nil || project.ProjectID != p1 || project.Code != "synthetic-a" {
 		t.Fatalf("project lookup failed: %+v %v", project, err)
 	}
@@ -113,5 +117,55 @@ func TestRegistryConstraints(t *testing.T) {
 	if err != nil || caller.ProjectID == nil || *caller.ProjectID != p2 || caller.WorkloadID != workload {
 		t.Fatalf("workload lookup failed: %+v %v", caller, err)
 	}
-
+	// Lifecycle transitions must respect parent state and optimistic versions.
+	if _, err := tenants.ChangeStatus(ctx, p1, tenant, 1, status.Active); !errors.Is(err, constants.ErrConflict) {
+		t.Fatalf("tenant activated while parent disabled: %v", err)
+	}
+	activeProject, err := projects.ChangeStatus(ctx, p1, 1, status.Active)
+	if err != nil || activeProject.Status != status.Active || activeProject.Version != 2 {
+		t.Fatalf("project activation failed: %+v %v", activeProject, err)
+	}
+	activeTenant, err := tenants.ChangeStatus(ctx, p1, tenant, 1, status.Active)
+	if err != nil || activeTenant.Status != status.Active || activeTenant.Version != 2 || activeTenant.SessionGeneration != 1 {
+		t.Fatalf("tenant activation failed: %+v %v", activeTenant, err)
+	}
+	if _, err := tenants.ChangeStatus(ctx, p2, tenant, 2, status.Disabled); !errors.Is(err, constants.ErrConflict) {
+		t.Fatalf("cross-project mutation allowed: %v", err)
+	}
+	if _, err := tenants.ChangeStatus(ctx, p1, tenant, 1, status.Disabled); !errors.Is(err, constants.ErrConflict) {
+		t.Fatalf("stale version accepted: %v", err)
+	}
+	disabled, err := tenants.ChangeStatus(ctx, p1, tenant, 2, status.Disabled)
+	if err != nil || disabled.SessionGeneration != 2 || disabled.Version != 3 {
+		t.Fatalf("tenant disable failed: %+v %v", disabled, err)
+	}
+	if _, err := tenants.ChangeStatus(ctx, p1, tenant, 3, status.Disabled); !errors.Is(err, constants.ErrConflict) {
+		t.Fatalf("repeated disable changed generation: %v", err)
+	}
+	if _, err := tenants.ChangeStatus(ctx, p1, tenant, 3, status.Active); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := projects.ChangeStatus(ctx, p1, 2, status.Disabled); err != nil {
+		t.Fatal(err)
+	}
+	record, err = tenants.Find(ctx, p1, tenant)
+	if err != nil || record.SessionGeneration != 3 || record.Version != 5 {
+		t.Fatalf("project disable did not invalidate tenant generation: %+v %v", record, err)
+	}
+	const p3 = "10000000-0000-4000-8000-000000000003"
+	created, err := projects.Create(ctx, entity.Project{
+		ProjectID: p3, Code: "synthetic-c", Name: "Synthetic C",
+		Status: status.Disabled, Version: 1,
+	})
+	if err != nil || created.ProjectID != p3 || created.Status != status.Disabled {
+		t.Fatalf("project creation failed: %+v %v", created, err)
+	}
+	const t2 = "20000000-0000-4000-8000-000000000002"
+	createdTenant, err := tenants.Create(ctx, entity.Tenant{
+		TenantID: t2, ProjectID: p3, ExternalReference: "new-tenant",
+		Status: status.Disabled, Version: 1, SessionGeneration: 1,
+	})
+	if err != nil || createdTenant.TenantID != t2 || createdTenant.ProjectID != p3 {
+		t.Fatalf("tenant creation failed: %+v %v", createdTenant, err)
+	}
 }
