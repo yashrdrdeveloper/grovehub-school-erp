@@ -1,7 +1,14 @@
 package messaging
 
-import inframessaging "grovehub/services/infrastructure/client/messaging"
+import "context"
 
-// Broker-delivered message DTOs remain independent from persistence entities.
-type Message = inframessaging.Message
-type MessageHandler = inframessaging.Handler
+// Message is a transport-neutral broker delivery.
+type Message struct {
+	ID string
+	Payload []byte
+	Metadata map[string]string
+}
+
+type Handler func(context.Context, Message) error
+
+type MessageHandler = Handler

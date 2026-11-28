@@ -238,7 +238,7 @@ jobs:
       - name: Run available core, launcher and service unit suites
         working-directory: backend/projects/platform
         run: |
-          suites=(github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tests/unit-test/... ./launcher/internal/resources/tests/unit-test/... ./cmd/internal/resources/tests/unit-test/... ./services/identity/internal/tests/unit-test/... ./services/integration/internal/tests/unit-test/...)
+          suites=(github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tests/unit-test/... ./launcher/internal/resources/tests/unit-test/... ./services/audit/internal/tests/unit-test/... ./services/infrastructure/internal/tests/unit-test/... ./services/identity/internal/tests/unit-test/... ./services/integration/internal/tests/unit-test/...)
           # Some services intentionally have no unit-test directory.
           if [[ -d services/foundation/internal/tests/unit-test ]]; then
             suites+=(./services/foundation/internal/tests/unit-test/...)

@@ -5,36 +5,62 @@ package messaging
 import (
 	"context"
 
-	config "grovehub/services/infrastructure/internal/app/config/messaging"
-	"grovehub/services/infrastructure/client/messaging/contracts"
+	"grovehub/services/infrastructure/client/messaging/constants"
 	"grovehub/services/infrastructure/internal/app/client/messaging/helpers"
+	config "grovehub/services/infrastructure/internal/app/config/messaging"
+	dto "grovehub/services/infrastructure/internal/app/dto/messaging"
 )
 
-type Config = config.Messaging
+type (
+	Config = config.Messaging
+	Event = dto.Event
+	Message = dto.Message
+	Handler = dto.Handler
+	MessageHandler = dto.MessageHandler
+	PublishOptions = dto.PublishOptions
+)
 
 const ProviderNATS = config.ProviderNATS
 
-func DefaultMessaging() Config { return config.FromEnv() }
-func FromEnv() Config { return config.FromEnv() }
+var ErrReplayUnavailable = constants.ErrReplayUnavailable
 
-// Event is a transport-neutral pending outbox message.
-type Event = contracts.Event
+// @Client messagingClient
+type Client interface {
+	// @Proxy service.Publish
+	Publish(ctx context.Context, topic string, payload []byte, metadata map[string]string) error
+
+	// @Proxy service.PublishWithOptions
+	PublishWithOptions(ctx context.Context, topic string, payload []byte, metadata map[string]string, options dto.PublishOptions) error
+
+	// @Proxy service.Consume
+	Consume(ctx context.Context, topic string, handler dto.Handler) error
+
+	// @Proxy service.Health
+	Health(ctx context.Context) error
+}
+
+// MessagingClient preserves the existing public type name.
+type MessagingClient = Client
 
 type EventStore interface {
 	Enqueue(ctx context.Context, event Event) error
 }
 
-// Message represents a broker delivery independent of provider types.
-type Message = contracts.Message
-
-type Handler = contracts.Handler
-type MessageHandler = Handler
-
-// PublishOptions selects transactional outbox persistence for a message.
-type PublishOptions = contracts.PublishOptions
-
 type Publisher interface {
 	Publish(ctx context.Context, topic string, payload []byte, metadata map[string]string) error
+}
+
+// ReplaySource is an operator-only, read-only view of retained published events.
+type ReplaySource interface {
+	Published(ctx context.Context, eventID string) (Event, error)
+}
+
+func DefaultMessaging() Config {
+	return config.FromEnv()
+}
+
+func FromEnv() Config {
+	return config.FromEnv()
 }
 
 // WithConsumerGroup selects an independent logical subscriber.

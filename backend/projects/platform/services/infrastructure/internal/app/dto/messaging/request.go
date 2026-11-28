@@ -1,6 +1,13 @@
 package messaging
 
-import inframessaging "grovehub/services/infrastructure/client/messaging"
-
 // Event is a transport-neutral, immutable pending event DTO.
-type Event = inframessaging.Event
+type Event struct {
+	EventID string
+	Topic string
+	Payload []byte
+	Metadata map[string]string
+}
+
+type PublishOptions struct {
+	Persist bool
+}

@@ -7,12 +7,14 @@ import (
 	dto "grovehub/services/identity/internal/app/dto/account"
 )
 
+// Client-facing aliases expose the Identity-owned account DTOs.
 type (
 	Create = dto.Create
 	CreateResult = dto.CreateResult
 	Account = dto.Account
 	Update = dto.Update
 	GetRequest = dto.GetRequest
+	ByID = dto.ByID
 	SearchRequest = dto.SearchRequest
 )
 

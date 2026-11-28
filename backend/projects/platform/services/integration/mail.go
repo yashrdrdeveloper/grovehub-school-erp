@@ -5,6 +5,7 @@ import (
 	"gorm.io/gorm"
 	"grovehub/services/identity/client/invitation"
 	"grovehub/services/integration/client/mail"
+	clientimpl "grovehub/services/integration/internal/app/client/mail/impl"
 	controller "grovehub/services/integration/internal/app/controller/mail/restricted"
 	service "grovehub/services/integration/internal/app/services/mail/impl"
 )
@@ -12,7 +13,7 @@ import (
 // NewMailReconciliationClient composes Integration's read-only diagnostic
 // with the Identity-owned invitation projection, without starting workers.
 func NewMailReconciliationClient(db *gorm.DB, jobs invitation.DeliveryReader) mail.Client {
-	return service.New(db,jobs)
+	return clientimpl.NewMailClient(service.New(db, jobs))
 }
 
 func RegisterMailReconciliationHTTP(mux *http.ServeMux, client mail.Client) {

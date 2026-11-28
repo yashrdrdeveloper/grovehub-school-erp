@@ -1,7 +1,10 @@
 // Package authentication is Identity's public in-process verification contract.
 package authentication
 
-import schoolgateway "grovehub/libs/platform/session"
+import "grovehub/libs/platform/session"
 
-// Verifier checks opaque session secrets without exposing repositories.
-type Verifier = schoolgateway.AccessVerifier
+// Client checks opaque session secrets without exposing repositories.
+type Client = session.AccessVerifier
+
+// Verifier preserves the existing authentication boundary.
+type Verifier = Client

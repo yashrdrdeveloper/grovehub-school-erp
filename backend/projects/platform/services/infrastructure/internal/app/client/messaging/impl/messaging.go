@@ -1,16 +1,15 @@
 package impl
 
 import (
-    infrastructureclient "grovehub/services/infrastructure/client/messaging"
-    infrastructureservices "grovehub/services/infrastructure/internal/app/services/messaging"
+	client "grovehub/services/infrastructure/client/messaging"
+	"grovehub/services/infrastructure/internal/app/services/messaging"
 )
 
-// messagingClient preserves the public messaging facade.
-// Typed forwarding methods are generated from the client interface annotations.
+// messagingClient forwards typed operations to the transport service.
 type messagingClient struct {
-    service infrastructureservices.Service
+	service messaging.Service
 }
 
-func NewMessagingClient(service infrastructureservices.Service) infrastructureclient.MessagingClient {
-    return &messagingClient{service:service}
+func NewMessagingClient(service messaging.Service) client.Client {
+	return &messagingClient{service: service}
 }

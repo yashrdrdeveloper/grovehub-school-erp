@@ -8,6 +8,6 @@ import (
 
 // Matches Foundation's resource-based client/<resource>/impl layout.
 // Generated @Client proxy methods continue to live in the source overlay.
-func (b *builder) newClient(service messagingservice.Service) client.MessagingClient {
+func (b *builder) newClient(service messagingservice.Service) client.Client {
     return clientimpl.NewMessagingClient(service)
 }

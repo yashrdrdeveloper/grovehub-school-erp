@@ -7,12 +7,12 @@ import (
 )
 
 // integrationClient preserves explicit service boundaries.
-// Typed forwarders are generated under .generated/client/impl.
+// Typed forwarders are generated under .generated/internal/app/client/connection/impl.
 type integrationClient struct {
     connections integrationservices.ConnectionService
     providers providerservice.ProviderService
 }
 
-func NewClient(connections integrationservices.ConnectionService, providers providerservice.ProviderService) integrationclient.Client {
+func NewConnectionClient(connections integrationservices.ConnectionService, providers providerservice.ProviderService) integrationclient.Client {
     return &integrationClient{connections: connections, providers: providers}
 }

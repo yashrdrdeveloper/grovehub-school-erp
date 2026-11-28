@@ -3,44 +3,29 @@ package mail
 
 import (
 	"context"
-	"errors"
-	"time"
+
+	"grovehub/services/integration/client/mail/constants"
+	dto "grovehub/services/integration/internal/app/dto/mail"
 )
 
-const ReconciliationPath = "/integrations/restricted/mail/reconciliation/search"
-const ReconciliationScope = "integration.mail.reconciliation.read"
-const ReconciliationSubject = "platform-mail-reconciliation-reader"
+const (
+	ReconciliationPath = constants.ReconciliationPath
+	ReconciliationScope = constants.ReconciliationScope
+	ReconciliationSubject = constants.ReconciliationSubject
+)
 
-var ErrInvalidScope = errors.New("invalid reconciliation scope or cursor")
+var ErrInvalidScope = constants.ErrInvalidScope
 
-type SearchRequest struct {
-	TenantID string `json:"tenantId"`
-	After string `json:"after,omitempty"`
-	Limit int `json:"limit"`
-}
-
-// Row contains only operator diagnostic fields. ACCEPTED is provider
-// acceptance, not inbox delivery.
-type Row struct {
-	DeliveryID string `json:"deliveryId"`
-	AccountID *string `json:"accountId,omitempty"`
-	Purpose *string `json:"purpose,omitempty"`
-	IdentityState string `json:"identityState"`
-	IntegrationState string `json:"integrationState"`
-	SuppressionReason *string `json:"suppressionReason,omitempty"`
-	ReservedAt *time.Time `json:"reservedAt,omitempty"`
-	AcceptedAt *time.Time `json:"acceptedAt,omitempty"`
-	Disposition string `json:"disposition"`
-}
-
-type Report struct {
-	TenantID string `json:"tenantId"`
-	Rows []Row `json:"rows"`
-	NextCursor string `json:"nextCursor,omitempty"`
-}
+type (
+	SearchRequest = dto.SearchRequest
+	Row = dto.Row
+	Report = dto.Report
+)
 
 // Client is the typed read-only diagnostic boundary. Local callers must be
 // trusted operators; remote callers must use authenticated workload HTTP.
+// @Client mailClient
 type Client interface {
-	Search(context.Context, SearchRequest) (Report, error)
+	// @Proxy service.Search
+	Search(ctx context.Context, request dto.SearchRequest) (dto.Report, error)
 }

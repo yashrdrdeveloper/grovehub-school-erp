@@ -13,3 +13,5 @@ var (
     ErrInvalidMessage = errors.New("messaging event requires event ID, topic and payload")
     ErrInvalidStore = errors.New("messaging repository requires a database")
 )
+
+var ErrReplayUnavailable = errors.New("published event unavailable")

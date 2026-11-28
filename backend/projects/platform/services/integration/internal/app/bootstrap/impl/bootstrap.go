@@ -13,7 +13,7 @@ import (
     coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
     gmail "grovehub/services/integration/internal/app/externalService/mail/gmail"
 
-    integrationclient "grovehub/services/integration/client"
+    integrationclient "grovehub/services/integration/client/connection"
     integrationconfig "grovehub/services/integration/internal/app/config"
     bootstrap "grovehub/services/integration/internal/app/bootstrap"
     connectionpublic "grovehub/services/integration/internal/app/controller/connection/public"

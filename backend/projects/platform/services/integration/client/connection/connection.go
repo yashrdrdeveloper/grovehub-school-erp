@@ -1,13 +1,13 @@
 package connection
 
 import (
-    providerdto "grovehub/services/integration/internal/app/providers/dto"
-    providerresponse "grovehub/services/integration/internal/app/dto/provider"
 	"context"
 	"encoding/json"
 
+	"grovehub/services/integration/client/connection/constants"
 	connectiondto "grovehub/services/integration/internal/app/dto/connection"
-	
+	providerresponse "grovehub/services/integration/internal/app/dto/provider"
+	providerdto "grovehub/services/integration/internal/app/providers/dto"
 )
 
 // Client is the in-process service-to-service API, following Foundation's
@@ -45,4 +45,10 @@ type (
     ProviderDetails = providerresponse.ProviderDetails
     Action = providerdto.Action
     Descriptor = providerdto.Descriptor
+)
+
+// Existing aliases retain the delivery error identity for errors.Is callers.
+var (
+	ErrMailDeliveryUncertain = constants.ErrMailDeliveryUncertain
+	ErrMailDeliveryConflict = constants.ErrMailDeliveryConflict
 )

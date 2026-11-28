@@ -14,6 +14,7 @@ import (
 	"gorm.io/gorm"
 
 	"grovehub/libs/platform/command"
+	invitationclient "grovehub/services/identity/internal/app/client/invitation/impl"
 	invitationrepo "grovehub/services/identity/internal/app/repository/invitation/impl"
 	"grovehub/services/integration"
 	"grovehub/services/integration/client/mail"
@@ -29,7 +30,7 @@ type strategy struct {
 
 func New(db command.Database[*gorm.DB]) command.Command {
 	return NewWithSearch(db, func(ctx context.Context, db *gorm.DB, request mail.SearchRequest) (mail.Report, error) {
-		return integration.NewMailReconciliationClient(db, invitationrepo.NewDeliveryReader(db)).Search(ctx, request)
+		return integration.NewMailReconciliationClient(db, invitationclient.NewInvitationClient(invitationrepo.NewDeliveryReader(db))).Search(ctx, request)
 	})
 }
 

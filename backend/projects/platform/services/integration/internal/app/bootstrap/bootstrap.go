@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
-	integrationclient "grovehub/services/integration/client"
+	integrationclient "grovehub/services/integration/client/connection"
 )
 
 // Runtime owns Integration's controllers, typed client, verifier, and workers.

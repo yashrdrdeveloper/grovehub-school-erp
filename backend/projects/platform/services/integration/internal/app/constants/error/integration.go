@@ -20,3 +20,12 @@ var (
 	ErrUnknownProvider     = errors.New("unknown integration provider")
 	ErrDuplicateProvider   = errors.New("duplicate integration provider")
 )
+
+// ErrMailDeliveryUncertain means dispatch may have reached the provider.
+// The same delivery identifier must never be dispatched again automatically.
+var ErrMailDeliveryUncertain = errors.New("mail delivery outcome uncertain")
+
+// ErrMailDeliveryConflict indicates reuse of an identifier with different content.
+var ErrMailDeliveryConflict = errors.New("mail delivery identifier conflict")
+
+var ErrInvalidScope = errors.New("invalid reconciliation scope or cursor")
