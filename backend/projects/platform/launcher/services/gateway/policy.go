@@ -39,6 +39,7 @@ var restrictedPolicies = map[string]core.RoutePolicy{
 	"POST /identity/restricted/accounts/search": {Scope: "identity.accounts.search", RequireActor: true},
 	"GET /identity/restricted/accounts/roles": {Scope: "identity.accounts.roles", RequireActor: true},
 	"GET /identity/restricted/accounts/{accountId}": {Scope: "identity.accounts.get", RequireActor: true},
+	"GET /identity/restricted/accounts/{accountId}/person": {Scope: "identity.accounts.person", RequireActor: true},
 	"PATCH /identity/restricted/accounts/{accountId}": {Scope: "identity.accounts.update", RequireActor: true},
 	"PATCH /identity/restricted/accounts/{accountId}/suspend": {Scope: "identity.accounts.suspend", RequireActor: true},
 	"PATCH /identity/restricted/accounts/{accountId}/activate": {Scope: "identity.accounts.activate", RequireActor: true},

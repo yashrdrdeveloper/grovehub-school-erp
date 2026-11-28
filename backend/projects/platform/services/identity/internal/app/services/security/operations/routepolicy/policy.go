@@ -50,6 +50,7 @@ func Lookup(pattern string) (Rule, bool) {
 		"POST /identity/protected/accounts/search": {Permission: permission.AccountSearch},
 		"GET /identity/protected/accounts/roles": {Permission: permission.RoleView},
 		"GET /identity/protected/accounts/{accountId}": {Permission: permission.AccountView},
+		"GET /identity/protected/accounts/{accountId}/person": {Permission: permission.AccountView},
 		"PATCH /identity/protected/accounts/{accountId}": {Permission: permission.AccountUpdate, BlockedUntilCutover: true},
 		"PATCH /identity/protected/accounts/{accountId}/suspend": {Permission: permission.AccountSuspend, BlockedUntilCutover: true},
 		"PATCH /identity/protected/accounts/{accountId}/activate": {Permission: permission.AccountActivate, BlockedUntilCutover: true},

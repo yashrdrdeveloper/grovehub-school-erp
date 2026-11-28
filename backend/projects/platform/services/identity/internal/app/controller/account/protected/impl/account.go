@@ -15,11 +15,13 @@ import (
 	dto "grovehub/services/identity/internal/app/dto/account"
 	account "grovehub/services/identity/internal/app/services/account"
 	roles "grovehub/services/identity/internal/app/services/account/operations/roles"
+	profile "grovehub/services/identity/internal/app/services/account/operations/personprofile"
 )
 
 type Controller struct {
 	service account.Service
 	catalog *roles.Operation
+	profile *profile.Operation
 }
 
 var _ protected.AccountController = (*Controller)(nil)
@@ -30,6 +32,23 @@ func New(service account.Service, catalogs ...*roles.Operation) protected.Accoun
 		controller.catalog = catalogs[0]
 	}
 	return controller
+}
+
+func NewWithProfile(service account.Service, catalog *roles.Operation, operation *profile.Operation) protected.AccountController {
+ return &Controller{service:service,catalog:catalog,profile:operation}
+}
+
+func (controller *Controller) PersonProfile(writer http.ResponseWriter, request *http.Request) {
+ writer.Header().Set("Cache-Control","no-store")
+ rest.RunStruct(writer, request, rest.StructConfig[dto.GetRequest,dto.PersonProfile]{
+  InvalidParams: definitions.InvalidRequest,
+  Fallback: definitions.Internal,
+  Service: func(ctx context.Context,input dto.GetRequest)(rest.Result[dto.PersonProfile],error){
+   if controller.profile==nil{return rest.Result[dto.PersonProfile]{},helpers.Map(authorization.ErrUnavailable)}
+   result,err:=controller.profile.Execute(ctx,input.Params.AccountID)
+   return rest.OK(result),helpers.Map(err)
+  },
+ })
 }
 
 func (controller *Controller) Create(writer http.ResponseWriter, request *http.Request) {

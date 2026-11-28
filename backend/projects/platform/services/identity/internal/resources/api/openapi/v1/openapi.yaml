@@ -806,6 +806,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /identity/restricted/accounts/{accountId}/person:
+    get:
+      operationId: getAccountPersonProfile
+      summary: Read the basic person profile of an account in the authenticated tenant
+      security:
+        - workloadBearer: []
+          identityProof: []
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      responses:
+        '200':
+          description: Tenant-authorized basic person profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonProfileSuccess'
+        '400':
+          description: Invalid account ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Authorization denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Account or profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Profile dependency unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /identity/restricted/accounts/{accountId}:
     get:
       operationId: getAccount
@@ -1552,6 +1595,22 @@ components:
         success: {type: boolean, const: true}
         data:
           $ref: '#/components/schemas/SessionsData'
+    PersonProfile:
+      type: object
+      additionalProperties: false
+      required: [personGid, firstName, lastName]
+      properties:
+        personGid: {type: string, format: uuid}
+        firstName: {type: string}
+        middleName: {type: string}
+        lastName: {type: string}
+    PersonProfileSuccess:
+      type: object
+      required: [success, data]
+      properties:
+        success: {type: boolean, const: true}
+        data:
+          $ref: '#/components/schemas/PersonProfile'
     AccountSuccess:
       type: object
       required: [success, data]

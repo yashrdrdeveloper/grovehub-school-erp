@@ -27,6 +27,7 @@ var operations=[]Operation{
  {"POST","/identity/protected/accounts/search","identity.accounts.search"},
  {"GET","/identity/protected/accounts/roles","identity.accounts.roles"},
  {"GET","/identity/protected/accounts/{accountId}","identity.accounts.get"},
+ {"GET","/identity/protected/accounts/{accountId}/person","identity.accounts.person"},
  {"PATCH","/identity/protected/accounts/{accountId}","identity.accounts.update"},
  {"PATCH","/identity/protected/accounts/{accountId}/suspend","identity.accounts.suspend"},
  {"PATCH","/identity/protected/accounts/{accountId}/activate","identity.accounts.activate"},

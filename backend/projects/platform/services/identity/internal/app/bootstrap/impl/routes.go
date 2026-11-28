@@ -2,6 +2,7 @@ package impl
 
 import (
 	"net/http"
+	"grovehub/services/identity/internal/app/services/account/operations/personprofile"
 	capabilityprotected "grovehub/services/identity/internal/app/controller/capability/protected"
 	capabilityimpl "grovehub/services/identity/internal/app/controller/capability/protected/impl"
 	roleprotected "grovehub/services/identity/internal/app/controller/role/protected"
@@ -41,7 +42,7 @@ func (b *builder) newControllers(services serviceGraph) controllerGraph {
 		publicAuth:       authpublicimpl.New(services.auth, manager),
 		protectedAuth:    authprotectedimpl.New(services.auth, manager),
 		publicActivation: activationpublicimpl.New(services.account, manager),
-		protectedAccount: accountprotectedimpl.New(services.account, services.catalog),
+		protectedAccount: accountprotectedimpl.NewWithProfile(services.account, services.catalog, personprofile.New(services.account, b.foundation, services.policy)),
 		roleController: roleprotectedimpl.New(services.roles),
 		accountroleController: accountroleprotectedimpl.New(services.accountRoles),
 		approvalController: approvalprotectedimpl.NewWithMutations(services.approvalReads, services.approvalMutations, services.approvalExecutor),

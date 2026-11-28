@@ -42,6 +42,10 @@ func (c *Client) Business(ctx context.Context, scope, id string, input json.RawM
 		if len(bytes.TrimSpace(input)) != 0 { return Result{}, ErrInvalidBusinessRequest }
 		_, resp, err := c.api.DefaultAPI.GetAccount(ctx, id).Execute()
 		return sdkResult(resp, err)
+	case "identity.accounts.person":
+		if !ValidSessionID(id) || len(bytes.TrimSpace(input)) != 0 { return Result{}, ErrInvalidBusinessRequest }
+		_, resp, err := c.api.DefaultAPI.GetAccountPersonProfile(ctx,id).Execute()
+		return sdkResult(resp,err)
 	case "identity.accounts.update":
 		if !ValidSessionID(id) { return Result{}, ErrInvalidBusinessRequest }
 		body, err := decodeBusinessBody[sdk.UpdateAccountBody](input)

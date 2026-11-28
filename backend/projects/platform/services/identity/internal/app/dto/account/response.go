@@ -38,3 +38,12 @@ type SetupStatusResult struct {
 	Verified bool `json:"verified"`
 	ExpiresIn int `json:"expiresIn"`
 }
+
+// PersonProfile is intentionally limited to names and the authorized account's
+// person reference. Global contacts and other memberships are not exposed.
+type PersonProfile struct {
+ PersonGID string `json:"personGid"`
+ FirstName string `json:"firstName"`
+ MiddleName string `json:"middleName,omitempty"`
+ LastName string `json:"lastName"`
+}
