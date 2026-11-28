@@ -38,3 +38,5 @@ jobs:
           }
           EOF
           sudo nginx -t -c "$RUNNER_TEMP/nginx.conf"
+      - name: Verify live Nginx route isolation and browser proof forwarding
+        run: python3 backend/deployment/scripts/check-nginx-ingress.py

@@ -82,3 +82,18 @@ The Cross-project school lifecycle workflow provisions three isolated databases 
 ### Resource budget and database indexes
 Platform's business pool defaults to 20 open and 5 idle connections. An explicitly separate Audit pool defaults to 5 open and 2 idle. Override with PLATFORM_DB_MAX_OPEN, PLATFORM_DB_MAX_IDLE, AUDIT_DB_MAX_OPEN and AUDIT_DB_MAX_IDLE (1–100 open; 0–open idle). Invalid settings fail startup. School and Internal Tool retain 10 open and 2 idle each. Default total is 40 open connections when Audit shares Platform's pool or 45 when split; account for other clients, migrations, replication and PostgreSQL reserved connections. These are capacity limits, not measured throughput.
 Apply Identity 202611280003, Integration 202611280002 and Audit 202611280006 before rollout. Indexes target tenant/session reconciliation, pending invitations, live proof invalidation, mailbox lookup, OAuth state cleanup and filtered receipt order. Validate with EXPLAIN (ANALYZE, BUFFERS) on representative staging data; index creation takes write locks, so schedule migrations appropriately. Gmail watch renewal runs immediately and advances a bounded keyset page every five minutes, retrying failures on subsequent sweeps rather than starving later connections. Registry tenant IDs accept canonical non-nil UUIDs; Platform-created person and connection IDs remain UUIDv7.
+
+## Release acceptance checklist
+
+Before promoting this development branch, require green workflows for the same commit: Cross-project school lifecycle, Backend annotation build, Independent project backends, Shared library release candidates, Deployment configuration, and both frontend builds (run manually when path filtering omits them). Verify generated API clients correspond to that commit. The School ingress forwards Authorization only on the four recovery/invitation validation/exchange paths; all other browser API routes strip it and all routes strip X-GH-Identity-Proof. CI tests the actual Nginx routing with a disposable upstream.
+
+On the target host, complete these operator-owned gates:
+
+- Verify database role isolation, PostgreSQL connection budget, available disk, NATS storage limits and backup retention. Restore a backup into an isolated database and record recovery duration before destructive migrations.
+- Prepare all five verified artifacts, apply the owning database migrations, register canonical School IDs and bootstrap authorized operators. Provision independent workload keys, TLS and private ingress; do not reuse development keys.
+- Verify private readiness of each application and the audit-delivery health of School and Internal Tool. Exercise login, recovery, approved lifecycle operations and receipt search over the configured HTTPS ingress using disposable accounts. Verify disabled tenants and unauthorized scopes cannot access restricted routes.
+- Measure query plans and p50/p95 latency under representative school traffic, connection utilization and worker lag. A school-size estimate or successful build is not a load-test result.
+- Validate provider OAuth and email delivery with a controlled test mailbox. The CI lifecycle suite deliberately does not call external providers or exercise production NATS.
+- Record trusted artifact digests, migration versions, rollback compatibility and operator sign-off. Do not activate production if any applicable gate fails.
+
+No production host, live database, OAuth account or backup destination was provisioned by repository changes. Publishing independent libraries and splitting repositories, if desired, require a separate release decision; the existing monorepo packages independently deployable applications.
