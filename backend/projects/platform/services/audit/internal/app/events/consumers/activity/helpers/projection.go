@@ -5,100 +5,46 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
-	"strings"
 
 	"github.com/google/uuid"
-	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
+
+	"grovehub/services/audit/internal/app/constants/events"
+	dto "grovehub/services/audit/internal/app/dto/events"
 	"grovehub/services/audit/internal/app/entity"
+	validator "grovehub/services/audit/internal/app/validators/events"
+	validationhelpers "grovehub/services/audit/internal/app/validators/events/helpers"
 )
 
-var ErrInvalidEvent = errors.New("invalid or unscoped audit event")
+var ErrInvalidEvent = validator.ErrInvalidEvent
 var namespace = uuid.MustParse("bca86488-355c-4c40-a2cf-41121835ed83")
 
-// A narrow schema, not a recursive blacklist. Unknown fields (including
-// approval payload hashes, emails, credentials and free-form provider data)
-// are never persisted. Existing role descriptions are deliberately omitted.
-type snapshot struct {
-	ID string `json:"id,omitempty"`
-	AccountID string `json:"accountId,omitempty"`
-	PersonGID string `json:"personGid,omitempty"`
-	TenantID string `json:"tenantId,omitempty"`
-	Version int64 `json:"version"`
-	Status string `json:"status,omitempty"`
-	Username *string `json:"username,omitempty"`
-	CurrentStep int `json:"currentStep,omitempty"`
-	StepCount int `json:"stepCount,omitempty"`
-	Role *roleSnapshot `json:"role,omitempty"`
-	Account *accountSnapshot `json:"account,omitempty"`
-}
-
-type roleSnapshot struct {
-	Name string `json:"name"`
-	Status string `json:"status"`
-	Personas []string `json:"personas"`
-	Permissions []string `json:"permissionCodes"`
-}
-
-type accountSnapshot struct {
-	Status string `json:"status"`
-	PrimaryRoleID string `json:"primaryRoleId"`
-	SecondaryRoleIDs []string `json:"secondaryRoleIds"`
-}
-
-type payload struct {
-	TenantID string `json:"tenantId"`
-	ActorID string `json:"actorId"`
-	Operation string `json:"operation"`
-	RequestID string `json:"requestId"`
-	RequestType string `json:"requestType"`
-	Old *snapshot `json:"old"`
-	New *snapshot `json:"new"`
-}
-
-func validID(value string) bool {
-	id, err := uuid.Parse(value)
-	return err == nil && id != uuid.Nil && id.String() == value
-}
-
 func optionalID(value string) *string {
-	if !validID(value) { return nil }
+	if !validationhelpers.ValidID(value) { return nil }
 	return &value
 }
 
 func Project(ctx context.Context, expectedType string, raw []byte) (entity.Activity, error) {
-	if expectedType == "audit.activity.occurred.v1" { return projectOccurrence(raw) }
-	if expectedType == "identity.invitation.delivery.changed.v1" { return projectInvitation(ctx, raw) }
-	var event coreevents.Envelope[payload]
-	if len(raw) > 512*1024 || json.Unmarshal(raw, &event) != nil || event.EventType != expectedType || event.Version != 1 || !validID(event.EventID) || !validID(event.AggregateID) || event.OccurredAt.IsZero() || event.Data.New == nil || event.Data.New.Version < 1 {
-		return entity.Activity{}, ErrInvalidEvent
+	if expectedType == events.ActivityOccurred {
+		return projectOccurrence(raw)
 	}
+	if expectedType == events.InvitationDelivery {
+		return projectInvitation(ctx, raw)
+	}
+
+	event, tenant, assetType, err := validator.Identity(expectedType, raw)
+	if err != nil {
+		return entity.Activity{}, err
+	}
+
 	data := event.Data
-	tenant := data.TenantID
-	if tenant == "" { tenant = data.New.TenantID }
-	if tenant == "" || strings.TrimSpace(tenant) != tenant || (data.New.TenantID != "" && data.New.TenantID != tenant) || (data.Old != nil && data.Old.TenantID != "" && data.Old.TenantID != tenant) || data.Operation == "" || len(data.Operation) > 80 {
-		return entity.Activity{}, ErrInvalidEvent
+	for _, value := range []*dto.Snapshot{data.Old, data.New} {
+		if value != nil {
+			value.TenantID = ""
+		}
 	}
-	assetType := ""
-	switch expectedType {
-	case "identity.account.changed.v1", "identity.account.registration.changed.v1", "identity.account.metadata.changed.v1", "identity.account.authority.changed.v1":
-		assetType = "ACCOUNT"
-	case "identity.role.changed.v1", "identity.role.metadata.changed.v1":
-		assetType = "ROLE"
-	case "identity.approval.changed.v1":
-		assetType = "APPROVAL"
-	default:
-		return entity.Activity{}, ErrInvalidEvent
-	}
-	for _, value := range []*snapshot{data.Old,data.New} {
-		if value == nil { continue }
-		if (value.ID != "" && value.ID != event.AggregateID) || (value.AccountID != "" && value.AccountID != event.AggregateID) { return entity.Activity{}, ErrInvalidEvent }
-		value.TenantID = ""
-	}
-	if assetType == "APPROVAL" && data.RequestID != event.AggregateID { return entity.Activity{}, ErrInvalidEvent }
 	projected, err := json.Marshal(struct {
-		Old *snapshot `json:"old"`
-		New *snapshot `json:"new"`
+		Old *dto.Snapshot `json:"old"`
+		New *dto.Snapshot `json:"new"`
 		RequestID *string `json:"requestId,omitempty"`
 		RequestType string `json:"requestType,omitempty"`
 	}{data.Old, data.New, optionalID(data.RequestID), data.RequestType})
