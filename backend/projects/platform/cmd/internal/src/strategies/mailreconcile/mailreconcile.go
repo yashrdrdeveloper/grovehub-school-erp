@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"gorm.io/gorm"
+
 	"grovehub/cmd/internal/src/command"
 	"grovehub/cmd/internal/src/operations/database"
 	"grovehub/services/identity"
@@ -18,17 +20,30 @@ import (
 	"grovehub/services/integration/client/mail"
 )
 
+type SearchOperation func(context.Context, *gorm.DB, mail.SearchRequest) (mail.Report, error)
+
 // @Strategy
 type strategy struct {
 	database database.Database
+	search   SearchOperation
 }
 
 func New(db database.Database) command.Command {
-	return &strategy{database: db}
+	return NewWithSearch(db, func(ctx context.Context, db *gorm.DB, request mail.SearchRequest) (mail.Report, error) {
+		return integration.NewMailReconciliationClient(db, identity.NewInvitationDeliveryReader(db)).Search(ctx, request)
+	})
+}
+
+func NewWithSearch(db database.Database, search SearchOperation) command.Command {
+	return &strategy{database: db, search: search}
 }
 
 func (s *strategy) Run(args []string, output, diagnostics io.Writer) int {
 	if err := s.run(args, output, diagnostics); err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			return 0
+		}
+
 		_, _ = fmt.Fprintln(diagnostics, "identity-mail-reconcile:", err)
 		return 1
 	}
@@ -62,15 +77,15 @@ func (s *strategy) run(args []string, output, diagnostics io.Writer) error {
 	}
 	defer closeDB()
 
-	var current string
-	if err := db.WithContext(ctx).Raw("SELECT current_database()").Scan(&current).Error; err != nil {
+	current, err := s.database.CurrentName(ctx, db)
+	if err != nil {
 		return errors.New("could not verify database name")
 	}
 	if current != *database {
 		return errors.New("configured database does not match --database")
 	}
 
-	report, err := integration.NewMailReconciliationClient(db, identity.NewInvitationDeliveryReader(db)).Search(ctx, mail.SearchRequest{
+	report, err := s.search(ctx, db, mail.SearchRequest{
 		TenantID: *tenant, After: *after, Limit: *limit,
 	})
 	if err != nil {

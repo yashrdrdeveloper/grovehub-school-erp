@@ -11,23 +11,38 @@ import (
 	"strings"
 	"time"
 
+	"gorm.io/gorm"
+
 	"grovehub/cmd/internal/src/command"
 	"grovehub/cmd/internal/src/operations/database"
 	"grovehub/services/audit"
 	"grovehub/services/infrastructure"
 )
 
+type ReplayOperation func(context.Context, *gorm.DB, *gorm.DB, audit.ReplayRequest) (audit.ReplayResult, error)
+
 // @Strategy
 type strategy struct {
 	database database.Database
+	replay   ReplayOperation
 }
 
 func New(db database.Database) command.Command {
-	return &strategy{database: db}
+	return NewWithReplay(db, func(ctx context.Context, auditDB, businessDB *gorm.DB, request audit.ReplayRequest) (audit.ReplayResult, error) {
+		return audit.Replay(ctx, auditDB, infrastructure.NewReplaySource(businessDB), request)
+	})
+}
+
+func NewWithReplay(db database.Database, replay ReplayOperation) command.Command {
+	return &strategy{database: db, replay: replay}
 }
 
 func (s *strategy) Run(args []string, output, diagnostics io.Writer) int {
 	if err := s.run(args, output, diagnostics); err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			return 0
+		}
+
 		_, _ = fmt.Fprintln(diagnostics, "audit-replay:", err)
 		return 1
 	}
@@ -66,8 +81,8 @@ func (s *strategy) run(args []string, output, diagnostics io.Writer) error {
 	}
 	defer closeDB()
 
-	var current string
-	if err := db.WithContext(ctx).Raw("SELECT current_database()").Scan(&current).Error; err != nil || current != *database {
+	current, err := s.database.CurrentName(ctx, db)
+	if err != nil || current != *database {
 		return errors.New("configured business database does not match --database")
 	}
 
@@ -77,11 +92,12 @@ func (s *strategy) run(args []string, output, diagnostics io.Writer) error {
 	}
 	defer closeAudit()
 
-	if err := auditDB.WithContext(ctx).Raw("SELECT current_database()").Scan(&current).Error; err != nil || current != *auditDatabase {
+	current, err = s.database.CurrentName(ctx, auditDB)
+	if err != nil || current != *auditDatabase {
 		return errors.New("configured Audit database does not match --audit-database")
 	}
 
-	result, err := audit.Replay(ctx, auditDB, infrastructure.NewReplaySource(db), audit.ReplayRequest{
+	result, err := s.replay(ctx, auditDB, db, audit.ReplayRequest{
 		TenantID: *tenant, EventID: *event, OperatorLabel: *operator, Apply: *apply,
 	})
 	if err != nil {

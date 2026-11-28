@@ -29,7 +29,6 @@ jobs:
           cache-dependency-path: |
             backend/projects/platform/go.sum
             backend/libs/core/go.sum
-            backend/libs/platform/go.sum
       - name: Enforce single maintained entry point
         run: |
           test -f backend/projects/platform/cmd/main.go

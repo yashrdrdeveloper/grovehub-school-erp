@@ -9,22 +9,35 @@ import (
 	"io"
 	"time"
 
+	"gorm.io/gorm"
+
 	"grovehub/cmd/internal/src/command"
 	"grovehub/cmd/internal/src/operations/database"
 	"grovehub/services/audit"
 )
 
+type Inspector func(context.Context, *gorm.DB, string) ([]audit.StorageTable, error)
+
 // @Strategy
 type strategy struct {
 	database database.Database
+	inspect  Inspector
 }
 
 func New(db database.Database) command.Command {
-	return &strategy{database: db}
+	return NewWithInspector(db, audit.InspectStorage)
+}
+
+func NewWithInspector(db database.Database, inspect Inspector) command.Command {
+	return &strategy{database: db, inspect: inspect}
 }
 
 func (s *strategy) Run(args []string, output, diagnostics io.Writer) int {
 	if err := s.run(args, output, diagnostics); err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			return 0
+		}
+
 		_, _ = fmt.Fprintln(diagnostics, err)
 		return 1
 	}
@@ -52,7 +65,7 @@ func (s *strategy) run(args []string, output, diagnostics io.Writer) error {
 	}
 	defer closeDB()
 
-	tables, err := audit.InspectStorage(ctx, db, *database)
+	tables, err := s.inspect(ctx, db, *database)
 	if err != nil {
 		return errors.New("Audit storage inspection failed; verify database name, schema and permissions")
 	}

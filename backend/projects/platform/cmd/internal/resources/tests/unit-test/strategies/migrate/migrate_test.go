@@ -16,7 +16,7 @@ import (
 
 type database struct {
 	businessError, auditError bool
-	opened, closed []string
+	opened, closed            []string
 }
 
 func (d *database) Business(context.Context) (*gorm.DB, func(), error) {
@@ -41,14 +41,18 @@ func (d *database) Audit(_ context.Context, shared *gorm.DB) (*gorm.DB, func(), 
 	return &gorm.DB{}, func() { d.closed = append(d.closed, name) }, nil
 }
 
+func (d *database) CurrentName(context.Context, *gorm.DB) (string, error) {
+	panic("migration must not use operator name verification")
+}
+
 func TestMigration(t *testing.T) {
 	for _, tc := range []struct {
-		name string
-		args []string
+		name                      string
+		args                      []string
 		businessError, auditError bool
-		fail string
-		code int
-		ran, closed []string
+		fail                      string
+		code                      int
+		ran, closed               []string
 	}{
 		{name: "missing", code: 2},
 		{name: "invalid", args: []string{"bad"}, code: 2},
