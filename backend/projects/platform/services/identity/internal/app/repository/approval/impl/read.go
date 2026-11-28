@@ -6,7 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	dto "grovehub/services/identity/internal/app/dto/approval"
 	"grovehub/services/identity/internal/app/entity"
@@ -29,7 +29,7 @@ func (reader *Reader) scoped(ctx context.Context, visibility approval.Visibility
 	if reader.db == nil || visibility.TenantID == "" || visibility.AccountID == "" || visibility.Now.IsZero() {
 		return nil, approval.ErrInvalid
 	}
-	db := transaction.Database(ctx, reader.db).Table("identity.approval_requests AS r").Where("r.tenant_id = ?", visibility.TenantID)
+	db := coredatabase.TransactionDB(ctx, reader.db).Table("identity.approval_requests AS r").Where("r.tenant_id = ?", visibility.TenantID)
 	if !visibility.Inbox {
 		return db.Where("r.requester_id = ?", visibility.AccountID), nil
 	}

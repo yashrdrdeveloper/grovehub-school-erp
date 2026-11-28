@@ -6,7 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/repository/authority"
@@ -28,7 +28,7 @@ func (reader *AdministratorReader) Count(ctx context.Context, tenantID string) (
 		return 0, authority.ErrScopeRequired
 	}
 	if reader.db == nil {
-		return 0, transaction.ErrMissingDatabase
+		return 0, coredatabase.ErrMissingDatabase
 	}
 	required := permission.AdministratorRecoveryCapabilities()
 	codes := make([]string, 0, len(required))
@@ -40,7 +40,7 @@ func (reader *AdministratorReader) Count(ctx context.Context, tenantID string) (
 		codes = append(codes, string(code))
 	}
 	var count int64
-	err := transaction.Database(ctx, reader.db).Raw(constants.CountAdministrators, tenantID, feature.RoleManagement, codes, len(codes)).Scan(&count).Error
+	err := coredatabase.TransactionDB(ctx, reader.db).Raw(constants.CountAdministrators, tenantID, feature.RoleManagement, codes, len(codes)).Scan(&count).Error
 	if err != nil {
 		return 0, err
 	}

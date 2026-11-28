@@ -5,7 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/repository/authority"
 	"grovehub/services/identity/internal/app/repository/authority/constants"
 )
@@ -26,11 +26,11 @@ func (guard *GlobalGuard) Run(ctx context.Context, operation func(context.Contex
 		return authority.ErrScopeRequired
 	}
 	// Never upgrade a shared global lock held by a tenant transaction.
-	if transaction.Active(ctx) {
+	if coredatabase.TransactionActive(ctx) {
 		return authority.ErrLockOrder
 	}
-	return transaction.Run(ctx, guard.db, func(tx context.Context) error {
-		db := transaction.Database(tx, guard.db)
+	return coredatabase.RunTransaction(ctx, guard.db, func(tx context.Context) error {
+		db := coredatabase.TransactionDB(tx, guard.db)
 		if err := db.Exec(constants.LockGlobalExclusive).Error; err != nil {
 			return err
 		}
@@ -55,7 +55,7 @@ func (guard *GlobalGuard) Run(ctx context.Context, operation func(context.Contex
 }
 
 func (guard *GlobalGuard) protectedTenants(ctx context.Context) ([]string, error) {
-	db := transaction.Database(ctx, guard.db)
+	db := coredatabase.TransactionDB(ctx, guard.db)
 	var tenants []string
 	if err := db.Raw(constants.Tenants).Scan(&tenants).Error; err != nil {
 		return nil, err

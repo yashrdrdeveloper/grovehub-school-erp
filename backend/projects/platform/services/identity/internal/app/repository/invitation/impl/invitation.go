@@ -8,7 +8,7 @@ import (
 
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/entity"
 	invitationrepo "grovehub/services/identity/internal/app/repository/invitation"
 )
@@ -25,16 +25,16 @@ func New(db *gorm.DB, audit auditclient.Client) invitationrepo.Repository {
 }
 
 func (repository *Repository) Queue(ctx context.Context, invitation entity.Invitation) error {
-	return transaction.Run(ctx,repository.db,func(tx context.Context) error {
-		if err:=transaction.Database(tx,repository.db).Create(&invitation).Error;err!=nil { return err }
+	return coredatabase.RunTransaction(ctx,repository.db,func(tx context.Context) error {
+		if err:=coredatabase.TransactionDB(tx,repository.db).Create(&invitation).Error;err!=nil { return err }
 		return repository.record(tx,invitation,"QUEUED","",nil,invitation.CreatedAt)
 	})
 }
 
 func (repository *Repository) Claim(ctx context.Context, now time.Time) (entity.Invitation, bool, error) {
 	var invitation entity.Invitation
-	err := transaction.Run(ctx,repository.db,func(tx context.Context) error {
-	result := transaction.Database(tx, repository.db).Raw(`
+	err := coredatabase.RunTransaction(ctx,repository.db,func(tx context.Context) error {
+	result := coredatabase.TransactionDB(tx, repository.db).Raw(`
 		UPDATE identity.invitations
 		SET lease_until = ?, attempts = attempts + 1
 		WHERE id = (
@@ -70,11 +70,11 @@ func (repository *Repository) Retry(ctx context.Context, invitationID string, ne
 
 // LockClaim fences a worker whose lease expired while waiting for tenant authority.
 func (repository *Repository) LockClaim(ctx context.Context, invitation entity.Invitation, now time.Time) (bool, error) {
-	if !transaction.Active(ctx) {
-		return false, transaction.ErrMissingDatabase
+	if !coredatabase.TransactionActive(ctx) {
+		return false, coredatabase.ErrMissingDatabase
 	}
 	var row struct { ID string }
-	result := transaction.Database(ctx, repository.db).Raw(`
+	result := coredatabase.TransactionDB(ctx, repository.db).Raw(`
 		SELECT id FROM identity.invitations
 		WHERE id = ? AND attempts = ? AND lease_until > ?
 		  AND sent_at IS NULL AND suppressed_at IS NULL
@@ -90,9 +90,9 @@ func (repository *Repository) Suppress(ctx context.Context, invitation entity.In
 }
 
 func (repository *Repository) transition(ctx context.Context,id string,attempt int,operation string,reason string,next *time.Time,at time.Time,statement string,args ...any) error {
-	return transaction.Run(ctx,repository.db,func(tx context.Context) error {
+	return coredatabase.RunTransaction(ctx,repository.db,func(tx context.Context) error {
 		var entry entity.Invitation
-		result:=transaction.Database(tx,repository.db).Raw(statement,args...).Scan(&entry)
+		result:=coredatabase.TransactionDB(tx,repository.db).Raw(statement,args...).Scan(&entry)
 		if result.Error!=nil { return result.Error }
 		if entry.ID=="" { return errors.New("invitation transition lost ownership") }
 		if entry.ID!=id || (attempt>0 && entry.Attempts!=attempt) { return errors.New("invitation transition identity mismatch") }

@@ -6,7 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	kind "grovehub/services/identity/internal/app/constants/approval"
 	"grovehub/services/identity/internal/app/entity"
 	producer "grovehub/services/identity/internal/app/events/producers/approval"
@@ -27,7 +27,7 @@ func New(db *gorm.DB, recorder producer.Recorder) approval.Repository {
 }
 
 func (repository *Repository) dbFor(ctx context.Context) *gorm.DB {
-	return transaction.Database(ctx, repository.db)
+	return coredatabase.TransactionDB(ctx, repository.db)
 }
 
 func (repository *Repository) Now(ctx context.Context) (time.Time, error) {
@@ -89,7 +89,7 @@ func (repository *Repository) Step(ctx context.Context, tenantID string, request
 }
 
 func (repository *Repository) Insert(ctx context.Context, request entity.ApprovalRequest, steps []approval.Step) error {
-	if repository.recorder == nil || !transaction.Active(ctx) {
+	if repository.recorder == nil || !coredatabase.TransactionActive(ctx) {
 		return producerimpl.ErrUnavailable
 	}
 	db := repository.dbFor(ctx)
@@ -105,14 +105,14 @@ func (repository *Repository) Insert(ctx context.Context, request entity.Approva
 }
 
 func (repository *Repository) InsertDecision(ctx context.Context, tenantID string, requestID string, record approval.ReviewRecord) error {
-	if repository.recorder == nil || !transaction.Active(ctx) {
+	if repository.recorder == nil || !coredatabase.TransactionActive(ctx) {
 		return producerimpl.ErrUnavailable
 	}
 	return repository.dbFor(ctx).Exec(constants.InsertDecision, tenantID, requestID, record.RequesterID, record.Step, record.ReviewerID, record.Decision, record.Comment, record.At).Error
 }
 
 func (repository *Repository) Advance(ctx context.Context, before entity.ApprovalRequest, next entity.ApprovalRequest) error {
-	if repository.recorder == nil || !transaction.Active(ctx) {
+	if repository.recorder == nil || !coredatabase.TransactionActive(ctx) {
 		return producerimpl.ErrUnavailable
 	}
 	operation := string(next.Status)

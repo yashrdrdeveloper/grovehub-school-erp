@@ -5,7 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
-	coretransaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	authorizationrepo "grovehub/services/identity/internal/app/repository/authorization"
 	"grovehub/services/identity/internal/app/repository/authorization/helpers"
 )
@@ -25,10 +25,10 @@ func (repository *Repository) LoadSnapshot(ctx context.Context, tenantID string,
 		return authorizationrepo.Snapshot{}, authorizationrepo.ErrScopeRequired
 	}
 	if repository.db == nil {
-		return authorizationrepo.Snapshot{}, coretransaction.ErrMissingDatabase
+		return authorizationrepo.Snapshot{}, coredatabase.ErrMissingDatabase
 	}
 	var rows []helpers.SnapshotRow
-	result := coretransaction.Database(ctx, repository.db).Raw(helpers.SnapshotQuery, tenantID, accountID).Scan(&rows)
+	result := coredatabase.TransactionDB(ctx, repository.db).Raw(helpers.SnapshotQuery, tenantID, accountID).Scan(&rows)
 	if result.Error != nil {
 		return authorizationrepo.Snapshot{}, result.Error
 	}

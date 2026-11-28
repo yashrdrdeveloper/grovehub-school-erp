@@ -6,7 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/repository/authority"
 	"grovehub/services/identity/internal/app/repository/authority/constants"
 )
@@ -27,11 +27,11 @@ func (locker *Locker) Run(ctx context.Context, tenantID string, operation func(c
 	if strings.TrimSpace(tenantID) == "" || strings.TrimSpace(tenantID) != tenantID || operation == nil {
 		return authority.ErrScopeRequired
 	}
-	return transaction.Run(ctx, locker.db, func(tx context.Context) error {
-		if err := transaction.Database(tx, locker.db).Exec(constants.LockGlobalShared).Error; err != nil {
+	return coredatabase.RunTransaction(ctx, locker.db, func(tx context.Context) error {
+		if err := coredatabase.TransactionDB(tx, locker.db).Exec(constants.LockGlobalShared).Error; err != nil {
 			return err
 		}
-		if err := transaction.Database(tx, locker.db).Exec(lockTenant, tenantID).Error; err != nil {
+		if err := coredatabase.TransactionDB(tx, locker.db).Exec(lockTenant, tenantID).Error; err != nil {
 			return err
 		}
 		return operation(tx)

@@ -6,7 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/entity"
 	credentialrepo "grovehub/services/identity/internal/app/repository/credential"
 )
@@ -23,7 +23,7 @@ func New(db *gorm.DB) credentialrepo.Repository {
 
 func (repository *Repository) Find(ctx context.Context, accountID string) (entity.PasswordCredential, error) {
 	var credential entity.PasswordCredential
-	err := transaction.Database(ctx, repository.db).
+	err := coredatabase.TransactionDB(ctx, repository.db).
 		Where("account_id = ?", accountID).
 		Take(&credential).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -33,11 +33,11 @@ func (repository *Repository) Find(ctx context.Context, accountID string) (entit
 }
 
 func (repository *Repository) Create(ctx context.Context, credential entity.PasswordCredential) error {
-	return transaction.Database(ctx, repository.db).Create(&credential).Error
+	return coredatabase.TransactionDB(ctx, repository.db).Create(&credential).Error
 }
 
 func (repository *Repository) Update(ctx context.Context, credential entity.PasswordCredential) error {
-	result := transaction.Database(ctx, repository.db).
+	result := coredatabase.TransactionDB(ctx, repository.db).
 		Model(&entity.PasswordCredential{}).
 		Where("account_id = ? AND version = ?", credential.AccountID, credential.Version-1).
 		Updates(map[string]any{

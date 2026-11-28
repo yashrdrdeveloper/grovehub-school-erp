@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	authorityconstants "grovehub/services/identity/internal/app/repository/authority/constants"
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/repository/approvalpolicy"
@@ -34,15 +34,15 @@ func (writer *Provisioner) Apply(ctx context.Context, manifest approvalpolicy.Ma
 		return approvalpolicy.Receipt{}, err
 	}
 	if writer.db == nil || writer.readiness == nil || writer.administrators == nil {
-		return approvalpolicy.Receipt{}, transaction.ErrMissingDatabase
+		return approvalpolicy.Receipt{}, coredatabase.ErrMissingDatabase
 	}
 	id, err := uuid.NewRandom()
 	if err != nil {
 		return approvalpolicy.Receipt{}, err
 	}
 	receipt := approvalpolicy.Receipt{ReceiptID: id.String(), Policies: make([]approvalpolicy.Activated, 0, len(manifest.Policies))}
-	err = transaction.Run(ctx, writer.db, func(tx context.Context) error {
-		db := transaction.Database(tx, writer.db)
+	err = coredatabase.RunTransaction(ctx, writer.db, func(tx context.Context) error {
+		db := coredatabase.TransactionDB(tx, writer.db)
 		// Offline only; caller must not already hold tenant authority locks.
 		if err := db.Exec(authorityconstants.LockGlobalExclusive).Error; err != nil {
 			return err

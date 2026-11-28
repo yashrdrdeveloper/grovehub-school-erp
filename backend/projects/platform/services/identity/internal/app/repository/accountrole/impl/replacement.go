@@ -6,7 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/repository/accountrole"
 	"grovehub/services/identity/internal/app/repository/accountrole/constants"
 	"grovehub/services/identity/internal/app/repository/accountrole/helpers"
@@ -33,7 +33,7 @@ func (writer *Writer) Replace(ctx context.Context, request accountrole.Replaceme
 	}
 	var assignment accountrole.Assignment
 	err = writer.locker.Run(ctx, request.TenantID, func(tx context.Context) error {
-		db := transaction.Database(tx, writer.db)
+		db := coredatabase.TransactionDB(tx, writer.db)
 		var locked string
 		result := db.Raw(constants.LockAccount, request.TenantID, request.AccountID).Scan(&locked)
 		if result.Error != nil {

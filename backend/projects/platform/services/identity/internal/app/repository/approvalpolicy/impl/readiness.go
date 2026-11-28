@@ -6,7 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	kind "grovehub/services/identity/internal/app/constants/approval"
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/repository/approval"
@@ -36,7 +36,7 @@ func NewReadiness(db *gorm.DB) rbacmigration.Readiness {
 
 func (reader *Readiness) Require(ctx context.Context, tenantID string) error {
 	if reader.db == nil {
-		return transaction.ErrMissingDatabase
+		return coredatabase.ErrMissingDatabase
 	}
 	return reader.locker.Run(ctx, tenantID, func(tx context.Context) error {
 		if err := reader.migration.Require(tx, tenantID); err != nil {
@@ -54,7 +54,7 @@ func (reader *Readiness) Require(ctx context.Context, tenantID string) error {
 }
 
 func (reader *Readiness) requirePolicies(ctx context.Context, tenantID string) error {
-	db := transaction.Database(ctx, reader.db)
+	db := coredatabase.TransactionDB(ctx, reader.db)
 	var payload string
 	result := db.Raw(constants.LatestReceipt, tenantID).Scan(&payload)
 	if result.Error != nil {

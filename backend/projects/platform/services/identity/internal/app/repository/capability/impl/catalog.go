@@ -6,7 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/repository/authority"
 	"grovehub/services/identity/internal/app/repository/capability"
 	"grovehub/services/identity/internal/app/repository/capability/constants"
@@ -25,9 +25,9 @@ func (reader *Reader) Available(ctx context.Context, tenantID string) ([]capabil
 		return nil, authority.ErrScopeRequired
 	}
 	if reader.db == nil {
-		return nil, transaction.ErrMissingDatabase
+		return nil, coredatabase.ErrMissingDatabase
 	}
 	rows := make([]capability.Entry, 0)
-	err := transaction.Database(ctx, reader.db).Raw(constants.Available, tenantID).Scan(&rows).Error
+	err := coredatabase.TransactionDB(ctx, reader.db).Raw(constants.Available, tenantID).Scan(&rows).Error
 	return rows, err
 }

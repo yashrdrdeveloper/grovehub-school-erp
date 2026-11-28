@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
 	auditclient "grovehub/services/audit/client/producer"
 	"grovehub/services/identity/internal/app/entity"
@@ -18,7 +18,7 @@ var deliveryNamespace=uuid.MustParse("60b74248-62f8-4de1-928a-dca56dc32dab")
 
 func (repository *Repository) record(ctx context.Context,entry entity.Invitation,operation string,reason string,next *time.Time,at time.Time) error {
 	var scope struct { TenantID *string }
-	if err:=transaction.Database(ctx,repository.db).Raw("SELECT tenant_id FROM identity.accounts WHERE account_id = ?",entry.AccountID).Scan(&scope).Error;err!=nil { return err }
+	if err:=coredatabase.TransactionDB(ctx,repository.db).Raw("SELECT tenant_id FROM identity.accounts WHERE account_id = ?",entry.AccountID).Scan(&scope).Error;err!=nil { return err }
 	// A legacy orphan or tenantless record has no safe tenant visibility.
 	// Do not block suppression of an obsolete job or assign a fabricated tenant.
 	if scope.TenantID==nil || *scope.TenantID=="" { 
