@@ -116,6 +116,14 @@ jobs:
           cache-dependency-path: |
             backend/projects/platform/go.sum
             backend/libs/core/go.sum
+      - name: Enforce Launcher Go formatting
+        shell: bash
+        run: |
+          unformatted="$(git ls-files -z ':(glob)backend/projects/platform/launcher/**/*.go' | xargs -0 -r gofmt -l)"
+          if [[ -n "$unformatted" ]]; then
+            printf 'Unformatted Launcher files:\n%s\n' "$unformatted"
+            exit 1
+          fi
       - name: Lint Foundation repository formatting and function signatures
         run: make backend-lint
       - name: Compile the complete backend with generated annotations
