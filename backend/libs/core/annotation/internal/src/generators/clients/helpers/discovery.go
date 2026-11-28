@@ -6,6 +6,8 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"path"
+	"strconv"
 	"strings"
 )
 
@@ -35,7 +37,7 @@ func DiscoverWithRenderer(dir,generatedRoutes string,render layout.Renderer)([]c
 				if err != nil { return nil,err }
 				if !found { continue }
 				if !token.IsIdentifier(receiver) { return nil,fmt.Errorf("%s: invalid @Client receiver %q",spec.Name.Name,receiver) }
-				proxy := clientProxy{receiver:receiver,imports:file.Imports}
+				proxy := clientProxy{receiver:receiver,imports:signatureImports(file.Imports,iface)}
 				for _,member := range iface.Methods.List {
 					if len(member.Names)!=1 { return nil,fmt.Errorf("annotated @Client %s cannot embed interfaces",spec.Name.Name) }
 					name := spec.Name.Name+"."+member.Names[0].Name
@@ -80,4 +82,38 @@ func DiscoverWithRenderer(dir,generatedRoutes string,render layout.Renderer)([]c
 		}
 	}
 	return result,nil
+}
+
+// signatureImports retains only the imports needed by the generated method
+// signatures. Facade helpers, constants, and initialization belong to the
+// resource package and must not be copied into its implementation package.
+func signatureImports(imports []*ast.ImportSpec, iface *ast.InterfaceType) []*ast.ImportSpec {
+	used := map[string]bool{}
+	ast.Inspect(iface, func(node ast.Node) bool {
+		if selector, ok := node.(*ast.SelectorExpr); ok {
+			if qualifier, ok := selector.X.(*ast.Ident); ok {
+				used[qualifier.Name] = true
+			}
+		}
+		return true
+	})
+	var result []*ast.ImportSpec
+	for _, spec := range imports {
+		name := path.Base(strings.Trim(spec.Path.Value, "\"\x60"))
+		if spec.Name != nil {
+			name = spec.Name.Name
+		} else if strings.HasPrefix(name, "v") {
+			// Semantic import versions use the preceding path component as the
+			// conventional package name (example/module/v2 -> module).
+			if _, err := strconv.Atoi(strings.TrimPrefix(name, "v")); err == nil {
+				name = path.Base(path.Dir(strings.Trim(spec.Path.Value, "\"\x60")))
+			}
+		}
+		// Dot imports cannot be inferred from selectors. Preserve them; blank
+		// imports are facade initialization, never part of a method signature.
+		if name == "." || used[name] {
+			result = append(result, spec)
+		}
+	}
+	return result
 }
