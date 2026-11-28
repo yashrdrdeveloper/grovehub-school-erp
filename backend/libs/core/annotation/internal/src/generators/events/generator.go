@@ -4,8 +4,8 @@
 package events
 
 import (
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -17,15 +17,11 @@ func GenerateAll(backend string)error{
     for _,service:=range services {
         if !service.IsDir(){continue}
         owner:=filepath.Join(backend,"services",service.Name())
-        root:=filepath.Join(owner,"events")
+        relative:="events"
         if info,err:=os.Stat(filepath.Join(owner,"internal","app","events"));err==nil&&info.IsDir(){
-            root=filepath.Join(owner,"internal","app","events")
+            relative=filepath.Join("internal","app","events")
         }
-        if _,err:=os.Stat(root);os.IsNotExist(err){continue}else if err!=nil{return err}
-        if err:=filepath.WalkDir(root,func(dir string,item fs.DirEntry,walkErr error)error{
-            if walkErr!=nil{return walkErr}
-            if !item.IsDir(){return nil}
-            rel,err:=filepath.Rel(owner,dir);if err!=nil{return err}
+        if err:=layout.WalkOwnedDirectories(owner,relative,nil,func(dir,rel string)error{
             out:=filepath.Join(owner,".generated",rel,"zz_events.gen.go")
             defs,pkg,err:=helpers.Discover(dir);if err!=nil{return fmt.Errorf("%s: %w",dir,err)}
             if len(defs)==0 {

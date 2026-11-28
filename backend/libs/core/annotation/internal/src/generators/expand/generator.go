@@ -2,12 +2,12 @@
 package expand
 
 import (
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
  "fmt"
  "go/ast"
  "go/parser"
  "go/token"
  "os"
- "path/filepath"
  "strings"
 )
 
@@ -16,7 +16,7 @@ type methodKinds struct { getter, setter bool }
 
 
 func Expand(dir string) error {
- files,err:=filepath.Glob(filepath.Join(dir,"*.go"));if err!=nil{return err}
+ files,err:=layout.GoFiles(dir);if err!=nil{return err}
  fset:=token.NewFileSet()
  parsed:=make(map[string]*ast.File)
  existing:=make(map[string]methodKinds)

@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
 	"fmt"
 	"go/parser"
 	"go/token"
@@ -24,7 +25,7 @@ func resolveConfig(repositoryDir,modulePath,service,reference string)(dir,import
 	candidates:=[]string{parts[0], filepath.Join("helpers",parts[0])}
 	for _,relative:=range candidates {
 		candidate:=filepath.Join(repositoryDir,relative)
-		files,err:=filepath.Glob(filepath.Join(candidate,"*.go"))
+		files,err:=layout.GoFiles(candidate)
 		if err!=nil{return "","","","",err}
 		for _,f:=range files {
 			pkg,err:=parser.ParseFile(token.NewFileSet(),f,nil,parser.PackageClauseOnly)

@@ -68,8 +68,8 @@ var _=Describe("Search configuration ownership and validation",func(){
 		specs,err:=helpers.Discover(root,"grovehub","demo")
 		Expect(err).NotTo(HaveOccurred());Expect(specs).To(HaveLen(1))
 	})
-	It("reports invalid glob patterns at the input boundary",func(){
-		root:=filepath.Join(GinkgoT().TempDir(),"[")
+	It("reports non-directory source paths at the input boundary",func(){
+		root:=fixture.Write(GinkgoT().TempDir(),"blocked","not a directory")
 		_,err:=helpers.Discover(root,"grovehub","demo")
 		Expect(err).To(HaveOccurred())
 		Expect(helpers.ValidateImplementation(root,nil)).NotTo(Succeed())

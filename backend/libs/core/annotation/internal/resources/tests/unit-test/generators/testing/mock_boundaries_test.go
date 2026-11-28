@@ -63,10 +63,10 @@ var _=Describe("Test generator subprocess and output boundaries",func(){
 		Expect(os.MkdirAll(filepath.Join(root,".generated","tests","mocks","zz_mocks.gen.go","child"),0755)).To(Succeed())
 		Expect(testgen.GenerateAll(root,root)).NotTo(Succeed())
 	})
-	It("rejects invalid glob paths and filesystem errors",func(){
+	It("handles literal metacharacter paths and reports filesystem errors",func(){
 		root:=GinkgoT().TempDir()
 		Expect(os.MkdirAll(filepath.Join(root,"tests","unit-test","["),0755)).To(Succeed())
-		Expect(testgen.GenerateAll(root,root)).NotTo(Succeed())
+		Expect(testgen.GenerateAll(root,root)).To(Succeed())
 		Expect(os.RemoveAll(filepath.Join(root,"tests"))).To(Succeed())
 		Expect(os.Symlink("tests",filepath.Join(root,"tests"))).To(Succeed())
 		Expect(testgen.GenerateAll(root,root)).NotTo(Succeed())

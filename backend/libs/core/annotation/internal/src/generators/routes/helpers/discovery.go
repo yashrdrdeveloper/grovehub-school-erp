@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -46,11 +47,10 @@ func DiscoverWithTier(dir, servicePath string, configured, restrictedOnly bool) 
 		if !info.IsDir() {
 			return nil, fmt.Errorf("%s: controller category must be a directory", directory.dir)
 		}
-		files, err := filepath.Glob(filepath.Join(directory.dir, "*.go"))
+		files, err := layout.GoFiles(directory.dir)
 		if err != nil {
 			return nil, err
 		}
-		sort.Strings(files)
 		for _, filename := range files {
 			if strings.HasSuffix(filename, "_test.go") {
 				continue

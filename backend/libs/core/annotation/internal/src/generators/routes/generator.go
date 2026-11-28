@@ -31,9 +31,11 @@ func GenerateAll(backend string) error {
 		}
 		name := service.Name()
 		owner := filepath.Join(backend, "services", name)
-		controllerDir := filepath.Join(owner, "controller")
+		controllerRel := "controller"
+		controllerDir := filepath.Join(owner, controllerRel)
         if info, err := os.Stat(filepath.Join(owner, "internal", "app", "controller")); err == nil && info.IsDir() {
-            controllerDir = filepath.Join(owner, "internal", "app", "controller")
+            controllerRel = filepath.Join("internal","app","controller")
+            controllerDir = filepath.Join(owner,controllerRel)
         }
 		if info, err := os.Stat(controllerDir); os.IsNotExist(err) {
 			continue
@@ -43,7 +45,8 @@ func GenerateAll(backend string) error {
 			return fmt.Errorf("%s: controller must be a directory", name)
 		}
 
-		routesDir := filepath.Join(filepath.Dir(controllerDir), "routes")
+		routesRel := filepath.Join(filepath.Dir(controllerRel), "routes")
+		routesDir := filepath.Join(owner,routesRel)
         servicePath, configured, err := helpers.ServicePrefix(filepath.Join(routesDir, "http.go"))
 		if err != nil {
 			return fmt.Errorf("%s routes: %w", name, err)
@@ -52,9 +55,7 @@ func GenerateAll(backend string) error {
 		if err != nil {
 			return fmt.Errorf("%s routes: %w", name, err)
 		}
-		rel, err := filepath.Rel(owner, routesDir)
-        if err != nil { return err }
-        output := filepath.Join(owner, ".generated", rel, "zz_routes.gen.go")
+        output := filepath.Join(owner, ".generated", routesRel, "zz_routes.gen.go")
 		if len(groups) == 0 {
 			if err := os.Remove(output); err != nil && !os.IsNotExist(err) {
 				return err

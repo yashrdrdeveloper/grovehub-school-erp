@@ -21,28 +21,27 @@ func GenerateAll(backend string) error {
 	for _, service := range services {
 		if !service.IsDir() { continue }
 		owner := filepath.Join(backend, "services", service.Name())
-		dir := filepath.Join(owner, "repository")
+		rootRel := "repository"
+		dir := filepath.Join(owner, rootRel)
         if info, err := os.Stat(filepath.Join(owner, "internal", "app", "repository")); err == nil && info.IsDir() {
-            dir = filepath.Join(owner, "internal", "app", "repository")
+            rootRel = filepath.Join("internal","app","repository")
+            dir = filepath.Join(owner,rootRel)
         }
 		if _, err := os.Stat(dir); os.IsNotExist(err) { continue } else if err != nil { return err }
 		// Search contracts are scoped to repository/<resource>, preserving
 		// repository/impl as a legacy flat layout for other services.
 		entries,err:=os.ReadDir(dir)
 		if err!=nil{return err}
-		directories:=[]string{dir}
+		directories:=[]string{"."}
 		for _,entry:=range entries {
 			if !entry.IsDir(){continue}
 			if entry.Name()=="impl"||entry.Name()=="constants"||entry.Name()=="helpers"||strings.HasPrefix(entry.Name(),"."){continue}
-			directories=append(directories,filepath.Join(dir,entry.Name()))
+			directories=append(directories,entry.Name())
 		}
-		for _,resourceDir:=range directories {
+		for _,rel:=range directories {
+			resourceDir:=filepath.Join(dir,rel)
 			specs,err:=helpers.Discover(resourceDir,modulePath,service.Name())
 			if err!=nil{return fmt.Errorf("%s search %s: %w",service.Name(),resourceDir,err)}
-			rel,err:=filepath.Rel(dir,resourceDir)
-			if err!=nil{return err}
-			rootRel, err := filepath.Rel(owner, dir)
-            if err != nil { return err }
             outDir:=filepath.Join(owner,".generated",rootRel)
 			if rel!="." {outDir=filepath.Join(outDir,rel)}
 			out:=filepath.Join(outDir,"impl","zz_search.gen.go")

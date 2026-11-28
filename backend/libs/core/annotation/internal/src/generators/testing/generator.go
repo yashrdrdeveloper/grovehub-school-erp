@@ -3,16 +3,15 @@
 package testgen
 
 import (
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
 	generatedoutput "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/output"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"sort"
 	"strings"
 	"unicode"
 
@@ -39,13 +38,13 @@ func GenerateAll(backend, core string) error {
 		return err
 	}
 	roots := []struct{ owner, tests string }{
-		{core, filepath.Join(core, "tests")},
+		{core, "tests"},
 	}
 	entries, err := os.ReadDir(core)
 	if err != nil { return err }
 	for _, entry := range entries {
 		if !entry.IsDir() { continue }
-		capabilityTests := filepath.Join(core, entry.Name(), "internal", "resources", "tests")
+		capabilityTests := filepath.Join(entry.Name(), "internal", "resources", "tests")
 		roots = append(roots, struct{ owner, tests string }{core, capabilityTests})
 	}
 	if backend != core {
@@ -58,26 +57,12 @@ func GenerateAll(backend, core string) error {
 				continue
 			}
 			owner := filepath.Join(backend, "services", service.Name())
-			roots = append(roots, struct{ owner, tests string }{owner, filepath.Join(owner, "internal", "tests")})
+			roots = append(roots, struct{ owner, tests string }{owner, filepath.Join("internal", "tests")})
 		}
 	}
 	for _, root := range roots {
-		if _, err := os.Stat(root.tests); os.IsNotExist(err) {
-			continue
-		} else if err != nil {
-			return err
-		}
-		if err := filepath.WalkDir(root.tests, func(dir string, entry fs.DirEntry, walkErr error) error {
-			if walkErr != nil {
-				return walkErr
-			}
-			if !entry.IsDir() {
-				return nil
-			}
-			if entry.Name() == ".generated" || entry.Name() == "vendor" {
-				return filepath.SkipDir
-			}
-			return generateDir(root.owner, dir)
+		if err := layout.WalkOwnedDirectories(root.owner,root.tests,map[string]bool{".generated":true,"vendor":true},func(dir,rel string)error{
+			return generateDir(root.owner,dir,rel)
 		}); err != nil {
 			return err
 		}
@@ -85,14 +70,13 @@ func GenerateAll(backend, core string) error {
 	return nil
 }
 
-func generateDir(owner, dir string) error {
-	paths, err := filepath.Glob(filepath.Join(dir, "*.go"))
+func generateDir(owner, dir, rel string) error {
+	paths, err := layout.GoFiles(dir)
 	if err != nil {
 		return err
 	}
-	sort.Strings(paths)
 	var suite testSuite
-	var mockSource string
+	var mockSource, mockPackage string
 	for _, path := range paths {
 		if strings.HasPrefix(filepath.Base(path), "zz_") {
 			continue
@@ -135,7 +119,7 @@ func generateDir(owner, dir string) error {
 					if mockSource != "" && mockSource != path {
 						return fmt.Errorf("%s: at most one @Mock source file per directory", dir)
 					}
-					mockSource = path
+					mockSource, mockPackage = path, f.Name.Name
 				}
 			}
 			fn, ok := declaration.(*ast.FuncDecl)
@@ -189,21 +173,13 @@ func generateDir(owner, dir string) error {
 			}
 		}
 	}
-	rel, err := filepath.Rel(owner, dir)
-	if err != nil {
-		return err
-	}
 	outDir := filepath.Join(owner, ".generated", rel)
 	mockOutput := filepath.Join(outDir, "zz_mocks.gen.go")
 	if mockSource != "" {
-		f, err := parser.ParseFile(token.NewFileSet(), mockSource, nil, parser.PackageClauseOnly)
-		if err != nil {
-			return err
-		}
 		if err := os.MkdirAll(outDir, 0755); err != nil {
 			return err
 		}
-		cmd := exec.Command("go", "run", "go.uber.org/mock/mockgen", "-source="+mockSource, "-destination="+mockOutput, "-package="+f.Name.Name)
+		cmd := exec.Command("go", "run", "go.uber.org/mock/mockgen", "-source="+mockSource, "-destination="+mockOutput, "-package="+mockPackage)
 		// Resolve embedded interfaces against the source owner's module, not Core.
 		moduleDir, err := FindModuleDir(filepath.Dir(mockSource))
 		if err != nil {

@@ -1,22 +1,20 @@
 package helpers
 
 import (
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
 	"path"
-	"path/filepath"
 	"reflect"
-	"sort"
 	"strconv"
 	"strings"
 )
 
 func Discover(dir string) ([]patchType, string, error) {
-	names, err := filepath.Glob(filepath.Join(dir, "*.go"))
+	names, err := layout.GoFiles(dir)
 	if err != nil { return nil, "", err }
-	sort.Strings(names)
 	var specs []patchType
 	seen := map[string]bool{}
 	methods := map[string]bool{}

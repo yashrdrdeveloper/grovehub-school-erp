@@ -6,8 +6,6 @@ import (
 	"go/parser"
 	"go/token"
 	"path"
-	"path/filepath"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -26,8 +24,7 @@ func destinationType(backend,modulePath string,imports []*ast.ImportSpec,expr as
 	if !strings.HasPrefix(importPath,modulePath+"/services/"){return nil,fmt.Errorf("destination %s is not a service DTO import",alias.Name)}
 	dir,err:=layout.ResolveImport(backend,modulePath,importPath)
 	if err!=nil{return nil,err}
-	files,err:=filepath.Glob(filepath.Join(dir,"*.go"));if err!=nil{return nil,err}
-	sort.Strings(files)
+	files,err:=layout.GoFiles(dir);if err!=nil{return nil,err}
 	for _,file:=range files {
 		if strings.HasSuffix(file,"_test.go"){continue}
 		astFile,err:=parser.ParseFile(token.NewFileSet(),file,nil,0);if err!=nil{return nil,err}

@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
 	"bytes"
 	"fmt"
 	"go/ast"
@@ -9,14 +10,12 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 )
 
 func Generate(sourceDir,outputDir string) error {
-	files,err:=filepath.Glob(filepath.Join(sourceDir,"*.go"))
+	files,err:=layout.GoFiles(sourceDir)
 	if err!=nil{return err}
-	sort.Strings(files)
 	type parsedFile struct {
 		name string
 		fset *token.FileSet

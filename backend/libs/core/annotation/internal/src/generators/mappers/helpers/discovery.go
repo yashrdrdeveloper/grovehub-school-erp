@@ -1,20 +1,18 @@
 package helpers
 
 import (
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
 	"bytes"
 	"fmt"
 	"go/ast"
 	"go/format"
 	"go/parser"
 	"go/token"
-	"path/filepath"
-	"sort"
 	"strings"
 )
 
 func Discover(backend,modulePath,dir string)(mappingGroup,bool,error) {
-	files,err:=filepath.Glob(filepath.Join(dir,"*.go"));if err!=nil{return mappingGroup{},false,err}
-	sort.Strings(files)
+	files,err:=layout.GoFiles(dir);if err!=nil{return mappingGroup{},false,err}
 	var result mappingGroup
 	found:=false
 	for _,filePath:=range files {

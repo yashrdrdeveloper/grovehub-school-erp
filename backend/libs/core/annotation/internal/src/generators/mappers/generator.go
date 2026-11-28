@@ -20,27 +20,26 @@ func GenerateAll(backend string) error {
 	for _,entry:=range services {
 		if !entry.IsDir(){continue}
 		owner:=filepath.Join(backend,"services",entry.Name())
-		dir:=filepath.Join(owner,"mappers")
+		rootRel:="mappers"
+		dir:=filepath.Join(owner,rootRel)
         if stat,err:=os.Stat(filepath.Join(owner,"internal","app","mappers"));err==nil&&stat.IsDir(){
-            dir=filepath.Join(owner,"internal","app","mappers")
+            rootRel=filepath.Join("internal","app","mappers")
+            dir=filepath.Join(owner,rootRel)
         }
 		if stat,err:=os.Stat(dir);err!=nil||!stat.IsDir(){continue}
 		// Generate once per resource package, retaining legacy flat mappers.
 		entries,err:=os.ReadDir(dir)
 		if err!=nil{return err}
-		directories:=[]string{dir}
+		directories:=[]string{"."}
 		for _,entry:=range entries {
 			if entry.IsDir() && entry.Name()!="impl" && !strings.HasPrefix(entry.Name(),"."){
-				directories=append(directories,filepath.Join(dir,entry.Name()))
+				directories=append(directories,entry.Name())
 			}
 		}
-		for _,resourceDir:=range directories {
+		for _,rel:=range directories {
+			resourceDir:=filepath.Join(dir,rel)
 			group,found,err:=helpers.Discover(backend,modulePath,resourceDir)
 			if err!=nil{return fmt.Errorf("%s mapper %s: %w",entry.Name(),resourceDir,err)}
-			rel,err:=filepath.Rel(dir,resourceDir)
-			if err!=nil{return err}
-			rootRel,err:=filepath.Rel(owner,dir)
-            if err!=nil{return err}
             outDir:=filepath.Join(owner,".generated",rootRel)
 			if rel!="." {outDir=filepath.Join(outDir,rel)}
 			out:=filepath.Join(outDir,"impl","zz_mappers.gen.go")

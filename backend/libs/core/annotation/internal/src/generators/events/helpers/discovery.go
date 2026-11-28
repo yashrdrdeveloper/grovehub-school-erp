@@ -1,18 +1,17 @@
 package helpers
 
 import (
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"path/filepath"
 	"sort"
 	"strings"
 )
 
 func Discover(dir string)([]eventDefinition,string,error){
-    files,err:=filepath.Glob(filepath.Join(dir,"*.go"));if err!=nil{return nil,"",err}
-    sort.Strings(files)
+    files,err:=layout.GoFiles(dir);if err!=nil{return nil,"",err}
     var defs []eventDefinition
     var pkg string
     for _,file:=range files {

@@ -18,13 +18,13 @@ func GenerateAll(backend string) error {
 	for _,service:=range services {
 		if !service.IsDir(){continue}
 		owner:=filepath.Join(backend,"services",service.Name())
-		dir:=filepath.Join(owner,"entity")
+		rel:="entity"
+		dir:=filepath.Join(owner,rel)
         if info,err:=os.Stat(filepath.Join(owner,"internal","app","entity"));err==nil&&info.IsDir(){
-            dir=filepath.Join(owner,"internal","app","entity")
+            rel=filepath.Join("internal","app","entity")
+            dir=filepath.Join(owner,rel)
         }
 		if info,err:=os.Stat(dir);err!=nil||!info.IsDir(){continue}
-        rel, err := filepath.Rel(owner, dir)
-        if err != nil { return err }
 		if err:=helpers.Generate(dir,filepath.Join(owner,".generated",rel));err!=nil {
 			return fmt.Errorf("%s entities: %w",service.Name(),err)
 		}

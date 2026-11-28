@@ -1,12 +1,12 @@
 package helpers
 
 import (
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
 	"path/filepath"
-	"sort"
 	"strings"
 )
 
@@ -15,9 +15,8 @@ import (
 func Discover(dir, modulePath, service string) ([]spec, error) {
 	interfaces, err := repositoryInterfaces(dir)
 	if err != nil { return nil, err }
-	paths, err := filepath.Glob(filepath.Join(dir, "impl", "*.go"))
+	paths, err := layout.GoFiles(filepath.Join(dir, "impl"))
 	if err != nil { return nil, err }
-	sort.Strings(paths)
 	var result []spec
 	seen := make(map[string]bool)
 	for _, filename := range paths {
@@ -81,7 +80,7 @@ func Discover(dir, modulePath, service string) ([]spec, error) {
 
 // Reject misplaced @Searchable annotations before emitting a search helper.
 func repositoryInterfaces(dir string) ([]*ast.File,error) {
-	paths, err := filepath.Glob(filepath.Join(dir, "*.go"))
+	paths, err := layout.GoFiles(dir)
 	if err != nil { return nil,err }
 	var files []*ast.File
 	for _, filename := range paths {

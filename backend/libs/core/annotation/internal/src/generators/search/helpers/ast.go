@@ -1,13 +1,13 @@
 package helpers
 
 import (
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
 	"bytes"
 	"fmt"
 	"go/ast"
 	"go/format"
 	"go/parser"
 	"go/token"
-	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -20,7 +20,7 @@ func exprString(e ast.Expr) string {
 }
 
 func findConfig(dir,name string) (*ast.CompositeLit,error) {
-	paths,err:=filepath.Glob(filepath.Join(dir,"*.go"))
+	paths,err:=layout.GoFiles(dir)
 	if err!=nil{return nil,err}
 	for _,p:=range paths {
 		file,err:=parser.ParseFile(token.NewFileSet(),p,nil,0)

@@ -1,16 +1,16 @@
 package helpers
 
 import (
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"path/filepath"
 	"strings"
 )
 
 func ValidateImplementation(dir string, specs []spec) error {
-	files, err := filepath.Glob(filepath.Join(dir, "*.go"))
+	files, err := layout.GoFiles(dir)
 	if err != nil { return err }
 	structs := make(map[string]bool)
 	for _, filename := range files {

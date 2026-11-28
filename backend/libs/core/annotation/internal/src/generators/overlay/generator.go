@@ -3,6 +3,7 @@
 package overlay
 
 import (
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
 	generatedoutput "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/output"
 	"fmt"
 	"io/fs"
@@ -29,26 +30,14 @@ func WriteOverlay(backend, core string) error {
 	replacement := map[string]string{}
 
 	scan := func(owner string) error {
-		generatedRoot := filepath.Join(owner, ".generated")
-		if _, err := os.Stat(generatedRoot); os.IsNotExist(err) {
-			return nil
-		} else if err != nil {
-			return err
-		}
-		return filepath.WalkDir(generatedRoot, func(path string, item fs.DirEntry, err error) error {
-			if err != nil {
-				return err
-			}
+		return layout.WalkOwned(owner,".generated",func(path,relative string,item fs.DirEntry)error{
 			if item.IsDir() || !strings.HasSuffix(item.Name(), ".go") {
 				return nil
 			}
 			if !item.Type().IsRegular() {
 				return fmt.Errorf("generated Go file %s must be regular", path)
 			}
-			rel, err := filepath.Rel(generatedRoot, path)
-			if err != nil {
-				return err
-			}
+			rel:=strings.TrimPrefix(relative, ".generated"+string(os.PathSeparator))
 			logical := filepath.Join(owner, rel)
 			if _, err := os.Stat(filepath.Dir(logical)); err != nil {
 				return fmt.Errorf("generated source has no original package directory %s: %w", logical, err)
