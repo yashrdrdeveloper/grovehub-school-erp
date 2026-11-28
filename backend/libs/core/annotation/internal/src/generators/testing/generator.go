@@ -48,7 +48,11 @@ func GenerateAll(backend, core string) error {
 		roots = append(roots, struct{ owner, tests string }{core, capabilityTests})
 	}
 	if backend != core {
-		roots = append(roots, struct{ owner, tests string }{filepath.Join(backend,"launcher"),filepath.Join("internal","resources","tests")})
+		roots = append(roots, struct{ owner, tests string }{
+			filepath.Join(backend, "launcher"), filepath.Join("internal", "resources", "tests"),
+		}, struct{ owner, tests string }{
+			filepath.Join(backend, "cmd"), filepath.Join("internal", "resources", "tests"),
+		})
 		services, err := os.ReadDir(filepath.Join(backend, "services"))
 		if err != nil {
 			return err

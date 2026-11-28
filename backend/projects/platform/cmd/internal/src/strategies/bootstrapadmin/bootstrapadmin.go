@@ -1,6 +1,8 @@
 package bootstrapadmin
 
 import (
+	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -9,15 +11,27 @@ import (
 	admin "grovehub/services/identity/bootstrapadmin"
 )
 
-// @Strategy
-type strategy struct{}
+type Runner func([]string, io.Reader, io.Writer, io.Writer) error
 
-func New() command.Command {
-	return strategy{}
+// @Strategy
+type strategy struct {
+	run Runner
 }
 
-func (strategy) Run(args []string, output, diagnostics io.Writer) int {
-	if err := admin.RunArgs(args, os.Stdin, output, diagnostics); err != nil {
+func New() command.Command {
+	return NewWithRunner(admin.RunArgs)
+}
+
+func NewWithRunner(run Runner) command.Command {
+	return &strategy{run: run}
+}
+
+func (s *strategy) Run(args []string, output, diagnostics io.Writer) int {
+	if err := s.run(args, os.Stdin, output, diagnostics); err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			return 0
+		}
+
 		_, _ = fmt.Fprintln(diagnostics, "bootstrap-admin:", err)
 		return 1
 	}

@@ -57,6 +57,9 @@ func WriteOverlay(backend, core string) error {
 
 	if root != core {
 		if err := scan(filepath.Join(root,"launcher")); err != nil { return err }
+		if err := scan(filepath.Join(root, "cmd")); err != nil {
+			return err
+		}
 		services, err := os.ReadDir(filepath.Join(root, "services"))
 		if err != nil {
 			return err

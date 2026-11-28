@@ -5,7 +5,9 @@ import (
 	"grovehub/cmd/internal/src/constants"
 	databaseimpl "grovehub/cmd/internal/src/operations/database/impl"
 	"grovehub/cmd/internal/src/operations/migration"
+	migrationimpl "grovehub/cmd/internal/src/operations/migration/impl"
 	"grovehub/cmd/internal/src/registry"
+	registryimpl "grovehub/cmd/internal/src/registry/impl"
 	"grovehub/cmd/internal/src/strategies/auditreplay"
 	"grovehub/cmd/internal/src/strategies/auditstorage"
 	"grovehub/cmd/internal/src/strategies/bootstrapadmin"
@@ -23,20 +25,20 @@ import (
 func New() registry.Registry {
 	db := databaseimpl.New()
 	migrations := map[string]migration.Migration{
-		"foundation": migration.Operation(foundation.Migrate),
-		"infrastructure": migration.Operation(infrastructure.Migrate),
-		"integration": migration.Operation(integration.Migrate),
-		"identity": migration.Operation(identity.Migrate),
-		"audit": migration.Operation(audit.Migrate),
+		"foundation":     migrationimpl.New(foundation.Migrate),
+		"infrastructure": migrationimpl.New(infrastructure.Migrate),
+		"integration":    migrationimpl.New(integration.Migrate),
+		"identity":       migrationimpl.New(identity.Migrate),
+		"audit":          migrationimpl.New(audit.Migrate),
 	}
 
-	return registry.New(map[string]command.Command{
-		constants.Serve: serve.New(),
-		constants.Migrate: migrate.New(db, migrations),
-		constants.AuditReplay: auditreplay.New(db),
-		constants.AuditStorage: auditstorage.New(db),
+	return registryimpl.New(map[string]command.Command{
+		constants.Serve:          serve.New(),
+		constants.Migrate:        migrate.New(db, migrations),
+		constants.AuditReplay:    auditreplay.New(db),
+		constants.AuditStorage:   auditstorage.New(db),
 		constants.BootstrapAdmin: bootstrapadmin.New(),
-		constants.MailReconcile: mailreconcile.New(db),
-		constants.RBACMigrate: rbacmigrate.New(),
+		constants.MailReconcile:  mailreconcile.New(db),
+		constants.RBACMigrate:    rbacmigrate.New(),
 	})
 }

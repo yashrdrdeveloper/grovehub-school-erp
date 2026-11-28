@@ -1,0 +1,55 @@
+name: Platform command architecture
+
+on:
+  push:
+    paths:
+      - 'backend/projects/platform/cmd/**'
+      - 'backend/projects/platform/services/**'
+      - 'backend/projects/platform/launcher/**'
+      - 'backend/libs/**'
+      - 'scripts/backend/**'
+      - 'scripts/identity/**'
+      - '.github/workflows/platform-cmd.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  command-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GOWORK: 'off'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.3'
+          cache-dependency-path: |
+            backend/projects/platform/go.sum
+            backend/libs/core/go.sum
+            backend/libs/platform/go.sum
+      - name: Enforce single maintained entry point
+        run: |
+          test -f backend/projects/platform/cmd/main.go
+          test "$(find backend/projects/platform/cmd -mindepth 1 -maxdepth 1 -printf '%f\n' | sort)" = "$(printf 'internal\nmain.go')"
+      - name: Generate annotated source and compile executable
+        run: make backend-build
+      - name: Run command unit tests and report statement coverage
+        run: make unit-test package=cmd
+      - name: Verify CLI rejects unknown command without opening databases
+        shell: bash
+        run: |
+          set +e
+          .runtime/bin/groovehub-platform unknown
+          code=$?
+          set -e
+          test "$code" -eq 2
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: platform-command-coverage
+          path: |
+            backend/projects/platform/.generated/unit-coverage/cmd.out
+            .runtime/reports/unit-coverage/cmd.html

@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm"
 
 	"grovehub/cmd/internal/src/operations/migration"
+	migrationimpl "grovehub/cmd/internal/src/operations/migration/impl"
 	"grovehub/cmd/internal/src/strategies/migrate"
 )
 
@@ -64,7 +65,7 @@ func TestMigration(t *testing.T) {
 			var ran []string
 			operations := map[string]migration.Migration{}
 			for _, service := range []string{"foundation", "infrastructure", "integration", "identity", "audit"} {
-				operations[service] = migration.Operation(func(context.Context, *gorm.DB) error {
+				operations[service] = migrationimpl.New(func(context.Context, *gorm.DB) error {
 					ran = append(ran, service)
 					if tc.fail == service {
 						return errors.New("migration")

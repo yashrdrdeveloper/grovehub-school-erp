@@ -23,6 +23,11 @@ var _ = Describe("Resolve", func() {
 	Expect(err).NotTo(HaveOccurred())
 	Expect(coverage.Names(selected)).To(Equal("foundation, identity"))
 
+	Expect(os.MkdirAll(filepath.Join(backend, "cmd"), 0755)).To(Succeed())
+	selected, err = coverage.Resolve(backend, filepath.Join(backend, "libs", "core"), "cmd", "")
+	Expect(err).NotTo(HaveOccurred())
+	Expect(coverage.Names(selected)).To(Equal("cmd"))
+
 	selected, err = coverage.Resolve(backend, filepath.Join(backend, "libs", "core"), "foundation", "")
 	Expect(err).NotTo(HaveOccurred())
 	Expect(coverage.Names(selected)).To(Equal("foundation"))

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"time"
 
 	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
@@ -11,26 +12,42 @@ import (
 	"grovehub/launcher"
 )
 
-// @Strategy
-type strategy struct{}
-
-func New() command.Command {
-	return strategy{}
+type Dependencies struct {
+	Logger     func(io.Writer) (*slog.Logger, error)
+	Initialize func(context.Context, *slog.Logger) coretelemetry.Shutdown
+	Run        func(*slog.Logger) error
 }
 
-func (strategy) Run(args []string, output, diagnostics io.Writer) int {
+// @Strategy
+type strategy struct {
+	dependencies Dependencies
+}
+
+func New() command.Command {
+	return NewWithDependencies(Dependencies{
+		Logger:     launcher.NewLogger,
+		Initialize: coretelemetry.Initialize,
+		Run:        launcher.Run,
+	})
+}
+
+func NewWithDependencies(dependencies Dependencies) command.Command {
+	return &strategy{dependencies: dependencies}
+}
+
+func (s *strategy) Run(args []string, output, diagnostics io.Writer) int {
 	if len(args) != 0 {
 		_, _ = fmt.Fprintln(diagnostics, "usage: groovehub-platform serve")
 		return 2
 	}
 
-	logger, err := launcher.NewLogger(output)
+	logger, err := s.dependencies.Logger(output)
 	if err != nil {
 		_, _ = fmt.Fprintf(diagnostics, "invalid GROVEHUB_LOG_LEVELS: %v\n", err)
 		return 1
 	}
 
-	shutdownTelemetry := coretelemetry.Initialize(context.Background(), logger)
+	shutdownTelemetry := s.dependencies.Initialize(context.Background(), logger)
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -51,7 +68,7 @@ func (strategy) Run(args []string, output, diagnostics io.Writer) int {
 		"phase", "0.1.1",
 	)
 
-	if err := launcher.Run(logger); err != nil {
+	if err := s.dependencies.Run(logger); err != nil {
 		logger.Error(
 			"GroveHub stopped with error",
 			"service", coretelemetry.ServiceLauncherEdge.Name,

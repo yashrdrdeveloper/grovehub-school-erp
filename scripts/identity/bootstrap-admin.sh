@@ -33,10 +33,12 @@ if [[ "${PASSWORD}" != "${CONFIRM_PASSWORD}" ]]; then
   exit 1
 fi
 
+bash "${SCRIPT_DIR}/../backend/generate-annotations.sh"
+
 args=(--confirm-bootstrap --password-stdin --email "$1" --first-name "$2" --last-name "$3" --tenant-id "$4")
 if [[ "$#" -eq 5 ]]; then args+=(--person-gid "$5"); fi
 (
   cd -- "${BACKEND_DIR}"
-  printf '%s\n' "${PASSWORD}" | go run ./cmd identity-bootstrap-admin "${args[@]}"
+  printf '%s\n' "${PASSWORD}" | go run -overlay="${BACKEND_DIR}/.generated/overlay.json" ./cmd identity-bootstrap-admin "${args[@]}"
 )
 unset PASSWORD CONFIRM_PASSWORD

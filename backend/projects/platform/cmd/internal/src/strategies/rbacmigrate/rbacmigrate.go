@@ -8,15 +8,23 @@ import (
 	"grovehub/services/identity/rbacmigrationcli"
 )
 
-// @Strategy
-type strategy struct{}
+type Runner func([]string, io.Writer, io.Writer) error
 
-func New() command.Command {
-	return strategy{}
+// @Strategy
+type strategy struct {
+	run Runner
 }
 
-func (strategy) Run(args []string, output, diagnostics io.Writer) int {
-	if err := rbacmigrationcli.Run(args, output, diagnostics); err != nil {
+func New() command.Command {
+	return NewWithRunner(rbacmigrationcli.Run)
+}
+
+func NewWithRunner(run Runner) command.Command {
+	return &strategy{run: run}
+}
+
+func (s *strategy) Run(args []string, output, diagnostics io.Writer) int {
+	if err := s.run(args, output, diagnostics); err != nil {
 		_, _ = fmt.Fprintln(diagnostics, "identity-rbac-migrate:", err)
 		return 1
 	}
