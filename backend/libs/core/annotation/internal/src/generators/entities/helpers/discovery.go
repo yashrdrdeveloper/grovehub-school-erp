@@ -2,10 +2,8 @@ package helpers
 
 import (
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
-	"bytes"
 	"fmt"
 	"go/ast"
-	"go/format"
 	"go/parser"
 	"go/token"
 	"os"
@@ -14,6 +12,10 @@ import (
 )
 
 func Generate(sourceDir,outputDir string) error {
+	return GenerateWithRenderer(sourceDir,outputDir,layout.Render)
+}
+
+func GenerateWithRenderer(sourceDir,outputDir string,render layout.Renderer)error{
 	files,err:=layout.GoFiles(sourceDir)
 	if err!=nil{return err}
 	type parsedFile struct {
@@ -71,11 +73,10 @@ func Generate(sourceDir,outputDir string) error {
 				}
 				for _,field:=range typ.Fields.List {
 					if len(field.Names)==0{return fmt.Errorf("%s.%s: embedded fields are not supported",src.name,e.name)}
-					var rendered bytes.Buffer
-					if err:=format.Node(&rendered,file.fset,field.Type);err!=nil{return err}
+					rendered,err:=render(file.fset,field.Type);if err!=nil{return err}
 					for _,name:=range field.Names{
 						if !name.IsExported(){return fmt.Errorf("%s.%s: unexported field %s cannot be generated",src.name,e.name,name.Name)}
-						e.fields=append(e.fields,fieldSpec{name:name.Name,typ:rendered.String()})
+						e.fields=append(e.fields,fieldSpec{name:name.Name,typ:rendered})
 					}
 				}
 				// Preserve the current Foundation Person semantics: custom value

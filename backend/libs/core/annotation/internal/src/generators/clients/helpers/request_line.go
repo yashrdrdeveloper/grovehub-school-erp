@@ -1,10 +1,9 @@
 package helpers
 
 import (
-	"bytes"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
 	"fmt"
 	"go/ast"
-	"go/format"
 	"go/token"
 	"strings"
 )
@@ -38,7 +37,7 @@ func requestLine(doc *ast.CommentGroup) (endpointMethod,bool,error) {
 	return result,found,nil
 }
 
-func endpointArguments(set *token.FileSet, fn *ast.FuncType, args []string, method endpointMethod) (endpointMethod,error) {
+func endpointArguments(set *token.FileSet, fn *ast.FuncType, args []string, method endpointMethod,render layout.Renderer) (endpointMethod,error) {
 	if len(args)!=2 || fn.Params==nil || len(fn.Params.List)!=2 || fn.Results==nil {
 		return method,fmt.Errorf("@RequestLine requires context and one operation-specific request struct")
 	}
@@ -64,8 +63,7 @@ func endpointArguments(set *token.FileSet, fn *ast.FuncType, args []string, meth
 	if len(results[0].Names)>0 || len(results[len(results)-1].Names)>0 {
 		return method,fmt.Errorf("named @RequestLine results are not supported")
 	}
-	var result bytes.Buffer
-	if err:=format.Node(&result,set,results[0].Type);err!=nil{return method,err}
-	method.resultType=result.String()
+	result,err:=render(set,results[0].Type);if err!=nil{return method,err}
+	method.resultType=result
 	return method,nil
 }

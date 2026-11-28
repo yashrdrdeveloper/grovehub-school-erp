@@ -2,16 +2,18 @@ package helpers
 
 import (
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
-	"bytes"
 	"fmt"
 	"go/ast"
-	"go/format"
 	"go/parser"
 	"go/token"
 	"strings"
 )
 
 func Discover(dir, generatedRoutes string) ([]clientProxy,error) {
+	return DiscoverWithRenderer(dir,generatedRoutes,layout.Render)
+}
+
+func DiscoverWithRenderer(dir,generatedRoutes string,render layout.Renderer)([]clientProxy,error){
 	files,err := layout.GoFiles(dir)
 	if err != nil { return nil,err }
 	var result []clientProxy
@@ -51,9 +53,9 @@ func Discover(dir, generatedRoutes string) ([]clientProxy,error) {
 						if len(param.Names)==0 { return nil,fmt.Errorf("%s: all arguments must be named",name) }
 						for _,arg := range param.Names { args=append(args,arg.Name) }
 					}
-					var signature bytes.Buffer
-					if err := format.Node(&signature,set,fn); err != nil { return nil,err }
-					method := proxyMethod{name:member.Names[0].Name,signature:strings.TrimPrefix(signature.String(),"func"),
+					signature,err:=render(set,fn)
+					if err!=nil{return nil,err}
+					method := proxyMethod{name:member.Names[0].Name,signature:strings.TrimPrefix(signature,"func"),
 						arguments:strings.Join(args,", "),hasResults:fn.Results!=nil&&len(fn.Results.List)>0}
 					if hasProxy {
 						parts := strings.Split(target,".")
@@ -69,7 +71,7 @@ func Discover(dir, generatedRoutes string) ([]clientProxy,error) {
 						route,err := resolveRoute(line.verb, line.path, patterns)
 						if err != nil { return nil,fmt.Errorf("%s: %w",name,err) }
 						line.path = route
-						ep,err := endpointArguments(set,fn,args,line)
+						ep,err := endpointArguments(set,fn,args,line,render)
 						if err != nil { return nil,fmt.Errorf("%s: %w",name,err) }
 						method.endpoint = &ep
 					}

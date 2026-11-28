@@ -2,10 +2,8 @@ package helpers
 
 import (
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
-	"bytes"
 	"fmt"
 	"go/ast"
-	"go/format"
 	"go/parser"
 	"go/token"
 	"sort"
@@ -14,9 +12,14 @@ import (
 )
 
 func exprString(e ast.Expr) string {
-	var b bytes.Buffer
-	if err:=format.Node(&b,token.NewFileSet(),e);err!=nil{return ""}
-	return strings.Join(strings.Fields(b.String()),"")
+	return ExpressionString(e)
+}
+
+// ExpressionString normalizes rendered type expressions for signature matching.
+func ExpressionString(e ast.Expr)string{
+	value,err:=layout.Render(token.NewFileSet(),e)
+	if err!=nil{return ""}
+	return strings.Join(strings.Fields(value),"")
 }
 
 func findConfig(dir,name string) (*ast.CompositeLit,error) {

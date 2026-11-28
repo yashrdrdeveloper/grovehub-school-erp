@@ -2,16 +2,18 @@ package helpers
 
 import (
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
-	"bytes"
 	"fmt"
 	"go/ast"
-	"go/format"
 	"go/parser"
 	"go/token"
 	"strings"
 )
 
 func Discover(backend,modulePath,dir string)(mappingGroup,bool,error) {
+	return DiscoverWithRenderer(backend,modulePath,dir,layout.Render)
+}
+
+func DiscoverWithRenderer(backend,modulePath,dir string,render layout.Renderer)(mappingGroup,bool,error){
 	files,err:=layout.GoFiles(dir);if err!=nil{return mappingGroup{},false,err}
 	var result mappingGroup
 	found:=false
@@ -49,13 +51,11 @@ func Discover(backend,modulePath,dir string)(mappingGroup,bool,error) {
 						if !ok{return result,false,fmt.Errorf("%s: unmapped destination field %s",member.Names[0].Name,field)}
 						ordered=append(ordered,fieldMapping{name:field,expression:expr})
 					}
-					var signature bytes.Buffer
-					if err:=format.Node(&signature,set,fn);err!=nil{return result,false,err}
-					var resultType bytes.Buffer
-					if err:=format.Node(&resultType,set,fn.Results.List[0].Type);err!=nil{return result,false,err}
+					signature,err:=render(set,fn);if err!=nil{return result,false,err}
+					resultType,err:=render(set,fn.Results.List[0].Type);if err!=nil{return result,false,err}
 					result.methods=append(result.methods,mappingMethod{
-						name:member.Names[0].Name,signature:strings.TrimPrefix(signature.String(),"func"),
-						output:resultType.String(),fields:ordered,
+						name:member.Names[0].Name,signature:strings.TrimPrefix(signature,"func"),
+						output:resultType,fields:ordered,
 					})
 				}
 			}
