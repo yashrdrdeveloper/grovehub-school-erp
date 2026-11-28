@@ -17,7 +17,11 @@ import (
 	"grovehub/services/audit/internal/app/constants/events"
 	protected "grovehub/services/audit/internal/app/controller/activity/protected"
 	controllerimpl "grovehub/services/audit/internal/app/controller/activity/protected/impl"
-	operator "grovehub/services/audit/internal/app/controller/operator/restricted"
+	operator "grovehub/services/audit/internal/app/controller/operator"
+	operatorroutes "grovehub/services/audit/internal/app/controller/operator/restricted"
+	operatorcontroller "grovehub/services/audit/internal/app/controller/operator/restricted/impl"
+	operatorrepo "grovehub/services/audit/internal/app/repository/operator/impl"
+	operatorservice "grovehub/services/audit/internal/app/services/operator/impl"
 	consumer "grovehub/services/audit/internal/app/events/consumers/activity"
 	repository "grovehub/services/audit/internal/app/repository/activity/impl"
 	rejection "grovehub/services/audit/internal/app/repository/rejection/impl"
@@ -41,12 +45,7 @@ func New(logger *slog.Logger, db *gorm.DB, client messaging.MessagingClient, acc
 
 type runtime struct {
 	controller          protected.ActivityController
-	operator            http.HandlerFunc
-	operatorSearch      http.HandlerFunc
-	schoolCheck         http.HandlerFunc
-	schoolReceipt       http.HandlerFunc
-	schoolStatusReceipt http.HandlerFunc
-	schoolReceiptSearch http.HandlerFunc
+	operator operator.Controller
 	stop                context.CancelFunc
 	wait                sync.WaitGroup
 	once                sync.Once
@@ -77,12 +76,7 @@ func (b *builder) Build() (bootstrap.Runtime, error) {
 	ctx, stop := context.WithCancel(context.Background())
 	module := &runtime{
 		controller:          controllerimpl.New(service.New(repo, b.access)),
-		operator:            operator.Handler(b.db),
-		operatorSearch:      operator.SearchHandler(b.db),
-		schoolCheck:         operator.SchoolCheckHandler(b.db),
-		schoolReceipt:       operator.ReceiptHandler(b.db),
-		schoolStatusReceipt: operator.StatusReceiptHandler(b.db),
-		schoolReceiptSearch: operator.ReceiptSearchHandler(b.db),
+		operator: operatorcontroller.New(operatorservice.New(operatorrepo.New(b.db))),
 		stop:                stop,
 		monitor:             monitor,
 	}
@@ -138,12 +132,7 @@ func (module *runtime) consume(ctx context.Context, logger *slog.Logger, client 
 
 func (module *runtime) RegisterHTTP(mux *http.ServeMux) {
 	routes.RegisterHTTP(mux, module.controller)
-	mux.HandleFunc(operator.Pattern, module.operator)
-	mux.HandleFunc(operator.SearchPattern, module.operatorSearch)
-	mux.HandleFunc(operator.SchoolCheckPattern, module.schoolCheck)
-	mux.HandleFunc(operator.ReceiptPattern, module.schoolReceipt)
-	mux.HandleFunc(operator.StatusReceiptPattern, module.schoolStatusReceipt)
-	mux.HandleFunc(operator.ReceiptSearchPattern, module.schoolReceiptSearch)
+	operatorroutes.Register(mux, module.operator)
 }
 
 func (module *runtime) Close() {
