@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 	"gorm.io/gorm"
 
-	"grovehub/libs/schoolgateway"
+	schoolgateway "grovehub/launcher/services/gateway/session"
 	"grovehub/services/identity/internal/app/constants/permission"
 	controller "grovehub/services/identity/internal/app/controller/account/protected/impl"
 	dto "grovehub/services/identity/internal/app/dto/account"

@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	mockdatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tests/mocks/database"
-	schoolgateway "grovehub/libs/schoolgateway"
+	schoolgateway "grovehub/launcher/services/gateway/session"
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/entity"

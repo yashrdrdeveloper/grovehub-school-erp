@@ -3,7 +3,7 @@ package impl
 
 import (
 	"context"
-	"grovehub/libs/schoolgateway"
+	schoolgateway "grovehub/launcher/services/gateway/session"
 	"time"
 	"grovehub/services/identity/internal/app/entity"
 	secrets "grovehub/services/identity/internal/app/services/authentication/helpers"

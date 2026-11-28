@@ -6,6 +6,7 @@ import (
 	"context"
 
 	config "grovehub/services/infrastructure/internal/app/config/messaging"
+	"grovehub/services/infrastructure/internal/app/client/messaging/contracts"
 	"grovehub/services/infrastructure/internal/app/client/messaging/helpers"
 )
 
@@ -17,31 +18,20 @@ func DefaultMessaging() Config { return config.FromEnv() }
 func FromEnv() Config { return config.FromEnv() }
 
 // Event is a transport-neutral pending outbox message.
-type Event struct {
-	EventID string
-	Topic string
-	Payload []byte
-	Metadata map[string]string
-}
+type Event = contracts.Event
 
 type EventStore interface {
 	Enqueue(ctx context.Context, event Event) error
 }
 
 // Message represents a broker delivery independent of provider types.
-type Message struct {
-	ID string
-	Payload []byte
-	Metadata map[string]string
-}
+type Message = contracts.Message
 
-type Handler func(context.Context, Message) error
+type Handler = contracts.Handler
 type MessageHandler = Handler
 
 // PublishOptions selects transactional outbox persistence for a message.
-type PublishOptions struct {
-	Persist bool
-}
+type PublishOptions = contracts.PublishOptions
 
 type Publisher interface {
 	Publish(ctx context.Context, topic string, payload []byte, metadata map[string]string) error
@@ -64,16 +54,4 @@ func WithSubscriptionObserver(ctx context.Context, observer func(bool)) context.
 
 func NotifySubscription(ctx context.Context, ready bool) {
 	helpers.NotifySubscription(ctx, ready)
-}
-
-// @Client messagingClient
-type MessagingClient interface {
-	// @Proxy service.Publish
-	Publish(ctx context.Context, topic string, payload []byte, metadata map[string]string) error
-	// @Proxy service.PublishWithOptions
-	PublishWithOptions(ctx context.Context, topic string, payload []byte, metadata map[string]string, options PublishOptions) error
-	// @Proxy service.Consume
-	Consume(ctx context.Context, topic string, handler Handler) error
-	// @Proxy service.Health
-	Health(ctx context.Context) error
 }

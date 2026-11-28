@@ -10,7 +10,7 @@ import (
  "strings"
 
  core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
- school "grovehub/libs/schoolgateway"
+ school "grovehub/launcher/services/gateway/session"
  integration "grovehub/services/integration/client/principal"
 )
 

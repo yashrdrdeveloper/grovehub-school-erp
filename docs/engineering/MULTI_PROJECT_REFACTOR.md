@@ -14,7 +14,7 @@ Baseline: phase-2.1-identity-account, bbd54e2a6f8217119bb72d7eccdb5dc1e2504e13. 
 ## Existing ownership
 Move Foundation, Identity, Infrastructure, Integration and Audit together into Platform. Preserve existing public routes, migrations, generated code conventions, operator commands and in-process clients. Communication is future work. School owns student, academic, attendance, CRM, finance, task and HR domains; Accounting deferred. Internal Tool owns separate operator identity, approvals, API templates, execution and environment configuration. Do not scaffold unused services merely to fill directories.
 
-Existing backend/libs/schoolgateway is application-specific: retain school session policy in Platform and expose only necessary verified contracts. Extract generic messaging from backend/libs/infrastructure into Core after dependency audit. Preserve Audit-owned producer facade and transactional semantics.
+Existing backend/projects/platform/launcher/services/gateway/session is application-specific: retain school session policy in Platform and expose only necessary verified contracts. Keep provider-owned messaging contracts in Platform Infrastructure's public client; Core remains provider-neutral. Preserve Audit-owned producer facade and transactional semantics.
 
 ## Migration gates
 1. Capture build/test baseline, route inventory, migration history, imports and aliases. Do not claim baseline green without execution.

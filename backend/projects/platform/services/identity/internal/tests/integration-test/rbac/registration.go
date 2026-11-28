@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 
 	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
-	"grovehub/libs/schoolgateway"
+	schoolgateway "grovehub/launcher/services/gateway/session"
 	foundation "grovehub/services/foundation/client/person"
 	"grovehub/services/identity/internal/app/constants/permission"
 	dto "grovehub/services/identity/internal/app/dto/account"

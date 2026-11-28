@@ -3,7 +3,7 @@ package impl
 
 import (
     "context"
-    "grovehub/libs/schoolgateway"
+    schoolgateway "grovehub/launcher/services/gateway/session"
     "errors"
     "log/slog"
     "net/http"

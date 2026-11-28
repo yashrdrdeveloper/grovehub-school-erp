@@ -163,7 +163,7 @@ Open decisions: actual tenant ID type/directory, final permission naming and gra
 
 ## Implementation checkpoint (26 November 2026)
 
-The additive RBAC schema, code-owned vocabularies, pure evaluator and tenant-scoped snapshot repository are implemented. Snapshot loading uses one SQL statement and rejects missing or inconsistent scope; seven SQL-mock regression scenarios pass. The school-specific principal and cookies are owned by `backend/libs/schoolgateway`. The evaluator ignores the legacy Admin claim. No live migration, registry seed, role backfill, protected route switch or approval workflow has been applied. Next implement controlled catalog registration/bootstrap and an authorization service that loads the verified actor's snapshot; then integrate operation-by-operation after staged migration and test verification. See [implementation progress](../internal/IMPLEMENTATION_PROGRESS.md).
+The additive RBAC schema, code-owned vocabularies, pure evaluator and tenant-scoped snapshot repository are implemented. Snapshot loading uses one SQL statement and rejects missing or inconsistent scope; seven SQL-mock regression scenarios pass. The school-specific principal and cookies are owned by `backend/projects/platform/launcher/services/gateway/session`. The evaluator ignores the legacy Admin claim. No live migration, registry seed, role backfill, protected route switch or approval workflow has been applied. Next implement controlled catalog registration/bootstrap and an authorization service that loads the verified actor's snapshot; then integrate operation-by-operation after staged migration and test verification. See [implementation progress](../internal/IMPLEMENTATION_PROGRESS.md).
 
 ## Registry and authorization checkpoint
 

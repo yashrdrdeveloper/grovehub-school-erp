@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	external "grovehub/launcher/services/gateway/operations/external"
-	schoolgateway "grovehub/libs/schoolgateway"
+	schoolgateway "grovehub/launcher/services/gateway/session"
 )
 
 type accessVerifier struct{}

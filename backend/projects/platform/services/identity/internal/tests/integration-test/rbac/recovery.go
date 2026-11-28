@@ -2,7 +2,7 @@ package rbac_test
 
 import (
 	"context"
-	"grovehub/libs/schoolgateway"
+	schoolgateway "grovehub/launcher/services/gateway/session"
 	"grovehub/services/audit"
 	"grovehub/services/infrastructure"
 	"time"

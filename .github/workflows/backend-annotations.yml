@@ -25,11 +25,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Inventory remaining School Gateway compatibility imports
+      - name: Reject legacy Platform libraries and imports
         shell: bash
         run: |
-          git grep -lF 'grovehub/libs/schoolgateway' -- '*.go' || true
-          git grep -lF 'libs/schoolgateway' -- '*.md' '*.sh' '*.yml' 'Makefile' '**/Makefile' || true
+          test ! -d backend/projects/platform/libs
+          if git grep -nF 'grovehub/libs/schoolgateway' -- '*.go'; then
+            echo "Use launcher/services/gateway/session."
+            exit 1
+          fi
+          if git grep -nF 'grovehub/libs/infrastructure/messaging' -- '*.go'; then
+            echo "Use services/infrastructure/client/messaging."
+            exit 1
+          fi
       - name: Reject legacy annotation imports and adjacent unit tests
         shell: bash
         run: |
@@ -153,7 +160,7 @@ jobs:
       - name: Run package-local tenant lifecycle regression tests
         working-directory: backend/projects/platform
         run: |
-          go test -vet=off -overlay=.generated/overlay.json ./launcher/bootstrap ./libs/schoolgateway ./services/identity/internal/app/services/authentication/operations/reconciletenant ./services/identity/internal/app/services/registration/operations/invitation ./services/identity/internal/app/services/account/operations/personprofile ./services/integration/internal/app/services/connection/impl ./services/integration/internal/app/services/connection/operations/oauth/strategies/impl ./services/audit/internal/app/controller/operator/restricted
+          go test -vet=off -overlay=.generated/overlay.json ./launcher/bootstrap ./launcher/services/gateway/internal/tests/unit-test/session ./services/identity/internal/app/services/authentication/operations/reconciletenant ./services/identity/internal/app/services/registration/operations/invitation ./services/identity/internal/app/services/account/operations/personprofile ./services/integration/internal/app/services/connection/impl ./services/integration/internal/app/services/connection/operations/oauth/strategies/impl ./services/audit/internal/app/controller/operator/restricted
       - name: Verify Integration resource packages compile with generated overlays
         working-directory: backend/projects/platform
         run: go test -vet=off -overlay=.generated/overlay.json ./services/integration/internal/tests/unit-test/...

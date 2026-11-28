@@ -3,7 +3,7 @@ package impl
 import (
     "context"
     auditclient "grovehub/services/audit/client/producer"
-    "grovehub/libs/schoolgateway"
+    schoolgateway "grovehub/launcher/services/gateway/session"
     eventhelpers "grovehub/services/foundation/internal/app/events/producers/person/operations/changed/helpers"
 
     foundationevents "grovehub/services/foundation/internal/app/constants/events"

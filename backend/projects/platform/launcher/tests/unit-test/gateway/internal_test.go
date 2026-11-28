@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	internalgateway "grovehub/launcher/services/gateway/operations/inprocess"
-	schoolgateway "grovehub/libs/schoolgateway"
+	schoolgateway "grovehub/launcher/services/gateway/session"
 )
 
 type allowOperation struct{}

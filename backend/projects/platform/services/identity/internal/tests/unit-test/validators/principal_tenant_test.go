@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	schoolgateway "grovehub/libs/schoolgateway"
+	schoolgateway "grovehub/launcher/services/gateway/session"
 	"grovehub/services/identity/internal/app/services/security/principal"
 )
 

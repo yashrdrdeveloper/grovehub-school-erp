@@ -2,7 +2,7 @@ package refresh
 
 import (
 	"context"
- "grovehub/libs/schoolgateway"
+ schoolgateway "grovehub/launcher/services/gateway/session"
 	"time"
 
 	authdto "grovehub/services/identity/internal/app/dto/authentication"
