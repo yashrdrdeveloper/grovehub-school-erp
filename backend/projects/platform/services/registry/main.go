@@ -7,6 +7,8 @@ import (
 )
 
 type Service = bootstrap.Service
+type Dependencies = bootstrap.Dependencies
+type Module = bootstrap.Runtime
 
 func Bootstrap() Service {
 	return bootstrapimpl.NewServiceBootstrap()

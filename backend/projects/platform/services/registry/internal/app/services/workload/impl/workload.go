@@ -110,7 +110,7 @@ func (s *WorkloadService) RevokeKey(ctx context.Context, workloadID, keyID strin
 	if err := validator.ValidateID(workloadID); err != nil {
 		return err
 	}
-	if err := validator.ValidateIdentifier(keyID); err != nil {
+	if err := validator.ValidateKeyID(keyID); err != nil {
 		return err
 	}
 	return helpers.RepositoryError(s.keys.Revoke(ctx, workloadID, keyID))

@@ -7,12 +7,17 @@ import (
 
 	"gorm.io/gorm"
 
+	platformbootstrap "grovehub/libs/platform/bootstrap"
+
 	"grovehub/services/registry/internal/app/bootstrap"
 	"grovehub/services/registry/internal/resources/migrations"
 )
 
 func NewServiceBootstrap() bootstrap.Service {
-	return NewOperatorBootstrap(runMigration)
+	return platformbootstrap.RuntimeRegistration[*gorm.DB, bootstrap.Dependencies, bootstrap.Runtime]{
+		Service: NewOperatorBootstrap(runMigration),
+		BuildRuntime: Build,
+	}
 }
 
 func runMigration(ctx context.Context, db *gorm.DB) error {

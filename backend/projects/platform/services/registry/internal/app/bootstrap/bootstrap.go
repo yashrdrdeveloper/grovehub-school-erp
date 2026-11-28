@@ -4,8 +4,16 @@ import (
 	"gorm.io/gorm"
 
 	platformbootstrap "grovehub/libs/platform/bootstrap"
+	"grovehub/services/registry/client/authorization"
 )
 
-// Service exposes the Registry's currently available bootstrap capabilities.
-// The HTTP runtime will be added with the authenticated Registry API.
-type Service = platformbootstrap.Service[*gorm.DB]
+type Dependencies struct {
+	DB       *gorm.DB
+	Audience string
+}
+
+type Runtime interface {
+	Authorization() authorization.Client
+}
+
+type Service = platformbootstrap.RuntimeService[*gorm.DB, Dependencies, Runtime]

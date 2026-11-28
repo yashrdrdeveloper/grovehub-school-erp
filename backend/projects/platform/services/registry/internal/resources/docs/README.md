@@ -32,3 +32,19 @@ a controlled overlap; revoked key identifiers and public keys cannot be reused.
 Grant creation requires a provider-owned capability and an exact target scope.
 Grant revocation deletes the grant. Lifecycle writes require expected versions.
 These services are not exposed over HTTP until the gateway is ready.
+
+Live verification is available through Bootstrap().Build(Dependencies) and
+Runtime.Authorization(). The route provider must supply an exact target,
+capability, method and request URI. The signed credential binds those values
+and a deployment-specific audience. The resolver reads active key, caller,
+grant and target state in one database statement; no stale-key cache or
+legacy fallback is used. The inactive-target exception must be restricted
+to provider-defined lifecycle/recovery routes, not request parameters.
+
+The initial verifier accepts workload-only credentials, never actor or
+session assertions. Delegation will require independently verified identity
+proof. Credentials are short-lived bearer tokens, not single-use nonces;
+mutation replay still requires idempotency/expected-version checks. Since
+the existing token timestamp has second precision, sign after the next
+whole second following key activation or workload status change. No routes
+are switched to this verifier in this stage.
