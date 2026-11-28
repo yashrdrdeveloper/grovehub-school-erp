@@ -1,0 +1,97 @@
+name: Launcher source formatting (one-time)
+
+on:
+  push:
+    branches: [phase1-refactor]
+    paths: ['.github/workflows/launcher-format-once.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  format-launcher:
+    if: github.ref == 'refs/heads/phase1-refactor'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.3'
+          cache: false
+      - name: Format tracked Launcher Go files and preserve source tokens
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/launcherfmt.go" <<'GO'
+          package main
+          
+          import (
+           "bytes"
+           "fmt"
+           "go/ast"
+           "go/format"
+           "go/parser"
+           "go/scanner"
+           "go/token"
+           "os"
+           "sort"
+           "strings"
+          )
+          
+          func tokens(src []byte) []string {
+           var s scanner.Scanner
+           f:=token.NewFileSet().AddFile("source.go",-1,len(src))
+           s.Init(f,src,nil,scanner.ScanComments)
+           var out []string
+           for { _,t,l:=s.Scan(); if t==token.EOF {break}; if t==token.SEMICOLON {continue}; out=append(out,t.String()+"\x00"+l) }
+           return out
+          }
+          
+          func formatFile(path string) error {
+           src,err:=os.ReadFile(path);if err!=nil{return err}
+           base,err:=format.Source(src);if err!=nil{return err}
+           fs:=token.NewFileSet(); file,err:=parser.ParseFile(fs,path,base,parser.ParseComments);if err!=nil{return err}
+           edits:=map[int]string{}
+           pos:=func(p token.Pos)int{return fs.Position(p).Offset}
+           ast.Inspect(file,func(n ast.Node)bool{
+            b,ok:=n.(*ast.BlockStmt); if !ok || len(b.List)==0{return true}
+            left,right:=pos(b.Lbrace),pos(b.Rbrace)
+            if !bytes.Contains(base[left:right],[]byte("\n")) {edits[left+1]="\n";edits[right]="\n"}
+            if len(b.List)>=3 {for i:=1;i<len(b.List);i++ {prev,next:=b.List[i-1],b.List[i]; switch prev.(type){case *ast.IfStmt,*ast.ForStmt,*ast.RangeStmt,*ast.SwitchStmt,*ast.TypeSwitchStmt,*ast.SelectStmt:
+             a,z:=pos(prev.End()),pos(next.Pos()); gap:=base[a:z]; if strings.TrimSpace(string(gap))==""&&bytes.Count(gap,[]byte("\n"))==1{edits[a]="\n"}
+            }}}
+            return true
+           })
+           for i:=1;i<len(file.Decls);i++ {prev,next:=file.Decls[i-1],file.Decls[i]; start:=next.Pos();switch d:=next.(type){case *ast.FuncDecl:if d.Doc!=nil{start=d.Doc.Pos()};case *ast.GenDecl:if d.Doc!=nil{start=d.Doc.Pos()}}
+            a,z:=pos(prev.End()),pos(start);gap:=base[a:z];if strings.TrimSpace(string(gap))==""&&bytes.Count(gap,[]byte("\n"))==1{edits[a]="\n"}
+           }
+           if len(file.Decls)>0 { start:=file.Decls[0].Pos();if d,ok:=file.Decls[0].(*ast.GenDecl);ok&&d.Doc!=nil{start=d.Doc.Pos()};a,z:=pos(file.Name.End()),pos(start);gap:=base[a:z];if strings.TrimSpace(string(gap))==""&&bytes.Count(gap,[]byte("\n"))==1{edits[a]="\n"} }
+           keys:=make([]int,0,len(edits));for k:=range edits{keys=append(keys,k)};sort.Sort(sort.Reverse(sort.IntSlice(keys)))
+           out:=append([]byte(nil),base...);for _,k:=range keys{out=append(append(append([]byte(nil),out[:k]...),edits[k]...),out[k:]...)}
+           out,err=format.Source(out);if err!=nil{return err}
+           if strings.Join(tokens(base),"\x01")!=strings.Join(tokens(out),"\x01"){return fmt.Errorf("source tokens changed: %s",path)}
+           if !bytes.Equal(src,out){if err:=os.WriteFile(path,out,0644);err!=nil{return err};fmt.Println(path)}
+           return nil
+          }
+          func main(){for _,path:=range os.Args[1:]{if err:=formatFile(path);err!=nil{fmt.Fprintln(os.Stderr,err);os.Exit(1)}}}
+          
+          GO
+          go build -o "$RUNNER_TEMP/launcherfmt" "$RUNNER_TEMP/launcherfmt.go"
+          files=()
+          while IFS= read -r -d '' path; do
+            [[ "$path" == *.go ]] && files+=("$path")
+          done < <(git ls-files -z backend/projects/platform/launcher/)
+          printf 'Formatting %s tracked Go files\n' "${#files[@]}"
+          "$RUNNER_TEMP/launcherfmt" "${files[@]}"
+          test -z "$(gofmt -l "${files[@]}")"
+          git diff --check
+          git diff --stat
+          git add -- "${files[@]}"
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'style(launcher): format Go source and tests for readability'
+          git push origin HEAD:refs/heads/phase1-refactor
