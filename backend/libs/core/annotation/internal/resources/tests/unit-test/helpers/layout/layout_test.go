@@ -3,12 +3,14 @@ package layout_test
 import (
 	"os"
 	"path/filepath"
-	"testing"
+	. "github.com/onsi/ginkgo/v2"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/generation/layout"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
 )
 
-func TestReadModulePath(t *testing.T) {
+var _ = Describe("ReadModulePath", func() {
+	It("Read Module Path", func() {
+		t := GinkgoT()
 	root := t.TempDir()
 	if _, err := layout.ReadModulePath(root); err == nil {
 		t.Fatal("missing module file accepted")
@@ -33,9 +35,13 @@ func TestReadModulePath(t *testing.T) {
 			t.Fatalf("got %q (%v), want %q", got, err, entry.want)
 		}
 	}
-}
 
-func TestResolveImport(t *testing.T) {
+	})
+})
+
+var _ = Describe("ResolveImport", func() {
+	It("Resolve Import", func() {
+		t := GinkgoT()
 	root := t.TempDir()
 	modulePath := "example.org/internal-platform"
 	resolved, err := layout.ResolveImport(root, modulePath, modulePath+"/services/demo/dto")
@@ -47,4 +53,6 @@ func TestResolveImport(t *testing.T) {
 			t.Fatalf("invalid or foreign import accepted: %q", invalid)
 		}
 	}
-}
+
+	})
+})

@@ -18,7 +18,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/generation/layout"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
 )
 
 type endpointMethod struct {

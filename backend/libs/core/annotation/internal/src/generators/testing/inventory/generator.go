@@ -4,7 +4,6 @@ package inventory
 
 import (
 
-    "fmt"
     "go/ast"
     "go/parser"
     "go/token"
@@ -37,6 +36,14 @@ func Inspect(owner string)(Report,error){
     if _,err:=os.Stat(root);os.IsNotExist(err){root=owner}
     testRoot:=filepath.Join(owner,"internal","tests","unit-test")
     if _,err:=os.Stat(testRoot);os.IsNotExist(err){testRoot=filepath.Join(owner,"tests","unit-test")}
+    testRoots := []string{testRoot}
+    if root == owner {
+        entries, err := os.ReadDir(owner)
+        if err != nil { return Report{}, err }
+        for _, entry := range entries {
+            if entry.IsDir() { testRoots = append(testRoots, filepath.Join(owner, entry.Name(), "internal", "resources", "tests", "unit-test")) }
+        }
+    }
     var result Report
     tracked:=map[string]bool{}
     err:=filepath.WalkDir(root,func(path string,entry fs.DirEntry,err error)error{
@@ -51,6 +58,10 @@ func Inspect(owner string)(Report,error){
         relative,err:=filepath.Rel(root,path)
         if err!=nil{return err}
         expected:=filepath.Join(testRoot,strings.TrimSuffix(relative,".go")+"_test.go")
+        parts := strings.Split(filepath.ToSlash(relative), "/")
+        if root == owner && len(parts) > 3 && parts[1] == "internal" && parts[2] == "src" {
+            expected = filepath.Join(owner, parts[0], "internal", "resources", "tests", "unit-test", filepath.FromSlash(strings.TrimSuffix(strings.Join(parts[3:], "/"), ".go")+"_test.go"))
+        }
         result.SourceFiles++
         if _,err:=os.Stat(expected);err==nil{tracked[expected]=true}
         f,err:=parser.ParseFile(token.NewFileSet(),path,nil,0)
@@ -74,11 +85,14 @@ func Inspect(owner string)(Report,error){
         if result.Missing[i].Source==result.Missing[j].Source{return result.Missing[i].Name<result.Missing[j].Name}
         return result.Missing[i].Source<result.Missing[j].Source
     })
+    for _, testRoot := range testRoots {
     err=filepath.WalkDir(testRoot,func(path string,entry fs.DirEntry,err error)error{
         if os.IsNotExist(err){return nil}
         if err!=nil{return err}
         if !entry.IsDir()&&strings.HasSuffix(path,"_test.go"){result.TestFiles++}
         return nil
     })
-    return result,err
+    if err != nil { return Report{}, err }
+    }
+    return result,nil
 }

@@ -18,7 +18,7 @@ import (
     "strings"
 
     "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
-    sourceparser "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/generation/parser"
+    sourceparser "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/parser"
 )
 
 

@@ -128,9 +128,9 @@ func generateDir(owner, dir string) error {
 						return fmt.Errorf("%s: @Mock requires interface %s", path, spec.Name.Name)
 					}
 					if isTest {
-						return fmt.Errorf("%s: @Mock interface must be in a normal Go file in internal/tests/mocks", path)
+						return fmt.Errorf("%s: @Mock interface must be in a normal Go file in a test-owned mocks directory", path)
 					}
-					if !strings.Contains(filepath.ToSlash(dir), "/tests/mocks/") {
+					if !strings.Contains(filepath.ToSlash(dir)+"/", "/tests/mocks/") {
 						return fmt.Errorf("%s: @Mock is limited to test-owned mocks", path)
 					}
 					if mockSource != "" && mockSource != path {
