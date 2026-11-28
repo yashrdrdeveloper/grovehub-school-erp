@@ -12,8 +12,8 @@ The words **MUST**, **MUST NOT**, and **SHOULD** express enforceable rules. Exis
 |---|---|---|
 | `docs/engineering/backend/backend.md` | This architecture/SRP/quality master | Service-specific details |
 | `docs/engineering/backend/<topic>.md` | Reusable technical guidance | Individual product workflows |
-| `backend/services/<module>/docs/engineering/` | Module-specific implementation, deviations, contracts, dependencies, runbooks | General platform-wide rules duplicated from here |
-| `backend/services/<module>/docs/product/` | Use cases, actor journeys, API sequences, request/response examples, acceptance criteria | Internal algorithm blueprints |
+| `backend/projects/<project>/services/<module>/docs/engineering/` | Module-specific implementation, deviations, contracts, dependencies, runbooks | General platform-wide rules duplicated from here |
+| `backend/projects/<project>/services/<module>/docs/product/` | Use cases, actor journeys, API sequences, request/response examples, acceptance criteria | Internal algorithm blueprints |
 | `backend/libs/<library>/docs/engineering/` | Shared capability contracts, use conditions, invariant/security guarantees | Domain- or vendor-specific product rules |
 | `backend/services/<module>/internal/resources/api/openapi/` | Machine-readable canonical API schema | Prose-only undocumented contract |
 | `backend/services/<module>/internal/resources/migrations/` | Immutable, ordered schema changes | Unreviewed generated schema mutation |
@@ -363,3 +363,6 @@ Use `gofmt` on all changed Go source files before a change is merged. Keep impor
 7. Persistently configurable business selections (including the active external sender or provider for a tenant) MUST NOT be frozen in service environment variables. Environment settings are reserved for deployment secrets, trusted origins, runtime endpoints and other deployment-owned invariants. Validate dynamic selections against tenant scope, active connection state and provider capability every use.
 8. Public routes for account activation, invitation grants or password recovery do not imply public account registration. Protected account creation is mandatory; grant-bound activation may be public-tier only if token consumption and business invariants are independently enforced.
 9. Changed source MUST pass `gofmt`, generation/build, authorization/tenant tests and documentation parity before merging. Avoid string-matching error messages when a typed/sentinel error can preserve the same safe API mapping.
+
+
+For new or revised module documentation, use the [service documentation template](service-documentation-template.md). Keep existing implementation-specific inventories rather than replacing them with placeholders.

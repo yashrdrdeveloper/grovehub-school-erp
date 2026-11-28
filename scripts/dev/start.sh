@@ -20,5 +20,8 @@ export IDENTITY_ALLOWED_ORIGIN="${IDENTITY_ALLOWED_ORIGIN:-http://127.0.0.1:4173
 # init all already includes the Integration schema.
 bash "${SCRIPT_DIR}/../database/migrate.sh" init all
 BACKEND_HOT_RELOAD=1 bash "${SCRIPT_DIR}/../backend/start.sh"
-bash "${SCRIPT_DIR}/../swagger/start.sh"
+# Optional developer documentation server: DEV_SWAGGER=1 make dev-start
+if [[ "${DEV_SWAGGER:-0}" == "1" ]]; then
+  bash "${SCRIPT_DIR}/../swagger/start.sh"
+fi
 bash "${SCRIPT_DIR}/../frontend/start.sh"
