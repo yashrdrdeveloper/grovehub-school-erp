@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	validation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/validation"
+	coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
 	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
 	httprequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/request"
 	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
@@ -113,7 +113,7 @@ var _ = Describe("HTTP REST executor", func() {
 		writer := httptest.NewRecorder()
 		customCalled := false
 		rest.Run(writer, routeRequest(http.MethodPost, "/people", `{"firstName":"  "}`, ""), rest.Config[rest.Empty, rest.Empty, personBody, personResponse]{
-			Body: validation.Rules[personBody]{
+			Body: coreannotation.ValidationRules[personBody]{
 				Validate: func(_ personBody) error { customCalled = true; return nil },
 			},
 			InvalidBody: invalidBody, Fallback: fallback,

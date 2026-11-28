@@ -36,3 +36,7 @@ Any proposed annotation must obtain a tested parser/generator and be moved to an
 ## Explicit roots and module identity
 
 Application generator entrypoints take the application root. Testing and overlay accept `<application-directory> <core-directory>`; Core-only mode uses the same directory for both. The application must have its own go.mod. The shell runner at `scripts/backend/generate-annotations.sh` accepts the same two roots, invokes the canonical Core import path and preserves owner-local generated outputs. Coverage accepts explicit Core, generation script and reports paths. The empty-overlay exception is restricted to standalone Core mode.
+
+## Phase 1 capability encapsulation
+
+The physical annotation owner is `backend/libs/core/annotation/`. Runtime clients import the root facade; command-line entry points under `generation/` forward to `internal/src/generators/`. Catalog metadata lives under `internal/src/catalog/`, typed metadata contracts under `internal/src/contracts/`, and runtime implementations under `internal/src/impl/`. Private unit suites belong in `internal/resources/tests/unit-test/`; public API suites remain under Core's `tests/unit-test/`. The testing generator, method inventory and coverage runner discover the capability-local tree. Existing public compatibility imports are transitional and must not be introduced in new source.

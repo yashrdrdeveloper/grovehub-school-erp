@@ -9,10 +9,9 @@ backend/libs/
 ├── core/
 │   ├── <capability>/
 │   │   ├── <capability>.go       # stable public facade
-│   │   ├── contracts/           # internal typed contracts if actually required
-│   │   ├── helpers/             # algorithm support
-│   │   ├── mappers/             # transformation only when needed
-│   │   └── validators/          # generic technical checks
+│   │   └── internal/
+│   │       ├── src/             # contracts, constants, helpers, impl, validators, mappers
+│   │       └── resources/tests/ # private unit tests, mocks, fixtures and helpers
 │   ├── annotation/
 │   ├── database/transaction/
 │   └── docs/engineering/
@@ -56,3 +55,7 @@ The school module owns `backend/libs/schoolgateway` (verified session principal,
 ## 7. Independent Core workspace
 
 Core has its own go.mod and go.sum under `libs/backend/core`, with module path `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core`. Root go.work includes the school module and Core. The school uses a checkout-relative replace for reproducible monorepo builds with GOWORK=off; Core itself has no replace back into school. Use the capability import prefix, not the former school module path. A released tag/private module distribution must be designed and validated separately. Application-specific technical adapters remain under that application's libs. The standalone test procedure is documented in Core's owner runbook.
+
+## Phase 1 capability testing and visibility
+
+Runtime capabilities expose a single public facade. Private implementation packages live under `<capability>/internal/src/`. Capability-specific tests belong under `<capability>/internal/resources/tests/unit-test/` and may import that capability's own internal source. Public behavior is tested under `backend/libs/core/tests/unit-test/`. Never import private packages from other capabilities or production code from test resources. Avoid empty folders and redundant tests. Existing annotation CLI commands remain supported. Compatibility paths used during migration must not be introduced in new code.

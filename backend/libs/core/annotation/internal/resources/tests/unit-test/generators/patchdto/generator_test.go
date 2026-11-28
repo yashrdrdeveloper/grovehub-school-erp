@@ -5,12 +5,13 @@ import (
 	"path/filepath"
 	"strings"
 	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/patchdto"
 )
 
 const patchSource = `package widget
-import annotated "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/dto"
+import annotated "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
 
 // @PatchRequestDto
 type UpdateWidget struct {
@@ -60,7 +61,7 @@ var _ = Describe("GenerateAll", func() {
 // @PatchRequestDto
 type UpdateWidget struct { Name string ` + "`json:\"name\"`" + ` }`,
 		"missing json tag": `package widget
-import dto "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/dto"
+import dto "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
 // @PatchRequestDto
 type UpdateWidget struct { Name dto.Patch[string] }`,
 		"manual MarshalJSON": patchSource + `
@@ -89,5 +90,15 @@ var _ = Describe("GenerateAll", func() {
 	if err := patchdto.GenerateAll(root); err != nil { t.Fatal(err) }
 	if _, err := os.Stat(output); !os.IsNotExist(err) { t.Fatalf("stale generated output retained: %v", err) }
 
+	})
+})
+
+var _ = Describe("GenerateAll", func() {
+	It("preserves legacy PATCH imports during facade migration", func() {
+		root, output := fixture(GinkgoT(), strings.Replace(patchSource, "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation", "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/dto", 1))
+		Expect(patchdto.GenerateAll(root)).To(Succeed())
+		generated, err := os.ReadFile(output)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(string(generated)).To(ContainSubstring("func (request UpdateWidget) MarshalJSON()"))
 	})
 })

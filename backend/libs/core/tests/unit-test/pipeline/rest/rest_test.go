@@ -9,14 +9,14 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	annotationvalidation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/validation"
+	coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
 	httprequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/request"
 	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
 )
 
 type bodyConfig[T any] struct {
 	Decode func(*http.Request, any) error
-	Rules annotationvalidation.Rules[T]
+	Rules coreannotation.ValidationRules[T]
 }
 
 func read[T any](request *http.Request, config bodyConfig[T]) (T, error) {
@@ -39,7 +39,7 @@ var _ = Describe("REST request pipeline", func() {
 				order = append(order, "decode")
 				return httprequest.DecodeStrictJSON(r, dst)
 			},
-			Rules: annotationvalidation.Rules[input]{
+			Rules: coreannotation.ValidationRules[input]{
 				Normalize: func(v input) (input, error) {
 					order = append(order, "resource-normalize")
 					Expect(v.Name).To(Equal("Anu")) // tag normalization happened first
@@ -61,11 +61,11 @@ var _ = Describe("REST request pipeline", func() {
 	It("validates the trimmed DTO, rejecting whitespace-only values before custom rules", func() {
 		called := false
 		_, err := read(request(`{"name":"   "}`), bodyConfig[input]{
-			Rules: annotationvalidation.Rules[input]{
+			Rules: coreannotation.ValidationRules[input]{
 				Validate: func(v input) error { called = true; return nil },
 			},
 		})
-		var invalid annotationvalidation.Error
+		var invalid coreannotation.ValidationError
 		Expect(errors.As(err, &invalid)).To(BeTrue())
 		Expect(invalid.Field).To(Equal("Name"))
 		Expect(invalid.Rule).To(Equal("notblank"))
@@ -81,7 +81,7 @@ var _ = Describe("REST request pipeline", func() {
 	It("runs custom validation only after DTO validation succeeds", func() {
 		sentinel := errors.New("resource rule")
 		_, err := read(request(`{"name":"Anu"}`), bodyConfig[input]{
-			Rules: annotationvalidation.Rules[input]{
+			Rules: coreannotation.ValidationRules[input]{
 				Validate: func(v input) error { return sentinel },
 			},
 		})
@@ -91,7 +91,7 @@ var _ = Describe("REST request pipeline", func() {
 	It("keeps decoding errors separate from domain validation errors", func() {
 		called := false
 		_, err := read(request(`{"name":12}`), bodyConfig[input]{
-			Rules: annotationvalidation.Rules[input]{
+			Rules: coreannotation.ValidationRules[input]{
 				Normalize: func(v input) (input, error) { called = true; return v, nil },
 			},
 		})
@@ -110,7 +110,7 @@ var _ = Describe("REST request pipeline", func() {
 		sentinel := errors.New("invalid canonical value")
 		validated := false
 		_, err := read(request(`{"name":"Sam"}`), bodyConfig[input]{
-			Rules: annotationvalidation.Rules[input]{
+			Rules: coreannotation.ValidationRules[input]{
 				Normalize: func(v input) (input, error) { return v, sentinel },
 				Validate: func(v input) error { validated = true; return nil },
 			},
@@ -122,9 +122,9 @@ var _ = Describe("REST request pipeline", func() {
 	It("maps only DTO rule failures through the configured mapper", func() {
 		sentinel := errors.New("mapped DTO failure")
 		_, err := read(request(`{"name":"  "}`), bodyConfig[input]{
-			Rules: annotationvalidation.Rules[input]{
+			Rules: coreannotation.ValidationRules[input]{
 				MapDTOError: func(err error) error {
-					var invalid annotationvalidation.Error
+					var invalid coreannotation.ValidationError
 					Expect(errors.As(err, &invalid)).To(BeTrue())
 					return sentinel
 				},

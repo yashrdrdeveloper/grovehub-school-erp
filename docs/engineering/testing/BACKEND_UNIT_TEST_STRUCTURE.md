@@ -64,3 +64,7 @@ Use live Makefile targets. Annotation-backed packages may require `-overlay=.gen
 ## 6. Review checklist
 
 Test locations mirror owners, no empty generated directories, API/event compatibility is covered, secrets remain redacted, and owner engineering/product documentation describes meaningful new behavior. Source annotations are not assumed to enforce runtime policy.
+
+## Core capability-local ownership (Phase 1)
+
+Core has two unit-test ownership levels: `backend/libs/core/tests/unit-test/` for public APIs and `<capability>/internal/resources/tests/unit-test/` for private implementation behavior. Mirror the relevant `internal/src/` path in the latter. New Core tests use Ginkgo v2 and Gomega, with one suite entry point (or supported generated equivalent) per package. No adjacent tests in refactored Core production folders. Internal tests may use exported package-level contracts inside Go `internal` without widening the external facade. Shared test support belongs in the corresponding owner-local `mocks`, `fixtures`, or `helpers` directory. Real PostgreSQL and other infrastructure behavior remains in sanity. Both unit-test trees must be included in coverage.
