@@ -349,25 +349,25 @@ func testTarget(root, generated, reports string, item target, mode string) error
 	if item.name == "core" {
 		root = item.owner
 	}
-	production, err := listProduction(root, item)
-	if err != nil {
-		return err
-	}
 	rel, err := filepath.Rel(root, item.owner)
 	if err != nil {
 		return err
 	}
 	candidates := []string{
-		filepath.Join(item.owner, "internal", "tests", "unit-test"),
-		filepath.Join(item.owner, "tests", "unit-test"),
+		filepath.Join(rel, "internal", "tests", "unit-test"),
+		filepath.Join(rel, "tests", "unit-test"),
 	}
 	if item.name == "core" {
 		entries, err := os.ReadDir(item.owner)
 		if err != nil { return err }
 		for _, entry := range entries {
 			if !entry.IsDir() { continue }
-			candidates = append(candidates, filepath.Join(item.owner, entry.Name(), "internal", "resources", "tests", "unit-test"))
+			candidates = append(candidates, filepath.Join(rel, entry.Name(), "internal", "resources", "tests", "unit-test"))
 		}
+	}
+	production, err := listProduction(root, item)
+	if err != nil {
+		return err
 	}
 	// The generated files now exist at their logical Go package paths. Mixing
 	// materialized files with -overlay causes source lookup failures in the
@@ -377,12 +377,8 @@ func testTarget(root, generated, reports string, item target, mode string) error
 	arguments = append(arguments, "-coverprofile="+profile)
 	arguments = append(arguments, production...)
 	tests := 0
-	for _, dir := range candidates {
-		if info, err := os.Stat(dir); err == nil && info.IsDir() {
-			sub, err := filepath.Rel(root, dir)
-			if err != nil {
-				return err
-			}
+	for _, sub := range candidates {
+		if info, err := os.Stat(filepath.Join(root, sub)); err == nil && info.IsDir() {
 			arguments = append(arguments, "./"+filepath.ToSlash(sub)+"/...")
 			tests++
 		}

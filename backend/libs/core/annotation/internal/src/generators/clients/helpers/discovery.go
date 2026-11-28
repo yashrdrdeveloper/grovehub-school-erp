@@ -44,8 +44,8 @@ func DiscoverWithRenderer(dir,generatedRoutes string,render layout.Renderer)([]c
 					line,hasLine,err := requestLine(member.Doc)
 					if err != nil { return nil,fmt.Errorf("%s: %w",name,err) }
 					if hasProxy==hasLine { return nil,fmt.Errorf("%s: declare exactly one of @Proxy or @RequestLine",name) }
-					fn,ok := member.Type.(*ast.FuncType)
-					if !ok { return nil,fmt.Errorf("%s: expected function type",name) }
+					// A successfully parsed named interface method always has a function type.
+					fn := member.Type.(*ast.FuncType)
 					var args []string
 					for _,param := range fn.Params.List {
 						if len(param.Names)==0 { return nil,fmt.Errorf("%s: all arguments must be named",name) }
