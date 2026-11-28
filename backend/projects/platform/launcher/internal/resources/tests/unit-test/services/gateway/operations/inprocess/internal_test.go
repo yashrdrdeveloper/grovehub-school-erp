@@ -7,7 +7,7 @@ import (
 
 	internalgateway "grovehub/launcher/internal/src/services/gateway/operations/inprocess"
  internalimpl "grovehub/launcher/internal/src/services/gateway/operations/inprocess/impl"
-	schoolgateway "grovehub/launcher/session"
+	schoolgateway "grovehub/internal/session"
 )
 
 type allowOperation struct{}

@@ -2,7 +2,7 @@ package impl
 
 import (
 	"errors"
-	schoolgateway "grovehub/launcher/session"
+	schoolgateway "grovehub/internal/session"
 	"log/slog"
 	"net/url"
 

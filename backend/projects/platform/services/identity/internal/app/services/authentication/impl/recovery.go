@@ -2,7 +2,7 @@ package impl
 
 import (
 	"context"
-	schoolgateway "grovehub/launcher/session"
+	schoolgateway "grovehub/internal/session"
 	"errors"
 	"strings"
 	"time"

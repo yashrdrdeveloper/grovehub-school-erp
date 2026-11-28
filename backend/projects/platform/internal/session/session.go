@@ -4,10 +4,10 @@ package session
 
 import (
 	"context"
-	"grovehub/launcher/internal/src/services/gateway/constants"
-	"grovehub/launcher/session/contracts"
-	"grovehub/launcher/internal/src/services/gateway/operations/principal"
-	"grovehub/launcher/internal/src/services/gateway/operations/tenant"
+	"grovehub/internal/session/constants"
+	"grovehub/internal/session/contracts"
+	"grovehub/internal/session/operations/principal"
+	"grovehub/internal/session/operations/tenant"
 )
 
 type Principal = contracts.Principal

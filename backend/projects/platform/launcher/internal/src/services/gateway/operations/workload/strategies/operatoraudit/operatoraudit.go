@@ -27,5 +27,6 @@ func(v *verifier) VerifyWorkload(ctx context.Context,r *http.Request)(context.Co
  return verified,nil
 }
 
+// @Strategy
 type verifier struct { scoped core.ScopedWorkloadVerifier }
 var _ core.WorkloadVerifier = (*verifier)(nil)

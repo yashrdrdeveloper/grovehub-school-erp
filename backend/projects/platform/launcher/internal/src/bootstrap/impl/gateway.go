@@ -9,7 +9,7 @@ import (
  gatewayimpl "grovehub/launcher/internal/src/services/gateway/impl"
  "grovehub/launcher/internal/src/services/gateway/operations/workload"
  tenantaccess "grovehub/launcher/internal/src/services/gateway/operations/tenant/access"
- "grovehub/launcher/session"
+ "grovehub/internal/session"
 )
 
 func(b *builder) newTenantState()(session.TenantStateLookup,session.TenantCheck,error){

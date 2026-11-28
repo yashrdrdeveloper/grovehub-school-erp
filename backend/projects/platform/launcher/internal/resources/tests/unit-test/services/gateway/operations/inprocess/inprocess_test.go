@@ -6,7 +6,7 @@ import (
  . "github.com/onsi/ginkgo/v2"
  . "github.com/onsi/gomega"
  "go.uber.org/mock/gomock"
- "grovehub/launcher/session"
+ "grovehub/internal/session"
  mock "grovehub/launcher/internal/resources/tests/mocks/gateway/inprocess"
  "grovehub/launcher/internal/src/services/gateway/operations/inprocess"
  "grovehub/launcher/internal/src/services/gateway/operations/inprocess/impl"

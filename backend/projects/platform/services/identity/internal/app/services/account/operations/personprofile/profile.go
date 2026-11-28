@@ -9,7 +9,7 @@ import (
  dto "grovehub/services/identity/internal/app/dto/account"
  repo "grovehub/services/identity/internal/app/repository/account"
  "grovehub/services/identity/internal/app/services/authorization"
- schoolgateway "grovehub/launcher/session"
+ schoolgateway "grovehub/internal/session"
 )
 
 const route = "GET /identity/protected/accounts/{accountId}/person"

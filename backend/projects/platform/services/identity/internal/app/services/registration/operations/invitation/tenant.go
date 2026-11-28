@@ -2,7 +2,7 @@ package invitation
 
 import (
  "errors"
- schoolgateway "grovehub/launcher/session"
+ schoolgateway "grovehub/internal/session"
 )
 
 // An unavailable registry cannot establish permanent ineligibility. Retain

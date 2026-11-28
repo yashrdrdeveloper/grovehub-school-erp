@@ -8,7 +8,7 @@ import (
  "github.com/google/uuid"
  . "github.com/onsi/gomega"
  "gorm.io/gorm"
- schoolgateway "grovehub/launcher/session"
+ schoolgateway "grovehub/internal/session"
  "grovehub/services/identity/internal/app/entity"
  sessionrepo "grovehub/services/identity/internal/app/repository/session"
  sessionimpl "grovehub/services/identity/internal/app/repository/session/impl"

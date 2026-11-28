@@ -2,6 +2,7 @@ package impl
 
 import "grovehub/launcher/internal/src/services/health"
 
+// @Service
 type service struct {ready func()bool}
 var _ health.Service=(*service)(nil)
 func New(ready func()bool) health.Service{return &service{ready:ready}}

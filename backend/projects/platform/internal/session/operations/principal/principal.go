@@ -2,7 +2,7 @@ package principal
 
 import (
 	"context"
-	"grovehub/launcher/session/contracts"
+	"grovehub/internal/session/contracts"
 )
 
 type principalKey struct{}

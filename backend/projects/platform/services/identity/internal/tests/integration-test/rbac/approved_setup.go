@@ -2,7 +2,7 @@ package rbac_test
 
 import (
 	"context"
-	schoolgateway "grovehub/launcher/session"
+	schoolgateway "grovehub/internal/session"
 	"grovehub/services/audit"
 	"crypto/aes"
 	"crypto/cipher"

@@ -2,7 +2,7 @@ package inprocess
 
 import (
  "context"
- "grovehub/launcher/session"
+ "grovehub/internal/session"
 )
 
 // @Mock

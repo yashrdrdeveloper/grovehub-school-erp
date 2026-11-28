@@ -1,12 +1,36 @@
 package config_test
+
 import (
- "testing"
- "grovehub/launcher/internal/src/config"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	"grovehub/launcher/internal/src/config"
 )
-func TestFromEnv(t *testing.T){
- t.Setenv("GROOVEHUB_HTTP_ADDR","")
- t.Setenv("PLATFORM_TENANT_ACCESS_REQUIRED","true")
- if c:=config.FromEnv();c.Address!="127.0.0.1:8080"||!c.TenantRequired{t.Fatal(c.Address,c.TenantRequired)}
- t.Setenv("GROOVEHUB_HTTP_ADDR","127.0.0.1:9090")
- if c:=config.FromEnv();c.Address!="127.0.0.1:9090"{t.Fatal(c.Address)}
+
+// @Testing suite=LauncherConfig
+func ConfigSpecs() {
+	Describe("FromEnv", func() {
+		It("uses the default listener and reads every environment binding", func() {
+			t := GinkgoT()
+			t.Setenv("GROOVEHUB_HTTP_ADDR", "")
+			t.Setenv("IDENTITY_ALLOWED_ORIGIN", "https://school.example")
+			t.Setenv("PLATFORM_WORKLOAD_CONFIG", "{}")
+			t.Setenv("PLATFORM_TENANT_ACCESS_ORIGIN", "https://platform.example")
+			t.Setenv("PLATFORM_TENANT_ACCESS_KEY_ID", "key")
+			t.Setenv("PLATFORM_TENANT_ACCESS_PRIVATE_KEY", "test-key")
+			t.Setenv("PLATFORM_TENANT_ACCESS_REQUIRED", "true")
+			Expect(config.FromEnv()).To(Equal(config.Config{
+				Address: "127.0.0.1:8080", AllowedOrigin: "https://school.example",
+				Workload: "{}", TenantOrigin: "https://platform.example",
+				TenantKeyID: "key", TenantPrivateKey: "test-key", TenantRequired: true,
+			}))
+		})
+		It("preserves an explicit address and requires an exact true flag", func() {
+			t := GinkgoT()
+			t.Setenv("GROOVEHUB_HTTP_ADDR", "127.0.0.1:9090")
+			t.Setenv("PLATFORM_TENANT_ACCESS_REQUIRED", "false")
+			value := config.FromEnv()
+			Expect(value.Address).To(Equal("127.0.0.1:9090"))
+			Expect(value.TenantRequired).To(BeFalse())
+		})
+	})
 }

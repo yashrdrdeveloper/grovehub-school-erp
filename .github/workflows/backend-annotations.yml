@@ -30,7 +30,7 @@ jobs:
         run: |
           test ! -d backend/projects/platform/libs
           if git grep -nF 'grovehub/libs/schoolgateway' -- '*.go'; then
-            echo "Use launcher/session."
+            echo "Use Platform internal/session."
             exit 1
           fi
           if git grep -nF 'grovehub/libs/infrastructure/messaging' -- '*.go'; then
@@ -40,10 +40,10 @@ jobs:
       - name: Reject legacy Launcher structure
         shell: bash
         run: |
-          for path in bootstrap services tests routing middleware constants; do
+          for path in bootstrap services tests routing middleware constants session; do
             test ! -d "backend/projects/platform/launcher/$path"
           done
-          if git grep -nE '"grovehub/launcher/(bootstrap|middleware|routing|constants|services/)' -- '*.go'; then
+          if git grep -nE '"grovehub/launcher/(bootstrap|middleware|routing|constants|services/|session)' -- '*.go'; then
             echo "Use the canonical Launcher boundary."
             exit 1
           fi
@@ -131,17 +131,15 @@ jobs:
           wc -l "$RUNNER_TEMP/core-imports.txt"
       - name: Test gateway security contracts and context operations
         working-directory: backend/projects/platform
-        run: go test -race -coverpkg=./launcher/session,./launcher/internal/src/services/gateway/operations/principal,./launcher/internal/src/services/gateway/operations/tenant ./launcher/internal/resources/tests/unit-test/session
+        run: go test -race -vet=off -overlay=.generated/overlay.json ./launcher/internal/resources/tests/unit-test/session
       - name: Measure Launcher coverage with generated annotations
-        working-directory: backend/projects/platform
-        run: |
-          go test -race -vet=off -overlay=.generated/overlay.json -covermode=atomic -coverpkg=./launcher,./launcher/internal/src/...,./launcher/session/... -coverprofile="$RUNNER_TEMP/launcher-coverage.out" ./launcher/internal/resources/tests/unit-test/...
-          go tool cover -func="$RUNNER_TEMP/launcher-coverage.out"
+        # The Core runner materializes generated source and checks exact statement coverage.
+        run: make unit-coverage package=launcher
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: launcher-coverage
-          path: ${{ runner.temp }}/launcher-coverage.out
+          path: backend/projects/platform/.generated/unit-coverage/launcher.out
       - name: Compile cross-project lifecycle fixture against the public Launcher boundary
         working-directory: backend/projects/platform
         run: go test -vet=off -overlay=.generated/overlay.json -run '^$' ./services/identity/internal/tests/integration-test/lifecycle

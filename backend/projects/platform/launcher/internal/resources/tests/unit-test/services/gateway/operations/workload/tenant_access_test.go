@@ -18,7 +18,7 @@ import (
 
  "github.com/google/uuid"
  core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
- school "grovehub/launcher/session"
+ school "grovehub/internal/session"
 )
 func TestTenantAccessClient(t *testing.T){
  id:=uuid.NewString()

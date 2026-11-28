@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	schoolgateway "grovehub/launcher/session"
+	schoolgateway "grovehub/internal/session"
 )
 
 type Principal = schoolgateway.Principal

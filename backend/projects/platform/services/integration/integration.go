@@ -3,7 +3,7 @@ package integration
 
 import (
     "context"
-    schoolgateway "grovehub/launcher/session"
+    schoolgateway "grovehub/internal/session"
     "errors"
     "fmt"
     "log/slog"

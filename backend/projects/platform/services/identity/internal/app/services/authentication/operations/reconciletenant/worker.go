@@ -6,7 +6,7 @@ import (
  "log/slog"
  "time"
 
- schoolgateway "grovehub/launcher/session"
+ schoolgateway "grovehub/internal/session"
 )
 
 const (

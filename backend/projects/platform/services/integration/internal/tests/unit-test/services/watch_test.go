@@ -5,7 +5,7 @@ import (
     execute "grovehub/services/integration/internal/app/providers/operations/execute"
     oauth "grovehub/services/integration/internal/app/providers/mailprovider/operations/oauth"
 	"context"
-    schoolgateway "grovehub/launcher/session"
+    schoolgateway "grovehub/internal/session"
 	"encoding/json"
     "errors"
 	"time"

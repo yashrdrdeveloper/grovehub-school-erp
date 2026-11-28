@@ -4,7 +4,7 @@ import (
     maildto "grovehub/services/integration/internal/app/providers/mailprovider/dto"
     mailcontracts "grovehub/services/integration/internal/app/providers/mailprovider/contracts"
     "context"
-    schoolgateway "grovehub/launcher/session"
+    schoolgateway "grovehub/internal/session"
     "crypto/rand"
     "crypto/sha256"
     "encoding/base64"

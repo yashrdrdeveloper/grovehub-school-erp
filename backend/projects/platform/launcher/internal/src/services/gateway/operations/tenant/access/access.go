@@ -14,7 +14,7 @@ import (
  "time"
 
  core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
- schoolgateway "grovehub/launcher/session"
+ schoolgateway "grovehub/internal/session"
 )
 
 type TenantAccessConfig struct{Origin,KeyID,PrivateKey string}

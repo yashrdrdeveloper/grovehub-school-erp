@@ -1,6 +1,6 @@
 package helpers
 
-import ("crypto/subtle";"net/http";"strings";schoolgateway "grovehub/launcher/session")
+import ("crypto/subtle";"net/http";"strings";schoolgateway "grovehub/internal/session")
 
 func RequiresCSRF(request *http.Request) bool {
 	if request.Method == http.MethodGet || request.Method == http.MethodHead {

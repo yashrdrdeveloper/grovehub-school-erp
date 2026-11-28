@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm/clause"
 
 	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
-	schoolgateway "grovehub/launcher/session"
+	schoolgateway "grovehub/internal/session"
 	"grovehub/services/identity/internal/app/entity"
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"
 )

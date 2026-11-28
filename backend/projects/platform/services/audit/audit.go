@@ -6,7 +6,7 @@ import (
 	"log/slog"
 
 	"gorm.io/gorm"
-	schoolgateway "grovehub/launcher/session"
+	schoolgateway "grovehub/internal/session"
 	producer "grovehub/services/audit/client/producer"
 	"grovehub/services/audit/internal/app/bootstrap"
 	bootstrapimpl "grovehub/services/audit/internal/app/bootstrap/impl"

@@ -6,7 +6,7 @@ import (
  "log/slog"
  "net/http"
  coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
- "grovehub/launcher/session"
+ "grovehub/internal/session"
  external "grovehub/launcher/internal/src/services/gateway/operations/external/impl"
  "grovehub/launcher/internal/src/services/gateway/operations/workload"
  tenantaccess "grovehub/launcher/internal/src/services/gateway/operations/tenant/access"
@@ -26,6 +26,14 @@ func NewLogger(output io.Writer)(*slog.Logger,error){return bootstrap.NewLogger(
 func NewPostgresDB(ctx context.Context)(*gorm.DB,error){return bootstrap.NewPostgresDB(ctx)}
 func NewAuditPostgresDB(ctx context.Context,shared *gorm.DB)(*gorm.DB,func(),error){return bootstrap.NewAuditPostgresDB(ctx,shared)}
 var ErrDatabaseURLRequired=bootstrap.ErrDatabaseURLRequired
+
+ // Public composition contracts alias the Platform-private session boundary.
+ type Principal = session.Principal
+ type AccessVerifier = session.AccessVerifier
+ type ProtectedRouteAuthorizer = session.ProtectedRouteAuthorizer
+ type TenantCheck = session.TenantCheck
+ type TenantState = session.TenantState
+ type TenantStateLookup = session.TenantStateLookup
 
  // DelegatedIdentity is the verified actor boundary for composing the gateway.
  type DelegatedIdentity interface {

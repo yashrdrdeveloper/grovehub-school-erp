@@ -17,7 +17,7 @@ import (
  "strings"
 
  core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
- school "grovehub/launcher/session"
+ school "grovehub/internal/session"
  integration "grovehub/services/integration/client/principal"
  mail "grovehub/services/integration/client/mail"
  "grovehub/launcher/internal/src/services/gateway/policies"

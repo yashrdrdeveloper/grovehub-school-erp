@@ -2,7 +2,7 @@ package tenant
 
 import (
 	"context"
-	"grovehub/launcher/session/contracts"
+	"grovehub/internal/session/contracts"
 )
 
 func ActiveTenantCheck(lookup contracts.TenantStateLookup) contracts.TenantCheck {
