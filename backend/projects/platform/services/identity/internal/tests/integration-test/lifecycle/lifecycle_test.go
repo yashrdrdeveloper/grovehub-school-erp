@@ -26,7 +26,7 @@ import (
  "gorm.io/gorm"
  core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
  coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
- "grovehub/launcher/services/gateway"
+ gateway "grovehub/launcher"
  schoolgateway "grovehub/launcher/session"
  "grovehub/services/audit"
  "grovehub/services/identity"
@@ -159,14 +159,14 @@ func TestCrossProjectSchoolLifecycle(t *testing.T){
  integrationModule.RegisterHTTP(mux);auditModule.RegisterHTTP(mux)
  mux.HandleFunc("GET /ready",func(w http.ResponseWriter,_ *http.Request){w.WriteHeader(204)})
  configJSON:=jsonText(t,map[string]any{"Keys":[]core.WorkloadKeyConfig{schoolKey.config},"Routes":routes,"SchoolStatusReceiptKeys":[]core.WorkloadKeyConfig{receiptKey.config},"SchoolReceiptReadKeys":[]core.WorkloadKeyConfig{readerKey.config}})
- workloads,err:=gateway.NewPlatformWorkloads(configJSON,actor,integrationModule,check);must(t,err)
+ workloads,err:=gateway.NewWorkloadVerifier(configJSON,actor,integrationModule,check);must(t,err)
  const browserOrigin="http://127.0.0.1:4173"
- runtime:=gateway.New(mux,actor,workloads,browserOrigin,nil)
- restricted:=core.RestrictedOnly(mux,runtime.External)
+ runtime:=gateway.NewExternalGateway(mux,actor,workloads,browserOrigin)
+ restricted:=core.RestrictedOnly(mux,runtime)
  var receiptAttempts atomic.Int32
  var lostAcknowledgment atomic.Bool
  platform:=httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter,r *http.Request){
-  if r.URL.Path=="/ready"{runtime.External.ServeHTTP(w,r);return}
+  if r.URL.Path=="/ready"{runtime.ServeHTTP(w,r);return}
   if r.URL.Path=="/audit/restricted/school-status-receipts"{
    receiptAttempts.Add(1)
    // Simulate an acknowledgment lost after the first committed receipt.

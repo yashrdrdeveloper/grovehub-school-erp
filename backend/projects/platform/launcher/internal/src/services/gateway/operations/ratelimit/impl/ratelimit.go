@@ -31,7 +31,7 @@ func New(limits map[string]int) ratelimit.Limiter {
 	return &limiter{entries: make(map[string]attempt), limits: configured}
 }
 
-func (limiter *Limiter) Allow(pattern string, request *http.Request) bool {
+func (limiter *limiter) Allow(pattern string, request *http.Request) bool {
 	limit, configured := limiter.limits[request.Method+" "+pattern]
 	if !configured || limit < 1 {
 		return true
