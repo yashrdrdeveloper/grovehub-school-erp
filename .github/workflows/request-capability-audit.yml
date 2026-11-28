@@ -1,0 +1,63 @@
+name: Core request capability audit
+
+on:
+  push:
+    branches: [phase1-refactor, develop]
+    paths:
+      - 'backend/libs/core/request/**'
+      - 'backend/libs/core/tests/unit-test/request/**'
+      - '.github/workflows/request-capability-audit.yml'
+  pull_request:
+    paths:
+      - 'backend/libs/core/request/**'
+      - 'backend/libs/core/tests/unit-test/request/**'
+      - '.github/workflows/request-capability-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  core-request:
+    runs-on: ubuntu-latest
+    env:
+      GOWORK: 'off'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enforce single facade and mirrored tests
+        shell: bash
+        run: |
+          root=backend/libs/core/request
+          test "$(git ls-files "$root/" | grep '[.]go$' | grep -v '/internal/')" = "$root/request.go"
+          for folder in "$root"/internal/src/*; do
+            case "$(basename "$folder")" in
+              operations|helpers|constants|contracts|config) test -d "$folder" ;;
+              *) echo "Unexpected request source category: $folder"; exit 1 ;;
+            esac
+          done
+          count=0
+          while IFS= read -r source; do
+            [[ "$source" == *.go && "$source" != *_test.go ]] || continue
+            relative="${source#"$root/internal/src/"}"
+            test -f "$root/internal/resources/tests/unit-test/${relative%.go}_test.go" || { echo "Missing mirror: $source"; exit 1; }
+            count=$((count + 1))
+          done < <(git ls-files "$root/internal/src/")
+          test "$count" -gt 0
+          if git grep -nE 'libs/backend/core/request/(contracts|helpers|validators|operations|config|constants)(/|")' -- '*.go' '*.sh' '*.tmpl' '*.tpl'; then
+            echo "Use the root core/request facade."
+            exit 1
+          fi
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.3'
+          cache-dependency-path: backend/libs/core/go.sum
+      - name: Run request tests and enforce full statement coverage
+        working-directory: backend/libs/core
+        run: |
+          go test -count=1 -covermode=atomic -coverpkg=./request/... -coverprofile="$RUNNER_TEMP/request-coverage.out" ./request/internal/resources/tests/unit-test/... ./tests/unit-test/request/...
+          go tool cover -func="$RUNNER_TEMP/request-coverage.out" | tee "$RUNNER_TEMP/request-coverage.txt"
+          awk '/^total:/ { found=1; if ($NF != "100.0%") exit 1 } END { if (!found) exit 1 }' "$RUNNER_TEMP/request-coverage.txt"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: request-coverage
+          path: ${{ runner.temp }}/request-coverage.out
