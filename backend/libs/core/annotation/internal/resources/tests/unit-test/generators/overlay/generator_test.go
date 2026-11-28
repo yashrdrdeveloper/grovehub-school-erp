@@ -1,13 +1,17 @@
-package main
+package overlay_test
 
 import (
 	"encoding/json"
 	"os"
 	"path/filepath"
-	"testing"
+	. "github.com/onsi/ginkgo/v2"
+
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/overlay"
 )
 
-func TestExplicitOverlayRoots(t *testing.T) {
+var _ = Describe("WriteOverlay", func() {
+	It("Explicit Overlay Roots", func() {
+		t := GinkgoT()
 	root := t.TempDir()
 	app := filepath.Join(root, "app")
 	core := filepath.Join(root, "shared")
@@ -17,10 +21,10 @@ func TestExplicitOverlayRoots(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	if err := writeOverlay(core, core); err != nil {
+	if err := overlay.WriteOverlay(core, core); err != nil {
 		t.Fatal(err)
 	}
-	if err := writeOverlay(app, core); err == nil {
+	if err := overlay.WriteOverlay(app, core); err == nil {
 		t.Fatal("empty application overlay accepted")
 	}
 	want := map[string]string{}
@@ -37,14 +41,14 @@ func TestExplicitOverlayRoots(t *testing.T) {
 		}
 		want[logical] = generated
 	}
-	if err := writeOverlay(app, core); err != nil {
+	if err := overlay.WriteOverlay(app, core); err != nil {
 		t.Fatal(err)
 	}
 	data, err := os.ReadFile(filepath.Join(app, ".generated", "overlay.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	var config configuration
+	var config overlay.Configuration
 	if err := json.Unmarshal(data, &config); err != nil {
 		t.Fatal(err)
 	}
@@ -56,4 +60,6 @@ func TestExplicitOverlayRoots(t *testing.T) {
 			t.Fatalf("missing mapping for %s", logical)
 		}
 	}
-}
+
+	})
+})

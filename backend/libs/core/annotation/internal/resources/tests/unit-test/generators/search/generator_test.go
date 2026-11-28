@@ -1,10 +1,12 @@
-package main
+package search_test
 
 import (
 	"os"
 	"path/filepath"
 	"strings"
-	"testing"
+	. "github.com/onsi/ginkgo/v2"
+
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/search"
 )
 
 const searchTestInterface = `package repository
@@ -44,7 +46,7 @@ var PersonConfig = coresearch.Config{
 }
 `
 
-func searchFixture(t *testing.T, iface, impl string) (string, string) {
+func searchFixture(t GinkgoTInterface, iface, impl string) (string, string) {
 	t.Helper()
 	backend := t.TempDir()
 	if err := os.WriteFile(filepath.Join(backend, "go.mod"), []byte("module grovehub\n"), 0644); err != nil { t.Fatal(err) }
@@ -62,9 +64,11 @@ func searchFixture(t *testing.T, iface, impl string) (string, string) {
 	return backend, output
 }
 
-func TestConcreteSearchAnnotationGeneratesPrivateHelper(t *testing.T) {
+var _ = Describe("GenerateAll", func() {
+	It("Concrete Search Annotation Generates Private Helper", func() {
+		t := GinkgoT()
 	root, output := searchFixture(t, searchTestInterface, searchTestImpl)
-	if err := generateAll(root); err != nil { t.Fatal(err) }
+	if err := search.GenerateAll(root); err != nil { t.Fatal(err) }
 	compiled, err := os.ReadFile(output)
 	if err != nil { t.Fatal(err) }
 	for _, fragment := range []string{
@@ -77,61 +81,85 @@ func TestConcreteSearchAnnotationGeneratesPrivateHelper(t *testing.T) {
 	if strings.Contains(string(compiled), "func (repository *PersonRepository) Search(") {
 		t.Fatal("generator must not duplicate the public Search method")
 	}
-	if err := generateAll(root); err != nil { t.Fatal(err) }
+	if err := search.GenerateAll(root); err != nil { t.Fatal(err) }
 	repeated, err := os.ReadFile(output)
 	if err != nil || string(repeated) != string(compiled) { t.Fatalf("generation is not idempotent: %v", err) }
-}
 
-func TestSearchAnnotationMustBeOnImplementation(t *testing.T) {
+	})
+})
+
+var _ = Describe("GenerateAll", func() {
+	It("Search Annotation Must Be On Implementation", func() {
+		t := GinkgoT()
 	annotated := strings.Replace(searchTestInterface, "\tSearch(ctx context.Context", "\t// @Searchable config=search.PersonConfig alias=p\n\tSearch(ctx context.Context", 1)
 	root, _ := searchFixture(t, annotated, searchTestImpl)
-	if err := generateAll(root); err == nil || !strings.Contains(err.Error(), "move @Searchable") {
+	if err := search.GenerateAll(root); err == nil || !strings.Contains(err.Error(), "move @Searchable") {
 		t.Fatalf("expected misplaced annotation error, got: %v", err)
 	}
-}
 
-func TestSearchAnnotationRequiresGeneratedHelperDelegation(t *testing.T) {
+	})
+})
+
+var _ = Describe("GenerateAll", func() {
+	It("Search Annotation Requires Generated Helper Delegation", func() {
+		t := GinkgoT()
 	manual := strings.Replace(searchTestImpl, "return repository.searchGenerated(ctx, query)", "return coresearch.QueryResult[entity.Person]{}, nil", 1)
 	root, _ := searchFixture(t, searchTestInterface, manual)
-	if err := generateAll(root); err == nil || !strings.Contains(err.Error(), "searchGenerated") {
+	if err := search.GenerateAll(root); err == nil || !strings.Contains(err.Error(), "searchGenerated") {
 		t.Fatalf("expected delegation error, got: %v", err)
 	}
-}
 
-func TestSearchAnnotationRejectsEntityMismatch(t *testing.T) {
+	})
+})
+
+var _ = Describe("GenerateAll", func() {
+	It("Search Annotation Rejects Entity Mismatch", func() {
+		t := GinkgoT()
 	wrong := strings.Replace(searchTestImpl, "config=search.PersonConfig alias=p", "config=search.PersonConfig alias=p entity=Contact", 1)
 	root, _ := searchFixture(t, searchTestInterface, wrong)
-	if err := generateAll(root); err == nil || !strings.Contains(err.Error(), "must match") {
+	if err := search.GenerateAll(root); err == nil || !strings.Contains(err.Error(), "must match") {
 		t.Fatalf("expected entity mismatch, got: %v", err)
 	}
-}
 
-func TestSearchAnnotationRejectsGeneratedNameCollision(t *testing.T) {
+	})
+})
+
+var _ = Describe("GenerateAll", func() {
+	It("Search Annotation Rejects Generated Name Collision", func() {
+		t := GinkgoT()
 	collision := searchTestImpl + `
 func (repository *PersonRepository) searchGenerated(ctx context.Context, query coresearch.Query[string]) (coresearch.QueryResult[entity.Person], error) {
 	return coresearch.QueryResult[entity.Person]{}, nil
 }
 `
 	root, _ := searchFixture(t, searchTestInterface, collision)
-	if err := generateAll(root); err == nil || !strings.Contains(err.Error(), "already implements searchGenerated") {
+	if err := search.GenerateAll(root); err == nil || !strings.Contains(err.Error(), "already implements searchGenerated") {
 		t.Fatalf("expected helper collision error, got: %v", err)
 	}
-}
 
-func TestSearchGeneratorRemovesStaleOutput(t *testing.T) {
+	})
+})
+
+var _ = Describe("GenerateAll", func() {
+	It("Search Generator Removes Stale Output", func() {
+		t := GinkgoT()
 	root, output := searchFixture(t, searchTestInterface, searchTestImpl)
-	if err := generateAll(root); err != nil { t.Fatal(err) }
+	if err := search.GenerateAll(root); err != nil { t.Fatal(err) }
 	source := strings.Replace(searchTestImpl, "// @Searchable config=search.PersonConfig alias=p", "// unannotated", 1)
 	file := filepath.Join(root, "services", "demo", "repository", "impl", "person.go")
 	if err := os.WriteFile(file, []byte(source), 0644); err != nil { t.Fatal(err) }
-	if err := generateAll(root); err != nil { t.Fatal(err) }
+	if err := search.GenerateAll(root); err != nil { t.Fatal(err) }
 	if _, err := os.Stat(output); !os.IsNotExist(err) { t.Fatalf("stale generator output retained: %v", err) }
-}
 
-func TestSearchImportsUseTargetModulePath(t *testing.T) {
+	})
+})
+
+var _ = Describe("GenerateAll", func() {
+	It("Search Imports Use Target Module Path", func() {
+		t := GinkgoT()
 	root, output := searchFixture(t, searchTestInterface, searchTestImpl)
 	if err := os.WriteFile(filepath.Join(root, "go.mod"), []byte("module example.org/internal-platform\n"), 0644); err != nil { t.Fatal(err) }
-	if err := generateAll(root); err != nil { t.Fatal(err) }
+	if err := search.GenerateAll(root); err != nil { t.Fatal(err) }
 	data, err := os.ReadFile(output)
 	if err != nil { t.Fatal(err) }
 	content := string(data)
@@ -141,4 +169,6 @@ func TestSearchImportsUseTargetModulePath(t *testing.T) {
 	if strings.Contains(content, "grovehub/services/") {
 		t.Fatal("generated search imports contain the school module")
 	}
-}
+
+	})
+})

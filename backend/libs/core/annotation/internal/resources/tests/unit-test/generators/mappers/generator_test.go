@@ -1,13 +1,17 @@
-package main
+package mappers_test
 
 import (
 	"os"
 	"path/filepath"
 	"strings"
-	"testing"
+	. "github.com/onsi/ginkgo/v2"
+
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/mappers"
 )
 
-func TestGenerateResourceOwnedMapper(t *testing.T) {
+var _ = Describe("GenerateAll", func() {
+	It("Generate Resource Owned Mapper", func() {
+		t := GinkgoT()
 	backend:=t.TempDir()
 	if err:=os.WriteFile(filepath.Join(backend,"go.mod"),[]byte("module example.org/internal-platform\n"),0644);err!=nil{t.Fatal(err)}
 	owner:=filepath.Join(backend,"services","foundation")
@@ -26,7 +30,7 @@ type PersonMapper interface {
 		if err:=os.MkdirAll(filepath.Dir(path),0755);err!=nil{t.Fatal(err)}
 		if err:=os.WriteFile(path,[]byte(source),0644);err!=nil{t.Fatal(err)}
 	}
-	if err:=generateAll(backend);err!=nil{t.Fatal(err)}
+	if err:=mappers.GenerateAll(backend);err!=nil{t.Fatal(err)}
 	output:=filepath.Join(owner,".generated","mappers","person","impl","zz_mappers.gen.go")
 	code,err:=os.ReadFile(output)
 	if err!=nil{t.Fatal(err)}
@@ -40,4 +44,6 @@ type PersonMapper interface {
 	if _,err:=os.Stat(filepath.Join(owner,".generated","mappers","impl","zz_mappers.gen.go"));!os.IsNotExist(err) {
 		t.Fatalf("unexpected flat mapper output: %v",err)
 	}
-}
+
+	})
+})
