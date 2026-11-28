@@ -29,6 +29,12 @@ type WorkloadClaims struct {
 	Subject string
 	Audience string
 	ExpiresAt time.Time
+	IssuedAt time.Time
+	TargetScope string
+	TargetProjectID string
+	TargetTenantID string
+	RequestMethod string
+	RequestURI string
 	Scopes []string
 	TenantID string
 	ActorGID string

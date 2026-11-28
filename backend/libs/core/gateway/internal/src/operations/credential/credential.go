@@ -23,6 +23,11 @@ type signedClaims struct {
 	TenantID  string   `json:"tenant,omitempty"`
 	ActorGID  string   `json:"actor,omitempty"`
 	SessionID string   `json:"session,omitempty"`
+	TargetScope string `json:"targetScope,omitempty"`
+	TargetProjectID string `json:"targetProject,omitempty"`
+	TargetTenantID string `json:"targetTenant,omitempty"`
+	RequestMethod string `json:"method,omitempty"`
+	RequestURI string `json:"uri,omitempty"`
 }
 
 // Ed25519Credentials verifies a versioned internal credential, not a JWT.
@@ -42,7 +47,7 @@ func SignWorkloadWithEncoder(keyID, issuer string, key ed25519.PrivateKey, claim
 	if !helpers.ValidKeyID(keyID) || issuer == "" || len(key) != ed25519.PrivateKeySize || claims.Subject == "" || claims.Audience == "" || !claims.ExpiresAt.After(now) || claims.ExpiresAt.After(now.Add(constants.MaxCredentialLifetime)) || !helpers.ValidActorPair(claims.TenantID, claims.ActorGID) {
 		return "", contracts.ErrWorkloadDenied
 	}
-	payload, err := encode(signedClaims{Issuer: issuer, Subject: claims.Subject, Audience: claims.Audience, IssuedAt: now.Unix(), ExpiresAt: claims.ExpiresAt.Unix(), Scopes: claims.Scopes, TenantID: claims.TenantID, ActorGID: claims.ActorGID, SessionID: claims.SessionID})
+	payload, err := encode(signedClaims{Issuer: issuer, Subject: claims.Subject, Audience: claims.Audience, IssuedAt: now.Unix(), ExpiresAt: claims.ExpiresAt.Unix(), Scopes: claims.Scopes, TenantID: claims.TenantID, ActorGID: claims.ActorGID, SessionID: claims.SessionID, TargetScope: claims.TargetScope, TargetProjectID: claims.TargetProjectID, TargetTenantID: claims.TargetTenantID, RequestMethod: claims.RequestMethod, RequestURI: claims.RequestURI})
 	if err != nil {
 		return "", err
 	}
@@ -94,5 +99,5 @@ func (v Ed25519Credentials) VerifyCredential(ctx context.Context, token string) 
 			return contracts.WorkloadClaims{}, contracts.ErrWorkloadDenied
 		}
 	}
-	return contracts.WorkloadClaims{Subject: claims.Subject, Audience: claims.Audience, ExpiresAt: time.Unix(claims.ExpiresAt, 0), Scopes: claims.Scopes, TenantID: claims.TenantID, ActorGID: claims.ActorGID, SessionID: claims.SessionID}, nil
+	return contracts.WorkloadClaims{Subject: claims.Subject, Audience: claims.Audience, ExpiresAt: time.Unix(claims.ExpiresAt, 0), Scopes: claims.Scopes, TenantID: claims.TenantID, ActorGID: claims.ActorGID, SessionID: claims.SessionID, IssuedAt: time.Unix(claims.IssuedAt, 0), TargetScope: claims.TargetScope, TargetProjectID: claims.TargetProjectID, TargetTenantID: claims.TargetTenantID, RequestMethod: claims.RequestMethod, RequestURI: claims.RequestURI}, nil
 }
