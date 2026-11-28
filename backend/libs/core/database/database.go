@@ -9,13 +9,12 @@ import (
 
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/postgres"
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction"
-
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/impl"
 )
 
 // UnitOfWork coordinates repository operations in a context-bound transaction.
 type UnitOfWork interface {
-	Run(ctx context.Context, operation func(context.Context) error) error
+	transaction.UnitOfWork
 }
 
 var ErrMissingDatabase = transaction.ErrMissingDatabase

@@ -15,6 +15,7 @@ database/
     │   │   └── validators/
     │   └── transaction/
     │       ├── transaction.go
+    │       ├── unit_of_work.go        # interface
     │       ├── helpers/context.go
     │       └── impl/unit_of_work.go
     └── resources/tests/unit-test/
@@ -27,7 +28,7 @@ database/
 - `AfterCommit`: registers callbacks that run only after successful commit.
 - `DetachedContext`: preserves context values while removing transaction state and cancellation.
 
-The UnitOfWork interface is declared directly in the facade so source-based mock generation can resolve it. The constructor returns the interface and the concrete GORM implementation remains private. No artificial interfaces are required for pure validation and mapping functions. A transaction context is intended for sequential repository operations, not concurrent use.
+The UnitOfWork interface is defined in transaction/unit_of_work.go beside impl/unit_of_work.go. The public facade embeds the interface without exposing the implementation. The implementation constructor returns the interface and includes a compile-time conformance check. No artificial interfaces are required for pure validation and mapping functions. A transaction context is intended for sequential repository operations, not concurrent use.
 
 ## Testing
 

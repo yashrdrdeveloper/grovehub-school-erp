@@ -14,7 +14,7 @@ jobs:
       - name: Enforce the database facade and test ownership
         shell: bash
         run: |
-          if git grep -nE 'core/database/(postgres|transaction)"' -- '*.go'; then
+          if git grep -nE 'database/(postgres|transaction)"' -- '*.go'; then
             echo "Import the database facade instead of legacy packages."
             exit 1
           fi

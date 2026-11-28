@@ -76,6 +76,8 @@ var _ = Describe("GenerateAll", func() {
 	for _, fragment := range []string{
 		"func (repository *PersonRepository) searchGenerated(",
 		"coresearch.Execute[string, entity.Person]",
+		"coredatabase.TransactionDB(ctx, repository.db)",
+		"libs/backend/core/database\"",
 		"search.PersonConfig",
 	} {
 		Expect(string(compiled)).To(ContainSubstring(fragment))
