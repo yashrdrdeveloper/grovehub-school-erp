@@ -1,0 +1,58 @@
+name: Core build tools audit
+
+on:
+  push:
+    branches: [phase1-refactor, develop]
+    paths:
+      - 'backend/libs/core/tools/**'
+      - '.github/workflows/tools-capability-audit.yml'
+  pull_request:
+    paths:
+      - 'backend/libs/core/tools/**'
+      - '.github/workflows/tools-capability-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  core-tools:
+    runs-on: ubuntu-latest
+    env:
+      GOWORK: 'off'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify CLI boundaries and source mirrors
+        shell: bash
+        run: |
+          root=backend/libs/core/tools/modulepack
+          test "$(git ls-files "$root/" | grep '[.]go$' | grep -v '/internal/')" = "$root/main.go"
+          while IFS= read -r source; do
+            [[ "$source" == *.go && "$source" != *_test.go ]] || continue
+            relative="${source#"$root/internal/src/"}"
+            test -f "$root/internal/resources/tests/unit-test/${relative%.go}_test.go"
+          done < <(git ls-files "$root/internal/src/")
+          test -f backend/libs/core/tools/clientgen/generate.sh
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.3'
+          cache-dependency-path: backend/libs/core/go.sum
+      - name: Test module packaging and report coverage
+        working-directory: backend/libs/core
+        run: |
+          go test -count=1 -covermode=atomic -coverpkg=./tools/modulepack/internal/src/... -coverprofile="$RUNNER_TEMP/modulepack-coverage.out" ./tools/modulepack/...
+          go tool cover -func="$RUNNER_TEMP/modulepack-coverage.out"
+          go build -o "$RUNNER_TEMP/modulepack" ./tools/modulepack
+          if "$RUNNER_TEMP/modulepack" > "$RUNNER_TEMP/modulepack.stdout" 2> "$RUNNER_TEMP/modulepack.stderr"; then
+            exit 1
+          fi
+          grep -Fxq 'usage: modulepack SOURCE PROXY VERSION RFC3339_TIME' "$RUNNER_TEMP/modulepack.stderr"
+      - name: Test standalone OpenAPI adapter
+        working-directory: backend/libs/core
+        run: |
+          bash -n tools/clientgen/generate.sh
+          bash tools/clientgen/internal/resources/tests/unit-test/generate_test.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: modulepack-coverage
+          path: ${{ runner.temp }}/modulepack-coverage.out
