@@ -10,6 +10,9 @@ foreign keys. PostgreSQL 15 or newer is required. The CLI registers the migratio
 through the common bootstrap contract. No API routes or registration writes are
 exposed yet. No projects or grants are seeded.
 
-Next: repository and service interfaces, trusted operator provisioning,
-annotation-owned restricted APIs, live credential verification and gateway
-cutover. Runtime authorization is not changed by merely creating these tables.
+The public entry point is main.go. Annotated entities mirror all six tables.
+Project and tenant read services require exact verified scope and capability;
+they do not authenticate credentials themselves. Repositories are internal.
+
+Next: provisioning writes, key/grant lifecycle, live credential verification,
+annotation-owned restricted APIs and gateway cutover. Runtime authorization is not changed by merely creating these tables.
