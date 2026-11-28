@@ -9,7 +9,6 @@ import (
 
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/postgres"
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/impl"
 )
 
 // UnitOfWork coordinates repository operations in a context-bound transaction.
@@ -28,7 +27,7 @@ func OpenProjectPool(ctx context.Context, dsn string) (*sql.DB, error) {
 }
 
 func NewUnitOfWork(db *gorm.DB) UnitOfWork {
-	return impl.NewUnitOfWork(db)
+	return transaction.NewUnitOfWork(db)
 }
 
 func TransactionDB(ctx context.Context, fallback *gorm.DB) *gorm.DB {

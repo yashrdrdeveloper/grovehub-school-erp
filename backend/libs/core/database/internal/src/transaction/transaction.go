@@ -1,70 +1,47 @@
-// Package transaction coordinates shared GORM transactions.
+// Package transaction exposes private transaction operations.
 package transaction
 
 import (
 	"context"
-	"errors"
 
 	"gorm.io/gorm"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/helpers"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/operations/active"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/operations/aftercommit"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/operations/detachedcontext"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/operations/resolve"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/operations/run"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/operations/unitofwork"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/operations/unitofwork/impl"
 )
 
-var ErrMissingDatabase = errors.New("transaction database is nil")
+// UnitOfWork exposes the operation contract to the database facade.
+type UnitOfWork interface {
+	unitofwork.UnitOfWork
+}
+
+var ErrMissingDatabase = run.ErrMissingDatabase
+
+func NewUnitOfWork(db *gorm.DB) UnitOfWork {
+	return impl.NewUnitOfWork(db)
+}
 
 func Database(ctx context.Context, fallback *gorm.DB) *gorm.DB {
-	if state, ok := helpers.FromContext(ctx); ok {
-		return state.Database(ctx)
-	}
-
-	return fallback.WithContext(ctx)
+	return resolve.Database(ctx, fallback)
 }
 
 func Active(ctx context.Context) bool {
-	_, ok := helpers.FromContext(ctx)
-
-	return ok
+	return active.Active(ctx)
 }
 
 func AfterCommit(ctx context.Context, callback func()) bool {
-	state, ok := helpers.FromContext(ctx)
-	if !ok {
-		return false
-	}
-
-	state.AddCallback(callback)
-
-	return true
+	return aftercommit.AfterCommit(ctx, callback)
 }
 
 func DetachedContext(ctx context.Context) context.Context {
-	return helpers.DetachedContext(ctx)
+	return detachedcontext.DetachedContext(ctx)
 }
 
-// Run joins an existing transaction or starts a new one. Callbacks are executed
-// only after a successful commit; rollback discards them.
 func Run(ctx context.Context, db *gorm.DB, operation func(context.Context) error) error {
-	if db == nil {
-		return ErrMissingDatabase
-	}
-
-	if Active(ctx) {
-		return operation(ctx)
-	}
-
-	var state *helpers.State
-
-	err := db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		transactionContext, boundState := helpers.Bind(ctx, tx)
-		state = boundState
-
-		return operation(transactionContext)
-	})
-	if err != nil {
-		return err
-	}
-
-	state.PublishCallbacks()
-
-	return nil
+	return run.Run(ctx, db, operation)
 }
