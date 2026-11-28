@@ -1,0 +1,13 @@
+package causation_test
+
+import (
+	"testing"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+)
+
+func TestCausationOperation(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "CausationOperation Suite")
+}
