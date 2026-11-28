@@ -6,6 +6,7 @@ app="$service/internal/app"
 
 for forbidden in \
   "$service/cmd" \
+  "backend/projects/platform/cmd/internal" \
   "$app/bootstrap/impl/bootstrap.go" \
   "$app/security" \
   "$app/controller/account/public" \
@@ -24,7 +25,10 @@ for required in \
   "$app/validators/account/helpers/search.go" \
   "$app/controller/activation/public/activation.go" \
   "$app/client/account/impl/account.go" \
-  "backend/projects/platform/cmd/internal/src/strategies/bootstrapadmin/bootstrapadmin.go"; do
+  "$app/bootstrap/impl/operator.go" \
+  "$app/strategies/command/bootstrapadmin/bootstrapadmin.go" \
+  "$app/strategies/command/rbacmigrate/rbacmigrate.go" \
+  "$app/strategies/command/mailreconcile/mailreconcile.go"; do
   if [[ ! -f "$required" ]]; then
     printf '[ERROR] Required Identity architecture path is missing: %s\n' "$required" >&2
     exit 1
