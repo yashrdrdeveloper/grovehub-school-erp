@@ -26,3 +26,13 @@ func TestTenantSessionGeneration(t *testing.T) {
  if err := CheckTenantSession(ctx, "school", generation); err != nil { t.Fatal("new session denied", err) }
  if err := CheckTenantSession(ctx, "other", generation); !errors.Is(err, ErrTenantDenied) { t.Fatal("wrong tenant accepted", err) }
 }
+
+func TestCheckAccountTenant(t *testing.T) {
+ tenant := "stored-school"
+ ctx := WithTenantCheck(context.Background(), func(_ context.Context, got string) (int64,error) {
+  if got != tenant { t.Fatal("incorrect tenant",got) }
+  return 0, ErrTenantDenied
+ })
+ if !errors.Is(CheckAccountTenant(ctx, &tenant), ErrTenantDenied) { t.Fatal("disabled account accepted") }
+ if !errors.Is(CheckAccountTenant(ctx, nil), ErrTenantDenied) { t.Fatal("missing tenant accepted") }
+}

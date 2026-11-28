@@ -2,6 +2,7 @@ package eligibility
 
 import (
 	"context"
+	"grovehub/libs/schoolgateway"
 	"time"
 
 	"grovehub/services/identity/internal/app/entity"
@@ -46,6 +47,7 @@ func (guard *ProofGuard) Run(ctx context.Context, secret string, purpose entity.
 		if err != nil || account.TenantID == nil || *account.TenantID != guard.tenant || account.Version != *proof.AccountVersion {
 			return tokens.ErrInvalidToken
 		}
+		if schoolgateway.CheckTenant(tx, guard.tenant) != nil { return tokens.ErrInvalidToken }
 		if purpose == entity.SetupGrant && proof.Attempts >= 2 {
 			return tokens.ErrAttemptsExceeded
 		}

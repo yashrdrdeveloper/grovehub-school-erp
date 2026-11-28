@@ -3,6 +3,7 @@ package impl
 
 import (
 	"context"
+	"grovehub/libs/schoolgateway"
 	"errors"
 	"time"
 	"grovehub/services/identity/internal/app/entity"
@@ -122,7 +123,7 @@ func (service *Service) InspectProof(ctx context.Context, proof string, purpose 
   if err != nil { return authdto.GrantResult{}, err }
   account, err := service.accounts.FindByID(ctx, token.AccountID)
   if err != nil { return authdto.GrantResult{}, errors.New("invalid or expired proof") }
-  if account.Status != expected { return authdto.GrantResult{}, tokenrepo.ErrInvalidToken }
+  if account.Status != expected || schoolgateway.CheckAccountTenant(ctx, account.TenantID) != nil { return authdto.GrantResult{}, tokenrepo.ErrInvalidToken }
   remaining := int(time.Until(token.ExpiresAt).Seconds())
   if remaining < 1 { return authdto.GrantResult{}, tokenrepo.ErrInvalidToken }
   return authdto.GrantResult{Verified:true, Purpose:string(tokenPurpose), ExpiresIn:remaining}, nil

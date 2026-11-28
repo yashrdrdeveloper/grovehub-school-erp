@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+	"grovehub/libs/schoolgateway"
 	"errors"
 	"time"
 	"grovehub/services/identity/internal/app/entity"
@@ -58,11 +59,7 @@ func (op *Service) Execute(ctx context.Context, secret string, purpose string) (
 		if err != nil {
 			return err
 		}
-		accountID, err := op.tokens.Consume(transactionCtx, digest, tokenPurpose, time.Now().UTC())
-		if err != nil {
-			return err
-		}
-		account, err := op.accounts.FindByID(transactionCtx, accountID)
+		account, err := op.accounts.FindByID(transactionCtx, proof.AccountID)
 		if err != nil {
 			return err
 		}
@@ -73,6 +70,10 @@ func (op *Service) Execute(ctx context.Context, secret string, purpose string) (
 			return errors.New("password reset no longer available")
 		}
 
+		if schoolgateway.CheckAccountTenant(transactionCtx, account.TenantID) != nil { return tokenrepo.ErrInvalidToken }
+		accountID, err := op.tokens.Consume(transactionCtx, digest, tokenPurpose, time.Now().UTC())
+		if err != nil { return err }
+		if accountID != proof.AccountID { return tokenrepo.ErrInvalidToken }
 		now := time.Now().UTC()
 		return op.tokens.Issue(transactionCtx, entity.PasswordToken{
 			TokenHash: grantDigest,

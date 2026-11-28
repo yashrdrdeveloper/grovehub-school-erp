@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+	"grovehub/libs/schoolgateway"
 	"errors"
 	"strings"
 	"grovehub/services/identity/internal/app/entity"
@@ -38,6 +39,8 @@ func (op *Service) Execute(ctx context.Context, email string) error {
 	}
 
 	return op.unit.Run(ctx, func(transactionCtx context.Context) error {
-		return op.invitation.Queue(transactionCtx, account, entity.PasswordReset, "there")
+		current, err := op.accounts.FindByID(transactionCtx, account.AccountID)
+		if err != nil || current.Status != entity.Active || current.Email != email || schoolgateway.CheckAccountTenant(transactionCtx, current.TenantID) != nil { return nil }
+		return op.invitation.Queue(transactionCtx, current, entity.PasswordReset, "there")
 	})
 }

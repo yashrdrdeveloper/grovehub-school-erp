@@ -2,6 +2,7 @@ package rbac_test
 
 import (
 	"context"
+	"grovehub/libs/schoolgateway"
 	"grovehub/services/audit"
 	"grovehub/services/infrastructure"
 	"time"
@@ -43,6 +44,14 @@ func verifyRecoveryGuard(ctx context.Context, db *gorm.DB, tenant string, accoun
 	Expect(err).NotTo(HaveOccurred())
 	Expect(account.TenantID).NotTo(BeNil())
 	Expect(*account.TenantID).To(Equal(tenant))
+	disabled := schoolgateway.WithTenantCheck(ctx, func(_ context.Context, id string) (int64, error) {
+		Expect(id).To(Equal(tenant))
+		return 0, schoolgateway.ErrTenantDenied
+	})
+	Expect(service.Forgot(disabled, account.Email)).To(Succeed())
+	var suppressedCount int64
+	Expect(db.Model(&entity.Invitation{}).Where("account_id = ? AND purpose = ?", accountID, entity.PasswordReset).Count(&suppressedCount).Error).NotTo(HaveOccurred())
+	Expect(suppressedCount).To(BeZero())
 	login, err := service.Login(ctx, dto.Login{Identifier: account.Email, Password: "Test-setup-password-123"}, "recovery-test")
 	Expect(err).NotTo(HaveOccurred())
 
@@ -50,8 +59,19 @@ func verifyRecoveryGuard(ctx context.Context, db *gorm.DB, tenant string, accoun
 	var first entity.Invitation
 	Expect(db.Where("account_id = ? AND purpose = ?", accountID, entity.PasswordReset).Take(&first).Error).NotTo(HaveOccurred())
 	firstProof := invitationProof(first, cfg.EncryptionKey)
+	_, err = service.InspectProof(disabled, firstProof, "recovery")
+	Expect(err).To(MatchError(tokenrepo.ErrInvalidToken))
+	_, err = service.Exchange(disabled, firstProof, "recovery")
+	Expect(err).To(MatchError(tokenrepo.ErrInvalidToken))
 	grant, err := service.Exchange(ctx, firstProof, "recovery")
 	Expect(err).NotTo(HaveOccurred())
+
+	Expect(service.ResetPassword(disabled, grant.Secret, "Not-allowed-password-123")).To(MatchError(tokenrepo.ErrInvalidToken))
+	deniedHash, err := secrets.Digest(grant.Secret, 32)
+	Expect(err).NotTo(HaveOccurred())
+	deniedGrant, err := tokens.Inspect(ctx, deniedHash, entity.ResetGrant, time.Now().UTC())
+	Expect(err).NotTo(HaveOccurred())
+	Expect(deniedGrant.Attempts).To(BeZero())
 
 	// Concurrent forgot requests must leave only one currently valid proof.
 	outcomes := make(chan error, 2)

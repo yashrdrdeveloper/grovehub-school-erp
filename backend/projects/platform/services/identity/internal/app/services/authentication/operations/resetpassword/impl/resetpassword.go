@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+	"grovehub/libs/schoolgateway"
 	"errors"
 	"time"
 	"grovehub/services/identity/internal/app/entity"
@@ -35,17 +36,21 @@ func (op *Service) Execute(ctx context.Context, grant string, password string) e
 	}
 
 	return op.unit.Run(ctx, func(transactionCtx context.Context) error {
-		accountID, err := op.tokens.Consume(transactionCtx, digest, entity.ResetGrant, time.Now().UTC())
+		proof, err := op.tokens.Inspect(transactionCtx, digest, entity.ResetGrant, time.Now().UTC())
 		if err != nil {
 			return err
 		}
-		account, err := op.accounts.FindByID(transactionCtx, accountID)
+		account, err := op.accounts.FindByID(transactionCtx, proof.AccountID)
 		if err != nil {
 			return err
 		}
 		if account.Status != entity.Active {
 			return errors.New("invalid account status")
 		}
+		if schoolgateway.CheckAccountTenant(transactionCtx, account.TenantID) != nil { return tokenrepo.ErrInvalidToken }
+		accountID, err := op.tokens.Consume(transactionCtx, digest, entity.ResetGrant, time.Now().UTC())
+		if err != nil { return err }
+		if accountID != proof.AccountID { return tokenrepo.ErrInvalidToken }
 		if err := op.credential.Replace(transactionCtx, accountID, password); err != nil {
 			return err
 		}

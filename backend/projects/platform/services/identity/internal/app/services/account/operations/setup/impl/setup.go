@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+	"grovehub/libs/schoolgateway"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
 	"errors"
 	"time"
@@ -36,6 +37,11 @@ func (op *Service) Execute(ctx context.Context, grant string, input accountdto.S
 		return accountdto.SetupResult{}, err
 	}
 
+	proof, err := op.tokens.Inspect(ctx, digest, entity.SetupGrant, time.Now().UTC())
+	if err != nil { return accountdto.SetupResult{}, err }
+	initial, err := op.accounts.FindByID(ctx, proof.AccountID)
+	if err != nil || initial.Status != entity.PendingSetup || schoolgateway.CheckAccountTenant(ctx, initial.TenantID) != nil { return accountdto.SetupResult{}, tokenrepo.ErrInvalidToken }
+
 	// The attempt is committed independently so transaction rollback cannot refund it.
 	if err := op.tokens.ReserveSetupAttempt(ctx, digest, time.Now().UTC()); err != nil {
 		return accountdto.SetupResult{}, err
@@ -55,6 +61,7 @@ func (op *Service) Execute(ctx context.Context, grant string, input accountdto.S
 			return errors.New("account not pending setup")
 		}
 
+		if schoolgateway.CheckAccountTenant(transactionCtx, accountEntity.TenantID) != nil { return tokenrepo.ErrInvalidToken }
 		before := accountEntity
 		accountEntity.Status = entity.Active
 		accountEntity.Version++

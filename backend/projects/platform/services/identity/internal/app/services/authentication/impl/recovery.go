@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+	"grovehub/libs/schoolgateway"
 	"errors"
 	"strings"
 	"time"
@@ -45,6 +46,7 @@ func (service *RecoveryGuard) Forgot(ctx context.Context, email string) error {
 	return service.locker.Run(ctx, tenant, func(tx context.Context) error {
 		current, err := service.accounts.FindByID(tx, account.AccountID)
 		if err != nil || !eligibleRecoveryAccount(current, tenant) || current.Email != email { return nil }
+		if schoolgateway.CheckTenant(tx, tenant) != nil { return nil }
 		return service.invitations.Queue(tx, current, entity.PasswordReset, "there")
 	})
 }
@@ -66,6 +68,7 @@ func (service *RecoveryGuard) withProof(ctx context.Context, secret string, purp
 		if err != nil || currentProof.AccountID != account.AccountID || currentProof.AccountVersion == nil { return tokenrepo.ErrInvalidToken }
 		current, err := service.accounts.FindByID(tx, currentProof.AccountID)
 		if err != nil || !eligibleRecoveryAccount(current, tenant) || current.Version != *currentProof.AccountVersion { return tokenrepo.ErrInvalidToken }
+		if schoolgateway.CheckTenant(tx, tenant) != nil { return tokenrepo.ErrInvalidToken }
 		return operation(tx, current)
 	})
 }
@@ -161,6 +164,7 @@ func (service *RecoveryGuard) ChangePassword(ctx context.Context, password strin
 		session, err := service.sessions.LockActive(tx, actor.AccountID, actor.SessionID, now)
 		if errors.Is(err, sessionrepo.ErrInvalidSession) { return principal.ErrAuthenticationRequired }
 		if err != nil { return err }
+		if schoolgateway.CheckTenantSession(tx, actor.TenantID, session.SessionGeneration) != nil { return principal.ErrAuthenticationRequired }
 		if session.ReauthenticatedAt == nil || session.ReauthenticatedAt.After(now) || now.Sub(*session.ReauthenticatedAt) > 5*time.Minute {
 			return principal.ErrRecentAuthenticationRequired
 		}
