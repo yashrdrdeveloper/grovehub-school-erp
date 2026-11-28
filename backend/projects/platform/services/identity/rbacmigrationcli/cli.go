@@ -19,8 +19,8 @@ import (
 	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
 	"gorm.io/gorm"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/postgres"
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+
 	migrationimpl "grovehub/services/identity/internal/app/repository/rbacmigration/impl"
 	"grovehub/services/identity/internal/app/services/rbacmigration"
 	"grovehub/services/identity/internal/app/services/rbacmigration/operations/plan"
@@ -49,7 +49,7 @@ func Run(args []string, output io.Writer, diagnostics io.Writer) error {
 	if dsn == "" {
 		return errors.New("DATABASE_URL is missing")
 	}
-	db, err := postgres.NewDB(dsn)
+	db, err := coredatabase.NewDB(dsn)
 	if err != nil {
 		return errors.New("could not connect to configured database")
 	}
@@ -157,7 +157,7 @@ func apply(ctx context.Context, db *gorm.DB, opts options, output io.Writer) err
 		return err
 	}
 	var result any
-	err = transaction.Run(ctx, db, func(tx context.Context) error {
+	err = coredatabase.RunTransaction(ctx, db, func(tx context.Context) error {
 		if opts.operation == "backfill" {
 			result, err = migrationimpl.NewBackfill(db).Apply(tx, reviewed, opts.operator)
 		} else {
@@ -170,7 +170,7 @@ func apply(ctx context.Context, db *gorm.DB, opts options, output io.Writer) err
 		if err != nil {
 			return err
 		}
-		return transaction.Database(tx, db).Exec(
+		return coredatabase.TransactionDB(tx, db).Exec(
 			"INSERT INTO identity.rbac_migration_receipts (receipt_id, tenant_id, operator_id, operation, input_sha256, result) VALUES (?, ?, ?, ?, ?, CAST(? AS jsonb))",
 			receiptID.String(), opts.tenant, opts.operator, strings.ToUpper(opts.operation), opts.digest, string(payload),
 		).Error

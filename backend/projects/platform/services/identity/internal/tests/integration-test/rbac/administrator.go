@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/gomega"
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/repository/authority"
@@ -66,7 +66,7 @@ func verifyAdministratorGuard(ctx context.Context, db *gorm.DB) {
 	for _, account := range []string{first, second} {
 		go func(accountID string) {
 			outcomes <- guard.Run(ctx, tenant, func(tx context.Context) error {
-				return transaction.Database(tx, db).Exec("UPDATE identity.accounts SET status = 'SUSPENDED' WHERE tenant_id = ? AND account_id = ?", tenant, accountID).Error
+				return coredatabase.TransactionDB(tx, db).Exec("UPDATE identity.accounts SET status = 'SUSPENDED' WHERE tenant_id = ? AND account_id = ?", tenant, accountID).Error
 			})
 		}(account)
 	}
@@ -84,7 +84,7 @@ func verifyAdministratorGuard(ctx context.Context, db *gorm.DB) {
 	Expect(err).NotTo(HaveOccurred())
 	Expect(count).To(Equal(int64(1)))
 	Expect(guard.Run(ctx, tenant, func(tx context.Context) error {
-		return transaction.Database(tx, db).Exec("UPDATE identity.tenant_features SET enabled = false WHERE tenant_id = ?", tenant).Error
+		return coredatabase.TransactionDB(tx, db).Exec("UPDATE identity.tenant_features SET enabled = false WHERE tenant_id = ?", tenant).Error
 	})).To(MatchError(authority.ErrLastAdministrator))
 	count, err = reader.Count(ctx, tenant)
 	Expect(err).NotTo(HaveOccurred())

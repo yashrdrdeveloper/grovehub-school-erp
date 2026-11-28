@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/config"
 	"grovehub/services/identity/internal/app/services/security/principal"
 	dto "grovehub/services/identity/internal/app/dto/authentication"
@@ -38,7 +38,7 @@ func verifyRecoveryGuard(ctx context.Context, db *gorm.DB, tenant string, accoun
 	credentials := credentialimpl.New(credentialrepo.New(db))
 	cfg := config.Config{EncryptionKey: make([]byte, 32), ResetURL: "https://school.example/reset-password"}
 	sender := invitation.New(tokens, mailrepo.New(db,audit.NewProducer(infrastructure.NewEventStore(db))), cfg)
-	base := authimpl.New(accounts, sessions, tokens, credentials, sender, mapper.New(), transaction.NewUnitOfWork(db))
+	base := authimpl.New(accounts, sessions, tokens, credentials, sender, mapper.New(), coredatabase.NewUnitOfWork(db))
 	service := authimpl.NewRecoveryGuard(base, accounts, tokens, sessions, authorityrepo.New(db), sender, audit.NewProducer(infrastructure.NewEventStore(db)))
 	account, err := accounts.FindByID(ctx, accountID)
 	Expect(err).NotTo(HaveOccurred())

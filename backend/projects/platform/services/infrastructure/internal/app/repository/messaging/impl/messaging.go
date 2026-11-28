@@ -8,7 +8,7 @@ import (
     "gorm.io/gorm"
     "gorm.io/gorm/clause"
 
-    coretransaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+    coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
     errorcode "grovehub/services/infrastructure/internal/app/constants/error"
     dto "grovehub/services/infrastructure/internal/app/dto/messaging"
     "grovehub/services/infrastructure/internal/app/entity"
@@ -35,7 +35,7 @@ func (store *messagingRepository) Enqueue(ctx context.Context, event dto.Event) 
     if err := store.validator.ValidateEvent(event); err != nil { return err }
     entry,err:=store.mapper.ToEntity(event,time.Now().UTC())
     if err!=nil{return err}
-    return coretransaction.Database(ctx, store.db).Table(entry.TableName()).Create(&entry).Error
+    return coredatabase.TransactionDB(ctx, store.db).Table(entry.TableName()).Create(&entry).Error
 }
 
 func (store *messagingRepository) Claim(ctx context.Context, limit int, lease time.Duration) ([]entity.Messaging, error) {

@@ -12,7 +12,7 @@ import (
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/repository/authority"
 	"grovehub/services/identity/internal/app/repository/rbacmigration"
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/repository/approvalpolicy"
 	policyimpl "grovehub/services/identity/internal/app/repository/approvalpolicy/impl"
 	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
@@ -80,7 +80,7 @@ func verifyPolicyProvisioning(ctx context.Context, db *gorm.DB, tenant string, a
 			argument = tenant
 		}
 		Expect(global.Run(ctx, func(tx context.Context) error {
-			return transaction.Database(tx, db).Exec(statement, argument).Error
+			return coredatabase.TransactionDB(tx, db).Exec(statement, argument).Error
 		})).To(MatchError(authority.ErrLastAdministrator))
 		count, err := administrators.Count(ctx, tenant)
 		Expect(err).NotTo(HaveOccurred())

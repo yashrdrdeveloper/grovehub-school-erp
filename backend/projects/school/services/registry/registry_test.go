@@ -14,7 +14,7 @@ import (
  "time"
 
  "github.com/google/uuid"
- "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/postgres"
+ coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
  core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/registry"
 )
@@ -22,7 +22,7 @@ import (
 func TestRegistry(t *testing.T){
  dsn:=os.Getenv("PROJECT_SCHOOL_TEST_DSN");if dsn==""{t.Skip("requires disposable School database")}
  ctx:=context.Background()
- db,err:=postgres.OpenProjectPool(ctx,dsn);if err!=nil{t.Fatal(err)};defer db.Close()
+ db,err:=coredatabase.OpenProjectPool(ctx,dsn);if err!=nil{t.Fatal(err)};defer db.Close()
  var database string
  if err=db.QueryRowContext(ctx,"SELECT current_database()").Scan(&database);err!=nil||database!="school_test"{t.Fatal("disposable database required")}
  if err=registry.Migrate(ctx,db);err!=nil{t.Fatal(err)}

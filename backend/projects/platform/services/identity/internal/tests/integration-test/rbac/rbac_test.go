@@ -3,7 +3,7 @@ package rbac_test
 import (
 	"context"
 	"errors"
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"os"
 	"testing"
 
@@ -243,7 +243,7 @@ var _ = Describe("RBAC persistence against PostgreSQL", func() {
 		Expect(err).To(MatchError(rolerepo.ErrInvalidPermissions))
 		grantUpdate.Codes = []permission.Code{}
 		rollback := errors.New("force rollback")
-		Expect(transaction.Run(ctx, db, func(tx context.Context) error {
+		Expect(coredatabase.RunTransaction(ctx, db, func(tx context.Context) error {
 			cleared, err := writer.ReplaceDraftPermissions(tx, grantUpdate)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(cleared.Codes).To(BeEmpty())

@@ -15,7 +15,7 @@ import (
 	. "github.com/onsi/gomega"
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/config"
 	integrationclient "grovehub/services/integration/client/connection"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
@@ -129,7 +129,7 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	query, err := url.ParseQuery(link.Fragment)
 	Expect(err).NotTo(HaveOccurred())
 	proof := query.Get("proof")
-	exchangeOperation := exchangeimpl.New(accountimpl.New(db), tokens, transaction.NewUnitOfWork(db))
+	exchangeOperation := exchangeimpl.New(accountimpl.New(db), tokens, coredatabase.NewUnitOfWork(db))
 	proofs := eligibility.NewProofGuard(tenant, accounts, tokens, locker, readiness, assignments, snapshots)
 	disabledProofs := eligibility.NewProofGuard("", accounts, tokens, locker, readiness, assignments, snapshots)
 	disabledAuth := authruntime.NewOnboarding(&setupExchange{operation: exchangeOperation}, disabledProofs)

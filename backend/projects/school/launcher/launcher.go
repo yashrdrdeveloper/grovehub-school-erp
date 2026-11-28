@@ -13,14 +13,14 @@ import (
  "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/readiness"
  "time"
 
- "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/postgres"
+ coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 )
 
 // Run starts the private application listener with bounded readiness checks.
 func Run() error {
  ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
  defer stop()
- db,err:=postgres.OpenProjectPool(ctx,os.Getenv("SCHOOL_DATABASE_URL"))
+ db,err:=coredatabase.OpenProjectPool(ctx,os.Getenv("SCHOOL_DATABASE_URL"))
  if err!=nil {return fmt.Errorf("SCHOOL_DATABASE_URL: %w",err)}
  defer db.Close()
  if err:=registry.Check(ctx,db);err!=nil{return err}

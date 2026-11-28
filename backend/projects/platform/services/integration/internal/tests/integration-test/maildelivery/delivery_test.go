@@ -13,7 +13,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	client "grovehub/services/integration/client/connection"
 	repository "grovehub/services/integration/internal/app/repository/maildelivery/impl"
 	"grovehub/services/integration/internal/app/services/connection/operations/action/delivery"
@@ -43,7 +43,7 @@ func TestDurableDispatch(t *testing.T) {
 	var calls atomic.Int32
 	send := func() (any,error) { calls.Add(1); return nil,nil }
 	rollback := errors.New("injected caller rollback")
-	err = transaction.Run(ctx, db, func(tx context.Context) error {
+	err = coredatabase.RunTransaction(ctx, db, func(tx context.Context) error {
 		if _, err := dispatcher.Dispatch(tx, tenant, id, []byte("synthetic mail"), send); err != nil { return err }
 		return rollback
 	})
@@ -73,14 +73,14 @@ func TestDurableDispatch(t *testing.T) {
 	sqlDB.SetMaxOpenConns(1)
 	blockedID := uuid.NewString()
 	bounded, cancel := context.WithTimeout(ctx, 250*time.Millisecond)
-	err = transaction.Run(ctx, db, func(tx context.Context) error {
+	err = coredatabase.RunTransaction(ctx, db, func(tx context.Context) error {
 		_, err := dispatcher.Dispatch(bounded, tenant, blockedID, []byte("pool test"), send)
 		return err
 	})
 	cancel()
 	if err == nil || calls.Load() != 2 { t.Fatal("single-connection pool must fail before sending") }
 	sqlDB.SetMaxOpenConns(2)
-	err = transaction.Run(ctx, db, func(tx context.Context) error {
+	err = coredatabase.RunTransaction(ctx, db, func(tx context.Context) error {
 		_, err := dispatcher.Dispatch(tx, tenant, blockedID, []byte("pool test"), send)
 		return err
 	})
