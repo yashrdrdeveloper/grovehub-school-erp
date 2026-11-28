@@ -7,6 +7,7 @@ import (
  "errors"
  "io"
  "net/http"
+ "strconv"
  "strings"
  "time"
 
@@ -48,10 +49,11 @@ func NewAccess(db *sql.DB,raw,readRaw,renameRaw,statusRaw string)(http.HandlerFu
   claims,ok:=core.WorkloadFrom(ctx)
   if !ok||claims.Subject!=AccessSubject||len(claims.Scopes)!=1||claims.Scopes[0]!=AccessScope||claims.ActorGID!=""||claims.TenantID!=""||claims.SessionID!=""{w.WriteHeader(403);return}
   probe,cancel:=context.WithTimeout(ctx,2*time.Second);defer cancel()
-  var active bool
-  err=db.QueryRowContext(probe,"SELECT EXISTS(SELECT 1 FROM school_registry.schools WHERE id=$1 AND status='ACTIVE')",id).Scan(&active)
-  if err!=nil{w.WriteHeader(503);return}
-  if !active{w.WriteHeader(403);return}
+  var generation int64
+  err=db.QueryRowContext(probe,"SELECT session_generation FROM school_registry.schools WHERE id=$1 AND status='ACTIVE'",id).Scan(&generation)
+  if errors.Is(err,sql.ErrNoRows){w.WriteHeader(403);return}
+  if err!=nil||generation<1{w.WriteHeader(503);return}
+  w.Header().Set("X-GH-Session-Generation",strconv.FormatInt(generation,10))
   w.WriteHeader(204)
  },nil
 }

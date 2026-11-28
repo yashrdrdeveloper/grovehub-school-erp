@@ -43,7 +43,7 @@ func (operation *RefreshOperation) Execute(ctx context.Context, token string) (a
 
 	tenant:=""
 	if account.TenantID!=nil{tenant=*account.TenantID}
-	if schoolgateway.CheckTenant(ctx,tenant)!=nil{return auth.RefreshResult{},auth.ErrInvalidRefreshToken}
+	if schoolgateway.CheckTenantSession(ctx,tenant,session.SessionGeneration)!=nil{return auth.RefreshResult{},auth.ErrInvalidRefreshToken}
 
 	access, err := secrets.NewSecret(32)
 	if err != nil {

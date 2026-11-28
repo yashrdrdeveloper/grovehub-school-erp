@@ -9,6 +9,7 @@ import (
  "net/http"
  "net/url"
  "strings"
+ "strconv"
  "time"
 
  core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
@@ -32,14 +33,18 @@ func NewTenantAccess(c TenantAccessConfig)(schoolgateway.TenantCheck,error){
   return core.WorkloadClaims{Scopes:[]string{tenantAccessScope}},nil
  }})
  if err!=nil{return nil,err}
- return func(ctx context.Context,id string)error{
-  if !validSchoolID(id){return schoolgateway.ErrTenantDenied}
+ return func(ctx context.Context,id string)(int64,error){
+  if !validSchoolID(id){return 0,schoolgateway.ErrTenantDenied}
   ctx,cancel:=context.WithTimeout(ctx,3*time.Second);defer cancel()
   req,err:=http.NewRequestWithContext(ctx,"GET",strings.TrimRight(origin.String(),"/")+"/school/restricted/registry/schools/"+id+"/access-check",nil)
-  if err!=nil{return schoolgateway.ErrTenantDenied}
-  resp,err:=client.Do(req);if err!=nil{return schoolgateway.ErrTenantDenied};defer resp.Body.Close()
+  if err!=nil{return 0,schoolgateway.ErrTenantDenied}
+  resp,err:=client.Do(req);if err!=nil{return 0,schoolgateway.ErrTenantDenied};defer resp.Body.Close()
   body,err:=io.ReadAll(io.LimitReader(resp.Body,1))
-  if err!=nil||resp.StatusCode!=204||len(body)!=0{return schoolgateway.ErrTenantDenied}
-  return nil
+  if err!=nil||resp.StatusCode!=204||len(body)!=0{return 0,schoolgateway.ErrTenantDenied}
+  values:=resp.Header.Values("X-GH-Session-Generation")
+  if len(values)!=1{return 0,schoolgateway.ErrTenantDenied}
+  generation,err:=strconv.ParseInt(values[0],10,64)
+  if err!=nil||generation<1||strconv.FormatInt(generation,10)!=values[0]{return 0,schoolgateway.ErrTenantDenied}
+  return generation,nil
  },nil
 }

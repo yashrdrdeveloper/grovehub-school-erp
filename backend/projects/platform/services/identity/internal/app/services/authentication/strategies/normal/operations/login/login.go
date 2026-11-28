@@ -49,7 +49,8 @@ func (operation *LoginOperation) Execute(ctx context.Context, input authdto.Logi
 
 	tenant:=""
 	if account.TenantID!=nil{tenant=*account.TenantID}
-	if schoolgateway.CheckTenant(ctx,tenant)!=nil{return auth.SessionResult{},auth.ErrInvalidCredentials}
+	generation, err := schoolgateway.TenantGeneration(ctx, tenant)
+	if err != nil { return auth.SessionResult{}, auth.ErrInvalidCredentials }
 
 	access, err := secrets.NewSecret(32)
 	if err != nil {
@@ -78,6 +79,7 @@ func (operation *LoginOperation) Execute(ctx context.Context, input authdto.Logi
 	now := time.Now().UTC()
 	session := entity.Session{
 		SessionID: sessionID,
+		SessionGeneration: generation,
 		AccountID: account.AccountID,
 		AccessHash: accessHash,
 		RefreshHash: refreshHash,

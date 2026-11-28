@@ -25,7 +25,10 @@ var statusSchema string
 //go:embed 006_status_delivery.sql
 var statusDeliverySchema string
 
-const Version=6
+//go:embed 007_session_generation.sql
+var sessionGenerationSchema string
+
+const Version=7
 
 func Apply(ctx context.Context,db *sql.DB)error{
  tx,err:=db.BeginTx(ctx,nil);if err!=nil{return err};defer tx.Rollback()
@@ -57,6 +60,10 @@ func Apply(ctx context.Context,db *sql.DB)error{
  if version<6{
   if _,err=tx.ExecContext(ctx,statusDeliverySchema);err!=nil{return err}
   if _,err=tx.ExecContext(ctx,"INSERT INTO school_registry.schema_version(version) VALUES(6)");err!=nil{return err}
+ }
+ if version<7{
+  if _,err=tx.ExecContext(ctx,sessionGenerationSchema);err!=nil{return err}
+  if _,err=tx.ExecContext(ctx,"INSERT INTO school_registry.schema_version(version) VALUES(7)");err!=nil{return err}
  }
  return tx.Commit()
 }

@@ -5,6 +5,7 @@ import "time"
 // @Entity identity.sessions
 type Session struct {
 	SessionID         string     `gorm:"column:session_id;primaryKey;type:uuid" json:"sessionId"`
+	SessionGeneration int64      `gorm:"column:session_generation;not null" json:"-"`
 	AccountID         string     `gorm:"column:account_id;type:uuid" json:"-"`
 	AccessHash        string     `gorm:"column:access_hash" json:"-"`
 	RefreshHash       string     `gorm:"column:refresh_hash" json:"-"`

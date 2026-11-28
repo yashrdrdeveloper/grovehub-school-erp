@@ -12,6 +12,7 @@ type Principal struct {
 	PersonGID       string
 	TenantID        string
 	SessionID       string
+	SessionGeneration int64
 	Admin           bool
 	AuthenticatedAt time.Time
 }

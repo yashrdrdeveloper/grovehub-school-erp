@@ -151,7 +151,7 @@ func (v *platformWorkloads) VerifyWorkload(ctx context.Context,r *http.Request)(
  switch r.Pattern {
  case "POST /identity/restricted/auth/logout","POST /identity/restricted/auth/logout-all","DELETE /identity/restricted/auth/sessions/{sessionId}":
  default:
-  if school.CheckTenant(verified,actor.TenantID)!=nil{return nil,core.ErrWorkloadDenied}
+  if school.CheckTenantSession(verified,actor.TenantID,actor.SessionGeneration)!=nil{return nil,core.ErrWorkloadDenied}
  }
  r.Header.Del("X-GH-Identity-Proof")
  verified=school.WithPrincipal(verified,actor)

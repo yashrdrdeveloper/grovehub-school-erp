@@ -32,17 +32,20 @@ func TestSchoolAccessCheck(t *testing.T){
  mux:=http.NewServeMux()
  if err=registry.RegisterHTTP(mux,db,"","","",string(raw));err!=nil{t.Fatal(err)}
  token,err:=core.SignWorkload(key.KeyID,key.Issuer,priv,core.WorkloadClaims{Subject:key.Subject,Audience:"school",Scopes:key.Scopes,ExpiresAt:time.Now().Add(time.Minute)});if err!=nil{t.Fatal(err)}
+ var generation string
  check:=func(id,suffix string,auth bool)int{
   r:=httptest.NewRequest("GET","/school/restricted/registry/schools/"+id+"/access-check"+suffix,nil)
   if auth{r.Header.Set("Authorization","Bearer "+token)}
-  w:=httptest.NewRecorder();mux.ServeHTTP(w,r);return w.Code
+  w:=httptest.NewRecorder();mux.ServeHTTP(w,r);generation=w.Header().Get("X-GH-Session-Generation");return w.Code
  }
- if got:=check(school,"",true);got!=204{t.Fatal("active school denied",got)}
+ if got:=check(school,"",true);got!=204||generation!="1"{t.Fatal("active school denied or wrong generation",got,generation)}
  if got:=check(missing,"",true);got!=403{t.Fatal("missing school accepted",got)}
  if got:=check(school,"",false);got!=403{t.Fatal("unsigned request accepted",got)}
  if got:=check(school,"?status=ACTIVE",true);got!=403{t.Fatal("query accepted",got)}
  if _,err=db.ExecContext(ctx,"UPDATE school_registry.schools SET status='DISABLED' WHERE id=$1",school);err!=nil{t.Fatal(err)}
  if got:=check(school,"",true);got!=403{t.Fatal("disabled school accepted",got)}
  if _,err=db.ExecContext(ctx,"UPDATE school_registry.schools SET status='ACTIVE' WHERE id=$1",school);err!=nil{t.Fatal(err)}
- if got:=check(school,"",true);got!=204{t.Fatal("reactivated school denied",got)}
+ if got:=check(school,"",true);got!=204||generation!="2"{t.Fatal("reactivated school denied or wrong generation",got,generation)}
+ if _,err=db.ExecContext(ctx,"UPDATE school_registry.schools SET name='Renamed access school' WHERE id=$1",school);err!=nil{t.Fatal(err)}
+ if got:=check(school,"",true);got!=204||generation!="2"{t.Fatal("rename changed session generation",got,generation)}
 }

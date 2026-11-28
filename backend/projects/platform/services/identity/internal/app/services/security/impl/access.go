@@ -70,6 +70,7 @@ func (verifier *Verifier) principalForSession(ctx context.Context, session entit
 		PersonGID:       account.PersonGID,
 		TenantID:        tenantID,
 		SessionID:       session.SessionID,
+		SessionGeneration: session.SessionGeneration,
 		Admin:           verifier.adminIDs[account.AccountID],
 		AuthenticatedAt: authenticatedAt,
 	}, nil
