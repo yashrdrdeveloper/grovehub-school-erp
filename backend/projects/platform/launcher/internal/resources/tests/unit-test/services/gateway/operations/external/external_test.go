@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
-	"testing"
+	ginkgo "github.com/onsi/ginkgo/v2"
 
 	external "grovehub/launcher/internal/src/services/gateway/operations/external/impl"
 	schoolgateway "grovehub/internal/session"
@@ -24,7 +24,8 @@ func (accessVerifier) VerifyAccess(_ context.Context, secret string) (schoolgate
 	}, nil
 }
 
-func TestProtectedWildcardRoutingPreservesPathValues(t *testing.T) {
+func verifyProtectedWildcardRoutingPreservesPathValues() {
+	t := ginkgo.GinkgoT()
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /foundation/protected/persons/{gid}", func(w http.ResponseWriter, r *http.Request) {
 		principal, ok := schoolgateway.PrincipalFrom(r.Context())
@@ -45,7 +46,8 @@ func TestProtectedWildcardRoutingPreservesPathValues(t *testing.T) {
 	}
 }
 
-func TestUnknownAndRestrictedRoutesFailClosed(t *testing.T) {
+func verifyUnknownAndRestrictedRoutesFailClosed() {
+	t := ginkgo.GinkgoT()
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /unclassified", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -71,7 +73,8 @@ func TestUnknownAndRestrictedRoutesFailClosed(t *testing.T) {
 	}
 }
 
-func TestPublicUnsafeRequestsRequireTrustedOrigin(t *testing.T) {
+func verifyPublicUnsafeRequestsRequireTrustedOrigin() {
+	t := ginkgo.GinkgoT()
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /identity/public/auth/login", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -86,7 +89,8 @@ func TestPublicUnsafeRequestsRequireTrustedOrigin(t *testing.T) {
 	}
 }
 
-func TestRateLimitUsesProvidedExactMethodAndRoute(t *testing.T) {
+func verifyRateLimitUsesProvidedExactMethodAndRoute() {
+	t := ginkgo.GinkgoT()
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /identity/public/auth/login", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -108,7 +112,8 @@ func TestRateLimitUsesProvidedExactMethodAndRoute(t *testing.T) {
 	}
 }
 
-func TestLocalViteLoopbackOriginsShareSamePort(t *testing.T) {
+func verifyLocalViteLoopbackOriginsShareSamePort() {
+	t := ginkgo.GinkgoT()
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /identity/public/auth/invitations/exchange", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -152,7 +157,8 @@ func (access *routeAccess) AuthorizeProtectedRoute(ctx context.Context, pattern 
 	return nil
 }
 
-func TestIdentityProtectedRoutePolicy(t *testing.T) {
+func verifyIdentityProtectedRoutePolicy() {
+	t := ginkgo.GinkgoT()
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /identity/protected/accounts/{accountId}", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -177,4 +183,16 @@ func TestIdentityProtectedRoutePolicy(t *testing.T) {
 	if access.pattern != "GET /identity/protected/accounts/{accountId}" {
 		t.Fatalf("expected registered pattern, got %q", access.pattern)
 	}
+}
+
+// @Testing suite=LauncherExternalGateway
+func ExternalGatewaySpecs() {
+	ginkgo.Describe("ExternalGateway", func() {
+		ginkgo.It("Protected Wildcard Routing Preserves Path Values", verifyProtectedWildcardRoutingPreservesPathValues)
+		ginkgo.It("Unknown And Restricted Routes Fail Closed", verifyUnknownAndRestrictedRoutesFailClosed)
+		ginkgo.It("Public Unsafe Requests Require Trusted Origin", verifyPublicUnsafeRequestsRequireTrustedOrigin)
+		ginkgo.It("Rate Limit Uses Provided Exact Method And Route", verifyRateLimitUsesProvidedExactMethodAndRoute)
+		ginkgo.It("Local Vite Loopback Origins Share Same Port", verifyLocalViteLoopbackOriginsShareSamePort)
+		ginkgo.It("Identity Protected Route Policy", verifyIdentityProtectedRoutePolicy)
+	})
 }

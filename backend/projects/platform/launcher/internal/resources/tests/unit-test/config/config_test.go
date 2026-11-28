@@ -18,19 +18,27 @@ func ConfigSpecs() {
 			t.Setenv("PLATFORM_TENANT_ACCESS_KEY_ID", "key")
 			t.Setenv("PLATFORM_TENANT_ACCESS_PRIVATE_KEY", "test-key")
 			t.Setenv("PLATFORM_TENANT_ACCESS_REQUIRED", "true")
-			Expect(config.FromEnv()).To(Equal(config.Config{
+			value, err := config.FromEnv()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(value).To(Equal(config.Config{
 				Address: "127.0.0.1:8080", AllowedOrigin: "https://school.example",
 				Workload: "{}", TenantOrigin: "https://platform.example",
 				TenantKeyID: "key", TenantPrivateKey: "test-key", TenantRequired: true,
 			}))
 		})
-		It("preserves an explicit address and requires an exact true flag", func() {
+		It("preserves an explicit address and loads a false flag", func() {
 			t := GinkgoT()
 			t.Setenv("GROOVEHUB_HTTP_ADDR", "127.0.0.1:9090")
 			t.Setenv("PLATFORM_TENANT_ACCESS_REQUIRED", "false")
-			value := config.FromEnv()
+			value, err := config.FromEnv()
+			Expect(err).NotTo(HaveOccurred())
 			Expect(value.Address).To(Equal("127.0.0.1:9090"))
 			Expect(value.TenantRequired).To(BeFalse())
+		})
+		It("rejects malformed required-tenant flags instead of disabling the policy", func() {
+			GinkgoT().Setenv("PLATFORM_TENANT_ACCESS_REQUIRED", "invalid")
+			_, err := config.FromEnv()
+			Expect(err).To(MatchError(ContainSubstring("PLATFORM_TENANT_ACCESS_REQUIRED")))
 		})
 	})
 }

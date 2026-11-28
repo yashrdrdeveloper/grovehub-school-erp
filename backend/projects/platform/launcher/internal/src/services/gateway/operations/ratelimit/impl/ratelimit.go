@@ -10,6 +10,7 @@ import (
 
 // Limiter is a bounded per-process throttle. Production multi-replica
 // deployments must add a shared/distributed limiter at the edge.
+// @Service
 type limiter struct {
 	mu sync.Mutex
 	entries map[string]attempt

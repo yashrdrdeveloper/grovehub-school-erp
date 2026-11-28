@@ -9,13 +9,14 @@ import (
  "encoding/base64"
  "encoding/json"
  "net/http/httptest"
- "testing"
+ ginkgo "github.com/onsi/ginkgo/v2"
  "time"
 
  core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
 )
 
-func TestInternalCatalogBoundary(t *testing.T){
+func verifyInternalCatalogBoundary() {
+	t := ginkgo.GinkgoT()
  pub,priv,err:=ed25519.GenerateKey(rand.Reader);if err!=nil{t.Fatal(err)}
  key:=core.WorkloadKeyConfig{KeyID:"internal-test",PublicKey:base64.RawURLEncoding.EncodeToString(pub),Issuer:"internal-tool",Subject:"internal-tool",Scopes:[]string{internalcatalog.InternalCatalogScope}}
  raw,err:=json.Marshal(WorkloadConfig{InternalToolKeys:[]core.WorkloadKeyConfig{key}});if err!=nil{t.Fatal(err)}
@@ -37,4 +38,11 @@ func TestInternalCatalogBoundary(t *testing.T){
  bad:=key;bad.Scopes=[]string{internalcatalog.InternalCatalogScope,"identity.accounts.create"}
  if _,err:=internalcatalog.New([]core.WorkloadKeyConfig{bad},nil);err==nil{t.Fatal("overbroad key accepted")}
  if _,err:=internalcatalog.New([]core.WorkloadKeyConfig{key},[]core.WorkloadKeyConfig{key});err==nil{t.Fatal("shared key accepted")}
+}
+
+// @Testing suite=LauncherWorkloads
+func InternalCatalogSpecs() {
+	ginkgo.Describe("InternalCatalog", func() {
+		ginkgo.It("Internal Catalog Boundary", verifyInternalCatalogBoundary)
+	})
 }

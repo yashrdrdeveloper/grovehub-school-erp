@@ -11,12 +11,13 @@ import (
  "encoding/base64"
  "encoding/json"
  "net/http/httptest"
- "testing"
+ ginkgo "github.com/onsi/ginkgo/v2"
  "time"
  "github.com/google/uuid"
  core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
 )
-func TestSchoolReceiptWorkload(t *testing.T){
+func verifySchoolReceiptWorkload() {
+	t := ginkgo.GinkgoT()
  pub,priv,err:=ed25519.GenerateKey(rand.Reader);if err!=nil{t.Fatal(err)}
  k:=core.WorkloadKeyConfig{KeyID:"receipt-test",PublicKey:base64.RawURLEncoding.EncodeToString(pub),Issuer:schoolreceipt.ReceiptIssuer,Subject:schoolreceipt.ReceiptIssuer+":"+uuid.NewString(),Scopes:[]string{schoolreceipt.ReceiptScope}}
  raw,_:=json.Marshal(WorkloadConfig{SchoolReceiptKeys:[]core.WorkloadKeyConfig{k}})
@@ -30,7 +31,8 @@ func TestSchoolReceiptWorkload(t *testing.T){
  if _,err:=schoolreceipt.New([]core.WorkloadKeyConfig{k},[]core.WorkloadKeyConfig{k});err==nil{t.Fatal("shared credential accepted")}
 }
 
-func TestSchoolReceiptReaderWorkload(t *testing.T){
+func verifySchoolReceiptReaderWorkload() {
+	t := ginkgo.GinkgoT()
  pub,priv,err:=ed25519.GenerateKey(rand.Reader);if err!=nil{t.Fatal(err)}
  k:=core.WorkloadKeyConfig{KeyID:"receipt-reader-test",PublicKey:base64.RawURLEncoding.EncodeToString(pub),Issuer:"internal-tool-school-receipt-reader",Subject:"internal-tool-school-receipt-reader",Scopes:[]string{schoolreceiptread.ReceiptReadScope}}
  raw,_:=json.Marshal(WorkloadConfig{SchoolReceiptReadKeys:[]core.WorkloadKeyConfig{k}})
@@ -44,7 +46,8 @@ func TestSchoolReceiptReaderWorkload(t *testing.T){
  if _,err:=schoolreceiptread.New([]core.WorkloadKeyConfig{k},[]core.WorkloadKeyConfig{k});err==nil{t.Fatal("reused key accepted")}
 }
 
-func TestStatusReceiptWorkload(t *testing.T){
+func verifyStatusReceiptWorkload() {
+	t := ginkgo.GinkgoT()
  pub,priv,err:=ed25519.GenerateKey(rand.Reader);if err!=nil{t.Fatal(err)}
  k:=core.WorkloadKeyConfig{KeyID:"status-receipt-test",PublicKey:base64.RawURLEncoding.EncodeToString(pub),Issuer:schoolstatusreceipt.StatusReceiptIssuer,Subject:schoolstatusreceipt.StatusReceiptIssuer+":"+uuid.NewString(),Scopes:[]string{schoolstatusreceipt.StatusReceiptScope}}
  raw,_:=json.Marshal(WorkloadConfig{SchoolStatusReceiptKeys:[]core.WorkloadKeyConfig{k}})
@@ -55,4 +58,13 @@ func TestStatusReceiptWorkload(t *testing.T){
   _,err=v.VerifyWorkload(context.Background(),r)
   if (err==nil)!=(r.Pattern==schoolstatusreceipt.StatusReceiptRoute){t.Fatal("wrong status publisher grant",path,err)}
  }
+}
+
+// @Testing suite=LauncherWorkloads
+func SchoolReceiptSpecs() {
+	ginkgo.Describe("SchoolReceipt", func() {
+		ginkgo.It("School Receipt Workload", verifySchoolReceiptWorkload)
+		ginkgo.It("School Receipt Reader Workload", verifySchoolReceiptReaderWorkload)
+		ginkgo.It("Status Receipt Workload", verifyStatusReceiptWorkload)
+	})
 }

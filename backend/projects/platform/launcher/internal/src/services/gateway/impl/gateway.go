@@ -10,6 +10,7 @@ import (
  schoolgateway "grovehub/internal/session"
 )
 
+// @Service
 type service struct {
  external http.Handler
  internal inprocess.Operation

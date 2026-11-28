@@ -11,13 +11,14 @@ import (
  "encoding/base64"
  "encoding/json"
  "net/http/httptest"
- "testing"
+ ginkgo "github.com/onsi/ginkgo/v2"
  "time"
 
  core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
 )
 
-func TestOperatorAuditBoundary(t *testing.T){
+func verifyOperatorAuditBoundary() {
+	t := ginkgo.GinkgoT()
  pub,priv,err:=ed25519.GenerateKey(rand.Reader);if err!=nil{t.Fatal(err)}
  key:=core.WorkloadKeyConfig{KeyID:"operator-audit-test",PublicKey:base64.RawURLEncoding.EncodeToString(pub),Issuer:"internal-tool-audit",Subject:"internal-tool-audit",Scopes:[]string{operatoraudit.OperatorAuditScope}}
  raw,err:=json.Marshal(WorkloadConfig{OperatorAuditKeys:[]core.WorkloadKeyConfig{key}});if err!=nil{t.Fatal(err)}
@@ -41,7 +42,8 @@ func TestOperatorAuditBoundary(t *testing.T){
  if _,err:=operatoraudit.New([]core.WorkloadKeyConfig{key},[]core.WorkloadKeyConfig{key});err==nil{t.Fatal("shared key accepted")}
 }
 
-func TestOperatorAuditReadIsolation(t *testing.T){
+func verifyOperatorAuditReadIsolation() {
+	t := ginkgo.GinkgoT()
  pub,priv,err:=ed25519.GenerateKey(rand.Reader);if err!=nil{t.Fatal(err)}
  key:=core.WorkloadKeyConfig{KeyID:"read-test",PublicKey:base64.RawURLEncoding.EncodeToString(pub),Issuer:"internal-tool-audit-reader",Subject:"internal-tool-audit-reader",Scopes:[]string{operatorauditread.OperatorAuditReadScope}}
  raw,_:=json.Marshal(WorkloadConfig{OperatorAuditReadKeys:[]core.WorkloadKeyConfig{key}})
@@ -53,4 +55,12 @@ func TestOperatorAuditReadIsolation(t *testing.T){
   if (err==nil)!=(r.Pattern==operatorauditread.OperatorAuditReadRoute){t.Fatal("wrong grant",path,err)}
  }
  if _,err:=operatorauditread.New([]core.WorkloadKeyConfig{key},[]core.WorkloadKeyConfig{key});err==nil{t.Fatal("shared key accepted")}
+}
+
+// @Testing suite=LauncherWorkloads
+func OperatorAuditSpecs() {
+	ginkgo.Describe("OperatorAudit", func() {
+		ginkgo.It("Operator Audit Boundary", verifyOperatorAuditBoundary)
+		ginkgo.It("Operator Audit Read Isolation", verifyOperatorAuditReadIsolation)
+	})
 }

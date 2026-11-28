@@ -20,15 +20,18 @@ import (
 type builder struct {
  logger *slog.Logger
  config config.Config
+ configErr error
 }
 var _ bootstrap.Bootstrap = (*builder)(nil)
 
 func New(logger *slog.Logger) bootstrap.Bootstrap {
  if logger==nil {logger=slog.Default()}
- return &builder{logger:logger,config:config.FromEnv()}
+ configuration,err:=config.FromEnv()
+ return &builder{logger:logger,config:configuration,configErr:err}
 }
 
 func(b *builder) Build()(result bootstrap.Runtime,err error){
+ if b.configErr!=nil{return nil,fmt.Errorf("load launcher configuration: %w",b.configErr)}
  cleanup:=&helpers.Cleanup{}
  ctx,stop:=signal.NotifyContext(context.Background(),os.Interrupt,syscall.SIGTERM)
  cleanup.Add(stop)

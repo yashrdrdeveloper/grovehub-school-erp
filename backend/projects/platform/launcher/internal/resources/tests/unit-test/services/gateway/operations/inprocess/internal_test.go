@@ -3,7 +3,7 @@ package gateway_test
 import (
 	"context"
 	"errors"
-	"testing"
+	ginkgo "github.com/onsi/ginkgo/v2"
 
 	internalgateway "grovehub/launcher/internal/src/services/gateway/operations/inprocess"
  internalimpl "grovehub/launcher/internal/src/services/gateway/operations/inprocess/impl"
@@ -19,7 +19,8 @@ func (allowOperation) Authorize(_ context.Context, principal schoolgateway.Princ
 	return nil
 }
 
-func TestInternalGatewayRejectsUnknownPrincipal(t *testing.T) {
+func verifyInternalGatewayRejectsUnknownPrincipal() {
+	t := ginkgo.GinkgoT()
 	gateway := internalimpl.New(allowOperation{})
 	called := false
 
@@ -32,7 +33,8 @@ func TestInternalGatewayRejectsUnknownPrincipal(t *testing.T) {
 	}
 }
 
-func TestInternalGatewayKeepsTypedResult(t *testing.T) {
+func verifyInternalGatewayKeepsTypedResult() {
+	t := ginkgo.GinkgoT()
 	gateway := internalimpl.New(allowOperation{})
 	ctx := schoolgateway.WithPrincipal(context.Background(), schoolgateway.Principal{
 		AccountID: "account",
@@ -47,7 +49,8 @@ func TestInternalGatewayKeepsTypedResult(t *testing.T) {
 	}
 }
 
-func TestInternalGatewayFailsClosedWithoutAuthorizer(t *testing.T) {
+func verifyInternalGatewayFailsClosedWithoutAuthorizer() {
+	t := ginkgo.GinkgoT()
 	gateway := internalimpl.New(nil)
 	ctx := schoolgateway.WithPrincipal(context.Background(), schoolgateway.Principal{
 		AccountID: "account",
@@ -60,4 +63,13 @@ func TestInternalGatewayFailsClosedWithoutAuthorizer(t *testing.T) {
 	if err == nil {
 		t.Fatal("missing authorizer was accepted")
 	}
+}
+
+// @Testing suite=LauncherInProcess
+func InternalGatewaySpecs() {
+	ginkgo.Describe("InternalGateway", func() {
+		ginkgo.It("Internal Gateway Rejects Unknown Principal", verifyInternalGatewayRejectsUnknownPrincipal)
+		ginkgo.It("Internal Gateway Keeps Typed Result", verifyInternalGatewayKeepsTypedResult)
+		ginkgo.It("Internal Gateway Fails Closed Without Authorizer", verifyInternalGatewayFailsClosedWithoutAuthorizer)
+	})
 }

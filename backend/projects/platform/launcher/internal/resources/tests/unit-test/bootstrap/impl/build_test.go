@@ -1,11 +1,12 @@
 package impl_test
 
 import (
- "testing"
+ ginkgo "github.com/onsi/ginkgo/v2"
  "grovehub/launcher/internal/src/bootstrap/impl"
 )
 
-func TestBuildRejectsMissingTenantConfiguration(t *testing.T){
+func verifyBuildRejectsMissingTenantConfiguration() {
+	t := ginkgo.GinkgoT()
  t.Setenv("PLATFORM_TENANT_ACCESS_REQUIRED","true")
  t.Setenv("PLATFORM_TENANT_ACCESS_ORIGIN","")
  t.Setenv("PLATFORM_TENANT_ACCESS_KEY_ID","")
@@ -14,7 +15,8 @@ func TestBuildRejectsMissingTenantConfiguration(t *testing.T){
  if runtime!=nil||err==nil{t.Fatal("missing required tenant verifier accepted")}
 }
 
-func TestBuildRejectsMissingDatabase(t *testing.T){
+func verifyBuildRejectsMissingDatabase() {
+	t := ginkgo.GinkgoT()
  t.Setenv("PLATFORM_TENANT_ACCESS_REQUIRED","false")
  t.Setenv("PLATFORM_TENANT_ACCESS_ORIGIN","")
  t.Setenv("PLATFORM_TENANT_ACCESS_KEY_ID","")
@@ -22,4 +24,12 @@ func TestBuildRejectsMissingDatabase(t *testing.T){
  t.Setenv("DATABASE_URL","")
  runtime,err:=impl.New(nil).Build()
  if runtime!=nil||err==nil{t.Fatal("missing database URL accepted")}
+}
+
+// @Testing suite=LauncherBootstrapImplementation
+func BuildSpecs() {
+	ginkgo.Describe("Build", func() {
+		ginkgo.It("Build Rejects Missing Tenant Configuration", verifyBuildRejectsMissingTenantConfiguration)
+		ginkgo.It("Build Rejects Missing Database", verifyBuildRejectsMissingDatabase)
+	})
 }

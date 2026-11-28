@@ -19,6 +19,7 @@ import (
 var tierPattern = regexp.MustCompile(`^/[a-z][a-z0-9-]*/(public|protected|restricted)(/|$)`)
 
 
+// @Service
 type operation struct {
 	mux       *http.ServeMux
 	access    schoolgateway.AccessVerifier

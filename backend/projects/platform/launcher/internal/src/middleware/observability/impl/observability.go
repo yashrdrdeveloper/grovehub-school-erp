@@ -13,6 +13,7 @@ import (
 	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
 )
 
+// @Service
 type observability struct{logger *slog.Logger}
 var _ middleware.Middleware=(*observability)(nil)
 func New(logger *slog.Logger) middleware.Middleware {return &observability{logger:logger}}

@@ -13,14 +13,15 @@ import (
  "net/http"
  "net/http/httptest"
  "strings"
- "testing"
+ ginkgo "github.com/onsi/ginkgo/v2"
  "time"
 
  "github.com/google/uuid"
  core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
  school "grovehub/internal/session"
 )
-func TestTenantAccessClient(t *testing.T){
+func verifyTenantAccessClient() {
+	t := ginkgo.GinkgoT()
  id:=uuid.NewString()
  pub,priv,err:=ed25519.GenerateKey(rand.Reader);if err!=nil{t.Fatal(err)}
  keys,err:=core.NewEd25519Credentials([]core.WorkloadKeyConfig{{KeyID:"access",PublicKey:base64.RawURLEncoding.EncodeToString(pub),Issuer:tenantaccess.TenantAccessSubject,Subject:tenantaccess.TenantAccessSubject,Scopes:[]string{tenantaccess.TenantAccessScope}}});if err!=nil{t.Fatal(err)}
@@ -57,7 +58,8 @@ type tenantIdentity struct{tenant string}
 func(i tenantIdentity) VerifyAccess(context.Context,string)(school.Principal,error){return school.Principal{TenantID:i.tenant,AccountID:"account",PersonGID:"person",SessionID:"session",SessionGeneration:1},nil}
 func(i tenantIdentity) VerifyDelegatedSession(context.Context,string)(school.Principal,error){return school.Principal{},errors.New("not used")}
 func(i tenantIdentity) AuthorizeProtectedRoute(context.Context,string)error{return nil}
-func TestActorTenantEnforcement(t *testing.T){
+func verifyActorTenantEnforcement() {
+	t := ginkgo.GinkgoT()
  pub,priv,err:=ed25519.GenerateKey(rand.Reader);if err!=nil{t.Fatal(err)}
  id:=uuid.NewString()
  scopes:=[]string{"identity.auth.me","identity.auth.logout","identity.auth.login"}
@@ -87,4 +89,12 @@ func TestActorTenantEnforcement(t *testing.T){
  generationNumber=2
  if _,err=call("GET /identity/restricted/auth/me");err==nil{t.Fatal("old session restored after reactivation")}
  if _,err=call("POST /identity/restricted/auth/logout");err!=nil{t.Fatal("stale session logout blocked",err)}
+}
+
+// @Testing suite=LauncherWorkloads
+func TenantAccessSpecs() {
+	ginkgo.Describe("TenantAccess", func() {
+		ginkgo.It("Tenant Access Client", verifyTenantAccessClient)
+		ginkgo.It("Actor Tenant Enforcement", verifyActorTenantEnforcement)
+	})
 }

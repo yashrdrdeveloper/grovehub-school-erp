@@ -31,6 +31,7 @@ type delegatedIdentity interface {
  school.AccessVerifier
 }
 
+// @Service
 type platformWorkloads struct {
  scoped core.ScopedWorkloadVerifier
  internalCatalog core.WorkloadVerifier

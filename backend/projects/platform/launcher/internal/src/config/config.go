@@ -1,7 +1,29 @@
 package config
-import "os"
-type Config struct {Address,AllowedOrigin,Workload,TenantOrigin,TenantKeyID,TenantPrivateKey string;TenantRequired bool}
-func FromEnv() Config {
- address:=os.Getenv("GROOVEHUB_HTTP_ADDR");if address==""{address="127.0.0.1:8080"}
- return Config{Address:address,AllowedOrigin:os.Getenv("IDENTITY_ALLOWED_ORIGIN"),Workload:os.Getenv("PLATFORM_WORKLOAD_CONFIG"),TenantOrigin:os.Getenv("PLATFORM_TENANT_ACCESS_ORIGIN"),TenantKeyID:os.Getenv("PLATFORM_TENANT_ACCESS_KEY_ID"),TenantPrivateKey:os.Getenv("PLATFORM_TENANT_ACCESS_PRIVATE_KEY"),TenantRequired:os.Getenv("PLATFORM_TENANT_ACCESS_REQUIRED")=="true"}
+
+import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
+
+// Config is decoded once at startup; an invalid tenant-required flag fails closed.
+// @Configuration
+type Config struct {
+	// @Env
+	// @Default
+	Address string `env:"GROOVEHUB_HTTP_ADDR" default:"127.0.0.1:8080"`
+	// @Env
+	AllowedOrigin string `env:"IDENTITY_ALLOWED_ORIGIN"`
+	// @Env
+	Workload string `env:"PLATFORM_WORKLOAD_CONFIG"`
+	// @Env
+	TenantOrigin string `env:"PLATFORM_TENANT_ACCESS_ORIGIN"`
+	// @Env
+	TenantKeyID string `env:"PLATFORM_TENANT_ACCESS_KEY_ID"`
+	// @Env
+	// @Secret
+	TenantPrivateKey string `env:"PLATFORM_TENANT_ACCESS_PRIVATE_KEY" secret:"true"`
+	// @Env
+	// @Default
+	TenantRequired bool `env:"PLATFORM_TENANT_ACCESS_REQUIRED" default:"false"`
+}
+
+func FromEnv() (Config, error) {
+	return annotation.ConfigurationFromEnv[Config]()
 }

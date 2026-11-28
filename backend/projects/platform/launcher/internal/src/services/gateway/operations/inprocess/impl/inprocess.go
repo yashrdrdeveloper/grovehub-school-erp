@@ -2,6 +2,7 @@ package impl
 
 import ("context";"errors";schoolgateway "grovehub/internal/session";"grovehub/launcher/internal/src/services/gateway/operations/inprocess")
 
+// @Service
 type operation struct {
 	authorizer inprocess.Authorizer
 }

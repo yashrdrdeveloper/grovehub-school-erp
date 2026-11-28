@@ -9,13 +9,14 @@ import (
  "encoding/base64"
  "encoding/json"
  "net/http/httptest"
- "testing"
+ ginkgo "github.com/onsi/ginkgo/v2"
  "time"
 
  "github.com/google/uuid"
  core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
 )
-func TestSchoolExecutionBoundary(t *testing.T){
+func verifySchoolExecutionBoundary() {
+	t := ginkgo.GinkgoT()
  school,other:=uuid.NewString(),uuid.NewString()
  pub,priv,err:=ed25519.GenerateKey(rand.Reader);if err!=nil{t.Fatal(err)}
  key:=core.WorkloadKeyConfig{KeyID:"school-check",PublicKey:base64.RawURLEncoding.EncodeToString(pub),Issuer:schoolexecution.SchoolExecutionIssuer,Subject:schoolexecution.SchoolSubjectPrefix+school,Scopes:[]string{schoolexecution.SchoolAuditCheckScope}}
@@ -34,4 +35,11 @@ func TestSchoolExecutionBoundary(t *testing.T){
  bad:=key;bad.Subject=schoolexecution.SchoolSubjectPrefix+other
  if _,err:=schoolexecution.New([]core.WorkloadKeyConfig{key,bad},nil);err==nil{t.Fatal("shared school key accepted")}
  if _,err:=schoolexecution.New([]core.WorkloadKeyConfig{key},[]core.WorkloadKeyConfig{key});err==nil{t.Fatal("shared workload accepted")}
+}
+
+// @Testing suite=LauncherWorkloads
+func SchoolExecutionSpecs() {
+	ginkgo.Describe("SchoolExecution", func() {
+		ginkgo.It("School Execution Boundary", verifySchoolExecutionBoundary)
+	})
 }
