@@ -1,4 +1,4 @@
-package helpers
+package runtime
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/mappers"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/helpers"
 )
 
 var latencyBoundariesSeconds = []float64{
@@ -121,7 +121,7 @@ func RecordOperation(
 	duration time.Duration,
 	statusCode int,
 ) {
-	service := mappers.ResolveService(serviceName)
+	service := helpers.ResolveService(serviceName)
 	runtime := getActiveRuntime()
 	if runtime == nil {
 		return
@@ -158,7 +158,7 @@ func RecordHTTPServerRequest(
 	duration time.Duration,
 	statusCode int,
 ) {
-	service := mappers.ResolveService(serviceName)
+	service := helpers.ResolveService(serviceName)
 	runtime := getActiveRuntime()
 	if runtime == nil {
 		return
@@ -191,7 +191,7 @@ func AddActiveHTTPServerRequest(
 	method string,
 	delta int64,
 ) {
-	service := mappers.ResolveService(serviceName)
+	service := helpers.ResolveService(serviceName)
 	runtime := getActiveRuntime()
 	if runtime == nil {
 		return

@@ -1,12 +1,10 @@
-package helpers
+package runtime
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"log/slog"
-	"os"
-	"strings"
 	"sync"
 	"time"
 
@@ -22,14 +20,10 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/mappers"
-	telemetryvalidators "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/validators"
-)
-
-const (
-	defaultEnvironment    = "local"
-	defaultServiceVersion = "dev"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/contracts"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/helpers"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/config"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/constants"
 )
 
 type serviceRuntime struct {
@@ -54,11 +48,11 @@ var (
 )
 
 func Initialize(ctx context.Context, logger *slog.Logger) contracts.Shutdown {
-	environment := envOrDefault("OTEL_DEPLOYMENT_ENVIRONMENT", defaultEnvironment)
-	serviceVersion := envOrDefault("OTEL_SERVICE_VERSION", defaultServiceVersion)
-	instanceID := envOrDefault("OTEL_SERVICE_INSTANCE_ID", defaultInstanceID())
-	traceSampleRatio := configuredTraceSampleRatio(logger)
-	metricExportInterval := configuredMetricExportInterval(logger)
+	environment := config.EnvOrDefault("OTEL_DEPLOYMENT_ENVIRONMENT", constants.DefaultEnvironment)
+	serviceVersion := config.EnvOrDefault("OTEL_SERVICE_VERSION", constants.DefaultServiceVersion)
+	instanceID := config.EnvOrDefault("OTEL_SERVICE_INSTANCE_ID", config.DefaultInstanceID())
+	traceSampleRatio := config.ConfiguredTraceSampleRatio(logger)
+	metricExportInterval := config.ConfiguredMetricExportInterval(logger)
 
 	services := []contracts.Service{
 		contracts.ServiceLauncherEdge,
@@ -154,7 +148,7 @@ func newServiceRuntime(
 ) *serviceRuntime {
 	serviceResource := resource.NewSchemaless(
 		attribute.String("service.name", service.Name),
-		attribute.String("service.namespace", contracts.ServiceNamespace),
+		attribute.String("service.namespace", constants.ServiceNamespace),
 		attribute.String("service.version", serviceVersion),
 		attribute.String("service.instance.id", instanceID),
 		attribute.String("deployment.environment.name", environment),
@@ -166,7 +160,7 @@ func newServiceRuntime(
 		sdktrace.WithSampler(sdktrace.ParentBased(sdktrace.TraceIDRatioBased(traceSampleRatio))),
 	}
 
-	traceExportEnabled := traceExportConfigured()
+	traceExportEnabled := config.TraceExportConfigured()
 	if traceExportEnabled {
 		exporter, err := otlptracehttp.New(ctx)
 		if err != nil {
@@ -184,10 +178,10 @@ func newServiceRuntime(
 
 	meterOptions := []sdkmetric.Option{
 		sdkmetric.WithResource(serviceResource),
-		sdkmetric.WithCardinalityLimit(1000),
+		sdkmetric.WithCardinalityLimit(constants.MetricCardinalityLimit),
 	}
 
-	metricExportEnabled := metricExportConfigured()
+	metricExportEnabled := config.MetricExportConfigured()
 	if metricExportEnabled {
 		exporter, err := otlpmetrichttp.New(ctx)
 		if err != nil {
@@ -229,7 +223,7 @@ func newServiceRuntime(
 }
 
 func TracerProvider(serviceName string) trace.TracerProvider {
-	service := mappers.ResolveService(serviceName)
+	service := helpers.ResolveService(serviceName)
 	if runtime := getActiveRuntime(); runtime != nil {
 		if serviceRuntime := runtime.services[service.Key]; serviceRuntime != nil {
 			return serviceRuntime.tracerProvider
@@ -239,7 +233,7 @@ func TracerProvider(serviceName string) trace.TracerProvider {
 }
 
 func MeterProvider(serviceName string) metric.MeterProvider {
-	service := mappers.ResolveService(serviceName)
+	service := helpers.ResolveService(serviceName)
 	if runtime := getActiveRuntime(); runtime != nil {
 		if serviceRuntime := runtime.services[service.Key]; serviceRuntime != nil {
 			return serviceRuntime.meterProvider
@@ -260,69 +254,3 @@ func getActiveRuntime() *Runtime {
 	return activeRuntime
 }
 
-func configuredTraceSampleRatio(logger *slog.Logger) float64 {
-	value := strings.TrimSpace(os.Getenv("GROVEHUB_TRACE_SAMPLE_RATIO"))
-	ratio, err := telemetryvalidators.TraceSampleRatio(value)
-	if err == nil {
-		return ratio
-	}
-	logger.Warn(
-		"invalid GROVEHUB_TRACE_SAMPLE_RATIO; using default",
-		"value", value,
-		"default", telemetryvalidators.DefaultTraceSampleRatio,
-	)
-	return telemetryvalidators.DefaultTraceSampleRatio
-}
-
-func configuredMetricExportInterval(logger *slog.Logger) time.Duration {
-	value := strings.TrimSpace(os.Getenv("GROVEHUB_METRIC_EXPORT_INTERVAL"))
-	interval, err := telemetryvalidators.MetricExportInterval(value)
-	if err == nil {
-		return interval
-	}
-	logger.Warn(
-		"invalid GROVEHUB_METRIC_EXPORT_INTERVAL; using default",
-		"value", value,
-		"default", telemetryvalidators.DefaultMetricExportInterval.String(),
-	)
-	return telemetryvalidators.DefaultMetricExportInterval
-}
-
-func traceExportConfigured() bool {
-	return firstNonEmptyEnvironmentValue(
-		"OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
-		"OTEL_EXPORTER_OTLP_ENDPOINT",
-	) != ""
-}
-
-func metricExportConfigured() bool {
-	return firstNonEmptyEnvironmentValue(
-		"OTEL_EXPORTER_OTLP_METRICS_ENDPOINT",
-		"OTEL_EXPORTER_OTLP_ENDPOINT",
-	) != ""
-}
-
-func firstNonEmptyEnvironmentValue(names ...string) string {
-	for _, name := range names {
-		if value := strings.TrimSpace(os.Getenv(name)); value != "" {
-			return value
-		}
-	}
-	return ""
-}
-
-func defaultInstanceID() string {
-	hostname, err := os.Hostname()
-	if err != nil || strings.TrimSpace(hostname) == "" {
-		hostname = "unknown-host"
-	}
-	return fmt.Sprintf("%s-%d", hostname, os.Getpid())
-}
-
-func envOrDefault(name string, fallback string) string {
-	value := strings.TrimSpace(os.Getenv(name))
-	if value == "" {
-		return fallback
-	}
-	return value
-}

@@ -8,16 +8,19 @@ import (
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/helpers"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/mappers"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/contracts"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/operations/runtime"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/helpers"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/operations/tracing"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/config"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/constants"
 )
 
-const ServiceNamespace = contracts.ServiceNamespace
+const ServiceNamespace = constants.ServiceNamespace
 
 type Shutdown = contracts.Shutdown
 type Service = contracts.Service
-type Runtime = helpers.Runtime
+type Runtime = runtime.Runtime
 
 var (
 	ServiceLauncherEdge = contracts.ServiceLauncherEdge
@@ -27,19 +30,19 @@ var (
 )
 
 func ResolveService(value string) Service {
-	return mappers.ResolveService(value)
+	return helpers.ResolveService(value)
 }
 
 func Initialize(ctx context.Context, logger *slog.Logger) Shutdown {
-	return helpers.Initialize(ctx, logger)
+	return runtime.Initialize(ctx, logger)
 }
 
 func TracerProvider(serviceName string) trace.TracerProvider {
-	return helpers.TracerProvider(serviceName)
+	return runtime.TracerProvider(serviceName)
 }
 
 func MeterProvider(serviceName string) metric.MeterProvider {
-	return helpers.MeterProvider(serviceName)
+	return runtime.MeterProvider(serviceName)
 }
 
 func RecordOperation(
@@ -49,7 +52,7 @@ func RecordOperation(
 	duration time.Duration,
 	statusCode int,
 ) {
-	helpers.RecordOperation(ctx, serviceName, operation, duration, statusCode)
+	runtime.RecordOperation(ctx, serviceName, operation, duration, statusCode)
 }
 
 func RecordHTTPServerRequest(
@@ -60,7 +63,7 @@ func RecordHTTPServerRequest(
 	duration time.Duration,
 	statusCode int,
 ) {
-	helpers.RecordHTTPServerRequest(ctx, serviceName, method, route, duration, statusCode)
+	runtime.RecordHTTPServerRequest(ctx, serviceName, method, route, duration, statusCode)
 }
 
 func AddActiveHTTPServerRequest(
@@ -69,7 +72,7 @@ func AddActiveHTTPServerRequest(
 	method string,
 	delta int64,
 ) {
-	helpers.AddActiveHTTPServerRequest(ctx, serviceName, method, delta)
+	runtime.AddActiveHTTPServerRequest(ctx, serviceName, method, delta)
 }
 
 func StartSpan(
@@ -78,29 +81,42 @@ func StartSpan(
 	operation string,
 	options ...trace.SpanStartOption,
 ) (context.Context, trace.Span) {
-	return helpers.StartSpan(ctx, component, operation, options...)
+	return tracing.StartSpan(ctx, component, operation, options...)
 }
 
 func ContextWithService(ctx context.Context, service Service) context.Context {
-	return helpers.ContextWithService(ctx, service)
+	return tracing.ContextWithService(ctx, service)
 }
 
 func ServiceFromContext(ctx context.Context) (Service, bool) {
-	return helpers.ServiceFromContext(ctx)
+	return tracing.ServiceFromContext(ctx)
 }
 
 func TraceID(ctx context.Context) string {
-	return helpers.TraceID(ctx)
+	return tracing.TraceID(ctx)
 }
 
 func SpanID(ctx context.Context) string {
-	return helpers.SpanID(ctx)
+	return tracing.SpanID(ctx)
 }
 
 func LogFields(ctx context.Context) []any {
-	return helpers.LogFields(ctx)
+	return tracing.LogFields(ctx)
 }
 
 func Logger(logger *slog.Logger, ctx context.Context) *slog.Logger {
-	return helpers.Logger(logger, ctx)
+	return tracing.Logger(logger, ctx)
+}
+
+const (
+	DefaultTraceSampleRatio = constants.DefaultTraceSampleRatio
+	DefaultMetricExportInterval = constants.DefaultMetricExportInterval
+)
+
+func TraceSampleRatio(value string) (float64, error) {
+	return config.TraceSampleRatio(value)
+}
+
+func MetricExportInterval(value string) (time.Duration, error) {
+	return config.MetricExportInterval(value)
 }

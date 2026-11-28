@@ -2,8 +2,6 @@ package contracts
 
 import "context"
 
-const ServiceNamespace = "grovehub"
-
 type Shutdown func(context.Context) error
 
 type Service struct {

@@ -1,4 +1,4 @@
-package helpers
+package tracing
 
 import (
 	"context"
@@ -7,8 +7,9 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/mappers"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/contracts"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/helpers"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/operations/runtime"
 )
 
 type serviceContextKey struct{}
@@ -19,7 +20,7 @@ func StartSpan(
 	operation string,
 	options ...trace.SpanStartOption,
 ) (context.Context, trace.Span) {
-	service := mappers.ResolveService(component)
+	service := helpers.ResolveService(component)
 	baseOptions := []trace.SpanStartOption{
 		trace.WithAttributes(
 			attribute.String("grovehub.service.key", service.Key),
@@ -28,7 +29,7 @@ func StartSpan(
 		),
 	}
 
-	tracer := TracerProvider(service.Key).Tracer("grovehub/" + service.Key)
+	tracer := runtime.TracerProvider(service.Key).Tracer("grovehub/" + service.Key)
 	spanContext, span := tracer.Start(
 		ctx,
 		service.Name+" "+operation,
