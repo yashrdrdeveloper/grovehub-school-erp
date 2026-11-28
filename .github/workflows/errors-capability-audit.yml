@@ -1,0 +1,15 @@
+name: Errors capability audit
+on:
+  push:
+    branches: [phase1-refactor]
+    paths: ['.github/workflows/errors-capability-audit.yml', 'backend/**', 'scripts/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inventory error package consumers
+        run: git grep -nE 'errors/(contracts|helpers)' -- '*.go' '*.sh' '*.yml' '*.md' || true
