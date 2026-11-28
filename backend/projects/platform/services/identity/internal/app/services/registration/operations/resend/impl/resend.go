@@ -7,19 +7,19 @@ import (
 	"grovehub/services/identity/internal/app/services/security/principal"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	registration "grovehub/services/identity/internal/app/services/registration"
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	resend "grovehub/services/identity/internal/app/services/registration/operations/resend"
 )
 
 type Service struct {
 	accounts accountrepo.Repository
 	invitations registration.InvitationSender
-	unit transaction.UnitOfWork
+	unit coredatabase.UnitOfWork
 }
 
 var _ resend.Operation = (*Service)(nil)
 
-func New(accounts accountrepo.Repository, invitations registration.InvitationSender, unit transaction.UnitOfWork) resend.Operation {
+func New(accounts accountrepo.Repository, invitations registration.InvitationSender, unit coredatabase.UnitOfWork) resend.Operation {
 	return &Service{accounts: accounts, invitations: invitations, unit: unit}
 }
 

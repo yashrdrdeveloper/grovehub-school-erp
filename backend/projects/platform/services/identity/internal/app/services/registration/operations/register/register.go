@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
 	coreid "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/id"
 	idempotency "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency"
@@ -33,11 +33,11 @@ type RegisterOperation struct {
 	foundation foundation.Client
 	validator validator.Validator
 	invitations registration.InvitationSender
-	unit transaction.UnitOfWork
+	unit coredatabase.UnitOfWork
 	events accountproducer.ChangedProducer
 }
 
-func New(accounts accountrepo.Repository, foundationClient foundation.Client, validator validator.Validator, invitations registration.InvitationSender, unit transaction.UnitOfWork, events accountproducer.ChangedProducer) Operation {
+func New(accounts accountrepo.Repository, foundationClient foundation.Client, validator validator.Validator, invitations registration.InvitationSender, unit coredatabase.UnitOfWork, events accountproducer.ChangedProducer) Operation {
 	return &RegisterOperation{
 		accounts: accounts,
 		foundation: foundationClient,

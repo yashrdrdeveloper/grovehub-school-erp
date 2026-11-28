@@ -11,19 +11,19 @@ import (
 	authdto "grovehub/services/identity/internal/app/dto/authentication"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	tokenrepo "grovehub/services/identity/internal/app/repository/passwordtoken"
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	exchange "grovehub/services/identity/internal/app/services/authentication/operations/exchange"
 )
 
 type Service struct {
 	accounts accountrepo.Repository
 	tokens tokenrepo.Repository
-	unit transaction.UnitOfWork
+	unit coredatabase.UnitOfWork
 }
 
 var _ exchange.Operation = (*Service)(nil)
 
-func New(accounts accountrepo.Repository, tokens tokenrepo.Repository, unit transaction.UnitOfWork) exchange.Operation {
+func New(accounts accountrepo.Repository, tokens tokenrepo.Repository, unit coredatabase.UnitOfWork) exchange.Operation {
 	return &Service{accounts: accounts, tokens: tokens, unit: unit}
 }
 

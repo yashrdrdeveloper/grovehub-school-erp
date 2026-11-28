@@ -12,7 +12,7 @@ import (
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	tokenrepo "grovehub/services/identity/internal/app/repository/passwordtoken"
 	credential "grovehub/services/identity/internal/app/services/credential"
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	accountproducer "grovehub/services/identity/internal/app/events/producers/account"
 	setup "grovehub/services/identity/internal/app/services/account/operations/setup"
 )
@@ -21,13 +21,13 @@ type Service struct {
 	accounts accountrepo.Repository
 	tokens tokenrepo.Repository
 	credentials credential.Service
-	unit transaction.UnitOfWork
+	unit coredatabase.UnitOfWork
 	events accountproducer.ChangedProducer
 }
 
 var _ setup.Operation = (*Service)(nil)
 
-func New(accounts accountrepo.Repository, tokens tokenrepo.Repository, credentials credential.Service, unit transaction.UnitOfWork, events accountproducer.ChangedProducer) setup.Operation {
+func New(accounts accountrepo.Repository, tokens tokenrepo.Repository, credentials credential.Service, unit coredatabase.UnitOfWork, events accountproducer.ChangedProducer) setup.Operation {
 	return &Service{accounts: accounts, tokens: tokens, credentials: credentials, unit: unit, events: events}
 }
 

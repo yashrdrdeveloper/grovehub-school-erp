@@ -9,7 +9,7 @@ import (
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"
 	accountmapper "grovehub/services/identity/internal/app/mappers/account"
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	accountproducer "grovehub/services/identity/internal/app/events/producers/account"
 	transition "grovehub/services/identity/internal/app/services/account/operations/transition"
 	"grovehub/services/identity/internal/app/services/account/helpers"
@@ -19,13 +19,13 @@ type Service struct {
 	accounts accountrepo.Repository
 	sessions sessionrepo.Repository
 	mapper accountmapper.Mapper
-	unit transaction.UnitOfWork
+	unit coredatabase.UnitOfWork
 	events accountproducer.ChangedProducer
 }
 
 var _ transition.Operation = (*Service)(nil)
 
-func New(accounts accountrepo.Repository, sessions sessionrepo.Repository, mapper accountmapper.Mapper, unit transaction.UnitOfWork, events accountproducer.ChangedProducer) transition.Operation {
+func New(accounts accountrepo.Repository, sessions sessionrepo.Repository, mapper accountmapper.Mapper, unit coredatabase.UnitOfWork, events accountproducer.ChangedProducer) transition.Operation {
 	return &Service{accounts: accounts, sessions: sessions, mapper: mapper, unit: unit, events: events}
 }
 

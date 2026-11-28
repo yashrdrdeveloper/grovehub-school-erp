@@ -7,7 +7,7 @@ import (
 	"time"
 	"grovehub/services/identity/internal/app/entity"
 	secrets "grovehub/services/identity/internal/app/services/authentication/helpers"
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
 	accountproducer "grovehub/services/identity/internal/app/events/producers/account"
@@ -45,7 +45,7 @@ type Service struct {
 
 var _ account.Service = (*Service)(nil)
 
-func New(accounts accountrepo.Repository, tokens tokenrepo.Repository, sessions sessionrepo.Repository, credentials credential.Service, registrations registration.Service, mapper accountmapper.Mapper, validator accountvalidator.Validator, unit transaction.UnitOfWork, events accountproducer.ChangedProducer, readers ...accountrepo.Reader) account.Service {
+func New(accounts accountrepo.Repository, tokens tokenrepo.Repository, sessions sessionrepo.Repository, credentials credential.Service, registrations registration.Service, mapper accountmapper.Mapper, validator accountvalidator.Validator, unit coredatabase.UnitOfWork, events accountproducer.ChangedProducer, readers ...accountrepo.Reader) account.Service {
 	var reader accountrepo.Reader = accounts
 	if len(readers) == 1 && readers[0] != nil {
 		reader = readers[0]

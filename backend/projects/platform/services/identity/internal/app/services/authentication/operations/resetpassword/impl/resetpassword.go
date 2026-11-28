@@ -11,7 +11,7 @@ import (
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"
 	tokenrepo "grovehub/services/identity/internal/app/repository/passwordtoken"
 	credential "grovehub/services/identity/internal/app/services/credential"
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	resetpassword "grovehub/services/identity/internal/app/services/authentication/operations/resetpassword"
 )
 
@@ -20,12 +20,12 @@ type Service struct {
 	sessions sessionrepo.Repository
 	tokens tokenrepo.Repository
 	credential credential.Service
-	unit transaction.UnitOfWork
+	unit coredatabase.UnitOfWork
 }
 
 var _ resetpassword.Operation = (*Service)(nil)
 
-func New(accounts accountrepo.Repository, sessions sessionrepo.Repository, tokens tokenrepo.Repository, credentials credential.Service, unit transaction.UnitOfWork) resetpassword.Operation {
+func New(accounts accountrepo.Repository, sessions sessionrepo.Repository, tokens tokenrepo.Repository, credentials credential.Service, unit coredatabase.UnitOfWork) resetpassword.Operation {
 	return &Service{accounts: accounts, sessions: sessions, tokens: tokens, credential: credentials, unit: unit}
 }
 

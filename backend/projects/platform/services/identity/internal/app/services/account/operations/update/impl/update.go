@@ -12,7 +12,7 @@ import (
 	accountmapper "grovehub/services/identity/internal/app/mappers/account"
 	accountvalidator "grovehub/services/identity/internal/app/validators/account"
 	rolevalidator "grovehub/services/identity/internal/app/validators/account/helpers"
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	accountproducer "grovehub/services/identity/internal/app/events/producers/account"
 	update "grovehub/services/identity/internal/app/services/account/operations/update"
 )
@@ -21,13 +21,13 @@ type Service struct {
 	accounts accountrepo.Repository
 	mapper accountmapper.Mapper
 	validator accountvalidator.Validator
-	unit transaction.UnitOfWork
+	unit coredatabase.UnitOfWork
 	events accountproducer.ChangedProducer
 }
 
 var _ update.Operation = (*Service)(nil)
 
-func New(accounts accountrepo.Repository, mapper accountmapper.Mapper, validator accountvalidator.Validator, unit transaction.UnitOfWork, events accountproducer.ChangedProducer) update.Operation {
+func New(accounts accountrepo.Repository, mapper accountmapper.Mapper, validator accountvalidator.Validator, unit coredatabase.UnitOfWork, events accountproducer.ChangedProducer) update.Operation {
 	return &Service{accounts: accounts, mapper: mapper, validator: validator, unit: unit, events: events}
 }
 

@@ -25,7 +25,7 @@ import (
  "gorm.io/driver/postgres"
  "gorm.io/gorm"
  core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
- transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+ coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
  "grovehub/launcher/services/gateway"
  "grovehub/libs/schoolgateway"
  "grovehub/services/audit"
@@ -136,7 +136,7 @@ func TestCrossProjectSchoolLifecycle(t *testing.T){
  eventStore:=infrastructure.NewEventStore(db)
  producer:=audit.NewProducer(eventStore)
  sender:=invitation.New(tr,mailrepo.New(db,producer),config.Config{EncryptionKey:make([]byte,32),ResetURL:"https://school.example/reset-password"})
- base:=authimpl.New(ar,sr,tr,cred,sender,mapper.New(),transaction.NewUnitOfWork(db))
+ base:=authimpl.New(ar,sr,tr,cred,sender,mapper.New(),coredatabase.NewUnitOfWork(db))
  auth:=authimpl.NewRecoveryGuard(base,ar,tr,sr,authority.New(db),sender,producer)
  actor:=identityBoundary{AccessVerifier:access.New(ar,sr,nil),policy:routepolicy.NewWithExecution(nil,false,nil,check)}
  t.Setenv("GROVEHUB_INTEGRATION_ENCRYPTION_KEY",base64.StdEncoding.EncodeToString(make([]byte,32)))

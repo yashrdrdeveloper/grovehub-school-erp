@@ -3,7 +3,7 @@ package invitation
 import (
 	"context"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/entity"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	"grovehub/services/identity/internal/app/repository/accountrole"
@@ -29,7 +29,7 @@ func (operation *Approved) Queue(ctx context.Context, tenantID string, assignmen
 	if assignment.Status != entity.PendingSetup {
 		return nil
 	}
-	if !transaction.Active(ctx) || operation.accounts == nil || operation.sender == nil {
+	if !coredatabase.TransactionActive(ctx) || operation.accounts == nil || operation.sender == nil {
 		return accountrole.ErrIneligible
 	}
 	account, err := operation.accounts.FindByID(ctx, assignment.AccountID)

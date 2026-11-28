@@ -4,7 +4,7 @@ package impl
 import (
 	"context"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	foundation "grovehub/services/foundation/client/person"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
 	accountproducer "grovehub/services/identity/internal/app/events/producers/account"
@@ -24,7 +24,7 @@ type Service struct {
 
 var _ registration.Service = (*Service)(nil)
 
-func New(accounts accountrepo.Repository, foundationClient foundation.Client, validator validator.Validator, invitations registration.InvitationSender, unit transaction.UnitOfWork, events accountproducer.ChangedProducer) registration.Service {
+func New(accounts accountrepo.Repository, foundationClient foundation.Client, validator validator.Validator, invitations registration.InvitationSender, unit coredatabase.UnitOfWork, events accountproducer.ChangedProducer) registration.Service {
 	return &Service{
 		register: register.New(accounts, foundationClient, validator, invitations, unit, events),
 		resend: resendimpl.New(accounts, invitations, unit),

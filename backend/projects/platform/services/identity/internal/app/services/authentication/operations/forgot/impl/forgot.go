@@ -8,19 +8,19 @@ import (
 	"grovehub/services/identity/internal/app/entity"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	registration "grovehub/services/identity/internal/app/services/registration"
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	forgot "grovehub/services/identity/internal/app/services/authentication/operations/forgot"
 )
 
 type Service struct {
 	accounts accountrepo.Repository
 	invitation registration.InvitationSender
-	unit transaction.UnitOfWork
+	unit coredatabase.UnitOfWork
 }
 
 var _ forgot.Operation = (*Service)(nil)
 
-func New(accounts accountrepo.Repository, invitations registration.InvitationSender, unit transaction.UnitOfWork) forgot.Operation {
+func New(accounts accountrepo.Repository, invitations registration.InvitationSender, unit coredatabase.UnitOfWork) forgot.Operation {
 	return &Service{accounts: accounts, invitation: invitations, unit: unit}
 }
 
