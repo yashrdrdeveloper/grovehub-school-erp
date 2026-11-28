@@ -2,10 +2,9 @@
 package gormtable
 
 import (
- "bytes"
+	generatedoutput "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/output"
  "fmt"
  "go/ast"
- "go/format"
  "go/parser"
  "go/token"
  "os"
@@ -78,9 +77,5 @@ func GenerateInto(dir, output string)error {
   if err:=os.Remove(output);err!=nil&&!os.IsNotExist(err){return err}
   return nil
  }
- contents,err:=format.Source([]byte(b.String()));if err!=nil{return err}
- before,err:=os.ReadFile(output)
- if err==nil&&bytes.Equal(before,contents){return nil}
- if err!=nil&&!os.IsNotExist(err){return err}
- return os.WriteFile(output,contents,0644)
+	return generatedoutput.WriteGo(output, []byte(b.String()), "")
 }

@@ -3,10 +3,9 @@
 package testgen
 
 import (
-	"bytes"
+	generatedoutput "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/output"
 	"fmt"
 	"go/ast"
-	"go/format"
 	"go/parser"
 	"go/token"
 	"io/fs"
@@ -296,19 +295,5 @@ func writeSuite(output string, suite testSuite) error {
 		fmt.Fprintf(&source, "%s()\n", spec)
 	}
 	source.WriteString("})\n")
-	formatted, err := format.Source([]byte(source.String()))
-	if err != nil {
-		return err
-	}
-	old, err := os.ReadFile(output)
-	if err == nil && bytes.Equal(old, formatted) {
-		return nil
-	}
-	if err != nil && !os.IsNotExist(err) {
-		return err
-	}
-	if err := os.MkdirAll(filepath.Dir(output), 0755); err != nil {
-		return err
-	}
-	return os.WriteFile(output, formatted, 0644)
+	return generatedoutput.WriteGo(output, []byte(source.String()), "")
 }

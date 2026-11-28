@@ -1,10 +1,8 @@
 package helpers
 
 import (
-	"bytes"
+	generatedoutput "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/output"
 	"fmt"
-	"go/format"
-	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -60,17 +58,5 @@ func WriteRoutes(modulePath, service string, groups []routeGroup, output string)
 		}
 	}
 	b.WriteString("}\n}\n\n")
-	source, err := format.Source([]byte(b.String()))
-	if err != nil {
-		return fmt.Errorf("format generated routes: %w", err)
-	}
-	if old, err := os.ReadFile(output); err == nil && bytes.Equal(old, source) {
-		return nil
-	} else if err != nil && !os.IsNotExist(err) {
-		return err
-	}
-	if err := os.MkdirAll(filepath.Dir(output), 0755); err != nil {
-		return err
-	}
-	return os.WriteFile(output, source, 0644)
+	return generatedoutput.WriteGo(output, []byte(b.String()), "format generated routes")
 }

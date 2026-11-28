@@ -1,12 +1,9 @@
 package helpers
 
 import (
-	"bytes"
+	generatedoutput "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/output"
 	"fmt"
-	"go/format"
-	"os"
 	"path"
-	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -51,9 +48,5 @@ func write(src sourceFile,output string)error {
 		b.WriteString(")\n\n")
 	}
 	b.WriteString(body.String())
-	formatted,err:=format.Source([]byte(b.String()))
-	if err!=nil{return fmt.Errorf("format %s: %w",src.name,err)}
-	if old,err:=os.ReadFile(output);err==nil&&bytes.Equal(old,formatted){return nil}else if err!=nil&&!os.IsNotExist(err){return err}
-	if err:=os.MkdirAll(filepath.Dir(output),0755);err!=nil{return err}
-	return os.WriteFile(output,formatted,0644)
+	return generatedoutput.WriteGo(output, []byte(b.String()), "format "+src.name)
 }

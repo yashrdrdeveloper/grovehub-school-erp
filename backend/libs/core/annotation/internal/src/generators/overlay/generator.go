@@ -3,8 +3,7 @@
 package overlay
 
 import (
-	"bytes"
-	"encoding/json"
+	generatedoutput "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/output"
 	"fmt"
 	"io/fs"
 	"os"
@@ -88,34 +87,5 @@ func WriteOverlay(backend, core string) error {
 		return fmt.Errorf("no generated Go files found; run generate-annotations.sh first")
 	}
 
-	outDir := filepath.Join(root, ".generated")
-	if err := os.MkdirAll(outDir, 0755); err != nil {
-		return err
-	}
-	out := filepath.Join(outDir, "overlay.json")
-	data, err := json.MarshalIndent(Configuration{Replace: replacement}, "", "  ")
-	if err != nil {
-		return err
-	}
-	data = append(data, '\n')
-	old, err := os.ReadFile(out)
-	if err == nil && bytes.Equal(old, data) {
-		return nil
-	}
-	if err != nil && !os.IsNotExist(err) {
-		return err
-	}
-	temp, err := os.CreateTemp(outDir, "overlay-*.json")
-	if err != nil {
-		return err
-	}
-	defer os.Remove(temp.Name())
-	if _, err = temp.Write(data); err != nil {
-		temp.Close()
-		return err
-	}
-	if err = temp.Close(); err != nil {
-		return err
-	}
-	return os.Rename(temp.Name(), out)
+	return generatedoutput.WriteJSON(filepath.Join(root, ".generated", "overlay.json"), "overlay-*.json", Configuration{Replace:replacement})
 }

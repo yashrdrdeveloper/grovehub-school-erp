@@ -1,11 +1,8 @@
 package helpers
 
 import (
-	"bytes"
+	generatedoutput "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/output"
 	"fmt"
-	"go/format"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
@@ -42,11 +39,5 @@ func WriteProxies(proxies []clientProxy,output string) error {
 			b.WriteString("return result, err\n}\n\n")
 		}
 	}
-	source,err:=format.Source([]byte(b.String()))
-	if err!=nil {return fmt.Errorf("format generated client: %w",err)}
-	previous,err:=os.ReadFile(output)
-	if err==nil && bytes.Equal(previous,source){return nil}
-	if err!=nil&&!os.IsNotExist(err){return err}
-	if err:=os.MkdirAll(filepath.Dir(output),0755);err!=nil{return err}
-	return os.WriteFile(output,source,0644)
+	return generatedoutput.WriteGo(output, []byte(b.String()), "format generated client")
 }

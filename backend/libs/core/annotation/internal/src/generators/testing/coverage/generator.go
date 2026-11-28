@@ -5,6 +5,7 @@
 package coverage
 
 import (
+	generatedoutput "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/output"
 	"bufio"
 	"context"
 	"encoding/json"
@@ -484,20 +485,8 @@ func Score(path string) (int64, int64, error) {
 		}
 		fmt.Fprintf(&normalized, "%s %d %d\n", key, block.statements, block.hits)
 	}
-	temp, err := os.CreateTemp(filepath.Dir(path), "coverage-*.out")
-	if err != nil {
-		return 0, 0, err
-	}
-	defer os.Remove(temp.Name())
-	if _, err := temp.WriteString(normalized.String()); err != nil {
-		_ = temp.Close()
-		return 0, 0, err
-	}
-	if err := temp.Close(); err != nil {
-		return 0, 0, err
-	}
-	if err := os.Rename(temp.Name(), path); err != nil {
-		return 0, 0, err
+	if err := generatedoutput.WriteAtomic(path, "coverage-*.out", []byte(normalized.String())); err != nil {
+		return 0,0,err
 	}
 	return total, covered, nil
 }

@@ -1,11 +1,8 @@
 package helpers
 
 import (
-	"bytes"
+	generatedoutput "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/output"
 	"fmt"
-	"go/format"
-	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -20,9 +17,5 @@ func Write(output, pkg string, specs []patchType) error {
 		}
 		b.WriteString("return json.Marshal(fields)\n}\n\n")
 	}
-	source, err := format.Source([]byte(b.String()))
-	if err != nil { return err }
-	if old, err := os.ReadFile(output); err == nil && bytes.Equal(old, source) { return nil } else if err != nil && !os.IsNotExist(err) { return err }
-	if err := os.MkdirAll(filepath.Dir(output), 0755); err != nil { return err }
-	return os.WriteFile(output, source, 0644)
+	return generatedoutput.WriteGo(output, []byte(b.String()), "")
 }
