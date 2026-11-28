@@ -55,3 +55,21 @@ func TestGeneratedBusinessRejectsInvalidDispatch(t *testing.T) {
 		if !errors.Is(err,ErrInvalidBusinessRequest){t.Errorf("%s: expected invalid request, got %v",tc.scope,err)}
 	}
 }
+
+func TestGeneratedBusinessAccountPersonProfile(t *testing.T) {
+ const id="e93696cc-15f0-4e06-9577-0d5cfc2a83c8"
+ const body=`{"success":true,"data":{"personGid":"019abcde-1234-7890-8abc-123456789abc","firstName":"A","lastName":"B"}}`
+ calls:=0
+ client:=newTestClient(t,func(w http.ResponseWriter,r *http.Request){
+  calls++
+  if r.Method!="GET"||r.URL.Path!="/identity/restricted/accounts/"+id+"/person"||r.Header.Get("X-GH-Identity-Proof")!="proof"{t.Error("wrong profile operation")}
+  w.Header().Set("Content-Type","application/json")
+  _,_=io.WriteString(w,body)
+ })
+ result,err:=client.Business(context.Background(),"identity.accounts.person",id,nil,"proof","")
+ if err!=nil||result.Status!=200||string(result.Body)!=body{t.Fatal("profile response not preserved",err)}
+ for _,tc:=range []struct{id,input string}{{"not-a-uuid",""},{id,"{}"}}{
+  if _,err:=client.Business(context.Background(),"identity.accounts.person",tc.id,json.RawMessage(tc.input),"proof","");!errors.Is(err,ErrInvalidBusinessRequest){t.Fatal("invalid dispatch accepted",err)}
+ }
+ if calls!=1{t.Fatal("invalid operation reached upstream")}
+}

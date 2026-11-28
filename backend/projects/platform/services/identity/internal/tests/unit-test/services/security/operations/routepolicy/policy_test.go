@@ -173,6 +173,7 @@ func TestConfiguredTenantPolicyForDirectCallers(t *testing.T) {
   "GET /identity/protected/auth/sessions",
   "POST /identity/protected/auth/change-password",
   "GET /identity/protected/accounts/{accountId}",
+  "GET /identity/protected/accounts/{accountId}/person",
   "POST /identity/protected/accounts/search",
   "POST /identity/protected/roles/search",
   "POST /identity/protected/approvals/{requestId}/execute",

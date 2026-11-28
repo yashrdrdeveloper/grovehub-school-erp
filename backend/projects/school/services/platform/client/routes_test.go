@@ -5,6 +5,9 @@ func TestOperationAllowlist(t *testing.T){
  for _,op:=range Operations(){key:=op.Method+" "+op.Path;if seen[key]{t.Fatal("duplicate",key)};seen[key]=true}
  cases:=[]struct{method,path,scope string}{
  {"POST","/identity/restricted/accounts/search","identity.accounts.search"},
+ {"GET","/identity/restricted/accounts/00000000-0000-4000-8000-000000000000/person","identity.accounts.person"},
+ {"GET","/identity/restricted/accounts/not-a-uuid/person",""},
+ {"PATCH","/identity/restricted/accounts/00000000-0000-4000-8000-000000000000/person",""},
  {"GET","/integrations/restricted/providers/gmail","integration.provider"},
  {"POST","/integrations/restricted/connections/00000000-0000-4000-8000-000000000000/actions/mail.send","integration.action"},
  {"GET","/foundation/restricted/persons",""},
