@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"sync"
 
-	schoolgateway "grovehub/internal/session"
+	schoolgateway "grovehub/libs/platform/session"
 	accountclient "grovehub/services/identity/client/account"
 	"grovehub/services/identity/internal/app/bootstrap"
 	security "grovehub/services/identity/internal/app/services/security"

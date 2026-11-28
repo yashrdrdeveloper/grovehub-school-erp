@@ -3,7 +3,7 @@ package workload
 import (
 	"context"
 
-	"grovehub/internal/session"
+	"grovehub/libs/platform/session"
 )
 
 // @Mock

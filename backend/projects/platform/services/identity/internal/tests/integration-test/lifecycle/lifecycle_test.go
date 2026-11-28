@@ -27,7 +27,7 @@ import (
  core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
  coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
  gateway "grovehub/launcher"
- schoolgateway "grovehub/internal/session"
+ schoolgateway "grovehub/libs/platform/session"
  "grovehub/services/audit"
  "grovehub/services/identity"
  "grovehub/services/infrastructure"

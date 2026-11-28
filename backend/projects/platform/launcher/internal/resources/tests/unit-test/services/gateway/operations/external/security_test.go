@@ -10,10 +10,10 @@ import (
 	. "github.com/onsi/gomega"
 	"go.uber.org/mock/gomock"
 
-	"grovehub/internal/session"
 	fixture "grovehub/launcher/internal/resources/tests/helpers/workload"
 	mock "grovehub/launcher/internal/resources/tests/mocks/gateway/external"
 	external "grovehub/launcher/internal/src/services/gateway/operations/external/impl"
+	"grovehub/libs/platform/session"
 )
 
 // @Testing suite=LauncherExternalGateway

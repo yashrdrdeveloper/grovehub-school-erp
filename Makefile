@@ -150,3 +150,10 @@ internal-frontend-test:
 	@cd frontend && pnpm --filter @groovehub/internal-tool test
 internal-frontend-dev:
 	@cd frontend && pnpm --filter @groovehub/internal-tool dev
+
+.PHONY: platform-lib-test platform-lib-coverage
+platform-lib-test:
+	@cd backend/libs/platform && GOWORK=off go test ./...
+
+platform-lib-coverage:
+	@bash ./backend/libs/platform/tools/coverage/check.sh

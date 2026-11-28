@@ -6,9 +6,9 @@ import (
 
 	ginkgo "github.com/onsi/ginkgo/v2"
 
-	schoolgateway "grovehub/internal/session"
 	internalgateway "grovehub/launcher/internal/src/services/gateway/operations/inprocess"
 	internalimpl "grovehub/launcher/internal/src/services/gateway/operations/inprocess/impl"
+	schoolgateway "grovehub/libs/platform/session"
 )
 
 type allowOperation struct{}

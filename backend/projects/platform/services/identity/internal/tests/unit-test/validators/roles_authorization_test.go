@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	schoolgateway "grovehub/internal/session"
+	schoolgateway "grovehub/libs/platform/session"
 	"grovehub/services/identity/internal/app/services/account/operations/roles"
 )
 

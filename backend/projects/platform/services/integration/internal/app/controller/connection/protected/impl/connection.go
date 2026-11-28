@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
-	schoolgateway "grovehub/internal/session"
+	schoolgateway "grovehub/libs/platform/session"
 	"net/http"
 	"strings"
 

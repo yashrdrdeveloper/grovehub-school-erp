@@ -2,7 +2,7 @@ package helpers
 
 import (
  "context"
- schoolgateway "grovehub/internal/session"
+ schoolgateway "grovehub/libs/platform/session"
 )
 
 type tenantStateKey struct{}

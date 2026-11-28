@@ -8,8 +8,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"grovehub/internal/session"
 	"grovehub/launcher/internal/src/services/gateway/operations/external/helpers"
+	"grovehub/libs/platform/session"
 )
 
 // @Testing suite=LauncherExternalHelpers

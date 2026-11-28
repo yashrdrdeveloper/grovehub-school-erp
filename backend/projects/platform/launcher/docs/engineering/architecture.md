@@ -1,6 +1,6 @@
 # Platform Launcher
 
-The root launcher.go exposes lifecycle and operator bootstrap entry points; session/ is the only public session contract boundary. All runtime logic is under internal/src, tests under internal/resources/tests. Session types remain public so code generation cannot leak a Go internal type into another service's mock.
+The root launcher.go exposes lifecycle and operator bootstrap entry points; shared security contracts are imported from the standalone `grovehub/libs/platform/session` capability. All Launcher runtime logic is under internal/src, tests under internal/resources/tests. Session library internals are private to their owning capability.
 
 Health routes are declared through @Routes and @GET in controller/health.go. The generator only accepts GET /health and GET /ready for the Launcher, not arbitrary untiered service routes. Test suites may use @Testing, @BeforeEach and @Mock. Generated files are ignored and overlay-mapped from launcher/.generated. The fallback is not a business endpoint.
 
@@ -15,4 +15,4 @@ Existing Core annotation white-box checks of unexported implementation details r
 - Keep `@Routes` and HTTP method annotations on the controller interface; keep `@Service` and `@Strategy` declarations on the corresponding concrete implementations. Unsupported catalog-only annotations must not replace explicit security or lifecycle enforcement.
 - All Launcher unit suites use `@Testing`; use generated `@Mock` interfaces for external dependencies and `@BeforeEach` for supported setup. Keep real cryptographic checks in security tests rather than mocking the policy being tested.
 - Production composition is defined by `bootstrap/impl.DefaultDependencies`. The builder owns reverse-order rollback, database pool ownership, worker lifecycle and server draining. Unit tests supply alternative transport adapters to exercise genuine failure paths without a live broker or database.
-- Run `make unit-coverage package=launcher` for exact 100% statement coverage. The existing coverage runner materializes generated source, includes all Launcher production packages and the shared Platform-private session capability, and rejects every uncovered statement. Generated routes and facade methods are included.
+- Run `make unit-coverage package=launcher` for exact 100% statement coverage. The existing coverage runner materializes generated source, includes all Launcher-owned production packages and rejects every uncovered statement. The standalone Platform library has its own strict coverage gate. Generated routes and facade methods are included. Run `make platform-lib-coverage` independently for the shared library.

@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"grovehub/internal/session"
 	"grovehub/launcher/internal/src/services/gateway"
 	gatewayimpl "grovehub/launcher/internal/src/services/gateway/impl"
 	tenantaccess "grovehub/launcher/internal/src/services/gateway/operations/tenant/access"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload"
+	"grovehub/libs/platform/session"
 )
 
 func (b *builder) newTenantState() (session.TenantStateLookup, session.TenantCheck, error) {

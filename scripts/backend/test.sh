@@ -22,3 +22,9 @@ log_info "Running backend tests with the generated annotation overlay"
   cd -- "${CORE_DIR}"
   go test -vet=off -overlay="${BACKEND_DIR}/.generated/overlay.json" ./...
 )
+
+# The Platform-specific shared library is an independent Go module.
+(
+  cd -- "${PLATFORM_LIB_DIR}"
+  GOWORK=off go test ./...
+)

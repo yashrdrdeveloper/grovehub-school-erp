@@ -2,7 +2,7 @@ package impl
 
 import (
 	"context"
-	schoolgateway "grovehub/internal/session"
+	schoolgateway "grovehub/libs/platform/session"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
 	"errors"
 	"time"

@@ -7,8 +7,8 @@ import (
 
 	ginkgo "github.com/onsi/ginkgo/v2"
 
-	schoolgateway "grovehub/internal/session"
 	external "grovehub/launcher/internal/src/services/gateway/operations/external/impl"
+	schoolgateway "grovehub/libs/platform/session"
 )
 
 type accessVerifier struct{}

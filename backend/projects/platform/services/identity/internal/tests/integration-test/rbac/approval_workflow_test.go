@@ -16,7 +16,7 @@ import (
 	. "github.com/onsi/gomega"
 	"gorm.io/gorm"
 
-	schoolgateway "grovehub/internal/session"
+	schoolgateway "grovehub/libs/platform/session"
 	infrastructure "grovehub/services/infrastructure"
 	messaging "grovehub/services/infrastructure/client/messaging"
 	resourceproducer "grovehub/services/identity/internal/app/events/producers/resource/impl"

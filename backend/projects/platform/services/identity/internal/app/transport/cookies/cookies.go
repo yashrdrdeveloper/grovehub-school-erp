@@ -5,7 +5,7 @@ package cookies
 import (
 	"net/http"
 
-	schoolgateway "grovehub/internal/session"
+	schoolgateway "grovehub/libs/platform/session"
 )
 
 const (

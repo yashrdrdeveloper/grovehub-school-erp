@@ -16,12 +16,12 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"grovehub/internal/session"
 	mock "grovehub/launcher/internal/resources/tests/mocks/bootstrap"
 	"grovehub/launcher/internal/src/bootstrap"
 	"grovehub/launcher/internal/src/bootstrap/impl"
 	"grovehub/launcher/internal/src/config"
 	"grovehub/launcher/internal/src/server"
+	"grovehub/libs/platform/session"
 	"grovehub/services/audit"
 	"grovehub/services/foundation"
 	person "grovehub/services/foundation/client/person"

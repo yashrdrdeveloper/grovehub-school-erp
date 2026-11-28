@@ -326,13 +326,7 @@ func appendManifest(path,logical string)error{
 }
 
 func listProduction(root string, item target) ([]string, error) {
-	patterns := []string{item.pattern}
-	// Platform's shared session context remains in Launcher coverage even
-	// though Go's internal-package rules require a Platform-wide boundary.
-	if item.name == "launcher" {
-		patterns = append(patterns, "./internal/session/...")
-	}
-	cmd := exec.Command("go", append([]string{"list", "-f", "{{.ImportPath}}"}, patterns...)...)
+	cmd := exec.Command("go", "list", "-f", "{{.ImportPath}}", item.pattern)
 	cmd.Dir, cmd.Stderr = root, os.Stderr
 	data, err := cmd.Output()
 	if err != nil {

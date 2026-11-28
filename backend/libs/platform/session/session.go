@@ -4,10 +4,10 @@ package session
 
 import (
 	"context"
-	"grovehub/internal/session/constants"
-	"grovehub/internal/session/contracts"
-	"grovehub/internal/session/operations/principal"
-	"grovehub/internal/session/operations/tenant"
+	"grovehub/libs/platform/session/internal/src/constants"
+	"grovehub/libs/platform/session/internal/src/contracts"
+	"grovehub/libs/platform/session/internal/src/operations/principal"
+	"grovehub/libs/platform/session/internal/src/operations/tenant"
 )
 
 type Principal = contracts.Principal
@@ -18,11 +18,11 @@ type TenantState = contracts.TenantState
 type TenantStateLookup = contracts.TenantStateLookup
 
 const (
-	AccessCookie = constants.AccessCookie
+	AccessCookie  = constants.AccessCookie
 	RefreshCookie = constants.RefreshCookie
-	CSRFName = constants.CSRFName
-	ResetCookie = constants.ResetCookie
-	SetupCookie = constants.SetupCookie
+	CSRFName      = constants.CSRFName
+	ResetCookie   = constants.ResetCookie
+	SetupCookie   = constants.SetupCookie
 )
 
 var ErrTenantDenied = contracts.ErrTenantDenied

@@ -16,8 +16,8 @@ import (
 	. "github.com/onsi/gomega"
 
 	core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
-	"grovehub/internal/session"
 	"grovehub/launcher/internal/src/services/gateway/operations/tenant/access"
+	"grovehub/libs/platform/session"
 )
 
 func tenantConfig(origin string) access.TenantAccessConfig {

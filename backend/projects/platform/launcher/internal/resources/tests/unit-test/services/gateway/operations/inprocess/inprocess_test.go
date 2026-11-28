@@ -8,10 +8,10 @@ import (
 	. "github.com/onsi/gomega"
 	"go.uber.org/mock/gomock"
 
-	"grovehub/internal/session"
 	mock "grovehub/launcher/internal/resources/tests/mocks/gateway/inprocess"
 	"grovehub/launcher/internal/src/services/gateway/operations/inprocess"
 	"grovehub/launcher/internal/src/services/gateway/operations/inprocess/impl"
+	"grovehub/libs/platform/session"
 )
 
 var authorizer *mock.MockAuthorizer

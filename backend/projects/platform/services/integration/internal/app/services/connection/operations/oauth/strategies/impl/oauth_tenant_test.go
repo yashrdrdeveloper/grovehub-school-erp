@@ -6,7 +6,7 @@ import (
  "testing"
  "time"
 
- schoolgateway "grovehub/internal/session"
+ schoolgateway "grovehub/libs/platform/session"
  "grovehub/services/integration/internal/app/entity"
  mailcontracts "grovehub/services/integration/internal/app/providers/mailprovider/contracts"
  maildto "grovehub/services/integration/internal/app/providers/mailprovider/dto"

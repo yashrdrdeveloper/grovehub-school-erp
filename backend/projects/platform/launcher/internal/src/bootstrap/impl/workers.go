@@ -5,8 +5,8 @@ import (
 
 	"gorm.io/gorm"
 
-	"grovehub/internal/session"
 	"grovehub/launcher/internal/src/bootstrap/helpers"
+	"grovehub/libs/platform/session"
 )
 
 func (b *builder) startWorkers(ctx context.Context, db *gorm.DB, lookup session.TenantStateLookup, cleanup *helpers.Cleanup) {

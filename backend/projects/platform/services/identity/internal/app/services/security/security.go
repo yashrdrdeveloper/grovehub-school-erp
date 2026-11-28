@@ -3,7 +3,7 @@ package security
 import (
 	"context"
 
-	schoolgateway "grovehub/internal/session"
+	schoolgateway "grovehub/libs/platform/session"
 )
 
 // AccessVerifier is the Identity-owned contract for validating a browser

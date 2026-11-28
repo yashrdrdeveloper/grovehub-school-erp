@@ -9,6 +9,10 @@ sync_backend_go_modules() {
     GOWORK=off go mod tidy
   )
   (
+    cd -- "${PLATFORM_LIB_DIR}"
+    GOWORK=off go mod tidy
+  )
+  (
     cd -- "${BACKEND_DIR}"
     go mod tidy
   )

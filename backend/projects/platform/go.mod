@@ -70,6 +70,9 @@ require (
 	google.golang.org/grpc v1.84.0 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 	gorm.io/driver/postgres v1.6.0 // indirect
+	grovehub/libs/platform v0.0.0
 )
 
 replace github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core => ../../libs/core
+
+replace grovehub/libs/platform => ../../libs/platform

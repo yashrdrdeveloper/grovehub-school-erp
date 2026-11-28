@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
-	school "grovehub/internal/session"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/internalcatalog"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/operatoraudit"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/operatorauditread"
@@ -19,6 +18,7 @@ import (
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/schoolreceiptread"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/schoolstatusreceipt"
 	"grovehub/launcher/internal/src/services/gateway/policies"
+	school "grovehub/libs/platform/session"
 	mail "grovehub/services/integration/client/mail"
 	integration "grovehub/services/integration/client/principal"
 )

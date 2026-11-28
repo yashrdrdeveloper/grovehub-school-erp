@@ -2,7 +2,7 @@ package eligibility
 
 import (
 	"context"
-	schoolgateway "grovehub/internal/session"
+	schoolgateway "grovehub/libs/platform/session"
 	"time"
 
 	"grovehub/services/identity/internal/app/entity"

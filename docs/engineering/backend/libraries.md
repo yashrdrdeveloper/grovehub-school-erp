@@ -50,7 +50,7 @@ Breaking library changes must update consumers, generated code, tests, and owner
 
 ## 6. School-specific gateway contract
 
-The Platform launcher gateway owns its verified session principal, AccessVerifier and school cookie names under `backend/projects/platform/launcher/session`, backed by gateway contracts, constants and operations. `libs/backend/core/gateway` owns only neutral route tiers and workload verification. The legacy school Admin claim is not a universal permission and must never bypass RBAC. Core must not import any school-owned package, including in tests or generated overlays. [Core boundary audit](../../product/internal/CORE_BOUNDARY_AUDIT.md) records the migration inventory. The Core module has moved and passed standalone build/test checks. Published releases and second-application integration remain pending.
+The independently owned Platform library at `backend/libs/platform` (module `grovehub/libs/platform`) exposes its verified session principal, AccessVerifier and cookie names through `grovehub/libs/platform/session`. Its contracts, constants and operations live under the capability's private `internal/src`. Platform services and Launcher import the facade; Core does not depend on it. `libs/backend/core/gateway` owns only neutral route tiers and workload verification. The legacy school Admin claim is not a universal permission and must never bypass RBAC. Core must not import any school-owned package, including in tests or generated overlays. [Core boundary audit](../../product/internal/CORE_BOUNDARY_AUDIT.md) records the migration inventory. The Core module has moved and passed standalone build/test checks. Published releases and second-application integration remain pending.
 
 ## 7. Independent Core workspace
 

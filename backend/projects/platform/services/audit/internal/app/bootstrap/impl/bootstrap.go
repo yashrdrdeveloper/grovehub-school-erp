@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
-	schoolgateway "grovehub/internal/session"
+	schoolgateway "grovehub/libs/platform/session"
 
 	"grovehub/services/audit/internal/app/bootstrap"
 	"grovehub/services/audit/internal/app/constants/events"

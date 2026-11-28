@@ -4,7 +4,7 @@ import (
 	"context"
 
 	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
-	schoolgateway "grovehub/internal/session"
+	schoolgateway "grovehub/libs/platform/session"
 	dto "grovehub/services/audit/internal/app/dto/activity"
 	repo "grovehub/services/audit/internal/app/repository/activity"
 	"grovehub/services/audit/internal/app/services/activity"

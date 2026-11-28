@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"grovehub/internal/session"
+	"grovehub/libs/platform/session"
 	person "grovehub/services/foundation/client/person"
 	account "grovehub/services/identity/client/account"
 	"grovehub/services/infrastructure/client/messaging"

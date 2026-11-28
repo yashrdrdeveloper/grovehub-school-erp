@@ -2,7 +2,7 @@ package principal
 
 import (
 	"context"
-	"grovehub/internal/session/contracts"
+	"grovehub/libs/platform/session/internal/src/contracts"
 )
 
 type principalKey struct{}
@@ -15,4 +15,3 @@ func PrincipalFrom(ctx context.Context) (contracts.Principal, bool) {
 	principal, ok := ctx.Value(principalKey{}).(contracts.Principal)
 	return principal, ok && principal.AccountID != "" && principal.SessionID != ""
 }
-

@@ -17,7 +17,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	schoolgateway "grovehub/internal/session"
+	schoolgateway "grovehub/libs/platform/session"
 	infrastructure "grovehub/services/infrastructure"
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/constants/permission"

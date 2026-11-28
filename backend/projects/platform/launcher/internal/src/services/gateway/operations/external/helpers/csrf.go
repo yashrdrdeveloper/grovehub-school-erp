@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	schoolgateway "grovehub/internal/session"
+	schoolgateway "grovehub/libs/platform/session"
 )
 
 func RequiresCSRF(request *http.Request) bool {

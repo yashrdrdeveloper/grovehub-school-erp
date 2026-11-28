@@ -3,7 +3,7 @@ package invitation
 import (
  "errors"
  "testing"
- schoolgateway "grovehub/internal/session"
+ schoolgateway "grovehub/libs/platform/session"
 )
 
 func TestTenantDeliveryDecision(t *testing.T) {

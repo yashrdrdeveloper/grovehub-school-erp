@@ -15,6 +15,9 @@ case "${scope}" in
   core)
     path="${CORE_DIR}"
     ;;
+  platform-library)
+    path="${PLATFORM_LIB_DIR}"
+    ;;
   integration)
     path="${BACKEND_DIR}/services/integration"
     ;;
@@ -25,7 +28,7 @@ case "${scope}" in
     path="${BACKEND_DIR}/services/foundation/internal/app/repository"
     ;;
   *)
-    die "Unsupported format scope: ${scope}. Expected all, core, foundation, foundation-repository, or integration."
+    die "Unsupported format scope: ${scope}. Expected all, core, platform-library, foundation, foundation-repository, or integration."
     ;;
 esac
 
@@ -33,12 +36,18 @@ mode="${2:-}"
 case "${mode}" in
   --check)
     go run "${SCRIPT_DIR}/groovefmt/main.go" -check "${path}"
-    if [[ "$scope" == all ]]; then go run "${SCRIPT_DIR}/groovefmt/main.go" -check "${CORE_DIR}"; fi
+    if [[ "$scope" == all ]]; then
+      go run "${SCRIPT_DIR}/groovefmt/main.go" -check "${CORE_DIR}"
+      go run "${SCRIPT_DIR}/groovefmt/main.go" -check "${PLATFORM_LIB_DIR}"
+    fi
     log_info "GroveHub formatting lint passed under ${path}"
     ;;
   "")
     go run "${SCRIPT_DIR}/groovefmt/main.go" "${path}"
-    if [[ "$scope" == all ]]; then go run "${SCRIPT_DIR}/groovefmt/main.go" "${CORE_DIR}"; fi
+    if [[ "$scope" == all ]]; then
+      go run "${SCRIPT_DIR}/groovefmt/main.go" "${CORE_DIR}"
+      go run "${SCRIPT_DIR}/groovefmt/main.go" "${PLATFORM_LIB_DIR}"
+    fi
     log_info "Formatted Go code with GroveHub style under ${path}"
     ;;
   *)

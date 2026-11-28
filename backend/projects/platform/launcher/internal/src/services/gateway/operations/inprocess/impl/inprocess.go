@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	schoolgateway "grovehub/internal/session"
 	"grovehub/launcher/internal/src/services/gateway/operations/inprocess"
+	schoolgateway "grovehub/libs/platform/session"
 )
 
 // @Service

@@ -7,8 +7,8 @@ import (
 
 	"gorm.io/gorm"
 
-	"grovehub/internal/session"
 	"grovehub/launcher/internal/src/bootstrap/helpers"
+	"grovehub/libs/platform/session"
 	"grovehub/services/audit"
 	"grovehub/services/foundation"
 	"grovehub/services/identity"

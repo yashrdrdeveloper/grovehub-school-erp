@@ -10,7 +10,7 @@ Provision separate databases and login roles for Platform, School and Internal T
 
 ## Build ownership
 
-No root Go workspace is required. The Platform, School, Internal Tool and Core modules build with GOWORK=off. Platform annotation generation remains provider-owned and consumes Core through a local module replacement; School and Internal Tool generate SDKs from service-owned specifications. The local replacement is an intentional monorepo development dependency, not a published release. Each project can be built and tested via its own entrypoint. Root Makefile convenience commands do not share database credentials or start another project's process. Frontend package-manager files are scoped to frontend/. Published Core and npm packages, remote dependency verification and separate deployable repository checkouts are not yet complete.
+No root Go workspace is required. The Platform, School, Internal Tool, Core and Platform shared-library modules build with GOWORK=off. The Platform project requires `grovehub/libs/platform` using a checkout-relative replacement for `backend/libs/platform`. Platform annotation generation remains provider-owned and consumes Core through a local module replacement; School and Internal Tool generate SDKs from service-owned specifications. The local replacement is an intentional monorepo development dependency, not a published release. Each project can be built and tested via its own entrypoint. Root Makefile convenience commands do not share database credentials or start another project's process. Frontend package-manager files are scoped to frontend/. Published Core and npm packages, remote dependency verification and separate deployable repository checkouts are not yet complete.
 
 ## CI deployment artifacts
 

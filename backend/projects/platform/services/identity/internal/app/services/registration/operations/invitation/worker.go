@@ -2,7 +2,7 @@ package invitation
 
 import (
 	"context"
-	schoolgateway "grovehub/internal/session"
+	schoolgateway "grovehub/libs/platform/session"
 	"crypto/aes"
 	"crypto/cipher"
 	"encoding/json"
