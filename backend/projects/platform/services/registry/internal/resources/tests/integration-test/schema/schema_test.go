@@ -1,19 +1,24 @@
 package schema_test
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"errors"
 	"os"
 	"testing"
+	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
+	"grovehub/libs/platform/scope"
 	"grovehub/services/registry/internal/app/constants/status"
 	"grovehub/services/registry/internal/app/entity"
 	"grovehub/services/registry/internal/app/repository/constants"
+	grantrepo "grovehub/services/registry/internal/app/repository/grant/impl"
+	keyrepo "grovehub/services/registry/internal/app/repository/key/impl"
 	projectrepo "grovehub/services/registry/internal/app/repository/project/impl"
 	tenantrepo "grovehub/services/registry/internal/app/repository/tenant/impl"
 	workloadrepo "grovehub/services/registry/internal/app/repository/workload/impl"
@@ -167,5 +172,65 @@ func TestRegistryConstraints(t *testing.T) {
 	})
 	if err != nil || createdTenant.TenantID != t2 || createdTenant.ProjectID != p3 {
 		t.Fatalf("tenant creation failed: %+v %v", createdTenant, err)
+	}
+	// Workload creation, rotation and grant revocation use explicit owners.
+	workloads := workloadrepo.NewWorkloadRepository(gormDB)
+	const w2 = "30000000-0000-4000-8000-000000000002"
+	second, err := workloads.Create(ctx, entity.Workload{
+		WorkloadID: w2, ProjectID: &created.ProjectID, Issuer: "fixture", Subject: "second",
+		Status: status.Disabled, Version: 1,
+	})
+	if err != nil || second.Status != status.Disabled {
+		t.Fatalf("workload creation failed: %+v %v", second, err)
+	}
+	if _, err := workloads.ChangeStatus(ctx, w2, 1, status.Active); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := workloads.ChangeStatus(ctx, w2, 1, status.Disabled); !errors.Is(err, constants.ErrConflict) {
+		t.Fatalf("stale workload version accepted: %v", err)
+	}
+
+	keys := keyrepo.NewKeyRepository(gormDB)
+	now := time.Now().UTC()
+	firstKey := entity.WorkloadKey{
+		KeyID: "first-key", WorkloadID: w2, PublicKey: bytes.Repeat([]byte{1}, 32),
+		ValidFrom: now.Add(-time.Minute), ValidUntil: now.Add(time.Hour),
+	}
+	if err := keys.Create(ctx, firstKey); err != nil {
+		t.Fatal(err)
+	}
+	nextKey := firstKey
+	nextKey.KeyID, nextKey.PublicKey = "next-key", bytes.Repeat([]byte{2}, 32)
+	if err := keys.Create(ctx, nextKey); err != nil {
+		t.Fatal(err)
+	}
+	if err := keys.Revoke(ctx, workload, firstKey.KeyID); !errors.Is(err, constants.ErrConflict) {
+		t.Fatalf("wrong workload revoked a key: %v", err)
+	}
+	if err := keys.Revoke(ctx, w2, firstKey.KeyID); err != nil {
+		t.Fatal(err)
+	}
+	var revoked int
+	if err := tx.QueryRowContext(ctx, "SELECT count(*) FROM registry.workload_keys WHERE workload_id=$1 AND revoked_at IS NOT NULL", w2).Scan(&revoked); err != nil || revoked != 1 {
+		t.Fatalf("rotation did not preserve one revoked key: %d %v", revoked, err)
+	}
+	reject("INSERT INTO registry.workload_keys(key_id,workload_id,public_key,valid_from,valid_until) VALUES ($1,$2,$3,$4,$5)", "reuse-key", workload, firstKey.PublicKey, firstKey.ValidFrom, firstKey.ValidUntil)
+
+	grants := grantrepo.NewGrantRepository(gormDB)
+	const grant3 = "40000000-0000-4000-8000-000000000003"
+	if err := grants.Create(ctx, entity.WorkloadGrant{
+		GrantID: grant3, WorkloadID: w2, TargetProjectID: &created.ProjectID,
+		Scope: scope.Project, Capability: "registry.project.read",
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if err := grants.Revoke(ctx, workload, grant3); !errors.Is(err, constants.ErrConflict) {
+		t.Fatalf("wrong workload revoked a grant: %v", err)
+	}
+	if err := grants.Revoke(ctx, w2, grant3); err != nil {
+		t.Fatal(err)
+	}
+	if err := grants.Revoke(ctx, w2, grant3); !errors.Is(err, constants.ErrConflict) {
+		t.Fatalf("missing grant was not rejected: %v", err)
 	}
 }

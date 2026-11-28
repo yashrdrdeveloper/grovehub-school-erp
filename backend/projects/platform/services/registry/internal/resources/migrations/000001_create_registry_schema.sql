@@ -61,7 +61,7 @@ CREATE TABLE registry.workload_grants (
     target_tenant_id uuid,
     scope text NOT NULL CHECK (scope IN ('PLATFORM','PROJECT','TENANT')),
     capability text NOT NULL,
-    allow_delegation boolean NOT NULL DEFAULT false,
+    allow_delegation boolean NOT NULL DEFAULT false CHECK (scope <> 'PLATFORM' OR NOT allow_delegation),
     created_at timestamptz NOT NULL DEFAULT now(),
     FOREIGN KEY (capability, scope) REFERENCES registry.capabilities(code, scope),
     FOREIGN KEY (target_project_id, target_tenant_id) REFERENCES registry.tenants(project_id, tenant_id),
