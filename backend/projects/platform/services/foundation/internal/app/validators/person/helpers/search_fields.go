@@ -3,7 +3,7 @@ package helpers
 import (
     "strings"
 
-    corenormalize "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/normalize"
+    coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
     coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
     "grovehub/services/foundation/internal/app/entity"
 )
@@ -50,7 +50,7 @@ func equalitySearchField(normalizer coresearch.ValueNormalizer) coresearch.Field
 }
 
 func normalizeGIDSearchValue(_ coresearch.Operator, value string) (string, error) {
-    normalized, err := corenormalize.UUIDv7(value)
+    normalized, err := coreutils.NormalizeUUIDv7(value)
     if err != nil { return "", invalidPersonSearch() }
     return normalized, nil
 }
@@ -66,7 +66,7 @@ func normalizeStatusSearchValue(_ coresearch.Operator, value string) (string, er
 }
 
 func normalizeTimeSearchValue(_ coresearch.Operator, value string) (string, error) {
-    normalized, err := corenormalize.RFC3339UTC(value)
+    normalized, err := coreutils.NormalizeRFC3339UTC(value)
     if err != nil { return "", invalidPersonSearch() }
     return normalized, nil
 }
@@ -82,7 +82,7 @@ func normalizeEmailSearchValue(operator coresearch.Operator, value string) (stri
 
 func normalizePhoneSearchFieldValue(operator coresearch.Operator, value string) (string, error) {
     if coresearch.IsPartialOperator(operator) {
-        normalized, err := corenormalize.PhoneCharacters(value)
+        normalized, err := coreutils.NormalizePhoneCharacters(value)
         if err != nil || normalized == "" { return "", invalidPersonSearch() }
         return normalized, nil
     }

@@ -4,7 +4,7 @@ import (
     "strings"
     "time"
 
-    corenormalize "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/normalize"
+    coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
     "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/contracts"
     "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/mappers"
 )
@@ -15,7 +15,7 @@ func cursorError(invalid error) error {
 }
 
 func ValidateUUIDv7Cursor(value string, invalid error) error {
-    if _, err := corenormalize.UUIDv7(value); err != nil { return cursorError(invalid) }
+    if _, err := coreutils.NormalizeUUIDv7(value); err != nil { return cursorError(invalid) }
     return nil
 }
 

@@ -2,7 +2,7 @@ package helpers
 
 import (
  "github.com/google/uuid"
- corenormalize "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/normalize"
+ coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
 )
 
 // ValidTenantID matches School Registry's canonical UUID contract. School IDs
@@ -14,6 +14,6 @@ func ValidTenantID(raw string) bool {
 
 // ValidID applies GrooveHub's standard UUIDv7 validation consistently.
 func ValidID(raw string) bool {
-    _,err:=corenormalize.UUIDv7(raw)
+    _,err:=coreutils.NormalizeUUIDv7(raw)
     return err==nil
 }

@@ -6,7 +6,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/google/uuid"
-	corenormalize "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/normalize"
+	coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
 	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	"grovehub/services/identity/internal/app/constants/persona"
 	roledto "grovehub/services/identity/internal/app/dto/role"
@@ -48,7 +48,7 @@ func normalizePersona(_ coresearch.Operator, value string) (string, error) {
 }
 
 func normalizeTime(_ coresearch.Operator, value string) (string, error) {
-	value, err := corenormalize.RFC3339UTC(value)
+	value, err := coreutils.NormalizeRFC3339UTC(value)
 	if err != nil {
 		return "", ErrInvalidSearch
 	}

@@ -1,26 +1,30 @@
 # Core Utils
 
 Consumers import only `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils`.
-The former public core/helpers package is removed.
+The former core/helpers and core/normalize packages are removed.
 
 ```text
 utils/
 ├── utils.go
 ├── README.md
 └── internal/
-    ├── src/operations/strings/strings.go
-    └── resources/tests/unit-test/operations/strings/
-        ├── strings_test.go
-        └── suite_test.go
+    ├── src/
+    │   ├── constants/normalization.go
+    │   ├── contracts/normalization.go
+    │   └── operations/
+    │       ├── strings/strings.go
+    │       └── normalize/
+    │           ├── normalize.go
+    │           └── time.go
+    └── resources/tests/unit-test/  # exact source mirrors
 ```
 
-OptionalString maps exactly the empty string to nil and preserves every other
-value. NullableString maps nil to the empty string and dereferences any other
-pointer unchanged. Neither operation trims, normalizes or performs I/O.
-
-Only cohesive, generic conversions belong here; capability-local helpers
-remain private to their owning capability. No config, constants, contracts,
-helpers or impl directories are necessary for these two pure operations.
+OptionalString and NullableString preserve their existing conversion behavior.
+Normalization is exposed through NormalizeEmail, NormalizePhone,
+NormalizePhoneCharacters, NormalizeUUIDv7 and NormalizeRFC3339UTC. Existing
+validation rules, canonical representations and error identities are preserved.
+Only cohesive, domain-independent utilities belong here; capability-local
+helpers remain private.
 
 ```bash
 cd backend/libs/core

@@ -2,7 +2,7 @@ package helpers
 
 import (
     coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-    corenormalize "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/normalize"
+    coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
     personerror "grovehub/services/foundation/internal/app/constants/error"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     "grovehub/services/foundation/internal/app/entity"
@@ -74,7 +74,7 @@ func normalizeContactGroup(
 }
 
 func normalizeEmail(value string) (string, error) {
-	normalized, err := corenormalize.Email(value)
+	normalized, err := coreutils.NormalizeEmail(value)
 	if err != nil {
 		return "", coreerrors.NewError(personerror.InvalidPersonContact)
 	}
@@ -82,7 +82,7 @@ func normalizeEmail(value string) (string, error) {
 }
 
 func normalizePhone(value string) (string, error) {
-	normalized, err := corenormalize.Phone(value)
+	normalized, err := coreutils.NormalizePhone(value)
 	if err != nil {
 		return "", coreerrors.NewError(personerror.InvalidPersonContact)
 	}

@@ -1,4 +1,4 @@
-package normalize_test
+package constants_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestCoreNormalization(t *testing.T) {
+func TestConstants(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Core Normalization")
+	RunSpecs(t, "Utils constants Suite")
 }

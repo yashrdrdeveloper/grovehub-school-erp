@@ -1,45 +1,40 @@
-package helpers
+package normalize
 
 import (
-	"errors"
 	"net/mail"
 	"regexp"
 	"strings"
 
 	"github.com/google/uuid"
+
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils/internal/src/constants"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils/internal/src/contracts"
 )
 
-const maxEmailLength = 254
+var phonePattern = regexp.MustCompile(constants.PhonePattern)
 
-var (
-	ErrInvalidEmail  = errors.New("invalid email")
-	ErrInvalidPhone  = errors.New("invalid phone")
-	ErrInvalidUUIDv7 = errors.New("invalid UUIDv7")
-	phonePattern     = regexp.MustCompile(`^\+[1-9][0-9]{7,14}$`)
-)
-
-func Email(value string) (string, error) {
+func NormalizeEmail(value string) (string, error) {
 	normalized := strings.ToLower(strings.TrimSpace(value))
-	if normalized == "" || len(normalized) > maxEmailLength {
-		return "", ErrInvalidEmail
+	if normalized == "" || len(normalized) > constants.MaxEmailLength {
+		return "", contracts.ErrInvalidEmail
 	}
 
 	address, err := mail.ParseAddress(normalized)
 	if err != nil || strings.ToLower(address.Address) != normalized {
-		return "", ErrInvalidEmail
+		return "", contracts.ErrInvalidEmail
 	}
 	return normalized, nil
 }
 
-func Phone(value string) (string, error) {
-	normalized, err := PhoneCharacters(value)
+func NormalizePhone(value string) (string, error) {
+	normalized, err := NormalizePhoneCharacters(value)
 	if err != nil || !phonePattern.MatchString(normalized) {
-		return "", ErrInvalidPhone
+		return "", contracts.ErrInvalidPhone
 	}
 	return normalized, nil
 }
 
-func PhoneCharacters(value string) (string, error) {
+func NormalizePhoneCharacters(value string) (string, error) {
 	trimmed := strings.TrimSpace(value)
 	builder := strings.Builder{}
 
@@ -52,18 +47,18 @@ func PhoneCharacters(value string) (string, error) {
 		} else if digit {
 			builder.WriteRune(character)
 		} else if !separator {
-			return "", ErrInvalidPhone
+			return "", contracts.ErrInvalidPhone
 		}
 	}
 
 	return builder.String(), nil
 }
 
-func UUIDv7(value string) (string, error) {
+func NormalizeUUIDv7(value string) (string, error) {
 	normalized := strings.TrimSpace(value)
 	parsed, err := uuid.Parse(normalized)
 	if err != nil || parsed == uuid.Nil || parsed.Version() != uuid.Version(7) {
-		return "", ErrInvalidUUIDv7
+		return "", contracts.ErrInvalidUUIDv7
 	}
 	return parsed.String(), nil
 }

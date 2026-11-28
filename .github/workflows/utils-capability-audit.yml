@@ -7,6 +7,9 @@ on:
       - 'backend/libs/core/utils/**'
       - 'backend/libs/core/tests/unit-test/utils/**'
       - 'backend/libs/core/helpers/**'
+      - 'backend/libs/core/normalize/**'
+      - 'backend/libs/core/tests/unit-test/normalize/**'
+      - 'backend/libs/core/**'
       - 'backend/projects/**'
       - '.github/workflows/utils-capability-audit.yml'
   pull_request:
@@ -14,6 +17,9 @@ on:
       - 'backend/libs/core/utils/**'
       - 'backend/libs/core/tests/unit-test/utils/**'
       - 'backend/libs/core/helpers/**'
+      - 'backend/libs/core/normalize/**'
+      - 'backend/libs/core/tests/unit-test/normalize/**'
+      - 'backend/libs/core/**'
       - 'backend/projects/**'
       - '.github/workflows/utils-capability-audit.yml'
   workflow_dispatch:
@@ -40,8 +46,9 @@ jobs:
             esac
           done
           test ! -d backend/libs/core/helpers
-          if git grep -nE 'libs/backend/core/helpers(/|")' -- '*.go' '*.tmpl' '*.tpl' '*.sh'; then
-            echo "Use core/utils instead of the removed core/helpers package."
+          test ! -d backend/libs/core/normalize
+          if git grep -nE 'libs/backend/core/(helpers|normalize)(/|")' -- '*.go' '*.tmpl' '*.tpl' '*.sh'; then
+            echo "Use core/utils instead of removed core/helpers and core/normalize packages."
             exit 1
           fi
           count=0

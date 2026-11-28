@@ -34,7 +34,7 @@ Infrastructure-owned shared contracts, such as broker-delivery DTOs, event-store
 
 ## 4. Avoiding false reuse
 
-- Shared, cohesive, domain-agnostic conversions belong in `libs/backend/core/utils` and are exposed exclusively through `utils.go`. Do not use a public core/helpers bucket or move capability-local helpers into utils.
+- Shared, cohesive, domain-agnostic conversions and normalization belong in `libs/backend/core/utils` and are exposed exclusively through `utils.go`. Name normalization functions `Normalize<Kind>` (for example `NormalizeEmail`, `NormalizePhone`, `NormalizeUUIDv7`). Do not use separate public core/helpers or core/normalize packages or move capability-local helpers into utils.
 - No service-specific event/error/DTO in core.
 - No generic repository replacing aggregate-specific SQL and lifecycle rules.
 - No external app importing another service's private/internal files.

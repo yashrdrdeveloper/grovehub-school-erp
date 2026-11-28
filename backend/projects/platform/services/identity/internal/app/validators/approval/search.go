@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	corenormalize "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/normalize"
+	coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
 	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	kind "grovehub/services/identity/internal/app/constants/approval"
 	dto "grovehub/services/identity/internal/app/dto/approval"
@@ -36,7 +36,7 @@ func normalizeStatus(_ coresearch.Operator, value string) (string, error) {
 }
 
 func normalizeTime(_ coresearch.Operator, value string) (string, error) {
-	return corenormalize.RFC3339UTC(value)
+	return coreutils.NormalizeRFC3339UTC(value)
 }
 
 func cursorValidator(normalize coresearch.ValueNormalizer) coresearch.CursorValueValidator {

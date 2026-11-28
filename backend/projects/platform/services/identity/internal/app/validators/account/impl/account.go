@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	corenormalize "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/normalize"
+	coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
 	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
 	accountvalidator "grovehub/services/identity/internal/app/validators/account"
@@ -23,14 +23,14 @@ func New() accountvalidator.Validator {
 }
 
 func (Validator) NormalizeCreate(request accountdto.Create) (accountdto.Create, error) {
-	email, err := corenormalize.Email(request.Email)
+	email, err := coreutils.NormalizeEmail(request.Email)
 	if err != nil {
 		return request, errors.New("invalid email")
 	}
 	request.Email = email
 
 	if strings.TrimSpace(request.PhoneNumber) != "" {
-		phone, phoneErr := corenormalize.Phone(request.PhoneNumber)
+		phone, phoneErr := coreutils.NormalizePhone(request.PhoneNumber)
 		if phoneErr != nil {
 			return request, errors.New("invalid phone")
 		}
