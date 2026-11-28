@@ -2,11 +2,8 @@
 // for independently bootstrapped backend service modules.
 package module
 
-import "net/http"
+import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/module/internal/src/contracts"
 
 // Module is the minimal reusable lifecycle contract.
 // Service-owned modules expose additional typed clients in their own interfaces.
-type Module interface {
-    RegisterHTTP(mux *http.ServeMux)
-    Close()
-}
+type Module = contracts.Module
