@@ -1,0 +1,13 @@
+package contract_test
+
+import (
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	contract "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+)
+
+var _ = Describe("Status", func() {
+	It("preserves the declared metadata contract", func() {
+		Expect([]contract.Status{contract.Existing, contract.Gombok, contract.Proposed, contract.Optional, contract.Discouraged, contract.Pilot}).To(Equal([]contract.Status{"EXISTING", "GOMBOK", "PROPOSED", "OPTIONAL", "DISCOURAGED", "PILOT"}))
+	})
+})
