@@ -1,4 +1,4 @@
-package helpers
+package fingerprint
 
 import (
 	"crypto/sha256"
@@ -6,9 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency/contracts"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency/internal/src/contracts"
 )
 
+// Fingerprint hashes the JSON representation without changing its semantics.
 func Fingerprint(value any) (string, error) {
 	payload, err := json.Marshal(value)
 	if err != nil {

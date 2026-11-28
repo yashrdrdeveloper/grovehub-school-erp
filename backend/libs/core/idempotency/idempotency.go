@@ -1,12 +1,14 @@
+// Package idempotency exposes request key validation and fingerprinting.
 package idempotency
 
 import (
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency/helpers"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency/validators"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency/internal/src/constants"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency/internal/src/contracts"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency/internal/src/operations/fingerprint"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency/internal/src/operations/key"
 )
 
-const MaxKeyLength = contracts.MaxKeyLength
+const MaxKeyLength = constants.MaxKeyLength
 
 var (
 	ErrInvalidKey  = contracts.ErrInvalidKey
@@ -14,9 +16,9 @@ var (
 )
 
 func ValidateKey(value string) (string, error) {
-	return validators.ValidateKey(value)
+	return key.ValidateKey(value)
 }
 
 func Fingerprint(value any) (string, error) {
-	return helpers.Fingerprint(value)
+	return fingerprint.Fingerprint(value)
 }
