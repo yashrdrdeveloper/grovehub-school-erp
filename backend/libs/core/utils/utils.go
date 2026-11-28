@@ -21,6 +21,8 @@ var (
 	ErrInvalidEmail  = contracts.ErrInvalidEmail
 	ErrInvalidPhone  = contracts.ErrInvalidPhone
 	ErrInvalidUUIDv7 = contracts.ErrInvalidUUIDv7
+	ErrInvalidUUID   = contracts.ErrInvalidUUID
+	ErrInvalidText   = contracts.ErrInvalidText
 	ErrInvalidTime   = contracts.ErrInvalidTime
 )
 
@@ -42,4 +44,16 @@ func NormalizeUUIDv7(value string) (string, error) {
 
 func NormalizeRFC3339UTC(value string) (string, error) {
 	return normalize.NormalizeRFC3339UTC(value)
+}
+
+func ValidateUUID(value string) error {
+	return normalize.ValidateUUID(value)
+}
+
+func NormalizeText(value string, maxBytes int) (string, error) {
+	return normalize.NormalizeText(value, maxBytes)
+}
+
+func NormalizeStrictRFC3339UTC(value string) (string, error) {
+	return normalize.NormalizeStrictRFC3339UTC(value)
 }

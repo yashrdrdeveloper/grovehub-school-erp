@@ -1,8 +1,7 @@
 package helpers
 
-import "github.com/google/uuid"
+import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
 
 func ValidID(value string) bool {
-	id, err := uuid.Parse(value)
-	return err == nil && id != uuid.Nil && id.String() == value
+	return utils.ValidateUUID(value) == nil
 }

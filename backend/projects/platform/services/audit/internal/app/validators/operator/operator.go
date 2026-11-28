@@ -3,7 +3,7 @@ package operator
 import (
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
 
 	"grovehub/services/audit/internal/app/constants/operator"
 	"grovehub/services/audit/internal/app/dto/producer"
@@ -12,8 +12,7 @@ import (
 )
 
 func ValidID(value string) bool {
-	id, err := uuid.Parse(value)
-	return err == nil && id != uuid.Nil && id.String() == value
+	return utils.ValidateUUID(value) == nil
 }
 
 func ValidSearch(input dto.SearchInput) bool {
