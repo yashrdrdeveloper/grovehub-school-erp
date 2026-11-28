@@ -24,3 +24,11 @@ Disabling a tenant increments its session generation; disabling a project
 atomically increments every existing tenant generation. Tenant activation
 locks the project and requires it to be active. The gateway must still check
 live project and tenant state when it is cut over.
+
+Workload provisioning is deliberately platform-scoped. Registering a workload
+does not grant any capabilities. Only canonical Ed25519 public keys are
+accepted, with bounded validity. Rotation is add-new then revoke-old, allowing
+a controlled overlap; revoked key identifiers and public keys cannot be reused.
+Grant creation requires a provider-owned capability and an exact target scope.
+Grant revocation deletes the grant. Lifecycle writes require expected versions.
+These services are not exposed over HTTP until the gateway is ready.

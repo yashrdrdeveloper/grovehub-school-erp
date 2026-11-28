@@ -7,7 +7,9 @@ import (
 	"gorm.io/gorm"
 
 	coredatabase "grovehub/libs/core/database"
+	"grovehub/services/registry/internal/app/constants/status"
 	"grovehub/services/registry/internal/app/entity"
+	"grovehub/services/registry/internal/app/repository/helpers"
 	"grovehub/services/registry/internal/app/repository/constants"
 	"grovehub/services/registry/internal/app/repository/workload"
 	queries "grovehub/services/registry/internal/app/repository/workload/constants"
@@ -32,4 +34,20 @@ func (r *WorkloadRepository) Find(ctx context.Context, workloadID string) (entit
 	}
 
 	return result, nil
+}
+
+func (r *WorkloadRepository) Create(ctx context.Context, value entity.Workload) (entity.Workload, error) {
+	if err := coredatabase.TransactionDB(ctx, r.db).Create(&value).Error; err != nil {
+		return entity.Workload{}, helpers.WriteError(err)
+	}
+	return value, nil
+}
+
+func (r *WorkloadRepository) ChangeStatus(ctx context.Context, workloadID string, expectedVersion int64, next status.Status) (entity.Workload, error) {
+	var value entity.Workload
+	result := coredatabase.TransactionDB(ctx, r.db).Raw(queries.ChangeStatus, next, workloadID, expectedVersion, next).Scan(&value)
+	if err := helpers.UpdateError(result); err != nil {
+		return entity.Workload{}, err
+	}
+	return value, nil
 }
