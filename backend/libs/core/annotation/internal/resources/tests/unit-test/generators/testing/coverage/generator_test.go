@@ -38,7 +38,7 @@ var _ = Describe("Resolve", func() {
 
 	selected, err = coverage.Resolve(backend, filepath.Join(backend, "libs", "core"), "", "[\"\"]")
 	Expect(err).NotTo(HaveOccurred())
-	Expect(coverage.Names(selected)).To(Equal("core, foundation, identity, launcher"))
+	Expect(coverage.Names(selected)).To(Equal("cmd, core, foundation, identity, launcher"))
 
 	_, err = coverage.Resolve(backend, filepath.Join(backend, "libs", "core"), "foundation", "[\"identity\"]")
 	Expect(err).To(HaveOccurred())

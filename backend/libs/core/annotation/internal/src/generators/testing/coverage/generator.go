@@ -141,6 +141,9 @@ func Resolve(root, core, single, multiple string) ([]target, error) {
 	}
 	if len(requested) == 0 || (len(requested) == 1 && requested[0] == "all") {
 		requested = []string{"core", "launcher"}
+		if info, err := os.Stat(filepath.Join(root, "cmd")); err == nil && info.IsDir() {
+			requested = append(requested, "cmd")
+		}
 		services, err := os.ReadDir(filepath.Join(root, "services"))
 		if err != nil {
 			return nil, err
@@ -392,6 +395,11 @@ func testTarget(root, generated, reports string, item target, mode string) error
 	fmt.Printf("[INFO] Testing %s: %d production packages, %d unit-test trees (%s)\n", item.name, len(production), tests, rel)
 	if err := command(context.Background(), root, "go", arguments...); err != nil {
 		return err
+	}
+	if item.name == "cmd" {
+		if err := CoverEntrypoint(root, profile, "./cmd", []string{"__unknown_command_for_coverage__"}, 2); err != nil {
+			return err
+		}
 	}
 	total, covered, err := Score(profile)
 	if err != nil {

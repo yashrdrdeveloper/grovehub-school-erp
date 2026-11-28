@@ -33,10 +33,18 @@ jobs:
         run: |
           test -f backend/projects/platform/cmd/main.go
           test "$(find backend/projects/platform/cmd -mindepth 1 -maxdepth 1 -printf '%f\n' | sort)" = "$(printf 'internal\nmain.go')"
+      - name: Check command source formatting
+        run: |
+          unformatted="$(git ls-files -z ':(glob)backend/projects/platform/cmd/**/*.go' | xargs -0 -r gofmt -l)"
+          if [[ -n "$unformatted" ]]; then
+            printf '%s\\n' "$unformatted"
+            git ls-files -z ':(glob)backend/projects/platform/cmd/**/*.go' | xargs -0 -r gofmt -d
+            exit 1
+          fi
       - name: Generate annotated source and compile executable
         run: make backend-build
-      - name: Run command unit tests and report statement coverage
-        run: make unit-test package=cmd
+      - name: Require exact 100 percent command statement coverage including main
+        run: make unit-coverage package=cmd
       - name: Verify CLI rejects unknown command without opening databases
         shell: bash
         run: |
