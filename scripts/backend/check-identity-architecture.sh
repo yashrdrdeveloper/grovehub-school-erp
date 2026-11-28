@@ -6,7 +6,8 @@ app="$service/internal/app"
 
 for forbidden in \
   "$service/cmd" \
-  "backend/projects/platform/cmd/internal" \
+  "$service/bootstrapadmin" \
+  "$service/rbacmigrationcli" \
   "$app/bootstrap/impl/bootstrap.go" \
   "$app/security" \
   "$app/controller/account/public" \

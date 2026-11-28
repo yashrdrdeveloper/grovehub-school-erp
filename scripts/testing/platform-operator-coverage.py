@@ -63,16 +63,17 @@ def main():
 
         facade_lines = {}
         for owner in owners:
-            relative = f"services/{owner}/{owner}.go"
+            relative = f"services/{owner}/main.go"
             lines = (project / relative).read_text().splitlines()
-            facade_lines["grovehub/" + relative] = next(
-                i for i, line in enumerate(lines, 1) if line.startswith("func Bootstrap(")
-            )
+            start = next(i for i, line in enumerate(lines, 1) if line.startswith("func Bootstrap("))
+            end = next(i for i in range(start + 1, len(lines) + 1) if lines[i - 1] == "}")
+            facade_lines["grovehub/" + relative] = (start, end)
 
         def in_scope(block):
             filename, location = block.rsplit(":", 1)
             if filename in facade_lines:
-                return int(location.split(".", 1)[0]) >= facade_lines[filename]
+                start, end = facade_lines[filename]
+                return start <= int(location.split(".", 1)[0]) <= end
             return (
                 "/launcher/internal/src/operations/command/" in filename
                 or "/launcher/internal/src/strategies/migrate/" in filename

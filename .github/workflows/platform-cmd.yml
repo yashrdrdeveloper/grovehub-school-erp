@@ -33,7 +33,9 @@ jobs:
       - name: Enforce single maintained entry point
         run: |
           test -f backend/projects/platform/cmd/main.go
-          test "$(find backend/projects/platform/cmd -mindepth 1 -maxdepth 1 -printf '%f\n' | sort)" = "main.go"
+          test "$(find backend/projects/platform/cmd -mindepth 1 -maxdepth 1 -printf '%f\n' | sort)" = "$(printf 'internal\nmain.go')"
+      - name: Enforce backend documentation location
+        run: python3 scripts/backend/check-documentation-layout.py
       - name: Check command source formatting
         run: |
           unformatted="$(git ls-files -z ':(glob)backend/projects/platform/cmd/**/*.go' | xargs -0 -r gofmt -l)"
