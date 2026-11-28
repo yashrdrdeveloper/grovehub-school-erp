@@ -28,17 +28,16 @@ func validateConfig(dir,config string,filters,sorts []string,cursor string) erro
 	if len(filters)>0 {
 		if err:=compareFields(append(scalars,relations...),filters,"@Filterable");err!=nil{return err}
 	}
-	configuredSorts,err:=names(field(lit,"SortFields"));if err!=nil{return err}
+	sortEntries,err:=entries(field(lit,"SortFields"));if err!=nil{return err}
 	if len(sorts)>0 {
+		configuredSorts:=make([]string,0,len(sortEntries))
+		for _,entry:=range sortEntries{configuredSorts=append(configuredSorts,entry.name)}
 		if err:=compareFields(configuredSorts,sorts,"@Sortable");err!=nil{return err}
 	}
 	cursorExpr,err:=stringExpr(field(lit,"CursorExpression"));if err!=nil{return err}
-	sortsNode,ok:=field(lit,"SortFields").(*ast.CompositeLit);if !ok{return fmt.Errorf("invalid SortFields")}
-	for _,item:=range sortsNode.Elts {
-		pair:=item.(*ast.KeyValueExpr)
-		name,err:=stringExpr(pair.Key);if err!=nil{return err}
-		if cursor!="" && name!=cursor {continue}
-		value,ok:=pair.Value.(*ast.CompositeLit);if !ok{return fmt.Errorf("sort field %s must use a literal",cursor)}
+	for _,item:=range sortEntries {
+		if cursor!="" && item.name!=cursor {continue}
+		value,ok:=item.value.(*ast.CompositeLit);if !ok{return fmt.Errorf("sort field %s must use a literal",item.name)}
 		expression,err:=stringExpr(field(value,"Expression"));if err!=nil{return err}
 		if expression==cursorExpr{return nil}
 	}

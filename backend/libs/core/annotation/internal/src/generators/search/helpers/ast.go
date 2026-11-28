@@ -54,14 +54,27 @@ func stringExpr(node ast.Expr)(string,error){
 	return strconv.Unquote(value.Value)
 }
 
-func names(node ast.Expr)([]string,error){
+type mapEntry struct {
+	name string
+	value ast.Expr
+}
+
+func entries(node ast.Expr)([]mapEntry,error){
 	lit,ok:=node.(*ast.CompositeLit);if !ok{return nil,fmt.Errorf("expected static map literal")}
-	names:=make([]string,0,len(lit.Elts))
+	result:=make([]mapEntry,0,len(lit.Elts))
 	for _,item:=range lit.Elts {
 		pair,ok:=item.(*ast.KeyValueExpr);if !ok{return nil,fmt.Errorf("map requires keyed entries")}
-		s,err:=stringExpr(pair.Key);if err!=nil{return nil,err}
-		names=append(names,s)
+		name,err:=stringExpr(pair.Key);if err!=nil{return nil,err}
+		result=append(result,mapEntry{name:name,value:pair.Value})
 	}
-	sort.Strings(names)
-	return names,nil
+	return result,nil
+}
+
+func names(node ast.Expr)([]string,error){
+	items,err:=entries(node)
+	if err!=nil{return nil,err}
+	result:=make([]string,0,len(items))
+	for _,item:=range items{result=append(result,item.name)}
+	sort.Strings(result)
+	return result,nil
 }

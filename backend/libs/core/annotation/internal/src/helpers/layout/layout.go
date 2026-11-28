@@ -41,7 +41,12 @@ func ResolveImport(root string, modulePath string, importPath string) (string, e
 	if !strings.HasPrefix(importPath, prefix) {
 		return "", fmt.Errorf("import %q is outside module %q", importPath, modulePath)
 	}
-	relative := strings.TrimPrefix(importPath, prefix)
+	return ResolveRelative(root, strings.TrimPrefix(importPath, prefix))
+}
+
+// ResolveRelative joins a module-relative path without allowing an absolute
+// path or a traversal outside the owning module.
+func ResolveRelative(root, relative string) (string,error) {
 	if !filepath.IsLocal(filepath.FromSlash(relative)) {
 		return "", fmt.Errorf("invalid module-relative import %q", relative)
 	}

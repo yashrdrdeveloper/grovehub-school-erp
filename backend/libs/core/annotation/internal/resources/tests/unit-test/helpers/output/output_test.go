@@ -50,5 +50,6 @@ var _ = Describe("WriteIfChanged",func(){
 		link:=filepath.Join(root,"dangling")
 		Expect(os.Symlink(filepath.Join(root,"missing","source.go"),link)).To(Succeed())
 		Expect(output.WriteIfChanged(link,[]byte("new"))).NotTo(Succeed())
+		Expect(output.WriteIfChanged(filepath.Join(link,"child","source.go"),[]byte("new"))).NotTo(Succeed())
 	})
 })

@@ -13,7 +13,8 @@ import (
 // @Searchable belongs to the concrete Search method, not the public interface.
 // The developer-maintained Search method delegates to generated searchGenerated.
 func Discover(dir, modulePath, service string) ([]spec, error) {
-	if err := rejectInterfaceSearchables(dir); err != nil { return nil, err }
+	interfaces, err := repositoryInterfaces(dir)
+	if err != nil { return nil, err }
 	paths, err := filepath.Glob(filepath.Join(dir, "impl", "*.go"))
 	if err != nil { return nil, err }
 	sort.Strings(paths)
@@ -37,7 +38,7 @@ func Discover(dir, modulePath, service string) ([]spec, error) {
 				return nil, fmt.Errorf("%s: duplicate @Searchable Search for %s", filename, receiverType)
 			}
 			seen[receiverType] = true
-			entityName, err := repositoryEntity(dir, receiverType)
+			entityName, err := repositoryEntity(interfaces, receiverType)
 			if err != nil { return nil, fmt.Errorf("%s.Search: %w", receiverType, err) }
 			if err := validateSignature(method.Type, entityName); err != nil {
 				return nil, fmt.Errorf("%s.Search: %w", receiverType, err)
@@ -79,13 +80,15 @@ func Discover(dir, modulePath, service string) ([]spec, error) {
 }
 
 // Reject misplaced @Searchable annotations before emitting a search helper.
-func rejectInterfaceSearchables(dir string) error {
+func repositoryInterfaces(dir string) ([]*ast.File,error) {
 	paths, err := filepath.Glob(filepath.Join(dir, "*.go"))
-	if err != nil { return err }
+	if err != nil { return nil,err }
+	var files []*ast.File
 	for _, filename := range paths {
 		if strings.HasSuffix(filename, "_test.go") { continue }
 		file, err := parser.ParseFile(token.NewFileSet(), filename, nil, parser.ParseComments)
-		if err != nil { return err }
+		if err != nil { return nil,err }
+		files=append(files,file)
 		for _, decl := range file.Decls {
 			gen, ok := decl.(*ast.GenDecl)
 			if !ok || gen.Tok != token.TYPE { continue }
@@ -96,24 +99,19 @@ func rejectInterfaceSearchables(dir string) error {
 				if !ok { continue }
 				for _, member := range iface.Methods.List {
 					if hasDirective(member.Doc, "Searchable") {
-						return fmt.Errorf("%s: move @Searchable from %s interface to the concrete Search method", filename, t.Name.Name)
+						return nil,fmt.Errorf("%s: move @Searchable from %s interface to the concrete Search method", filename, t.Name.Name)
 					}
 				}
 			}
 		}
 	}
-	return nil
+	return files,nil
 }
 
 // repositoryEntity ensures the annotated implementation satisfies the
 // explicit repository interface and its @Repository ownership declaration.
-func repositoryEntity(dir, receiver string) (string, error) {
-	paths, err := filepath.Glob(filepath.Join(dir, "*.go"))
-	if err != nil { return "", err }
-	for _, filename := range paths {
-		if strings.HasSuffix(filename, "_test.go") { continue }
-		file, err := parser.ParseFile(token.NewFileSet(), filename, nil, parser.ParseComments)
-		if err != nil { return "", err }
+func repositoryEntity(files []*ast.File, receiver string) (string, error) {
+	for _, file := range files {
 		for _, decl := range file.Decls {
 			group, ok := decl.(*ast.GenDecl)
 			if !ok || group.Tok != token.TYPE { continue }

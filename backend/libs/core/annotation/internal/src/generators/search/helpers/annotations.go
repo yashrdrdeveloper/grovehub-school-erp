@@ -56,11 +56,8 @@ func searchOptions(raw string) (map[string]string,error) {
 }
 
 func optionalFields(group *ast.CommentGroup,name string)([]string,error){
-	raw:=directive(group,name)
-	if raw=="" {return nil,nil}
-	opts,err:=options(raw,[]string{"fields"})
-	if err!=nil{return nil,fmt.Errorf("@%s: %w",name,err)}
-	return strings.Split(opts["fields"],","),nil
+	if !hasDirective(group,name) {return nil,nil}
+	return fieldsFrom(group,name)
 }
 
 func fieldsFrom(group *ast.CommentGroup, name string) ([]string,error) {

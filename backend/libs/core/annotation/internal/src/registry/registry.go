@@ -67,11 +67,12 @@ var (
 
 var patternInventory = patterns.Entries
 
-var known = buildDefinitions()
+var known = BuildDefinitions(inventory, patternInventory)
 
-func buildDefinitions() map[string]Definition {
+// BuildDefinitions validates and assembles the internal annotation catalog.
+func BuildDefinitions(uses []UseCase, candidates []Pattern) map[string]Definition {
     registry := make(map[string]Definition)
-    for _, use := range inventory {
+    for _, use := range uses {
         if use.Name == "" || use.Syntax == "" || use.Category == "" || use.Purpose == "" || use.Target == "" {
             panic(fmt.Sprintf("incomplete annotation definition: %+v", use))
         }
@@ -85,7 +86,7 @@ func buildDefinitions() map[string]Definition {
     }
     // Every GoF candidate annotation also has a discoverable declaration,
     // including patterns intentionally not recommended for generation.
-    for _, pattern := range patternInventory {
+    for _, pattern := range candidates {
         if _, exists := registry[pattern.Name]; exists { continue }
         implementation := Optional
         mode := "CHECK"
@@ -263,7 +264,6 @@ func validFieldName(s string) bool {
     return true
 }
 func validFieldList(s string) bool {
-    if s=="" {return false}
     seen:=map[string]bool{}
     for _,field:=range strings.Split(s,",") {
         if !validFieldName(field)||seen[field] {return false}
