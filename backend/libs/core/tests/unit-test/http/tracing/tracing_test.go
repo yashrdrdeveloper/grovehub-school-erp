@@ -8,8 +8,8 @@ import (
 	. "github.com/onsi/gomega"
 	"go.opentelemetry.io/otel/trace"
 
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
-	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
+	corehttp "grovehub/libs/core/http"
+	coretelemetry "grovehub/libs/core/telemetry"
 )
 
 var _ = Describe("HTTP trace propagation", func() {

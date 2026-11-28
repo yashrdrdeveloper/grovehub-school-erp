@@ -3,13 +3,13 @@ package helpers_test
 import (
 	. "github.com/onsi/ginkgo/v2"
 
-	fixture "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/resources/tests/helpers"
+	fixture "grovehub/libs/core/annotation/internal/resources/tests/helpers"
 )
 
 const searchTestInterface = `package repository
 import (
 	"context"
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	coresearch "grovehub/libs/core/search"
 	"grovehub/services/demo/entity"
 )
 // @Repository entity=Person
@@ -22,7 +22,7 @@ const searchTestImpl = `package impl
 import (
 	"context"
 	"gorm.io/gorm"
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	coresearch "grovehub/libs/core/search"
 	"grovehub/services/demo/entity"
 )
 type PersonRepository struct { db *gorm.DB }
@@ -34,7 +34,7 @@ func (repository *PersonRepository) Search(ctx context.Context, query coresearch
 `
 
 const searchTestConfig = `package search
-import coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+import coresearch "grovehub/libs/core/search"
 var PersonConfig = coresearch.Config{
 	ScalarFields: map[string]coresearch.ScalarField{"gid": {Expression: "p.gid"}},
 	RelationFields: map[string]coresearch.RelationField{},

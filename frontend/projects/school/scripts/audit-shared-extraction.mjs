@@ -10,7 +10,7 @@ const files = execFileSync('git', ['ls-files', '-z'], { cwd: repo, encoding: 'ut
 const sourceFiles = files.filter((file) => /\.(?:tsx?|css|go)$/.test(file));
 const candidates = [
   ['COMPONENTS', 'frontend/packages/components/', 'frontend/libs/components/'],
-  ['CORE', 'backend/libs/core/', 'libs/backend/core/'],
+  ['CORE', 'backend/libs/core/', 'libs/core/'],
 ];
 const getOwner = (file) =>
   candidates.find(([, ...roots]) => roots.some((root) => file.startsWith(root)));

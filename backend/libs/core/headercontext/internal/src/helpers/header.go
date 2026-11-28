@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/contracts"
+	"grovehub/libs/core/headercontext/internal/src/contracts"
 )
 
 // ReadOne reads an optional single, nonblank header and trims surrounding space.

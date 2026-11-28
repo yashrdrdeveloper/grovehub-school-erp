@@ -3,19 +3,19 @@ package cli
 import (
 	"io"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/check"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/clients"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/entities"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/events"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/expand"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/gormtable"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/mappers"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/overlay"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/patchdto"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/routes"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/search"
-	testgen "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/testing"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/testing/coverage"
+	"grovehub/libs/core/annotation/internal/src/generators/check"
+	"grovehub/libs/core/annotation/internal/src/generators/clients"
+	"grovehub/libs/core/annotation/internal/src/generators/entities"
+	"grovehub/libs/core/annotation/internal/src/generators/events"
+	"grovehub/libs/core/annotation/internal/src/generators/expand"
+	"grovehub/libs/core/annotation/internal/src/generators/gormtable"
+	"grovehub/libs/core/annotation/internal/src/generators/mappers"
+	"grovehub/libs/core/annotation/internal/src/generators/overlay"
+	"grovehub/libs/core/annotation/internal/src/generators/patchdto"
+	"grovehub/libs/core/annotation/internal/src/generators/routes"
+	"grovehub/libs/core/annotation/internal/src/generators/search"
+	testgen "grovehub/libs/core/annotation/internal/src/generators/testing"
+	"grovehub/libs/core/annotation/internal/src/generators/testing/coverage"
 )
 
 func commands() map[string]command {

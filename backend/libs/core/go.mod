@@ -1,4 +1,4 @@
-module github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core
+module grovehub/libs/core
 
 go 1.27.0
 

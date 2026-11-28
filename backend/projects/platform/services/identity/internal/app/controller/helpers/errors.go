@@ -13,7 +13,7 @@ import (
 	"errors"
 	"strings"
 
-	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
+	coreerrors "grovehub/libs/core/errors"
 	definitions "grovehub/services/identity/internal/app/constants/error"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"

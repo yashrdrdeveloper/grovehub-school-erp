@@ -8,12 +8,12 @@ import (
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/operations/runtime"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/helpers"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/operations/tracing"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/config"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/constants"
+	"grovehub/libs/core/telemetry/internal/src/contracts"
+	"grovehub/libs/core/telemetry/internal/src/operations/runtime"
+	"grovehub/libs/core/telemetry/internal/src/helpers"
+	"grovehub/libs/core/telemetry/internal/src/operations/tracing"
+	"grovehub/libs/core/telemetry/internal/src/config"
+	"grovehub/libs/core/telemetry/internal/src/constants"
 )
 
 const ServiceNamespace = constants.ServiceNamespace

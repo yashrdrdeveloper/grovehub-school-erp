@@ -6,7 +6,7 @@ import (
     . "github.com/onsi/ginkgo/v2"
     . "github.com/onsi/gomega"
 
-    coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
+    coreevents "grovehub/libs/core/events"
     ops "grovehub/services/foundation/internal/app/constants/events"
     changed "grovehub/services/foundation/internal/app/events/producers/person/operations/changed"
     helpers "grovehub/services/foundation/internal/app/events/producers/person/operations/changed/helpers"

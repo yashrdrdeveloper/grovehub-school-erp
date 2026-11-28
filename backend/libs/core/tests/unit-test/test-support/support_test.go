@@ -10,10 +10,10 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tests/helpers/clock"
-	httphelpers "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tests/helpers/http"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tests/mocks/controller"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tests/mocks/database"
+	"grovehub/libs/core/tests/helpers/clock"
+	httphelpers "grovehub/libs/core/tests/helpers/http"
+	"grovehub/libs/core/tests/mocks/controller"
+	"grovehub/libs/core/tests/mocks/database"
 )
 
 func TestSharedClock(t *testing.T) {

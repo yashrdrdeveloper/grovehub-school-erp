@@ -1,6 +1,6 @@
 # Core Search
 
-Import only `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search`. All query, cursor, sort, pagination,
+Import only `grovehub/libs/core/search`. All query, cursor, sort, pagination,
 validation and filter contracts are exposed by search.go.
 
 ```text

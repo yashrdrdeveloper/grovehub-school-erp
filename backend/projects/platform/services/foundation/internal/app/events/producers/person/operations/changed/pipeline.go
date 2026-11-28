@@ -5,7 +5,7 @@ import (
 	"context"
 
 	messagingclient "grovehub/services/infrastructure/client/messaging"
-	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
+	coreevents "grovehub/libs/core/events"
 	eventflows "grovehub/services/foundation/internal/app/events/producers/person/operations/changed/flows"
 	changedstrategies "grovehub/services/foundation/internal/app/events/producers/person/operations/changed/strategies"
 )

@@ -4,9 +4,9 @@ package logging
 import (
 	"log/slog"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/logging/internal/src/config"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/logging/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/logging/internal/src/operations/filter"
+	"grovehub/libs/core/logging/internal/src/config"
+	"grovehub/libs/core/logging/internal/src/contracts"
+	"grovehub/libs/core/logging/internal/src/operations/filter"
 )
 
 type Levels = contracts.Levels

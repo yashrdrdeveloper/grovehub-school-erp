@@ -8,8 +8,8 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	coredatabase "grovehub/libs/core/database"
+	coresearch "grovehub/libs/core/search"
 	"grovehub/services/identity/internal/app/entity"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	"grovehub/services/identity/internal/app/repository/account/constants"

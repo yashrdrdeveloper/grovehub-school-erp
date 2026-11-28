@@ -5,7 +5,7 @@ import (
 	. "github.com/onsi/gomega"
 	"time"
 	"os"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/configuration"
+	"grovehub/libs/core/annotation/internal/src/configuration"
 )
 
 type settings struct {

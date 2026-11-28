@@ -3,7 +3,7 @@ package restricted_test
 import (
 	"net/http"
 	"net/http/httptest"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/operations/restricted"
+	"grovehub/libs/core/gateway/internal/src/operations/restricted"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

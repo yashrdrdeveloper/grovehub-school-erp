@@ -4,7 +4,7 @@
 
 ## Public API and ownership
 
-Consumers use `annotation.go`, importing `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation`. Public operations include catalog lookup, directive parsing and validation, source scanning, typed PATCH fields, entity builders, startup configuration and DTO validation.
+Consumers use `annotation.go`, importing `grovehub/libs/core/annotation`. Public operations include catalog lookup, directive parsing and validation, source scanning, typed PATCH fields, entity builders, startup configuration and DTO validation.
 
 ```text
 annotation/

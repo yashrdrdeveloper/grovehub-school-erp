@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
+	coretelemetry "grovehub/libs/core/telemetry"
 )
 
 var _ = Describe("Logical service identity", func() {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/contracts"
+	"grovehub/libs/core/search/internal/src/contracts"
 )
 
 type QueryBuilder struct {

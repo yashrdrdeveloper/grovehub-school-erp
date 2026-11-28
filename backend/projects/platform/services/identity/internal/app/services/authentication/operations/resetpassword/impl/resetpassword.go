@@ -11,7 +11,7 @@ import (
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"
 	tokenrepo "grovehub/services/identity/internal/app/repository/passwordtoken"
 	credential "grovehub/services/identity/internal/app/services/credential"
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+	coredatabase "grovehub/libs/core/database"
 	resetpassword "grovehub/services/identity/internal/app/services/authentication/operations/resetpassword"
 )
 

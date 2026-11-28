@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
+	corehttp "grovehub/libs/core/http"
 )
 
 var _ = Describe("HTTP log level mapping", func() {

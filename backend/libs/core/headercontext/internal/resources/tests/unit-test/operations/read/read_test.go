@@ -3,8 +3,8 @@ package read_test
 import (
 	"net/http"
 	"strings"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/operations/read"
+	"grovehub/libs/core/headercontext/internal/src/contracts"
+	"grovehub/libs/core/headercontext/internal/src/operations/read"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

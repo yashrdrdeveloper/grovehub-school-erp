@@ -5,7 +5,7 @@ import (
 	. "github.com/onsi/gomega"
 	"os"
 	"path/filepath"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/parser"
+	"grovehub/libs/core/annotation/internal/src/parser"
 )
 
 var _ = Describe("ScanFile", func() {

@@ -4,8 +4,8 @@ import (
     "errors"
     "strings"
 
-    coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
-    coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
+    coreannotation "grovehub/libs/core/annotation"
+    coreerrors "grovehub/libs/core/errors"
     personerror "grovehub/services/foundation/internal/app/constants/error"
 )
 

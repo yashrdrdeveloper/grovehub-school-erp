@@ -4,7 +4,7 @@ import (
  "path/filepath"
  . "github.com/onsi/ginkgo/v2"
  . "github.com/onsi/gomega"
- "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/testing/inventory"
+ "grovehub/libs/core/annotation/internal/src/generators/testing/inventory"
 )
 var _ = Describe("Launcher inventory",func(){
  It("maps internal/src to internal/resources/tests",func(){

@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
+	coreannotation "grovehub/libs/core/annotation"
 	"grovehub/services/integration/internal/app/config"
 )
 

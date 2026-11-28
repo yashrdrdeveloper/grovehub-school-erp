@@ -1,6 +1,6 @@
 package helpers
 
-const patchImport = "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
+const patchImport = "grovehub/libs/core/annotation"
 
 type patchField struct {
 	name string

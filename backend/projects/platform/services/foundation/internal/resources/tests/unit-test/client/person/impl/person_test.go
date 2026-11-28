@@ -8,7 +8,7 @@ import (
     . "github.com/onsi/gomega"
     "go.uber.org/mock/gomock"
 
-    corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
+    corehttp "grovehub/libs/core/http"
     foundationclient "grovehub/services/foundation/client/person"
     clientimpl "grovehub/services/foundation/internal/app/client/person/impl"
     routes "grovehub/services/foundation/internal/app/routes"

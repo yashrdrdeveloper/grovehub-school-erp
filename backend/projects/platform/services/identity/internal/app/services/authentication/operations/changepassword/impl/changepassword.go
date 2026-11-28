@@ -6,7 +6,7 @@ import (
 	"grovehub/services/identity/internal/app/services/security/principal"
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"
 	credential "grovehub/services/identity/internal/app/services/credential"
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+	coredatabase "grovehub/libs/core/database"
 	changepassword "grovehub/services/identity/internal/app/services/authentication/operations/changepassword"
 )
 

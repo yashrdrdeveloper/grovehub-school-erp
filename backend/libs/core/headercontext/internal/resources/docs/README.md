@@ -1,6 +1,6 @@
 # Core Header Context
 
-Consumers import only `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext`.
+Consumers import only `grovehub/libs/core/headercontext`.
 The public facade preserves Values, ErrInvalidHeader, WithValues, FromContext,
 IdempotencyKey, CorrelationID, RequestID, WithoutIdempotencyKey and Middleware.
 

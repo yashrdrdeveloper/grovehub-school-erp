@@ -8,7 +8,7 @@ import (
 
 	"gorm.io/gorm"
 
-	coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+	coregateway "grovehub/libs/core/gateway"
 	"grovehub/launcher/internal/src/bootstrap"
 	bootstrapimpl "grovehub/launcher/internal/src/bootstrap/impl"
 	commandbootstrap "grovehub/launcher/internal/src/operations/command/bootstrap"

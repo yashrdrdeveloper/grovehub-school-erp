@@ -2,7 +2,7 @@ package platform
 
 import (
  "context"
- corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
+ corehttp "grovehub/libs/core/http"
  "crypto/ed25519"
  "encoding/base64"
  "encoding/json"
@@ -12,7 +12,7 @@ import (
  "regexp"
  "strings"
 
- core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+ core "grovehub/libs/core/gateway"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/services/workflow"
  sdk "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/generated/registry"
 )

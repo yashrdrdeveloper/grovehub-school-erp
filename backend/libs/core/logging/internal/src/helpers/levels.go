@@ -3,7 +3,7 @@ package helpers
 import (
 	"log/slog"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/logging/internal/src/constants"
+	"grovehub/libs/core/logging/internal/src/constants"
 )
 
 func StandardLevel(name string) (slog.Level, bool) {

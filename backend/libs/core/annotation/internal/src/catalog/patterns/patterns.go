@@ -2,7 +2,7 @@
 // Every entry is metadata; no object is instantiated or decorated automatically.
 package patterns
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+import "grovehub/libs/core/annotation/internal/src/contracts"
 
 // All returns a caller-owned copy ordered by GoF family.
 func All() []contract.Pattern {

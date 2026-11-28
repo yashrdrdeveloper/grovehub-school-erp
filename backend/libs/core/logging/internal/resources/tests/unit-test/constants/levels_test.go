@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/logging/internal/src/constants"
+	"grovehub/libs/core/logging/internal/src/constants"
 )
 
 var _ = Describe("Standard level constants", func() {

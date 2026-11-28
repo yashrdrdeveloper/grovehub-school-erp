@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"bytes"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/cli"
+	"grovehub/libs/core/annotation/internal/src/cli"
 )
 
 var _ = Describe("Run", func() {

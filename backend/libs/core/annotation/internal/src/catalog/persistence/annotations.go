@@ -1,7 +1,7 @@
 // persistence owns the annotation definitions for this backend responsibility.
 package persistence
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+import "grovehub/libs/core/annotation/internal/src/contracts"
 
 var UseCases = []contract.UseCase{
     {Name:"Repository",Syntax:"@Repository entity=Type",Category:"Persistence, repository, transactions and search",Purpose:"Validated repository ownership metadata; no constructor or transaction is generated",Mode:"CHECK",Status:contract.Pilot,Roadmap:"P4",Target:contract.InterfaceTarget},

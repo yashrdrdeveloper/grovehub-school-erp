@@ -2,9 +2,9 @@ package metadata_test
 
 import (
 	"context"
-	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/operations/metadata"
+	coreevents "grovehub/libs/core/events"
+	"grovehub/libs/core/headercontext/internal/src/contracts"
+	"grovehub/libs/core/headercontext/internal/src/operations/metadata"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

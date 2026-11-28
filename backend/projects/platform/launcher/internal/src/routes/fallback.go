@@ -3,7 +3,7 @@ package routes
 import (
 	"net/http"
 
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
+	corehttp "grovehub/libs/core/http"
 	"grovehub/launcher/internal/src/constants/errorcode"
 )
 

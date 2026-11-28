@@ -11,10 +11,10 @@ import (
 )
 
 type service struct {
-	ctx context.Context
-	event producer.Event
+	ctx      context.Context
+	event    producer.Event
 	activity producer.Activity
-	err error
+	err      error
 }
 
 func (s *service) Produce(ctx context.Context, event producer.Event) error {

@@ -9,7 +9,7 @@ import (
     . "github.com/onsi/gomega"
     "gorm.io/gorm"
 
-    database "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tests/mocks/database"
+    database "grovehub/libs/core/tests/mocks/database"
     contactimpl "grovehub/services/foundation/internal/app/repository/contact/impl"
     "grovehub/services/foundation/internal/app/entity"
     fixtures "grovehub/services/foundation/internal/resources/tests/helpers/person"

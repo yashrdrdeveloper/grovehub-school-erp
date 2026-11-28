@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils/internal/src/operations/strings"
+	"grovehub/libs/core/utils/internal/src/operations/strings"
 )
 
 var _ = Describe("OptionalString", func() {

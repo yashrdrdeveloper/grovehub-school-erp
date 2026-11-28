@@ -8,7 +8,7 @@ import (
 	producerimpl "grovehub/services/identity/internal/app/events/producers/approval/impl"
 	"grovehub/services/identity/internal/app/repository/authority"
 	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+	coredatabase "grovehub/libs/core/database"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	accountimpl "grovehub/services/identity/internal/app/repository/account/impl"
 	authorizationrepo "grovehub/services/identity/internal/app/repository/authorization"

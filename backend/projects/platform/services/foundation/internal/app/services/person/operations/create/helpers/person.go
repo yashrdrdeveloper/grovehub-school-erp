@@ -4,7 +4,7 @@ package helpers
 import (
     "time"
 
-    coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
+    coreutils "grovehub/libs/core/utils"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     "grovehub/services/foundation/internal/app/entity"
 )

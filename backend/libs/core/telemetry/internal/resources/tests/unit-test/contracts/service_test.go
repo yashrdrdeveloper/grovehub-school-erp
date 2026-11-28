@@ -2,7 +2,7 @@ package contracts_test
 
 import (
 	"context"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/contracts"
+	"grovehub/libs/core/telemetry/internal/src/contracts"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

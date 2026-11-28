@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/testing/coverage"
+	"grovehub/libs/core/annotation/internal/src/generators/testing/coverage"
 )
 
 type closeFailureReader struct{io.Reader;failure error}

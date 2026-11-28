@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	coresearch "grovehub/libs/core/search"
 
 	"grovehub/services/identity/internal/app/constants/persona"
 	"grovehub/services/identity/internal/app/constants/permission"

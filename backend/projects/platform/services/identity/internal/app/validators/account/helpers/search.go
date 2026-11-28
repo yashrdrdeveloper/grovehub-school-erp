@@ -6,8 +6,8 @@ import (
 
 	"github.com/google/uuid"
 
-	coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	coreutils "grovehub/libs/core/utils"
+	coresearch "grovehub/libs/core/search"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
 	roles "grovehub/services/identity/internal/app/constants/role"
 	"grovehub/services/identity/internal/app/entity"

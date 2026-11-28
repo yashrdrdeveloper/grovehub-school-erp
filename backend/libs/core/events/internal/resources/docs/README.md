@@ -1,6 +1,6 @@
 # Core Events
 
-Consumers import only `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events`.
+Consumers import only `grovehub/libs/core/events`.
 The root events.go facade exposes Envelope, Metadata, WithCorrelationID,
 WithCausationID, NewEnvelope, Rules, Run and ErrIncompleteRules. Generic type
 identity, JSON fields, optional IDs and function signatures are preserved.

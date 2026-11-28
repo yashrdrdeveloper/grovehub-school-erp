@@ -4,7 +4,7 @@ import (
  "context"
  "errors"
  "net/http"
- core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+ core "grovehub/libs/core/gateway"
  sdk "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/generated/audit"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/entity"
 )

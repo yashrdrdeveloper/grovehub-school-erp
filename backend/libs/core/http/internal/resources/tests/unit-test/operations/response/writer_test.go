@@ -3,8 +3,8 @@ package response_test
 import (
 	"context"
 	"net/http/httptest"
-	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/operations/response"
+	coreerrors "grovehub/libs/core/errors"
+	"grovehub/libs/core/http/internal/src/operations/response"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

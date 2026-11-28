@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 	"strings"
-	corerequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/operations/endpoint"
+	corerequest "grovehub/libs/core/request"
+	"grovehub/libs/core/http/internal/src/operations/endpoint"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

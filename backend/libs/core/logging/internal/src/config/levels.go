@@ -5,9 +5,9 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/logging/internal/src/constants"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/logging/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/logging/internal/src/helpers"
+	"grovehub/libs/core/logging/internal/src/constants"
+	"grovehub/libs/core/logging/internal/src/contracts"
+	"grovehub/libs/core/logging/internal/src/helpers"
 )
 
 func DefaultLevels() contracts.Levels {

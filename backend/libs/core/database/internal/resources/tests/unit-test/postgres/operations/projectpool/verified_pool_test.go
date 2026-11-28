@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/postgres/operations/projectpool"
+	"grovehub/libs/core/database/internal/src/postgres/operations/projectpool"
 )
 
 var _=Describe("Verified project pool",func(){

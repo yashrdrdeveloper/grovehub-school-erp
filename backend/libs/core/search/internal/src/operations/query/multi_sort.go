@@ -6,9 +6,9 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/helpers"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/operations/page"
+	"grovehub/libs/core/search/internal/src/contracts"
+	"grovehub/libs/core/search/internal/src/helpers"
+	"grovehub/libs/core/search/internal/src/operations/page"
 )
 
 // applyMultiSort builds a lexicographic keyset predicate using only allowlisted expressions.

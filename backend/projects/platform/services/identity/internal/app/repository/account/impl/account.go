@@ -8,8 +8,8 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	coredatabase "grovehub/libs/core/database"
+	coresearch "grovehub/libs/core/search"
 	"grovehub/services/identity/internal/app/entity"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	searchconfig "grovehub/services/identity/internal/app/repository/account/helpers/search"

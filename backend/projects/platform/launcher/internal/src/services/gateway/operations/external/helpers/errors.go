@@ -3,7 +3,7 @@ package helpers
 import (
 	"net/http"
 
-	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
+	coreerrors "grovehub/libs/core/errors"
 )
 
 var (

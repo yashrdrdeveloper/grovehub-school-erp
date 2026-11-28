@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils/internal/src/constants"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils/internal/src/contracts"
+	"grovehub/libs/core/utils/internal/src/constants"
+	"grovehub/libs/core/utils/internal/src/contracts"
 )
 
 var phonePattern = regexp.MustCompile(constants.PhonePattern)

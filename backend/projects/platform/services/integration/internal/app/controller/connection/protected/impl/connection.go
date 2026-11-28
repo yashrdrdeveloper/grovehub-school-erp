@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"strings"
 
-	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
+	coreerrors "grovehub/libs/core/errors"
+	corehttp "grovehub/libs/core/http"
 
 	clientprincipal "grovehub/services/integration/client/principal"
 	integrationerrors "grovehub/services/integration/internal/app/constants/error"

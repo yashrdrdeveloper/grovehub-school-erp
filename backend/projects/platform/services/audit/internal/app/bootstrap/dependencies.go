@@ -1,17 +1,17 @@
 package bootstrap
 
 import (
-	"log/slog"
 	"gorm.io/gorm"
+	platformbootstrap "grovehub/libs/platform/bootstrap"
 	"grovehub/libs/platform/session"
 	"grovehub/services/infrastructure/client/messaging"
-	platformbootstrap "grovehub/libs/platform/bootstrap"
+	"log/slog"
 )
 
 // Dependencies specifies the typed inputs needed to construct the service runtime.
 type Dependencies struct {
 	Logger *slog.Logger
-	DB *gorm.DB
+	DB     *gorm.DB
 	Events messaging.MessagingClient
 	Access session.ProtectedRouteAuthorizer
 }

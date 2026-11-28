@@ -3,8 +3,8 @@ package pipeline_test
 import (
 	"context"
 	"errors"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events/internal/src/operations/pipeline"
+	"grovehub/libs/core/events/internal/src/contracts"
+	"grovehub/libs/core/events/internal/src/operations/pipeline"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

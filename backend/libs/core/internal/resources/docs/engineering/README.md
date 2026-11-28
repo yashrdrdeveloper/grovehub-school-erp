@@ -18,10 +18,10 @@ No `docs/product/` is created: library behavior is technical, and actual end-use
 
 ## Module and validation
 
-Module: `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core`. This module can run its tests with GOWORK=off and never imports the school backend. In this private monorepo, the consuming school module uses a local relative replacement. No public/tagged distribution is claimed.
+Module: `grovehub/libs/core`. This module can run its tests with GOWORK=off and never imports the school backend. In this private monorepo, the consuming school module uses a local relative replacement. No public/tagged distribution is claimed.
 
 ```bash
-cd libs/backend/core
+cd libs/core
 export GOWORK=off
 go run ./annotation/cmd testing "$PWD" "$PWD"
 go run ./annotation/cmd overlay "$PWD" "$PWD"

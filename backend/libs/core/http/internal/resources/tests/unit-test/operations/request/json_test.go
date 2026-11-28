@@ -3,7 +3,7 @@ package request_test
 import (
 	"net/http/httptest"
 	"strings"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/operations/request"
+	"grovehub/libs/core/http/internal/src/operations/request"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

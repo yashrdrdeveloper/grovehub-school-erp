@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
+	"grovehub/libs/core/annotation/internal/src/helpers/layout"
 	"fmt"
 	"go/ast"
 	goparser "go/parser"
@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/registry"
+	"grovehub/libs/core/annotation/internal/src/contracts"
+	"grovehub/libs/core/annotation/internal/src/registry"
 )
 
 func CheckValidationTags(path string) error {

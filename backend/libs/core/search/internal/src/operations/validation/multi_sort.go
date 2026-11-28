@@ -3,8 +3,8 @@ package validation
 import (
 	"strings"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/operations/cursor"
+	"grovehub/libs/core/search/internal/src/contracts"
+	"grovehub/libs/core/search/internal/src/operations/cursor"
 )
 
 // NormalizeSorts preserves request priority while rejecting duplicates.

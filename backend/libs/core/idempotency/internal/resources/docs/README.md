@@ -1,6 +1,6 @@
 # Core Idempotency
 
-Consumers import only `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency`. The public
+Consumers import only `grovehub/libs/core/idempotency`. The public
 facade exposes MaxKeyLength, ErrInvalidKey, ErrFingerprint, ValidateKey and
 Fingerprint. The former public contracts, helpers and validators packages
 are removed.

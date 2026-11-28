@@ -3,9 +3,9 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/operations/metadata"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/operations/read"
+	"grovehub/libs/core/headercontext/internal/src/contracts"
+	"grovehub/libs/core/headercontext/internal/src/operations/metadata"
+	"grovehub/libs/core/headercontext/internal/src/operations/read"
 )
 
 // New captures validated metadata before invoking the downstream handler.

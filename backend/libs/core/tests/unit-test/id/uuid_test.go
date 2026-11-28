@@ -5,7 +5,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	coreid "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/id"
+	coreid "grovehub/libs/core/id"
 )
 
 var _ = Describe("UUIDv7", func() {

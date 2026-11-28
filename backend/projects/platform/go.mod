@@ -13,7 +13,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.33.1
 	github.com/onsi/gomega v1.42.1
 	github.com/pressly/goose/v3 v3.29.0
-	github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core v0.0.0
+	grovehub/libs/core v0.0.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.72.0
 	go.opentelemetry.io/otel v1.47.0
 	go.opentelemetry.io/otel/sdk v1.47.0
@@ -73,6 +73,6 @@ require (
 	grovehub/libs/platform v0.0.0
 )
 
-replace github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core => ../../libs/core
+replace grovehub/libs/core => ../../libs/core
 
 replace grovehub/libs/platform => ../../libs/platform

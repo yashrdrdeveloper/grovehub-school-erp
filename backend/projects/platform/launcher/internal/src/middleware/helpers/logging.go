@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
-	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
+	corehttp "grovehub/libs/core/http"
+	coretelemetry "grovehub/libs/core/telemetry"
 )
 
 func RecordLog(logger *slog.Logger, ctx context.Context, request *http.Request, route string, recorder *Recorder, duration time.Duration) {

@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
+	coregateway "grovehub/libs/core/gateway"
+	corehttp "grovehub/libs/core/http"
 	"grovehub/services/integration/client/mail"
 	integrationerrors "grovehub/services/integration/internal/app/constants/error"
 )

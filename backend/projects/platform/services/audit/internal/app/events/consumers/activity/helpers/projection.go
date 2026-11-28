@@ -45,10 +45,10 @@ func Project(ctx context.Context, expectedType string, raw []byte) (entity.Activ
 		}
 	}
 	projected, err := json.Marshal(struct {
-		Old *dto.Snapshot `json:"old"`
-		New *dto.Snapshot `json:"new"`
-		RequestID *string `json:"requestId,omitempty"`
-		RequestType string `json:"requestType,omitempty"`
+		Old         *dto.Snapshot `json:"old"`
+		New         *dto.Snapshot `json:"new"`
+		RequestID   *string       `json:"requestId,omitempty"`
+		RequestType string        `json:"requestType,omitempty"`
 	}{data.Old, data.New, optionalID(data.RequestID), data.RequestType})
 	if err != nil {
 		return entity.Activity{}, ErrInvalidEvent

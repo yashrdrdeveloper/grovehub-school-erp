@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+	"grovehub/libs/core/gateway"
 	"grovehub/services/audit/internal/app/controller/operator/constants"
 	"grovehub/services/audit/internal/app/controller/operator/restricted"
 	controller "grovehub/services/audit/internal/app/controller/operator/restricted/impl"

@@ -1,6 +1,6 @@
 package policies
 
-import core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+import core "grovehub/libs/core/gateway"
 
 func identityPolicies() map[string]core.RoutePolicy {
 	return map[string]core.RoutePolicy{

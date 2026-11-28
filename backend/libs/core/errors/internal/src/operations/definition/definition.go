@@ -1,8 +1,8 @@
 package definition
 
 import (
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors/internal/src/operations/definition/validators"
+	"grovehub/libs/core/errors/internal/src/contracts"
+	"grovehub/libs/core/errors/internal/src/operations/definition/validators"
 )
 
 // NewDefinition accepts one optional HTTP error status, defaulting to 500.

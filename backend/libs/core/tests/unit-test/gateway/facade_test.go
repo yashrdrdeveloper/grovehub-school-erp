@@ -6,7 +6,7 @@ import (
 	"encoding/base64"
 	"testing"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+	"grovehub/libs/core/gateway"
 )
 
 func TestGatewayFacade(t *testing.T) {

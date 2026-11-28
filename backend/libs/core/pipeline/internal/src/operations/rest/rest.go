@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"net/http"
 
-	coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
-	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
-	corerequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
+	coreannotation "grovehub/libs/core/annotation"
+	coreerrors "grovehub/libs/core/errors"
+	corehttp "grovehub/libs/core/http"
+	corerequest "grovehub/libs/core/request"
 )
 
 // Empty marks an absent path, query or JSON body.

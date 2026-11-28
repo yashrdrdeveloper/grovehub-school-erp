@@ -9,9 +9,9 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
-	corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
+	coreannotation "grovehub/libs/core/annotation"
+	corehttp "grovehub/libs/core/http"
+	corepipeline "grovehub/libs/core/pipeline"
 )
 
 type bodyConfig[T any] struct {

@@ -5,8 +5,8 @@ import (
 	goparser "go/parser"
 	"go/token"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/parser/helpers"
+	"grovehub/libs/core/annotation/internal/src/contracts"
+	"grovehub/libs/core/annotation/internal/src/parser/helpers"
 )
 
 type Occurrence = contract.Occurrence

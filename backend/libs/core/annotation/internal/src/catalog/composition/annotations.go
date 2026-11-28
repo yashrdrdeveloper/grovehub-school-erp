@@ -1,7 +1,7 @@
 // Package composition owns the annotation metadata for this backend responsibility.
 package composition
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+import "grovehub/libs/core/annotation/internal/src/contracts"
 
 var UseCases = []contract.UseCase{
     {Name:"Service",Syntax:"@Service",Category:"Services, composition and dependency injection",Purpose:"Register service contract/constructor for generated composition",Mode:"CHECK",Status:contract.Pilot,Roadmap:"P5",Target:contract.TypeTarget},

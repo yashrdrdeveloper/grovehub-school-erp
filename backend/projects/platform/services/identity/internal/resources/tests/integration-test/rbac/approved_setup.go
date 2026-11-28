@@ -15,7 +15,7 @@ import (
 	. "github.com/onsi/gomega"
 	"gorm.io/gorm"
 
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+	coredatabase "grovehub/libs/core/database"
 	"grovehub/services/identity/internal/app/config"
 	integrationclient "grovehub/services/integration/client/connection"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"

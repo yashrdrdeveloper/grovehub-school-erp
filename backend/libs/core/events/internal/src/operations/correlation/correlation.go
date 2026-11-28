@@ -3,7 +3,7 @@ package correlation
 import (
 	"context"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
+	"grovehub/libs/core/telemetry"
 )
 
 type key struct{}

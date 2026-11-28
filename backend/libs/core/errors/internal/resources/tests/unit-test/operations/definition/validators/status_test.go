@@ -5,7 +5,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors/internal/src/operations/definition/validators"
+	"grovehub/libs/core/errors/internal/src/operations/definition/validators"
 )
 
 var _ = Describe("HTTPStatus", func() {

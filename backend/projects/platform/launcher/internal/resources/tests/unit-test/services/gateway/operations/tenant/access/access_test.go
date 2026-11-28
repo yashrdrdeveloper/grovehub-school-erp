@@ -15,7 +15,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+	core "grovehub/libs/core/gateway"
 	"grovehub/launcher/internal/src/services/gateway/operations/tenant/access"
 	"grovehub/libs/platform/session"
 )

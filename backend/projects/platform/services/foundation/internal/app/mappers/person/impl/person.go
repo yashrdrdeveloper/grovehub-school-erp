@@ -1,7 +1,7 @@
 package impl
 
 import (
-	coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
+	coreutils "grovehub/libs/core/utils"
 	persondto "grovehub/services/foundation/internal/app/dto/person"
 	"grovehub/services/foundation/internal/app/entity"
 	foundationmappers "grovehub/services/foundation/internal/app/mappers/person"

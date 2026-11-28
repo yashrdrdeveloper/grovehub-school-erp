@@ -9,8 +9,8 @@ import (
 
 	"github.com/google/uuid"
 
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
-	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
+	coredatabase "grovehub/libs/core/database"
+	coreevents "grovehub/libs/core/events"
 	"grovehub/services/identity/internal/app/entity"
 	resource "grovehub/services/identity/internal/app/events/producers/resource/operations/changed"
 	"grovehub/services/identity/internal/app/events/producers/rolemetadata"

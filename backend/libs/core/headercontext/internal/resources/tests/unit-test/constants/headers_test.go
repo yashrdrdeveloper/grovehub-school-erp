@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/constants"
+	"grovehub/libs/core/headercontext/internal/src/constants"
 )
 
 var _ = Describe("Header names", func() {

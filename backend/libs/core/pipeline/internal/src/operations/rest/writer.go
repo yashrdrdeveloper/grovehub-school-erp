@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
-	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
+	coreannotation "grovehub/libs/core/annotation"
+	coreerrors "grovehub/libs/core/errors"
+	corehttp "grovehub/libs/core/http"
 )
 
 // Failure is the safe, final response descriptor. The raw cause is never

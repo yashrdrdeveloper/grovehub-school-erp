@@ -3,7 +3,7 @@ package impl
 import (
 	"net/http"
 
-	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
+	coreerrors "grovehub/libs/core/errors"
 	controllerhelpers "grovehub/services/integration/internal/app/controller/helpers"
 	integrationconfig "grovehub/services/integration/internal/app/config"
 	integrationerrors "grovehub/services/integration/internal/app/constants/error"

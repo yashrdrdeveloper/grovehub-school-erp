@@ -8,7 +8,7 @@ import (
 	"log/slog"
 	"testing"
 
-	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
+	coretelemetry "grovehub/libs/core/telemetry"
 	"grovehub/launcher/internal/src/strategies/serve"
 )
 

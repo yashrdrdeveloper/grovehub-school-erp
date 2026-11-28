@@ -2,6 +2,6 @@ module github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school
 
 go 1.27.0
 
-require github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core v0.0.0
+require grovehub/libs/core v0.0.0
 
-replace github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core => ../../libs/core
+replace grovehub/libs/core => ../../libs/core

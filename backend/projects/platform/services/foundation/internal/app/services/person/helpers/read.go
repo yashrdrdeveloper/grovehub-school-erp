@@ -4,7 +4,7 @@ import (
     "context"
     "errors"
 
-    coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
+    coreerrors "grovehub/libs/core/errors"
     personerror "grovehub/services/foundation/internal/app/constants/error"
     "grovehub/services/foundation/internal/app/entity"
     foundationmappers "grovehub/services/foundation/internal/app/mappers/person"

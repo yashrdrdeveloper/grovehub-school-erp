@@ -6,7 +6,7 @@ import (
 	"os"
 	"reflect"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/configuration/helpers"
+	"grovehub/libs/core/annotation/internal/src/configuration/helpers"
 )
 
 // Lookup can be injected without modifying the process environment.

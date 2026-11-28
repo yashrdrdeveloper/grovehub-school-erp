@@ -39,22 +39,22 @@ func projectOccurrence(raw []byte) (entity.Activity, error) {
 	}
 
 	return entity.Activity{
-		AuditID: id,
-		SourceEventID: event.EventID,
-		TenantID: data.TenantID,
-		AssetType: data.AssetType,
-		AssetID: data.AssetID,
-		AuditType: client.ActivityOccurred,
-		Operation: data.Operation,
-		Source: data.Source,
-		OccurrenceID: occurrence,
-		AssetVersion: data.AssetVersion,
-		ActorID: optionalID(data.ActorID),
-		PersonID: optionalID(data.PersonID),
+		AuditID:          id,
+		SourceEventID:    event.EventID,
+		TenantID:         data.TenantID,
+		AssetType:        data.AssetType,
+		AssetID:          data.AssetID,
+		AuditType:        client.ActivityOccurred,
+		Operation:        data.Operation,
+		Source:           data.Source,
+		OccurrenceID:     occurrence,
+		AssetVersion:     data.AssetVersion,
+		ActorID:          optionalID(data.ActorID),
+		PersonID:         optionalID(data.PersonID),
 		SubjectAccountID: subject,
-		Data: json.RawMessage("{}"),
-		SemanticHash: hex.EncodeToString(digest[:]),
-		OccurredAt: data.OccurredAt.UTC(),
+		Data:             json.RawMessage("{}"),
+		SemanticHash:     hex.EncodeToString(digest[:]),
+		OccurredAt:       data.OccurredAt.UTC(),
 	}, nil
 }
 

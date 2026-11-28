@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
-	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
+	coreevents "grovehub/libs/core/events"
 	mailboxevents "grovehub/services/integration/internal/app/events/producers/connection/operations/mailbox"
 )
 

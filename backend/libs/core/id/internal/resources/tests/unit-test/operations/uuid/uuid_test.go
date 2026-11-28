@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/id/internal/src/operations/uuid"
+	"grovehub/libs/core/id/internal/src/operations/uuid"
 )
 
 var _ = Describe("NewUUIDv7", func() {

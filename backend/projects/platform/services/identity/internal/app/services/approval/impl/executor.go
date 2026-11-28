@@ -2,7 +2,7 @@ package impl
 
 import (
 	"context"
-	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
+	coreevents "grovehub/libs/core/events"
 	"grovehub/services/identity/internal/app/events/producers/resource"
 	"errors"
 

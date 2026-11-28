@@ -1,6 +1,6 @@
 package operator
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
+import "grovehub/libs/core/request"
 
 type SchoolCheckParams struct {
 	SchoolID string `path:"schoolId"`

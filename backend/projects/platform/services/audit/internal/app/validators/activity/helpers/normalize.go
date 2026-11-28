@@ -1,8 +1,8 @@
 package helpers
 
 import (
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
+	coresearch "grovehub/libs/core/search"
+	"grovehub/libs/core/utils"
 	"grovehub/services/audit/internal/app/services/activity"
 	"grovehub/services/audit/internal/app/validators/activity/constants"
 )

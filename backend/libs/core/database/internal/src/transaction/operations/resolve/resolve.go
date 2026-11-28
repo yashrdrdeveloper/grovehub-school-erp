@@ -5,7 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/helpers"
+	"grovehub/libs/core/database/internal/src/transaction/helpers"
 )
 
 // Database returns the context-bound transaction or the supplied fallback.

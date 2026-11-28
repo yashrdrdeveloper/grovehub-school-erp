@@ -1,6 +1,6 @@
 # Core Errors
 
-Consumers import only `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors` (package
+Consumers import only `grovehub/libs/core/errors` (package
 `coreerrors`). Error codes, public messages and domain policy are owned by
 consumers, not this library.
 

@@ -13,7 +13,7 @@ import (
 
 type Consumer struct {
 	repository activity.Repository
-	rejected rejection.Repository
+	rejected   rejection.Repository
 }
 
 func New(repository activity.Repository, rejected rejection.Repository) *Consumer {

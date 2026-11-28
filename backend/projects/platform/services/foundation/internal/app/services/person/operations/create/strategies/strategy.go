@@ -5,7 +5,7 @@ package strategies
 import (
     "context"
 
-    corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
+    corepipeline "grovehub/libs/core/pipeline"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     personflow "grovehub/services/foundation/internal/app/services/person/operations/create/flows"
 )

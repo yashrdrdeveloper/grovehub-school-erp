@@ -1,7 +1,7 @@
 // Package http owns the annotation metadata for this backend responsibility.
 package http
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+import "grovehub/libs/core/annotation/internal/src/contracts"
 
 var UseCases = []contract.UseCase{
     {Name:"RequestLine",Syntax:"@RequestLine GET /service/access/resource/{id}",Category:"HTTP controllers, routes, request/response and API docs",Purpose:"Generate client methods mapped to verified HTTP controller routes; dispatch in-process through REST validation and response envelopes",Mode:"GEN",Status:contract.Pilot,Roadmap:"P3",Target:contract.MethodTarget},

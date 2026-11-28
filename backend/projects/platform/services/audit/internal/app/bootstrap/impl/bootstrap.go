@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
 	"gorm.io/gorm"
+	coreerrors "grovehub/libs/core/errors"
 	schoolgateway "grovehub/libs/platform/session"
 
 	"grovehub/services/audit/internal/app/bootstrap"
@@ -20,15 +20,15 @@ import (
 	operator "grovehub/services/audit/internal/app/controller/operator"
 	operatorroutes "grovehub/services/audit/internal/app/controller/operator/restricted"
 	operatorcontroller "grovehub/services/audit/internal/app/controller/operator/restricted/impl"
-	operatorrepo "grovehub/services/audit/internal/app/repository/operator/impl"
-	operatorservice "grovehub/services/audit/internal/app/services/operator/impl"
 	consumer "grovehub/services/audit/internal/app/events/consumers/activity"
 	repository "grovehub/services/audit/internal/app/repository/activity/impl"
+	operatorrepo "grovehub/services/audit/internal/app/repository/operator/impl"
 	rejection "grovehub/services/audit/internal/app/repository/rejection/impl"
 	schemarepo "grovehub/services/audit/internal/app/repository/schema/impl"
 	"grovehub/services/audit/internal/app/routes"
 	service "grovehub/services/audit/internal/app/services/activity/impl"
 	"grovehub/services/audit/internal/app/services/monitoring"
+	operatorservice "grovehub/services/audit/internal/app/services/operator/impl"
 	"grovehub/services/infrastructure/client/messaging"
 )
 

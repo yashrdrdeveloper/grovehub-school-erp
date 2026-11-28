@@ -7,7 +7,7 @@ import (
 	"go/token"
 	"strings"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
+	"grovehub/libs/core/annotation/internal/src/helpers/layout"
 )
 
 func destinationType(backend,modulePath string,imports []layout.ImportBinding,expr ast.Expr)([]string,error) {

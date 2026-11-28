@@ -1,6 +1,6 @@
 package helpers
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/constants"
+import "grovehub/libs/core/headercontext/internal/src/constants"
 
 // ValidID accepts an absent identifier or a bounded ASCII metadata identifier.
 func ValidID(value string) bool {

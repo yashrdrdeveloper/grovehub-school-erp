@@ -3,7 +3,7 @@ package person
 import (
 	"context"
 
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	coresearch "grovehub/libs/core/search"
 	persondto "grovehub/services/foundation/internal/app/dto/person"
 )
 

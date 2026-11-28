@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	corehttp "grovehub/libs/core/http"
+	coresearch "grovehub/libs/core/search"
 	"grovehub/services/identity/client/account"
 	clientimpl "grovehub/services/identity/internal/app/client/account/impl"
 )

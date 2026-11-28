@@ -3,7 +3,7 @@ package search
 import (
 	"time"
 
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	coresearch "grovehub/libs/core/search"
 	roledto "grovehub/services/identity/internal/app/dto/role"
 	"grovehub/services/identity/internal/app/entity"
 	rolemapper "grovehub/services/identity/internal/app/mappers/role"

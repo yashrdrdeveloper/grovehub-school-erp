@@ -2,7 +2,7 @@ package launcher
 
 import (
  "context"
- corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
+ corehttp "grovehub/libs/core/http"
  "errors"
  "fmt"
  "net/http"
@@ -16,7 +16,7 @@ import (
 
  "time"
 
- coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+ coredatabase "grovehub/libs/core/database"
  auth "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/services/authentication"
  controller "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/controller/authentication"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/resources/migrations"

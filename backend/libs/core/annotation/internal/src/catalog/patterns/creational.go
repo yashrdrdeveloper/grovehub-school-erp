@@ -1,7 +1,7 @@
 // Package patterns catalogs GoF design patterns without generating their business behavior.
 package patterns
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+import "grovehub/libs/core/annotation/internal/src/contracts"
 
 var creational = []contract.Pattern{
     {Name:"AbstractFactory", Family:"Creational", Pattern:"Abstract Factory", Purpose:"Registry of related provider families; explicit factory contract", Decision:"Optional registry"},

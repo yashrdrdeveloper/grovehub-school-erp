@@ -3,8 +3,8 @@
 package testgen
 
 import (
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
-	generatedoutput "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/output"
+	"grovehub/libs/core/annotation/internal/src/helpers/layout"
+	generatedoutput "grovehub/libs/core/annotation/internal/src/helpers/output"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -15,7 +15,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
+	"grovehub/libs/core/annotation"
 )
 
 type testSuite struct {

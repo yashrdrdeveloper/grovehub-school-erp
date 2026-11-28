@@ -17,7 +17,7 @@ func NewOperatorBootstrap(migrate func(context.Context, *gorm.DB) error) platfor
 		ServiceName: constants.ServiceName,
 		RegisterCommands: func(db command.Database[*gorm.DB]) map[string]command.Command {
 			return map[string]command.Command{
-				constants.AuditReplay: auditreplay.New(db),
+				constants.AuditReplay:  auditreplay.New(db),
 				constants.AuditStorage: auditstorage.New(db),
 			}
 		},

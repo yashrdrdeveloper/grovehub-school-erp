@@ -4,8 +4,8 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	coreutils "grovehub/libs/core/utils"
+	coresearch "grovehub/libs/core/search"
 	kind "grovehub/services/identity/internal/app/constants/approval"
 	dto "grovehub/services/identity/internal/app/dto/approval"
 	repo "grovehub/services/identity/internal/app/repository/approval"

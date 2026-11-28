@@ -4,12 +4,12 @@
 package events
 
 import (
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
+	"grovehub/libs/core/annotation/internal/src/helpers/layout"
 	"fmt"
 	"os"
 	"path/filepath"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/events/helpers"
+	"grovehub/libs/core/annotation/internal/src/generators/events/helpers"
 )
 
 func GenerateAll(backend string)error{

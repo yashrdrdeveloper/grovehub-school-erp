@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm/clause"
 	"time"
 
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+	coredatabase "grovehub/libs/core/database"
 	"grovehub/services/integration/internal/app/entity"
 	integrationrepository "grovehub/services/integration/internal/app/repository/connection"
 )

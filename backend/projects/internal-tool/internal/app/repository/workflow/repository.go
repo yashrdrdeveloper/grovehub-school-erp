@@ -2,7 +2,7 @@ package workflow
 
 import (
  "context"
- corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
+ corehttp "grovehub/libs/core/http"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/repository/activity"
  "database/sql"
  "encoding/json"

@@ -1,13 +1,13 @@
 package helpers
 
 import (
-	generatedoutput "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/output"
+	generatedoutput "grovehub/libs/core/annotation/internal/src/helpers/output"
 	"fmt"
 	"path/filepath"
 	"sort"
 	"strings"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
+	"grovehub/libs/core/annotation/internal/src/helpers/layout"
 )
 
 func WriteRoutes(modulePath, service string, groups []routeGroup, output string) error {

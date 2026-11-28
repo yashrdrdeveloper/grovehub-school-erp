@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
-	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
+	corehttp "grovehub/libs/core/http"
+	coretelemetry "grovehub/libs/core/telemetry"
 	"grovehub/launcher/internal/src/middleware"
 	"grovehub/launcher/internal/src/middleware/helpers"
 )

@@ -1,7 +1,7 @@
 package correlation_test
 
 import (
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
+	corehttp "grovehub/libs/core/http"
 
 	"context"
 	"net/http"

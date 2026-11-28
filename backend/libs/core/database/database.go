@@ -7,8 +7,8 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/postgres"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction"
+	"grovehub/libs/core/database/internal/src/postgres"
+	"grovehub/libs/core/database/internal/src/transaction"
 )
 
 // UnitOfWork coordinates repository operations in a context-bound transaction.

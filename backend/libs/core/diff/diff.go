@@ -2,8 +2,8 @@
 package diff
 
 import (
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/diff/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/diff/internal/src/operations/compare"
+	"grovehub/libs/core/diff/internal/src/contracts"
+	"grovehub/libs/core/diff/internal/src/operations/compare"
 )
 
 // Change describes a single flattened JSON field change.

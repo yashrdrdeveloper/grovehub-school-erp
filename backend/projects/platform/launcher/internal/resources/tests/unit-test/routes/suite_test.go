@@ -7,7 +7,7 @@ import (
 
 	. "github.com/onsi/gomega"
 
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
+	corehttp "grovehub/libs/core/http"
 	routing "grovehub/launcher/internal/src/routes"
 )
 

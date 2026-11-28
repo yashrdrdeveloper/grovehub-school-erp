@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/constants"
+	"grovehub/libs/core/telemetry/internal/src/constants"
 )
 
 func TraceSampleRatio(value string) (float64, error) {

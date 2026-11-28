@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
+	coreerrors "grovehub/libs/core/errors"
 )
 
 var _ = Describe("NewErrorWithMetadata", func() {

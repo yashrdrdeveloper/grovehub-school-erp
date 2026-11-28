@@ -3,7 +3,7 @@ package idempotency_test
 import (
 	"testing"
 
-	coreidempotency "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency"
+	coreidempotency "grovehub/libs/core/idempotency"
 )
 
 func TestValidateKey(t *testing.T) {

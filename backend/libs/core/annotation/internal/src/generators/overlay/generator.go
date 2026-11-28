@@ -3,8 +3,8 @@
 package overlay
 
 import (
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
-	generatedoutput "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/output"
+	"grovehub/libs/core/annotation/internal/src/helpers/layout"
+	generatedoutput "grovehub/libs/core/annotation/internal/src/helpers/output"
 	"fmt"
 	"io/fs"
 	"os"

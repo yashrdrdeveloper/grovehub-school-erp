@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/diff/internal/src/operations/compare/helpers"
+	"grovehub/libs/core/diff/internal/src/operations/compare/helpers"
 )
 
 var _ = Describe("JSONValue", func() {

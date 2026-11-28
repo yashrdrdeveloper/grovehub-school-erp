@@ -5,7 +5,7 @@ import (
 	"io/fs"
 	"path/filepath"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/check/helpers"
+	"grovehub/libs/core/annotation/internal/src/generators/check/helpers"
 )
 
 func CheckServices(backend string) error {

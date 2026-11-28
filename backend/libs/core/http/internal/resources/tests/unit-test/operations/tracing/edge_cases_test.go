@@ -12,8 +12,8 @@ import (
 	"go.opentelemetry.io/otel"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/operations/tracing"
-	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
+	"grovehub/libs/core/http/internal/src/operations/tracing"
+	coretelemetry "grovehub/libs/core/telemetry"
 )
 
 type captureTransport func(*http.Request)(*http.Response,error)

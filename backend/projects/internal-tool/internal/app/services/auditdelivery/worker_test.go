@@ -8,7 +8,7 @@ import (
 
  "github.com/google/uuid"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/entity"
- coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+ coredatabase "grovehub/libs/core/database"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/client/audit"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/resources/migrations"
 )

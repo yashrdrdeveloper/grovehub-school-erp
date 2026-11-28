@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
+	corehttp "grovehub/libs/core/http"
 )
 
 func TestFacadeEnvelopesAndStrictDecoding(t *testing.T) {

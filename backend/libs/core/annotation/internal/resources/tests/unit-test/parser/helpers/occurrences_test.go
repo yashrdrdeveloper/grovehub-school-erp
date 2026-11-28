@@ -5,8 +5,8 @@ import (
 	. "github.com/onsi/gomega"
 	"go/parser"
 	"go/token"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/parser/helpers"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/registry"
+	"grovehub/libs/core/annotation/internal/src/parser/helpers"
+	"grovehub/libs/core/annotation/internal/src/registry"
 )
 
 var _ = Describe("CollectOccurrences", func() {

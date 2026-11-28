@@ -1,8 +1,8 @@
 package workload
 
 import (
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/helpers"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/contracts"
+	"grovehub/libs/core/gateway/internal/src/helpers"
+	"grovehub/libs/core/gateway/internal/src/contracts"
 
 	"context"
 	"net/http"

@@ -2,7 +2,7 @@ package helpers
 
 import (
  "github.com/google/uuid"
- coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
+ coreutils "grovehub/libs/core/utils"
 )
 
 // ValidTenantID matches School Registry's canonical UUID contract. School IDs

@@ -1,7 +1,7 @@
 package flows
 
 import (
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	coresearch "grovehub/libs/core/search"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
 	"grovehub/services/identity/internal/app/entity"
 )

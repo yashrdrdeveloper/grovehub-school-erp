@@ -5,7 +5,7 @@ import (
 	. "github.com/onsi/gomega"
 	"reflect"
 	"time"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/configuration/helpers"
+	"grovehub/libs/core/annotation/internal/src/configuration/helpers"
 )
 
 var _ = Describe("DecodeField", func() {

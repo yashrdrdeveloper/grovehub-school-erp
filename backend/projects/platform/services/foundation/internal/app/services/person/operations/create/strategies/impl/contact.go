@@ -4,8 +4,8 @@ import (
     createhelpers "grovehub/services/foundation/internal/app/services/person/operations/create/helpers"
     "context"
 
-    coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-    corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
+    coreerrors "grovehub/libs/core/errors"
+    corepipeline "grovehub/libs/core/pipeline"
     personerror "grovehub/services/foundation/internal/app/constants/error"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     "grovehub/services/foundation/internal/app/entity"

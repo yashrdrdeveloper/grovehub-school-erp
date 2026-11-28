@@ -12,7 +12,7 @@ import (
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/repository/authority"
 	"grovehub/services/identity/internal/app/repository/rbacmigration"
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+	coredatabase "grovehub/libs/core/database"
 	"grovehub/services/identity/internal/app/repository/approvalpolicy"
 	policyimpl "grovehub/services/identity/internal/app/repository/approvalpolicy/impl"
 	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"

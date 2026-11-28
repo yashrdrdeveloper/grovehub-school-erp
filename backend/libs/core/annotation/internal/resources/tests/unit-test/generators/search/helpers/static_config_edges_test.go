@@ -2,7 +2,7 @@ package helpers_test
 
 import (
 	"strings"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/search/helpers"
+	"grovehub/libs/core/annotation/internal/src/generators/search/helpers"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

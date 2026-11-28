@@ -3,7 +3,7 @@ package helpers
 import (
 	"reflect"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/diff/internal/src/contracts"
+	"grovehub/libs/core/diff/internal/src/contracts"
 )
 
 // Changes walks JSON-normalized values and returns deterministic leaf changes.

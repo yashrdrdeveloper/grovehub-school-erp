@@ -3,7 +3,7 @@ package helpers
 import (
 	"sort"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/diff/internal/src/contracts"
+	"grovehub/libs/core/diff/internal/src/contracts"
 )
 
 func walkObject(path string, old, next map[string]any, changes *[]contracts.Change) {

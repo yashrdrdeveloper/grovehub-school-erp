@@ -5,9 +5,9 @@ import (
     "context"
     "time"
 
-    coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-    coreid "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/id"
-    corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
+    coreerrors "grovehub/libs/core/errors"
+    coreid "grovehub/libs/core/id"
+    corepipeline "grovehub/libs/core/pipeline"
     personerror "grovehub/services/foundation/internal/app/constants/error"
     foundationevents "grovehub/services/foundation/internal/app/constants/events"
     persondto "grovehub/services/foundation/internal/app/dto/person"

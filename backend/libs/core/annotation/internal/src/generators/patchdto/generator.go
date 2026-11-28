@@ -3,12 +3,12 @@
 package patchdto
 
 import (
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/layout"
+	"grovehub/libs/core/annotation/internal/src/helpers/layout"
 	"fmt"
 	"os"
 	"path/filepath"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/patchdto/helpers"
+	"grovehub/libs/core/annotation/internal/src/generators/patchdto/helpers"
 )
 
 // DTO packages can live in legacy dto/, client/, or the owning service's

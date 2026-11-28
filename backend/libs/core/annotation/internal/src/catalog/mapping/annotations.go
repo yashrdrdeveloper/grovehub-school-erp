@@ -1,7 +1,7 @@
 // mapping owns the annotation definitions for this backend responsibility.
 package mapping
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+import "grovehub/libs/core/annotation/internal/src/contracts"
 
 var UseCases = []contract.UseCase{
     {Name:"Mapper",Syntax:"@Mapper",Category:"Mappers and representation conversion",Purpose:"Generate typed mapping implementation for interface",Mode:"GEN",Status:contract.Pilot,Roadmap:"P2",Target:contract.InterfaceTarget},

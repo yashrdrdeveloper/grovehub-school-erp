@@ -3,8 +3,8 @@ package key
 import (
 	"strings"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency/internal/src/constants"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency/internal/src/contracts"
+	"grovehub/libs/core/idempotency/internal/src/constants"
+	"grovehub/libs/core/idempotency/internal/src/contracts"
 )
 
 // ValidateKey trims surrounding whitespace and validates the existing ASCII allowlist.

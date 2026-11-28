@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	testgen "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/testing"
+	testgen "grovehub/libs/core/annotation/internal/src/generators/testing"
 )
 
 func writeTestSource(path, source string) {

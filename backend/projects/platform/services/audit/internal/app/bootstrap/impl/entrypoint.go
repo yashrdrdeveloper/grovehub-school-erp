@@ -2,15 +2,15 @@ package impl
 
 import (
 	"context"
-	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-	"grovehub/services/audit/internal/app/bootstrap/constants"
 	"gorm.io/gorm"
+	coreerrors "grovehub/libs/core/errors"
 	platformbootstrap "grovehub/libs/platform/bootstrap"
 	"grovehub/services/audit/internal/app/bootstrap"
-	"grovehub/services/audit/internal/resources/migrations"
+	"grovehub/services/audit/internal/app/bootstrap/constants"
 	activityrepo "grovehub/services/audit/internal/app/repository/activity/impl"
 	"grovehub/services/audit/internal/app/services/replay"
 	replayimpl "grovehub/services/audit/internal/app/services/replay/impl"
+	"grovehub/services/audit/internal/resources/migrations"
 	"grovehub/services/infrastructure/client/messaging"
 )
 

@@ -3,8 +3,8 @@ package helpers
 import (
     "strings"
 
-    coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
-    coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+    coreutils "grovehub/libs/core/utils"
+    coresearch "grovehub/libs/core/search"
     "grovehub/services/foundation/internal/app/entity"
 )
 

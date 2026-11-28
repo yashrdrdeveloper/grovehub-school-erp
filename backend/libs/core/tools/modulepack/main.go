@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tools/modulepack/internal/src/operations/pack"
+	"grovehub/libs/core/tools/modulepack/internal/src/operations/pack"
 )
 
 func main() {

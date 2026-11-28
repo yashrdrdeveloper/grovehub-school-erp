@@ -4,7 +4,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	idempotency "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency"
+	idempotency "grovehub/libs/core/idempotency"
 	dto "grovehub/services/identity/internal/app/dto/account"
 	repo "grovehub/services/identity/internal/app/repository/account"
 	validator "grovehub/services/identity/internal/app/validators/account"

@@ -3,7 +3,7 @@ package clients_test
 import (
 "os"
 "path/filepath"
-"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/clients"
+"grovehub/libs/core/annotation/internal/src/generators/clients"
 . "github.com/onsi/ginkgo/v2"
 . "github.com/onsi/gomega"
 )

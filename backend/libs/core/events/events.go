@@ -4,11 +4,11 @@ package events
 import (
 	"context"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events/internal/src/operations/causation"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events/internal/src/operations/correlation"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events/internal/src/operations/envelope"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events/internal/src/operations/pipeline"
+	"grovehub/libs/core/events/internal/src/contracts"
+	"grovehub/libs/core/events/internal/src/operations/causation"
+	"grovehub/libs/core/events/internal/src/operations/correlation"
+	"grovehub/libs/core/events/internal/src/operations/envelope"
+	"grovehub/libs/core/events/internal/src/operations/pipeline"
 )
 
 // Envelope is the public event wire contract.

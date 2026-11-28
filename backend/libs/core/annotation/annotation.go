@@ -3,13 +3,13 @@
 package annotation
 
 import (
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/configuration"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/dto"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/entity"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/parser"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/registry"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/validation"
+	"grovehub/libs/core/annotation/internal/src/configuration"
+	"grovehub/libs/core/annotation/internal/src/contracts"
+	"grovehub/libs/core/annotation/internal/src/dto"
+	"grovehub/libs/core/annotation/internal/src/entity"
+	"grovehub/libs/core/annotation/internal/src/parser"
+	"grovehub/libs/core/annotation/internal/src/registry"
+	"grovehub/libs/core/annotation/internal/src/validation"
 )
 
 type (

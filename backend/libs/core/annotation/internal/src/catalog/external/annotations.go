@@ -1,7 +1,7 @@
 // Package external owns the annotation metadata for this backend responsibility.
 package external
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+import "grovehub/libs/core/annotation/internal/src/contracts"
 
 var UseCases = []contract.UseCase{
     {Name:"Client",Syntax:"@Client",Category:"Typed HTTP clients, provider adapters and external services",Purpose:"Typed in-process or HTTP client descriptor / adapter",Mode:"GEN/REG",Status:contract.Pilot,Roadmap:"P3",Target:contract.InterfaceTarget},

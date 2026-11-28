@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/operations/readiness"
+	"grovehub/libs/core/http/internal/src/operations/readiness"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

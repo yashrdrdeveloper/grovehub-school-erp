@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 	ginkgo "github.com/onsi/ginkgo/v2"
 
-	core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+	core "grovehub/libs/core/gateway"
 	. "grovehub/launcher/internal/src/services/gateway/operations/workload"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/schoolexecution"
 )

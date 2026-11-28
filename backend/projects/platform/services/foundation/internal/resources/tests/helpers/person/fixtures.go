@@ -4,7 +4,7 @@ package person
 import (
     "time"
 
-    coreclock "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tests/helpers/clock"
+    coreclock "grovehub/libs/core/tests/helpers/clock"
     personconstants "grovehub/services/foundation/internal/resources/tests/constants/person"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     "grovehub/services/foundation/internal/app/entity"

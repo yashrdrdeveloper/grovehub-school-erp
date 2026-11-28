@@ -4,7 +4,7 @@ import (
  "net/http"
  "strings"
 
- core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+ core "grovehub/libs/core/gateway"
  auth "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/identity/client/authentication"
  business "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/platform/client"
 )

@@ -6,8 +6,8 @@ import (
 	"strings"
 	"grovehub/services/identity/internal/app/entity"
 
-	corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	corepipeline "grovehub/libs/core/pipeline"
+	coresearch "grovehub/libs/core/search"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
 	mapper "grovehub/services/identity/internal/app/mappers/account"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"

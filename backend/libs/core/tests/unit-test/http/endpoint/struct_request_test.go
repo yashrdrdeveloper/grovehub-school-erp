@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"testing"
 
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
-	corerequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
+	corehttp "grovehub/libs/core/http"
+	corerequest "grovehub/libs/core/request"
 
 )
 

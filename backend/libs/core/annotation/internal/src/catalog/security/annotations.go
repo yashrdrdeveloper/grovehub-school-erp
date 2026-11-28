@@ -1,7 +1,7 @@
 // Package security owns the annotation metadata for this backend responsibility.
 package security
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+import "grovehub/libs/core/annotation/internal/src/contracts"
 
 var UseCases = []contract.UseCase{
     {Name:"Authenticate",Syntax:"@Authenticate",Category:"Security, secrets, tenancy and policy",Purpose:"Require verified identity; never trust caller-filled principal",Mode:"WRAP/CHECK",Status:contract.Proposed,Roadmap:"P7",Target:contract.MethodTarget},

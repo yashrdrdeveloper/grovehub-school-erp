@@ -9,7 +9,9 @@ import (
 )
 
 func Migrate(ctx context.Context, db *sql.DB) error {
-	if err := goose.SetDialect("postgres"); err != nil { return err }
+	if err := goose.SetDialect("postgres"); err != nil {
+		return err
+	}
 	goose.SetBaseFS(resources.Migrations)
 	defer goose.SetBaseFS(nil)
 	goose.SetTableName("audit_schema_state")

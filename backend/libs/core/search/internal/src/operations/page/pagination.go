@@ -6,9 +6,9 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/operations/cursor"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/operations/validation"
+	"grovehub/libs/core/search/internal/src/contracts"
+	"grovehub/libs/core/search/internal/src/operations/cursor"
+	"grovehub/libs/core/search/internal/src/operations/validation"
 )
 
 // ResolvePage keeps legacy rows requests valid and uses offsets only without a cursor.

@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
-	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
+	coredatabase "grovehub/libs/core/database"
+	coreevents "grovehub/libs/core/events"
 	"grovehub/services/identity/internal/app/entity"
 	producer "grovehub/services/identity/internal/app/events/producers/registration"
 	repo "grovehub/services/identity/internal/app/repository/account"

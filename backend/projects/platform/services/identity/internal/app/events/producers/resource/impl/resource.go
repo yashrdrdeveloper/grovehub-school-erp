@@ -8,8 +8,8 @@ import (
 
 	"github.com/google/uuid"
 
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
-	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
+	coredatabase "grovehub/libs/core/database"
+	coreevents "grovehub/libs/core/events"
 	kind "grovehub/services/identity/internal/app/constants/approval"
 	"grovehub/services/identity/internal/app/entity"
 	"grovehub/services/identity/internal/app/events/producers/resource"

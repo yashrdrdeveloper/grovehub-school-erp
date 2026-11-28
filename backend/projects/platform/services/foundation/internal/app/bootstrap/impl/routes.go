@@ -1,7 +1,7 @@
 package impl
 
 import (
-    coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+    coredatabase "grovehub/libs/core/database"
     protected "grovehub/services/foundation/internal/app/controller/person/protected"
     controllerimpl "grovehub/services/foundation/internal/app/controller/person/protected/impl"
     personproducer "grovehub/services/foundation/internal/app/events/producers/person"

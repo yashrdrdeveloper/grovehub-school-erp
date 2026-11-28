@@ -9,8 +9,8 @@ import (
 	. "github.com/onsi/gomega"
 	"gorm.io/gorm"
 
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
-	databasemock "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tests/mocks/database"
+	coredatabase "grovehub/libs/core/database"
+	databasemock "grovehub/libs/core/tests/mocks/database"
 )
 
 var _ = Describe("RunTransaction", func() {

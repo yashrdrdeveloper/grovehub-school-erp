@@ -2,7 +2,7 @@
 
 This inventory describes the current **Core-owned technical packages**. Their root package is the stable import API where provided. Internal contracts/validators/helpers under a capability must not become arbitrary imports from services.
 
-| Capability path under `libs/backend/core/` | Responsibility | Must not contain |
+| Capability path under `libs/core/` | Responsibility | Must not contain |
 |---|---|---|
 | `annotation/` | Registered syntax and typed Go code generation/checks | Runtime business decisions and hidden authorization |
 | `database/` | GORM context propagation, UnitOfWork, after-commit hooks | A domain repository or distributed remote transaction |
@@ -28,10 +28,10 @@ For generic normalization, never move a value into core only because a similarly
 ## Allowed dependency directions
 
 ```text
-module business code -> libs/backend/core/<public-capability>
+module business code -> libs/core/<public-capability>
 module business code -> libs/infrastructure/<public-capability> (when needed)
-libs/backend/core/<capability> -> sibling generic facade, stdlib, approved technical libs
-libs/backend/core/<capability> -X-> services/*, vendor-specific externalService/*
+libs/core/<capability> -> sibling generic facade, stdlib, approved technical libs
+libs/core/<capability> -X-> services/*, vendor-specific externalService/*
 ```
 
 A root facade should be small. Avoid re-exporting every internal helper, impl factory, validator, or generated type from it.

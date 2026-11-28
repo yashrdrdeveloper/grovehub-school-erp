@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency/internal/src/contracts"
+	"grovehub/libs/core/idempotency/internal/src/contracts"
 )
 
 // Fingerprint hashes the JSON representation without changing its semantics.

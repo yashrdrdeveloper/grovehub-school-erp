@@ -73,7 +73,7 @@ Confirm API/event compatibility, secret handling, database migration history, bu
 `make backend-test` runs both the school module and Core module test trees; generation continues to emit owner-local files. `make unit-test package=core` and `make unit-coverage package=core` use the separate Core module root. The latter retains the strict 100% requirement. Core-only validation from the monorepo root:
 
 ```bash
-cd libs/backend/core
+cd libs/core
 export GOWORK=off
 go run ./annotation/cmd testing "$PWD" "$PWD"
 go run ./annotation/cmd overlay "$PWD" "$PWD"

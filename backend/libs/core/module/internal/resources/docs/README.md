@@ -1,6 +1,6 @@
 # Core Module
 
-Import only `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/module`.
+Import only `grovehub/libs/core/module`.
 The public module.go facade exposes the shared Module lifecycle interface.
 
 ```text

@@ -5,8 +5,8 @@ import (
 	. "github.com/onsi/gomega"
 	"errors"
 	"strings"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/operations/validation"
+	"grovehub/libs/core/search/internal/src/contracts"
+	"grovehub/libs/core/search/internal/src/operations/validation"
 )
 
 var _ = Describe("Request normalization",func(){

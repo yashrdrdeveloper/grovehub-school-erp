@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+	"grovehub/libs/core/annotation/internal/src/contracts"
 )
 
 // ProviderIndex checks uniqueness across maintained source files.

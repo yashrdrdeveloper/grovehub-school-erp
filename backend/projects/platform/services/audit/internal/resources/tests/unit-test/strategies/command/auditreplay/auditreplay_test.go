@@ -9,9 +9,9 @@ import (
 
 	"gorm.io/gorm"
 
-	"grovehub/services/audit/internal/resources/tests/helpers/operatorfixture"
-	"grovehub/services/audit/internal/app/strategies/command/auditreplay"
 	"grovehub/services/audit"
+	"grovehub/services/audit/internal/app/strategies/command/auditreplay"
+	"grovehub/services/audit/internal/resources/tests/helpers/operatorfixture"
 )
 
 func TestAuditReplay(t *testing.T) {

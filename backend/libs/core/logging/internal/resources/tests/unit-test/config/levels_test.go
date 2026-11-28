@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/logging/internal/src/config"
+	"grovehub/libs/core/logging/internal/src/config"
 )
 
 var _ = Describe("DefaultLevels", func() {

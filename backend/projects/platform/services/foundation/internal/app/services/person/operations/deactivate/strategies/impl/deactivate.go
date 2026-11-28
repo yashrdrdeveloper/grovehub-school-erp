@@ -5,8 +5,8 @@ import (
     "errors"
     "time"
 
-    corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
-    coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+    corepipeline "grovehub/libs/core/pipeline"
+    coredatabase "grovehub/libs/core/database"
     foundationevents "grovehub/services/foundation/internal/app/constants/events"
     eventproducers "grovehub/services/foundation/internal/app/events/producers/person"
     persondto "grovehub/services/foundation/internal/app/dto/person"

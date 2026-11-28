@@ -10,10 +10,10 @@ import (
  "os/signal"
  "syscall"
  "sync/atomic"
- corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
+ corehttp "grovehub/libs/core/http"
  "time"
 
- coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+ coredatabase "grovehub/libs/core/database"
 )
 
 // Run starts the private application listener with bounded readiness checks.

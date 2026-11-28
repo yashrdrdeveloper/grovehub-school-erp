@@ -4,8 +4,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/operations/query"
+	"grovehub/libs/core/search/internal/src/contracts"
+	"grovehub/libs/core/search/internal/src/operations/query"
 )
 
 var _ = Describe("Query edge cases",func(){

@@ -4,9 +4,9 @@ import (
     "strings"
     "time"
 
-    coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
-    "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/contracts"
-    "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/operations/cursor"
+    coreutils "grovehub/libs/core/utils"
+    "grovehub/libs/core/search/internal/src/contracts"
+    "grovehub/libs/core/search/internal/src/operations/cursor"
 )
 
 func cursorError(invalid error) error {

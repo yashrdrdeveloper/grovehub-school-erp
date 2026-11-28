@@ -1,7 +1,7 @@
 // Package testing owns the annotation metadata for this backend responsibility.
 package testing
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+import "grovehub/libs/core/annotation/internal/src/contracts"
 
 var UseCases = []contract.UseCase{
     {Name:"Testing",Syntax:"@Testing suite=Name",Category:"Testing, fixtures, mocks, contract tests and benchmarks",Purpose:"Generate the Ginkgo suite entry point from an annotated spec registration function",Mode:"GEN",Status:contract.Existing,Roadmap:"P8",Target:contract.FunctionTarget},

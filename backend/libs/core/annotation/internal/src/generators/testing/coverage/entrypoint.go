@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	generatedoutput "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/output"
+	generatedoutput "grovehub/libs/core/annotation/internal/src/helpers/output"
 )
 
 // CoverEntrypoint instruments the actual executable and merges its runtime

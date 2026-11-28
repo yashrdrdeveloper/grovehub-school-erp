@@ -10,10 +10,10 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
-	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
-	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/internal/src/operations/rest"
+	coreannotation "grovehub/libs/core/annotation"
+	coreerrors "grovehub/libs/core/errors"
+	corehttp "grovehub/libs/core/http"
+	rest "grovehub/libs/core/pipeline/internal/src/operations/rest"
 )
 
 type personPath struct {

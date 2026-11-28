@@ -1,6 +1,6 @@
 # Core Diff
 
-The public consumer import remains `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/diff`.
+The public consumer import remains `grovehub/libs/core/diff`.
 This capability compares JSON-compatible values. Business identity, event publication,
 field redaction and audit policy stay with consumers.
 

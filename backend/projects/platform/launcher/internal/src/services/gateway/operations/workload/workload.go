@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+	core "grovehub/libs/core/gateway"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/internalcatalog"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/operatoraudit"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/operatorauditread"

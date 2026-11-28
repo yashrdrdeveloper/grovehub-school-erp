@@ -1,6 +1,6 @@
 # Core Telemetry
 
-Import only `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry`. The root facade exposes logical service
+Import only `grovehub/libs/core/telemetry`. The root facade exposes logical service
 identity, runtime initialization and shutdown, provider selection, metric
 recording, trace context, structured logging and configuration validation.
 

@@ -4,8 +4,8 @@ import (
 	"context"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/helpers"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/operations/active"
+	"grovehub/libs/core/database/internal/src/transaction/helpers"
+	"grovehub/libs/core/database/internal/src/transaction/operations/active"
 )
 
 var _ = Describe("Active", func() {

@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-	corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
-	corerequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
+	coreerrors "grovehub/libs/core/errors"
+	corepipeline "grovehub/libs/core/pipeline"
+	corerequest "grovehub/libs/core/request"
 )
 
 type operationParams struct { GID string `path:"gid" normalize:"trim" validate:"notblank"` }

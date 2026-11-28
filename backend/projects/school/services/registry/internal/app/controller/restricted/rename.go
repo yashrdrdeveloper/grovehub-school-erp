@@ -10,7 +10,7 @@ import (
  "strings"
  "time"
 
- core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+ core "grovehub/libs/core/gateway"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/registry/internal/app/repository"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/registry/internal/app/services"
 )

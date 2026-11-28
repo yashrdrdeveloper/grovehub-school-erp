@@ -3,7 +3,7 @@ package impl
 import (
 	"net/http"
 
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
+	corehttp "grovehub/libs/core/http"
 	"grovehub/launcher/internal/src/controller"
 	"grovehub/launcher/internal/src/services/health"
 	healthimpl "grovehub/launcher/internal/src/services/health/impl"

@@ -1,8 +1,8 @@
 package helpers_test
 
 import (
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/helpers"
+	"grovehub/libs/core/telemetry/internal/src/contracts"
+	"grovehub/libs/core/telemetry/internal/src/helpers"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

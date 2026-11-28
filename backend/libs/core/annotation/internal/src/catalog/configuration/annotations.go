@@ -1,7 +1,7 @@
 // Package configuration owns the annotation metadata for this backend responsibility.
 package configuration
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+import "grovehub/libs/core/annotation/internal/src/contracts"
 
 var UseCases = []contract.UseCase{
     {Name:"Configuration",Syntax:"@Configuration",Category:"Configuration, profiles, typed environment and secrets",Purpose:"Typed config struct registered for startup loading",Mode:"REG/GEN",Status:contract.Pilot,Roadmap:"P5",Target:contract.TypeTarget},

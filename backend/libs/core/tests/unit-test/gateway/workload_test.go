@@ -1,7 +1,7 @@
 package gateway_test
 
 import (
-	. "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+	. "grovehub/libs/core/gateway"
 
 	"context"
 	"crypto/ed25519"

@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"os"
 
-	corelogging "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/logging"
+	corelogging "grovehub/libs/core/logging"
 )
 
 const logLevelsEnvironmentVariable = "GROVEHUB_LOG_LEVELS"

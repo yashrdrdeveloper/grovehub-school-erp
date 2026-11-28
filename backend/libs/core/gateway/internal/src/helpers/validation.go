@@ -3,7 +3,7 @@ package helpers
 import (
 	"strings"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/constants"
+	"grovehub/libs/core/gateway/internal/src/constants"
 )
 
 // ValidKeyID checks the existing credential key identifier constraints.

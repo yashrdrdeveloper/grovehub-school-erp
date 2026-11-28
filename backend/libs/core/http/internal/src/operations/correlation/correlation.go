@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/constants"
+	"grovehub/libs/core/http/internal/src/constants"
 )
 
 type key struct{}

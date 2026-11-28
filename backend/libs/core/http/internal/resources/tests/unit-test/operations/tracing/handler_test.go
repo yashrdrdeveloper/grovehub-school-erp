@@ -3,7 +3,7 @@ package tracing_test
 import (
 	"net/http"
 	"net/http/httptest"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/operations/tracing"
+	"grovehub/libs/core/http/internal/src/operations/tracing"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

@@ -11,7 +11,7 @@ import (
 	authdto "grovehub/services/identity/internal/app/dto/authentication"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	tokenrepo "grovehub/services/identity/internal/app/repository/passwordtoken"
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+	coredatabase "grovehub/libs/core/database"
 	exchange "grovehub/services/identity/internal/app/services/authentication/operations/exchange"
 )
 

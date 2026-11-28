@@ -1,9 +1,9 @@
 package config
 
 import (
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/helpers"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/operations/credential"
+	"grovehub/libs/core/gateway/internal/src/helpers"
+	"grovehub/libs/core/gateway/internal/src/contracts"
+	"grovehub/libs/core/gateway/internal/src/operations/credential"
 
 	"crypto/ed25519"
 	"encoding/base64"

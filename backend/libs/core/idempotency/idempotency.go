@@ -2,10 +2,10 @@
 package idempotency
 
 import (
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency/internal/src/constants"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency/internal/src/operations/fingerprint"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency/internal/src/operations/key"
+	"grovehub/libs/core/idempotency/internal/src/constants"
+	"grovehub/libs/core/idempotency/internal/src/contracts"
+	"grovehub/libs/core/idempotency/internal/src/operations/fingerprint"
+	"grovehub/libs/core/idempotency/internal/src/operations/key"
 )
 
 const MaxKeyLength = constants.MaxKeyLength

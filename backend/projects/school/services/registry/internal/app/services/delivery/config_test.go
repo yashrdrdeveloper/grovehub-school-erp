@@ -8,7 +8,7 @@ import (
  "testing"
 
  "github.com/google/uuid"
- core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+ core "grovehub/libs/core/gateway"
 )
 func TestConfigure(t *testing.T){
  makeConfig:=func()Config{

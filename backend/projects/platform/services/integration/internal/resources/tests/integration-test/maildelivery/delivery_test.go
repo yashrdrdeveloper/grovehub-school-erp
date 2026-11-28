@@ -15,7 +15,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+	coredatabase "grovehub/libs/core/database"
 	client "grovehub/services/integration/client/connection"
 	repository "grovehub/services/integration/internal/app/repository/maildelivery/impl"
 	"grovehub/services/integration/internal/app/services/connection/operations/action/delivery"

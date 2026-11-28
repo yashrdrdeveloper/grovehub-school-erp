@@ -4,8 +4,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request/internal/src/operations/inspect"
+	"grovehub/libs/core/request/internal/src/contracts"
+	"grovehub/libs/core/request/internal/src/operations/inspect"
 )
 
 type allSections struct {

@@ -9,7 +9,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/helpers"
+	"grovehub/libs/core/telemetry/internal/src/helpers"
 )
 
 var latencyBoundariesSeconds = []float64{

@@ -1,6 +1,6 @@
 # Core Logging
 
-Import only `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/logging`. The single public facade
+Import only `grovehub/libs/core/logging`. The single public facade
 exposes Levels, NewLevels, DefaultLevels, ParseLevels and NewLevelFilterHandler.
 
 ```text

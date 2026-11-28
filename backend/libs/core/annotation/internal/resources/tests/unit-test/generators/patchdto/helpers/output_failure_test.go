@@ -7,14 +7,14 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/patchdto/helpers"
-	fixture "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/resources/tests/helpers"
+	"grovehub/libs/core/annotation/internal/src/generators/patchdto/helpers"
+	fixture "grovehub/libs/core/annotation/internal/resources/tests/helpers"
 )
 
 var _=Describe("Generated output persistence",func(){
 	It("preserves deterministic output and reports invalid output destinations",func(){
 		root:=GinkgoT().TempDir()
-		fixture.Write(root,"source.go","package dto\nimport annotation \"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation\"\n// @PatchRequestDto\ntype Input struct{ Name annotation.Patch[string] `json:\"name\"` }")
+		fixture.Write(root,"source.go","package dto\nimport annotation \"grovehub/libs/core/annotation\"\n// @PatchRequestDto\ntype Input struct{ Name annotation.Patch[string] `json:\"name\"` }")
 		specs,pkg,err:=helpers.Discover(root)
 		Expect(err).NotTo(HaveOccurred())
 		save:=func(path string)error{return helpers.Write(path,pkg,specs)}

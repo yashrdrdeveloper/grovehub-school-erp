@@ -3,7 +3,7 @@
 // the behavior explicitly, without reflection or invisible interception.
 package chain
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+import "grovehub/libs/core/annotation/internal/src/contracts"
 
 var UseCases = []contract.UseCase{
     {Name:"ChainOfResponsibility",Syntax:"@ChainOfResponsibility",Category:"Service pipeline",Purpose:"Mark a method implemented through the typed core service chain runner",Mode:"CHECK",Status:contract.Pilot,Roadmap:"P4",Target:contract.MethodTarget},

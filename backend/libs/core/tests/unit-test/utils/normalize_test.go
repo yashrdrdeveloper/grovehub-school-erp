@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
+	coreutils "grovehub/libs/core/utils"
 )
 
 var _ = Describe("Normalization facade", func() {

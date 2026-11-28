@@ -7,9 +7,9 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/helpers"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/operations/runtime"
+	"grovehub/libs/core/telemetry/internal/src/contracts"
+	"grovehub/libs/core/telemetry/internal/src/helpers"
+	"grovehub/libs/core/telemetry/internal/src/operations/runtime"
 )
 
 type serviceContextKey struct{}

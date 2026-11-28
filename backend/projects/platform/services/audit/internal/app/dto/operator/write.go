@@ -1,7 +1,7 @@
 package operator
 
 import (
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
+	"grovehub/libs/core/request"
 	"grovehub/services/audit/internal/app/dto/producer"
 )
 

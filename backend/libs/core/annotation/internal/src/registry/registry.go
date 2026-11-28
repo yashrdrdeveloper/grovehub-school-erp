@@ -13,8 +13,8 @@ import (
     "strings"
     "unicode"
 
-    "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
-    "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/catalog/patterns"
+    "grovehub/libs/core/annotation/internal/src/contracts"
+    "grovehub/libs/core/annotation/internal/src/catalog/patterns"
 )
 
 // Re-export the contract types to preserve the annotation package's API.

@@ -19,7 +19,7 @@ import (
 	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
 	"gorm.io/gorm"
 
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+	coredatabase "grovehub/libs/core/database"
 
 	migrationimpl "grovehub/services/identity/internal/app/repository/rbacmigration/impl"
 	"grovehub/services/identity/internal/app/services/rbacmigration"

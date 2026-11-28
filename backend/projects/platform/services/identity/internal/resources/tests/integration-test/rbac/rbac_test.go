@@ -3,11 +3,11 @@ package rbac_test
 import (
 	"context"
 	"errors"
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+	coredatabase "grovehub/libs/core/database"
 	"os"
 	"testing"
 
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	coresearch "grovehub/libs/core/search"
 	roledto "grovehub/services/identity/internal/app/dto/role"
 	searchoperation "grovehub/services/identity/internal/app/services/role/operations/search"
 	rolevalidator "grovehub/services/identity/internal/app/validators/role"

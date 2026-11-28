@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
-	corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	corehttp "grovehub/libs/core/http"
+	corepipeline "grovehub/libs/core/pipeline"
+	coresearch "grovehub/libs/core/search"
 	definitions "grovehub/services/identity/internal/app/constants/error"
 	protected "grovehub/services/identity/internal/app/controller/role/protected"
 	"grovehub/services/identity/internal/app/controller/helpers"

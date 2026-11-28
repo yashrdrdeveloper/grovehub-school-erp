@@ -1,7 +1,7 @@
 // Package event owns the annotation metadata for this backend responsibility.
 package event
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+import "grovehub/libs/core/annotation/internal/src/contracts"
 
 var UseCases = []contract.UseCase{
     {Name:"Event",Syntax:"@Event",Category:"Events, envelopes and event lifecycle",Purpose:"Domain-owned topic, version and payload metadata",Mode:"GEN/CHECK",Status:contract.Pilot,Roadmap:"P6",Target:contract.TypeTarget},

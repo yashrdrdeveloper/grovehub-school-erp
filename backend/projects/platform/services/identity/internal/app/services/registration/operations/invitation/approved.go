@@ -3,7 +3,7 @@ package invitation
 import (
 	"context"
 
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+	coredatabase "grovehub/libs/core/database"
 	"grovehub/services/identity/internal/app/entity"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	"grovehub/services/identity/internal/app/repository/accountrole"

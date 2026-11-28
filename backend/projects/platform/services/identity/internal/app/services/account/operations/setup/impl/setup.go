@@ -12,7 +12,7 @@ import (
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	tokenrepo "grovehub/services/identity/internal/app/repository/passwordtoken"
 	credential "grovehub/services/identity/internal/app/services/credential"
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+	coredatabase "grovehub/libs/core/database"
 	accountproducer "grovehub/services/identity/internal/app/events/producers/account"
 	setup "grovehub/services/identity/internal/app/services/account/operations/setup"
 )

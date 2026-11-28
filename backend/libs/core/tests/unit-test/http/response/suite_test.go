@@ -13,9 +13,9 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	oteltrace "go.opentelemetry.io/otel/trace"
 
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
-	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
+	corehttp "grovehub/libs/core/http"
+	coreerrors "grovehub/libs/core/errors"
+	coretelemetry "grovehub/libs/core/telemetry"
 )
 
 const (

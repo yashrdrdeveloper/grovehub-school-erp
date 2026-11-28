@@ -1,6 +1,6 @@
 # Core Request
 
-Consumers import only `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request`. The root facade
+Consumers import only `grovehub/libs/core/request`. The root facade
 exposes Request, Contract, Sections, Empty, Parts and Inspect.
 
 ```text

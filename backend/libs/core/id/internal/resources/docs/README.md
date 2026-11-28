@@ -1,6 +1,6 @@
 # Core ID
 
-Consumers import only `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/id`. The root id.go facade
+Consumers import only `grovehub/libs/core/id`. The root id.go facade
 exposes NewUUIDv7; generation stays under internal/src/operations/uuid.
 The former public id/helpers package is removed.
 

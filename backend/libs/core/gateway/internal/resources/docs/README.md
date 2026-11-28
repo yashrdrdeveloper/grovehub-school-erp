@@ -1,6 +1,6 @@
 # Core Gateway
 
-Consumers import only `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway`.
+Consumers import only `grovehub/libs/core/gateway`.
 The public facade exposes existing route tiers, workload claims, policy and
 verifier contracts, Ed25519 credentials, restricted-route middleware and
 signed HTTP transport. Concrete public types are aliases of internal types,

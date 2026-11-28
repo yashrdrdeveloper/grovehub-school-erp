@@ -3,7 +3,7 @@ package correlation_test
 import (
 	"context"
 	"go.opentelemetry.io/otel/trace"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events/internal/src/operations/correlation"
+	"grovehub/libs/core/events/internal/src/operations/correlation"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

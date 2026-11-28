@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	coresearch "grovehub/libs/core/search"
 	dto "grovehub/services/identity/internal/app/dto/approval"
 	repo "grovehub/services/identity/internal/app/repository/approval"
 	authrepo "grovehub/services/identity/internal/app/repository/authorization"

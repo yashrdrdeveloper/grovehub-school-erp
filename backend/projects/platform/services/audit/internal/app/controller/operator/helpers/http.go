@@ -6,9 +6,9 @@ import (
 	"io"
 	"net/http"
 
-	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
+	coreerrors "grovehub/libs/core/errors"
+	"grovehub/libs/core/gateway"
+	"grovehub/libs/core/pipeline"
 	definitions "grovehub/services/audit/internal/app/constants/error"
 	"grovehub/services/audit/internal/app/controller/operator/constants"
 	repository "grovehub/services/audit/internal/app/repository/operator"

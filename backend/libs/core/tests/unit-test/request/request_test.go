@@ -3,7 +3,7 @@ package request_test
 import (
 	"testing"
 
-	corerequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
+	corerequest "grovehub/libs/core/request"
 )
 
 type onlyBody struct {

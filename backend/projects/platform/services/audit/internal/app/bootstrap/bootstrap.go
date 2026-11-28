@@ -1,6 +1,9 @@
 package bootstrap
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/module"
+import "grovehub/libs/core/module"
 
-type Runtime interface { module.Module; Ready() bool }
-type Bootstrap interface { Build() (Runtime,error) }
+type Runtime interface {
+	module.Module
+	Ready() bool
+}
+type Bootstrap interface{ Build() (Runtime, error) }

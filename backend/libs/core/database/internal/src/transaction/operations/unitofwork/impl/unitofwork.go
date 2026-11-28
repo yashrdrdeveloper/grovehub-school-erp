@@ -5,8 +5,8 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/operations/run"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/operations/unitofwork"
+	"grovehub/libs/core/database/internal/src/transaction/operations/run"
+	"grovehub/libs/core/database/internal/src/transaction/operations/unitofwork"
 )
 
 type unitOfWork struct {

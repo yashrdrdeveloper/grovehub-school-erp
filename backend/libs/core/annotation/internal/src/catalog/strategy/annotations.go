@@ -1,7 +1,7 @@
 // Package strategy catalogs typed service strategy declarations.
 package strategy
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+import "grovehub/libs/core/annotation/internal/src/contracts"
 
 var UseCases = []contract.UseCase{
     {Name:"Strategy",Syntax:"@Strategy",Category:"Service pipeline",Purpose:"Mark typed strategy implementation explicitly composed by the service",Mode:"CHECK",Status:contract.Pilot,Roadmap:"P4",Target:contract.TypeTarget},

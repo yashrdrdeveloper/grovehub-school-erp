@@ -3,8 +3,8 @@ package helpers
 import (
 	"fmt"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/registry"
+	"grovehub/libs/core/annotation/internal/src/contracts"
+	"grovehub/libs/core/annotation/internal/src/registry"
 )
 
 func ValidateOccurrence(found contract.Occurrence) error {

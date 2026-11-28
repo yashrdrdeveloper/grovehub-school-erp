@@ -2,8 +2,8 @@
 package request
 
 import (
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request/internal/src/operations/inspect"
+	"grovehub/libs/core/request/internal/src/contracts"
+	"grovehub/libs/core/request/internal/src/operations/inspect"
 )
 
 // Request is the zero-sized marker embedded in concrete endpoint DTOs.

@@ -17,8 +17,8 @@ import (
     "github.com/google/uuid"
     "gorm.io/gorm"
 
-    coreid "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/id"
-    coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+    coreid "grovehub/libs/core/id"
+    coredatabase "grovehub/libs/core/database"
     passwords "grovehub/services/identity/internal/app/services/credential/helpers"
 )
 

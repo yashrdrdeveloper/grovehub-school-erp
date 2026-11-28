@@ -1,7 +1,7 @@
 // entity owns the annotation definitions for this backend responsibility.
 package entity
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+import "grovehub/libs/core/annotation/internal/src/contracts"
 
 var UseCases = []contract.UseCase{
     {Name:"Entity",Syntax:"@Entity schema.table [mode=table]",Category:"Entity, DTO and model lifecycle",Purpose:"Generate GORM TableName only; entity structs remain passive and never receive implicit builders, getters, or setters",Mode:"GEN",Status:contract.Existing,Roadmap:"P0",Target:contract.TypeTarget},

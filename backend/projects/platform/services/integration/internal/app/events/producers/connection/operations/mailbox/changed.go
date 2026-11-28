@@ -1,7 +1,7 @@
 package mailbox
 
 import (
-    coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
+    coreevents "grovehub/libs/core/events"
     flows "grovehub/services/integration/internal/app/events/producers/connection/operations/mailbox/flows"
 )
 

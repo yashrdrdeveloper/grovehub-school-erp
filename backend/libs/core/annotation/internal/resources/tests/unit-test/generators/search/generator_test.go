@@ -8,13 +8,13 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/search"
+	"grovehub/libs/core/annotation/internal/src/generators/search"
 )
 
 const searchTestInterface = `package repository
 import (
 	"context"
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	coresearch "grovehub/libs/core/search"
 	"grovehub/services/demo/entity"
 )
 // @Repository entity=Person
@@ -27,7 +27,7 @@ const searchTestImpl = `package impl
 import (
 	"context"
 	"gorm.io/gorm"
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	coresearch "grovehub/libs/core/search"
 	"grovehub/services/demo/entity"
 )
 type PersonRepository struct { db *gorm.DB }
@@ -39,7 +39,7 @@ func (repository *PersonRepository) Search(ctx context.Context, query coresearch
 `
 
 const searchTestConfig = `package search
-import coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+import coresearch "grovehub/libs/core/search"
 var PersonConfig = coresearch.Config{
 	ScalarFields: map[string]coresearch.ScalarField{"gid": {Expression: "p.gid"}},
 	RelationFields: map[string]coresearch.RelationField{},
@@ -77,7 +77,7 @@ var _ = Describe("GenerateAll", func() {
 		"func (repository *PersonRepository) searchGenerated(",
 		"coresearch.Execute[string, entity.Person]",
 		"coredatabase.TransactionDB(ctx, repository.db)",
-		"libs/backend/core/database\"",
+		"libs/core/database\"",
 		"search.PersonConfig",
 	} {
 		Expect(string(compiled)).To(ContainSubstring(fragment))

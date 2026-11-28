@@ -1,7 +1,7 @@
 package activity
 
 import (
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	coresearch "grovehub/libs/core/search"
 	dto "grovehub/services/audit/internal/app/dto/activity"
 	"grovehub/services/audit/internal/app/services/activity"
 	"grovehub/services/audit/internal/app/validators/activity/constants"

@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
-	corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
+	headercontext "grovehub/libs/core/headercontext"
+	corehttp "grovehub/libs/core/http"
+	corepipeline "grovehub/libs/core/pipeline"
 	kind "grovehub/services/identity/internal/app/constants/approval"
 	definitions "grovehub/services/identity/internal/app/constants/error"
 	"grovehub/services/identity/internal/app/controller/helpers"

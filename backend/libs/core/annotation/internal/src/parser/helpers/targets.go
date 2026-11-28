@@ -4,7 +4,7 @@ import (
 	"go/ast"
 	"go/token"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+	"grovehub/libs/core/annotation/internal/src/contracts"
 )
 
 type Targets map[*ast.CommentGroup]contract.Target

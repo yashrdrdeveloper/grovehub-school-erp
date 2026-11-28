@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request/internal/src/contracts"
+	"grovehub/libs/core/request/internal/src/contracts"
 )
 
 // Inspect validates the common request shape and discovers declared sections.

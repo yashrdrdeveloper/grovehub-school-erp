@@ -12,7 +12,7 @@ import (
  "testing"
 
  "github.com/google/uuid"
- core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+ core "grovehub/libs/core/gateway"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/services/workflow"
 )
 func TestSchoolCheckAdapter(t *testing.T){

@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
-	corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
+	corehttp "grovehub/libs/core/http"
+	corepipeline "grovehub/libs/core/pipeline"
 	errorcode "grovehub/services/identity/internal/app/constants/error"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
 	authdto "grovehub/services/identity/internal/app/dto/authentication"

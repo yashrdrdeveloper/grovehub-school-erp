@@ -5,7 +5,7 @@
 package coverage
 
 import (
-	generatedoutput "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/helpers/output"
+	generatedoutput "grovehub/libs/core/annotation/internal/src/helpers/output"
 	"bufio"
 	"context"
 	"encoding/json"
@@ -68,7 +68,7 @@ func Run(args []string) error {
 	if *mode == "--inventory" {
 		for _, item := range targets {
 			fmt.Printf("[INFO] Method inventory: %s\n", item.name)
-			if err := command(context.Background(), root, "go", "run", "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/cmd", "inventory", item.owner); err != nil {
+			if err := command(context.Background(), root, "go", "run", "grovehub/libs/core/annotation/cmd", "inventory", item.owner); err != nil {
 				return err
 			}
 		}

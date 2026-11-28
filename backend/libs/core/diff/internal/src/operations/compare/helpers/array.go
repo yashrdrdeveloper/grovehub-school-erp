@@ -3,7 +3,7 @@ package helpers
 import (
 	"strconv"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/diff/internal/src/contracts"
+	"grovehub/libs/core/diff/internal/src/contracts"
 )
 
 func walkArray(path string, old, next []any, changes *[]contracts.Change) {

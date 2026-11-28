@@ -13,7 +13,7 @@ import (
 
 // CoreImportPath names the current Core capability owner. Change this single
 // generator contract together with the eventual standalone Core module move.
-const CoreImportPath = "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core"
+const CoreImportPath = "grovehub/libs/core"
 
 func ReadModulePath(root string) (string, error) {
 	filename := filepath.Join(root, "go.mod")

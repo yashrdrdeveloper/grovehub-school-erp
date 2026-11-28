@@ -17,8 +17,8 @@ import (
  "time"
 
  "github.com/google/uuid"
- coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
- core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+ coredatabase "grovehub/libs/core/database"
+ core "grovehub/libs/core/gateway"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/registry"
 )
 func TestSchoolStatus(t *testing.T){

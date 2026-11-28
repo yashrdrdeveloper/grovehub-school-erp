@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/module/internal/src/contracts"
+	"grovehub/libs/core/module/internal/src/contracts"
 )
 
 var _ = Describe("Module", func() {

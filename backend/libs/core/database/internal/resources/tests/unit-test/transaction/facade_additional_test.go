@@ -6,8 +6,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction"
-	databasemock "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tests/mocks/database"
+	"grovehub/libs/core/database/internal/src/transaction"
+	databasemock "grovehub/libs/core/tests/mocks/database"
 )
 
 var _ = Describe("Internal transaction facade",func(){

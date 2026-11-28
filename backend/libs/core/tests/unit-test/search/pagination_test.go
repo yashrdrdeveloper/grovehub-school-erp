@@ -3,7 +3,7 @@ package search_test
 import (
 	"testing"
 
-	. "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	. "grovehub/libs/core/search"
 )
 
 func TestResolvePage(t *testing.T) {

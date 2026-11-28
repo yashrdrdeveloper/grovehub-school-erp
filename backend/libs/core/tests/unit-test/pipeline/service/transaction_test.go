@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
+	corepipeline "grovehub/libs/core/pipeline"
 )
 
 type fakeUnit struct{ completed bool; err error }

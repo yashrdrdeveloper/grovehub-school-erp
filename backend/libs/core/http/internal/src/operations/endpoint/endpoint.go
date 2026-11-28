@@ -12,15 +12,15 @@ import (
 	"net/http"
 	"net/url"
 
-	corerequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
+	corerequest "grovehub/libs/core/request"
 	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
 
-	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-	headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
-	httpheaders "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/constants"
+	coreerrors "grovehub/libs/core/errors"
+	headercontext "grovehub/libs/core/headercontext"
+	httpheaders "grovehub/libs/core/http/internal/src/constants"
 )
 
 const maxResponseBytes int64 = 8 << 20

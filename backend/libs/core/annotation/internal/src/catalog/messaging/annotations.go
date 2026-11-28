@@ -1,7 +1,7 @@
 // Package messaging owns the annotation metadata for this backend responsibility.
 package messaging
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+import "grovehub/libs/core/annotation/internal/src/contracts"
 
 var UseCases = []contract.UseCase{
     {Name:"Producer",Syntax:"@Producer",Category:"Messaging producer, consumer, broker topology and delivery",Purpose:"Typed publisher binding to MessagingClient, domain topic",Mode:"REG/GEN",Status:contract.Proposed,Roadmap:"P6",Target:contract.MethodTarget},

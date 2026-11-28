@@ -15,7 +15,7 @@ BACKEND_DIR="${REPO_ROOT}/backend/projects/platform"
 CORE_DIR="${REPO_ROOT}/backend/libs/core"
 PLATFORM_LIB_DIR="${REPO_ROOT}/backend/libs/platform"
 PLATFORM_LIB_MODULE="grovehub/libs/platform"
-CORE_MODULE="github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core"
+CORE_MODULE="grovehub/libs/core"
 # Scripts always resolve the owning module, never an enclosing Go workspace.
 export GOWORK=off
 TOOLS_DIR="${REPO_ROOT}/.tools"

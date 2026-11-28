@@ -4,8 +4,8 @@ import (
 	"context"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/helpers"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/operations/aftercommit"
+	"grovehub/libs/core/database/internal/src/transaction/helpers"
+	"grovehub/libs/core/database/internal/src/transaction/operations/aftercommit"
 )
 
 var _ = Describe("AfterCommit", func() {

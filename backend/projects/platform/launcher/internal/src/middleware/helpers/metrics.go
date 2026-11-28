@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
+	coretelemetry "grovehub/libs/core/telemetry"
 )
 
 func RecordMetrics(ctx context.Context, request *http.Request, route string, recorder *Recorder, duration time.Duration) {

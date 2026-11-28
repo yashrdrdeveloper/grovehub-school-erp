@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/logging/internal/src/contracts"
+	"grovehub/libs/core/logging/internal/src/contracts"
 )
 
 type levelFilterHandler struct {

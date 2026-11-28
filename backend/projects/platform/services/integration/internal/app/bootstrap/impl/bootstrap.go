@@ -10,7 +10,7 @@ import (
 
     "gorm.io/gorm"
 
-    coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+    coregateway "grovehub/libs/core/gateway"
     gmail "grovehub/services/integration/internal/app/externalService/mail/gmail"
 
     integrationclient "grovehub/services/integration/client/connection"

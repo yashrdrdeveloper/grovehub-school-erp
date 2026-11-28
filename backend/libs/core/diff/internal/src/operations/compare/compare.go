@@ -4,8 +4,8 @@ package compare
 import (
 	"fmt"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/diff/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/diff/internal/src/operations/compare/helpers"
+	"grovehub/libs/core/diff/internal/src/contracts"
+	"grovehub/libs/core/diff/internal/src/operations/compare/helpers"
 )
 
 func Compare[T any](old, next T) ([]contracts.Change, error) {

@@ -1,6 +1,6 @@
 # Core Pipeline
 
-The root `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline` facade exposes typed REST execution and
+The root `grovehub/libs/core/pipeline` facade exposes typed REST execution and
 service orchestration. Internal operations preserve the existing behavior.
 
 - REST: RunREST, RunStruct, ReadBody, Config, StructConfig, Writer, Result, Input,

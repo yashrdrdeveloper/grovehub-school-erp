@@ -1,8 +1,8 @@
 package helpers_test
 
 import (
-"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/entities/helpers"
-fixture "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/resources/tests/helpers"
+"grovehub/libs/core/annotation/internal/src/generators/entities/helpers"
+fixture "grovehub/libs/core/annotation/internal/resources/tests/helpers"
 . "github.com/onsi/ginkgo/v2"
 . "github.com/onsi/gomega"
 )

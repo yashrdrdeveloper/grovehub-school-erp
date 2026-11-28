@@ -6,8 +6,8 @@ import (
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
-	httpheaders "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/constants"
-	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
+	httpheaders "grovehub/libs/core/http/internal/src/constants"
+	coretelemetry "grovehub/libs/core/telemetry"
 )
 
 type traceHeaderTransport struct {

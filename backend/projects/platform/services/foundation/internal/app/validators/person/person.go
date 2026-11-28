@@ -1,7 +1,7 @@
 package person
 
 import (
-	coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
+	coreannotation "grovehub/libs/core/annotation"
 	persondto "grovehub/services/foundation/internal/app/dto/person"
 )
 

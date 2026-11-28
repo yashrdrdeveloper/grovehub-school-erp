@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
+	corepipeline "grovehub/libs/core/pipeline"
 	definitions "grovehub/services/identity/internal/app/constants/error"
 	protected "grovehub/services/identity/internal/app/controller/capability/protected"
 	"grovehub/services/identity/internal/app/controller/helpers"

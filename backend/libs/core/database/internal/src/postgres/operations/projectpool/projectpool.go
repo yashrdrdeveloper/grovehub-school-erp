@@ -8,9 +8,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/stdlib"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/postgres/operations/projectpool/constants"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/postgres/operations/projectpool/helpers"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/postgres/operations/projectpool/validators"
+	"grovehub/libs/core/database/internal/src/postgres/operations/projectpool/constants"
+	"grovehub/libs/core/database/internal/src/postgres/operations/projectpool/helpers"
+	"grovehub/libs/core/database/internal/src/postgres/operations/projectpool/validators"
 )
 
 // OpenProjectPool verifies the explicit database and role before returning a pool.

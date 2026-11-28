@@ -3,9 +3,9 @@ package envelope
 import (
 	"context"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events/internal/src/operations/causation"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events/internal/src/operations/correlation"
+	"grovehub/libs/core/events/internal/src/contracts"
+	"grovehub/libs/core/events/internal/src/operations/causation"
+	"grovehub/libs/core/events/internal/src/operations/correlation"
 )
 
 func New[T any](ctx context.Context, metadata contracts.Metadata, data T) contracts.Envelope[T] {

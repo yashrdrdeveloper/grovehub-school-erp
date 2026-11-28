@@ -4,9 +4,9 @@ import (
 	"context"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/operations/unitofwork"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/operations/unitofwork/impl"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/operations/run"
+	"grovehub/libs/core/database/internal/src/transaction/operations/unitofwork"
+	"grovehub/libs/core/database/internal/src/transaction/operations/unitofwork/impl"
+	"grovehub/libs/core/database/internal/src/transaction/operations/run"
 )
 
 var _ = Describe("UnitOfWork", func() {

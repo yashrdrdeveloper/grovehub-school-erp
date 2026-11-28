@@ -8,7 +8,7 @@ import (
  "net/url"
  "os"
 
- core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+ core "grovehub/libs/core/gateway"
  client "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/identity/client/authentication"
  controller "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/identity/controller/authentication/public"
  protected "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/identity/controller/authentication/protected"

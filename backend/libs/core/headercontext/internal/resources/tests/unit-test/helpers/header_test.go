@@ -2,8 +2,8 @@ package helpers_test
 
 import (
 	"net/http"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/helpers"
+	"grovehub/libs/core/headercontext/internal/src/contracts"
+	"grovehub/libs/core/headercontext/internal/src/helpers"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

@@ -1,6 +1,6 @@
 package config
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
+import "grovehub/libs/core/annotation"
 
 // Config is decoded once at startup; an invalid tenant-required flag fails closed.
 // @Configuration

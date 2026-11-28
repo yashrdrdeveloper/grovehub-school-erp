@@ -5,8 +5,8 @@ import (
 	"errors"
 	"net/http/httptest"
 	"time"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/operations/workload"
+	"grovehub/libs/core/gateway/internal/src/contracts"
+	"grovehub/libs/core/gateway/internal/src/operations/workload"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

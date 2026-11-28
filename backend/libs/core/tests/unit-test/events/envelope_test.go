@@ -10,7 +10,7 @@ import (
 
     "go.opentelemetry.io/otel/trace"
 
-    coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
+    coreevents "grovehub/libs/core/events"
 )
 
 var _ = Describe("Generic event envelope", func() {

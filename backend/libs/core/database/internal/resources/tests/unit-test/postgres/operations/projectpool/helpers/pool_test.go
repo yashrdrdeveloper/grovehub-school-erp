@@ -4,8 +4,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/postgres/operations/projectpool/constants"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/postgres/operations/projectpool/helpers"
+	"grovehub/libs/core/database/internal/src/postgres/operations/projectpool/constants"
+	"grovehub/libs/core/database/internal/src/postgres/operations/projectpool/helpers"
 )
 
 var _ = Describe("ConfigurePool", func() {

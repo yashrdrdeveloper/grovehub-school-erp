@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	coremodule "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/module"
+	coremodule "grovehub/libs/core/module"
 )
 
 // Service-owned implementations can extend the shared contract.

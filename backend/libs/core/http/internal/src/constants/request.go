@@ -1,6 +1,6 @@
 package constants
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
+import "grovehub/libs/core/headercontext"
 
 const (
 	CorrelationID = headercontext.HeaderCorrelationID

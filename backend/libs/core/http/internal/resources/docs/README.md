@@ -1,6 +1,6 @@
 # Core HTTP
 
-Consumers import only `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http` (package corehttp).
+Consumers import only `grovehub/libs/core/http` (package corehttp).
 The root http.go facade exposes response contracts, correlation, endpoint
 dispatch, header names, logging levels, readiness, request decoding, response
 writing and tracing.

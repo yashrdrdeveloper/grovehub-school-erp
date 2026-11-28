@@ -9,8 +9,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/internal/src/operations/rest"
+	coreerrors "grovehub/libs/core/errors"
+	rest "grovehub/libs/core/pipeline/internal/src/operations/rest"
 )
 
 var _ = Describe("REST result writers", func() {

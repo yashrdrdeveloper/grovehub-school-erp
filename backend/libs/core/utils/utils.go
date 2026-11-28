@@ -2,9 +2,9 @@
 package utils
 
 import (
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils/internal/src/operations/normalize"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils/internal/src/operations/strings"
+	"grovehub/libs/core/utils/internal/src/contracts"
+	"grovehub/libs/core/utils/internal/src/operations/normalize"
+	"grovehub/libs/core/utils/internal/src/operations/strings"
 )
 
 // OptionalString converts an empty string to nil for nullable fields.

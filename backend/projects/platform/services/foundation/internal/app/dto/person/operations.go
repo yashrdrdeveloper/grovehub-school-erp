@@ -1,8 +1,8 @@
 package person
 
 import (
-    corerequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
-    coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+    corerequest "grovehub/libs/core/request"
+    coresearch "grovehub/libs/core/search"
 )
 
 // The fields of each endpoint request describe only the sources that exist

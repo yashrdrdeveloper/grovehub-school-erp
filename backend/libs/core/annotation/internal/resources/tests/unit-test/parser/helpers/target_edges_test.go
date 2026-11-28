@@ -8,8 +8,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/parser/helpers"
-	contract "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+	"grovehub/libs/core/annotation/internal/src/parser/helpers"
+	contract "grovehub/libs/core/annotation/internal/src/contracts"
 )
 
 var _=Describe("AST declaration ownership",func(){

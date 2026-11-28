@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
+	coreevents "grovehub/libs/core/events"
 	eventtypes "grovehub/services/audit/internal/app/constants/events"
 	"grovehub/services/audit/internal/app/dto/producer"
 	validator "grovehub/services/audit/internal/app/validators/events"

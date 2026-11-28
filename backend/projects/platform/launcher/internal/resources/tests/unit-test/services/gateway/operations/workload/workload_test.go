@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 	"go.uber.org/mock/gomock"
 
-	core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+	core "grovehub/libs/core/gateway"
 	fixture "grovehub/launcher/internal/resources/tests/helpers/workload"
 	mockexternal "grovehub/launcher/internal/resources/tests/mocks/gateway/external"
 	mock "grovehub/launcher/internal/resources/tests/mocks/gateway/workload"

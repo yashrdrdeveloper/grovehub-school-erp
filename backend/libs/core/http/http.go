@@ -8,17 +8,17 @@ import (
 	"sync/atomic"
 	"time"
 
-	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-	corerequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/constants"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/helpers"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/operations/correlation"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/operations/endpoint"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/operations/readiness"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/operations/request"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/operations/response"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/operations/tracing"
+	coreerrors "grovehub/libs/core/errors"
+	corerequest "grovehub/libs/core/request"
+	"grovehub/libs/core/http/internal/src/constants"
+	"grovehub/libs/core/http/internal/src/contracts"
+	"grovehub/libs/core/http/internal/src/helpers"
+	"grovehub/libs/core/http/internal/src/operations/correlation"
+	"grovehub/libs/core/http/internal/src/operations/endpoint"
+	"grovehub/libs/core/http/internal/src/operations/readiness"
+	"grovehub/libs/core/http/internal/src/operations/request"
+	"grovehub/libs/core/http/internal/src/operations/response"
+	"grovehub/libs/core/http/internal/src/operations/tracing"
 )
 
 const (

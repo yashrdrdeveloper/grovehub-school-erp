@@ -3,10 +3,10 @@ package read
 import (
 	"net/http"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/constants"
-	coreidempotency "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/helpers"
+	"grovehub/libs/core/headercontext/internal/src/constants"
+	coreidempotency "grovehub/libs/core/idempotency"
+	"grovehub/libs/core/headercontext/internal/src/contracts"
+	"grovehub/libs/core/headercontext/internal/src/helpers"
 )
 
 // HTTPHeaders reads only supported metadata and validates it before returning any values.

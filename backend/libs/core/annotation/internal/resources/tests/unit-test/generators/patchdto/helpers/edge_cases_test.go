@@ -4,8 +4,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/patchdto/helpers"
-	fixture "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/resources/tests/helpers"
+	"grovehub/libs/core/annotation/internal/src/generators/patchdto/helpers"
+	fixture "grovehub/libs/core/annotation/internal/resources/tests/helpers"
 )
 
 var _=Describe("Patch contract validation",func(){
@@ -27,7 +27,7 @@ var _=Describe("Patch contract validation",func(){
 			{"// @PatchRequestDto\ntype Update struct{}\nfunc (u *Update) MarshalJSON()([]byte,error){return nil,nil}","remove handwritten MarshalJSON"},
 		}{
 			root:=GinkgoT().TempDir()
-			fixture.Write(root,"update.go","package dto\nimport \"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation\"\n"+test.source)
+			fixture.Write(root,"update.go","package dto\nimport \"grovehub/libs/core/annotation\"\n"+test.source)
 			_,_,err:=helpers.Discover(root)
 			Expect(err).To(MatchError(ContainSubstring(test.reason)),test.source)
 		}

@@ -4,8 +4,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/expand"
-	fixture "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/resources/tests/helpers"
+	"grovehub/libs/core/annotation/internal/src/generators/expand"
+	fixture "grovehub/libs/core/annotation/internal/resources/tests/helpers"
 )
 
 var _=Describe("Entity annotation expansion",func(){

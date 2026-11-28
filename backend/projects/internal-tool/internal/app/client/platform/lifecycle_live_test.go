@@ -12,7 +12,7 @@ import (
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/entity"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/services/workflow"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/resources/migrations"
- coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+ coredatabase "grovehub/libs/core/database"
 )
 
 // Invoked by the cross-project suite as a separate executable. It owns its

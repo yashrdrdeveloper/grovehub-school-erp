@@ -7,15 +7,15 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/patchdto"
-	sourceFixture "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/resources/tests/helpers"
+	"grovehub/libs/core/annotation/internal/src/generators/patchdto"
+	sourceFixture "grovehub/libs/core/annotation/internal/resources/tests/helpers"
 )
 
 var _=Describe("Patch DTO overlay lifecycle",func(){
 	It("ignores generated and vendor trees and removes stale outputs safely",func(){
 		root:=GinkgoT().TempDir()
 		owner:=filepath.Join(root,"services","demo")
-		sourceFixture.Write(owner,"internal/app/dto/update.go","package dto\nimport annotation \"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation\"\n// @PatchRequestDto\ntype Update struct{ Name annotation.Patch[string] `json:\"name\"` }")
+		sourceFixture.Write(owner,"internal/app/dto/update.go","package dto\nimport annotation \"grovehub/libs/core/annotation\"\n// @PatchRequestDto\ntype Update struct{ Name annotation.Patch[string] `json:\"name\"` }")
 		sourceFixture.Write(owner,"internal/app/dto/vendor/broken.go","invalid source")
 		sourceFixture.Write(owner,"internal/app/dto/.generated/broken.go","invalid source")
 		Expect(patchdto.GenerateAll(root)).To(Succeed())

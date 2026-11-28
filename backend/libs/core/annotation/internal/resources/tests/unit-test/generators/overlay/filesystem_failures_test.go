@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/overlay"
-	sourceFixture "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/resources/tests/helpers"
+	"grovehub/libs/core/annotation/internal/src/generators/overlay"
+	sourceFixture "grovehub/libs/core/annotation/internal/resources/tests/helpers"
 )
 
 var _=Describe("Overlay filesystem boundaries",func(){

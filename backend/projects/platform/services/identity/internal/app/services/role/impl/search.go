@@ -3,7 +3,7 @@ package impl
 import (
 	"context"
 
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	coresearch "grovehub/libs/core/search"
 	"grovehub/services/identity/internal/app/constants/permission"
 	roledto "grovehub/services/identity/internal/app/dto/role"
 	searchoperation "grovehub/services/identity/internal/app/services/role/operations/search"

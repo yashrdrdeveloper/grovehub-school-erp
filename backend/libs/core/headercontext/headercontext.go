@@ -3,13 +3,13 @@
 package headercontext
 
 import (
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/constants"
+	"grovehub/libs/core/headercontext/internal/src/constants"
 	"context"
 	"net/http"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/operations/metadata"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/operations/middleware"
+	"grovehub/libs/core/headercontext/internal/src/contracts"
+	"grovehub/libs/core/headercontext/internal/src/operations/metadata"
+	"grovehub/libs/core/headercontext/internal/src/operations/middleware"
 )
 
 // Header names owned by the inbound metadata capability.

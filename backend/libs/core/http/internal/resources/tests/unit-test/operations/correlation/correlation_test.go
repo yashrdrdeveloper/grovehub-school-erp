@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"github.com/google/uuid"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/operations/correlation"
+	"grovehub/libs/core/http/internal/src/operations/correlation"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

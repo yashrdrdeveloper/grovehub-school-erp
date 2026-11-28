@@ -5,7 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+	coredatabase "grovehub/libs/core/database"
 	authorizationrepo "grovehub/services/identity/internal/app/repository/authorization"
 	"grovehub/services/identity/internal/app/repository/authorization/helpers"
 )

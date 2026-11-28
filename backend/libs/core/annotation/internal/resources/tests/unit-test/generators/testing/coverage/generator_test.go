@@ -7,7 +7,7 @@ import (
 	"strings"
 	. "github.com/onsi/ginkgo/v2"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/testing/coverage"
+	"grovehub/libs/core/annotation/internal/src/generators/testing/coverage"
 
 	. "github.com/onsi/gomega"
 )

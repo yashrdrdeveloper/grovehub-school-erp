@@ -10,16 +10,16 @@ import (
 
 // Client-facing aliases preserve the event envelope and payload contracts.
 type (
-	Event = dto.Event
-	Activity = dto.Activity
-	InvitationEvent = dto.InvitationEvent
-	OperatorActivity = dto.OperatorActivity
+	Event               = dto.Event
+	Activity            = dto.Activity
+	InvitationEvent     = dto.InvitationEvent
+	OperatorActivity    = dto.OperatorActivity
 	SchoolRenameReceipt = dto.SchoolRenameReceipt
 	SchoolStatusReceipt = dto.SchoolStatusReceipt
 )
 
 const (
-	ActivityOccurred = constants.ActivityOccurred
+	ActivityOccurred   = constants.ActivityOccurred
 	InvitationDelivery = constants.InvitationDelivery
 )
 

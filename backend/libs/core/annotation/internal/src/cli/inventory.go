@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/testing/inventory"
+	"grovehub/libs/core/annotation/internal/src/generators/testing/inventory"
 )
 
 func runInventory(args []string, output io.Writer) error {

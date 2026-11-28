@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	coresearch "grovehub/libs/core/search"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

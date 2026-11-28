@@ -1,6 +1,6 @@
 package person
 
-import coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
+import coreannotation "grovehub/libs/core/annotation"
 
 type ContactValue struct {
 	Value     string `json:"value" normalize:"trim" validate:"notblank"`

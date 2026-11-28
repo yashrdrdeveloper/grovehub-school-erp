@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"strings"
 
-	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
+	coreevents "grovehub/libs/core/events"
 	eventtypes "grovehub/services/audit/internal/app/constants/events"
 	dto "grovehub/services/audit/internal/app/dto/events"
 	"grovehub/services/audit/internal/app/validators/events/constants"

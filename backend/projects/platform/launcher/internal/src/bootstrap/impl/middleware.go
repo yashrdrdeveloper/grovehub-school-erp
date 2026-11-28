@@ -9,9 +9,9 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
-	coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
-	headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
-	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
+	coregateway "grovehub/libs/core/gateway"
+	headercontext "grovehub/libs/core/headercontext"
+	coretelemetry "grovehub/libs/core/telemetry"
 	observability "grovehub/launcher/internal/src/middleware/observability/impl"
 )
 

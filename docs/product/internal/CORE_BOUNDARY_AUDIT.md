@@ -128,4 +128,4 @@ Select canonical Go module identity, generalize generation roots and script invo
 
 ## Extraction checkpoint (26 November 2026)
 
-The above graph records the pre-relocation import paths for traceability. Core has now moved to `libs/backend/core` and its module path is `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core`. No old physical Core directory remains. The isolated migration passed independent Core tests with GOWORK=off, school builds in both workspace modes, school regression tests, and coverage/inventory generation. See [implementation progress](IMPLEMENTATION_PROGRESS.md) for exact commits, validation and remaining release limitations.
+The above graph records the pre-relocation import paths for traceability. Core has now moved to `libs/core` and its module path is `grovehub/libs/core`. No old physical Core directory remains. The isolated migration passed independent Core tests with GOWORK=off, school builds in both workspace modes, school regression tests, and coverage/inventory generation. See [implementation progress](IMPLEMENTATION_PROGRESS.md) for exact commits, validation and remaining release limitations.

@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/parser"
+	"grovehub/libs/core/annotation/internal/src/contracts"
+	"grovehub/libs/core/annotation/internal/src/parser"
 )
 
 func CheckDirectory(entry fs.DirEntry) error {

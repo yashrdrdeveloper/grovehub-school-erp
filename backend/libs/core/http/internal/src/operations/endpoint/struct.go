@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/url"
-	corerequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
+	corerequest "grovehub/libs/core/request"
 )
 
 // CallStruct invokes the registered controller route from an endpoint-specific

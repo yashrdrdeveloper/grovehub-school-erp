@@ -7,7 +7,7 @@ import (
  "os"
  "time"
 
- coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+ coredatabase "grovehub/libs/core/database"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/launcher"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/school/services/registry"
 )

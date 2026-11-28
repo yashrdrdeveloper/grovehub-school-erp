@@ -12,7 +12,7 @@ import (
 	accountmapper "grovehub/services/identity/internal/app/mappers/account"
 	accountvalidator "grovehub/services/identity/internal/app/validators/account"
 	rolevalidator "grovehub/services/identity/internal/app/validators/account/helpers"
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+	coredatabase "grovehub/libs/core/database"
 	accountproducer "grovehub/services/identity/internal/app/events/producers/account"
 	update "grovehub/services/identity/internal/app/services/account/operations/update"
 )

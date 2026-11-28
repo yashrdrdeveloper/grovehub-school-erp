@@ -1,6 +1,6 @@
 package contracts
 
-import coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
+import coreerrors "grovehub/libs/core/errors"
 
 type Success[T any] struct {
 	Success bool `json:"success"`

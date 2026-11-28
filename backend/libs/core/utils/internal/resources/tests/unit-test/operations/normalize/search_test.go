@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
+	"grovehub/libs/core/utils"
 )
 
 func TestStrictNormalization(t *testing.T) {

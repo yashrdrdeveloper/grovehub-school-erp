@@ -2,7 +2,7 @@ package impl
 
 import (
     "context"
-    coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
+    coreerrors "grovehub/libs/core/errors"
     errorcode "grovehub/services/infrastructure/internal/app/constants/error"
     dto "grovehub/services/infrastructure/internal/app/dto/messaging"
     consumestrategies "grovehub/services/infrastructure/internal/app/services/messaging/operations/consume/strategies"

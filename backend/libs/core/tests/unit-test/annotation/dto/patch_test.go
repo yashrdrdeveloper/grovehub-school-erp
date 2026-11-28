@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	annotationdto "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
+	annotationdto "grovehub/libs/core/annotation"
 )
 
 var _ = Describe("Patch", func() {

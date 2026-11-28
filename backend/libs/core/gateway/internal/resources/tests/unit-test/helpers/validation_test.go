@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/helpers"
+	"grovehub/libs/core/gateway/internal/src/helpers"
 )
 
 var _ = Describe("ValidKeyID", func() {

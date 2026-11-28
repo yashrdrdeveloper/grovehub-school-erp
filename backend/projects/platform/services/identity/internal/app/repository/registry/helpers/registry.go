@@ -3,7 +3,7 @@ package helpers
 import (
 	"gorm.io/gorm"
 
-	coreid "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/id"
+	coreid "grovehub/libs/core/id"
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/repository/registry"

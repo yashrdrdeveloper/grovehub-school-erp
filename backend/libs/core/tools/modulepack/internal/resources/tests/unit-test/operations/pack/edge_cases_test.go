@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tools/modulepack/internal/src/operations/pack"
+	"grovehub/libs/core/tools/modulepack/internal/src/operations/pack"
 )
 
 type closeFailure struct { io.WriteCloser }

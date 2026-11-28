@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/logging/internal/src/contracts"
+	"grovehub/libs/core/logging/internal/src/contracts"
 )
 
 var _ = Describe("NewLevels", func() {

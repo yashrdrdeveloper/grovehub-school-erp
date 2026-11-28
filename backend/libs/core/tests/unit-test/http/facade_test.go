@@ -8,7 +8,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
+	corehttp "grovehub/libs/core/http"
 )
 
 func TestFacade(t *testing.T) {

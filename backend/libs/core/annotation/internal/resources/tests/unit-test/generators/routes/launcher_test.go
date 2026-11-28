@@ -5,7 +5,7 @@ import (
  "path/filepath"
  . "github.com/onsi/ginkgo/v2"
  . "github.com/onsi/gomega"
- "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/routes"
+ "grovehub/libs/core/annotation/internal/src/generators/routes"
 )
 
 var _ = Describe("Launcher annotations",func(){

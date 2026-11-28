@@ -1,7 +1,7 @@
 // Package utilities owns the annotation metadata for this backend responsibility.
 package utilities
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+import "grovehub/libs/core/annotation/internal/src/contracts"
 
 var UseCases = []contract.UseCase{
     {Name:"Pure",Syntax:"@Pure",Category:"Utilities, helpers, cache, concurrency and shared contracts",Purpose:"Static advisory for side-effect-free functions; lint where possible",Mode:"CHECK",Status:contract.Optional,Roadmap:"P8",Target:contract.FunctionTarget},

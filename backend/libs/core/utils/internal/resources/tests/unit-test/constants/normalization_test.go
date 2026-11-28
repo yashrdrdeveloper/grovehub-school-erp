@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils/internal/src/constants"
+	"grovehub/libs/core/utils/internal/src/constants"
 )
 
 var _ = Describe("Normalization constants", func() {

@@ -19,7 +19,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/metric/metricdata"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/operations/runtime"
+	"grovehub/libs/core/telemetry/internal/src/operations/runtime"
 )
 
 var sdkFailure=errors.New("SDK failure")

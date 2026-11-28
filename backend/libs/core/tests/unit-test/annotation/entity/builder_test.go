@@ -1,7 +1,7 @@
 package entity_test
 
 import (
- coreentity "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
+ coreentity "grovehub/libs/core/annotation"
 
  . "github.com/onsi/ginkgo/v2"
  . "github.com/onsi/gomega"

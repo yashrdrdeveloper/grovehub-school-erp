@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils/internal/src/contracts"
+	"grovehub/libs/core/utils/internal/src/contracts"
 )
 
 // NormalizeRFC3339UTC normalizes a timestamp to UTC with nanosecond precision.

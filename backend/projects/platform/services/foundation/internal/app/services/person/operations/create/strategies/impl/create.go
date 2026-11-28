@@ -5,10 +5,10 @@ package impl
 import (
     "context"
 
-    coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-    coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+    coreerrors "grovehub/libs/core/errors"
+    coredatabase "grovehub/libs/core/database"
     createstrategies "grovehub/services/foundation/internal/app/services/person/operations/create/strategies"
-    corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
+    corepipeline "grovehub/libs/core/pipeline"
     personerror "grovehub/services/foundation/internal/app/constants/error"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     "grovehub/services/foundation/internal/app/entity"

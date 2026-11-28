@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
+	coreerrors "grovehub/libs/core/errors"
 	definitions "grovehub/services/audit/internal/app/constants/error"
 	operations "grovehub/services/audit/internal/app/constants/operator"
 	dto "grovehub/services/audit/internal/app/dto/operator"

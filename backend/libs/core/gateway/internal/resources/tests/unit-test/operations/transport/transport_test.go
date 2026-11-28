@@ -8,8 +8,8 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"strings"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/operations/transport"
+	"grovehub/libs/core/gateway/internal/src/contracts"
+	"grovehub/libs/core/gateway/internal/src/operations/transport"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

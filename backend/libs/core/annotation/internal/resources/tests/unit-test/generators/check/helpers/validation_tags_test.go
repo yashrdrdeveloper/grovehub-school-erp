@@ -5,7 +5,7 @@ import (
 	. "github.com/onsi/gomega"
 	"os"
 	"path/filepath"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/check/helpers"
+	"grovehub/libs/core/annotation/internal/src/generators/check/helpers"
 )
 
 var _ = Describe("CheckValidationTags",func(){

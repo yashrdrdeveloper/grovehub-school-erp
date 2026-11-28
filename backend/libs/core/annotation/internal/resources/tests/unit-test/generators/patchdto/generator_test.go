@@ -8,11 +8,11 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/patchdto"
+	"grovehub/libs/core/annotation/internal/src/generators/patchdto"
 )
 
 const patchSource = `package widget
-import annotated "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
+import annotated "grovehub/libs/core/annotation"
 
 // @PatchRequestDto
 type UpdateWidget struct {
@@ -63,7 +63,7 @@ var _ = Describe("GenerateAll", func() {
 // @PatchRequestDto
 type UpdateWidget struct { Name string ` + "`json:\"name\"`" + ` }`,
 		"missing json tag": `package widget
-import dto "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
+import dto "grovehub/libs/core/annotation"
 // @PatchRequestDto
 type UpdateWidget struct { Name dto.Patch[string] }`,
 		"manual MarshalJSON": patchSource + `
@@ -100,8 +100,8 @@ var _ = Describe("GenerateAll", func() {
 
 var _ = Describe("GenerateAll", func() {
     It("rejects removed PATCH subpackage imports", func() {
-        legacyImport := "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation" + "/dto"
-        root, _ := fixture(GinkgoT(), strings.Replace(patchSource, "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation", legacyImport, 1))
+        legacyImport := "grovehub/libs/core/annotation" + "/dto"
+        root, _ := fixture(GinkgoT(), strings.Replace(patchSource, "grovehub/libs/core/annotation", legacyImport, 1))
         Expect(patchdto.GenerateAll(root)).To(MatchError(ContainSubstring("must use")))
     })
 })

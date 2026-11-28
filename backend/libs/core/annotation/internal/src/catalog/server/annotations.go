@@ -1,7 +1,7 @@
 // Package server owns the annotation metadata for this backend responsibility.
 package server
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+import "grovehub/libs/core/annotation/internal/src/contracts"
 
 var UseCases = []contract.UseCase{
     {Name:"Module",Syntax:"@Module",Category:"Server, launcher, startup, shutdown and background jobs",Purpose:"Declare module composition entry, dependencies and exports",Mode:"REG",Status:contract.Proposed,Roadmap:"P3",Target:contract.FunctionTarget},

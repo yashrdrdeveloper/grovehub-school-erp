@@ -8,8 +8,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
-	headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
+	coreevents "grovehub/libs/core/events"
+	headercontext "grovehub/libs/core/headercontext"
 )
 
 var _ = Describe("Header context", func() {

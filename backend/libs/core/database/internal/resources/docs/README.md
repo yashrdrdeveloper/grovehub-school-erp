@@ -1,6 +1,6 @@
 # Core Database
 
-The only consumer import is `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database`. Database provisioning, migrations, business repositories and tenant authorization stay in their owning applications.
+The only consumer import is `grovehub/libs/core/database`. Database provisioning, migrations, business repositories and tenant authorization stay in their owning applications.
 
 ```text
 database/

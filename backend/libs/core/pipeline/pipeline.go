@@ -5,11 +5,11 @@ import (
 	"context"
 	"net/http"
 
-	coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
-	corerequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/internal/src/operations/rest"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/internal/src/operations/service"
+	coreannotation "grovehub/libs/core/annotation"
+	coredatabase "grovehub/libs/core/database"
+	corerequest "grovehub/libs/core/request"
+	"grovehub/libs/core/pipeline/internal/src/operations/rest"
+	"grovehub/libs/core/pipeline/internal/src/operations/service"
 )
 
 type Empty = rest.Empty

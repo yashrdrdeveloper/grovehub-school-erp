@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils/internal/src/contracts"
+	"grovehub/libs/core/utils/internal/src/contracts"
 )
 
 // ValidateUUID requires a nonzero UUID in canonical lowercase form, without normalization.

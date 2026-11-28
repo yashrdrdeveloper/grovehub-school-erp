@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 	"go.opentelemetry.io/otel/codes"
 
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
+	corehttp "grovehub/libs/core/http"
 )
 
 // @Testing suite=LauncherMiddleware

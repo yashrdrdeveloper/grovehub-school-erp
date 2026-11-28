@@ -15,7 +15,7 @@ import (
 	"github.com/google/uuid"
 	ginkgo "github.com/onsi/ginkgo/v2"
 
-	core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+	core "grovehub/libs/core/gateway"
 	tenantaccess "grovehub/launcher/internal/src/services/gateway/operations/tenant/access"
 	. "grovehub/launcher/internal/src/services/gateway/operations/workload"
 	"grovehub/launcher/internal/src/services/gateway/policies"

@@ -1,7 +1,7 @@
 // Package patterns catalogs GoF design patterns without generating their business behavior.
 package patterns
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+import "grovehub/libs/core/annotation/internal/src/contracts"
 
 var behavioral = []contract.Pattern{
     {Name:"Chain", Family:"Behavioral", Pattern:"Chain of Responsibility", Purpose:"Ordered middleware/handler chain", Decision:"Useful registry"},

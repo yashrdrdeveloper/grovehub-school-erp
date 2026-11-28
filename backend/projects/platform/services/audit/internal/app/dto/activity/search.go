@@ -1,8 +1,8 @@
 package activity
 
 import (
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
+	"grovehub/libs/core/request"
+	coresearch "grovehub/libs/core/search"
 	"grovehub/services/audit/internal/app/entity"
 )
 

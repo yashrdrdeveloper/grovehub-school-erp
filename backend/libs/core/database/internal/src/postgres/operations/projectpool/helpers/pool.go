@@ -3,7 +3,7 @@ package helpers
 import (
 	"database/sql"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/postgres/operations/projectpool/constants"
+	"grovehub/libs/core/database/internal/src/postgres/operations/projectpool/constants"
 )
 
 func ConfigurePool(db *sql.DB) {

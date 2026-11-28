@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+	coredatabase "grovehub/libs/core/database"
 	"grovehub/services/identity/internal/app/repository/role"
 	"grovehub/services/identity/internal/app/repository/role/constants"
 	"grovehub/services/identity/internal/app/repository/role/helpers"

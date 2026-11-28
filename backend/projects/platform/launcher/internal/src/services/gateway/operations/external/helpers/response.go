@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
+	corehttp "grovehub/libs/core/http"
 )
 
 func Reject(writer http.ResponseWriter, request *http.Request, status int) {

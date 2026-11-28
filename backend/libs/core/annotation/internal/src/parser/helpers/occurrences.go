@@ -5,8 +5,8 @@ import (
 	"go/ast"
 	"go/token"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/registry"
+	"grovehub/libs/core/annotation/internal/src/contracts"
+	"grovehub/libs/core/annotation/internal/src/registry"
 )
 
 // CollectOccurrences preserves source order and reports invalid directives

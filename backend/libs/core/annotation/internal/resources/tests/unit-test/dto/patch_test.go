@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"encoding/json"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/dto"
+	"grovehub/libs/core/annotation/internal/src/dto"
 )
 
 var _ = Describe("UnmarshalJSON", func() {

@@ -3,7 +3,7 @@ package helpers
 import (
 	"time"
 
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	coresearch "grovehub/libs/core/search"
 	dto "grovehub/services/identity/internal/app/dto/approval"
 	"grovehub/services/identity/internal/app/entity"
 )

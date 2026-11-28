@@ -1,6 +1,6 @@
 # Core Utils
 
-Consumers import only `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils`.
+Consumers import only `grovehub/libs/core/utils`.
 The former core/helpers and core/normalize packages are removed.
 
 ```text

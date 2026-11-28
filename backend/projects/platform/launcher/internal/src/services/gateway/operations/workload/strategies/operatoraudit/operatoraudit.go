@@ -5,7 +5,7 @@ import (
 	"errors"
 	"net/http"
 
-	core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+	core "grovehub/libs/core/gateway"
 )
 
 const OperatorAuditRoute = "POST /audit/restricted/operator-activities"

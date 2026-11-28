@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	coredb "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+	coredb "grovehub/libs/core/database"
 	"grovehub/services/identity/client/invitation"
 )
 

@@ -6,8 +6,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils/internal/src/operations/normalize"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils/internal/src/contracts"
+	"grovehub/libs/core/utils/internal/src/contracts"
+	"grovehub/libs/core/utils/internal/src/operations/normalize"
 )
 
 var _ = Describe("RFC3339 UTC normalization", func() {

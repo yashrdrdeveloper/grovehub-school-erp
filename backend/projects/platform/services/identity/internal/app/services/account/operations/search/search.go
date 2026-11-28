@@ -4,8 +4,8 @@ package search
 import (
 	"context"
 
-	corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	corepipeline "grovehub/libs/core/pipeline"
+	coresearch "grovehub/libs/core/search"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
 	"grovehub/services/identity/internal/app/services/account/operations/search/flows"
 	strategies "grovehub/services/identity/internal/app/services/account/operations/search/strategies"

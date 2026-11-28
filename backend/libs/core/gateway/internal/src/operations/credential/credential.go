@@ -1,9 +1,9 @@
 package credential
 
 import (
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/constants"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/helpers"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/contracts"
+	"grovehub/libs/core/gateway/internal/src/constants"
+	"grovehub/libs/core/gateway/internal/src/helpers"
+	"grovehub/libs/core/gateway/internal/src/contracts"
 
 	"context"
 	"crypto/ed25519"

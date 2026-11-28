@@ -10,8 +10,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	annotationdto "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/dto"
-	coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
+	annotationdto "grovehub/libs/core/annotation/internal/src/dto"
+	coreutils "grovehub/libs/core/utils"
 )
 
 // Error describes the invalid field path/rule without disclosing its value.

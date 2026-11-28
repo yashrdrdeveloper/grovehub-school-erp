@@ -2,10 +2,10 @@
 package coreerrors
 
 import (
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors/internal/src/operations/create"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors/internal/src/operations/definition"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors/internal/src/operations/wrap"
+	"grovehub/libs/core/errors/internal/src/contracts"
+	"grovehub/libs/core/errors/internal/src/operations/create"
+	"grovehub/libs/core/errors/internal/src/operations/definition"
+	"grovehub/libs/core/errors/internal/src/operations/wrap"
 )
 
 type Code = contracts.Code

@@ -4,7 +4,7 @@ import (
 	"context"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/postgres"
+	"grovehub/libs/core/database/internal/src/postgres"
 )
 
 var _ = Describe("OpenProjectPool", func() {

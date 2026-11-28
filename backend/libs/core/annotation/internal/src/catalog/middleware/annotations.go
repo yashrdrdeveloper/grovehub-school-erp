@@ -1,7 +1,7 @@
 // Package middleware owns the annotation metadata for this backend responsibility.
 package middleware
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+import "grovehub/libs/core/annotation/internal/src/contracts"
 
 var UseCases = []contract.UseCase{
     {Name:"UseMiddleware",Syntax:"@UseMiddleware",Category:"HTTP middleware and cross-cutting web concerns",Purpose:"Ordered middleware bindings from approved registry",Mode:"REG",Status:contract.Proposed,Roadmap:"P3",Target:contract.MethodTarget},

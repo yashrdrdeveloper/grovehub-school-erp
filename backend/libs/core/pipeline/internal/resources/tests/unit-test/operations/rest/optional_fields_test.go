@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	corerequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
-	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/internal/src/operations/rest"
+	corerequest "grovehub/libs/core/request"
+	rest "grovehub/libs/core/pipeline/internal/src/operations/rest"
 )
 
 type optionalQuery struct {

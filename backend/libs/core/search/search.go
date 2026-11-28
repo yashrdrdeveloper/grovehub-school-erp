@@ -3,13 +3,13 @@ package search
 import (
 	"gorm.io/gorm"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/helpers"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/operations/cursor"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/operations/validation"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/operations/query"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/operations/page"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/constants"
+	"grovehub/libs/core/search/internal/src/contracts"
+	"grovehub/libs/core/search/internal/src/helpers"
+	"grovehub/libs/core/search/internal/src/operations/cursor"
+	"grovehub/libs/core/search/internal/src/operations/validation"
+	"grovehub/libs/core/search/internal/src/operations/query"
+	"grovehub/libs/core/search/internal/src/operations/page"
+	"grovehub/libs/core/search/internal/src/constants"
 )
 
 const (

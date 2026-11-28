@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors/internal/src/operations/wrap"
+	"grovehub/libs/core/errors/internal/src/contracts"
+	"grovehub/libs/core/errors/internal/src/operations/wrap"
 )
 
 var _ = Describe("Wrap", func() {

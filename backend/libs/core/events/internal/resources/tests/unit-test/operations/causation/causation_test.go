@@ -2,8 +2,8 @@ package causation_test
 
 import (
 	"context"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events/internal/src/operations/causation"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events/internal/src/operations/correlation"
+	"grovehub/libs/core/events/internal/src/operations/causation"
+	"grovehub/libs/core/events/internal/src/operations/correlation"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

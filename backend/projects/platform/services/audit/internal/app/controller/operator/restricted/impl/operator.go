@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
+	coreerrors "grovehub/libs/core/errors"
+	"grovehub/libs/core/pipeline"
 	definitions "grovehub/services/audit/internal/app/constants/error"
 	"grovehub/services/audit/internal/app/controller/operator"
 	"grovehub/services/audit/internal/app/controller/operator/constants"
@@ -42,10 +42,10 @@ func (c *controller) Write(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pipeline.RunStruct(w, r, pipeline.StructConfig[dto.WriteRequest, pipeline.Empty]{
-		Decode: helpers.Decode(w),
+		Decode:             helpers.Decode(w),
 		InvalidRequestBody: definitions.OperatorInvalid,
-		Fallback: definitions.OperatorUnavailable,
-		Writer: helpers.Writer[pipeline.Empty](),
+		Fallback:           definitions.OperatorUnavailable,
+		Writer:             helpers.Writer[pipeline.Empty](),
 		Validate: func(input dto.WriteRequest) error {
 			if !validator.ValidActivity(input.RequestBody) {
 				return coreerrors.NewError(definitions.OperatorInvalid)
@@ -67,10 +67,10 @@ func (c *controller) Receipt(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pipeline.RunStruct(w, r, pipeline.StructConfig[dto.RenameReceiptRequest, pipeline.Empty]{
-		Decode: helpers.Decode(w),
+		Decode:             helpers.Decode(w),
 		InvalidRequestBody: definitions.OperatorInvalid,
-		Fallback: definitions.OperatorUnavailable,
-		Writer: helpers.Writer[pipeline.Empty](),
+		Fallback:           definitions.OperatorUnavailable,
+		Writer:             helpers.Writer[pipeline.Empty](),
 		Validate: func(input dto.RenameReceiptRequest) error {
 			if !validator.ValidRename(input.RequestBody) {
 				return coreerrors.NewError(definitions.OperatorInvalid)
@@ -95,10 +95,10 @@ func (c *controller) StatusReceipt(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pipeline.RunStruct(w, r, pipeline.StructConfig[dto.StatusReceiptRequest, pipeline.Empty]{
-		Decode: helpers.Decode(w),
+		Decode:             helpers.Decode(w),
 		InvalidRequestBody: definitions.OperatorInvalid,
-		Fallback: definitions.OperatorUnavailable,
-		Writer: helpers.Writer[pipeline.Empty](),
+		Fallback:           definitions.OperatorUnavailable,
+		Writer:             helpers.Writer[pipeline.Empty](),
 		Validate: func(input dto.StatusReceiptRequest) error {
 			if !validator.ValidStatus(input.RequestBody) {
 				return coreerrors.NewError(definitions.OperatorInvalid)
@@ -123,10 +123,10 @@ func (c *controller) Search(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pipeline.RunStruct(w, r, pipeline.StructConfig[dto.SearchRequest, dto.SearchPage]{
-		Decode: helpers.Decode(w),
+		Decode:             helpers.Decode(w),
 		InvalidRequestBody: definitions.OperatorInvalid,
-		Fallback: definitions.OperatorUnavailable,
-		Writer: helpers.Writer[dto.SearchPage](),
+		Fallback:           definitions.OperatorUnavailable,
+		Writer:             helpers.Writer[dto.SearchPage](),
 		Validate: func(input dto.SearchRequest) error {
 			if !validator.ValidSearch(input.RequestBody) {
 				return coreerrors.NewError(definitions.OperatorInvalid)
@@ -149,10 +149,10 @@ func (c *controller) ReceiptSearch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pipeline.RunStruct(w, r, pipeline.StructConfig[dto.ReceiptSearchRequest, dto.ReceiptPage]{
-		Decode: helpers.Decode(w),
+		Decode:             helpers.Decode(w),
 		InvalidRequestBody: definitions.OperatorInvalid,
-		Fallback: definitions.OperatorUnavailable,
-		Writer: helpers.Writer[dto.ReceiptPage](),
+		Fallback:           definitions.OperatorUnavailable,
+		Writer:             helpers.Writer[dto.ReceiptPage](),
 		Validate: func(input dto.ReceiptSearchRequest) error {
 			if !validator.ValidReceiptSearch(input.RequestBody) {
 				return coreerrors.NewError(definitions.OperatorInvalid)
@@ -177,8 +177,8 @@ func (c *controller) SchoolCheck(w http.ResponseWriter, r *http.Request) {
 
 	pipeline.RunStruct(w, r, pipeline.StructConfig[dto.SchoolCheckRequest, pipeline.Empty]{
 		InvalidParams: definitions.OperatorForbidden,
-		Fallback: definitions.OperatorUnavailable,
-		Writer: helpers.Writer[pipeline.Empty](),
+		Fallback:      definitions.OperatorUnavailable,
+		Writer:        helpers.Writer[pipeline.Empty](),
 		Validate: func(input dto.SchoolCheckRequest) error {
 			if !validator.ValidID(input.Params.SchoolID) {
 				return coreerrors.NewError(definitions.OperatorForbidden)

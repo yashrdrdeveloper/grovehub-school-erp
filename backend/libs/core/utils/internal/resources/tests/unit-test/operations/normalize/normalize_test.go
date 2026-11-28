@@ -6,8 +6,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils/internal/src/operations/normalize"
+	"grovehub/libs/core/utils/internal/src/contracts"
+	"grovehub/libs/core/utils/internal/src/operations/normalize"
 )
 
 var _ = Describe("NormalizeEmail", func() {
@@ -44,7 +44,7 @@ var _ = Describe("NormalizePhone", func() {
 
 var _ = Describe("NormalizePhoneCharacters", func() {
 	It("removes supported separators without requiring an international prefix", func() {
-		for input, expected := range map[string]string{" (123) 456-78 ":"12345678", "+1-234":"+1234", "":""} {
+		for input, expected := range map[string]string{" (123) 456-78 ": "12345678", "+1-234": "+1234", "": ""} {
 			value, err := normalize.NormalizePhoneCharacters(input)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(value).To(Equal(expected))

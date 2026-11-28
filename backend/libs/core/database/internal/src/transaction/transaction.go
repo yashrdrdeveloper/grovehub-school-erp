@@ -6,13 +6,13 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/operations/active"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/operations/aftercommit"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/operations/detachedcontext"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/operations/resolve"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/operations/run"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/operations/unitofwork"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/operations/unitofwork/impl"
+	"grovehub/libs/core/database/internal/src/transaction/operations/active"
+	"grovehub/libs/core/database/internal/src/transaction/operations/aftercommit"
+	"grovehub/libs/core/database/internal/src/transaction/operations/detachedcontext"
+	"grovehub/libs/core/database/internal/src/transaction/operations/resolve"
+	"grovehub/libs/core/database/internal/src/transaction/operations/run"
+	"grovehub/libs/core/database/internal/src/transaction/operations/unitofwork"
+	"grovehub/libs/core/database/internal/src/transaction/operations/unitofwork/impl"
 )
 
 // UnitOfWork exposes the operation contract to the database facade.

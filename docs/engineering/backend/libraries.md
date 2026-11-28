@@ -34,7 +34,7 @@ Infrastructure-owned contracts, such as broker-delivery DTOs, event-store record
 
 ## 4. Avoiding false reuse
 
-- Shared, cohesive, domain-agnostic conversions and normalization belong in `libs/backend/core/utils` and are exposed exclusively through `utils.go`. Name normalization functions `Normalize<Kind>` (for example `NormalizeEmail`, `NormalizePhone`, `NormalizeUUIDv7`). Do not use separate public core/helpers or core/normalize packages or move capability-local helpers into utils.
+- Shared, cohesive, domain-agnostic conversions and normalization belong in `libs/core/utils` and are exposed exclusively through `utils.go`. Name normalization functions `Normalize<Kind>` (for example `NormalizeEmail`, `NormalizePhone`, `NormalizeUUIDv7`). Do not use separate public core/helpers or core/normalize packages or move capability-local helpers into utils.
 - No service-specific event/error/DTO in core.
 - No generic repository replacing aggregate-specific SQL and lifecycle rules.
 - No external app importing another service's private/internal files.
@@ -50,11 +50,11 @@ Breaking library changes must update consumers, generated code, tests, and owner
 
 ## 6. School-specific gateway contract
 
-The independently owned Platform library at `backend/libs/platform` (module `grovehub/libs/platform`) exposes its verified session principal, AccessVerifier and cookie names through `grovehub/libs/platform/session`. Its contracts, constants and operations live under the capability's private `internal/src`. Platform services and Launcher import the facade; Core does not depend on it. `libs/backend/core/gateway` owns only neutral route tiers and workload verification. The legacy school Admin claim is not a universal permission and must never bypass RBAC. Core must not import any school-owned package, including in tests or generated overlays. [Core boundary audit](../../product/internal/CORE_BOUNDARY_AUDIT.md) records the migration inventory. The Core module has moved and passed standalone build/test checks. Published releases and second-application integration remain pending.
+The independently owned Platform library at `backend/libs/platform` (module `grovehub/libs/platform`) exposes its verified session principal, AccessVerifier and cookie names through `grovehub/libs/platform/session`. Its contracts, constants and operations live under the capability's private `internal/src`. Platform services and Launcher import the facade; Core does not depend on it. `libs/core/gateway` owns only neutral route tiers and workload verification. The legacy school Admin claim is not a universal permission and must never bypass RBAC. Core must not import any school-owned package, including in tests or generated overlays. [Core boundary audit](../../product/internal/CORE_BOUNDARY_AUDIT.md) records the migration inventory. The Core module has moved and passed standalone build/test checks. Published releases and second-application integration remain pending.
 
 ## 7. Independent Core workspace
 
-Core has its own go.mod and go.sum under `libs/backend/core`, with module path `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core`. Root go.work includes the school module and Core. The school uses a checkout-relative replace for reproducible monorepo builds with GOWORK=off; Core itself has no replace back into school. Use the capability import prefix, not the former school module path. A released tag/private module distribution must be designed and validated separately. Application-specific technical adapters remain under that application's libs. The standalone test procedure is documented in Core's owner runbook.
+Core has its own go.mod and go.sum under `libs/core`, with module path `grovehub/libs/core`. Root go.work includes the school module and Core. The school uses a checkout-relative replace for reproducible monorepo builds with GOWORK=off; Core itself has no replace back into school. Use the capability import prefix, not the former school module path. A released tag/private module distribution must be designed and validated separately. Application-specific technical adapters remain under that application's libs. The standalone test procedure is documented in Core's owner runbook.
 
 ## Phase 1 capability testing and visibility
 

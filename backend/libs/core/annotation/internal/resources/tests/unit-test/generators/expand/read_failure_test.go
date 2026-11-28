@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/expand"
+	"grovehub/libs/core/annotation/internal/src/generators/expand"
 )
 
 var _=Describe("Expansion source read failures",func(){

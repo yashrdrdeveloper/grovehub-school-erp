@@ -3,11 +3,11 @@ package operator
 import (
 	"time"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
+	"grovehub/libs/core/utils"
 
 	"grovehub/services/audit/internal/app/constants/operator"
-	"grovehub/services/audit/internal/app/dto/producer"
 	dto "grovehub/services/audit/internal/app/dto/operator"
+	"grovehub/services/audit/internal/app/dto/producer"
 	"grovehub/services/audit/internal/app/validators/operator/helpers"
 )
 

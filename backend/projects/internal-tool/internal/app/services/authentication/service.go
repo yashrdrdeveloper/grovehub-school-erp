@@ -3,7 +3,7 @@ package authentication
 import (
  "context"
  "log/slog"
- corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
+ corehttp "grovehub/libs/core/http"
  "crypto/rand"
  "crypto/sha256"
  "crypto/subtle"

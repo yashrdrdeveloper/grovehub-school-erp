@@ -8,7 +8,7 @@ import (
 	"grovehub/services/identity/internal/app/entity"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	registration "grovehub/services/identity/internal/app/services/registration"
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+	coredatabase "grovehub/libs/core/database"
 	forgot "grovehub/services/identity/internal/app/services/authentication/operations/forgot"
 )
 

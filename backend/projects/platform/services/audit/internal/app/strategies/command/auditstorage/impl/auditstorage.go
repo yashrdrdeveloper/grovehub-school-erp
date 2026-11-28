@@ -17,7 +17,7 @@ import (
 // @Strategy
 type strategy struct {
 	database command.Database[*gorm.DB]
-	inspect helpers.Inspector
+	inspect  helpers.Inspector
 }
 
 func New(db command.Database[*gorm.DB]) command.Command {

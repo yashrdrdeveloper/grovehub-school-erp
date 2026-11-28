@@ -1,7 +1,7 @@
 // Package observability owns the annotation metadata for this backend responsibility.
 package observability
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+import "grovehub/libs/core/annotation/internal/src/contracts"
 
 var UseCases = []contract.UseCase{
     {Name:"Log",Syntax:"@Log",Category:"Logging, tracing, metrics, auditing and diagnostics",Purpose:"Structured log wrapper through `slog`/core logging",Mode:"WRAP",Status:contract.Proposed,Roadmap:"P7",Target:contract.MethodTarget},

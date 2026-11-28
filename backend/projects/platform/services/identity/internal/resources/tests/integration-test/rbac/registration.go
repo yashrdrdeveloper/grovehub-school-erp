@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"gorm.io/gorm"
 
-	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+	coresearch "grovehub/libs/core/search"
 	schoolgateway "grovehub/libs/platform/session"
 	foundation "grovehub/services/foundation/client/person"
 	"grovehub/services/identity/internal/app/constants/permission"

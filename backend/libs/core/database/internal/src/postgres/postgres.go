@@ -7,8 +7,8 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/postgres/operations/connection"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/postgres/operations/projectpool"
+	"grovehub/libs/core/database/internal/src/postgres/operations/connection"
+	"grovehub/libs/core/database/internal/src/postgres/operations/projectpool"
 )
 
 func NewDB(databaseURL string) (*gorm.DB, error) {

@@ -3,7 +3,7 @@
 package bootstrap
 
 import (
-    coremodule "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/module"
+    coremodule "grovehub/libs/core/module"
     foundationclient "grovehub/services/foundation/client/person"
 )
 

@@ -1,7 +1,7 @@
 // Package dto declares build-time DTO annotations and shared PATCH support.
 package dto
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+import "grovehub/libs/core/annotation/internal/src/contracts"
 
 // UseCases registers annotations implemented by the DTO generator.
 var UseCases = []contract.UseCase{

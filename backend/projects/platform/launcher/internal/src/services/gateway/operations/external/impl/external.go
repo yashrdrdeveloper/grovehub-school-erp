@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+	coregateway "grovehub/libs/core/gateway"
 	"grovehub/launcher/internal/src/services/gateway/operations/external"
 	"grovehub/launcher/internal/src/services/gateway/operations/external/helpers"
 	"grovehub/launcher/internal/src/services/gateway/operations/ratelimit"

@@ -3,7 +3,7 @@ package impl
 import (
 	"net/http"
 
-	coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+	coregateway "grovehub/libs/core/gateway"
 	"grovehub/launcher/internal/src/services/gateway"
 	external "grovehub/launcher/internal/src/services/gateway/operations/external/impl"
 	"grovehub/launcher/internal/src/services/gateway/operations/inprocess"

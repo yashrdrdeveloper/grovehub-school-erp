@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	coreid "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/id"
+	coreid "grovehub/libs/core/id"
 	kind "grovehub/services/identity/internal/app/constants/approval"
 	dto "grovehub/services/identity/internal/app/dto/approval"
 	"grovehub/services/identity/internal/app/entity"

@@ -4,7 +4,7 @@ import (
     "context"
     "errors"
 
-    coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+    coredatabase "grovehub/libs/core/database"
 )
 
 var ErrMissingUnitOfWork = errors.New("service transaction requires a unit of work")

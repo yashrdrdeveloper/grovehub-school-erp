@@ -3,7 +3,7 @@ package pipeline
 import (
 	"context"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events/internal/src/contracts"
+	"grovehub/libs/core/events/internal/src/contracts"
 )
 
 func Run[T any, M any](ctx context.Context, value T, rules contracts.Rules[T, M]) error {

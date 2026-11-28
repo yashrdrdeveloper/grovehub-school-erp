@@ -9,10 +9,10 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-	headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
-	corerequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/operations/endpoint"
+	coreerrors "grovehub/libs/core/errors"
+	headercontext "grovehub/libs/core/headercontext"
+	corerequest "grovehub/libs/core/request"
+	"grovehub/libs/core/http/internal/src/operations/endpoint"
 )
 
 func expectQueryFailure[Q any](input Q) {

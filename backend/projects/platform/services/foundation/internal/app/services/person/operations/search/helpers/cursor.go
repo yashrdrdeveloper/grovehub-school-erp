@@ -2,7 +2,7 @@
 package helpers
 
 import (
-    coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+    coresearch "grovehub/libs/core/search"
     "grovehub/services/foundation/internal/app/entity"
 )
 

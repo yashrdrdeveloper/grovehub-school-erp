@@ -17,7 +17,7 @@ import (
 // @Strategy
 type strategy struct {
 	database command.Database[*gorm.DB]
-	replay helpers.ReplayOperation
+	replay   helpers.ReplayOperation
 }
 
 func New(db command.Database[*gorm.DB]) command.Command {
@@ -29,7 +29,7 @@ func NewWithReplay(db command.Database[*gorm.DB], operation helpers.ReplayOperat
 }
 
 func (s *strategy) Run(args []string, output, diagnostics io.Writer) int {
-	return shared.Run(diagnostics, bootstrap.AuditReplay + ":", func() error {
+	return shared.Run(diagnostics, bootstrap.AuditReplay+":", func() error {
 		options, err := helpers.Parse(args, diagnostics)
 		if err != nil {
 			return err

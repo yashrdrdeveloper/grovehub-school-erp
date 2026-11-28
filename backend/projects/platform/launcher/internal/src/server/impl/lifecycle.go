@@ -10,7 +10,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
+	coretelemetry "grovehub/libs/core/telemetry"
 	"grovehub/launcher/internal/src/server"
 )
 

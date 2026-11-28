@@ -4,7 +4,7 @@ package main
 import (
 	"os"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/cli"
+	"grovehub/libs/core/annotation/internal/src/cli"
 )
 
 func main() {

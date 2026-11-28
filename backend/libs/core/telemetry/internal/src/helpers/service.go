@@ -3,7 +3,7 @@ package helpers
 import (
 	"strings"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry/internal/src/contracts"
+	"grovehub/libs/core/telemetry/internal/src/contracts"
 )
 
 func ResolveService(value string) contracts.Service {

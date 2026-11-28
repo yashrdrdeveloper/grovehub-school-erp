@@ -1,7 +1,7 @@
 // validation owns the annotation definitions for this backend responsibility.
 package validation
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+import "grovehub/libs/core/annotation/internal/src/contracts"
 
 var UseCases = []contract.UseCase{
     {Name:"Validator",Syntax:"@Validator",Category:"Validation, normalization and structured errors",Purpose:"Typed validator registration / wrapper for DTO type",Mode:"GEN/REG",Status:contract.Pilot,Roadmap:"P2",Target:contract.TypeTarget},

@@ -6,12 +6,12 @@ import (
 	"crypto/ed25519"
 	"net/http"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/config"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/operations/credential"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/operations/restricted"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/operations/transport"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/operations/workload"
+	"grovehub/libs/core/gateway/internal/src/config"
+	"grovehub/libs/core/gateway/internal/src/contracts"
+	"grovehub/libs/core/gateway/internal/src/operations/credential"
+	"grovehub/libs/core/gateway/internal/src/operations/restricted"
+	"grovehub/libs/core/gateway/internal/src/operations/transport"
+	"grovehub/libs/core/gateway/internal/src/operations/workload"
 )
 
 type Tier = contracts.Tier

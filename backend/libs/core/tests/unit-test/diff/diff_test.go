@@ -6,7 +6,7 @@ import (
     . "github.com/onsi/ginkgo/v2"
     . "github.com/onsi/gomega"
 
-    corediff "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/diff"
+    corediff "grovehub/libs/core/diff"
 )
 
 type testContact struct {

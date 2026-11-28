@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
-	coredb "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
+	coredb "grovehub/libs/core/database"
 	"grovehub/services/identity/client/invitation"
 	receipt "grovehub/services/integration/internal/app/repository/maildelivery/impl"
 	"grovehub/services/integration/internal/app/services/mail"

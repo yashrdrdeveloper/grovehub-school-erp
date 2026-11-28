@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"testing"
 
-	endpoint "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/operations/endpoint"
-	corerequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
-	httpresponse "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/operations/response"
+	endpoint "grovehub/libs/core/http/internal/src/operations/endpoint"
+	corerequest "grovehub/libs/core/request"
+	httpresponse "grovehub/libs/core/http/internal/src/operations/response"
 )
 
 type personPath struct {

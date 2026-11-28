@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
-	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
+	coredatabase "grovehub/libs/core/database"
+	coreevents "grovehub/libs/core/events"
 	auditclient "grovehub/services/audit/client/producer"
 	"grovehub/services/identity/internal/app/entity"
 )
