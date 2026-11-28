@@ -1,0 +1,54 @@
+name: Audit refactor verification
+on:
+  push:
+    branches:
+      - phase1-refactor
+    paths:
+      - '.github/workflows/audit-refactor-verification.yml'
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      GOWORK: 'off'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.3'
+          cache: false
+      - name: Format migrated imports and changed Audit and Core files
+        shell: bash
+        run: |
+          git diff --name-only -z --diff-filter=AM 9755302a536496ccd8111b9fb96217cf5fb80221^ HEAD -- '*.go' | xargs -0 -r gofmt -w
+          git ls-files -z ':(glob)backend/projects/platform/launcher/**/*.go' ':(glob)backend/projects/platform/services/audit/**/*.go' ':(glob)backend/projects/platform/services/foundation/**/*.go' | xargs -0 -r gofmt -w
+          test -z "$(git ls-files -z ':(glob)backend/projects/platform/launcher/**/*.go' ':(glob)backend/projects/platform/services/audit/**/*.go' | xargs -0 -r gofmt -l)"
+          git diff --check
+      - name: Commit formatting changes
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          if ! git diff --cached --quiet; then
+            git commit -m "style(backend): format migrated Go imports and Audit refactor"
+            git push origin HEAD:refs/heads/phase1-refactor
+          fi
+      - name: Generate annotation routes and compile backend
+        run: make backend-build
+      - name: Run Audit unit tests with generated routes
+        working-directory: backend/projects/platform
+        run: go test -vet=off -overlay=.generated/overlay.json -count=1 ./services/audit/internal/resources/tests/unit-test/...
+      - name: Run Core pipeline regression tests
+        working-directory: backend/libs/core
+        run: go test -count=1 ./pipeline/... ./tests/unit-test/pipeline/...
+      - name: Measure Audit unit coverage
+        run: make unit-test package=audit
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audit-coverage
+          path: backend/projects/platform/.generated/unit-coverage/audit.out

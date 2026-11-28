@@ -3,8 +3,10 @@ package impl
 import (
 	"context"
 
+	coreerrors "grovehub/libs/core/errors"
 	coresearch "grovehub/libs/core/search"
 	schoolgateway "grovehub/libs/platform/session"
+	definitions "grovehub/services/audit/internal/app/constants/error"
 	dto "grovehub/services/audit/internal/app/dto/activity"
 	repo "grovehub/services/audit/internal/app/repository/activity"
 	"grovehub/services/audit/internal/app/services/activity"
@@ -38,13 +40,13 @@ func (service *Service) Search(ctx context.Context, input dto.Search) (dto.Page,
 	}
 	rows, err := service.repository.Search(ctx, actor.TenantID, self, query)
 	if err != nil {
-		return dto.Page{}, err
+		return dto.Page{}, coreerrors.Wrap(definitions.Internal, err)
 	}
 	result := dto.Page{Items: rows.Items, PageInfo: coresearch.NewPageResponse(query, rows)}
 	if rows.HasNext && len(rows.Items) > 0 {
 		result.PageInfo.NextCursor, err = helpers.NextCursor(query, input.PageInfo, rows.Items[len(rows.Items)-1])
 		if err != nil {
-			return dto.Page{}, err
+			return dto.Page{}, coreerrors.Wrap(definitions.Internal, err)
 		}
 	}
 	return result, nil
