@@ -5,7 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/entity"
 	"grovehub/services/identity/internal/app/repository/authority"
 	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
@@ -33,7 +33,7 @@ func (writer *LifecycleWriter) Transition(ctx context.Context, request role.Tran
 	}
 	var detail role.Detail
 	err = writer.locker.Run(ctx, request.TenantID, func(tx context.Context) error {
-		db := transaction.Database(tx, writer.db)
+		db := coredatabase.TransactionDB(tx, writer.db)
 		var locked lockedRole
 		result := db.Raw(constants.LockRole, request.TenantID, request.RoleID).Scan(&locked)
 		if result.Error != nil {

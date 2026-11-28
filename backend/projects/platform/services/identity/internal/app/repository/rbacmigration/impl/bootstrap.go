@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	authorityconstants "grovehub/services/identity/internal/app/repository/authority/constants"
 	accountroleimpl "grovehub/services/identity/internal/app/repository/accountrole/impl"
 	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
@@ -39,8 +39,8 @@ func (writer *Bootstrap) Apply(ctx context.Context, request rbacmigration.Manife
 		return rbacmigration.BootstrapResult{}, err
 	}
 	var result rbacmigration.BootstrapResult
-	err = transaction.Run(ctx, writer.db, func(tx context.Context) error {
-		db := transaction.Database(tx, writer.db)
+	err = coredatabase.RunTransaction(ctx, writer.db, func(tx context.Context) error {
+		db := coredatabase.TransactionDB(tx, writer.db)
 		// Offline only; caller must not already hold tenant authority locks.
 		if err := db.Exec(authorityconstants.LockGlobalExclusive).Error; err != nil {
 			return err
@@ -90,7 +90,7 @@ func (writer *Bootstrap) Apply(ctx context.Context, request rbacmigration.Manife
 }
 
 func (writer *Bootstrap) verifyBackfill(ctx context.Context, reviewed rbacmigration.Plan) error {
-	db := transaction.Database(ctx, writer.db)
+	db := coredatabase.TransactionDB(ctx, writer.db)
 	before := rbacmigration.Inventory{TenantID: reviewed.TenantID}
 	if err := loadInventory(db, reviewed.TenantID, &before); err != nil {
 		return err
@@ -123,7 +123,7 @@ func (writer *Bootstrap) verifyBackfill(ctx context.Context, reviewed rbacmigrat
 }
 
 func (writer *Bootstrap) activate(ctx context.Context, request rbacmigration.Manifest, operatorID string) (int, error) {
-	db := transaction.Database(ctx, writer.db)
+	db := coredatabase.TransactionDB(ctx, writer.db)
 	repository := roleimpl.New(writer.db)
 	total := 0
 	for _, grant := range request.Grants {

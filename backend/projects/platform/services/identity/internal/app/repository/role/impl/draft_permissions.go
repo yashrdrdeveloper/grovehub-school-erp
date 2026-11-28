@@ -6,7 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/entity"
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/repository/authority"
@@ -40,7 +40,7 @@ func (writer *DraftWriter) ReplaceDraftPermissions(ctx context.Context, update r
 	}
 	var detail role.PermissionSet
 	err = writer.locker.Run(ctx, update.TenantID, func(tx context.Context) error {
-		db := transaction.Database(tx, writer.db)
+		db := coredatabase.TransactionDB(tx, writer.db)
 		if err := checkDraft(db, update); err != nil {
 			return err
 		}

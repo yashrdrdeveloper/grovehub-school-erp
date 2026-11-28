@@ -6,7 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	dto "grovehub/services/identity/internal/app/dto/account"
 	"grovehub/services/identity/internal/app/repository/role"
 )
@@ -26,10 +26,10 @@ func (reader *CatalogReader) ListActive(ctx context.Context, tenantID string) ([
 		return nil, role.ErrScopeRequired
 	}
 	if reader.db == nil {
-		return nil, transaction.ErrMissingDatabase
+		return nil, coredatabase.ErrMissingDatabase
 	}
 	result := make([]dto.Role, 0)
-	err := transaction.Database(ctx, reader.db).Raw("SELECT role_id::text AS id, name FROM identity.roles WHERE tenant_id = ? AND status = 'ACTIVE' ORDER BY normalized_name, role_id", tenantID).Scan(&result).Error
+	err := coredatabase.TransactionDB(ctx, reader.db).Raw("SELECT role_id::text AS id, name FROM identity.roles WHERE tenant_id = ? AND status = 'ACTIVE' ORDER BY normalized_name, role_id", tenantID).Scan(&result).Error
 	if err != nil {
 		return nil, err
 	}

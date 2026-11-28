@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	authorityconstants "grovehub/services/identity/internal/app/repository/authority/constants"
 	accountroleimpl "grovehub/services/identity/internal/app/repository/accountrole/impl"
 	"grovehub/services/identity/internal/app/repository/rbacmigration/constants"
@@ -37,8 +37,8 @@ func (writer *Backfill) Apply(ctx context.Context, reviewed rbacmigration.Plan, 
 	var result rbacmigration.BackfillResult
 	// The caller must use a fresh operator context, not a nested authority transaction.
 	// The runtime must be stopped before an operator calls this primitive.
-	err = transaction.Run(ctx, writer.db, func(tx context.Context) error {
-		db := transaction.Database(tx, writer.db)
+	err = coredatabase.RunTransaction(ctx, writer.db, func(tx context.Context) error {
+		db := coredatabase.TransactionDB(tx, writer.db)
 		// Offline only; caller must not already hold tenant authority locks.
 		if err := db.Exec(authorityconstants.LockGlobalExclusive).Error; err != nil {
 			return err
@@ -107,7 +107,7 @@ func insertAssignments(db *gorm.DB, current rbacmigration.Plan, operatorID strin
 }
 
 func (writer *Backfill) verify(ctx context.Context, current rbacmigration.Plan, before rbacmigration.Inventory, expected int) error {
-	db := transaction.Database(ctx, writer.db)
+	db := coredatabase.TransactionDB(ctx, writer.db)
 	after := rbacmigration.Inventory{TenantID: current.TenantID}
 	if err := loadInventory(db, current.TenantID, &after); err != nil {
 		return err

@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/repository/role"
 	"grovehub/services/identity/internal/app/repository/role/constants"
 	"grovehub/services/identity/internal/app/repository/role/helpers"
@@ -25,11 +25,11 @@ func (repository *Repository) UpdateMetadata(ctx context.Context, update role.Me
 		return role.Detail{}, role.ErrVersionConflict
 	}
 	if repository.db == nil {
-		return role.Detail{}, transaction.ErrMissingDatabase
+		return role.Detail{}, coredatabase.ErrMissingDatabase
 	}
 	var detail role.Detail
-	err = transaction.Run(ctx, repository.db, func(tx context.Context) error {
-		db := transaction.Database(tx, repository.db)
+	err = coredatabase.RunTransaction(ctx, repository.db, func(tx context.Context) error {
+		db := coredatabase.TransactionDB(tx, repository.db)
 		normalizedName := strings.ToLower(draft.Name)
 		searchDetails := strings.ToLower(strings.TrimSpace(draft.Name + " " + draft.Description))
 		result := db.Exec(constants.UpdateMetadata, draft.Name, normalizedName, draft.Description, searchDetails, draft.ActorID, draft.TenantID, identifier.String(), update.Version)

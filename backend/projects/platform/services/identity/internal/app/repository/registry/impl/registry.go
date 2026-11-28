@@ -5,7 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/repository/registry"
 	authorityconstants "grovehub/services/identity/internal/app/repository/authority/constants"
 	"grovehub/services/identity/internal/app/repository/registry/helpers"
@@ -23,8 +23,8 @@ func New(db *gorm.DB) registry.Repository {
 
 func (repository *Repository) Register(ctx context.Context, batch registry.Batch) (registry.Result, error) {
 	var result registry.Result
-	err := transaction.Run(ctx, repository.db, func(tx context.Context) error {
-		db := transaction.Database(tx, repository.db)
+	err := coredatabase.RunTransaction(ctx, repository.db, func(tx context.Context) error {
+		db := coredatabase.TransactionDB(tx, repository.db)
 		// Registration inserts inactive definitions only; it cannot remove authority.
 		if err := db.Exec(authorityconstants.LockGlobalShared).Error; err != nil {
 			return err

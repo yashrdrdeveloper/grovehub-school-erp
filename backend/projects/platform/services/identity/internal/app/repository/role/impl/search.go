@@ -7,7 +7,7 @@ import (
 
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	"grovehub/services/identity/internal/app/repository/role"
 	"grovehub/services/identity/internal/app/repository/role/constants"
@@ -19,9 +19,9 @@ func (repository *Repository) Search(ctx context.Context, tenantID string, query
 		return coresearch.QueryResult[role.Detail]{}, role.ErrScopeRequired
 	}
 	if repository.db == nil {
-		return coresearch.QueryResult[role.Detail]{}, transaction.ErrMissingDatabase
+		return coresearch.QueryResult[role.Detail]{}, coredatabase.ErrMissingDatabase
 	}
-	db := transaction.Database(ctx, repository.db).Table("identity.roles AS r").Where("r.tenant_id = ?", tenantID)
+	db := coredatabase.TransactionDB(ctx, repository.db).Table("identity.roles AS r").Where("r.tenant_id = ?", tenantID)
 	// Legacy cursor requests also receive the filtered total, as Account Search does.
 	var legacyTotal *int64
 	if query.PageNumber == 0 {

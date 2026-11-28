@@ -5,7 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/repository/role"
 )
 
@@ -18,8 +18,8 @@ func NewDraftInspector(db *gorm.DB) role.DraftInspector {
 }
 
 func (reader *DraftInspector) Require(ctx context.Context, tenantID string, roleID string, version int64) error {
-	if reader.db == nil || !transaction.Active(ctx) {
-		return transaction.ErrMissingDatabase
+	if reader.db == nil || !coredatabase.TransactionActive(ctx) {
+		return coredatabase.ErrMissingDatabase
 	}
-	return checkDraft(transaction.Database(ctx, reader.db), role.DraftPermissionUpdate{TenantID: tenantID, RoleID: roleID, Version: version})
+	return checkDraft(coredatabase.TransactionDB(ctx, reader.db), role.DraftPermissionUpdate{TenantID: tenantID, RoleID: roleID, Version: version})
 }

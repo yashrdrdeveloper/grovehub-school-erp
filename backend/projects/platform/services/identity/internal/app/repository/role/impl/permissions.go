@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/repository/role"
 	"grovehub/services/identity/internal/app/repository/role/constants"
 )
@@ -27,10 +27,10 @@ func (repository *Repository) Permissions(ctx context.Context, tenantID string, 
 		return role.PermissionSet{}, role.ErrNotFound
 	}
 	if repository.db == nil {
-		return role.PermissionSet{}, transaction.ErrMissingDatabase
+		return role.PermissionSet{}, coredatabase.ErrMissingDatabase
 	}
 	var row permissionRow
-	result := transaction.Database(ctx, repository.db).Raw(constants.FindPermissions, tenantID, id.String()).Scan(&row)
+	result := coredatabase.TransactionDB(ctx, repository.db).Raw(constants.FindPermissions, tenantID, id.String()).Scan(&row)
 	if result.Error != nil {
 		return role.PermissionSet{}, result.Error
 	}

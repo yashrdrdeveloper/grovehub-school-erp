@@ -6,7 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/repository/rbacmigration"
 )
 
@@ -25,7 +25,7 @@ func (reader *Readiness) Require(ctx context.Context, tenantID string) error {
 		return rbacmigration.ErrNotReady
 	}
 	var ready bool
-	err := transaction.Database(ctx, reader.db).Raw(
+	err := coredatabase.TransactionDB(ctx, reader.db).Raw(
 		"SELECT EXISTS (SELECT 1 FROM identity.rbac_migration_receipts b JOIN identity.rbac_migration_receipts s ON s.tenant_id = b.tenant_id AND s.operation = 'BOOTSTRAP' AND s.created_at >= b.created_at WHERE b.tenant_id = ? AND b.operation = 'BACKFILL')", tenantID,
 	).Scan(&ready).Error
 	if err != nil {

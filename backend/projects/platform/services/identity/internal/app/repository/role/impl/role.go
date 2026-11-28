@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	coreid "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/id"
 	"grovehub/services/identity/internal/app/entity"
 	"grovehub/services/identity/internal/app/repository/role"
@@ -37,15 +37,15 @@ func (repository *Repository) CreateDraft(ctx context.Context, draft role.Draft)
 		return role.Detail{}, err
 	}
 	if repository.db == nil {
-		return role.Detail{}, transaction.ErrMissingDatabase
+		return role.Detail{}, coredatabase.ErrMissingDatabase
 	}
 	identifier, err := coreid.NewUUIDv7()
 	if err != nil {
 		return role.Detail{}, err
 	}
 	var detail role.Detail
-	err = transaction.Run(ctx, repository.db, func(tx context.Context) error {
-		db := transaction.Database(tx, repository.db)
+	err = coredatabase.RunTransaction(ctx, repository.db, func(tx context.Context) error {
+		db := coredatabase.TransactionDB(tx, repository.db)
 		normalizedName := strings.ToLower(draft.Name)
 		searchDetails := strings.ToLower(strings.TrimSpace(draft.Name + " " + draft.Description))
 		if err := db.Exec(constants.InsertDraft, identifier, draft.TenantID, draft.Name, normalizedName, draft.Description, searchDetails, draft.ActorID, draft.ActorID).Error; err != nil {
@@ -75,10 +75,10 @@ func (repository *Repository) FindByID(ctx context.Context, tenantID string, rol
 		return role.Detail{}, role.ErrNotFound
 	}
 	if repository.db == nil {
-		return role.Detail{}, transaction.ErrMissingDatabase
+		return role.Detail{}, coredatabase.ErrMissingDatabase
 	}
 	var row detailRow
-	result := transaction.Database(ctx, repository.db).Raw(constants.FindDetail, tenantID, identifier.String()).Scan(&row)
+	result := coredatabase.TransactionDB(ctx, repository.db).Raw(constants.FindDetail, tenantID, identifier.String()).Scan(&row)
 	if result.Error != nil {
 		return role.Detail{}, result.Error
 	}
