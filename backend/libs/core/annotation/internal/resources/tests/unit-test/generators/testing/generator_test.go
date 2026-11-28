@@ -1,12 +1,16 @@
-package main
+package testgen_test
 
 import (
 	"os"
 	"path/filepath"
-	"testing"
+	. "github.com/onsi/ginkgo/v2"
+
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/testing"
 )
 
-func TestFindModuleDir(t *testing.T) {
+var _ = Describe("FindModuleDir", func() {
+	It("Find Module Dir", func() {
+		t := GinkgoT()
 	root := t.TempDir()
 	module := filepath.Join(root, "project")
 	child := filepath.Join(module, "services", "example", "internal", "tests", "mocks")
@@ -16,8 +20,10 @@ func TestFindModuleDir(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(module, "go.mod"), []byte("module example.test/project\n"), 0600); err != nil {
 		t.Fatal(err)
 	}
-	got, err := findModuleDir(child)
+	got, err := testgen.FindModuleDir(child)
 	if err != nil || got != module {
 		t.Fatalf("module = %q, error = %v", got, err)
 	}
-}
+
+	})
+})

@@ -1,10 +1,12 @@
-package main
+package routes_test
 
 import (
 	"os"
 	"path/filepath"
 	"strings"
-	"testing"
+	. "github.com/onsi/ginkgo/v2"
+
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/routes"
 )
 
 const personController = `package protected
@@ -33,7 +35,7 @@ import "net/http"
 func RegisterHTTP(mux *http.ServeMux) {}
 `
 
-func writeTestFile(t *testing.T, filename, value string) {
+func writeTestFile(t GinkgoTInterface, filename, value string) {
 	t.Helper()
 	if err := os.MkdirAll(filepath.Dir(filename), 0755); err != nil {
 		t.Fatal(err)
@@ -43,7 +45,7 @@ func writeTestFile(t *testing.T, filename, value string) {
 	}
 }
 
-func testBackend(t *testing.T) (string, string) {
+func testBackend(t GinkgoTInterface) (string, string) {
 	t.Helper()
 	backend := t.TempDir()
 	writeTestFile(t, filepath.Join(backend, "go.mod"), "module grovehub\n")
@@ -53,9 +55,9 @@ func testBackend(t *testing.T) (string, string) {
 	return backend, filepath.Join(owner, ".generated", "routes", "zz_routes.gen.go")
 }
 
-func generatedRoutes(t *testing.T, backend, output string) string {
+func generatedRoutes(t GinkgoTInterface, backend, output string) string {
 	t.Helper()
-	if err := generateAll(backend); err != nil {
+	if err := routes.GenerateAll(backend); err != nil {
 		t.Fatal(err)
 	}
 	data, err := os.ReadFile(output)
@@ -65,7 +67,9 @@ func generatedRoutes(t *testing.T, backend, output string) string {
 	return string(data)
 }
 
-func TestRouteAccessTiersAndServicePrefix(t *testing.T) {
+var _ = Describe("GenerateAll", func() {
+	It("Route Access Tiers And Service Prefix", func() {
+		t := GinkgoT()
 	backend, output := testBackend(t)
 	owner := filepath.Join(backend, "services", "foundation")
 	writeTestFile(t, filepath.Join(owner, "controller", "public", "health.go"), `package public
@@ -110,9 +114,13 @@ type MaintenanceController interface {
 	if next := generatedRoutes(t, backend, output); next != content {
 		t.Fatal("generator is not deterministic")
 	}
-}
 
-func TestServicePrefixIsOwnedByRouteComposition(t *testing.T) {
+	})
+})
+
+var _ = Describe("GenerateAll", func() {
+	It("Service Prefix Is Owned By Route Composition", func() {
+		t := GinkgoT()
 	backend, output := testBackend(t)
 	_ = generatedRoutes(t, backend, output)
 	filename := filepath.Join(backend, "services", "foundation", "routes", "http.go")
@@ -124,9 +132,13 @@ func TestServicePrefixIsOwnedByRouteComposition(t *testing.T) {
 	if strings.Contains(content, "GET /foundation/") || strings.Contains(content, "POST /foundation/") || strings.Contains(content, "PATCH /foundation/") {
 		t.Fatal("stale service prefix retained")
 	}
-}
 
-func TestLegacyUncategorizedRoutesStayCompatible(t *testing.T) {
+	})
+})
+
+var _ = Describe("GenerateAll", func() {
+	It("Legacy Uncategorized Routes Stay Compatible", func() {
+		t := GinkgoT()
 	backend := t.TempDir()
 	writeTestFile(t, filepath.Join(backend, "go.mod"), "module grovehub\n")
 	owner := filepath.Join(backend, "services", "identity")
@@ -150,21 +162,29 @@ type AuthController interface {
 	if strings.Contains(content, "POST /identity/") {
 		t.Fatal("legacy service prefix must not be inferred")
 	}
-}
 
-func TestCategorizedControllersRequireServicePrefix(t *testing.T) {
+	})
+})
+
+var _ = Describe("GenerateAll", func() {
+	It("Categorized Controllers Require Service Prefix", func() {
+		t := GinkgoT()
 	backend, _ := testBackend(t)
 	filename := filepath.Join(backend, "services", "foundation", "routes", "http.go")
 	writeTestFile(t, filename, `package routes
 import "net/http"
 func RegisterHTTP(mux *http.ServeMux) {}
 `)
-	if err := generateAll(backend); err == nil || !strings.Contains(err.Error(), "requires a service @Routes") {
+	if err := routes.GenerateAll(backend); err == nil || !strings.Contains(err.Error(), "requires a service @Routes") {
 		t.Fatalf("expected missing service prefix error, got %v", err)
 	}
-}
 
-func TestServicePrefixRequiresCategorizedControllers(t *testing.T) {
+	})
+})
+
+var _ = Describe("GenerateAll", func() {
+	It("Service Prefix Requires Categorized Controllers", func() {
+		t := GinkgoT()
 	backend, _ := testBackend(t)
 	filename := filepath.Join(backend, "services", "foundation", "controller", "legacy.go")
 	writeTestFile(t, filename, `package controller
@@ -175,12 +195,16 @@ type LegacyController interface {
 	Get(http.ResponseWriter, *http.Request)
 }
 `)
-	if err := generateAll(backend); err == nil || !strings.Contains(err.Error(), "must live in public/") {
+	if err := routes.GenerateAll(backend); err == nil || !strings.Contains(err.Error(), "must live in public/") {
 		t.Fatalf("expected uncategorized controller error, got %v", err)
 	}
-}
 
-func TestGeneratorRejectsDuplicateRoutesWithinTier(t *testing.T) {
+	})
+})
+
+var _ = Describe("GenerateAll", func() {
+	It("Generator Rejects Duplicate Routes Within Tier", func() {
+		t := GinkgoT()
 	backend, _ := testBackend(t)
 	filename := filepath.Join(backend, "services", "foundation", "controller", "protected", "duplicate.go")
 	writeTestFile(t, filename, `package protected
@@ -191,30 +215,42 @@ type DuplicateController interface {
 	Create(http.ResponseWriter, *http.Request)
 }
 `)
-	if err := generateAll(backend); err == nil || !strings.Contains(err.Error(), "duplicate route") {
+	if err := routes.GenerateAll(backend); err == nil || !strings.Contains(err.Error(), "duplicate route") {
 		t.Fatalf("expected duplicate route error, got %v", err)
 	}
-}
 
-func TestServicePrefixAnnotationOnlyOnRegisterHTTP(t *testing.T) {
+	})
+})
+
+var _ = Describe("GenerateAll", func() {
+	It("Service Prefix Annotation Only On Register HTTP", func() {
+		t := GinkgoT()
 	backend, _ := testBackend(t)
 	filename := filepath.Join(backend, "services", "foundation", "routes", "http.go")
 	writeTestFile(t, filename, strings.Replace(serviceRoutes, "func RegisterHTTP", "func Configure", 1))
-	if err := generateAll(backend); err == nil || !strings.Contains(err.Error(), "RegisterHTTP function") {
+	if err := routes.GenerateAll(backend); err == nil || !strings.Contains(err.Error(), "RegisterHTTP function") {
 		t.Fatalf("expected misplaced service @Routes error, got %v", err)
 	}
-}
 
-func TestGeneratorRejectsMalformedServicePrefix(t *testing.T) {
+	})
+})
+
+var _ = Describe("GenerateAll", func() {
+	It("Generator Rejects Malformed Service Prefix", func() {
+		t := GinkgoT()
 	backend, _ := testBackend(t)
 	filename := filepath.Join(backend, "services", "foundation", "routes", "http.go")
 	writeTestFile(t, filename, strings.Replace(serviceRoutes, "/foundation", "/foundation//admin", 1))
-	if err := generateAll(backend); err == nil || !strings.Contains(err.Error(), "invalid route path") {
+	if err := routes.GenerateAll(backend); err == nil || !strings.Contains(err.Error(), "invalid route path") {
 		t.Fatalf("expected invalid prefix error, got %v", err)
 	}
-}
 
-func TestResourceFirstControllerPackage(t *testing.T) {
+	})
+})
+
+var _ = Describe("GenerateAll", func() {
+	It("Resource First Controller Package", func() {
+		t := GinkgoT()
 	backend,output:=testBackend(t)
 	owner:=filepath.Join(backend,"services","foundation")
 	legacy:=filepath.Join(owner,"controller","protected","person.go")
@@ -229,9 +265,13 @@ func TestResourceFirstControllerPackage(t *testing.T) {
 	}{
 		if !strings.Contains(content,required){t.Errorf("missing resource route %q:\n%s",required,content)}
 	}
-}
 
-func TestRouteLimitGeneratesExactMethodAndPattern(t *testing.T) {
+	})
+})
+
+var _ = Describe("GenerateAll", func() {
+	It("Route Limit Generates Exact Method And Pattern", func() {
+		t := GinkgoT()
 	backend, output := testBackend(t)
 	controller := filepath.Join(backend, "services", "foundation", "controller", "protected", "person.go")
 	writeTestFile(t, controller, strings.Replace(personController,
@@ -242,24 +282,33 @@ func TestRouteLimitGeneratesExactMethodAndPattern(t *testing.T) {
 		!strings.Contains(content, "\"POST /foundation/protected/persons/search\": 30") {
 		t.Fatal("annotated method policy missing from generated routes")
 	}
-}
 
-func TestRouteLimitRejectsMalformedLimits(t *testing.T) {
+	})
+})
+
+var _ = Describe("GenerateAll", func() {
+	It("Route Limit Rejects Malformed Limits", func() {
+		t := GinkgoT()
 	for _, value := range []string{"0", "-2", "abc", "100001"} {
-		t.Run(value, func(t *testing.T) {
+		By(value)
+		{
 			backend, _ := testBackend(t)
 			controller := filepath.Join(backend, "services", "foundation", "controller", "protected", "person.go")
 			writeTestFile(t, controller, strings.Replace(personController,
 				"// @POST /search",
 				"// @POST /search\n\t// @RouteLimit "+value, 1))
-			if err := generateAll(backend); err == nil || !strings.Contains(err.Error(), "@RouteLimit") {
+			if err := routes.GenerateAll(backend); err == nil || !strings.Contains(err.Error(), "@RouteLimit") {
 				t.Fatalf("expected invalid limit rejection; got %v", err)
 			}
-		})
+		}
 	}
-}
 
-func TestRoutesUseTargetModulePath(t *testing.T) {
+	})
+})
+
+var _ = Describe("GenerateAll", func() {
+	It("Routes Use Target Module Path", func() {
+		t := GinkgoT()
 	backend, output := testBackend(t)
 	writeTestFile(t, filepath.Join(backend, "go.mod"), "module example.org/internal-platform\n")
 	content := generatedRoutes(t, backend, output)
@@ -269,4 +318,6 @@ func TestRoutesUseTargetModulePath(t *testing.T) {
 	if strings.Contains(content, "grovehub/services/") {
 		t.Fatal("generated controller import contains the school module")
 	}
-}
+
+	})
+})

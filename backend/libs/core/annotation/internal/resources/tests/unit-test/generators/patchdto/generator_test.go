@@ -1,10 +1,12 @@
-package main
+package patchdto_test
 
 import (
 	"os"
 	"path/filepath"
 	"strings"
-	"testing"
+	. "github.com/onsi/ginkgo/v2"
+
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/generators/patchdto"
 )
 
 const patchSource = `package widget
@@ -17,7 +19,7 @@ type UpdateWidget struct {
 }
 `
 
-func fixture(t *testing.T, source string) (string, string) {
+func fixture(t GinkgoTInterface, source string) (string, string) {
 	t.Helper()
 	root := t.TempDir()
 	dir := filepath.Join(root, "services", "demo", "dto", "request", "widget")
@@ -27,9 +29,11 @@ func fixture(t *testing.T, source string) (string, string) {
 	return root, filepath.Join(root, "services", "demo", ".generated", "dto", "request", "widget", "zz_patchdto.gen.go")
 }
 
-func TestGeneratePatchRequestDTO(t *testing.T) {
+var _ = Describe("GenerateAll", func() {
+	It("Generate Patch Request DTO", func() {
+		t := GinkgoT()
 	root, output := fixture(t, patchSource)
-	if err := generateAll(root); err != nil { t.Fatal(err) }
+	if err := patchdto.GenerateAll(root); err != nil { t.Fatal(err) }
 	generated, err := os.ReadFile(output)
 	if err != nil { t.Fatal(err) }
 	for _, expected := range []string{
@@ -41,12 +45,16 @@ func TestGeneratePatchRequestDTO(t *testing.T) {
 	} {
 		if !strings.Contains(string(generated), expected) { t.Fatalf("missing %q: %s", expected, generated) }
 	}
-	if err := generateAll(root); err != nil { t.Fatal(err) }
+	if err := patchdto.GenerateAll(root); err != nil { t.Fatal(err) }
 	again, err := os.ReadFile(output)
 	if err != nil || string(again) != string(generated) { t.Fatalf("generator not idempotent: %v", err) }
-}
 
-func TestRejectInvalidPatchAnnotations(t *testing.T) {
+	})
+})
+
+var _ = Describe("GenerateAll", func() {
+	It("Reject Invalid Patch Annotations", func() {
+		t := GinkgoT()
 	cases := map[string]string{
 		"wrong type": `package widget
 // @PatchRequestDto
@@ -60,19 +68,26 @@ func (UpdateWidget) MarshalJSON() ([]byte, error) { return nil, nil }`,
 		"bad json tag": strings.Replace(patchSource, "`json:\"count\"`", "`json:\"title\"`", 1),
 	}
 	for name, src := range cases {
-		t.Run(name, func(t *testing.T) {
+		By(name)
+		{
 			root, _ := fixture(t, src)
-			if err := generateAll(root); err == nil { t.Fatal("expected generator to reject invalid PATCH DTO") }
-		})
+			if err := patchdto.GenerateAll(root); err == nil { t.Fatal("expected generator to reject invalid PATCH DTO") }
+		}
 	}
-}
 
-func TestRemoveStaleGeneratedPatchMethod(t *testing.T) {
+	})
+})
+
+var _ = Describe("GenerateAll", func() {
+	It("Remove Stale Generated Patch Method", func() {
+		t := GinkgoT()
 	root, output := fixture(t, patchSource)
-	if err := generateAll(root); err != nil { t.Fatal(err) }
+	if err := patchdto.GenerateAll(root); err != nil { t.Fatal(err) }
 	src := strings.Replace(patchSource, "// @PatchRequestDto", "// no annotation", 1)
 	path := filepath.Join(root, "services", "demo", "dto", "request", "widget", "widget.go")
 	if err := os.WriteFile(path, []byte(src), 0644); err != nil { t.Fatal(err) }
-	if err := generateAll(root); err != nil { t.Fatal(err) }
+	if err := patchdto.GenerateAll(root); err != nil { t.Fatal(err) }
 	if _, err := os.Stat(output); !os.IsNotExist(err) { t.Fatalf("stale generated output retained: %v", err) }
-}
+
+	})
+})
