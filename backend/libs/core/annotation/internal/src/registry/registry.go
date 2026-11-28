@@ -51,20 +51,14 @@ type UseCase = contract.UseCase
 
 // Definition groups every supported context for one directive.
 // All returned definitions are owned by the caller (safe to modify).
-type Definition struct {
-    Name     string
-    UseCases []UseCase
-}
+type Definition = contract.Definition
 
 // A pattern is a GoF architectural decision, not a generated service.
 type Pattern = contract.Pattern
 
 // Directive is a parsed comment directive. Arguments stay uninterpreted
 // until a dedicated, validated Phase 2 processor is implemented.
-type Directive struct {
-    Name      string
-    Arguments string
-}
+type Directive = contract.Directive
 
 var (
     ErrUnknownDirective = errors.New("unknown annotation directive")

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	annotationdto "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/impl/dto"
+	annotationdto "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/dto"
 	corenormalize "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/normalize"
 )
 

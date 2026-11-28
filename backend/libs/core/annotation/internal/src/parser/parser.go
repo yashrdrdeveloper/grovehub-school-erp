@@ -1,98 +1,25 @@
-// Package parser discovers Phase 1 annotation comments in Go source files.
-// Discovery never rewrites files, generates implementations, or executes policy.
-// Future per-capability processors can consume these typed occurrences.
+// Package parser discovers annotation occurrences without executing policies.
 package parser
 
 import (
-    "fmt"
-    "go/ast"
-    goparser "go/parser"
-    "go/token"
+	goparser "go/parser"
+	"go/token"
 
-    annotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/impl/registry"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/parser/helpers"
 )
 
-// Occurrence identifies a known annotation and its source declaration.
-// Target is advisory until a directive-specific processor is available.
-type Occurrence struct {
-    Directive annotation.Directive
-    Target    annotation.Target
-    File      string
-    Line      int
-    Column    int
-}
+type Occurrence = contract.Occurrence
 
-// ScanFile parses a Go file using the standard AST and returns recognized
-// directives in source order. It fails closed on unknown or invalid directives.
-func ScanFile(path string) ([]Occurrence,error) {
-    set:=token.NewFileSet()
-    file,err:=goparser.ParseFile(set,path,nil,goparser.ParseComments|goparser.AllErrors)
-    if err!=nil{return nil,err}
+// ScanFile returns recognized annotations in source order.
+func ScanFile(path string) ([]Occurrence, error) {
+	set := token.NewFileSet()
+	file, err := goparser.ParseFile(set, path, nil, goparser.ParseComments|goparser.AllErrors)
+	if err != nil {
+		return nil, err
+	}
 
-    targets:=map[*ast.CommentGroup]annotation.Target{}
-    ast.Inspect(file,func(n ast.Node) bool {
-        switch decl:=n.(type) {
-        case *ast.File:
-            if decl.Doc!=nil {targets[decl.Doc]=annotation.PackageTarget}
-        case *ast.FuncDecl:
-            if decl.Doc!=nil {
-                t:=annotation.FunctionTarget
-                if decl.Recv!=nil {t=annotation.MethodTarget}
-                targets[decl.Doc]=t
-            }
-        case *ast.GenDecl:
-            if decl.Doc!=nil {
-                target:=annotation.FileTarget
-                if decl.Tok==token.TYPE {
-                    target=annotation.TypeTarget
-                    if len(decl.Specs)==1 {
-                        if spec,ok:=decl.Specs[0].(*ast.TypeSpec);ok {
-                            if _,ok:=spec.Type.(*ast.InterfaceType);ok {target=annotation.InterfaceTarget}
-                        }
-                    }
-                }
-                targets[decl.Doc]=target
-            }
-        case *ast.TypeSpec:
-            if decl.Doc!=nil {
-                target:=annotation.TypeTarget
-                if _,ok:=decl.Type.(*ast.InterfaceType);ok {target=annotation.InterfaceTarget}
-                targets[decl.Doc]=target
-            }
-        case *ast.InterfaceType:
-            // Method declarations are represented by *ast.Field in Go's AST,
-            // but their annotation target is Method, not a struct field.
-            for _,method := range decl.Methods.List {
-                if len(method.Names)!=1 {continue}
-                if _,ok:=method.Type.(*ast.FuncType);!ok{continue}
-                if method.Doc!=nil {targets[method.Doc]=annotation.MethodTarget}
-                if method.Comment!=nil {targets[method.Comment]=annotation.MethodTarget}
-            }
-        case *ast.Field:
-            if decl.Doc!=nil {
-                if _,seen:=targets[decl.Doc];!seen {targets[decl.Doc]=annotation.FieldTarget}
-            }
-            if decl.Comment!=nil {
-                if _,seen:=targets[decl.Comment];!seen {targets[decl.Comment]=annotation.FieldTarget}
-            }
-        }
-        return true
-    })
+	targets := helpers.CollectTargets(file)
 
-    var result []Occurrence
-    for _,group:=range file.Comments {
-        target,ok:=targets[group]
-        if !ok {target=annotation.FileTarget}
-        for _,comment:=range group.List {
-            d,found,err:=annotation.ParseComment(comment.Text)
-            if err!=nil {
-                pos:=set.Position(comment.Pos())
-                return nil,fmt.Errorf("%s:%d:%d: %w",pos.Filename,pos.Line,pos.Column,err)
-            }
-            if !found {continue}
-            pos:=set.Position(comment.Pos())
-            result=append(result,Occurrence{Directive:d,Target:target,File:pos.Filename,Line:pos.Line,Column:pos.Column})
-        }
-    }
-    return result,nil
+	return helpers.CollectOccurrences(set, file.Comments, targets)
 }
