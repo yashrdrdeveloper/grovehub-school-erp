@@ -64,6 +64,12 @@ var _=Describe("Endpoint input encoding",func(){
 		_,status,err=endpoint.CallRequest[string](ctx,http.HandlerFunc(func(w http.ResponseWriter,r *http.Request){Expect(r.URL.RawQuery).To(BeEmpty());w.WriteHeader(204)}),"GET","/",endpoint.Request[corerequest.Empty,*edgeQuery,corerequest.Empty]{Query:absent})
 		Expect(err).NotTo(HaveOccurred());Expect(status).To(Equal(204))
 	})
+	It("omits the explicitly absent query DTO",func(){
+		_,status,err:=endpoint.CallRequest[string](context.Background(),http.HandlerFunc(func(w http.ResponseWriter,r *http.Request){
+			Expect(r.URL.RawQuery).To(BeEmpty());w.WriteHeader(204)
+		}),"GET","/",endpoint.Request[corerequest.Empty,corerequest.Empty,corerequest.Empty]{})
+		Expect(err).NotTo(HaveOccurred());Expect(status).To(Equal(204))
+	})
 	It("rejects unsupported and duplicate query fields",func(){
 		expectQueryFailure("not a struct")
 		expectQueryFailure(struct{hidden string `query:"hidden"`}{hidden:"x"})
@@ -80,7 +86,7 @@ var _=Describe("Endpoint input encoding",func(){
 			{"/{id}",struct{A string `path:"id"`; B string `path:"id"`}{A:"a",B:"b"}},
 			{"/{id}",struct{ID *string `path:"id"`}{}},
 			{"/{id}",struct{ID bool `path:"id"`}{ID:true}},
-			{"/{id}/tail",struct{}{}},
+			{"/{id}/tail",struct{}{}},{"/{id}",struct{}{}},
 			{"/{id}",struct{ID string `path:"id"`}{ID:"."}},
 		}{
 			_,_,err:=endpoint.Call[string](context.Background(),handler,"GET",item.route,item.dto,nil)
@@ -121,6 +127,15 @@ var _=Describe("Endpoint response classification",func(){
 			value,_,err:=endpoint.Call[string](context.Background(),h,"GET","/",nil,nil)
 			if item.failure {Expect(err).To(HaveOccurred())}else{Expect(err).NotTo(HaveOccurred());Expect(value).To(BeEmpty())}
 		}
+	})
+	It("rejects valid JSON metadata that cannot be decoded into Go values",func(){
+		h:=http.HandlerFunc(func(w http.ResponseWriter,_ *http.Request){
+			w.WriteHeader(400)
+			fmt.Fprint(w,`{"success":false,"errorCode":"INVALID","httpErrorCode":400,"errorMetaData":1e1000}`)
+		})
+		_,status,err:=endpoint.Call[string](context.Background(),h,"GET","/",nil,nil)
+		Expect(status).To(Equal(400))
+		Expect(err).To(MatchError(ContainSubstring("invalid endpoint error metadata")))
 	})
 	It("preserves structured application errors and their optional metadata",func(){
 		for _,metadata:=range []string{"null","{}",`{"field":"name"}`}{

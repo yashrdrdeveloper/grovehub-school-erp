@@ -47,7 +47,25 @@ var (
 	activeRuntime   *Runtime
 )
 
+// Dependencies isolate the external SDK boundaries. Normal callers use Initialize.
+type Dependencies struct {
+	TraceExporter func(context.Context) (sdktrace.SpanExporter,error)
+	MetricExporter func(context.Context) (sdkmetric.Exporter,error)
+	StartRuntimeMetrics func(metric.MeterProvider) error
+	Meter func(metric.MeterProvider,string) metric.Meter
+}
+
 func Initialize(ctx context.Context, logger *slog.Logger) contracts.Shutdown {
+	return InitializeWithDependencies(ctx,logger,Dependencies{
+		TraceExporter: func(ctx context.Context)(sdktrace.SpanExporter,error){return otlptracehttp.New(ctx)},
+		MetricExporter: func(ctx context.Context)(sdkmetric.Exporter,error){return otlpmetrichttp.New(ctx)},
+		StartRuntimeMetrics: func(provider metric.MeterProvider)error{return otelruntime.Start(otelruntime.WithMeterProvider(provider))},
+		Meter: func(provider metric.MeterProvider,name string)metric.Meter{return provider.Meter(name)},
+	})
+}
+
+// InitializeWithDependencies is internal to telemetry; production uses the real SDK.
+func InitializeWithDependencies(ctx context.Context, logger *slog.Logger, dependencies Dependencies) contracts.Shutdown {
 	environment := config.EnvOrDefault("OTEL_DEPLOYMENT_ENVIRONMENT", constants.DefaultEnvironment)
 	serviceVersion := config.EnvOrDefault("OTEL_SERVICE_VERSION", constants.DefaultServiceVersion)
 	instanceID := config.EnvOrDefault("OTEL_SERVICE_INSTANCE_ID", config.DefaultInstanceID())
@@ -72,6 +90,7 @@ func Initialize(ctx context.Context, logger *slog.Logger) contracts.Shutdown {
 			instanceID,
 			traceSampleRatio,
 			metricExportInterval,
+			dependencies,
 		)
 		runtime.services[service.Key] = serviceRuntime
 	}
@@ -93,7 +112,7 @@ func Initialize(ctx context.Context, logger *slog.Logger) contracts.Shutdown {
 		)
 	}))
 
-	if err := otelruntime.Start(otelruntime.WithMeterProvider(edge.meterProvider)); err != nil {
+	if err := dependencies.StartRuntimeMetrics(edge.meterProvider); err != nil {
 		logger.Error(
 			"OpenTelemetry Go runtime metrics initialization failed",
 			"service", contracts.ServiceLauncherEdge.Name,
@@ -115,9 +134,7 @@ func Initialize(ctx context.Context, logger *slog.Logger) contracts.Shutdown {
 		var shutdownErrors []error
 		for _, service := range services {
 			serviceRuntime := runtime.services[service.Key]
-			if serviceRuntime == nil {
-				continue
-			}
+			// Every service is inserted during initialization; the map is immutable.
 
 			if err := serviceRuntime.meterProvider.Shutdown(shutdownContext); err != nil {
 				shutdownErrors = append(
@@ -145,6 +162,7 @@ func newServiceRuntime(
 	instanceID string,
 	traceSampleRatio float64,
 	metricExportInterval time.Duration,
+	dependencies Dependencies,
 ) *serviceRuntime {
 	serviceResource := resource.NewSchemaless(
 		attribute.String("service.name", service.Name),
@@ -162,7 +180,7 @@ func newServiceRuntime(
 
 	traceExportEnabled := config.TraceExportConfigured()
 	if traceExportEnabled {
-		exporter, err := otlptracehttp.New(ctx)
+		exporter, err := dependencies.TraceExporter(ctx)
 		if err != nil {
 			logger.Error(
 				"OpenTelemetry trace exporter initialization failed",
@@ -183,7 +201,7 @@ func newServiceRuntime(
 
 	metricExportEnabled := config.MetricExportConfigured()
 	if metricExportEnabled {
-		exporter, err := otlpmetrichttp.New(ctx)
+		exporter, err := dependencies.MetricExporter(ctx)
 		if err != nil {
 			logger.Error(
 				"OpenTelemetry metric exporter initialization failed",
@@ -210,7 +228,7 @@ func newServiceRuntime(
 		tracerProvider: tracerProvider,
 		meterProvider:  meterProvider,
 	}
-	serviceRuntime.initializeMetrics(logger)
+	serviceRuntime.initializeMetrics(logger, dependencies.Meter(meterProvider,"grovehub/"+service.Key))
 
 	logger.Info(
 		"OpenTelemetry service initialized",

@@ -2,6 +2,9 @@ package support_test
 
 import (
 	"net/http"
+	"database/sql"
+	"errors"
+	"gorm.io/gorm"
 	"testing"
 	"time"
 
@@ -38,4 +41,20 @@ func TestDatabaseFixture(t *testing.T) {
 	var value int
 	if err:=db.Raw("SELECT 1").Scan(&value).Error;err!=nil || value!=1 { t.Fatalf("value=%d err=%v",value,err) }
 	mock.ExpectClose()
+}
+
+func TestDatabaseFixtureErrors(t *testing.T) {
+	sentinel := errors.New("driver unavailable")
+	db, mock, cleanup, err := database.NewPostgresWith(func()(*sql.DB,sqlmock.Sqlmock,error){
+		return nil,nil,sentinel
+	},func(*sql.DB)(*gorm.DB,error){t.Fatal("must not open after failed connection");return nil,nil})
+	if !errors.Is(err,sentinel)||db!=nil||mock!=nil||cleanup!=nil {t.Fatal("connection failure not propagated")}
+	connection,expected,err:=sqlmock.New()
+	if err!=nil {t.Fatal(err)}
+	expected.ExpectClose()
+	db,mock,cleanup,err=database.NewPostgresWith(func()(*sql.DB,sqlmock.Sqlmock,error){
+		return connection,expected,nil
+	},func(*sql.DB)(*gorm.DB,error){return nil,sentinel})
+	if !errors.Is(err,sentinel)||db!=nil||mock!=nil||cleanup!=nil {t.Fatal("GORM failure not propagated")}
+	if err:=expected.ExpectationsWereMet();err!=nil{t.Fatal(err)}
 }

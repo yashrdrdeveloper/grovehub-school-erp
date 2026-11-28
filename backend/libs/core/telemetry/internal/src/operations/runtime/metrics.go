@@ -29,8 +29,7 @@ var latencyBoundariesSeconds = []float64{
 	10,
 }
 
-func (runtime *serviceRuntime) initializeMetrics(logger *slog.Logger) {
-	meter := runtime.meterProvider.Meter("grovehub/" + runtime.service.Key)
+func (runtime *serviceRuntime) initializeMetrics(logger *slog.Logger, meter metric.Meter) {
 
 	operationDuration, err := meter.Float64Histogram(
 		"grovehub.service.operation.duration",

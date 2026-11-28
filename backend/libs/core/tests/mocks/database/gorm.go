@@ -13,9 +13,17 @@ import (
 // NewPostgres builds a GORM connection backed entirely by a fake SQL driver.
 // All callers must check ExpectationsWereMet and invoke cleanup.
 func NewPostgres() (*gorm.DB, sqlmock.Sqlmock, func() error, error) {
-    connection, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherRegexp))
+    return NewPostgresWith(func() (*sql.DB, sqlmock.Sqlmock, error) {
+        return sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherRegexp))
+    }, openPostgres)
+}
+
+// NewPostgresWith lets isolated tests supply their own fake driver and GORM opener.
+// Production test fixtures use NewPostgres; no actual database is opened.
+func NewPostgresWith(connect func() (*sql.DB, sqlmock.Sqlmock, error), open func(*sql.DB) (*gorm.DB, error)) (*gorm.DB, sqlmock.Sqlmock, func() error, error) {
+    connection, mock, err := connect()
     if err != nil { return nil,nil,nil,err }
-    db,err := openPostgres(connection)
+    db,err := open(connection)
     if err != nil { _=connection.Close();return nil,nil,nil,err }
     return db,mock,connection.Close,nil
 }

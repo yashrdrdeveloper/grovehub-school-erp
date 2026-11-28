@@ -3,6 +3,7 @@ package pack
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"time"
@@ -14,6 +15,14 @@ import (
 
 // Run prepares a versioned module in the standard Go proxy layout.
 func Run(args []string) error {
+	return RunWithArchive(args, func(path string) (io.WriteCloser, error) {
+		return os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0644)
+	})
+}
+
+// RunWithArchive isolates the archive creation boundary from the packaging logic.
+// The production opener enforces exclusive creation; callers own that contract.
+func RunWithArchive(args []string, openArchive func(string) (io.WriteCloser, error)) error {
 	if len(args) != 4 {
 		return fmt.Errorf("usage: modulepack SOURCE PROXY VERSION RFC3339_TIME")
 	}
@@ -30,15 +39,15 @@ func Run(args []string) error {
 		return fmt.Errorf("module must declare its path and have no replacements")
 	}
 	m := module.Version{Path: parsed.Module.Mod.Path, Version: version}
-	if err := module.Check(m.Path, m.Version); err != nil {
-		return err
-	}
 	escapedPath, err := module.EscapePath(m.Path)
 	if err != nil {
 		return err
 	}
 	escapedVersion, err := module.EscapeVersion(m.Version)
 	if err != nil {
+		return err
+	}
+	if err := module.Check(m.Path, m.Version); err != nil {
 		return err
 	}
 	stamp, err := time.Parse(time.RFC3339, args[3])
@@ -50,7 +59,7 @@ func Run(args []string) error {
 		return err
 	}
 	base := filepath.Join(dir, escapedVersion)
-	archive, err := os.OpenFile(base+".zip", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0644)
+	archive, err := openArchive(base+".zip")
 	if err != nil {
 		return err
 	}

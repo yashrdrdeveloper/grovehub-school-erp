@@ -271,7 +271,6 @@ func expandPath(route string, pathDTO any) (string, error) {
 	if strings.ContainsAny(result, "{}") || strings.Contains(result, "//") {
 		return "", errors.New("unresolved or unsafe endpoint path")
 	}
-	if result == route { return "", errors.New("unresolved endpoint path placeholders") }
 	for _, match := range placeholders {
 		if _, exists := fields[match[1]]; !exists {
 			return "", fmt.Errorf("endpoint path field %s is missing", match[1])
