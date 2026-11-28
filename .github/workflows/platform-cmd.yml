@@ -8,6 +8,7 @@ on:
       - 'backend/projects/platform/launcher/**'
       - 'backend/libs/**'
       - 'scripts/backend/**'
+      - 'scripts/testing/platform-operator-coverage.py'
       - 'scripts/identity/**'
       - '.github/workflows/platform-cmd.yml'
   workflow_dispatch:
@@ -32,7 +33,7 @@ jobs:
       - name: Enforce single maintained entry point
         run: |
           test -f backend/projects/platform/cmd/main.go
-          test "$(find backend/projects/platform/cmd -mindepth 1 -maxdepth 1 -printf '%f\n' | sort)" = "$(printf 'internal\nmain.go')"
+          test "$(find backend/projects/platform/cmd -mindepth 1 -maxdepth 1 -printf '%f\n' | sort)" = "main.go"
       - name: Check command source formatting
         run: |
           unformatted="$(git ls-files -z ':(glob)backend/projects/platform/cmd/**/*.go' | xargs -0 -r gofmt -l)"
@@ -43,8 +44,10 @@ jobs:
           fi
       - name: Generate annotated source and compile executable
         run: make backend-build
-      - name: Require exact 100 percent command statement coverage including main
+      - name: Require exact 100 percent entry point coverage
         run: make unit-coverage package=cmd
+      - name: Require exact 100 percent relocated operator coverage
+        run: python3 scripts/testing/platform-operator-coverage.py
       - name: Verify CLI rejects unknown command without opening databases
         shell: bash
         run: |
@@ -60,4 +63,6 @@ jobs:
           include-hidden-files: true
           path: |
             backend/projects/platform/.generated/unit-coverage/cmd.out
+            backend/projects/platform/.generated/unit-coverage/operator.out
+            backend/projects/platform/.generated/unit-coverage/operator-raw.out
             .runtime/reports/unit-coverage/cmd.html

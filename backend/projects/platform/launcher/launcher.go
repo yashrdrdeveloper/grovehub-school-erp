@@ -11,6 +11,8 @@ import (
 	coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
 	"grovehub/launcher/internal/src/bootstrap"
 	bootstrapimpl "grovehub/launcher/internal/src/bootstrap/impl"
+	commandbootstrap "grovehub/launcher/internal/src/operations/command/bootstrap"
+	"grovehub/launcher/internal/src/operations/command/registry"
 	external "grovehub/launcher/internal/src/services/gateway/operations/external/impl"
 	tenantaccess "grovehub/launcher/internal/src/services/gateway/operations/tenant/access"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload"
@@ -68,4 +70,11 @@ func NewWorkloadVerifier(raw string, identity DelegatedIdentity, webhook coregat
 
 func NewExternalGateway(mux *http.ServeMux, identity session.AccessVerifier, workloads coregateway.WorkloadVerifier, origin string, limits ...map[string]int) http.Handler {
 	return external.New(mux, identity, workloads, origin, limits...)
+}
+
+// Execute dispatches the requested operation without starting unrelated services.
+func Execute(args []string, output, diagnostics io.Writer) int {
+	return commandbootstrap.Dispatch(args, output, diagnostics, func() (registry.Registry, error) {
+		return commandbootstrap.New(Run)
+	})
 }

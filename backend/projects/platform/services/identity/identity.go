@@ -2,6 +2,7 @@
 package identity
 
 import (
+	platformbootstrap "grovehub/libs/platform/bootstrap"
 	"context"
 	schoolgateway "grovehub/libs/platform/session"
 	"errors"
@@ -33,4 +34,9 @@ func Migrate(ctx context.Context, db *gorm.DB) error {
 		return fmt.Errorf("identity migration DB: %w", err)
 	}
 	return migrations.Migrate(ctx, sqlDB)
+}
+
+// Bootstrap exposes operator capabilities without starting the service runtime.
+func Bootstrap() platformbootstrap.Service[*gorm.DB] {
+	return bootstrapimpl.NewOperatorBootstrap(Migrate)
 }

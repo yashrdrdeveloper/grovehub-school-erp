@@ -8,7 +8,7 @@ cd -- "$module_dir"
 profile="${1:-$module_dir/.generated/coverage.out}"
 mkdir -p -- "$(dirname -- "$profile")"
 # Include every production package and use all standalone test trees.
-go test -race -count=1 -covermode=atomic -coverpkg=./session/... -coverprofile="$profile" ./...
+go test -race -count=1 -covermode=atomic -coverpkg=./session/...,./bootstrap/...,./command/... -coverprofile="$profile" ./...
 go tool cover -func="$profile"
 awk '
   NR == 1 { next }

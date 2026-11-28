@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	platformbootstrap "grovehub/libs/platform/bootstrap"
     "context"
     "errors"
     "fmt"
@@ -38,4 +39,9 @@ func NewEventStore(db *gorm.DB) messagingclient.EventStore {
 // NewReplaySource exposes retained published events without broker or mutation access.
 func NewReplaySource(db *gorm.DB) messagingclient.ReplaySource {
 	return repositoryimpl.NewReplaySource(db)
+}
+
+// Bootstrap exposes operator capabilities without starting the service runtime.
+func Bootstrap() platformbootstrap.Service[*gorm.DB] {
+	return bootstrapimpl.NewOperatorBootstrap(Migrate)
 }

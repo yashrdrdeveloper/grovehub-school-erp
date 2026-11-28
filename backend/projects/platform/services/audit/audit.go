@@ -1,6 +1,7 @@
 package audit
 
 import (
+	platformbootstrap "grovehub/libs/platform/bootstrap"
 	"context"
 	"errors"
 	"log/slog"
@@ -42,4 +43,9 @@ type ReplayResult = replay.Result
 
 func Replay(ctx context.Context,db *gorm.DB,source messaging.ReplaySource,input ReplayRequest) (ReplayResult,error) {
 	return replayimpl.New(db,source,activityrepo.New(db)).Replay(ctx,input)
+}
+
+// Bootstrap exposes operator capabilities without starting the service runtime.
+func Bootstrap() platformbootstrap.Service[*gorm.DB] {
+	return bootstrapimpl.NewOperatorBootstrap(Migrate)
 }

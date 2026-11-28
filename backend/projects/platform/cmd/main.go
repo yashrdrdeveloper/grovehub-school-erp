@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
-	"grovehub/cmd/internal/src/bootstrap"
+	"grovehub/launcher"
 )
 
 func main() {
-	os.Exit(bootstrap.New().Run(os.Args[1:], os.Stdout, os.Stderr))
+	os.Exit(launcher.Execute(os.Args[1:], os.Stdout, os.Stderr))
 }

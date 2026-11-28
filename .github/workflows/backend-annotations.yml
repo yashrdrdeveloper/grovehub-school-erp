@@ -35,7 +35,7 @@ jobs:
         run: |
           test "$(go list -m)" = "grovehub/libs/platform"
           test "$(go list -m all)" = "grovehub/libs/platform"
-          test -z "$(gofmt -l session)"
+          test -z "$(gofmt -l session bootstrap command)"
           go build ./...
           go vet ./...
       - name: Enforce 100 percent Platform library statement coverage
@@ -171,7 +171,7 @@ jobs:
         run: GOWORK=off go test -race ./session/...
       - name: Test unified Platform command strategies
         working-directory: backend/projects/platform
-        run: go test -vet=off -overlay=.generated/overlay.json ./cmd/...
+        run: go test -vet=off -overlay=.generated/overlay.json ./cmd/... ./launcher/internal/resources/tests/unit-test/operations/command/... ./services/audit/internal/tests/unit-test/strategies/command/... ./services/identity/internal/tests/unit-test/strategies/command/...
       - name: Measure Launcher coverage with generated annotations
         # The Core runner materializes generated source and checks exact statement coverage.
         run: make unit-coverage package=launcher

@@ -2,6 +2,7 @@
 package foundation
 
 import (
+	platformbootstrap "grovehub/libs/platform/bootstrap"
     "context"
     "errors"
     "fmt"
@@ -29,4 +30,9 @@ func Migrate(ctx context.Context, db *gorm.DB) error {
     sqlDB, err := db.DB()
     if err != nil { return fmt.Errorf("access Foundation migration database: %w",err) }
     return foundationmigrations.Migrate(ctx, sqlDB)
+}
+
+// Bootstrap exposes operator capabilities without starting the service runtime.
+func Bootstrap() platformbootstrap.Service[*gorm.DB] {
+	return bootstrapimpl.NewOperatorBootstrap(Migrate)
 }
