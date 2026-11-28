@@ -3,12 +3,11 @@ package foundation
 
 import (
 	"context"
-	"log/slog"
 	"gorm.io/gorm"
-	"grovehub/services/infrastructure/client/messaging"
 	"grovehub/services/foundation/internal/app/bootstrap"
 	bootstrapimpl "grovehub/services/foundation/internal/app/bootstrap/impl"
-
+	"grovehub/services/infrastructure/client/messaging"
+	"log/slog"
 )
 
 type Module = bootstrap.Runtime

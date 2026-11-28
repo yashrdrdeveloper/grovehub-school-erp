@@ -69,9 +69,13 @@ func Execute[TId any, T any](db *gorm.DB, query contracts.Query[TId], config con
 		countQuery.Cursor = nil
 		countQuery.Offset = 0
 		countDB, err := Apply(db.Session(&gorm.Session{}), countQuery, config)
-		if err != nil { return contracts.QueryResult[T]{}, err }
+		if err != nil {
+			return contracts.QueryResult[T]{}, err
+		}
 		var count int64
-		if err := countDB.Model(new(T)).Select("COUNT(*)").Limit(-1).Offset(-1).Count(&count).Error; err != nil { return contracts.QueryResult[T]{}, err }
+		if err := countDB.Model(new(T)).Select("COUNT(*)").Limit(-1).Offset(-1).Count(&count).Error; err != nil {
+			return contracts.QueryResult[T]{}, err
+		}
 		total = &count
 	}
 	searchDB, err := Apply(db.Session(&gorm.Session{}), query, config)
@@ -88,4 +92,3 @@ func Execute[TId any, T any](db *gorm.DB, query contracts.Query[TId], config con
 	}
 	return contracts.QueryResult[T]{Items: items, HasNext: hasNext, TotalRecords: total}, nil
 }
-

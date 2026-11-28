@@ -10,4 +10,3 @@ type ReceiptSearchInput struct {
 	SchoolID  string `json:"schoolId,omitempty"`
 	Operation string `json:"operation,omitempty"`
 }
-

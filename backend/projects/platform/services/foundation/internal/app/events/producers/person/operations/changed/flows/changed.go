@@ -2,12 +2,12 @@
 package flows
 
 import (
-    foundationevents "grovehub/services/foundation/internal/app/constants/events"
-    persondto "grovehub/services/foundation/internal/app/dto/person"
+	foundationevents "grovehub/services/foundation/internal/app/constants/events"
+	persondto "grovehub/services/foundation/internal/app/dto/person"
 )
 
 type Change struct {
-    Operation foundationevents.Operation
-    Old *persondto.Person
-    New *persondto.Person
+	Operation foundationevents.Operation
+	Old       *persondto.Person
+	New       *persondto.Person
 }

@@ -15,9 +15,9 @@ import (
 )
 
 type Writer struct {
-	db *gorm.DB
+	db     *gorm.DB
 	locker authority.Locker
-	reads accountrole.Repository
+	reads  accountrole.Repository
 }
 
 var _ accountrole.Writer = (*Writer)(nil)

@@ -2,8 +2,8 @@
 package helpers
 
 import (
-    persondto "grovehub/services/foundation/internal/app/dto/person"
-    "grovehub/services/foundation/internal/app/entity"
+	persondto "grovehub/services/foundation/internal/app/dto/person"
+	"grovehub/services/foundation/internal/app/entity"
 )
 
 func BuildContacts(request persondto.Contacts, existing []entity.Contact) []entity.Contact {
@@ -35,11 +35,11 @@ func buildContactGroup(
 	for _, contact := range values {
 		key := contactKey(contactType, contact.Value)
 		contacts = append(contacts, entity.Contact{
-			Type: contactType,
-			Value: contact.Value,
+			Type:            contactType,
+			Value:           contact.Value,
 			NormalizedValue: contact.Value,
-			IsPrimary: contact.IsPrimary,
-			IsVerified: existingVerification[key],
+			IsPrimary:       contact.IsPrimary,
+			IsVerified:      existingVerification[key],
 		})
 	}
 	return contacts
@@ -64,6 +64,8 @@ func AssociateContacts(person entity.Person, contacts []entity.Contact) []entity
 
 // CopyContacts preserves the previous service API's defensive-copy semantics.
 func CopyContacts(contacts []entity.Contact) []entity.Contact {
-	if len(contacts) == 0 { return nil }
+	if len(contacts) == 0 {
+		return nil
+	}
 	return append([]entity.Contact(nil), contacts...)
 }

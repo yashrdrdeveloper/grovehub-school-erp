@@ -2,9 +2,9 @@ package impl
 
 import (
 	"context"
+	"errors"
 	coreevents "grovehub/libs/core/events"
 	"grovehub/services/identity/internal/app/events/producers/resource"
-	"errors"
 
 	kind "grovehub/services/identity/internal/app/constants/approval"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
@@ -12,8 +12,8 @@ import (
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	"grovehub/services/identity/internal/app/repository/accountrole"
 	repo "grovehub/services/identity/internal/app/repository/approval"
-	authrepo "grovehub/services/identity/internal/app/repository/authorization"
 	"grovehub/services/identity/internal/app/repository/authority"
+	authrepo "grovehub/services/identity/internal/app/repository/authorization"
 	"grovehub/services/identity/internal/app/repository/rbacmigration"
 	rolerepo "grovehub/services/identity/internal/app/repository/role"
 	"grovehub/services/identity/internal/app/services/account/operations/transition"
@@ -41,18 +41,18 @@ type PendingInvitation interface {
 
 type Effects struct {
 	PendingInvitation PendingInvitation
-	Audit resource.Recorder
-	AccountLifecycle AccountLifecycle
-	RoleLifecycle RoleLifecycle
-	Permissions rolerepo.DraftPermissionWriter
-	Assignment AssignmentEffect
+	Audit             resource.Recorder
+	AccountLifecycle  AccountLifecycle
+	RoleLifecycle     RoleLifecycle
+	Permissions       rolerepo.DraftPermissionWriter
+	Assignment        AssignmentEffect
 }
 
 type Executor struct {
-	service *Service
-	guard authority.Guard
+	service   *Service
+	guard     authority.Guard
 	readiness rbacmigration.Readiness
-	effects Effects
+	effects   Effects
 }
 
 // NewExecutor constructs the transactional effect executor. HTTP callers must
@@ -187,4 +187,3 @@ func (executor *Executor) reviewers(ctx context.Context, request entity.Approval
 	}
 	return nil
 }
-

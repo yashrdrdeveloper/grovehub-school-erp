@@ -14,15 +14,15 @@ type ResponseContacts struct {
 }
 
 type Person struct {
-	GID        string    `json:"gid"`
-	FirstName  string    `json:"firstName"`
-	MiddleName string    `json:"middleName,omitempty"`
-	LastName   string    `json:"lastName"`
-	Contacts   ResponseContacts  `json:"contacts"`
-	Status     string    `json:"status"`
-	Version    int64     `json:"version"`
-	CreatedAt  time.Time `json:"createdAt"`
-	UpdatedAt  time.Time `json:"updatedAt"`
+	GID        string           `json:"gid"`
+	FirstName  string           `json:"firstName"`
+	MiddleName string           `json:"middleName,omitempty"`
+	LastName   string           `json:"lastName"`
+	Contacts   ResponseContacts `json:"contacts"`
+	Status     string           `json:"status"`
+	Version    int64            `json:"version"`
+	CreatedAt  time.Time        `json:"createdAt"`
+	UpdatedAt  time.Time        `json:"updatedAt"`
 }
 
 type PersonErrorMetadata struct {

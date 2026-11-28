@@ -16,28 +16,28 @@ type environmentLoader struct{}
 func NewEnvironmentLoader() config.Loader { return environmentLoader{} }
 
 func (environmentLoader) Gmail() (config.Gmail, error) {
-    value, err := coreannotation.ConfigurationFromEnv[config.Gmail]()
-    if err != nil {
-        return config.Gmail{}, errors.New("Gmail OAuth configuration missing")
-    }
-    if !validCallback(value.RedirectURI, "gmail") {
-        return config.Gmail{}, errors.New("Gmail redirect URI must use the connections OAuth callback path over HTTPS")
-    }
-    return value,nil
+	value, err := coreannotation.ConfigurationFromEnv[config.Gmail]()
+	if err != nil {
+		return config.Gmail{}, errors.New("Gmail OAuth configuration missing")
+	}
+	if !validCallback(value.RedirectURI, "gmail") {
+		return config.Gmail{}, errors.New("Gmail redirect URI must use the connections OAuth callback path over HTTPS")
+	}
+	return value, nil
 }
 
 func (environmentLoader) Outlook() (config.Outlook, error) {
-    value, err := coreannotation.ConfigurationFromEnv[config.Outlook]()
-    if err != nil {
-        return config.Outlook{}, errors.New("Outlook OAuth configuration missing")
-    }
-    if !validCallback(value.RedirectURI, "outlook") {
-        return config.Outlook{}, errors.New("Outlook redirect URI must use the connections OAuth callback path over HTTPS")
-    }
-    if strings.ContainsAny(value.Tenant, "/?#\\ \t\r\n") {
-        return config.Outlook{}, errors.New("invalid Outlook tenant")
-    }
-    return value,nil
+	value, err := coreannotation.ConfigurationFromEnv[config.Outlook]()
+	if err != nil {
+		return config.Outlook{}, errors.New("Outlook OAuth configuration missing")
+	}
+	if !validCallback(value.RedirectURI, "outlook") {
+		return config.Outlook{}, errors.New("Outlook redirect URI must use the connections OAuth callback path over HTTPS")
+	}
+	if strings.ContainsAny(value.Tenant, "/?#\\ \t\r\n") {
+		return config.Outlook{}, errors.New("invalid Outlook tenant")
+	}
+	return value, nil
 }
 
 func (environmentLoader) GmailPush() config.GmailPush {

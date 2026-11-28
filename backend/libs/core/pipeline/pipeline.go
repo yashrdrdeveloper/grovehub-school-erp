@@ -7,9 +7,9 @@ import (
 
 	coreannotation "grovehub/libs/core/annotation"
 	coredatabase "grovehub/libs/core/database"
-	corerequest "grovehub/libs/core/request"
 	"grovehub/libs/core/pipeline/internal/src/operations/rest"
 	"grovehub/libs/core/pipeline/internal/src/operations/service"
+	corerequest "grovehub/libs/core/request"
 )
 
 type Empty = rest.Empty
@@ -22,8 +22,8 @@ type Failure = rest.Failure
 type BindError = rest.BindError
 type DecodeError = rest.DecodeError
 
-func OK[T any](data T) Result[T] { return rest.OK(data) }
-func Created[T any](data T) Result[T] { return rest.Created(data) }
+func OK[T any](data T) Result[T]                        { return rest.OK(data) }
+func Created[T any](data T) Result[T]                   { return rest.Created(data) }
 func CreatedOrOK[T any](data T, created bool) Result[T] { return rest.CreatedOrOK(data, created) }
 func ReadBody[T any](request *http.Request, decode func(*http.Request, any) error, rules coreannotation.ValidationRules[T]) (T, error) {
 	return rest.ReadBody(request, decode, rules)
@@ -45,23 +45,33 @@ type Operation = service.Operation
 type Recovery[S, R any] = service.Recovery[S, R]
 
 var (
-	ErrUnresolvedChain = service.ErrUnresolvedChain
-	ErrNoMatchingRule = service.ErrNoMatchingRule
+	ErrUnresolvedChain   = service.ErrUnresolvedChain
+	ErrNoMatchingRule    = service.ErrNoMatchingRule
 	ErrMissingUnitOfWork = service.ErrMissingUnitOfWork
 )
 
-func Next[R any]() Outcome[R] { return service.Next[R]() }
+func Next[R any]() Outcome[R]                        { return service.Next[R]() }
 func Return[R any](value R, created bool) Outcome[R] { return service.Return(value, created) }
-func Fail[R any](err error) Outcome[R] { return service.Fail[R](err) }
-func Continue[S, R any](ctx context.Context, state *S) Outcome[R] { return service.Continue[S, R](ctx, state) }
-func Chain[S, R any](ctx context.Context, state *S, handlers ...Handler[S, R]) Outcome[R] { return service.Chain(ctx, state, handlers...) }
+func Fail[R any](err error) Outcome[R]               { return service.Fail[R](err) }
+func Continue[S, R any](ctx context.Context, state *S) Outcome[R] {
+	return service.Continue[S, R](ctx, state)
+}
+func Chain[S, R any](ctx context.Context, state *S, handlers ...Handler[S, R]) Outcome[R] {
+	return service.Chain(ctx, state, handlers...)
+}
 func RunService[S, R any](ctx context.Context, state *S, handlers ...Handler[S, R]) (R, bool, error) {
 	return service.Run(ctx, state, handlers...)
 }
-func RequireHandled[R any](outcome Outcome[R], err error) Outcome[R] { return service.RequireHandled(outcome, err) }
-func When[S, R any](predicate func(*S) bool, handler Handler[S, R]) Rule[S, R] { return service.When(predicate, handler) }
+func RequireHandled[R any](outcome Outcome[R], err error) Outcome[R] {
+	return service.RequireHandled(outcome, err)
+}
+func When[S, R any](predicate func(*S) bool, handler Handler[S, R]) Rule[S, R] {
+	return service.When(predicate, handler)
+}
 func Otherwise[S, R any](handler Handler[S, R]) Rule[S, R] { return service.Otherwise(handler) }
-func Decide[S, R any](ctx context.Context, state *S, rules ...Rule[S, R]) Outcome[R] { return service.Decide(ctx, state, rules...) }
+func Decide[S, R any](ctx context.Context, state *S, rules ...Rule[S, R]) Outcome[R] {
+	return service.Decide(ctx, state, rules...)
+}
 func ResolveResult[T, R any](value T, err error, success func(T) Outcome[R], failure func(error) Outcome[R]) Outcome[R] {
 	return service.Result(value, err, success, failure)
 }
@@ -71,11 +81,15 @@ func Lookup[T, R any](value T, err error, missing error, found func(T) Outcome[R
 func Sequence[R any](ctx context.Context, result R, created bool, operations ...Operation) Outcome[R] {
 	return service.Sequence(ctx, result, created, operations...)
 }
-func Transactional[S, R any](unit coredatabase.UnitOfWork, handler Handler[S, R]) Handler[S, R] { return service.Transactional(unit, handler) }
+func Transactional[S, R any](unit coredatabase.UnitOfWork, handler Handler[S, R]) Handler[S, R] {
+	return service.Transactional(unit, handler)
+}
 func OnError[S, R any](target error, handler func(context.Context, *S, error) Outcome[R]) Recovery[S, R] {
 	return service.OnError(target, handler)
 }
-func OtherwiseError[S, R any](handler func(context.Context, *S, error) Outcome[R]) Recovery[S, R] { return service.OtherwiseError(handler) }
+func OtherwiseError[S, R any](handler func(context.Context, *S, error) Outcome[R]) Recovery[S, R] {
+	return service.OtherwiseError(handler)
+}
 func Recover[S, R any](ctx context.Context, state *S, result Outcome[R], recoveries ...Recovery[S, R]) Outcome[R] {
 	return service.Recover(ctx, state, result, recoveries...)
 }

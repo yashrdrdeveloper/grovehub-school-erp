@@ -8,7 +8,6 @@ import (
 	platformbootstrap "grovehub/libs/platform/bootstrap"
 	"grovehub/services/foundation/internal/app/bootstrap"
 	"grovehub/services/foundation/internal/resources/migrations"
-
 )
 
 // NewServiceBootstrap joins runtime, command and migration registration.

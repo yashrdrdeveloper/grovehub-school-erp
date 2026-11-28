@@ -2,12 +2,12 @@
 package person
 
 import (
-    "context"
+	"context"
 
-    foundationevents "grovehub/services/foundation/internal/app/constants/events"
-    persondto "grovehub/services/foundation/internal/app/dto/person"
+	foundationevents "grovehub/services/foundation/internal/app/constants/events"
+	persondto "grovehub/services/foundation/internal/app/dto/person"
 )
 
 type ChangedProducer interface {
-    Enqueue(ctx context.Context, operation foundationevents.Operation, old, next *persondto.Person) error
+	Enqueue(ctx context.Context, operation foundationevents.Operation, old, next *persondto.Person) error
 }

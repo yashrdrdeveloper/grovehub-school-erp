@@ -20,9 +20,9 @@ import (
 )
 
 type Readiness struct {
-	db *gorm.DB
-	locker authority.Locker
-	migration rbacmigration.Readiness
+	db             *gorm.DB
+	locker         authority.Locker
+	migration      rbacmigration.Readiness
 	administrators authority.AdministratorReader
 }
 

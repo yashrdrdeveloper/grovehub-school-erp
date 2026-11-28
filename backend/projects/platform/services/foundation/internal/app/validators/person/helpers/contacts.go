@@ -1,11 +1,11 @@
 package helpers
 
 import (
-    coreerrors "grovehub/libs/core/errors"
-    coreutils "grovehub/libs/core/utils"
-    personerror "grovehub/services/foundation/internal/app/constants/error"
-    persondto "grovehub/services/foundation/internal/app/dto/person"
-    "grovehub/services/foundation/internal/app/entity"
+	coreerrors "grovehub/libs/core/errors"
+	coreutils "grovehub/libs/core/utils"
+	personerror "grovehub/services/foundation/internal/app/constants/error"
+	persondto "grovehub/services/foundation/internal/app/dto/person"
+	"grovehub/services/foundation/internal/app/entity"
 )
 
 const maxContactsPerType = 10
@@ -31,7 +31,7 @@ func ValidateContacts(request persondto.Contacts) error {
 	}
 	seen := make(map[string]struct{}, len(request.Emails)+len(request.Phones))
 	for _, group := range []struct {
-		kind entity.ContactType
+		kind   entity.ContactType
 		values []persondto.ContactValue
 	}{
 		{entity.ContactTypeEmail, request.Emails},
@@ -66,7 +66,7 @@ func normalizeContactGroup(
 			return nil, err
 		}
 		normalized = append(normalized, persondto.ContactValue{
-			Value: value,
+			Value:     value,
 			IsPrimary: contact.IsPrimary,
 		})
 	}

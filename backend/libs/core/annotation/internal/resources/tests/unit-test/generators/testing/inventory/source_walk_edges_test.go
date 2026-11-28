@@ -1,16 +1,18 @@
 package inventory_test
 
 import (
-	"os"
-	"path/filepath"
-	"grovehub/libs/core/annotation/internal/src/generators/testing/inventory"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"grovehub/libs/core/annotation/internal/src/generators/testing/inventory"
+	"os"
+	"path/filepath"
 )
 
 var _ = Describe("Inspect", func() {
 	It("returns source traversal failures", func() {
-		if os.Geteuid() == 0 { Skip("root bypasses directory permissions") }
+		if os.Geteuid() == 0 {
+			Skip("root bypasses directory permissions")
+		}
 		root := GinkgoT().TempDir()
 		dir := filepath.Join(root, "private")
 		Expect(os.Mkdir(dir, 0700)).To(Succeed())

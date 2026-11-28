@@ -71,14 +71,14 @@ func (repository *Repository) Update(ctx context.Context, account entity.Account
 		Model(&entity.Account{}).
 		Where("account_id = ? AND version = ?", account.AccountID, account.Version-1).
 		Updates(map[string]any{
-			"username":       account.Username,
-			"primary_role_id": account.PrimaryRoleID,
+			"username":           account.Username,
+			"primary_role_id":    account.PrimaryRoleID,
 			"secondary_role_ids": gorm.Expr("?::jsonb", secondary),
-			"email":          account.Email,
-			"status":         account.Status,
-			"version":        account.Version,
-			"search_details": account.SearchDetails,
-			"updated_at":     account.UpdatedAt,
+			"email":              account.Email,
+			"status":             account.Status,
+			"version":            account.Version,
+			"search_details":     account.SearchDetails,
+			"updated_at":         account.UpdatedAt,
 		})
 	if result.Error != nil {
 		return mapWriteError(result.Error)
@@ -112,11 +112,17 @@ func searchAccounts(db *gorm.DB, query coresearch.Query[string]) (coresearch.Que
 	countQuery.Cursor = nil
 	countQuery.Offset = 0
 	countDB, err := coresearch.Apply(db.Session(&gorm.Session{}), countQuery, searchconfig.AccountConfig)
-	if err != nil { return coresearch.QueryResult[entity.Account]{}, err }
+	if err != nil {
+		return coresearch.QueryResult[entity.Account]{}, err
+	}
 	var total int64
-	if err := countDB.Model(&entity.Account{}).Select("COUNT(*)").Limit(-1).Offset(-1).Count(&total).Error; err != nil { return coresearch.QueryResult[entity.Account]{}, err }
+	if err := countDB.Model(&entity.Account{}).Select("COUNT(*)").Limit(-1).Offset(-1).Count(&total).Error; err != nil {
+		return coresearch.QueryResult[entity.Account]{}, err
+	}
 	result, err := coresearch.Execute[string, entity.Account](db, query, searchconfig.AccountConfig)
-	if err != nil { return coresearch.QueryResult[entity.Account]{}, err }
+	if err != nil {
+		return coresearch.QueryResult[entity.Account]{}, err
+	}
 	result.TotalRecords = &total
 	return result, nil
 }

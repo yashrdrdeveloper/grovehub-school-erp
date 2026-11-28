@@ -15,7 +15,7 @@ func TestStorageError(t *testing.T) {
 		t.Fatal("nil error changed")
 	}
 	for _, tc := range []struct {
-		cause error
+		cause  error
 		status int
 	}{
 		{repository.ErrConflict, http.StatusConflict},

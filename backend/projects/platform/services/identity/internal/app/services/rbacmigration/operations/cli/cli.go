@@ -14,27 +14,27 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 	"grovehub/services/identity/internal/app/repository/approvalpolicy"
 	policyimpl "grovehub/services/identity/internal/app/repository/approvalpolicy/impl"
 	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
-	"gorm.io/gorm"
 
 	coredatabase "grovehub/libs/core/database"
 
 	migrationimpl "grovehub/services/identity/internal/app/repository/rbacmigration/impl"
 	"grovehub/services/identity/internal/app/services/rbacmigration"
-	"grovehub/services/identity/internal/app/services/rbacmigration/operations/plan"
 	"grovehub/services/identity/internal/app/services/rbacmigration/operations/cli/helpers"
+	"grovehub/services/identity/internal/app/services/rbacmigration/operations/plan"
 )
 
 type options struct {
 	operation string
-	tenant string
-	database string
-	operator string
-	input string
-	digest string
-	confirm bool
+	tenant    string
+	database  string
+	operator  string
+	input     string
+	digest    string
+	confirm   bool
 }
 
 func Run(args []string, output io.Writer, diagnostics io.Writer) error {

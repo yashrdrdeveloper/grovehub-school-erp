@@ -70,10 +70,10 @@ func (repository *Repository) Rotate(ctx context.Context, session entity.Session
 		Model(&entity.Session{}).
 		Where("session_id = ? AND refresh_hash = ? AND revoked_at IS NULL AND refresh_expires_at > ?", session.SessionID, previousRefreshDigest, time.Now().UTC()).
 		Updates(map[string]any{
-			"access_hash": session.AccessHash,
-			"refresh_hash": session.RefreshHash,
+			"access_hash":       session.AccessHash,
+			"refresh_hash":      session.RefreshHash,
 			"access_expires_at": session.AccessExpiresAt,
-			"updated_at": session.UpdatedAt,
+			"updated_at":        session.UpdatedAt,
 		})
 	if result.Error != nil {
 		return result.Error
@@ -150,12 +150,14 @@ func (repository *Repository) LockActive(ctx context.Context, accountID string, 
 	return session, err
 }
 
- // FindDelegated validates the referenced session without exposing session secrets.
+// FindDelegated validates the referenced session without exposing session secrets.
 func (repository *Repository) FindDelegated(ctx context.Context, sessionID string, now time.Time) (entity.Session, error) {
- var session entity.Session
- err := coredatabase.TransactionDB(ctx, repository.db).
-  Where("session_id = ? AND revoked_at IS NULL AND access_expires_at > ? AND refresh_expires_at > ?", sessionID, now, now).
-  Take(&session).Error
- if errors.Is(err, gorm.ErrRecordNotFound) { return entity.Session{}, sessionrepo.ErrInvalidSession }
- return session, err
+	var session entity.Session
+	err := coredatabase.TransactionDB(ctx, repository.db).
+		Where("session_id = ? AND revoked_at IS NULL AND access_expires_at > ? AND refresh_expires_at > ?", sessionID, now, now).
+		Take(&session).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return entity.Session{}, sessionrepo.ErrInvalidSession
+	}
+	return session, err
 }

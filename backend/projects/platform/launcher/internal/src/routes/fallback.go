@@ -3,8 +3,8 @@ package routes
 import (
 	"net/http"
 
-	corehttp "grovehub/libs/core/http"
 	"grovehub/launcher/internal/src/constants/errorcode"
+	corehttp "grovehub/libs/core/http"
 )
 
 func RegisterFallback(mux *http.ServeMux) {

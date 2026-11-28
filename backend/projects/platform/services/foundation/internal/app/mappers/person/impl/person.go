@@ -57,4 +57,3 @@ func (mapper *PersonMapper) ToPersonResponse(person entity.Person, personContact
 		UpdatedAt:  person.UpdatedAt,
 	}
 }
-

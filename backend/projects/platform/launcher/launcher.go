@@ -8,7 +8,6 @@ import (
 
 	"gorm.io/gorm"
 
-	coregateway "grovehub/libs/core/gateway"
 	"grovehub/launcher/internal/src/bootstrap"
 	bootstrapimpl "grovehub/launcher/internal/src/bootstrap/impl"
 	commandbootstrap "grovehub/launcher/internal/src/operations/command/bootstrap"
@@ -16,6 +15,7 @@ import (
 	external "grovehub/launcher/internal/src/services/gateway/operations/external/impl"
 	tenantaccess "grovehub/launcher/internal/src/services/gateway/operations/tenant/access"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload"
+	coregateway "grovehub/libs/core/gateway"
 	"grovehub/libs/platform/session"
 )
 

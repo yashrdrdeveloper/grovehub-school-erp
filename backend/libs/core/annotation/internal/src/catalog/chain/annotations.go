@@ -6,5 +6,5 @@ package chain
 import "grovehub/libs/core/annotation/internal/src/contracts"
 
 var UseCases = []contract.UseCase{
-    {Name:"ChainOfResponsibility",Syntax:"@ChainOfResponsibility",Category:"Service pipeline",Purpose:"Mark a method implemented through the typed core service chain runner",Mode:"CHECK",Status:contract.Pilot,Roadmap:"P4",Target:contract.MethodTarget},
+	{Name: "ChainOfResponsibility", Syntax: "@ChainOfResponsibility", Category: "Service pipeline", Purpose: "Mark a method implemented through the typed core service chain runner", Mode: "CHECK", Status: contract.Pilot, Roadmap: "P4", Target: contract.MethodTarget},
 }

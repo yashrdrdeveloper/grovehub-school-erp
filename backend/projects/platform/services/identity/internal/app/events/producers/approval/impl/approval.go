@@ -7,13 +7,13 @@ import (
 
 	"github.com/google/uuid"
 
-	coreevents "grovehub/libs/core/events"
 	coredatabase "grovehub/libs/core/database"
+	coreevents "grovehub/libs/core/events"
+	auditclient "grovehub/services/audit/client/producer"
 	"grovehub/services/identity/internal/app/entity"
 	producer "grovehub/services/identity/internal/app/events/producers/approval"
 	"grovehub/services/identity/internal/app/events/producers/approval/operations/changed"
 	"grovehub/services/identity/internal/app/services/security/principal"
-	auditclient "grovehub/services/audit/client/producer"
 )
 
 const EventType = "identity.approval.changed.v1"

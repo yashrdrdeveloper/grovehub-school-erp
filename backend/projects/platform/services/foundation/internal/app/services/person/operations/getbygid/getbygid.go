@@ -2,18 +2,20 @@
 package getbygid
 
 import (
-    "context"
+	"context"
 
-    persondto "grovehub/services/foundation/internal/app/dto/person"
-    readstrategies "grovehub/services/foundation/internal/app/services/person/operations/getbygid/strategies"
+	persondto "grovehub/services/foundation/internal/app/dto/person"
+	readstrategies "grovehub/services/foundation/internal/app/services/person/operations/getbygid/strategies"
 )
 
 type GetByGIDOperation struct {
-    strategy readstrategies.GetByGIDStrategy
+	strategy readstrategies.GetByGIDStrategy
 }
 
-func New(strategy readstrategies.GetByGIDStrategy) *GetByGIDOperation { return &GetByGIDOperation{strategy: strategy} }
+func New(strategy readstrategies.GetByGIDStrategy) *GetByGIDOperation {
+	return &GetByGIDOperation{strategy: strategy}
+}
 
 func (service *GetByGIDOperation) GetByGID(ctx context.Context, request persondto.GetPersonByGIDRequest) (persondto.Person, error) {
-    return service.strategy.Execute(ctx, request)
+	return service.strategy.Execute(ctx, request)
 }

@@ -2,11 +2,11 @@ package middleware_test
 
 import (
 	"context"
-	"net/http"
-	"net/http/httptest"
 	"grovehub/libs/core/headercontext/internal/src/contracts"
 	"grovehub/libs/core/headercontext/internal/src/operations/metadata"
 	"grovehub/libs/core/headercontext/internal/src/operations/middleware"
+	"net/http"
+	"net/http/httptest"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

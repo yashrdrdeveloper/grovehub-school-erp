@@ -7,8 +7,8 @@ import (
 	"gorm.io/gorm"
 
 	coredatabase "grovehub/libs/core/database"
-	"grovehub/services/identity/internal/app/entity"
 	"grovehub/services/identity/internal/app/constants/permission"
+	"grovehub/services/identity/internal/app/entity"
 	"grovehub/services/identity/internal/app/repository/authority"
 	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
 	"grovehub/services/identity/internal/app/repository/role"

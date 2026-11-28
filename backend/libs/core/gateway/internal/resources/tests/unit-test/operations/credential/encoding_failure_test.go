@@ -12,11 +12,11 @@ import (
 	"grovehub/libs/core/gateway/internal/src/operations/credential"
 )
 
-var _=Describe("Credential encoding",func(){
-	It("never signs an output when serialization fails",func(){
-		_,key,err:=ed25519.GenerateKey(nil)
+var _ = Describe("Credential encoding", func() {
+	It("never signs an output when serialization fails", func() {
+		_, key, err := ed25519.GenerateKey(nil)
 		Expect(err).NotTo(HaveOccurred())
-		token,err:=credential.SignWorkloadWithEncoder("key","issuer",key,contracts.WorkloadClaims{Subject:"school",Audience:"platform",Scopes:[]string{"read"},ExpiresAt:time.Now().Add(time.Minute)},func(any)([]byte,error){
+		token, err := credential.SignWorkloadWithEncoder("key", "issuer", key, contracts.WorkloadClaims{Subject: "school", Audience: "platform", Scopes: []string{"read"}, ExpiresAt: time.Now().Add(time.Minute)}, func(any) ([]byte, error) {
 			return json.Marshal(make(chan int))
 		})
 		Expect(err).To(HaveOccurred())

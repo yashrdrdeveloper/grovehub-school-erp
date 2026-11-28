@@ -35,10 +35,10 @@ func snapshot(account *entity.Account) *changed.Snapshot {
 	return &changed.Snapshot{
 		AccountID: account.AccountID,
 		PersonGID: account.PersonGID,
-		TenantID: tenantID,
-		Username: account.Username,
-		Status: string(account.Status),
-		Version: account.Version,
+		TenantID:  tenantID,
+		Username:  account.Username,
+		Status:    string(account.Status),
+		Version:   account.Version,
 	}
 }
 
@@ -52,15 +52,15 @@ func (publisher *Producer) Enqueue(ctx context.Context, operation string, old *e
 	}
 
 	envelope := coreevents.NewEnvelope(ctx, coreevents.Metadata{
-		EventID: eventID,
-		EventType: "identity.account.changed.v1",
-		Version: 1,
+		EventID:     eventID,
+		EventType:   "identity.account.changed.v1",
+		Version:     1,
 		AggregateID: accountID,
-		OccurredAt: time.Now().UTC(),
+		OccurredAt:  time.Now().UTC(),
 	}, changed.Changed{
 		Operation: operation,
-		Old: snapshot(old),
-		New: snapshot(next),
+		Old:       snapshot(old),
+		New:       snapshot(next),
 	})
 	payload, err := json.Marshal(envelope)
 	if err != nil {
@@ -68,12 +68,12 @@ func (publisher *Producer) Enqueue(ctx context.Context, operation string, old *e
 	}
 	return publisher.events.Enqueue(ctx, infrastructure.Event{
 		EventID: eventID,
-		Topic: "identity_account_changed",
+		Topic:   "identity_account_changed",
 		Payload: payload,
 		Metadata: map[string]string{
-			"event-id": eventID,
+			"event-id":   eventID,
 			"event-type": "identity.account.changed.v1",
-			"source": "identity",
+			"source":     "identity",
 		},
 	})
 }

@@ -31,8 +31,8 @@ func TestRoleService(t *testing.T) {
 }
 
 type authorizer struct {
-	code permission.Code
-	err  error
+	code   permission.Code
+	err    error
 	grants []permission.Code
 }
 
@@ -46,14 +46,14 @@ func (auth *authorizer) Effective(ctx context.Context) ([]permission.Code, error
 }
 
 type repository struct {
-	draft rolerepo.Draft
-	update rolerepo.MetadataUpdate
-	query coresearch.Query[string]
+	draft       rolerepo.Draft
+	update      rolerepo.MetadataUpdate
+	query       coresearch.Query[string]
 	permissions rolerepo.PermissionSet
-	tenant string
-	id string
-	calls int
-	err error
+	tenant      string
+	id          string
+	calls       int
+	err         error
 }
 
 func (repo *repository) CreateDraft(ctx context.Context, draft rolerepo.Draft) (rolerepo.Detail, error) {

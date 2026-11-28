@@ -2,27 +2,27 @@ package impl
 
 import (
 	"context"
-	accountdto "grovehub/services/identity/internal/app/dto/account"
 	"errors"
-	"time"
+	coredatabase "grovehub/libs/core/database"
+	accountdto "grovehub/services/identity/internal/app/dto/account"
 	"grovehub/services/identity/internal/app/entity"
-	"grovehub/services/identity/internal/app/services/security/principal"
-	accounthelpers "grovehub/services/identity/internal/app/services/account/helpers"
-	accountrepo "grovehub/services/identity/internal/app/repository/account"
+	accountproducer "grovehub/services/identity/internal/app/events/producers/account"
 	accountmapper "grovehub/services/identity/internal/app/mappers/account"
+	accountrepo "grovehub/services/identity/internal/app/repository/account"
+	accounthelpers "grovehub/services/identity/internal/app/services/account/helpers"
+	update "grovehub/services/identity/internal/app/services/account/operations/update"
+	"grovehub/services/identity/internal/app/services/security/principal"
 	accountvalidator "grovehub/services/identity/internal/app/validators/account"
 	rolevalidator "grovehub/services/identity/internal/app/validators/account/helpers"
-	coredatabase "grovehub/libs/core/database"
-	accountproducer "grovehub/services/identity/internal/app/events/producers/account"
-	update "grovehub/services/identity/internal/app/services/account/operations/update"
+	"time"
 )
 
 type Service struct {
-	accounts accountrepo.Repository
-	mapper accountmapper.Mapper
+	accounts  accountrepo.Repository
+	mapper    accountmapper.Mapper
 	validator accountvalidator.Validator
-	unit coredatabase.UnitOfWork
-	events accountproducer.ChangedProducer
+	unit      coredatabase.UnitOfWork
+	events    accountproducer.ChangedProducer
 }
 
 var _ update.Operation = (*Service)(nil)

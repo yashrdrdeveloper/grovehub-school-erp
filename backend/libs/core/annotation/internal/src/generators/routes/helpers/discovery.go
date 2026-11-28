@@ -1,11 +1,11 @@
 package helpers
 
 import (
-	"grovehub/libs/core/annotation/internal/src/helpers/layout"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"grovehub/libs/core/annotation/internal/src/helpers/layout"
 	"os"
 	"path/filepath"
 	"sort"
@@ -16,17 +16,23 @@ func DiscoverWithTier(dir, servicePath string, configured, restrictedOnly bool) 
 	// Support both legacy controller/<tier> and resource-owned
 	// controller/<resource>/<tier> packages.
 	type category struct{ dir, tier, resource string }
-	directories := []category{{dir:dir}}
+	directories := []category{{dir: dir}}
 	for _, tier := range accessTiers {
-		directories = append(directories, category{dir:filepath.Join(dir,tier),tier:tier})
+		directories = append(directories, category{dir: filepath.Join(dir, tier), tier: tier})
 	}
 	resources, err := os.ReadDir(dir)
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	for _, resource := range resources {
-		if !resource.IsDir() { continue }
-		if containsTier(resource.Name()) { continue }
+		if !resource.IsDir() {
+			continue
+		}
+		if containsTier(resource.Name()) {
+			continue
+		}
 		for _, tier := range accessTiers {
-			directories=append(directories,category{dir:filepath.Join(dir,resource.Name(),tier),tier:tier,resource:resource.Name()})
+			directories = append(directories, category{dir: filepath.Join(dir, resource.Name(), tier), tier: tier, resource: resource.Name()})
 		}
 	}
 
@@ -115,7 +121,9 @@ func DiscoverWithTier(dir, servicePath string, configured, restrictedOnly bool) 
 						}
 						routeTier := directory.tier
 						if restrictedOnly {
-							if !configured || routeTier == "" { return nil, fmt.Errorf("%s: restricted project requires categorized service routes", filename) }
+							if !configured || routeTier == "" {
+								return nil, fmt.Errorf("%s: restricted project requires categorized service routes", filename)
+							}
 							routeTier = "restricted"
 						}
 						item.path = joinPaths(servicePath, routeTier, resourcePath, item.path)
@@ -138,6 +146,10 @@ func DiscoverWithTier(dir, servicePath string, configured, restrictedOnly bool) 
 }
 
 func containsTier(value string) bool {
-	for _, tier := range accessTiers { if tier==value { return true } }
+	for _, tier := range accessTiers {
+		if tier == value {
+			return true
+		}
+	}
 	return false
 }

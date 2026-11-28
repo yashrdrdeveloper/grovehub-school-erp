@@ -17,9 +17,13 @@ import (
 
 func GenerateAll(backend string) error {
 	modulePath, err := layout.ReadModulePath(backend)
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 	_, markerErr := os.Stat(filepath.Join(backend, ".restricted-routes"))
-	if markerErr != nil && !os.IsNotExist(markerErr) { return markerErr }
+	if markerErr != nil && !os.IsNotExist(markerErr) {
+		return markerErr
+	}
 	restrictedOnly := markerErr == nil
 	services, err := os.ReadDir(filepath.Join(backend, "services"))
 	if err != nil {
@@ -33,10 +37,10 @@ func GenerateAll(backend string) error {
 		owner := filepath.Join(backend, "services", name)
 		controllerRel := "controller"
 		controllerDir := filepath.Join(owner, controllerRel)
-        if info, err := os.Stat(filepath.Join(owner, "internal", "app", "controller")); err == nil && info.IsDir() {
-            controllerRel = filepath.Join("internal","app","controller")
-            controllerDir = filepath.Join(owner,controllerRel)
-        }
+		if info, err := os.Stat(filepath.Join(owner, "internal", "app", "controller")); err == nil && info.IsDir() {
+			controllerRel = filepath.Join("internal", "app", "controller")
+			controllerDir = filepath.Join(owner, controllerRel)
+		}
 		if info, err := os.Stat(controllerDir); os.IsNotExist(err) {
 			continue
 		} else if err != nil {
@@ -46,8 +50,8 @@ func GenerateAll(backend string) error {
 		}
 
 		routesRel := filepath.Join(filepath.Dir(controllerRel), "routes")
-		routesDir := filepath.Join(owner,routesRel)
-        servicePath, configured, err := helpers.ServicePrefix(filepath.Join(routesDir, "http.go"))
+		routesDir := filepath.Join(owner, routesRel)
+		servicePath, configured, err := helpers.ServicePrefix(filepath.Join(routesDir, "http.go"))
 		if err != nil {
 			return fmt.Errorf("%s routes: %w", name, err)
 		}
@@ -55,7 +59,7 @@ func GenerateAll(backend string) error {
 		if err != nil {
 			return fmt.Errorf("%s routes: %w", name, err)
 		}
-        output := filepath.Join(owner, ".generated", routesRel, "zz_routes.gen.go")
+		output := filepath.Join(owner, ".generated", routesRel, "zz_routes.gen.go")
 		if len(groups) == 0 {
 			if err := os.Remove(output); err != nil && !os.IsNotExist(err) {
 				return err
@@ -66,17 +70,22 @@ func GenerateAll(backend string) error {
 			return fmt.Errorf("%s routes: %w", name, err)
 		}
 	}
-	return generateLauncher(backend,modulePath)
+	return generateLauncher(backend, modulePath)
 }
 
 // Launcher owns only the two explicit infrastructure probes. It cannot be
 // used to expose service controllers outside their restricted route tiers.
-func generateLauncher(backend,modulePath string) error {
- owner:=filepath.Join(backend,"launcher")
- controller:=filepath.Join(owner,"internal","src","controller")
- if _,err:=os.Stat(controller);os.IsNotExist(err){return nil}else if err!=nil{return err}
- groups,err:=helpers.DiscoverWithTier(controller,"",false,false)
- if err!=nil{return err}
- return helpers.WriteLauncherRoutes(modulePath,groups,filepath.Join(owner,".generated","internal","src","routes","zz_routes.gen.go"))
+func generateLauncher(backend, modulePath string) error {
+	owner := filepath.Join(backend, "launcher")
+	controller := filepath.Join(owner, "internal", "src", "controller")
+	if _, err := os.Stat(controller); os.IsNotExist(err) {
+		return nil
+	} else if err != nil {
+		return err
+	}
+	groups, err := helpers.DiscoverWithTier(controller, "", false, false)
+	if err != nil {
+		return err
+	}
+	return helpers.WriteLauncherRoutes(modulePath, groups, filepath.Join(owner, ".generated", "internal", "src", "routes", "zz_routes.gen.go"))
 }
-

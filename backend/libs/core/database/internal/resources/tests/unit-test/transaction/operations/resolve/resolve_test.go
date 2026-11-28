@@ -4,9 +4,9 @@ import (
 	"context"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	databasemock "grovehub/libs/core/tests/mocks/database"
 	"grovehub/libs/core/database/internal/src/transaction/helpers"
 	"grovehub/libs/core/database/internal/src/transaction/operations/resolve"
+	databasemock "grovehub/libs/core/tests/mocks/database"
 )
 
 var _ = Describe("Database", func() {

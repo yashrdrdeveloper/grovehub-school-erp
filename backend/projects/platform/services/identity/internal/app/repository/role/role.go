@@ -6,16 +6,16 @@ import (
 
 	coresearch "grovehub/libs/core/search"
 
-	"grovehub/services/identity/internal/app/constants/persona"
 	"grovehub/services/identity/internal/app/constants/permission"
+	"grovehub/services/identity/internal/app/constants/persona"
 	"grovehub/services/identity/internal/app/entity"
 )
 
 var (
-	ErrScopeRequired = errors.New("role requires tenant scope")
-	ErrInvalidDraft  = errors.New("invalid role draft")
-	ErrNotFound      = errors.New("role not found")
-	ErrConflict      = errors.New("role name already exists")
+	ErrScopeRequired   = errors.New("role requires tenant scope")
+	ErrInvalidDraft    = errors.New("invalid role draft")
+	ErrNotFound        = errors.New("role not found")
+	ErrConflict        = errors.New("role name already exists")
 	ErrVersionConflict = errors.New("role version conflict")
 )
 
@@ -31,14 +31,14 @@ type Draft struct {
 // MetadataUpdate replaces metadata only; grants and lifecycle are untouched.
 type MetadataUpdate struct {
 	Draft
-	RoleID string
+	RoleID  string
 	Version int64
 }
 
 type PermissionSet struct {
-	RoleID string
+	RoleID  string
 	Version int64
-	Codes []permission.Code
+	Codes   []permission.Code
 }
 
 type Detail struct {

@@ -1,15 +1,15 @@
 package dto_test
 
 import (
+	"encoding/json"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"encoding/json"
 	"grovehub/libs/core/annotation/internal/src/dto"
 )
 
 var _ = Describe("UnmarshalJSON", func() {
 	It("distinguishes omitted, null, zero and invalid values", func() {
-		var value struct { Field dto.Patch[int] }
+		var value struct{ Field dto.Patch[int] }
 		Expect(json.Unmarshal([]byte("{}"), &value)).To(Succeed())
 		Expect(value.Field.Set).To(BeFalse())
 		Expect(json.Unmarshal([]byte(`{"Field":null}`), &value)).To(Succeed())

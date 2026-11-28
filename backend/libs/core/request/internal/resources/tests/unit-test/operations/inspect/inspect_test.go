@@ -28,7 +28,7 @@ type privateField struct {
 type unsupportedSection struct {
 	contracts.Request
 	Params string
-	Extra string
+	Extra  string
 }
 
 type missingMarker struct {
@@ -87,7 +87,7 @@ var _ = Describe("Inspect", func() {
 	It("rejects nil, missing contracts and non-struct implementations", func() {
 		var nilPointer *bodyOnly
 		for _, item := range []struct {
-			input any
+			input   any
 			message string
 		}{
 			{nil, "nil request"},

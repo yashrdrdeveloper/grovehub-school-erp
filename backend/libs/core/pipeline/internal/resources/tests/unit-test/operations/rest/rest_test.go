@@ -16,7 +16,7 @@ import (
 
 type bodyConfig[T any] struct {
 	Decode func(*http.Request, any) error
-	Rules coreannotation.ValidationRules[T]
+	Rules  coreannotation.ValidationRules[T]
 }
 
 func read[T any](request *http.Request, config bodyConfig[T]) (T, error) {
@@ -112,7 +112,7 @@ var _ = Describe("REST request pipeline", func() {
 		_, err := read(request(`{"name":"Sam"}`), bodyConfig[input]{
 			Rules: coreannotation.ValidationRules[input]{
 				Normalize: func(v input) (input, error) { return v, sentinel },
-				Validate: func(v input) error { validated = true; return nil },
+				Validate:  func(v input) error { validated = true; return nil },
 			},
 		})
 		Expect(err).To(MatchError(sentinel))

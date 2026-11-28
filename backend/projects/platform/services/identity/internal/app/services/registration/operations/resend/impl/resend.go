@@ -3,18 +3,18 @@ package impl
 import (
 	"context"
 	"errors"
+	coredatabase "grovehub/libs/core/database"
 	"grovehub/services/identity/internal/app/entity"
-	"grovehub/services/identity/internal/app/services/security/principal"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	registration "grovehub/services/identity/internal/app/services/registration"
-	coredatabase "grovehub/libs/core/database"
 	resend "grovehub/services/identity/internal/app/services/registration/operations/resend"
+	"grovehub/services/identity/internal/app/services/security/principal"
 )
 
 type Service struct {
-	accounts accountrepo.Repository
+	accounts    accountrepo.Repository
 	invitations registration.InvitationSender
-	unit coredatabase.UnitOfWork
+	unit        coredatabase.UnitOfWork
 }
 
 var _ resend.Operation = (*Service)(nil)

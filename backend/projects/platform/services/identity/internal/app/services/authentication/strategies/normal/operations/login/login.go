@@ -2,16 +2,16 @@ package login
 
 import (
 	"context"
- schoolgateway "grovehub/libs/platform/session"
 	"errors"
+	schoolgateway "grovehub/libs/platform/session"
 	"strings"
 	"time"
 
 	coreid "grovehub/libs/core/id"
-	accountrepo "grovehub/services/identity/internal/app/repository/account"
-	sessionrepo "grovehub/services/identity/internal/app/repository/session"
 	authdto "grovehub/services/identity/internal/app/dto/authentication"
 	"grovehub/services/identity/internal/app/entity"
+	accountrepo "grovehub/services/identity/internal/app/repository/account"
+	sessionrepo "grovehub/services/identity/internal/app/repository/session"
 	auth "grovehub/services/identity/internal/app/services/authentication"
 	secrets "grovehub/services/identity/internal/app/services/authentication/helpers"
 	credential "grovehub/services/identity/internal/app/services/credential"
@@ -22,8 +22,8 @@ type Operation interface {
 }
 
 type LoginOperation struct {
-	accounts accountrepo.Repository
-	sessions sessionrepo.Repository
+	accounts    accountrepo.Repository
+	sessions    sessionrepo.Repository
 	credentials credential.Service
 }
 
@@ -47,10 +47,14 @@ func (operation *LoginOperation) Execute(ctx context.Context, input authdto.Logi
 		return auth.SessionResult{}, auth.ErrInvalidCredentials
 	}
 
-	tenant:=""
-	if account.TenantID!=nil{tenant=*account.TenantID}
+	tenant := ""
+	if account.TenantID != nil {
+		tenant = *account.TenantID
+	}
 	generation, err := schoolgateway.TenantGeneration(ctx, tenant)
-	if err != nil { return auth.SessionResult{}, auth.ErrInvalidCredentials }
+	if err != nil {
+		return auth.SessionResult{}, auth.ErrInvalidCredentials
+	}
 
 	access, err := secrets.NewSecret(32)
 	if err != nil {
@@ -78,17 +82,17 @@ func (operation *LoginOperation) Execute(ctx context.Context, input authdto.Logi
 	}
 	now := time.Now().UTC()
 	session := entity.Session{
-		SessionID: sessionID,
+		SessionID:         sessionID,
 		SessionGeneration: generation,
-		AccountID: account.AccountID,
-		AccessHash: accessHash,
-		RefreshHash: refreshHash,
-		AccessExpiresAt: now.Add(15 * time.Minute),
-		RefreshExpiresAt: now.Add(30 * 24 * time.Hour),
+		AccountID:         account.AccountID,
+		AccessHash:        accessHash,
+		RefreshHash:       refreshHash,
+		AccessExpiresAt:   now.Add(15 * time.Minute),
+		RefreshExpiresAt:  now.Add(30 * 24 * time.Hour),
 		ReauthenticatedAt: &now,
-		UserAgent: userAgent,
-		CreatedAt: now,
-		UpdatedAt: now,
+		UserAgent:         userAgent,
+		CreatedAt:         now,
+		UpdatedAt:         now,
 	}
 	if err := operation.sessions.Create(ctx, session); err != nil {
 		if errors.Is(err, sessionrepo.ErrInvalidSession) {
@@ -99,10 +103,10 @@ func (operation *LoginOperation) Execute(ctx context.Context, input authdto.Logi
 
 	return auth.SessionResult{
 		Data: authdto.LoginResult{
-			AccountID: account.AccountID,
-			PersonGID: account.PersonGID,
-			SessionID: sessionID,
-			ExpiresIn: 900,
+			AccountID:     account.AccountID,
+			PersonGID:     account.PersonGID,
+			SessionID:     sessionID,
+			ExpiresIn:     900,
 			RequiresSetup: false,
 		},
 		Cookies: auth.Cookies{Access: access, Refresh: refresh},

@@ -18,9 +18,9 @@ import (
 	accountproducer "grovehub/services/identity/internal/app/events/producers/account"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	accounthelpers "grovehub/services/identity/internal/app/services/account/helpers"
-	"grovehub/services/identity/internal/app/services/security/principal"
-	"grovehub/services/identity/internal/app/services/registration/operations/register/flows"
 	registration "grovehub/services/identity/internal/app/services/registration"
+	"grovehub/services/identity/internal/app/services/registration/operations/register/flows"
+	"grovehub/services/identity/internal/app/services/security/principal"
 	validator "grovehub/services/identity/internal/app/validators/account"
 )
 
@@ -29,22 +29,22 @@ type Operation interface {
 }
 
 type RegisterOperation struct {
-	accounts accountrepo.Repository
-	foundation foundation.Client
-	validator validator.Validator
+	accounts    accountrepo.Repository
+	foundation  foundation.Client
+	validator   validator.Validator
 	invitations registration.InvitationSender
-	unit coredatabase.UnitOfWork
-	events accountproducer.ChangedProducer
+	unit        coredatabase.UnitOfWork
+	events      accountproducer.ChangedProducer
 }
 
 func New(accounts accountrepo.Repository, foundationClient foundation.Client, validator validator.Validator, invitations registration.InvitationSender, unit coredatabase.UnitOfWork, events accountproducer.ChangedProducer) Operation {
 	return &RegisterOperation{
-		accounts: accounts,
-		foundation: foundationClient,
-		validator: validator,
+		accounts:    accounts,
+		foundation:  foundationClient,
+		validator:   validator,
 		invitations: invitations,
-		unit: unit,
-		events: events,
+		unit:        unit,
+		events:      events,
 	}
 }
 
@@ -145,9 +145,9 @@ func (operation *RegisterOperation) resolve(ctx context.Context, flow *flows.Reg
 	searchRequest := coresearch.Request{
 		Filters: []coresearch.Filter{
 			{
-				Field: "contacts.email",
+				Field:    "contacts.email",
 				Operator: coresearch.OperatorEquals,
-				Values: []string{request.Email},
+				Values:   []string{request.Email},
 			},
 		},
 		PageInfo: coresearch.PageRequest{Rows: 2},
@@ -183,9 +183,9 @@ func (operation *RegisterOperation) resolve(ctx context.Context, flow *flows.Reg
 	}
 	newPerson := foundation.CreatePerson{
 		PersonNames: foundation.PersonNames{
-			FirstName: request.Person.FirstName,
+			FirstName:  request.Person.FirstName,
 			MiddleName: middleName,
-			LastName: request.Person.LastName,
+			LastName:   request.Person.LastName,
 		},
 		Contacts: foundation.Contacts{
 			Emails: []foundation.ContactValue{
@@ -221,16 +221,16 @@ func (operation *RegisterOperation) persist(ctx context.Context, flow *flows.Reg
 	}
 	now := time.Now().UTC()
 	accountEntity := entity.Account{
-		AccountID: accountID,
-		PersonGID: flow.Person.GID,
-		TenantID: &flow.Actor.TenantID,
-		Email: flow.Request.Email,
-		Status: entity.PendingSetup,
-		Version: 1,
-		CreatedAt: now,
-		UpdatedAt: now,
+		AccountID:                  accountID,
+		PersonGID:                  flow.Person.GID,
+		TenantID:                   &flow.Actor.TenantID,
+		Email:                      flow.Request.Email,
+		Status:                     entity.PendingSetup,
+		Version:                    1,
+		CreatedAt:                  now,
+		UpdatedAt:                  now,
 		RegistrationIdempotencyKey: &flow.IdempotencyKey,
-		RegistrationRequestHash: &flow.RequestHash,
+		RegistrationRequestHash:    &flow.RequestHash,
 	}
 	if flow.Request.PhoneNumber != "" {
 		accountEntity.Phone = &flow.Request.PhoneNumber
@@ -259,10 +259,10 @@ func (operation *RegisterOperation) persist(ctx context.Context, flow *flows.Reg
 
 func mapCreated(account entity.Account) accountdto.CreateResult {
 	return accountdto.CreateResult{
-		AccountID: account.AccountID,
-		PersonGID: account.PersonGID,
-		Email: account.Email,
-		Status: string(account.Status),
+		AccountID:  account.AccountID,
+		PersonGID:  account.PersonGID,
+		Email:      account.Email,
+		Status:     string(account.Status),
 		Invitation: accountdto.InvitationStatus{Status: "QUEUED"},
 	}
 }

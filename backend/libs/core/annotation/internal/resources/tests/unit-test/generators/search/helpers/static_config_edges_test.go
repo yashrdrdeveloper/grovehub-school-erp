@@ -1,10 +1,10 @@
 package helpers_test
 
 import (
-	"strings"
-	"grovehub/libs/core/annotation/internal/src/generators/search/helpers"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"grovehub/libs/core/annotation/internal/src/generators/search/helpers"
+	"strings"
 )
 
 var _ = Describe("Discover", func() {

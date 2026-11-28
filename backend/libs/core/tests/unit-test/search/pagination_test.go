@@ -8,10 +8,10 @@ import (
 
 func TestResolvePage(t *testing.T) {
 	tests := []struct {
-		name string
-		request PageRequest
+		name               string
+		request            PageRequest
 		page, rows, offset int
-		invalid bool
+		invalid            bool
 	}{
 		{name: "default", request: PageRequest{}, page: 1, rows: 25},
 		{name: "legacy", request: PageRequest{Rows: 50}, page: 1, rows: 50},
@@ -25,7 +25,9 @@ func TestResolvePage(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			page, rows, offset, err := ResolvePage(tc.request, ErrInvalidQuery)
 			if tc.invalid {
-				if err == nil { t.Fatal("expected validation error") }
+				if err == nil {
+					t.Fatal("expected validation error")
+				}
 				return
 			}
 			if err != nil || page != tc.page || rows != tc.rows || offset != tc.offset {
@@ -37,11 +39,19 @@ func TestResolvePage(t *testing.T) {
 
 func TestValidatePageCursor(t *testing.T) {
 	token, err := EncodeCursor(CursorPayload{PageNumber: 3, RowSize: 25})
-	if err != nil { t.Fatal(err) }
+	if err != nil {
+		t.Fatal(err)
+	}
 	request := PageRequest{PageNumber: 3, RowSize: 25, Cursor: token}
-	if err := ValidatePageCursor(request, 3, 25, ErrInvalidQuery); err != nil { t.Fatal(err) }
-	if err := ValidatePageCursor(request, 4, 25, ErrInvalidQuery); err == nil { t.Fatal("wrong page accepted") }
-	if err := ValidatePageCursor(request, 3, 50, ErrInvalidQuery); err == nil { t.Fatal("wrong row size accepted") }
+	if err := ValidatePageCursor(request, 3, 25, ErrInvalidQuery); err != nil {
+		t.Fatal(err)
+	}
+	if err := ValidatePageCursor(request, 4, 25, ErrInvalidQuery); err == nil {
+		t.Fatal("wrong page accepted")
+	}
+	if err := ValidatePageCursor(request, 3, 50, ErrInvalidQuery); err == nil {
+		t.Fatal("wrong row size accepted")
+	}
 }
 
 func TestNewPageResponse(t *testing.T) {

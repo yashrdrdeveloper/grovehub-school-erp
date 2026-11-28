@@ -21,9 +21,9 @@ type personPath struct {
 }
 
 type personQuery struct {
-	Notify bool `query:"notify"`
-	Page *int `query:"page" validate:"required,min=1,max=100"`
-	Tags []string `query:"tag"`
+	Notify bool     `query:"notify"`
+	Page   *int     `query:"page" validate:"required,min=1,max=100"`
+	Tags   []string `query:"tag"`
 }
 
 type personBody struct {
@@ -36,7 +36,9 @@ type personResponse struct {
 
 func routeRequest(method, path, body, gid string) *http.Request {
 	request := httptest.NewRequest(method, path, strings.NewReader(body))
-	if gid != "" { request.SetPathValue("gid", gid) }
+	if gid != "" {
+		request.SetPathValue("gid", gid)
+	}
 	return request
 }
 
@@ -57,17 +59,17 @@ var _ = Describe("HTTP REST executor", func() {
 		writer := httptest.NewRecorder()
 		called := 0
 		rest.Run(writer, request, rest.Config[personPath, personQuery, personBody, personResponse]{
-			InvalidPath: invalidPath,
+			InvalidPath:  invalidPath,
 			InvalidQuery: invalidQuery,
-			InvalidBody: invalidBody,
-			Fallback: fallback,
+			InvalidBody:  invalidBody,
+			Fallback:     fallback,
 			Service: func(ctx context.Context, input rest.Input[personPath, personQuery, personBody]) (rest.Result[personResponse], error) {
 				called++
 				Expect(ctx.Value(struct{ Key string }{"trace"})).To(Equal("kept"))
 				Expect(input.Path.GID).To(Equal(gid))
 				Expect(input.Query.Notify).To(BeTrue())
 				Expect(*input.Query.Page).To(Equal(2))
-				Expect(input.Query.Tags).To(Equal([]string{"a","b"}))
+				Expect(input.Query.Tags).To(Equal([]string{"a", "b"}))
 				Expect(input.Body.FirstName).To(Equal("Sima"))
 				return rest.Result[personResponse]{Data: personResponse{Name: input.Body.FirstName}, StatusCode: http.StatusCreated, Headers: http.Header{"X-Result": []string{"created"}}}, nil
 			},
@@ -130,9 +132,9 @@ var _ = Describe("HTTP REST executor", func() {
 	It("reports strict JSON decode failures with the configured safe error", func() {
 		writer := httptest.NewRecorder()
 		rest.Run(writer, routeRequest(http.MethodPost, "/people", `{"firstName":"Ana","unknown":"secret"}`, ""), rest.Config[rest.Empty, rest.Empty, personBody, personResponse]{
-			Decode: corehttp.DecodeStrictJSON,
+			Decode:      corehttp.DecodeStrictJSON,
 			InvalidBody: invalidBody,
-			Fallback: fallback,
+			Fallback:    fallback,
 			Service: func(_ context.Context, _ rest.Input[rest.Empty, rest.Empty, personBody]) (rest.Result[personResponse], error) {
 				Fail("service must not be called")
 				return rest.OK(personResponse{}), nil
@@ -148,7 +150,7 @@ var _ = Describe("HTTP REST executor", func() {
 		rest.Run(writer, routeRequest(http.MethodGet, "/people", "", ""), rest.Config[rest.Empty, rest.Empty, rest.Empty, personResponse]{
 			Fallback: fallback,
 			Service: func(_ context.Context, _ rest.Input[rest.Empty, rest.Empty, rest.Empty]) (rest.Result[personResponse], error) {
-				return rest.Result[personResponse]{}, coreerrors.NewErrorWithMetadata(conflict, map[string]string{"field":"email"})
+				return rest.Result[personResponse]{}, coreerrors.NewErrorWithMetadata(conflict, map[string]string{"field": "email"})
 			},
 		})
 		Expect(writer.Code).To(Equal(http.StatusConflict))
@@ -160,7 +162,7 @@ var _ = Describe("HTTP REST executor", func() {
 		writer := httptest.NewRecorder()
 		rest.Run(writer, routeRequest(http.MethodGet, "/people", "", ""), rest.Config[rest.Empty, rest.Empty, rest.Empty, personResponse]{
 			InvalidBody: invalidBody,
-			Fallback: fallback,
+			Fallback:    fallback,
 			Service: func(_ context.Context, _ rest.Input[rest.Empty, rest.Empty, rest.Empty]) (rest.Result[personResponse], error) {
 				return rest.Result[personResponse]{}, errors.New("secret database failure")
 			},
@@ -224,7 +226,7 @@ var _ = Describe("HTTP REST executor", func() {
 		writer := httptest.NewRecorder()
 		rest.Run(writer, routeRequest(http.MethodPost, "/people", `{"firstName":"Alex"}`, ""), rest.Config[rest.Empty, rest.Empty, personBody, personResponse]{
 			InvalidBody: invalidBody,
-			Fallback: fallback,
+			Fallback:    fallback,
 			Validate: func(input rest.Input[rest.Empty, rest.Empty, personBody]) error {
 				Expect(input.Body.FirstName).To(Equal("Alex"))
 				return coreerrors.NewError(invalidBody)
@@ -238,15 +240,18 @@ var _ = Describe("HTTP REST executor", func() {
 	})
 
 	It("rejects malformed query escaping and unknown keys in strict mode", func() {
-		for _, options := range []struct { raw string; strict bool }{
+		for _, options := range []struct {
+			raw    string
+			strict bool
+		}{
 			{"/people?page=1&unknown=%XX", false},
 			{"/people?page=1&unexpected=1", true},
 		} {
 			writer := httptest.NewRecorder()
 			rest.Run(writer, routeRequest(http.MethodGet, options.raw, "", ""), rest.Config[rest.Empty, personQuery, rest.Empty, personResponse]{
-				StrictQuery: options.strict,
+				StrictQuery:  options.strict,
 				InvalidQuery: invalidQuery,
-				Fallback: fallback,
+				Fallback:     fallback,
 				Service: func(_ context.Context, _ rest.Input[rest.Empty, personQuery, rest.Empty]) (rest.Result[personResponse], error) {
 					Fail("service must not run with invalid query")
 					return rest.OK(personResponse{}), nil
@@ -273,7 +278,7 @@ var _ = Describe("HTTP REST executor", func() {
 		rest.Run(writer, routeRequest(http.MethodGet, "/people", "", ""), rest.Config[rest.Empty, rest.Empty, rest.Empty, personResponse]{
 			Fallback: fallback,
 			Service: func(_ context.Context, _ rest.Input[rest.Empty, rest.Empty, rest.Empty]) (rest.Result[personResponse], error) {
-				return rest.Result[personResponse]{Data: personResponse{Name:"OK"}}, nil
+				return rest.Result[personResponse]{Data: personResponse{Name: "OK"}}, nil
 			},
 		})
 		Expect(writer.Code).To(Equal(http.StatusOK))

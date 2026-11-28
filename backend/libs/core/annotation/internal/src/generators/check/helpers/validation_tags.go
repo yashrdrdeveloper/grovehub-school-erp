@@ -1,10 +1,10 @@
 package helpers
 
 import (
-	"grovehub/libs/core/annotation/internal/src/helpers/layout"
 	"fmt"
 	"go/ast"
 	goparser "go/parser"
+	"grovehub/libs/core/annotation/internal/src/helpers/layout"
 	"reflect"
 	"slices"
 	"strconv"
@@ -15,7 +15,7 @@ import (
 )
 
 func CheckValidationTags(path string) error {
-	source, err := layout.ParseSource(path,goparser.ParseComments)
+	source, err := layout.ParseSource(path, goparser.ParseComments)
 	if err != nil {
 		return err
 	}
@@ -40,8 +40,8 @@ func CheckValidationTags(path string) error {
 	return validationError
 }
 
-func validateFieldTags(path string, field *ast.Field,raw string) error {
-	tags := strings.Split(reflect.StructTag(raw).Get("validate"),",")
+func validateFieldTags(path string, field *ast.Field, raw string) error {
+	tags := strings.Split(reflect.StructTag(raw).Get("validate"), ",")
 
 	for _, comment := range field.Doc.List {
 		directive, found, err := registry.ParseComment(comment.Text)

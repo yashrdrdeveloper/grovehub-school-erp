@@ -62,11 +62,11 @@ func firstNonEmptyEnvironmentValue(names ...string) string {
 }
 
 func DefaultInstanceID() string {
-	return InstanceID(os.Hostname,os.Getpid())
+	return InstanceID(os.Hostname, os.Getpid())
 }
 
 // InstanceID resolves a process identity using the platform hostname boundary.
-func InstanceID(host func()(string,error), pid int) string {
+func InstanceID(host func() (string, error), pid int) string {
 	hostname, err := host()
 	if err != nil || strings.TrimSpace(hostname) == "" {
 		hostname = "unknown-host"

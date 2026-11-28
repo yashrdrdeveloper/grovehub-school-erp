@@ -9,12 +9,12 @@ import (
 
 	coredatabase "grovehub/libs/core/database"
 	coreevents "grovehub/libs/core/events"
+	auditclient "grovehub/services/audit/client/producer"
 	"grovehub/services/identity/internal/app/entity"
 	"grovehub/services/identity/internal/app/events/producers/accountmetadata"
 	"grovehub/services/identity/internal/app/events/producers/accountmetadata/operations/changed"
 	"grovehub/services/identity/internal/app/repository/account"
 	"grovehub/services/identity/internal/app/services/security/principal"
-	auditclient "grovehub/services/audit/client/producer"
 )
 
 const EventType = "identity.account.metadata.changed.v1"

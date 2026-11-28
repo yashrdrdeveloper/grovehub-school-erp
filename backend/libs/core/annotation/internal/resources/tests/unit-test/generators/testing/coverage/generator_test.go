@@ -2,10 +2,10 @@ package coverage_test
 
 import (
 	"encoding/json"
+	. "github.com/onsi/ginkgo/v2"
 	"os"
 	"path/filepath"
 	"strings"
-	. "github.com/onsi/ginkgo/v2"
 
 	"grovehub/libs/core/annotation/internal/src/generators/testing/coverage"
 
@@ -15,37 +15,37 @@ import (
 var _ = Describe("Resolve", func() {
 	It("Package Selection", func() {
 		t := GinkgoT()
-	backend := t.TempDir()
-	for _, relative := range []string{"services/foundation", "services/identity", "libs/core", "launcher"} {
-		Expect(os.MkdirAll(filepath.Join(backend, relative), 0755)).To(Succeed())
-	}
-	selected, err := coverage.Resolve(backend, filepath.Join(backend, "libs", "core"), "", "[\"foundation\",\"identity\"]")
-	Expect(err).NotTo(HaveOccurred())
-	Expect(coverage.Names(selected)).To(Equal("foundation, identity"))
+		backend := t.TempDir()
+		for _, relative := range []string{"services/foundation", "services/identity", "libs/core", "launcher"} {
+			Expect(os.MkdirAll(filepath.Join(backend, relative), 0755)).To(Succeed())
+		}
+		selected, err := coverage.Resolve(backend, filepath.Join(backend, "libs", "core"), "", "[\"foundation\",\"identity\"]")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(coverage.Names(selected)).To(Equal("foundation, identity"))
 
-	Expect(os.MkdirAll(filepath.Join(backend, "cmd"), 0755)).To(Succeed())
-	selected, err = coverage.Resolve(backend, filepath.Join(backend, "libs", "core"), "cmd", "")
-	Expect(err).NotTo(HaveOccurred())
-	Expect(coverage.Names(selected)).To(Equal("cmd"))
+		Expect(os.MkdirAll(filepath.Join(backend, "cmd"), 0755)).To(Succeed())
+		selected, err = coverage.Resolve(backend, filepath.Join(backend, "libs", "core"), "cmd", "")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(coverage.Names(selected)).To(Equal("cmd"))
 
-	selected, err = coverage.Resolve(backend, filepath.Join(backend, "libs", "core"), "foundation", "")
-	Expect(err).NotTo(HaveOccurred())
-	Expect(coverage.Names(selected)).To(Equal("foundation"))
+		selected, err = coverage.Resolve(backend, filepath.Join(backend, "libs", "core"), "foundation", "")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(coverage.Names(selected)).To(Equal("foundation"))
 
-	selected, err = coverage.Resolve(backend, filepath.Join(backend, "libs", "core"), "", "[foundation,identity]")
-	Expect(err).NotTo(HaveOccurred())
-	Expect(coverage.Names(selected)).To(Equal("foundation, identity"))
+		selected, err = coverage.Resolve(backend, filepath.Join(backend, "libs", "core"), "", "[foundation,identity]")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(coverage.Names(selected)).To(Equal("foundation, identity"))
 
-	selected, err = coverage.Resolve(backend, filepath.Join(backend, "libs", "core"), "", "[\"\"]")
-	Expect(err).NotTo(HaveOccurred())
-	Expect(coverage.Names(selected)).To(Equal("cmd, core, foundation, identity, launcher"))
+		selected, err = coverage.Resolve(backend, filepath.Join(backend, "libs", "core"), "", "[\"\"]")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(coverage.Names(selected)).To(Equal("cmd, core, foundation, identity, launcher"))
 
-	_, err = coverage.Resolve(backend, filepath.Join(backend, "libs", "core"), "foundation", "[\"identity\"]")
-	Expect(err).To(HaveOccurred())
-	_, err = coverage.Resolve(backend, filepath.Join(backend, "libs", "core"), "foundation/../../other", "")
-	Expect(err).To(HaveOccurred())
-	_, err = coverage.Resolve(backend, filepath.Join(backend, "libs", "core"), "missing", "")
-	Expect(err).To(HaveOccurred())
+		_, err = coverage.Resolve(backend, filepath.Join(backend, "libs", "core"), "foundation", "[\"identity\"]")
+		Expect(err).To(HaveOccurred())
+		_, err = coverage.Resolve(backend, filepath.Join(backend, "libs", "core"), "foundation/../../other", "")
+		Expect(err).To(HaveOccurred())
+		_, err = coverage.Resolve(backend, filepath.Join(backend, "libs", "core"), "missing", "")
+		Expect(err).To(HaveOccurred())
 
 	})
 })
@@ -53,20 +53,20 @@ var _ = Describe("Resolve", func() {
 var _ = Describe("Score", func() {
 	It("Score Merges Duplicate Instrumentation", func() {
 		t := GinkgoT()
-	profile := filepath.Join(t.TempDir(), "coverage.out")
-	original := "mode: atomic\n" +
-		"grovehub/example/file.go:1.1,2.5 2 0\n" +
-		"grovehub/example/file.go:3.1,4.5 3 0\n" +
-		"grovehub/example/file.go:1.1,2.5 2 7\n"
-	Expect(os.WriteFile(profile, []byte(original), 0644)).To(Succeed())
-	total, covered, err := coverage.Score(profile)
-	Expect(err).NotTo(HaveOccurred())
-	Expect(total).To(Equal(int64(5)))
-	Expect(covered).To(Equal(int64(2)))
-	saved, err := os.ReadFile(profile)
-	Expect(err).NotTo(HaveOccurred())
-	Expect(strings.Count(string(saved), "file.go:1.1,2.5")).To(Equal(1))
-	Expect(string(saved)).To(ContainSubstring("file.go:1.1,2.5 2 7"))
+		profile := filepath.Join(t.TempDir(), "coverage.out")
+		original := "mode: atomic\n" +
+			"grovehub/example/file.go:1.1,2.5 2 0\n" +
+			"grovehub/example/file.go:3.1,4.5 3 0\n" +
+			"grovehub/example/file.go:1.1,2.5 2 7\n"
+		Expect(os.WriteFile(profile, []byte(original), 0644)).To(Succeed())
+		total, covered, err := coverage.Score(profile)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(total).To(Equal(int64(5)))
+		Expect(covered).To(Equal(int64(2)))
+		saved, err := os.ReadFile(profile)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(strings.Count(string(saved), "file.go:1.1,2.5")).To(Equal(1))
+		Expect(string(saved)).To(ContainSubstring("file.go:1.1,2.5 2 7"))
 
 	})
 })
@@ -74,43 +74,43 @@ var _ = Describe("Score", func() {
 var _ = Describe("Materialize", func() {
 	It("Materialize And Clean Generated Sources", func() {
 		t := GinkgoT()
-	backend := t.TempDir()
-	owner := filepath.Join(backend, "services", "foundation")
-	logical := filepath.Join(owner, "internal", "app", "person", "zz_test.gen.go")
-	generated := filepath.Join(owner, ".generated", "internal", "app", "person", "zz_test.gen.go")
-	overlay := filepath.Join(backend, ".generated", "overlay.json")
-	manifest := filepath.Join(backend, ".generated", "unit-coverage", ".materialized-files")
-	Expect(os.MkdirAll(filepath.Dir(logical), 0755)).To(Succeed())
-	Expect(os.MkdirAll(filepath.Dir(generated), 0755)).To(Succeed())
-	Expect(os.MkdirAll(filepath.Dir(manifest), 0755)).To(Succeed())
-	source := "// Code generated by a unit test. DO NOT EDIT.\npackage person\n"
-	Expect(os.WriteFile(generated, []byte(source), 0644)).To(Succeed())
-	serialized, err := json.Marshal(coverage.OverlayConfig{Replace: map[string]string{logical: generated}})
-	Expect(err).NotTo(HaveOccurred())
-	Expect(os.WriteFile(overlay, serialized, 0644)).To(Succeed())
+		backend := t.TempDir()
+		owner := filepath.Join(backend, "services", "foundation")
+		logical := filepath.Join(owner, "internal", "app", "person", "zz_test.gen.go")
+		generated := filepath.Join(owner, ".generated", "internal", "app", "person", "zz_test.gen.go")
+		overlay := filepath.Join(backend, ".generated", "overlay.json")
+		manifest := filepath.Join(backend, ".generated", "unit-coverage", ".materialized-files")
+		Expect(os.MkdirAll(filepath.Dir(logical), 0755)).To(Succeed())
+		Expect(os.MkdirAll(filepath.Dir(generated), 0755)).To(Succeed())
+		Expect(os.MkdirAll(filepath.Dir(manifest), 0755)).To(Succeed())
+		source := "// Code generated by a unit test. DO NOT EDIT.\npackage person\n"
+		Expect(os.WriteFile(generated, []byte(source), 0644)).To(Succeed())
+		serialized, err := json.Marshal(coverage.OverlayConfig{Replace: map[string]string{logical: generated}})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(os.WriteFile(overlay, serialized, 0644)).To(Succeed())
 
-	clean, err := coverage.Materialize(overlay, manifest)
-	Expect(err).NotTo(HaveOccurred())
-	bytes, err := os.ReadFile(logical)
-	Expect(err).NotTo(HaveOccurred())
-	Expect(string(bytes)).To(Equal(source))
-	clean()
-	_, err = os.Stat(logical)
-	Expect(os.IsNotExist(err)).To(BeTrue())
+		clean, err := coverage.Materialize(overlay, manifest)
+		Expect(err).NotTo(HaveOccurred())
+		bytes, err := os.ReadFile(logical)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(string(bytes)).To(Equal(source))
+		clean()
+		_, err = os.Stat(logical)
+		Expect(os.IsNotExist(err)).To(BeTrue())
 
-	// Interrupted processes can leave a durable manifest and an orphan.
-	Expect(os.WriteFile(logical, []byte(source), 0644)).To(Succeed())
-	Expect(os.WriteFile(manifest, []byte(logical+"\n"), 0600)).To(Succeed())
-	Expect(coverage.RecoverGenerated(manifest, backend)).To(Succeed())
-	_, err = os.Stat(logical)
-	Expect(os.IsNotExist(err)).To(BeTrue())
+		// Interrupted processes can leave a durable manifest and an orphan.
+		Expect(os.WriteFile(logical, []byte(source), 0644)).To(Succeed())
+		Expect(os.WriteFile(manifest, []byte(logical+"\n"), 0600)).To(Succeed())
+		Expect(coverage.RecoverGenerated(manifest, backend)).To(Succeed())
+		_, err = os.Stat(logical)
+		Expect(os.IsNotExist(err)).To(BeTrue())
 
-	// A modified file without a generated marker must never be deleted.
-	Expect(os.WriteFile(logical, []byte("package person\n"), 0644)).To(Succeed())
-	Expect(os.WriteFile(manifest, []byte(logical+"\n"), 0600)).To(Succeed())
-	Expect(coverage.RecoverGenerated(manifest, backend)).To(HaveOccurred())
-	_, err = os.Stat(logical)
-	Expect(err).NotTo(HaveOccurred())
+		// A modified file without a generated marker must never be deleted.
+		Expect(os.WriteFile(logical, []byte("package person\n"), 0644)).To(Succeed())
+		Expect(os.WriteFile(manifest, []byte(logical+"\n"), 0600)).To(Succeed())
+		Expect(coverage.RecoverGenerated(manifest, backend)).To(HaveOccurred())
+		_, err = os.Stat(logical)
+		Expect(err).NotTo(HaveOccurred())
 
 	})
 })
@@ -118,41 +118,41 @@ var _ = Describe("Materialize", func() {
 var _ = Describe("Materialize", func() {
 	It("Coverage Materializes Generated Dependencies Without Overlay", func() {
 		t := GinkgoT()
-	backend := t.TempDir()
-	foundation := filepath.Join(backend, "services", "foundation")
-	core := filepath.Join(backend, "libs", "core")
+		backend := t.TempDir()
+		foundation := filepath.Join(backend, "services", "foundation")
+		core := filepath.Join(backend, "libs", "core")
 
-	foundationFile := filepath.Join(foundation, "internal", "resources", "tests", "unit-test", "person", "zz_suite_test.go")
-	coreFile := filepath.Join(core, "tests", "mocks", "zz_mocks.gen.go")
-	generatedFoundation := filepath.Join(foundation, ".generated", "internal", "resources", "tests", "unit-test", "person", "zz_suite_test.go")
-	generatedCore := filepath.Join(core, ".generated", "tests", "mocks", "zz_mocks.gen.go")
-	manifest := filepath.Join(backend, ".generated", "unit-coverage", ".materialized-files")
-	overlay := filepath.Join(backend, ".generated", "overlay.json")
+		foundationFile := filepath.Join(foundation, "internal", "resources", "tests", "unit-test", "person", "zz_suite_test.go")
+		coreFile := filepath.Join(core, "tests", "mocks", "zz_mocks.gen.go")
+		generatedFoundation := filepath.Join(foundation, ".generated", "internal", "resources", "tests", "unit-test", "person", "zz_suite_test.go")
+		generatedCore := filepath.Join(core, ".generated", "tests", "mocks", "zz_mocks.gen.go")
+		manifest := filepath.Join(backend, ".generated", "unit-coverage", ".materialized-files")
+		overlay := filepath.Join(backend, ".generated", "overlay.json")
 
-	for _, path := range []string{foundationFile, coreFile, generatedFoundation, generatedCore, manifest, overlay} {
-		Expect(os.MkdirAll(filepath.Dir(path), 0755)).To(Succeed())
-	}
-	for _, path := range []string{generatedFoundation, generatedCore} {
-		Expect(os.WriteFile(path, []byte("// Code generated. DO NOT EDIT.\npackage mock\n"), 0644)).To(Succeed())
-	}
-	data, err := json.Marshal(coverage.OverlayConfig{Replace: map[string]string{
-		foundationFile: generatedFoundation,
-		coreFile:       generatedCore,
-	}})
-	Expect(err).NotTo(HaveOccurred())
-	Expect(os.WriteFile(overlay, data, 0644)).To(Succeed())
-
-	clean, err := coverage.Materialize(overlay, manifest)
-	Expect(err).NotTo(HaveOccurred())
-	for _, path := range []string{foundationFile, coreFile} {
-		_, err := os.Stat(path)
+		for _, path := range []string{foundationFile, coreFile, generatedFoundation, generatedCore, manifest, overlay} {
+			Expect(os.MkdirAll(filepath.Dir(path), 0755)).To(Succeed())
+		}
+		for _, path := range []string{generatedFoundation, generatedCore} {
+			Expect(os.WriteFile(path, []byte("// Code generated. DO NOT EDIT.\npackage mock\n"), 0644)).To(Succeed())
+		}
+		data, err := json.Marshal(coverage.OverlayConfig{Replace: map[string]string{
+			foundationFile: generatedFoundation,
+			coreFile:       generatedCore,
+		}})
 		Expect(err).NotTo(HaveOccurred())
-	}
-	clean()
-	for _, path := range []string{foundationFile, coreFile} {
-		_, err := os.Stat(path)
-		Expect(os.IsNotExist(err)).To(BeTrue())
-	}
+		Expect(os.WriteFile(overlay, data, 0644)).To(Succeed())
+
+		clean, err := coverage.Materialize(overlay, manifest)
+		Expect(err).NotTo(HaveOccurred())
+		for _, path := range []string{foundationFile, coreFile} {
+			_, err := os.Stat(path)
+			Expect(err).NotTo(HaveOccurred())
+		}
+		clean()
+		for _, path := range []string{foundationFile, coreFile} {
+			_, err := os.Stat(path)
+			Expect(os.IsNotExist(err)).To(BeTrue())
+		}
 
 	})
 })

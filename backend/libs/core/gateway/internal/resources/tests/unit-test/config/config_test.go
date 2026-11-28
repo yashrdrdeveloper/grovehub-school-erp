@@ -3,8 +3,8 @@ package config_test
 import (
 	"crypto/ed25519"
 	"encoding/base64"
-	"grovehub/libs/core/gateway/internal/src/contracts"
 	"grovehub/libs/core/gateway/internal/src/config"
+	"grovehub/libs/core/gateway/internal/src/contracts"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

@@ -2,23 +2,23 @@ package impl
 
 import (
 	"context"
-	schoolgateway "grovehub/libs/platform/session"
 	"errors"
-	"time"
-	"grovehub/services/identity/internal/app/entity"
-	secrets "grovehub/services/identity/internal/app/services/authentication/helpers"
-	auth "grovehub/services/identity/internal/app/services/authentication"
+	coredatabase "grovehub/libs/core/database"
+	schoolgateway "grovehub/libs/platform/session"
 	authdto "grovehub/services/identity/internal/app/dto/authentication"
+	"grovehub/services/identity/internal/app/entity"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	tokenrepo "grovehub/services/identity/internal/app/repository/passwordtoken"
-	coredatabase "grovehub/libs/core/database"
+	auth "grovehub/services/identity/internal/app/services/authentication"
+	secrets "grovehub/services/identity/internal/app/services/authentication/helpers"
 	exchange "grovehub/services/identity/internal/app/services/authentication/operations/exchange"
+	"time"
 )
 
 type Service struct {
 	accounts accountrepo.Repository
-	tokens tokenrepo.Repository
-	unit coredatabase.UnitOfWork
+	tokens   tokenrepo.Repository
+	unit     coredatabase.UnitOfWork
 }
 
 var _ exchange.Operation = (*Service)(nil)
@@ -70,19 +70,25 @@ func (op *Service) Execute(ctx context.Context, secret string, purpose string) (
 			return errors.New("password reset no longer available")
 		}
 
-		if schoolgateway.CheckAccountGeneration(transactionCtx, account.TenantID, proof.SessionGeneration) != nil { return tokenrepo.ErrInvalidToken }
+		if schoolgateway.CheckAccountGeneration(transactionCtx, account.TenantID, proof.SessionGeneration) != nil {
+			return tokenrepo.ErrInvalidToken
+		}
 		accountID, err := op.tokens.Consume(transactionCtx, digest, tokenPurpose, time.Now().UTC())
-		if err != nil { return err }
-		if accountID != proof.AccountID { return tokenrepo.ErrInvalidToken }
+		if err != nil {
+			return err
+		}
+		if accountID != proof.AccountID {
+			return tokenrepo.ErrInvalidToken
+		}
 		now := time.Now().UTC()
 		return op.tokens.Issue(transactionCtx, entity.PasswordToken{
-			TokenHash: grantDigest,
-			AccountID: accountID,
-			Purpose: grantPurpose,
-			AccountVersion: proof.AccountVersion,
+			TokenHash:         grantDigest,
+			AccountID:         accountID,
+			Purpose:           grantPurpose,
+			AccountVersion:    proof.AccountVersion,
 			SessionGeneration: proof.SessionGeneration,
-			ExpiresAt: now.Add(10 * time.Minute),
-			CreatedAt: now,
+			ExpiresAt:         now.Add(10 * time.Minute),
+			CreatedAt:         now,
 		})
 	})
 	if err != nil {
@@ -92,8 +98,8 @@ func (op *Service) Execute(ctx context.Context, secret string, purpose string) (
 	return auth.Grant{
 		Secret: grantSecret,
 		Data: authdto.GrantResult{
-			Verified: true,
-			Purpose: string(tokenPurpose),
+			Verified:  true,
+			Purpose:   string(tokenPurpose),
 			ExpiresIn: 600,
 		},
 	}, nil

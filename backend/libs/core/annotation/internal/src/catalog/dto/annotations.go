@@ -6,13 +6,13 @@ import "grovehub/libs/core/annotation/internal/src/contracts"
 // UseCases registers annotations implemented by the DTO generator.
 var UseCases = []contract.UseCase{
 	{
-		Name: "PatchRequestDto",
-		Syntax: "@PatchRequestDto",
+		Name:     "PatchRequestDto",
+		Syntax:   "@PatchRequestDto",
 		Category: "DTO request serialization",
-		Purpose: "Generate presence-aware JSON MarshalJSON for fields typed dto.Patch[T]; omit absent fields, retain explicit null",
-		Mode: "GEN",
-		Status: contract.Pilot,
-		Roadmap: "P2",
-		Target: contract.TypeTarget,
+		Purpose:  "Generate presence-aware JSON MarshalJSON for fields typed dto.Patch[T]; omit absent fields, retain explicit null",
+		Mode:     "GEN",
+		Status:   contract.Pilot,
+		Roadmap:  "P2",
+		Target:   contract.TypeTarget,
 	},
 }

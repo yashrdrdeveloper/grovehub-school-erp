@@ -7,14 +7,14 @@ import (
 
 	coreid "grovehub/libs/core/id"
 	kind "grovehub/services/identity/internal/app/constants/approval"
+	"grovehub/services/identity/internal/app/constants/permission"
 	dto "grovehub/services/identity/internal/app/dto/approval"
 	"grovehub/services/identity/internal/app/entity"
-	"grovehub/services/identity/internal/app/constants/permission"
+	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	"grovehub/services/identity/internal/app/repository/accountrole"
 	repo "grovehub/services/identity/internal/app/repository/approval"
-	accountrepo "grovehub/services/identity/internal/app/repository/account"
-	authrepo "grovehub/services/identity/internal/app/repository/authorization"
 	"grovehub/services/identity/internal/app/repository/authority"
+	authrepo "grovehub/services/identity/internal/app/repository/authorization"
 	rolerepo "grovehub/services/identity/internal/app/repository/role"
 	"grovehub/services/identity/internal/app/services/approval"
 	"grovehub/services/identity/internal/app/services/approval/helpers"
@@ -24,12 +24,12 @@ import (
 
 // @Service
 type Service struct {
-	repository repo.Repository
-	locker authority.Locker
-	authorizer authorization.Service
-	snapshots authrepo.Repository
-	accounts accountrepo.Reader
-	roles rolerepo.Repository
+	repository  repo.Repository
+	locker      authority.Locker
+	authorizer  authorization.Service
+	snapshots   authrepo.Repository
+	accounts    accountrepo.Reader
+	roles       rolerepo.Repository
 	assignments accountrole.Repository
 }
 
@@ -102,7 +102,7 @@ func (service *Service) create(ctx context.Context, actor principal.Principal, r
 		if err != nil {
 			return err
 		}
-		created = entity.ApprovalRequest{RequestID: id, TenantID: actor.TenantID, PolicyID: policy.PolicyID, RequesterID: actor.AccountID, RequestType: requestType, Payload: payload, PayloadSHA256: digest, Reason: reason, IdempotencyKey: key, Status: kind.Pending, CurrentStep: 1, StepCount: len(policy.Steps), Version: 1, ExpiresAt: now.Add(24*time.Hour), CreatedAt: now, UpdatedAt: now}
+		created = entity.ApprovalRequest{RequestID: id, TenantID: actor.TenantID, PolicyID: policy.PolicyID, RequesterID: actor.AccountID, RequestType: requestType, Payload: payload, PayloadSHA256: digest, Reason: reason, IdempotencyKey: key, Status: kind.Pending, CurrentStep: 1, StepCount: len(policy.Steps), Version: 1, ExpiresAt: now.Add(24 * time.Hour), CreatedAt: now, UpdatedAt: now}
 		return service.repository.Insert(tx, created, policy.Steps)
 	})
 	if err != nil {

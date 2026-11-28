@@ -4,8 +4,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"grovehub/libs/core/annotation/internal/src/generators/clients/helpers"
 	fixture "grovehub/libs/core/annotation/internal/resources/tests/helpers"
+	"grovehub/libs/core/annotation/internal/src/generators/clients/helpers"
 )
 
 var _ = Describe("Discover", func() {

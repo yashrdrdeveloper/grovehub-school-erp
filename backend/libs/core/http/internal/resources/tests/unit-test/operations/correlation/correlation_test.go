@@ -2,10 +2,10 @@ package correlation_test
 
 import (
 	"context"
-	"net/http"
-	"net/http/httptest"
 	"github.com/google/uuid"
 	"grovehub/libs/core/http/internal/src/operations/correlation"
+	"net/http"
+	"net/http/httptest"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

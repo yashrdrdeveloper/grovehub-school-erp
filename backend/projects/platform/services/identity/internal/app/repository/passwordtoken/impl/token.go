@@ -47,26 +47,31 @@ func (repository *Repository) Consume(ctx context.Context, hash string, purpose 
 	return result.AccountID, nil
 }
 
-
 func (repository *Repository) Inspect(ctx context.Context, hash string, purpose entity.TokenPurpose, now time.Time) (entity.PasswordToken, error) {
-  var token entity.PasswordToken
-  err := coredatabase.TransactionDB(ctx, repository.db).
-    Where("token_hash = ? AND purpose = ? AND used_at IS NULL AND expires_at > ?", hash, purpose, now).
-    Take(&token).Error
-  if err == gorm.ErrRecordNotFound { return entity.PasswordToken{}, tokenrepo.ErrInvalidToken }
-  return token, err
+	var token entity.PasswordToken
+	err := coredatabase.TransactionDB(ctx, repository.db).
+		Where("token_hash = ? AND purpose = ? AND used_at IS NULL AND expires_at > ?", hash, purpose, now).
+		Take(&token).Error
+	if err == gorm.ErrRecordNotFound {
+		return entity.PasswordToken{}, tokenrepo.ErrInvalidToken
+	}
+	return token, err
 }
 
 // ReserveSetupAttempt commits outside the setup unit of work. A failed password
 // update must not roll back this counter, or retries would be unlimited.
 func (repository *Repository) ReserveSetupAttempt(ctx context.Context, hash string, now time.Time) error {
-  result := repository.db.WithContext(ctx).Exec(`
+	result := repository.db.WithContext(ctx).Exec(`
     UPDATE identity.password_tokens SET attempts = attempts + 1
     WHERE token_hash = ? AND purpose = ? AND used_at IS NULL AND expires_at > ? AND attempts < 2
   `, hash, entity.SetupGrant, now)
-  if result.Error != nil { return result.Error }
-  if result.RowsAffected == 0 { return tokenrepo.ErrAttemptsExceeded }
-  return nil
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return tokenrepo.ErrAttemptsExceeded
+	}
+	return nil
 }
 
 func (repository *Repository) Invalidate(ctx context.Context, accountID string, purpose entity.TokenPurpose) error {

@@ -6,15 +6,15 @@ import (
 
 type mappingMethod struct {
 	name, signature, output string
-	fields []fieldMapping
+	fields                  []fieldMapping
 }
 
-type fieldMapping struct {name, expression string}
+type fieldMapping struct{ name, expression string }
 
 type mappingGroup struct {
 	receiver string
-	imports []layout.ImportBinding
-	methods []mappingMethod
+	imports  []layout.ImportBinding
+	methods  []mappingMethod
 }
 
 // HasMethods reports whether discovery found executable mapping methods.

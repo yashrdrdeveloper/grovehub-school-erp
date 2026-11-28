@@ -26,7 +26,9 @@ type Writer[T any] struct {
 
 func writeSuccess[T any](writer http.ResponseWriter, request *http.Request, output Writer[T], result Result[T], fallback coreerrors.Definition) {
 	status := result.StatusCode
-	if status == 0 { status = http.StatusOK }
+	if status == 0 {
+		status = http.StatusOK
+	}
 	if status < 200 || status > 299 {
 		writeFailure(writer, request, output, fmt.Errorf("service returned a non-success result status"), fallback, fallback)
 		return
@@ -36,7 +38,9 @@ func writeSuccess[T any](writer http.ResponseWriter, request *http.Request, outp
 		return
 	}
 	for name, values := range result.Headers {
-		for _, value := range values { writer.Header().Add(name, value) }
+		for _, value := range values {
+			writer.Header().Add(name, value)
+		}
 	}
 	if status == http.StatusNoContent {
 		writer.WriteHeader(status)

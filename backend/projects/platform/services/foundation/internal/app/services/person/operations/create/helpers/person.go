@@ -2,23 +2,23 @@
 package helpers
 
 import (
-    "time"
+	"time"
 
-    coreutils "grovehub/libs/core/utils"
-    persondto "grovehub/services/foundation/internal/app/dto/person"
-    "grovehub/services/foundation/internal/app/entity"
+	coreutils "grovehub/libs/core/utils"
+	persondto "grovehub/services/foundation/internal/app/dto/person"
+	"grovehub/services/foundation/internal/app/entity"
 )
 
 // NewPerson is use-case construction, not entity behavior.
 func NewPerson(gid string, input persondto.CreatePerson, now time.Time) entity.Person {
 	return entity.Person{
-		GID: gid,
-		FirstName: input.FirstName,
+		GID:        gid,
+		FirstName:  input.FirstName,
 		MiddleName: coreutils.OptionalString(input.MiddleName),
-		LastName: input.LastName,
-		Status: entity.PersonStatusActive,
-		Version: 1,
-		CreatedAt: now,
-		UpdatedAt: now,
+		LastName:   input.LastName,
+		Status:     entity.PersonStatusActive,
+		Version:    1,
+		CreatedAt:  now,
+		UpdatedAt:  now,
 	}
 }

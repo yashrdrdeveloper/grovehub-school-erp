@@ -5,7 +5,7 @@ package events
 type Operation string
 
 const (
-    Created     Operation = "CREATED"
-    Updated     Operation = "UPDATED"
-    Deactivated Operation = "DEACTIVATED"
+	Created     Operation = "CREATED"
+	Updated     Operation = "UPDATED"
+	Deactivated Operation = "DEACTIVATED"
 )

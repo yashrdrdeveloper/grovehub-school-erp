@@ -1,10 +1,10 @@
 package helpers
 
 import (
-    "strings"
-    "time"
+	"strings"
+	"time"
 
-    "grovehub/services/foundation/internal/app/entity"
+	"grovehub/services/foundation/internal/app/entity"
 )
 
 type cursorValueExtractor func(entity.Person) string

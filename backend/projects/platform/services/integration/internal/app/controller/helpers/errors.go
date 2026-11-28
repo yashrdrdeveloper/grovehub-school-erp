@@ -1,15 +1,15 @@
 package helpers
 
 import (
-    providerhelpers "grovehub/services/integration/internal/app/providers/helpers"
-    "errors"
-    "net/http"
+	"errors"
+	providerhelpers "grovehub/services/integration/internal/app/providers/helpers"
+	"net/http"
 
-    coreerrors "grovehub/libs/core/errors"
-    corehttp "grovehub/libs/core/http"
-    integrationerrors "grovehub/services/integration/internal/app/constants/error"
-    integrationrepository "grovehub/services/integration/internal/app/repository/connection"
-    serviceimpl "grovehub/services/integration/internal/app/services/connection/impl"
+	coreerrors "grovehub/libs/core/errors"
+	corehttp "grovehub/libs/core/http"
+	integrationerrors "grovehub/services/integration/internal/app/constants/error"
+	integrationrepository "grovehub/services/integration/internal/app/repository/connection"
+	serviceimpl "grovehub/services/integration/internal/app/services/connection/impl"
 )
 
 // WriteServiceError preserves Integration's existing structured HTTP error mapping

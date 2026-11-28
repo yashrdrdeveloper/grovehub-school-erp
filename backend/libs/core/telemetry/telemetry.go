@@ -8,12 +8,12 @@ import (
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 
-	"grovehub/libs/core/telemetry/internal/src/contracts"
-	"grovehub/libs/core/telemetry/internal/src/operations/runtime"
-	"grovehub/libs/core/telemetry/internal/src/helpers"
-	"grovehub/libs/core/telemetry/internal/src/operations/tracing"
 	"grovehub/libs/core/telemetry/internal/src/config"
 	"grovehub/libs/core/telemetry/internal/src/constants"
+	"grovehub/libs/core/telemetry/internal/src/contracts"
+	"grovehub/libs/core/telemetry/internal/src/helpers"
+	"grovehub/libs/core/telemetry/internal/src/operations/runtime"
+	"grovehub/libs/core/telemetry/internal/src/operations/tracing"
 )
 
 const ServiceNamespace = constants.ServiceNamespace
@@ -109,7 +109,7 @@ func Logger(logger *slog.Logger, ctx context.Context) *slog.Logger {
 }
 
 const (
-	DefaultTraceSampleRatio = constants.DefaultTraceSampleRatio
+	DefaultTraceSampleRatio     = constants.DefaultTraceSampleRatio
 	DefaultMetricExportInterval = constants.DefaultMetricExportInterval
 )
 

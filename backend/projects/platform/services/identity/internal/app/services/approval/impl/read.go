@@ -7,8 +7,8 @@ import (
 	coresearch "grovehub/libs/core/search"
 	dto "grovehub/services/identity/internal/app/dto/approval"
 	repo "grovehub/services/identity/internal/app/repository/approval"
-	authrepo "grovehub/services/identity/internal/app/repository/authorization"
 	"grovehub/services/identity/internal/app/repository/authority"
+	authrepo "grovehub/services/identity/internal/app/repository/authorization"
 	"grovehub/services/identity/internal/app/services/approval"
 	"grovehub/services/identity/internal/app/services/approval/helpers"
 	"grovehub/services/identity/internal/app/services/authorization"
@@ -17,10 +17,10 @@ import (
 )
 
 type ReadService struct {
-	reader repo.Reader
+	reader     repo.Reader
 	repository repo.Repository
-	locker authority.Locker
-	snapshots authrepo.Repository
+	locker     authority.Locker
+	snapshots  authrepo.Repository
 }
 
 var _ approval.Reader = (*ReadService)(nil)

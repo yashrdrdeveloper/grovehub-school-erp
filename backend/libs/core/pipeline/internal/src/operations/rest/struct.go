@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"strings"
 	"net/url"
+	"strings"
 
 	coreannotation "grovehub/libs/core/annotation"
 	coreerrors "grovehub/libs/core/errors"
@@ -16,16 +16,16 @@ import (
 // StructConfig operates on one endpoint-specific request struct. Only the
 // applicable exported fields Params, Query and RequestBody are declared.
 type StructConfig[Request, Response any] struct {
-	Rules coreannotation.ValidationRules[Request]
-	Validate func(Request) error
-	Service func(context.Context, Request) (Result[Response], error)
-	Decode func(*http.Request, any) error
-	StrictQuery bool
-	InvalidParams coreerrors.Definition
-	InvalidQuery coreerrors.Definition
+	Rules              coreannotation.ValidationRules[Request]
+	Validate           func(Request) error
+	Service            func(context.Context, Request) (Result[Response], error)
+	Decode             func(*http.Request, any) error
+	StrictQuery        bool
+	InvalidParams      coreerrors.Definition
+	InvalidQuery       coreerrors.Definition
 	InvalidRequestBody coreerrors.Definition
-	Fallback coreerrors.Definition
-	Writer Writer[Response]
+	Fallback           coreerrors.Definition
+	Writer             Writer[Response]
 }
 
 // RunStruct binds only the fields an endpoint declares, validates the complete
@@ -55,9 +55,9 @@ func RunStruct[Request corerequest.Contract, Response any](writer http.ResponseW
 	} else if config.StrictQuery && request.URL.RawQuery != "" {
 		values, parseErr := url.ParseQuery(request.URL.RawQuery)
 		if parseErr != nil {
-			err = BindError{Source:"query",Field:"query",Reason:"malformed"}
+			err = BindError{Source: "query", Field: "query", Reason: "malformed"}
 		} else if len(values) > 0 {
-			err = BindError{Source:"query",Field:"query",Reason:"not declared"}
+			err = BindError{Source: "query", Field: "query", Reason: "not declared"}
 		}
 		if err != nil {
 			writeFailure(writer, request, config.Writer, err, config.InvalidQuery, config.Fallback)
@@ -66,9 +66,11 @@ func RunStruct[Request corerequest.Contract, Response any](writer http.ResponseW
 	}
 	if sections.HasRequestBody {
 		decode := config.Decode
-		if decode == nil { decode = corehttp.DecodeJSON }
+		if decode == nil {
+			decode = corehttp.DecodeJSON
+		}
 		if err = decode(request, sections.RequestBody.Addr().Interface()); err != nil {
-			writeFailure(writer, request, config.Writer, &DecodeError{Err:err}, config.InvalidRequestBody, config.Fallback)
+			writeFailure(writer, request, config.Writer, &DecodeError{Err: err}, config.InvalidRequestBody, config.Fallback)
 			return
 		}
 	}

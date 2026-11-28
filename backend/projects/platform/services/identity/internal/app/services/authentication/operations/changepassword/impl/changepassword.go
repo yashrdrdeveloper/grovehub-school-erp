@@ -2,18 +2,18 @@ package impl
 
 import (
 	"context"
-	"time"
-	"grovehub/services/identity/internal/app/services/security/principal"
-	sessionrepo "grovehub/services/identity/internal/app/repository/session"
-	credential "grovehub/services/identity/internal/app/services/credential"
 	coredatabase "grovehub/libs/core/database"
+	sessionrepo "grovehub/services/identity/internal/app/repository/session"
 	changepassword "grovehub/services/identity/internal/app/services/authentication/operations/changepassword"
+	credential "grovehub/services/identity/internal/app/services/credential"
+	"grovehub/services/identity/internal/app/services/security/principal"
+	"time"
 )
 
 type Service struct {
-	sessions sessionrepo.Repository
+	sessions   sessionrepo.Repository
 	credential credential.Service
-	unit coredatabase.UnitOfWork
+	unit       coredatabase.UnitOfWork
 }
 
 var _ changepassword.Operation = (*Service)(nil)

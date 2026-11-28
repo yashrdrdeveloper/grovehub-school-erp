@@ -2,8 +2,8 @@ package credential
 
 import (
 	"grovehub/libs/core/gateway/internal/src/constants"
-	"grovehub/libs/core/gateway/internal/src/helpers"
 	"grovehub/libs/core/gateway/internal/src/contracts"
+	"grovehub/libs/core/gateway/internal/src/helpers"
 
 	"context"
 	"crypto/ed25519"
@@ -14,15 +14,15 @@ import (
 )
 
 type signedClaims struct {
-	Issuer string `json:"iss"`
-	Subject string `json:"sub"`
-	Audience string `json:"aud"`
-	IssuedAt int64 `json:"iat"`
-	ExpiresAt int64 `json:"exp"`
-	Scopes []string `json:"scopes"`
-	TenantID string `json:"tenant,omitempty"`
-	ActorGID string `json:"actor,omitempty"`
-	SessionID string `json:"session,omitempty"`
+	Issuer    string   `json:"iss"`
+	Subject   string   `json:"sub"`
+	Audience  string   `json:"aud"`
+	IssuedAt  int64    `json:"iat"`
+	ExpiresAt int64    `json:"exp"`
+	Scopes    []string `json:"scopes"`
+	TenantID  string   `json:"tenant,omitempty"`
+	ActorGID  string   `json:"actor,omitempty"`
+	SessionID string   `json:"session,omitempty"`
 }
 
 // Ed25519Credentials verifies a versioned internal credential, not a JWT.
@@ -32,12 +32,12 @@ type Ed25519Credentials struct {
 }
 
 func SignWorkload(keyID, issuer string, key ed25519.PrivateKey, claims contracts.WorkloadClaims) (string, error) {
-	return SignWorkloadWithEncoder(keyID,issuer,key,claims,json.Marshal)
+	return SignWorkloadWithEncoder(keyID, issuer, key, claims, json.Marshal)
 }
 
 // SignWorkloadWithEncoder isolates serialization before any credential is signed.
 // Production callers always use SignWorkload and the standard JSON encoder.
-func SignWorkloadWithEncoder(keyID, issuer string, key ed25519.PrivateKey, claims contracts.WorkloadClaims, encode func(any)([]byte,error)) (string, error) {
+func SignWorkloadWithEncoder(keyID, issuer string, key ed25519.PrivateKey, claims contracts.WorkloadClaims, encode func(any) ([]byte, error)) (string, error) {
 	now := time.Now()
 	if !helpers.ValidKeyID(keyID) || issuer == "" || len(key) != ed25519.PrivateKeySize || claims.Subject == "" || claims.Audience == "" || !claims.ExpiresAt.After(now) || claims.ExpiresAt.After(now.Add(constants.MaxCredentialLifetime)) || !helpers.ValidActorPair(claims.TenantID, claims.ActorGID) {
 		return "", contracts.ErrWorkloadDenied
@@ -46,8 +46,8 @@ func SignWorkloadWithEncoder(keyID, issuer string, key ed25519.PrivateKey, claim
 	if err != nil {
 		return "", err
 	}
-	body := constants.CredentialVersion + "."+keyID+"."+base64.RawURLEncoding.EncodeToString(payload)
-	token := body+"."+base64.RawURLEncoding.EncodeToString(ed25519.Sign(key, []byte(body)))
+	body := constants.CredentialVersion + "." + keyID + "." + base64.RawURLEncoding.EncodeToString(payload)
+	token := body + "." + base64.RawURLEncoding.EncodeToString(ed25519.Sign(key, []byte(body)))
 	if len(token) > constants.MaxCredentialSize {
 		return "", contracts.ErrWorkloadDenied
 	}

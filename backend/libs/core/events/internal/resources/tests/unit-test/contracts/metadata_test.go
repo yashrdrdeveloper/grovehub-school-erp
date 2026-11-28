@@ -1,8 +1,8 @@
 package contracts_test
 
 import (
-	"time"
 	"grovehub/libs/core/events/internal/src/contracts"
+	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

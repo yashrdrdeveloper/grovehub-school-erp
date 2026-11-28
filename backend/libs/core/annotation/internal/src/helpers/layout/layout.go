@@ -46,7 +46,7 @@ func ResolveImport(root string, modulePath string, importPath string) (string, e
 
 // ResolveRelative joins a module-relative path without allowing an absolute
 // path or a traversal outside the owning module.
-func ResolveRelative(root, relative string) (string,error) {
+func ResolveRelative(root, relative string) (string, error) {
 	if !filepath.IsLocal(filepath.FromSlash(relative)) {
 		return "", fmt.Errorf("invalid module-relative import %q", relative)
 	}

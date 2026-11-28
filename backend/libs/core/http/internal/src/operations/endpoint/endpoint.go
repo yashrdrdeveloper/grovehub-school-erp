@@ -36,7 +36,9 @@ type Request[Path, Query, Body any] = corerequest.Parts[Path, Query, Body]
 func CallRequest[Response, Path, Query, Body any](ctx context.Context, handler http.Handler, method, route string, input Request[Path, Query, Body]) (Response, int, error) {
 	var zero Response
 	query, err := encodeQuery(input.Query)
-	if err != nil { return zero, 0, err }
+	if err != nil {
+		return zero, 0, err
+	}
 	var body any
 	if reflect.TypeFor[Body]() != reflect.TypeFor[corerequest.Empty]() {
 		body = input.Body
@@ -58,37 +60,65 @@ func Call[T any](ctx context.Context, handler http.Handler, method, route string
 
 func call[T any](ctx context.Context, handler http.Handler, method, route string, pathDTO any, query url.Values, body any) (T, int, error) {
 	var zero T
-	if ctx == nil { return zero, 0, errors.New("HTTP endpoint call requires context") }
-	if err := ctx.Err(); err != nil { return zero, 0, err }
-	if handler == nil { return zero, 0, errors.New("HTTP endpoint call requires a handler") }
+	if ctx == nil {
+		return zero, 0, errors.New("HTTP endpoint call requires context")
+	}
+	if err := ctx.Err(); err != nil {
+		return zero, 0, err
+	}
+	if handler == nil {
+		return zero, 0, errors.New("HTTP endpoint call requires a handler")
+	}
 	path, err := expandPath(route, pathDTO)
-	if err != nil { return zero, 0, err }
+	if err != nil {
+		return zero, 0, err
+	}
 
 	var payload io.Reader
 	if body != nil {
 		encoded, err := json.Marshal(body)
-		if err != nil { return zero, 0, fmt.Errorf("encode endpoint body: %w", err) }
+		if err != nil {
+			return zero, 0, fmt.Errorf("encode endpoint body: %w", err)
+		}
 		payload = bytes.NewReader(encoded)
 	}
-	endpointURL := "http://grovehub.internal"+path
-	if len(query) != 0 { endpointURL += "?"+query.Encode() }
+	endpointURL := "http://grovehub.internal" + path
+	if len(query) != 0 {
+		endpointURL += "?" + query.Encode()
+	}
 	request, err := http.NewRequestWithContext(ctx, method, endpointURL, payload)
-	if err != nil { return zero, 0, fmt.Errorf("construct endpoint request: %w", err) }
-	if body != nil { request.Header.Set("Content-Type", "application/json") }
+	if err != nil {
+		return zero, 0, fmt.Errorf("construct endpoint request: %w", err)
+	}
+	if body != nil {
+		request.Header.Set("Content-Type", "application/json")
+	}
 
 	// Validated caller context is preserved, including tracing, transactions
 	// and trusted metadata. Headers are forwarded for future HTTP middleware.
 	values := headercontext.FromContext(ctx)
-	if values.IdempotencyKey != "" { request.Header.Set(httpheaders.IdempotencyKey, values.IdempotencyKey) }
-	if values.CorrelationID != "" { request.Header.Set(httpheaders.CorrelationID, values.CorrelationID) }
-	if values.RequestID != "" { request.Header.Set(httpheaders.RequestID, values.RequestID) }
+	if values.IdempotencyKey != "" {
+		request.Header.Set(httpheaders.IdempotencyKey, values.IdempotencyKey)
+	}
+	if values.CorrelationID != "" {
+		request.Header.Set(httpheaders.CorrelationID, values.CorrelationID)
+	}
+	if values.RequestID != "" {
+		request.Header.Set(httpheaders.RequestID, values.RequestID)
+	}
 
 	recorder := &responseBuffer{header: make(http.Header)}
 	handler.ServeHTTP(recorder, request)
-	if recorder.tooLarge { return zero, recorder.status, errors.New("endpoint response exceeds maximum size") }
+	if recorder.tooLarge {
+		return zero, recorder.status, errors.New("endpoint response exceeds maximum size")
+	}
 	status := recorder.status
-	if status == 0 { status = http.StatusOK }
-	if status == http.StatusNoContent { return zero, status, nil }
+	if status == 0 {
+		status = http.StatusOK
+	}
+	if status == http.StatusNoContent {
+		return zero, status, nil
+	}
 	if status < 200 || status >= 600 {
 		return zero, status, fmt.Errorf("invalid endpoint response status %d", status)
 	}
@@ -138,21 +168,25 @@ func call[T any](ctx context.Context, handler http.Handler, method, route string
 // controller call. Unlike httptest.ResponseRecorder, it refuses to buffer
 // more than maxResponseBytes and allows the caller to detect truncated output.
 type responseBuffer struct {
-	header http.Header
-	body bytes.Buffer
-	status int
+	header   http.Header
+	body     bytes.Buffer
+	status   int
 	tooLarge bool
 }
 
 func (recorder *responseBuffer) Header() http.Header { return recorder.header }
 
 func (recorder *responseBuffer) WriteHeader(status int) {
-	if recorder.status == 0 { recorder.status = status }
+	if recorder.status == 0 {
+		recorder.status = status
+	}
 }
 
-func (recorder *responseBuffer) Write(payload []byte) (int,error) {
-	if recorder.status == 0 { recorder.status = http.StatusOK }
-	if int64(recorder.body.Len()) + int64(len(payload)) > maxResponseBytes {
+func (recorder *responseBuffer) Write(payload []byte) (int, error) {
+	if recorder.status == 0 {
+		recorder.status = http.StatusOK
+	}
+	if int64(recorder.body.Len())+int64(len(payload)) > maxResponseBytes {
 		recorder.tooLarge = true
 		return 0, errors.New("endpoint response exceeds maximum size")
 	}
@@ -164,36 +198,56 @@ func (recorder *responseBuffer) Write(payload []byte) (int,error) {
 // The values are URL-escaped by url.Values.Encode in call().
 func encodeQuery[Q any](input Q) (url.Values, error) {
 	values := make(url.Values)
-	if reflect.TypeFor[Q]() == reflect.TypeFor[corerequest.Empty]() { return values, nil }
+	if reflect.TypeFor[Q]() == reflect.TypeFor[corerequest.Empty]() {
+		return values, nil
+	}
 	value := reflect.ValueOf(input)
 	for value.Kind() == reflect.Pointer {
-		if value.IsNil() { return values, nil }
+		if value.IsNil() {
+			return values, nil
+		}
 		value = value.Elem()
 	}
-	if value.Kind() != reflect.Struct { return nil, errors.New("endpoint query DTO must be a struct") }
+	if value.Kind() != reflect.Struct {
+		return nil, errors.New("endpoint query DTO must be a struct")
+	}
 	t := value.Type()
 	for i := 0; i < value.NumField(); i++ {
 		field := t.Field(i)
 		name := strings.Split(field.Tag.Get("query"), ",")[0]
-		if name == "" || name == "-" { continue }
-		if !field.IsExported() { return nil, fmt.Errorf("endpoint query field %s must be exported", field.Name) }
-		if _, present := values[name]; present { return nil, fmt.Errorf("duplicate endpoint query field %s", name) }
+		if name == "" || name == "-" {
+			continue
+		}
+		if !field.IsExported() {
+			return nil, fmt.Errorf("endpoint query field %s must be exported", field.Name)
+		}
+		if _, present := values[name]; present {
+			return nil, fmt.Errorf("duplicate endpoint query field %s", name)
+		}
 		v := value.Field(i)
 		for v.Kind() == reflect.Pointer {
-			if v.IsNil() { break }
+			if v.IsNil() {
+				break
+			}
 			v = v.Elem()
 		}
-		if v.Kind() == reflect.Pointer && v.IsNil() { continue }
+		if v.Kind() == reflect.Pointer && v.IsNil() {
+			continue
+		}
 		if v.Kind() == reflect.Slice {
 			for j := 0; j < v.Len(); j++ {
 				item, err := queryScalar(v.Index(j))
-				if err != nil { return nil, fmt.Errorf("invalid endpoint query field %s: %w", name, err) }
+				if err != nil {
+					return nil, fmt.Errorf("invalid endpoint query field %s: %w", name, err)
+				}
 				values.Add(name, item)
 			}
 			continue
 		}
 		text, err := queryScalar(v)
-		if err != nil { return nil, fmt.Errorf("invalid endpoint query field %s: %w", name, err) }
+		if err != nil {
+			return nil, fmt.Errorf("invalid endpoint query field %s: %w", name, err)
+		}
 		values.Set(name, text)
 	}
 	return values, nil
@@ -224,13 +278,19 @@ func expandPath(route string, pathDTO any) (string, error) {
 	}
 	placeholders := placeholder.FindAllStringSubmatch(route, -1)
 	if len(placeholders) == 0 {
-		if strings.ContainsAny(route, "{}") { return "", errors.New("invalid endpoint route placeholder") }
+		if strings.ContainsAny(route, "{}") {
+			return "", errors.New("invalid endpoint route placeholder")
+		}
 		return route, nil
 	}
 	value := reflect.ValueOf(pathDTO)
-	if !value.IsValid() { return "", errors.New("endpoint path DTO is missing") }
+	if !value.IsValid() {
+		return "", errors.New("endpoint path DTO is missing")
+	}
 	for value.Kind() == reflect.Pointer {
-		if value.IsNil() { return "", errors.New("endpoint path DTO is nil") }
+		if value.IsNil() {
+			return "", errors.New("endpoint path DTO is nil")
+		}
 		value = value.Elem()
 	}
 	if value.Kind() != reflect.Struct {
@@ -241,12 +301,20 @@ func expandPath(route string, pathDTO any) (string, error) {
 	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
 		tag := strings.Split(field.Tag.Get("path"), ",")[0]
-		if tag == "" || tag == "-" { continue }
-		if !field.IsExported() { return "", fmt.Errorf("endpoint path field %s must be exported", field.Name) }
-		if _, exists := fields[tag]; exists { return "", fmt.Errorf("duplicate endpoint path field %s", tag) }
+		if tag == "" || tag == "-" {
+			continue
+		}
+		if !field.IsExported() {
+			return "", fmt.Errorf("endpoint path field %s must be exported", field.Name)
+		}
+		if _, exists := fields[tag]; exists {
+			return "", fmt.Errorf("duplicate endpoint path field %s", tag)
+		}
 		raw := value.Field(i)
 		if raw.Kind() == reflect.Pointer {
-			if raw.IsNil() { return "", fmt.Errorf("endpoint path field %s is nil", tag) }
+			if raw.IsNil() {
+				return "", fmt.Errorf("endpoint path field %s is nil", tag)
+			}
 			raw = raw.Elem()
 		}
 		var rendered string

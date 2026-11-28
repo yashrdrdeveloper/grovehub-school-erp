@@ -11,8 +11,8 @@ import (
 
 	"gorm.io/gorm"
 
-	coredatabase "grovehub/libs/core/database"
 	"grovehub/launcher/internal/src/config/database/helpers"
+	coredatabase "grovehub/libs/core/database"
 )
 
 const databaseURLEnv = "DATABASE_URL"

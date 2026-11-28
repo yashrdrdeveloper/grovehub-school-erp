@@ -4,8 +4,8 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	coreutils "grovehub/libs/core/utils"
 	coresearch "grovehub/libs/core/search"
+	coreutils "grovehub/libs/core/utils"
 	kind "grovehub/services/identity/internal/app/constants/approval"
 	dto "grovehub/services/identity/internal/app/dto/approval"
 	repo "grovehub/services/identity/internal/app/repository/approval"
@@ -71,12 +71,12 @@ func NormalizeSearch(request coresearch.Request) (coresearch.Query[string], erro
 	}
 	equality := coresearch.OperatorSet(coresearch.OperatorEquals, coresearch.OperatorNotEquals, coresearch.OperatorIn, coresearch.OperatorNotIn)
 	fields := map[string]coresearch.FieldSpec{
-		dto.FieldRequestID: {Operators: equality, Normalizer: normalizeID},
+		dto.FieldRequestID:   {Operators: equality, Normalizer: normalizeID},
 		dto.FieldRequestType: {Operators: equality, Normalizer: normalizeKind},
-		dto.FieldStatus: {Operators: equality, Normalizer: normalizeStatus},
-		dto.FieldCreatedAt: {Operators: coresearch.TimeOperators(), Normalizer: normalizeTime},
-		dto.FieldUpdatedAt: {Operators: coresearch.TimeOperators(), Normalizer: normalizeTime},
-		dto.FieldExpiresAt: {Operators: coresearch.TimeOperators(), Normalizer: normalizeTime},
+		dto.FieldStatus:      {Operators: equality, Normalizer: normalizeStatus},
+		dto.FieldCreatedAt:   {Operators: coresearch.TimeOperators(), Normalizer: normalizeTime},
+		dto.FieldUpdatedAt:   {Operators: coresearch.TimeOperators(), Normalizer: normalizeTime},
+		dto.FieldExpiresAt:   {Operators: coresearch.TimeOperators(), Normalizer: normalizeTime},
 	}
 	filters, err := coresearch.NormalizeFilters(request.Filters, fields, 20, 50, repo.ErrInvalid)
 	if err != nil {

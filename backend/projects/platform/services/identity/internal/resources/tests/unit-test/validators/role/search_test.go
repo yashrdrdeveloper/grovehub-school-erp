@@ -13,8 +13,8 @@ var _ = Describe("NormalizeSearch", func() {
 	It("normalizes numbered pages and ordered filters", func() {
 		query, err := rolevalidator.NormalizeSearch(coresearch.Request{
 			PageInfo: coresearch.PageRequest{PageNumber: 2, RowSize: 10},
-			Sort: []coresearch.Sort{{Field: roledto.FieldName, Direction: coresearch.DirectionAscending}, {Field: roledto.FieldCreatedAt, Direction: coresearch.DirectionDescending}},
-			Filters: []coresearch.Filter{{Field: roledto.FieldStatus, Operator: coresearch.OperatorEquals, Values: []string{"inactive"}}},
+			Sort:     []coresearch.Sort{{Field: roledto.FieldName, Direction: coresearch.DirectionAscending}, {Field: roledto.FieldCreatedAt, Direction: coresearch.DirectionDescending}},
+			Filters:  []coresearch.Filter{{Field: roledto.FieldStatus, Operator: coresearch.OperatorEquals, Values: []string{"inactive"}}},
 		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(query.Offset).To(Equal(10))

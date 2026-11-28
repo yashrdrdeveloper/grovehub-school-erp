@@ -7,32 +7,32 @@ import (
 	"gorm.io/gorm"
 
 	coredatabase "grovehub/libs/core/database"
+	coresearch "grovehub/libs/core/search"
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/constants/permission"
-	"grovehub/services/identity/internal/app/repository/authority"
-	accountrepo "grovehub/services/identity/internal/app/repository/account"
-	migrationreadiness "grovehub/services/identity/internal/app/repository/rbacmigration"
-	"time"
-	coresearch "grovehub/libs/core/search"
+	"grovehub/services/identity/internal/app/constants/persona"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
+	"grovehub/services/identity/internal/app/entity"
+	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	accountread "grovehub/services/identity/internal/app/repository/account/impl"
-	accountvalidator "grovehub/services/identity/internal/app/validators/account/impl"
-	migrationreader "grovehub/services/identity/internal/app/repository/rbacmigration/impl"
-	"grovehub/services/identity/internal/app/services/rbacmigration"
-	migrationplan "grovehub/services/identity/internal/app/services/rbacmigration/operations/plan"
-	assignmentreplace "grovehub/services/identity/internal/app/services/accountrole/operations/replace"
 	accountrolerepo "grovehub/services/identity/internal/app/repository/accountrole"
 	accountroleimpl "grovehub/services/identity/internal/app/repository/accountrole/impl"
-	"grovehub/services/identity/internal/app/constants/persona"
-	"grovehub/services/identity/internal/app/entity"
+	"grovehub/services/identity/internal/app/repository/authority"
+	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
+	migrationreadiness "grovehub/services/identity/internal/app/repository/rbacmigration"
+	migrationreader "grovehub/services/identity/internal/app/repository/rbacmigration/impl"
+	registryimpl "grovehub/services/identity/internal/app/repository/registry/impl"
 	rolerepo "grovehub/services/identity/internal/app/repository/role"
 	roleimpl "grovehub/services/identity/internal/app/repository/role/impl"
-	"grovehub/services/identity/internal/app/services/role/operations/lifecycle"
-	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
-	registryimpl "grovehub/services/identity/internal/app/repository/registry/impl"
+	assignmentreplace "grovehub/services/identity/internal/app/services/accountrole/operations/replace"
 	"grovehub/services/identity/internal/app/services/authorization/operations/protect"
+	"grovehub/services/identity/internal/app/services/rbacmigration"
+	migrationplan "grovehub/services/identity/internal/app/services/rbacmigration/operations/plan"
 	"grovehub/services/identity/internal/app/services/registry"
 	registryservice "grovehub/services/identity/internal/app/services/registry/impl"
+	"grovehub/services/identity/internal/app/services/role/operations/lifecycle"
+	accountvalidator "grovehub/services/identity/internal/app/validators/account/impl"
+	"time"
 )
 
 func verifyAdministratorGuard(ctx context.Context, db *gorm.DB) {
@@ -220,7 +220,7 @@ func verifyAdministratorGuard(ctx context.Context, db *gorm.DB) {
 	Expect(projected.PrimaryRoleID).NotTo(BeNil())
 	Expect(*projected.PrimaryRoleID).To(Equal(migrated.PrimaryRoleID))
 	query, err := accountvalidator.NewNormalized().Search(coresearch.Request{
-		Filters: []coresearch.Filter{{Field: accountdto.FieldPrimaryRoleID, Operator: coresearch.OperatorEquals, Values: []string{migrated.PrimaryRoleID}}},
+		Filters:  []coresearch.Filter{{Field: accountdto.FieldPrimaryRoleID, Operator: coresearch.OperatorEquals, Values: []string{migrated.PrimaryRoleID}}},
 		PageInfo: coresearch.PageRequest{PageNumber: 1, RowSize: 25},
 	})
 	Expect(err).NotTo(HaveOccurred())

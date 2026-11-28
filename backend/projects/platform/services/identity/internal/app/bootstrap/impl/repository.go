@@ -1,16 +1,16 @@
 package impl
 
 import (
+	coredatabase "grovehub/libs/core/database"
+	producerimpl "grovehub/services/identity/internal/app/events/producers/approval/impl"
+	accountrepo "grovehub/services/identity/internal/app/repository/account"
+	accountimpl "grovehub/services/identity/internal/app/repository/account/impl"
 	accountrolerepo "grovehub/services/identity/internal/app/repository/accountrole"
 	accountroleimpl "grovehub/services/identity/internal/app/repository/accountrole/impl"
 	approvalrepo "grovehub/services/identity/internal/app/repository/approval"
 	approvalimpl "grovehub/services/identity/internal/app/repository/approval/impl"
-	producerimpl "grovehub/services/identity/internal/app/events/producers/approval/impl"
 	"grovehub/services/identity/internal/app/repository/authority"
 	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
-	coredatabase "grovehub/libs/core/database"
-	accountrepo "grovehub/services/identity/internal/app/repository/account"
-	accountimpl "grovehub/services/identity/internal/app/repository/account/impl"
 	authorizationrepo "grovehub/services/identity/internal/app/repository/authorization"
 	authorizationimpl "grovehub/services/identity/internal/app/repository/authorization/impl"
 	credentialrepo "grovehub/services/identity/internal/app/repository/credential"
@@ -28,10 +28,10 @@ import (
 )
 
 type repositories struct {
-	accountRoles accountrolerepo.Repository
-	approval approvalrepo.Repository
+	accountRoles  accountrolerepo.Repository
+	approval      approvalrepo.Repository
 	approvalReads approvalrepo.Reader
-	authority authority.Locker
+	authority     authority.Locker
 	accounts      accountrepo.Repository
 	authorization authorizationrepo.Repository
 	registry      registryrepo.Repository
@@ -45,10 +45,10 @@ type repositories struct {
 
 func (b *builder) newRepository() repositories {
 	return repositories{
-		accountRoles: accountroleimpl.New(b.db),
-		approval: approvalimpl.New(b.db, producerimpl.New(b.audit)),
+		accountRoles:  accountroleimpl.New(b.db),
+		approval:      approvalimpl.New(b.db, producerimpl.New(b.audit)),
 		approvalReads: approvalimpl.NewReader(b.db),
-		authority: authorityimpl.New(b.db),
+		authority:     authorityimpl.New(b.db),
 		accounts:      accountimpl.New(b.db),
 		authorization: authorizationimpl.New(b.db),
 		registry:      registryimpl.New(b.db),
@@ -56,7 +56,7 @@ func (b *builder) newRepository() repositories {
 		credentials:   credentialimpl.New(b.db),
 		sessions:      sessionimpl.New(b.db),
 		tokens:        passwordtokenimpl.New(b.db),
-		mail:          invitationimpl.New(b.db,b.audit),
+		mail:          invitationimpl.New(b.db, b.audit),
 		unit:          coredatabase.NewUnitOfWork(b.db),
 	}
 }

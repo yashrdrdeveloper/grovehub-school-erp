@@ -1,31 +1,31 @@
 package gormtable_test
 
 import (
-	"path/filepath"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"path/filepath"
 
-	"grovehub/libs/core/annotation/internal/src/generators/gormtable"
 	fixture "grovehub/libs/core/annotation/internal/resources/tests/helpers"
+	"grovehub/libs/core/annotation/internal/src/generators/gormtable"
 )
 
-var _ = Describe("GenerateInto",func(){
-	It("emits deterministic table methods and removes stale generated output",func(){
-		root:=GinkgoT().TempDir()
-		fixture.Write(root,"record.go","package entity\n// @Entity demo.records mode=table\ntype Record struct{}\n")
-		out:=filepath.Join(GinkgoT().TempDir(),"zz_tables.gen.go")
-		Expect(gormtable.GenerateInto(root,out)).To(Succeed())
-		content:=fixture.Read(out)
+var _ = Describe("GenerateInto", func() {
+	It("emits deterministic table methods and removes stale generated output", func() {
+		root := GinkgoT().TempDir()
+		fixture.Write(root, "record.go", "package entity\n// @Entity demo.records mode=table\ntype Record struct{}\n")
+		out := filepath.Join(GinkgoT().TempDir(), "zz_tables.gen.go")
+		Expect(gormtable.GenerateInto(root, out)).To(Succeed())
+		content := fixture.Read(out)
 		Expect(content).To(ContainSubstring(`func (Record) TableName() string { return "demo.records" }`))
-		Expect(gormtable.GenerateInto(root,out)).To(Succeed())
+		Expect(gormtable.GenerateInto(root, out)).To(Succeed())
 		Expect(fixture.Read(out)).To(Equal(content))
-		fixture.Write(root,"record.go","package entity\ntype Record struct{}\n")
-		Expect(gormtable.GenerateInto(root,out)).To(Succeed())
+		fixture.Write(root, "record.go", "package entity\ntype Record struct{}\n")
+		Expect(gormtable.GenerateInto(root, out)).To(Succeed())
 		Expect(out).NotTo(BeAnExistingFile())
 	})
-	It("rejects handwritten table names on annotated types",func(){
-		root:=GinkgoT().TempDir()
-		fixture.Write(root,"record.go","package entity\n// @Entity demo.records\ntype Record struct{}\nfunc (Record) TableName()string{return \"other\"}\n")
-		Expect(gormtable.GenerateInto(root,filepath.Join(root,"out.go"))).To(MatchError(ContainSubstring("declares TableName manually")))
+	It("rejects handwritten table names on annotated types", func() {
+		root := GinkgoT().TempDir()
+		fixture.Write(root, "record.go", "package entity\n// @Entity demo.records\ntype Record struct{}\nfunc (Record) TableName()string{return \"other\"}\n")
+		Expect(gormtable.GenerateInto(root, filepath.Join(root, "out.go"))).To(MatchError(ContainSubstring("declares TableName manually")))
 	})
 })

@@ -6,28 +6,28 @@ import (
 
 	coredatabase "grovehub/libs/core/database"
 	coreevents "grovehub/libs/core/events"
+	auditclient "grovehub/services/audit/client/producer"
 	"grovehub/services/identity/internal/app/entity"
 	producer "grovehub/services/identity/internal/app/events/producers/registration"
 	repo "grovehub/services/identity/internal/app/repository/account"
-	auditclient "grovehub/services/audit/client/producer"
 )
 
 const EventType = "identity.account.registration.changed.v1"
 const Topic = "identity_account_registration_changed"
 
 type Snapshot struct {
-	AccountID string `json:"accountId"`
-	PersonGID string `json:"personGid"`
-	Status entity.AccountStatus `json:"status"`
-	Version int64 `json:"version"`
+	AccountID string               `json:"accountId"`
+	PersonGID string               `json:"personGid"`
+	Status    entity.AccountStatus `json:"status"`
+	Version   int64                `json:"version"`
 }
 
 type Changed struct {
-	TenantID string `json:"tenantId"`
-	ActorID string `json:"actorId"`
-	Operation string `json:"operation"`
-	Old *Snapshot `json:"old"`
-	New Snapshot `json:"new"`
+	TenantID  string    `json:"tenantId"`
+	ActorID   string    `json:"actorId"`
+	Operation string    `json:"operation"`
+	Old       *Snapshot `json:"old"`
+	New       Snapshot  `json:"new"`
 }
 
 type Producer struct {

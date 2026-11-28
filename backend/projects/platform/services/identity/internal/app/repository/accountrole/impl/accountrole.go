@@ -25,17 +25,17 @@ func New(db *gorm.DB) accountrole.Repository {
 }
 
 type assignmentRow struct {
-	AccountID string
-	Status entity.AccountStatus
-	Version int64
+	AccountID     string
+	Status        entity.AccountStatus
+	Version       int64
 	PrimaryRoleID string
 	SecondaryJSON string
 }
 
 type candidateRow struct {
-	RoleID string
-	Status entity.RoleStatus
-	Version int64
+	RoleID    string
+	Status    entity.RoleStatus
+	Version   int64
 	CodesJSON string
 }
 

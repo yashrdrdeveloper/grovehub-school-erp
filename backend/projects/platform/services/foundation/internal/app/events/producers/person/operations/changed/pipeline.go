@@ -4,15 +4,15 @@ package changed
 import (
 	"context"
 
-	messagingclient "grovehub/services/infrastructure/client/messaging"
 	coreevents "grovehub/libs/core/events"
 	eventflows "grovehub/services/foundation/internal/app/events/producers/person/operations/changed/flows"
 	changedstrategies "grovehub/services/foundation/internal/app/events/producers/person/operations/changed/strategies"
+	messagingclient "grovehub/services/infrastructure/client/messaging"
 )
 
 type ChangedPipeline struct {
 	strategy changedstrategies.ChangedStrategy
-	store messagingclient.EventStore
+	store    messagingclient.EventStore
 }
 
 func NewChangedPipeline(strategy changedstrategies.ChangedStrategy, store messagingclient.EventStore) *ChangedPipeline {
@@ -21,9 +21,9 @@ func NewChangedPipeline(strategy changedstrategies.ChangedStrategy, store messag
 
 func (pipeline *ChangedPipeline) Rules() coreevents.Rules[eventflows.Change, messagingclient.Event] {
 	return coreevents.Rules[eventflows.Change, messagingclient.Event]{
-	    ShouldEmit: pipeline.strategy.ShouldEmit,
-	    Build: pipeline.strategy.Build,
-	    Enqueue: pipeline.store.Enqueue,
+		ShouldEmit: pipeline.strategy.ShouldEmit,
+		Build:      pipeline.strategy.Build,
+		Enqueue:    pipeline.store.Enqueue,
 	}
 }
 

@@ -42,8 +42,8 @@ var PersonConfig = coresearch.Config{
 /** contactSearchField builds the trusted contact-relation predicate for Person searches. */
 func contactSearchField(contactType entity.ContactType, conditions ...coresearch.FixedCondition) coresearch.RelationField {
 	return coresearch.RelationField{
-		Table: entity.Contact{}.TableName(),
-		Alias: "contact",
+		Table:           entity.Contact{}.TableName(),
+		Alias:           "contact",
 		ParentCondition: "contact.person_gid = p.gid",
 		ValueExpression: "contact.normalized_value",
 		FixedConditions: append(

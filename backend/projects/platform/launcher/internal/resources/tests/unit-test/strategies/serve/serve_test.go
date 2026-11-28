@@ -8,8 +8,8 @@ import (
 	"log/slog"
 	"testing"
 
-	coretelemetry "grovehub/libs/core/telemetry"
 	"grovehub/launcher/internal/src/strategies/serve"
+	coretelemetry "grovehub/libs/core/telemetry"
 )
 
 func TestServe(t *testing.T) {

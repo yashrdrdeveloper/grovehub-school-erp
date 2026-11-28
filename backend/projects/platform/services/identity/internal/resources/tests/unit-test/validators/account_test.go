@@ -1,9 +1,9 @@
 package validator_test
 
 import (
-	"testing"
 	"reflect"
 	"strings"
+	"testing"
 
 	accountdto "grovehub/services/identity/internal/app/dto/account"
 	"grovehub/services/identity/internal/app/entity"
@@ -28,9 +28,9 @@ func TestAccountSearchRejectsUntrustedFields(t *testing.T) {
 	rules := validator.New()
 	_, err := rules.Search(coresearch.Request{
 		Filters: []coresearch.Filter{{
-			Field: "passwordHash",
+			Field:    "passwordHash",
 			Operator: coresearch.OperatorEquals,
-			Values: []string{"bad"},
+			Values:   []string{"bad"},
 		}},
 	})
 	if err == nil {
@@ -38,9 +38,9 @@ func TestAccountSearchRejectsUntrustedFields(t *testing.T) {
 	}
 	_, err = rules.Search(coresearch.Request{
 		Filters: []coresearch.Filter{{
-			Field: "status",
+			Field:    "status",
 			Operator: coresearch.OperatorEquals,
-			Values: []string{"ACTIVE OR 1=1"},
+			Values:   []string{"ACTIVE OR 1=1"},
 		}},
 	})
 	if err == nil {
@@ -53,9 +53,9 @@ func TestAccountSearchAcceptsEntityStatuses(t *testing.T) {
 	for _, status := range []entity.AccountStatus{entity.Active, entity.PendingSetup, entity.Suspended, entity.Deactivated} {
 		_, err := rules.Search(coresearch.Request{
 			Filters: []coresearch.Filter{{
-				Field: accountdto.FieldStatus,
+				Field:    accountdto.FieldStatus,
 				Operator: coresearch.OperatorEquals,
-				Values: []string{string(status)},
+				Values:   []string{string(status)},
 			}},
 		})
 		if err != nil {
@@ -68,9 +68,9 @@ func TestAccountSearchFieldsMatchDTOAndSQL(t *testing.T) {
 	fields := map[string]string{
 		accountdto.FieldAccountID: "AccountID",
 		accountdto.FieldPersonGID: "PersonGID",
-		accountdto.FieldUsername: "Username",
-		accountdto.FieldEmail: "Email",
-		accountdto.FieldStatus: "Status",
+		accountdto.FieldUsername:  "Username",
+		accountdto.FieldEmail:     "Email",
+		accountdto.FieldStatus:    "Status",
 		accountdto.FieldCreatedAt: "CreatedAt",
 		accountdto.FieldUpdatedAt: "UpdatedAt",
 	}

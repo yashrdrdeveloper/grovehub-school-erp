@@ -1,8 +1,8 @@
 package workload
 
 import (
-	"grovehub/libs/core/gateway/internal/src/helpers"
 	"grovehub/libs/core/gateway/internal/src/contracts"
+	"grovehub/libs/core/gateway/internal/src/helpers"
 
 	"context"
 	"net/http"
@@ -12,8 +12,8 @@ import (
 
 type ScopedWorkloadVerifier struct {
 	Credentials contracts.CredentialVerifier
-	Audience string
-	Routes map[string]contracts.RoutePolicy
+	Audience    string
+	Routes      map[string]contracts.RoutePolicy
 }
 
 type workloadContextKey struct{}

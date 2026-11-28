@@ -1,8 +1,8 @@
 package changed
 
 import (
-    foundationevents "grovehub/services/foundation/internal/app/constants/events"
-    persondto "grovehub/services/foundation/internal/app/dto/person"
+	foundationevents "grovehub/services/foundation/internal/app/constants/events"
+	persondto "grovehub/services/foundation/internal/app/dto/person"
 )
 
 // Changed carries full public Person response snapshots. Nil Old means creation;
@@ -10,7 +10,7 @@ import (
 // Consumers must protect contact PII and should not log raw event payloads.
 // @Event topic=foundation_person_changed type=foundation.person.changed.v1 source=foundation
 type Changed struct {
-    Operation foundationevents.Operation `json:"operation"`
-    Old *persondto.Person `json:"old"`
-    New *persondto.Person `json:"new"`
+	Operation foundationevents.Operation `json:"operation"`
+	Old       *persondto.Person          `json:"old"`
+	New       *persondto.Person          `json:"new"`
 }

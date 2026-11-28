@@ -3,19 +3,19 @@
 package strategies
 
 import (
-    "context"
+	"context"
 
-    corepipeline "grovehub/libs/core/pipeline"
-    persondto "grovehub/services/foundation/internal/app/dto/person"
-    personflow "grovehub/services/foundation/internal/app/services/person/operations/create/flows"
+	corepipeline "grovehub/libs/core/pipeline"
+	persondto "grovehub/services/foundation/internal/app/dto/person"
+	personflow "grovehub/services/foundation/internal/app/services/person/operations/create/flows"
 )
 
 // @Strategy
 // CreateStrategy runs the four ordered steps of the Person creation use case.
 // Each step returns Next, Return (with created flag), or Fail.
 type CreateStrategy interface {
-    Prepare(ctx context.Context, state *personflow.Create) corepipeline.Outcome[persondto.Person]
-    Idempotency(ctx context.Context, state *personflow.Create) corepipeline.Outcome[persondto.Person]
-    Contacts(ctx context.Context, state *personflow.Create) corepipeline.Outcome[persondto.Person]
-    Persist(ctx context.Context, state *personflow.Create) corepipeline.Outcome[persondto.Person]
+	Prepare(ctx context.Context, state *personflow.Create) corepipeline.Outcome[persondto.Person]
+	Idempotency(ctx context.Context, state *personflow.Create) corepipeline.Outcome[persondto.Person]
+	Contacts(ctx context.Context, state *personflow.Create) corepipeline.Outcome[persondto.Person]
+	Persist(ctx context.Context, state *personflow.Create) corepipeline.Outcome[persondto.Person]
 }

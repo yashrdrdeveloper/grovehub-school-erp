@@ -12,7 +12,6 @@ import (
 
 	coredatabase "grovehub/libs/core/database"
 	"grovehub/services/identity/internal/app/config"
-	"grovehub/services/identity/internal/app/services/security/principal"
 	dto "grovehub/services/identity/internal/app/dto/authentication"
 	"grovehub/services/identity/internal/app/entity"
 	mapper "grovehub/services/identity/internal/app/mappers/account/impl"
@@ -25,10 +24,11 @@ import (
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"
 	sessionimpl "grovehub/services/identity/internal/app/repository/session/impl"
 	auth "grovehub/services/identity/internal/app/services/authentication"
-	authimpl "grovehub/services/identity/internal/app/services/authentication/impl"
 	secrets "grovehub/services/identity/internal/app/services/authentication/helpers"
+	authimpl "grovehub/services/identity/internal/app/services/authentication/impl"
 	credentialimpl "grovehub/services/identity/internal/app/services/credential/impl"
 	"grovehub/services/identity/internal/app/services/registration/operations/invitation"
+	"grovehub/services/identity/internal/app/services/security/principal"
 )
 
 func verifyRecoveryGuard(ctx context.Context, db *gorm.DB, tenant string, accountID string) {
@@ -37,7 +37,7 @@ func verifyRecoveryGuard(ctx context.Context, db *gorm.DB, tenant string, accoun
 	sessions := sessionimpl.New(db)
 	credentials := credentialimpl.New(credentialrepo.New(db))
 	cfg := config.Config{EncryptionKey: make([]byte, 32), ResetURL: "https://school.example/reset-password"}
-	sender := invitation.New(tokens, mailrepo.New(db,audit.NewProducer(infrastructure.NewEventStore(db))), cfg)
+	sender := invitation.New(tokens, mailrepo.New(db, audit.NewProducer(infrastructure.NewEventStore(db))), cfg)
 	base := authimpl.New(accounts, sessions, tokens, credentials, sender, mapper.New(), coredatabase.NewUnitOfWork(db))
 	service := authimpl.NewRecoveryGuard(base, accounts, tokens, sessions, authorityrepo.New(db), sender, audit.NewProducer(infrastructure.NewEventStore(db)))
 	account, err := accounts.FindByID(ctx, accountID)
@@ -75,8 +75,12 @@ func verifyRecoveryGuard(ctx context.Context, db *gorm.DB, tenant string, accoun
 
 	// Concurrent forgot requests must leave only one currently valid proof.
 	outcomes := make(chan error, 2)
-	for range 2 { go func() { outcomes <- service.Forgot(ctx, account.Email) }() }
-	for range 2 { Expect(<-outcomes).To(Succeed()) }
+	for range 2 {
+		go func() { outcomes <- service.Forgot(ctx, account.Email) }()
+	}
+	for range 2 {
+		Expect(<-outcomes).To(Succeed())
+	}
 	_, err = service.InspectProof(ctx, grant.Secret, "reset-grant")
 	Expect(err).To(MatchError(tokenrepo.ErrInvalidToken))
 	var mails []entity.Invitation
@@ -86,17 +90,26 @@ func verifyRecoveryGuard(ctx context.Context, db *gorm.DB, tenant string, accoun
 	valid := 0
 	for _, mail := range mails {
 		proof := invitationProof(mail, cfg.EncryptionKey)
-		if _, err := service.InspectProof(ctx, proof, "recovery"); err == nil { current = proof; valid++ }
+		if _, err := service.InspectProof(ctx, proof, "recovery"); err == nil {
+			current = proof
+			valid++
+		}
 	}
 	Expect(valid).To(Equal(1))
 	grant, err = service.Exchange(ctx, current, "recovery")
 	Expect(err).NotTo(HaveOccurred())
 
 	// Two submissions of the same grant cannot both replace the password.
-	for range 2 { go func() { outcomes <- service.ResetPassword(ctx, grant.Secret, "Recovery-password-456") }() }
+	for range 2 {
+		go func() { outcomes <- service.ResetPassword(ctx, grant.Secret, "Recovery-password-456") }()
+	}
 	successes := 0
 	for range 2 {
-		if err := <-outcomes; err == nil { successes++ } else { Expect(err).To(MatchError(tokenrepo.ErrInvalidToken)) }
+		if err := <-outcomes; err == nil {
+			successes++
+		} else {
+			Expect(err).To(MatchError(tokenrepo.ErrInvalidToken))
+		}
 	}
 	Expect(successes).To(Equal(1))
 	oldAccess, err := secrets.Digest(login.Cookies.Access, 32)
@@ -139,44 +152,47 @@ func verifyRecoveryGuard(ctx context.Context, db *gorm.DB, tenant string, accoun
 	Expect(err).NotTo(HaveOccurred())
 	Expect(validPassword).To(BeTrue())
 	var count int64
-	Expect(db.Raw("SELECT count(*) FROM infrastructure.messaging WHERE topic = 'audit_activity_occurred' AND convert_from(payload,'UTF8')::jsonb#>>'{data,assetId}' = ?",accountID).Scan(&count).Error).NotTo(HaveOccurred())
+	Expect(db.Raw("SELECT count(*) FROM infrastructure.messaging WHERE topic = 'audit_activity_occurred' AND convert_from(payload,'UTF8')::jsonb#>>'{data,assetId}' = ?", accountID).Scan(&count).Error).NotTo(HaveOccurred())
 	Expect(count).To(Equal(int64(5)))
 	var failed int64
-	Expect(db.Raw("SELECT count(*) FROM infrastructure.messaging WHERE topic = 'audit_activity_occurred' AND convert_from(payload,'UTF8')::jsonb#>>'{data,assetId}' = ? AND convert_from(payload,'UTF8')::jsonb#>>'{data,operation}' = 'LOGIN_FAILED' AND convert_from(payload,'UTF8')::jsonb#>>'{data,actorId}' IS NULL",accountID).Scan(&failed).Error).NotTo(HaveOccurred())
+	Expect(db.Raw("SELECT count(*) FROM infrastructure.messaging WHERE topic = 'audit_activity_occurred' AND convert_from(payload,'UTF8')::jsonb#>>'{data,assetId}' = ? AND convert_from(payload,'UTF8')::jsonb#>>'{data,operation}' = 'LOGIN_FAILED' AND convert_from(payload,'UTF8')::jsonb#>>'{data,actorId}' IS NULL", accountID).Scan(&failed).Error).NotTo(HaveOccurred())
 	Expect(failed).To(Equal(int64(1)))
 
 	// Both an unexchanged proof and an exchanged grant must stay invalid
 	// after a disable/reactivate cycle. A new request can recover normally.
 	generation := int64(1)
 	active := true
-	policy := schoolgateway.WithTenantCheck(ctx, func(_ context.Context, id string) (int64,error) {
+	policy := schoolgateway.WithTenantCheck(ctx, func(_ context.Context, id string) (int64, error) {
 		Expect(id).To(Equal(tenant))
-		if !active { return 0,schoolgateway.ErrTenantDenied }
-		return generation,nil
+		if !active {
+			return 0, schoolgateway.ErrTenantDenied
+		}
+		return generation, nil
 	})
 	newProof := func() string {
 		Expect(service.Forgot(policy, account.Email)).To(Succeed())
 		var mail entity.Invitation
 		Expect(db.Where("account_id = ? AND purpose = ?", accountID, entity.PasswordReset).Order("created_at DESC").Take(&mail).Error).NotTo(HaveOccurred())
-		return invitationProof(mail,cfg.EncryptionKey)
+		return invitationProof(mail, cfg.EncryptionKey)
 	}
 	oldProof := newProof()
-	active = false; generation++
-	_, err = service.Exchange(policy,oldProof,"recovery")
+	active = false
+	generation++
+	_, err = service.Exchange(policy, oldProof, "recovery")
 	Expect(err).To(MatchError(tokenrepo.ErrInvalidToken))
 	active = true
-	_, err = service.Exchange(policy,oldProof,"recovery")
+	_, err = service.Exchange(policy, oldProof, "recovery")
 	Expect(err).To(MatchError(tokenrepo.ErrInvalidToken))
-	grant,err = service.Exchange(policy,newProof(),"recovery")
+	grant, err = service.Exchange(policy, newProof(), "recovery")
 	Expect(err).NotTo(HaveOccurred())
-	grantHash,err = secrets.Digest(grant.Secret,32)
+	grantHash, err = secrets.Digest(grant.Secret, 32)
 	Expect(err).NotTo(HaveOccurred())
-	stored,err := tokens.Inspect(ctx,grantHash,entity.ResetGrant,time.Now().UTC())
+	stored, err := tokens.Inspect(ctx, grantHash, entity.ResetGrant, time.Now().UTC())
 	Expect(err).NotTo(HaveOccurred())
 	Expect(stored.SessionGeneration).To(Equal(int64(2)))
 	generation++
-	Expect(service.ResetPassword(policy,grant.Secret,"Not-allowed-password-123")).To(MatchError(tokenrepo.ErrInvalidToken))
-	stored,err = tokens.Inspect(ctx,grantHash,entity.ResetGrant,time.Now().UTC())
+	Expect(service.ResetPassword(policy, grant.Secret, "Not-allowed-password-123")).To(MatchError(tokenrepo.ErrInvalidToken))
+	stored, err = tokens.Inspect(ctx, grantHash, entity.ResetGrant, time.Now().UTC())
 	Expect(err).NotTo(HaveOccurred())
 	Expect(stored.Attempts).To(BeZero())
 }

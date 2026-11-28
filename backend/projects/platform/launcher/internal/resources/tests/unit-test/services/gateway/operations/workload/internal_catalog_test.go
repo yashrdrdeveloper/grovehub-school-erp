@@ -11,9 +11,9 @@ import (
 
 	ginkgo "github.com/onsi/ginkgo/v2"
 
-	core "grovehub/libs/core/gateway"
 	. "grovehub/launcher/internal/src/services/gateway/operations/workload"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/internalcatalog"
+	core "grovehub/libs/core/gateway"
 )
 
 func verifyInternalCatalogBoundary() {

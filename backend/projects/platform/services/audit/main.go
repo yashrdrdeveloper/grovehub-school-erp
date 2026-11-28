@@ -3,14 +3,14 @@ package audit
 
 import (
 	"context"
-	"log/slog"
 	"gorm.io/gorm"
 	"grovehub/libs/platform/session"
-	"grovehub/services/infrastructure/client/messaging"
+	producer "grovehub/services/audit/client/producer"
 	"grovehub/services/audit/internal/app/bootstrap"
 	bootstrapimpl "grovehub/services/audit/internal/app/bootstrap/impl"
-	producer "grovehub/services/audit/client/producer"
 	"grovehub/services/audit/internal/app/services/replay"
+	"grovehub/services/infrastructure/client/messaging"
+	"log/slog"
 )
 
 type Module = bootstrap.Runtime

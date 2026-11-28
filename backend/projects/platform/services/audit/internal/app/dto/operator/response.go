@@ -28,4 +28,3 @@ type ReceiptPage struct {
 	RowSize    int           `json:"rowSize"`
 	HasMore    bool          `json:"hasMore"`
 }
-

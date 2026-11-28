@@ -15,9 +15,9 @@ import (
 )
 
 type Controller struct {
-	service approval.Reader
+	service   approval.Reader
 	mutations approval.Service
-	executor approval.Executor
+	executor  approval.Executor
 }
 
 var _ protected.ApprovalController = (*Controller)(nil)
@@ -33,9 +33,9 @@ func NewWithMutations(service approval.Reader, mutations approval.Service, execu
 
 func (controller *Controller) History(writer http.ResponseWriter, request *http.Request) {
 	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.SearchRequest, coresearch.Result[dto.Summary]]{
-		Decode: corehttp.DecodeStrictJSON,
+		Decode:             corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
-		Fallback: definitions.Internal,
+		Fallback:           definitions.Internal,
 		Service: func(ctx context.Context, input dto.SearchRequest) (corepipeline.Result[coresearch.Result[dto.Summary]], error) {
 			result, err := controller.service.History(ctx, input.RequestBody)
 			return corepipeline.OK(result), helpers.Map(err)
@@ -45,9 +45,9 @@ func (controller *Controller) History(writer http.ResponseWriter, request *http.
 
 func (controller *Controller) Inbox(writer http.ResponseWriter, request *http.Request) {
 	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.SearchRequest, coresearch.Result[dto.Summary]]{
-		Decode: corehttp.DecodeStrictJSON,
+		Decode:             corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
-		Fallback: definitions.Internal,
+		Fallback:           definitions.Internal,
 		Service: func(ctx context.Context, input dto.SearchRequest) (corepipeline.Result[coresearch.Result[dto.Summary]], error) {
 			result, err := controller.service.Inbox(ctx, input.RequestBody)
 			return corepipeline.OK(result), helpers.Map(err)
@@ -68,7 +68,7 @@ func (controller *Controller) PendingCount(writer http.ResponseWriter, request *
 func (controller *Controller) Detail(writer http.ResponseWriter, request *http.Request) {
 	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.GetRequest, dto.Detail]{
 		InvalidParams: definitions.InvalidRequest,
-		Fallback: definitions.Internal,
+		Fallback:      definitions.Internal,
 		Service: func(ctx context.Context, input dto.GetRequest) (corepipeline.Result[dto.Detail], error) {
 			result, err := controller.service.Detail(ctx, input.Params.RequestID)
 			return corepipeline.OK(result), helpers.Map(err)

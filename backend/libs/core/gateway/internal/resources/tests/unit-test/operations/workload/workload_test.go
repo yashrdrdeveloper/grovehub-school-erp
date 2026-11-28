@@ -3,10 +3,10 @@ package workload_test
 import (
 	"context"
 	"errors"
-	"net/http/httptest"
-	"time"
 	"grovehub/libs/core/gateway/internal/src/contracts"
 	"grovehub/libs/core/gateway/internal/src/operations/workload"
+	"net/http/httptest"
+	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -24,12 +24,14 @@ var _ = Describe("VerifyWorkload", func() {
 	var verifier workload.ScopedWorkloadVerifier
 
 	BeforeEach(func() {
-		claims = contracts.WorkloadClaims{Subject:"service", Audience:"platform", ExpiresAt:time.Now().Add(time.Minute), Scopes:[]string{"read"}, TenantID:"tenant", ActorGID:"actor"}
+		claims = contracts.WorkloadClaims{Subject: "service", Audience: "platform", ExpiresAt: time.Now().Add(time.Minute), Scopes: []string{"read"}, TenantID: "tenant", ActorGID: "actor"}
 		verifier = workload.ScopedWorkloadVerifier{
-			Audience:"platform", Routes:map[string]contracts.RoutePolicy{route:{Scope:"read", RequireActor:true}},
-			Credentials:credentialFunc(func(_ context.Context, token string)(contracts.WorkloadClaims,error){
-				if token != "valid" { return contracts.WorkloadClaims{}, errors.New("invalid") }
-				return claims,nil
+			Audience: "platform", Routes: map[string]contracts.RoutePolicy{route: {Scope: "read", RequireActor: true}},
+			Credentials: credentialFunc(func(_ context.Context, token string) (contracts.WorkloadClaims, error) {
+				if token != "valid" {
+					return contracts.WorkloadClaims{}, errors.New("invalid")
+				}
+				return claims, nil
 			}),
 		}
 	})
@@ -37,7 +39,7 @@ var _ = Describe("VerifyWorkload", func() {
 	It("stores verified claims and isolates scope slices from callers", func() {
 		request := httptest.NewRequest("GET", "/service/restricted/read", nil)
 		request.Pattern = route
-		request.Header.Set("Authorization","Bearer valid")
+		request.Header.Set("Authorization", "Bearer valid")
 		ctx, err := verifier.VerifyWorkload(context.Background(), request)
 		Expect(err).NotTo(HaveOccurred())
 		claims.Scopes[0] = "write"
@@ -57,8 +59,8 @@ var _ = Describe("VerifyWorkload", func() {
 	It("rejects missing dependencies, malformed headers, unknown routes and invalid verified claims", func() {
 		request := httptest.NewRequest("GET", "/service/restricted/read", nil)
 		request.Pattern = route
-		request.Header.Set("Authorization","Bearer valid")
-		for _, bad := range []workload.ScopedWorkloadVerifier{{}, {Audience:"platform", Credentials:verifier.Credentials}} {
+		request.Header.Set("Authorization", "Bearer valid")
+		for _, bad := range []workload.ScopedWorkloadVerifier{{}, {Audience: "platform", Credentials: verifier.Credentials}} {
 			_, err := bad.VerifyWorkload(context.Background(), request)
 			Expect(err).To(BeIdenticalTo(contracts.ErrWorkloadDenied))
 		}
@@ -71,16 +73,16 @@ var _ = Describe("VerifyWorkload", func() {
 			_, err = verifier.VerifyWorkload(context.Background(), request)
 			Expect(err).To(BeIdenticalTo(contracts.ErrWorkloadDenied))
 		}
-		request.Header.Set("Authorization","Bearer valid")
-		request.Header.Add("Authorization","Bearer valid")
+		request.Header.Set("Authorization", "Bearer valid")
+		request.Header.Add("Authorization", "Bearer valid")
 		_, err = verifier.VerifyWorkload(context.Background(), request)
 		Expect(err).To(BeIdenticalTo(contracts.ErrWorkloadDenied))
-		request.Header.Set("Authorization","Bearer valid")
+		request.Header.Set("Authorization", "Bearer valid")
 		original := claims
 		for _, mutate := range []func(*contracts.WorkloadClaims){
-			func(v *contracts.WorkloadClaims){v.Subject=""}, func(v *contracts.WorkloadClaims){v.Audience="other"},
-			func(v *contracts.WorkloadClaims){v.ExpiresAt=time.Now().Add(-time.Minute)}, func(v *contracts.WorkloadClaims){v.TenantID=""},
-			func(v *contracts.WorkloadClaims){v.TenantID="";v.ActorGID=""}, func(v *contracts.WorkloadClaims){v.Scopes=[]string{"write"}},
+			func(v *contracts.WorkloadClaims) { v.Subject = "" }, func(v *contracts.WorkloadClaims) { v.Audience = "other" },
+			func(v *contracts.WorkloadClaims) { v.ExpiresAt = time.Now().Add(-time.Minute) }, func(v *contracts.WorkloadClaims) { v.TenantID = "" },
+			func(v *contracts.WorkloadClaims) { v.TenantID = ""; v.ActorGID = "" }, func(v *contracts.WorkloadClaims) { v.Scopes = []string{"write"} },
 		} {
 			claims = original
 			mutate(&claims)

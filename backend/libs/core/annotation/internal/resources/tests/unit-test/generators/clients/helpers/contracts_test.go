@@ -1,12 +1,12 @@
 package helpers_test
 
 import (
-	"path/filepath"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"path/filepath"
 
-	"grovehub/libs/core/annotation/internal/src/generators/clients/helpers"
 	fixture "grovehub/libs/core/annotation/internal/resources/tests/helpers"
+	"grovehub/libs/core/annotation/internal/src/generators/clients/helpers"
 )
 
 var _ = Describe("Discover", func() {
@@ -16,8 +16,8 @@ var _ = Describe("Discover", func() {
 		proxies, err := helpers.Discover(root, "")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(proxies).To(HaveLen(1))
-		output := filepath.Join(GinkgoT().TempDir(),"client.go")
-		Expect(helpers.WriteProxies(proxies,output)).To(Succeed())
+		output := filepath.Join(GinkgoT().TempDir(), "client.go")
+		Expect(helpers.WriteProxies(proxies, output)).To(Succeed())
 		Expect(fixture.Read(output)).To(ContainSubstring("return c.service.Get(id)"))
 		Expect(fixture.Read(output)).To(ContainSubstring("c.service.Delete(id)"))
 		Expect(fixture.Read(output)).NotTo(ContainSubstring("return c.service.Delete"))

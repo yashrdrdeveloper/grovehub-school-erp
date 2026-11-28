@@ -10,12 +10,12 @@ import (
 
 	coredatabase "grovehub/libs/core/database"
 	coreevents "grovehub/libs/core/events"
+	auditclient "grovehub/services/audit/client/producer"
 	kind "grovehub/services/identity/internal/app/constants/approval"
 	"grovehub/services/identity/internal/app/entity"
 	"grovehub/services/identity/internal/app/events/producers/resource"
 	"grovehub/services/identity/internal/app/events/producers/resource/operations/changed"
 	"grovehub/services/identity/internal/app/services/security/principal"
-	auditclient "grovehub/services/audit/client/producer"
 )
 
 var ErrInvalid = errors.New("invalid resource audit transition")

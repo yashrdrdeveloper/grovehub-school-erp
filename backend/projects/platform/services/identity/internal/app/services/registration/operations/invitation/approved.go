@@ -13,10 +13,10 @@ import (
 )
 
 type Approved struct {
-	accounts accountrepo.Reader
+	accounts    accountrepo.Reader
 	assignments accountrole.Repository
-	snapshots authrepo.Repository
-	sender registration.InvitationSender
+	snapshots   authrepo.Repository
+	sender      registration.InvitationSender
 }
 
 func NewApproved(accounts accountrepo.Reader, assignments accountrole.Repository, snapshots authrepo.Repository, sender registration.InvitationSender) *Approved {

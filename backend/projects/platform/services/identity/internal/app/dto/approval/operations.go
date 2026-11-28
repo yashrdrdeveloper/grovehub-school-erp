@@ -43,13 +43,13 @@ type AssignmentRequest struct {
 }
 
 type DecisionBody struct {
-	Version int64 `json:"version"`
+	Version int64  `json:"version"`
 	Comment string `json:"comment"`
 }
 
 type DecisionRequest struct {
 	request.Request
-	Params ByID `validate:"valid"`
+	Params      ByID         `validate:"valid"`
 	RequestBody DecisionBody `validate:"valid"`
 }
 
@@ -59,6 +59,6 @@ type VersionBody struct {
 
 type VersionRequest struct {
 	request.Request
-	Params ByID `validate:"valid"`
+	Params      ByID        `validate:"valid"`
 	RequestBody VersionBody `validate:"valid"`
 }

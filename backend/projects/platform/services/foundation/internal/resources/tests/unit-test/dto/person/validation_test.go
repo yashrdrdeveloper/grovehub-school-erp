@@ -16,9 +16,9 @@ var _ = Describe("DTO tag stages", func() {
 	It("normalizes embedded names before enforcing notblank/length rules", func() {
 		input := persondto.CreatePerson{
 			PersonNames: persondto.PersonNames{
-				FirstName: "  Amit  ",
+				FirstName:  "  Amit  ",
 				MiddleName: "  Kumar  ",
-				LastName: "  Singh  ",
+				LastName:   "  Singh  ",
 			},
 		}
 		normalized, err := coreannotation.NormalizeFields(input)
@@ -57,7 +57,7 @@ var _ = Describe("DTO tag stages", func() {
 	It("recursively validates nested contact slices after normalization", func() {
 		input := persondto.CreatePerson{
 			PersonNames: persondto.PersonNames{FirstName: "Riya", LastName: "Shah"},
-			Contacts: persondto.Contacts{Emails: []persondto.ContactValue{{Value: "   "}}},
+			Contacts:    persondto.Contacts{Emails: []persondto.ContactValue{{Value: "   "}}},
 		}
 		_, err := coreannotation.Process(input, coreannotation.ValidationRules[persondto.CreatePerson]{})
 		var invalid coreannotation.ValidationError
@@ -69,8 +69,8 @@ var _ = Describe("DTO tag stages", func() {
 	It("preserves PATCH omission and null semantics while checking supplied fields", func() {
 		cases := []struct {
 			payload string
-			field string
-			rule string
+			field   string
+			rule    string
 		}{
 			{`{}`, "", ""},
 			{`{"middleName":null,"contacts":null}`, "", ""},

@@ -1,12 +1,11 @@
 package search_test
 
 import (
-
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 	"os"
 	"path/filepath"
 	"strings"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 
 	"grovehub/libs/core/annotation/internal/src/generators/search"
 )
@@ -54,8 +53,8 @@ func searchFixture(t GinkgoTInterface, iface, impl string) (string, string) {
 	Expect(os.WriteFile(filepath.Join(backend, "go.mod"), []byte("module grovehub\n"), 0644)).To(Succeed())
 	repo := filepath.Join(backend, "services", "demo", "repository")
 	for rel, content := range map[string]string{
-		"person.go": iface,
-		"impl/person.go": impl,
+		"person.go":                iface,
+		"impl/person.go":           impl,
 		"helpers/search/person.go": searchTestConfig,
 	} {
 		filename := filepath.Join(repo, rel)
@@ -69,24 +68,24 @@ func searchFixture(t GinkgoTInterface, iface, impl string) (string, string) {
 var _ = Describe("GenerateAll", func() {
 	It("Concrete Search Annotation Generates Private Helper", func() {
 		t := GinkgoT()
-	root, output := searchFixture(t, searchTestInterface, searchTestImpl)
-	Expect(search.GenerateAll(root)).To(Succeed())
-	compiled, err := os.ReadFile(output)
-	Expect(err).NotTo(HaveOccurred())
-	for _, fragment := range []string{
-		"func (repository *PersonRepository) searchGenerated(",
-		"coresearch.Execute[string, entity.Person]",
-		"coredatabase.TransactionDB(ctx, repository.db)",
-		"libs/core/database\"",
-		"search.PersonConfig",
-	} {
-		Expect(string(compiled)).To(ContainSubstring(fragment))
-	}
-	Expect(string(compiled)).NotTo(ContainSubstring("func (repository *PersonRepository) Search("))
-	Expect(search.GenerateAll(root)).To(Succeed())
-	repeated, err := os.ReadFile(output)
-	Expect(err).NotTo(HaveOccurred())
-	Expect(repeated).To(Equal(compiled))
+		root, output := searchFixture(t, searchTestInterface, searchTestImpl)
+		Expect(search.GenerateAll(root)).To(Succeed())
+		compiled, err := os.ReadFile(output)
+		Expect(err).NotTo(HaveOccurred())
+		for _, fragment := range []string{
+			"func (repository *PersonRepository) searchGenerated(",
+			"coresearch.Execute[string, entity.Person]",
+			"coredatabase.TransactionDB(ctx, repository.db)",
+			"libs/core/database\"",
+			"search.PersonConfig",
+		} {
+			Expect(string(compiled)).To(ContainSubstring(fragment))
+		}
+		Expect(string(compiled)).NotTo(ContainSubstring("func (repository *PersonRepository) Search("))
+		Expect(search.GenerateAll(root)).To(Succeed())
+		repeated, err := os.ReadFile(output)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(repeated).To(Equal(compiled))
 
 	})
 })
@@ -94,12 +93,12 @@ var _ = Describe("GenerateAll", func() {
 var _ = Describe("GenerateAll", func() {
 	It("Search Annotation Must Be On Implementation", func() {
 		t := GinkgoT()
-	annotated := strings.Replace(searchTestInterface, "\tSearch(ctx context.Context", "\t// @Searchable config=search.PersonConfig alias=p\n\tSearch(ctx context.Context", 1)
-	root, _ := searchFixture(t, annotated, searchTestImpl)
-	{
-		err := search.GenerateAll(root)
-		Expect(err).To(MatchError(ContainSubstring("move @Searchable")))
-	}
+		annotated := strings.Replace(searchTestInterface, "\tSearch(ctx context.Context", "\t// @Searchable config=search.PersonConfig alias=p\n\tSearch(ctx context.Context", 1)
+		root, _ := searchFixture(t, annotated, searchTestImpl)
+		{
+			err := search.GenerateAll(root)
+			Expect(err).To(MatchError(ContainSubstring("move @Searchable")))
+		}
 
 	})
 })
@@ -107,12 +106,12 @@ var _ = Describe("GenerateAll", func() {
 var _ = Describe("GenerateAll", func() {
 	It("Search Annotation Requires Generated Helper Delegation", func() {
 		t := GinkgoT()
-	manual := strings.Replace(searchTestImpl, "return repository.searchGenerated(ctx, query)", "return coresearch.QueryResult[entity.Person]{}, nil", 1)
-	root, _ := searchFixture(t, searchTestInterface, manual)
-	{
-		err := search.GenerateAll(root)
-		Expect(err).To(MatchError(ContainSubstring("searchGenerated")))
-	}
+		manual := strings.Replace(searchTestImpl, "return repository.searchGenerated(ctx, query)", "return coresearch.QueryResult[entity.Person]{}, nil", 1)
+		root, _ := searchFixture(t, searchTestInterface, manual)
+		{
+			err := search.GenerateAll(root)
+			Expect(err).To(MatchError(ContainSubstring("searchGenerated")))
+		}
 
 	})
 })
@@ -120,12 +119,12 @@ var _ = Describe("GenerateAll", func() {
 var _ = Describe("GenerateAll", func() {
 	It("Search Annotation Rejects Entity Mismatch", func() {
 		t := GinkgoT()
-	wrong := strings.Replace(searchTestImpl, "config=search.PersonConfig alias=p", "config=search.PersonConfig alias=p entity=Contact", 1)
-	root, _ := searchFixture(t, searchTestInterface, wrong)
-	{
-		err := search.GenerateAll(root)
-		Expect(err).To(MatchError(ContainSubstring("must match")))
-	}
+		wrong := strings.Replace(searchTestImpl, "config=search.PersonConfig alias=p", "config=search.PersonConfig alias=p entity=Contact", 1)
+		root, _ := searchFixture(t, searchTestInterface, wrong)
+		{
+			err := search.GenerateAll(root)
+			Expect(err).To(MatchError(ContainSubstring("must match")))
+		}
 
 	})
 })
@@ -133,16 +132,16 @@ var _ = Describe("GenerateAll", func() {
 var _ = Describe("GenerateAll", func() {
 	It("Search Annotation Rejects Generated Name Collision", func() {
 		t := GinkgoT()
-	collision := searchTestImpl + `
+		collision := searchTestImpl + `
 func (repository *PersonRepository) searchGenerated(ctx context.Context, query coresearch.Query[string]) (coresearch.QueryResult[entity.Person], error) {
 	return coresearch.QueryResult[entity.Person]{}, nil
 }
 `
-	root, _ := searchFixture(t, searchTestInterface, collision)
-	{
-		err := search.GenerateAll(root)
-		Expect(err).To(MatchError(ContainSubstring("already implements searchGenerated")))
-	}
+		root, _ := searchFixture(t, searchTestInterface, collision)
+		{
+			err := search.GenerateAll(root)
+			Expect(err).To(MatchError(ContainSubstring("already implements searchGenerated")))
+		}
 
 	})
 })
@@ -150,16 +149,16 @@ func (repository *PersonRepository) searchGenerated(ctx context.Context, query c
 var _ = Describe("GenerateAll", func() {
 	It("Search Generator Removes Stale Output", func() {
 		t := GinkgoT()
-	root, output := searchFixture(t, searchTestInterface, searchTestImpl)
-	Expect(search.GenerateAll(root)).To(Succeed())
-	source := strings.Replace(searchTestImpl, "// @Searchable config=search.PersonConfig alias=p", "// unannotated", 1)
-	file := filepath.Join(root, "services", "demo", "repository", "impl", "person.go")
-	Expect(os.WriteFile(file, []byte(source), 0644)).To(Succeed())
-	Expect(search.GenerateAll(root)).To(Succeed())
-	{
-		_, err := os.Stat(output)
-		Expect(os.IsNotExist(err)).To(BeTrue())
-	}
+		root, output := searchFixture(t, searchTestInterface, searchTestImpl)
+		Expect(search.GenerateAll(root)).To(Succeed())
+		source := strings.Replace(searchTestImpl, "// @Searchable config=search.PersonConfig alias=p", "// unannotated", 1)
+		file := filepath.Join(root, "services", "demo", "repository", "impl", "person.go")
+		Expect(os.WriteFile(file, []byte(source), 0644)).To(Succeed())
+		Expect(search.GenerateAll(root)).To(Succeed())
+		{
+			_, err := os.Stat(output)
+			Expect(os.IsNotExist(err)).To(BeTrue())
+		}
 
 	})
 })
@@ -167,14 +166,14 @@ var _ = Describe("GenerateAll", func() {
 var _ = Describe("GenerateAll", func() {
 	It("Search Imports Use Target Module Path", func() {
 		t := GinkgoT()
-	root, output := searchFixture(t, searchTestInterface, searchTestImpl)
-	Expect(os.WriteFile(filepath.Join(root, "go.mod"), []byte("module example.org/internal-platform\n"), 0644)).To(Succeed())
-	Expect(search.GenerateAll(root)).To(Succeed())
-	data, err := os.ReadFile(output)
-	Expect(err).NotTo(HaveOccurred())
-	content := string(data)
-	Expect(content).To(ContainSubstring("example.org/internal-platform/services/demo/entity"))
-	Expect(content).NotTo(ContainSubstring("grovehub/services/"))
+		root, output := searchFixture(t, searchTestInterface, searchTestImpl)
+		Expect(os.WriteFile(filepath.Join(root, "go.mod"), []byte("module example.org/internal-platform\n"), 0644)).To(Succeed())
+		Expect(search.GenerateAll(root)).To(Succeed())
+		data, err := os.ReadFile(output)
+		Expect(err).NotTo(HaveOccurred())
+		content := string(data)
+		Expect(content).To(ContainSubstring("example.org/internal-platform/services/demo/entity"))
+		Expect(content).NotTo(ContainSubstring("grovehub/services/"))
 
 	})
 })

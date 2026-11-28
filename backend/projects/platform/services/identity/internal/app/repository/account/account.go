@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	ErrNotFound = errors.New("account not found")
-	ErrConflict = errors.New("account conflict")
+	ErrNotFound        = errors.New("account not found")
+	ErrConflict        = errors.New("account conflict")
 	ErrVersionConflict = errors.New("account version conflict")
 )
 

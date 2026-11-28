@@ -7,15 +7,15 @@ import (
 	. "github.com/onsi/gomega"
 	"gorm.io/gorm"
 
-	kind "grovehub/services/identity/internal/app/constants/approval"
-	"grovehub/services/identity/internal/app/constants/permission"
-	"grovehub/services/identity/internal/app/constants/feature"
-	"grovehub/services/identity/internal/app/repository/authority"
-	"grovehub/services/identity/internal/app/repository/rbacmigration"
 	coredatabase "grovehub/libs/core/database"
+	kind "grovehub/services/identity/internal/app/constants/approval"
+	"grovehub/services/identity/internal/app/constants/feature"
+	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/repository/approvalpolicy"
 	policyimpl "grovehub/services/identity/internal/app/repository/approvalpolicy/impl"
+	"grovehub/services/identity/internal/app/repository/authority"
 	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
+	"grovehub/services/identity/internal/app/repository/rbacmigration"
 	migrationimpl "grovehub/services/identity/internal/app/repository/rbacmigration/impl"
 )
 

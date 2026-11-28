@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	core "grovehub/libs/core/gateway"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/helpers"
+	core "grovehub/libs/core/gateway"
 )
 
 const SchoolAuditCheckRoute = "GET /audit/restricted/schools/{schoolId}/activity-check"

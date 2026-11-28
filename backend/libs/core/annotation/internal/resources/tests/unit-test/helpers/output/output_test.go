@@ -18,7 +18,7 @@ var _ = Describe("WriteGo", func() {
 		data, err := os.ReadFile(path)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(string(data)).To(Equal("package sample\n\nfunc Answer() int { return 42 }\n"))
-		stamp := time.Unix(1000,0)
+		stamp := time.Unix(1000, 0)
 		Expect(os.Chtimes(path, stamp, stamp)).To(Succeed())
 		Expect(output.WriteGo(path, data, "generate")).To(Succeed())
 		info, err := os.Stat(path)
@@ -40,16 +40,16 @@ var _ = Describe("WriteGo", func() {
 	})
 })
 
-var _ = Describe("WriteIfChanged",func(){
-	It("rejects non-file output and blocked paths",func(){
-		root:=GinkgoT().TempDir()
-		blocked:=filepath.Join(root,"blocked")
-		Expect(os.WriteFile(blocked,[]byte("file"),0644)).To(Succeed())
-		Expect(output.WriteIfChanged(filepath.Join(blocked,"source.go"),[]byte("new"))).NotTo(Succeed())
-		Expect(output.WriteIfChanged(root,[]byte("new"))).NotTo(Succeed())
-		link:=filepath.Join(root,"dangling")
-		Expect(os.Symlink(filepath.Join(root,"missing","source.go"),link)).To(Succeed())
-		Expect(output.WriteIfChanged(link,[]byte("new"))).NotTo(Succeed())
-		Expect(output.WriteIfChanged(filepath.Join(link,"child","source.go"),[]byte("new"))).NotTo(Succeed())
+var _ = Describe("WriteIfChanged", func() {
+	It("rejects non-file output and blocked paths", func() {
+		root := GinkgoT().TempDir()
+		blocked := filepath.Join(root, "blocked")
+		Expect(os.WriteFile(blocked, []byte("file"), 0644)).To(Succeed())
+		Expect(output.WriteIfChanged(filepath.Join(blocked, "source.go"), []byte("new"))).NotTo(Succeed())
+		Expect(output.WriteIfChanged(root, []byte("new"))).NotTo(Succeed())
+		link := filepath.Join(root, "dangling")
+		Expect(os.Symlink(filepath.Join(root, "missing", "source.go"), link)).To(Succeed())
+		Expect(output.WriteIfChanged(link, []byte("new"))).NotTo(Succeed())
+		Expect(output.WriteIfChanged(filepath.Join(link, "child", "source.go"), []byte("new"))).NotTo(Succeed())
 	})
 })

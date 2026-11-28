@@ -3,18 +3,18 @@
 package bootstrap
 
 import (
-    coremodule "grovehub/libs/core/module"
-    foundationclient "grovehub/services/foundation/client/person"
+	coremodule "grovehub/libs/core/module"
+	foundationclient "grovehub/services/foundation/client/person"
 )
 
 // Runtime is Foundation's public module contract: common lifecycle plus its
 // typed in-process Person client.
 type Runtime interface {
-    coremodule.Module
-    Client() foundationclient.Client
+	coremodule.Module
+	Client() foundationclient.Client
 }
 
 // Bootstrap assembles all Foundation dependencies and starts owned workers.
 type Bootstrap interface {
-    Build() (Runtime, error)
+	Build() (Runtime, error)
 }

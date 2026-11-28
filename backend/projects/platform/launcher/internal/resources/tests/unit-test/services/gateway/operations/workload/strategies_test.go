@@ -11,7 +11,6 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	core "grovehub/libs/core/gateway"
 	fixture "grovehub/launcher/internal/resources/tests/helpers/workload"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/internalcatalog"
@@ -21,6 +20,7 @@ import (
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/schoolreceipt"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/schoolreceiptread"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/schoolstatusreceipt"
+	core "grovehub/libs/core/gateway"
 )
 
 type strategyCase struct {

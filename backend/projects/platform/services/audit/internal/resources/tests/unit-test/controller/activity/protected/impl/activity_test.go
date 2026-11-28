@@ -23,8 +23,8 @@ func (s searchService) Search(context.Context, dto.Search) (dto.Page, error) {
 
 func TestSearchErrorContract(t *testing.T) {
 	for _, tc := range []struct {
-		name string
-		err error
+		name   string
+		err    error
 		status int
 	}{
 		{"success", nil, http.StatusOK},

@@ -19,7 +19,7 @@ import (
 // @Service
 type Service struct {
 	register register.Operation
-	resend resend.Operation
+	resend   resend.Operation
 }
 
 var _ registration.Service = (*Service)(nil)
@@ -27,7 +27,7 @@ var _ registration.Service = (*Service)(nil)
 func New(accounts accountrepo.Repository, foundationClient foundation.Client, validator validator.Validator, invitations registration.InvitationSender, unit coredatabase.UnitOfWork, events accountproducer.ChangedProducer) registration.Service {
 	return &Service{
 		register: register.New(accounts, foundationClient, validator, invitations, unit, events),
-		resend: resendimpl.New(accounts, invitations, unit),
+		resend:   resendimpl.New(accounts, invitations, unit),
 	}
 }
 

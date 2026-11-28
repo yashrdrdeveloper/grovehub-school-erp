@@ -1,10 +1,10 @@
 package helpers
 
 import (
-    "sort"
-    "strings"
+	"sort"
+	"strings"
 
-    "grovehub/services/foundation/internal/app/entity"
+	"grovehub/services/foundation/internal/app/entity"
 )
 
 // BuildPersonSearchDetails creates the aggregate search projection from Person
@@ -19,8 +19,12 @@ func BuildPersonSearchDetails(person entity.Person, personContacts []entity.Cont
 	})
 	parts := make([]string, 0, 4+len(contacts)*2)
 	parts = append(parts, person.GID, person.FirstName)
-	if person.MiddleName != nil { parts = append(parts, *person.MiddleName) }
+	if person.MiddleName != nil {
+		parts = append(parts, *person.MiddleName)
+	}
 	parts = append(parts, person.LastName)
-	for _, contact := range contacts { parts = append(parts, contact.Value, contact.NormalizedValue) }
+	for _, contact := range contacts {
+		parts = append(parts, contact.Value, contact.NormalizedValue)
+	}
 	return strings.ToLower(strings.TrimSpace(strings.Join(parts, " ")))
 }

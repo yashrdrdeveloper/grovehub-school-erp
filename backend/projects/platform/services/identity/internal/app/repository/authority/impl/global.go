@@ -11,7 +11,7 @@ import (
 )
 
 type GlobalGuard struct {
-	db *gorm.DB
+	db     *gorm.DB
 	reader authority.AdministratorReader
 }
 

@@ -2,54 +2,54 @@ package rbac_test
 
 import (
 	"context"
-	"grovehub/services/audit"
 	"encoding/json"
+	"errors"
 	headercontext "grovehub/libs/core/headercontext"
+	coresearch "grovehub/libs/core/search"
+	"grovehub/services/audit"
+	approvalcontroller "grovehub/services/identity/internal/app/controller/approval/protected/impl"
 	"net/http"
 	"net/http/httptest"
 	"strings"
-	approvalcontroller "grovehub/services/identity/internal/app/controller/approval/protected/impl"
-	coresearch "grovehub/libs/core/search"
-	"errors"
 	"time"
 
 	. "github.com/onsi/gomega"
 	"gorm.io/gorm"
 
-	schoolgateway "grovehub/libs/platform/session"
-	infrastructure "grovehub/services/infrastructure"
-	messaging "grovehub/services/infrastructure/client/messaging"
-	resourceproducer "grovehub/services/identity/internal/app/events/producers/resource/impl"
-	producerimpl "grovehub/services/identity/internal/app/events/producers/approval/impl"
 	coreevents "grovehub/libs/core/events"
+	schoolgateway "grovehub/libs/platform/session"
 	kind "grovehub/services/identity/internal/app/constants/approval"
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/constants/permission"
+	accountdto "grovehub/services/identity/internal/app/dto/accountrole"
 	dto "grovehub/services/identity/internal/app/dto/approval"
 	"grovehub/services/identity/internal/app/entity"
-	accountdto "grovehub/services/identity/internal/app/dto/accountrole"
+	producerimpl "grovehub/services/identity/internal/app/events/producers/approval/impl"
+	resourceproducer "grovehub/services/identity/internal/app/events/producers/resource/impl"
+	accountimpl "grovehub/services/identity/internal/app/repository/account/impl"
 	assignmentrepo "grovehub/services/identity/internal/app/repository/accountrole"
 	assignmentimpl "grovehub/services/identity/internal/app/repository/accountrole/impl"
-	accountimpl "grovehub/services/identity/internal/app/repository/account/impl"
 	repo "grovehub/services/identity/internal/app/repository/approval"
 	repository "grovehub/services/identity/internal/app/repository/approval/impl"
-	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
 	"grovehub/services/identity/internal/app/repository/authority"
-	migrationimpl "grovehub/services/identity/internal/app/repository/rbacmigration/impl"
-	migrationrepo "grovehub/services/identity/internal/app/repository/rbacmigration"
-	rolerepo "grovehub/services/identity/internal/app/repository/role"
-	"grovehub/services/identity/internal/app/services/authorization/operations/protect"
-	"grovehub/services/identity/internal/app/services/accountrole/operations/replace"
-	"grovehub/services/identity/internal/app/services/role/operations/lifecycle"
+	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
 	authrepo "grovehub/services/identity/internal/app/repository/authorization/impl"
+	migrationrepo "grovehub/services/identity/internal/app/repository/rbacmigration"
+	migrationimpl "grovehub/services/identity/internal/app/repository/rbacmigration/impl"
 	registryrepo "grovehub/services/identity/internal/app/repository/registry/impl"
+	rolerepo "grovehub/services/identity/internal/app/repository/role"
 	roleimpl "grovehub/services/identity/internal/app/repository/role/impl"
+	"grovehub/services/identity/internal/app/services/accountrole/operations/replace"
 	approvalimpl "grovehub/services/identity/internal/app/services/approval/impl"
 	"grovehub/services/identity/internal/app/services/approval/operations/state"
 	"grovehub/services/identity/internal/app/services/authorization"
 	authimpl "grovehub/services/identity/internal/app/services/authorization/impl"
+	"grovehub/services/identity/internal/app/services/authorization/operations/protect"
 	"grovehub/services/identity/internal/app/services/registry"
 	registryimpl "grovehub/services/identity/internal/app/services/registry/impl"
+	"grovehub/services/identity/internal/app/services/role/operations/lifecycle"
+	infrastructure "grovehub/services/infrastructure"
+	messaging "grovehub/services/infrastructure/client/messaging"
 )
 
 func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
@@ -356,7 +356,7 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	applied, err := executor.Execute(requesterCtx, approvedPermission.RequestID, approvedPermission.Version)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(applied.Status).To(Equal(kind.Applied))
-	Expect(applied.Version).To(Equal(approvedPermission.Version+1))
+	Expect(applied.Version).To(Equal(approvedPermission.Version + 1))
 	replay, err := executor.Execute(requesterCtx, approvedPermission.RequestID, approvedPermission.Version)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(replay.Version).To(Equal(applied.Version))
@@ -411,7 +411,6 @@ func verifyApprovalWorkflow(ctx context.Context, db *gorm.DB) {
 	verifyNormalizedRegistration(ctx, db, tenant, requester, reviewer, managementRole, requiredRole, store)
 }
 
-
 var errInjectedEffect = errors.New("injected failure after draft write")
 
 type failingDraftWriter struct {
@@ -424,8 +423,6 @@ func (writer failingDraftWriter) ReplaceDraftPermissions(ctx context.Context, re
 	}
 	return rolerepo.PermissionSet{}, errInjectedEffect
 }
-
-
 
 var errInjectedOutbox = errors.New("injected approval outbox failure")
 

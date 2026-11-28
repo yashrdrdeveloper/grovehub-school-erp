@@ -10,8 +10,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	coretelemetry "grovehub/libs/core/telemetry"
 	"grovehub/launcher/internal/src/server"
+	coretelemetry "grovehub/libs/core/telemetry"
 )
 
 // RunLifecycle owns serving and graceful shutdown for a bound listener.

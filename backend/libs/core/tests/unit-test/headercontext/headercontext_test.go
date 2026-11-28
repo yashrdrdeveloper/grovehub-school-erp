@@ -18,7 +18,7 @@ var _ = Describe("Header context", func() {
 			Expect(headercontext.IdempotencyKey(r.Context())).To(Equal("create:123"))
 			Expect(headercontext.CorrelationID(r.Context())).To(Equal("correlation-123"))
 			Expect(headercontext.RequestID(r.Context())).To(Equal("request-123"))
-			event := coreevents.NewEnvelope(r.Context(), coreevents.Metadata{EventID:"event", EventType:"test", Version:1}, "payload")
+			event := coreevents.NewEnvelope(r.Context(), coreevents.Metadata{EventID: "event", EventType: "test", Version: 1}, "payload")
 			Expect(event.CorrelationID).To(Equal("correlation-123"))
 			w.WriteHeader(http.StatusNoContent)
 		}))
@@ -35,7 +35,9 @@ var _ = Describe("Header context", func() {
 		handler := headercontext.Middleware(http.HandlerFunc(func(http.ResponseWriter, *http.Request) { Fail("invalid request must not reach handler") }))
 		for _, values := range [][]string{{"valid", "other"}, {"invalid key"}, {" "}} {
 			request := httptest.NewRequest(http.MethodPost, "/", nil)
-			for _, value := range values { request.Header.Add("Idempotency-Key", value) }
+			for _, value := range values {
+				request.Header.Add("Idempotency-Key", value)
+			}
 			recorder := httptest.NewRecorder()
 			handler.ServeHTTP(recorder, request)
 			Expect(recorder.Code).To(Equal(http.StatusBadRequest))
@@ -52,7 +54,7 @@ var _ = Describe("Header context", func() {
 		request.Header.Set("Idempotency-Key", "register-key")
 		request.Header.Set("X-Trace-ID", "spoofed")
 		handler.ServeHTTP(httptest.NewRecorder(), request)
-		ctx := headercontext.WithValues(context.Background(), headercontext.Values{IdempotencyKey:"register-key", CorrelationID:"corr"})
+		ctx := headercontext.WithValues(context.Background(), headercontext.Values{IdempotencyKey: "register-key", CorrelationID: "corr"})
 		internal := headercontext.WithoutIdempotencyKey(ctx)
 		Expect(headercontext.IdempotencyKey(internal)).To(BeEmpty())
 		Expect(headercontext.CorrelationID(internal)).To(Equal("corr"))

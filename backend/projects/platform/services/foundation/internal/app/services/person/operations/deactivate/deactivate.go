@@ -2,24 +2,28 @@
 package deactivate
 
 import (
-    "context"
+	"context"
 
-    corepipeline "grovehub/libs/core/pipeline"
-    persondto "grovehub/services/foundation/internal/app/dto/person"
-    deactivateflow "grovehub/services/foundation/internal/app/services/person/operations/deactivate/flows"
-    deactivatestrategies "grovehub/services/foundation/internal/app/services/person/operations/deactivate/strategies"
+	corepipeline "grovehub/libs/core/pipeline"
+	persondto "grovehub/services/foundation/internal/app/dto/person"
+	deactivateflow "grovehub/services/foundation/internal/app/services/person/operations/deactivate/flows"
+	deactivatestrategies "grovehub/services/foundation/internal/app/services/person/operations/deactivate/strategies"
 )
 
-type DeactivateOperation struct { strategy deactivatestrategies.DeactivateStrategy }
+type DeactivateOperation struct {
+	strategy deactivatestrategies.DeactivateStrategy
+}
 
-func New(strategy deactivatestrategies.DeactivateStrategy) *DeactivateOperation { return &DeactivateOperation{strategy: strategy} }
+func New(strategy deactivatestrategies.DeactivateStrategy) *DeactivateOperation {
+	return &DeactivateOperation{strategy: strategy}
+}
 
 // @ChainOfResponsibility
 func (service *DeactivateOperation) Deactivate(ctx context.Context, request persondto.DeactivatePersonRequest) (persondto.Person, error) {
-    result, _, err := corepipeline.RunService(ctx, &deactivateflow.Deactivate{Request: request},
-        service.strategy.Load,
-        service.strategy.Prepare,
-        service.strategy.Persist,
-    )
-    return result, err
+	result, _, err := corepipeline.RunService(ctx, &deactivateflow.Deactivate{Request: request},
+		service.strategy.Load,
+		service.strategy.Prepare,
+		service.strategy.Persist,
+	)
+	return result, err
 }

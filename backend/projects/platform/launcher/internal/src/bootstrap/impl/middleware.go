@@ -9,10 +9,10 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
+	observability "grovehub/launcher/internal/src/middleware/observability/impl"
 	coregateway "grovehub/libs/core/gateway"
 	headercontext "grovehub/libs/core/headercontext"
 	coretelemetry "grovehub/libs/core/telemetry"
-	observability "grovehub/launcher/internal/src/middleware/observability/impl"
 )
 
 func newEdgeHandler(logger *slog.Logger, mux *http.ServeMux, external http.Handler) http.Handler {

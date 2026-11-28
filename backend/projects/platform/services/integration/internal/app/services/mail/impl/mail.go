@@ -14,16 +14,22 @@ import (
 )
 
 func New(db *gorm.DB, jobs invitation.DeliveryReader) mail.Service {
-	return reconciliation.New(jobs,receipt.NewReceiptReader(db),func(ctx context.Context, read func(context.Context,time.Time)error)error{
-		if db==nil{return errors.New("reconciliation database unavailable")}
+	return reconciliation.New(jobs, receipt.NewReceiptReader(db), func(ctx context.Context, read func(context.Context, time.Time) error) error {
+		if db == nil {
+			return errors.New("reconciliation database unavailable")
+		}
 		// This diagnostic never joins a caller's mutation. Both owners use the
 		// same context-bound snapshot in the current shared PostgreSQL deployment.
-		return coredb.RunTransaction(coredb.DetachedContext(ctx),db,func(txCtx context.Context)error{
-			tx:=coredb.TransactionDB(txCtx,db)
-			if err:=tx.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY").Error;err!=nil{return err}
+		return coredb.RunTransaction(coredb.DetachedContext(ctx), db, func(txCtx context.Context) error {
+			tx := coredb.TransactionDB(txCtx, db)
+			if err := tx.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY").Error; err != nil {
+				return err
+			}
 			var now time.Time
-			if err:=tx.Raw("SELECT CURRENT_TIMESTAMP").Row().Scan(&now);err!=nil{return err}
-			return read(txCtx,now)
+			if err := tx.Raw("SELECT CURRENT_TIMESTAMP").Row().Scan(&now); err != nil {
+				return err
+			}
+			return read(txCtx, now)
 		})
 	})
 }

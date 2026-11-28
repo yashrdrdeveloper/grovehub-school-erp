@@ -3,12 +3,12 @@
 package testgen
 
 import (
-	"grovehub/libs/core/annotation/internal/src/helpers/layout"
-	generatedoutput "grovehub/libs/core/annotation/internal/src/helpers/output"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"grovehub/libs/core/annotation/internal/src/helpers/layout"
+	generatedoutput "grovehub/libs/core/annotation/internal/src/helpers/output"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -26,8 +26,6 @@ type testSuite struct {
 	beforeEach []string
 }
 
-
-
 func GenerateAll(backend, core string) error {
 	backend, err := filepath.Abs(backend)
 	if err != nil {
@@ -41,9 +39,13 @@ func GenerateAll(backend, core string) error {
 		{core, "tests"},
 	}
 	entries, err := os.ReadDir(core)
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 	for _, entry := range entries {
-		if !entry.IsDir() { continue }
+		if !entry.IsDir() {
+			continue
+		}
 		capabilityTests := filepath.Join(entry.Name(), "internal", "resources", "tests")
 		roots = append(roots, struct{ owner, tests string }{core, capabilityTests})
 	}
@@ -66,8 +68,8 @@ func GenerateAll(backend, core string) error {
 		}
 	}
 	for _, root := range roots {
-		if err := layout.WalkOwnedDirectories(root.owner,root.tests,map[string]bool{".generated":true,"vendor":true},func(dir,rel string)error{
-			return generateDir(root.owner,dir,rel)
+		if err := layout.WalkOwnedDirectories(root.owner, root.tests, map[string]bool{".generated": true, "vendor": true}, func(dir, rel string) error {
+			return generateDir(root.owner, dir, rel)
 		}); err != nil {
 			return err
 		}

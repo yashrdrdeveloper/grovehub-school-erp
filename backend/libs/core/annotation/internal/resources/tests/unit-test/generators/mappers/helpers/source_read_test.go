@@ -10,12 +10,12 @@ import (
 	"grovehub/libs/core/annotation/internal/src/generators/mappers/helpers"
 )
 
-var _=Describe("Source directory read failures",func(){
-	It("propagates non-directory source paths instead of treating them as empty",func(){
-		root:=GinkgoT().TempDir()
-		blocked:=filepath.Join(root,"blocked")
-		Expect(os.WriteFile(blocked,[]byte("not a directory"),0644)).To(Succeed())
-		_,_,err:=helpers.Discover(root,"example.com/project",blocked)
+var _ = Describe("Source directory read failures", func() {
+	It("propagates non-directory source paths instead of treating them as empty", func() {
+		root := GinkgoT().TempDir()
+		blocked := filepath.Join(root, "blocked")
+		Expect(os.WriteFile(blocked, []byte("not a directory"), 0644)).To(Succeed())
+		_, _, err := helpers.Discover(root, "example.com/project", blocked)
 		Expect(err).To(HaveOccurred())
 	})
 })

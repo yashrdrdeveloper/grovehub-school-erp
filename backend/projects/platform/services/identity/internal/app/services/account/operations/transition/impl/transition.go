@@ -2,25 +2,25 @@ package impl
 
 import (
 	"context"
+	coredatabase "grovehub/libs/core/database"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
-	"time"
 	"grovehub/services/identity/internal/app/entity"
-	"grovehub/services/identity/internal/app/services/security/principal"
+	accountproducer "grovehub/services/identity/internal/app/events/producers/account"
+	accountmapper "grovehub/services/identity/internal/app/mappers/account"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"
-	accountmapper "grovehub/services/identity/internal/app/mappers/account"
-	coredatabase "grovehub/libs/core/database"
-	accountproducer "grovehub/services/identity/internal/app/events/producers/account"
-	transition "grovehub/services/identity/internal/app/services/account/operations/transition"
 	"grovehub/services/identity/internal/app/services/account/helpers"
+	transition "grovehub/services/identity/internal/app/services/account/operations/transition"
+	"grovehub/services/identity/internal/app/services/security/principal"
+	"time"
 )
 
 type Service struct {
 	accounts accountrepo.Repository
 	sessions sessionrepo.Repository
-	mapper accountmapper.Mapper
-	unit coredatabase.UnitOfWork
-	events accountproducer.ChangedProducer
+	mapper   accountmapper.Mapper
+	unit     coredatabase.UnitOfWork
+	events   accountproducer.ChangedProducer
 }
 
 var _ transition.Operation = (*Service)(nil)
@@ -65,8 +65,8 @@ func (op *Service) Execute(ctx context.Context, accountID string, action string)
 		}
 
 		operation := map[string]string{
-			"suspend": "SUSPENDED",
-			"activate": "ACTIVATED",
+			"suspend":    "SUSPENDED",
+			"activate":   "ACTIVATED",
 			"deactivate": "DEACTIVATED",
 		}[action]
 		if err := op.events.Enqueue(transactionCtx, operation, &before, &current); err != nil {

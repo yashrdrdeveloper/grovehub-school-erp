@@ -22,7 +22,7 @@ func (reader *CooldownReader) RecentSetup(ctx context.Context, accountID string,
 	if reader.db == nil || !coredatabase.TransactionActive(ctx) {
 		return false, coredatabase.ErrMissingDatabase
 	}
-	var row struct { Recent bool }
+	var row struct{ Recent bool }
 	err := coredatabase.TransactionDB(ctx, reader.db).Raw("SELECT EXISTS (SELECT 1 FROM identity.invitations WHERE account_id = ? AND purpose = 'ACCOUNT_SETUP' AND created_at > ?) AS recent", accountID, since).Scan(&row).Error
 	return row.Recent, err
 }

@@ -3,13 +3,13 @@ package search
 import (
 	"gorm.io/gorm"
 
+	"grovehub/libs/core/search/internal/src/constants"
 	"grovehub/libs/core/search/internal/src/contracts"
 	"grovehub/libs/core/search/internal/src/helpers"
 	"grovehub/libs/core/search/internal/src/operations/cursor"
-	"grovehub/libs/core/search/internal/src/operations/validation"
-	"grovehub/libs/core/search/internal/src/operations/query"
 	"grovehub/libs/core/search/internal/src/operations/page"
-	"grovehub/libs/core/search/internal/src/constants"
+	"grovehub/libs/core/search/internal/src/operations/query"
+	"grovehub/libs/core/search/internal/src/operations/validation"
 )
 
 const (
@@ -111,35 +111,44 @@ func EscapeLike(value string) string {
 	return helpers.EscapeLike(value)
 }
 
- 
 // Shared request-validation helpers use resource-supplied errors and policies.
-func OperatorSet(operators ...Operator) map[Operator]struct{} { return validation.OperatorSet(operators...) }
+func OperatorSet(operators ...Operator) map[Operator]struct{} {
+	return validation.OperatorSet(operators...)
+}
 func EqualityOperators() map[Operator]struct{} { return validation.EqualityOperators() }
-func TextOperators() map[Operator]struct{} { return validation.TextOperators() }
-func TimeOperators() map[Operator]struct{} { return validation.TimeOperators() }
+func TextOperators() map[Operator]struct{}     { return validation.TextOperators() }
+func TimeOperators() map[Operator]struct{}     { return validation.TimeOperators() }
 func IsPartialOperator(operator Operator) bool { return validation.IsPartialOperator(operator) }
-func ValidValueCount(operator Operator, count int) bool { return validation.ValidValueCount(operator, count) }
+func ValidValueCount(operator Operator, count int) bool {
+	return validation.ValidValueCount(operator, count)
+}
 
-func ValidateUUIDv7Cursor(value string, invalid error) error { return validation.ValidateUUIDv7Cursor(value, invalid) }
-func ValidateTimeCursor(value string, invalid error) error { return validation.ValidateTimeCursor(value, invalid) }
-func ValidateNonEmptyCursor(value string, invalid error) error { return validation.ValidateNonEmptyCursor(value, invalid) }
+func ValidateUUIDv7Cursor(value string, invalid error) error {
+	return validation.ValidateUUIDv7Cursor(value, invalid)
+}
+func ValidateTimeCursor(value string, invalid error) error {
+	return validation.ValidateTimeCursor(value, invalid)
+}
+func ValidateNonEmptyCursor(value string, invalid error) error {
+	return validation.ValidateNonEmptyCursor(value, invalid)
+}
 
 func NormalizeSearchTerms(value string, maxLength, maxTerms int, invalid error) ([]string, error) {
-    return validation.NormalizeSearchTerms(value, maxLength, maxTerms, invalid)
+	return validation.NormalizeSearchTerms(value, maxLength, maxTerms, invalid)
 }
 
 func ResolveRows(rows int, invalid error) (int, error) { return validation.ResolveRows(rows, invalid) }
 
 func NormalizeSort(request []Sort, fallback QuerySort, allowed map[string]CursorValueValidator, invalid error) (QuerySort, error) {
-    return validation.NormalizeSort(request, fallback, allowed, invalid)
+	return validation.NormalizeSort(request, fallback, allowed, invalid)
 }
 
 func NormalizeFilters(filters []Filter, fields map[string]FieldSpec, maxFilters, maxValues int, invalid error) ([]QueryFilter, error) {
-    return validation.NormalizeFilters(filters, fields, maxFilters, maxValues, invalid)
+	return validation.NormalizeFilters(filters, fields, maxFilters, maxValues, invalid)
 }
 
 func NormalizeCursor(value string, sort QuerySort, validateValue CursorValueValidator, validateID CursorValueValidator, invalid error) (*Cursor[string], CursorPayload, error) {
-    return validation.NormalizeCursor(value, sort, validateValue, validateID, invalid)
+	return validation.NormalizeCursor(value, sort, validateValue, validateID, invalid)
 }
 
 func NormalizeSorts(request []Sort, fallback QuerySort, allowed map[string]CursorValueValidator, max int, invalid error) ([]QuerySort, error) {
@@ -162,6 +171,6 @@ func NextPageNumber(request PageRequest, number int) int {
 	return page.NextPageNumber(request, number)
 }
 
-func NewPageResponse[TId any,T any](input Query[TId], result QueryResult[T]) PageResponse {
+func NewPageResponse[TId any, T any](input Query[TId], result QueryResult[T]) PageResponse {
 	return page.NewPageResponse(input, result)
 }

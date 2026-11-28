@@ -8,18 +8,18 @@ import (
 	"gorm.io/gorm"
 
 	coredatabase "grovehub/libs/core/database"
-	authorityconstants "grovehub/services/identity/internal/app/repository/authority/constants"
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/repository/approvalpolicy"
 	"grovehub/services/identity/internal/app/repository/approvalpolicy/constants"
 	"grovehub/services/identity/internal/app/repository/approvalpolicy/helpers"
 	"grovehub/services/identity/internal/app/repository/authority"
+	authorityconstants "grovehub/services/identity/internal/app/repository/authority/constants"
 	"grovehub/services/identity/internal/app/repository/rbacmigration"
 )
 
 type Provisioner struct {
-	db *gorm.DB
-	readiness rbacmigration.Readiness
+	db             *gorm.DB
+	readiness      rbacmigration.Readiness
 	administrators authority.AdministratorReader
 }
 
@@ -115,7 +115,7 @@ func activate(db *gorm.DB, manifest approvalpolicy.Manifest, revision approvalpo
 	if err := db.Exec(constants.Deactivate, manifest.TenantID, revision.Type).Error; err != nil {
 		return approvalpolicy.Activated{}, err
 	}
-	next := approvalpolicy.Activated{Type: revision.Type, PolicyID: id.String(), Version: version+1}
+	next := approvalpolicy.Activated{Type: revision.Type, PolicyID: id.String(), Version: version + 1}
 	if err := db.Exec(constants.Insert, next.PolicyID, manifest.TenantID, next.Type, next.Version, manifest.AuthorID).Error; err != nil {
 		return approvalpolicy.Activated{}, err
 	}

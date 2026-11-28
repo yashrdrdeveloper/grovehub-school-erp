@@ -10,7 +10,7 @@ import (
 	"grovehub/services/identity/client/invitation"
 )
 
-type deliveryReader struct { db *gorm.DB }
+type deliveryReader struct{ db *gorm.DB }
 
 func NewDeliveryReader(db *gorm.DB) invitation.DeliveryReader {
 	return &deliveryReader{db: db}

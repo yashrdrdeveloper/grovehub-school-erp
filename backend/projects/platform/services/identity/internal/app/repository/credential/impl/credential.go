@@ -41,10 +41,10 @@ func (repository *Repository) Update(ctx context.Context, credential entity.Pass
 		Model(&entity.PasswordCredential{}).
 		Where("account_id = ? AND version = ?", credential.AccountID, credential.Version-1).
 		Updates(map[string]any{
-			"password_hash": credential.PasswordHash,
+			"password_hash":       credential.PasswordHash,
 			"password_changed_at": credential.PasswordChangedAt,
-			"version": credential.Version,
-			"updated_at": credential.UpdatedAt,
+			"version":             credential.Version,
+			"updated_at":          credential.UpdatedAt,
 		})
 	if result.Error != nil {
 		return result.Error

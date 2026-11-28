@@ -55,7 +55,7 @@ func WorkloadFrom(ctx context.Context) (WorkloadClaims, bool) {
 }
 
 var (
-	_ WorkloadVerifier = ScopedWorkloadVerifier{}
+	_ WorkloadVerifier   = ScopedWorkloadVerifier{}
 	_ CredentialVerifier = Ed25519Credentials{}
-	_ http.RoundTripper = (*WorkloadTransport)(nil)
+	_ http.RoundTripper  = (*WorkloadTransport)(nil)
 )

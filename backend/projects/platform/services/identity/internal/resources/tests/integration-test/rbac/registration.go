@@ -33,7 +33,7 @@ import (
 
 type registrationFoundation struct {
 	foundation.Client
-	person foundation.Person
+	person   foundation.Person
 	searches int
 }
 

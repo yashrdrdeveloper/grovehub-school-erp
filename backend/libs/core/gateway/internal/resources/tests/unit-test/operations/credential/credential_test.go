@@ -5,10 +5,10 @@ import (
 	"crypto/ed25519"
 	"encoding/base64"
 	"encoding/json"
-	"strings"
-	"time"
 	"grovehub/libs/core/gateway/internal/src/contracts"
 	"grovehub/libs/core/gateway/internal/src/operations/credential"
+	"strings"
+	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -43,7 +43,7 @@ var _ = Describe("SignWorkload and VerifyCredential", func() {
 		Expect(err).To(BeIdenticalTo(contracts.ErrWorkloadDenied))
 		_, err = verifier.VerifyCredential(nil, token)
 		Expect(err).To(BeIdenticalTo(contracts.ErrWorkloadDenied))
-		for _, bad := range []string{"", strings.Repeat("x", 8193), strings.Replace(token, "ghw1.", "ghw2.", 1), strings.Replace(token, ".key.", ".missing.", 1), token[:strings.LastIndex(token, ".")+1]+"!", token[:strings.LastIndex(token, ".")+1]+"YQ"} {
+		for _, bad := range []string{"", strings.Repeat("x", 8193), strings.Replace(token, "ghw1.", "ghw2.", 1), strings.Replace(token, ".key.", ".missing.", 1), token[:strings.LastIndex(token, ".")+1] + "!", token[:strings.LastIndex(token, ".")+1] + "YQ"} {
 			_, err = verifier.VerifyCredential(context.Background(), bad)
 			Expect(err).To(BeIdenticalTo(contracts.ErrWorkloadDenied))
 		}
@@ -62,7 +62,7 @@ var _ = Describe("SignWorkload and VerifyCredential", func() {
 			func(v *contracts.WorkloadClaims) { v.Subject = "" },
 			func(v *contracts.WorkloadClaims) { v.Audience = "" },
 			func(v *contracts.WorkloadClaims) { v.ExpiresAt = time.Now().Add(-time.Minute) },
-			func(v *contracts.WorkloadClaims) { v.ExpiresAt = time.Now().Add(3*time.Minute) },
+			func(v *contracts.WorkloadClaims) { v.ExpiresAt = time.Now().Add(3 * time.Minute) },
 			func(v *contracts.WorkloadClaims) { v.ActorGID = "" },
 			func(v *contracts.WorkloadClaims) { v.Scopes = []string{strings.Repeat("x", 9000)} },
 		} {
@@ -79,15 +79,17 @@ var _ = Describe("SignWorkload and VerifyCredential", func() {
 			body := "ghw1.key." + base64.RawURLEncoding.EncodeToString([]byte(payload))
 			return body + "." + base64.RawURLEncoding.EncodeToString(ed25519.Sign(private, []byte(body)))
 		}
-		valid := map[string]any{"iss":"issuer","sub":"subject","aud":"platform","iat":now,"exp":now+60,"scopes":[]string{"read"}}
+		valid := map[string]any{"iss": "issuer", "sub": "subject", "aud": "platform", "iat": now, "exp": now + 60, "scopes": []string{"read"}}
 		for field, values := range map[string][]any{
-			"iss":{"other"}, "sub":{"other"}, "aud":{""},
-			"iat":{int64(0),now+1}, "exp":{now,now+121},
-			"scopes":{[]string{"write"},[]string{""}}, "tenant":{"tenant"},
+			"iss": {"other"}, "sub": {"other"}, "aud": {""},
+			"iat": {int64(0), now + 1}, "exp": {now, now + 121},
+			"scopes": {[]string{"write"}, []string{""}}, "tenant": {"tenant"},
 		} {
 			for _, value := range values {
 				payload := make(map[string]any)
-				for k, v := range valid { payload[k] = v }
+				for k, v := range valid {
+					payload[k] = v
+				}
 				payload[field] = value
 				raw, err := json.Marshal(payload)
 				Expect(err).NotTo(HaveOccurred())

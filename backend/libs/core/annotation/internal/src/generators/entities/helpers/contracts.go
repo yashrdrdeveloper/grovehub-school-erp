@@ -5,8 +5,8 @@ import (
 )
 
 type entitySpec struct {
-	name             string
-	fields           []fieldSpec
+	name                    string
+	fields                  []fieldSpec
 	builder, getter, setter bool
 }
 
@@ -16,8 +16,8 @@ type fieldSpec struct {
 
 type sourceFile struct {
 	name, pkg string
-	imports []layout.ImportBinding
-	entities []entitySpec
+	imports   []layout.ImportBinding
+	entities  []entitySpec
 }
 
 type methodIndex map[string]map[string]bool

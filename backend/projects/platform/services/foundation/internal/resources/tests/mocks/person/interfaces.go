@@ -3,63 +3,69 @@
 package personmocks
 
 import (
-    create "grovehub/services/foundation/internal/app/services/person/operations/create/strategies"
-    getbygid "grovehub/services/foundation/internal/app/services/person/operations/getbygid/strategies"
-    update "grovehub/services/foundation/internal/app/services/person/operations/update/strategies"
-    search "grovehub/services/foundation/internal/app/services/person/operations/search/strategies"
-    deactivate "grovehub/services/foundation/internal/app/services/person/operations/deactivate/strategies"
-    protected "grovehub/services/foundation/internal/app/controller/person/protected"
-    coredatabase "grovehub/libs/core/database"
-    eventperson "grovehub/services/foundation/internal/app/events/producers/person"
-    mapperperson "grovehub/services/foundation/internal/app/mappers/person"
-    "grovehub/services/foundation/internal/app/repository/contact"
-    personrepository "grovehub/services/foundation/internal/app/repository/person"
-    personservice "grovehub/services/foundation/internal/app/services/person"
-    personvalidators "grovehub/services/foundation/internal/app/validators/person"
-    infrastructureclient "grovehub/services/infrastructure/client/messaging"
+	coredatabase "grovehub/libs/core/database"
+	protected "grovehub/services/foundation/internal/app/controller/person/protected"
+	eventperson "grovehub/services/foundation/internal/app/events/producers/person"
+	mapperperson "grovehub/services/foundation/internal/app/mappers/person"
+	"grovehub/services/foundation/internal/app/repository/contact"
+	personrepository "grovehub/services/foundation/internal/app/repository/person"
+	personservice "grovehub/services/foundation/internal/app/services/person"
+	create "grovehub/services/foundation/internal/app/services/person/operations/create/strategies"
+	deactivate "grovehub/services/foundation/internal/app/services/person/operations/deactivate/strategies"
+	getbygid "grovehub/services/foundation/internal/app/services/person/operations/getbygid/strategies"
+	search "grovehub/services/foundation/internal/app/services/person/operations/search/strategies"
+	update "grovehub/services/foundation/internal/app/services/person/operations/update/strategies"
+	personvalidators "grovehub/services/foundation/internal/app/validators/person"
+	infrastructureclient "grovehub/services/infrastructure/client/messaging"
 )
 
 // @Mock
-type PersonRepository interface { personrepository.PersonRepository }
+type PersonRepository interface {
+	personrepository.PersonRepository
+}
 
 // @Mock
-type ContactRepository interface { contact.ContactRepository }
+type ContactRepository interface{ contact.ContactRepository }
 
 // @Mock
-type PersonService interface { personservice.PersonService }
+type PersonService interface{ personservice.PersonService }
 
 // @Mock
-type PersonMapper interface { mapperperson.PersonMapper }
+type PersonMapper interface{ mapperperson.PersonMapper }
 
 // @Mock
-type PersonValidator interface { personvalidators.PersonValidator }
+type PersonValidator interface {
+	personvalidators.PersonValidator
+}
 
 // @Mock
-type ChangedProducer interface { eventperson.ChangedProducer }
+type ChangedProducer interface{ eventperson.ChangedProducer }
 
 // @Mock
-type UnitOfWork interface { coredatabase.UnitOfWork }
+type UnitOfWork interface{ coredatabase.UnitOfWork }
 
 // @Mock
-type OutboxStore interface { infrastructureclient.EventStore }
+type OutboxStore interface {
+	infrastructureclient.EventStore
+}
 
 // @Mock
-type MessagingClient interface { infrastructureclient.Client }
+type MessagingClient interface{ infrastructureclient.Client }
 
 // @Mock
-type CreateStrategy interface { create.CreateStrategy }
+type CreateStrategy interface{ create.CreateStrategy }
 
 // @Mock
-type UpdateStrategy interface { update.UpdateStrategy }
+type UpdateStrategy interface{ update.UpdateStrategy }
 
 // @Mock
-type SearchStrategy interface { search.SearchStrategy }
+type SearchStrategy interface{ search.SearchStrategy }
 
 // @Mock
-type GetByGIDStrategy interface { getbygid.GetByGIDStrategy }
+type GetByGIDStrategy interface{ getbygid.GetByGIDStrategy }
 
 // @Mock
-type DeactivateStrategy interface { deactivate.DeactivateStrategy }
+type DeactivateStrategy interface{ deactivate.DeactivateStrategy }
 
 // @Mock
-type PersonController interface { protected.PersonController }
+type PersonController interface{ protected.PersonController }

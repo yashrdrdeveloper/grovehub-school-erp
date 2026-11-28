@@ -1,12 +1,12 @@
 package helpers
 
 import (
-    "errors"
-    "strings"
+	"errors"
+	"strings"
 
-    coreannotation "grovehub/libs/core/annotation"
-    coreerrors "grovehub/libs/core/errors"
-    personerror "grovehub/services/foundation/internal/app/constants/error"
+	coreannotation "grovehub/libs/core/annotation"
+	coreerrors "grovehub/libs/core/errors"
+	personerror "grovehub/services/foundation/internal/app/constants/error"
 )
 
 func invalidPersonSearch() error {
@@ -19,7 +19,9 @@ func invalidPersonSearchCursor() error {
 
 func MapPersonDTOError(err error) error {
 	var fieldError coreannotation.ValidationError
-	if !errors.As(err, &fieldError) { return err }
+	if !errors.As(err, &fieldError) {
+		return err
+	}
 	field := strings.TrimPrefix(fieldError.Field, "RequestBody.")
 	if strings.HasPrefix(field, "Contacts.") || field == "Contacts" {
 		return coreerrors.NewError(personerror.InvalidPersonContact)

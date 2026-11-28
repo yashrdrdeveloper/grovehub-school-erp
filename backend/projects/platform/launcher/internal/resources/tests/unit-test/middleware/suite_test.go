@@ -15,8 +15,8 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	oteltrace "go.opentelemetry.io/otel/trace"
 
-	coretelemetry "grovehub/libs/core/telemetry"
 	launcherMiddleware "grovehub/launcher/internal/src/middleware/observability/impl"
+	coretelemetry "grovehub/libs/core/telemetry"
 )
 
 const failedPath = "/abc"

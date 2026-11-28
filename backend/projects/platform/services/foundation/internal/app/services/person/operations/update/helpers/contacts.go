@@ -4,8 +4,8 @@ import "grovehub/services/foundation/internal/app/entity"
 
 // contactIdentity compares normalized contact identities without audit fields.
 type contactIdentity struct {
-    Type entity.ContactType
-    NormalizedValue string
+	Type            entity.ContactType
+	NormalizedValue string
 }
 
 // ContactsEqual compares PATCH contact values without considering audit timestamps.

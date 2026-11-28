@@ -11,18 +11,18 @@ import (
 )
 
 type EligibleGrant struct {
-	RoleID string `json:"role_id"`
+	RoleID     string          `json:"role_id"`
 	Permission permission.Code `json:"permission_code"`
 }
 
 // Visibility is constructed exclusively from a verified principal and live
 // database-loaded grants. No HTTP input may populate this structure.
 type Visibility struct {
-	TenantID string
+	TenantID  string
 	AccountID string
-	Now time.Time
-	Grants []EligibleGrant
-	Inbox bool
+	Now       time.Time
+	Grants    []EligibleGrant
+	Inbox     bool
 }
 
 type Reader interface {

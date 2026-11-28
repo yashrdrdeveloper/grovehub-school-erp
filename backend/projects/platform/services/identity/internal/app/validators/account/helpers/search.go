@@ -6,10 +6,10 @@ import (
 
 	"github.com/google/uuid"
 
-	coreutils "grovehub/libs/core/utils"
 	coresearch "grovehub/libs/core/search"
-	accountdto "grovehub/services/identity/internal/app/dto/account"
+	coreutils "grovehub/libs/core/utils"
 	roles "grovehub/services/identity/internal/app/constants/role"
+	accountdto "grovehub/services/identity/internal/app/dto/account"
 	"grovehub/services/identity/internal/app/entity"
 )
 
@@ -62,26 +62,28 @@ func sortFields() map[string]coresearch.CursorValueValidator {
 		accountdto.FieldCreatedAt: coresearch.ValidateTimeCursor,
 		accountdto.FieldUpdatedAt: coresearch.ValidateTimeCursor,
 		accountdto.FieldAccountID: coresearch.ValidateUUIDv7Cursor,
-		accountdto.FieldStatus: coresearch.ValidateNonEmptyCursor,
-		accountdto.FieldUsername: validateUsernameCursor,
+		accountdto.FieldStatus:    coresearch.ValidateNonEmptyCursor,
+		accountdto.FieldUsername:  validateUsernameCursor,
 	}
 }
 
 func validateUsernameCursor(value string, invalid error) error {
-	if value != strings.ToLower(value) { return invalid }
+	if value != strings.ToLower(value) {
+		return invalid
+	}
 	return nil
 }
 
 func filterFields(normalized bool) map[string]coresearch.FieldSpec {
 	fields := map[string]coresearch.FieldSpec{
-		accountdto.FieldAccountID: {Operators: coresearch.EqualityOperators(), Normalizer: normalizeUUID},
-		accountdto.FieldPersonGID: {Operators: coresearch.EqualityOperators(), Normalizer: normalizeUUID},
-		accountdto.FieldUsername: {Operators: coresearch.TextOperators(), Normalizer: normalizeText},
-		accountdto.FieldEmail: {Operators: coresearch.TextOperators(), Normalizer: normalizeText},
-		accountdto.FieldStatus: {Operators: coresearch.EqualityOperators(), Normalizer: normalizeStatus},
+		accountdto.FieldAccountID:     {Operators: coresearch.EqualityOperators(), Normalizer: normalizeUUID},
+		accountdto.FieldPersonGID:     {Operators: coresearch.EqualityOperators(), Normalizer: normalizeUUID},
+		accountdto.FieldUsername:      {Operators: coresearch.TextOperators(), Normalizer: normalizeText},
+		accountdto.FieldEmail:         {Operators: coresearch.TextOperators(), Normalizer: normalizeText},
+		accountdto.FieldStatus:        {Operators: coresearch.EqualityOperators(), Normalizer: normalizeStatus},
 		accountdto.FieldPrimaryRoleID: {Operators: coresearch.EqualityOperators(), Normalizer: normalizeRole},
-		accountdto.FieldCreatedAt: {Operators: coresearch.TimeOperators(), Normalizer: normalizeTime},
-		accountdto.FieldUpdatedAt: {Operators: coresearch.TimeOperators(), Normalizer: normalizeTime},
+		accountdto.FieldCreatedAt:     {Operators: coresearch.TimeOperators(), Normalizer: normalizeTime},
+		accountdto.FieldUpdatedAt:     {Operators: coresearch.TimeOperators(), Normalizer: normalizeTime},
 	}
 	if normalized {
 		fields[accountdto.FieldPrimaryRoleID] = coresearch.FieldSpec{Operators: coresearch.EqualityOperators(), Normalizer: normalizeNormalizedRole}
@@ -117,7 +119,7 @@ func normalizeSearch(request coresearch.Request, normalized bool) (coresearch.Qu
 	}
 	sorts := sortFields()
 	ordered, err := coresearch.NormalizeSorts(request.Sort, coresearch.QuerySort{
-		Field: accountdto.FieldCreatedAt,
+		Field:     accountdto.FieldCreatedAt,
 		Direction: coresearch.DirectionDescending,
 	}, sorts, 5, errInvalidSearch)
 	if err != nil {
@@ -131,16 +133,20 @@ func normalizeSearch(request coresearch.Request, normalized bool) (coresearch.Qu
 	if err != nil {
 		return coresearch.Query[string]{}, err
 	}
-	if err := coresearch.ValidatePageCursor(request.PageInfo, page, rows, errInvalidSearch); err != nil { return coresearch.Query[string]{}, err }
-	if request.PageInfo.PageNumber == 0 { page = 0 }
+	if err := coresearch.ValidatePageCursor(request.PageInfo, page, rows, errInvalidSearch); err != nil {
+		return coresearch.Query[string]{}, err
+	}
+	if request.PageInfo.PageNumber == 0 {
+		page = 0
+	}
 	return coresearch.Query[string]{
-		SearchTerms: terms,
-		Filters: filters,
-		Sort: ordered[0],
+		SearchTerms:    terms,
+		Filters:        filters,
+		Sort:           ordered[0],
 		SecondarySorts: ordered[1:],
-		Cursor: cursor,
-		Limit: rows,
-		PageNumber: page,
-		Offset: offset,
+		Cursor:         cursor,
+		Limit:          rows,
+		PageNumber:     page,
+		Offset:         offset,
 	}, nil
 }

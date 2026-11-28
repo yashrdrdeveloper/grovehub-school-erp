@@ -44,10 +44,10 @@ var PersonConfig = coresearch.Config{
 `
 
 func searchFixture(implementation, configuration string) string {
-	root:=GinkgoT().TempDir()
-	fixture.Write(root,"person.go",searchTestInterface)
-	fixture.Write(root,"impl/person.go",implementation)
-	fixture.Write(root,"helpers/search/person.go",configuration)
+	root := GinkgoT().TempDir()
+	fixture.Write(root, "person.go", searchTestInterface)
+	fixture.Write(root, "impl/person.go", implementation)
+	fixture.Write(root, "helpers/search/person.go", configuration)
 
 	return root
 }

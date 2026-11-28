@@ -22,11 +22,11 @@ import (
 )
 
 const (
-	identityHealthPath       = "/identity/health"
-	identityService          = "identity"
-	identityOperation        = "GET /identity/health"
-	internalServiceURL       = "http://service.test/internal"
-	backgroundServiceURL     = "http://service.test/background"
+	identityHealthPath   = "/identity/health"
+	identityService      = "identity"
+	identityOperation    = "GET /identity/health"
+	internalServiceURL   = "http://service.test/internal"
+	backgroundServiceURL = "http://service.test/background"
 )
 
 type roundTripFunc func(*http.Request) (*http.Response, error)

@@ -3,9 +3,9 @@
 package overlay
 
 import (
+	"fmt"
 	"grovehub/libs/core/annotation/internal/src/helpers/layout"
 	generatedoutput "grovehub/libs/core/annotation/internal/src/helpers/output"
-	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -15,8 +15,6 @@ import (
 type Configuration struct {
 	Replace map[string]string `json:"Replace"`
 }
-
-
 
 func WriteOverlay(backend, core string) error {
 	root, err := filepath.Abs(backend)
@@ -30,14 +28,14 @@ func WriteOverlay(backend, core string) error {
 	replacement := map[string]string{}
 
 	scan := func(owner string) error {
-		return layout.WalkOwned(owner,".generated",func(path,relative string,item fs.DirEntry)error{
+		return layout.WalkOwned(owner, ".generated", func(path, relative string, item fs.DirEntry) error {
 			if item.IsDir() || !strings.HasSuffix(item.Name(), ".go") {
 				return nil
 			}
 			if !item.Type().IsRegular() {
 				return fmt.Errorf("generated Go file %s must be regular", path)
 			}
-			rel:=strings.TrimPrefix(relative, ".generated"+string(os.PathSeparator))
+			rel := strings.TrimPrefix(relative, ".generated"+string(os.PathSeparator))
 			logical := filepath.Join(owner, rel)
 			if _, err := os.Stat(filepath.Dir(logical)); err != nil {
 				return fmt.Errorf("generated source has no original package directory %s: %w", logical, err)
@@ -56,7 +54,9 @@ func WriteOverlay(backend, core string) error {
 	}
 
 	if root != core {
-		if err := scan(filepath.Join(root,"launcher")); err != nil { return err }
+		if err := scan(filepath.Join(root, "launcher")); err != nil {
+			return err
+		}
 		if err := scan(filepath.Join(root, "cmd")); err != nil {
 			return err
 		}
@@ -80,5 +80,5 @@ func WriteOverlay(backend, core string) error {
 		return fmt.Errorf("no generated Go files found; run generate-annotations.sh first")
 	}
 
-	return generatedoutput.WriteJSON(filepath.Join(root, ".generated", "overlay.json"), "overlay-*.json", Configuration{Replace:replacement})
+	return generatedoutput.WriteJSON(filepath.Join(root, ".generated", "overlay.json"), "overlay-*.json", Configuration{Replace: replacement})
 }

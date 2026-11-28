@@ -3,8 +3,8 @@ package policies_test
 import (
 	ginkgo "github.com/onsi/ginkgo/v2"
 
-	core "grovehub/libs/core/gateway"
 	"grovehub/launcher/internal/src/services/gateway/policies"
+	core "grovehub/libs/core/gateway"
 )
 
 func verifyRestrictedPolicyCannotBeWeakened() {

@@ -21,10 +21,9 @@ type SearchRequest struct {
 
 type PreviewRequest struct {
 	request.Request
-	Params ByID `validate:"valid"`
+	Params      ByID               `validate:"valid"`
 	RequestBody PreviewPermissions `validate:"valid"`
 }
-
 
 type CreateRequest struct {
 	request.Request
@@ -33,6 +32,6 @@ type CreateRequest struct {
 
 type UpdateRequest struct {
 	request.Request
-	Params ByID `validate:"valid"`
+	Params      ByID           `validate:"valid"`
 	RequestBody UpdateMetadata `validate:"valid"`
 }

@@ -28,7 +28,7 @@ func (m *exampleModule) RegisterHTTP(mux *http.ServeMux) {
 	})
 }
 
-func (m *exampleModule) Close() { m.closed = true }
+func (m *exampleModule) Close()       { m.closed = true }
 func (m *exampleModule) Name() string { return "example" }
 
 var _ = Describe("Module facade", func() {

@@ -15,15 +15,15 @@ import (
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/sdk/resource"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
 
-	"grovehub/libs/core/telemetry/internal/src/contracts"
-	"grovehub/libs/core/telemetry/internal/src/helpers"
 	"grovehub/libs/core/telemetry/internal/src/config"
 	"grovehub/libs/core/telemetry/internal/src/constants"
+	"grovehub/libs/core/telemetry/internal/src/contracts"
+	"grovehub/libs/core/telemetry/internal/src/helpers"
 )
 
 type serviceRuntime struct {
@@ -49,18 +49,20 @@ var (
 
 // Dependencies isolate the external SDK boundaries. Normal callers use Initialize.
 type Dependencies struct {
-	TraceExporter func(context.Context) (sdktrace.SpanExporter,error)
-	MetricExporter func(context.Context) (sdkmetric.Exporter,error)
+	TraceExporter       func(context.Context) (sdktrace.SpanExporter, error)
+	MetricExporter      func(context.Context) (sdkmetric.Exporter, error)
 	StartRuntimeMetrics func(metric.MeterProvider) error
-	Meter func(metric.MeterProvider,string) metric.Meter
+	Meter               func(metric.MeterProvider, string) metric.Meter
 }
 
 func Initialize(ctx context.Context, logger *slog.Logger) contracts.Shutdown {
-	return InitializeWithDependencies(ctx,logger,Dependencies{
-		TraceExporter: func(ctx context.Context)(sdktrace.SpanExporter,error){return otlptracehttp.New(ctx)},
-		MetricExporter: func(ctx context.Context)(sdkmetric.Exporter,error){return otlpmetrichttp.New(ctx)},
-		StartRuntimeMetrics: func(provider metric.MeterProvider)error{return otelruntime.Start(otelruntime.WithMeterProvider(provider))},
-		Meter: func(provider metric.MeterProvider,name string)metric.Meter{return provider.Meter(name)},
+	return InitializeWithDependencies(ctx, logger, Dependencies{
+		TraceExporter:  func(ctx context.Context) (sdktrace.SpanExporter, error) { return otlptracehttp.New(ctx) },
+		MetricExporter: func(ctx context.Context) (sdkmetric.Exporter, error) { return otlpmetrichttp.New(ctx) },
+		StartRuntimeMetrics: func(provider metric.MeterProvider) error {
+			return otelruntime.Start(otelruntime.WithMeterProvider(provider))
+		},
+		Meter: func(provider metric.MeterProvider, name string) metric.Meter { return provider.Meter(name) },
 	})
 }
 
@@ -228,7 +230,7 @@ func newServiceRuntime(
 		tracerProvider: tracerProvider,
 		meterProvider:  meterProvider,
 	}
-	serviceRuntime.initializeMetrics(logger, dependencies.Meter(meterProvider,"grovehub/"+service.Key))
+	serviceRuntime.initializeMetrics(logger, dependencies.Meter(meterProvider, "grovehub/"+service.Key))
 
 	logger.Info(
 		"OpenTelemetry service initialized",
@@ -271,4 +273,3 @@ func getActiveRuntime() *Runtime {
 	defer activeRuntimeMu.RUnlock()
 	return activeRuntime
 }
-

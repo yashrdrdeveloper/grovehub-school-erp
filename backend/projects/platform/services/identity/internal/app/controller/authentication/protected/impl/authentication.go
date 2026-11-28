@@ -7,10 +7,10 @@ import (
 	corehttp "grovehub/libs/core/http"
 	corepipeline "grovehub/libs/core/pipeline"
 	errorcode "grovehub/services/identity/internal/app/constants/error"
-	accountdto "grovehub/services/identity/internal/app/dto/account"
-	authdto "grovehub/services/identity/internal/app/dto/authentication"
 	protected "grovehub/services/identity/internal/app/controller/authentication/protected"
 	"grovehub/services/identity/internal/app/controller/helpers"
+	accountdto "grovehub/services/identity/internal/app/dto/account"
+	authdto "grovehub/services/identity/internal/app/dto/authentication"
 	auth "grovehub/services/identity/internal/app/services/authentication"
 	"grovehub/services/identity/internal/app/transport/cookies"
 )
@@ -49,7 +49,7 @@ func (controller *Controller) LogoutAll(writer http.ResponseWriter, request *htt
 			}
 			controller.cookies.ClearSession(writer)
 			return corepipeline.OK(authdto.RevocationResult{
-				Status: "ALL_SESSIONS_REVOKED",
+				Status:       "ALL_SESSIONS_REVOKED",
 				RevokedCount: count,
 			}), nil
 		},
@@ -58,16 +58,16 @@ func (controller *Controller) LogoutAll(writer http.ResponseWriter, request *htt
 
 func (controller *Controller) ChangePassword(writer http.ResponseWriter, request *http.Request) {
 	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[authdto.ChangePasswordRequest, authdto.StatusResult]{
-		Decode: corehttp.DecodeStrictJSON,
+		Decode:             corehttp.DecodeStrictJSON,
 		InvalidRequestBody: errorcode.InvalidRequest,
-		Fallback: errorcode.Internal,
+		Fallback:           errorcode.Internal,
 		Service: func(ctx context.Context, input authdto.ChangePasswordRequest) (corepipeline.Result[authdto.StatusResult], error) {
 			if err := controller.service.ChangePassword(ctx, input.RequestBody.NewPassword); err != nil {
 				return corepipeline.Result[authdto.StatusResult]{}, helpers.Map(err)
 			}
 			controller.cookies.ClearSession(writer)
 			return corepipeline.OK(authdto.StatusResult{
-				Status: "PASSWORD_CHANGED",
+				Status:          "PASSWORD_CHANGED",
 				SessionsRevoked: true,
 			}), nil
 		},
@@ -76,9 +76,9 @@ func (controller *Controller) ChangePassword(writer http.ResponseWriter, request
 
 func (controller *Controller) Reauthenticate(writer http.ResponseWriter, request *http.Request) {
 	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[authdto.ReauthenticateRequest, authdto.StatusResult]{
-		Decode: corehttp.DecodeStrictJSON,
+		Decode:             corehttp.DecodeStrictJSON,
 		InvalidRequestBody: errorcode.InvalidRequest,
-		Fallback: errorcode.Internal,
+		Fallback:           errorcode.Internal,
 		Service: func(ctx context.Context, input authdto.ReauthenticateRequest) (corepipeline.Result[authdto.StatusResult], error) {
 			if err := controller.service.Reauthenticate(ctx, input.RequestBody.Password); err != nil {
 				return corepipeline.Result[authdto.StatusResult]{}, helpers.Map(err)
@@ -108,7 +108,7 @@ func (controller *Controller) RevokeSession(writer http.ResponseWriter, request 
 			}
 			return corepipeline.OK(authdto.SessionRevokedResult{
 				SessionID: sessionID,
-				Status: "REVOKED",
+				Status:    "REVOKED",
 			}), nil
 		},
 	})

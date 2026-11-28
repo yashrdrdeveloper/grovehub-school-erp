@@ -10,11 +10,11 @@ import (
 	"grovehub/libs/core/annotation/internal/src/generators/expand"
 )
 
-var _=Describe("Expansion source read failures",func(){
-	It("rejects non-directory roots",func(){
-		root:=GinkgoT().TempDir()
-		path:=filepath.Join(root,"source")
-		Expect(os.WriteFile(path,[]byte("file"),0644)).To(Succeed())
+var _ = Describe("Expansion source read failures", func() {
+	It("rejects non-directory roots", func() {
+		root := GinkgoT().TempDir()
+		path := filepath.Join(root, "source")
+		Expect(os.WriteFile(path, []byte("file"), 0644)).To(Succeed())
 		Expect(expand.Expand(path)).NotTo(Succeed())
 	})
 })

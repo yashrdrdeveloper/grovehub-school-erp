@@ -2,20 +2,20 @@ package impl
 
 import (
 	"context"
-	schoolgateway "grovehub/libs/platform/session"
 	"errors"
-	"strings"
+	coredatabase "grovehub/libs/core/database"
+	schoolgateway "grovehub/libs/platform/session"
 	"grovehub/services/identity/internal/app/entity"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
-	registration "grovehub/services/identity/internal/app/services/registration"
-	coredatabase "grovehub/libs/core/database"
 	forgot "grovehub/services/identity/internal/app/services/authentication/operations/forgot"
+	registration "grovehub/services/identity/internal/app/services/registration"
+	"strings"
 )
 
 type Service struct {
-	accounts accountrepo.Repository
+	accounts   accountrepo.Repository
 	invitation registration.InvitationSender
-	unit coredatabase.UnitOfWork
+	unit       coredatabase.UnitOfWork
 }
 
 var _ forgot.Operation = (*Service)(nil)
@@ -40,7 +40,9 @@ func (op *Service) Execute(ctx context.Context, email string) error {
 
 	return op.unit.Run(ctx, func(transactionCtx context.Context) error {
 		current, err := op.accounts.FindByID(transactionCtx, account.AccountID)
-		if err != nil || current.Status != entity.Active || current.Email != email || schoolgateway.CheckAccountTenant(transactionCtx, current.TenantID) != nil { return nil }
+		if err != nil || current.Status != entity.Active || current.Email != email || schoolgateway.CheckAccountTenant(transactionCtx, current.TenantID) != nil {
+			return nil
+		}
 		return op.invitation.Queue(transactionCtx, current, entity.PasswordReset, "there")
 	})
 }

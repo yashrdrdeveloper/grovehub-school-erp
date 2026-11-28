@@ -3,13 +3,13 @@ package maildelivery_test
 import (
 	"context"
 	"errors"
+	"grovehub/services/identity"
+	"grovehub/services/integration"
+	"grovehub/services/integration/client/mail"
 	"os"
 	"sync/atomic"
 	"testing"
 	"time"
-	"grovehub/services/identity"
-	"grovehub/services/integration"
-	"grovehub/services/integration/client/mail"
 
 	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
@@ -24,12 +24,18 @@ import (
 
 func TestDurableDispatch(t *testing.T) {
 	dsn := os.Getenv("INTEGRATION_MAIL_TEST_DSN")
-	if dsn == "" { t.Skip("requires disposable PostgreSQL") }
+	if dsn == "" {
+		t.Skip("requires disposable PostgreSQL")
+	}
 	ctx := context.Background()
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil { t.Fatal(err) }
+	if err != nil {
+		t.Fatal(err)
+	}
 	sqlDB, err := db.DB()
-	if err != nil { t.Fatal(err) }
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer sqlDB.Close()
 	var name string
 	if err := db.Raw("SELECT current_database()").Scan(&name).Error; err != nil || name != "groovehub_rbac_test" {
@@ -39,37 +45,63 @@ func TestDurableDispatch(t *testing.T) {
 	if err := db.Raw("SELECT count(*) FROM information_schema.schemata WHERE schema_name = 'integration'").Scan(&existing).Error; err != nil || existing != 0 {
 		t.Fatal("mail integration schema must be fresh")
 	}
-	if err := migrations.Migrate(ctx, sqlDB); err != nil { t.Fatal(err) }
+	if err := migrations.Migrate(ctx, sqlDB); err != nil {
+		t.Fatal(err)
+	}
 	dispatcher := delivery.New(repository.New(db))
 	tenant, id := uuid.NewString(), uuid.NewString()
 	var calls atomic.Int32
-	send := func() (any,error) { calls.Add(1); return nil,nil }
+	send := func() (any, error) { calls.Add(1); return nil, nil }
 	rollback := errors.New("injected caller rollback")
 	err = coredatabase.RunTransaction(ctx, db, func(tx context.Context) error {
-		if _, err := dispatcher.Dispatch(tx, tenant, id, []byte("synthetic mail"), send); err != nil { return err }
+		if _, err := dispatcher.Dispatch(tx, tenant, id, []byte("synthetic mail"), send); err != nil {
+			return err
+		}
 		return rollback
 	})
-	if !errors.Is(err, rollback) { t.Fatalf("expected rollback: %v", err) }
+	if !errors.Is(err, rollback) {
+		t.Fatalf("expected rollback: %v", err)
+	}
 	// A new dispatcher simulates worker restart after Identity rollback.
 	dispatcher = delivery.New(repository.New(db))
-	if _, err := dispatcher.Dispatch(ctx, tenant, id, []byte("synthetic mail"), send); err != nil { t.Fatal(err) }
-	if calls.Load() != 1 { t.Fatal("accepted delivery was repeated") }
-	if _, err := dispatcher.Dispatch(ctx, tenant, id, []byte("different mail"), send); !errors.Is(err, client.ErrMailDeliveryConflict) { t.Fatalf("expected conflict: %v",err) }
+	if _, err := dispatcher.Dispatch(ctx, tenant, id, []byte("synthetic mail"), send); err != nil {
+		t.Fatal(err)
+	}
+	if calls.Load() != 1 {
+		t.Fatal("accepted delivery was repeated")
+	}
+	if _, err := dispatcher.Dispatch(ctx, tenant, id, []byte("different mail"), send); !errors.Is(err, client.ErrMailDeliveryConflict) {
+		t.Fatalf("expected conflict: %v", err)
+	}
 
 	unknown := uuid.NewString()
-	if _, err := dispatcher.Dispatch(ctx, tenant, unknown, []byte("synthetic mail"), func()(any,error){calls.Add(1); return nil,errors.New("timeout")}); !errors.Is(err,client.ErrMailDeliveryUncertain) { t.Fatalf("expected uncertainty: %v",err) }
-	if _, err := dispatcher.Dispatch(ctx, tenant, unknown, []byte("synthetic mail"), send); !errors.Is(err,client.ErrMailDeliveryUncertain) { t.Fatalf("expected persistent uncertainty: %v",err) }
-	if calls.Load() != 2 { t.Fatal("uncertain delivery was repeated") }
+	if _, err := dispatcher.Dispatch(ctx, tenant, unknown, []byte("synthetic mail"), func() (any, error) { calls.Add(1); return nil, errors.New("timeout") }); !errors.Is(err, client.ErrMailDeliveryUncertain) {
+		t.Fatalf("expected uncertainty: %v", err)
+	}
+	if _, err := dispatcher.Dispatch(ctx, tenant, unknown, []byte("synthetic mail"), send); !errors.Is(err, client.ErrMailDeliveryUncertain) {
+		t.Fatalf("expected persistent uncertainty: %v", err)
+	}
+	if calls.Load() != 2 {
+		t.Fatal("uncertain delivery was repeated")
+	}
 
 	// No matching Identity jobs exist for these synthetic Integration receipts.
 	reader := integration.NewMailReconciliationClient(db, identity.NewInvitationDeliveryReader(db))
-	report, err := reader.Search(ctx, mail.SearchRequest{TenantID:tenant,Limit:1})
-	if err != nil { t.Fatal(err) }
-	if len(report.Rows) != 1 || report.Rows[0].Disposition != "RECEIPT_WITHOUT_JOB" || report.Rows[0].AccountID != nil || report.NextCursor == "" { t.Fatal("unexpected first reconciliation page") }
-	next, err := reader.Search(ctx, mail.SearchRequest{TenantID:tenant,After:report.NextCursor,Limit:1})
-	if err != nil || len(next.Rows) != 1 || next.Rows[0].DeliveryID == report.Rows[0].DeliveryID || next.NextCursor != "" { t.Fatalf("invalid continuation page: %v", err) }
-	foreign, err := reader.Search(ctx, mail.SearchRequest{TenantID:uuid.NewString(),Limit:100})
-	if err != nil || len(foreign.Rows) != 0 { t.Fatalf("tenant scope leaked: %v",err) }
+	report, err := reader.Search(ctx, mail.SearchRequest{TenantID: tenant, Limit: 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(report.Rows) != 1 || report.Rows[0].Disposition != "RECEIPT_WITHOUT_JOB" || report.Rows[0].AccountID != nil || report.NextCursor == "" {
+		t.Fatal("unexpected first reconciliation page")
+	}
+	next, err := reader.Search(ctx, mail.SearchRequest{TenantID: tenant, After: report.NextCursor, Limit: 1})
+	if err != nil || len(next.Rows) != 1 || next.Rows[0].DeliveryID == report.Rows[0].DeliveryID || next.NextCursor != "" {
+		t.Fatalf("invalid continuation page: %v", err)
+	}
+	foreign, err := reader.Search(ctx, mail.SearchRequest{TenantID: uuid.NewString(), Limit: 100})
+	if err != nil || len(foreign.Rows) != 0 {
+		t.Fatalf("tenant scope leaked: %v", err)
+	}
 
 	// Independent reservation requires a spare connection while the caller holds
 	// its transaction. Verify bounded failure with one connection, then success with two.
@@ -81,11 +113,15 @@ func TestDurableDispatch(t *testing.T) {
 		return err
 	})
 	cancel()
-	if err == nil || calls.Load() != 2 { t.Fatal("single-connection pool must fail before sending") }
+	if err == nil || calls.Load() != 2 {
+		t.Fatal("single-connection pool must fail before sending")
+	}
 	sqlDB.SetMaxOpenConns(2)
 	err = coredatabase.RunTransaction(ctx, db, func(tx context.Context) error {
 		_, err := dispatcher.Dispatch(tx, tenant, blockedID, []byte("pool test"), send)
 		return err
 	})
-	if err != nil || calls.Load() != 3 { t.Fatalf("two-connection dispatch failed: %v",err) }
+	if err != nil || calls.Load() != 3 {
+		t.Fatalf("two-connection dispatch failed: %v", err)
+	}
 }

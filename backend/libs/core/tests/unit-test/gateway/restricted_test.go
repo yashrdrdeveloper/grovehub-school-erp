@@ -18,8 +18,8 @@ func TestRestrictedOnly(t *testing.T) {
 	handler := RestrictedOnly(mux, mux)
 	cases := []struct {
 		method string
-		path string
-		want int
+		path   string
+		want   int
 	}{
 		{http.MethodGet, "/identity/restricted/accounts", http.StatusNoContent},
 		{http.MethodGet, "/identity/public/accounts", http.StatusForbidden},

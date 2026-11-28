@@ -15,7 +15,6 @@ type GetRequest struct {
 
 type PreviewRequest struct {
 	request.Request
-	Params ByID `validate:"valid"`
+	Params      ByID    `validate:"valid"`
 	RequestBody Replace `validate:"valid"`
 }
-

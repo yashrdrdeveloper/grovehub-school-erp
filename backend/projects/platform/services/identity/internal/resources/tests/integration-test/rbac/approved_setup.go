@@ -2,14 +2,14 @@ package rbac_test
 
 import (
 	"context"
-	schoolgateway "grovehub/libs/platform/session"
-	"grovehub/services/audit"
 	"crypto/aes"
 	"crypto/cipher"
 	"encoding/json"
 	"errors"
-	"sync/atomic"
+	schoolgateway "grovehub/libs/platform/session"
+	"grovehub/services/audit"
 	"net/url"
+	"sync/atomic"
 	"time"
 
 	. "github.com/onsi/gomega"
@@ -17,19 +17,6 @@ import (
 
 	coredatabase "grovehub/libs/core/database"
 	"grovehub/services/identity/internal/app/config"
-	integrationclient "grovehub/services/integration/client/connection"
-	accountrepo "grovehub/services/identity/internal/app/repository/account"
-	registryrepo "grovehub/services/identity/internal/app/repository/registry/impl"
-	"grovehub/services/identity/internal/app/services/registry"
-	registryimpl "grovehub/services/identity/internal/app/services/registry/impl"
-	"grovehub/services/identity/internal/app/services/security/principal"
-	accountservice "grovehub/services/identity/internal/app/services/account/impl"
-	authservice "grovehub/services/identity/internal/app/services/authentication"
-	authruntime "grovehub/services/identity/internal/app/services/authentication/impl"
-	"grovehub/services/identity/internal/app/services/approval/operations/cutover"
-	resendimpl "grovehub/services/identity/internal/app/services/registration/operations/resend/impl"
-	"grovehub/services/identity/internal/app/services/authorization"
-	"grovehub/services/identity/internal/app/services/authentication/operations/exchange"
 	kind "grovehub/services/identity/internal/app/constants/approval"
 	"grovehub/services/identity/internal/app/constants/permission"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
@@ -39,9 +26,10 @@ import (
 	accountproducer "grovehub/services/identity/internal/app/events/producers/account/impl"
 	approvalproducer "grovehub/services/identity/internal/app/events/producers/approval/impl"
 	resourceproducer "grovehub/services/identity/internal/app/events/producers/resource/impl"
+	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	accountimpl "grovehub/services/identity/internal/app/repository/account/impl"
-	assignmentimpl "grovehub/services/identity/internal/app/repository/accountrole/impl"
 	assignmentrepo "grovehub/services/identity/internal/app/repository/accountrole"
+	assignmentimpl "grovehub/services/identity/internal/app/repository/accountrole/impl"
 	approvalrepo "grovehub/services/identity/internal/app/repository/approval/impl"
 	policyimpl "grovehub/services/identity/internal/app/repository/approvalpolicy/impl"
 	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
@@ -50,18 +38,30 @@ import (
 	mailrepo "grovehub/services/identity/internal/app/repository/invitation/impl"
 	tokenrepo "grovehub/services/identity/internal/app/repository/passwordtoken"
 	tokenimpl "grovehub/services/identity/internal/app/repository/passwordtoken/impl"
+	registryrepo "grovehub/services/identity/internal/app/repository/registry/impl"
 	roleimpl "grovehub/services/identity/internal/app/repository/role/impl"
-	setupimpl "grovehub/services/identity/internal/app/services/account/operations/setup/impl"
+	accountservice "grovehub/services/identity/internal/app/services/account/impl"
 	"grovehub/services/identity/internal/app/services/account/operations/setup/eligibility"
+	setupimpl "grovehub/services/identity/internal/app/services/account/operations/setup/impl"
 	"grovehub/services/identity/internal/app/services/accountrole/operations/replace"
 	approvalimpl "grovehub/services/identity/internal/app/services/approval/impl"
+	"grovehub/services/identity/internal/app/services/approval/operations/cutover"
+	authservice "grovehub/services/identity/internal/app/services/authentication"
 	secrets "grovehub/services/identity/internal/app/services/authentication/helpers"
+	authruntime "grovehub/services/identity/internal/app/services/authentication/impl"
+	"grovehub/services/identity/internal/app/services/authentication/operations/exchange"
 	exchangeimpl "grovehub/services/identity/internal/app/services/authentication/operations/exchange/impl"
+	"grovehub/services/identity/internal/app/services/authorization"
 	authimpl "grovehub/services/identity/internal/app/services/authorization/impl"
 	"grovehub/services/identity/internal/app/services/authorization/operations/protect"
 	credentialimpl "grovehub/services/identity/internal/app/services/credential/impl"
 	"grovehub/services/identity/internal/app/services/registration/operations/invitation"
+	resendimpl "grovehub/services/identity/internal/app/services/registration/operations/resend/impl"
+	"grovehub/services/identity/internal/app/services/registry"
+	registryimpl "grovehub/services/identity/internal/app/services/registry/impl"
+	"grovehub/services/identity/internal/app/services/security/principal"
 	messaging "grovehub/services/infrastructure/client/messaging"
+	integrationclient "grovehub/services/integration/client/connection"
 )
 
 func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, requesterCtx context.Context, reviewerCtx context.Context, roleID string, accountID string, store messaging.EventStore) {
@@ -76,7 +76,7 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	tokens := tokenimpl.New(db)
 	credentials := credentialimpl.New(credentialrepo.New(db))
 	cfg := config.Config{ApprovalExecutionTenant: tenant, EncryptionKey: make([]byte, 32), SetupURL: "https://school.example/set-password"}
-	sender := invitation.New(tokens, mailrepo.New(db,audit.NewProducer(store)), cfg)
+	sender := invitation.New(tokens, mailrepo.New(db, audit.NewProducer(store)), cfg)
 	approvedInvitations := invitation.NewApproved(accounts, assignments, snapshots, sender)
 	repository := approvalrepo.New(db, approvalproducer.New(audit.NewProducer(store)))
 	service := approvalimpl.New(repository, locker, authorizer, snapshots, accounts, roles, assignments)
@@ -143,10 +143,10 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	token, err := tokens.Inspect(ctx, hash, entity.SetupGrant, time.Now().UTC())
 	Expect(err).NotTo(HaveOccurred())
 	Expect(token.AccountVersion).NotTo(BeNil())
-	Expect(*token.AccountVersion).To(Equal(before.Version+1))
+	Expect(*token.AccountVersion).To(Equal(before.Version + 1))
 
 	// The exchanged proof is no longer deliverable, even if the worker never sent it.
-	worker := invitation.NewWorker(mailrepo.New(db,audit.NewProducer(store)), accounts, tokens, locker, assignments, snapshots, nil, cfg)
+	worker := invitation.NewWorker(mailrepo.New(db, audit.NewProducer(store)), accounts, tokens, locker, assignments, snapshots, nil, cfg)
 	claimed, err := worker.RunOnce(ctx)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(claimed).To(BeTrue())
@@ -163,9 +163,9 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	Expect(err).NotTo(HaveOccurred())
 	Expect(status.Verified).To(BeTrue())
 	// A legacy generation-zero setup grant cannot cross registry cutover.
-	registryCtx := schoolgateway.WithTenantCheck(ctx, func(_ context.Context, id string) (int64,error) {
+	registryCtx := schoolgateway.WithTenantCheck(ctx, func(_ context.Context, id string) (int64, error) {
 		Expect(id).To(Equal(tenant))
-		return 2,nil
+		return 2, nil
 	})
 	_, err = onboarding.SetupStatus(registryCtx, grant.Secret)
 	Expect(err).To(MatchError(tokenrepo.ErrInvalidToken))
@@ -223,7 +223,7 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	rotatedToken, err := tokens.Inspect(ctx, rotatedHash, entity.AccountSetup, time.Now().UTC())
 	Expect(err).NotTo(HaveOccurred())
 	Expect(rotatedToken.AccountVersion).NotTo(BeNil())
-	Expect(*rotatedToken.AccountVersion).To(Equal(before.Version+1))
+	Expect(*rotatedToken.AccountVersion).To(Equal(before.Version + 1))
 
 	// A second authorized resend invalidates a proof that was never exchanged.
 	Expect(db.Exec("UPDATE identity.invitations SET created_at = ? WHERE id = ?", time.Now().UTC().Add(-time.Minute), rotated.ID).Error).NotTo(HaveOccurred())
@@ -238,7 +238,7 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	Expect(db.Exec("UPDATE identity.invitations SET next_attempt_at = ? WHERE id = ?", time.Now().UTC().Add(-time.Minute), rotated.ID).Error).NotTo(HaveOccurred())
 	transport := &invitationTransport{}
 	transport.fail.Store(true)
-	worker = invitation.NewWorker(mailrepo.New(db,audit.NewProducer(store)), accounts, tokens, locker, assignments, snapshots, transport, cfg)
+	worker = invitation.NewWorker(mailrepo.New(db, audit.NewProducer(store)), accounts, tokens, locker, assignments, snapshots, transport, cfg)
 	claimed, err = worker.RunOnce(ctx)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(claimed).To(BeTrue())
@@ -259,7 +259,10 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	transport.fail.Store(false)
 
 	// Two workers racing for the single due job may send it only once.
-	type deliveryOutcome struct { claimed bool; err error }
+	type deliveryOutcome struct {
+		claimed bool
+		err     error
+	}
 	deliveries := make(chan deliveryOutcome, 2)
 	for range 2 {
 		go func() { claimed, err := worker.RunOnce(ctx); deliveries <- deliveryOutcome{claimed, err} }()
@@ -268,7 +271,9 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	for range 2 {
 		result := <-deliveries
 		Expect(result.err).NotTo(HaveOccurred())
-		if result.claimed { successes++ }
+		if result.claimed {
+			successes++
+		}
 	}
 	Expect(successes).To(Equal(1))
 	Expect(transport.calls.Load()).To(Equal(int32(2)))
@@ -302,7 +307,7 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	Expect(activated.Status).To(Equal(string(entity.Active)))
 	after, err := accounts.FindByID(ctx, accountID)
 	Expect(err).NotTo(HaveOccurred())
-	Expect(after.Version).To(Equal(before.Version+2))
+	Expect(after.Version).To(Equal(before.Version + 2))
 	Expect(after.PrimaryRoleID).NotTo(BeNil())
 	Expect(*after.PrimaryRoleID).To(Equal(roleID))
 	verified, err := credentials.Verify(ctx, accountID, "Test-setup-password-123")
@@ -315,12 +320,12 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 
 // The adapter exercises the actual exchange operation without composing unrelated auth use cases.
 type setupExchange struct {
- authservice.Service
- operation exchange.Operation
+	authservice.Service
+	operation exchange.Operation
 }
 
 func (adapter *setupExchange) Exchange(ctx context.Context, secret string, purpose string) (authservice.Grant, error) {
- return adapter.operation.Execute(ctx, secret, purpose)
+	return adapter.operation.Execute(ctx, secret, purpose)
 }
 
 var errInvitationTransport = errors.New("injected invitation transport failure")
@@ -328,7 +333,7 @@ var errInvitationTransport = errors.New("injected invitation transport failure")
 type invitationTransport struct {
 	integrationclient.Client
 	calls atomic.Int32
-	fail atomic.Bool
+	fail  atomic.Bool
 }
 
 func (transport *invitationTransport) ExecuteSystemMail(ctx context.Context, tenantID string, input json.RawMessage) (any, error) {
@@ -357,9 +362,9 @@ func invitationProof(mail entity.Invitation, key []byte) string {
 
 func verifyInvitationDeliveryAudit(db *gorm.DB, tenant string, accountID string, originalID string, rotatedID string, currentID string) {
 	type auditRow struct {
-		EventType string
-		Attempt int
-		Reason *string
+		EventType     string
+		Attempt       int
+		Reason        *string
 		NextAttemptAt *time.Time
 	}
 	read := func(id string) []auditRow {

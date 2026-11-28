@@ -1,8 +1,8 @@
 package config
 
 import (
-	"grovehub/libs/core/gateway/internal/src/helpers"
 	"grovehub/libs/core/gateway/internal/src/contracts"
+	"grovehub/libs/core/gateway/internal/src/helpers"
 	"grovehub/libs/core/gateway/internal/src/operations/credential"
 
 	"crypto/ed25519"

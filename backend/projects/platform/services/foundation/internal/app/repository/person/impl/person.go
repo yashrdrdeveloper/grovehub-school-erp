@@ -9,8 +9,8 @@ import (
 	coredatabase "grovehub/libs/core/database"
 	coresearch "grovehub/libs/core/search"
 	"grovehub/services/foundation/internal/app/entity"
-	personrepository "grovehub/services/foundation/internal/app/repository/person"
 	repositoryerrors "grovehub/services/foundation/internal/app/repository/constants/errors"
+	personrepository "grovehub/services/foundation/internal/app/repository/person"
 	personerrorshelpers "grovehub/services/foundation/internal/app/repository/person/helpers/errors"
 )
 
@@ -54,13 +54,13 @@ func (repository *PersonRepository) Update(ctx context.Context, person entity.Pe
 		Model(&entity.Person{}).
 		Where("gid = ? AND version = ?", person.GID, expectedVersion).
 		Updates(map[string]any{
-			"first_name": person.FirstName,
-			"middle_name": person.MiddleName,
-			"last_name": person.LastName,
-			"status": person.Status,
-			"version": person.Version,
+			"first_name":     person.FirstName,
+			"middle_name":    person.MiddleName,
+			"last_name":      person.LastName,
+			"status":         person.Status,
+			"version":        person.Version,
 			"search_details": person.SearchDetails,
-			"updated_at": person.UpdatedAt,
+			"updated_at":     person.UpdatedAt,
 		})
 	if result.Error != nil {
 		return personerrorshelpers.MapPersonWriteError(result.Error)

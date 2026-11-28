@@ -16,7 +16,7 @@ import (
 )
 
 type Repository struct {
-	db *gorm.DB
+	db       *gorm.DB
 	recorder producer.Recorder
 }
 

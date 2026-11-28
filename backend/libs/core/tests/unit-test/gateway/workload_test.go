@@ -44,11 +44,11 @@ func TestScopedWorkloadVerifier(t *testing.T) {
 	parts := strings.Split(token, ".")
 	parts[2] = "e30"
 	cases := []struct {
-		name string
-		token string
-		pattern string
+		name      string
+		token     string
+		pattern   string
 		duplicate bool
-		allow bool
+		allow     bool
 	}{
 		{"valid", token, route, false, true},
 		{"missing", "", route, false, false},
@@ -94,7 +94,7 @@ func TestSignWorkloadLifetime(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, lifetime := range []time.Duration{-time.Minute, 3*time.Minute} {
+	for _, lifetime := range []time.Duration{-time.Minute, 3 * time.Minute} {
 		_, err := SignWorkload("key", "school", private, WorkloadClaims{Subject: "school", Audience: "platform", ExpiresAt: time.Now().Add(lifetime)})
 		if err == nil {
 			t.Fatal("invalid lifetime accepted")

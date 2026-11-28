@@ -13,20 +13,26 @@ import (
 )
 
 func GenerateAll(backend string) error {
-	services,err:=os.ReadDir(filepath.Join(backend,"services"))
-	if err!=nil{return err}
-	for _,service:=range services {
-		if !service.IsDir(){continue}
-		owner:=filepath.Join(backend,"services",service.Name())
-		rel:="entity"
-		dir:=filepath.Join(owner,rel)
-        if info,err:=os.Stat(filepath.Join(owner,"internal","app","entity"));err==nil&&info.IsDir(){
-            rel=filepath.Join("internal","app","entity")
-            dir=filepath.Join(owner,rel)
-        }
-		if info,err:=os.Stat(dir);err!=nil||!info.IsDir(){continue}
-		if err:=helpers.Generate(dir,filepath.Join(owner,".generated",rel));err!=nil {
-			return fmt.Errorf("%s entities: %w",service.Name(),err)
+	services, err := os.ReadDir(filepath.Join(backend, "services"))
+	if err != nil {
+		return err
+	}
+	for _, service := range services {
+		if !service.IsDir() {
+			continue
+		}
+		owner := filepath.Join(backend, "services", service.Name())
+		rel := "entity"
+		dir := filepath.Join(owner, rel)
+		if info, err := os.Stat(filepath.Join(owner, "internal", "app", "entity")); err == nil && info.IsDir() {
+			rel = filepath.Join("internal", "app", "entity")
+			dir = filepath.Join(owner, rel)
+		}
+		if info, err := os.Stat(dir); err != nil || !info.IsDir() {
+			continue
+		}
+		if err := helpers.Generate(dir, filepath.Join(owner, ".generated", rel)); err != nil {
+			return fmt.Errorf("%s entities: %w", service.Name(), err)
 		}
 	}
 	return nil

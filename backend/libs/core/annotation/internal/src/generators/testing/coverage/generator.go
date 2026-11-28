@@ -5,13 +5,13 @@
 package coverage
 
 import (
-	generatedoutput "grovehub/libs/core/annotation/internal/src/helpers/output"
 	"bufio"
 	"context"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
+	generatedoutput "grovehub/libs/core/annotation/internal/src/helpers/output"
 	"io"
 	"os"
 	"os/exec"
@@ -28,8 +28,6 @@ type target struct {
 type OverlayConfig struct {
 	Replace map[string]string
 }
-
-
 
 func Run(args []string) error {
 	flags := flag.NewFlagSet("annotation coverage", flag.ContinueOnError)
@@ -243,12 +241,12 @@ func RecoverGenerated(manifest string, roots ...string) error {
 }
 
 func Materialize(overlay, manifest string) (func(), error) {
-	return MaterializeWithManifest(overlay,manifest,appendManifest)
+	return MaterializeWithManifest(overlay, manifest, appendManifest)
 }
 
 // MaterializeWithManifest isolates durable manifest persistence from copying.
 // The normal Materialize entry point always appends to the physical manifest.
-func MaterializeWithManifest(overlay,manifest string,record func(string,string)error)(func(),error){
+func MaterializeWithManifest(overlay, manifest string, record func(string, string) error) (func(), error) {
 	data, err := os.ReadFile(overlay)
 	if err != nil {
 		return nil, err
@@ -301,7 +299,7 @@ func MaterializeWithManifest(overlay,manifest string,record func(string,string)e
 			return nil, err
 		}
 		created = append(created, logical)
-		if err := record(manifest,logical); err != nil {
+		if err := record(manifest, logical); err != nil {
 			_ = input.Close()
 			_ = output.Close()
 			clean()
@@ -322,12 +320,14 @@ func MaterializeWithManifest(overlay,manifest string,record func(string,string)e
 
 // appendManifest returns write and close errors so recovery never assumes
 // that a generated file was recorded when persistence actually failed.
-func appendManifest(path,logical string)error{
-	f,err:=os.OpenFile(path,os.O_WRONLY|os.O_APPEND,0600)
-	if err!=nil{return err}
-	_,writeErr:=fmt.Fprintln(f,logical)
-	closeErr:=f.Close()
-	return errors.Join(writeErr,closeErr)
+func appendManifest(path, logical string) error {
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_APPEND, 0600)
+	if err != nil {
+		return err
+	}
+	_, writeErr := fmt.Fprintln(f, logical)
+	closeErr := f.Close()
+	return errors.Join(writeErr, closeErr)
 }
 
 func listProduction(root string, item target) ([]string, error) {
@@ -364,9 +364,13 @@ func testTarget(root, generated, reports string, item target, mode string) error
 	}
 	if item.name == "core" {
 		entries, err := os.ReadDir(item.owner)
-		if err != nil { return err }
+		if err != nil {
+			return err
+		}
 		for _, entry := range entries {
-			if !entry.IsDir() { continue }
+			if !entry.IsDir() {
+				continue
+			}
 			candidates = append(candidates, filepath.Join(rel, entry.Name(), "internal", "resources", "tests", "unit-test"))
 		}
 	}
@@ -430,20 +434,24 @@ func Score(path string) (int64, int64, error) {
 	if err != nil {
 		return 0, 0, err
 	}
-	normalized,total,covered,err:=ReadProfile(file,path)
-	if err!=nil{return 0,0,err}
+	normalized, total, covered, err := ReadProfile(file, path)
+	if err != nil {
+		return 0, 0, err
+	}
 	if err := generatedoutput.WriteAtomic(path, "coverage-*.out", normalized); err != nil {
-		return 0,0,err
+		return 0, 0, err
 	}
 	return total, covered, nil
 }
 
 // ReadProfile validates and merges an input profile independently of output
 // persistence. It owns the reader and reports a failed close on success.
-func ReadProfile(file io.ReadCloser,path string)(data []byte,total,covered int64,err error){
-	defer func(){
-		closeErr:=file.Close()
-		if err==nil && closeErr!=nil{data,total,covered,err=nil,0,0,closeErr}
+func ReadProfile(file io.ReadCloser, path string) (data []byte, total, covered int64, err error) {
+	defer func() {
+		closeErr := file.Close()
+		if err == nil && closeErr != nil {
+			data, total, covered, err = nil, 0, 0, closeErr
+		}
 	}()
 	scanner := bufio.NewScanner(file)
 	if !scanner.Scan() {
@@ -490,14 +498,14 @@ func ReadProfile(file io.ReadCloser,path string)(data []byte,total,covered int64
 	if err := scanner.Err(); err != nil {
 		return nil, 0, 0, err
 	}
-	
+
 	// Keep the first-seen order to retain Go cover's source-block ordering.
 	// Rewrite the profile so HTML rendering and the strict gate use identical,
 	// deduplicated instrumentation rather than different coverage denominators.
 	var normalized strings.Builder
 	normalized.WriteString(mode)
 	normalized.WriteByte('\n')
-	
+
 	for _, key := range order {
 		block := records[key]
 		total += block.statements
@@ -506,5 +514,5 @@ func ReadProfile(file io.ReadCloser,path string)(data []byte,total,covered int64
 		}
 		fmt.Fprintf(&normalized, "%s %d %d\n", key, block.statements, block.hits)
 	}
-	return []byte(normalized.String()),total,covered,nil
+	return []byte(normalized.String()), total, covered, nil
 }

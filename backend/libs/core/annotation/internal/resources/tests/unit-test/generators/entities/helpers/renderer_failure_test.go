@@ -9,22 +9,24 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
+	fixture "grovehub/libs/core/annotation/internal/resources/tests/helpers"
 	"grovehub/libs/core/annotation/internal/src/generators/entities/helpers"
 	"grovehub/libs/core/annotation/internal/src/helpers/layout"
-	fixture "grovehub/libs/core/annotation/internal/resources/tests/helpers"
 )
 
-var _=Describe("Accessor syntax formatting failures",func(){
-	It("reports failed field formatting without writing a partial accessor",func(){
-		root:=GinkgoT().TempDir()
-		fixture.Write(root,"source.go","package entity\n// @Builder\ntype Record struct{ Name string; Other string }")
-		out:=filepath.Join(root,"generated")
-		failure:=errors.New("renderer failed")
-		calls:=0
-		Expect(helpers.GenerateWithRenderer(root,out,func(set *token.FileSet,node ast.Node)(string,error){
+var _ = Describe("Accessor syntax formatting failures", func() {
+	It("reports failed field formatting without writing a partial accessor", func() {
+		root := GinkgoT().TempDir()
+		fixture.Write(root, "source.go", "package entity\n// @Builder\ntype Record struct{ Name string; Other string }")
+		out := filepath.Join(root, "generated")
+		failure := errors.New("renderer failed")
+		calls := 0
+		Expect(helpers.GenerateWithRenderer(root, out, func(set *token.FileSet, node ast.Node) (string, error) {
 			calls++
-			if calls==2{return "",failure}
-			return layout.Render(set,node)
+			if calls == 2 {
+				return "", failure
+			}
+			return layout.Render(set, node)
 		})).To(MatchError(failure))
 		Expect(out).NotTo(BeAnExistingFile())
 	})

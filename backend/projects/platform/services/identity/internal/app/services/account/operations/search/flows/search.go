@@ -7,9 +7,9 @@ import (
 )
 
 type Search struct {
-	Request coresearch.Request
+	Request  coresearch.Request
 	TenantID string
-	Query coresearch.Query[string]
+	Query    coresearch.Query[string]
 	Accounts coresearch.QueryResult[entity.Account]
-	Result coresearch.Result[accountdto.Account]
+	Result   coresearch.Result[accountdto.Account]
 }

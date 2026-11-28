@@ -9,11 +9,11 @@ import (
 	coredatabase "grovehub/libs/core/database"
 )
 
-var _ = Describe("Public database constructors",func(){
-	It("rejects invalid connection configuration",func(){
-		_,err:=coredatabase.NewDB("://invalid")
+var _ = Describe("Public database constructors", func() {
+	It("rejects invalid connection configuration", func() {
+		_, err := coredatabase.NewDB("://invalid")
 		Expect(err).To(HaveOccurred())
-		pool,err:=coredatabase.OpenProjectPool(context.Background(),"postgres://school:secret@localhost/school?user=other")
+		pool, err := coredatabase.OpenProjectPool(context.Background(), "postgres://school:secret@localhost/school?user=other")
 		Expect(err).To(HaveOccurred())
 		Expect(pool).To(BeNil())
 		Expect(err.Error()).NotTo(ContainSubstring("secret"))

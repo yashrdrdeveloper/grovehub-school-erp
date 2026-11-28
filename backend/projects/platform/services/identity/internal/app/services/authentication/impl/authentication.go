@@ -3,62 +3,62 @@ package impl
 
 import (
 	"context"
-	schoolgateway "grovehub/libs/platform/session"
 	"errors"
-	"time"
-	"grovehub/services/identity/internal/app/entity"
-	secrets "grovehub/services/identity/internal/app/services/authentication/helpers"
 	coredatabase "grovehub/libs/core/database"
-	accountrepo "grovehub/services/identity/internal/app/repository/account"
-	sessionrepo "grovehub/services/identity/internal/app/repository/session"
-	tokenrepo "grovehub/services/identity/internal/app/repository/passwordtoken"
-	accountmapper "grovehub/services/identity/internal/app/mappers/account"
-	credential "grovehub/services/identity/internal/app/services/credential"
-	registration "grovehub/services/identity/internal/app/services/registration"
-	auth "grovehub/services/identity/internal/app/services/authentication"
-	authdto "grovehub/services/identity/internal/app/dto/authentication"
+	schoolgateway "grovehub/libs/platform/session"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
-	strategies "grovehub/services/identity/internal/app/services/authentication/strategies"
-	normal "grovehub/services/identity/internal/app/services/authentication/strategies/normal"
-	refresh "grovehub/services/identity/internal/app/services/authentication/operations/refresh"
-	forgot "grovehub/services/identity/internal/app/services/authentication/operations/forgot"
-	forgotimpl "grovehub/services/identity/internal/app/services/authentication/operations/forgot/impl"
-	exchange "grovehub/services/identity/internal/app/services/authentication/operations/exchange"
-	exchangeimpl "grovehub/services/identity/internal/app/services/authentication/operations/exchange/impl"
-	resetpassword "grovehub/services/identity/internal/app/services/authentication/operations/resetpassword"
-	resetpasswordimpl "grovehub/services/identity/internal/app/services/authentication/operations/resetpassword/impl"
-	reauthenticate "grovehub/services/identity/internal/app/services/authentication/operations/reauthenticate"
-	reauthenticateimpl "grovehub/services/identity/internal/app/services/authentication/operations/reauthenticate/impl"
+	authdto "grovehub/services/identity/internal/app/dto/authentication"
+	"grovehub/services/identity/internal/app/entity"
+	accountmapper "grovehub/services/identity/internal/app/mappers/account"
+	accountrepo "grovehub/services/identity/internal/app/repository/account"
+	tokenrepo "grovehub/services/identity/internal/app/repository/passwordtoken"
+	sessionrepo "grovehub/services/identity/internal/app/repository/session"
+	auth "grovehub/services/identity/internal/app/services/authentication"
+	secrets "grovehub/services/identity/internal/app/services/authentication/helpers"
 	changepassword "grovehub/services/identity/internal/app/services/authentication/operations/changepassword"
 	changepasswordimpl "grovehub/services/identity/internal/app/services/authentication/operations/changepassword/impl"
+	exchange "grovehub/services/identity/internal/app/services/authentication/operations/exchange"
+	exchangeimpl "grovehub/services/identity/internal/app/services/authentication/operations/exchange/impl"
+	forgot "grovehub/services/identity/internal/app/services/authentication/operations/forgot"
+	forgotimpl "grovehub/services/identity/internal/app/services/authentication/operations/forgot/impl"
 	logout "grovehub/services/identity/internal/app/services/authentication/operations/logout"
 	logoutimpl "grovehub/services/identity/internal/app/services/authentication/operations/logout/impl"
 	logoutall "grovehub/services/identity/internal/app/services/authentication/operations/logoutall"
 	logoutallimpl "grovehub/services/identity/internal/app/services/authentication/operations/logoutall/impl"
-	sessions "grovehub/services/identity/internal/app/services/authentication/operations/sessions"
-	sessionsimpl "grovehub/services/identity/internal/app/services/authentication/operations/sessions/impl"
-	revokesession "grovehub/services/identity/internal/app/services/authentication/operations/revokesession"
-	revokesessionimpl "grovehub/services/identity/internal/app/services/authentication/operations/revokesession/impl"
 	me "grovehub/services/identity/internal/app/services/authentication/operations/me"
 	meimpl "grovehub/services/identity/internal/app/services/authentication/operations/me/impl"
+	reauthenticate "grovehub/services/identity/internal/app/services/authentication/operations/reauthenticate"
+	reauthenticateimpl "grovehub/services/identity/internal/app/services/authentication/operations/reauthenticate/impl"
+	refresh "grovehub/services/identity/internal/app/services/authentication/operations/refresh"
+	resetpassword "grovehub/services/identity/internal/app/services/authentication/operations/resetpassword"
+	resetpasswordimpl "grovehub/services/identity/internal/app/services/authentication/operations/resetpassword/impl"
+	revokesession "grovehub/services/identity/internal/app/services/authentication/operations/revokesession"
+	revokesessionimpl "grovehub/services/identity/internal/app/services/authentication/operations/revokesession/impl"
+	sessions "grovehub/services/identity/internal/app/services/authentication/operations/sessions"
+	sessionsimpl "grovehub/services/identity/internal/app/services/authentication/operations/sessions/impl"
+	strategies "grovehub/services/identity/internal/app/services/authentication/strategies"
+	normal "grovehub/services/identity/internal/app/services/authentication/strategies/normal"
+	credential "grovehub/services/identity/internal/app/services/credential"
+	registration "grovehub/services/identity/internal/app/services/registration"
+	"time"
 )
 
 // @Service
 type Service struct {
-	accounts accountrepo.Repository
-	tokens tokenrepo.Repository
-	login strategies.LoginStrategy
-	refresh refresh.Operation
-	forgot forgot.Operation
-	exchange exchange.Operation
-	resetpassword resetpassword.Operation
+	accounts       accountrepo.Repository
+	tokens         tokenrepo.Repository
+	login          strategies.LoginStrategy
+	refresh        refresh.Operation
+	forgot         forgot.Operation
+	exchange       exchange.Operation
+	resetpassword  resetpassword.Operation
 	reauthenticate reauthenticate.Operation
 	changepassword changepassword.Operation
-	logout logout.Operation
-	logoutall logoutall.Operation
-	sessions sessions.Operation
-	revokesession revokesession.Operation
-	me me.Operation
+	logout         logout.Operation
+	logoutall      logoutall.Operation
+	sessions       sessions.Operation
+	revokesession  revokesession.Operation
+	me             me.Operation
 }
 
 var _ auth.Service = (*Service)(nil)
@@ -69,20 +69,20 @@ func New(accounts accountrepo.Repository, sessions sessionrepo.Repository, token
 		reader = readers[0]
 	}
 	return &Service{
-		accounts: accounts,
-		tokens: tokens,
-		login: normal.New(accounts, sessions, credentials),
-		refresh: refresh.New(accounts, sessions),
-		forgot: forgotimpl.New(accounts, invitations, unit),
-		exchange: exchangeimpl.New(accounts, tokens, unit),
-		resetpassword: resetpasswordimpl.New(accounts, sessions, tokens, credentials, unit),
+		accounts:       accounts,
+		tokens:         tokens,
+		login:          normal.New(accounts, sessions, credentials),
+		refresh:        refresh.New(accounts, sessions),
+		forgot:         forgotimpl.New(accounts, invitations, unit),
+		exchange:       exchangeimpl.New(accounts, tokens, unit),
+		resetpassword:  resetpasswordimpl.New(accounts, sessions, tokens, credentials, unit),
 		reauthenticate: reauthenticateimpl.New(sessions, credentials),
 		changepassword: changepasswordimpl.New(sessions, credentials, unit),
-		logout: logoutimpl.New(sessions),
-		logoutall: logoutallimpl.New(sessions),
-		sessions: sessionsimpl.New(sessions),
-		revokesession: revokesessionimpl.New(sessions),
-		me: meimpl.New(reader, mapper),
+		logout:         logoutimpl.New(sessions),
+		logoutall:      logoutallimpl.New(sessions),
+		sessions:       sessionsimpl.New(sessions),
+		revokesession:  revokesessionimpl.New(sessions),
+		me:             meimpl.New(reader, mapper),
 	}
 }
 
@@ -102,31 +102,40 @@ func (service *Service) Exchange(ctx context.Context, secret string, purpose str
 	return service.exchange.Execute(ctx, secret, purpose)
 }
 
-
 func (service *Service) InspectProof(ctx context.Context, proof string, purpose string) (authdto.GrantResult, error) {
-  var tokenPurpose entity.TokenPurpose
-  var expected entity.AccountStatus
-  switch purpose {
-  case "recovery":
-    tokenPurpose, expected = entity.PasswordReset, entity.Active
-  case "invitation":
-    tokenPurpose, expected = entity.AccountSetup, entity.PendingSetup
-  case "reset-grant":
-    tokenPurpose, expected = entity.ResetGrant, entity.Active
-  default:
-    return authdto.GrantResult{}, tokenrepo.ErrInvalidToken
-  }
-  digest, err := secrets.Digest(proof, 32)
-  if err != nil { return authdto.GrantResult{}, tokenrepo.ErrInvalidToken }
-  now := time.Now().UTC()
-  token, err := service.tokens.Inspect(ctx, digest, tokenPurpose, now)
-  if err != nil { return authdto.GrantResult{}, err }
-  account, err := service.accounts.FindByID(ctx, token.AccountID)
-  if err != nil { return authdto.GrantResult{}, errors.New("invalid or expired proof") }
-  if account.Status != expected || schoolgateway.CheckAccountGeneration(ctx, account.TenantID, token.SessionGeneration) != nil { return authdto.GrantResult{}, tokenrepo.ErrInvalidToken }
-  remaining := int(time.Until(token.ExpiresAt).Seconds())
-  if remaining < 1 { return authdto.GrantResult{}, tokenrepo.ErrInvalidToken }
-  return authdto.GrantResult{Verified:true, Purpose:string(tokenPurpose), ExpiresIn:remaining}, nil
+	var tokenPurpose entity.TokenPurpose
+	var expected entity.AccountStatus
+	switch purpose {
+	case "recovery":
+		tokenPurpose, expected = entity.PasswordReset, entity.Active
+	case "invitation":
+		tokenPurpose, expected = entity.AccountSetup, entity.PendingSetup
+	case "reset-grant":
+		tokenPurpose, expected = entity.ResetGrant, entity.Active
+	default:
+		return authdto.GrantResult{}, tokenrepo.ErrInvalidToken
+	}
+	digest, err := secrets.Digest(proof, 32)
+	if err != nil {
+		return authdto.GrantResult{}, tokenrepo.ErrInvalidToken
+	}
+	now := time.Now().UTC()
+	token, err := service.tokens.Inspect(ctx, digest, tokenPurpose, now)
+	if err != nil {
+		return authdto.GrantResult{}, err
+	}
+	account, err := service.accounts.FindByID(ctx, token.AccountID)
+	if err != nil {
+		return authdto.GrantResult{}, errors.New("invalid or expired proof")
+	}
+	if account.Status != expected || schoolgateway.CheckAccountGeneration(ctx, account.TenantID, token.SessionGeneration) != nil {
+		return authdto.GrantResult{}, tokenrepo.ErrInvalidToken
+	}
+	remaining := int(time.Until(token.ExpiresAt).Seconds())
+	if remaining < 1 {
+		return authdto.GrantResult{}, tokenrepo.ErrInvalidToken
+	}
+	return authdto.GrantResult{Verified: true, Purpose: string(tokenPurpose), ExpiresIn: remaining}, nil
 }
 
 func (service *Service) ResetPassword(ctx context.Context, grant string, password string) error {

@@ -2,11 +2,11 @@ package envelope_test
 
 import (
 	"context"
-	"time"
 	"grovehub/libs/core/events/internal/src/contracts"
-	"grovehub/libs/core/events/internal/src/operations/envelope"
 	"grovehub/libs/core/events/internal/src/operations/causation"
 	"grovehub/libs/core/events/internal/src/operations/correlation"
+	"grovehub/libs/core/events/internal/src/operations/envelope"
+	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

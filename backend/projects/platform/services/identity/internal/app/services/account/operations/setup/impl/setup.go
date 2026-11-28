@@ -2,27 +2,27 @@ package impl
 
 import (
 	"context"
+	"errors"
+	coredatabase "grovehub/libs/core/database"
 	schoolgateway "grovehub/libs/platform/session"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
-	"errors"
-	"time"
 	"grovehub/services/identity/internal/app/entity"
-	secrets "grovehub/services/identity/internal/app/services/authentication/helpers"
-	accounthelpers "grovehub/services/identity/internal/app/services/account/helpers"
+	accountproducer "grovehub/services/identity/internal/app/events/producers/account"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	tokenrepo "grovehub/services/identity/internal/app/repository/passwordtoken"
-	credential "grovehub/services/identity/internal/app/services/credential"
-	coredatabase "grovehub/libs/core/database"
-	accountproducer "grovehub/services/identity/internal/app/events/producers/account"
+	accounthelpers "grovehub/services/identity/internal/app/services/account/helpers"
 	setup "grovehub/services/identity/internal/app/services/account/operations/setup"
+	secrets "grovehub/services/identity/internal/app/services/authentication/helpers"
+	credential "grovehub/services/identity/internal/app/services/credential"
+	"time"
 )
 
 type Service struct {
-	accounts accountrepo.Repository
-	tokens tokenrepo.Repository
+	accounts    accountrepo.Repository
+	tokens      tokenrepo.Repository
 	credentials credential.Service
-	unit coredatabase.UnitOfWork
-	events accountproducer.ChangedProducer
+	unit        coredatabase.UnitOfWork
+	events      accountproducer.ChangedProducer
 }
 
 var _ setup.Operation = (*Service)(nil)
@@ -38,9 +38,13 @@ func (op *Service) Execute(ctx context.Context, grant string, input accountdto.S
 	}
 
 	proof, err := op.tokens.Inspect(ctx, digest, entity.SetupGrant, time.Now().UTC())
-	if err != nil { return accountdto.SetupResult{}, err }
+	if err != nil {
+		return accountdto.SetupResult{}, err
+	}
 	initial, err := op.accounts.FindByID(ctx, proof.AccountID)
-	if err != nil || initial.Status != entity.PendingSetup || schoolgateway.CheckAccountGeneration(ctx, initial.TenantID, proof.SessionGeneration) != nil { return accountdto.SetupResult{}, tokenrepo.ErrInvalidToken }
+	if err != nil || initial.Status != entity.PendingSetup || schoolgateway.CheckAccountGeneration(ctx, initial.TenantID, proof.SessionGeneration) != nil {
+		return accountdto.SetupResult{}, tokenrepo.ErrInvalidToken
+	}
 
 	// The attempt is committed independently so transaction rollback cannot refund it.
 	if err := op.tokens.ReserveSetupAttempt(ctx, digest, time.Now().UTC()); err != nil {
@@ -61,7 +65,9 @@ func (op *Service) Execute(ctx context.Context, grant string, input accountdto.S
 			return errors.New("account not pending setup")
 		}
 
-		if schoolgateway.CheckAccountGeneration(transactionCtx, accountEntity.TenantID, proof.SessionGeneration) != nil { return tokenrepo.ErrInvalidToken }
+		if schoolgateway.CheckAccountGeneration(transactionCtx, accountEntity.TenantID, proof.SessionGeneration) != nil {
+			return tokenrepo.ErrInvalidToken
+		}
 		before := accountEntity
 		accountEntity.Status = entity.Active
 		accountEntity.Version++
@@ -79,9 +85,9 @@ func (op *Service) Execute(ctx context.Context, grant string, input accountdto.S
 		}
 
 		result = accountdto.SetupResult{
-			AccountID: accountID,
-			PersonGID: accountEntity.PersonGID,
-			Status: string(accountEntity.Status),
+			AccountID:      accountID,
+			PersonGID:      accountEntity.PersonGID,
+			Status:         string(accountEntity.Status),
 			SetupCompleted: true,
 		}
 		return nil

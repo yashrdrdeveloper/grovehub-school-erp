@@ -14,8 +14,8 @@ var _ = Describe("Run", func() {
 	It("rejects every missing callback before invoking any operation", func() {
 		valid := contracts.Rules[int, string]{
 			ShouldEmit: func(int) bool { Fail("unexpected eligibility check"); return false },
-			Build: func(context.Context, int) (string, error) { Fail("unexpected build"); return "", nil },
-			Enqueue: func(context.Context, string) error { Fail("unexpected enqueue"); return nil },
+			Build:      func(context.Context, int) (string, error) { Fail("unexpected build"); return "", nil },
+			Enqueue:    func(context.Context, string) error { Fail("unexpected enqueue"); return nil },
 		}
 		for _, rules := range []contracts.Rules[int, string]{
 			{},
@@ -30,8 +30,8 @@ var _ = Describe("Run", func() {
 	It("does not build or enqueue an ineligible event", func() {
 		rules := contracts.Rules[int, string]{
 			ShouldEmit: func(value int) bool { return value > 0 },
-			Build: func(context.Context, int) (string, error) { Fail("unexpected build"); return "", nil },
-			Enqueue: func(context.Context, string) error { Fail("unexpected enqueue"); return nil },
+			Build:      func(context.Context, int) (string, error) { Fail("unexpected build"); return "", nil },
+			Enqueue:    func(context.Context, string) error { Fail("unexpected enqueue"); return nil },
 		}
 		Expect(pipeline.Run(context.Background(), 0, rules)).To(Succeed())
 	})
@@ -63,8 +63,8 @@ var _ = Describe("Run", func() {
 		sentinel := errors.New("build failed")
 		rules := contracts.Rules[int, string]{
 			ShouldEmit: func(int) bool { return true },
-			Build: func(context.Context, int) (string, error) { return "", sentinel },
-			Enqueue: func(context.Context, string) error { Fail("unexpected enqueue"); return nil },
+			Build:      func(context.Context, int) (string, error) { return "", sentinel },
+			Enqueue:    func(context.Context, string) error { Fail("unexpected enqueue"); return nil },
 		}
 		Expect(pipeline.Run(context.Background(), 1, rules)).To(BeIdenticalTo(sentinel))
 	})
@@ -73,8 +73,8 @@ var _ = Describe("Run", func() {
 		sentinel := errors.New("enqueue failed")
 		rules := contracts.Rules[int, string]{
 			ShouldEmit: func(int) bool { return true },
-			Build: func(context.Context, int) (string, error) { return "message", nil },
-			Enqueue: func(context.Context, string) error { return sentinel },
+			Build:      func(context.Context, int) (string, error) { return "message", nil },
+			Enqueue:    func(context.Context, string) error { return sentinel },
 		}
 		Expect(pipeline.Run(context.Background(), 1, rules)).To(BeIdenticalTo(sentinel))
 	})

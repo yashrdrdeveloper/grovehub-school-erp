@@ -17,9 +17,9 @@ import (
 
 func (controller *Controller) SubmitLifecycle(writer http.ResponseWriter, request *http.Request) {
 	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.LifecycleRequest, dto.Summary]{
-		Decode: corehttp.DecodeStrictJSON,
+		Decode:             corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
-		Fallback: definitions.Internal,
+		Fallback:           definitions.Internal,
 		Service: func(ctx context.Context, input dto.LifecycleRequest) (corepipeline.Result[dto.Summary], error) {
 			if controller.mutations == nil {
 				return corepipeline.Result[dto.Summary]{}, helpers.Map(authorization.ErrUnavailable)
@@ -33,9 +33,9 @@ func (controller *Controller) SubmitLifecycle(writer http.ResponseWriter, reques
 
 func (controller *Controller) SubmitPermissions(writer http.ResponseWriter, request *http.Request) {
 	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.PermissionRequest, dto.Summary]{
-		Decode: corehttp.DecodeStrictJSON,
+		Decode:             corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
-		Fallback: definitions.Internal,
+		Fallback:           definitions.Internal,
 		Service: func(ctx context.Context, input dto.PermissionRequest) (corepipeline.Result[dto.Summary], error) {
 			if controller.mutations == nil {
 				return corepipeline.Result[dto.Summary]{}, helpers.Map(authorization.ErrUnavailable)
@@ -49,9 +49,9 @@ func (controller *Controller) SubmitPermissions(writer http.ResponseWriter, requ
 
 func (controller *Controller) SubmitAssignment(writer http.ResponseWriter, request *http.Request) {
 	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.AssignmentRequest, dto.Summary]{
-		Decode: corehttp.DecodeStrictJSON,
+		Decode:             corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
-		Fallback: definitions.Internal,
+		Fallback:           definitions.Internal,
 		Service: func(ctx context.Context, input dto.AssignmentRequest) (corepipeline.Result[dto.Summary], error) {
 			if controller.mutations == nil {
 				return corepipeline.Result[dto.Summary]{}, helpers.Map(authorization.ErrUnavailable)
@@ -65,10 +65,10 @@ func (controller *Controller) SubmitAssignment(writer http.ResponseWriter, reque
 
 func (controller *Controller) Approve(writer http.ResponseWriter, request *http.Request) {
 	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.DecisionRequest, dto.Summary]{
-		Decode: corehttp.DecodeStrictJSON,
+		Decode:             corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
-		InvalidParams: definitions.InvalidRequest,
-		Fallback: definitions.Internal,
+		InvalidParams:      definitions.InvalidRequest,
+		Fallback:           definitions.Internal,
 		Service: func(ctx context.Context, input dto.DecisionRequest) (corepipeline.Result[dto.Summary], error) {
 			if controller.mutations == nil {
 				return corepipeline.Result[dto.Summary]{}, helpers.Map(authorization.ErrUnavailable)
@@ -81,10 +81,10 @@ func (controller *Controller) Approve(writer http.ResponseWriter, request *http.
 
 func (controller *Controller) Reject(writer http.ResponseWriter, request *http.Request) {
 	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.DecisionRequest, dto.Summary]{
-		Decode: corehttp.DecodeStrictJSON,
+		Decode:             corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
-		InvalidParams: definitions.InvalidRequest,
-		Fallback: definitions.Internal,
+		InvalidParams:      definitions.InvalidRequest,
+		Fallback:           definitions.Internal,
 		Service: func(ctx context.Context, input dto.DecisionRequest) (corepipeline.Result[dto.Summary], error) {
 			if controller.mutations == nil {
 				return corepipeline.Result[dto.Summary]{}, helpers.Map(authorization.ErrUnavailable)
@@ -97,10 +97,10 @@ func (controller *Controller) Reject(writer http.ResponseWriter, request *http.R
 
 func (controller *Controller) Cancel(writer http.ResponseWriter, request *http.Request) {
 	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.VersionRequest, dto.Summary]{
-		Decode: corehttp.DecodeStrictJSON,
+		Decode:             corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
-		InvalidParams: definitions.InvalidRequest,
-		Fallback: definitions.Internal,
+		InvalidParams:      definitions.InvalidRequest,
+		Fallback:           definitions.Internal,
 		Service: func(ctx context.Context, input dto.VersionRequest) (corepipeline.Result[dto.Summary], error) {
 			if controller.mutations == nil {
 				return corepipeline.Result[dto.Summary]{}, helpers.Map(authorization.ErrUnavailable)
@@ -113,10 +113,10 @@ func (controller *Controller) Cancel(writer http.ResponseWriter, request *http.R
 
 func (controller *Controller) Execute(writer http.ResponseWriter, request *http.Request) {
 	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.VersionRequest, dto.Summary]{
-		Decode: corehttp.DecodeStrictJSON,
+		Decode:             corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
-		InvalidParams: definitions.InvalidRequest,
-		Fallback: definitions.Internal,
+		InvalidParams:      definitions.InvalidRequest,
+		Fallback:           definitions.Internal,
 		Service: func(ctx context.Context, input dto.VersionRequest) (corepipeline.Result[dto.Summary], error) {
 			if controller.executor == nil {
 				return corepipeline.Result[dto.Summary]{}, helpers.Map(authorization.ErrUnavailable)

@@ -11,11 +11,11 @@ import (
 
 	ginkgo "github.com/onsi/ginkgo/v2"
 
-	core "grovehub/libs/core/gateway"
 	. "grovehub/launcher/internal/src/services/gateway/operations/workload"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/internalcatalog"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/operatoraudit"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/operatorauditread"
+	core "grovehub/libs/core/gateway"
 )
 
 func verifyOperatorAuditBoundary() {

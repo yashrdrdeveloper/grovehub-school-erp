@@ -27,10 +27,12 @@ type Result[T any] struct {
 	Headers    http.Header
 }
 
-func OK[T any](data T) Result[T] { return Result[T]{StatusCode: http.StatusOK, Data: data} }
+func OK[T any](data T) Result[T]      { return Result[T]{StatusCode: http.StatusOK, Data: data} }
 func Created[T any](data T) Result[T] { return Result[T]{StatusCode: http.StatusCreated, Data: data} }
 func CreatedOrOK[T any](data T, created bool) Result[T] {
-	if created { return Created(data) }
+	if created {
+		return Created(data)
+	}
 	return OK(data)
 }
 
@@ -38,18 +40,18 @@ func CreatedOrOK[T any](data T, created bool) Result[T] {
 // calling Service. Invalid* definitions are for transport/DTO input failures;
 // Fallback is used only when a service or pipeline error is not classified.
 type Config[Path, Query, Body, Response any] struct {
-	Path        coreannotation.ValidationRules[Path]
-	Query       coreannotation.ValidationRules[Query]
-	Body        coreannotation.ValidationRules[Body]
-	Validate    func(Input[Path, Query, Body]) error
-	Service     func(context.Context, Input[Path, Query, Body]) (Result[Response], error)
-	Decode      func(*http.Request, any) error
-	StrictQuery bool
-	InvalidPath coreerrors.Definition
+	Path         coreannotation.ValidationRules[Path]
+	Query        coreannotation.ValidationRules[Query]
+	Body         coreannotation.ValidationRules[Body]
+	Validate     func(Input[Path, Query, Body]) error
+	Service      func(context.Context, Input[Path, Query, Body]) (Result[Response], error)
+	Decode       func(*http.Request, any) error
+	StrictQuery  bool
+	InvalidPath  coreerrors.Definition
 	InvalidQuery coreerrors.Definition
-	InvalidBody coreerrors.Definition
-	Fallback    coreerrors.Definition
-	Writer      Writer[Response]
+	InvalidBody  coreerrors.Definition
+	Fallback     coreerrors.Definition
+	Writer       Writer[Response]
 }
 
 // DecodeError reports a bad request body without reflecting user-supplied data.
@@ -62,8 +64,12 @@ func (err *DecodeError) Unwrap() error { return err.Err }
 // Prefer Run for HTTP controllers, so error handling and response output are shared.
 func ReadBody[T any](request *http.Request, decode func(*http.Request, any) error, rules coreannotation.ValidationRules[T]) (T, error) {
 	var value T
-	if decode == nil { decode = corehttp.DecodeJSON }
-	if err := decode(request, &value); err != nil { return value, &DecodeError{Err: err} }
+	if decode == nil {
+		decode = corehttp.DecodeJSON
+	}
+	if err := decode(request, &value); err != nil {
+		return value, &DecodeError{Err: err}
+	}
 	return coreannotation.Process(value, rules)
 }
 

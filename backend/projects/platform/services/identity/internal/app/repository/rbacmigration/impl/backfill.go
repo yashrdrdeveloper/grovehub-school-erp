@@ -9,8 +9,8 @@ import (
 	"gorm.io/gorm"
 
 	coredatabase "grovehub/libs/core/database"
-	authorityconstants "grovehub/services/identity/internal/app/repository/authority/constants"
 	accountroleimpl "grovehub/services/identity/internal/app/repository/accountrole/impl"
+	authorityconstants "grovehub/services/identity/internal/app/repository/authority/constants"
 	"grovehub/services/identity/internal/app/repository/rbacmigration/constants"
 	"grovehub/services/identity/internal/app/services/rbacmigration"
 	"grovehub/services/identity/internal/app/services/rbacmigration/operations/plan"

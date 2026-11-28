@@ -1,9 +1,9 @@
 package restricted_test
 
 import (
+	"grovehub/libs/core/gateway/internal/src/operations/restricted"
 	"net/http"
 	"net/http/httptest"
-	"grovehub/libs/core/gateway/internal/src/operations/restricted"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

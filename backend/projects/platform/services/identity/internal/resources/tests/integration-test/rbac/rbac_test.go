@@ -18,21 +18,21 @@ import (
 	"gorm.io/gorm"
 
 	schoolgateway "grovehub/libs/platform/session"
-	infrastructure "grovehub/services/infrastructure"
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/constants/persona"
 	"grovehub/services/identity/internal/app/entity"
-	rolerepo "grovehub/services/identity/internal/app/repository/role"
-	roleimpl "grovehub/services/identity/internal/app/repository/role/impl"
 	authorizationrepo "grovehub/services/identity/internal/app/repository/authorization/impl"
 	registryrepo "grovehub/services/identity/internal/app/repository/registry"
 	registryimpl "grovehub/services/identity/internal/app/repository/registry/impl"
+	rolerepo "grovehub/services/identity/internal/app/repository/role"
+	roleimpl "grovehub/services/identity/internal/app/repository/role/impl"
 	"grovehub/services/identity/internal/app/services/authorization"
 	authorizationimpl "grovehub/services/identity/internal/app/services/authorization/impl"
 	"grovehub/services/identity/internal/app/services/registry"
 	registryservice "grovehub/services/identity/internal/app/services/registry/impl"
 	"grovehub/services/identity/internal/resources/migrations"
+	infrastructure "grovehub/services/infrastructure"
 )
 
 func TestRBACPostgres(t *testing.T) {
@@ -96,7 +96,7 @@ var _ = Describe("RBAC persistence against PostgreSQL", func() {
 		Expect(draftCount).To(BeZero())
 
 		update := rolerepo.MetadataUpdate{
-			Draft: rolerepo.Draft{TenantID: "school-a", ActorID: actorID, Name: "Lead Teacher", Personas: []persona.Code{persona.Teacher}},
+			Draft:  rolerepo.Draft{TenantID: "school-a", ActorID: actorID, Name: "Lead Teacher", Personas: []persona.Code{persona.Teacher}},
 			RoleID: createdRole.Role.RoleID, Version: 1,
 		}
 		updatedRole, err := roles.UpdateMetadata(ctx, update)
@@ -112,7 +112,7 @@ var _ = Describe("RBAC persistence against PostgreSQL", func() {
 		Expect(err).To(MatchError(rolerepo.ErrNotFound))
 		update.TenantID = "school-a"
 		update.Name = "Concurrent edit"
-		type outcome struct { err error }
+		type outcome struct{ err error }
 		outcomes := make(chan outcome, 2)
 		for range 2 {
 			go func() {
@@ -138,8 +138,8 @@ var _ = Describe("RBAC persistence against PostgreSQL", func() {
 		Expect(err).NotTo(HaveOccurred())
 		requestSearch := coresearch.Request{
 			PageInfo: coresearch.PageRequest{PageNumber: 1, RowSize: 1},
-			Sort: []coresearch.Sort{{Field: roledto.FieldName, Direction: coresearch.DirectionAscending}, {Field: roledto.FieldCreatedAt, Direction: coresearch.DirectionDescending}},
-			Filters: []coresearch.Filter{{Field: roledto.FieldPersonas, Operator: coresearch.OperatorEquals, Values: []string{"TEACHER"}}},
+			Sort:     []coresearch.Sort{{Field: roledto.FieldName, Direction: coresearch.DirectionAscending}, {Field: roledto.FieldCreatedAt, Direction: coresearch.DirectionDescending}},
+			Filters:  []coresearch.Filter{{Field: roledto.FieldPersonas, Operator: coresearch.OperatorEquals, Values: []string{"TEACHER"}}},
 		}
 		query, err := rolevalidator.NormalizeSearch(requestSearch)
 		Expect(err).NotTo(HaveOccurred())

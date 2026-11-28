@@ -6,8 +6,8 @@ import (
 	"grovehub/libs/core/search/internal/src/constants"
 )
 
-var _ = Describe("Pagination limits",func(){
-	It("preserves the shared defaults",func(){
+var _ = Describe("Pagination limits", func() {
+	It("preserves the shared defaults", func() {
 		Expect(constants.DefaultRows).To(Equal(25))
 		Expect(constants.MaxRows).To(Equal(100))
 	})

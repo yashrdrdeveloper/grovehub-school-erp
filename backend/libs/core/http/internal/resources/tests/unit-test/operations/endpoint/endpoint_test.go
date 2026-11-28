@@ -2,10 +2,10 @@ package endpoint_test
 
 import (
 	"context"
+	"grovehub/libs/core/http/internal/src/operations/endpoint"
+	corerequest "grovehub/libs/core/request"
 	"net/http"
 	"strings"
-	corerequest "grovehub/libs/core/request"
-	"grovehub/libs/core/http/internal/src/operations/endpoint"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -13,13 +13,15 @@ import (
 
 var _ = Describe("Call", func() {
 	It("dispatches through the handler and rejects invalid dependencies and paths", func() {
-		type params struct { ID string `path:"id"` }
+		type params struct {
+			ID string `path:"id"`
+		}
 		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			Expect(r.URL.Path).To(Equal("/items/a"))
 			_, err := w.Write([]byte(`{"success":true,"data":"ok"}`))
 			Expect(err).NotTo(HaveOccurred())
 		})
-		result, status, err := endpoint.Call[string](context.Background(), handler, "GET", "/items/{id}", params{ID:"a"}, nil)
+		result, status, err := endpoint.Call[string](context.Background(), handler, "GET", "/items/{id}", params{ID: "a"}, nil)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(result).To(Equal("ok"))
 		Expect(status).To(Equal(200))
@@ -27,7 +29,7 @@ var _ = Describe("Call", func() {
 		Expect(err).To(HaveOccurred())
 		_, _, err = endpoint.Call[string](context.Background(), nil, "GET", "/", nil, nil)
 		Expect(err).To(HaveOccurred())
-		_, _, err = endpoint.Call[string](context.Background(), handler, "GET", "/items/{id}", params{ID:".."}, nil)
+		_, _, err = endpoint.Call[string](context.Background(), handler, "GET", "/items/{id}", params{ID: ".."}, nil)
 		Expect(err).To(HaveOccurred())
 	})
 
@@ -42,8 +44,10 @@ var _ = Describe("Call", func() {
 
 var _ = Describe("CallRequest", func() {
 	It("encodes declared query values", func() {
-		type query struct { Value string `query:"value"` }
-		input := endpoint.Request[corerequest.Empty, query, corerequest.Empty]{Query:query{Value:"a b"}}
+		type query struct {
+			Value string `query:"value"`
+		}
+		input := endpoint.Request[corerequest.Empty, query, corerequest.Empty]{Query: query{Value: "a b"}}
 		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			Expect(r.URL.Query().Get("value")).To(Equal("a b"))
 			w.WriteHeader(204)

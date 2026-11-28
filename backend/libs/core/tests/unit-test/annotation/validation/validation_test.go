@@ -9,9 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	annotation "grovehub/libs/core/annotation"
-
 )
-
 
 type SampleNames struct {
 	FirstName  string `json:"firstName" normalize:"trim" validate:"notblank,maxrunes=100"`
@@ -44,9 +42,9 @@ var _ = Describe("DTO tag stages", func() {
 	It("normalizes embedded names before enforcing notblank/length rules", func() {
 		input := sampleCreate{
 			SampleNames: SampleNames{
-				FirstName: "  Amit  ",
+				FirstName:  "  Amit  ",
 				MiddleName: "  Kumar  ",
-				LastName: "  Singh  ",
+				LastName:   "  Singh  ",
 			},
 		}
 		normalized, err := annotation.NormalizeFields(input)
@@ -85,7 +83,7 @@ var _ = Describe("DTO tag stages", func() {
 	It("recursively validates nested contact slices after normalization", func() {
 		input := sampleCreate{
 			SampleNames: SampleNames{FirstName: "Riya", LastName: "Shah"},
-			Contacts: sampleContacts{Emails: []sampleValue{{Value: "   "}}},
+			Contacts:    sampleContacts{Emails: []sampleValue{{Value: "   "}}},
 		}
 		_, err := annotation.Process(input, annotation.ValidationRules[sampleCreate]{})
 		var invalid annotation.ValidationError
@@ -97,8 +95,8 @@ var _ = Describe("DTO tag stages", func() {
 	It("preserves PATCH omission and null semantics while checking supplied fields", func() {
 		cases := []struct {
 			payload string
-			field string
-			rule string
+			field   string
+			rule    string
 		}{
 			{`{}`, "", ""},
 			{`{"middleName":null,"contacts":null}`, "", ""},

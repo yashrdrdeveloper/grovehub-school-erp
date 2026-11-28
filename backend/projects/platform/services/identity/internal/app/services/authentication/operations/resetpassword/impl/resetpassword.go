@@ -2,25 +2,25 @@ package impl
 
 import (
 	"context"
-	schoolgateway "grovehub/libs/platform/session"
 	"errors"
-	"time"
-	"grovehub/services/identity/internal/app/entity"
-	secrets "grovehub/services/identity/internal/app/services/authentication/helpers"
-	accountrepo "grovehub/services/identity/internal/app/repository/account"
-	sessionrepo "grovehub/services/identity/internal/app/repository/session"
-	tokenrepo "grovehub/services/identity/internal/app/repository/passwordtoken"
-	credential "grovehub/services/identity/internal/app/services/credential"
 	coredatabase "grovehub/libs/core/database"
+	schoolgateway "grovehub/libs/platform/session"
+	"grovehub/services/identity/internal/app/entity"
+	accountrepo "grovehub/services/identity/internal/app/repository/account"
+	tokenrepo "grovehub/services/identity/internal/app/repository/passwordtoken"
+	sessionrepo "grovehub/services/identity/internal/app/repository/session"
+	secrets "grovehub/services/identity/internal/app/services/authentication/helpers"
 	resetpassword "grovehub/services/identity/internal/app/services/authentication/operations/resetpassword"
+	credential "grovehub/services/identity/internal/app/services/credential"
+	"time"
 )
 
 type Service struct {
-	accounts accountrepo.Repository
-	sessions sessionrepo.Repository
-	tokens tokenrepo.Repository
+	accounts   accountrepo.Repository
+	sessions   sessionrepo.Repository
+	tokens     tokenrepo.Repository
 	credential credential.Service
-	unit coredatabase.UnitOfWork
+	unit       coredatabase.UnitOfWork
 }
 
 var _ resetpassword.Operation = (*Service)(nil)
@@ -47,10 +47,16 @@ func (op *Service) Execute(ctx context.Context, grant string, password string) e
 		if account.Status != entity.Active {
 			return errors.New("invalid account status")
 		}
-		if schoolgateway.CheckAccountGeneration(transactionCtx, account.TenantID, proof.SessionGeneration) != nil { return tokenrepo.ErrInvalidToken }
+		if schoolgateway.CheckAccountGeneration(transactionCtx, account.TenantID, proof.SessionGeneration) != nil {
+			return tokenrepo.ErrInvalidToken
+		}
 		accountID, err := op.tokens.Consume(transactionCtx, digest, entity.ResetGrant, time.Now().UTC())
-		if err != nil { return err }
-		if accountID != proof.AccountID { return tokenrepo.ErrInvalidToken }
+		if err != nil {
+			return err
+		}
+		if accountID != proof.AccountID {
+			return tokenrepo.ErrInvalidToken
+		}
 		if err := op.credential.Replace(transactionCtx, accountID, password); err != nil {
 			return err
 		}

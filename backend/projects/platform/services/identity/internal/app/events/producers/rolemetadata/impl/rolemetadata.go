@@ -11,12 +11,12 @@ import (
 
 	coredatabase "grovehub/libs/core/database"
 	coreevents "grovehub/libs/core/events"
+	auditclient "grovehub/services/audit/client/producer"
 	"grovehub/services/identity/internal/app/entity"
 	resource "grovehub/services/identity/internal/app/events/producers/resource/operations/changed"
 	"grovehub/services/identity/internal/app/events/producers/rolemetadata"
 	"grovehub/services/identity/internal/app/events/producers/rolemetadata/operations/changed"
 	"grovehub/services/identity/internal/app/services/security/principal"
-	auditclient "grovehub/services/audit/client/producer"
 )
 
 const EventType = "identity.role.metadata.changed.v1"

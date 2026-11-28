@@ -2,29 +2,31 @@
 package create
 
 import (
-    "context"
+	"context"
 
-    corepipeline "grovehub/libs/core/pipeline"
-    persondto "grovehub/services/foundation/internal/app/dto/person"
-    personflow "grovehub/services/foundation/internal/app/services/person/operations/create/flows"
-    createstrategies "grovehub/services/foundation/internal/app/services/person/operations/create/strategies"
+	corepipeline "grovehub/libs/core/pipeline"
+	persondto "grovehub/services/foundation/internal/app/dto/person"
+	personflow "grovehub/services/foundation/internal/app/services/person/operations/create/flows"
+	createstrategies "grovehub/services/foundation/internal/app/services/person/operations/create/strategies"
 )
 
 // CreateOperation owns the Create-specific strategy dependency; embedding promotes
 // Create to the parent PersonService without a forwarding wrapper.
 type CreateOperation struct {
-    creator createstrategies.CreateStrategy
+	creator createstrategies.CreateStrategy
 }
 
-func New(creator createstrategies.CreateStrategy) *CreateOperation { return &CreateOperation{creator: creator} }
+func New(creator createstrategies.CreateStrategy) *CreateOperation {
+	return &CreateOperation{creator: creator}
+}
 
 // @ChainOfResponsibility
 func (service *CreateOperation) Create(ctx context.Context, request persondto.CreatePersonRequest) (persondto.Person, bool, error) {
-    flow := personflow.Create{Request: request}
-    return corepipeline.RunService(ctx, &flow,
-        service.creator.Prepare,
-        service.creator.Idempotency,
-        service.creator.Contacts,
-        service.creator.Persist,
-    )
+	flow := personflow.Create{Request: request}
+	return corepipeline.RunService(ctx, &flow,
+		service.creator.Prepare,
+		service.creator.Idempotency,
+		service.creator.Contacts,
+		service.creator.Persist,
+	)
 }

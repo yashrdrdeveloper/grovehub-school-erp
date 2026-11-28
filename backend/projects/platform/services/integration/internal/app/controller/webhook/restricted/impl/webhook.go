@@ -4,17 +4,17 @@ import (
 	"net/http"
 
 	coreerrors "grovehub/libs/core/errors"
-	controllerhelpers "grovehub/services/integration/internal/app/controller/helpers"
 	integrationconfig "grovehub/services/integration/internal/app/config"
 	integrationerrors "grovehub/services/integration/internal/app/constants/error"
-	"grovehub/services/integration/internal/app/externalService/mail/gmail"
+	controllerhelpers "grovehub/services/integration/internal/app/controller/helpers"
 	webhookrestricted "grovehub/services/integration/internal/app/controller/webhook/restricted"
+	"grovehub/services/integration/internal/app/externalService/mail/gmail"
 	integrationservices "grovehub/services/integration/internal/app/services/connection"
 )
 
 type Controller struct {
-	service integrationservices.ConnectionService
-	verifier *gmail.PushVerifier
+	service     integrationservices.ConnectionService
+	verifier    *gmail.PushVerifier
 	pushEnabled bool
 }
 
@@ -22,8 +22,8 @@ var _ webhookrestricted.WebhookController = (*Controller)(nil)
 
 func New(service integrationservices.ConnectionService, config integrationconfig.GmailPush) webhookrestricted.WebhookController {
 	return &Controller{
-		service: service,
-		verifier: gmail.NewPushVerifier(config.Audience, config.ServiceAccount),
+		service:     service,
+		verifier:    gmail.NewPushVerifier(config.Audience, config.ServiceAccount),
 		pushEnabled: config.Enabled(),
 	}
 }

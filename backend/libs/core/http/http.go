@@ -9,7 +9,6 @@ import (
 	"time"
 
 	coreerrors "grovehub/libs/core/errors"
-	corerequest "grovehub/libs/core/request"
 	"grovehub/libs/core/http/internal/src/constants"
 	"grovehub/libs/core/http/internal/src/contracts"
 	"grovehub/libs/core/http/internal/src/helpers"
@@ -19,13 +18,14 @@ import (
 	"grovehub/libs/core/http/internal/src/operations/request"
 	"grovehub/libs/core/http/internal/src/operations/response"
 	"grovehub/libs/core/http/internal/src/operations/tracing"
+	corerequest "grovehub/libs/core/request"
 )
 
 const (
 	IdempotencyKey = constants.IdempotencyKey
-	CorrelationID = constants.CorrelationID
-	RequestID = constants.RequestID
-	TraceID = constants.TraceID
+	CorrelationID  = constants.CorrelationID
+	RequestID      = constants.RequestID
+	TraceID        = constants.TraceID
 )
 
 type Success[T any] = contracts.Success[T]
@@ -42,9 +42,9 @@ func NewError[M any](code coreerrors.Code, message string, status int, metadata 
 }
 
 func WithNew(ctx context.Context) context.Context { return correlation.WithNew(ctx) }
-func ID(ctx context.Context) string { return correlation.ID(ctx) }
-func Ensure(ctx context.Context) context.Context { return correlation.Ensure(ctx) }
-func Ingress(next http.Handler) http.Handler { return correlation.Ingress(next) }
+func ID(ctx context.Context) string               { return correlation.ID(ctx) }
+func Ensure(ctx context.Context) context.Context  { return correlation.Ensure(ctx) }
+func Ingress(next http.Handler) http.Handler      { return correlation.Ingress(next) }
 
 func Call[T any](ctx context.Context, handler http.Handler, method, route string, pathDTO, body any) (T, int, error) {
 	return endpoint.Call[T](ctx, handler, method, route, pathDTO, body)
@@ -68,8 +68,12 @@ func ReadinessHTTP(origin, path string) (Check, error) {
 	return readiness.HTTP(origin, path)
 }
 
-func DecodeJSON(req *http.Request, destination any) error { return request.DecodeJSON(req, destination) }
-func DecodeStrictJSON(req *http.Request, destination any) error { return request.DecodeStrictJSON(req, destination) }
+func DecodeJSON(req *http.Request, destination any) error {
+	return request.DecodeJSON(req, destination)
+}
+func DecodeStrictJSON(req *http.Request, destination any) error {
+	return request.DecodeStrictJSON(req, destination)
+}
 
 func WriteSuccess[T any](writer http.ResponseWriter, status int, data T) error {
 	return response.WriteSuccess(writer, status, data)
@@ -92,7 +96,13 @@ func WriteErrorWithMetadataContext[M any](ctx context.Context, writer http.Respo
 }
 
 func NewTransport(base http.RoundTripper) http.RoundTripper { return tracing.NewTransport(base) }
-func NewServiceTransport(service string, base http.RoundTripper) http.RoundTripper { return tracing.NewServiceTransport(service, base) }
+func NewServiceTransport(service string, base http.RoundTripper) http.RoundTripper {
+	return tracing.NewServiceTransport(service, base)
+}
 func NewClient(timeout time.Duration) *http.Client { return tracing.NewClient(timeout) }
-func NewServiceClient(service string, timeout time.Duration) *http.Client { return tracing.NewServiceClient(service, timeout) }
-func ServiceHandler(service, operation string, next http.Handler) http.Handler { return tracing.ServiceHandler(service, operation, next) }
+func NewServiceClient(service string, timeout time.Duration) *http.Client {
+	return tracing.NewServiceClient(service, timeout)
+}
+func ServiceHandler(service, operation string, next http.Handler) http.Handler {
+	return tracing.ServiceHandler(service, operation, next)
+}

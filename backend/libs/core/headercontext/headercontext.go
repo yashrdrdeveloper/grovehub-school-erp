@@ -3,8 +3,8 @@
 package headercontext
 
 import (
-	"grovehub/libs/core/headercontext/internal/src/constants"
 	"context"
+	"grovehub/libs/core/headercontext/internal/src/constants"
 	"net/http"
 
 	"grovehub/libs/core/headercontext/internal/src/contracts"
@@ -15,8 +15,8 @@ import (
 // Header names owned by the inbound metadata capability.
 const (
 	HeaderIdempotencyKey = constants.HeaderIdempotencyKey
-	HeaderCorrelationID = constants.HeaderCorrelationID
-	HeaderRequestID = constants.HeaderRequestID
+	HeaderCorrelationID  = constants.HeaderCorrelationID
+	HeaderRequestID      = constants.HeaderRequestID
 )
 
 // Values is a small immutable copy of trusted header metadata.

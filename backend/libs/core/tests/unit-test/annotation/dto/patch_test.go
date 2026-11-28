@@ -11,7 +11,9 @@ import (
 
 var _ = Describe("Patch", func() {
 	It("distinguishes omission, explicit null, and supplied values", func() {
-		type input struct { Name annotationdto.Patch[string] `json:"name"` }
+		type input struct {
+			Name annotationdto.Patch[string] `json:"name"`
+		}
 		var missing input
 		Expect(json.Unmarshal([]byte(`{}`), &missing)).To(Succeed())
 		Expect(missing.Name.Set).To(BeFalse())
@@ -27,7 +29,9 @@ var _ = Describe("Patch", func() {
 		Expect(*updated.Name.Value).To(Equal("Mira"))
 	})
 	It("rejects incompatible JSON values", func() {
-		type input struct { Name annotationdto.Patch[string] `json:"name"` }
+		type input struct {
+			Name annotationdto.Patch[string] `json:"name"`
+		}
 		var value input
 		Expect(json.Unmarshal([]byte(`{"name":42}`), &value)).NotTo(Succeed())
 	})

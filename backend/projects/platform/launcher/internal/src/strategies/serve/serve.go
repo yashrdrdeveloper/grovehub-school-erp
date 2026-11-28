@@ -7,8 +7,8 @@ import (
 	"log/slog"
 	"time"
 
-	coretelemetry "grovehub/libs/core/telemetry"
 	bootstrapimpl "grovehub/launcher/internal/src/bootstrap/impl"
+	coretelemetry "grovehub/libs/core/telemetry"
 	"grovehub/libs/platform/command"
 )
 
