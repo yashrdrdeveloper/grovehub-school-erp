@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	annotationconfig "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/configuration"
+	coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
 	"grovehub/services/integration/internal/app/config"
 )
 
@@ -16,7 +16,7 @@ type environmentLoader struct{}
 func NewEnvironmentLoader() config.Loader { return environmentLoader{} }
 
 func (environmentLoader) Gmail() (config.Gmail, error) {
-    value, err := annotationconfig.FromEnv[config.Gmail]()
+    value, err := coreannotation.ConfigurationFromEnv[config.Gmail]()
     if err != nil {
         return config.Gmail{}, errors.New("Gmail OAuth configuration missing")
     }
@@ -27,7 +27,7 @@ func (environmentLoader) Gmail() (config.Gmail, error) {
 }
 
 func (environmentLoader) Outlook() (config.Outlook, error) {
-    value, err := annotationconfig.FromEnv[config.Outlook]()
+    value, err := coreannotation.ConfigurationFromEnv[config.Outlook]()
     if err != nil {
         return config.Outlook{}, errors.New("Outlook OAuth configuration missing")
     }

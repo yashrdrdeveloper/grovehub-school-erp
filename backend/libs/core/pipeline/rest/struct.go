@@ -7,7 +7,7 @@ import (
 	"strings"
 	"net/url"
 
-	validation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/validation"
+	coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
 	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
 	httprequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/request"
 	corerequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
@@ -16,7 +16,7 @@ import (
 // StructConfig operates on one endpoint-specific request struct. Only the
 // applicable exported fields Params, Query and RequestBody are declared.
 type StructConfig[Request, Response any] struct {
-	Rules validation.Rules[Request]
+	Rules coreannotation.ValidationRules[Request]
 	Validate func(Request) error
 	Service func(context.Context, Request) (Result[Response], error)
 	Decode func(*http.Request, any) error
@@ -72,10 +72,10 @@ func RunStruct[Request corerequest.Contract, Response any](writer http.ResponseW
 			return
 		}
 	}
-	normalized, err := validation.Process(input, config.Rules)
+	normalized, err := coreannotation.Process(input, config.Rules)
 	if err != nil {
 		invalid := config.InvalidRequestBody
-		var fieldErr validation.Error
+		var fieldErr coreannotation.ValidationError
 		if errors.As(err, &fieldErr) {
 			switch {
 			case strings.HasPrefix(fieldErr.Field, "Params."):

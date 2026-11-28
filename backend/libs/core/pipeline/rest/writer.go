@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	validation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/validation"
+	coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
 	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
 	httpresponse "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/response"
 )
@@ -65,7 +65,7 @@ func classifyFailure(err error, invalid, fallback coreerrors.Definition) Failure
 	}
 	var decodeError *DecodeError
 	var bindError BindError
-	var dtoError validation.Error
+	var dtoError coreannotation.ValidationError
 	if errors.As(err, &decodeError) || errors.As(err, &bindError) || errors.As(err, &dtoError) {
 		if invalid.Code() != "" && invalid.HTTPStatus() >= 400 && invalid.HTTPStatus() < 500 {
 			return Failure{StatusCode: invalid.HTTPStatus(), Definition: invalid}

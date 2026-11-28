@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
-	validation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/validation"
+	coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
 	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
 	httprequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/request"
 	corerequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
@@ -38,9 +38,9 @@ func CreatedOrOK[T any](data T, created bool) Result[T] {
 // calling Service. Invalid* definitions are for transport/DTO input failures;
 // Fallback is used only when a service or pipeline error is not classified.
 type Config[Path, Query, Body, Response any] struct {
-	Path        validation.Rules[Path]
-	Query       validation.Rules[Query]
-	Body        validation.Rules[Body]
+	Path        coreannotation.ValidationRules[Path]
+	Query       coreannotation.ValidationRules[Query]
+	Body        coreannotation.ValidationRules[Body]
 	Validate    func(Input[Path, Query, Body]) error
 	Service     func(context.Context, Input[Path, Query, Body]) (Result[Response], error)
 	Decode      func(*http.Request, any) error
@@ -60,11 +60,11 @@ func (err *DecodeError) Unwrap() error { return err.Err }
 
 // ReadBody remains available for callers needing only decoding and validation.
 // Prefer Run for HTTP controllers, so error handling and response output are shared.
-func ReadBody[T any](request *http.Request, decode func(*http.Request, any) error, rules validation.Rules[T]) (T, error) {
+func ReadBody[T any](request *http.Request, decode func(*http.Request, any) error, rules coreannotation.ValidationRules[T]) (T, error) {
 	var value T
 	if decode == nil { decode = httprequest.DecodeJSON }
 	if err := decode(request, &value); err != nil { return value, &DecodeError{Err: err} }
-	return validation.Process(value, rules)
+	return coreannotation.Process(value, rules)
 }
 
 // Run binds path -> query -> JSON body, normalizes and validates each input,
@@ -81,7 +81,7 @@ func Run[Path, Query, Body, Response any](writer http.ResponseWriter, request *h
 		writeFailure(writer, request, config.Writer, err, config.InvalidPath, config.Fallback)
 		return
 	}
-	if input.Path, err = validation.Process(input.Path, config.Path); err != nil {
+	if input.Path, err = coreannotation.Process(input.Path, config.Path); err != nil {
 		writeFailure(writer, request, config.Writer, err, config.InvalidPath, config.Fallback)
 		return
 	}
@@ -89,7 +89,7 @@ func Run[Path, Query, Body, Response any](writer http.ResponseWriter, request *h
 		writeFailure(writer, request, config.Writer, err, config.InvalidQuery, config.Fallback)
 		return
 	}
-	if input.Query, err = validation.Process(input.Query, config.Query); err != nil {
+	if input.Query, err = coreannotation.Process(input.Query, config.Query); err != nil {
 		writeFailure(writer, request, config.Writer, err, config.InvalidQuery, config.Fallback)
 		return
 	}
