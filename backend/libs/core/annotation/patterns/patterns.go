@@ -1,16 +1,11 @@
-// Package patterns owns the 23 GoF pattern definitions and their automation decisions.
-// Every entry is metadata; no object is instantiated or decorated automatically.
+// Package patterns provides a compatibility API for GoF metadata.
 package patterns
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/contract"
+import (
+    "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
+    "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/catalog/patterns"
+)
 
-// All returns a caller-owned copy ordered by GoF family.
-func All() []contract.Pattern {
-    out := make([]contract.Pattern, 0, len(creational)+len(structural)+len(behavioral))
-    out = append(out, creational...)
-    out = append(out, structural...)
-    return append(out, behavioral...)
-}
+func All() []contract.Pattern { return patterns.All() }
 
-// Entries is kept for the root annotation registry's historical API.
-var Entries = All()
+var Entries = patterns.Entries
