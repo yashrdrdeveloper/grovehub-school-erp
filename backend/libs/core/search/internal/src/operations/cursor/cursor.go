@@ -9,10 +9,9 @@ import (
 
 func EncodeCursor(cursor contracts.CursorPayload) (string, error) {
 	payload, err := json.Marshal(cursor)
-	if err != nil {
-		return "", err
-	}
-	return base64.RawURLEncoding.EncodeToString(payload), nil
+	// Marshal returns nil bytes on failure; encoding nil yields an empty token.
+	// Preserve the error without duplicating the serializer's failure branch.
+	return base64.RawURLEncoding.EncodeToString(payload), err
 }
 
 func DecodeCursor(value string) (contracts.CursorPayload, error) {
