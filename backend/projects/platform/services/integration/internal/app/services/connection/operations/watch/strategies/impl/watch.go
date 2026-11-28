@@ -44,14 +44,18 @@ func (s *watchStrategy) Watch(ctx context.Context, tenantID, id string) (connect
 	if c.Provider != providerconstants.Gmail || c.Status != entity.StatusActive {
 		return connectiondto.Watch{}, connectionhelpers.ErrConnectionInactive
 	}
+	generation, err := connectionhelpers.RequireTenantGeneration(ctx, c.TenantID)
+	if err != nil { return connectiondto.Watch{}, err }
 	token, err := s.tokens.ValidProviderToken(ctx, id, "GMAIL")
 	if err != nil {
 		return connectiondto.Watch{}, err
 	}
+	if err := connectionhelpers.RequireSameGeneration(ctx, c.TenantID, generation); err != nil { return connectiondto.Watch{}, err }
 	historyID, expiration, err := s.gmail.Watch(ctx, token, s.pushTopic)
 	if err != nil {
 		return connectiondto.Watch{}, err
 	}
+	if err := connectionhelpers.RequireSameGeneration(ctx, c.TenantID, generation); err != nil { return connectiondto.Watch{}, err }
 	if err = s.watchRepository.SaveWatch(ctx, id, historyID, expiration); err != nil {
 		return connectiondto.Watch{}, err
 	}
@@ -68,7 +72,13 @@ func (s *watchStrategy) ProcessPush(ctx context.Context, notification gmail.Push
 	}
 	// No message ingestion or cursor updates occur here. Communication will
 	// consume the event and call Integration provider capabilities.
+	// Resolve each tenant separately: one disabled school must not prevent
+	// another school sharing a provider mailbox from receiving its event.
+	var failures error
 	for _, connection := range matches {
+		active, err := connectionhelpers.TenantActive(ctx, connection.TenantID)
+		if err != nil { failures=errors.Join(failures,err); continue }
+		if !active { continue }
 		if s.events == nil {
 			return errors.New("integration messaging is unavailable")
 		}
@@ -81,10 +91,10 @@ func (s *watchStrategy) ProcessPush(ctx context.Context, notification gmail.Push
 			HistoryHint:  notification.HistoryID,
 		}
 		if err := s.events.PublishChanged(ctx, notificationData); err != nil {
-			return err
+			failures=errors.Join(failures,err)
 		}
 	}
-	return nil
+	return failures
 }
 
 func (s *watchStrategy) RenewExpiring(ctx context.Context) error {
@@ -95,10 +105,15 @@ func (s *watchStrategy) RenewExpiring(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	var failures error
 	for _, c := range rows {
+		if ctx.Err()!=nil {return ctx.Err()}
+		active, err := connectionhelpers.TenantActive(ctx, c.TenantID)
+		if err != nil {failures=errors.Join(failures,err);continue}
+		if !active {continue}
 		if _, err := s.Watch(ctx, c.TenantID, c.ID); err != nil {
-			return err
+			failures=errors.Join(failures,err)
 		}
 	}
-	return nil
+	return failures
 }

@@ -3,6 +3,7 @@ package impl
 
 import (
     "context"
+    "grovehub/libs/schoolgateway"
     "errors"
     "log/slog"
     "net/http"
@@ -28,12 +29,15 @@ type builder struct {
     db *gorm.DB
     messaging messaging.MessagingClient
     devAuth integrationconfig.DevAuth
+    tenantState schoolgateway.TenantStateLookup
 }
 
 var _ bootstrap.Bootstrap = (*builder)(nil)
 
-func New(logger *slog.Logger, db *gorm.DB, events messaging.MessagingClient, auth integrationconfig.DevAuth) bootstrap.Bootstrap {
-    return &builder{logger:logger,db:db,messaging:events,devAuth:auth}
+func New(logger *slog.Logger, db *gorm.DB, events messaging.MessagingClient, auth integrationconfig.DevAuth, lookups ...schoolgateway.TenantStateLookup) bootstrap.Bootstrap {
+    b:=&builder{logger:logger,db:db,messaging:events,devAuth:auth}
+    if len(lookups)==1 {b.tenantState=lookups[0]}
+    return b
 }
 
 type runtime struct {

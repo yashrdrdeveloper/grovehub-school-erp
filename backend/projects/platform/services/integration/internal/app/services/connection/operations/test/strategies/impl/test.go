@@ -45,6 +45,8 @@ func (s *testStrategy) RunTest(ctx context.Context, tenantID, id, direction stri
 	if connection.Status != entity.StatusActive || connection.ExternalID == nil {
 		return connectiondto.ConnectionTest{}, connectionhelpers.ErrConnectionInactive
 	}
+	generation, err := connectionhelpers.RequireTenantGeneration(ctx, connection.TenantID)
+	if err != nil { return connectiondto.ConnectionTest{}, err }
 	action, err := connectionhelpers.ProbeAction(direction)
 	if err != nil {
 		return connectiondto.ConnectionTest{}, connectionhelpers.ErrInvalidConnection
@@ -76,6 +78,7 @@ func (s *testStrategy) RunTest(ctx context.Context, tenantID, id, direction stri
 			} else if token.AccessToken == "" {
 				err = errors.New("provider token missing")
 			} else {
+				if err := connectionhelpers.RequireSameGeneration(ctx, connection.TenantID, generation); err != nil { return connectiondto.ConnectionTest{}, err }
 				_, err = s.actions.Execute(ctx, providerdto.Session{
 					ConnectionID: id,
 					ProviderID:   connection.Provider,

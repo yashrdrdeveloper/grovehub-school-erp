@@ -3,6 +3,7 @@ package integration
 
 import (
     "context"
+    "grovehub/libs/schoolgateway"
     "errors"
     "fmt"
     "log/slog"
@@ -26,6 +27,12 @@ func New(logger *slog.Logger, db *gorm.DB, events messaging.MessagingClient, dev
     settings:=integrationconfig.DevAuth{}
     if len(developmentAuth)>0 {settings=developmentAuth[0]}
     return bootstrapimpl.New(logger,db,events,settings).Build()
+}
+
+// NewWithTenantState configures the authoritative School policy for HTTP,
+// in-process clients and background workers before any of them start.
+func NewWithTenantState(logger *slog.Logger, db *gorm.DB, events messaging.MessagingClient, lookup schoolgateway.TenantStateLookup) (Module,error) {
+    return bootstrapimpl.New(logger,db,events,integrationconfig.DevAuth{},lookup).Build()
 }
 
 func Migrate(ctx context.Context, db *gorm.DB) error {

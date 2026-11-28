@@ -23,5 +23,5 @@ func (b *builder) newServices(providers providerDependencies, producer eventprod
     )
     if err!=nil{return nil,nil,err}
     providerService:=providerimpl.NewProviderService(providers.registry,providers.actions,providers.oauth)
-    return service,providerService,nil
+    return connectionimpl.WithTenantState(service,b.tenantState),providerService,nil
 }

@@ -72,12 +72,16 @@ func Run(logger *slog.Logger) error {
 	defer foundationModule.Close()
 	foundationModule.RegisterHTTP(mux)
 
+	tenantState,err:=gateway.NewTenantState(gateway.TenantAccessConfig{Origin:os.Getenv("PLATFORM_TENANT_ACCESS_ORIGIN"),KeyID:os.Getenv("PLATFORM_TENANT_ACCESS_KEY_ID"),PrivateKey:os.Getenv("PLATFORM_TENANT_ACCESS_PRIVATE_KEY")})
+	if err!=nil{return err}
+	tenantCheck:=schoolgateway.ActiveTenantCheck(tenantState)
+ if os.Getenv("PLATFORM_TENANT_ACCESS_REQUIRED")=="true"&&tenantCheck==nil{return errors.New("tenant access verifier required")}
 	// No loopback development principal is installed in the real launcher.
-	integrationModule, err := integration.New(
+	integrationModule, err := integration.NewWithTenantState(
 		logger,
 		db,
 		infrastructureModule.MessagingClient(),
-		integration.DevAuth{},
+		tenantState,
 	)
 	if err != nil {
 		return fmt.Errorf("initialize Integration: %w", err)
@@ -85,10 +89,6 @@ func Run(logger *slog.Logger) error {
 	defer integrationModule.Close()
 	integrationModule.RegisterHTTP(mux)
 
-	tenantState,err:=gateway.NewTenantState(gateway.TenantAccessConfig{Origin:os.Getenv("PLATFORM_TENANT_ACCESS_ORIGIN"),KeyID:os.Getenv("PLATFORM_TENANT_ACCESS_KEY_ID"),PrivateKey:os.Getenv("PLATFORM_TENANT_ACCESS_PRIVATE_KEY")})
-	if err!=nil{return err}
-	tenantCheck:=schoolgateway.ActiveTenantCheck(tenantState)
- if os.Getenv("PLATFORM_TENANT_ACCESS_REQUIRED")=="true"&&tenantCheck==nil{return errors.New("tenant access verifier required")}
 	identityModule, err := identity.New(
 		logger,
 		db,

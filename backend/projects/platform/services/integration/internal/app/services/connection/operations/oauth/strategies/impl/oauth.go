@@ -124,6 +124,13 @@ func hashState(raw string) string {
 
 func (s *oauthStrategy) ValidProviderToken(ctx context.Context, connectionID, provider string) (maildto.OAuthToken, error) {
 	var empty maildto.OAuthToken
+	connection, err := s.repository.GetByID(ctx, connectionID)
+	if err != nil { return empty, err }
+	if connection.Status != entity.StatusActive || connection.Provider != provider {
+		return empty, connectionhelpers.ErrConnectionInactive
+	}
+	generation, err := connectionhelpers.RequireTenantGeneration(ctx, connection.TenantID)
+	if err != nil { return empty, err }
 	encrypted, err := s.repository.Credential(ctx, connectionID)
 	if err != nil {
 		return empty, err
@@ -133,12 +140,14 @@ func (s *oauthStrategy) ValidProviderToken(ctx context.Context, connectionID, pr
 		return empty, err
 	}
 	if time.Until(token.Expiry) > time.Minute {
+		if err := connectionhelpers.RequireSameGeneration(ctx, connection.TenantID, generation); err != nil { return empty, err }
 		return token, nil
 	}
 	strategy, findErr := s.oauth.Find(provider)
 	if findErr != nil {
 		return empty, connectionhelpers.ErrOAuthUnavailable
 	}
+	if err := connectionhelpers.RequireSameGeneration(ctx, connection.TenantID, generation); err != nil { return empty, err }
 	token, err = strategy.Refresh(ctx, token)
 	if err != nil {
 		return empty, err
@@ -147,6 +156,7 @@ func (s *oauthStrategy) ValidProviderToken(ctx context.Context, connectionID, pr
 	if err != nil {
 		return empty, err
 	}
+	if err := connectionhelpers.RequireSameGeneration(ctx, connection.TenantID, generation); err != nil { return empty, err }
 	if err = s.repository.UpdateCredential(ctx, connectionID, encrypted); err != nil {
 		return empty, err
 	}

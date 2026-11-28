@@ -45,6 +45,8 @@ func (s *actionStrategy) executeAction(ctx context.Context, tenantID, connection
 	if c.Status != entity.StatusActive {
 		return nil, connectionhelpers.ErrConnectionInactive
 	}
+	generation, err := connectionhelpers.RequireTenantGeneration(ctx, c.TenantID)
+	if err != nil { return nil, err }
 	if s.actions == nil {
 		return nil, providerhelpers.ErrProviderUnavailable
 	}
@@ -58,6 +60,7 @@ func (s *actionStrategy) executeAction(ctx context.Context, tenantID, connection
 	if token.AccessToken == "" {
 		return nil, errors.New("provider authentication unavailable")
 	}
+	if err := connectionhelpers.RequireSameGeneration(ctx, c.TenantID, generation); err != nil { return nil, err }
 	send := func() (any, error) {
 		return s.actions.Execute(ctx, providerdto.Session{
 			ConnectionID: connectionID, ProviderID: c.Provider, AccessToken: token.AccessToken,
@@ -70,6 +73,7 @@ func (s *actionStrategy) executeAction(ctx context.Context, tenantID, connection
 }
 
 func (s *actionStrategy) ExecuteSystemMail(ctx context.Context, tenantID string, input json.RawMessage) (any, error) {
+	if _, err := connectionhelpers.RequireTenantGeneration(ctx, tenantID); err != nil { return nil, err }
 	var fields map[string]json.RawMessage
 	if err := json.Unmarshal(input, &fields); err != nil {
 		return nil, err
