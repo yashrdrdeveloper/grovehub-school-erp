@@ -41,7 +41,7 @@ jobs:
           export GOPROXY="file://$RUNNER_TEMP/core-proxy,https://proxy.golang.org"
           export GONOSUMDB="$CORE_MODULE"
           go mod edit -require="$CORE_MODULE@$CORE_VERSION"
-          printf 'package consumer\nimport (\n _ "%s/gateway"\n _ "%s/database/postgres"\n)\n' "$CORE_MODULE" "$CORE_MODULE" > consumer.go
+          printf 'package consumer\nimport (\n _ "%s/gateway"\n _ "%s/database"\n)\n' "$CORE_MODULE" "$CORE_MODULE" > consumer.go
           go test -mod=mod ./...
           go list -m -json "$CORE_MODULE" > "$RUNNER_TEMP/core-proxy/consumer-module.json"
           go mod verify

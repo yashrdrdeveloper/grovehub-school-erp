@@ -8,7 +8,7 @@ modules/<resource>/repository/              # typed repository contract
 modules/<resource>/repository/impl/         # SQL/GORM implementation
 modules/<resource>/repository/helpers/      # resource-only queries/constraints
 modules/<resource>/services/operations/     # transaction + business invariants
-libs/core/database/transaction/             # generic context-bound UnitOfWork mechanics
+libs/core/database/                         # generic context-bound UnitOfWork mechanics
 internal/resources/migrations/               # embedded, versioned, owned DDL
 ```
 

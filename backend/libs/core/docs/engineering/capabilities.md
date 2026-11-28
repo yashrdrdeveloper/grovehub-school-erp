@@ -5,7 +5,7 @@ This inventory describes the current **Core-owned technical packages**. Their ro
 | Capability path under `libs/backend/core/` | Responsibility | Must not contain |
 |---|---|---|
 | `annotation/` | Registered syntax and typed Go code generation/checks | Runtime business decisions and hidden authorization |
-| `database/transaction/` | GORM context propagation, UnitOfWork, after-commit hooks | A domain repository or distributed remote transaction |
+| `database/` | GORM context propagation, UnitOfWork, after-commit hooks | A domain repository or distributed remote transaction |
 | `diff/` | Generic deterministic comparison of JSON-compatible values | Publishing domain events or PII policy |
 | `errors/` | Structured technical error contracts and wrapping | Service-specific error identity |
 | `events/` | Typed generic event envelope, metadata, pipeline rules | NATS/Watermill or outbox persistence entities |

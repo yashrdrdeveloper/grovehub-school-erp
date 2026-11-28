@@ -11,6 +11,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Inventory database consumers
+      - name: Enforce the database facade and test ownership
+        shell: bash
         run: |
-          git grep -nE 'core/database/(postgres|transaction)|PROJECT_(SCHOOL|INTERNAL|CROSS)_TEST_DSN|database/postgres' -- '*.go' '*.sh' '*.yml' '*.md' || true
+          if git grep -nE 'core/database/(postgres|transaction)"' -- '*.go'; then
+            echo "Import the database facade instead of legacy packages."
+            exit 1
+          fi
+          test ! -d backend/libs/core/database/postgres
+          test ! -d backend/libs/core/database/transaction
+          test -z "$(git ls-files 'backend/libs/core/database/**' | grep '_test[.]go$' | grep -v '/internal/resources/tests/unit-test/' || true)"
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.3'
+          cache-dependency-path: backend/libs/core/go.sum
+      - name: Verify database unit tests
+        working-directory: backend/libs/core
+        run: GOWORK=off go test ./database/... ./tests/unit-test/database/...
