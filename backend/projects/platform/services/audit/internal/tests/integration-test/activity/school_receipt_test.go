@@ -46,6 +46,15 @@ func TestSchoolReceiptLedger(t *testing.T){
  found=false
  for _,row:=range page.Records{if row.ExecutionID==status.ExecutionID&&row.Operation=="DISABLE"{found=true}}
  if !found{t.Fatal("missing status receipt")}
+ // Verify filtering occurs before pagination and excludes other schools.
+ other:=a;other.ExecutionID=uuid.NewString();other.SchoolID=uuid.NewString()
+ if err=operator.StoreSchoolReceipt(ctx,db,other);err!=nil{t.Fatal(err)}
+ filtered,err:=operator.SearchFilteredReceipts(ctx,db,operator.ReceiptSearchInput{SearchInput:operator.SearchInput{PageNumber:1,RowSize:1},SchoolID:a.SchoolID})
+ if err!=nil||len(filtered.Records)!=1||!filtered.HasMore||filtered.Records[0].SchoolID!=a.SchoolID{t.Fatal("wrong first filtered page",filtered,err)}
+ filtered,err=operator.SearchFilteredReceipts(ctx,db,operator.ReceiptSearchInput{SearchInput:operator.SearchInput{PageNumber:2,RowSize:1},SchoolID:a.SchoolID})
+ if err!=nil||len(filtered.Records)!=1||filtered.HasMore||filtered.Records[0].SchoolID!=a.SchoolID{t.Fatal("wrong second filtered page",filtered,err)}
+ filtered,err=operator.SearchFilteredReceipts(ctx,db,operator.ReceiptSearchInput{SearchInput:operator.SearchInput{PageNumber:1,RowSize:100},SchoolID:a.SchoolID,Operation:"DISABLE"})
+ if err!=nil||len(filtered.Records)!=1||filtered.Records[0].ExecutionID!=status.ExecutionID{t.Fatal("wrong operation filter",filtered,err)}
  status.Operation="ACTIVATE"
  if err=operator.StoreStatusReceipt(ctx,db,status);!errors.Is(err,operator.ErrConflict){t.Fatal("changed transition accepted",err)}
 }

@@ -27,14 +27,14 @@ paths:
   /audit/restricted/school-mutation-receipts/search:
     post:
       operationId: searchSchoolMutationReceipts
-      description: Global receipt metadata for the dedicated Internal Tool receipt reader only.
+      description: Global receipt metadata with optional school and operation filters for the dedicated Internal Tool receipt reader only.
       security: [{workloadBearer: []}]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OperatorSearchInput'
+              $ref: '#/components/schemas/SchoolReceiptSearchInput'
       responses:
         '200':
           description: Receipt metadata page
@@ -42,7 +42,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SchoolReceiptPage'
-        '400': {description: Invalid pagination}
+        '400': {description: Invalid pagination or filter}
         '403': {description: Denied}
         '503': {description: Audit unavailable}
   /audit/restricted/school-rename-receipts:
@@ -201,6 +201,15 @@ components:
         previousVersion: {type: integer, format: int64, minimum: 1}
         correlationId: {type: string, format: uuid}
         occurredAt: {type: string, format: date-time}
+    SchoolReceiptSearchInput:
+      type: object
+      additionalProperties: false
+      required: [pageNumber, rowSize]
+      properties:
+        pageNumber: {type: integer, format: int32, minimum: 1, maximum: 10000}
+        rowSize: {type: integer, format: int32, minimum: 1, maximum: 100}
+        schoolId: {type: string, format: uuid}
+        operation: {type: string, description: RENAME or ACTIVATE or DISABLE}
     OperatorSearchInput:
       type: object
       additionalProperties: false
