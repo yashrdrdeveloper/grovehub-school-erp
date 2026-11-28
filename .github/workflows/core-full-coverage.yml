@@ -1,0 +1,50 @@
+name: Core 100 percent coverage
+
+on:
+  push:
+    branches: [phase1-refactor, develop]
+    paths:
+      - 'backend/libs/core/**'
+      - '.github/workflows/core-full-coverage.yml'
+  pull_request:
+    paths:
+      - 'backend/libs/core/**'
+      - '.github/workflows/core-full-coverage.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    outputs:
+      capabilities: ${{ steps.matrix.outputs.capabilities }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: matrix
+        shell: bash
+        run: |
+          capabilities=$(bash backend/libs/core/tools/coverage/check.sh list "$RUNNER_TEMP/core-inventory" | python3 -c 'import json,sys; print(json.dumps([line.strip() for line in sys.stdin if line.strip()]))')
+          echo "capabilities=$capabilities" >> "$GITHUB_OUTPUT"
+  coverage:
+    needs: inventory
+    name: Coverage / ${{ matrix.capability }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        capability: ${{ fromJSON(needs.inventory.outputs.capabilities) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.3'
+          cache-dependency-path: backend/libs/core/go.sum
+      - name: Require all statements in each independent scope
+        run: bash backend/libs/core/tools/coverage/check.sh "${{ matrix.capability }}" "$RUNNER_TEMP/core-coverage"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: core-coverage-${{ matrix.capability }}
+          path: ${{ runner.temp }}/core-coverage/*.out
