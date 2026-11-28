@@ -1,6 +1,6 @@
 # Core Annotation Engine — Implementation Notes
 
-The generic semantics are defined in [annotation.md](../../../../../docs/engineering/backend/annotation.md). This file is for the **Core library owner** to describe the actual engine boundary.
+The generic semantics are defined in [annotation.md](../../../../../../../docs/engineering/backend/annotation.md). This file is for the **Core library owner** to describe the actual engine boundary.
 
 ## Source packages
 

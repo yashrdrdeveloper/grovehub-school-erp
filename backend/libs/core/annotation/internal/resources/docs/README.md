@@ -35,7 +35,7 @@ Generated code remains ignored beneath the owning service or library and is inje
 
 A checked `@Provider id=... category=...` validates static metadata; registration remains explicit. A checked `@Transactional` requires a real UnitOfWork. `@Entity` generates TableName, not business constructors or setters.
 
-See [Core annotation engine](../docs/engineering/annotation_engine.md) and [Core capabilities index](../docs/engineering/README.md).
+See [Core annotation engine](../../../../internal/resources/docs/engineering/annotation_engine.md) and [Core capabilities index](../../../../internal/resources/docs/engineering/README.md).
 
 ## Unit-test source mirroring
 

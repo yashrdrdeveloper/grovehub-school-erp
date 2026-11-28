@@ -2,13 +2,13 @@
 
 `libs/core` owns **reusable domain-neutral technical capabilities**, not business vocabulary or provider-specific messaging. The consumer-facing surface is a named capability facade. Service implementations must not import private nested helper/validator packages.
 
-Generic policy: [Backend Standard](../../../../../docs/engineering/backend/backend.md), [Libraries](../../../../../docs/engineering/backend/libraries.md), [Annotations](../../../../../docs/engineering/backend/annotation.md).
+Generic policy: [Backend Standard](../../../../../../../docs/engineering/backend/backend.md), [Libraries](../../../../../../../docs/engineering/backend/libraries.md), [Annotations](../../../../../../../docs/engineering/backend/annotation.md).
 
 ## Owner-specific references
 
 - [capabilities.md](capabilities.md) — inventory, public import direction and SRP for Core capabilities.
 - [annotation_engine.md](annotation_engine.md) — parser/checker/generation/overlay pipeline, supported effect boundaries.
-- [../../annotation/README.md](../../annotation/README.md) — source-level annotation catalog entry point.
+- [../../annotation/README.md](../../../../annotation/internal/resources/docs/README.md) — source-level annotation catalog entry point.
 
 ## New capability checklist
 
