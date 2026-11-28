@@ -3,16 +3,16 @@
 package impl
 
 import (
-	"grovehub/launcher/internal/src/services/gateway/operations/external"
-	"grovehub/launcher/internal/src/services/gateway/operations/external/helpers"
-	"grovehub/launcher/internal/src/services/gateway/operations/ratelimit"
-	limiterimpl "grovehub/launcher/internal/src/services/gateway/operations/ratelimit/impl"
 	"net/http"
 	"regexp"
 	"strings"
 
 	coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
 	schoolgateway "grovehub/internal/session"
+	"grovehub/launcher/internal/src/services/gateway/operations/external"
+	"grovehub/launcher/internal/src/services/gateway/operations/external/helpers"
+	"grovehub/launcher/internal/src/services/gateway/operations/ratelimit"
+	limiterimpl "grovehub/launcher/internal/src/services/gateway/operations/ratelimit/impl"
 	integrationprincipal "grovehub/services/integration/client/principal"
 )
 
@@ -97,7 +97,6 @@ func (operation *operation) servePublic(writer http.ResponseWriter, request *htt
 		return
 	}
 	operation.mux.ServeHTTP(writer, request)
-
 }
 
 func (operation *operation) serveProtected(writer http.ResponseWriter, request *http.Request, route string) {
@@ -140,7 +139,6 @@ func (operation *operation) serveProtected(writer http.ResponseWriter, request *
 	}
 
 	operation.mux.ServeHTTP(writer, request.WithContext(ctx))
-
 }
 
 func (operation *operation) serveRestricted(writer http.ResponseWriter, request *http.Request, _ string) {
@@ -163,7 +161,6 @@ func (operation *operation) serveRestricted(writer http.ResponseWriter, request 
 	}
 
 	operation.mux.ServeHTTP(writer, request)
-
 }
 
 var _ external.Operation = (*operation)(nil)

@@ -35,5 +35,4 @@ func RoutingSpecs() {
 			Expect(recorder.Code).To(Equal(http.StatusNoContent))
 		})
 	})
-
 }

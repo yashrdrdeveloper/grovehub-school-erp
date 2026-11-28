@@ -15,5 +15,4 @@ func ErrorCodeSpecs() {
 			Expect(errorcode.RouteNotFound.Message()).To(Equal(expectedRouteNotFoundMessage))
 		})
 	})
-
 }

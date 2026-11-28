@@ -3,8 +3,9 @@ package operatorauditread
 import (
 	"context"
 	"errors"
-	core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
 	"net/http"
+
+	core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
 )
 
 const OperatorAuditReadRoute = "POST /audit/restricted/operator-activities/search"
@@ -13,7 +14,11 @@ const OperatorAuditReadScope = "internal.audit.operator.read"
 
 func New(keys, other []core.WorkloadKeyConfig) (core.WorkloadVerifier, error) {
 	for _, key := range keys {
-		if key.Subject != "internal-tool-audit-reader" || key.Issuer != "internal-tool-audit-reader" || key.AllowDelegation || len(key.Scopes) != 1 || key.Scopes[0] != OperatorAuditReadScope {
+		if key.Subject != "internal-tool-audit-reader" ||
+			key.Issuer != "internal-tool-audit-reader" ||
+			key.AllowDelegation ||
+			len(key.Scopes) != 1 ||
+			key.Scopes[0] != OperatorAuditReadScope {
 			return nil, errors.New("invalid operator audit reader key")
 		}
 		for _, k := range other {
@@ -32,7 +37,14 @@ func New(keys, other []core.WorkloadKeyConfig) (core.WorkloadVerifier, error) {
 }
 
 func (v *verifier) VerifyWorkload(ctx context.Context, r *http.Request) (context.Context, error) {
-	if r.Method != "POST" || r.URL == nil || r.URL.Path != "/audit/restricted/operator-activities/search" || r.URL.RawQuery != "" || r.URL.ForceQuery || r.URL.RawPath != "" || len(r.Header.Values("Cookie")) != 0 || len(r.Header.Values("X-GH-Identity-Proof")) != 0 {
+	if r.Method != "POST" ||
+		r.URL == nil ||
+		r.URL.Path != "/audit/restricted/operator-activities/search" ||
+		r.URL.RawQuery != "" ||
+		r.URL.ForceQuery ||
+		r.URL.RawPath != "" ||
+		len(r.Header.Values("Cookie")) != 0 ||
+		len(r.Header.Values("X-GH-Identity-Proof")) != 0 {
 		return nil, core.ErrWorkloadDenied
 	}
 
@@ -42,7 +54,13 @@ func (v *verifier) VerifyWorkload(ctx context.Context, r *http.Request) (context
 	}
 
 	claims, ok := core.WorkloadFrom(verified)
-	if !ok || claims.Subject != "internal-tool-audit-reader" || len(claims.Scopes) != 1 || claims.Scopes[0] != OperatorAuditReadScope || claims.ActorGID != "" || claims.TenantID != "" || claims.SessionID != "" {
+	if !ok ||
+		claims.Subject != "internal-tool-audit-reader" ||
+		len(claims.Scopes) != 1 ||
+		claims.Scopes[0] != OperatorAuditReadScope ||
+		claims.ActorGID != "" ||
+		claims.TenantID != "" ||
+		claims.SessionID != "" {
 		return nil, core.ErrWorkloadDenied
 	}
 

@@ -1,8 +1,9 @@
 package routes
 
 import (
-	"grovehub/launcher/internal/src/controller"
 	"net/http"
+
+	"grovehub/launcher/internal/src/controller"
 )
 
 func RegisterHTTP(mux *http.ServeMux, health controller.HealthController) {

@@ -7,18 +7,19 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	ginkgo "github.com/onsi/ginkgo/v2"
-	tenantaccess "grovehub/launcher/internal/src/services/gateway/operations/tenant/access"
-	. "grovehub/launcher/internal/src/services/gateway/operations/workload"
-	"grovehub/launcher/internal/src/services/gateway/policies"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	ginkgo "github.com/onsi/ginkgo/v2"
+
 	core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
 	school "grovehub/internal/session"
+	tenantaccess "grovehub/launcher/internal/src/services/gateway/operations/tenant/access"
+	. "grovehub/launcher/internal/src/services/gateway/operations/workload"
+	"grovehub/launcher/internal/src/services/gateway/policies"
 )
 
 func verifyTenantAccessClient() {
@@ -39,7 +40,8 @@ func verifyTenantAccessClient() {
 	generation := "1"
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		r.Pattern = "GET /school/restricted/registry/schools/{schoolId}/access-check"
-		if _, err := verifier.VerifyWorkload(r.Context(), r); err != nil || r.URL.Path != "/school/restricted/registry/schools/"+id+"/access-check" {
+		if _, err := verifier.VerifyWorkload(r.Context(), r); err != nil ||
+			r.URL.Path != "/school/restricted/registry/schools/"+id+"/access-check" {
 			t.Error("invalid signed request", err)
 			w.WriteHeader(403)
 			return

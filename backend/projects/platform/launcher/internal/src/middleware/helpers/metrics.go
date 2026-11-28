@@ -2,9 +2,10 @@ package helpers
 
 import (
 	"context"
-	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
 	"net/http"
 	"time"
+
+	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
 )
 
 func RecordMetrics(ctx context.Context, request *http.Request, route string, recorder *Recorder, duration time.Duration) {
@@ -17,5 +18,4 @@ func RecordMetrics(ctx context.Context, request *http.Request, route string, rec
 		duration,
 		recorder.Status,
 	)
-
 }

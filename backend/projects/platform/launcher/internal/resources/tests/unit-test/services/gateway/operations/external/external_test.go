@@ -2,9 +2,10 @@ package gateway_test
 
 import (
 	"context"
-	ginkgo "github.com/onsi/ginkgo/v2"
 	"net/http"
 	"net/http/httptest"
+
+	ginkgo "github.com/onsi/ginkgo/v2"
 
 	schoolgateway "grovehub/internal/session"
 	external "grovehub/launcher/internal/src/services/gateway/operations/external/impl"

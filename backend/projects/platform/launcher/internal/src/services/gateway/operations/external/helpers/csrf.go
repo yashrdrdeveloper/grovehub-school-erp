@@ -2,9 +2,10 @@ package helpers
 
 import (
 	"crypto/subtle"
-	schoolgateway "grovehub/internal/session"
 	"net/http"
 	"strings"
+
+	schoolgateway "grovehub/internal/session"
 )
 
 func RequiresCSRF(request *http.Request) bool {

@@ -1,16 +1,18 @@
 package impl
 
 import (
-	coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
-	headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
-	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
-	observability "grovehub/launcher/internal/src/middleware/observability/impl"
 	"log/slog"
 	"net/http"
 	"strings"
+
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
+
+	coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+	headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
+	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
+	observability "grovehub/launcher/internal/src/middleware/observability/impl"
 )
 
 func newEdgeHandler(logger *slog.Logger, mux *http.ServeMux, external http.Handler) http.Handler {

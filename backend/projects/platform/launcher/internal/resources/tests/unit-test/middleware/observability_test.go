@@ -28,5 +28,4 @@ func ObservabilitySpecs() {
 			Expect(endedSpans[0].Events()).NotTo(BeEmpty())
 		})
 	})
-
 }

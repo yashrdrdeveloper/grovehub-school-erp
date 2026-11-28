@@ -18,7 +18,12 @@ func ValidateOrigin(origin string, request *http.Request) bool {
 	// and scheme, when the configured allowed origin itself is loopback.
 	allowed, allowedErr := url.Parse(origin)
 	incoming, incomingErr := url.Parse(request.Header.Get("Origin"))
-	if allowedErr != nil || incomingErr != nil || allowed.Scheme != "http" || incoming.Scheme != "http" || allowed.Port() == "" || allowed.Port() != incoming.Port() {
+	if allowedErr != nil ||
+		incomingErr != nil ||
+		allowed.Scheme != "http" ||
+		incoming.Scheme != "http" ||
+		allowed.Port() == "" ||
+		allowed.Port() != incoming.Port() {
 		return false
 	}
 

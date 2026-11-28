@@ -1,9 +1,10 @@
 package helpers
 
 import (
-	core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
 	"net/http"
 	"strings"
+
+	core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
 )
 
 // Only the explicitly scoped School workload may supply an identity proof.

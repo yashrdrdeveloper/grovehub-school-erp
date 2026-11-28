@@ -5,7 +5,6 @@ import (
 	"crypto/ed25519"
 	"encoding/base64"
 	"errors"
-	"grovehub/launcher/internal/src/services/gateway/operations/workload/helpers"
 	"io"
 	"net/http"
 	"net/url"
@@ -15,6 +14,7 @@ import (
 
 	core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
 	schoolgateway "grovehub/internal/session"
+	"grovehub/launcher/internal/src/services/gateway/operations/workload/helpers"
 )
 
 type TenantAccessConfig struct{ Origin, KeyID, PrivateKey string }
@@ -44,7 +44,15 @@ func NewTenantStateWithDependencies(c TenantAccessConfig, clientFactory func(*co
 	}
 
 	origin, err := url.Parse(c.Origin)
-	if err != nil || origin.Hostname() == "" || origin.User != nil || origin.RawPath != "" || origin.RawQuery != "" || origin.ForceQuery || origin.Fragment != "" || (origin.Path != "" && origin.Path != "/") || (origin.Scheme != "https" && !(origin.Scheme == "http" && (origin.Hostname() == "127.0.0.1" || origin.Hostname() == "::1"))) {
+	if err != nil ||
+		origin.Hostname() == "" ||
+		origin.User != nil ||
+		origin.RawPath != "" ||
+		origin.RawQuery != "" ||
+		origin.ForceQuery ||
+		origin.Fragment != "" ||
+		(origin.Path != "" && origin.Path != "/") ||
+		(origin.Scheme != "https" && !(origin.Scheme == "http" && (origin.Hostname() == "127.0.0.1" || origin.Hostname() == "::1"))) {
 		return nil, errors.New("invalid tenant access origin")
 	}
 
@@ -104,7 +112,13 @@ func TenantAccessPolicy(r *http.Request) (core.WorkloadClaims, error) {
 	}
 
 	id := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/school/restricted/registry/schools/"), "/access-check")
-	if !helpers.ValidSchoolID(id) || r.URL.Path != "/school/restricted/registry/schools/"+id+"/access-check" || r.Method != "GET" || r.URL.RawQuery != "" || r.URL.RawPath != "" || r.URL.ForceQuery || r.ContentLength != 0 {
+	if !helpers.ValidSchoolID(id) ||
+		r.URL.Path != "/school/restricted/registry/schools/"+id+"/access-check" ||
+		r.Method != "GET" ||
+		r.URL.RawQuery != "" ||
+		r.URL.RawPath != "" ||
+		r.URL.ForceQuery ||
+		r.ContentLength != 0 {
 		return core.WorkloadClaims{}, core.ErrWorkloadDenied
 	}
 

@@ -3,10 +3,11 @@ package schoolstatusreceipt
 import (
 	"context"
 	"errors"
-	core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
-	"grovehub/launcher/internal/src/services/gateway/operations/workload/helpers"
 	"net/http"
 	"strings"
+
+	core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+	"grovehub/launcher/internal/src/services/gateway/operations/workload/helpers"
 )
 
 const StatusReceiptRoute = "POST /audit/restricted/school-status-receipts"
@@ -17,7 +18,12 @@ const StatusReceiptIssuer = "school-registry-status-audit"
 
 func New(keys, other []core.WorkloadKeyConfig) (core.WorkloadVerifier, error) {
 	for i, k := range keys {
-		if k.Issuer != StatusReceiptIssuer || !strings.HasPrefix(k.Subject, StatusReceiptIssuer+":") || !helpers.ValidSchoolID(strings.TrimPrefix(k.Subject, StatusReceiptIssuer+":")) || k.AllowDelegation || len(k.Scopes) != 1 || k.Scopes[0] != StatusReceiptScope {
+		if k.Issuer != StatusReceiptIssuer ||
+			!strings.HasPrefix(k.Subject, StatusReceiptIssuer+":") ||
+			!helpers.ValidSchoolID(strings.TrimPrefix(k.Subject, StatusReceiptIssuer+":")) ||
+			k.AllowDelegation ||
+			len(k.Scopes) != 1 ||
+			k.Scopes[0] != StatusReceiptScope {
 			return nil, errors.New("invalid school receipt key")
 		}
 		for _, old := range append(append([]core.WorkloadKeyConfig(nil), other...), keys[:i]...) {
@@ -36,7 +42,14 @@ func New(keys, other []core.WorkloadKeyConfig) (core.WorkloadVerifier, error) {
 }
 
 func (v *verifier) VerifyWorkload(ctx context.Context, r *http.Request) (context.Context, error) {
-	if r.Method != "POST" || r.URL == nil || r.URL.Path != "/audit/restricted/school-status-receipts" || r.URL.RawPath != "" || r.URL.RawQuery != "" || r.URL.ForceQuery || len(r.Header.Values("Cookie")) != 0 || len(r.Header.Values("X-GH-Identity-Proof")) != 0 {
+	if r.Method != "POST" ||
+		r.URL == nil ||
+		r.URL.Path != "/audit/restricted/school-status-receipts" ||
+		r.URL.RawPath != "" ||
+		r.URL.RawQuery != "" ||
+		r.URL.ForceQuery ||
+		len(r.Header.Values("Cookie")) != 0 ||
+		len(r.Header.Values("X-GH-Identity-Proof")) != 0 {
 		return nil, core.ErrWorkloadDenied
 	}
 
@@ -46,7 +59,14 @@ func (v *verifier) VerifyWorkload(ctx context.Context, r *http.Request) (context
 	}
 
 	claims, ok := core.WorkloadFrom(verified)
-	if !ok || !strings.HasPrefix(claims.Subject, StatusReceiptIssuer+":") || !helpers.ValidSchoolID(strings.TrimPrefix(claims.Subject, StatusReceiptIssuer+":")) || len(claims.Scopes) != 1 || claims.Scopes[0] != StatusReceiptScope || claims.ActorGID != "" || claims.TenantID != "" || claims.SessionID != "" {
+	if !ok ||
+		!strings.HasPrefix(claims.Subject, StatusReceiptIssuer+":") ||
+		!helpers.ValidSchoolID(strings.TrimPrefix(claims.Subject, StatusReceiptIssuer+":")) ||
+		len(claims.Scopes) != 1 ||
+		claims.Scopes[0] != StatusReceiptScope ||
+		claims.ActorGID != "" ||
+		claims.TenantID != "" ||
+		claims.SessionID != "" {
 		return nil, core.ErrWorkloadDenied
 	}
 

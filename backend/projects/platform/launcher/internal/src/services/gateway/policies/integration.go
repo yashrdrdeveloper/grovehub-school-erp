@@ -1,8 +1,9 @@
 package policies
 
-import core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
-
-import mail "grovehub/services/integration/client/mail"
+import (
+	core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+	mail "grovehub/services/integration/client/mail"
+)
 
 func integrationPolicies() map[string]core.RoutePolicy {
 	return map[string]core.RoutePolicy{

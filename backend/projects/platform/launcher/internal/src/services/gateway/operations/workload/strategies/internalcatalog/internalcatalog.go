@@ -14,7 +14,11 @@ const InternalCatalogScope = "internal.integration.catalog.read"
 
 func New(keys, schoolKeys []core.WorkloadKeyConfig) (core.WorkloadVerifier, error) {
 	for _, key := range keys {
-		if key.Subject != "internal-tool" || key.Issuer != "internal-tool" || key.AllowDelegation || len(key.Scopes) != 1 || key.Scopes[0] != InternalCatalogScope {
+		if key.Subject != "internal-tool" ||
+			key.Issuer != "internal-tool" ||
+			key.AllowDelegation ||
+			len(key.Scopes) != 1 ||
+			key.Scopes[0] != InternalCatalogScope {
 			return nil, errors.New("invalid internal tool catalog key")
 		}
 		for _, school := range schoolKeys {
@@ -33,7 +37,14 @@ func New(keys, schoolKeys []core.WorkloadKeyConfig) (core.WorkloadVerifier, erro
 }
 
 func (v *verifier) VerifyWorkload(ctx context.Context, r *http.Request) (context.Context, error) {
-	if r.Pattern != InternalCatalogRoute || r.Method != "GET" || r.URL == nil || r.URL.Path != "/integrations/restricted/providers" || r.URL.RawQuery != "" || r.URL.RawPath != "" || len(r.Header.Values("Cookie")) != 0 || len(r.Header.Values("X-GH-Identity-Proof")) != 0 {
+	if r.Pattern != InternalCatalogRoute ||
+		r.Method != "GET" ||
+		r.URL == nil ||
+		r.URL.Path != "/integrations/restricted/providers" ||
+		r.URL.RawQuery != "" ||
+		r.URL.RawPath != "" ||
+		len(r.Header.Values("Cookie")) != 0 ||
+		len(r.Header.Values("X-GH-Identity-Proof")) != 0 {
 		return nil, core.ErrWorkloadDenied
 	}
 
@@ -43,7 +54,13 @@ func (v *verifier) VerifyWorkload(ctx context.Context, r *http.Request) (context
 	}
 
 	claims, ok := core.WorkloadFrom(verified)
-	if !ok || claims.Subject != "internal-tool" || len(claims.Scopes) != 1 || claims.Scopes[0] != InternalCatalogScope || claims.ActorGID != "" || claims.TenantID != "" || claims.SessionID != "" {
+	if !ok ||
+		claims.Subject != "internal-tool" ||
+		len(claims.Scopes) != 1 ||
+		claims.Scopes[0] != InternalCatalogScope ||
+		claims.ActorGID != "" ||
+		claims.TenantID != "" ||
+		claims.SessionID != "" {
 		return nil, core.ErrWorkloadDenied
 	}
 

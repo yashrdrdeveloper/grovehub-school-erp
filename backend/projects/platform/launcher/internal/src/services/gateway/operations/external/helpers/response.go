@@ -1,9 +1,10 @@
 package helpers
 
 import (
-	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 	"log/slog"
 	"net/http"
+
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 )
 
 func Reject(writer http.ResponseWriter, request *http.Request, status int) {

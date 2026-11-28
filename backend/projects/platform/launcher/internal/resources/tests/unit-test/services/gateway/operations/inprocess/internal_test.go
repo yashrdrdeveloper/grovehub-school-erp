@@ -3,6 +3,7 @@ package gateway_test
 import (
 	"context"
 	"errors"
+
 	ginkgo "github.com/onsi/ginkgo/v2"
 
 	schoolgateway "grovehub/internal/session"

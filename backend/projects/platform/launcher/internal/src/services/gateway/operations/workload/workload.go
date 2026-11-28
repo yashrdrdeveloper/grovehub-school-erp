@@ -5,6 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
+	"strings"
+
+	core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+	school "grovehub/internal/session"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/internalcatalog"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/operatoraudit"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/operatorauditread"
@@ -12,12 +18,6 @@ import (
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/schoolreceipt"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/schoolreceiptread"
 	"grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/schoolstatusreceipt"
-	"io"
-	"net/http"
-	"strings"
-
-	core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
-	school "grovehub/internal/session"
 	"grovehub/launcher/internal/src/services/gateway/policies"
 	mail "grovehub/services/integration/client/mail"
 	integration "grovehub/services/integration/client/principal"
@@ -152,14 +152,22 @@ func NewPlatformWorkloads(raw string, identity delegatedIdentity, webhook core.W
 		v.schoolStatusReceipt = status
 	}
 
-	if len(cfg.Keys) == 0 && len(cfg.Routes) == 0 && (len(cfg.InternalToolKeys) > 0 || len(cfg.OperatorAuditKeys) > 0 || len(cfg.OperatorAuditReadKeys) > 0 || len(cfg.SchoolExecutionKeys) > 0 || len(cfg.SchoolReceiptKeys) > 0 || len(cfg.SchoolReceiptReadKeys) > 0 || len(cfg.SchoolStatusReceiptKeys) > 0) {
+	if len(cfg.Keys) == 0 &&
+		len(cfg.Routes) == 0 &&
+		(len(cfg.InternalToolKeys) > 0 || len(cfg.OperatorAuditKeys) > 0 || len(cfg.OperatorAuditReadKeys) > 0 || len(cfg.SchoolExecutionKeys) > 0 || len(cfg.SchoolReceiptKeys) > 0 || len(cfg.SchoolReceiptReadKeys) > 0 || len(cfg.SchoolStatusReceiptKeys) > 0) {
 		return v, nil
 	}
 	// Mail diagnostics require a dedicated single-scope, nondelegating operator key.
 	for _, key := range cfg.Keys {
 		for _, scope := range key.Scopes {
-			if scope == mail.ReconciliationScope || key.Subject == mail.ReconciliationSubject || key.Issuer == mail.ReconciliationSubject {
-				if key.Subject != mail.ReconciliationSubject || key.Issuer != mail.ReconciliationSubject || key.AllowDelegation || len(key.Scopes) != 1 || scope != mail.ReconciliationScope {
+			if scope == mail.ReconciliationScope ||
+				key.Subject == mail.ReconciliationSubject ||
+				key.Issuer == mail.ReconciliationSubject {
+				if key.Subject != mail.ReconciliationSubject ||
+					key.Issuer != mail.ReconciliationSubject ||
+					key.AllowDelegation ||
+					len(key.Scopes) != 1 ||
+					scope != mail.ReconciliationScope {
 					return nil, errors.New("invalid mail reconciliation workload key")
 				}
 			}
@@ -250,14 +258,29 @@ func (v *platformWorkloads) VerifyWorkload(ctx context.Context, r *http.Request)
 	}
 
 	if r.Pattern == "POST "+mail.ReconciliationPath {
-		if policy.RequireActor || claims.Subject != mail.ReconciliationSubject || claims.ActorGID != "" || claims.TenantID != "" || claims.SessionID != "" || r.URL == nil || r.URL.Path != mail.ReconciliationPath || r.URL.RawPath != "" || r.URL.RawQuery != "" || r.URL.ForceQuery || len(r.Header.Values("Cookie")) != 0 || len(r.Header.Values("X-GH-Identity-Proof")) != 0 {
+		if policy.RequireActor ||
+			claims.Subject != mail.ReconciliationSubject ||
+			claims.ActorGID != "" ||
+			claims.TenantID != "" ||
+			claims.SessionID != "" ||
+			r.URL == nil ||
+			r.URL.Path != mail.ReconciliationPath ||
+			r.URL.RawPath != "" ||
+			r.URL.RawQuery != "" ||
+			r.URL.ForceQuery ||
+			len(r.Header.Values("Cookie")) != 0 ||
+			len(r.Header.Values("X-GH-Identity-Proof")) != 0 {
 			return nil, core.ErrWorkloadDenied
 		}
 		return verified, nil
 	}
 
 	if !policy.RequireActor {
-		if (foundationRoute(r.Pattern) && claims.Subject != "school-foundation") || (!foundationRoute(r.Pattern) && claims.Subject != "school") || claims.ActorGID != "" || claims.TenantID != "" || claims.SessionID != "" {
+		if (foundationRoute(r.Pattern) && claims.Subject != "school-foundation") ||
+			(!foundationRoute(r.Pattern) && claims.Subject != "school") ||
+			claims.ActorGID != "" ||
+			claims.TenantID != "" ||
+			claims.SessionID != "" {
 			return nil, core.ErrWorkloadDenied
 		}
 		return verified, nil

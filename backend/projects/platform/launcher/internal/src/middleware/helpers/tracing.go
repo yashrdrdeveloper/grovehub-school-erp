@@ -2,12 +2,14 @@ package helpers
 
 import (
 	"context"
-	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
+	"net/http"
+	"time"
+
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
-	"net/http"
-	"time"
+
+	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
 )
 
 func RecordTrace(ctx context.Context, request *http.Request, route string, recorder *Recorder, duration time.Duration) {
@@ -39,5 +41,4 @@ func RecordTrace(ctx context.Context, request *http.Request, route string, recor
 			),
 		)
 	}
-
 }

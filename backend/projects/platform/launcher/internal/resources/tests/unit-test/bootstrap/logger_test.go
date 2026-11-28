@@ -38,5 +38,4 @@ func LoggerSpecs() {
 			Expect(err.Error()).To(ContainSubstring("unsupported log level"))
 		})
 	})
-
 }
