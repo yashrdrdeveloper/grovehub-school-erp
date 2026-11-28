@@ -1,10 +1,11 @@
 package postgres
 
 import (
-	gormpostgres "gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 )
 
 func NewDB(databaseURL string) (*gorm.DB, error) {
-	return gorm.Open(gormpostgres.Open(databaseURL), &gorm.Config{})
+	return coredatabase.NewDB(databaseURL)
 }
