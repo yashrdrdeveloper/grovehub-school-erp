@@ -8,7 +8,7 @@ import (
 
 func TestRuntimeRegistrationBuild(t *testing.T) {
 	registration := bootstrap.RuntimeRegistration[int, int, int]{
-		Service: bootstrap.Registration[int]{ServiceName: "test"},
+		Service:      bootstrap.Registration[int]{ServiceName: "test"},
 		BuildRuntime: func(input int) (int, error) { return input + 1, nil },
 	}
 	var service bootstrap.RuntimeService[int, int, int] = registration

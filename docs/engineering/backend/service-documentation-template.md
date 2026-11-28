@@ -6,11 +6,14 @@ Copy the **structure**, not the contents, into each implemented service. Do not 
 
 ```text
 <service>/
-  docs/
-    engineering/
-      README.md       # implementation architecture and decisions
-    product/
-      README.md       # real features and reproducible business workflows
+  internal/
+    resources/
+      docs/
+        README.md     # documentation index
+        engineering/
+          README.md   # implementation architecture and decisions
+        product/
+          README.md   # real features and reproducible business workflows
 ```
 
 ## Engineering README sections

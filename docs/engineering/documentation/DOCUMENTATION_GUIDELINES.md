@@ -50,7 +50,7 @@ Each has a different audience/purpose.
 3. Other docs link to it instead of copying large blocks.
 4. Docs live near the code/domain they govern when useful.
 5. Repository-wide standards live under `docs/engineering`.
-6. Package/service runbooks live with the package/service.
+6. Backend package, library, capability, project and service documentation (including README files) MUST live under the owner's `internal/resources/docs/`. Repository-wide documentation outside `backend/` remains in its existing central location. Validate with `python3 scripts/backend/check-documentation-layout.py`.
 7. Public API reference derives from machine-readable contracts.
 8. Generated API docs are not manually edited.
 9. Examples must remain valid.

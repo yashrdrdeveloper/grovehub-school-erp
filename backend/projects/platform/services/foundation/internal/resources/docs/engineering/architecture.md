@@ -6,7 +6,7 @@
 
 ```text
 services/foundation/
-├── foundation.go                           # New + Migrate
+├── main.go                                 # typed Bootstrap + compatibility adapters
 ├── client/person/person.go                 # @Client, typed public DTO aliases
 ├── client/person/constants/error.go        # client-visible error aliases
 └── internal/

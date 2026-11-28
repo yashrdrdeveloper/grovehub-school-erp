@@ -2,7 +2,7 @@
 
 **Status:** Normative • **Scope:** every Go backend module and shared library • **Owner:** Backend engineering
 
-This file is the **generic source of truth** for designing and maintaining backend packages. It deliberately contains **no specific service, vendor, event, endpoint, table, or product workflow**. Module-specific implementation belongs in the module's `docs/engineering/`; business API execution and expected results belong in `docs/product/`.
+This file is the **generic source of truth** for designing and maintaining backend packages. It deliberately contains **no specific service, vendor, event, endpoint, table, or product workflow**. Module-specific implementation belongs in the module's `internal/resources/docs/engineering/`; business API execution and expected results belong in `internal/resources/docs/product/`.
 
 The words **MUST**, **MUST NOT**, and **SHOULD** express enforceable rules. Existing external contracts, already-applied database migrations, and production data take precedence over a purely cosmetic folder move; document exceptions in the owning module.
 
@@ -12,13 +12,15 @@ The words **MUST**, **MUST NOT**, and **SHOULD** express enforceable rules. Exis
 |---|---|---|
 | `docs/engineering/backend/backend.md` | This architecture/SRP/quality master | Service-specific details |
 | `docs/engineering/backend/<topic>.md` | Reusable technical guidance | Individual product workflows |
-| `backend/projects/<project>/services/<module>/docs/engineering/` | Module-specific implementation, deviations, contracts, dependencies, runbooks | General platform-wide rules duplicated from here |
-| `backend/projects/<project>/services/<module>/docs/product/` | Use cases, actor journeys, API sequences, request/response examples, acceptance criteria | Internal algorithm blueprints |
-| `backend/libs/<library>/docs/engineering/` | Shared capability contracts, use conditions, invariant/security guarantees | Domain- or vendor-specific product rules |
+| `backend/projects/<project>/services/<module>/internal/resources/docs/engineering/` | Module-specific implementation, deviations, contracts, dependencies, runbooks | General platform-wide rules duplicated from here |
+| `backend/projects/<project>/services/<module>/internal/resources/docs/product/` | Use cases, actor journeys, API sequences, request/response examples, acceptance criteria | Internal algorithm blueprints |
+| `backend/libs/<library>/internal/resources/docs/engineering/` | Shared capability contracts, use conditions, invariant/security guarantees | Domain- or vendor-specific product rules |
 | `backend/services/<module>/internal/resources/api/openapi/` | Machine-readable canonical API schema | Prose-only undocumented contract |
 | `backend/services/<module>/internal/resources/migrations/` | Immutable, ordered schema changes | Unreviewed generated schema mutation |
 
 When documentation and code differ, first establish what is actually deployed, then **correct the owner-local documentation** and any generic rule only if the latter is wrong. A plan or annotation inventory is not proof that code generation, authorization, transactions, or other runtime behavior exists.
+
+Every maintained documentation file under `backend/`, including README files, MUST live under its owning component's `internal/resources/docs/`. Repository-wide standards outside `backend/` remain centrally owned. `python3 scripts/backend/check-documentation-layout.py` enforces the tracked-file location and Platform service root convention.
 
 ## 2. Canonical module blueprint
 
@@ -32,7 +34,7 @@ backend/
 │   └── <technical-library>/                  # separately owned capability contracts
 └── services/
     └── <module>/
-        ├── <module>.go                       # exported New, Migrate, Module only as needed
+        ├── main.go                           # public typed Bootstrap, temporary compatibility facade
         ├── client/
         │   └── <resource>/<resource>.go      # stable intermodule facade, aliases, @Client
         ├── internal/
@@ -94,14 +96,15 @@ backend/
         │   ├── resources/
         │   │   ├── resources.go               # embed resources
         │   │   ├── migrations/
-        │   │   └── api/openapi/v1/
+        │   │   ├── api/openapi/v1/
+        │   │   └── docs/
+        │   │       ├── README.md
+        │   │       ├── engineering/{README.md,architecture.md}
+        │   │       └── product/{README.md,api_workflows.md}
         │   └── tests/
         │       ├── unit-test/                 # mirrors source ownership
         │       ├── mocks/
         │       └── fixtures/
-        └── docs/
-            ├── engineering/{README.md,architecture.md}
-            └── product/{README.md,api_workflows.md}
 ```
 
 **Not a scaffolding checklist.** Absence of an HTTP API means no controller/routes folder. No persistence means no repository/entity/migration. A single-step operation does not need `flows/` or a chain. Never create `impl/` merely to wrap a one-line pure function without a genuine boundary.
@@ -146,8 +149,8 @@ backend/
 | `providers/` | Generic provider discovery/execution | Capability-neutral contracts, registry | `mail.*`, payment-specific, vendor specifics |
 | `internal/resources/` | Immutable deployable assets | Embed versioned SQL/OpenAPI | Runtime policy decisions |
 | `internal/tests/` | Confidence and contracts | Mocks, scenario tests, exact regression cases | Shipping test-only shims in production |
-| `docs/engineering/` | How this module works | Architecture, diagrams, invariants, exceptions | Duplicating this entire master |
-| `docs/product/` | What user or caller can do | API journey, preconditions, examples, expected results | Hidden internal implementation dependency |
+| `internal/resources/docs/engineering/` | How this module works | Architecture, diagrams, invariants, exceptions | Duplicating this entire master |
+| `internal/resources/docs/product/` | What user or caller can do | API journey, preconditions, examples, expected results | Hidden internal implementation dependency |
 
 **Placement test:** Determine the *owner* (resource/capability), the *change trigger* (reason to modify), and the *side-effect boundary*. Put code in the lowest owner-specific folder satisfying all three.
 
@@ -337,7 +340,7 @@ A change is complete only when a reviewer can answer **yes** to all applicable q
 | Testing / release gates | [testing.md](testing.md) |
 | Core and technical library design | [libraries.md](libraries.md) |
 
-A service's or library's `docs/engineering/README.md` must link here and list its **actual deviations/implementations**. A service's `docs/product/README.md` must map user-visible use cases to reproducible API steps. There is no reason to put product examples in this generic master.
+A service's or library's `internal/resources/docs/engineering/README.md` must link here and list its **actual deviations/implementations**. A service's `internal/resources/docs/product/README.md` must map user-visible use cases to reproducible API steps. There is no reason to put product examples in this generic master.
 
 ## Gateway boundary and route annotations
 

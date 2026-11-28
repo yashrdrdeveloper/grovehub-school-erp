@@ -14,10 +14,10 @@ backend/libs/
 │   │       └── resources/tests/ # private unit tests, mocks, fixtures and helpers
 │   ├── annotation/
 │   ├── database/
-│   └── docs/engineering/
+│   └── internal/resources/docs/engineering/
 └── <technical-library>/
     ├── <capability>/
-    └── docs/engineering/
+    └── internal/resources/docs/engineering/
 ```
 
 For core capabilities, use the standard internal/src categories operations, helpers, constants, contracts and config when needed. Do not create empty categories. Expose a single root facade. Create only folders with real responsibilities. Services import the public capability facade, **never** a library's private helpers, contracts, mappers or validators unless explicitly part of its API. Libraries must follow Go `internal` import restrictions.
@@ -44,7 +44,7 @@ Infrastructure-owned contracts, such as broker-delivery DTOs, event-store record
 
 ## 5. Documentation for libraries
 
-Each owned library has `docs/engineering/README.md`: public entry points, import rules, SRP, initialization, error/timeout semantics, lifecycle, security, usage and tests. Complex capabilities can add topic-specific engineering guides. **Product execution guides belong to consuming services**, not shared libraries.
+Each owned library has `internal/resources/docs/engineering/README.md`: public entry points, import rules, SRP, initialization, error/timeout semantics, lifecycle, security, usage and tests. Complex capabilities can add topic-specific engineering guides. **Product execution guides belong to consuming services**, not shared libraries.
 
 Breaking library changes must update consumers, generated code, tests, and owner-local docs together.
 

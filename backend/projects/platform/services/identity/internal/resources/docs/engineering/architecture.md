@@ -1,6 +1,6 @@
 # Identity — Clean architecture (resource-first)
 
-Identity is rebuilt to the same module topology as Foundation, Integration and Infrastructure. The exported root `identity.go` exposes only New and Migrate; dependency composition, routing, DTOs, entities and repositories are inside `internal/app`. All applied identity migration versions remain immutable and are embedded from `internal/resources/migrations`.
+Identity is rebuilt to the same module topology as Foundation, Integration and Infrastructure. The exported root `main.go` exposes the common typed Bootstrap contract and transitional compatibility functions; dependency composition, routing, DTOs, entities and repositories are inside `internal/app`. All applied identity migration versions remain immutable and are embedded from `internal/resources/migrations`.
 
 ## Ownership
 
@@ -47,7 +47,7 @@ Controller method `@RouteLimit N` metadata is validated by the shared generator 
 
 Identity's `@Client identityAccountClient` uses `@RequestLine` for GET account and POST account search, with a generated in-process HTTP client in `internal/app/client/account/impl`. The Runtime no longer delegates account methods to the service. `bootstrap/impl/build.go` composes dependencies, `runtime.go` manages lifecycle, and `workers.go` handles cancellation.
 
-Protected account creation remains admin-only. Public `/identity/public/accounts/setup` and `/setup/status` routes belong to the activation controller and require a valid purpose-bound invitation setup grant. The offline administrator command is now `backend/cmd/identity-bootstrap-admin`, through the service-owned operator facade in `services/identity/bootstrapadmin`.
+Protected account creation remains admin-only. Public `/identity/public/accounts/setup` and `/setup/status` routes belong to the activation controller and require a valid purpose-bound invitation setup grant. The offline administrator command is now `Platform `identity-bootstrap-admin` subcommand`, through the service-owned operator facade in `services/identity/internal/app/strategies/command/bootstrapadmin/runner`.
 
 ## Dynamic Integration-managed mail routing
 

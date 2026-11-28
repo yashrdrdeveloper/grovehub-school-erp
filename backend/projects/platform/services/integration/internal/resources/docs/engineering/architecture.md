@@ -4,7 +4,7 @@
 
 ```text
 services/integration/
-├── integration.go                           # New/Migrate + public DevAuth alias
+├── main.go                                  # typed Bootstrap + compatibility adapters
 ├── client/connection/connection.go          # @Client and stable DTO aliases
 └── internal/
     ├── app/

@@ -35,13 +35,13 @@ docs/
     └── git/
 ```
 
-Modules own **additional implemented architecture** in `backend/services/<module>/docs/engineering/`; they own **business API execution** in `backend/services/<module>/docs/product/`. Shared libraries own `backend/libs/<library>/docs/engineering/`. Generic documentation must not enumerate particular module endpoints, events, tables or provider names.
+Modules own **additional implemented architecture** in `backend/projects/<project>/services/<module>/internal/resources/docs/engineering/`; they own **business API execution** in `backend/projects/<project>/services/<module>/internal/resources/docs/product/`. Shared libraries own `backend/libs/<library>/internal/resources/docs/engineering/`. Generic documentation must not enumerate particular module endpoints, events, tables or provider names.
 
 ## Task routing
 
 | Task | Read first | Then |
 |---|---|---|
-| Go module creation/refactor | [backend/backend.md](backend/backend.md) | Owning module `docs/engineering/` |
+| Go module creation/refactor | [backend/backend.md](backend/backend.md) | Owning module `internal/resources/docs/engineering/` |
 | Annotations, generated Go, overlay | [backend/annotation.md](backend/annotation.md) | Library owner annotation engine docs |
 | Search/index/cursor | [backend/searchDetails.md](backend/searchDetails.md) | Module-specific projection rules |
 | Domain event and broker/outbox | [backend/events.md](backend/events.md) | Publisher/consumer module architecture |
@@ -50,7 +50,7 @@ Modules own **additional implemented architecture** in `backend/services/<module
 | Provider strategies and adapters | [backend/providers.md](backend/providers.md) | Module's provider engineering docs |
 | Operation/pattern review | [backend/patterns.md](backend/patterns.md) | Module services implementation |
 | Go tests and CI | [backend/testing.md](backend/testing.md) | [testing guideline](testing/TESTING_GUIDELINES.md) |
-| Core/Infrastructure library | [backend/libraries.md](backend/libraries.md) | Library's `docs/engineering/` |
+| Core/Infrastructure library | [backend/libraries.md](backend/libraries.md) | Library's `internal/resources/docs/engineering/` |
 | Frontend | [frontend guideline](frontend/FRONTEND_CODE_GUIDELINES.md) | Component/package owner docs |
 | Security | [security guideline](security/SECURITY_GUIDELINES.md) | Implemented IAM/middleware |
 | Tracing and monitoring | [observability guideline](observability/OBSERVABILITY_GUIDELINES.md) | [trace policy](observability/TRACE_CONTEXT_GUIDELINES.md) |
@@ -60,11 +60,14 @@ Modules own **additional implemented architecture** in `backend/services/<module
 
 ## Module ownership links
 
-- [Foundation engineering](../../backend/services/foundation/docs/engineering/README.md) and [product](../../backend/services/foundation/docs/product/README.md)
-- [Integration engineering](../../backend/services/integration/docs/engineering/README.md) and [product](../../backend/services/integration/docs/product/README.md)
-- [Infrastructure engineering](../../backend/services/infrastructure/docs/engineering/README.md) and [product](../../backend/services/infrastructure/docs/product/README.md)
-- [Core library engineering](../../backend/libs/core/docs/engineering/README.md)
-- [Infrastructure library engineering](../../backend/libs/infrastructure/docs/engineering/README.md)
+- [Foundation engineering](../../backend/projects/platform/services/foundation/internal/resources/docs/engineering/README.md) and [product](../../backend/projects/platform/services/foundation/internal/resources/docs/product/README.md)
+- [Integration engineering](../../backend/projects/platform/services/integration/internal/resources/docs/engineering/README.md) and [product](../../backend/projects/platform/services/integration/internal/resources/docs/product/README.md)
+- [Infrastructure engineering](../../backend/projects/platform/services/infrastructure/internal/resources/docs/engineering/README.md) and [product](../../backend/projects/platform/services/infrastructure/internal/resources/docs/product/README.md)
+- [Core library engineering](../../backend/libs/core/internal/resources/docs/engineering/README.md)
+- [Platform library engineering](../../backend/libs/platform/internal/resources/docs/engineering/README.md)
+- [Backend documentation index](../../backend/internal/resources/docs/README.md)
+- [Platform CMD architecture](../../backend/projects/platform/cmd/internal/resources/docs/engineering/architecture.md)
+- [Audit engineering](../../backend/projects/platform/services/audit/internal/resources/docs/engineering/README.md)
 
 Identity remains on its current documentation/code layout and is not being changed in this documentation refactor.
 
@@ -72,4 +75,4 @@ Identity remains on its current documentation/code layout and is not being chang
 
 [API response envelopes](api/API_RESPONSE_ENVELOPE_GUIDELINES.md) · [Backend unit-test structure](testing/BACKEND_UNIT_TEST_STRUCTURE.md) · [Regression testing](testing/REGRESSION_TESTING.md) · [CI/CD](ci/CI_CD_GUIDELINES.md) · [Git/PR](git/GIT_AND_PR_GUIDELINES.md) · [Docker](deployment/DOCKER_GUIDELINES.md) · [Kubernetes](deployment/KUBERNETES_GUIDELINES.md) · [Deployment](deployment/DEPLOYMENT_GUIDELINES.md) · [Release](release/RELEASE_GUIDELINES.md) · [Observability](observability/GROVEHUB_OBSERVABILITY.md).
 
-**Rule:** a generic rule lives in the central owner; a concrete module contract lives with that module; an API walkthrough lives in `docs/product/`. Delete obsolete alternatives instead of maintaining contradictory duplicates.
+**Rule:** a generic rule lives in the central owner; a concrete module contract lives with that module; an API walkthrough lives in `internal/resources/docs/product/`. Delete obsolete alternatives instead of maintaining contradictory duplicates.

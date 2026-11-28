@@ -4,25 +4,25 @@ import (
 	"log/slog"
 
 	"gorm.io/gorm"
-	"grovehub/libs/platform/session"
-	person "grovehub/services/foundation/client/person"
-	"grovehub/services/infrastructure/client/messaging"
-	connection "grovehub/services/integration/client/connection"
 	"grovehub/launcher/internal/src/bootstrap"
 	serverimpl "grovehub/launcher/internal/src/server/impl"
+	"grovehub/libs/platform/session"
 	"grovehub/services/audit"
 	"grovehub/services/foundation"
+	person "grovehub/services/foundation/client/person"
 	"grovehub/services/identity"
 	"grovehub/services/infrastructure"
+	"grovehub/services/infrastructure/client/messaging"
 	"grovehub/services/integration"
+	connection "grovehub/services/integration/client/connection"
 )
 
 // DefaultDependencies is the production composition root. Each adapter has
 // explicit ownership; the builder remains responsible for rollback.
 func DefaultDependencies() bootstrap.Dependencies {
 	return bootstrap.Dependencies{
-		OpenDatabase:          NewPostgresDB,
-		OpenAuditDatabase:     NewAuditPostgresDB,
+		OpenDatabase:      NewPostgresDB,
+		OpenAuditDatabase: NewAuditPostgresDB,
 		NewInfrastructure: func(config messaging.Config, db *gorm.DB, logger *slog.Logger) (infrastructure.Module, error) {
 			return infrastructure.Bootstrap().Build(infrastructure.Dependencies{Config: config, DB: db, Logger: logger})
 		},
