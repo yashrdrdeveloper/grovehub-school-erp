@@ -8,8 +8,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	annotationvalidation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/validation"
-	annotationdto "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/dto"
+	annotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
+
 )
 
 
@@ -34,10 +34,10 @@ type sampleCreate struct {
 }
 
 type samplePatch struct {
-	FirstName  annotationdto.Patch[string]         `json:"firstName" normalize:"trim" validate:"nonnull,notblank,maxrunes=100"`
-	MiddleName annotationdto.Patch[string]         `json:"middleName" normalize:"trim" validate:"maxrunes=100"`
-	LastName   annotationdto.Patch[string]         `json:"lastName" normalize:"trim" validate:"nonnull,notblank,maxrunes=100"`
-	Contacts   annotationdto.Patch[sampleContacts] `json:"contacts" validate:"valid"`
+	FirstName  annotation.Patch[string]         `json:"firstName" normalize:"trim" validate:"nonnull,notblank,maxrunes=100"`
+	MiddleName annotation.Patch[string]         `json:"middleName" normalize:"trim" validate:"maxrunes=100"`
+	LastName   annotation.Patch[string]         `json:"lastName" normalize:"trim" validate:"nonnull,notblank,maxrunes=100"`
+	Contacts   annotation.Patch[sampleContacts] `json:"contacts" validate:"valid"`
 }
 
 var _ = Describe("DTO tag stages", func() {
@@ -49,21 +49,21 @@ var _ = Describe("DTO tag stages", func() {
 				LastName: "  Singh  ",
 			},
 		}
-		normalized, err := annotationvalidation.NormalizeFields(input)
+		normalized, err := annotation.NormalizeFields(input)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(normalized.FirstName).To(Equal("Amit"))
 		Expect(normalized.MiddleName).To(Equal("Kumar"))
 		Expect(normalized.LastName).To(Equal("Singh"))
 		Expect(input.FirstName).To(Equal("  Amit  "))
-		Expect(annotationvalidation.Validate(normalized)).To(Succeed())
+		Expect(annotation.Validate(normalized)).To(Succeed())
 	})
 
 	It("rejects trimmed blank strings with a field-specific rule", func() {
 		in := sampleCreate{SampleNames: SampleNames{FirstName: "   ", LastName: "Smith"}}
-		normalized, err := annotationvalidation.NormalizeFields(in)
+		normalized, err := annotation.NormalizeFields(in)
 		Expect(err).NotTo(HaveOccurred())
-		err = annotationvalidation.Validate(normalized)
-		var invalid annotationvalidation.Error
+		err = annotation.Validate(normalized)
+		var invalid annotation.ValidationError
 		Expect(errors.As(err, &invalid)).To(BeTrue())
 		Expect(invalid.Field).To(Equal("SampleNames.FirstName"))
 		Expect(invalid.Rule).To(Equal("notblank"))
@@ -71,13 +71,13 @@ var _ = Describe("DTO tag stages", func() {
 
 	It("uses rune counts after trimming and rejects oversized names", func() {
 		allowed := sampleCreate{SampleNames: SampleNames{FirstName: " " + strings.Repeat("ऋ", 100) + " ", LastName: "Singh"}}
-		normalized, err := annotationvalidation.NormalizeFields(allowed)
+		normalized, err := annotation.NormalizeFields(allowed)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(annotationvalidation.Validate(normalized)).To(Succeed())
+		Expect(annotation.Validate(normalized)).To(Succeed())
 		tooLong := allowed
 		tooLong.FirstName = strings.Repeat("ऋ", 101)
-		_, err = annotationvalidation.Process(tooLong, annotationvalidation.Rules[sampleCreate]{})
-		var invalid annotationvalidation.Error
+		_, err = annotation.Process(tooLong, annotation.ValidationRules[sampleCreate]{})
+		var invalid annotation.ValidationError
 		Expect(errors.As(err, &invalid)).To(BeTrue())
 		Expect(invalid.Rule).To(Equal("maxrunes"))
 	})
@@ -87,8 +87,8 @@ var _ = Describe("DTO tag stages", func() {
 			SampleNames: SampleNames{FirstName: "Riya", LastName: "Shah"},
 			Contacts: sampleContacts{Emails: []sampleValue{{Value: "   "}}},
 		}
-		_, err := annotationvalidation.Process(input, annotationvalidation.Rules[sampleCreate]{})
-		var invalid annotationvalidation.Error
+		_, err := annotation.Process(input, annotation.ValidationRules[sampleCreate]{})
+		var invalid annotation.ValidationError
 		Expect(errors.As(err, &invalid)).To(BeTrue())
 		Expect(invalid.Field).To(Equal("Contacts.Emails[0].Value"))
 		Expect(input.Contacts.Emails[0].Value).To(Equal("   ")) // no in-place slice mutation
@@ -111,12 +111,12 @@ var _ = Describe("DTO tag stages", func() {
 		for _, testcase := range cases {
 			var request samplePatch
 			Expect(json.Unmarshal([]byte(testcase.payload), &request)).To(Succeed())
-			_, err := annotationvalidation.Process(request, annotationvalidation.Rules[samplePatch]{})
+			_, err := annotation.Process(request, annotation.ValidationRules[samplePatch]{})
 			if testcase.field == "" {
 				Expect(err).NotTo(HaveOccurred(), testcase.payload)
 				continue
 			}
-			var invalid annotationvalidation.Error
+			var invalid annotation.ValidationError
 			Expect(errors.As(err, &invalid)).To(BeTrue(), testcase.payload)
 			Expect(invalid.Field).To(Equal(testcase.field), testcase.payload)
 			Expect(invalid.Rule).To(Equal(testcase.rule), testcase.payload)
@@ -126,7 +126,7 @@ var _ = Describe("DTO tag stages", func() {
 	It("trims a supplied PATCH name without modifying the original pointer", func() {
 		var original samplePatch
 		Expect(json.Unmarshal([]byte(`{"firstName":"  Asha  "}`), &original)).To(Succeed())
-		normalized, err := annotationvalidation.Process(original, annotationvalidation.Rules[samplePatch]{})
+		normalized, err := annotation.Process(original, annotation.ValidationRules[samplePatch]{})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(*normalized.FirstName.Value).To(Equal("Asha"))
 		Expect(*original.FirstName.Value).To(Equal("  Asha  "))

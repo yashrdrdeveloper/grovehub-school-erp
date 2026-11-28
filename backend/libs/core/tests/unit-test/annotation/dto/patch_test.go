@@ -6,10 +6,10 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	annotationdto "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/dto"
+	annotationdto "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
 )
 
-var _ = Describe("Reusable presence-aware PATCH field", func() {
+var _ = Describe("Patch", func() {
 	It("distinguishes omission, explicit null, and supplied values", func() {
 		type input struct { Name annotationdto.Patch[string] `json:"name"` }
 		var missing input

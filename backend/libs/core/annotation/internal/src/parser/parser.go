@@ -9,7 +9,7 @@ import (
     goparser "go/parser"
     "go/token"
 
-    "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
+    annotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/impl/registry"
 )
 
 // Occurrence identifies a known annotation and its source declaration.

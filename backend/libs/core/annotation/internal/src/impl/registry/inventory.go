@@ -1,6 +1,6 @@
 // Package-level inventory composition. Each annotation category owns its
 // definitions under its own directory. Keep public All/Lookup/Uses unchanged.
-package annotation
+package registry
 
 import (
     "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/entity"
