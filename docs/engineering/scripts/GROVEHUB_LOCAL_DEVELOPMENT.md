@@ -1,7 +1,7 @@
 # GroveHub Local Development
 
 > **Status:** Mandatory GroveHub local-development standard  
-> **Applies to:** backend developer startup, Air hot reload, Swagger startup, local observability startup, process ownership, Go module refresh, and local backend telemetry configuration  
+> **Applies to:** backend developer startup, Air hot reload, Swagger startup, local infrastructure startup, local observability startup, process ownership, Go module refresh, and local backend telemetry configuration  
 > **Precedence:** This file is authoritative for GroveHub local development command semantics when an older generic example conflicts with it.
 
 ---
@@ -19,24 +19,89 @@ make backend-dev
     -> run Air in the foreground
     -> hot reload enabled
 
+make nats-start
+    -> start local NATS JetStream
+    -> use persistent Docker volume for JetStream state
+
+make nats-stop
+    -> stop/remove only the local NATS container
+    -> preserve the JetStream data volume
+
+make nats-status
+    -> report NATS container/health/endpoints/persistent volume
+
 make dev-start
+    -> start NATS JetStream
     -> run backend through Air in the background
     -> start Swagger
     -> hot reload enabled
 
 make dev-start-with-logs
+    -> start NATS JetStream
     -> run backend through Air in the background
     -> start Swagger
     -> start the local OpenTelemetry collector
     -> export GroveHub logs, traces, and metrics to Grafana Cloud
     -> hot reload enabled
+
+make dev-stop
+    -> stop Swagger
+    -> stop the managed backend/Air process
+    -> stop/remove the NATS container while preserving JetStream data
+    -> stop the optional local OpenTelemetry collector
+
+make dev-status
+    -> report NATS, backend, and Swagger status
 ```
 
 Do not route `dev-start` or `dev-start-with-logs` through a one-time backend binary.
 
 ---
 
-## 2. Git Pull and File Changes
+### Optional service database migrations
+
+`make dev-start` executes `scripts/database/migrate.sh init all`. For each registered service, a missing `migrations/` directory or a directory containing no `*.sql` files is a legitimate **no-op**, logged as a skip. This also applies to `status` and `reset` for services with no migrations. Services with actual SQL migrations must still propagate Goose/database failures (never silently skip failed migrations). This allows Infrastructure to run without a schema directory while Foundation, Identity, and Integration migrate normally.
+
+## 2. Local NATS JetStream
+
+The local messaging broker is NATS JetStream.
+
+Canonical development defaults:
+
+```text
+container = grovehub-nats
+image     = nats:2.11.9-alpine
+client    = nats://127.0.0.1:4222
+monitor   = http://127.0.0.1:8222
+volume    = grovehub-nats-data
+store     = /data
+```
+
+NATS is managed by:
+
+```text
+scripts/infrastructure/nats/start.sh
+scripts/infrastructure/nats/stop.sh
+scripts/infrastructure/nats/status.sh
+```
+
+The container is disposable. The named volume is not.
+
+`nats-stop` and `dev-stop` must preserve `grovehub-nats-data` so normal stop/start cycles, application restarts, and container recreation do not delete JetStream state.
+
+Deleting/resetting the JetStream volume is a separate destructive operation and must never be implicit in ordinary stop/start commands.
+
+Ports may be overridden through the Make interface:
+
+```bash
+make nats-start NATS_CLIENT_PORT=4223 NATS_MONITOR_PORT=8223
+```
+
+The root Makefile remains thin; Docker/runtime orchestration belongs in `scripts/infrastructure/nats/` and must reuse `scripts/lib/container.sh`.
+
+---
+
+## 3. Git Pull and File Changes
 
 Air watches the local backend source tree.
 
@@ -60,7 +125,7 @@ Air does not perform `git pull` itself. It reacts to filesystem changes produced
 
 ---
 
-## 3. Dependency Refresh
+## 4. Dependency Refresh
 
 The backend must synchronize the Go module graph before compiling when dependencies may have changed.
 
@@ -104,7 +169,7 @@ Do not use `go get` as automatic development bootstrap because it can intentiona
 
 ---
 
-## 4. Process Ownership
+## 5. Process Ownership
 
 The repository owns one backend PID file:
 
@@ -124,9 +189,15 @@ Stop/status logic must recognize both forms and must never use broad `pkill` or 
 
 `make dev-stop` must safely stop the Air supervisor and its managed backend process.
 
+Containerized development dependencies use explicit container names and are stopped by exact name only.
+
 ---
 
-## 5. Logs
+### Existing backend on port 8080
+
+`dev-start` first trusts only a running process with a verified repository PID file. If that file is stale or missing, it may **recover** a running Air supervisor only when `lsof` identifies the listener and the parent process executable and working directory match this checkout's Air installation and backend directory. This prevents duplicate Air instances and preserves hot reload. If port 8080 is occupied by anything else, startup **must refuse to take over**, print the listener with `lsof -nP -iTCP:8080 -sTCP:LISTEN`, and ask the developer to inspect and stop only the confirmed conflicting process. Never run indiscriminate `pkill`, `killall`, or an unconditional `kill` against the port occupant.
+
+## 6. Logs
 
 Both one-time and Air-backed development startup write backend output to:
 
@@ -150,7 +221,7 @@ The collector also maps structured GroveHub `service` and `serviceKey` fields in
 
 ---
 
-## 6. Application Log Levels
+## 7. Application Log Levels
 
 Local backend application log levels are configured through the root `.env` file using:
 
@@ -179,7 +250,7 @@ Rules:
 
 ---
 
-## 7. Trace and Metric Controls
+## 8. Trace and Metric Controls
 
 Local tracing and metric export are configured through the root `.env` file:
 
@@ -203,7 +274,7 @@ The backend startup scripts may load the root `.env`, but only application runti
 
 ---
 
-## 8. Local Observability Flow
+## 9. Local Observability Flow
 
 ```text
 GroveHub backend
@@ -223,25 +294,53 @@ Use `docs/engineering/observability/GROVEHUB_OBSERVABILITY.md` for canonical ser
 
 ---
 
-## 9. Mandatory Agent Rules
+## 10. Mandatory Agent Rules
 
 When changing local developer startup:
 
 1. Preserve the command semantics in this document.
 2. Keep the root Makefile thin.
 3. Put orchestration in `scripts/`.
-4. Reuse shared process/toolchain/module/environment helpers.
+4. Reuse shared process/toolchain/module/environment/container helpers.
 5. Keep `backend-start` production-like and non-reloading.
 6. Keep `dev-start` and `dev-start-with-logs` Air-backed.
-7. Ensure pulled `.go`, `go.mod`, and `go.sum` changes trigger a rebuild.
-8. Use `go mod tidy` to synchronize the module graph before builds that must self-heal after dependency changes.
-9. Treat `backend/go.sum` as committed repository state.
-10. Preserve `GROVEHUB_LOG_LEVELS` exact-list semantics and supported values.
-11. Do not silently fall back when an explicitly configured log level is invalid.
-12. Keep telemetry runtime variables explicit; do not export unrelated `.env` secrets into the backend process.
-13. Keep local collector filelog export limited to structured GroveHub application records; do not ship Air/watch/build chatter as application logs.
-14. Map GroveHub structured `level` to OpenTelemetry severity explicitly before export; do not rely on Grafana/Loki inferred level detection for application severity.
-15. Keep log resource service identity aligned with trace/metric service identity.
-16. Preserve traces + metrics export in `dev-start-with-logs`, not only log shipping.
-17. Never add broad process termination.
-18. Report the actual start/stop/hot-reload/telemetry validation performed.
+7. Start required local infrastructure dependencies before the backend.
+8. Ordinary NATS stop/recreate must preserve the JetStream data volume.
+9. Ensure pulled `.go`, `go.mod`, and `go.sum` changes trigger a rebuild.
+10. Use `go mod tidy` to synchronize the module graph before builds that must self-heal after dependency changes.
+11. Treat `backend/go.sum` as committed repository state.
+12. Preserve `GROVEHUB_LOG_LEVELS` exact-list semantics and supported values.
+13. Do not silently fall back when an explicitly configured log level is invalid.
+14. Keep telemetry runtime variables explicit; do not export unrelated `.env` secrets into the backend process.
+15. Keep local collector filelog export limited to structured GroveHub application records; do not ship Air/watch/build chatter as application logs.
+16. Map GroveHub structured `level` to OpenTelemetry severity explicitly before export; do not rely on Grafana/Loki inferred level detection for application severity.
+17. Keep log resource service identity aligned with trace/metric service identity.
+18. Preserve traces + metrics export in `dev-start-with-logs`, not only log shipping.
+19. Never add broad process termination.
+20. Report the actual start/stop/hot-reload/infrastructure/telemetry validation performed.
+
+---
+
+## Backend Custom Formatting
+
+`make backend-format` runs the repository-owned Go formatter at
+`scripts/backend/groovefmt/main.go`. Supported scopes include
+`FORMAT_SCOPE=all`, `FORMAT_SCOPE=foundation`, and `FORMAT_SCOPE=integration`.
+
+The formatter first applies standard `gofmt` (imports, indentation, spacing, and
+blank lines between top-level function, type, and constant declarations), then
+compacts multiline function/method/interface signatures onto one line, dropping
+trailing commas used only for multiline parameter lists. Interface members remain
+consecutive as in idiomatic Go. Signatures containing comments or raw string
+literals are not flattened, and generated files are not modified.
+
+The formatter checks that the resulting Go source still parses and is designed
+to be idempotent. Use `go test ./scripts/backend/groovefmt/...` from a module
+containing the tool, or `GO111MODULE=off go test scripts/backend/groovefmt/*.go`
+from the repository root to run its isolated standard-library-only tests.
+
+## Frontend HTTPS preview (Cloudflare Quick Tunnel)
+
+`make frontend-start`, `make dev-start` and `make dev-start-with-logs` start a managed Quick Tunnel when `cloudflared` is installed. Install on macOS with `brew install cloudflared`. The console prints the local Vite URL and temporary HTTPS URL; `make frontend-status` and `make dev-status` report it again. Open the HTTPS URL on a phone. Quick Tunnel URLs change on tunnel restart. The scripts reuse the managed tunnel while running, stop it with `frontend-stop`/`dev-stop`, and retain the log in `.runtime/logs/frontend-tunnel.log`. If cloudflared is missing or startup fails, local development remains available. `FRONTEND_TUNNEL=0` disables the tunnel and closes a managed existing one.
+
+Quick Tunnels are public: anyone with the link can reach the Vite development server and its existing API proxy. Use test data only; for sensitive data use a named tunnel protected by Cloudflare Access instead. Vite allows only the exact generated hostname, not the whole trycloudflare.com domain. The development proxy maps only that hostname's exact same-origin browser requests to the configured loopback origin; backend session and CSRF checks remain unchanged. This assumes the usual loopback IDENTITY_ALLOWED_ORIGIN configuration; custom backend origins are not automatically overridden. The backend, database, Swagger and NATS ports are not tunneled separately. If a different tunnel URL is allocated, the managed Vite process restarts to apply its exact host allowlist. A running named tunnel configuration in the default cloudflared config directory may prevent Quick Tunnel creation; do not delete it automatically.

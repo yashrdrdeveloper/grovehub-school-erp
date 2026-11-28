@@ -1,0 +1,1 @@
+export { TableScrollbar } from './TableScrollbar';

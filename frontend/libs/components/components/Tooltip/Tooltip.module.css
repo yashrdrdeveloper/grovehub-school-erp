@@ -1,0 +1,45 @@
+.anchor {
+  display: inline-flex;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+.anchor[tabindex='0'] {
+  cursor: not-allowed;
+}
+.anchor[tabindex='0']:focus-visible {
+  outline: var(--gh-focus-outline-width) solid var(--gh-color-ring);
+  border-radius: var(--gh-control-radius);
+}
+.anchor[data-full-width='true'] {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+}
+.anchor[data-full-width='true'] > * {
+  width: 100%;
+  min-width: 0;
+}
+.bubble {
+  position: fixed;
+  z-index: 120;
+  transform: translate(-50%, -100%);
+  width: max-content;
+  max-width: min(18rem, calc(100vw - 16px));
+  box-sizing: border-box;
+  background: var(--gh-color-text-strong);
+  color: var(--gh-color-surface);
+  border-radius: var(--gh-control-radius);
+  padding: var(--gh-space-1) var(--gh-space-2);
+  font-size: var(--gh-text-xs);
+  line-height: var(--gh-leading-normal);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+  pointer-events: none;
+  box-shadow: var(--gh-shadow-card);
+}
+@media (hover: none) {
+  .anchor:not(:focus-within) {
+    touch-action: manipulation;
+  }
+}

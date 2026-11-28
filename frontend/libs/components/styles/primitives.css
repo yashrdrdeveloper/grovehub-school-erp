@@ -1,0 +1,416 @@
+/* Component-owned legacy utility classes and shared component recipes. Tokens live only in @Styles. */
+.button {
+  display: inline-flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  min-height: var(--gh-control-height-md);
+  padding: var(--gh-space-2) var(--gh-space-4);
+  border: 1px solid transparent;
+  border-radius: var(--gh-control-radius);
+  font-size: var(--gh-text-xs);
+  font-weight: var(--gh-weight-medium);
+  transition:
+    background var(--gh-motion-normal),
+    box-shadow var(--gh-motion-normal),
+    transform var(--gh-motion-normal);
+  white-space: nowrap;
+}
+.button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.button--primary {
+  background: var(--gh-color-primary);
+  color: var(--gh-color-primary-foreground);
+}
+.button--primary:hover {
+  background: var(--gh-color-accent-hover);
+  color: var(--gh-color-primary-foreground);
+}
+.button--secondary {
+  background: var(--gh-color-secondary);
+  border-color: var(--gh-color-border);
+  color: var(--gh-color-secondary-foreground);
+}
+.button--secondary:hover,
+.button--ghost:hover {
+  background: var(--gh-color-surface-subtle);
+}
+.button--ghost {
+  background: transparent;
+  color: var(--gh-color-text);
+}
+.button--danger {
+  background: var(--gh-color-danger);
+  color: var(--gh-color-danger-foreground);
+}
+.button--full {
+  width: 100%;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+.field__label {
+  font-size: var(--gh-text-xs);
+  font-weight: var(--gh-weight-bold);
+  color: var(--gh-color-text);
+}
+.field__input {
+  width: 100%;
+  outline: 0;
+  background: var(--gh-color-surface);
+  border: 1px solid var(--gh-color-input);
+  border-radius: var(--gh-control-radius);
+  color: var(--gh-color-text-strong);
+  height: var(--gh-control-height-md);
+  padding: 11px 13px;
+  transition:
+    border 0.15s,
+    box-shadow 0.15s;
+}
+.field__input:focus {
+  border-color: var(--gh-color-ring);
+  box-shadow: none;
+}
+.field__input--error {
+  border-color: var(--gh-color-danger);
+}
+.field__hint {
+  font-size: 0.6875rem;
+  color: var(--gh-color-muted);
+}
+.field__hint--error,
+.form-error {
+  color: var(--gh-color-danger);
+}
+.form-error {
+  font-size: 0.75rem;
+  margin: 0;
+}
+.form-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.form-row--end {
+  justify-content: flex-end;
+}
+.form-row a {
+  color: var(--gh-color-accent);
+  font-size: var(--gh-text-xs);
+  font-weight: var(--gh-weight-bold);
+}
+.card {
+  background: var(--gh-color-surface);
+  border: 1px solid var(--gh-color-border);
+  border-radius: var(--gh-radius-lg);
+  padding: var(--gh-space-6);
+  box-shadow: var(--gh-shadow-card);
+  min-width: 0;
+}
+.card h3 {
+  margin: 0;
+  font-size: 0.9375rem;
+  letter-spacing: -0.02em;
+}
+
+.gh-button {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  outline-offset: 3px;
+}
+.gh-button:focus-visible,
+.gh-password-field__toggle:focus-visible {
+  outline: var(--gh-focus-outline-width) solid var(--gh-color-ring);
+}
+.gh-button--sm {
+  height: var(--gh-control-height-sm);
+  min-height: var(--gh-control-height-sm);
+  padding: 0 var(--gh-control-padding-x);
+}
+.gh-button--md {
+  height: var(--gh-control-height-md);
+  min-height: var(--gh-control-height-md);
+  padding: 0 var(--gh-control-padding-x);
+}
+.gh-button--lg {
+  height: var(--gh-control-height-lg);
+  min-height: var(--gh-control-height-lg);
+  padding: 0 var(--gh-control-padding-x);
+}
+.gh-button__spinner {
+  flex: 0 0 auto;
+  animation: gh-spin 0.8s linear infinite;
+}
+@keyframes gh-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.gh-form-field,
+.gh-input {
+  min-width: 0;
+}
+.gh-input {
+  max-width: 100%;
+}
+.gh-input:focus-visible {
+  outline: var(--gh-focus-outline-width) solid var(--gh-color-ring);
+  outline-offset: 1px;
+}
+.gh-field-required {
+  color: var(--gh-color-danger);
+}
+.gh-password-field {
+  position: relative;
+  min-width: 0;
+}
+.gh-password-field__input {
+  padding-inline-end: 3rem;
+}
+.gh-password-field__toggle {
+  position: absolute;
+  inset-inline-end: 0.4rem;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: var(--gh-control-height-sm);
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--gh-color-muted);
+}
+.gh-password-field__toggle:hover:not(:disabled) {
+  background: var(--gh-color-surface-subtle);
+}
+.gh-container {
+  width: 100%;
+  min-width: 0;
+  max-width: var(--gh-container-limit);
+  margin-inline: auto;
+}
+.gh-container--sm {
+  --gh-container-limit: 38rem;
+}
+.gh-container--md {
+  --gh-container-limit: 52rem;
+}
+.gh-container--lg {
+  --gh-container-limit: 72rem;
+}
+.gh-container--xl {
+  --gh-container-limit: 86rem;
+}
+.gh-container--full {
+  --gh-container-limit: none;
+}
+.gh-container--padded {
+  padding-inline: clamp(1rem, 3vw, 2rem);
+}
+.gh-typography {
+  overflow-wrap: anywhere;
+}
+.gh-typography--display {
+  font-size: var(--gh-text-display);
+  font-weight: var(--gh-weight-heavy);
+  line-height: var(--gh-leading-tight);
+}
+.gh-typography--heading {
+  font-size: var(--gh-text-2xl);
+  font-weight: var(--gh-weight-bold);
+  line-height: var(--gh-leading-heading);
+}
+.gh-typography--subheading {
+  font-size: var(--gh-text-lg);
+  font-weight: var(--gh-weight-semibold);
+  line-height: var(--gh-leading-heading);
+}
+.gh-typography--body {
+  font-size: var(--gh-text-base);
+  line-height: var(--gh-leading-normal);
+}
+.gh-typography--caption {
+  font-size: var(--gh-text-xs);
+  line-height: var(--gh-leading-normal);
+}
+.gh-typography--label {
+  font-size: var(--gh-text-sm);
+  font-weight: var(--gh-weight-semibold);
+  line-height: var(--gh-leading-heading);
+}
+.gh-typography--default {
+  color: var(--gh-color-text-strong);
+}
+.gh-typography--muted {
+  color: var(--gh-color-muted);
+}
+.gh-typography--danger {
+  color: var(--gh-color-danger);
+}
+.gh-typography--success {
+  color: var(--gh-color-success);
+}
+@media (prefers-reduced-motion: reduce) {
+  .gh-button__spinner {
+    animation-duration: 1.8s;
+  }
+}
+@media (max-width: 640px) {
+  .gh-container--padded {
+    padding-inline: 1rem;
+  }
+}
+
+/* Shared composition and typography size recipes; values come from @Styles. */
+.gh-typography--warning {
+  color: var(--gh-color-warning);
+}
+.gh-typography--size-xs {
+  font-size: var(--gh-text-xs);
+}
+.gh-typography--size-sm {
+  font-size: var(--gh-text-sm);
+}
+.gh-typography--size-base {
+  font-size: var(--gh-text-base);
+}
+.gh-typography--size-lg {
+  font-size: var(--gh-text-lg);
+}
+.gh-typography--size-xl {
+  font-size: var(--gh-text-xl);
+}
+.gh-typography--size-2xl {
+  font-size: var(--gh-text-2xl);
+}
+.gh-typography--weight-normal {
+  font-weight: var(--gh-weight-normal);
+}
+.gh-typography--weight-medium {
+  font-weight: var(--gh-weight-medium);
+}
+.gh-typography--weight-semibold {
+  font-weight: var(--gh-weight-semibold);
+}
+.gh-typography--weight-bold {
+  font-weight: var(--gh-weight-bold);
+}
+
+.gh-form {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+}
+.gh-form--stack {
+  grid-template-columns: minmax(0, 1fr);
+}
+.gh-form--inline {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.gh-form--gap-sm {
+  gap: var(--gh-space-2);
+}
+.gh-form--gap-md {
+  gap: var(--gh-space-4);
+}
+.gh-form--gap-lg {
+  gap: var(--gh-space-6);
+}
+.gh-form--inline > * {
+  min-width: 0;
+}
+@media (max-width: 720px) {
+  .gh-form--inline {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* Shared UI recipes; all measurements and semantic colors come from @Styles. */
+.button--outline {
+  background: transparent;
+  color: var(--gh-color-text-strong);
+  border-color: var(--gh-color-input);
+}
+.button--outline:hover {
+  background: var(--gh-color-surface-subtle);
+}
+.gh-input-control {
+  box-sizing: border-box;
+  padding-block: 0;
+  padding-inline: var(--gh-control-padding-x);
+  height: var(--gh-control-height-md);
+  border-color: var(--gh-color-input);
+  border-radius: var(--gh-control-radius);
+  color: var(--gh-color-text-strong);
+  background: var(--gh-color-surface);
+}
+.gh-input-control--sm {
+  height: var(--gh-control-height-sm);
+}
+.gh-input-control--md {
+  height: var(--gh-control-height-md);
+}
+.gh-input-control--lg {
+  height: var(--gh-control-height-lg);
+}
+.gh-input-control:focus-visible {
+  outline: var(--gh-focus-outline-width) solid var(--gh-color-ring);
+  outline-offset: 1px;
+}
+.gh-card--outline {
+  box-shadow: none;
+}
+.gh-card--muted {
+  background: var(--gh-color-surface-subtle);
+}
+.gh-card--padding-none {
+  padding: 0;
+}
+.gh-card--padding-sm {
+  padding: var(--gh-space-3);
+}
+.gh-card--padding-md {
+  padding: var(--gh-space-6);
+}
+.gh-card--padding-lg {
+  padding: var(--gh-space-8);
+}
+
+/* Disabled input fields keep the enabled border and geometry. */
+.gh-input-control:disabled,
+.gh-input:disabled {
+  opacity: 1;
+  border-color: var(--gh-color-input);
+  background: var(--gh-color-surface-subtle);
+  color: var(--gh-color-muted);
+  cursor: not-allowed;
+}
+.gh-input-control::placeholder,
+.gh-input::placeholder,
+.gh-input-control:disabled::placeholder,
+.gh-input:disabled::placeholder {
+  color: var(--gh-color-muted);
+  opacity: 1;
+}
+
+.gh-input-control:focus,
+.gh-input:focus,
+.field__input:focus {
+  border-color: var(--gh-color-ring);
+  outline: none;
+  box-shadow: none;
+}
+.gh-button:focus-visible {
+  outline: var(--gh-focus-outline-width) solid var(--gh-color-ring);
+  outline-offset: 1px;
+  box-shadow: none;
+}

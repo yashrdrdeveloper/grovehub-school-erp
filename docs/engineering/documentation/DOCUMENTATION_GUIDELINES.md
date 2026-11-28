@@ -846,3 +846,8 @@ Useful Documentation
 ```
 
 > **A Perihellion document should reduce dependency on tribal knowledge, not create another place for it to hide.**
+
+
+## Backend documentation owner split (current)
+
+The canonical generic Go engineering architecture and subject guides live in `docs/engineering/backend/` and must not contain module-specific APIs, entities, tables, concrete provider IDs or business scenarios. Each actual backend module owns `backend/services/<module>/docs/engineering/` for implementation and operational details and `backend/services/<module>/docs/product/` for reproducible use cases and HTTP/event workflows. Each shared library owns `backend/libs/<library>/docs/engineering/` for technical capability contracts. New module documentation must link to the generic master rather than copying it. The current Identity module documentation is not part of this migration.

@@ -1,61 +1,161 @@
-# Backend Annotation and Code Generation Standard
+# Annotation Contract and Generation Guide
 
-Scope: Go source annotations and deterministic generated code. An annotation is a **build-time declaration**, not a replacement for architectural boundaries or runtime validation.
+**Generic only.** Module-specific annotation decisions belong to the module's `docs/engineering/`. Read [backend.md](backend.md) first.
 
-## Design constraints
+## 1. What an annotation means
 
-1. Prefer idiomatic, handwritten Go if generation does not remove meaningful repetition.
-2. Annotations declare metadata; generators produce code without hidden network or database side effects.
-3. Generated code must be deterministic, reproducible and versioned by a documented toolchain.
-4. Do not generate business decisions, authorization rules, orchestration or provider-specific policy.
-5. Do not turn annotations into an implicit service container.
-6. Keep visible source minimal, with generated output in module-approved `.generated/` or other explicitly documented locations where build/test tooling can still compile it.
-7. Go ignores dot-prefixed directories in ordinary package discovery; if output lives there, generation must also arrange a supported compile/import workflow. Never promise the output will compile automatically.
+Go has no runtime Java-style annotations. The syntax `// @Name ...` is a source comment recognized by a **specific** GrooveHub scanner/checker/generator. Its presence alone does not create runtime functionality. Every directive has four dimensions:
 
-## Annotation families (proposals require implementation verification)
+| Dimension | Meaning |
+|---|---|
+| **Target** | Type, interface, method, function or field supported by the processor |
+| **Mode** | `GEN`: generated typed Go; `CHECK`: compile-time validation; `REG`: registry metadata; `TAG`: validated struct tags; `WRAP`: deliberate wrapper |
+| **Status** | Existing, Pilot, Optional, Proposed, Discouraged or historical catalog |
+| **Runtime obligation** | Actual constructor, auth check, transaction, consumer lifecycle, or adapter still required |
 
-| Annotation | Intended responsibility | Boundary |
-|---|---|---|
-| `@Entity` | Map a declared entity to schema/table metadata | No business validation |
-| `@Table` | Describe table/column mapping where needed | No migration execution at runtime |
-| `@Repository` | Generate or register repetitive persistence glue | No hidden transactions |
-| `@Getter`, `@Setter`, `@Data` | Explicit data-access boilerplate only if justified | Do not break invariants or expose private state |
-| `@Builder` | Construct values with optional fields and declared validation | Not a default for every struct |
-| `@Mappers` | Deterministic conversion between known shapes | No lossy implicit conversion |
-| `@Validators`, `@Valid`, `@NonNull` | Generate structural checks | Application semantics stay explicit |
-| `@PatchRequestDto` | Track presence/null/value for patchable fields | Never conflate omission and explicit null |
-| `@Searchable`, `@Filterable`, `@Sortable`, `@Cursor` | Declare trusted searchable field metadata | No user-provided raw SQL |
-| `@Routes` | Generate transport registration metadata when adopted | No authorization policy inference |
-| `@Client` | Repetitive typed client plumbing if required | No secret management or retry policy |
-| `@Service` | Not recommended for generation in this architecture | Application services remain explicit |
+A directive documented as Proposed must **not** be added to code expecting enforcement. `Pilot` means there is a limited checked/generated implementation, not a broad runtime framework. Inspect the active processor, tests, and generated overlay before relying on it.
 
-These names form a **design vocabulary**, not a claim that all processors currently exist. Keep the implementation status in the generator's module engineering docs and do not annotate source with unsupported features.
-
-## Generation process
+## 2. Source layout
 
 ```text
-Handwritten source + annotation declarations
-             |
-    Parse / validate declarations
-             |
-    Generate deterministic Go
-             |
-  gofmt -> compile -> contract tests
+libs/backend/core/annotation/
+├── annotation.go                    # public lookup / parsing facade
+├── inventory.go                     # category definitions aggregation
+├── contract/                        # annotation metadata and targets
+├── entity/                           # entity / data metadata
+├── dto/                              # presence-aware Patch[T]
+├── mapping/                          # typed mapper directives
+├── validation/                       # validation/tag rules
+├── persistence/                      # repo/search declarations
+├── http/                             # routes / methods / client request lines
+├── external/                         # typed clients and external providers
+├── configuration/                    # env/config contracts
+├── event/                            # domain event metadata
+├── messaging/                        # future producer/consumer registration
+├── composition/                      # service assembly metadata
+├── strategy/ and chain/              # checked operation annotations
+├── testing/                          # test registration / mocks
+├── security/, middleware/, server/   # enforcement catalog
+├── observability/, utilities/        # observability / helpers catalog
+├── patterns/                         # GoF pattern documentation/registry
+└── generation/
+    ├── parser/ and check/
+    ├── entities/ and gormtable/
+    ├── routes/ and clients/
+    ├── mappers/ and events/
+    ├── search/ and patchdto/
+    └── overlay/ and expand/
 ```
 
-A generator must reject invalid declarations with file/line diagnostics, detect collisions, preserve explicit field and null semantics, and refuse to overwrite handwritten files. Generated output should contain a provenance header. CI must detect drift between source and generated artifacts.
+Category-specific `annotations.go` describes a directive. The processor under `generation/` determines executable semantics; these are **not interchangeable**.
 
-## Architectural placement
+## 3. Safe/common usage matrix
 
-- Generic annotation parser/generator packages belong in a shared tooling/library boundary.
-- Each module owns its entity and repository declarations.
-- Module engineering docs describe the annotations actually enabled, generation command, compile visibility and regeneration procedure.
-- Product docs describe resulting API behavior, never annotations.
+| Annotation | Target, purpose | Actual or expected boundary |
+|---|---|---|
+| `@Entity <schema>.<table>` | Persisted struct; GORM `TableName` | Generates table name **only**; no mutations, constructors or validations |
+| `@Builder`, `@Getter`, `@Setter` | Optional typed construction/access | Only on supported targets; do not auto-generate mutable sensitive fields |
+| `@Data` | Passive data marker | Checked metadata, not magic value validation |
+| `@PatchRequestDto` | Presence-aware PATCH DTO | Generates supported JSON marshal/unmarshal semantics; validate absent/null/value |
+| `@Mapper`, `@Mapping` | Typed representation converter | Generate mapping on supported interface; explicit sensitive/null behavior |
+| `@Repository entity=<Type>` | Repository ownership | Checked metadata; **does not** create a DB or transaction |
+| `@Searchable ...` | Repository search implementation | Generated only against explicit allowlisted config; no inferred SQL |
+| `@Filterable`, `@Sortable`, `@Cursor` | Search allowlist parity | Checked fields; policy stays in resource validator |
+| `@Service` | Composed service | Checked ownership; explicit bootstrap constructors |
+| `@Strategy` | Typed operation strategy | Checked; actual behavior implemented and wired explicitly |
+| `@ChainOfResponsibility` | Ordered operation chain | Checked; invoke real typed runner yourself |
+| `@Transactional` | Write operation intent | Checked; **explicit** UnitOfWork still required |
+| `@Client` | Public typed client interface | Processor-generated proxy or request adapter |
+| `@Proxy service.Operation` | Deliberately trusted internal-only delegation when no HTTP endpoint exists | Skips HTTP pipeline; caller must enforce authorization and scope |
+| `@RequestLine METHOD /path` | Required for public module client methods corresponding to an annotated HTTP operation | Generated against registered methods and REST contracts; preserves identical validation and access rules |
+| `@Routes` + `@GET/POST/PUT/PATCH/DELETE` | HTTP handler routing | Generated registration, not permission checks |
+| `@Event topic=... type=... source=...` | Domain event contract | Generated/checked metadata, not delivery guarantees |
+| `@ExternalService` | Third-party capability interface | Declares external boundary; bootstrap registers concrete adapter |
+| `@Provider id=NAME category=kind` | Concrete provider type | **Checked** uppercase identifier, lowercase category, unique IDs; no auto-init |
+| `@Configuration`, `@Env`, `@Secret` | Typed runtime configuration | Use only implemented features; secret redaction and validation still required |
+| `@Validator`, `@Valid`, `@NonNull`, `@Size` | Input validation/tag metadata | Match real validation processor and field tags, not comments alone |
+| `@Testing`, `@Mock` | Approved test-suites / interface mocks | Generate in test-only ownership, not production code |
 
-## Non-goals
+Consult the live catalog to distinguish a registered *name* from the exact parser/generator behavior. Other catalog annotations (audit, cron, tracing, retry, auth scopes, middleware, caching, etc.) **must not be treated as implemented** until a tested processor enforces them.
 
-Generating complete services, implicit dependency injection, magic transaction management, silent entity mutation, undocumented SQL generation, cross-provider business adapters or treating generation as a substitute for tests.
+## 4. Examples with placeholder types
 
-## Checklist
+```go
+// @Entity app.records
+type Record struct {
+    ID string
+}
 
-Before adding an annotation: verify generator support, name/ownership, determinism, Go visibility, error diagnostics, concurrency safety, migration compatibility, opt-out path and documented regeneration.
+// @Repository entity=Record
+type RecordRepository interface {
+    Create(ctx context.Context, record Record) error
+}
+
+// @Service
+type RecordService struct {
+    // Explicitly constructed operation dependencies.
+}
+
+// @Provider id=VENDOR_A category=storage
+type vendorStrategy struct {
+    // Concrete external service client supplied by bootstrap.
+}
+```
+
+These snippets illustrate *annotation placement*; they are not complete compilable modules. Use real schema names and only annotations supported by the currently installed processor.
+
+For HTTP:
+
+```go
+// @Routes /resources
+type ResourceController interface {
+    // @GET /{id}
+    Get(writer http.ResponseWriter, request *http.Request)
+}
+```
+
+An access tier inside a route does **not** create identity verification; authorization must be wired independently.
+
+## 5. Generators, overlay and ownership
+
+1. Maintained Go definitions are the **source of truth**.
+2. The annotation checker scans maintained source, rejects unknown directives, malformed targets and metadata-only directives that have no processor.
+3. A generator verifies method signatures and emits typed Go beneath the owning service/library `.generated/` directory.
+4. The Go build/test invokes the approved overlay JSON to see generated files without committing them beside maintained source.
+5. Never edit an emitted file by hand. Fix the source annotation or generator and regenerate.
+6. The generated output must preserve API signature, public behavior, error mapping, source ownership and import rules.
+7. Generated code must be reproducible across clean local checkout and CI; do not rely on hidden local runtime environment.
+8. Do not add generated code to the module's public boundary unless the contract explicitly requires it.
+
+## 6. Provider annotation rules
+
+The concrete external adapter owns `// @Provider id=... category=...`. Provider IDs are static, uppercase `A-Z`/`0-9`/`_`, unique across checked services. Category is lowercase and stable. The checker validates metadata; explicit bootstrap still constructs clients, validates credentials, chooses adapters and registers capabilities. Runtime registration must report duplicate/conflicting providers; a source check alone does not establish a running catalog.
+
+## 7. Annotation design checklist
+
+Before adding a directive, answer:
+
+- Does an actual processor recognize this **exact target and argument syntax**?
+- Is it generating useful **typed code**, or would plain Go be clearer?
+- Who owns its generated file? Will a private overlay compile without consumer-side internal imports?
+- Is the operation's auth, transaction, retry and lifecycle visible without reading generated implementation?
+- Can malformed metadata or collision fail the build predictably?
+- Are tests present for valid syntax, invalid syntax, target mismatch, generator conflicts and runtime behavior?
+- Are the master annotation guide and the owning library's engineering docs updated?
+
+**Never use an annotation as a substitute for a business invariant or a security control.**
+
+## 8. @RouteLimit implementation
+
+Add `// @RouteLimit 30` on an annotated controller interface method (not in Launcher code), beside `@GET`, `@POST`, etc. Its numeric argument is the maximum number of requests per minute from the same remote IP address to that exact method+registered route pattern, and must be in the range **1–100000**. Missing annotation means no *route-specific* limit, not unlimited platform protection.
+
+The route generator parses the method's comments, validates the argument and emits `routes.RouteLimits() map[string]int` in the generated private routes package. Service bootstrap provides this map to the generic Launcher gateway limiter. No endpoint-specific switch belongs in shared gateway code. This generated declaration is configuration, not authorization: the gateway continues to validate route tiers, sessions, Origin, CSRF and provider/workload credentials. The in-memory limiter is not distributed and must not be represented as production multi-replica abuse prevention.
+
+
+## Mandatory client declaration parity
+
+For every controller-backed method on a module's exported `@Client` facade, declare `@RequestLine METHOD /relative/path` with the same method, route parameter names, typed request wrapper and response DTO as the controller. Compose its generated implementation through `bootstrap/impl/client.go`; do not implement that client by forwarding directly to the service from `bootstrap/impl/runtime.go`. Reject unmatched route/controller/client contracts during generation. `@Proxy` is reserved for explicitly reviewed, trusted internal-only actions with their own authorization enforcement.
+
+## Independent generation roots
+
+The generator commands live in the independent Core module. The application orchestration script accepts an application root and a Core root (defaults are the school module and shared Core). Routes/Mappers/Search derive service imports from the application's go.mod; Core capability imports use the canonical module identifier. Testing and overlay commands accept both absolute roots, including the same root for standalone Core verification. Generated paths stay in their owning directories. Do not write into a downloaded, read-only module cache.

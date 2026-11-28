@@ -1,0 +1,120 @@
+.calendar {
+  display: grid;
+  gap: var(--gh-space-2);
+}
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gh-space-1);
+}
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+}
+.weekday {
+  text-align: center;
+  color: var(--gh-color-muted);
+  font-size: var(--gh-text-xs);
+}
+.day.day {
+  width: 100%;
+  padding: 0;
+  min-width: 0;
+}
+.day[data-outside='true'] {
+  opacity: 0.55;
+}
+.day[aria-current='date'] {
+  outline: 1px solid var(--gh-color-ring);
+  outline-offset: -2px;
+}
+
+.navigation[data-hidden='true'] {
+  visibility: hidden;
+}
+.calendar[data-compact='true'] {
+  gap: var(--gh-space-1);
+  min-width: 0;
+  font-size: var(--gh-text-xs);
+}
+.calendar[data-compact='true'] .heading {
+  font-weight: var(--gh-weight-medium);
+}
+.calendar[data-compact='true'] .navigation {
+  width: var(--gh-control-height-sm);
+  min-width: 0;
+  padding: 0;
+}
+.calendar[data-compact='true'] .day.day {
+  height: var(--gh-space-6);
+  min-height: var(--gh-space-6);
+  font-size: var(--gh-text-xs);
+  font-weight: var(--gh-weight-normal);
+  border-radius: var(--gh-radius-sm);
+}
+.day[data-range-day='true'][data-outside='true'] {
+  visibility: hidden;
+}
+.day.day[data-in-range='true'] {
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-accent);
+  border-radius: 0;
+}
+.day.day[data-range-start='true'],
+.day.day[data-range-end='true'] {
+  background: var(--gh-color-primary);
+  color: var(--gh-color-primary-foreground);
+}
+
+.period {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  gap: var(--gh-space-1);
+  white-space: nowrap;
+}
+.periodButton.periodButton {
+  min-width: 0;
+  padding-inline: var(--gh-space-1);
+  font-size: inherit;
+  font-weight: var(--gh-weight-medium);
+}
+.periodGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(4, 1fr);
+  min-height: 10rem;
+  gap: var(--gh-space-1);
+}
+.periodCell.periodCell {
+  min-width: 0;
+  padding: 0;
+  height: 100%;
+  min-height: var(--gh-space-6);
+  font-size: var(--gh-text-xs);
+}
+.calendar[data-compact='true'] .periodButton,
+.calendar[data-compact='true'] .navigation {
+  height: var(--gh-space-6);
+  min-height: var(--gh-space-6);
+}
+.calendar[data-compact='true'] .navigation {
+  width: var(--gh-space-6);
+}
+.calendar[data-compact='true'] .weekday {
+  font-size: var(--gh-text-2xs);
+}
+.calendar[data-compact='true'] .days {
+  gap: 1px;
+}
+@media (max-width: 640px) {
+  .calendar[data-compact='true'] .day.day,
+  .calendar[data-compact='true'] .periodButton,
+  .calendar[data-compact='true'] .navigation {
+    height: var(--gh-space-8);
+    min-height: var(--gh-space-8);
+  }
+}

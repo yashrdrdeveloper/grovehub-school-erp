@@ -1,0 +1,11 @@
+/* School-owned legacy token aliases. */
+:root {
+  --rdr-radius: var(--gh-radius-md);
+  --rdr-primary: var(--gh-color-primary);
+  --rdr-primary-foreground: var(--gh-color-primary-foreground);
+  --rdr-secondary: var(--gh-color-secondary);
+  --rdr-secondary-foreground: var(--gh-color-secondary-foreground);
+  --rdr-input: var(--gh-color-input);
+  --rdr-ring: var(--gh-color-ring);
+  --rdr-destructive: var(--gh-color-danger);
+}

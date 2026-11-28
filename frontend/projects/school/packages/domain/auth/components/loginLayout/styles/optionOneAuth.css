@@ -1,0 +1,1252 @@
+/*
+ * RDR / Option 1 — single authoritative authentication design system.
+ * Covers login, forgot, reset, invitation, invalid/expired links, loading and success.
+ * Do not import loginV2.css or mobileAuth.css alongside this file.
+ */
+/* Authentication owns the viewport; do not reserve the document scrollbar gutter. */
+:root:has(.rdr-login-v2) {
+  scrollbar-gutter: auto;
+  background: var(--gh-color-surface);
+}
+:root:has(.rdr-login-v2) body {
+  overflow: hidden;
+  background: var(--gh-color-surface);
+}
+.rdr-login-v2 {
+  --auth-bg: var(--gh-color-surface);
+  --auth-ink: var(--gh-color-text-strong);
+  --auth-muted: var(--gh-color-muted);
+  --auth-field: var(--gh-color-surface);
+  --auth-border: var(--gh-color-border);
+  --auth-primary: var(--gh-color-primary);
+  --auth-link: var(--gh-color-accent);
+  --auth-secondary: var(--gh-color-text-secondary);
+  --auth-error: var(--gh-color-danger);
+  --auth-focus: var(--gh-color-ring);
+  --auth-placeholder: var(--gh-color-muted);
+  --auth-accent: var(--gh-color-accent);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--auth-bg);
+  color: var(--auth-ink);
+  font-family: Manrope, Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.012em;
+}
+.rdr-login-v2 *,
+.rdr-login-v2 *::before,
+.rdr-login-v2 *::after {
+  box-sizing: border-box;
+}
+.rdr-login-v2 button,
+.rdr-login-v2 input {
+  font: inherit;
+}
+.rdr-login-v2 a {
+  color: inherit;
+  text-decoration: none;
+}
+.rdr-login-v2 button {
+  cursor: pointer;
+}
+/* Inputs use the parent shell's :focus-within ring; do not outline them twice. */
+.rdr-login-v2 :is(button, a):focus-visible {
+  outline: var(--gh-focus-outline-width) solid var(--auth-focus);
+  outline-offset: 3px;
+}
+.rdr-login-v2__frame {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+.rdr-login-v2__visual {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  color: var(--gh-color-auth-panel-text);
+  background:
+    radial-gradient(ellipse at 10% 90%, var(--gh-color-auth-panel-glow), transparent 55%),
+    linear-gradient(145deg, var(--gh-color-auth-panel-start), var(--gh-color-auth-panel-end));
+}
+.rdr-login-v2__visual-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  z-index: 2;
+  padding: clamp(18px, 3vw, 38px);
+  min-width: 0;
+}
+.rdr-login-v2__visual-brand > .school-monogram {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 51px;
+  width: 51px;
+  height: 43px;
+  padding: 7px;
+  border-radius: 10px;
+  background: #eef2f7;
+  border: 1px solid #d7dde7;
+  color: #1f2a44;
+}
+.rdr-login-v2__visual-brand .school-monogram svg {
+  width: 100%;
+  height: 100%;
+  color: #1f2a44;
+}
+.rdr-login-v2__visual-brand > span:last-child {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 3px;
+}
+.rdr-login-v2__visual-brand strong {
+  font-weight: 800;
+  font-size: clamp(13px, 1.4vw, 17px);
+  color: var(--gh-color-auth-panel-text);
+  letter-spacing: -0.04em;
+  line-height: 1.14;
+}
+.rdr-login-v2__visual-brand small {
+  font-size: clamp(9px, 0.82vw, 11px);
+  color: var(--gh-color-auth-panel-muted);
+  line-height: 1.3;
+}
+/* Abstract academic network. The desktop artwork has no cards, stock images or animations. */
+.rdr-auth-art {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(4px, 1.4dvh, 12px);
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  padding: clamp(5px, 1.5dvh, 15px) clamp(14px, 2.8vw, 40px);
+  color: #6f8090;
+  pointer-events: none;
+}
+.rdr-auth-art__svg {
+  display: block;
+  width: min(100%, 560px);
+  height: auto;
+  max-height: clamp(130px, 43dvh, 400px);
+  aspect-ratio: 560/380;
+  color: inherit;
+  --art-node-bg: #f4f3ee;
+}
+.rdr-auth-art__caption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  font-size: clamp(9px, 0.83vw, 11px);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: #7a7771;
+  white-space: nowrap;
+}
+.rdr-auth-art__sep {
+  height: 3px;
+  width: 3px;
+  border-radius: 50%;
+  background: #b99b6b;
+}
+.rdr-login-v2__visual-copy {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  min-width: 0;
+  width: 100%;
+  max-width: 42rem;
+  padding: var(--gh-space-4) clamp(20px, 3.4vw, 48px);
+}
+.rdr-login-v2__visual-kicker {
+  display: flex;
+  gap: 0;
+  align-items: center;
+  color: var(--gh-color-auth-panel-accent);
+  font-size: clamp(9px, 0.85vw, 11px);
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+.rdr-login-v2__visual-kicker > span {
+  display: none;
+}
+.rdr-login-v2__visual-copy h2 {
+  font-weight: 800;
+  font-size: clamp(26px, 3.2vw, 42px);
+  line-height: 1.08;
+  letter-spacing: -0.06em;
+  color: var(--gh-color-auth-panel-text);
+  margin: 10px 0 10px;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+.rdr-login-v2__visual-copy h2 span {
+  color: var(--gh-color-auth-panel-text);
+}
+.rdr-login-v2__visual-copy > p {
+  max-width: 390px;
+  font-size: clamp(11px, 1vw, 13px);
+  line-height: 1.6;
+  color: var(--gh-color-auth-panel-muted);
+  margin: 0;
+}
+.rdr-login-v2__visual-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 clamp(20px, 3.4vw, 48px) clamp(18px, 3.6dvh, 42px);
+  padding-top: var(--gh-space-3);
+  border-top: 1px solid var(--gh-color-auth-panel-border);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  font-weight: 750;
+  color: var(--gh-color-auth-panel-muted);
+  flex-wrap: wrap;
+}
+.rdr-login-v2__visual-footer i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.rdr-login-v2__mobile-header {
+  display: none;
+}
+.rdr-login-v2__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  padding: clamp(16px, 3vw, 40px) clamp(22px, 5vw, 70px);
+  background: var(--auth-bg);
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+}
+.rdr-login-v2__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-shrink: 0;
+  min-width: 0;
+  width: 100%;
+}
+.rdr-login-v2__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--auth-muted) !important;
+  white-space: nowrap;
+  min-height: 44px;
+}
+.rdr-login-v2__back svg {
+  width: 16px;
+  height: 16px;
+}
+.rdr-login-v2__appearance {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--auth-border);
+  border-radius: 999px;
+  background: var(--auth-field);
+  flex-shrink: 0;
+}
+.rdr-login-v2__appearance button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  color: var(--auth-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+}
+.rdr-login-v2__appearance button.is-active {
+  background: var(--auth-bg);
+  color: var(--auth-ink);
+  box-shadow: 0 1px 6px #1f2a4420;
+}
+.rdr-login-v2__main {
+  flex: 0 0 auto;
+  align-self: center;
+  width: min(100%, 440px);
+  max-width: 440px;
+  min-width: 0;
+  margin: auto;
+  padding: clamp(14px, 2dvh, 24px) 0;
+}
+.rdr-login-v2__heading {
+  margin: 0 0 clamp(18px, 2.7dvh, 27px);
+}
+.rdr-login-v2__eyebrow {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--auth-accent);
+  font-weight: 800;
+  margin: 0 0 12px;
+  text-transform: uppercase;
+}
+.rdr-login-v2__heading h1 {
+  font-size: clamp(29px, 3.45vw, 45px);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--auth-ink);
+  letter-spacing: -0.065em;
+  margin: 0 0 10px;
+  text-wrap: balance;
+}
+.rdr-login-v2__heading p {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--auth-muted);
+  margin: 0;
+}
+.rdr-login-v2__description-mobile,
+.rdr-login-v2__mobile-signin-title,
+.rdr-login-v2__mobile-description {
+  display: none;
+}
+.rdr-login-v2__form {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+  gap: 0;
+}
+.rdr-login-v2__forgot-desktop,
+.rdr-auth-flow__back,
+.rdr-recovery__back {
+  color: var(--auth-link) !important;
+  font-size: 12px;
+  font-weight: 700;
+}
+.rdr-login-v2__forgot-mobile {
+  display: none;
+}
+.rdr-login-v2__visibility {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  margin-right: -11px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--auth-muted);
+}
+.rdr-login-v2__visibility svg {
+  width: 19px;
+  height: 19px;
+}
+.rdr-login-v2__feedback-slot {
+  min-height: 0;
+  height: auto;
+  margin: 0;
+}
+.rdr-auth-flow__error-slot,
+.rdr-recovery__error-slot {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  min-height: 32px;
+  max-height: 32px;
+  margin-top: 4px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+.rdr-auth-flow__error-slot .rdr-login-v2__error,
+.rdr-recovery__error-slot .rdr-recovery__inline-error {
+  margin: 0;
+  padding: 7px 9px;
+  min-height: 35px;
+  width: 100%;
+  line-height: 1.4;
+}
+.rdr-login-v2__feedback-slot--signin {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  min-height: 52px;
+  max-height: none;
+  overflow: visible;
+  padding-top: 7px;
+}
+.rdr-login-v2__feedback-slot--signin .rdr-login-v2__auth-error {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+  min-height: 36px;
+  padding: 7px 10px;
+  align-items: flex-start;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.rdr-login-v2__auth-error svg {
+  flex: 0 0 16px;
+  margin-top: 1px;
+}
+.rdr-login-v2__auth-error span {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.rdr-login-v2__auth-error,
+.rdr-login-v2__error,
+.rdr-recovery__inline-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 9px 11px;
+  border-radius: 8px;
+  border: 1px solid #e8bcc6;
+  background: #fff1f3;
+  color: #a92c4a;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.rdr-login-v2__submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  min-height: 51px;
+  margin: 22px 0 0;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: var(--gh-control-radius);
+  background: var(--auth-primary);
+  color: #fff !important;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.3;
+  text-align: center;
+  transition: background 0.15s ease;
+}
+.rdr-login-v2__submit:hover:not(:disabled) {
+  filter: brightness(1.09);
+}
+.rdr-login-v2__submit:disabled {
+  opacity: 0.62;
+  cursor: wait;
+}
+.rdr-login-v2__submit svg {
+  width: 17px;
+  height: 17px;
+}
+.rdr-login-v2__spinner {
+  animation: rdr-auth-spin 1s linear infinite;
+}
+@keyframes rdr-auth-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.rdr-login-v2__closing {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  color: var(--auth-secondary);
+  font-size: 11px;
+  line-height: 1.3;
+  white-space: nowrap;
+  min-width: 0;
+  margin: 12px 0 0;
+  opacity: 1;
+  letter-spacing: normal;
+}
+.rdr-login-v2__closing > svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+.rdr-login-v2__closing > span {
+  font-size: inherit;
+  white-space: nowrap;
+}
+.rdr-o1-auth-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--auth-secondary);
+  margin-top: 12px;
+  white-space: nowrap;
+}
+/* Forgot password: form and accepted-request state use identical UI at all breakpoints. */
+.rdr-auth-flow,
+.rdr-auth-flow__form,
+.rdr-auth-flow__fields,
+.rdr-auth-flow__actions {
+  width: 100%;
+  min-width: 0;
+}
+.rdr-auth-flow__notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 11px;
+  margin: 0 0 15px;
+  border: 1px solid #d9e5ed;
+  border-radius: 9px;
+  background: #f4f8fc;
+  font-size: 11px;
+  color: #405977;
+}
+.rdr-auth-flow__notice--success {
+  border-color: #c9e7d7;
+  background: #eff9f2;
+  color: #305b49;
+}
+/* One consistent recovery presentation on desktop and mobile. */
+.rdr-auth-flow__notice--info {
+  display: none;
+}
+.rdr-auth-flow__notice-icon {
+  flex: 0 0 19px;
+}
+.rdr-auth-flow__notice-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.rdr-auth-flow__notice-copy strong {
+  font-size: 11px;
+}
+.rdr-auth-flow__notice-copy small {
+  font-size: 10px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.rdr-auth-flow__secondary-slot {
+  display: flex;
+  justify-content: center;
+  margin: 15px 0 0;
+}
+.rdr-auth-flow__back,
+.rdr-recovery__back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.rdr-auth-flow__back svg,
+.rdr-recovery__back svg {
+  width: 15px;
+  height: 15px;
+}
+.rdr-auth-flow__back,
+.rdr-recovery__back {
+  min-height: 44px;
+}
+.rdr-auth-flow__mobile-success {
+  display: none;
+}
+.rdr-auth-flow--sent .rdr-auth-flow__form {
+  display: none;
+}
+.rdr-auth-flow--sent .rdr-auth-flow__mobile-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  text-align: center;
+  width: 100%;
+  min-width: 0;
+}
+.rdr-auth-flow__mobile-success h3 {
+  font-size: clamp(22px, 2.6vw, 30px);
+  letter-spacing: -0.05em;
+  font-weight: 800;
+  margin: 13px 0 6px;
+  line-height: 1.2;
+}
+.rdr-auth-flow__mobile-success p {
+  max-width: 350px;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--auth-muted);
+  margin: 0;
+}
+.rdr-auth-flow__mobile-success p strong {
+  color: var(--auth-ink);
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+.rdr-auth-flow__mobile-success .rdr-login-v2__submit {
+  margin-top: 22px;
+}
+.rdr-auth-flow__resend {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin-top: 0;
+  padding: 2px 10px;
+  color: var(--auth-link);
+  background: transparent;
+  border: 0;
+  font-size: 11px;
+  font-weight: 650;
+}
+.rdr-auth-flow__resend:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+/* Set/reset password forms, token checks, success, expired/unavailable states. */
+.rdr-recovery,
+.rdr-recovery__form,
+.rdr-recovery__fields,
+.rdr-recovery__actions,
+.rdr-recovery__state {
+  width: 100%;
+  min-width: 0;
+}
+.rdr-recovery__requirement {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--auth-muted);
+  font-size: 11px;
+  line-height: 1.5;
+  margin: 12px 0 0;
+}
+.rdr-recovery__requirement svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: #6385a1;
+}
+.rdr-recovery__remaining {
+  display: block;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.35;
+  color: var(--auth-muted);
+  min-height: 0;
+  margin: 8px 0 0;
+}
+.rdr-recovery__remaining:empty {
+  display: none;
+}
+.rdr-recovery__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.rdr-recovery__slow {
+  font-size: 11px;
+  color: var(--auth-muted);
+  margin: 10px 0 0;
+}
+.rdr-recovery__state-button {
+  margin-top: 21px;
+  max-width: 360px;
+}
+.rdr-recovery__back {
+  margin-top: 17px;
+}
+/* Recovery notices retain their semantic dark-mode status colors. */
+:root[data-theme='dark'] .rdr-auth-flow__notice {
+  background: #202f42;
+  border-color: #42536d;
+  color: #c1d5ed;
+}
+:root[data-theme='dark'] .rdr-auth-flow__notice--success {
+  background: #213b35;
+  border-color: #365f50;
+  color: #c6eadc;
+}
+:root[data-theme='dark'] .rdr-login-v2__auth-error,
+:root[data-theme='dark'] .rdr-login-v2__error,
+:root[data-theme='dark'] .rdr-recovery__inline-error {
+  background: #402b3b;
+  color: #ff9cab;
+  border-color: #734356;
+}
+@media (min-width: 721px) and (max-width: 1100px) {
+  .rdr-login-v2__frame {
+    grid-template-columns: minmax(0, 42fr) minmax(0, 58fr);
+  }
+  .rdr-login-v2__visual-copy h2 {
+    font-size: clamp(21px, 2.9vw, 34px);
+  }
+  .rdr-login-v2__content {
+    padding-inline: clamp(19px, 3vw, 36px);
+  }
+}
+@media (min-width: 721px) and (max-height: 760px) {
+  .rdr-login-v2__content {
+    padding-block: 12px;
+  }
+  .rdr-login-v2__visual-brand {
+    padding: 15px 23px;
+  }
+  .rdr-login-v2__visual-copy {
+    padding: var(--gh-space-2) 22px;
+  }
+  .rdr-login-v2__visual-copy h2 {
+    font-size: clamp(21px, 2.75vw, 33px);
+  }
+  .rdr-login-v2__main {
+    padding: 10px 0;
+  }
+  .rdr-login-v2__heading {
+    margin-bottom: 14px;
+  }
+  .rdr-login-v2__heading h1 {
+    font-size: clamp(27px, 3vw, 38px);
+  }
+  .rdr-login-v2__submit {
+    min-height: 45px;
+    margin-top: 15px;
+  }
+  .rdr-login-v2__closing,
+  .rdr-o1-auth-footer {
+    margin-top: 8px;
+  }
+}
+@media (max-width: 720px) {
+  .rdr-login-v2 {
+    --auth-mobile-gutter: clamp(20px, 6vw, 24px);
+  }
+  .rdr-login-v2__frame {
+    display: flex;
+    flex-direction: column;
+  }
+  .rdr-login-v2__visual {
+    height: auto;
+    min-height: 0;
+    flex: 0 0 calc(env(safe-area-inset-top) + 92px);
+    background: var(--auth-bg) !important;
+  }
+  .rdr-login-v2__visual-brand,
+  .rdr-login-v2__visual-copy,
+  .rdr-login-v2__visual-footer,
+  .rdr-auth-art {
+    display: none;
+  }
+  .rdr-login-v2__mobile-header {
+    display: block;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+  }
+  .rdr-login-v2__mobile-identity {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    position: absolute;
+    top: calc(env(safe-area-inset-top) + 17px);
+    left: max(var(--auth-mobile-gutter), calc((100% - 380px) / 2));
+    max-width: calc(100% - 2 * var(--auth-mobile-gutter));
+  }
+  .rdr-login-v2__mobile-identity > .school-monogram {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 46px;
+    width: 46px;
+    height: 46px;
+    padding: 6px;
+    color: #1f2a44;
+    background: #eef2f7;
+    border: 1px solid #d7dde7;
+    border-radius: 10px;
+  }
+  .rdr-login-v2__mobile-identity .school-monogram svg {
+    width: 100%;
+    height: 100%;
+    color: #1f2a44;
+  }
+  .rdr-login-v2__mobile-school-name {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: var(--auth-ink);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    font-size: 15px;
+    line-height: 1.15;
+  }
+  .rdr-login-v2__mobile-school-name small {
+    font-size: 10px;
+    color: var(--auth-muted);
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+  .rdr-login-v2__content {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 0;
+    padding: 0 var(--auth-mobile-gutter) max(13px, env(safe-area-inset-bottom));
+    align-items: center;
+    justify-content: flex-start;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-gutter: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gh-color-scrollbar-thumb) var(--auth-bg);
+  }
+  .rdr-login-v2__toolbar {
+    display: none;
+  }
+  .rdr-login-v2__main {
+    margin: auto;
+    width: min(100%, 380px);
+    max-width: 380px;
+    padding: 10px 0 14px;
+  }
+  .rdr-login-v2__heading {
+    margin-bottom: clamp(12px, 2dvh, 20px);
+  }
+  .rdr-login-v2__heading h1 {
+    font-size: clamp(27px, 7.3vw, 35px);
+    line-height: 1.13;
+    margin: 0 0 10px;
+  }
+  .rdr-login-v2__eyebrow {
+    font-size: 10px;
+    color: var(--auth-accent);
+    margin-bottom: 11px;
+  }
+  .rdr-login-v2__description-desktop {
+    display: none;
+  }
+  .rdr-login-v2__heading .rdr-login-v2__description-mobile {
+    display: block;
+    font-size: 12px;
+    line-height: 1.4;
+    letter-spacing: -0.015em;
+  }
+  .rdr-login-v2__forgot-desktop {
+    display: none;
+  }
+  .rdr-login-v2__forgot-mobile {
+    display: inline-flex;
+    align-self: flex-end;
+    align-items: center;
+    justify-content: flex-end;
+    min-height: 24px;
+    margin: 0;
+    padding: 0;
+    color: var(--auth-link) !important;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .rdr-login-v2__submit {
+    min-height: 48px;
+    margin-top: 11px;
+    font-size: 14px;
+  }
+  .rdr-login-v2__closing {
+    margin-top: 8px;
+    font-size: clamp(10px, 2.75vw, 11px);
+  }
+  .rdr-o1-auth-footer {
+    justify-content: center;
+    gap: 12px;
+    margin-top: 8px;
+    font-size: clamp(10px, 2.65vw, 11px);
+  }
+  .rdr-auth-flow__mobile-success h3 {
+    font-size: clamp(22px, 5.6vw, 29px);
+  }
+  .rdr-auth-flow__mobile-success .rdr-login-v2__submit {
+    margin-top: 11px;
+  }
+  .rdr-recovery__requirement {
+    font-size: 10px;
+  }
+}
+@media (max-width: 720px) and (max-height: 740px) {
+  .rdr-login-v2__visual {
+    flex-basis: calc(env(safe-area-inset-top) + 78px);
+  }
+  .rdr-login-v2__mobile-identity {
+    top: calc(env(safe-area-inset-top) + 10px);
+  }
+  .rdr-login-v2__main {
+    padding: 5px 0;
+  }
+  .rdr-login-v2__heading {
+    margin-bottom: 14px;
+  }
+  .rdr-login-v2__heading h1 {
+    font-size: clamp(25px, 6.8vw, 31px);
+  }
+  .rdr-login-v2__submit {
+    min-height: 44px;
+    margin-top: 10px;
+  }
+  .rdr-login-v2__closing,
+  .rdr-o1-auth-footer {
+    margin-top: 13px;
+  }
+}
+@media (max-width: 720px) and (max-height: 590px) {
+  .rdr-login-v2__content {
+    justify-content: flex-start;
+  }
+  .rdr-login-v2__main {
+    margin-top: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rdr-login-v2__spinner {
+    animation: none;
+  }
+}
+
+/* UI/UX Pro Max: stable geometry, accessible link targets and responsive auth. */
+.rdr-login-v2__frame,
+.rdr-login-v2__content,
+.rdr-login-v2__main,
+.rdr-login-v2__form,
+.rdr-auth-flow__mobile-success,
+.rdr-recovery__state {
+  max-width: 100%;
+  min-width: 0;
+}
+.rdr-login-v2__forgot-desktop,
+.rdr-login-v2__forgot-mobile {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.rdr-login-v2--forgot .rdr-login-v2__heading h1 {
+  white-space: nowrap;
+  letter-spacing: -0.055em;
+  font-size: clamp(23px, 2.6vw, 36px);
+}
+.rdr-auth-flow__mobile-success p strong {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 720px) {
+  .rdr-login-v2__content {
+    overflow-x: clip;
+  }
+  .rdr-login-v2__main {
+    width: min(100%, 380px);
+    max-width: 380px;
+  }
+  .rdr-login-v2__feedback-slot--signin {
+    height: auto;
+    min-height: 24px;
+    max-height: none;
+    overflow: visible;
+  }
+  .rdr-login-v2--forgot .rdr-login-v2__heading h1 {
+    font-size: clamp(19px, 5.7vw, 26px);
+  }
+  .rdr-login-v2__main:has(.rdr-auth-flow--sent) .rdr-login-v2__heading,
+  .rdr-login-v2__main:has(.rdr-recovery__state) .rdr-login-v2__heading {
+    margin-bottom: 10px;
+  }
+  .rdr-login-v2__main:has(.rdr-auth-flow--sent) .rdr-auth-flow__mobile-success h3 {
+    margin: 7px 0 5px;
+    font-size: clamp(20px, 5.8vw, 26px);
+  }
+  .rdr-login-v2__main:has(.rdr-auth-flow--sent) .rdr-auth-flow__mobile-success p {
+    font-size: 13px;
+    line-height: 1.48;
+  }
+  .rdr-login-v2__main:has(.rdr-recovery__state) .rdr-recovery__state-button {
+    margin-top: 10px;
+  }
+  .rdr-login-v2__closing {
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .rdr-o1-auth-footer {
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+}
+@media (max-width: 720px) and (max-height: 680px) {
+  .rdr-login-v2__visual {
+    flex-basis: calc(env(safe-area-inset-top) + 69px);
+  }
+  .rdr-login-v2__mobile-identity {
+    top: calc(env(safe-area-inset-top) + 8px);
+  }
+  .rdr-login-v2__mobile-identity > .school-monogram {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+  }
+  .rdr-login-v2__heading {
+    margin-bottom: 10px;
+  }
+  .rdr-login-v2__heading h1 {
+    font-size: clamp(24px, 6.6vw, 29px);
+    margin-bottom: 5px;
+  }
+  .rdr-login-v2__eyebrow {
+    margin-bottom: 8px;
+  }
+  .rdr-login-v2__submit {
+    min-height: 44px;
+    margin-top: 8px;
+  }
+  .rdr-login-v2__closing,
+  .rdr-o1-auth-footer {
+    margin-top: 6px;
+  }
+}
+@media (min-width: 721px) and (max-height: 680px) {
+  .rdr-auth-art__svg {
+    max-height: clamp(90px, 25dvh, 190px);
+  }
+}
+@media (max-width: 720px) and (max-height: 580px) {
+  .rdr-login-v2__content {
+    justify-content: flex-start;
+    overflow-y: auto;
+    scrollbar-gutter: auto;
+  }
+  .rdr-login-v2__main {
+    margin-top: 0;
+  }
+}
+/* Portrait tablets: avoid an inner scrolling auth panel at ordinary viewport heights.
+   Compress spacing across ALL states rather than clipping the footer. Shorter windows
+   retain the standard scroll fallback to keep password recovery controls reachable. */
+@media (min-width: 721px) and (max-width: 1100px) and (min-height: 560px) {
+  .rdr-login-v2__content {
+    padding-block: clamp(10px, 2dvh, 22px);
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+  }
+  .rdr-login-v2__main {
+    padding-block: 6px;
+    margin: auto;
+  }
+  .rdr-login-v2__heading {
+    margin-bottom: 12px;
+  }
+  .rdr-login-v2__eyebrow {
+    margin-bottom: 8px;
+  }
+  .rdr-login-v2__heading h1 {
+    font-size: clamp(28px, 3vw, 36px);
+    margin-bottom: 6px;
+  }
+  .rdr-login-v2__heading p {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .rdr-login-v2__submit {
+    min-height: 45px;
+    margin-top: 12px;
+  }
+  .rdr-login-v2__feedback-slot--signin {
+    height: auto;
+    min-height: 52px;
+    max-height: none;
+    overflow: visible;
+  }
+  .rdr-login-v2__closing,
+  .rdr-o1-auth-footer {
+    margin-top: 7px;
+  }
+  .rdr-auth-flow__mobile-success h3 {
+    margin: 8px 0 4px;
+  }
+  .rdr-auth-flow__mobile-success .rdr-login-v2__submit {
+    margin-top: 12px;
+  }
+  .rdr-recovery__state-button {
+    margin-top: 12px;
+  }
+  .rdr-recovery__back {
+    margin-top: 8px;
+  }
+}
+/* Tablet landscape and short browser windows: fit the same content without
+   clipping controls. Allow scrolling only when the viewport is exceptionally short. */
+@media (min-width: 721px) and (max-width: 1100px) and (min-height: 560px) and (max-height: 799px) {
+  .rdr-login-v2__content {
+    padding-block: 8px;
+  }
+  .rdr-login-v2__main {
+    padding-block: 0;
+  }
+  .rdr-login-v2__heading {
+    margin-bottom: 8px;
+  }
+  .rdr-login-v2__eyebrow {
+    margin-bottom: 6px;
+  }
+  .rdr-login-v2__heading h1 {
+    font-size: clamp(25px, 2.8vw, 32px);
+    margin-bottom: 5px;
+  }
+  .rdr-login-v2__heading p {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .rdr-login-v2__submit {
+    min-height: 42px;
+    margin-top: 8px;
+  }
+  .rdr-login-v2__feedback-slot--signin {
+    height: auto;
+    min-height: 52px;
+    max-height: none;
+    overflow: visible;
+  }
+  .rdr-login-v2__closing,
+  .rdr-o1-auth-footer {
+    margin-top: 5px;
+  }
+  .rdr-auth-flow__mobile-success .rdr-login-v2__submit {
+    margin-top: 8px;
+  }
+  .rdr-auth-flow__mobile-success h3 {
+    font-size: 23px;
+    margin: 5px 0 3px;
+  }
+  .rdr-recovery__state-button {
+    margin-top: 9px;
+  }
+  .rdr-recovery__back {
+    margin-top: 5px;
+  }
+}
+@media (min-width: 721px) and (max-width: 1100px) and (max-height: 559px) {
+  .rdr-login-v2__content {
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+  }
+}
+@media (max-width: 285px) {
+  /* Browser zoom can reduce the effective CSS viewport below normal phone width. */
+  .rdr-login-v2--forgot .rdr-login-v2__heading h1 {
+    white-space: normal;
+  }
+  .rdr-login-v2__closing,
+  .rdr-o1-auth-footer {
+    white-space: normal;
+    flex-wrap: wrap;
+    text-align: center;
+  }
+}
+/* Shared measured fit — one centering strategy for desktop and tablets.
+   Error/success content is measured at its real height, not hidden behind overflow.
+   Only unusually short or zoomed displays fall back to accessible scrolling. */
+@media (min-width: 721px) {
+  .rdr-login-v2__content {
+    position: relative;
+    overflow: hidden;
+  }
+  .rdr-login-v2__toolbar {
+    position: relative;
+    z-index: 2;
+  }
+  .rdr-login-v2__main {
+    position: absolute;
+    top: var(--auth-panel-center, 50%);
+    left: 50%;
+    transform: translate(-50%, -50%) scale(var(--auth-panel-scale, 1));
+    transform-origin: center center;
+    width: min(calc(100% - 48px), 440px);
+    max-width: 440px;
+    margin: 0;
+    flex: 0 0 auto;
+  }
+  .rdr-login-v2__content[data-auth-fit='scroll'] {
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+  }
+  .rdr-login-v2__content[data-auth-fit='scroll'] .rdr-login-v2__main {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    margin: auto;
+  }
+}
+/* Keep the sign-in subtitle on one line without truncating its meaning. */
+@media (max-width: 720px) {
+  .rdr-login-v2--login .rdr-login-v2__heading .rdr-login-v2__description-mobile {
+    white-space: nowrap;
+    font-size: clamp(11px, 2.85vw, 12px);
+    line-height: 1.35;
+    letter-spacing: -0.02em;
+  }
+}
+/* Below standard usable phone widths, allow wrapping instead of text clipping. */
+@media (max-width: 285px) {
+  .rdr-login-v2--login .rdr-login-v2__heading .rdr-login-v2__description-mobile {
+    white-space: normal;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rdr-login-v2__submit {
+    transition: none;
+  }
+}
+
+/* Mobile sign-in: one aligned column with the recovery link after both fields. */
+@media (max-width: 720px) {
+  .rdr-login-v2__form--signin .rdr-login-v2__submit {
+    margin-top: var(--gh-space-3);
+  }
+  .rdr-login-v2__form--signin .rdr-login-v2__feedback-slot--signin {
+    min-height: 36px;
+  }
+  .rdr-login-v2__content::-webkit-scrollbar-track,
+  .rdr-login-v2__content::-webkit-scrollbar-corner {
+    background: var(--auth-bg);
+  }
+}

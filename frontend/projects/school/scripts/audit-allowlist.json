@@ -1,0 +1,74 @@
+{
+  "description": "Auth art, CredentialField, catalog cards and home-page styles moved to owner-scoped CSS Modules. Existing audit ceilings cannot regress.",
+  "capturedRunId": 45065887411,
+  "allowlisted": {
+    "app/styles.css": ["LEGACY_GLOBAL_CSS", "LARGE_STYLESHEET", "CSS_COLOR_LITERAL"],
+    "packages/domain/auth/components/loginLayout/LoginLayout.tsx": ["RAW_CLASS"],
+    "packages/domain/auth/components/loginLayout/styles/optionOneAuth.css": [
+      "LEGACY_DOMAIN_CSS",
+      "LARGE_STYLESHEET",
+      "CSS_COLOR_LITERAL"
+    ],
+    "packages/domain/auth/pages/forgotPassword/components/forgotPasswordForm/ForgotPasswordForm.tsx": [
+      "RAW_CLASS"
+    ],
+    "packages/domain/auth/pages/login/components/LoginForm/LoginForm.tsx": ["RAW_CLASS"],
+    "packages/domain/auth/pages/login/templates/desktopLogin/DesktopLogin.tsx": ["RAW_CLASS"],
+    "packages/domain/auth/pages/login/templates/mobileLogin/MobileLogin.tsx": ["RAW_CLASS"],
+    "packages/domain/auth/pages/recovery/components/recoveryPasswordForm/RecoveryPasswordForm.tsx": [
+      "RAW_CLASS"
+    ],
+    "packages/domain/auth/pages/recovery/components/recoveryState/RecoveryState.tsx": ["RAW_CLASS"],
+    "packages/domain/auth/pages/recovery/Recovery.tsx": ["RAW_CLASS"],
+    "packages/domain/publicSite/pages/landing/components/aboutContent/aboutContent.tsx": [
+      "RAW_CLASS"
+    ],
+    "packages/domain/publicSite/pages/landing/components/campusContent/campusContent.tsx": [
+      "RAW_CLASS"
+    ],
+    "packages/domain/publicSite/pages/landing/components/enquiryForm/enquiryForm.tsx": [
+      "RAW_CLASS"
+    ],
+    "packages/domain/publicSite/pages/landing/components/homeContent/homeContent.tsx": [
+      "RAW_CLASS"
+    ],
+    "packages/domain/publicSite/pages/landing/components/publicSheet/components/infoPanels/infoPanels.tsx": [
+      "RAW_CLASS"
+    ],
+    "packages/domain/publicSite/pages/landing/components/publicSheet/components/storyPanel/StoryPanel.tsx": [
+      "RAW_CLASS"
+    ],
+    "packages/domain/publicSite/pages/landing/components/publicSheet/PublicSheet.tsx": [
+      "RAW_CLASS"
+    ],
+    "packages/domain/publicSite/pages/landing/components/resourceContent/resourceContent.tsx": [
+      "RAW_CLASS"
+    ],
+    "packages/domain/publicSite/pages/landing/components/siteChrome/siteChrome.tsx": ["RAW_CLASS"],
+    "packages/domain/publicSite/pages/landing/components/siteMedia/siteMedia.tsx": ["RAW_CLASS"],
+    "packages/domain/publicSite/pages/landing/LandingPage.tsx": ["RAW_CLASS"],
+    "packages/domain/publicSite/pages/landing/styles/landingPage.css": [
+      "LEGACY_DOMAIN_CSS",
+      "LARGE_STYLESHEET",
+      "CSS_COLOR_LITERAL"
+    ],
+    "packages/domain/publicSite/pages/landing/styles/optionOnePages.css": [
+      "LEGACY_DOMAIN_CSS",
+      "CSS_COLOR_LITERAL"
+    ],
+    "packages/shell/components/appLauncher/AppLauncher.tsx": ["RAW_CLASS"],
+    "packages/shell/components/sidebar/Sidebar.tsx": ["RAW_CLASS"],
+    "packages/shell/templates/workspaceShell/WorkspaceShell.tsx": ["RAW_CLASS"]
+  },
+  "referenceCommit": "585e8f81f8091536222c446931466710626db283",
+  "maxFlaggedFiles": 26,
+  "maxFindings": 33,
+  "maxByCode": {
+    "CSS_COLOR_LITERAL": 4,
+    "LARGE_STYLESHEET": 3,
+    "LEGACY_DOMAIN_CSS": 3,
+    "LEGACY_GLOBAL_CSS": 1,
+    "RAW_CLASS": 22
+  },
+  "lastVerifiedRunId": 45070078775
+}

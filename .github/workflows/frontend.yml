@@ -1,0 +1,117 @@
+name: Frontend
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'frontend/projects/school/**'
+      - 'frontend/libs/**'
+      - 'frontend/package.json'
+      - 'frontend/pnpm-lock.yaml'
+      - 'frontend/pnpm-workspace.yaml'
+      - 'scripts/frontend/**'
+      - 'scripts/release/**'
+      - '.github/workflows/frontend.yml'
+  pull_request:
+    paths:
+      - 'frontend/**'
+      - 'frontend/libs/**'
+      - 'frontend/package.json'
+      - 'frontend/pnpm-lock.yaml'
+      - 'frontend/pnpm-workspace.yaml'
+      - 'scripts/frontend/**'
+      - 'scripts/release/**'
+      - '.github/workflows/frontend.yml'
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: frontend/projects/school
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Shared library dependency inventory
+        run: node scripts/audit-shared-extraction.mjs
+      - name: Audit all tracked frontend source (non-blocking report)
+        run: pnpm audit:guidelines
+      - name: Check architecture
+        run: pnpm check:architecture
+      - name: Generate exact formatting remediation patch
+        if: failure()
+        run: |
+          pnpm format
+          git -C ../../.. diff --no-ext-diff -- frontend/projects/school frontend/libs > "$RUNNER_TEMP/frontend-format.patch"
+          git -C ../../.. diff --stat -- frontend/projects/school frontend/libs
+          git -C ../../.. restore --worktree -- frontend/projects/school frontend/libs
+      - name: Upload formatting remediation patch
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-format-remediation
+          path: ${{ runner.temp }}/frontend-format.patch
+          if-no-files-found: ignore
+      - name: Typecheck shared Base
+        if: success() || failure()
+        run: pnpm --filter @groovehub/base typecheck
+      - name: Typecheck shared Components
+        if: success() || failure()
+        run: pnpm --filter @groovehub/components typecheck
+      - name: Typecheck
+        if: success() || failure()
+        run: pnpm typecheck
+      - name: Test
+        if: success() || failure()
+        run: pnpm exec jest --runInBand
+      - name: Build and prerender SEO pages
+        run: pnpm build
+      - name: Install isolated Chromium test runner
+        run: |
+          npm install --prefix "$RUNNER_TEMP/groovehub-browser" --no-package-lock --no-save playwright@1.55.0
+          "$RUNNER_TEMP/groovehub-browser/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Browser regression smoke (mobile, accessibility, themes)
+        run: |
+          pnpm preview --host 127.0.0.1 --port 4173 > "$RUNNER_TEMP/groovehub-preview.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          ready=0
+          for attempt in $(seq 1 45); do
+            if curl --fail --silent http://127.0.0.1:4173/login > /dev/null; then
+              ready=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then
+            cat "$RUNNER_TEMP/groovehub-preview.log"
+            exit 1
+          fi
+          GH_PLAYWRIGHT_PACKAGE="$RUNNER_TEMP/groovehub-browser/node_modules/playwright" node scripts/e2e/browser-regressions.cjs
+      - name: Verify public SEO artifacts
+        run: |
+          test -f dist/sitemap.xml
+          test -f dist/robots.txt
+          test -f dist/about/director/index.html
+          test -f dist/mandatory-public-disclosure/index.html
+          grep -q 'application/ld+json' dist/index.html
+          grep -q 'RDR School' dist/about/director/index.html
+      - name: ESLint (entire frontend)
+        if: success() || failure()
+        run: pnpm lint
+      - name: Package School frontend
+        run: bash ../../../scripts/release/package-artifact.sh school-frontend dist "$RUNNER_TEMP/release" "$GITHUB_SHA"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: school-frontend-${{ github.sha }}
+          path: ${{ runner.temp }}/release/
+          if-no-files-found: error

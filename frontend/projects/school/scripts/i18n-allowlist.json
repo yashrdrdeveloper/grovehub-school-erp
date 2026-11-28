@@ -1,0 +1,5 @@
+{
+  "description": "Initial measured JSX copy debt after the Phase 2.1 source-message codemod. Increase is forbidden.",
+  "maxTotal": 0,
+  "counts": {}
+}

@@ -2,3 +2,29 @@
 .state/
 .tools/
 .env
+
+# Module-local generated Go files and overlay manifest
+.generated/
+
+# Frontend local dependencies, cache and build output
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
+frontend/.env.local
+
+# Shared pnpm workspace and independent internal application
+node_modules/
+frontend/libs/*/dist/
+frontend/projects/*/dist/
+frontend/projects/*/.vite/
+frontend/projects/*/coverage/
+frontend/projects/*/.env.local
+
+# Consumer-local generated OpenAPI SDKs
+/backend/projects/school/internal/generated/
+/backend/projects/internal-tool/internal/generated/
+
+# Developer-local Go workspaces are not part of the build contract.
+/go.work
+/go.work.sum

@@ -1,0 +1,1 @@
+export { DesktopRbac } from './DesktopRbac';

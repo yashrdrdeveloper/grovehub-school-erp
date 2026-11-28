@@ -1,0 +1,29 @@
+package helpers
+
+import (
+	"context"
+	"time"
+
+	"github.com/google/uuid"
+
+	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
+	mailboxevents "grovehub/services/integration/internal/app/events/producers/connection/operations/mailbox"
+)
+
+func BuildChanged(ctx context.Context, payload mailboxevents.Payload) mailboxevents.Changed {
+	return coreevents.NewEnvelope(ctx, coreevents.Metadata{
+		EventID:     uuid.NewString(),
+		EventType:   mailboxevents.ChangedEventType,
+		Version:     mailboxevents.ChangedVersion,
+		AggregateID: payload.ConnectionID,
+		OccurredAt:  time.Now().UTC(),
+	}, payload)
+}
+
+func ChangedMetadata(event mailboxevents.Changed) map[string]string {
+	return map[string]string{
+		"eventId":   event.EventID,
+		"eventType": event.EventType,
+		"source":    "integration",
+	}
+}

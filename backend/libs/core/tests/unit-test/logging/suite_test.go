@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	corelogging "grovehub/libs/core/logging"
+	corelogging "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/logging"
 )
 
 const (

@@ -1,0 +1,1 @@
+export { SchoolMonogram } from './SchoolMonogram';

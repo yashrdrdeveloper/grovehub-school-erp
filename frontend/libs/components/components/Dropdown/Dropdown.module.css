@@ -1,0 +1,31 @@
+.items {
+  display: grid;
+  gap: var(--gh-space-1);
+}
+.items > * {
+  justify-content: flex-start;
+}
+.itemLabel {
+  flex: 1;
+  text-align: start;
+}
+.separator {
+  border-top: 1px solid var(--gh-color-border);
+}
+.label {
+  color: var(--gh-color-muted);
+  padding: var(--gh-space-1);
+  font-size: var(--gh-text-xs);
+}
+
+.items[data-compact='true'] {
+  gap: 0;
+  padding: var(--gh-space-1);
+}
+.items[data-compact='true'] button {
+  min-height: var(--gh-control-height-xs);
+  height: var(--gh-control-height-xs);
+  padding-inline: var(--gh-space-2);
+  font-size: var(--gh-text-xs);
+  font-weight: var(--gh-weight-normal);
+}

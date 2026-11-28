@@ -1,20 +1,23 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-# Add backend module health endpoints here as new modules become part of the platform.
+# The launcher owns platform health for the single GroveHub backend process.
 BACKEND_HOST="127.0.0.1"
 BACKEND_PORT="8080"
 BACKEND_BASE_URL="http://${BACKEND_HOST}:${BACKEND_PORT}"
 BACKEND_HEALTH_ENDPOINTS=(
-  "/identity/health"
+  "/health"
 )
 
-# Add one "Display Name|path-under-backend/services" entry for each OpenAPI spec.
+# Add one "Display Name|path-under-backend/projects/platform/services" entry for each OpenAPI spec.
 # Swagger UI is intentionally pinned; upgrade this version deliberately.
 SWAGGER_IMAGE="swaggerapi/swagger-ui:v5.33.3"
 SWAGGER_CONTAINER_NAME="groovehub-swagger"
-SWAGGER_PORT="${SWAGGER_PORT:-8081}"
+SWAGGER_PORT="${SWAGGER_PORT:-8090}"
 SWAGGER_BASE_URL="http://127.0.0.1:${SWAGGER_PORT}"
 SWAGGER_SPECS=(
-  "Identity API v1|identity/api/openapi/v1/openapi.yaml"
+  "Identity API v1|identity/internal/resources/api/openapi/v1/openapi.yaml"
+  "Foundation API v1|foundation/internal/resources/api/openapi/v1/openapi.yaml"
+  "Integration API v1|integration/internal/resources/api/openapi/v1/openapi.yaml"
+  "Audit API v1|audit/internal/resources/api/openapi/v1/openapi.yaml"
 )

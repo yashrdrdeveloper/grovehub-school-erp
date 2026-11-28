@@ -1,0 +1,1 @@
+export { MobileRbac } from './MobileRbac';

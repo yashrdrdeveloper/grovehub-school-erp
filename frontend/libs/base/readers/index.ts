@@ -1,0 +1,1 @@
+export { readProperty } from './readProperty';

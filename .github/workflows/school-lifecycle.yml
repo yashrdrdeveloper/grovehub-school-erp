@@ -1,0 +1,70 @@
+name: Cross-project school lifecycle
+on:
+  push:
+    branches: [phase-2.1-multi-project-refactor]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/school-lifecycle.yml'
+      - 'Makefile'
+      - 'scripts/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  lifecycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: provisioner
+          POSTGRES_PASSWORD: provisioner
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U provisioner -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      GOWORK: 'off'
+      PROJECT_SCHOOL_TEST_DSN: postgres://school_test:school_test@127.0.0.1:5432/school_test?sslmode=disable
+      INTERNAL_TOOL_AUTH_TEST_DSN: postgres://internal_test:internal_test@127.0.0.1:5432/internal_test?sslmode=disable
+      LIFECYCLE_PLATFORM_DSN: postgres://platform_test:platform_test@127.0.0.1:5432/groovehub_lifecycle_test?sslmode=disable
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.3'
+          cache: false
+      - name: Provision isolated fixture databases
+        run: |
+          docker exec -i ${{ job.services.postgres.id }} psql -v ON_ERROR_STOP=1 -U provisioner -d postgres <<'SQL'
+          CREATE ROLE school_test LOGIN PASSWORD 'school_test';
+          CREATE ROLE internal_test LOGIN PASSWORD 'internal_test';
+          CREATE ROLE platform_test LOGIN PASSWORD 'platform_test';
+          CREATE DATABASE school_test OWNER school_test;
+          CREATE DATABASE internal_test OWNER internal_test;
+          CREATE DATABASE groovehub_lifecycle_test OWNER platform_test;
+          REVOKE CONNECT ON DATABASE school_test, internal_test, groovehub_lifecycle_test FROM PUBLIC;
+          SQL
+      - name: Build School executable and generated clients
+        working-directory: backend/projects/school
+        run: |
+          make generate-clients
+          go build -mod=mod -o "$RUNNER_TEMP/lifecycle-school" ./cmd/school
+      - name: Build Internal Tool lifecycle test executable
+        working-directory: backend/projects/internal-tool
+        run: |
+          make generate-clients
+          go test -mod=mod -c -o "$RUNNER_TEMP/lifecycle-internal.test" ./internal/app/client/platform
+      - name: Generate Platform annotations and build
+        run: make backend-build
+      - name: Verify signed lifecycle, session and receipt flow
+        working-directory: backend/projects/platform
+        run: |
+          export LIFECYCLE_SCHOOL_BIN="$RUNNER_TEMP/lifecycle-school"
+          export LIFECYCLE_INTERNAL_TEST_BIN="$RUNNER_TEMP/lifecycle-internal.test"
+          go test -vet=off -overlay=.generated/overlay.json -count=1 -v -timeout=5m ./services/identity/internal/tests/integration-test/lifecycle

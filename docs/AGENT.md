@@ -1,5 +1,9 @@
 # AGENT.md
 
+> **Backend Core workspace update (26 November 2026):** physical owner `libs/backend/core`; import prefix `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core`. Root go.work includes school backend and Core. School-owned `backend/libs/schoolgateway` stays outside Core. Never recreate the old Core folder or import school contracts from reusable Core. The private monorepo uses the checked-in relative replacement for builds with GOWORK=off. Verify both module roots and generator/coverage boundaries before delivery.
+
+> **Shared frontend workspace update (26 November 2026):** physical reusable owners are `libs/frontend/base`, `libs/frontend/styles` and `libs/frontend/components`. School application-specific packages remain in `frontend/packages/{assets,business,domain,shell}`. Historical logical `packages/base`, `packages/styles`, `packages/components` references below map to these shared locations through `frontend/scripts/lib/source-layout.mjs`; do not recreate old folders. Keep product dependencies outside shared libraries. Validate frozen workspace install, independent Base and Components typechecks, school architecture/typecheck/Jest/lint/build, and browser regression before release.
+
 > **Status:** Mandatory repository context and execution contract for AI coding agents  
 > **Location:** `docs/AGENT.md`  
 > **Applies to:** AI coding agents, code generators, refactoring agents, automated reviewers, and any tool that changes or evaluates Perihellion source  
@@ -7,229 +11,34 @@
 
 ---
 
-## 0. GroveHub Current Mandatory Overrides
+## 0. Current Backend Standard and Priority
 
-These GroveHub-specific rules are newer than older generic examples in this document and the long-form engineering standards. **When there is a conflict, these rules and the dedicated GroveHub standards below win.**
+**This section supersedes all historical backend structure examples elsewhere in this document.** The canonical backend architecture is [`docs/engineering/backend/backend.md`](engineering/backend/backend.md). It is deliberately generic. Topic-level guidance lives alongside it:
 
-Mandatory current standards:
+- [annotations](engineering/backend/annotation.md)
+- [searchDetails](engineering/backend/searchDetails.md)
+- [events](engineering/backend/events.md)
+- [persistence and ACID](engineering/backend/persistence.md)
+- [API / DTO / validator / mapper](engineering/backend/api.md)
+- [providers](engineering/backend/providers.md)
+- [patterns and operations](engineering/backend/patterns.md)
+- [testing](engineering/backend/testing.md)
+- [libraries](engineering/backend/libraries.md)
 
-```text
-docs/engineering/backend/GROVEHUB_BACKEND_STRUCTURE.md
-docs/engineering/testing/BACKEND_UNIT_TEST_STRUCTURE.md
-docs/engineering/observability/TRACE_CONTEXT_GUIDELINES.md
-docs/engineering/observability/GROVEHUB_OBSERVABILITY.md
-docs/engineering/scripts/GROVEHUB_LOCAL_DEVELOPMENT.md
-```
+**Documentation scopes:**
 
-### Backend structure
+- `docs/engineering/backend/`: generic master and generic topic guides only. No module-specific examples, endpoints, tables, vendors, or event types.
+- `backend/services/<module>/docs/engineering/`: actual module folder tree, module contracts, implemented patterns and operational details.
+- `backend/services/<module>/docs/product/`: actual product use cases, API execution, prerequisites, expected results, negative cases.
+- `backend/libs/<library>/docs/engineering/`: reusable technical capability contracts and SRP.
 
-The root `backend/launcher/` is the platform edge/composition boundary.
+**Currently maintained module owner references:** `backend/services/foundation/docs/engineering/README.md`, `backend/services/integration/docs/engineering/README.md`, `backend/services/infrastructure/docs/engineering/README.md`. Identity is **not changed by this documentation reorganization**; consult its existing code, OpenAPI and documentation before working on it.
 
-Backend services do **not** have service-local `launcher/` folders and do **not** use a `src/` wrapper. Current GroveHub services use flat responsibility folders directly under the service root.
+**Current backend layout:** one public module facade, deliberate public `client/`, private `internal/app/` resource-first layers, `internal/resources/` SQL and OpenAPI, owner-local `internal/tests/`, module-local `docs/`, shared launcher, and technical `libs/`. No new module-local `src/`, launcher, global test buckets, duplicate DTOs, empty scaffolding or core dependency on business/provider code.
 
-```text
-backend/services/<service>/
-├── <service>.go
-├── api/
-├── config/
-├── constants/
-├── entity/
-├── repository/
-│   └── postgres/
-├── services/
-├── controller/
-├── routes/
-├── dto/
-├── client/
-├── migrations/
-└── tests/
-    └── unit-test/
-```
+**Mandatory functional boundaries:** real auth/tenant policy (never route-folder security); explicit UnitOfWork transactions and idempotency; event producers domain-owned, broker/outbox Infrastructure-owned; generic core does not own transport; provider-specific external SDKs under `externalService/<capability>/<provider>`; all generated annotation effects must be verified against the actual processor and Go overlay. Never claim a cataloged annotation enforces runtime policy.
 
-Create only folders with a current responsibility.
-
-Do not recreate either of these older patterns:
-
-```text
-backend/services/<service>/src/
-backend/services/<service>/launcher/
-```
-
-### Backend layer responsibilities
-
-GroveHub uses a strict responsibility split:
-
-```text
-Route
-  ↓
-Controller
-  ↓
-Service
-  ↓
-Repository interface
-  ↓
-PostgreSQL repository
-  ↓
-PostgreSQL
-```
-
-`entity/` is passive data used by the service and repository layers. It is not a business-logic layer.
-
-Mandatory rules:
-
-```text
-entity/              -> data only: structs, types, aliases, entity-owned constants
-repository/          -> persistence contracts only
-repository/postgres/ -> SQL, row scanning, persistence models, DB error handling
-services/            -> ALL business rules/use cases/orchestration
-controller/          -> request/response transport mapping + service invocation only
-routes/              -> route registration only
-migrations/          -> service-owned schema evolution
-```
-
-Entities must not contain business-rule constructors, validation workflows, lifecycle transitions, ID generation, clocks, repository access, persistence mapping, or transport behavior.
-
-Repositories must not contain business decisions, lifecycle transitions, authorization rules, business validation, workflow orchestration, or ID generation. Technical database branching such as `ErrNoRows`/constraint mapping is allowed because it is persistence handling.
-
-Controllers must not query repositories/databases directly and must not contain business rules.
-
-Business logic belongs in the owning `services/` package.
-
-PostgreSQL-specific persistence row models may live under:
-
-```text
-repository/postgres/entity.go
-```
-
-These are persistence models and are distinct from domain data under `entity/`.
-
-### Backend unit tests
-
-The old centralized path `backend/testing/unit-test/` is superseded and must not be recreated.
-
-Unit tests live with their owner:
-
-```text
-backend/launcher/tests/unit-test/...
-backend/services/<service>/tests/unit-test/...
-backend/libs/core/tests/unit-test/...
-backend/providers/<provider>/tests/unit-test/...
-```
-
-Inside `tests/unit-test/`, mirror the flat production responsibility.
-
-Examples:
-
-```text
-services/      -> tests/unit-test/services/
-controller/    -> tests/unit-test/controller/
-repository/    -> tests/unit-test/repository/
-```
-
-Pure data-only entities do not require meaningless unit tests merely to assert struct fields or type aliases.
-
-Every backend unit-test package folder that exists must contain `suite_test.go` and use Ginkgo v2 + Gomega:
-
-```go
-import (
-    . "github.com/onsi/ginkgo/v2"
-    . "github.com/onsi/gomega"
-)
-```
-
-`suite_test.go` owns suite registration plus shared constants, fixtures, builders, fakes/stubs, setup/cleanup, and reusable helper functions for that test package. Other `_test.go` files should stay focused on behavior specs and use the suite support.
-
-Repository-wide `testing/sanity/` and `testing/regression/` remain repository-wide and are not moved into one backend owner.
-
-### Trace context and API-to-API propagation
-
-OpenTelemetry trace context is mandatory across the GroveHub backend ecosystem.
-
-The launcher/edge starts or continues the inbound trace. Every nested service/business/dependency operation must receive the existing `context.Context` and create child spans rather than a disconnected trace.
-
-GroveHub HTTP responses expose the active trace identifier in:
-
-```text
-X-Trace-ID
-```
-
-Outbound HTTP calls also forward `X-Trace-ID` for support/debug correlation. W3C `traceparent` remains the authoritative OpenTelemetry propagation header because parent/child relationships require both trace and span context. `X-Trace-ID` is never added to the JSON response envelope.
-
-Request/execution logs inside a trace include:
-
-```text
-traceId
-spanId
-traceFlags
-```
-
-On failures, spans/logs capture safe request/response metadata such as method, route/path, status, request size, response size, duration, service/component, traceId, and spanId. Generic middleware must not dump raw request/response bodies, Authorization headers, cookies, passwords, tokens, credentials, or arbitrary sensitive query data.
-
-Before adding an HTTP client, service call, worker, messaging boundary, provider call, or middleware, verify that trace context crosses that boundary.
-
-### GroveHub observability identity, metrics, and Grafana
-
-The canonical logical telemetry services are defined centrally. Current identities are:
-
-```text
-service.namespace = grovehub
-
-service.name = LAUNCHER (EDGE)
-grovehub.service.key = launcher-edge
-
-service.name = IDENTITY
-grovehub.service.key = identity
-```
-
-Do not emit ad-hoc variants such as `edge`, `launcher`, `platform`, `identity-service`, or differently cased service names. Future logical services must be registered centrally before service-owned telemetry is emitted.
-
-Metrics, traces, and logs must agree on logical service identity. The same trace ID continues across `LAUNCHER (EDGE) -> IDENTITY -> real dependency` boundaries while each child span has its own span ID.
-
-HTTP latency uses OpenTelemetry histogram metrics so Grafana computes P50/P95/P99. Do not calculate request percentiles inside application code. Metric dimensions must be bounded; use route templates and never use trace IDs, request IDs, user/student IDs, emails, or raw resource URLs as metric labels.
-
-The initial GroveHub observability surface includes:
-
-```text
-RPS / request count
-5xx error rate
-active requests
-P50 / P95 / P99 HTTP latency
-service-operation latency/errors
-service availability
-Go runtime metrics
-WARN/ERROR logs
-trace waterfall/correlation
-Grafana overview dashboard + filters
-bootstrap alert rules
-```
-
-When canonical telemetry names, resources, labels, or dashboard query assumptions change, update the Grafana/dashboard contract and `GROVEHUB_OBSERVABILITY.md` in the same task.
-
-### Local developer hot reload
-
-GroveHub development commands have fixed semantics:
-
-```text
-make backend-start
-    -> one-time backend binary
-    -> no hot reload
-
-make backend-dev
-    -> Air in foreground
-    -> hot reload
-
-make dev-start
-    -> Air-backed backend in background + Swagger
-    -> hot reload
-
-make dev-start-with-logs
-    -> Air-backed backend in background + Swagger + local OTel collector
-    -> hot reload
-```
-
-Do not route `dev-start` or `dev-start-with-logs` through a one-time backend binary.
-
-Air watches backend `.go`, `go.mod`, and `go.sum` changes. After a developer runs `git pull`, watched file changes must trigger dependency refresh, rebuild, and backend restart automatically. Air does not perform `git pull` itself.
+**Precedence:** deployed public contract and applied SQL history > this generic master > actual owner-local engineering/product docs > historical examples in this agent document. When later sections mention obsolete flat service paths or old backend guideline filenames, follow the newer linked guide instead.
 
 ---
 
@@ -266,8 +75,8 @@ docs/
 └── engineering/
     ├── README.md
     ├── backend/
-    │   ├── BACKEND_CODE_GUIDELINES.md
-    │   └── GROVEHUB_BACKEND_STRUCTURE.md
+    │   ├── backend.md
+    │   └── backend.md
     ├── frontend/
     │   └── FRONTEND_CODE_GUIDELINES.md
     ├── testing/
@@ -371,8 +180,8 @@ Always:
 
 ```text
 docs/AGENT.md
-docs/engineering/backend/BACKEND_CODE_GUIDELINES.md
-docs/engineering/backend/GROVEHUB_BACKEND_STRUCTURE.md
+docs/engineering/backend/backend.md
+docs/engineering/backend/backend.md
 docs/engineering/testing/TESTING_GUIDELINES.md
 docs/engineering/testing/BACKEND_UNIT_TEST_STRUCTURE.md
 ```
@@ -416,8 +225,8 @@ Read:
 
 ```text
 docs/engineering/api/API_CONTRACT_GUIDELINES.md
-docs/engineering/backend/BACKEND_CODE_GUIDELINES.md
-docs/engineering/backend/GROVEHUB_BACKEND_STRUCTURE.md
+docs/engineering/backend/backend.md
+docs/engineering/backend/backend.md
 docs/engineering/testing/TESTING_GUIDELINES.md
 docs/engineering/testing/BACKEND_UNIT_TEST_STRUCTURE.md
 ```
@@ -443,8 +252,8 @@ Read:
 
 ```text
 docs/engineering/database/DATABASE_GUIDELINES.md
-docs/engineering/backend/BACKEND_CODE_GUIDELINES.md
-docs/engineering/backend/GROVEHUB_BACKEND_STRUCTURE.md
+docs/engineering/backend/backend.md
+docs/engineering/backend/backend.md
 docs/engineering/testing/TESTING_GUIDELINES.md
 docs/engineering/testing/BACKEND_UNIT_TEST_STRUCTURE.md
 ```
@@ -474,8 +283,8 @@ Read:
 
 ```text
 docs/engineering/providers/PROVIDER_SDK_GUIDELINES.md
-docs/engineering/backend/BACKEND_CODE_GUIDELINES.md
-docs/engineering/backend/GROVEHUB_BACKEND_STRUCTURE.md
+docs/engineering/backend/backend.md
+docs/engineering/backend/backend.md
 docs/engineering/testing/TESTING_GUIDELINES.md
 docs/engineering/testing/BACKEND_UNIT_TEST_STRUCTURE.md
 docs/engineering/security/SECURITY_GUIDELINES.md
@@ -712,7 +521,7 @@ Examples:
 ```text
 backend/services/<service>/
 backend/launcher/
-backend/libs/core/
+libs/backend/core/
 frontend/packages/domain/<domain>/
 frontend/packages/shell/
 providers/<provider>/
@@ -1066,7 +875,7 @@ Repository/PostgreSQL Adapter
 
 Do not bypass layers because code is in one process.
 
-Use `GROVEHUB_BACKEND_STRUCTURE.md` for current service folder placement and layer ownership.
+Use `backend.md` for current service folder placement and layer ownership.
 
 ---
 
@@ -1497,7 +1306,7 @@ Before moving code into:
 frontend/base
 frontend/business
 frontend/components
-backend/libs/core
+libs/backend/core
 provider SDK
 shared script lib
 ```

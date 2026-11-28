@@ -1,0 +1,57 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	"time"
+
+	"grovehub/launcher"
+	"grovehub/launcher/bootstrap"
+	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
+)
+
+func main() {
+	if len(os.Args) > 1 { os.Exit(runMigrationCommand()) }
+    os.Exit(run())
+}
+
+func run() int {
+	logger, err := bootstrap.NewLogger(os.Stdout)
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "invalid GROVEHUB_LOG_LEVELS: %v\n", err)
+		return 1
+	}
+
+	shutdownTelemetry := coretelemetry.Initialize(context.Background(), logger)
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := shutdownTelemetry(ctx); err != nil {
+			logger.Error(
+				"OpenTelemetry shutdown failed",
+				"service", coretelemetry.ServiceLauncherEdge.Name,
+				"error", err,
+			)
+		}
+	}()
+
+	logger.Info(
+		"starting GroveHub",
+		"service", coretelemetry.ServiceLauncherEdge.Name,
+		"serviceKey", coretelemetry.ServiceLauncherEdge.Key,
+		"phase", "0.1.1",
+	)
+
+	if err := launcher.Run(logger); err != nil {
+		logger.Error(
+			"GroveHub stopped with error",
+			"service", coretelemetry.ServiceLauncherEdge.Name,
+			"error", err,
+		)
+		return 1
+	}
+
+	return 0
+}

@@ -1,0 +1,59 @@
+import { BOX_TAG } from '@Components/components/Box';
+import { cn } from '@Base/utilities/cn';
+
+import { Box } from '../Box';
+import { FieldLabel } from '../FieldLabel';
+
+import type { FormFieldComponent } from './types/formField.props';
+
+/** FormField owns native field structure; form controls only supply state and IDs. */
+export const FormField: FormFieldComponent = ({
+  htmlFor,
+  label,
+  hint,
+  error,
+  required = false,
+  children,
+  className,
+  dataTestId,
+  ...props
+}) => {
+  const testId = dataTestId ?? htmlFor;
+  const messageRole = (error && ('alert' as const)) || undefined;
+
+  return (
+    <Box
+      as={BOX_TAG.DIV}
+      className={cn('field gh-form-field grid gap-1.5', className)}
+      dataTestId={`${testId}-field`}
+      {...props}
+    >
+      <FieldLabel
+        className="field__label text-sm font-medium text-foreground"
+        dataTestId={`${testId}-label`}
+        htmlFor={htmlFor}
+      >
+        {label}
+        {required && (
+          <Box as={BOX_TAG.SPAN} className="gh-field-required" aria-hidden="true">
+            {' *'}
+          </Box>
+        )}
+      </FieldLabel>
+
+      {children}
+
+      {(error || hint) && (
+        <Box
+          as={BOX_TAG.SPAN}
+          id={`${htmlFor}-description`}
+          dataTestId={`${testId}-message`}
+          className={cn('field__hint text-xs', error && 'field__hint--error')}
+          role={messageRole}
+        >
+          {error || hint}
+        </Box>
+      )}
+    </Box>
+  );
+};

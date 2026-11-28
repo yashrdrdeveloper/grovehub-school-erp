@@ -22,5 +22,5 @@ log_info "Running GroveHub backend with Air hot reload"
 log_info "Backend URL: ${BACKEND_BASE_URL}"
 log_info "Air version: ${AIR_VERSION}"
 
-cd -- "${BACKEND_DIR}"
-exec "${AIR_BIN}" -c .air.toml
+cd -- "${REPO_ROOT}"
+exec "${AIR_BIN}" -c backend/.air.toml

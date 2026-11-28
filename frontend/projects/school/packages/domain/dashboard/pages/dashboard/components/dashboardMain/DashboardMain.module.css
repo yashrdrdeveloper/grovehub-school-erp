@@ -1,0 +1,222 @@
+/* Scoped dashboard main styles. */
+
+.school-home__main-column {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  min-width: 0;
+}
+
+.school-home__focus {
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+}
+
+.school-home__focus-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 17px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.school-home__focus-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 39px;
+  width: 39px;
+  height: 39px;
+  border-radius: 11px;
+  background: var(--accent-pale);
+  color: var(--accent);
+}
+
+.school-home__focus-heading > div:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+
+.school-home__focus-heading h3 {
+  margin: 0 0 4px;
+  font-size: 0.8125rem;
+}
+
+.school-home__focus-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.6875rem;
+}
+
+.school-home__focus-count {
+  color: var(--muted);
+  font-size: 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  padding: 6px 9px;
+  white-space: nowrap;
+}
+
+.school-home__focus-content {
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  padding: 30px 25px;
+}
+
+.school-home__focus-content > strong {
+  font-size: 0.875rem;
+  letter-spacing: -0.02em;
+  margin: 18px 0 6px;
+}
+
+.school-home__focus-content > p {
+  font-size: 0.6875rem;
+  max-width: 335px;
+  color: var(--muted);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.school-home__empty-art {
+  width: 128px;
+  height: 90px;
+  border: 1px solid var(--border);
+  background: var(--canvas);
+  border-radius: 12px;
+  position: relative;
+  transform: rotate(-4deg);
+  box-shadow:
+    10px 10px 0 -5px var(--surface-subtle),
+    10px 10px 0 -4px var(--border);
+  padding: 19px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.school-home__empty-art span {
+  display: block;
+  height: 5px;
+  border-radius: 9px;
+  background: var(--border);
+  width: 78%;
+}
+
+.school-home__empty-art span:nth-child(2) {
+  width: 57%;
+}
+
+.school-home__empty-art span:nth-child(3) {
+  width: 68%;
+}
+
+.school-home__empty-art svg {
+  position: absolute;
+  right: -12px;
+  bottom: -11px;
+  color: var(--home-green);
+  background: var(--surface);
+  border-radius: 50%;
+  padding: 2px;
+}
+
+.school-home__focus-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.625rem;
+}
+
+.school-home__focus-footer > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.school-home__operations {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 9px;
+}
+
+.school-home__operation {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 11px;
+  padding: 14px 16px;
+  min-width: 0;
+}
+
+.school-home__operation-icon {
+  flex: 0 0 39px;
+  height: 39px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--tone-bg);
+  color: var(--tone);
+}
+
+.school-home__operation > div:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+
+.school-home__operation h3 {
+  font-size: 0.75rem;
+  margin: 0 0 4px;
+}
+
+.school-home__operation p {
+  margin: 0 0 7px;
+  color: var(--muted);
+  font-size: 0.6875rem;
+}
+
+.school-home__operation small {
+  color: var(--muted);
+  font-size: 0.625rem;
+}
+
+.school-home__operation-arrow {
+  flex-shrink: 0;
+  color: var(--muted);
+  opacity: 0.55;
+}
+
+:global(:root[data-theme='dark']) .school-home__focus {
+  box-shadow: var(--gh-shadow-card);
+}
+
+:global(:root[data-theme='dark']) .school-home__operation {
+  box-shadow: var(--gh-shadow-card);
+}
+
+@media (max-width: 650px) {
+  .school-home__focus-content {
+    min-height: 245px;
+  }
+
+  .school-home__focus-count {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .school-home__operation {
+    transition: none;
+  }
+}

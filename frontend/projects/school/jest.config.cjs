@@ -1,0 +1,38 @@
+module.exports = {
+  testEnvironment: 'jsdom',
+  setupFiles: ['<rootDir>/scripts/test/polyfills.cjs'],
+  setupFilesAfterEnv: ['<rootDir>/scripts/test/setupI18n.ts'],
+  roots: ['<rootDir>', '<rootDir>/../../libs/base', '<rootDir>/../../libs/components'],
+  testMatch: [
+    '<rootDir>/packages/**/*.test.ts',
+    '<rootDir>/packages/**/*.test.tsx',
+    '<rootDir>/../../libs/base/**/*.test.ts',
+    '<rootDir>/../../libs/components/**/*.test.ts',
+    '<rootDir>/../../libs/components/**/*.test.tsx',
+  ],
+  transform: {
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      { tsconfig: { module: 'CommonJS', jsx: 'react-jsx' } },
+    ],
+    '^.+\\.js$': '<rootDir>/scripts/test/transformEsm.cjs',
+  },
+  transformIgnorePatterns: ['/node_modules/(?!\\.pnpm/lodash-es@|lodash-es/)'],
+  moduleNameMapper: {
+    '^.+\\.(css|scss)$': '<rootDir>/scripts/test/styleMock.cjs',
+    '^@Base$': '<rootDir>/../../libs/base',
+    '^@Base/(.*)$': '<rootDir>/../../libs/base/$1',
+    '^@Business$': '<rootDir>/packages/business',
+    '^@Business/(.*)$': '<rootDir>/packages/business/$1',
+    '^@Components$': '<rootDir>/../../libs/components',
+    '^@Components/(.*)$': '<rootDir>/../../libs/components/$1',
+    '^@Domain$': '<rootDir>/packages/domain',
+    '^@Domain/(.*)$': '<rootDir>/packages/domain/$1',
+    '^@Assets$': '<rootDir>/packages/assets',
+    '^@Assets/(.*)$': '<rootDir>/packages/assets/$1',
+    '^@Styles$': '<rootDir>/../../libs/styles',
+    '^@Styles/(.*)$': '<rootDir>/../../libs/styles/$1',
+    '^@Shell$': '<rootDir>/packages/shell',
+    '^@Shell/(.*)$': '<rootDir>/packages/shell/$1',
+  },
+};

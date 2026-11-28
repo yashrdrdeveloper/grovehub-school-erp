@@ -5,29 +5,74 @@ cat <<'EOF'
 GroveHub developer commands
 
 Backend
+  make backend-format FORMAT_SCOPE=integration   Format Integration Go files with gofmt
+  make backend-format                            Format all backend Go files
   make backend-setup    Install/pin local backend development tools
-  make backend-build    Build the platform binary into .runtime/bin
+  make backend-build    Generate annotation code and build the platform binary into .runtime/bin
+  make backend-test     Generate annotation code and run all backend Go tests with overlay
   make backend-start    Start the backend binary in the background (no hot reload)
   make backend-stop     Stop the managed backend process (binary or Air)
   make backend-status   Show backend process, hot-reload mode, and health status
   make backend-dev      Run backend with Air hot reload in the foreground
 
+Independent projects (run with their own environment)
+  make school-backend-build / school-backend-test / school-backend-start
+  make internal-backend-build / internal-backend-test / internal-backend-start
+  make internal-db-migrate
+  make internal-frontend-build / internal-frontend-test / internal-frontend-dev
+  cd frontend && pnpm install --frozen-lockfile
+
 Database
-  make db-migrate-status  Show Foundation migration status using DATABASE_URL
-  make db-migrate-up      Apply pending Foundation migrations
-  make db-migrate-down    Roll back the latest Foundation migration
+  make db-schema-status                           Show current GroveHub schema baseline state
+  make db-schema-init                             Initialize all service schemas from the current baseline
+  make db-schema-init DB_SERVICE=audit            Apply Audit schema migrations
+  make db-schema-reset DB_SERVICE=foundation      Reset only the Foundation schema
+  make db-schema-init DB_SERVICE=infrastructure         Apply Infrastructure messaging/outbox migration
+  make db-schema-reset DB_SERVICE=integration     Reset only the Integration schema (dev data lost)
+
+  DB_SERVICE can be: all, foundation, infrastructure, identity, integration, or audit.
+  Reset requires an explicit business service and is development-only. Audit and all resets are refused to preserve history.
+  AUDIT_DATABASE_URL is optional; empty uses the shared business database.
+
+Messaging / NATS JetStream
+  make nats-start     Start local NATS JetStream with persistent storage
+  make nats-stop      Stop the NATS container and preserve JetStream data
+  make nats-status    Show NATS health, endpoints, and persistent volume
+
+Testing
+  make unit-test package=foundation                     Run isolated Foundation unit tests and report coverage
+  make unit-coverage package=foundation                 Require 100% statement coverage (fails below 100%)
+  make unit-coverage packages='["foundation","identity"]' Require 100% for each selected service
+  make unit-coverage                                    All services plus core and launcher
+  make test-inventory package=foundation                List missing mirrored test files/methods
+  make sanity
+      Start/verify NATS, run all backend sanity tests, generate an HTML report,
+      and open .runtime/reports/sanity/index.html in the browser.
+
+  make sanity SANITY_SCOPE=./tests/sanity/infrastructure/messaging/...
+      Run only the selected backend sanity package tree.
 
 Swagger
-  make swagger-start    Start Swagger UI on http://localhost:8081
+  make swagger-start    Start Swagger UI on http://localhost:8080
   make swagger-stop     Stop the managed Swagger UI container
   make swagger-status   Show Swagger UI status
 
 Development
-  make dev-start            Start Air hot reload backend + Swagger UI
-  make dev-start-with-logs  Start Air hot reload backend + Swagger UI + local OTEL collector
-  make dev-stop             Stop Swagger UI + backend + optional OTEL collector
-  make dev-status           Show backend + Swagger UI status
+  make frontend-start       Start Vite and print local and Cloudflare HTTPS URLs (if cloudflared is installed)
+  make frontend-stop        Stop managed Vite and Cloudflare tunnel
+  make frontend-status      Show managed frontend and tunnel URL
+  make dev-start            Start NATS, schemas, Air backend, Swagger, Vite and frontend Cloudflare tunnel
+  make dev-start-with-logs  Same as dev-start plus the local OTEL collector
+  make dev-stop             Stop frontend, Swagger UI, backend, NATS, and optional OTEL collector
+  make dev-status           Show NATS, backend, frontend, and Swagger UI status
+
+Container runtime used by dev-start
+  macOS    Colima (installed/started automatically; Docker CLI/Compose via Homebrew)
+  Windows  Docker Desktop (installed through winget/Chocolatey and started automatically)
+  Linux    Docker Engine (installed through the official Docker installer and started automatically)
 
 Overrides
   make swagger-start SWAGGER_PORT=8082
+  make frontend-start FRONTEND_TUNNEL=0  # local only; also supported by dev-start
+  macOS: brew install cloudflared  # optional public development preview
 EOF

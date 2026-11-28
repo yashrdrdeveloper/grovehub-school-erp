@@ -1,0 +1,82 @@
+/* RDR workspace top bar. All selectors and responsive behavior belong to this component. */
+.root {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gh-space-3);
+  height: 52px;
+  flex-shrink: 0;
+  padding-inline: 16px;
+  border-bottom: 1px solid var(--gh-color-border);
+  background: var(--gh-color-shell-surface);
+  color: var(--gh-color-text);
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: var(--gh-space-3);
+  min-width: 0;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gh-space-1);
+  color: var(--gh-color-text-strong);
+  white-space: nowrap;
+}
+
+.schoolName {
+  font-size: var(--gh-text-sm);
+  font-weight: var(--gh-weight-semibold);
+  line-height: 1;
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 48px;
+  height: 26px;
+  color: inherit;
+}
+
+.logo svg {
+  width: 100%;
+  height: auto;
+}
+
+.menu {
+  display: none;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 33px;
+  height: 33px;
+  padding: 4px;
+  border: 0;
+  border-radius: var(--gh-radius-sm);
+  color: var(--gh-color-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.menu:hover {
+  background: var(--gh-color-surface-subtle);
+}
+
+.menu:focus-visible {
+  outline: var(--gh-focus-outline-width) solid var(--gh-color-ring);
+  outline-offset: 2px;
+}
+
+/* Home, Apps and Menu are available in the bottom navigation on phones. */
+@media (max-width: 720px) {
+  .root {
+    display: none;
+  }
+}

@@ -8,14 +8,17 @@ SCRIPT_DIR="$(
 
 source "${SCRIPT_DIR}/../lib/paths.sh"
 source "${SCRIPT_DIR}/../lib/common.sh"
-source "${SCRIPT_DIR}/../lib/go.sh"
+# Module dependencies are synchronized once by dev.sh; rebuilding on every
+# source edit must not rewrite go.mod or go.sum and re-trigger Air.
 
-sync_backend_go_modules
+require_command go
+ensure_runtime_dirs
+bash "${SCRIPT_DIR}/generate-annotations.sh"
 
 OUTPUT="${RUNTIME_BIN_DIR}/groovehub-dev"
 
 log_info "Building GroveHub backend for Air"
 (
   cd -- "${BACKEND_DIR}"
-  go build -o "${OUTPUT}" ./cmd/platform
+  go build -overlay="${BACKEND_DIR}/.generated/overlay.json" -o "${OUTPUT}" ./cmd/platform
 )

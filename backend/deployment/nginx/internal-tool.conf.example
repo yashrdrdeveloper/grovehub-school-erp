@@ -1,0 +1,23 @@
+# Include inside a separate HTTPS server block. Restrict ingress at the
+# firewall or identity-aware access layer before enabling this virtual host.
+root /opt/groovehub/internal-tool-frontend/current/payload;
+index index.html;
+client_max_body_size 64k;
+add_header X-Robots-Tag "noindex, nofollow" always;
+location ~ ^/internal/(public|protected)(/|$) {
+    proxy_pass http://127.0.0.1:8082;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-GH-Identity-Proof "";
+    proxy_set_header Authorization "";
+    proxy_connect_timeout 3s;
+    proxy_read_timeout 35s;
+}
+location ~ ^/(identity|audit|foundation|integrations|integration|infrastructure|school|internal|health|ready)(/|$) {
+    return 404;
+}
+location ~ ^/(\.env|\.git)(/|$) { return 404; }
+location /assets/ { try_files $uri =404; }
+location / { try_files $uri $uri/ /index.html; }

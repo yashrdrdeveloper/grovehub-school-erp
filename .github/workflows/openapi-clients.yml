@@ -1,0 +1,32 @@
+name: Platform OpenAPI and client generation
+on:
+  push:
+    paths:
+      - 'backend/projects/platform/services/**/api/openapi/**'
+      - 'backend/libs/core/tools/clientgen/**'
+      - '.github/workflows/openapi-clients.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [foundation, identity, integration, audit]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate service-owned contract
+        run: |
+          docker run --rm --network none -v "$PWD/backend/projects/platform/services/${{ matrix.service }}/internal/resources/api/openapi/v1:/input:ro" openapitools/openapi-generator-cli:v7.15.0 validate -i /input/openapi.yaml
+      - name: Generate consumer-local Go SDK
+        run: |
+          mkdir -p "$RUNNER_TEMP/clients"
+          bash backend/libs/core/tools/clientgen/generate.sh "backend/projects/platform/services/${{ matrix.service }}/internal/resources/api/openapi/v1/openapi.yaml" "$RUNNER_TEMP/clients/${{ matrix.service }}" "${{ matrix.service }}client"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: generated-${{ matrix.service }}-go-client
+          path: ${{ runner.temp }}/clients/${{ matrix.service }}
+          if-no-files-found: error

@@ -1,26 +1,31 @@
-# Core Shared Library — Engineering Documentation
+# Core Library — Engineering
 
-See [Backend Engineering Master Standard](../../../../../docs/engineering/backend/backend.md).
+`libs/core` owns **reusable domain-neutral technical capabilities**, not business vocabulary or provider-specific messaging. The consumer-facing surface is a named capability facade. Service implementations must not import private nested helper/validator packages.
 
-## Scope
+Generic policy: [Backend Standard](../../../../../docs/engineering/backend/backend.md), [Libraries](../../../../../docs/engineering/backend/libraries.md), [Annotations](../../../../../docs/engineering/backend/annotation.md).
 
-Shared libraries provide **generic, independently reusable mechanisms**; they do not own a service's entities, API flows, business errors, permissions, or use cases.
+## Owner-specific references
 
-## Rules
+- [capabilities.md](capabilities.md) — inventory, public import direction and SRP for Core capabilities.
+- [annotation_engine.md](annotation_engine.md) — parser/checker/generation/overlay pipeline, supported effect boundaries.
+- [../../annotation/README.md](../../annotation/README.md) — source-level annotation catalog entry point.
 
-- A public helper must have a precise purpose, stable contract, documented failure modes and clear owner.
-- Keep libraries small and dependency-light; avoid importing service packages.
-- Separate transport pipelines, persistence primitives, search contracts, error primitives, logging/tracing and annotations by responsibility when implemented.
-- Inject external dependencies explicitly; avoid global mutable state.
-- State concurrency guarantees and context/cancellation behavior for exported interfaces.
-- Version breaking contracts and provide migration instructions to consumers.
-- Shared mechanisms must not silently enforce a product-specific policy.
-- Do not add a library abstraction until at least one real consumer demonstrates stable reusable semantics.
+## New capability checklist
 
-## Module inventory to maintain
+Document public facade, contract and error behavior, parameters, concurrency and cancellation rules, allocation/PII risks, tests, owners and reasons the helper cannot live in the consuming service. No capability may import a concrete business module or external provider implementation.
 
-For each actual exported package, document: API, examples, ownership, supported configurations, invariants, concurrency safety, failure semantics, extension points, test commands, backwards compatibility and known consumers.
+No `docs/product/` is created: library behavior is technical, and actual end-user workflows belong in the consuming service's `docs/product/`.
 
-This is an engineering-only module. Product workflows belong to the consuming services' `docs/product/`.
+## Module and validation
 
-**Status:** This file establishes consistent library documentation; implementation-specific API inventories must be verified from code and filled in.
+Module: `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core`. This module can run its tests with GOWORK=off and never imports the school backend. In this private monorepo, the consuming school module uses a local relative replacement. No public/tagged distribution is claimed.
+
+```bash
+cd libs/backend/core
+export GOWORK=off
+go run ./annotation/generation/testing "$PWD" "$PWD"
+go run ./annotation/generation/overlay "$PWD" "$PWD"
+go test -vet=off -overlay=.generated/overlay.json ./...
+```
+
+Use `make unit-test package=core` from the repository root for report-only coverage; `make unit-coverage package=core` requires 100%.

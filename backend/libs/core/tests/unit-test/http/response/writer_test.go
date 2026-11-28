@@ -9,7 +9,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 
-	httpresponse "grovehub/libs/core/http/response"
+	httpresponse "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/response"
 )
 
 var _ = Describe("HTTP response writer", func() {

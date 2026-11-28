@@ -1,0 +1,112 @@
+/* Compact, owner-scoped catalog cards with a separate pin action. */
+.catalog-app {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--gh-color-border);
+  border-radius: var(--gh-control-radius);
+  background: var(--gh-color-surface);
+  transition: border-color var(--gh-motion-fast);
+}
+
+.catalog-app:not(.catalog-app--planned):hover {
+  border-color: var(--gh-color-accent);
+}
+
+.catalog-app__link {
+  min-height: 6rem;
+  display: grid;
+  grid-template-columns: var(--gh-control-height-md) minmax(0, 1fr);
+  align-content: start;
+  align-items: start;
+  column-gap: var(--gh-space-3);
+  row-gap: var(--gh-space-1);
+  padding: var(--gh-space-3);
+  padding-inline-end: var(--gh-control-height-lg);
+}
+
+.catalog-app__icon {
+  grid-row: 1 / span 3;
+  width: var(--gh-control-height-md);
+  height: var(--gh-control-height-md);
+  border-radius: var(--gh-control-radius);
+  display: grid;
+  place-items: center;
+  color: var(--gh-color-accent);
+  background: var(--gh-color-accent-soft);
+}
+
+.catalog-app strong {
+  grid-column: 2;
+  font-size: var(--gh-text-sm);
+  font-weight: var(--gh-weight-semibold);
+  color: var(--gh-color-text-strong);
+  overflow-wrap: anywhere;
+}
+
+.catalog-app small {
+  grid-column: 2;
+  font-size: var(--gh-text-xs);
+  line-height: var(--gh-leading-normal);
+  color: var(--gh-color-muted);
+  overflow-wrap: anywhere;
+}
+
+.catalog-app__status {
+  grid-column: 2;
+  font-size: var(--gh-text-2xs);
+  font-weight: var(--gh-weight-medium);
+  color: var(--gh-color-accent);
+}
+
+.catalog-app--planned {
+  opacity: 0.63;
+}
+
+.catalog-app--planned .catalog-app__status {
+  color: var(--gh-color-muted);
+}
+
+.catalog-app__pin {
+  position: absolute;
+  inset-inline-end: var(--gh-space-2);
+  inset-block-start: var(--gh-space-2);
+  display: grid;
+  place-items: center;
+  width: var(--gh-control-height-xs);
+  height: var(--gh-control-height-xs);
+  border: 1px solid transparent;
+  border-radius: var(--gh-control-radius);
+  background: transparent;
+  color: var(--gh-color-muted);
+}
+
+.catalog-app__pin--active {
+  color: var(--gh-color-catalog-pin-foreground);
+  background: var(--gh-color-catalog-pin-background);
+}
+
+.catalog-app__pin:hover {
+  color: var(--gh-color-accent);
+  background: var(--gh-color-surface-subtle);
+}
+
+.catalog-app__link:focus-visible,
+.catalog-app__pin:focus-visible {
+  outline: var(--gh-focus-outline-width) solid var(--gh-color-ring);
+  outline-offset: -1px;
+}
+
+@media (max-width: 640px) {
+  .catalog-app__link {
+    grid-template-columns: minmax(0, 1fr);
+    padding-inline-end: var(--gh-space-3);
+  }
+
+  .catalog-app__icon,
+  .catalog-app strong,
+  .catalog-app small,
+  .catalog-app__status {
+    grid-column: 1;
+    grid-row: auto;
+  }
+}

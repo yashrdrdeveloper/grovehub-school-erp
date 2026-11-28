@@ -1,0 +1,9 @@
+.field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--gh-space-1);
+}
+.field > :last-child {
+  align-self: end;
+}

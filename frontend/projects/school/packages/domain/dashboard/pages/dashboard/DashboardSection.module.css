@@ -1,0 +1,53 @@
+/* Scoped dashboard common styles. */
+
+.school-home__section {
+  min-width: 0;
+}
+
+.school-home__section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 13px;
+}
+
+.school-home__eyebrow {
+  display: block;
+  font-size: 0.5625rem;
+  font-weight: 800;
+  color: var(--muted);
+  letter-spacing: 0.17em;
+  margin-bottom: 6px;
+}
+
+.school-home__section-heading h2 {
+  font-size: 1.0625rem;
+  letter-spacing: -0.04em;
+  margin: 0;
+}
+
+.school-home__hint {
+  color: var(--muted);
+  font-size: 0.6875rem;
+}
+
+.school-home__tone--pink {
+  --tone: var(--home-pink);
+  --tone-bg: var(--gh-color-home-tone-pink-bg);
+}
+
+.school-home__tone--blue {
+  --tone: var(--home-blue);
+  --tone-bg: var(--gh-color-home-tone-blue-bg);
+}
+
+.school-home__tone--amber {
+  --tone: var(--home-amber);
+  --tone-bg: var(--gh-color-home-tone-amber-bg);
+}
+
+.school-home__tone--green {
+  --tone: var(--home-green);
+  --tone-bg: var(--gh-color-home-tone-green-bg);
+}

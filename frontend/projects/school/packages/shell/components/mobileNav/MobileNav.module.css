@@ -1,0 +1,69 @@
+/* Owner-scoped bottom navigation; only three implemented workspace actions. */
+.root {
+  display: none;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 5px 0;
+  border: 0;
+  border-radius: var(--gh-radius-md);
+  background: transparent;
+  color: var(--gh-color-muted);
+  font-size: 0.625rem;
+  font-weight: var(--gh-weight-semibold);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.item:hover {
+  background: var(--gh-color-surface-subtle);
+  color: var(--gh-color-text-strong);
+}
+
+.item:focus-visible {
+  outline: var(--gh-focus-outline-width) solid var(--gh-color-ring);
+  outline-offset: 1px;
+}
+
+.active {
+  background: var(--gh-color-accent-soft);
+  color: var(--gh-color-accent);
+}
+
+.item svg {
+  width: 18px;
+  height: 18px;
+}
+
+@media (max-width: 720px) {
+  .root {
+    position: fixed;
+    z-index: 30;
+    bottom: var(--workspace-mobile-nav-offset);
+    left: 16px;
+    right: 16px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: auto;
+    padding: var(--gh-space-1);
+    min-height: var(--workspace-mobile-nav-height);
+    border: 1px solid var(--gh-color-border);
+    border-radius: 18px;
+    background: var(--gh-color-surface);
+    box-shadow: var(--gh-shadow-dialog);
+    backdrop-filter: blur(14px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item {
+    transition: none;
+  }
+}

@@ -1,0 +1,181 @@
+.anchor {
+  display: inline-flex;
+  min-width: 0;
+}
+.anchor[data-full-width='true'] {
+  display: flex;
+  width: 100%;
+}
+.panel {
+  position: fixed;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  max-height: min(calc(100dvh - 24px), var(--popover-available-height, 100dvh));
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--gh-color-border);
+  border-radius: var(--gh-control-radius);
+  padding: var(--gh-space-3);
+  background: var(--gh-color-surface);
+  color: var(--gh-color-text);
+  box-shadow: var(--gh-shadow-card);
+}
+.heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--gh-space-2);
+  padding-bottom: var(--gh-space-2);
+}
+.title {
+  margin: 0;
+  font-size: var(--gh-text-base);
+  font-weight: var(--gh-weight-semibold);
+}
+.close {
+  display: grid;
+  place-items: center;
+  width: var(--gh-control-height-sm);
+  height: var(--gh-control-height-sm);
+  background: transparent;
+  color: inherit;
+  border: 0;
+  border-radius: var(--gh-control-radius);
+}
+.content {
+  overflow: auto;
+  scrollbar-gutter: stable;
+  min-height: 0;
+}
+@media (max-width: 640px) {
+  .panel {
+    inset: auto 0 0 !important;
+    width: 100% !important;
+    max-height: 94dvh;
+    border-radius: var(--gh-control-radius) var(--gh-control-radius) 0 0;
+    padding-bottom: max(var(--gh-space-4), env(safe-area-inset-bottom));
+  }
+}
+
+.panel[data-compact='true'] .heading {
+  padding-bottom: var(--gh-space-1);
+}
+.panel[data-compact='true'] .title {
+  font-size: var(--gh-text-sm);
+  font-weight: var(--gh-weight-medium);
+}
+@media (min-width: 641px) {
+  .panel[data-compact='true'] {
+    padding: var(--gh-space-2) var(--gh-space-3);
+  }
+}
+
+@media (min-width: 641px) {
+  .panel[data-desktop-scroll-layout='true'] {
+    height: min(
+      var(--gh-popover-scroll-max-height),
+      60dvh,
+      calc(100dvh - 24px),
+      var(--popover-available-height, 100dvh)
+    );
+    min-height: min(
+      var(--gh-popover-scroll-max-height),
+      60dvh,
+      calc(100dvh - 24px),
+      var(--popover-available-height, 100dvh)
+    );
+    max-height: min(
+      var(--gh-popover-scroll-max-height),
+      60dvh,
+      calc(100dvh - 24px),
+      var(--popover-available-height, 100dvh)
+    );
+    padding: 0;
+  }
+  .panel[data-desktop-scroll-layout='true'] .heading {
+    flex: 0 0 auto;
+    padding: var(--gh-space-2) var(--gh-space-3);
+  }
+  .panel[data-desktop-scroll-layout='true'] .content {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+@media (min-width: 641px) {
+  .panel[data-desktop-dropdown='true'] {
+    padding: 0;
+    max-height: min(
+      var(--gh-select-dropdown-max-height),
+      45dvh,
+      calc(100dvh - 24px),
+      var(--popover-available-height, 100dvh)
+    );
+    outline: none;
+  }
+  .panel[data-desktop-dropdown='true'] .heading {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .panel[data-desktop-dropdown='true'] .close {
+    display: none;
+  }
+  .panel[data-desktop-dropdown='true'] .content {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+  }
+}
+
+.panel[data-desktop-dropdown='true']:focus-visible {
+  outline: none;
+}
+
+.heading[data-custom-heading='true'] {
+  flex: 0 0 auto;
+  min-width: 0;
+  gap: var(--gh-space-1);
+  border-bottom: 1px solid var(--gh-color-border);
+  margin-bottom: var(--gh-space-2);
+}
+.heading[data-custom-heading='true'] .title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.headerContent {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.heading[data-custom-heading='true'] .close {
+  flex: 0 0 auto;
+  width: var(--gh-control-height-xs);
+  height: var(--gh-control-height-xs);
+}
+.heading[data-custom-heading='true'] .close:hover {
+  background: var(--gh-color-surface-subtle);
+}
+
+.hiddenTitle {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

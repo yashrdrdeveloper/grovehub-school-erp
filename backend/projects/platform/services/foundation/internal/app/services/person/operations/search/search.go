@@ -1,0 +1,26 @@
+// Package search owns the Person Search use case.
+package search
+
+import (
+    "context"
+
+    coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+    servicepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
+    persondto "grovehub/services/foundation/internal/app/dto/person"
+    searchflow "grovehub/services/foundation/internal/app/services/person/operations/search/flows"
+    searchstrategies "grovehub/services/foundation/internal/app/services/person/operations/search/strategies"
+)
+
+type SearchOperation struct { strategy searchstrategies.SearchStrategy }
+
+func New(strategy searchstrategies.SearchStrategy) *SearchOperation { return &SearchOperation{strategy: strategy} }
+
+// @ChainOfResponsibility
+func (service *SearchOperation) Search(ctx context.Context, request persondto.SearchPersonsRequest) (coresearch.Result[persondto.Person], error) {
+    result, _, err := servicepipeline.Run(ctx, &searchflow.Search{Request: request},
+        service.strategy.Prepare,
+        service.strategy.Query,
+        service.strategy.Hydrate,
+    )
+    return result, err
+}

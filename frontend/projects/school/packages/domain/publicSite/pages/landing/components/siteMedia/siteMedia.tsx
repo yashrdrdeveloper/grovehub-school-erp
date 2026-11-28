@@ -1,0 +1,128 @@
+import { _find } from '@Base/utilities/find';
+import { Box, BOX_TAG } from '@Components/components/Box';
+import type { ReactNode } from 'react';
+import {
+  BookOpen,
+  Bus,
+  Computer,
+  FlaskConical,
+  HeartPulse,
+  Pencil,
+  Presentation,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Trophy,
+} from '@Components/icons';
+import { photographs } from '../../constants/school.content';
+import { PHOTO_MOTIFS_VARIANT } from './constants/siteMedia.photoMotifsVariant';
+import type { PhotoMotifsVariant } from './constants/siteMedia.photoMotifsVariant';
+
+const facilityIcons = [
+  Computer,
+  FlaskConical,
+  Presentation,
+  BookOpen,
+  Trophy,
+  Bus,
+  HeartPulse,
+  ShieldCheck,
+];
+const ImageCard = ({
+  src,
+  alt,
+  position,
+  className = '',
+  loading = 'lazy',
+  children,
+}: {
+  src: string;
+  alt: string;
+  position?: string;
+  className?: string;
+  loading?: 'lazy' | 'eager';
+  children?: ReactNode;
+}) => (
+  <Box as={BOX_TAG.DIV} className={`rdr-photo ${className}`}>
+    <img
+      src={_find(photographs, (photo) => photo.src === src)?.originalSrc ?? src}
+      alt={alt}
+      loading={loading}
+      decoding="async"
+      style={{ objectPosition: position ?? 'center' }}
+      referrerPolicy="no-referrer"
+      onError={(event) => {
+        const image = event.currentTarget;
+        const localPhoto = _find(photographs, (photo) => photo.originalSrc === image.src);
+        if (localPhoto && !image.dataset.fallbackAttempted) {
+          image.dataset.fallbackAttempted = 'true';
+          image.src = localPhoto.src;
+          return;
+        }
+        image.style.display = 'none';
+        image.parentElement?.classList.add('rdr-photo--unavailable');
+      }}
+    />
+    {children}
+  </Box>
+);
+const Heading = ({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string;
+  title: string;
+  description?: string;
+}) => (
+  <Box as={BOX_TAG.DIV} className="rdr-section-heading">
+    <Box as={BOX_TAG.SPAN} className="rdr-eyebrow">
+      {eyebrow}
+    </Box>
+    <Box as={BOX_TAG.H2}>{title}</Box>
+    {description && <Box as={BOX_TAG.P}>{description}</Box>}
+  </Box>
+);
+
+/** Purely decorative school motifs. Keep them outside important photo faces
+ * and out of the accessibility tree; the original photographs remain intact. */
+const PhotoMotifs = ({ variant = PHOTO_MOTIFS_VARIANT.HERO }: { variant?: PhotoMotifsVariant }) => (
+  <Box
+    as={BOX_TAG.DIV}
+    className={`rdr-photo-motifs rdr-photo-motifs--${variant}`}
+    aria-hidden="true"
+  >
+    <svg className="rdr-photo-motifs__flight" viewBox="0 0 170 76" fill="none">
+      <path
+        d="M4 59C34 26 48 83 83 44c20-21 25-38 51-36"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeDasharray="4 7"
+        strokeLinecap="round"
+      />
+      <path
+        d="m131 8 32-5-18 24-5-12-9-7Zm9 7 23-12"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
+    <Box as={BOX_TAG.SPAN} className="rdr-photo-motifs__spark">
+      <Sparkles size={27} strokeWidth={1.4} />
+    </Box>
+    <Box as={BOX_TAG.SPAN} className="rdr-photo-motifs__star">
+      <Star size={18} strokeWidth={1.5} />
+    </Box>
+    <Box as={BOX_TAG.SPAN} className="rdr-photo-motifs__book">
+      <BookOpen size={25} strokeWidth={1.4} />
+    </Box>
+    <Box as={BOX_TAG.SPAN} className="rdr-photo-motifs__pencil">
+      <Pencil size={23} strokeWidth={1.5} />
+    </Box>
+  </Box>
+);
+
+export { facilityIcons };
+export { ImageCard };
+export { Heading };
+export { PhotoMotifs };

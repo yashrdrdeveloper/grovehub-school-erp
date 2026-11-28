@@ -1,0 +1,43 @@
+name: Internal Tool frontend
+on:
+  push:
+    paths:
+      - 'frontend/projects/internal-tool/**'
+      - 'frontend/libs/**'
+      - 'frontend/pnpm-lock.yaml'
+      - 'frontend/pnpm-workspace.yaml'
+      - '.github/workflows/internal-tool-frontend.yml'
+      - 'frontend/package.json'
+      - 'scripts/release/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm --filter @groovehub/internal-tool... install --frozen-lockfile
+        working-directory: frontend
+      - run: pnpm --filter @groovehub/internal-tool test
+        working-directory: frontend
+      - run: pnpm --filter @groovehub/internal-tool build
+        working-directory: frontend
+      - name: Enforce independent application imports
+        run: |
+          if grep -R -nE 'frontend/projects/school|/projects/school|@Domain/|@Shell/|@Business/' frontend/projects/internal-tool/app frontend/projects/internal-tool/packages; then exit 1; fi
+      - name: Package Internal Tool frontend
+        run: bash scripts/release/package-artifact.sh internal-tool-frontend frontend/projects/internal-tool/dist "$RUNNER_TEMP/release" "$GITHUB_SHA"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: internal-tool-frontend-${{ github.sha }}
+          path: ${{ runner.temp }}/release/
+          if-no-files-found: error

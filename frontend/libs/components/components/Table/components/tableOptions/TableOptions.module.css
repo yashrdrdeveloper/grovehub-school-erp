@@ -1,0 +1,12 @@
+.options {
+  display: grid;
+  gap: var(--gh-space-1);
+}
+.options button {
+  width: 100%;
+  justify-content: flex-start;
+  font-weight: var(--gh-weight-medium);
+}
+.options > * {
+  min-width: 0;
+}

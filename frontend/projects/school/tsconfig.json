@@ -1,0 +1,82 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "esModuleInterop": true,
+    "types": [
+      "vite/client",
+      "jest"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@Base/*": [
+        "../../libs/base/*"
+      ],
+      "@Business/*": [
+        "packages/business/*"
+      ],
+      "@Components/*": [
+        "../../libs/components/*"
+      ],
+      "@Domain/*": [
+        "packages/domain/*"
+      ],
+      "@Shell/*": [
+        "packages/shell/*"
+      ],
+      "@Base": [
+        "../../libs/base/index.ts"
+      ],
+      "@Business": [
+        "packages/business/index.ts"
+      ],
+      "@Components": [
+        "../../libs/components/index.ts"
+      ],
+      "@Domain": [
+        "packages/domain/index.ts"
+      ],
+      "@Shell": [
+        "packages/shell/index.ts"
+      ],
+      "@Styles": [
+        "../../libs/styles/index.ts"
+      ],
+      "@Styles/*": [
+        "../../libs/styles/*"
+      ],
+      "@Assets/*": [
+        "packages/assets/*"
+      ],
+      "@Assets": [
+        "packages/assets/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "app",
+    "packages",
+    "../../libs/base",
+    "../../libs/styles",
+    "../../libs/components",
+    "vite.config.ts"
+  ]
+}

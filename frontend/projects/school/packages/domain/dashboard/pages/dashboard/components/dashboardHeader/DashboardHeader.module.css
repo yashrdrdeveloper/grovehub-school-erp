@@ -1,0 +1,91 @@
+/* Scoped dashboard header styles. */
+
+.school-home__header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 25px;
+  padding: 8px 0 12px;
+}
+
+.school-home__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--muted);
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.school-home__breadcrumb > svg:first-child {
+  color: var(--gh-color-accent);
+}
+
+.school-home__header h1 {
+  margin: 14px 0 7px;
+  font-size: clamp(1.9375rem, 3.8vw, 2.8125rem);
+  line-height: 1.11;
+  letter-spacing: -0.07em;
+  font-weight: 800;
+}
+
+.school-home__spark {
+  margin-left: 10px;
+  color: var(--gh-color-accent);
+  font-size: 0.55em;
+  vertical-align: 12%;
+}
+
+.school-home__header p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.school-home__date {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.school-home__date > svg {
+  color: var(--home-blue);
+}
+
+.school-home__date span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.school-home__date strong {
+  color: var(--ink-strong);
+  font-size: 0.75rem;
+}
+
+.school-home__date small {
+  font-size: 0.625rem;
+}
+
+@media (max-width: 650px) {
+  .school-home__header {
+    flex-direction: column;
+    align-items: start;
+    gap: 14px;
+  }
+
+  .school-home__header h1 {
+    font-size: 2.1875rem;
+  }
+
+  .school-home__date {
+    padding: 8px 10px;
+  }
+}

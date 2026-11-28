@@ -1,0 +1,191 @@
+package gateway
+
+import (
+ "context"
+ "encoding/json"
+ "errors"
+ "fmt"
+ "io"
+ "net/http"
+ "strings"
+
+ core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+ school "grovehub/libs/schoolgateway"
+ integration "grovehub/services/integration/client/principal"
+)
+
+const gmailWebhook = "POST /integrations/restricted/webhooks/gmail"
+
+type delegatedIdentity interface {
+ VerifyDelegatedSession(context.Context,string)(school.Principal,error)
+ school.ProtectedRouteAuthorizer
+ school.AccessVerifier
+}
+
+type platformWorkloads struct {
+ scoped core.ScopedWorkloadVerifier
+ internalCatalog core.ScopedWorkloadVerifier
+ operatorAudit core.ScopedWorkloadVerifier
+ operatorAuditRead core.ScopedWorkloadVerifier
+ schoolExecution core.ScopedWorkloadVerifier
+ schoolReceipt core.ScopedWorkloadVerifier
+ schoolStatusReceipt core.ScopedWorkloadVerifier
+ receiptRead core.ScopedWorkloadVerifier
+ policies map[string]core.RoutePolicy
+ identity delegatedIdentity
+ webhook core.WorkloadVerifier
+ tenantCheck school.TenantCheck
+}
+
+type workloadConfig struct {
+ Keys []core.WorkloadKeyConfig
+ InternalToolKeys []core.WorkloadKeyConfig
+ OperatorAuditKeys []core.WorkloadKeyConfig
+ OperatorAuditReadKeys []core.WorkloadKeyConfig
+ SchoolExecutionKeys []core.WorkloadKeyConfig
+ SchoolReceiptKeys []core.WorkloadKeyConfig
+ SchoolStatusReceiptKeys []core.WorkloadKeyConfig
+ SchoolReceiptReadKeys []core.WorkloadKeyConfig
+ Routes map[string]core.RoutePolicy
+}
+
+// NewPlatformWorkloads uses explicit route grants. Empty config grants no
+// service-to-service access. The existing Gmail webhook verifier stays isolated.
+func NewPlatformWorkloads(raw string, identity delegatedIdentity, webhook core.WorkloadVerifier,checks ...school.TenantCheck) (core.WorkloadVerifier,error) {
+ v:=&platformWorkloads{identity:identity,webhook:webhook}
+ if len(checks)>0{v.tenantCheck=checks[0]}
+ if strings.TrimSpace(raw)=="" { return v,nil }
+ var cfg workloadConfig
+ decoder:=json.NewDecoder(strings.NewReader(raw))
+ decoder.DisallowUnknownFields()
+ if err:=decoder.Decode(&cfg);err!=nil {return nil,fmt.Errorf("invalid workload configuration")}
+ var extra any
+ if err:=decoder.Decode(&extra);err!=io.EOF {return nil,errors.New("invalid trailing workload configuration")}
+ if len(cfg.InternalToolKeys)>0 {
+  catalog,err:=newInternalCatalogVerifier(cfg.InternalToolKeys,cfg.Keys)
+  if err!=nil{return nil,err}
+  v.internalCatalog=catalog
+ }
+ if len(cfg.OperatorAuditKeys)>0{
+  other:=append(append([]core.WorkloadKeyConfig(nil),cfg.Keys...),cfg.InternalToolKeys...)
+  audit,err:=newOperatorAuditVerifier(cfg.OperatorAuditKeys,other)
+  if err!=nil{return nil,err};v.operatorAudit=audit
+ }
+ if len(cfg.OperatorAuditReadKeys)>0{
+  other:=append(append(append([]core.WorkloadKeyConfig(nil),cfg.Keys...),cfg.InternalToolKeys...),cfg.OperatorAuditKeys...)
+  reader,err:=newOperatorAuditReadVerifier(cfg.OperatorAuditReadKeys,other)
+  if err!=nil{return nil,err};v.operatorAuditRead=reader
+ }
+ if len(cfg.SchoolExecutionKeys)>0{
+  other:=append(append(append(append([]core.WorkloadKeyConfig(nil),cfg.Keys...),cfg.InternalToolKeys...),cfg.OperatorAuditKeys...),cfg.OperatorAuditReadKeys...)
+  school,err:=newSchoolExecutionVerifier(cfg.SchoolExecutionKeys,other);if err!=nil{return nil,err};v.schoolExecution=school
+ }
+ if len(cfg.SchoolReceiptKeys)>0{
+  other:=append(append(append(append(append([]core.WorkloadKeyConfig(nil),cfg.Keys...),cfg.InternalToolKeys...),cfg.OperatorAuditKeys...),cfg.OperatorAuditReadKeys...),cfg.SchoolExecutionKeys...)
+  receipt,err:=newReceiptVerifier(cfg.SchoolReceiptKeys,other);if err!=nil{return nil,err};v.schoolReceipt=receipt
+ }
+ if len(cfg.SchoolReceiptReadKeys)>0{
+  other:=append(append(append(append(append(append([]core.WorkloadKeyConfig(nil),cfg.Keys...),cfg.InternalToolKeys...),cfg.OperatorAuditKeys...),cfg.OperatorAuditReadKeys...),cfg.SchoolExecutionKeys...),cfg.SchoolReceiptKeys...)
+  reader,err:=newReceiptReadVerifier(cfg.SchoolReceiptReadKeys,other);if err!=nil{return nil,err};v.receiptRead=reader
+ }
+ if len(cfg.SchoolStatusReceiptKeys)>0{
+  other:=append(append(append(append(append(append(append([]core.WorkloadKeyConfig(nil),cfg.Keys...),cfg.InternalToolKeys...),cfg.OperatorAuditKeys...),cfg.OperatorAuditReadKeys...),cfg.SchoolExecutionKeys...),cfg.SchoolReceiptKeys...),cfg.SchoolReceiptReadKeys...)
+  status,err:=newStatusReceiptVerifier(cfg.SchoolStatusReceiptKeys,other);if err!=nil{return nil,err};v.schoolStatusReceipt=status
+ }
+ if len(cfg.Keys)==0&&len(cfg.Routes)==0&&(len(cfg.InternalToolKeys)>0||len(cfg.OperatorAuditKeys)>0||len(cfg.OperatorAuditReadKeys)>0||len(cfg.SchoolExecutionKeys)>0||len(cfg.SchoolReceiptKeys)>0||len(cfg.SchoolReceiptReadKeys)>0||len(cfg.SchoolStatusReceiptKeys)>0){return v,nil}
+ credentials,err:=core.NewEd25519Credentials(cfg.Keys)
+ if err!=nil {return nil,err}
+ if len(cfg.Routes)==0 {return nil,errors.New("no workload route policies")}
+ for pattern,policy:=range cfg.Routes {
+  if !validRoutePolicy(pattern,policy) {
+   return nil,fmt.Errorf("invalid workload route policy: %s",pattern)
+  }
+  if policy.RequireActor && identity==nil {
+   return nil,errors.New("delegated route has no supported identity authorization boundary")
+  }
+ }
+ // The proof-based School boundary independently enforces actor presence.
+ // The generic verifier must not require an unverified actor assertion.
+ routes:=make(map[string]core.RoutePolicy,len(cfg.Routes))
+ for pattern,policy:=range cfg.Routes {routes[pattern]=core.RoutePolicy{Scope:policy.Scope}}
+ v.scoped=core.ScopedWorkloadVerifier{Credentials:credentials,Audience:"platform",Routes:routes}
+ v.policies=cfg.Routes
+ return v,nil
+}
+
+func (v *platformWorkloads) VerifyWorkload(ctx context.Context,r *http.Request)(context.Context,error) {
+ if r==nil {return nil,core.ErrWorkloadDenied}
+ if r.Pattern==gmailWebhook {
+  if v.webhook==nil {return nil,core.ErrWorkloadDenied}
+  return v.webhook.VerifyWorkload(ctx,r)
+ }
+ if r.Pattern==statusReceiptRoute{return v.verifyStatusReceipt(ctx,r)}
+ if r.Pattern==receiptReadRoute{return v.verifyReceiptRead(ctx,r)}
+ if r.Pattern==receiptRoute{return v.verifyReceipt(ctx,r)}
+ if r.Pattern==schoolAuditCheckRoute{return v.verifySchoolExecution(ctx,r)}
+ if r.Pattern==operatorAuditReadRoute{return v.verifyOperatorAuditRead(ctx,r)}
+ if r.Pattern==operatorAuditRoute{return v.verifyOperatorAudit(ctx,r)}
+ if r.Pattern==internalCatalogRoute {
+  if verified,err:=v.verifyInternalCatalog(ctx,r);err==nil{return verified,nil}
+ }
+ ctx=school.WithTenantCheck(ctx,v.tenantCheck)
+ verified,err:=v.scoped.VerifyWorkload(ctx,r)
+ if err!=nil {return nil,err}
+ claims,ok:=core.WorkloadFrom(verified)
+ if !ok {return nil,core.ErrWorkloadDenied}
+ policy,ok:=v.policies[r.Pattern]
+ if !ok || len(claims.Scopes)!=1 || claims.Scopes[0]!=policy.Scope {return nil,core.ErrWorkloadDenied}
+ if !policy.RequireActor {
+  if (foundationRoute(r.Pattern) && claims.Subject!="school-foundation") || (!foundationRoute(r.Pattern) && claims.Subject!="school") || claims.ActorGID!="" || claims.TenantID!="" || claims.SessionID!="" {return nil,core.ErrWorkloadDenied}
+  return verified,nil
+ }
+ if v.identity==nil || claims.Subject!="school" {return nil,core.ErrWorkloadDenied}
+ // School must prove possession of the actual access secret. A session ID
+ // or a signed assertion alone cannot authenticate a browser user.
+ values:=r.Header.Values("X-GH-Identity-Proof")
+ if len(values)!=1 || len(values[0])==0 || len(values[0])>2048 || strings.ContainsAny(values[0]," \t\r\n,;") {return nil,core.ErrWorkloadDenied}
+ if claims.SessionID!="" || claims.ActorGID!="" || claims.TenantID!="" {return nil,core.ErrWorkloadDenied}
+ actor,err:=v.identity.VerifyAccess(verified,values[0])
+ if err!=nil || actor.SessionID=="" || actor.AccountID=="" {return nil,core.ErrWorkloadDenied}
+ // Logout and revocation remain available to disabled users.
+ switch r.Pattern {
+ case "POST /identity/restricted/auth/logout","POST /identity/restricted/auth/logout-all","DELETE /identity/restricted/auth/sessions/{sessionId}":
+ default:
+  if school.CheckTenantSession(verified,actor.TenantID,actor.SessionGeneration)!=nil{return nil,core.ErrWorkloadDenied}
+ }
+ r.Header.Del("X-GH-Identity-Proof")
+ verified=school.WithPrincipal(verified,actor)
+ // Reuse existing route policy during migration; unknown routes deny.
+ oldPattern:=strings.Replace(r.Pattern,"/restricted/","/protected/",1)
+ if integrationRoute(r.Pattern) {
+  // Integration controllers enforce tenant + owner on each resource and
+  // independently require admin for system-mail configuration.
+  if actor.TenantID=="" || actor.PersonGID=="" {return nil,core.ErrWorkloadDenied}
+ } else if err:=v.identity.AuthorizeProtectedRoute(verified,oldPattern);err!=nil {return nil,core.ErrWorkloadDenied}
+ verified=integration.WithVerifiedPrincipal(verified,integration.VerifiedPrincipal{TenantID:actor.TenantID,ActorGID:actor.PersonGID})
+ return verified,nil
+}
+
+func integrationRoute(pattern string) bool {
+ switch pattern {
+ case "POST /integrations/restricted/connections": return true
+ case "GET /integrations/restricted/connections/{id}": return true
+ case "GET /integrations/restricted/connections": return true
+ case "DELETE /integrations/restricted/connections/{id}": return true
+ case "POST /integrations/restricted/connections/{id}/oauth/start": return true
+ case "POST /integrations/restricted/connections/{id}/test": return true
+ case "GET /integrations/restricted/connections/{id}/tests": return true
+ case "POST /integrations/restricted/connections/{id}/watch": return true
+ case "POST /integrations/restricted/connections/system-mail/sender": return true
+ case "POST /integrations/restricted/connections/{id}/actions/{action}": return true
+ case "GET /integrations/restricted/providers": return true
+ case "GET /integrations/restricted/providers/{provider}": return true
+ default: return false
+ }
+}
+func foundationRoute(pattern string) bool {
+ switch pattern {
+ case "POST /foundation/restricted/persons", "GET /foundation/restricted/persons/{gid}", "PATCH /foundation/restricted/persons/{gid}", "POST /foundation/restricted/persons/search", "PATCH /foundation/restricted/persons/{gid}/deactivate": return true
+ default: return false
+ }
+}

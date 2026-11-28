@@ -105,3 +105,49 @@ stop_owned_process_any() {
   kill -KILL "${pid}"
   rm -f -- "${pid_file}"
 }
+
+
+# macOS/Linux: identify an HTTP listener without trusting the HTTP response
+# itself as proof of process ownership. Does not signal any process.
+listening_tcp_pids() {
+  local port="$1"
+  command -v lsof >/dev/null 2>&1 || return 1
+  lsof -nP -t -iTCP:"${port}" -sTCP:LISTEN 2>/dev/null || true
+}
+
+process_working_directory() {
+  local pid="$1"
+  command -v lsof >/dev/null 2>&1 || return 1
+  lsof -nP -a -p "${pid}" -d cwd -Fn 2>/dev/null |
+    sed -n 's/^n//p' | head -n 1
+}
+
+# Recovers only the actual Air supervisor of a listener rooted in this
+# checkout. Never adopts another project's process or an arbitrary /health.
+repo_air_supervisor_for_listener() {
+  local listener_pid="$1"
+  local expected_air="$2"
+  local expected_dir="$3"
+  local pid="${listener_pid}"
+  local depth command_line working_dir parent
+
+  for ((depth=0; depth<6; depth++)); do
+    [[ "${pid}" =~ ^[0-9]+$ ]] || return 1
+    pid_is_running "${pid}" || return 1
+    command_line="$(process_command "${pid}")"
+    working_dir="$(process_working_directory "${pid}")"
+
+    if [[ "${command_line}" == "${expected_air}" || "${command_line}" == "${expected_air} "* ]]; then
+      if [[ "${working_dir}" == "${expected_dir}" ]]; then
+        printf '%s\n' "${pid}"
+        return 0
+      fi
+      return 1
+    fi
+
+    parent="$(ps -p "${pid}" -o ppid= 2>/dev/null | tr -d '[:space:]')"
+    [[ -n "${parent}" && "${parent}" != "1" && "${parent}" != "${pid}" ]] || return 1
+    pid="${parent}"
+  done
+  return 1
+}

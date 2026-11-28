@@ -1,0 +1,120 @@
+name: Independent project backends
+on:
+  push:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/project-backends.yml'
+      - 'scripts/release/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [school, internal-tool]
+    defaults:
+      run:
+        working-directory: backend/projects/${{ matrix.project }}
+    env:
+      GOWORK: 'off'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.3'
+          cache: false
+      - name: Generate pinned project API clients
+        run: make generate-clients
+      - run: go test -mod=mod ./...
+      - run: go build -mod=mod ./...
+      - name: Enforce independent project dependency graph
+        run: bash ../../deployment/check-project-dependencies.sh
+      - name: Build project executable
+        run: |
+          mkdir -p "$RUNNER_TEMP/project-bin"
+          go build -mod=mod -trimpath -o "$RUNNER_TEMP/project-bin/${{ matrix.project }}" ./cmd/${{ matrix.project }}
+      - name: Package independent backend
+        run: bash ../../../scripts/release/package-artifact.sh "${{ matrix.project }}-backend" "$RUNNER_TEMP/project-bin/${{ matrix.project }}" "$RUNNER_TEMP/release" "$GITHUB_SHA"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.project }}-backend-${{ github.sha }}
+          path: ${{ runner.temp }}/release/
+          if-no-files-found: error
+  core-security:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/libs/core
+    env:
+      GOWORK: 'off'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.3'
+          cache: false
+      - run: go test ./gateway ./annotation/generation/routes ./http/readiness ./http/correlation
+  project-databases:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: provisioner
+          POSTGRES_PASSWORD: provisioner
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U provisioner -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: backend/libs/core
+    env:
+      GOWORK: 'off'
+      PROJECT_SCHOOL_TEST_DSN: postgres://school_test:school_test@127.0.0.1:5432/school_test?sslmode=disable
+      PROJECT_INTERNAL_TEST_DSN: postgres://internal_test:internal_test@127.0.0.1:5432/internal_test?sslmode=disable
+      PROJECT_CROSS_TEST_DSN: postgres://school_test:school_test@127.0.0.1:5432/internal_test?sslmode=disable
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.3'
+          cache: false
+      - name: Provision isolated disposable databases and roles
+        run: |
+          docker exec -i ${{ job.services.postgres.id }} psql -v ON_ERROR_STOP=1 -U provisioner -d postgres <<'SQL'
+          CREATE ROLE school_test LOGIN PASSWORD 'school_test';
+          CREATE ROLE internal_test LOGIN PASSWORD 'internal_test';
+          CREATE DATABASE school_test OWNER school_test;
+          CREATE DATABASE internal_test OWNER internal_test;
+          REVOKE CONNECT ON DATABASE school_test, internal_test FROM PUBLIC;
+          SQL
+      - run: go test -count=1 -v ./database/postgres
+      - name: Verify School registry migration and restricted lookup
+        working-directory: backend/projects/school
+        env:
+          SCHOOL_DATABASE_URL: postgres://school_test:school_test@127.0.0.1:5432/school_test?sslmode=disable
+        run: |
+          make generate-clients
+          go run -mod=mod ./cmd/school migrate
+          go run -mod=mod ./cmd/school migrate
+          go test -mod=mod -count=1 -v ./services/registry
+      - name: Verify Internal Tool operator authentication against its owned database
+        working-directory: backend/projects/internal-tool
+        env:
+          INTERNAL_TOOL_AUTH_TEST_DSN: postgres://internal_test:internal_test@127.0.0.1:5432/internal_test?sslmode=disable
+          INTERNAL_TOOL_DATABASE_URL: postgres://internal_test:internal_test@127.0.0.1:5432/internal_test?sslmode=disable
+        run: |
+          make generate-clients
+          go run -mod=mod ./cmd/internal-tool migrate
+          go run -mod=mod ./cmd/internal-tool migrate
+          go test -mod=mod -count=1 -v ./internal/app/controller/authentication
+          go test -mod=mod -count=1 -v ./internal/app/services/workflow
+          go test -mod=mod -count=1 -v ./internal/app/services/auditdelivery
