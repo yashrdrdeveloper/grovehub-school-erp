@@ -1,0 +1,16 @@
+name: Database capability audit
+on:
+  push:
+    branches: [phase1-refactor]
+    paths: ['.github/workflows/database-refactor-audit.yml', 'backend/**', 'scripts/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  imports:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inventory database consumers
+        run: |
+          git grep -nE 'core/database/(postgres|transaction)|PROJECT_(SCHOOL|INTERNAL|CROSS)_TEST_DSN|database/postgres' -- '*.go' '*.sh' '*.yml' '*.md' || true
