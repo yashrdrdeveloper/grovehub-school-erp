@@ -1,0 +1,67 @@
+package helpers
+
+import (
+	"bytes"
+	"fmt"
+	"go/ast"
+	"go/format"
+	"go/parser"
+	"go/token"
+	"path/filepath"
+	"sort"
+	"strconv"
+	"strings"
+)
+
+func exprString(e ast.Expr) string {
+	var b bytes.Buffer
+	if err:=format.Node(&b,token.NewFileSet(),e);err!=nil{return ""}
+	return strings.Join(strings.Fields(b.String()),"")
+}
+
+func findConfig(dir,name string) (*ast.CompositeLit,error) {
+	paths,err:=filepath.Glob(filepath.Join(dir,"*.go"))
+	if err!=nil{return nil,err}
+	for _,p:=range paths {
+		file,err:=parser.ParseFile(token.NewFileSet(),p,nil,0)
+		if err!=nil{return nil,err}
+		for _,dec:=range file.Decls {
+			g,ok:=dec.(*ast.GenDecl);if !ok||g.Tok!=token.VAR{continue}
+			for _,item:=range g.Specs {
+				value,ok:=item.(*ast.ValueSpec);if !ok||len(value.Values)!=1{continue}
+				for _,ident:=range value.Names {
+					if ident.Name!=name{continue}
+					lit,ok:=value.Values[0].(*ast.CompositeLit)
+					if !ok||exprString(lit.Type)!="coresearch.Config" {return nil,fmt.Errorf("%s must be coresearch.Config literal",name)}
+					return lit,nil
+				}
+			}
+		}
+	}
+	return nil,fmt.Errorf("search configuration %s not found",name)
+}
+
+func field(lit *ast.CompositeLit,key string)ast.Expr{
+	for _,item:=range lit.Elts {
+		pair,ok:=item.(*ast.KeyValueExpr);if !ok {continue}
+		id,ok:=pair.Key.(*ast.Ident);if ok&&id.Name==key{return pair.Value}
+	}
+	return nil
+}
+
+func stringExpr(node ast.Expr)(string,error){
+	value,ok:=node.(*ast.BasicLit);if !ok||value.Kind!=token.STRING{return "",fmt.Errorf("expected constant string expression")}
+	return strconv.Unquote(value.Value)
+}
+
+func names(node ast.Expr)([]string,error){
+	lit,ok:=node.(*ast.CompositeLit);if !ok{return nil,fmt.Errorf("expected static map literal")}
+	names:=make([]string,0,len(lit.Elts))
+	for _,item:=range lit.Elts {
+		pair,ok:=item.(*ast.KeyValueExpr);if !ok{return nil,fmt.Errorf("map requires keyed entries")}
+		s,err:=stringExpr(pair.Key);if err!=nil{return nil,err}
+		names=append(names,s)
+	}
+	sort.Strings(names)
+	return names,nil
+}
