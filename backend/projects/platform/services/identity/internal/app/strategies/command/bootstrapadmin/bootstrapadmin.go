@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"grovehub/libs/platform/command"
-	admin "grovehub/services/identity/bootstrapadmin"
+	admin "grovehub/services/identity/internal/app/strategies/command/bootstrapadmin/runner"
 )
 
 type Runner func([]string, io.Reader, io.Writer, io.Writer) error

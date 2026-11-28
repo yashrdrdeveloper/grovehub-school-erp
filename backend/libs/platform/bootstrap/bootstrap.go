@@ -49,3 +49,20 @@ func (r Registration[D]) Commands(db command.Database[D]) map[string]command.Com
 func (r Registration[D]) Migration() Migration[D] {
 	return r.MigrationPlan
 }
+
+// RuntimeService extends the common operator contract with typed runtime construction.
+// Different services may specialize I and R while sharing Service[D] registration.
+type RuntimeService[D any, I any, R any] interface {
+	Service[D]
+	Build(I) (R, error)
+}
+
+// RuntimeRegistration combines operator registration with a service-owned builder.
+type RuntimeRegistration[D any, I any, R any] struct {
+	Service[D]
+	BuildRuntime func(I) (R, error)
+}
+
+func (r RuntimeRegistration[D, I, R]) Build(input I) (R, error) {
+	return r.BuildRuntime(input)
+}

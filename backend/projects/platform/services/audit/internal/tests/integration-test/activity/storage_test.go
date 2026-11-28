@@ -9,6 +9,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"grovehub/services/audit"
+	"grovehub/services/audit/internal/app/services/storage"
 )
 
 func TestAuditStorageInspection(t *testing.T) {
@@ -34,10 +35,10 @@ func TestAuditStorageInspection(t *testing.T) {
 	if err := audit.Migrate(ctx, db); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := audit.InspectStorage(ctx, db, "wrong-database"); err == nil {
+	if _, err := storage.InspectStorage(ctx, db, "wrong-database"); err == nil {
 		t.Fatal("wrong database accepted")
 	}
-	report, err := audit.InspectStorage(ctx, db, database)
+	report, err := storage.InspectStorage(ctx, db, database)
 	if err != nil {
 		t.Fatal(err)
 	}
