@@ -2,7 +2,8 @@ package impl
 
 import (
 	"context"
-	"errors"
+	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
+	"grovehub/services/audit/internal/app/bootstrap/constants"
 	"gorm.io/gorm"
 	platformbootstrap "grovehub/libs/platform/bootstrap"
 	"grovehub/services/audit/internal/app/bootstrap"
@@ -25,7 +26,7 @@ func NewServiceBootstrap() bootstrap.Service {
 
 func runMigration(ctx context.Context, db *gorm.DB) error {
 	if db == nil {
-		return errors.New("audit migration requires a database")
+		return coreerrors.NewError(constants.DatabaseRequired)
 	}
 	sqlDB, err := db.DB()
 	if err != nil {
