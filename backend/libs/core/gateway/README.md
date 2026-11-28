@@ -12,14 +12,21 @@ gateway/
 ├── README.md
 └── internal/
     ├── src/
-    │   ├── contracts/contracts.go
     │   ├── config/config.go
-    │   ├── credential/credential.go
-    │   ├── restricted/restricted.go
-    │   ├── transport/transport.go
-    │   └── workload/workload.go
+    │   ├── constants/credential.go
+    │   ├── contracts/contracts.go
+    │   ├── helpers/validation.go
+    │   └── operations/
+    │       ├── credential/credential.go
+    │       ├── restricted/restricted.go
+    │       ├── transport/transport.go
+    │       └── workload/workload.go
     └── resources/tests/unit-test/  # exact source mirrors
 ```
+
+The five source categories are config (configuration construction), constants
+(fixed protocol values), contracts (public types and interfaces), helpers
+(pure reusable validation), and operations (runtime behavior).
 
 The existing ghw1 Ed25519 wire format, expiry, scope, delegation, route,
 origin, header filtering, redirect and fail-closed checks are preserved.

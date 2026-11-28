@@ -29,6 +29,12 @@ jobs:
         run: |
           root=backend/libs/core/gateway
           test "$(git ls-files "$root/*.go" | grep -v '/internal/')" = "$root/gateway.go"
+          for folder in "$root"/internal/src/*; do
+            case "$(basename "$folder")" in
+              config|constants|contracts|helpers|operations) test -d "$folder" ;;
+              *) echo "Unexpected gateway source category: $folder"; exit 1 ;;
+            esac
+          done
           count=0
           while IFS= read -r source; do
             [[ "$source" == *.go && "$source" != *_test.go ]] || continue

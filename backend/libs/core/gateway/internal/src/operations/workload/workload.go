@@ -1,6 +1,7 @@
 package workload
 
 import (
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/helpers"
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/contracts"
 
 	"context"
@@ -37,7 +38,7 @@ func (v ScopedWorkloadVerifier) VerifyWorkload(ctx context.Context, request *htt
 	if err != nil || claims.Subject == "" || claims.Audience != v.Audience || !claims.ExpiresAt.After(time.Now()) {
 		return nil, contracts.ErrWorkloadDenied
 	}
-	if (claims.TenantID == "") != (claims.ActorGID == "") || (policy.RequireActor && claims.ActorGID == "") {
+	if !helpers.ValidActorPair(claims.TenantID, claims.ActorGID) || (policy.RequireActor && claims.ActorGID == "") {
 		return nil, contracts.ErrWorkloadDenied
 	}
 	for _, scope := range claims.Scopes {

@@ -8,10 +8,10 @@ import (
 
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/config"
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/credential"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/restricted"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/transport"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/workload"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/operations/credential"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/operations/restricted"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/operations/transport"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/operations/workload"
 )
 
 type Tier = contracts.Tier

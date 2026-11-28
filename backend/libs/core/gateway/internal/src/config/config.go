@@ -1,8 +1,9 @@
 package config
 
 import (
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/helpers"
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/credential"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/operations/credential"
 
 	"crypto/ed25519"
 	"encoding/base64"
@@ -18,7 +19,7 @@ func NewEd25519Credentials(config []contracts.WorkloadKeyConfig) (credential.Ed2
 		return credential.Ed25519Credentials{}, fmt.Errorf("no trusted workload keys configured")
 	}
 	for _, item := range config {
-		if item.KeyID == "" || len(item.KeyID) > 128 || strings.ContainsAny(item.KeyID, ". \t\r\n,") || strings.TrimSpace(item.Issuer) == "" || strings.TrimSpace(item.Subject) == "" || len(item.Scopes) == 0 {
+		if !helpers.ValidKeyID(item.KeyID) || strings.TrimSpace(item.Issuer) == "" || strings.TrimSpace(item.Subject) == "" || len(item.Scopes) == 0 {
 			return credential.Ed25519Credentials{}, fmt.Errorf("invalid workload key configuration")
 		}
 		if _, exists := keys[item.KeyID]; exists {

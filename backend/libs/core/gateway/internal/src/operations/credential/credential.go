@@ -1,6 +1,8 @@
 package credential
 
 import (
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/constants"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/helpers"
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/contracts"
 
 	"context"
@@ -10,8 +12,6 @@ import (
 	"strings"
 	"time"
 )
-
-const maxCredentialLifetime = 2 * time.Minute
 
 type signedClaims struct {
 	Issuer string `json:"iss"`
@@ -33,27 +33,27 @@ type Ed25519Credentials struct {
 
 func SignWorkload(keyID, issuer string, key ed25519.PrivateKey, claims contracts.WorkloadClaims) (string, error) {
 	now := time.Now()
-	if keyID == "" || len(keyID) > 128 || strings.ContainsAny(keyID, ". \t\r\n,") || issuer == "" || len(key) != ed25519.PrivateKeySize || claims.Subject == "" || claims.Audience == "" || !claims.ExpiresAt.After(now) || claims.ExpiresAt.After(now.Add(maxCredentialLifetime)) || (claims.TenantID == "") != (claims.ActorGID == "") {
+	if !helpers.ValidKeyID(keyID) || issuer == "" || len(key) != ed25519.PrivateKeySize || claims.Subject == "" || claims.Audience == "" || !claims.ExpiresAt.After(now) || claims.ExpiresAt.After(now.Add(constants.MaxCredentialLifetime)) || !helpers.ValidActorPair(claims.TenantID, claims.ActorGID) {
 		return "", contracts.ErrWorkloadDenied
 	}
 	payload, err := json.Marshal(signedClaims{Issuer: issuer, Subject: claims.Subject, Audience: claims.Audience, IssuedAt: now.Unix(), ExpiresAt: claims.ExpiresAt.Unix(), Scopes: claims.Scopes, TenantID: claims.TenantID, ActorGID: claims.ActorGID, SessionID: claims.SessionID})
 	if err != nil {
 		return "", err
 	}
-	body := "ghw1."+keyID+"."+base64.RawURLEncoding.EncodeToString(payload)
+	body := constants.CredentialVersion + "."+keyID+"."+base64.RawURLEncoding.EncodeToString(payload)
 	token := body+"."+base64.RawURLEncoding.EncodeToString(ed25519.Sign(key, []byte(body)))
-	if len(token) > 8192 {
+	if len(token) > constants.MaxCredentialSize {
 		return "", contracts.ErrWorkloadDenied
 	}
 	return token, nil
 }
 
 func (v Ed25519Credentials) VerifyCredential(ctx context.Context, token string) (contracts.WorkloadClaims, error) {
-	if ctx == nil || ctx.Err() != nil || len(token) > 8192 {
+	if ctx == nil || ctx.Err() != nil || len(token) > constants.MaxCredentialSize {
 		return contracts.WorkloadClaims{}, contracts.ErrWorkloadDenied
 	}
 	parts := strings.Split(token, ".")
-	if len(parts) != 4 || parts[0] != "ghw1" {
+	if len(parts) != 4 || parts[0] != constants.CredentialVersion {
 		return contracts.WorkloadClaims{}, contracts.ErrWorkloadDenied
 	}
 	key, ok := v.Keys[parts[1]]
@@ -70,10 +70,10 @@ func (v Ed25519Credentials) VerifyCredential(ctx context.Context, token string) 
 		return contracts.WorkloadClaims{}, contracts.ErrWorkloadDenied
 	}
 	now := time.Now().Unix()
-	if claims.Issuer != key.Issuer || claims.Subject != key.Subject || claims.Audience == "" || claims.IssuedAt <= 0 || claims.IssuedAt > now || claims.ExpiresAt <= now || claims.ExpiresAt <= claims.IssuedAt || claims.ExpiresAt-claims.IssuedAt > int64(maxCredentialLifetime/time.Second) {
+	if claims.Issuer != key.Issuer || claims.Subject != key.Subject || claims.Audience == "" || claims.IssuedAt <= 0 || claims.IssuedAt > now || claims.ExpiresAt <= now || claims.ExpiresAt <= claims.IssuedAt || claims.ExpiresAt-claims.IssuedAt > int64(constants.MaxCredentialLifetime/time.Second) {
 		return contracts.WorkloadClaims{}, contracts.ErrWorkloadDenied
 	}
-	if (claims.TenantID == "") != (claims.ActorGID == "") || ((claims.ActorGID != "" || claims.SessionID != "") && !key.AllowDelegation) {
+	if !helpers.ValidActorPair(claims.TenantID, claims.ActorGID) || ((claims.ActorGID != "" || claims.SessionID != "") && !key.AllowDelegation) {
 		return contracts.WorkloadClaims{}, contracts.ErrWorkloadDenied
 	}
 	for _, scope := range claims.Scopes {

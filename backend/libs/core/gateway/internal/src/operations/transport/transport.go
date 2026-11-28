@@ -1,8 +1,9 @@
 package transport
 
 import (
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/constants"
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/credential"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/operations/credential"
 
  "crypto/ed25519"
  "fmt"
@@ -40,7 +41,7 @@ func (t *WorkloadTransport) RoundTrip(req *http.Request) (*http.Response, error)
  if len(claims.Scopes)==0 { return nil, contracts.ErrWorkloadDenied }
  claims.Subject=t.Subject
  claims.Audience=t.Audience
- claims.ExpiresAt=time.Now().Add(time.Minute)
+ claims.ExpiresAt=time.Now().Add(constants.OutboundCredentialLifetime)
  token,err:=credential.SignWorkload(t.KeyID,t.Issuer,t.PrivateKey,claims)
  if err!=nil { return nil,err }
  clone:=req.Clone(req.Context())
@@ -59,5 +60,5 @@ func NewWorkloadHTTPClient(t *WorkloadTransport) (*http.Client,error) {
  if t==nil || t.Origin==nil || t.Policy==nil || len(t.PrivateKey)!=ed25519.PrivateKeySize || t.KeyID=="" || t.Issuer=="" || t.Subject=="" || t.Audience=="" {
   return nil,fmt.Errorf("invalid workload transport configuration")
  }
- return &http.Client{Transport:t,Timeout:15*time.Second,CheckRedirect:func(*http.Request,[]*http.Request)error{return http.ErrUseLastResponse}},nil
+ return &http.Client{Transport:t,Timeout:constants.HTTPClientTimeout,CheckRedirect:func(*http.Request,[]*http.Request)error{return http.ErrUseLastResponse}},nil
 }
