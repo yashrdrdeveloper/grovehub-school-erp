@@ -10,6 +10,7 @@ import (
 	"grovehub/services/registry/internal/app/entity"
 	"grovehub/services/registry/internal/app/repository/constants"
 	"grovehub/services/registry/internal/app/repository/project"
+	queries "grovehub/services/registry/internal/app/repository/project/constants"
 )
 
 type ProjectRepository struct {
@@ -22,7 +23,7 @@ func NewProjectRepository(db *gorm.DB) project.ProjectRepository {
 
 func (r *ProjectRepository) Find(ctx context.Context, projectID string) (entity.Project, error) {
 	var result entity.Project
-	err := coredatabase.TransactionDB(ctx, r.db).Where("project_id = ?", projectID).Take(&result).Error
+	err := coredatabase.TransactionDB(ctx, r.db).Where(queries.FindByID, projectID).Take(&result).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return entity.Project{}, constants.ErrNotFound
 	}

@@ -3,10 +3,18 @@ package schema_test
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"os"
 	"testing"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+
+	"grovehub/services/registry/internal/app/repository/constants"
+	projectrepo "grovehub/services/registry/internal/app/repository/project/impl"
+	tenantrepo "grovehub/services/registry/internal/app/repository/tenant/impl"
+	workloadrepo "grovehub/services/registry/internal/app/repository/workload/impl"
 
 	"grovehub/services/registry/internal/resources/migrations"
 )
@@ -79,4 +87,31 @@ func TestRegistryConstraints(t *testing.T) {
 	if err := tx.QueryRowContext(ctx, "SELECT status, session_generation FROM registry.tenants WHERE tenant_id=$1", tenant).Scan(&status, &generation); err != nil || status != "DISABLED" || generation != 1 {
 		t.Fatalf("unsafe tenant defaults: %q %d %v", status, generation, err)
 	}
+	// Run GORM repository reads inside the same transaction as the fixtures.
+	gormDB, err := gorm.Open(postgres.New(postgres.Config{Conn: tx}), &gorm.Config{
+		DisableAutomaticPing: true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	project, err := projectrepo.NewProjectRepository(gormDB).Find(ctx, p1)
+	if err != nil || project.ProjectID != p1 || project.Code != "synthetic-a" {
+		t.Fatalf("project lookup failed: %+v %v", project, err)
+	}
+	tenants := tenantrepo.NewTenantRepository(gormDB)
+	record, err := tenants.Find(ctx, p1, tenant)
+	if err != nil || record.ProjectID != p1 || record.TenantID != tenant {
+		t.Fatalf("tenant lookup failed: %+v %v", record, err)
+	}
+	if _, err := tenants.Find(ctx, p2, tenant); !errors.Is(err, constants.ErrNotFound) {
+		t.Fatalf("cross-project tenant lookup was not rejected: %v", err)
+	}
+	if _, err := tenants.Find(ctx, p1, "20000000-0000-4000-8000-000000000099"); !errors.Is(err, constants.ErrNotFound) {
+		t.Fatalf("missing tenant lookup returned %v", err)
+	}
+	caller, err := workloadrepo.NewWorkloadRepository(gormDB).Find(ctx, workload)
+	if err != nil || caller.ProjectID == nil || *caller.ProjectID != p2 || caller.WorkloadID != workload {
+		t.Fatalf("workload lookup failed: %+v %v", caller, err)
+	}
+
 }

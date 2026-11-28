@@ -10,6 +10,7 @@ import (
 	"grovehub/services/registry/internal/app/entity"
 	"grovehub/services/registry/internal/app/repository/constants"
 	"grovehub/services/registry/internal/app/repository/workload"
+	queries "grovehub/services/registry/internal/app/repository/workload/constants"
 )
 
 type WorkloadRepository struct {
@@ -22,7 +23,7 @@ func NewWorkloadRepository(db *gorm.DB) workload.WorkloadRepository {
 
 func (r *WorkloadRepository) Find(ctx context.Context, workloadID string) (entity.Workload, error) {
 	var result entity.Workload
-	err := coredatabase.TransactionDB(ctx, r.db).Where("workload_id = ?", workloadID).Take(&result).Error
+	err := coredatabase.TransactionDB(ctx, r.db).Where(queries.FindByID, workloadID).Take(&result).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return entity.Workload{}, constants.ErrNotFound
 	}

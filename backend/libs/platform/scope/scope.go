@@ -17,11 +17,11 @@ type Grant = contracts.Grant
 
 const (
 	Platform = contracts.Platform
-	Project = contracts.Project
-	Tenant = contracts.Tenant
-	User = contracts.User
+	Project  = contracts.Project
+	Tenant   = contracts.Tenant
+	User     = contracts.User
 	Workload = contracts.Workload
-	System = contracts.System
+	System   = contracts.System
 )
 
 var ErrInvalid = contracts.ErrInvalid

@@ -10,6 +10,7 @@ import (
 	"grovehub/services/registry/internal/app/entity"
 	"grovehub/services/registry/internal/app/repository/constants"
 	"grovehub/services/registry/internal/app/repository/tenant"
+	queries "grovehub/services/registry/internal/app/repository/tenant/constants"
 )
 
 type TenantRepository struct {
@@ -22,7 +23,7 @@ func NewTenantRepository(db *gorm.DB) tenant.TenantRepository {
 
 func (r *TenantRepository) Find(ctx context.Context, projectID, tenantID string) (entity.Tenant, error) {
 	var result entity.Tenant
-	err := coredatabase.TransactionDB(ctx, r.db).Where("project_id = ? AND tenant_id = ?", projectID, tenantID).Take(&result).Error
+	err := coredatabase.TransactionDB(ctx, r.db).Where(queries.FindByID, projectID, tenantID).Take(&result).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return entity.Tenant{}, constants.ErrNotFound
 	}
