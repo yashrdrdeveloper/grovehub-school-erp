@@ -98,11 +98,9 @@ var _ = Describe("GenerateAll", func() {
 })
 
 var _ = Describe("GenerateAll", func() {
-	It("preserves legacy PATCH imports during facade migration", func() {
-		root, output := fixture(GinkgoT(), strings.Replace(patchSource, "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation", "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/dto", 1))
-		Expect(patchdto.GenerateAll(root)).To(Succeed())
-		generated, err := os.ReadFile(output)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(string(generated)).To(ContainSubstring("func (request UpdateWidget) MarshalJSON()"))
-	})
+    It("rejects removed PATCH subpackage imports", func() {
+        legacyImport := "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation" + "/dto"
+        root, _ := fixture(GinkgoT(), strings.Replace(patchSource, "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation", legacyImport, 1))
+        Expect(patchdto.GenerateAll(root)).To(MatchError(ContainSubstring("must use")))
+    })
 })

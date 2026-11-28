@@ -19,7 +19,6 @@ import (
 )
 
 const patchImport = "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
-const legacyPatchImport = "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/dto"
 
 type patchField struct {
 	name string
@@ -158,7 +157,7 @@ func isPatch(expr ast.Expr, aliases map[string]string) bool {
 	selector, ok := index.X.(*ast.SelectorExpr)
 	if !ok || selector.Sel.Name != "Patch" { return false }
 	identifier, ok := selector.X.(*ast.Ident)
-	return ok && (aliases[identifier.Name] == patchImport || aliases[identifier.Name] == legacyPatchImport)
+	return ok && aliases[identifier.Name] == patchImport
 }
 
 func write(output, pkg string, specs []patchType) error {

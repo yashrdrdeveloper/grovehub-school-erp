@@ -23,7 +23,7 @@ annotation/
 
 Core-level public API tests live in `backend/libs/core/tests/unit-test/`. Capability-local tests mirror private source responsibilities and may import their own internal packages. Production code must never import test resources. Both test trees are discovered by the annotation testing and coverage tools. The generators retain their original CLI paths for scripts and CI.
 
-Legacy category and runtime import paths are compatibility bridges during the consumer migration; do not use them in new code. The PATCH generator accepts both legacy and facade imports while migration is in progress.
+The root facade is the only runtime import. Legacy category and runtime subpackages have been removed. The PATCH generator requires the facade import.
 
 ## Maintained source of truth
 

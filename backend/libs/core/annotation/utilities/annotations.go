@@ -1,6 +1,0 @@
-// Compatibility catalog; new code should use annotation.Uses or annotation.Lookup.
-package utilities
-
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/catalog/utilities"
-
-var UseCases = utilities.UseCases

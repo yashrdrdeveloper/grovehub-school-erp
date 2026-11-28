@@ -5,7 +5,7 @@ import (
     "errors"
     "time"
 
-    annotationvalidation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/validation"
+    coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
     servicepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
     coretransaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
     persondto "grovehub/services/foundation/internal/app/dto/person"
@@ -47,7 +47,7 @@ func (strategy *Updater) Load(ctx context.Context, state *updateflow.Update) ser
 }
 
 func (strategy *Updater) Apply(ctx context.Context, state *updateflow.Update) servicepipeline.Outcome[persondto.Person] {
-    validated, err := annotationvalidation.Process(state.Request, strategy.validator.UpdateRules())
+    validated, err := coreannotation.Process(state.Request, strategy.validator.UpdateRules())
     if err != nil { return servicepipeline.Fail[persondto.Person](err) }
     state.Validated = validated
     updated, contacts, changed, err := updatehelpers.ApplyPersonUpdate(ctx, state.Person, state.Contacts, validated.RequestBody, strategy.contacts, strategy.mapper)

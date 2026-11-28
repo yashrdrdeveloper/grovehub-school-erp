@@ -4,7 +4,7 @@ import (
     "errors"
     "strings"
 
-    annotationvalidation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/validation"
+    coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
     coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
     personerror "grovehub/services/foundation/internal/app/constants/error"
 )
@@ -18,7 +18,7 @@ func invalidPersonSearchCursor() error {
 }
 
 func MapPersonDTOError(err error) error {
-	var fieldError annotationvalidation.Error
+	var fieldError coreannotation.ValidationError
 	if !errors.As(err, &fieldError) { return err }
 	field := strings.TrimPrefix(fieldError.Field, "RequestBody.")
 	if strings.HasPrefix(field, "Contacts.") || field == "Contacts" {

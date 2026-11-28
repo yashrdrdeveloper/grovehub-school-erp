@@ -1,7 +1,7 @@
 package impl
 
 import (
-    annotationvalidation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/validation"
+    coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     foundationvalidators "grovehub/services/foundation/internal/app/validators/person"
     validatorhelpers "grovehub/services/foundation/internal/app/validators/person/helpers"
@@ -11,24 +11,24 @@ type PersonValidator struct{}
 
 func NewPersonValidator() foundationvalidators.PersonValidator { return &PersonValidator{} }
 
-func (validator *PersonValidator) CreateRules() annotationvalidation.Rules[persondto.CreatePersonRequest] {
-    return annotationvalidation.Rules[persondto.CreatePersonRequest]{
+func (validator *PersonValidator) CreateRules() coreannotation.ValidationRules[persondto.CreatePersonRequest] {
+    return coreannotation.ValidationRules[persondto.CreatePersonRequest]{
         Normalize: validatorhelpers.NormalizeCreatePersonRequest,
         Validate: validatorhelpers.ValidateCreatePersonRequest,
         MapDTOError: validatorhelpers.MapPersonDTOError,
     }
 }
 
-func (validator *PersonValidator) UpdateRules() annotationvalidation.Rules[persondto.UpdatePersonRequest] {
-    return annotationvalidation.Rules[persondto.UpdatePersonRequest]{
+func (validator *PersonValidator) UpdateRules() coreannotation.ValidationRules[persondto.UpdatePersonRequest] {
+    return coreannotation.ValidationRules[persondto.UpdatePersonRequest]{
         Normalize: validatorhelpers.NormalizeUpdatePersonRequest,
         Validate: validatorhelpers.ValidateUpdatePersonRequest,
         MapDTOError: validatorhelpers.MapPersonDTOError,
     }
 }
 
-func (validator *PersonValidator) SearchRules() annotationvalidation.Rules[persondto.SearchPersonsRequest] {
-    return annotationvalidation.Rules[persondto.SearchPersonsRequest]{
+func (validator *PersonValidator) SearchRules() coreannotation.ValidationRules[persondto.SearchPersonsRequest] {
+    return coreannotation.ValidationRules[persondto.SearchPersonsRequest]{
         Validate: validatorhelpers.ValidateSearchPersonRequest,
     }
 }
