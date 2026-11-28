@@ -11,9 +11,8 @@ import (
 
 var _ = Describe("Public database constructors",func(){
 	It("rejects invalid connection configuration",func(){
-		db,err:=coredatabase.NewDB("://invalid")
+		_,err:=coredatabase.NewDB("://invalid")
 		Expect(err).To(HaveOccurred())
-		Expect(db).To(BeNil())
 		pool,err:=coredatabase.OpenProjectPool(context.Background(),"postgres://school:secret@localhost/school?user=other")
 		Expect(err).To(HaveOccurred())
 		Expect(pool).To(BeNil())

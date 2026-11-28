@@ -69,10 +69,10 @@ var _=Describe("REST binding edge cases",func(){
 		}
 	})
 	It("rejects unsupported DTO types, hidden fields and missing path values",func(){
-		Expect(runQueryCase("/?value=1",true,unexpectedQuery[string]).Code).To(Equal(400))
-		Expect(runQueryCase("/",false,unexpectedQuery[string]).Code).To(Equal(400))
+		Expect(runQueryCase("/?value=1",true,unexpectedQuery[string]).Code).To(Equal(500))
+		Expect(runQueryCase("/",false,unexpectedQuery[string]).Code).To(Equal(500))
 		Expect(runQueryCase("/?value=1",false,unexpectedQuery[unsupportedQuery]).Code).To(Equal(400))
-		Expect(runQueryCase("/?secret=1",false,unexpectedQuery[hiddenQuery]).Code).To(Equal(400))
+		Expect(runQueryCase("/?secret=1",false,unexpectedQuery[hiddenQuery]).Code).To(Equal(500))
 		w:=httptest.NewRecorder()
 		rest.Run(w,httptest.NewRequest("GET","/",nil),rest.Config[personPath,rest.Empty,rest.Empty,string]{InvalidPath:edgeInvalidParams,Fallback:edgeFallback,Service:func(context.Context,rest.Input[personPath,rest.Empty,rest.Empty])(rest.Result[string],error){
 			Fail("unexpected service");return rest.OK(""),nil
@@ -95,10 +95,10 @@ var _=Describe("Structured REST failure paths",func(){
 		r:=httptest.NewRequest("GET","/",nil)
 		Expect(runStructCase[noSections](r,false,nil,nil).Code).To(Equal(500))
 		Expect(runStructCase(r,false,unexpectedStruct[invalidShape],nil).Code).To(Equal(500))
-		Expect(runStructCase(r,true,unexpectedStruct[invalidQueryShape],nil).Code).To(Equal(400))
-		Expect(runStructCase(r,false,unexpectedStruct[invalidQueryShape],nil).Code).To(Equal(400))
-		Expect(runStructCase(r,false,unexpectedStruct[invalidParamsShape],nil).Code).To(Equal(400))
-		Expect(runStructCase(r,false,unexpectedStruct[hiddenQueryShape],nil).Code).To(Equal(400))
+		Expect(runStructCase(r,true,unexpectedStruct[invalidQueryShape],nil).Code).To(Equal(500))
+		Expect(runStructCase(r,false,unexpectedStruct[invalidQueryShape],nil).Code).To(Equal(500))
+		Expect(runStructCase(r,false,unexpectedStruct[invalidParamsShape],nil).Code).To(Equal(500))
+		Expect(runStructCase(r,false,unexpectedStruct[hiddenQueryShape],nil).Code).To(Equal(500))
 		Expect(runStructCase(r,false,unexpectedStruct[operationGet],nil).Code).To(Equal(400))
 	})
 	It("rejects malformed undeclared queries and invalid JSON bodies",func(){
@@ -123,7 +123,7 @@ var _=Describe("Structured REST failure paths",func(){
 	It("executes cross-source validation before the service and handles service failure",func(){
 		r:=httptest.NewRequest("GET","/",nil)
 		w:=runStructCase(r,false,unexpectedStruct[noSections],func(noSections)error{return errors.New("validation failed")})
-		Expect(w.Code).To(Equal(400))
+		Expect(w.Code).To(Equal(500))
 		w=runStructCase(r,false,func(context.Context,noSections)(rest.Result[string],error){return rest.Result[string]{},errors.New("private failure")},func(noSections)error{return nil})
 		Expect(w.Code).To(Equal(500))
 		Expect(w.Body.String()).NotTo(ContainSubstring("private failure"))

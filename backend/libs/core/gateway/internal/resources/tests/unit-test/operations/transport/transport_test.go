@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"strings"
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway/internal/src/contracts"
@@ -73,5 +74,34 @@ var _ = Describe("WorkloadTransport", func() {
 		value.Policy = func(*http.Request)(contracts.WorkloadClaims,error){return contracts.WorkloadClaims{},nil}
 		_, err = value.RoundTrip(request)
 		Expect(err).To(BeIdenticalTo(contracts.ErrWorkloadDenied))
+	})
+	It("rejects insecure non-loopback origins and signing failures",func(){
+		origin,err:=url.Parse("http://platform.example")
+		Expect(err).NotTo(HaveOccurred())
+		value.Origin=origin
+		req,err:=http.NewRequest("GET",origin.String(),nil)
+		Expect(err).NotTo(HaveOccurred())
+		_,err=value.RoundTrip(req)
+		Expect(err).To(MatchError(contracts.ErrWorkloadDenied))
+		value.Origin,_=url.Parse("https://platform.example")
+		value.PrivateKey=nil
+		_,err=value.RoundTrip(request)
+		Expect(err).To(MatchError(contracts.ErrWorkloadDenied))
+	})
+	It("uses the default HTTP transport for an explicitly allowed loopback origin",func(){
+		server:=httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter,r *http.Request){
+			if !strings.HasPrefix(r.Header.Get("Authorization"),"Bearer ghw1.") { w.WriteHeader(401);return }
+			w.WriteHeader(204)
+		}))
+		defer server.Close()
+		origin,err:=url.Parse(server.URL)
+		Expect(err).NotTo(HaveOccurred())
+		value.Origin=origin
+		req,err:=http.NewRequest("GET",server.URL,nil)
+		Expect(err).NotTo(HaveOccurred())
+		resp,err:=value.RoundTrip(req)
+		Expect(err).NotTo(HaveOccurred())
+		defer resp.Body.Close()
+		Expect(resp.StatusCode).To(Equal(204))
 	})
 })
