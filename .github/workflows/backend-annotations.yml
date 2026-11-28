@@ -5,6 +5,7 @@ on:
     branches:
       - phase-2.1-identity-account
       - phase-2.1-multi-project-refactor
+      - phase1-refactor
     paths:
       - "backend/**"
       - "backend/libs/core/**"
@@ -33,6 +34,10 @@ jobs:
           cache-dependency-path: |
             backend/projects/platform/go.sum
             backend/libs/core/go.sum
+      - name: Inventory legacy annotation package imports
+        shell: bash
+        run: |
+          git grep -nE 'libs/backend/core/annotation/(chain|composition|configuration|contract|dto|entity|event|external|http|mapping|messaging|middleware|observability|patterns|persistence|security|server|strategy|testing|utilities|validation|generation/(layout|parser))"' -- '*.go' || test "$?" -eq 1
       - name: Lint Foundation repository formatting and function signatures
         run: make backend-lint
       - name: Compile the complete backend with generated annotations
@@ -51,7 +56,7 @@ jobs:
         run: GOWORK=off go test -vet=off -overlay=.generated/overlay.json ./launcher/services/gateway
       - name: Test annotation source generators
         working-directory: backend/projects/platform
-        run: go test github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/generation/...
+        run: go test github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/resources/tests/unit-test/...
       - name: Verify Core standalone build and tests
         working-directory: backend/libs/core
         run: |
