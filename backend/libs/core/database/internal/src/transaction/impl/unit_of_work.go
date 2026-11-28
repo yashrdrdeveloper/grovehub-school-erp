@@ -6,16 +6,14 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/transaction/contracts"
+
 )
 
 type unitOfWork struct {
 	db *gorm.DB
 }
 
-var _ contracts.UnitOfWork = (*unitOfWork)(nil)
-
-func NewUnitOfWork(db *gorm.DB) contracts.UnitOfWork {
+func NewUnitOfWork(db *gorm.DB) *unitOfWork {
 	return &unitOfWork{db: db}
 }
 
