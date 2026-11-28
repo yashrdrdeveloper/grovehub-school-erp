@@ -1,0 +1,7 @@
+# Invitation mail delivery reconciliation
+
+Integration owns the reconciliation service and receipt projection; Identity owns its invitation projection. The launcher injects the Identity reader into Integration. The current shared PostgreSQL deployment uses a repeatable-read, read-only snapshot across both owner-local queries. Neither repository queries the other service schema. The service reports exceptions only and never sends, retries, or mutates mail. ACCEPTED denotes provider acceptance, not inbox delivery.
+
+POST /integrations/restricted/mail/reconciliation/search accepts tenantId, after (canonical delivery UUID, optional), limit (1–500). Configure an explicit workload route grant with scope integration.mail.reconciliation.read, RequireActor false, and a dedicated Ed25519 workload key with subject and issuer platform-mail-reconciliation-reader, exactly that scope, and no delegation. No grant or key is installed by default. This operator is trusted to select a tenant explicitly; do not expose it as a school or browser permission. No addresses, tokens, message bodies, request hashes or provider errors are returned.
+
+The existing identity-mail-reconcile command remains a thin, DB-name-verified local operator client until the remote workflow is verified and adopted. No standalone Platform operation remains. Communication will eventually own business reconciliation; Integration retains provider receipt diagnostics.

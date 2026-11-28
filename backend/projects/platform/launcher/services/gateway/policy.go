@@ -1,10 +1,14 @@
 package gateway
 
-import core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+import (
+ core "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+ mail "grovehub/services/integration/client/mail"
+)
 
 // The provider owns the restricted operation policy. Configuration can disable
 // operations, but cannot remap scopes or weaken actor requirements.
 var restrictedPolicies = map[string]core.RoutePolicy{
+ "POST "+mail.ReconciliationPath: {Scope: mail.ReconciliationScope, RequireActor:false},
 	"POST /identity/restricted/auth/login": {Scope: "identity.auth.login", RequireActor: false},
 	"POST /identity/restricted/auth/forgot-password": {Scope: "identity.auth.forgot", RequireActor: false},
 	"POST /identity/restricted/auth/refresh": {Scope: "identity.auth.refresh", RequireActor: false},

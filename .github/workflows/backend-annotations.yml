@@ -154,6 +154,12 @@ jobs:
       - name: Test Infrastructure messaging contracts and context helpers
         working-directory: backend/projects/platform
         run: go test -race -vet=off -overlay=.generated/overlay.json ./services/infrastructure/internal/tests/unit-test/...
+      - name: Test Integration mail reconciliation
+        working-directory: backend/projects/platform
+        run: go test -race -vet=off -overlay=.generated/overlay.json ./services/integration/internal/tests/unit-test/services/mail/... ./services/integration/internal/tests/unit-test/controller/mail/...
+      - name: Compile local mail reconciliation operator client
+        working-directory: backend/projects/platform
+        run: go build -overlay=.generated/overlay.json -o "$RUNNER_TEMP/mail-reconciliation" ./cmd/identity-mail-reconcile
       - name: Test Infrastructure messaging persistence options
         working-directory: backend/projects/platform
         run: go test -vet=off -overlay=.generated/overlay.json ./services/infrastructure/internal/app/services/messaging/...

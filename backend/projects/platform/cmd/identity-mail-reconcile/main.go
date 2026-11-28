@@ -11,7 +11,9 @@ import (
 	"time"
 
 	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
-	"grovehub/operations/mailreconcile"
+	"grovehub/services/identity"
+	"grovehub/services/integration"
+	"grovehub/services/integration/client/mail"
 )
 
 func main() {
@@ -52,7 +54,7 @@ func run() error {
 	if current != *database {
 		return errors.New("configured database does not match --database")
 	}
-	report, err := mailreconcile.Read(ctx, db, *tenant, *after, *limit)
+	report, err := integration.NewMailReconciliationClient(db, identity.NewInvitationDeliveryReader(db)).Search(ctx, mail.SearchRequest{TenantID:*tenant, After:*after, Limit:*limit})
 	if err != nil {
 		return errors.New("reconciliation query failed; verify scope and migrations")
 	}

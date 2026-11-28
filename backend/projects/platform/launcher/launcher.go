@@ -88,6 +88,7 @@ func Run(logger *slog.Logger) error {
 	}
 	defer integrationModule.Close()
 	integrationModule.RegisterHTTP(mux)
+	integration.RegisterMailReconciliationHTTP(mux, integration.NewMailReconciliationClient(db, identity.NewInvitationDeliveryReader(db)))
 
 	identityModule, err := identity.New(
 		logger,
