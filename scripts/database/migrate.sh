@@ -23,17 +23,17 @@ case "${command_name}" in
 esac
 
 case "${service_name}" in
-  all|foundation|infrastructure|identity|integration|audit)
+  all|registry|foundation|infrastructure|identity|integration|audit)
     ;;
   *)
-    die "Unsupported database service: ${service_name}. Expected all, foundation, infrastructure, identity, integration, or audit."
+    die "Unsupported database service: ${service_name}. Expected all, registry, foundation, infrastructure, identity, integration, or audit."
     ;;
 esac
 
 load_backend_runtime_env
 
-if [[ "${command_name}" == "reset" && ( "${service_name}" == "all" || "${service_name}" == "audit" ) ]]; then
-  die "Audit history cannot be reset. Use an explicit development-only business service reset or a fresh disposable database."
+if [[ "${command_name}" == "reset" && ( "${service_name}" == "all" || "${service_name}" == "audit" || "${service_name}" == "registry" ) ]]; then
+  die "Audit history and registry state cannot be reset. Use an explicit development-only business service reset or a fresh disposable database."
 fi
 if [[ "${service_name}" == "audit" ]]; then
   [[ -n "${AUDIT_DATABASE_URL:-${DATABASE_URL:-}}" ]] || die "AUDIT_DATABASE_URL or DATABASE_URL is required."
@@ -45,6 +45,7 @@ ensure_goose
 
 schema_state_table() {
   case "$1" in
+    registry) printf '%s\n' "registry_schema_state" ;;
     foundation) printf '%s\n' "foundation_schema_state" ;;
     identity) printf '%s\n' "identity_schema_state" ;;
     integration) printf '%s\n' "integration_schema_state" ;;
@@ -57,7 +58,7 @@ run_service_schema() {
   local service="$1"
   local action="$2"
   local schema_dir="${BACKEND_DIR}/services/${service}/migrations"
-  if [[ "${service}" == "foundation" || "${service}" == "infrastructure" || "${service}" == "integration" || "${service}" == "identity" || "${service}" == "audit" ]]; then
+  if [[ "${service}" == "registry" || "${service}" == "foundation" || "${service}" == "infrastructure" || "${service}" == "integration" || "${service}" == "identity" || "${service}" == "audit" ]]; then
     schema_dir="${BACKEND_DIR}/services/${service}/internal/resources/migrations"
   fi
   local state_table
@@ -116,6 +117,7 @@ fi
 
 case "${command_name}" in
   init)
+    init_service registry
     init_service foundation
     init_service infrastructure
     init_service identity
@@ -132,6 +134,7 @@ case "${command_name}" in
     init_service integration
     ;;
   status)
+    status_service registry
     status_service foundation
     status_service infrastructure
     status_service identity

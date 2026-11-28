@@ -19,11 +19,13 @@ import (
 	"grovehub/services/identity"
 	"grovehub/services/infrastructure"
 	"grovehub/services/integration"
+	platformregistry "grovehub/services/registry"
 )
 
 // New composes service bootstraps without initializing their HTTP runtimes.
 func New(run func(*slog.Logger) error) (registry.Registry, error) {
 	return NewWithServices(databaseimpl.New(), serve.New(run), []platformbootstrap.Service[*gorm.DB]{
+		platformregistry.Bootstrap(),
 		foundation.Bootstrap(),
 		infrastructure.Bootstrap(),
 		integration.Bootstrap(),

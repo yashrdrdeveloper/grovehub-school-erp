@@ -346,6 +346,15 @@ jobs:
             backend/libs/core/go.sum
       - name: Generate backend annotation overlay
         run: make backend-build
+      - name: Create isolated Registry database
+        run: docker exec ${{ job.services.postgres.id }} createdb -U rbac_test groovehub_registry_test
+
+      - name: Verify Registry project and tenant constraints
+        working-directory: backend/projects/platform
+        env:
+          REGISTRY_TEST_DSN: "host=127.0.0.1 port=5432 user=rbac_test password=rbac_test dbname=groovehub_registry_test sslmode=disable"
+        run: go test -count=1 -v ./services/registry/internal/resources/tests/integration-test/...
+
       - name: Apply real Identity migrations and validate RBAC
         working-directory: backend/projects/platform
         env:
