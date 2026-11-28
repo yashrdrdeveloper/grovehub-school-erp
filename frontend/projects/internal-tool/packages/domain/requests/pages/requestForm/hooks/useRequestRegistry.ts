@@ -11,7 +11,7 @@ async function loadRegistry<T>(resource: string, signal: AbortSignal, pageNumber
   return loadRegistry(resource, signal, pageNumber + 1, next);
 }
 
-export function useRequestRegistry() {
+export function useRequestRegistry(revision = 0) {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [environments, setEnvironments] = useState<Environment[]>([]);
   const [grants, setGrants] = useState<SchoolGrant[]>([]);
@@ -19,6 +19,11 @@ export function useRequestRegistry() {
   const [ready, setReady] = useState(false);
   useEffect(() => {
     const abort = new AbortController();
+    setReady(false);
+    setError('');
+    setGrants([]);
+    setTemplates([]);
+    setEnvironments([]);
     void Promise.all([
       loadRegistry<Template>('api-templates', abort.signal),
       loadRegistry<Environment>('environments', abort.signal),
@@ -33,6 +38,6 @@ export function useRequestRegistry() {
       if (!abort.signal.aborted) setError(errorText(failure));
     });
     return () => abort.abort();
-  }, []);
+  }, [revision]);
   return { templates, environments, grants, error, ready };
 }

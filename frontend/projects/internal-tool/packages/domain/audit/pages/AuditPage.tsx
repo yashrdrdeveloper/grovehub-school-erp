@@ -10,8 +10,8 @@ import type { BlockedEvent, OperatorActivity, SchoolReceipt } from './types/audi
 
 type View = 'local' | 'central' | 'blocked' | 'school';
 
-export function AuditPage() {
-  const [view, setView] = useState<View>('local');
+export function AuditPage({ initialView = 'local' }: { initialView?: View }) {
+  const [view, setView] = useState<View>(initialView);
   const [revision, setRevision] = useState(0);
   const [selected, setSelected] = useState<BlockedEvent | null>(null);
   const { summary, error } = useAuditDelivery(revision);
