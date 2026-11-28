@@ -11,8 +11,19 @@ paths:
       parameters:
         - {in: path, name: schoolId, required: true, schema: {type: string, format: uuid}}
       responses:
-        '204': {description: Active school}
-        '403': {description: Missing, disabled or unauthorized school}
+        '204':
+          description: Active school
+          headers:
+            X-GH-Session-Generation:
+              required: true
+              description: Current session generation for the active school
+              schema: {type: integer, format: int64, minimum: 1}
+        '403':
+          description: Missing, disabled or unauthorized school
+          headers:
+            X-GH-Session-Generation:
+              description: Present only for a verified lookup of a known disabled school
+              schema: {type: integer, format: int64, minimum: 1}
         '503': {description: Registry unavailable}
   /school/restricted/registry/schools/{schoolId}/status:
     patch:
