@@ -14,6 +14,7 @@ type limiter struct {
 	mu sync.Mutex
 	entries map[string]attempt
 	limits map[string]int
+	clock func() time.Time
 }
 
 type attempt struct {
@@ -22,13 +23,19 @@ type attempt struct {
 }
 
 func New(limits map[string]int) ratelimit.Limiter {
+	return NewWithClock(limits, time.Now)
+}
+
+// NewWithClock constructs the same limiter with an explicit clock.
+// The Launcher uses New; deterministic unit tests can advance time without sleeping.
+func NewWithClock(limits map[string]int, clock func() time.Time) ratelimit.Limiter {
 	configured := make(map[string]int, len(limits))
 	for pattern, count := range limits {
 		if count > 0 {
 			configured[pattern] = count
 		}
 	}
-	return &limiter{entries: make(map[string]attempt), limits: configured}
+	return &limiter{entries: make(map[string]attempt), limits: configured, clock: clock}
 }
 
 func (limiter *limiter) Allow(pattern string, request *http.Request) bool {
@@ -42,7 +49,7 @@ func (limiter *limiter) Allow(pattern string, request *http.Request) bool {
 		address = request.RemoteAddr
 	}
 	key := pattern + "|" + address
-	now := time.Now()
+	now := limiter.clock()
 
 	limiter.mu.Lock()
 	defer limiter.mu.Unlock()
