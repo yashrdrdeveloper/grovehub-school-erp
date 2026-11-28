@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"testing"
 
-	endpoint "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/endpoint"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 	corerequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
-	httpresponse "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/response"
+
 )
 
 type onlyParamsRequest struct {
@@ -31,9 +31,9 @@ func TestCallStructInfersAbsentSections(t *testing.T) {
 	mux:=http.NewServeMux()
 	mux.HandleFunc("GET /people/{gid}",func(w http.ResponseWriter,r *http.Request){
 		if r.URL.RawQuery!=""||r.ContentLength!=0 {t.Fatalf("unexpected undeclared query/body")}
-		if err:=httpresponse.WriteSuccess(w,200,personRecord{GID:r.PathValue("gid")});err!=nil{t.Fatal(err)}
+		if err:=corehttp.WriteSuccess(w,200,personRecord{GID:r.PathValue("gid")});err!=nil{t.Fatal(err)}
 	})
-	res,status,err:=endpoint.CallStruct[personRecord](context.Background(),mux,http.MethodGet,"/people/{gid}",onlyParamsRequest{Params:personPath{GID:"valid-gid"}})
+	res,status,err:=corehttp.CallStruct[personRecord](context.Background(),mux,http.MethodGet,"/people/{gid}",onlyParamsRequest{Params:personPath{GID:"valid-gid"}})
 	if err!=nil||status!=200||res.GID!="valid-gid" {t.Fatalf("result=%+v status=%d err=%v",res,status,err)}
 }
 
@@ -44,11 +44,11 @@ func TestCallStructMapsOnlyDeclaredParamsAndBody(t *testing.T) {
 		var body struct{Name string `json:"name"`}
 		if err:=json.NewDecoder(r.Body).Decode(&body);err!=nil{t.Fatal(err)}
 		if body.Name!="Ada"||r.PathValue("gid")!="valid-gid"{t.Fatalf("bad binding")}
-		if err:=httpresponse.WriteSuccess(w,200,personRecord{Name:body.Name});err!=nil{t.Fatal(err)}
+		if err:=corehttp.WriteSuccess(w,200,personRecord{Name:body.Name});err!=nil{t.Fatal(err)}
 	})
 	input:=paramsBodyRequest{Params:personPath{GID:"valid-gid"}}
 	input.RequestBody.Name="Ada"
-	res,status,err:=endpoint.CallStruct[personRecord](context.Background(),mux,http.MethodPatch,"/people/{gid}",input)
+	res,status,err:=corehttp.CallStruct[personRecord](context.Background(),mux,http.MethodPatch,"/people/{gid}",input)
 	if err!=nil||status!=200||res.Name!="Ada"{t.Fatalf("result=%+v status=%d err=%v",res,status,err)}
 }
 
@@ -56,8 +56,8 @@ func TestCallStructMapsOnlyDeclaredQuery(t *testing.T) {
 	mux:=http.NewServeMux()
 	mux.HandleFunc("GET /people",func(w http.ResponseWriter,r *http.Request){
 		if r.URL.Query().Get("page")!="4" {t.Fatalf("query was not transmitted")}
-		if err:=httpresponse.WriteSuccess(w,200,personRecord{Name:"query"});err!=nil{t.Fatal(err)}
+		if err:=corehttp.WriteSuccess(w,200,personRecord{Name:"query"});err!=nil{t.Fatal(err)}
 	})
-	_,status,err:=endpoint.CallStruct[personRecord](context.Background(),mux,http.MethodGet,"/people",queryRequest{Query:queryInputs{Page:4}})
+	_,status,err:=corehttp.CallStruct[personRecord](context.Background(),mux,http.MethodGet,"/people",queryRequest{Query:queryInputs{Page:4}})
 	if err!=nil||status!=200{t.Fatalf("status=%d err=%v",status,err)}
 }

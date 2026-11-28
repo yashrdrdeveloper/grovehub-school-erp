@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"go.opentelemetry.io/otel/trace"
 
-	httptracing "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/tracing"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
 )
 
@@ -21,7 +21,7 @@ var _ = Describe("HTTP trace propagation", func() {
 		var childSpanID string
 		var childService coretelemetry.Service
 		var childServicePresent bool
-		handler := httptracing.ServiceHandler(
+		handler := corehttp.ServiceHandler(
 			identityService,
 			identityOperation,
 			http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {

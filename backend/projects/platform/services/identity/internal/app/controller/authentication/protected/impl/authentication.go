@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	httprequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/request"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
 	errorcode "grovehub/services/identity/internal/app/constants/error"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
@@ -58,7 +58,7 @@ func (controller *Controller) LogoutAll(writer http.ResponseWriter, request *htt
 
 func (controller *Controller) ChangePassword(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[authdto.ChangePasswordRequest, authdto.StatusResult]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: errorcode.InvalidRequest,
 		Fallback: errorcode.Internal,
 		Service: func(ctx context.Context, input authdto.ChangePasswordRequest) (rest.Result[authdto.StatusResult], error) {
@@ -76,7 +76,7 @@ func (controller *Controller) ChangePassword(writer http.ResponseWriter, request
 
 func (controller *Controller) Reauthenticate(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[authdto.ReauthenticateRequest, authdto.StatusResult]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: errorcode.InvalidRequest,
 		Fallback: errorcode.Internal,
 		Service: func(ctx context.Context, input authdto.ReauthenticateRequest) (rest.Result[authdto.StatusResult], error) {

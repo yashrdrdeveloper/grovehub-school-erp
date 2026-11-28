@@ -13,7 +13,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	oteltrace "go.opentelemetry.io/otel/trace"
 
-	responsedto "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/contracts"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
 	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
 )
@@ -66,14 +66,14 @@ func newErrorTraceContext() (context.Context, oteltrace.Span) {
 	return coretelemetry.StartSpan(context.Background(), "identity", "test error")
 }
 
-func decodeDefaultError(recorder *httptest.ResponseRecorder) responsedto.Error[map[string]any] {
-	var payload responsedto.Error[map[string]any]
+func decodeDefaultError(recorder *httptest.ResponseRecorder) corehttp.Error[map[string]any] {
+	var payload corehttp.Error[map[string]any]
 	Expect(json.Unmarshal(recorder.Body.Bytes(), &payload)).To(Succeed())
 	return payload
 }
 
-func decodeMetadataError(recorder *httptest.ResponseRecorder) responsedto.Error[metadata] {
-	var payload responsedto.Error[metadata]
+func decodeMetadataError(recorder *httptest.ResponseRecorder) corehttp.Error[metadata] {
+	var payload corehttp.Error[metadata]
 	Expect(json.Unmarshal(recorder.Body.Bytes(), &payload)).To(Succeed())
 	return payload
 }

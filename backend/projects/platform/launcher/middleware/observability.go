@@ -10,8 +10,8 @@ import (
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 
-	httpheaders "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/headers"
-	httplogging "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/logging"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
+
 	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
 )
 
@@ -58,7 +58,7 @@ func RequestObservability(logger *slog.Logger, next http.Handler) http.Handler {
 
 		traceID := coretelemetry.TraceID(ctx)
 		if traceID != "" {
-			writer.Header().Set(httpheaders.TraceID, traceID)
+			writer.Header().Set(corehttp.TraceID, traceID)
 		}
 
 		recorder := &statusRecorder{
@@ -116,7 +116,7 @@ func RequestObservability(logger *slog.Logger, next http.Handler) http.Handler {
 
 		coretelemetry.Logger(logger, ctx).Log(
 			ctx,
-			httplogging.LevelForStatus(recorder.status),
+			corehttp.LevelForStatus(recorder.status),
 			"request completed",
 			slog.Group(
 				"request",

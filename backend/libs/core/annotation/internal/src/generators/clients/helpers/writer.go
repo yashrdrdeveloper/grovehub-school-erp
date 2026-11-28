@@ -22,7 +22,7 @@ func WriteProxies(proxies []clientProxy,output string) error {
 		if imp.Name!=nil {fmt.Fprintf(&b,"%s ",imp.Name.Name)}
 		fmt.Fprintf(&b,"%s\n",imp.Path.Value)
 	}
-	if usesEndpoints {fmt.Fprintf(&b,"httpendpoint %q\n",layout.CoreImportPath+"/http/endpoint")}
+	if usesEndpoints {fmt.Fprintf(&b,"httpendpoint %q\n",layout.CoreImportPath+"/http")}
 	b.WriteString(")\n\n")
 	for _,m:=range proxy.methods {
 		fmt.Fprintf(&b,"func (c *%s) %s%s {\n",proxy.receiver,m.name,m.signature)

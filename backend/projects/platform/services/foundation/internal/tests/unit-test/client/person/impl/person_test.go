@@ -8,7 +8,7 @@ import (
     . "github.com/onsi/gomega"
     "go.uber.org/mock/gomock"
 
-    httpresponse "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/response"
+    corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
     foundationclient "grovehub/services/foundation/client/person"
     clientimpl "grovehub/services/foundation/internal/app/client/person/impl"
     routes "grovehub/services/foundation/internal/app/routes"
@@ -25,7 +25,7 @@ func Specs() {
             controller.EXPECT().GetByGID(gomock.Any(),gomock.Any()).DoAndReturn(func(w http.ResponseWriter,r *http.Request){
                 Expect(r.Method).To(Equal(http.MethodGet))
                 Expect(r.PathValue("gid")).To(Equal(ids.GID))
-                Expect(httpresponse.WriteSuccess(w,http.StatusOK,fixtures.Response())).To(Succeed())
+                Expect(corehttp.WriteSuccess(w,http.StatusOK,fixtures.Response())).To(Succeed())
             })
             mux:=http.NewServeMux()
             routes.RegisterHTTP(mux,controller)
@@ -39,7 +39,7 @@ func Specs() {
         It("returns a typed response and a created flag from the generated POST route",func(){
             controller:=mocks.NewMockPersonController(gomock.NewController(GinkgoT()))
             controller.EXPECT().Create(gomock.Any(),gomock.Any()).DoAndReturn(func(w http.ResponseWriter,r *http.Request){
-                Expect(httpresponse.WriteSuccess(w,http.StatusCreated,fixtures.Response())).To(Succeed())
+                Expect(corehttp.WriteSuccess(w,http.StatusCreated,fixtures.Response())).To(Succeed())
             })
             mux:=http.NewServeMux()
             routes.RegisterHTTP(mux,controller)

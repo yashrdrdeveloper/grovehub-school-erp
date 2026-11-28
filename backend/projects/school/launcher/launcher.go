@@ -10,7 +10,7 @@ import (
  "os/signal"
  "syscall"
  "sync/atomic"
- "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/readiness"
+ corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
  "time"
 
  coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
@@ -42,11 +42,11 @@ func Run() error {
   w.WriteHeader(http.StatusNoContent)
  })
  var draining atomic.Bool
- checks:=[]readiness.Check{db.PingContext,func(ctx context.Context)error{return registry.Check(ctx,db)}}
- upstream,err:=readiness.HTTP(os.Getenv("PLATFORM_ORIGIN"),"/ready")
+ checks:=[]corehttp.Check{db.PingContext,func(ctx context.Context)error{return registry.Check(ctx,db)}}
+ upstream,err:=corehttp.ReadinessHTTP(os.Getenv("PLATFORM_ORIGIN"),"/ready")
  if err!=nil{return err}
  checks=append(checks,upstream)
- mux.HandleFunc("GET /health/ready",readiness.Handler(&draining,checks...))
+ mux.HandleFunc("GET /health/ready",corehttp.ReadinessHandler(&draining,checks...))
  server := &http.Server{Addr: addr, Handler: mux, ReadHeaderTimeout: 5*time.Second, ReadTimeout: 15*time.Second, WriteTimeout: 30*time.Second, IdleTimeout: 60*time.Second, MaxHeaderBytes: 1<<20}
  done := make(chan error, 1)
  go func() { done <- server.ListenAndServe() }()

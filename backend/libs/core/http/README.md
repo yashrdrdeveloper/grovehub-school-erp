@@ -1,6 +1,6 @@
 # Core HTTP
 
-New consumers import only `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http` (package corehttp).
+Consumers import only `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http` (package corehttp).
 The root http.go facade exposes response contracts, correlation, endpoint
 dispatch, header names, logging levels, readiness, request decoding, response
 writing and tracing.
@@ -23,12 +23,11 @@ http/
     └── resources/tests/unit-test/  # exact source-file mirrors
 ```
 
-The nine former public subpackages contain deprecated forwarding facades
-only during consumer migration. Header names forward directly to internal
-constants to avoid the existing headercontext/endpoint dependency cycle.
-Runtime behavior, response JSON, request types, trace propagation and
-security constraints remain unchanged. There are no artificial interfaces
-or empty config folders.
+All former public subpackages have been removed. Inbound metadata header names
+are owned by headercontext and re-exported through HTTP constants, preventing
+the endpoint/headercontext import cycle. Runtime behavior, response JSON,
+request types, trace propagation and security constraints remain unchanged.
+There are no artificial interfaces or empty config folders.
 
 Readiness calls use ReadinessHandler and ReadinessHTTP in the root facade.
 The old correlation.Header constant maps to RequestID.

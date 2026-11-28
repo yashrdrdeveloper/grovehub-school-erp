@@ -9,7 +9,7 @@ import (
 
 	coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
 	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-	httprequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/request"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 	corerequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
 )
 
@@ -66,7 +66,7 @@ func RunStruct[Request corerequest.Contract, Response any](writer http.ResponseW
 	}
 	if sections.HasRequestBody {
 		decode := config.Decode
-		if decode == nil { decode = httprequest.DecodeJSON }
+		if decode == nil { decode = corehttp.DecodeJSON }
 		if err = decode(request, sections.RequestBody.Addr().Interface()); err != nil {
 			writeFailure(writer, request, config.Writer, &DecodeError{Err:err}, config.InvalidRequestBody, config.Fallback)
 			return

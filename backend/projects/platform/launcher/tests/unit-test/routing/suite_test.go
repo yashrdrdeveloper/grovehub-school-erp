@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	responsedto "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/contracts"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 	"grovehub/launcher/routing"
 )
 
@@ -38,8 +38,8 @@ func serveRequest(handler http.Handler, method string, path string) *httptest.Re
 	return recorder
 }
 
-func decodeRouteError(recorder *httptest.ResponseRecorder) responsedto.Error[struct{}] {
-	var response responsedto.Error[struct{}]
+func decodeRouteError(recorder *httptest.ResponseRecorder) corehttp.Error[struct{}] {
+	var response corehttp.Error[struct{}]
 	Expect(json.NewDecoder(recorder.Body).Decode(&response)).To(Succeed())
 	return response
 }

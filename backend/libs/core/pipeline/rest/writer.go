@@ -7,7 +7,7 @@ import (
 
 	coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
 	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-	httpresponse "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/response"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 )
 
 // Failure is the safe, final response descriptor. The raw cause is never
@@ -42,7 +42,7 @@ func writeSuccess[T any](writer http.ResponseWriter, request *http.Request, outp
 		writer.WriteHeader(status)
 		return
 	}
-	_ = httpresponse.WriteSuccess(writer, status, result.Data)
+	_ = corehttp.WriteSuccess(writer, status, result.Data)
 }
 
 func writeFailure[T any](writer http.ResponseWriter, request *http.Request, output Writer[T], err error, invalid, fallback coreerrors.Definition) {
@@ -52,10 +52,10 @@ func writeFailure[T any](writer http.ResponseWriter, request *http.Request, outp
 		return
 	}
 	if failure.Metadata == nil {
-		_ = httpresponse.WriteErrorContext(request.Context(), writer, failure.StatusCode, failure.Definition)
+		_ = corehttp.WriteErrorContext(request.Context(), writer, failure.StatusCode, failure.Definition)
 		return
 	}
-	_ = httpresponse.WriteErrorWithMetadataContext(request.Context(), writer, failure.StatusCode, failure.Definition, failure.Metadata)
+	_ = corehttp.WriteErrorWithMetadataContext(request.Context(), writer, failure.StatusCode, failure.Definition, failure.Metadata)
 }
 
 func classifyFailure(err error, invalid, fallback coreerrors.Definition) Failure {

@@ -6,7 +6,7 @@ import (
     "net/http"
 
     coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-    httpresponse "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/response"
+    corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
     integrationerrors "grovehub/services/integration/internal/app/constants/error"
     integrationrepository "grovehub/services/integration/internal/app/repository/connection"
     serviceimpl "grovehub/services/integration/internal/app/services/connection/impl"
@@ -59,5 +59,5 @@ func WriteServiceError(w http.ResponseWriter, r *http.Request, err error) {
 }
 
 func WriteError(w http.ResponseWriter, r *http.Request, status int, definition coreerrors.Definition) {
-	_ = httpresponse.WriteErrorContext(r.Context(), w, status, definition)
+	_ = corehttp.WriteErrorContext(r.Context(), w, status, definition)
 }

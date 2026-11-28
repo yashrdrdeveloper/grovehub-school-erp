@@ -1,7 +1,7 @@
 package correlation_test
 
 import (
-	. "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/correlation"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 
 	"context"
 	"net/http"
@@ -12,20 +12,20 @@ import (
 )
 
 func TestIngress(t *testing.T) {
-	h := Ingress(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		id := ID(r.Context())
-		if _, err := uuid.Parse(id); err != nil || w.Header().Get(Header) != id {
+	h := corehttp.Ingress(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id := corehttp.ID(r.Context())
+		if _, err := uuid.Parse(id); err != nil || w.Header().Get(corehttp.RequestID) != id {
 			t.Fatal("invalid request correlation")
 		}
-		if ID(Ensure(r.Context())) != id {
+		if corehttp.ID(corehttp.Ensure(r.Context())) != id {
 			t.Fatal("correlation changed")
 		}
 	}))
 	r := httptest.NewRequest("GET", "/", nil)
-	r.Header.Set(Header, "forged")
+	r.Header.Set(corehttp.RequestID, "forged")
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
-	if w.Header().Get(Header) == "forged" || ID(WithNew(context.Background())) == w.Header().Get(Header) {
+	if w.Header().Get(corehttp.RequestID) == "forged" || corehttp.ID(corehttp.WithNew(context.Background())) == w.Header().Get(corehttp.RequestID) {
 		t.Fatal("correlation reused")
 	}
 }

@@ -9,7 +9,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 
-	httpresponse "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/response"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 )
 
 var _ = Describe("HTTP response writer", func() {
@@ -17,7 +17,7 @@ var _ = Describe("HTTP response writer", func() {
 		recorder := httptest.NewRecorder()
 		definition := serviceDownDefinition()
 
-		Expect(httpresponse.WriteError(recorder, http.StatusServiceUnavailable, definition)).To(Succeed())
+		Expect(corehttp.WriteError(recorder, http.StatusServiceUnavailable, definition)).To(Succeed())
 		payload := decodeDefaultError(recorder)
 
 		Expect(recorder.Code).To(Equal(http.StatusServiceUnavailable))
@@ -31,7 +31,7 @@ var _ = Describe("HTTP response writer", func() {
 	It("writes typed error metadata", func() {
 		recorder := httptest.NewRecorder()
 
-		Expect(httpresponse.WriteErrorWithMetadata(
+		Expect(corehttp.WriteErrorWithMetadata(
 			recorder,
 			http.StatusBadRequest,
 			invalidRequestDefinition(),
@@ -46,7 +46,7 @@ var _ = Describe("HTTP response writer", func() {
 		recorder := httptest.NewRecorder()
 		definition := serviceDownDefinition()
 
-		Expect(httpresponse.WriteErrorContext(
+		Expect(corehttp.WriteErrorContext(
 			ctx,
 			recorder,
 			http.StatusServiceUnavailable,

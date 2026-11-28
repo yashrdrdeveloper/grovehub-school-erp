@@ -16,8 +16,8 @@ import (
 	sdktracetest "go.opentelemetry.io/otel/sdk/trace/tracetest"
 	oteltrace "go.opentelemetry.io/otel/trace"
 
-	httpheaders "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/headers"
-	httptracing "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/tracing"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
+
 	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
 )
 
@@ -93,8 +93,8 @@ func captureOutboundTraceHeaders(request *http.Request) (string, string) {
 	var capturedTraceID string
 	var capturedTraceParent string
 	client := &http.Client{
-		Transport: httptracing.NewTransport(roundTripFunc(func(outbound *http.Request) (*http.Response, error) {
-			capturedTraceID = outbound.Header.Get(httpheaders.TraceID)
+		Transport: corehttp.NewTransport(roundTripFunc(func(outbound *http.Request) (*http.Response, error) {
+			capturedTraceID = outbound.Header.Get(corehttp.TraceID)
 			capturedTraceParent = outbound.Header.Get("traceparent")
 			return noContentResponse(outbound), nil
 		})),

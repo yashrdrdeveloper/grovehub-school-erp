@@ -2,7 +2,7 @@ package launcher
 
 import (
  "context"
- "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/correlation"
+ corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
  "errors"
  "fmt"
  "net/http"
@@ -13,7 +13,7 @@ import (
  auditclient "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/client/audit"
  auditcontroller "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/controller/audit"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/services/auditdelivery"
- "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/readiness"
+
  "time"
 
  coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
@@ -95,7 +95,7 @@ func Run() error {
   w.WriteHeader(http.StatusNoContent)
  })
  var draining atomic.Bool
- checks:=[]readiness.Check{db.PingContext}
+ checks:=[]corehttp.Check{db.PingContext}
  checks=append(checks,func(ctx context.Context)error{
   if err:=migrations.Check(ctx,db);err!=nil{return err}
   var active bool
@@ -104,16 +104,16 @@ func Run() error {
   return nil
  })
  if len(bindings)>0{
-  upstream,err:=readiness.HTTP(os.Getenv("INTERNAL_TOOL_PLATFORM_ORIGIN"),"/ready")
+  upstream,err:=corehttp.ReadinessHTTP(os.Getenv("INTERNAL_TOOL_PLATFORM_ORIGIN"),"/ready")
   if err!=nil{return err}
   checks=append(checks,upstream)
  }
  for _,origin:=range schoolOrigins{
   if len(bindings)>0&&origin==os.Getenv("INTERNAL_TOOL_PLATFORM_ORIGIN"){continue}
-  upstream,err:=readiness.HTTP(origin,"/ready");if err!=nil{return err};checks=append(checks,upstream)
+  upstream,err:=corehttp.ReadinessHTTP(origin,"/ready");if err!=nil{return err};checks=append(checks,upstream)
  }
- mux.HandleFunc("GET /health/ready",readiness.Handler(&draining,checks...))
- server := &http.Server{Addr: addr, Handler: correlation.Ingress(mux), ReadHeaderTimeout: 5*time.Second, ReadTimeout: 15*time.Second, WriteTimeout: 30*time.Second, IdleTimeout: 60*time.Second, MaxHeaderBytes: 1<<20}
+ mux.HandleFunc("GET /health/ready",corehttp.ReadinessHandler(&draining,checks...))
+ server := &http.Server{Addr: addr, Handler: corehttp.Ingress(mux), ReadHeaderTimeout: 5*time.Second, ReadTimeout: 15*time.Second, WriteTimeout: 30*time.Second, IdleTimeout: 60*time.Second, MaxHeaderBytes: 1<<20}
  done := make(chan error, 1)
  go func() { done <- server.ListenAndServe() }()
  select {

@@ -1,7 +1,7 @@
 package readiness_test
 
 import (
-	. "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/readiness"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 
 	"context"
 	"errors"
@@ -18,7 +18,7 @@ func TestHandler(t *testing.T) {
 		if failed { return errors.New("private database detail") }
 		return nil
 	}
-	h := Handler(&drain, check)
+	h := corehttp.ReadinessHandler(&drain, check)
 	for _, step := range []struct{ fail, draining bool; want int }{
 		{false,false,204},{true,false,503},{false,true,503},
 	} {
@@ -39,7 +39,7 @@ func TestHTTP(t *testing.T) {
 		w.WriteHeader(int(status.Load()))
 	}))
 	defer server.Close()
-	check,err:=HTTP(server.URL,"/ready")
+	check,err:=corehttp.ReadinessHTTP(server.URL,"/ready")
 	if err!=nil {t.Fatal(err)}
 	if err=check(context.Background());err!=nil {t.Fatal(err)}
 	for _,code:=range []int32{302,401,503}{
@@ -47,6 +47,6 @@ func TestHTTP(t *testing.T) {
 		if err=check(context.Background());err==nil {t.Fatalf("accepted %d",code)}
 	}
 	for _,origin:=range []string{"http://example.com","https://example.com/path","https://user@example.com","https://example.com?","https://example.com#fragment"} {
-		if _,err=HTTP(origin,"/ready");err==nil {t.Fatalf("accepted %s",origin)}
+		if _,err=corehttp.ReadinessHTTP(origin,"/ready");err==nil {t.Fatalf("accepted %s",origin)}
 	}
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	httprequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/request"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
 	definitions "grovehub/services/identity/internal/app/constants/error"
 	"grovehub/services/identity/internal/app/controller/helpers"
@@ -41,7 +41,7 @@ func (controller *Controller) SetupStatus(writer http.ResponseWriter, request *h
 
 func (controller *Controller) Setup(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.SetupRequest, dto.SetupResult]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
 		Service: func(ctx context.Context, input dto.SetupRequest) (rest.Result[dto.SetupResult], error) {

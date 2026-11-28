@@ -11,6 +11,19 @@ import (
 	httpresponse "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/operations/response"
 )
 
+type personPath struct {
+	GID string `path:"gid"`
+}
+
+type personRecord struct {
+	GID string `json:"gid"`
+	Name string `json:"name"`
+}
+
+type queryInputs struct {
+	Page int `query:"page"`
+}
+
 type onlyParamsRequest struct {
 	corerequest.Request
 	Params personPath

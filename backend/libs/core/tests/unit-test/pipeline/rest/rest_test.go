@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
-	httprequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/request"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
 )
 
@@ -37,7 +37,7 @@ var _ = Describe("REST request pipeline", func() {
 		value, err := read(request(`{"name":"  Anu  "}`), bodyConfig[input]{
 			Decode: func(r *http.Request, dst any) error {
 				order = append(order, "decode")
-				return httprequest.DecodeStrictJSON(r, dst)
+				return corehttp.DecodeStrictJSON(r, dst)
 			},
 			Rules: coreannotation.ValidationRules[input]{
 				Normalize: func(v input) (input, error) {
@@ -101,7 +101,7 @@ var _ = Describe("REST request pipeline", func() {
 	})
 
 	It("keeps strict JSON decoding configurable", func() {
-		_, err := read(request(`{"name":"Sam","unknown":true}`), bodyConfig[input]{Decode: httprequest.DecodeStrictJSON})
+		_, err := read(request(`{"name":"Sam","unknown":true}`), bodyConfig[input]{Decode: corehttp.DecodeStrictJSON})
 		var decodeError *rest.DecodeError
 		Expect(errors.As(err, &decodeError)).To(BeTrue())
 	})

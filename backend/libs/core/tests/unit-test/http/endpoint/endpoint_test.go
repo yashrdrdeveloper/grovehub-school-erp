@@ -13,9 +13,9 @@ import (
 
 	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
 	headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
-	endpoint "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/endpoint"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
-	httpresponse "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/response"
+
 )
 
 type personPath struct {
@@ -51,14 +51,14 @@ var _ = Describe("in-process @RequestLine transport", func() {
 			var body struct { Name string `json:"name"` }
 			Expect(json.NewDecoder(request.Body).Decode(&body)).To(Succeed())
 			Expect(body.Name).To(Equal("Ada"))
-			Expect(httpresponse.WriteSuccess(writer, http.StatusOK, personRecord{Name:body.Name})).To(Succeed())
+			Expect(corehttp.WriteSuccess(writer, http.StatusOK, personRecord{Name:body.Name})).To(Succeed())
 		})
-		input := endpoint.Request[personPath, queryInputs, struct { Name string `json:"name"` }]{
+		input := corehttp.Request[personPath, queryInputs, struct { Name string `json:"name"` }]{
 			Path: personPath{GID:"valid-gid"},
 			Query: queryInputs{Page:3,Active:true,Tags:[]string{"one & two","three"}},
 			Body: struct { Name string `json:"name"` }{Name:"Ada"},
 		}
-		result, status, err := endpoint.CallRequest[personRecord](context.Background(),mux,http.MethodPatch,"/people/{gid}",input)
+		result, status, err := corehttp.CallRequest[personRecord](context.Background(),mux,http.MethodPatch,"/people/{gid}",input)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(status).To(Equal(http.StatusOK))
 		Expect(result.Name).To(Equal("Ada"))
@@ -70,10 +70,10 @@ var _ = Describe("in-process @RequestLine transport", func() {
 			Expect(request.ContentLength).To(Equal(int64(0)))
 			Expect(request.Header.Get("Content-Type")).To(BeEmpty())
 			Expect(request.URL.RawQuery).To(BeEmpty())
-			Expect(httpresponse.WriteSuccess(writer, http.StatusOK, personRecord{GID:request.PathValue("gid")})).To(Succeed())
+			Expect(corehttp.WriteSuccess(writer, http.StatusOK, personRecord{GID:request.PathValue("gid")})).To(Succeed())
 		})
-		input := endpoint.Request[personPath, rest.Empty, rest.Empty]{Path:personPath{GID:"valid-gid"}}
-		result, status, err := endpoint.CallRequest[personRecord](context.Background(),mux,http.MethodGet,"/people/{gid}",input)
+		input := corehttp.Request[personPath, rest.Empty, rest.Empty]{Path:personPath{GID:"valid-gid"}}
+		result, status, err := corehttp.CallRequest[personRecord](context.Background(),mux,http.MethodGet,"/people/{gid}",input)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(status).To(Equal(http.StatusOK))
 		Expect(result.GID).To(Equal("valid-gid"))
@@ -82,10 +82,10 @@ var _ = Describe("in-process @RequestLine transport", func() {
 	It("rejects unsupported Query fields without dispatching a controller", func() {
 		mux := http.NewServeMux()
 		mux.HandleFunc("GET /people", func(http.ResponseWriter,*http.Request) { Fail("should not dispatch") })
-		input := endpoint.Request[rest.Empty,invalidQueryInputs,rest.Empty]{
+		input := corehttp.Request[rest.Empty,invalidQueryInputs,rest.Empty]{
 			Query:invalidQueryInputs{Unsupported:map[string]string{"key":"value"}},
 		}
-		_,_,err := endpoint.CallRequest[personRecord](context.Background(),mux,http.MethodGet,"/people",input)
+		_,_,err := corehttp.CallRequest[personRecord](context.Background(),mux,http.MethodGet,"/people",input)
 		Expect(err).To(HaveOccurred())
 	})
 
@@ -100,9 +100,9 @@ var _ = Describe("in-process @RequestLine transport", func() {
 			decoder := json.NewDecoder(request.Body)
 			Expect(decoder.Decode(&payload)).To(Succeed())
 			Expect(payload.Name).To(Equal("Ada"))
-			Expect(httpresponse.WriteSuccess(writer, http.StatusCreated, personRecord{GID:"gid",Name:payload.Name})).To(Succeed())
+			Expect(corehttp.WriteSuccess(writer, http.StatusCreated, personRecord{GID:"gid",Name:payload.Name})).To(Succeed())
 		})
-		result, status, err := endpoint.Call[personRecord](context.Background(), mux, http.MethodPost, "/foundation/protected/persons", nil, struct{ Name string `json:"name"` }{Name:"Ada"})
+		result, status, err := corehttp.Call[personRecord](context.Background(), mux, http.MethodPost, "/foundation/protected/persons", nil, struct{ Name string `json:"name"` }{Name:"Ada"})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(status).To(Equal(http.StatusCreated))
 		Expect(result).To(Equal(personRecord{GID:"gid",Name:"Ada"}))
@@ -116,10 +116,10 @@ var _ = Describe("in-process @RequestLine transport", func() {
 			Expect(request.Context().Value(typedKey)).To(Equal("value"))
 			Expect(headercontext.IdempotencyKey(request.Context())).To(Equal("valid-idempotency-key"))
 			Expect(request.Header.Get("Idempotency-Key")).To(Equal("valid-idempotency-key"))
-			Expect(httpresponse.WriteSuccess(writer, http.StatusOK, personRecord{GID:request.PathValue("gid")})).To(Succeed())
+			Expect(corehttp.WriteSuccess(writer, http.StatusOK, personRecord{GID:request.PathValue("gid")})).To(Succeed())
 		})
 		ctx := headercontext.WithValues(context.WithValue(context.Background(), typedKey, "value"), headercontext.Values{IdempotencyKey:"valid-idempotency-key"})
-		result, status, err := endpoint.Call[personRecord](ctx, mux, http.MethodGet, "/foundation/protected/persons/{gid}", personPath{GID:"valid-gid"}, nil)
+		result, status, err := corehttp.Call[personRecord](ctx, mux, http.MethodGet, "/foundation/protected/persons/{gid}", personPath{GID:"valid-gid"}, nil)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(status).To(Equal(http.StatusOK))
 		Expect(result.GID).To(Equal("valid-gid"))
@@ -129,9 +129,9 @@ var _ = Describe("in-process @RequestLine transport", func() {
 		mux := http.NewServeMux()
 		conflict := coreerrors.NewDefinition("TEST_CONTACT_CONFLICT", "Contact conflicts", http.StatusConflict)
 		mux.HandleFunc("PATCH /foundation/protected/persons/{gid}", func(w http.ResponseWriter, r *http.Request) {
-			Expect(httpresponse.WriteErrorWithMetadataContext(r.Context(), w, http.StatusConflict, conflict, map[string]string{"gid":r.PathValue("gid")})).To(Succeed())
+			Expect(corehttp.WriteErrorWithMetadataContext(r.Context(), w, http.StatusConflict, conflict, map[string]string{"gid":r.PathValue("gid")})).To(Succeed())
 		})
-		_, status, err := endpoint.Call[personRecord](context.Background(), mux, http.MethodPatch, "/foundation/protected/persons/{gid}", personPath{GID:"valid-gid"}, struct{}{})
+		_, status, err := corehttp.Call[personRecord](context.Background(), mux, http.MethodPatch, "/foundation/protected/persons/{gid}", personPath{GID:"valid-gid"}, struct{}{})
 		Expect(status).To(Equal(http.StatusConflict))
 		var applicationError *coreerrors.Error
 		Expect(errors.As(err, &applicationError)).To(BeTrue())
@@ -144,9 +144,9 @@ var _ = Describe("in-process @RequestLine transport", func() {
 		mux := http.NewServeMux()
 		definition := coreerrors.NewDefinition("TEST_NOT_FOUND", "No record", http.StatusNotFound)
 		mux.HandleFunc("GET /record", func(writer http.ResponseWriter, request *http.Request) {
-			Expect(httpresponse.WriteErrorContext(request.Context(), writer, http.StatusNotFound, definition)).To(Succeed())
+			Expect(corehttp.WriteErrorContext(request.Context(), writer, http.StatusNotFound, definition)).To(Succeed())
 		})
-		_, status, err := endpoint.Call[personRecord](context.Background(), mux, http.MethodGet, "/record", nil, nil)
+		_, status, err := corehttp.Call[personRecord](context.Background(), mux, http.MethodGet, "/record", nil, nil)
 		Expect(status).To(Equal(http.StatusNotFound))
 		var applicationError *coreerrors.Error
 		Expect(errors.As(err, &applicationError)).To(BeTrue())
@@ -158,7 +158,7 @@ var _ = Describe("in-process @RequestLine transport", func() {
 		handler := http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
 			_, _ = writer.Write([]byte(strings.Repeat("x", 8<<20+1)))
 		})
-		_, _, err := endpoint.Call[personRecord](context.Background(), handler, http.MethodGet, "/large", nil, nil)
+		_, _, err := corehttp.Call[personRecord](context.Background(), handler, http.MethodGet, "/large", nil, nil)
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("exceeds maximum size"))
 	})
@@ -168,7 +168,7 @@ var _ = Describe("in-process @RequestLine transport", func() {
 			http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { fmt.Fprint(w, "not JSON") }),
 			http.NewServeMux(),
 		} {
-			_, _, err := endpoint.Call[personRecord](context.Background(), handler, http.MethodGet, "/not-registered", nil, nil)
+			_, _, err := corehttp.Call[personRecord](context.Background(), handler, http.MethodGet, "/not-registered", nil, nil)
 			Expect(err).To(HaveOccurred())
 			var appErr *coreerrors.Error
 			Expect(errors.As(err, &appErr)).To(BeFalse())
@@ -179,17 +179,17 @@ var _ = Describe("in-process @RequestLine transport", func() {
 		mux := http.NewServeMux()
 		mux.HandleFunc("GET /person/{gid}", func(http.ResponseWriter,*http.Request) { Fail("should not dispatch") })
 		for _, path := range []personPath{{GID:""},{GID:".."},{GID:"."}} {
-			_, _, err := endpoint.Call[personRecord](context.Background(), mux, http.MethodGet, "/person/{gid}", path, nil)
+			_, _, err := corehttp.Call[personRecord](context.Background(), mux, http.MethodGet, "/person/{gid}", path, nil)
 			Expect(err).To(HaveOccurred())
 		}
-		_, _, err := endpoint.Call[personRecord](context.Background(), mux, http.MethodGet, "/person/{other}", personPath{GID:"ok"}, nil)
+		_, _, err := corehttp.Call[personRecord](context.Background(), mux, http.MethodGet, "/person/{other}", personPath{GID:"ok"}, nil)
 		Expect(err).To(HaveOccurred())
 	})
 
 	It("handles cancellation before dispatch and limits malformed metadata to safe errors", func() {
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel()
-		_, _, err := endpoint.Call[personRecord](ctx, http.HandlerFunc(func(http.ResponseWriter,*http.Request) { Fail("should not run") }), http.MethodGet, "/anything", nil, nil)
+		_, _, err := corehttp.Call[personRecord](ctx, http.HandlerFunc(func(http.ResponseWriter,*http.Request) { Fail("should not run") }), http.MethodGet, "/anything", nil, nil)
 		Expect(errors.Is(err, context.Canceled)).To(BeTrue())
 
 		handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
@@ -197,7 +197,7 @@ var _ = Describe("in-process @RequestLine transport", func() {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprint(w, `{"success":false,"errorCode":"INVALID","errorMessage":"Invalid","httpErrorCode":404}`)
 		})
-		_, status, err := endpoint.Call[personRecord](context.Background(), handler, http.MethodGet, "/bad", nil, nil)
+		_, status, err := corehttp.Call[personRecord](context.Background(), handler, http.MethodGet, "/bad", nil, nil)
 		Expect(status).To(Equal(http.StatusBadRequest))
 		Expect(err).To(HaveOccurred())
 		Expect(strings.Contains(err.Error(), "invalid endpoint error envelope")).To(BeTrue())

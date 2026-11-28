@@ -11,7 +11,7 @@ import (
     "grovehub/services/foundation/internal/app/entity"
     repositoryerrors "grovehub/services/foundation/internal/app/repository/constants/errors"
     personflow "grovehub/services/foundation/internal/app/services/person/operations/create/flows"
-    corehelpers "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/helpers"
+    coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
 )
 
 func (strategy *Creator) Idempotency(ctx context.Context, state *personflow.Create) servicepipeline.Outcome[persondto.Person] {
@@ -30,7 +30,7 @@ func (strategy *Creator) readIdempotency(ctx context.Context, state *personflow.
         func(person entity.Person) servicepipeline.Outcome[persondto.Person] {
             return servicepipeline.Decide(ctx, state,
                 servicepipeline.When(
-                    func(*personflow.Create) bool { return corehelpers.NullableString(person.RequestHash) != state.RequestHash },
+                    func(*personflow.Create) bool { return coreutils.NullableString(person.RequestHash) != state.RequestHash },
                     func(context.Context, *personflow.Create) servicepipeline.Outcome[persondto.Person] {
                         return servicepipeline.Fail[persondto.Person](coreerrors.NewError(personerror.PersonIdempotencyConflict))
                     },

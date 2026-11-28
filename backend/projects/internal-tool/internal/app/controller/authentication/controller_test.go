@@ -2,7 +2,7 @@ package authentication
 
 import (
  "context"
- "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/correlation"
+ corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
  "database/sql"
  "net/http"
  "net/http/httptest"
@@ -31,7 +31,7 @@ func TestOperatorAuthentication(t *testing.T){
  loginBody:=`{"email":"operator@example.com","password":"test-only-password-123"}`
  request:=func(method,path,body,origin string,cookies []*http.Cookie,csrf string)*httptest.ResponseRecorder{
   r:=httptest.NewRequest(method,path,strings.NewReader(body));if origin!=""{r.Header.Set("Origin",origin)};if csrf!=""{r.Header.Set("X-CSRF-Token",csrf)};for _,c:=range cookies{r.AddCookie(c)}
-  w:=httptest.NewRecorder();correlation.Ingress(mux).ServeHTTP(w,r);return w
+  w:=httptest.NewRecorder();corehttp.Ingress(mux).ServeHTTP(w,r);return w
  }
  const login="/internal/public/auth/login"
  const me="/internal/protected/auth/me"

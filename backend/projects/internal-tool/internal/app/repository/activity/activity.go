@@ -5,7 +5,7 @@ import (
  "context"
  "database/sql"
 
- "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/correlation"
+ corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 )
 
 type Executor interface{
@@ -13,7 +13,7 @@ type Executor interface{
 }
 
 func Record(ctx context.Context,db Executor,actor,resource,operation string)error{
- ctx=correlation.Ensure(ctx)
- _,err:=db.ExecContext(ctx,"INSERT INTO internal_tool.workflow_events(actor_id,resource_id,action,correlation_id) VALUES($1,$2,$3,$4)",actor,resource,operation,correlation.ID(ctx))
+ ctx=corehttp.Ensure(ctx)
+ _,err:=db.ExecContext(ctx,"INSERT INTO internal_tool.workflow_events(actor_id,resource_id,action,correlation_id) VALUES($1,$2,$3,$4)",actor,resource,operation,corehttp.ID(ctx))
  return err
 }

@@ -3,7 +3,7 @@ package authentication
 import (
  "context"
  "log/slog"
- "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/correlation"
+ corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
  "crypto/rand"
  "crypto/sha256"
  "crypto/subtle"
@@ -56,7 +56,7 @@ func(s *Service) Bootstrap(ctx context.Context,email,password string)error{
 
 type LoginResult struct{Operator entity.Operator; Token,CSRF string}
 func(s *Service) Login(ctx context.Context,email,password string)(result LoginResult,loginErr error){
- ctx=correlation.Ensure(ctx)
+ ctx=corehttp.Ensure(ctx)
  defer func(){
   outcome:=""
   if errors.Is(loginErr,ErrInvalid){outcome="REJECTED"}else if errors.Is(loginErr,ErrLimited){outcome="LIMITED"}

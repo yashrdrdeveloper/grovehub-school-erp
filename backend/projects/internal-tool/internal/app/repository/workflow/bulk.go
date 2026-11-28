@@ -2,7 +2,7 @@ package workflow
 
 import (
  "context"
- "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/correlation"
+ corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
  "sort"
 
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/entity"
@@ -14,7 +14,7 @@ type BulkItem struct{
 }
 
 func(r *Repository) BulkApprove(ctx context.Context,actor entity.Operator,items []BulkItem,comment string)([]entity.Approval,error){
- ctx=correlation.Ensure(ctx)
+ ctx=corehttp.Ensure(ctx)
  if actor.Persona!=entity.L2{return nil,ErrForbidden}
  tx,err:=r.db.BeginTx(ctx,nil);if err!=nil{return nil,err};defer tx.Rollback()
  var active bool

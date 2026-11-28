@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
-	httpresponse "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/response"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 	schoolgateway "grovehub/libs/schoolgateway"
 	integrationprincipal "grovehub/services/integration/client/principal"
 )
@@ -192,7 +192,7 @@ func (operation *Operation) reject(writer http.ResponseWriter, request *http.Req
 	writer.Header().Set("Cache-Control", "no-store")
 	// Gateway denies before reaching service controllers. Use the same core
 	// writer so the error envelope stays consistent across services.
-	_ = httpresponse.WriteErrorContext(request.Context(), writer, status, gatewayDefinition(status))
+	_ = corehttp.WriteErrorContext(request.Context(), writer, status, gatewayDefinition(status))
 }
 
 // rejectForbidden records a diagnostic reason only in backend logs. The HTTP

@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	httprequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/request"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
 	definitions "grovehub/services/identity/internal/app/constants/error"
 	protected "grovehub/services/identity/internal/app/controller/accountrole/protected"
@@ -36,7 +36,7 @@ func (controller *Controller) Get(writer http.ResponseWriter, request *http.Requ
 
 func (controller *Controller) Preview(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.PreviewRequest, dto.Preview]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		InvalidParams: definitions.InvalidRequest,
 		Fallback: definitions.Internal,

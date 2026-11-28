@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
-	httprequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/request"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
 	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	definitions "grovehub/services/identity/internal/app/constants/error"
@@ -53,7 +53,7 @@ func (controller *Controller) PersonProfile(writer http.ResponseWriter, request 
 
 func (controller *Controller) Create(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.CreateRequest, dto.CreateResult]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
 		Service: func(ctx context.Context, input dto.CreateRequest) (rest.Result[dto.CreateResult], error) {
@@ -65,7 +65,7 @@ func (controller *Controller) Create(writer http.ResponseWriter, request *http.R
 
 func (controller *Controller) Search(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.SearchRequest, coresearch.Result[dto.Account]]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
 		Service: func(ctx context.Context, input dto.SearchRequest) (rest.Result[coresearch.Result[dto.Account]], error) {
@@ -101,7 +101,7 @@ func (controller *Controller) Get(writer http.ResponseWriter, request *http.Requ
 
 func (controller *Controller) Update(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.UpdateRequest, dto.Account]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidParams: definitions.InvalidRequest,
 		InvalidRequestBody: definitions.InvalidRequest,
 		Fallback: definitions.Internal,

@@ -12,7 +12,7 @@ import (
 
 	coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
 	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-	httprequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/request"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
 )
 
@@ -130,7 +130,7 @@ var _ = Describe("HTTP REST executor", func() {
 	It("reports strict JSON decode failures with the configured safe error", func() {
 		writer := httptest.NewRecorder()
 		rest.Run(writer, routeRequest(http.MethodPost, "/people", `{"firstName":"Ana","unknown":"secret"}`, ""), rest.Config[rest.Empty, rest.Empty, personBody, personResponse]{
-			Decode: httprequest.DecodeStrictJSON,
+			Decode: corehttp.DecodeStrictJSON,
 			InvalidBody: invalidBody,
 			Fallback: fallback,
 			Service: func(_ context.Context, _ rest.Input[rest.Empty, rest.Empty, personBody]) (rest.Result[personResponse], error) {

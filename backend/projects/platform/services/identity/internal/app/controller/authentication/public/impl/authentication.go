@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	httprequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/request"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
 	definitions "grovehub/services/identity/internal/app/constants/error"
 	"grovehub/services/identity/internal/app/controller/helpers"
@@ -28,7 +28,7 @@ func New(service auth.Service, manager cookies.Manager) public.AuthenticationCon
 
 func (controller *Controller) Login(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.LoginRequest, dto.LoginResult]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
 		Service: func(ctx context.Context, input dto.LoginRequest) (rest.Result[dto.LoginResult], error) {
@@ -62,7 +62,7 @@ func (controller *Controller) Refresh(writer http.ResponseWriter, request *http.
 
 func (controller *Controller) ForgotPassword(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.ForgotPasswordRequest, dto.AcceptedResult]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
 		Service: func(ctx context.Context, input dto.ForgotPasswordRequest) (rest.Result[dto.AcceptedResult], error) {
@@ -145,7 +145,7 @@ func (controller *Controller) ResetGrantStatus(writer http.ResponseWriter, reque
 
 func (controller *Controller) ResetPassword(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.ResetPasswordRequest, dto.StatusResult]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
 		Service: func(ctx context.Context, input dto.ResetPasswordRequest) (rest.Result[dto.StatusResult], error) {

@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 	"go.opentelemetry.io/otel/codes"
 
-	httpheaders "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/headers"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 )
 
 var _ = Describe("Edge request observability", func() {
@@ -15,7 +15,7 @@ var _ = Describe("Edge request observability", func() {
 		observed := serveObservedRequest(http.StatusNotFound)
 		endedSpans := spanRecorder.Ended()
 
-		Expect(observed.recorder.Header().Get(httpheaders.TraceID)).To(Equal(observed.traceID))
+		Expect(observed.recorder.Header().Get(corehttp.TraceID)).To(Equal(observed.traceID))
 		Expect(observed.log).To(HaveKeyWithValue("level", "ERROR"))
 		Expect(observed.log).To(HaveKeyWithValue("traceId", observed.traceID))
 		Expect(observed.log).To(HaveKeyWithValue("spanId", observed.spanID))

@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	httprequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/request"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
 	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	definitions "grovehub/services/identity/internal/app/constants/error"
@@ -33,7 +33,7 @@ func NewWithMutations(service approval.Reader, mutations approval.Service, execu
 
 func (controller *Controller) History(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.SearchRequest, coresearch.Result[dto.Summary]]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
 		Service: func(ctx context.Context, input dto.SearchRequest) (rest.Result[coresearch.Result[dto.Summary]], error) {
@@ -45,7 +45,7 @@ func (controller *Controller) History(writer http.ResponseWriter, request *http.
 
 func (controller *Controller) Inbox(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.SearchRequest, coresearch.Result[dto.Summary]]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
 		Service: func(ctx context.Context, input dto.SearchRequest) (rest.Result[coresearch.Result[dto.Summary]], error) {

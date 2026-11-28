@@ -9,7 +9,7 @@ import (
 
 	coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
 	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-	httprequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/request"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 	corerequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/request"
 )
 
@@ -62,7 +62,7 @@ func (err *DecodeError) Unwrap() error { return err.Err }
 // Prefer Run for HTTP controllers, so error handling and response output are shared.
 func ReadBody[T any](request *http.Request, decode func(*http.Request, any) error, rules coreannotation.ValidationRules[T]) (T, error) {
 	var value T
-	if decode == nil { decode = httprequest.DecodeJSON }
+	if decode == nil { decode = corehttp.DecodeJSON }
 	if err := decode(request, &value); err != nil { return value, &DecodeError{Err: err} }
 	return coreannotation.Process(value, rules)
 }

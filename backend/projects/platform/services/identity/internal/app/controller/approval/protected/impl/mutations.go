@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
-	httprequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/request"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
 	kind "grovehub/services/identity/internal/app/constants/approval"
 	definitions "grovehub/services/identity/internal/app/constants/error"
@@ -17,7 +17,7 @@ import (
 
 func (controller *Controller) SubmitLifecycle(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.LifecycleRequest, dto.Summary]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
 		Service: func(ctx context.Context, input dto.LifecycleRequest) (rest.Result[dto.Summary], error) {
@@ -33,7 +33,7 @@ func (controller *Controller) SubmitLifecycle(writer http.ResponseWriter, reques
 
 func (controller *Controller) SubmitPermissions(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.PermissionRequest, dto.Summary]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
 		Service: func(ctx context.Context, input dto.PermissionRequest) (rest.Result[dto.Summary], error) {
@@ -49,7 +49,7 @@ func (controller *Controller) SubmitPermissions(writer http.ResponseWriter, requ
 
 func (controller *Controller) SubmitAssignment(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.AssignmentRequest, dto.Summary]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
 		Service: func(ctx context.Context, input dto.AssignmentRequest) (rest.Result[dto.Summary], error) {
@@ -65,7 +65,7 @@ func (controller *Controller) SubmitAssignment(writer http.ResponseWriter, reque
 
 func (controller *Controller) Approve(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.DecisionRequest, dto.Summary]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		InvalidParams: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
@@ -81,7 +81,7 @@ func (controller *Controller) Approve(writer http.ResponseWriter, request *http.
 
 func (controller *Controller) Reject(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.DecisionRequest, dto.Summary]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		InvalidParams: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
@@ -97,7 +97,7 @@ func (controller *Controller) Reject(writer http.ResponseWriter, request *http.R
 
 func (controller *Controller) Cancel(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.VersionRequest, dto.Summary]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		InvalidParams: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
@@ -113,7 +113,7 @@ func (controller *Controller) Cancel(writer http.ResponseWriter, request *http.R
 
 func (controller *Controller) Execute(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.VersionRequest, dto.Summary]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		InvalidParams: definitions.InvalidRequest,
 		Fallback: definitions.Internal,

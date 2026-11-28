@@ -3,7 +3,7 @@ package impl
 import (
 	"net/http"
 	"strings"
-	httpresponse "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/response"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 
 		controllerhelpers "grovehub/services/integration/internal/app/controller/helpers"
 	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
@@ -40,5 +40,5 @@ func (c *Controller) FinishOAuth(w http.ResponseWriter, r *http.Request) {
 		c.writeServiceError(w, r, err)
 		return
 	}
-	_ = httpresponse.WriteSuccess(w, http.StatusOK, result)
+	_ = corehttp.WriteSuccess(w, http.StatusOK, result)
 }

@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-	httprequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/request"
-	httpresponse "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/response"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
+
 	clientprincipal "grovehub/services/integration/client/principal"
 	integrationerrors "grovehub/services/integration/internal/app/constants/error"
 	connectionprotected "grovehub/services/integration/internal/app/controller/connection/protected"
@@ -68,7 +68,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req connectiondto.CreateConnection
-	if err := httprequest.DecodeStrictJSON(r, &req); err != nil {
+	if err := corehttp.DecodeStrictJSON(r, &req); err != nil {
 		writeError(w, r, http.StatusBadRequest, integrationerrors.Invalid)
 		return
 	}
@@ -81,7 +81,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 		c.writeServiceError(w, r, err)
 		return
 	}
-	_ = httpresponse.WriteSuccess(w, http.StatusCreated, result)
+	_ = corehttp.WriteSuccess(w, http.StatusCreated, result)
 }
 
 func (c *Controller) Get(w http.ResponseWriter, r *http.Request) {
@@ -99,7 +99,7 @@ func (c *Controller) Get(w http.ResponseWriter, r *http.Request) {
 		writeError(w, r, http.StatusForbidden, integrationerrors.Forbidden)
 		return
 	}
-	_ = httpresponse.WriteSuccess(w, http.StatusOK, result)
+	_ = corehttp.WriteSuccess(w, http.StatusOK, result)
 }
 
 func (c *Controller) List(w http.ResponseWriter, r *http.Request) {
@@ -113,7 +113,7 @@ func (c *Controller) List(w http.ResponseWriter, r *http.Request) {
 		c.writeServiceError(w, r, err)
 		return
 	}
-	_ = httpresponse.WriteSuccess(w, http.StatusOK, rows)
+	_ = corehttp.WriteSuccess(w, http.StatusOK, rows)
 }
 
 func (c *Controller) Disconnect(w http.ResponseWriter, r *http.Request) {
@@ -137,7 +137,7 @@ func (c *Controller) Disconnect(w http.ResponseWriter, r *http.Request) {
 		c.writeServiceError(w, r, err)
 		return
 	}
-	_ = httpresponse.WriteSuccess(w, http.StatusOK, result)
+	_ = corehttp.WriteSuccess(w, http.StatusOK, result)
 }
 
 func (c *Controller) BeginOAuth(w http.ResponseWriter, r *http.Request) {
@@ -150,7 +150,7 @@ func (c *Controller) BeginOAuth(w http.ResponseWriter, r *http.Request) {
 		c.writeServiceError(w, r, err)
 		return
 	}
-	_ = httpresponse.WriteSuccess(w, http.StatusOK, result)
+	_ = corehttp.WriteSuccess(w, http.StatusOK, result)
 }
 
 func (c *Controller) RunTest(w http.ResponseWriter, r *http.Request) {
@@ -161,7 +161,7 @@ func (c *Controller) RunTest(w http.ResponseWriter, r *http.Request) {
 	var payload struct {
 		Direction string `json:"direction"`
 	}
-	if err := httprequest.DecodeStrictJSON(r, &payload); err != nil {
+	if err := corehttp.DecodeStrictJSON(r, &payload); err != nil {
 		writeError(w, r, http.StatusBadRequest, integrationerrors.Invalid)
 		return
 	}
@@ -170,7 +170,7 @@ func (c *Controller) RunTest(w http.ResponseWriter, r *http.Request) {
 		c.writeServiceError(w, r, err)
 		return
 	}
-	_ = httpresponse.WriteSuccess(w, http.StatusOK, result)
+	_ = corehttp.WriteSuccess(w, http.StatusOK, result)
 }
 
 func (c *Controller) ListTests(w http.ResponseWriter, r *http.Request) {
@@ -183,7 +183,7 @@ func (c *Controller) ListTests(w http.ResponseWriter, r *http.Request) {
 		c.writeServiceError(w, r, err)
 		return
 	}
-	_ = httpresponse.WriteSuccess(w, http.StatusOK, result)
+	_ = corehttp.WriteSuccess(w, http.StatusOK, result)
 }
 
 func (c *Controller) Watch(w http.ResponseWriter, r *http.Request) {
@@ -196,7 +196,7 @@ func (c *Controller) Watch(w http.ResponseWriter, r *http.Request) {
 		c.writeServiceError(w, r, err)
 		return
 	}
-	_ = httpresponse.WriteSuccess(w, http.StatusOK, result)
+	_ = corehttp.WriteSuccess(w, http.StatusOK, result)
 }
 
 func (c *Controller) ExecuteAction(w http.ResponseWriter, r *http.Request) {
@@ -212,7 +212,7 @@ func (c *Controller) ExecuteAction(w http.ResponseWriter, r *http.Request) {
 	var payload struct {
 		Input json.RawMessage `json:"input"`
 	}
-	if err := httprequest.DecodeStrictJSON(r, &payload); err != nil {
+	if err := corehttp.DecodeStrictJSON(r, &payload); err != nil {
 		writeError(w, r, http.StatusBadRequest, integrationerrors.Invalid)
 		return
 	}
@@ -221,7 +221,7 @@ func (c *Controller) ExecuteAction(w http.ResponseWriter, r *http.Request) {
 		c.writeServiceError(w, r, err)
 		return
 	}
-	_ = httpresponse.WriteSuccess(w, http.StatusOK, result)
+	_ = corehttp.WriteSuccess(w, http.StatusOK, result)
 }
 
 func (c *Controller) ConfigureSystemMailSender(w http.ResponseWriter, r *http.Request) {
@@ -232,7 +232,7 @@ func (c *Controller) ConfigureSystemMailSender(w http.ResponseWriter, r *http.Re
 		return
 	}
 	var input connectiondto.ConfigureSystemMailSender
-	if err := httprequest.DecodeStrictJSON(r, &input); err != nil {
+	if err := corehttp.DecodeStrictJSON(r, &input); err != nil {
 		writeError(w, r, http.StatusBadRequest, integrationerrors.Invalid)
 		return
 	}
@@ -245,5 +245,5 @@ func (c *Controller) ConfigureSystemMailSender(w http.ResponseWriter, r *http.Re
 		c.writeServiceError(w, r, err)
 		return
 	}
-	_ = httpresponse.WriteSuccess(w, http.StatusOK, map[string]string{"connectionId": parsed.String()})
+	_ = corehttp.WriteSuccess(w, http.StatusOK, map[string]string{"connectionId": parsed.String()})
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	httprequest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/request"
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
 	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	definitions "grovehub/services/identity/internal/app/constants/error"
@@ -26,7 +26,7 @@ func New(service role.Service) protected.RoleController {
 
 func (controller *Controller) Search(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.SearchRequest, coresearch.Result[dto.Detail]]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
 		Service: func(ctx context.Context, input dto.SearchRequest) (rest.Result[coresearch.Result[dto.Detail]], error) {
@@ -60,7 +60,7 @@ func (controller *Controller) Permissions(writer http.ResponseWriter, request *h
 
 func (controller *Controller) PreviewPermissions(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.PreviewRequest, dto.PermissionPreview]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		InvalidParams: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
@@ -73,7 +73,7 @@ func (controller *Controller) PreviewPermissions(writer http.ResponseWriter, req
 
 func (controller *Controller) CreateDraft(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.CreateRequest, dto.Detail]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
 		Service: func(ctx context.Context, input dto.CreateRequest) (rest.Result[dto.Detail], error) {
@@ -85,7 +85,7 @@ func (controller *Controller) CreateDraft(writer http.ResponseWriter, request *h
 
 func (controller *Controller) UpdateMetadata(writer http.ResponseWriter, request *http.Request) {
 	rest.RunStruct(writer, request, rest.StructConfig[dto.UpdateRequest, dto.Detail]{
-		Decode: httprequest.DecodeStrictJSON,
+		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		InvalidParams: definitions.InvalidRequest,
 		Fallback: definitions.Internal,

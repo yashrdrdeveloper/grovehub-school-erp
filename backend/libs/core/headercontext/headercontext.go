@@ -3,12 +3,20 @@
 package headercontext
 
 import (
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/constants"
 	"context"
 	"net/http"
 
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/contracts"
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/operations/metadata"
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/operations/middleware"
+)
+
+// Header names owned by the inbound metadata capability.
+const (
+	HeaderIdempotencyKey = constants.HeaderIdempotencyKey
+	HeaderCorrelationID = constants.HeaderCorrelationID
+	HeaderRequestID = constants.HeaderRequestID
 )
 
 // Values is a small immutable copy of trusted header metadata.

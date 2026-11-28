@@ -3,7 +3,7 @@ package read
 import (
 	"net/http"
 
-	httpheaders "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/headers"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/constants"
 	coreidempotency "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency"
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/contracts"
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext/internal/src/helpers"
@@ -11,7 +11,7 @@ import (
 
 // HTTPHeaders reads only supported metadata and validates it before returning any values.
 func HTTPHeaders(header http.Header) (contracts.Values, error) {
-	idempotency, err := helpers.ReadOne(header, httpheaders.IdempotencyKey)
+	idempotency, err := helpers.ReadOne(header, constants.HeaderIdempotencyKey)
 	if err != nil {
 		return contracts.Values{}, err
 	}
@@ -21,11 +21,11 @@ func HTTPHeaders(header http.Header) (contracts.Values, error) {
 			return contracts.Values{}, contracts.ErrInvalidHeader
 		}
 	}
-	correlation, err := helpers.ReadOne(header, httpheaders.CorrelationID)
+	correlation, err := helpers.ReadOne(header, constants.HeaderCorrelationID)
 	if err != nil || !helpers.ValidID(correlation) {
 		return contracts.Values{}, contracts.ErrInvalidHeader
 	}
-	requestID, err := helpers.ReadOne(header, httpheaders.RequestID)
+	requestID, err := helpers.ReadOne(header, constants.HeaderRequestID)
 	if err != nil || !helpers.ValidID(requestID) {
 		return contracts.Values{}, contracts.ErrInvalidHeader
 	}
