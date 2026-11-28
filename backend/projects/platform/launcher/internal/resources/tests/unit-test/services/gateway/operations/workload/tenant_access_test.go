@@ -1,6 +1,7 @@
 package workload_test
 
 import (
+ tenantaccess "grovehub/launcher/internal/src/services/gateway/operations/tenant/access"
  . "grovehub/launcher/internal/src/services/gateway/operations/workload"
  "grovehub/launcher/internal/src/services/gateway/policies"
  "context"
@@ -22,8 +23,8 @@ import (
 func TestTenantAccessClient(t *testing.T){
  id:=uuid.NewString()
  pub,priv,err:=ed25519.GenerateKey(rand.Reader);if err!=nil{t.Fatal(err)}
- keys,err:=core.NewEd25519Credentials([]core.WorkloadKeyConfig{{KeyID:"access",PublicKey:base64.RawURLEncoding.EncodeToString(pub),Issuer:TenantAccessSubject,Subject:TenantAccessSubject,Scopes:[]string{TenantAccessScope}}});if err!=nil{t.Fatal(err)}
- verifier:=core.ScopedWorkloadVerifier{Credentials:keys,Audience:"school",Routes:map[string]core.RoutePolicy{"GET /school/restricted/registry/schools/{schoolId}/access-check":{Scope:TenantAccessScope}}}
+ keys,err:=core.NewEd25519Credentials([]core.WorkloadKeyConfig{{KeyID:"access",PublicKey:base64.RawURLEncoding.EncodeToString(pub),Issuer:tenantaccess.TenantAccessSubject,Subject:tenantaccess.TenantAccessSubject,Scopes:[]string{tenantaccess.TenantAccessScope}}});if err!=nil{t.Fatal(err)}
+ verifier:=core.ScopedWorkloadVerifier{Credentials:keys,Audience:"school",Routes:map[string]core.RoutePolicy{"GET /school/restricted/registry/schools/{schoolId}/access-check":{Scope:tenantaccess.TenantAccessScope}}}
  status:=204
  generation:="1"
  server:=httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter,r *http.Request){
@@ -32,9 +33,9 @@ func TestTenantAccessClient(t *testing.T){
   if generation!=""{w.Header().Set("X-GH-Session-Generation",generation)}
   w.WriteHeader(status)
  }));defer server.Close()
- config:=TenantAccessConfig{Origin:server.URL,KeyID:"access",PrivateKey:base64.RawURLEncoding.EncodeToString(priv)}
- check,err:=NewTenantAccess(config);if err!=nil{t.Fatal(err)}
- lookup,err:=NewTenantState(config);if err!=nil{t.Fatal(err)}
+ config:=tenantaccess.TenantAccessConfig{Origin:server.URL,KeyID:"access",PrivateKey:base64.RawURLEncoding.EncodeToString(priv)}
+ check,err:=tenantaccess.NewTenantAccess(config);if err!=nil{t.Fatal(err)}
+ lookup,err:=tenantaccess.NewTenantState(config);if err!=nil{t.Fatal(err)}
  for _,code:=range []int{204,403,503,302,200}{
   status=code
   if got,err:=check(context.Background(),id);(err==nil)!=(code==204)||(code==204&&got!=1){t.Fatal("incorrect decision",code,got,err)}
@@ -50,7 +51,7 @@ func TestTenantAccessClient(t *testing.T){
   if _,err:=check(context.Background(),id);err==nil{t.Fatal("invalid generation accepted",bad)}
  }
  if _,err=check(context.Background(),"invalid");err==nil{t.Fatal("invalid ID accepted")}
- if _,err=NewTenantAccess(TenantAccessConfig{Origin:server.URL});err==nil{t.Fatal("partial configuration accepted")}
+ if _,err=tenantaccess.NewTenantAccess(tenantaccess.TenantAccessConfig{Origin:server.URL});err==nil{t.Fatal("partial configuration accepted")}
 }
 type tenantIdentity struct{tenant string}
 func(i tenantIdentity) VerifyAccess(context.Context,string)(school.Principal,error){return school.Principal{TenantID:i.tenant,AccountID:"account",PersonGID:"person",SessionID:"session",SessionGeneration:1},nil}

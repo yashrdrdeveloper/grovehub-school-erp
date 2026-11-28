@@ -1,4 +1,4 @@
-package external
+package helpers
 
 import (
  "net/http"
@@ -8,7 +8,7 @@ import (
 
 // Only the explicitly scoped School workload may supply an identity proof.
 // Never interpret browser-supplied identity headers before workload verification.
-func adaptIdentityProof(r *http.Request) bool {
+func AdaptIdentityProof(r *http.Request) bool {
  var cookie,prefix string
  switch r.Pattern {
  case "POST /identity/restricted/auth/refresh":

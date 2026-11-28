@@ -1,6 +1,7 @@
-package workload
+package access
 
 import (
+ "grovehub/launcher/internal/src/services/gateway/operations/workload/helpers"
  "context"
  "crypto/ed25519"
  "encoding/base64"
@@ -35,12 +36,12 @@ func NewTenantState(c TenantAccessConfig)(schoolgateway.TenantStateLookup,error)
  base:=http.DefaultTransport.(*http.Transport).Clone();base.Proxy=nil
  client,err:=core.NewWorkloadHTTPClient(&core.WorkloadTransport{Origin:origin,KeyID:c.KeyID,Issuer:TenantAccessSubject,Subject:TenantAccessSubject,Audience:"school",PrivateKey:ed25519.PrivateKey(private),Base:base,Policy:func(r *http.Request)(core.WorkloadClaims,error){
   id:=strings.TrimSuffix(strings.TrimPrefix(r.URL.Path,"/school/restricted/registry/schools/"),"/access-check")
-  if !validSchoolID(id)||r.URL.Path!="/school/restricted/registry/schools/"+id+"/access-check"||r.Method!="GET"||r.URL.RawQuery!=""||r.URL.RawPath!=""||r.URL.ForceQuery||r.ContentLength!=0{return core.WorkloadClaims{},core.ErrWorkloadDenied}
+  if !helpers.ValidSchoolID(id)||r.URL.Path!="/school/restricted/registry/schools/"+id+"/access-check"||r.Method!="GET"||r.URL.RawQuery!=""||r.URL.RawPath!=""||r.URL.ForceQuery||r.ContentLength!=0{return core.WorkloadClaims{},core.ErrWorkloadDenied}
   return core.WorkloadClaims{Scopes:[]string{TenantAccessScope}},nil
  }})
  if err!=nil{return nil,err}
  return func(ctx context.Context,id string)(schoolgateway.TenantState,error){
-  if !validSchoolID(id){return schoolgateway.TenantState{},schoolgateway.ErrTenantDenied}
+  if !helpers.ValidSchoolID(id){return schoolgateway.TenantState{},schoolgateway.ErrTenantDenied}
   ctx,cancel:=context.WithTimeout(ctx,3*time.Second);defer cancel()
   req,err:=http.NewRequestWithContext(ctx,"GET",strings.TrimRight(origin.String(),"/")+"/school/restricted/registry/schools/"+id+"/access-check",nil)
   if err!=nil{return schoolgateway.TenantState{},schoolgateway.ErrTenantDenied}

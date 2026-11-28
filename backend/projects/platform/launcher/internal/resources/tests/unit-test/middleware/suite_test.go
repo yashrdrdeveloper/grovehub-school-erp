@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
-	"testing"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -16,7 +15,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	oteltrace "go.opentelemetry.io/otel/trace"
 
-	launcherMiddleware "grovehub/launcher/internal/src/middleware"
+	launcherMiddleware "grovehub/launcher/internal/src/middleware/observability/impl"
 	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
 )
 
@@ -34,19 +33,16 @@ var (
 	spanRecorder       *tracetest.SpanRecorder
 )
 
-func TestLauncherMiddlewareUnit(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Launcher Middleware Unit Tests")
-}
 
-var _ = BeforeEach(func() {
+// @BeforeEach
+func setupObservability() {
 	spanRecorder = tracetest.NewSpanRecorder()
 	testTracerProvider = sdktrace.NewTracerProvider(
 		sdktrace.WithSampler(sdktrace.AlwaysSample()),
 		sdktrace.WithSpanProcessor(spanRecorder),
 	)
 	otel.SetTracerProvider(testTracerProvider)
-})
+}
 
 var _ = AfterEach(func() {
 	Expect(testTracerProvider.Shutdown(context.Background())).To(Succeed())
@@ -60,9 +56,8 @@ func serveObservedRequest(status int) observedRequest {
 
 	buffer := &bytes.Buffer{}
 	logger := slog.New(slog.NewJSONHandler(buffer, nil))
-	handler := launcherMiddleware.RequestObservability(
-		logger,
-		http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+	handler := launcherMiddleware.New(logger).Wrap(
+http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
 			writer.WriteHeader(status)
 			_, _ = writer.Write([]byte("response"))
 		}),

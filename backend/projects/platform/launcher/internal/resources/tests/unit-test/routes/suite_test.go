@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"testing"
 
-	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
@@ -20,10 +18,6 @@ const (
 	expectedRouteErrorReason = "API route not found"
 )
 
-func TestLauncherRoutingUnit(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Launcher Routing Unit Tests")
-}
 
 func newFallbackMux() *http.ServeMux {
 	mux := http.NewServeMux()

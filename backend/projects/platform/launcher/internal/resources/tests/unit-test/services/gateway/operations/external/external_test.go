@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	external "grovehub/launcher/internal/src/services/gateway/operations/external"
+	external "grovehub/launcher/internal/src/services/gateway/operations/external/impl"
 	schoolgateway "grovehub/launcher/session"
 )
 

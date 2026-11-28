@@ -10,7 +10,9 @@ import (
 	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
 )
 
-var _ = Describe("Edge request observability", func() {
+// @Testing suite=LauncherMiddleware
+func ObservabilitySpecs() {
+ Describe("Edge request observability", func() {
 	It("returns the trace ID and correlates an HTTP failure with an error span", func() {
 		observed := serveObservedRequest(http.StatusNotFound)
 		endedSpans := spanRecorder.Ended()
@@ -26,3 +28,5 @@ var _ = Describe("Edge request observability", func() {
 		Expect(endedSpans[0].Events()).NotTo(BeEmpty())
 	})
 })
+
+}

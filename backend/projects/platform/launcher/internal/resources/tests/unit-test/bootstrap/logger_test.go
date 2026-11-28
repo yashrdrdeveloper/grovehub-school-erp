@@ -7,7 +7,9 @@ import (
 	bootstrap "grovehub/launcher/internal/src/bootstrap/impl"
 )
 
-var _ = Describe("Bootstrap logger", func() {
+// @Testing suite=LauncherBootstrap
+func LoggerSpecs() {
+ Describe("Bootstrap logger", func() {
 	It("uses the exact levels configured in GROVEHUB_LOG_LEVELS", func() {
 		setLogLevels("ERROR,WARN")
 		buffer := newLogBuffer()
@@ -36,3 +38,5 @@ var _ = Describe("Bootstrap logger", func() {
 		Expect(err.Error()).To(ContainSubstring("unsupported log level"))
 	})
 })
+
+}

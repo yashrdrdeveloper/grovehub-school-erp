@@ -10,7 +10,9 @@ import (
 	routing "grovehub/launcher/internal/src/routes"
 )
 
-var _ = Describe("Fallback routing", func() {
+// @Testing suite=LauncherRouting
+func RoutingSpecs(){
+ Describe("Fallback routing", func() {
 	It("returns the standard not-found response for an unknown route", func() {
 		recorder := serveRequest(newFallbackMux(), http.MethodGet, unknownPath)
 		response := decodeRouteError(recorder)
@@ -33,3 +35,5 @@ var _ = Describe("Fallback routing", func() {
 		Expect(recorder.Code).To(Equal(http.StatusNoContent))
 	})
 })
+
+}

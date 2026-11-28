@@ -1,6 +1,13 @@
 package workload
 
 import (
+ "grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/internalcatalog"
+ "grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/operatoraudit"
+ "grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/operatorauditread"
+ "grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/schoolexecution"
+ "grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/schoolreceipt"
+ "grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/schoolreceiptread"
+ "grovehub/launcher/internal/src/services/gateway/operations/workload/strategies/schoolstatusreceipt"
  "context"
  "encoding/json"
  "errors"
@@ -26,13 +33,13 @@ type delegatedIdentity interface {
 
 type platformWorkloads struct {
  scoped core.ScopedWorkloadVerifier
- internalCatalog core.ScopedWorkloadVerifier
- operatorAudit core.ScopedWorkloadVerifier
- operatorAuditRead core.ScopedWorkloadVerifier
- schoolExecution core.ScopedWorkloadVerifier
- schoolReceipt core.ScopedWorkloadVerifier
- schoolStatusReceipt core.ScopedWorkloadVerifier
- receiptRead core.ScopedWorkloadVerifier
+ internalCatalog core.WorkloadVerifier
+ operatorAudit core.WorkloadVerifier
+ operatorAuditRead core.WorkloadVerifier
+ schoolExecution core.WorkloadVerifier
+ schoolReceipt core.WorkloadVerifier
+ schoolStatusReceipt core.WorkloadVerifier
+ receiptRead core.WorkloadVerifier
  policies map[string]core.RoutePolicy
  identity delegatedIdentity
  webhook core.WorkloadVerifier
@@ -64,35 +71,35 @@ func NewPlatformWorkloads(raw string, identity delegatedIdentity, webhook core.W
  var extra any
  if err:=decoder.Decode(&extra);err!=io.EOF {return nil,errors.New("invalid trailing workload configuration")}
  if len(cfg.InternalToolKeys)>0 {
-  catalog,err:=NewInternalCatalogVerifier(cfg.InternalToolKeys,cfg.Keys)
+  catalog,err:=internalcatalog.New(cfg.InternalToolKeys,cfg.Keys)
   if err!=nil{return nil,err}
   v.internalCatalog=catalog
  }
  if len(cfg.OperatorAuditKeys)>0{
   other:=append(append([]core.WorkloadKeyConfig(nil),cfg.Keys...),cfg.InternalToolKeys...)
-  audit,err:=NewOperatorAuditVerifier(cfg.OperatorAuditKeys,other)
+  audit,err:=operatoraudit.New(cfg.OperatorAuditKeys,other)
   if err!=nil{return nil,err};v.operatorAudit=audit
  }
  if len(cfg.OperatorAuditReadKeys)>0{
   other:=append(append(append([]core.WorkloadKeyConfig(nil),cfg.Keys...),cfg.InternalToolKeys...),cfg.OperatorAuditKeys...)
-  reader,err:=NewOperatorAuditReadVerifier(cfg.OperatorAuditReadKeys,other)
+  reader,err:=operatorauditread.New(cfg.OperatorAuditReadKeys,other)
   if err!=nil{return nil,err};v.operatorAuditRead=reader
  }
  if len(cfg.SchoolExecutionKeys)>0{
   other:=append(append(append(append([]core.WorkloadKeyConfig(nil),cfg.Keys...),cfg.InternalToolKeys...),cfg.OperatorAuditKeys...),cfg.OperatorAuditReadKeys...)
-  school,err:=NewSchoolExecutionVerifier(cfg.SchoolExecutionKeys,other);if err!=nil{return nil,err};v.schoolExecution=school
+  school,err:=schoolexecution.New(cfg.SchoolExecutionKeys,other);if err!=nil{return nil,err};v.schoolExecution=school
  }
  if len(cfg.SchoolReceiptKeys)>0{
   other:=append(append(append(append(append([]core.WorkloadKeyConfig(nil),cfg.Keys...),cfg.InternalToolKeys...),cfg.OperatorAuditKeys...),cfg.OperatorAuditReadKeys...),cfg.SchoolExecutionKeys...)
-  receipt,err:=NewReceiptVerifier(cfg.SchoolReceiptKeys,other);if err!=nil{return nil,err};v.schoolReceipt=receipt
+  receipt,err:=schoolreceipt.New(cfg.SchoolReceiptKeys,other);if err!=nil{return nil,err};v.schoolReceipt=receipt
  }
  if len(cfg.SchoolReceiptReadKeys)>0{
   other:=append(append(append(append(append(append([]core.WorkloadKeyConfig(nil),cfg.Keys...),cfg.InternalToolKeys...),cfg.OperatorAuditKeys...),cfg.OperatorAuditReadKeys...),cfg.SchoolExecutionKeys...),cfg.SchoolReceiptKeys...)
-  reader,err:=NewReceiptReadVerifier(cfg.SchoolReceiptReadKeys,other);if err!=nil{return nil,err};v.receiptRead=reader
+  reader,err:=schoolreceiptread.New(cfg.SchoolReceiptReadKeys,other);if err!=nil{return nil,err};v.receiptRead=reader
  }
  if len(cfg.SchoolStatusReceiptKeys)>0{
   other:=append(append(append(append(append(append(append([]core.WorkloadKeyConfig(nil),cfg.Keys...),cfg.InternalToolKeys...),cfg.OperatorAuditKeys...),cfg.OperatorAuditReadKeys...),cfg.SchoolExecutionKeys...),cfg.SchoolReceiptKeys...),cfg.SchoolReceiptReadKeys...)
-  status,err:=NewStatusReceiptVerifier(cfg.SchoolStatusReceiptKeys,other);if err!=nil{return nil,err};v.schoolStatusReceipt=status
+  status,err:=schoolstatusreceipt.New(cfg.SchoolStatusReceiptKeys,other);if err!=nil{return nil,err};v.schoolStatusReceipt=status
  }
  if len(cfg.Keys)==0&&len(cfg.Routes)==0&&(len(cfg.InternalToolKeys)>0||len(cfg.OperatorAuditKeys)>0||len(cfg.OperatorAuditReadKeys)>0||len(cfg.SchoolExecutionKeys)>0||len(cfg.SchoolReceiptKeys)>0||len(cfg.SchoolReceiptReadKeys)>0||len(cfg.SchoolStatusReceiptKeys)>0){return v,nil}
  // Mail diagnostics require a dedicated single-scope, nondelegating operator key.
@@ -129,14 +136,14 @@ func (v *platformWorkloads) VerifyWorkload(ctx context.Context,r *http.Request)(
   if v.webhook==nil {return nil,core.ErrWorkloadDenied}
   return v.webhook.VerifyWorkload(ctx,r)
  }
- if r.Pattern==StatusReceiptRoute{return v.verifyStatusReceipt(ctx,r)}
- if r.Pattern==ReceiptReadRoute{return v.verifyReceiptRead(ctx,r)}
- if r.Pattern==ReceiptRoute{return v.verifyReceipt(ctx,r)}
- if r.Pattern==SchoolAuditCheckRoute{return v.verifySchoolExecution(ctx,r)}
- if r.Pattern==OperatorAuditReadRoute{return v.verifyOperatorAuditRead(ctx,r)}
- if r.Pattern==OperatorAuditRoute{return v.verifyOperatorAudit(ctx,r)}
- if r.Pattern==InternalCatalogRoute {
-  if verified,err:=v.verifyInternalCatalog(ctx,r);err==nil{return verified,nil}
+ if r.Pattern==schoolstatusreceipt.StatusReceiptRoute{return verifyStrategy(v.schoolStatusReceipt,ctx,r)}
+ if r.Pattern==schoolreceiptread.ReceiptReadRoute{return verifyStrategy(v.receiptRead,ctx,r)}
+ if r.Pattern==schoolreceipt.ReceiptRoute{return verifyStrategy(v.schoolReceipt,ctx,r)}
+ if r.Pattern==schoolexecution.SchoolAuditCheckRoute{return verifyStrategy(v.schoolExecution,ctx,r)}
+ if r.Pattern==operatorauditread.OperatorAuditReadRoute{return verifyStrategy(v.operatorAuditRead,ctx,r)}
+ if r.Pattern==operatoraudit.OperatorAuditRoute{return verifyStrategy(v.operatorAudit,ctx,r)}
+ if r.Pattern==internalcatalog.InternalCatalogRoute {
+  if verified,err:=verifyStrategy(v.internalCatalog,ctx,r);err==nil{return verified,nil}
  }
  ctx=school.WithTenantCheck(ctx,v.tenantCheck)
  verified,err:=v.scoped.VerifyWorkload(ctx,r)
@@ -203,3 +210,5 @@ func foundationRoute(pattern string) bool {
  default: return false
  }
 }
+
+func verifyStrategy(verifier core.WorkloadVerifier,ctx context.Context,r *http.Request)(context.Context,error){if verifier==nil{return nil,core.ErrWorkloadDenied};return verifier.VerifyWorkload(ctx,r)}

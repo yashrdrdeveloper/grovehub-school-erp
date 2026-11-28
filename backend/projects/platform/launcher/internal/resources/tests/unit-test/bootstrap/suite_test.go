@@ -3,7 +3,6 @@ package bootstrap_test
 import (
 	"bytes"
 	"os"
-	"testing"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -11,10 +10,6 @@ import (
 
 const logLevelsEnvironmentVariable = "GROVEHUB_LOG_LEVELS"
 
-func TestLauncherBootstrapUnit(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Launcher Bootstrap Unit Tests")
-}
 
 func setLogLevels(value string) {
 	previousValue, existed := os.LookupEnv(logLevelsEnvironmentVariable)

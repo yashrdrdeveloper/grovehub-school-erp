@@ -7,7 +7,7 @@ import (
  "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
  "go.opentelemetry.io/otel/attribute"
  "go.opentelemetry.io/otel/trace"
- "grovehub/launcher/internal/src/middleware"
+ observability "grovehub/launcher/internal/src/middleware/observability/impl"
  coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
  headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
  coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
@@ -16,9 +16,8 @@ func newEdgeHandler(logger *slog.Logger,mux *http.ServeMux,external http.Handler
 	restrictedHandler := coregateway.RestrictedOnly(mux, external)
 	edgeService := coretelemetry.ServiceLauncherEdge
 	edgeHandler := otelhttp.NewHandler(
-		middleware.RequestObservability(
-			logger,
-			headercontext.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observability.New(logger).Wrap(
+headercontext.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				_, pattern := mux.Handler(r)
 				if pattern == "GET /health" || pattern == "GET /ready" {
 					external.ServeHTTP(w, r)

@@ -3,8 +3,9 @@ package impl
 import (
  "net/http"
  "grovehub/launcher/internal/src/services/gateway"
- "grovehub/launcher/internal/src/services/gateway/operations/external"
+ external "grovehub/launcher/internal/src/services/gateway/operations/external/impl"
  "grovehub/launcher/internal/src/services/gateway/operations/inprocess"
+ inprocessimpl "grovehub/launcher/internal/src/services/gateway/operations/inprocess/impl"
  coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
  schoolgateway "grovehub/launcher/session"
 )
@@ -22,6 +23,6 @@ func (s *service) Internal() inprocess.Operation {return s.internal}
 func New(mux *http.ServeMux, access schoolgateway.AccessVerifier, workload coregateway.WorkloadVerifier, origin string, authorizer inprocess.Authorizer, limits ...map[string]int) gateway.Gateway {
 	return &service{
 		external: external.New(mux, access, workload, origin, limits...),
-		internal: inprocess.New(authorizer),
+		internal: inprocessimpl.New(authorizer),
 	}
 }

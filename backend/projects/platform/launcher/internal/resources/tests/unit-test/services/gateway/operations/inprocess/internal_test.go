@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	internalgateway "grovehub/launcher/internal/src/services/gateway/operations/inprocess"
+ internalimpl "grovehub/launcher/internal/src/services/gateway/operations/inprocess/impl"
 	schoolgateway "grovehub/launcher/session"
 )
 
@@ -19,7 +20,7 @@ func (allowOperation) Authorize(_ context.Context, principal schoolgateway.Princ
 }
 
 func TestInternalGatewayRejectsUnknownPrincipal(t *testing.T) {
-	gateway := internalgateway.New(allowOperation{})
+	gateway := internalimpl.New(allowOperation{})
 	called := false
 
 	_, err := internalgateway.Invoke(context.Background(), gateway, "account.get", func(context.Context) (string, error) {
@@ -32,7 +33,7 @@ func TestInternalGatewayRejectsUnknownPrincipal(t *testing.T) {
 }
 
 func TestInternalGatewayKeepsTypedResult(t *testing.T) {
-	gateway := internalgateway.New(allowOperation{})
+	gateway := internalimpl.New(allowOperation{})
 	ctx := schoolgateway.WithPrincipal(context.Background(), schoolgateway.Principal{
 		AccountID: "account",
 		SessionID: "session",
@@ -47,7 +48,7 @@ func TestInternalGatewayKeepsTypedResult(t *testing.T) {
 }
 
 func TestInternalGatewayFailsClosedWithoutAuthorizer(t *testing.T) {
-	gateway := internalgateway.New(nil)
+	gateway := internalimpl.New(nil)
 	ctx := schoolgateway.WithPrincipal(context.Background(), schoolgateway.Principal{
 		AccountID: "account",
 		SessionID: "session",

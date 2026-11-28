@@ -1,6 +1,7 @@
-package external
+package impl
 
 import (
+ "grovehub/launcher/internal/src/services/gateway/operations/ratelimit"
 	"net"
 	"net/http"
 	"sync"
@@ -9,7 +10,7 @@ import (
 
 // Limiter is a bounded per-process throttle. Production multi-replica
 // deployments must add a shared/distributed limiter at the edge.
-type Limiter struct {
+type limiter struct {
 	mu sync.Mutex
 	entries map[string]attempt
 	limits map[string]int
@@ -20,14 +21,14 @@ type attempt struct {
 	until time.Time
 }
 
-func NewLimiter(limits map[string]int) *Limiter {
+func New(limits map[string]int) ratelimit.Limiter {
 	configured := make(map[string]int, len(limits))
 	for pattern, count := range limits {
 		if count > 0 {
 			configured[pattern] = count
 		}
 	}
-	return &Limiter{entries: make(map[string]attempt), limits: configured}
+	return &limiter{entries: make(map[string]attempt), limits: configured}
 }
 
 func (limiter *Limiter) Allow(pattern string, request *http.Request) bool {
@@ -69,3 +70,5 @@ func (limiter *Limiter) Allow(pattern string, request *http.Request) bool {
 	limiter.entries[key] = entry
 	return true
 }
+
+var _ ratelimit.Limiter=(*limiter)(nil)

@@ -132,6 +132,16 @@ jobs:
       - name: Test gateway security contracts and context operations
         working-directory: backend/projects/platform
         run: go test -race -coverpkg=./launcher/session,./launcher/internal/src/services/gateway/operations/principal,./launcher/internal/src/services/gateway/operations/tenant ./launcher/internal/resources/tests/unit-test/session
+      - name: Measure Launcher coverage with generated annotations
+        working-directory: backend/projects/platform
+        run: |
+          go test -race -vet=off -overlay=.generated/overlay.json -covermode=atomic -coverpkg=./launcher,./launcher/internal/src/...,./launcher/session/... -coverprofile="$RUNNER_TEMP/launcher-coverage.out" ./launcher/internal/resources/tests/unit-test/...
+          go tool cover -func="$RUNNER_TEMP/launcher-coverage.out"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: launcher-coverage
+          path: ${{ runner.temp }}/launcher-coverage.out
       - name: Test canonical Platform workload policy
         working-directory: backend/projects/platform
         run: GOWORK=off go test -vet=off -overlay=.generated/overlay.json ./launcher/internal/resources/tests/unit-test/services/gateway/...

@@ -7,9 +7,13 @@ import (
 	"grovehub/launcher/internal/src/constants/errorcode"
 )
 
-var _ = Describe("Route error definitions", func() {
+// @Testing suite=LauncherErrorCode
+func ErrorCodeSpecs() {
+ Describe("Route error definitions", func() {
 	It("keeps the route-not-found contract stable", func() {
 		Expect(string(errorcode.RouteNotFound.Code())).To(Equal(expectedRouteNotFoundCode))
 		Expect(errorcode.RouteNotFound.Message()).To(Equal(expectedRouteNotFoundMessage))
 	})
 })
+
+}
