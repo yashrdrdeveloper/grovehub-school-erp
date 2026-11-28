@@ -238,6 +238,12 @@ func RecoverGenerated(manifest string, roots ...string) error {
 }
 
 func Materialize(overlay, manifest string) (func(), error) {
+	return MaterializeWithManifest(overlay,manifest,appendManifest)
+}
+
+// MaterializeWithManifest isolates durable manifest persistence from copying.
+// The normal Materialize entry point always appends to the physical manifest.
+func MaterializeWithManifest(overlay,manifest string,record func(string,string)error)(func(),error){
 	data, err := os.ReadFile(overlay)
 	if err != nil {
 		return nil, err
@@ -290,12 +296,7 @@ func Materialize(overlay, manifest string) (func(), error) {
 			return nil, err
 		}
 		created = append(created, logical)
-		f, err := os.OpenFile(manifest, os.O_WRONLY|os.O_APPEND, 0600)
-		if err == nil {
-			_, err = fmt.Fprintln(f, logical)
-			_ = f.Close()
-		}
-		if err != nil {
+		if err := record(manifest,logical); err != nil {
 			_ = input.Close()
 			_ = output.Close()
 			clean()
@@ -312,6 +313,16 @@ func Materialize(overlay, manifest string) (func(), error) {
 		}
 	}
 	return clean, nil
+}
+
+// appendManifest returns write and close errors so recovery never assumes
+// that a generated file was recorded when persistence actually failed.
+func appendManifest(path,logical string)error{
+	f,err:=os.OpenFile(path,os.O_WRONLY|os.O_APPEND,0600)
+	if err!=nil{return err}
+	_,writeErr:=fmt.Fprintln(f,logical)
+	closeErr:=f.Close()
+	return errors.Join(writeErr,closeErr)
 }
 
 func listProduction(root string, item target) ([]string, error) {
@@ -413,15 +424,28 @@ func Score(path string) (int64, int64, error) {
 	if err != nil {
 		return 0, 0, err
 	}
+	normalized,total,covered,err:=ReadProfile(file,path)
+	if err!=nil{return 0,0,err}
+	if err := generatedoutput.WriteAtomic(path, "coverage-*.out", normalized); err != nil {
+		return 0,0,err
+	}
+	return total, covered, nil
+}
+
+// ReadProfile validates and merges an input profile independently of output
+// persistence. It owns the reader and reports a failed close on success.
+func ReadProfile(file io.ReadCloser,path string)(data []byte,total,covered int64,err error){
+	defer func(){
+		closeErr:=file.Close()
+		if err==nil && closeErr!=nil{data,total,covered,err=nil,0,0,closeErr}
+	}()
 	scanner := bufio.NewScanner(file)
 	if !scanner.Scan() {
-		_ = file.Close()
-		return 0, 0, fmt.Errorf("empty coverage profile: %s", path)
+		return nil, 0, 0, fmt.Errorf("empty coverage profile: %s", path)
 	}
 	mode := scanner.Text()
 	if !strings.HasPrefix(mode, "mode: ") {
-		_ = file.Close()
-		return 0, 0, fmt.Errorf("invalid coverage mode %q", mode)
+		return nil, 0, 0, fmt.Errorf("invalid coverage mode %q", mode)
 	}
 	type coverageBlock struct {
 		statements int64
@@ -432,28 +456,23 @@ func Score(path string) (int64, int64, error) {
 	for scanner.Scan() {
 		columns := strings.Fields(scanner.Text())
 		if len(columns) != 3 {
-			_ = file.Close()
-			return 0, 0, fmt.Errorf("invalid coverage record %q", scanner.Text())
+			return nil, 0, 0, fmt.Errorf("invalid coverage record %q", scanner.Text())
 		}
 		statements, err := strconv.ParseInt(columns[1], 10, 64)
 		if err != nil {
-			_ = file.Close()
-			return 0, 0, err
+			return nil, 0, 0, err
 		}
 		hits, err := strconv.ParseInt(columns[2], 10, 64)
 		if err != nil {
-			_ = file.Close()
-			return 0, 0, err
+			return nil, 0, 0, err
 		}
 		if statements < 0 || hits < 0 {
-			_ = file.Close()
-			return 0, 0, fmt.Errorf("negative coverage values for %s", columns[0])
+			return nil, 0, 0, fmt.Errorf("negative coverage values for %s", columns[0])
 		}
 		key := columns[0]
 		block, found := records[key]
 		if found && block.statements != statements {
-			_ = file.Close()
-			return 0, 0, fmt.Errorf("conflicting statement counts for %s", key)
+			return nil, 0, 0, fmt.Errorf("conflicting statement counts for %s", key)
 		}
 		if !found {
 			order = append(order, key)
@@ -463,20 +482,16 @@ func Score(path string) (int64, int64, error) {
 		records[key] = block
 	}
 	if err := scanner.Err(); err != nil {
-		_ = file.Close()
-		return 0, 0, err
+		return nil, 0, 0, err
 	}
-	if err := file.Close(); err != nil {
-		return 0, 0, err
-	}
-
+	
 	// Keep the first-seen order to retain Go cover's source-block ordering.
 	// Rewrite the profile so HTML rendering and the strict gate use identical,
 	// deduplicated instrumentation rather than different coverage denominators.
 	var normalized strings.Builder
 	normalized.WriteString(mode)
 	normalized.WriteByte('\n')
-	var total, covered int64
+	
 	for _, key := range order {
 		block := records[key]
 		total += block.statements
@@ -485,8 +500,5 @@ func Score(path string) (int64, int64, error) {
 		}
 		fmt.Fprintf(&normalized, "%s %d %d\n", key, block.statements, block.hits)
 	}
-	if err := generatedoutput.WriteAtomic(path, "coverage-*.out", []byte(normalized.String())); err != nil {
-		return 0,0,err
-	}
-	return total, covered, nil
+	return []byte(normalized.String()),total,covered,nil
 }

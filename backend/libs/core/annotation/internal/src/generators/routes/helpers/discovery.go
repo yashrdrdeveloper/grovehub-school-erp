@@ -12,10 +12,6 @@ import (
 	"strings"
 )
 
-func discover(dir, servicePath string, configured bool) ([]routeGroup, error) {
-	return DiscoverWithTier(dir, servicePath, configured, false)
-}
-
 func DiscoverWithTier(dir, servicePath string, configured, restrictedOnly bool) ([]routeGroup, error) {
 	// Support both legacy controller/<tier> and resource-owned
 	// controller/<resource>/<tier> packages.

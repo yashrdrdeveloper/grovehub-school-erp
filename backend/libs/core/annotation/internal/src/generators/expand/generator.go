@@ -18,12 +18,14 @@ type methodKinds struct { getter, setter bool }
 func Expand(dir string) error {
  files,err:=layout.GoFiles(dir);if err!=nil{return err}
  fset:=token.NewFileSet()
- parsed:=make(map[string]*ast.File)
+ type sourceFile struct{tree *ast.File; data []byte}
+ parsed:=make(map[string]sourceFile)
  existing:=make(map[string]methodKinds)
  for _,path:=range files {
   if strings.HasSuffix(path,"_test.go") || strings.HasSuffix(path,"_gombok.go") {continue}
-  file,err:=parser.ParseFile(fset,path,nil,parser.ParseComments);if err!=nil{return err}
-  parsed[path]=file
+  data,err:=os.ReadFile(path);if err!=nil{return err}
+  file,err:=parser.ParseFile(fset,path,data,parser.ParseComments);if err!=nil{return err}
+  parsed[path]=sourceFile{tree:file,data:data}
   for _,decl:=range file.Decls {
    fn,ok:=decl.(*ast.FuncDecl);if !ok||fn.Recv==nil||len(fn.Recv.List)!=1 {continue}
    recv:=fn.Recv.List[0].Type
@@ -35,8 +37,8 @@ func Expand(dir string) error {
    existing[name.Name]=kind
   }
  }
- for path,file:=range parsed {
-  data,err:=os.ReadFile(path);if err!=nil{return err}
+ for path,source:=range parsed {
+  file,data:=source.tree,source.data
   // Offset-based replacement preserves original source and Gombok's doc attachment.
   type edit struct{ start,end int; text string }
   var edits []edit

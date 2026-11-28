@@ -46,7 +46,8 @@ func Inspect(owner string)(Report,error){
     }
     var result Report
     tracked:=map[string]bool{}
-    err:=filepath.WalkDir(root,func(path string,entry fs.DirEntry,err error)error{
+    err:=fs.WalkDir(os.DirFS(root),".",func(relative string,entry fs.DirEntry,err error)error{
+        path:=filepath.Join(root,filepath.FromSlash(relative))
         if err!=nil{return err}
         if entry.IsDir(){
             if root==owner && (entry.Name()=="tests" || entry.Name()==".generated" || entry.Name()=="testdata") {
@@ -55,8 +56,7 @@ func Inspect(owner string)(Report,error){
             return nil
         }
         if !strings.HasSuffix(path,".go")||strings.HasSuffix(path,"_test.go"){return nil}
-        relative,err:=filepath.Rel(root,path)
-        if err!=nil{return err}
+        relative=filepath.FromSlash(relative)
         expected:=filepath.Join(testRoot,strings.TrimSuffix(relative,".go")+"_test.go")
         parts := strings.Split(filepath.ToSlash(relative), "/")
         if root == owner && len(parts) > 3 && parts[1] == "internal" && parts[2] == "src" {

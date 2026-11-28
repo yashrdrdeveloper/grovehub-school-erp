@@ -18,7 +18,6 @@ var validTable = regexp.MustCompile(`^[a-z_][a-z0-9_]*(\.[a-z_][a-z0-9_]*)?$`)
 
 
 
-func generate(dir string)error { return GenerateInto(dir,filepath.Join(dir,"zz_tables.gen.go")) }
 
 func GenerateInto(dir, output string)error {
  entries,err:=os.ReadDir(dir);if err!=nil{return err}
