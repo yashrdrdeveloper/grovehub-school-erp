@@ -13,7 +13,7 @@ backend/libs/
 │   │       ├── src/             # contracts, constants, helpers, impl, validators, mappers
 │   │       └── resources/tests/ # private unit tests, mocks, fixtures and helpers
 │   ├── annotation/
-│   ├── database/transaction/
+│   ├── database/
 │   └── docs/engineering/
 └── <technical-library>/
     ├── <capability>/
@@ -58,4 +58,8 @@ Core has its own go.mod and go.sum under `libs/backend/core`, with module path `
 
 ## Phase 1 capability testing and visibility
 
-Runtime capabilities expose a single public facade. Private implementation packages live under `<capability>/internal/src/`. Capability-specific tests belong under `<capability>/internal/resources/tests/unit-test/` and may import that capability's own internal source. Public behavior is tested under `backend/libs/core/tests/unit-test/`. Never import private packages from other capabilities or production code from test resources. Avoid empty folders and redundant tests. Existing annotation CLI commands remain supported. The annotation capability has no compatibility import paths. Other capabilities undergoing migration must not introduce new legacy imports.
+Runtime capabilities expose a single public facade. Private implementation packages live under `<capability>/internal/src/`. Capability-specific tests belong under `<capability>/internal/resources/tests/unit-test/` and may import that capability's own internal source. Public behavior is tested under `backend/libs/core/tests/unit-test/`. Never import private packages from other capabilities or production code from test resources. Avoid empty folders and redundant tests. Annotation CLI subcommands are dispatched through annotation/cmd. The annotation capability has no compatibility import paths. Other capabilities undergoing migration must not introduce new legacy imports.
+
+## Operation-first internal organization
+
+A capability with multiple functional areas uses a named folder and matching facade per area, e.g. `internal/src/transaction/transaction.go` and `internal/src/postgres/postgres.go`. Individual use cases are grouped under `operations/<operation>/<operation>.go`. Where an interface is required, the interface lives in the operation entry file and its concrete implementation lives in `operations/<operation>/impl/<operation>.go`. A constructor returns the operation interface and its implementation asserts conformance. Do not create a category-wide `impl/` folder for unrelated operations. Pure functions do not need artificial interfaces or impl folders. Constants, helpers, validators and mappers belong to their owning operation unless genuinely shared across operations. Category facades delegate and do not contain operation logic. Every internal source file must have a matching relative-path unit-test file under `internal/resources/tests/unit-test/`; use separate suites for public API behavior and real infrastructure sanity tests. Do not create empty directories.

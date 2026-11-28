@@ -21,6 +21,31 @@ jobs:
           test ! -d backend/libs/core/database/postgres
           test ! -d backend/libs/core/database/transaction
           test -z "$(git ls-files 'backend/libs/core/database/**' | grep '_test[.]go$' | grep -v '/internal/resources/tests/unit-test/' || true)"
+      - name: Enforce operation ownership and mirrored unit tests
+        shell: bash
+        run: |
+          root=backend/libs/core/database/internal
+          test -f "$root/src/transaction/transaction.go"
+          test -f "$root/src/postgres/postgres.go"
+          test -f "$root/src/transaction/operations/unitofwork/unitofwork.go"
+          test -f "$root/src/transaction/operations/unitofwork/impl/unitofwork.go"
+          test ! -d "$root/src/transaction/impl"
+          test ! -d "$root/src/postgres/impl"
+          count=0
+          missing=0
+          while IFS= read -r source; do
+            [[ "$source" == *.go && "$source" != *_test.go ]] || continue
+            relative="${source#"$root/src/"}"
+            mirror="$root/resources/tests/unit-test/${relative%.go}_test.go"
+            count=$((count + 1))
+            if [[ ! -f "$mirror" ]]; then
+              echo "Missing mirrored test: $mirror"
+              missing=$((missing + 1))
+            fi
+          done < <(git ls-files "$root/src/")
+          echo "Database source files: $count; missing mirrors: $missing"
+          test "$count" -gt 0
+          test "$missing" -eq 0
       - uses: actions/setup-go@v6
         with:
           go-version: '1.27.3'

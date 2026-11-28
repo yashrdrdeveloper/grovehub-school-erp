@@ -8,17 +8,29 @@ database/
 └── internal/
     ├── src/
     │   ├── postgres/
-    │   │   ├── gorm.go
-    │   │   ├── pool.go
-    │   │   ├── constants/
-    │   │   ├── helpers/
-    │   │   └── validators/
+    │   │   ├── postgres.go
+    │   │   └── operations/
+    │   │       ├── connection/connection.go
+    │   │       └── projectpool/
+    │   │           ├── projectpool.go
+    │   │           ├── constants/pool.go
+    │   │           ├── helpers/
+    │   │           │   ├── identity.go
+    │   │           │   └── pool.go
+    │   │           └── validators/project_config.go
     │   └── transaction/
     │       ├── transaction.go
-    │       ├── unit_of_work.go        # interface
     │       ├── helpers/context.go
-    │       └── impl/unit_of_work.go
-    └── resources/tests/unit-test/
+    │       └── operations/
+    │           ├── active/active.go
+    │           ├── aftercommit/aftercommit.go
+    │           ├── detachedcontext/detachedcontext.go
+    │           ├── resolve/resolve.go
+    │           ├── run/run.go
+    │           └── unitofwork/
+    │               ├── unitofwork.go
+    │               └── impl/unitofwork.go
+    └── resources/tests/unit-test/  # exact mirror of src/
 ```
 
 - `NewDB`: opens a GORM PostgreSQL connection.
@@ -28,11 +40,11 @@ database/
 - `AfterCommit`: registers callbacks that run only after successful commit.
 - `DetachedContext`: preserves context values while removing transaction state and cancellation.
 
-The UnitOfWork interface is defined in transaction/unit_of_work.go beside impl/unit_of_work.go. The public facade embeds the interface without exposing the implementation. The implementation constructor returns the interface and includes a compile-time conformance check. No artificial interfaces are required for pure validation and mapping functions. A transaction context is intended for sequential repository operations, not concurrent use.
+The UnitOfWork interface is defined in transaction/operations/unitofwork/unitofwork.go beside impl/unitofwork.go. Every operation has its own folder; the postgres.go and transaction.go files delegate to their operations. Shared transaction context is kept in helpers/ because multiple operations use it. The public facade embeds the interface without exposing the implementation. The implementation constructor returns the interface and includes a compile-time conformance check. No artificial interfaces are required for pure validation and mapping functions. A transaction context is intended for sequential repository operations, not concurrent use.
 
 ## Testing
 
-Public unit tests: `tests/unit-test/database/` in Core. Private unit tests: `database/internal/resources/tests/unit-test/`. Unit tests use Ginkgo, Gomega and sqlmock; they do not connect to PostgreSQL.
+Public unit tests: `tests/unit-test/database/` in Core. Private unit tests: `database/internal/resources/tests/unit-test/`. Every internal source file has a matching relative-path *_test.go file. Unit tests use Ginkgo, Gomega and sqlmock; they do not connect to PostgreSQL.
 
 Real database isolation checks: `tests/sanity/database/postgres/` in Core. CI provisions disposable project databases and passes the three project test DSNs. If all are absent, the suite skips; partial configuration fails.
 
