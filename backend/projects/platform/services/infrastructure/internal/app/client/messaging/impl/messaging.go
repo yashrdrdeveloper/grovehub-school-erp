@@ -5,6 +5,12 @@ import (
 	"grovehub/services/infrastructure/internal/app/services/messaging"
 )
 
+// Aliases keep generated signatures expressed in the public client contract.
+type (
+	PublishOptions = client.PublishOptions
+	Handler = client.Handler
+)
+
 // messagingClient forwards typed operations to the transport service.
 type messagingClient struct {
 	service messaging.Service

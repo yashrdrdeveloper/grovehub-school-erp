@@ -44,7 +44,7 @@ type UnitOfWork interface { coredatabase.UnitOfWork }
 type OutboxStore interface { infrastructureclient.EventStore }
 
 // @Mock
-type MessagingClient interface { infrastructureclient.MessagingClient }
+type MessagingClient interface { infrastructureclient.Client }
 
 // @Mock
 type CreateStrategy interface { create.CreateStrategy }

@@ -13,7 +13,7 @@ import (
 
 // @Mock
 type InfrastructureModule interface {
-	MessagingClient() messaging.MessagingClient
+	MessagingClient() messaging.Client
 	EventStore() messaging.EventStore
 	Close() error
 }

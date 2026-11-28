@@ -30,10 +30,10 @@ type Client interface {
 	Publish(ctx context.Context, topic string, payload []byte, metadata map[string]string) error
 
 	// @Proxy service.PublishWithOptions
-	PublishWithOptions(ctx context.Context, topic string, payload []byte, metadata map[string]string, options dto.PublishOptions) error
+	PublishWithOptions(ctx context.Context, topic string, payload []byte, metadata map[string]string, options PublishOptions) error
 
 	// @Proxy service.Consume
-	Consume(ctx context.Context, topic string, handler dto.Handler) error
+	Consume(ctx context.Context, topic string, handler Handler) error
 
 	// @Proxy service.Health
 	Health(ctx context.Context) error
