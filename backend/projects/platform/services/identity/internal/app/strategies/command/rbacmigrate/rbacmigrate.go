@@ -5,7 +5,7 @@ import (
 	"io"
 
 	"grovehub/libs/platform/command"
-	"grovehub/services/identity/internal/app/strategies/command/rbacmigrate/runner"
+	"grovehub/services/identity/internal/app/services/rbacmigration/operations/cli"
 )
 
 type Runner func([]string, io.Writer, io.Writer) error

@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"grovehub/services/identity/internal/app/strategies/command/rbacmigrate/runner/helpers"
+	"grovehub/services/identity/internal/app/services/rbacmigration/operations/cli/helpers"
 )
 
 func TestMigrationInput(t *testing.T) {

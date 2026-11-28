@@ -9,9 +9,9 @@ import (
 
 	"gorm.io/gorm"
 
-	"grovehub/services/audit/internal/tests/helpers/operatorfixture"
+	"grovehub/services/audit/internal/app/services/storage"
 	"grovehub/services/audit/internal/app/strategies/command/auditstorage"
-	"grovehub/services/audit"
+	"grovehub/services/audit/internal/tests/helpers/operatorfixture"
 )
 
 func TestAuditStorage(t *testing.T) {
@@ -38,7 +38,7 @@ func TestAuditStorage(t *testing.T) {
 				f.ExpectAudit(nil, nil)
 			}
 
-			strategy := auditstorage.NewWithInspector(f.Mock, func(_ context.Context, db *gorm.DB, expected string) ([]audit.StorageTable, error) {
+			strategy := auditstorage.NewWithInspector(f.Mock, func(_ context.Context, db *gorm.DB, expected string) ([]storage.StorageTable, error) {
 				if db != f.AuditDB || expected != "audit" {
 					t.Fatal("incorrect audit scope")
 				}
@@ -46,7 +46,7 @@ func TestAuditStorage(t *testing.T) {
 					return nil, fixture.Failure
 				}
 
-				return []audit.StorageTable{{Name: "activities", TotalBytes: 123}}, nil
+				return []storage.StorageTable{{Name: "activities", TotalBytes: 123}}, nil
 			})
 			var output io.Writer = &f.Output
 			if tc.stage == "output" {

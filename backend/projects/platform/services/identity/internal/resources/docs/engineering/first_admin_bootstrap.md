@@ -54,4 +54,4 @@ Do not confuse `identity.accounts.account_id` with `foundation.persons.gid`: onl
 Never publish the bootstrap password or a complete connection string in issue trackers, logs, or Swagger.
 
 
-The single executable is built from `backend/projects/platform/cmd`; use its `identity-bootstrap-admin` subcommand. The privileged service-local facade lives at `backend/projects/platform/services/identity/internal/app/strategies/command/bootstrapadmin/runner`. Do not recreate `services/identity/cmd`.
+The single executable is built from `backend/projects/platform/cmd`; use its `identity-bootstrap-admin` subcommand. The privileged service-local facade lives at `backend/projects/platform/services/identity/internal/app/services/bootstrapadmin/operations/provision`. Do not recreate `services/identity/cmd`.

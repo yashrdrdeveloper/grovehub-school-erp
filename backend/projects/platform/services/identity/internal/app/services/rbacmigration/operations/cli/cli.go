@@ -24,7 +24,7 @@ import (
 	migrationimpl "grovehub/services/identity/internal/app/repository/rbacmigration/impl"
 	"grovehub/services/identity/internal/app/services/rbacmigration"
 	"grovehub/services/identity/internal/app/services/rbacmigration/operations/plan"
-	"grovehub/services/identity/internal/app/strategies/command/rbacmigrate/runner/helpers"
+	"grovehub/services/identity/internal/app/services/rbacmigration/operations/cli/helpers"
 )
 
 type options struct {
