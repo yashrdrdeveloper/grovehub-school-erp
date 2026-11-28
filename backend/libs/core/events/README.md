@@ -1,13 +1,15 @@
 # Core Events
 
-Public imports remain `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events` and
-`github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events/pipeline`. The public facades preserve generic type
-identity, JSON fields, optional IDs and existing function signatures.
+Consumers import only `github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events`.
+The root events.go facade exposes Envelope, Metadata, WithCorrelationID,
+WithCausationID, NewEnvelope, Rules, Run and ErrIncompleteRules. Generic type
+identity, JSON fields, optional IDs and function signatures are preserved.
+The former public events/pipeline import is removed; use events instead.
 
 ```text
 events/
 ├── events.go
-├── pipeline/pipeline.go
+├── README.md
 └── internal/
     ├── src/
     │   ├── contracts/

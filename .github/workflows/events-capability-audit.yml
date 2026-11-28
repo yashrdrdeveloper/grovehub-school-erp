@@ -6,11 +6,13 @@ on:
     paths:
       - 'backend/libs/core/events/**'
       - 'backend/libs/core/tests/unit-test/events/**'
+      - 'backend/projects/**'
       - '.github/workflows/events-capability-audit.yml'
   pull_request:
     paths:
       - 'backend/libs/core/events/**'
       - 'backend/libs/core/tests/unit-test/events/**'
+      - 'backend/projects/**'
       - '.github/workflows/events-capability-audit.yml'
   workflow_dispatch:
 
@@ -24,10 +26,15 @@ jobs:
       GOWORK: 'off'
     steps:
       - uses: actions/checkout@v4
-      - name: Verify exact mirrored tests
+      - name: Enforce single public events facade and mirrored tests
         shell: bash
         run: |
           root=backend/libs/core/events
+          test ! -d "$root/pipeline"
+          if git grep -nE 'libs/backend/core/events/pipeline(/|")' -- '*.go' '*.tmpl' '*.tpl' '*.sh'; then
+            echo "Import core/events instead of core/events/pipeline."
+            exit 1
+          fi
           count=0
           while IFS= read -r source; do
             [[ "$source" == *.go && "$source" != *_test.go ]] || continue
