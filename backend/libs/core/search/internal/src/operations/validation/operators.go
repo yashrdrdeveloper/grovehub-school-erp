@@ -1,6 +1,6 @@
-package validators
+package validation
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/contracts"
+import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/contracts"
 
 // OperatorSet creates the allowlist used by resource-owned filter fields.
 func OperatorSet(operators ...contracts.Operator) map[contracts.Operator]struct{} {

@@ -24,11 +24,6 @@ const (
 	DirectionDescending Direction = "DESC"
 )
 
-const (
-	DefaultRows = 25
-	MaxRows     = 100
-)
-
 type Filter struct {
 	Field    string   `json:"field"`
 	Operator Operator `json:"operator"`

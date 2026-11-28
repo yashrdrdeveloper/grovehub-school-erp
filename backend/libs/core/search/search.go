@@ -1,14 +1,15 @@
 package search
 
 import (
-	"fmt"
-
 	"gorm.io/gorm"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/contracts"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/helpers"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/mappers"
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/validators"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/contracts"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/helpers"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/operations/cursor"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/operations/validation"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/operations/query"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/operations/page"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/constants"
 )
 
 const (
@@ -28,13 +29,13 @@ const (
 	DirectionAscending  = contracts.DirectionAscending
 	DirectionDescending = contracts.DirectionDescending
 
-	DefaultRows = contracts.DefaultRows
-	MaxRows     = contracts.MaxRows
+	DefaultRows = constants.DefaultRows
+	MaxRows     = constants.MaxRows
 )
 
 var (
-	ErrInvalidQuery        = validators.ErrInvalidQuery
-	ErrUnsupportedOperator = helpers.ErrUnsupportedOperator
+	ErrInvalidQuery        = contracts.ErrInvalidQuery
+	ErrUnsupportedOperator = contracts.ErrUnsupportedOperator
 )
 
 type Operator = contracts.Operator
@@ -61,90 +62,20 @@ type ValueNormalizer = contracts.ValueNormalizer
 type FieldSpec = contracts.FieldSpec
 type QueryBuilder = helpers.QueryBuilder
 
-func Apply[TId any](db *gorm.DB, query Query[TId], config Config) (*gorm.DB, error) {
-	if db == nil {
-		return nil, ErrInvalidQuery
-	}
-
-	sortField, err := validators.ValidateQuery(query, config)
-	if err != nil {
-		return nil, ErrInvalidQuery
-	}
-
-	for _, term := range query.SearchTerms {
-		value := "%" + helpers.EscapeLike(term) + "%"
-		db = db.Where(config.SearchExpression+" ILIKE ?", value)
-	}
-
-	for _, filter := range query.Filters {
-		builder := &helpers.QueryBuilder{}
-		condition, err := helpers.BuildFilter(builder, filter, config)
-		if err != nil {
-			return nil, ErrInvalidQuery
-		}
-		db = db.Where(condition, builder.Args()...)
-	}
-
-	if len(query.SecondarySorts) > 0 {
-		return applyMultiSort(db, query, config)
-	}
-	if query.Cursor != nil {
-		builder := &helpers.QueryBuilder{}
-		condition := helpers.BuildCursorCondition(
-			builder,
-			sortField,
-			query.Sort.Direction,
-			query.Cursor.Value,
-			fmt.Sprint(query.Cursor.CursorId),
-			config.CursorExpression,
-		)
-		db = db.Where(condition, builder.Args()...)
-	}
-
-	direction := string(query.Sort.Direction)
-	db = db.Order(sortField.Expression + " " + direction)
-	if sortField.Expression != config.CursorExpression {
-		db = db.Order(config.CursorExpression + " " + direction)
-	}
-
-	return applyPage(db, query), nil
+func Apply[TId any](db *gorm.DB, input Query[TId], config Config) (*gorm.DB, error) {
+	return query.Apply(db, input, config)
 }
 
-// Execute shares the safe, parameterized search and keyset-pagination mechanics.
-// The repository supplies its own explicit model/table and allowlisted Config.
-func Execute[TId any, T any](db *gorm.DB, query Query[TId], config Config) (QueryResult[T], error) {
-	var total *int64
-	if query.PageNumber > 0 {
-		countQuery := query
-		countQuery.Cursor = nil
-		countQuery.Offset = 0
-		countDB, err := Apply(db.Session(&gorm.Session{}), countQuery, config)
-		if err != nil { return QueryResult[T]{}, err }
-		var count int64
-		if err := countDB.Model(new(T)).Select("COUNT(*)").Limit(-1).Offset(-1).Count(&count).Error; err != nil { return QueryResult[T]{}, err }
-		total = &count
-	}
-	searchDB, err := Apply(db.Session(&gorm.Session{}), query, config)
-	if err != nil {
-		return QueryResult[T]{}, err
-	}
-	items := make([]T, 0, query.Limit+1)
-	if err := searchDB.Find(&items).Error; err != nil {
-		return QueryResult[T]{}, err
-	}
-	hasNext := len(items) > query.Limit
-	if hasNext {
-		items = items[:query.Limit]
-	}
-	return QueryResult[T]{Items: items, HasNext: hasNext, TotalRecords: total}, nil
+func Execute[TId any, T any](db *gorm.DB, input Query[TId], config Config) (QueryResult[T], error) {
+	return query.Execute[TId, T](db, input, config)
 }
 
-func EncodeCursor(cursor CursorPayload) (string, error) {
-	return mappers.EncodeCursor(cursor)
+func EncodeCursor(payload CursorPayload) (string, error) {
+	return cursor.EncodeCursor(payload)
 }
 
 func DecodeCursor(value string) (CursorPayload, error) {
-	return mappers.DecodeCursor(value)
+	return cursor.DecodeCursor(value)
 }
 
 func BuildScalarCondition(
@@ -182,31 +113,55 @@ func EscapeLike(value string) string {
 
  
 // Shared request-validation helpers use resource-supplied errors and policies.
-func OperatorSet(operators ...Operator) map[Operator]struct{} { return validators.OperatorSet(operators...) }
-func EqualityOperators() map[Operator]struct{} { return validators.EqualityOperators() }
-func TextOperators() map[Operator]struct{} { return validators.TextOperators() }
-func TimeOperators() map[Operator]struct{} { return validators.TimeOperators() }
-func IsPartialOperator(operator Operator) bool { return validators.IsPartialOperator(operator) }
-func ValidValueCount(operator Operator, count int) bool { return validators.ValidValueCount(operator, count) }
+func OperatorSet(operators ...Operator) map[Operator]struct{} { return validation.OperatorSet(operators...) }
+func EqualityOperators() map[Operator]struct{} { return validation.EqualityOperators() }
+func TextOperators() map[Operator]struct{} { return validation.TextOperators() }
+func TimeOperators() map[Operator]struct{} { return validation.TimeOperators() }
+func IsPartialOperator(operator Operator) bool { return validation.IsPartialOperator(operator) }
+func ValidValueCount(operator Operator, count int) bool { return validation.ValidValueCount(operator, count) }
 
-func ValidateUUIDv7Cursor(value string, invalid error) error { return validators.ValidateUUIDv7Cursor(value, invalid) }
-func ValidateTimeCursor(value string, invalid error) error { return validators.ValidateTimeCursor(value, invalid) }
-func ValidateNonEmptyCursor(value string, invalid error) error { return validators.ValidateNonEmptyCursor(value, invalid) }
+func ValidateUUIDv7Cursor(value string, invalid error) error { return validation.ValidateUUIDv7Cursor(value, invalid) }
+func ValidateTimeCursor(value string, invalid error) error { return validation.ValidateTimeCursor(value, invalid) }
+func ValidateNonEmptyCursor(value string, invalid error) error { return validation.ValidateNonEmptyCursor(value, invalid) }
 
 func NormalizeSearchTerms(value string, maxLength, maxTerms int, invalid error) ([]string, error) {
-    return validators.NormalizeSearchTerms(value, maxLength, maxTerms, invalid)
+    return validation.NormalizeSearchTerms(value, maxLength, maxTerms, invalid)
 }
 
-func ResolveRows(rows int, invalid error) (int, error) { return validators.ResolveRows(rows, invalid) }
+func ResolveRows(rows int, invalid error) (int, error) { return validation.ResolveRows(rows, invalid) }
 
 func NormalizeSort(request []Sort, fallback QuerySort, allowed map[string]CursorValueValidator, invalid error) (QuerySort, error) {
-    return validators.NormalizeSort(request, fallback, allowed, invalid)
+    return validation.NormalizeSort(request, fallback, allowed, invalid)
 }
 
 func NormalizeFilters(filters []Filter, fields map[string]FieldSpec, maxFilters, maxValues int, invalid error) ([]QueryFilter, error) {
-    return validators.NormalizeFilters(filters, fields, maxFilters, maxValues, invalid)
+    return validation.NormalizeFilters(filters, fields, maxFilters, maxValues, invalid)
 }
 
 func NormalizeCursor(value string, sort QuerySort, validateValue CursorValueValidator, validateID CursorValueValidator, invalid error) (*Cursor[string], CursorPayload, error) {
-    return validators.NormalizeCursor(value, sort, validateValue, validateID, invalid)
+    return validation.NormalizeCursor(value, sort, validateValue, validateID, invalid)
+}
+
+func NormalizeSorts(request []Sort, fallback QuerySort, allowed map[string]CursorValueValidator, max int, invalid error) ([]QuerySort, error) {
+	return validation.NormalizeSorts(request, fallback, allowed, max, invalid)
+}
+
+func NormalizeMultiCursor(value string, rules []QuerySort, allowed map[string]CursorValueValidator, validateID CursorValueValidator, invalid error) (*Cursor[string], error) {
+	return validation.NormalizeMultiCursor(value, rules, allowed, validateID, invalid)
+}
+
+func ResolvePage(request PageRequest, invalid error) (int, int, int, error) {
+	return page.ResolvePage(request, invalid)
+}
+
+func ValidatePageCursor(request PageRequest, number, rows int, invalid error) error {
+	return page.ValidatePageCursor(request, number, rows, invalid)
+}
+
+func NextPageNumber(request PageRequest, number int) int {
+	return page.NextPageNumber(request, number)
+}
+
+func NewPageResponse[TId any,T any](input Query[TId], result QueryResult[T]) PageResponse {
+	return page.NewPageResponse(input, result)
 }

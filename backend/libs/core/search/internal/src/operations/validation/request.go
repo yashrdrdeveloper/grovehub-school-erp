@@ -1,14 +1,15 @@
-package validators
+package validation
 
 import (
     "strings"
 
-    "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/contracts"
+    "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/contracts"
+    "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/constants"
 )
 
 func requestError(invalid error) error {
     if invalid != nil { return invalid }
-    return ErrInvalidQuery
+    return contracts.ErrInvalidQuery
 }
 
 // NormalizeSearchTerms applies resource-owned length and term limits.
@@ -24,8 +25,8 @@ func NormalizeSearchTerms(value string, maxLength, maxTerms int, invalid error) 
 
 // ResolveRows uses the common pagination defaults and maximum.
 func ResolveRows(rows int, invalid error) (int, error) {
-    if rows == 0 { rows = contracts.DefaultRows }
-    if rows < 1 || rows > contracts.MaxRows { return 0, requestError(invalid) }
+    if rows == 0 { rows = constants.DefaultRows }
+    if rows < 1 || rows > constants.MaxRows { return 0, requestError(invalid) }
     return rows, nil
 }
 

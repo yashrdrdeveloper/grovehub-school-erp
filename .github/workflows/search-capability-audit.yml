@@ -1,0 +1,63 @@
+name: Core search capability audit
+
+on:
+  push:
+    branches: [phase1-refactor, develop]
+    paths:
+      - 'backend/libs/core/search/**'
+      - 'backend/libs/core/tests/unit-test/search/**'
+      - '.github/workflows/search-capability-audit.yml'
+  pull_request:
+    paths:
+      - 'backend/libs/core/search/**'
+      - 'backend/libs/core/tests/unit-test/search/**'
+      - '.github/workflows/search-capability-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  core-search:
+    runs-on: ubuntu-latest
+    env:
+      GOWORK: 'off'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enforce single facade and mirrored tests
+        shell: bash
+        run: |
+          root=backend/libs/core/search
+          test "$(git ls-files "$root/" | grep '[.]go$' | grep -v '/internal/')" = "$root/search.go"
+          for folder in "$root"/internal/src/*; do
+            case "$(basename "$folder")" in
+              operations|helpers|constants|contracts|config) test -d "$folder" ;;
+              *) echo "Unexpected search source category: $folder"; exit 1 ;;
+            esac
+          done
+          count=0
+          while IFS= read -r source; do
+            [[ "$source" == *.go && "$source" != *_test.go ]] || continue
+            relative="${source#"$root/internal/src/"}"
+            test -f "$root/internal/resources/tests/unit-test/${relative%.go}_test.go" || { echo "Missing mirror: $source"; exit 1; }
+            count=$((count + 1))
+          done < <(git ls-files "$root/internal/src/")
+          test "$count" -gt 0
+          if git grep -nE 'libs/backend/core/search/(contracts|helpers|mappers|validators|operations|config|constants)(/|")' -- '*.go' '*.sh' '*.tmpl' '*.tpl'; then
+            echo "Use the root core/search facade."
+            exit 1
+          fi
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.3'
+          cache-dependency-path: backend/libs/core/go.sum
+      - name: Run search tests and report statement coverage
+        working-directory: backend/libs/core
+        run: |
+          go test -count=1 -covermode=atomic -coverpkg=./search/... -coverprofile="$RUNNER_TEMP/search-coverage.out" ./search/internal/resources/tests/unit-test/... ./tests/unit-test/search/...
+          go tool cover -func="$RUNNER_TEMP/search-coverage.out" | tee "$RUNNER_TEMP/search-coverage.txt"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: search-coverage
+          path: ${{ runner.temp }}/search-coverage.out

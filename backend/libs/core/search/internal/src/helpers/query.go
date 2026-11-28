@@ -1,16 +1,10 @@
 package helpers
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/contracts"
-)
-
-var (
-	ErrInvalidField        = errors.New("invalid search field")
-	ErrUnsupportedOperator = errors.New("unsupported search operator")
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/contracts"
 )
 
 type QueryBuilder struct {
@@ -37,7 +31,7 @@ func BuildFilter(
 	if field, ok := config.RelationFields[filter.Field]; ok {
 		return BuildRelationCondition(builder, field, filter.Operator, filter.Values)
 	}
-	return "", ErrInvalidField
+	return "", contracts.ErrInvalidField
 }
 
 func BuildScalarCondition(
@@ -48,7 +42,7 @@ func BuildScalarCondition(
 ) (string, error) {
 	factory, ok := scalarOperatorFactories[operator]
 	if !ok {
-		return "", ErrUnsupportedOperator
+		return "", contracts.ErrUnsupportedOperator
 	}
 	return factory(builder, field, values)
 }
@@ -61,7 +55,7 @@ func BuildRelationCondition(
 ) (string, error) {
 	factory, ok := relationOperatorFactories[operator]
 	if !ok {
-		return "", ErrUnsupportedOperator
+		return "", contracts.ErrUnsupportedOperator
 	}
 	return factory(builder, field, values)
 }
@@ -142,7 +136,7 @@ var relationOperatorFactories = map[contracts.Operator]relationOperatorFactory{
 func scalarBinary(operator string) operatorFactory {
 	return func(builder *QueryBuilder, field contracts.ScalarField, values []string) (string, error) {
 		if len(values) != 1 {
-			return "", ErrUnsupportedOperator
+			return "", contracts.ErrUnsupportedOperator
 		}
 		placeholder := builder.Add(values[0])
 		return field.Expression + " " + operator + " " + placeholder + field.Cast, nil
@@ -152,7 +146,7 @@ func scalarBinary(operator string) operatorFactory {
 func scalarSet(operator string) operatorFactory {
 	return func(builder *QueryBuilder, field contracts.ScalarField, values []string) (string, error) {
 		if len(values) == 0 {
-			return "", ErrUnsupportedOperator
+			return "", contracts.ErrUnsupportedOperator
 		}
 		placeholders := make([]string, 0, len(values))
 		for _, value := range values {
@@ -165,7 +159,7 @@ func scalarSet(operator string) operatorFactory {
 func scalarExists(negated bool) operatorFactory {
 	return func(_ *QueryBuilder, field contracts.ScalarField, values []string) (string, error) {
 		if len(values) != 0 {
-			return "", ErrUnsupportedOperator
+			return "", contracts.ErrUnsupportedOperator
 		}
 		predicate := "IS NOT NULL"
 		if negated {
@@ -178,7 +172,7 @@ func scalarExists(negated bool) operatorFactory {
 func scalarLike(mode string) operatorFactory {
 	return func(builder *QueryBuilder, field contracts.ScalarField, values []string) (string, error) {
 		if len(values) != 1 {
-			return "", ErrUnsupportedOperator
+			return "", contracts.ErrUnsupportedOperator
 		}
 		value := EscapeLike(values[0])
 		if mode == "contains" {
@@ -213,7 +207,7 @@ func relationQuery(field contracts.RelationField, base string, extra string, neg
 func relationBinary(negated bool) relationOperatorFactory {
 	return func(builder *QueryBuilder, field contracts.RelationField, values []string) (string, error) {
 		if len(values) != 1 {
-			return "", ErrUnsupportedOperator
+			return "", contracts.ErrUnsupportedOperator
 		}
 		base := relationBase(builder, field)
 		extra := field.ValueExpression + " = " + builder.Add(values[0])
@@ -224,13 +218,13 @@ func relationBinary(negated bool) relationOperatorFactory {
 func relationSet(negated bool) relationOperatorFactory {
 	return func(builder *QueryBuilder, field contracts.RelationField, values []string) (string, error) {
 		if len(values) == 0 {
-			return "", ErrUnsupportedOperator
+			return "", contracts.ErrUnsupportedOperator
 		}
+		base := relationBase(builder, field)
 		placeholders := make([]string, 0, len(values))
 		for _, value := range values {
 			placeholders = append(placeholders, builder.Add(value))
 		}
-		base := relationBase(builder, field)
 		extra := field.ValueExpression + " IN (" + strings.Join(placeholders, ", ") + ")"
 		return relationQuery(field, base, extra, negated), nil
 	}
@@ -239,7 +233,7 @@ func relationSet(negated bool) relationOperatorFactory {
 func relationExists(negated bool) relationOperatorFactory {
 	return func(builder *QueryBuilder, field contracts.RelationField, values []string) (string, error) {
 		if len(values) != 0 {
-			return "", ErrUnsupportedOperator
+			return "", contracts.ErrUnsupportedOperator
 		}
 		return relationQuery(field, relationBase(builder, field), "", negated), nil
 	}
@@ -248,7 +242,7 @@ func relationExists(negated bool) relationOperatorFactory {
 func relationLike(mode string) relationOperatorFactory {
 	return func(builder *QueryBuilder, field contracts.RelationField, values []string) (string, error) {
 		if len(values) != 1 {
-			return "", ErrUnsupportedOperator
+			return "", contracts.ErrUnsupportedOperator
 		}
 		value := EscapeLike(values[0])
 		if mode == "contains" {

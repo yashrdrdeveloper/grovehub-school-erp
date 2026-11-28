@@ -1,10 +1,10 @@
-package mappers
+package cursor
 
 import (
 	"encoding/base64"
 	"encoding/json"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/contracts"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/contracts"
 )
 
 func EncodeCursor(cursor contracts.CursorPayload) (string, error) {

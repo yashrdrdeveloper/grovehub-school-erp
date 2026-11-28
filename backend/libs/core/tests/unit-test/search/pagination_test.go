@@ -1,6 +1,10 @@
-package search
+package search_test
 
-import "testing"
+import (
+	"testing"
+
+	. "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
+)
 
 func TestResolvePage(t *testing.T) {
 	tests := []struct {

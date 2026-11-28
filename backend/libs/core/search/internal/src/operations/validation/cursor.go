@@ -1,17 +1,17 @@
-package validators
+package validation
 
 import (
     "strings"
     "time"
 
     coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
-    "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/contracts"
-    "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/mappers"
+    "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/contracts"
+    "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search/internal/src/operations/cursor"
 )
 
 func cursorError(invalid error) error {
     if invalid != nil { return invalid }
-    return ErrInvalidQuery
+    return contracts.ErrInvalidQuery
 }
 
 func ValidateUUIDv7Cursor(value string, invalid error) error {
@@ -30,13 +30,13 @@ func ValidateNonEmptyCursor(value string, invalid error) error {
 }
 
 // NormalizeCursor validates a stable cursor against the requested sort.
-// The owning resource chooses its sort-value and cursor-ID validators.
+// The owning resource chooses its sort-value and cursor-ID validation.
 func NormalizeCursor(value string, sort contracts.QuerySort, validateValue contracts.CursorValueValidator, validateID contracts.CursorValueValidator, invalid error) (*contracts.Cursor[string], contracts.CursorPayload, error) {
     payload := contracts.CursorPayload{Field: sort.Field, Direction: sort.Direction}
     if strings.TrimSpace(value) == "" { return nil, payload, nil }
     if validateValue == nil || validateID == nil { return nil, contracts.CursorPayload{}, cursorError(invalid) }
 
-    decoded, err := mappers.DecodeCursor(value)
+    decoded, err := cursor.DecodeCursor(value)
     if err != nil || decoded.Field != sort.Field || decoded.Direction != sort.Direction {
         return nil, contracts.CursorPayload{}, cursorError(invalid)
     }
