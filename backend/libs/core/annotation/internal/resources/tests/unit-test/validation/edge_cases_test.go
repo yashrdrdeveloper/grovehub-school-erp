@@ -60,15 +60,14 @@ var _ = Describe("DTO validation edge cases",func(){
 	})
 	It("rejects unsupported normalization targets and nested invalid normalization",func(){
 		type invalidItem struct { Name string `normalize:"invalid"` }
-		for _,value:=range []any{
-			struct{N int `normalize:"trim"`}{},
-			struct{N struct{} `normalize:"trim"`}{},
-			struct{N []string `normalize:"trim"`}{},
-			struct{Items []invalidItem `validate:"valid"`}{Items:[]invalidItem{{Name:"x"}}},
-		}{
-			_,err:=validation.NormalizeFields(value)
-			Expect(err).To(HaveOccurred())
-		}
+		_,err:=validation.NormalizeFields(struct{N int `normalize:"trim"`}{})
+		Expect(err).To(MatchError("N: unsupported normalize target"))
+		_,err=validation.NormalizeFields(struct{N struct{} `normalize:"trim"`}{})
+		Expect(err).To(MatchError("N: unsupported normalize target"))
+		_,err=validation.NormalizeFields(struct{N []string `normalize:"trim"`}{})
+		Expect(err).To(MatchError("N: unsupported normalize target"))
+		_,err=validation.NormalizeFields(struct{Items []invalidItem `validate:"valid"`}{Items:[]invalidItem{{Name:"x"}}})
+		Expect(err).To(MatchError(ContainSubstring("Items[0].Name: unsupported normalizer")))
 	})
 	It("validates string, pointer, collection and numeric rules",func(){
 		type valid struct {

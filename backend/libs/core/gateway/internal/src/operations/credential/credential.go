@@ -32,11 +32,17 @@ type Ed25519Credentials struct {
 }
 
 func SignWorkload(keyID, issuer string, key ed25519.PrivateKey, claims contracts.WorkloadClaims) (string, error) {
+	return SignWorkloadWithEncoder(keyID,issuer,key,claims,json.Marshal)
+}
+
+// SignWorkloadWithEncoder isolates serialization before any credential is signed.
+// Production callers always use SignWorkload and the standard JSON encoder.
+func SignWorkloadWithEncoder(keyID, issuer string, key ed25519.PrivateKey, claims contracts.WorkloadClaims, encode func(any)([]byte,error)) (string, error) {
 	now := time.Now()
 	if !helpers.ValidKeyID(keyID) || issuer == "" || len(key) != ed25519.PrivateKeySize || claims.Subject == "" || claims.Audience == "" || !claims.ExpiresAt.After(now) || claims.ExpiresAt.After(now.Add(constants.MaxCredentialLifetime)) || !helpers.ValidActorPair(claims.TenantID, claims.ActorGID) {
 		return "", contracts.ErrWorkloadDenied
 	}
-	payload, err := json.Marshal(signedClaims{Issuer: issuer, Subject: claims.Subject, Audience: claims.Audience, IssuedAt: now.Unix(), ExpiresAt: claims.ExpiresAt.Unix(), Scopes: claims.Scopes, TenantID: claims.TenantID, ActorGID: claims.ActorGID, SessionID: claims.SessionID})
+	payload, err := encode(signedClaims{Issuer: issuer, Subject: claims.Subject, Audience: claims.Audience, IssuedAt: now.Unix(), ExpiresAt: claims.ExpiresAt.Unix(), Scopes: claims.Scopes, TenantID: claims.TenantID, ActorGID: claims.ActorGID, SessionID: claims.SessionID})
 	if err != nil {
 		return "", err
 	}

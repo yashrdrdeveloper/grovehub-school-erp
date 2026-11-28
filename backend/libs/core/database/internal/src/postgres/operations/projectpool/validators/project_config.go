@@ -11,6 +11,11 @@ import (
 var errInvalidURI = errors.New("explicit project PostgreSQL URI with host, database and user is required")
 
 func ProjectConfig(dsn string) (*pgx.ConnConfig, error) {
+	return ProjectConfigWithParser(dsn,pgx.ParseConfig)
+}
+
+// ProjectConfigWithParser checks driver-resolved identity as well as URI syntax.
+func ProjectConfigWithParser(dsn string, parse func(string)(*pgx.ConnConfig,error)) (*pgx.ConnConfig, error) {
 	uri, err := url.Parse(strings.TrimSpace(dsn))
 	if err != nil || !validProjectURI(uri) {
 		return nil, errInvalidURI
@@ -20,7 +25,7 @@ func ProjectConfig(dsn string) (*pgx.ConnConfig, error) {
 		return nil, errInvalidURI
 	}
 
-	config, err := pgx.ParseConfig(dsn)
+	config, err := parse(dsn)
 	if err != nil {
 		return nil, errInvalidURI
 	}

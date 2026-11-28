@@ -13,8 +13,6 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/metric/noop"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
@@ -91,12 +89,7 @@ var _=Describe("Telemetry SDK boundaries",func(){
 		GinkgoT().Setenv("OTEL_EXPORTER_OTLP_METRICS_ENDPOINT","")
 		GinkgoT().Setenv("GROVEHUB_TRACE_SAMPLE_RATIO","1")
 		GinkgoT().Setenv("GROVEHUB_METRIC_EXPORT_INTERVAL","15s")
-		shutdown:=runtime.InitializeWithDependencies(context.Background(),slog.New(slog.NewTextHandler(GinkgoWriter,nil)),runtime.Dependencies{
-			TraceExporter:func(ctx context.Context)(sdktrace.SpanExporter,error){return otlptracehttp.New(ctx)},
-			MetricExporter:func(ctx context.Context)(sdkmetric.Exporter,error){return otlpmetrichttp.New(ctx)},
-			StartRuntimeMetrics:func(metric.MeterProvider)error{return nil},
-			Meter:func(provider metric.MeterProvider,name string)metric.Meter{return provider.Meter(name)},
-		})
+		shutdown:=runtime.Initialize(context.Background(),slog.New(slog.NewTextHandler(GinkgoWriter,nil)))
 		ctx,span:=runtime.TracerProvider("identity").Tracer("test").Start(context.Background(),"operation")
 		runtime.RecordOperation(ctx,"identity","read",time.Millisecond,200)
 		span.End()
