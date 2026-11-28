@@ -4,6 +4,7 @@ import "time"
 
 // @Entity integration.oauth_states
 type OAuthState struct {
+	SessionGeneration int64 `gorm:"column:session_generation;not null"`
 	Hash         string    `gorm:"column:hash;primaryKey"`
 	ConnectionID string    `gorm:"column:connection_id;type:uuid;not null"`
 	ExpiresAt    time.Time `gorm:"column:expires_at;not null"`

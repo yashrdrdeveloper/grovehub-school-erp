@@ -4,6 +4,7 @@ import (
     maildto "grovehub/services/integration/internal/app/providers/mailprovider/dto"
     mailcontracts "grovehub/services/integration/internal/app/providers/mailprovider/contracts"
     "context"
+    "grovehub/libs/schoolgateway"
     "crypto/rand"
     "crypto/sha256"
     "encoding/base64"
@@ -38,6 +39,11 @@ func (s *oauthStrategy) BeginOAuth(ctx context.Context, tenantID, id string) (co
 	if c.Status != entity.StatusPendingSetup {
 		return connectiondto.OAuthStart{}, connectionhelpers.ErrInvalidConnection
 	}
+	generation, err := schoolgateway.TenantGeneration(ctx, c.TenantID)
+	if err != nil { return connectiondto.OAuthStart{}, connectionhelpers.ErrOAuthInvalid }
+	if actor, ok := schoolgateway.PrincipalFrom(ctx); ok && (actor.TenantID != c.TenantID || (generation != 0 && actor.SessionGeneration != generation)) {
+		return connectiondto.OAuthStart{}, connectionhelpers.ErrOAuthInvalid
+	}
 	strategy, err := s.oauth.Find(c.Provider)
 	if err != nil {
 		return connectiondto.OAuthStart{}, connectionhelpers.ErrOAuthUnavailable
@@ -49,7 +55,7 @@ func (s *oauthStrategy) BeginOAuth(ctx context.Context, tenantID, id string) (co
 	state := base64.RawURLEncoding.EncodeToString(nonce)
 	hash := hashState(state)
 	err = s.repository.SaveOAuthState(ctx, entity.OAuthState{
-		Hash: hash, ConnectionID: id, ExpiresAt: time.Now().UTC().Add(10 * time.Minute),
+		Hash: hash, ConnectionID: id, SessionGeneration: generation, ExpiresAt: time.Now().UTC().Add(10 * time.Minute),
 	})
 	if err != nil {
 		return connectiondto.OAuthStart{}, err
@@ -75,6 +81,9 @@ func (s *oauthStrategy) FinishOAuth(ctx context.Context, provider, code, state s
 	if connection.Provider != provider || connection.Status != entity.StatusPendingSetup {
 		return connectiondto.OAuthCompletion{}, connectionhelpers.ErrOAuthInvalid
 	}
+	if schoolgateway.CheckTenantSession(ctx, connection.TenantID, oauthState.SessionGeneration) != nil {
+		return connectiondto.OAuthCompletion{}, connectionhelpers.ErrOAuthInvalid
+	}
 	strategy, err := s.oauth.Find(provider)
 	if err != nil {
 		return connectiondto.OAuthCompletion{}, connectionhelpers.ErrOAuthUnavailable
@@ -96,6 +105,11 @@ func (s *oauthStrategy) FinishOAuth(ctx context.Context, provider, code, state s
 	encrypted, err := s.cipher.Seal(token)
 	if err != nil {
 		return connectiondto.OAuthCompletion{}, err
+	}
+	// The provider round trip can outlive a school disable/reactivate cycle.
+	// Recheck the original generation immediately before storing credentials.
+	if schoolgateway.CheckTenantSession(ctx, connection.TenantID, oauthState.SessionGeneration) != nil {
+		return connectiondto.OAuthCompletion{}, connectionhelpers.ErrOAuthInvalid
 	}
 	if err = s.repository.Activate(ctx, connection.ID, provider, mailbox, encrypted); err != nil {
 		return connectiondto.OAuthCompletion{}, err
