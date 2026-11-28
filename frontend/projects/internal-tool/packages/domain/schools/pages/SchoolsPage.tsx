@@ -47,7 +47,7 @@ export function SchoolsPage({ operator }: { operator: Operator }) {
     <label>{__('Environment')}<select value={environmentId} onChange={(event) => setEnvironmentId(event.target.value)} data-testid="schools-environment"><option value="">{__('All authorized environments')}</option>{registry.environments.filter((item) => records.some((record) => record.environment.id === item.id)).map((item) => <option value={item.id} key={item.id}>{item.name}</option>)}</select></label>
     <label>{__('Status')}<select value={status} onChange={(event) => setStatus(event.target.value)} data-testid="schools-status"><option value="">{__('All statuses')}</option><option value="ACTIVE">{__('Active')}</option><option value="DISABLED">{__('Disabled')}</option></select></label>
    </div><p className="muted small" role="status">{visible.length} {__('matching school and environment records')}</p></section>
-   {!target && selected && <SchoolDetails record={selected} close={() => setSelectedKey('')} requestChange={requestChange}/>}
+   {!target && selected && <SchoolDetails record={selected} canViewHistory={operator.persona === 'L2'} close={() => setSelectedKey('')} requestChange={requestChange}/>}
    {target && <RequestForm key={[target.templateId,target.environmentId,target.schoolId,target.schoolVersion].join(':')} target={target} close={() => setTarget(null)} success={success}/>}
    {!visible.length && <p role="status" className="action-card">{__('No matching schools in your authorized grants.')}</p>}
    <section className="school-list" aria-label={__('Authorized schools')} data-testid="schools-list">{visible.map((record) => <article className="school-record" key={record.key}>

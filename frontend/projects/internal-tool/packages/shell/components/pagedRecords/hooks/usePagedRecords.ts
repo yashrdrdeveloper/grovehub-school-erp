@@ -4,7 +4,8 @@ import type { PaginationAction } from '@Components/components/Pagination';
 import { errorText, search } from '../../../../business/api/client';
 import type { Page } from '../../../../business/api/types';
 
-export function usePagedRecords<T>(resource: string, revision: number) {
+export function usePagedRecords<T>(resource: string, revision: number, filters?: Readonly<Record<string, string>>) {
+  const filterKey = JSON.stringify(filters ?? {});
   const [pageNumber, setPageNumber] = useState(1);
   const [rowSize, setRowSize] = useState(25);
   const [refresh, setRefresh] = useState(0);
@@ -17,7 +18,7 @@ export function usePagedRecords<T>(resource: string, revision: number) {
     setLoading(true);
     setError('');
     setPage(null);
-    void search<T>(resource, pageNumber, rowSize, controller.signal)
+    void search<T>(resource, pageNumber, rowSize, controller.signal, JSON.parse(filterKey) as Record<string, string>)
       .then((value) => {
         if (controller.signal.aborted) return;
         if (!value.records.length && pageNumber > 1) {
@@ -33,7 +34,7 @@ export function usePagedRecords<T>(resource: string, revision: number) {
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [resource, pageNumber, rowSize, refresh, revision]);
+  }, [resource, pageNumber, rowSize, refresh, revision, filterKey]);
 
   function paginate(action: PaginationAction) {
     if (loading) return;

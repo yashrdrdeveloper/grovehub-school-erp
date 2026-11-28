@@ -9,12 +9,13 @@ import type { PagedRecordsProps } from './types/pagedRecords.props';
 export function PagedRecords<T>({
   resource,
   revision,
+  filters,
   columns,
   rowKey,
   onSelect,
   title,
 }: PagedRecordsProps<T>) {
-  const records = usePagedRecords<T>(resource, revision);
+  const records = usePagedRecords<T>(resource, revision, filters);
   const tableColumns = useMemo(() => getRecordColumns(columns), [columns]);
 
   return (

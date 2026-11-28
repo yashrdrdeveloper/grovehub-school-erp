@@ -36,8 +36,8 @@ export async function requestJSON<T>(path: string, method: string, body?: string
   return result.data as T;
 }
 
-export function search<T>(resource: string, pageNumber: number, rowSize: number, signal?: AbortSignal): Promise<Page<T>> {
-  return request<Page<T>>('/internal/protected/' + resource + '/search', 'POST', { pageNumber, rowSize }, signal);
+export function search<T>(resource: string, pageNumber: number, rowSize: number, signal?: AbortSignal, filters?: Readonly<Record<string, string>>): Promise<Page<T>> {
+  return request<Page<T>>('/internal/protected/' + resource + '/search', 'POST', { ...filters, pageNumber, rowSize }, signal);
 }
 
 export function errorText(error: unknown): string {
