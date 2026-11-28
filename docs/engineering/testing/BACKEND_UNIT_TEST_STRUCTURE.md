@@ -4,23 +4,23 @@
 
 ## 1. Core rule
 
-Place tests with the same **capability/resource/operation owner** as the production code they verify; do not create a global `backend/testing/unit-test/`. Use `internal/tests/unit-test/` for resource-first modules, while respecting established tests in a module that has not yet migrated. Never move unrelated production code or another module's tests merely for symmetry.
+Place tests with the same **capability/resource/operation owner** as the production code they verify; do not create a global `backend/testing/unit-test/`. Use `internal/resources/tests/unit-test/` for all resource-first service modules. Never move unrelated production code or another module's tests merely for symmetry.
 
 ```text
 backend/
-├── launcher/tests/unit-test/
+├── launcher/internal/resources/tests/unit-test/
 ├── services/<module>/
-│   └── internal/
-│       └── tests/
-│           ├── unit-test/
-│           │   ├── controller/<resource>/
-│           │   ├── validators/<resource>/
-│           │   ├── mappers/<resource>/
-│           │   ├── repository/<resource>/
-│           │   ├── services/<resource>/operations/<verb>/
-│           │   └── events/producers/<aggregate>/
-│           ├── mocks/
-│           └── fixtures/
+│   └── internal/resources/tests/
+│       ├── unit-test/
+│       │   ├── controller/<resource>/
+│       │   ├── validators/<resource>/
+│       │   ├── mappers/<resource>/
+│       │   ├── repository/<resource>/
+│       │   ├── services/<resource>/operations/<verb>/
+│       │   └── events/producers/<aggregate>/
+│       ├── integration-test/
+│       ├── mocks/
+│       └── fixtures/
 └── libs/<library>/tests/unit-test/
 ```
 

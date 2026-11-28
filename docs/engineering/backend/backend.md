@@ -97,14 +97,15 @@ backend/
         │   │   ├── resources.go               # embed resources
         │   │   ├── migrations/
         │   │   ├── api/openapi/v1/
-        │   │   └── docs/
-        │   │       ├── README.md
-        │   │       ├── engineering/{README.md,architecture.md}
-        │   │       └── product/{README.md,api_workflows.md}
-        │   └── tests/
-        │       ├── unit-test/                 # mirrors source ownership
-        │       ├── mocks/
-        │       └── fixtures/
+        │   │   ├── docs/
+        │   │   │   ├── README.md
+        │   │   │   ├── engineering/{README.md,architecture.md}
+        │   │   │   └── product/{README.md,api_workflows.md}
+        │   │   └── tests/
+        │   │       ├── unit-test/             # mirrors source ownership
+        │   │       ├── integration-test/
+        │   │       ├── mocks/
+        │   │       └── fixtures/
 ```
 
 **Not a scaffolding checklist.** Absence of an HTTP API means no controller/routes folder. No persistence means no repository/entity/migration. A single-step operation does not need `flows/` or a chain. Never create `impl/` merely to wrap a one-line pure function without a genuine boundary.
@@ -148,7 +149,7 @@ backend/
 | `externalService/` | Third-party integration | HTTP clients/SDK, rate limits, auth tokens | Application/domain policy |
 | `providers/` | Generic provider discovery/execution | Capability-neutral contracts, registry | `mail.*`, payment-specific, vendor specifics |
 | `internal/resources/` | Immutable deployable assets | Embed versioned SQL/OpenAPI | Runtime policy decisions |
-| `internal/tests/` | Confidence and contracts | Mocks, scenario tests, exact regression cases | Shipping test-only shims in production |
+| `internal/resources/tests/` | Confidence and contracts | Mocks, scenario tests, exact regression cases | Shipping test-only shims in production |
 | `internal/resources/docs/engineering/` | How this module works | Architecture, diagrams, invariants, exceptions | Duplicating this entire master |
 | `internal/resources/docs/product/` | What user or caller can do | API journey, preconditions, examples, expected results | Hidden internal implementation dependency |
 
@@ -300,7 +301,7 @@ Load private configuration from environment/secret sources; validate required va
 
 ## 16. Tests, docs and delivery gates
 
-- Place unit tests in mirrored `internal/tests/unit-test/` or approved owner-local packages where needed for Go `internal` visibility; prefer Ginkgo/Gomega for repository conventions; Go table tests are valid when clearer.
+- Place unit tests in mirrored `internal/resources/tests/unit-test/`; retain a colocated test only when it must exercise unexported implementation details and document that exception; prefer Ginkgo/Gomega for repository conventions; Go table tests are valid when clearer.
 - Test success, invalid input, nil dependencies, authorization denial, transaction rollback, idempotent replay, duplicate delivery, and cancellation.
 - Mock at the boundary; database repositories need realistic query tests; provider contracts need adapter tests; full broker/database behavior needs integration or sanity tests.
 - Mocking a transaction is not proof of ACID; mocking a publisher is not proof of outbox delivery.

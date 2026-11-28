@@ -56,4 +56,4 @@ Embeds `internal/resources/migrations/000001_create_foundation_schema.sql`. An o
 
 ## Tests
 
-Tests mirror app ownership under `internal/tests/unit-test` for controllers, event producer/pipeline, operations, helpers and generated client/route constraints. PostgreSQL integration tests should cover contact uniqueness, transaction rollback, optimistic version and outbox atomicity; a mock alone does not establish these guarantees.
+Tests mirror app ownership under `internal/resources/tests/unit-test` for controllers, event producer/pipeline, operations, helpers and generated client/route constraints. PostgreSQL integration tests should cover contact uniqueness, transaction rollback, optimistic version and outbox atomicity; a mock alone does not establish these guarantees.

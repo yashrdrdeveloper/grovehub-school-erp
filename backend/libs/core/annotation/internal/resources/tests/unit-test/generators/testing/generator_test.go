@@ -15,7 +15,7 @@ var _ = Describe("FindModuleDir", func() {
 		t := GinkgoT()
 	root := t.TempDir()
 	module := filepath.Join(root, "project")
-	child := filepath.Join(module, "services", "example", "internal", "tests", "mocks")
+	child := filepath.Join(module, "services", "example", "internal", "resources", "tests", "mocks")
 	Expect(os.MkdirAll(child, 0755)).To(Succeed())
 	Expect(os.WriteFile(filepath.Join(module, "go.mod"), []byte("module example.test/project\n"), 0600)).To(Succeed())
 	got, err := testgen.FindModuleDir(child)

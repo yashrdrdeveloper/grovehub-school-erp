@@ -67,4 +67,4 @@ jobs:
         run: |
           export LIFECYCLE_SCHOOL_BIN="$RUNNER_TEMP/lifecycle-school"
           export LIFECYCLE_INTERNAL_TEST_BIN="$RUNNER_TEMP/lifecycle-internal.test"
-          go test -vet=off -overlay=.generated/overlay.json -count=1 -v -timeout=5m ./services/identity/internal/tests/integration-test/lifecycle
+          go test -vet=off -overlay=.generated/overlay.json -count=1 -v -timeout=5m ./services/identity/internal/resources/tests/integration-test/lifecycle

@@ -68,7 +68,7 @@ Bootstrap loads validated private config, constructs provider adapters/registrie
 
 ## 6. Verification
 
-Tests under `internal/tests/unit-test` validate provider factory/registry, controller auth, action/test/watch behavior, OAuth and remote failures, credential encryption, and change-producer error propagation. Updating an external adapter must preserve the public Integration OpenAPI and test each provider independently.
+Tests under `internal/resources/tests/unit-test` validate provider factory/registry, controller auth, action/test/watch behavior, OAuth and remote failures, credential encryption, and change-producer error propagation. Updating an external adapter must preserve the public Integration OpenAPI and test each provider independently.
 
 ## External-provider Strategy
 

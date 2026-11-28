@@ -34,7 +34,7 @@ type Report struct {
 func Inspect(owner string)(Report,error){
     root:=filepath.Join(owner,"internal","app")
     if _,err:=os.Stat(root);os.IsNotExist(err){root=owner}
-    testRoot:=filepath.Join(owner,"internal","tests","unit-test")
+    testRoot:=filepath.Join(owner,"internal","resources","tests","unit-test")
     if _,err:=os.Stat(testRoot);os.IsNotExist(err){testRoot=filepath.Join(owner,"tests","unit-test")}
     if filepath.Base(owner)=="launcher" {
         if info,err:=os.Stat(filepath.Join(owner,"internal","src"));err==nil&&info.IsDir(){

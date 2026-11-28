@@ -35,8 +35,8 @@ def main():
         "./launcher/internal/resources/tests/unit-test/operations/command/...",
         "./launcher/internal/resources/tests/unit-test/strategies/migrate",
         "./launcher/internal/resources/tests/unit-test/strategies/serve",
-        "./services/audit/internal/tests/unit-test/strategies/command/...",
-        "./services/identity/internal/tests/unit-test/strategies/command/...",
+        "./services/audit/internal/resources/tests/unit-test/strategies/command/...",
+        "./services/identity/internal/resources/tests/unit-test/strategies/command/...",
     ]
 
     # Go coverage instrumentation must see the generated logical source paths.

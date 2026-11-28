@@ -8,3 +8,5 @@ Provider connections, email reconciliation and provider workers.
 
 - [Engineering](engineering/README.md)
 - [Product](product/README.md)
+
+Test suites, fixtures, helpers and mocks belong under `internal/resources/tests/`. Unit and integration tests remain separated by suite type.

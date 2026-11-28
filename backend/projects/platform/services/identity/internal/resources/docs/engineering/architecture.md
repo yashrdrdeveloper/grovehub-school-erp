@@ -54,3 +54,7 @@ Protected account creation remains admin-only. Public `/identity/public/accounts
 Identity owns invitation content, encrypted queue payload, tenant/account relationship and retry intent. Its worker resolves the tenant from the stored Identity account and calls Integration's `ExecuteSystemMail` instead of reading fixed tenant/connection environment IDs. Integration persists the chosen mail connection in `integration.system_mail_senders`, checks the active connection and `mail.send` capability, and accepts updates through admin-protected `POST /integrations/protected/connections/system-mail/sender` with body `{"connectionId":"<uuid>"}`. Configure a default sender per tenant before delivering invitations; a sender change requires no backend restart.
 
 Startup now requires an Integration client and a valid 32-byte `IDENTITY_INVITATION_KEY_B64` secret. A disconnected or missing sender causes a delivery error rather than silently using a different account.
+
+## Test resource layout
+
+Service-owned test directories live under `internal/resources/tests/`, including unit and integration suites, helpers and mocks. Generated suites mirror the resource paths under `.generated/`.

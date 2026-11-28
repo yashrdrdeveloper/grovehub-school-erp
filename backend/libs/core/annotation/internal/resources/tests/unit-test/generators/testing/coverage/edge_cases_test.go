@@ -108,7 +108,7 @@ func coverageFixture() (string,string,string,[]string) {
 	reports:=filepath.Join(root,"reports")
 	writeFixture(filepath.Join(root,"go.mod"),"module example.com/coveragefixture\n\ngo 1.20\n")
 	writeFixture(filepath.Join(root,"services","sample","sample.go"),"package sample\nfunc Answer() int { return 42 }\n")
-	writeFixture(filepath.Join(root,"services","sample","internal","tests","unit-test","sample_test.go"),"package sample_test\nimport (\"testing\"; \"example.com/coveragefixture/services/sample\")\nfunc TestAnswer(t *testing.T) { if sample.Answer()!=42 {t.Fatal(\"wrong answer\")} }\n")
+	writeFixture(filepath.Join(root,"services","sample","internal","resources","tests","unit-test","sample_test.go"),"package sample_test\nimport (\"testing\"; \"example.com/coveragefixture/services/sample\")\nfunc TestAnswer(t *testing.T) { if sample.Answer()!=42 {t.Fatal(\"wrong answer\")} }\n")
 	writeFixture(generator,"#!/bin/sh\nset -eu\nmkdir -p \"$1/.generated\"\nprintf '%s' '{\"Replace\":{}}' > \"$1/.generated/overlay.json\"\n")
 	return root,generator,reports,[]string{"-backend",root,"-core",root,"-generator-script",generator,"-reports",reports,"-package","sample"}
 }

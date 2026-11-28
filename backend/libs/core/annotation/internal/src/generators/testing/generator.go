@@ -62,7 +62,7 @@ func GenerateAll(backend, core string) error {
 				continue
 			}
 			owner := filepath.Join(backend, "services", service.Name())
-			roots = append(roots, struct{ owner, tests string }{owner, filepath.Join("internal", "tests")})
+			roots = append(roots, struct{ owner, tests string }{owner, filepath.Join("internal", "resources", "tests")})
 		}
 	}
 	for _, root := range roots {

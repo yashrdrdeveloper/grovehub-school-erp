@@ -122,9 +122,9 @@ var _ = Describe("Materialize", func() {
 	foundation := filepath.Join(backend, "services", "foundation")
 	core := filepath.Join(backend, "libs", "core")
 
-	foundationFile := filepath.Join(foundation, "internal", "tests", "unit-test", "person", "zz_suite_test.go")
+	foundationFile := filepath.Join(foundation, "internal", "resources", "tests", "unit-test", "person", "zz_suite_test.go")
 	coreFile := filepath.Join(core, "tests", "mocks", "zz_mocks.gen.go")
-	generatedFoundation := filepath.Join(foundation, ".generated", "internal", "tests", "unit-test", "person", "zz_suite_test.go")
+	generatedFoundation := filepath.Join(foundation, ".generated", "internal", "resources", "tests", "unit-test", "person", "zz_suite_test.go")
 	generatedCore := filepath.Join(core, ".generated", "tests", "mocks", "zz_mocks.gen.go")
 	manifest := filepath.Join(backend, ".generated", "unit-coverage", ".materialized-files")
 	overlay := filepath.Join(backend, ".generated", "overlay.json")

@@ -69,3 +69,7 @@ No HTTP controllers or routes are created because the typed client and internal 
 ## 6. Migration and tests
 
 Infrastructure owns the live messaging schema migration and any legacy data transfer. Applied SQL is immutable. Tests must verify both direct and persist modes, context-bound enqueue, retries, leases, prune safety, idempotent consumer expectations, shutdown cancellation, and broker connectivity.
+
+## Test resource layout
+
+Service-owned test directories live under `internal/resources/tests/`, including unit and integration suites, helpers and mocks. Generated suites mirror the resource paths under `.generated/`.

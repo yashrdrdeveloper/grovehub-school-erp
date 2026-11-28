@@ -17,7 +17,7 @@ var _=Describe("Source inventory",func(){
 		fixture.Write(root,"internal/app/a.go","package app\ntype Record struct{}\nfunc (Record) Z(){}\nfunc (Record) A(){}\nfunc First(){}")
 		fixture.Write(root,"internal/app/ignored_test.go","invalid source")
 		fixture.Write(root,"internal/app/README.md","ignored")
-		fixture.Write(root,"internal/tests/unit-test/z_test.go","package app")
+		fixture.Write(root,"internal/resources/tests/unit-test/z_test.go","package app")
 		report,err:=inventory.Inspect(root)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(report.SourceFiles).To(Equal(2));Expect(report.TestFiles).To(Equal(1))

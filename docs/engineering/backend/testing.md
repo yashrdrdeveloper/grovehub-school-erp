@@ -3,7 +3,7 @@
 ## 1. Test ownership
 
 ```text
-services/<module>/internal/tests/
+services/<module>/internal/resources/tests/
 ├── unit-test/
 │   ├── controller/<resource>/
 │   ├── validators/<resource>/

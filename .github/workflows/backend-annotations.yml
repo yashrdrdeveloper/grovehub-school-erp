@@ -171,7 +171,7 @@ jobs:
         run: GOWORK=off go test -race ./session/...
       - name: Test unified Platform command strategies
         working-directory: backend/projects/platform
-        run: go test -vet=off -overlay=.generated/overlay.json ./cmd/... ./launcher/internal/resources/tests/unit-test/operations/command/... ./services/audit/internal/tests/unit-test/strategies/command/... ./services/identity/internal/tests/unit-test/strategies/command/...
+        run: go test -vet=off -overlay=.generated/overlay.json ./cmd/... ./launcher/internal/resources/tests/unit-test/operations/command/... ./services/audit/internal/resources/tests/unit-test/strategies/command/... ./services/identity/internal/resources/tests/unit-test/strategies/command/...
       - name: Measure Launcher coverage with generated annotations
         # The Core runner materializes generated source and checks exact statement coverage.
         run: make unit-coverage package=launcher
@@ -182,7 +182,7 @@ jobs:
           path: backend/projects/platform/.generated/unit-coverage/launcher.out
       - name: Compile cross-project lifecycle fixture against the public Launcher boundary
         working-directory: backend/projects/platform
-        run: go test -vet=off -overlay=.generated/overlay.json -run '^$' ./services/identity/internal/tests/integration-test/lifecycle
+        run: go test -vet=off -overlay=.generated/overlay.json -run '^$' ./services/identity/internal/resources/tests/integration-test/lifecycle
       - name: Test canonical Platform workload policy
         working-directory: backend/projects/platform
         run: GOWORK=off go test -vet=off -overlay=.generated/overlay.json ./launcher/internal/resources/tests/unit-test/services/gateway/...
@@ -201,13 +201,13 @@ jobs:
         run: GOWORK=off go build -overlay=.generated/overlay.json -o "$RUNNER_TEMP/school-platform" ./cmd
       - name: Test Audit monitoring
         working-directory: backend/projects/platform
-        run: go test -race -vet=off -overlay=.generated/overlay.json ./services/audit/internal/tests/unit-test/services/monitoring/...
+        run: go test -race -vet=off -overlay=.generated/overlay.json ./services/audit/internal/resources/tests/unit-test/services/monitoring/...
       - name: Compile Audit replay operator command
         working-directory: backend/projects/platform
         run: go build -overlay=.generated/overlay.json -o "$RUNNER_TEMP/audit-replay" ./cmd
       - name: Verify canonical Identity resource packages compile
         working-directory: backend/projects/platform
-        run: go test -vet=off -overlay=.generated/overlay.json ./services/identity/internal/tests/unit-test/...
+        run: go test -vet=off -overlay=.generated/overlay.json ./services/identity/internal/resources/tests/unit-test/...
       - name: Reject legacy platform messaging library
         shell: bash
         run: |
@@ -218,10 +218,10 @@ jobs:
           fi
       - name: Test Infrastructure messaging contracts and context helpers
         working-directory: backend/projects/platform
-        run: go test -race -vet=off -overlay=.generated/overlay.json ./services/infrastructure/internal/tests/unit-test/...
+        run: go test -race -vet=off -overlay=.generated/overlay.json ./services/infrastructure/internal/resources/tests/unit-test/...
       - name: Test Integration mail reconciliation
         working-directory: backend/projects/platform
-        run: go test -race -vet=off -overlay=.generated/overlay.json ./services/integration/internal/tests/unit-test/services/mail/... ./services/integration/internal/tests/unit-test/controller/mail/...
+        run: go test -race -vet=off -overlay=.generated/overlay.json ./services/integration/internal/resources/tests/unit-test/services/mail/... ./services/integration/internal/resources/tests/unit-test/controller/mail/...
       - name: Compile local mail reconciliation operator client
         working-directory: backend/projects/platform
         run: go build -overlay=.generated/overlay.json -o "$RUNNER_TEMP/mail-reconciliation" ./cmd
@@ -234,14 +234,14 @@ jobs:
           go test -vet=off -overlay=.generated/overlay.json ./launcher/internal/resources/tests/unit-test/bootstrap/... ./services/identity/internal/app/services/authentication/operations/reconciletenant ./services/identity/internal/app/services/registration/operations/invitation ./services/identity/internal/app/services/account/operations/personprofile ./services/integration/internal/app/services/connection/impl ./services/integration/internal/app/services/connection/operations/oauth/strategies/impl ./services/audit/internal/app/controller/operator/restricted
       - name: Verify Integration resource packages compile with generated overlays
         working-directory: backend/projects/platform
-        run: go test -vet=off -overlay=.generated/overlay.json ./services/integration/internal/tests/unit-test/...
+        run: go test -vet=off -overlay=.generated/overlay.json ./services/integration/internal/resources/tests/unit-test/...
       - name: Run available core, launcher and service unit suites
         working-directory: backend/projects/platform
         run: |
-          suites=(github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tests/unit-test/... ./launcher/internal/resources/tests/unit-test/... ./services/audit/internal/tests/unit-test/... ./services/infrastructure/internal/tests/unit-test/... ./services/identity/internal/tests/unit-test/... ./services/integration/internal/tests/unit-test/...)
+          suites=(github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tests/unit-test/... ./launcher/internal/resources/tests/unit-test/... ./services/audit/internal/resources/tests/unit-test/... ./services/infrastructure/internal/resources/tests/unit-test/... ./services/identity/internal/resources/tests/unit-test/... ./services/integration/internal/resources/tests/unit-test/...)
           # Some services intentionally have no unit-test directory.
-          if [[ -d services/foundation/internal/tests/unit-test ]]; then
-            suites+=(./services/foundation/internal/tests/unit-test/...)
+          if [[ -d services/foundation/internal/resources/tests/unit-test ]]; then
+            suites+=(./services/foundation/internal/resources/tests/unit-test/...)
           fi
           if [[ -d services/foundation/tests/unit-test ]]; then
             suites+=(./services/foundation/tests/unit-test/...)
@@ -332,13 +332,13 @@ jobs:
         working-directory: backend/projects/platform
         env:
           IDENTITY_RBAC_TEST_DSN: "host=127.0.0.1 port=5432 user=rbac_test password=rbac_test dbname=groovehub_rbac_test sslmode=disable"
-        run: go test -vet=off -overlay=.generated/overlay.json -count=1 -v ./services/identity/internal/tests/integration-test/rbac/...
+        run: go test -vet=off -overlay=.generated/overlay.json -count=1 -v ./services/identity/internal/resources/tests/integration-test/rbac/...
 
       - name: Validate durable Integration mail dispatch against PostgreSQL
         working-directory: backend/projects/platform
         env:
           INTEGRATION_MAIL_TEST_DSN: "host=127.0.0.1 port=5432 user=rbac_test password=rbac_test dbname=groovehub_rbac_test sslmode=disable"
-        run: go test -vet=off -overlay=.generated/overlay.json -count=1 -v ./services/integration/internal/tests/integration-test/maildelivery/...
+        run: go test -vet=off -overlay=.generated/overlay.json -count=1 -v ./services/integration/internal/resources/tests/integration-test/maildelivery/...
 
       - name: Create isolated Audit database
         run: docker exec ${{ job.services.postgres.id }} createdb -U rbac_test groovehub_audit_test
@@ -348,4 +348,4 @@ jobs:
         env:
           AUDIT_TEST_DSN: "host=127.0.0.1 port=5432 user=rbac_test password=rbac_test dbname=groovehub_rbac_test sslmode=disable"
           AUDIT_SPLIT_TEST_DSN: "host=127.0.0.1 port=5432 user=rbac_test password=rbac_test dbname=groovehub_audit_test sslmode=disable"
-        run: go test -vet=off -overlay=.generated/overlay.json -count=1 -v ./services/audit/internal/tests/integration-test/...
+        run: go test -vet=off -overlay=.generated/overlay.json -count=1 -v ./services/audit/internal/resources/tests/integration-test/...
