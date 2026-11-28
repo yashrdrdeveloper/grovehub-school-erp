@@ -2,7 +2,7 @@ package messaging
 
 import (
 	"context"
-	"grovehub/services/infrastructure/internal/app/client/messaging/contracts"
+	"grovehub/services/infrastructure/client/messaging/contracts"
 )
 
 // @Client messagingClient

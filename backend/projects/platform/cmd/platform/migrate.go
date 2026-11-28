@@ -7,7 +7,7 @@ import (
     "time"
     "gorm.io/gorm"
 
-    "grovehub/launcher/bootstrap"
+    bootstrap "grovehub/launcher"
     "grovehub/services/foundation"
     "grovehub/services/audit"
     "grovehub/services/identity"

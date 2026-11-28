@@ -37,6 +37,11 @@ jobs:
             echo "Use services/infrastructure/client/messaging."
             exit 1
           fi
+      - name: Inventory deprecated Launcher imports
+        shell: bash
+        run: |
+          git grep -lF 'grovehub/launcher/services/gateway/session' -- '*.go' || true
+          git grep -nE '"grovehub/launcher/(bootstrap|middleware|routing|constants|services/gateway/operations)' -- '*.go' || true
       - name: Reject legacy annotation imports and adjacent unit tests
         shell: bash
         run: |
@@ -117,10 +122,10 @@ jobs:
           wc -l "$RUNNER_TEMP/core-imports.txt"
       - name: Test gateway security contracts and context operations
         working-directory: backend/projects/platform
-        run: go test -race -coverpkg=./launcher/services/gateway/session,./launcher/services/gateway/operations/principal,./launcher/services/gateway/operations/tenant ./launcher/services/gateway/internal/tests/unit-test/session
+        run: go test -race -coverpkg=./launcher/session,./launcher/internal/src/services/gateway/operations/principal,./launcher/internal/src/services/gateway/operations/tenant ./launcher/internal/resources/tests/unit-test/session
       - name: Test canonical Platform workload policy
         working-directory: backend/projects/platform
-        run: GOWORK=off go test -vet=off -overlay=.generated/overlay.json ./launcher/services/gateway
+        run: GOWORK=off go test -vet=off -overlay=.generated/overlay.json ./launcher/internal/resources/tests/unit-test/services/gateway/...
       - name: Test annotation source generators
         working-directory: backend/projects/platform
         run: go test github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/resources/tests/unit-test/...
@@ -166,14 +171,14 @@ jobs:
       - name: Run package-local tenant lifecycle regression tests
         working-directory: backend/projects/platform
         run: |
-          go test -vet=off -overlay=.generated/overlay.json ./launcher/bootstrap ./launcher/services/gateway/internal/tests/unit-test/session ./services/identity/internal/app/services/authentication/operations/reconciletenant ./services/identity/internal/app/services/registration/operations/invitation ./services/identity/internal/app/services/account/operations/personprofile ./services/integration/internal/app/services/connection/impl ./services/integration/internal/app/services/connection/operations/oauth/strategies/impl ./services/audit/internal/app/controller/operator/restricted
+          go test -vet=off -overlay=.generated/overlay.json ./launcher/internal/resources/tests/unit-test/bootstrap/... ./launcher/internal/resources/tests/unit-test/session ./services/identity/internal/app/services/authentication/operations/reconciletenant ./services/identity/internal/app/services/registration/operations/invitation ./services/identity/internal/app/services/account/operations/personprofile ./services/integration/internal/app/services/connection/impl ./services/integration/internal/app/services/connection/operations/oauth/strategies/impl ./services/audit/internal/app/controller/operator/restricted
       - name: Verify Integration resource packages compile with generated overlays
         working-directory: backend/projects/platform
         run: go test -vet=off -overlay=.generated/overlay.json ./services/integration/internal/tests/unit-test/...
       - name: Run available core, launcher and service unit suites
         working-directory: backend/projects/platform
         run: |
-          suites=(github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tests/unit-test/... ./launcher/tests/unit-test/... ./services/identity/internal/tests/unit-test/... ./services/integration/internal/tests/unit-test/...)
+          suites=(github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tests/unit-test/... ./launcher/internal/resources/tests/unit-test/... ./services/identity/internal/tests/unit-test/... ./services/integration/internal/tests/unit-test/...)
           # Some services intentionally have no unit-test directory.
           if [[ -d services/foundation/internal/tests/unit-test ]]; then
             suites+=(./services/foundation/internal/tests/unit-test/...)
@@ -190,6 +195,8 @@ jobs:
         shell: bash
         run: |
           test -s backend/projects/platform/.generated/overlay.json
+          test -s backend/projects/platform/launcher/.generated/internal/src/routes/zz_routes.gen.go
+          test -s backend/projects/platform/launcher/.generated/internal/resources/tests/unit-test/controller/zz_suite_test.go
           test -s backend/projects/platform/services/infrastructure/.generated/internal/app/entity/zz_tables.gen.go
           test -s backend/projects/platform/services/infrastructure/.generated/internal/app/client/messaging/impl/zz_clients.gen.go
           test -s backend/projects/platform/services/foundation/.generated/internal/app/routes/zz_routes.gen.go

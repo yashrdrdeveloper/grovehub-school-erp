@@ -355,6 +355,7 @@ func testTarget(root, generated, reports string, item target, mode string) error
 	}
 	candidates := []string{
 		filepath.Join(rel, "internal", "tests", "unit-test"),
+		filepath.Join(rel, "internal", "resources", "tests", "unit-test"),
 		filepath.Join(rel, "tests", "unit-test"),
 	}
 	if item.name == "core" {

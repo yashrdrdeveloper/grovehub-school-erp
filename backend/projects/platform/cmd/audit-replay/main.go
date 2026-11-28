@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"strings"
-	"grovehub/launcher/bootstrap"
+	bootstrap "grovehub/launcher"
 	"grovehub/services/audit"
 	"grovehub/services/infrastructure"
 )

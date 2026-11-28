@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"grovehub/launcher/bootstrap"
+	bootstrap "grovehub/launcher"
 	"grovehub/services/audit"
 )
 

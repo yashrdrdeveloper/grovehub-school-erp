@@ -66,5 +66,17 @@ func GenerateAll(backend string) error {
 			return fmt.Errorf("%s routes: %w", name, err)
 		}
 	}
-	return nil
+	return generateLauncher(backend,modulePath)
 }
+
+// Launcher owns only the two explicit infrastructure probes. It cannot be
+// used to expose service controllers outside their restricted route tiers.
+func generateLauncher(backend,modulePath string) error {
+ owner:=filepath.Join(backend,"launcher")
+ controller:=filepath.Join(owner,"internal","src","controller")
+ if _,err:=os.Stat(controller);os.IsNotExist(err){return nil}else if err!=nil{return err}
+ groups,err:=helpers.DiscoverWithTier(controller,"",false,false)
+ if err!=nil{return err}
+ return helpers.WriteLauncherRoutes(modulePath,groups,filepath.Join(owner,".generated","internal","src","routes","zz_routes.gen.go"))
+}
+

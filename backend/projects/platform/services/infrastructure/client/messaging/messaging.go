@@ -6,7 +6,7 @@ import (
 	"context"
 
 	config "grovehub/services/infrastructure/internal/app/config/messaging"
-	"grovehub/services/infrastructure/internal/app/client/messaging/contracts"
+	"grovehub/services/infrastructure/client/messaging/contracts"
 	"grovehub/services/infrastructure/internal/app/client/messaging/helpers"
 )
 

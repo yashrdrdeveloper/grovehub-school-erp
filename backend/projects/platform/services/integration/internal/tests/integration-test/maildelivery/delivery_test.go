@@ -7,7 +7,9 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
-	"grovehub/operations/mailreconcile"
+	"grovehub/services/identity"
+	"grovehub/services/integration"
+	"grovehub/services/integration/client/mail"
 
 	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
@@ -60,12 +62,13 @@ func TestDurableDispatch(t *testing.T) {
 	if calls.Load() != 2 { t.Fatal("uncertain delivery was repeated") }
 
 	// No matching Identity jobs exist for these synthetic Integration receipts.
-	report, err := mailreconcile.Read(ctx, db, tenant, "", 1)
+	reader := integration.NewMailReconciliationClient(db, identity.NewInvitationDeliveryReader(db))
+	report, err := reader.Search(ctx, mail.SearchRequest{TenantID:tenant,Limit:1})
 	if err != nil { t.Fatal(err) }
 	if len(report.Rows) != 1 || report.Rows[0].Disposition != "RECEIPT_WITHOUT_JOB" || report.Rows[0].AccountID != nil || report.NextCursor == "" { t.Fatal("unexpected first reconciliation page") }
-	next, err := mailreconcile.Read(ctx, db, tenant, report.NextCursor, 1)
+	next, err := reader.Search(ctx, mail.SearchRequest{TenantID:tenant,After:report.NextCursor,Limit:1})
 	if err != nil || len(next.Rows) != 1 || next.Rows[0].DeliveryID == report.Rows[0].DeliveryID || next.NextCursor != "" { t.Fatalf("invalid continuation page: %v", err) }
-	foreign, err := mailreconcile.Read(ctx, db, uuid.NewString(), "", 100)
+	foreign, err := reader.Search(ctx, mail.SearchRequest{TenantID:uuid.NewString(),Limit:100})
 	if err != nil || len(foreign.Rows) != 0 { t.Fatalf("tenant scope leaked: %v",err) }
 
 	// Independent reservation requires a spare connection while the caller holds

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"grovehub/launcher"
-	"grovehub/launcher/bootstrap"
+
 	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
 )
 
@@ -17,7 +17,7 @@ func main() {
 }
 
 func run() int {
-	logger, err := bootstrap.NewLogger(os.Stdout)
+	logger, err := launcher.NewLogger(os.Stdout)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "invalid GROVEHUB_LOG_LEVELS: %v\n", err)
 		return 1
