@@ -14,6 +14,7 @@ func HealthSpecs(){
    ready:=false
    mux:=http.NewServeMux()
    routes.RegisterHTTP(mux,impl.New(func()bool{return ready}))
+   Expect(routes.RouteLimits()).To(BeEmpty())
    run:=func(path string)*httptest.ResponseRecorder{w:=httptest.NewRecorder();mux.ServeHTTP(w,httptest.NewRequest("GET",path,nil));return w}
    Expect(run("/health").Code).To(Equal(200))
    Expect(run("/ready").Code).To(Equal(503))

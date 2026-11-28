@@ -16,7 +16,7 @@ import (
 	integrationprincipal "grovehub/services/integration/client/principal"
 )
 
-var tierPattern = regexp.MustCompile(`^/[a-z][a-z0-9-]*/(public|protected|restricted)(/|$)`)
+var tierPattern = regexp.MustCompile(`^/[a-z][a-z0-9-]*/([a-z][a-z0-9-]*)(/|$)`)
 
 
 // @Service
@@ -62,7 +62,21 @@ func (operation *operation) ServeHTTP(writer http.ResponseWriter, request *http.
 		return
 	}
 
-	if coregateway.Tier(matches[1]) != coregateway.Restricted && !helpers.ValidateOrigin(operation.origin,request) {
+	tier:=coregateway.Tier(matches[1])
+	var serve func(http.ResponseWriter,*http.Request,string)
+	switch tier {
+	case coregateway.Public:
+		serve=operation.servePublic
+	case coregateway.Protected:
+		serve=operation.serveProtected
+	case coregateway.Restricted:
+		serve=operation.serveRestricted
+	default:
+		helpers.RejectForbidden(writer,request,"route_not_registered_or_unclassified")
+		return
+	}
+
+	if tier != coregateway.Restricted && !helpers.ValidateOrigin(operation.origin,request) {
 		helpers.RejectForbidden(writer, request, "origin_mismatch")
 		return
 	}
@@ -73,15 +87,19 @@ func (operation *operation) ServeHTTP(writer http.ResponseWriter, request *http.
 		return
 	}
 
-	switch coregateway.Tier(matches[1]) {
-	case coregateway.Public:
+	serve(writer,request,route)
+}
+
+func(operation *operation) servePublic(writer http.ResponseWriter,request *http.Request,_ string){
 		if helpers.RequiresCSRF(request) && !helpers.ValidCSRF(request) {
 			helpers.RejectForbidden(writer, request, "csrf_invalid_or_missing")
 			return
 		}
 		operation.mux.ServeHTTP(writer, request)
 
-	case coregateway.Protected:
+}
+
+func(operation *operation) serveProtected(writer http.ResponseWriter,request *http.Request,route string){
 		if operation.access == nil {
 			helpers.Reject(writer, request, http.StatusUnauthorized)
 			return
@@ -104,7 +122,7 @@ func (operation *operation) ServeHTTP(writer http.ResponseWriter, request *http.
 		ctx := schoolgateway.WithPrincipal(request.Context(), principal)
 		if strings.HasPrefix(route, "/identity/protected/") || strings.HasPrefix(route, "/audit/protected/") {
 			policy, ok := operation.access.(schoolgateway.ProtectedRouteAuthorizer)
-			if !ok || policy.AuthorizeProtectedRoute(ctx, pattern) != nil {
+			if !ok || policy.AuthorizeProtectedRoute(ctx, request.Pattern) != nil {
 				helpers.RejectForbidden(writer, request, "identity_permission_denied")
 				return
 			}
@@ -117,7 +135,9 @@ func (operation *operation) ServeHTTP(writer http.ResponseWriter, request *http.
 		}
 		operation.mux.ServeHTTP(writer, request.WithContext(ctx))
 
-	case coregateway.Restricted:
+}
+
+func(operation *operation) serveRestricted(writer http.ResponseWriter,request *http.Request,_ string){
 		// Restricted endpoints must never inherit a browser session.
 		if operation.workloads == nil {
 			helpers.RejectForbidden(writer, request, "workload_verifier_unavailable")
@@ -135,10 +155,6 @@ func (operation *operation) ServeHTTP(writer http.ResponseWriter, request *http.
 		}
 		operation.mux.ServeHTTP(writer, request)
 
-	default:
-		helpers.RejectForbidden(writer, request, "unsupported_access_tier")
-	}
 }
-
 
 var _ external.Operation=(*operation)(nil)

@@ -175,7 +175,9 @@ func CompositionSpecs(){
 			Expect(fixture.handler).NotTo(BeNil())
 			call:=func(path string)int{
 				w:=httptest.NewRecorder()
-				fixture.handler.ServeHTTP(w,httptest.NewRequest(http.MethodGet,path,nil))
+				request:=httptest.NewRequest(http.MethodGet,path,nil)
+				request.Pattern="GET "+path
+				fixture.handler.ServeHTTP(w,request)
 				return w.Code
 			}
 			Expect(call("/health")).To(Equal(http.StatusOK))

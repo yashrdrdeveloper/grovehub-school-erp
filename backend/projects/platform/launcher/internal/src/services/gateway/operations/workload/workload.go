@@ -149,10 +149,9 @@ func (v *platformWorkloads) VerifyWorkload(ctx context.Context,r *http.Request)(
  ctx=school.WithTenantCheck(ctx,v.tenantCheck)
  verified,err:=v.scoped.VerifyWorkload(ctx,r)
  if err!=nil {return nil,err}
- claims,ok:=core.WorkloadFrom(verified)
- if !ok {return nil,core.ErrWorkloadDenied}
- policy,ok:=v.policies[r.Pattern]
- if !ok || len(claims.Scopes)!=1 || claims.Scopes[0]!=policy.Scope {return nil,core.ErrWorkloadDenied}
+ claims,authenticated:=core.WorkloadFrom(verified)
+ policy,granted:=v.policies[r.Pattern]
+ if !authenticated || !granted || len(claims.Scopes)!=1 || claims.Scopes[0]!=policy.Scope {return nil,core.ErrWorkloadDenied}
  if r.Pattern=="POST "+mail.ReconciliationPath {
   if policy.RequireActor || claims.Subject!=mail.ReconciliationSubject || claims.ActorGID!="" || claims.TenantID!="" || claims.SessionID!="" || r.URL==nil || r.URL.Path!=mail.ReconciliationPath || r.URL.RawPath!="" || r.URL.RawQuery!="" || r.URL.ForceQuery || len(r.Header.Values("Cookie"))!=0 || len(r.Header.Values("X-GH-Identity-Proof"))!=0 {return nil,core.ErrWorkloadDenied}
   return verified,nil
