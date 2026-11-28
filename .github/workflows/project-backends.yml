@@ -56,7 +56,7 @@ jobs:
         with:
           go-version: '1.27.3'
           cache: false
-      - run: go test ./database/... ./tests/unit-test/database/... ./gateway ./annotation/... ./tests/unit-test/annotation/... ./http/readiness ./http/correlation
+      - run: go test ./database/... ./tests/unit-test/database/... ./gateway ./annotation/... ./tests/unit-test/annotation/... ./http/... ./tests/unit-test/http/...
   core-diff:
     runs-on: ubuntu-latest
     env:
