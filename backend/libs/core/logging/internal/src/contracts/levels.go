@@ -2,6 +2,7 @@ package contracts
 
 import "log/slog"
 
+// Levels is an immutable set of explicitly enabled log levels.
 type Levels struct {
 	enabled map[slog.Level]struct{}
 }
