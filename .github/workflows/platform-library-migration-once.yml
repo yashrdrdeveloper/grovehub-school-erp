@@ -32,6 +32,8 @@ jobs:
           gofmt -w backend/projects/platform/launcher
           bash backend/libs/platform/tools/coverage/check.sh "$RUNNER_TEMP/platform-library-coverage.out"
           if git grep -nF '"grovehub/internal/session' -- '*.go'; then exit 1; fi
+          # Workflow updates require the separately authorized repository connector.
+          git restore -- .github/workflows/backend-annotations.yml
           git diff --check
           git add -A
           git diff --cached --stat
