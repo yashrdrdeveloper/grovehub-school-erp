@@ -22,6 +22,7 @@ import (
 	"grovehub/launcher/middleware"
 	"grovehub/launcher/routing"
 	"grovehub/launcher/services/gateway"
+ schoolgateway "grovehub/libs/schoolgateway"
 	coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
 	headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
 	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
@@ -120,9 +121,14 @@ func Run(logger *slog.Logger) error {
 
 	// Both external HTTP access tiers and restricted provider webhooks
 	// are verified before dispatch into a service-specific controller.
-	tenantCheck,err:=gateway.NewTenantAccess(gateway.TenantAccessConfig{Origin:os.Getenv("PLATFORM_TENANT_ACCESS_ORIGIN"),KeyID:os.Getenv("PLATFORM_TENANT_ACCESS_KEY_ID"),PrivateKey:os.Getenv("PLATFORM_TENANT_ACCESS_PRIVATE_KEY")})
+	tenantState,err:=gateway.NewTenantState(gateway.TenantAccessConfig{Origin:os.Getenv("PLATFORM_TENANT_ACCESS_ORIGIN"),KeyID:os.Getenv("PLATFORM_TENANT_ACCESS_KEY_ID"),PrivateKey:os.Getenv("PLATFORM_TENANT_ACCESS_PRIVATE_KEY")})
 	if err!=nil{return err}
-	if os.Getenv("PLATFORM_TENANT_ACCESS_REQUIRED")=="true"&&tenantCheck==nil{return errors.New("tenant access verifier required")}
+	tenantCheck:=schoolgateway.ActiveTenantCheck(tenantState)
+ if os.Getenv("PLATFORM_TENANT_ACCESS_REQUIRED")=="true"&&tenantCheck==nil{return errors.New("tenant access verifier required")}
+ if tenantState!=nil{
+  stopReconciliation:=identity.StartTenantSessionReconciler(ctx,logger,db,tenantState)
+  defer stopReconciliation()
+ }
 	workloads, err := gateway.NewPlatformWorkloads(os.Getenv("PLATFORM_WORKLOAD_CONFIG"), identityModule, integrationModule,tenantCheck)
 	if err != nil { return fmt.Errorf("initialize workload gateway: %w", err) }
 	gatewayRuntime := gateway.New(

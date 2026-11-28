@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm/clause"
 
 	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	"grovehub/libs/schoolgateway"
 	"grovehub/services/identity/internal/app/entity"
 	sessionrepo "grovehub/services/identity/internal/app/repository/session"
 )
@@ -99,9 +100,12 @@ func (repository *Repository) Reauthenticate(ctx context.Context, sessionID stri
 
 func (repository *Repository) List(ctx context.Context, accountID string) ([]entity.Session, error) {
 	var sessions []entity.Session
-	err := transaction.Database(ctx, repository.db).
-		Where("account_id = ? AND revoked_at IS NULL AND refresh_expires_at > ?", accountID, time.Now().UTC()).
-		Order("created_at DESC").
+	query := transaction.Database(ctx, repository.db).
+		Where("account_id = ? AND revoked_at IS NULL AND refresh_expires_at > ?", accountID, time.Now().UTC())
+	if actor, ok := schoolgateway.PrincipalFrom(ctx); ok && actor.AccountID == accountID && actor.SessionGeneration > 0 {
+		query = query.Where("session_generation = ?", actor.SessionGeneration)
+	}
+	err := query.Order("created_at DESC").
 		Limit(100).
 		Find(&sessions).Error
 	return sessions, err

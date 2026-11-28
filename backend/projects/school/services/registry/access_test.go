@@ -39,11 +39,11 @@ func TestSchoolAccessCheck(t *testing.T){
   w:=httptest.NewRecorder();mux.ServeHTTP(w,r);generation=w.Header().Get("X-GH-Session-Generation");return w.Code
  }
  if got:=check(school,"",true);got!=204||generation!="1"{t.Fatal("active school denied or wrong generation",got,generation)}
- if got:=check(missing,"",true);got!=403{t.Fatal("missing school accepted",got)}
- if got:=check(school,"",false);got!=403{t.Fatal("unsigned request accepted",got)}
+ if got:=check(missing,"",true);got!=403||generation!=""{t.Fatal("missing school accepted or generation leaked",got,generation)}
+ if got:=check(school,"",false);got!=403||generation!=""{t.Fatal("unsigned request accepted or generation leaked",got,generation)}
  if got:=check(school,"?status=ACTIVE",true);got!=403{t.Fatal("query accepted",got)}
  if _,err=db.ExecContext(ctx,"UPDATE school_registry.schools SET status='DISABLED' WHERE id=$1",school);err!=nil{t.Fatal(err)}
- if got:=check(school,"",true);got!=403{t.Fatal("disabled school accepted",got)}
+ if got:=check(school,"",true);got!=403||generation!="2"{t.Fatal("disabled school accepted or wrong generation",got,generation)}
  if _,err=db.ExecContext(ctx,"UPDATE school_registry.schools SET status='ACTIVE' WHERE id=$1",school);err!=nil{t.Fatal(err)}
  if got:=check(school,"",true);got!=204||generation!="2"{t.Fatal("reactivated school denied or wrong generation",got,generation)}
  if _,err=db.ExecContext(ctx,"UPDATE school_registry.schools SET name='Renamed access school' WHERE id=$1",school);err!=nil{t.Fatal(err)}

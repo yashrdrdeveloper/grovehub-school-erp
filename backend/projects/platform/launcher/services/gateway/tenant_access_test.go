@@ -30,11 +30,18 @@ func TestTenantAccessClient(t *testing.T){
   if generation!=""{w.Header().Set("X-GH-Session-Generation",generation)}
   w.WriteHeader(status)
  }));defer server.Close()
- check,err:=NewTenantAccess(TenantAccessConfig{Origin:server.URL,KeyID:"access",PrivateKey:base64.RawURLEncoding.EncodeToString(priv)});if err!=nil{t.Fatal(err)}
+ config:=TenantAccessConfig{Origin:server.URL,KeyID:"access",PrivateKey:base64.RawURLEncoding.EncodeToString(priv)}
+ check,err:=NewTenantAccess(config);if err!=nil{t.Fatal(err)}
+ lookup,err:=NewTenantState(config);if err!=nil{t.Fatal(err)}
  for _,code:=range []int{204,403,503,302,200}{
   status=code
   if got,err:=check(context.Background(),id);(err==nil)!=(code==204)||(code==204&&got!=1){t.Fatal("incorrect decision",code,got,err)}
  }
+ status=403
+ generation="2"
+ if state,err:=lookup(context.Background(),id);err!=nil||state.Active||state.Generation!=2{t.Fatal("disabled state unavailable",state,err)}
+ generation=""
+ if _,err:=lookup(context.Background(),id);err==nil{t.Fatal("unverified denial treated as registry state")}
  status=204
  for _,bad:=range []string{"","0","-1","01","1,2","9223372036854775808"}{
   generation=bad

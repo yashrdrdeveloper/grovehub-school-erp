@@ -50,10 +50,14 @@ func NewAccess(db *sql.DB,raw,readRaw,renameRaw,statusRaw string)(http.HandlerFu
   if !ok||claims.Subject!=AccessSubject||len(claims.Scopes)!=1||claims.Scopes[0]!=AccessScope||claims.ActorGID!=""||claims.TenantID!=""||claims.SessionID!=""{w.WriteHeader(403);return}
   probe,cancel:=context.WithTimeout(ctx,2*time.Second);defer cancel()
   var generation int64
-  err=db.QueryRowContext(probe,"SELECT session_generation FROM school_registry.schools WHERE id=$1 AND status='ACTIVE'",id).Scan(&generation)
+  var status string
+  err=db.QueryRowContext(probe,"SELECT session_generation,status FROM school_registry.schools WHERE id=$1",id).Scan(&generation,&status)
   if errors.Is(err,sql.ErrNoRows){w.WriteHeader(403);return}
-  if err!=nil||generation<1{w.WriteHeader(503);return}
+  if err!=nil||generation<1||(status!="ACTIVE"&&status!="DISABLED"){w.WriteHeader(503);return}
+  // Only a verified registry lookup returns a generation. A disabled
+  // response remains denied for authentication, but permits stale cleanup.
   w.Header().Set("X-GH-Session-Generation",strconv.FormatInt(generation,10))
+  if status=="DISABLED"{w.WriteHeader(403);return}
   w.WriteHeader(204)
  },nil
 }

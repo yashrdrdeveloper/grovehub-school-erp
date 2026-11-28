@@ -7,6 +7,23 @@ import (
 
 // TenantCheck returns the current session generation of an active school.
 type TenantCheck func(context.Context, string) (int64, error)
+
+// TenantStateLookup returns an authoritative state for a known school only.
+// Transport, credential and unknown-school failures return an error.
+type TenantState struct {
+ Generation int64
+ Active bool
+}
+type TenantStateLookup func(context.Context, string) (TenantState, error)
+
+func ActiveTenantCheck(lookup TenantStateLookup) TenantCheck {
+ if lookup == nil { return nil }
+ return func(ctx context.Context, tenant string) (int64, error) {
+  state, err := lookup(ctx, tenant)
+  if err != nil || !state.Active || state.Generation < 1 { return 0, ErrTenantDenied }
+  return state.Generation, nil
+ }
+}
 type tenantCheckKey struct{}
 var ErrTenantDenied = errors.New("tenant access denied")
 

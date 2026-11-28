@@ -67,6 +67,7 @@ var _ = Describe("RBAC persistence against PostgreSQL", func() {
 		ctx := context.Background()
 		Expect(migrations.Migrate(ctx, sqlDB)).To(Succeed())
 		Expect(infrastructure.Migrate(ctx, db)).To(Succeed())
+		verifyTenantSessionReconciliation(ctx, db)
 
 		roles := roleimpl.New(db)
 		draft := rolerepo.Draft{TenantID: "school-a", ActorID: actorID, Name: "  Senior Teacher  ", Personas: []persona.Code{persona.Teacher, persona.Coordinator}}
