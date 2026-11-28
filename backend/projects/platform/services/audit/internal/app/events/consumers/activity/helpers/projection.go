@@ -57,5 +57,20 @@ func Project(ctx context.Context, expectedType string, raw []byte) (entity.Activ
 	auditID := uuid.NewSHA1(namespace, key).String()
 	semantic, _ := json.Marshal([]any{string(key), optionalID(data.ActorID), json.RawMessage(projected)})
 	digest := sha256.Sum256(semantic)
-	return entity.Activity{AuditID: auditID, SourceEventID: event.EventID, TenantID: tenant, AssetType: assetType, AssetID: event.AggregateID, AuditType: expectedType, Operation: data.Operation, Source: "identity", AssetVersion: data.New.Version, ActorID: optionalID(data.ActorID), PersonID: optionalID(data.New.PersonGID), Data: projected, SemanticHash: hex.EncodeToString(digest[:]), OccurredAt: event.OccurredAt.UTC()}, nil
+	return entity.Activity{
+		AuditID:       auditID,
+		SourceEventID: event.EventID,
+		TenantID:      tenant,
+		AssetType:     assetType,
+		AssetID:       event.AggregateID,
+		AuditType:     expectedType,
+		Operation:     data.Operation,
+		Source:        "identity",
+		AssetVersion:  data.New.Version,
+		ActorID:       optionalID(data.ActorID),
+		PersonID:      optionalID(data.New.PersonGID),
+		Data:          projected,
+		SemanticHash:  hex.EncodeToString(digest[:]),
+		OccurredAt:    event.OccurredAt.UTC(),
+	}, nil
 }
