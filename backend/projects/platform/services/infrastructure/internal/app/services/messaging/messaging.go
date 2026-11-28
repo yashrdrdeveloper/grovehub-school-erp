@@ -4,7 +4,7 @@ import (
     "context"
 
     dto "grovehub/services/infrastructure/internal/app/dto/messaging"
-    inframessaging "grovehub/libs/infrastructure/messaging"
+    inframessaging "grovehub/services/infrastructure/client/messaging"
 )
 
 type Service interface {

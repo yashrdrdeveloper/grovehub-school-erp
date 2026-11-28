@@ -30,7 +30,7 @@ Core must not know vendor names, business entity names, application permissions,
 
 ## 3. Technical infrastructure contracts
 
-Infrastructure-owned shared contracts, such as broker-delivery DTOs, event-store records, publish options and transport configuration, belong in a separate technical library rather than `libs/backend/core/events`. The actual vendor SDK/transport adapter lives in Infrastructure's `externalService/<capability>/<provider>`.
+Infrastructure-owned contracts, such as broker-delivery DTOs, event-store records, publish options and transport configuration, belong to the Infrastructure service and are exposed through `services/infrastructure/client/messaging`. Do not create a separate shared library merely to hold service-owned contracts; genuinely independent reusable capabilities may still have their own library. The actual vendor SDK/transport adapter lives in Infrastructure's `externalService/<capability>/<provider>`.
 
 ## 4. Avoiding false reuse
 

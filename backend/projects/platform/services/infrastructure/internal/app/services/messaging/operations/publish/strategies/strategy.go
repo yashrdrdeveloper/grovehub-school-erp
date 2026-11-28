@@ -2,7 +2,7 @@ package strategies
 
 import (
     "context"
-    inframessaging "grovehub/libs/infrastructure/messaging"
+    inframessaging "grovehub/services/infrastructure/client/messaging"
 )
 
 // @Strategy

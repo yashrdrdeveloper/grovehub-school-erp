@@ -2,7 +2,7 @@ package publish
 
 import (
     "context"
-    inframessaging "grovehub/libs/infrastructure/messaging"
+    inframessaging "grovehub/services/infrastructure/client/messaging"
     "grovehub/services/infrastructure/internal/app/services/messaging/operations/publish/strategies"
 )
 

@@ -1,34 +1,79 @@
-// Package messaging exposes Infrastructure's typed public broker client,
-// configuration, durable event store and delivery DTOs in one file.
+// Package messaging exposes Infrastructure's transport-neutral broker client
+// and transactional event-store contracts.
 package messaging
 
 import (
-    "context"
+	"context"
 
-    inframessaging "grovehub/libs/infrastructure/messaging"
+	config "grovehub/services/infrastructure/internal/app/config/messaging"
+	"grovehub/services/infrastructure/internal/app/client/messaging/helpers"
 )
 
-type Config = inframessaging.Config
-const ProviderNATS = inframessaging.ProviderNATS
-func DefaultMessaging() Config { return inframessaging.FromEnv() }
+type Config = config.Messaging
 
-type Event = inframessaging.Event
-type EventStore interface {
-    Enqueue(ctx context.Context, event inframessaging.Event) error
+const ProviderNATS = config.ProviderNATS
+
+func DefaultMessaging() Config { return config.FromEnv() }
+func FromEnv() Config { return config.FromEnv() }
+
+// Event is a transport-neutral pending outbox message.
+type Event struct {
+	EventID string
+	Topic string
+	Payload []byte
+	Metadata map[string]string
 }
 
-type Message = inframessaging.Message
-type MessageHandler = inframessaging.Handler
-type PublishOptions = inframessaging.PublishOptions
+type EventStore interface {
+	Enqueue(ctx context.Context, event Event) error
+}
+
+// Message represents a broker delivery independent of provider types.
+type Message struct {
+	ID string
+	Payload []byte
+	Metadata map[string]string
+}
+
+type Handler func(context.Context, Message) error
+type MessageHandler = Handler
+
+// PublishOptions selects transactional outbox persistence for a message.
+type PublishOptions struct {
+	Persist bool
+}
+
+type Publisher interface {
+	Publish(ctx context.Context, topic string, payload []byte, metadata map[string]string) error
+}
+
+// WithConsumerGroup selects an independent logical subscriber.
+func WithConsumerGroup(ctx context.Context, group string) context.Context {
+	return helpers.WithConsumerGroup(ctx, group)
+}
+
+func ConsumerGroup(ctx context.Context) string {
+	return helpers.ConsumerGroup(ctx)
+}
+
+// WithSubscriptionObserver reports subscription readiness and termination.
+// The observer must be safe for concurrent use.
+func WithSubscriptionObserver(ctx context.Context, observer func(bool)) context.Context {
+	return helpers.WithSubscriptionObserver(ctx, observer)
+}
+
+func NotifySubscription(ctx context.Context, ready bool) {
+	helpers.NotifySubscription(ctx, ready)
+}
 
 // @Client messagingClient
 type MessagingClient interface {
-    // @Proxy service.Publish
-    Publish(ctx context.Context, topic string, payload []byte, metadata map[string]string) error
-    // @Proxy service.PublishWithOptions
-    PublishWithOptions(ctx context.Context, topic string, payload []byte, metadata map[string]string, options inframessaging.PublishOptions) error
-    // @Proxy service.Consume
-    Consume(ctx context.Context, topic string, handler inframessaging.Handler) error
-    // @Proxy service.Health
-    Health(ctx context.Context) error
+	// @Proxy service.Publish
+	Publish(ctx context.Context, topic string, payload []byte, metadata map[string]string) error
+	// @Proxy service.PublishWithOptions
+	PublishWithOptions(ctx context.Context, topic string, payload []byte, metadata map[string]string, options PublishOptions) error
+	// @Proxy service.Consume
+	Consume(ctx context.Context, topic string, handler Handler) error
+	// @Proxy service.Health
+	Health(ctx context.Context) error
 }

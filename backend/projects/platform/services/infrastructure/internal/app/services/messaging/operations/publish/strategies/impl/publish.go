@@ -3,7 +3,7 @@ package impl
 import (
     "context"
     coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-    inframessaging "grovehub/libs/infrastructure/messaging"
+
     client "grovehub/services/infrastructure/client/messaging"
     errorcode "grovehub/services/infrastructure/internal/app/constants/error"
     "grovehub/services/infrastructure/internal/app/services/messaging/operations/publish/helpers"
@@ -26,7 +26,7 @@ func (strategy *publishStrategy) Publish(ctx context.Context, topic string, payl
     }
     return nil
 }
-func (strategy *publishStrategy) PublishWithOptions(ctx context.Context, topic string, payload []byte, metadata map[string]string, options inframessaging.PublishOptions) error {
+func (strategy *publishStrategy) PublishWithOptions(ctx context.Context, topic string, payload []byte, metadata map[string]string, options client.PublishOptions) error {
     if !options.Persist { return strategy.Publish(ctx, topic, payload, metadata) }
     if strategy.store == nil { return errorcode.ErrInvalidStore }
     // The EventStore uses the business UnitOfWork transaction bound to ctx.

@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strings"
 	"regexp"
-	inframessaging "grovehub/libs/infrastructure/messaging"
+	inframessaging "grovehub/services/infrastructure/client/messaging"
 
 	"github.com/ThreeDotsLabs/watermill"
 	watermillnats "github.com/ThreeDotsLabs/watermill-nats/v2/pkg/nats"

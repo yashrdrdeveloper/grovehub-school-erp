@@ -3,7 +3,7 @@ package helpers
 import (
     "strings"
     "github.com/google/uuid"
-    inframessaging "grovehub/libs/infrastructure/messaging"
+    inframessaging "grovehub/services/infrastructure/client/messaging"
 )
 
 // NewMessage defensively copies the immutable event and preserves an explicit

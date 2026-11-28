@@ -2,17 +2,17 @@
 
 ## Public capability
 
-`libs/infrastructure/messaging` defines:
+`services/infrastructure/client/messaging` owns the public contracts:
 
 | Type/file | Purpose |
 |---|---|
-| `Event` in `event.go` | Pending outbox event ID, topic, payload, metadata |
-| `Message` and `Handler` in `consumer.go` | Transport-neutral broker delivery DTO and callback |
-| `PublishOptions` in `producer.go` | Per-message database persistence choice |
-| `Publisher` in `producer.go` | Minimal typed direct-publish contract |
-| `Config`, `FromEnv`, `Validate` in `config.go` | Required provider/URL/queue/durable configuration |
+| `Event` in `client/messaging/messaging.go` | Pending outbox event ID, topic, payload, metadata |
+| `Message` and `Handler` in `client/messaging/messaging.go` | Transport-neutral broker delivery DTO and callback |
+| `PublishOptions` in `client/messaging/messaging.go` | Per-message database persistence choice |
+| `Publisher` in `client/messaging/messaging.go` | Minimal typed direct-publish contract |
+| `Config`, `FromEnv`, `Validate` in `internal/app/config/messaging/messaging.go` | Required provider/URL/queue/durable configuration |
 
-The consuming application normally imports `services/infrastructure/client/messaging`, a typed public facade over these definitions, rather than depending on the runtime's `internal/app` packages. The Infrastructure service owns concrete NATS and PostgreSQL implementation, not the shared contract.
+Consuming services import only `services/infrastructure/client/messaging`; no separate platform messaging library is required. The Infrastructure service owns concrete NATS and PostgreSQL implementation, not the shared contract.
 
 ## Delivery choice
 

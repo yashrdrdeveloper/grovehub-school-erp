@@ -5,7 +5,7 @@
 ```text
 services/infrastructure/
 ├── infrastructure.go                      # New(config,db,logger), Migrate
-├── client/messaging/messaging.go           # @Client + public aliases + EventStore
+├── client/messaging/messaging.go           # @Client + public contracts + EventStore
 └── internal/
     ├── app/
     │   ├── bootstrap/impl/
@@ -31,7 +31,7 @@ services/infrastructure/
         └── 000001_create_messaging.sql
 ```
 
-Shared transport DTOs/config types are in `libs/infrastructure/messaging`, not `libs/core/events/messaging`. Business modules use only `services/infrastructure/client/messaging` for stable clients. NATS/Watermill types do not escape the adapter.
+Infrastructure owns transport DTOs and client contracts in `services/infrastructure/client/messaging`. Configuration lives in `internal/app/config/messaging` and subscription context helpers in `internal/app/client/messaging/helpers`, exposed through the public client. Business modules import only the public client; no separate platform messaging library exists. NATS/Watermill types do not escape the adapter.
 
 ## 2. Runtime configuration
 
