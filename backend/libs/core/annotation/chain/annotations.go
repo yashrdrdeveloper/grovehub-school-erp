@@ -1,10 +1,6 @@
-// Package chain catalogs the typed service chain marker.
-// The marker is checked by the annotation scanner; the service runner executes
-// the behavior explicitly, without reflection or invisible interception.
+// Compatibility catalog; new code should use annotation.Uses or annotation.Lookup.
 package chain
 
-import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/contract"
+import "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/catalog/chain"
 
-var UseCases = []contract.UseCase{
-    {Name:"ChainOfResponsibility",Syntax:"@ChainOfResponsibility",Category:"Service pipeline",Purpose:"Mark a method implemented through the typed core service chain runner",Mode:"CHECK",Status:contract.Pilot,Roadmap:"P4",Target:contract.MethodTarget},
-}
+var UseCases = chain.UseCases

@@ -13,7 +13,7 @@ import (
     "strings"
     "unicode"
 
-    "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/contract"
+    "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/contracts"
     "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/patterns"
 )
 
