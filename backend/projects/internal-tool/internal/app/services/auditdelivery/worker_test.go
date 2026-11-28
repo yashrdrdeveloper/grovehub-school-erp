@@ -8,14 +8,14 @@ import (
 
  "github.com/google/uuid"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/entity"
- "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/postgres"
+ coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/client/audit"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/resources/migrations"
 )
 
 func TestDurableRelay(t *testing.T){
  dsn:=os.Getenv("INTERNAL_TOOL_AUTH_TEST_DSN");if dsn==""{t.Skip("requires disposable database")}
- ctx:=context.Background();db,err:=postgres.OpenProjectPool(ctx,dsn);if err!=nil{t.Fatal(err)};defer db.Close()
+ ctx:=context.Background();db,err:=coredatabase.OpenProjectPool(ctx,dsn);if err!=nil{t.Fatal(err)};defer db.Close()
  if err=migrations.Apply(ctx,db);err!=nil{t.Fatal(err)}
  // Use a dedicated database in CI; mark earlier test rows delivered before
  // creating a new occurrence so the worker selects exactly our test row.

@@ -9,7 +9,7 @@ import (
  "strings"
  "time"
 
- "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/postgres"
+ coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
  auth "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/services/authentication"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/resources/migrations"
 )
@@ -17,7 +17,7 @@ func Run(args []string, input io.Reader)error{
  if len(args)<1{return fmt.Errorf("usage: operator-admin migrate | bootstrap EMAIL (password on stdin)")}
  if (args[0]=="migrate"&&len(args)!=1)||(args[0]=="bootstrap"&&len(args)!=2)||(args[0]!="migrate"&&args[0]!="bootstrap"){return fmt.Errorf("usage: migrate | bootstrap EMAIL (password on stdin)")}
  ctx,cancel:=context.WithTimeout(context.Background(),30*time.Second);defer cancel()
- db,err:=postgres.OpenProjectPool(ctx,os.Getenv("INTERNAL_TOOL_DATABASE_URL"));if err!=nil{return err};defer db.Close()
+ db,err:=coredatabase.OpenProjectPool(ctx,os.Getenv("INTERNAL_TOOL_DATABASE_URL"));if err!=nil{return err};defer db.Close()
  switch args[0]{
  case "migrate":
   if len(args)!=1{return fmt.Errorf("usage: operator-admin migrate")}

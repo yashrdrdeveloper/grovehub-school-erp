@@ -12,14 +12,14 @@ import (
 
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/services/authentication"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/resources/migrations"
- "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/postgres"
+ coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 )
 
 func TestOperatorAuthentication(t *testing.T){
  dsn:=os.Getenv("INTERNAL_TOOL_AUTH_TEST_DSN")
  if dsn==""{t.Skip("requires a fresh disposable database")}
  ctx:=context.Background()
- db,err:=postgres.OpenProjectPool(ctx,dsn);if err!=nil{t.Fatal(err)};defer db.Close()
+ db,err:=coredatabase.OpenProjectPool(ctx,dsn);if err!=nil{t.Fatal(err)};defer db.Close()
  if err=migrations.Apply(ctx,db);err!=nil{t.Fatal(err)}
  if err=migrations.Apply(ctx,db);err!=nil{t.Fatal("migration not idempotent",err)}
  if err=migrations.Check(ctx,db);err!=nil{t.Fatal(err)}

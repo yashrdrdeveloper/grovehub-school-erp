@@ -16,7 +16,7 @@ import (
  "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/readiness"
  "time"
 
- "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/postgres"
+ coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
  auth "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/services/authentication"
  controller "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/controller/authentication"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/resources/migrations"
@@ -29,7 +29,7 @@ import (
 func Run() error {
  ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
  defer stop()
- db,err:=postgres.OpenProjectPool(ctx,os.Getenv("INTERNAL_TOOL_DATABASE_URL"))
+ db,err:=coredatabase.OpenProjectPool(ctx,os.Getenv("INTERNAL_TOOL_DATABASE_URL"))
  if err!=nil {return fmt.Errorf("INTERNAL_TOOL_DATABASE_URL: %w",err)}
  defer db.Close()
  addr := os.Getenv("GROOVEHUB_HTTP_ADDR")

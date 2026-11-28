@@ -12,7 +12,7 @@ import (
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/entity"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/services/workflow"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/resources/migrations"
- "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/postgres"
+ coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 )
 
 // Invoked by the cross-project suite as a separate executable. It owns its
@@ -20,7 +20,7 @@ import (
 func TestLiveSchoolLifecycleExecution(t *testing.T) {
  if os.Getenv("LIFECYCLE_EXECUTE")!="true"{t.Skip("cross-project fixture")}
  ctx,cancel:=context.WithTimeout(context.Background(),30*time.Second);defer cancel()
- db,err:=postgres.OpenProjectPool(ctx,os.Getenv("INTERNAL_TOOL_AUTH_TEST_DSN"));if err!=nil{t.Fatal(err)};defer db.Close()
+ db,err:=coredatabase.OpenProjectPool(ctx,os.Getenv("INTERNAL_TOOL_AUTH_TEST_DSN"));if err!=nil{t.Fatal(err)};defer db.Close()
  var name string
  if err=db.QueryRowContext(ctx,"SELECT current_database()").Scan(&name);err!=nil||name!="internal_test"{t.Fatal("disposable Internal Tool database required")}
  if err=migrations.Apply(ctx,db);err!=nil{t.Fatal(err)}

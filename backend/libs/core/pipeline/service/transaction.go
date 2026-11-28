@@ -4,7 +4,7 @@ import (
     "context"
     "errors"
 
-    coretransaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+    coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 )
 
 var ErrMissingUnitOfWork = errors.New("service transaction requires a unit of work")
@@ -21,7 +21,7 @@ func Sequence[R any](ctx context.Context, result R, created bool, operations ...
 
 // Transactional ensures all nested repository writes share a transaction.
 // The annotation comment alone is not executable; callers must use this wrapper.
-func Transactional[S any, R any](unit coretransaction.UnitOfWork, handler Handler[S, R]) Handler[S, R] {
+func Transactional[S any, R any](unit coredatabase.UnitOfWork, handler Handler[S, R]) Handler[S, R] {
     return func(ctx context.Context, state *S) Outcome[R] {
         if unit == nil { return Fail[R](ErrMissingUnitOfWork) }
         var result Outcome[R]

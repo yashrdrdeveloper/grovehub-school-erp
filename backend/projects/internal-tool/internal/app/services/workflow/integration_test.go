@@ -11,12 +11,12 @@ import (
  repo "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/repository/workflow"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/app/entity"
  "github.com/yashrdrdeveloper/grovehub-school-erp/backend/projects/internal-tool/internal/resources/migrations"
- "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/postgres"
+ coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 )
 
 func TestApprovalLifecycle(t *testing.T){
  dsn:=os.Getenv("INTERNAL_TOOL_AUTH_TEST_DSN");if dsn==""{t.Skip("requires disposable database")}
- ctx:=context.Background();db,err:=postgres.OpenProjectPool(ctx,dsn);if err!=nil{t.Fatal(err)};defer db.Close()
+ ctx:=context.Background();db,err:=coredatabase.OpenProjectPool(ctx,dsn);if err!=nil{t.Fatal(err)};defer db.Close()
  if err=migrations.Apply(ctx,db);err!=nil{t.Fatal(err)}
  l1:=entity.Operator{ID:uuid.NewString(),Email:"workflow-l1@example.com",Persona:entity.L1}
  l2:=entity.Operator{ID:uuid.NewString(),Email:"workflow-l2@example.com",Persona:entity.L2}
