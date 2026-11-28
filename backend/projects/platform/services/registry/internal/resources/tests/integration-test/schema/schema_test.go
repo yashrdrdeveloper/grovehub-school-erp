@@ -17,6 +17,7 @@ import (
 	"grovehub/services/registry/internal/app/constants/status"
 	"grovehub/services/registry/internal/app/entity"
 	"grovehub/services/registry/internal/app/repository/constants"
+	authrepo "grovehub/services/registry/internal/app/repository/authorization/impl"
 	grantrepo "grovehub/services/registry/internal/app/repository/grant/impl"
 	keyrepo "grovehub/services/registry/internal/app/repository/key/impl"
 	projectrepo "grovehub/services/registry/internal/app/repository/project/impl"
@@ -232,5 +233,36 @@ func TestRegistryConstraints(t *testing.T) {
 	}
 	if err := grants.Revoke(ctx, w2, grant3); !errors.Is(err, constants.ErrConflict) {
 		t.Fatalf("missing grant was not rejected: %v", err)
+	}
+	// Verify exact live grants, parent state and revocation against PostgreSQL.
+	auth := authrepo.NewAuthorizationRepository(gormDB)
+	target := scope.Target{Level: scope.Project, ProjectID: p3}
+	if _, err := auth.Resolve(ctx, nextKey.KeyID, target, "registry.project.read", false); !errors.Is(err, constants.ErrNotFound) {
+		t.Fatalf("revoked grant resolved: %v", err)
+	}
+	if err := grants.Create(ctx, entity.WorkloadGrant{
+		GrantID: grant3, WorkloadID: w2, TargetProjectID: &created.ProjectID,
+		Scope: scope.Project, Capability: "registry.project.read",
+	}); err != nil { t.Fatal(err) }
+	if _, err := auth.Resolve(ctx, nextKey.KeyID, target, "registry.project.read", true); !errors.Is(err, constants.ErrNotFound) {
+		t.Fatalf("disabled caller project authorized: %v", err)
+	}
+	if _, err := projects.ChangeStatus(ctx, p3, 1, status.Active); err != nil { t.Fatal(err) }
+	resolved, err := auth.Resolve(ctx, nextKey.KeyID, target, "registry.project.read", false)
+	if err != nil || resolved.WorkloadID != w2 || resolved.CallerProjectID != p3 {
+		t.Fatalf("live key not resolved: %+v %v", resolved, err)
+	}
+	if _, err := auth.Resolve(ctx, firstKey.KeyID, target, "registry.project.read", false); !errors.Is(err, constants.ErrNotFound) {
+		t.Fatalf("revoked key resolved: %v", err)
+	}
+	if _, err := auth.Resolve(ctx, nextKey.KeyID, scope.Target{Level: scope.Tenant, ProjectID: p3, TenantID: t2}, "registry.project.read", true); !errors.Is(err, constants.ErrNotFound) {
+		t.Fatalf("project grant widened to tenant: %v", err)
+	}
+	state, err := auth.TenantState(ctx, p3, t2)
+	if err != nil || state.Active || state.SessionGeneration != 1 {
+		t.Fatalf("wrong tenant state: %+v %v", state, err)
+	}
+	if _, err := auth.TenantState(ctx, p1, t2); !errors.Is(err, constants.ErrNotFound) {
+		t.Fatalf("cross-project state resolved: %v", err)
 	}
 }
