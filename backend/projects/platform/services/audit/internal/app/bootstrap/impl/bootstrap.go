@@ -44,12 +44,12 @@ func New(logger *slog.Logger, db *gorm.DB, client messaging.MessagingClient, acc
 }
 
 type runtime struct {
-	controller          protected.ActivityController
-	operator operator.Controller
-	stop                context.CancelFunc
-	wait                sync.WaitGroup
-	once                sync.Once
-	monitor             *monitoring.Monitor
+	controller protected.ActivityController
+	operator   operator.Controller
+	stop       context.CancelFunc
+	wait       sync.WaitGroup
+	once       sync.Once
+	monitor    *monitoring.Monitor
 }
 
 func (b *builder) Build() (bootstrap.Runtime, error) {
@@ -75,10 +75,10 @@ func (b *builder) Build() (bootstrap.Runtime, error) {
 
 	ctx, stop := context.WithCancel(context.Background())
 	module := &runtime{
-		controller:          controllerimpl.New(service.New(repo, b.access)),
-		operator: operatorcontroller.New(operatorservice.New(operatorrepo.New(b.db))),
-		stop:                stop,
-		monitor:             monitor,
+		controller: controllerimpl.New(service.New(repo, b.access)),
+		operator:   operatorcontroller.New(operatorservice.New(operatorrepo.New(b.db))),
+		stop:       stop,
+		monitor:    monitor,
 	}
 
 	module.wait.Add(1)
