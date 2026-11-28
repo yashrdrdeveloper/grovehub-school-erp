@@ -1,6 +1,6 @@
 # Foundation — Person Events and Search
 
-This file contains **module-specific** details. Generic [events](../../../../../docs/engineering/backend/events.md) and [search](../../../../../docs/engineering/backend/searchDetails.md) rules remain shared.
+This file contains **module-specific** details. Generic [events](../../../../../../../../../docs/engineering/backend/events.md) and [search](../../../../../../../../../docs/engineering/backend/searchDetails.md) rules remain shared.
 
 ## Changed event
 

@@ -1,6 +1,6 @@
 # Foundation — Engineering
 
-This directory records **implemented module-specific architecture**. Generic rules belong to [Backend Engineering Standard](../../../../../docs/engineering/backend/backend.md), not here.
+This directory records **implemented module-specific architecture**. Generic rules belong to [Backend Engineering Standard](../../../../../../../../../docs/engineering/backend/backend.md), not here.
 
 ## Module responsibilities
 
@@ -13,4 +13,4 @@ Foundation owns the permanent Person GID and Person–Contact aggregate; it does
 - [../product/README.md](../product/README.md) — business surface and execution scenarios.
 - Canonical OpenAPI: `internal/resources/api/openapi/v1/openapi.yaml`.
 
-When a folder, API, table, event or behavior changes, update the specific document in the same commit. The engineering docs record **what exists**; [generic API rules](../../../../../docs/engineering/backend/api.md), [persistence](../../../../../docs/engineering/backend/persistence.md) and [search](../../../../../docs/engineering/backend/searchDetails.md) remain authoritative across modules.
+When a folder, API, table, event or behavior changes, update the specific document in the same commit. The engineering docs record **what exists**; [generic API rules](../../../../../../../../../docs/engineering/backend/api.md), [persistence](../../../../../../../../../docs/engineering/backend/persistence.md) and [search](../../../../../../../../../docs/engineering/backend/searchDetails.md) remain authoritative across modules.
