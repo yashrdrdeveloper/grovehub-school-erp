@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 
 	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/entity"
 	producer "grovehub/services/identity/internal/app/events/producers/approval"
 	"grovehub/services/identity/internal/app/events/producers/approval/operations/changed"
@@ -36,7 +36,7 @@ func snapshot(request entity.ApprovalRequest) changed.Snapshot {
 }
 
 func (recorder *Recorder) Record(ctx context.Context, operation string, before *entity.ApprovalRequest, after entity.ApprovalRequest) error {
-	if recorder.events == nil || !transaction.Active(ctx) {
+	if recorder.events == nil || !coredatabase.TransactionActive(ctx) {
 		return ErrUnavailable
 	}
 	actor, err := principal.RequireTenant(ctx)

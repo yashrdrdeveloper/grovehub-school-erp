@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
 	"grovehub/services/identity/internal/app/entity"
 	"grovehub/services/identity/internal/app/events/producers/accountmetadata"
@@ -33,7 +33,7 @@ func (recorder *Recorder) Record(ctx context.Context, before entity.Account, aft
 	if err != nil {
 		return err
 	}
-	if recorder.events == nil || !transaction.Active(ctx) || before.TenantID == nil || after.TenantID == nil || *before.TenantID != actor.TenantID || *after.TenantID != actor.TenantID || before.AccountID == "" || before.AccountID != after.AccountID || before.Version < 1 || after.Version <= before.Version || after.Version-before.Version != 1 || after.UpdatedAt.IsZero() || after.Username == nil || reflect.DeepEqual(before.Username, after.Username) {
+	if recorder.events == nil || !coredatabase.TransactionActive(ctx) || before.TenantID == nil || after.TenantID == nil || *before.TenantID != actor.TenantID || *after.TenantID != actor.TenantID || before.AccountID == "" || before.AccountID != after.AccountID || before.Version < 1 || after.Version <= before.Version || after.Version-before.Version != 1 || after.UpdatedAt.IsZero() || after.Username == nil || reflect.DeepEqual(before.Username, after.Username) {
 		return account.ErrConflict
 	}
 	// Metadata changes must not change the projected identity or authority.

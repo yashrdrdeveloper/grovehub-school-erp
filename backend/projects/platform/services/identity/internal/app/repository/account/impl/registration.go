@@ -5,7 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	repo "grovehub/services/identity/internal/app/repository/account"
 	"grovehub/services/identity/internal/app/repository/account/constants"
 )
@@ -21,11 +21,11 @@ func NewRegistrationWriter(db *gorm.DB) repo.RegistrationWriter {
 }
 
 func (writer *RegistrationWriter) FindRegistration(ctx context.Context, tenantID string, actorID string, key string) (repo.RegistrationReceipt, error) {
-	if writer.db == nil || !transaction.Active(ctx) || tenantID == "" || actorID == "" || key == "" {
+	if writer.db == nil || !coredatabase.TransactionActive(ctx) || tenantID == "" || actorID == "" || key == "" {
 		return repo.RegistrationReceipt{}, repo.ErrConflict
 	}
 	var receipt repo.RegistrationReceipt
-	result := transaction.Database(ctx, writer.db).Raw(constants.FindRegistration, tenantID, actorID, key).Scan(&receipt)
+	result := coredatabase.TransactionDB(ctx, writer.db).Raw(constants.FindRegistration, tenantID, actorID, key).Scan(&receipt)
 	if result.Error != nil {
 		return repo.RegistrationReceipt{}, result.Error
 	}
@@ -36,10 +36,10 @@ func (writer *RegistrationWriter) FindRegistration(ctx context.Context, tenantID
 }
 
 func (writer *RegistrationWriter) CreatePending(ctx context.Context, registration repo.Registration) error {
-	if writer.db == nil || !transaction.Active(ctx) || registration.TenantID == "" {
+	if writer.db == nil || !coredatabase.TransactionActive(ctx) || registration.TenantID == "" {
 		return repo.ErrConflict
 	}
-	db := transaction.Database(ctx, writer.db)
+	db := coredatabase.TransactionDB(ctx, writer.db)
 	if err := db.Exec(constants.InsertPending, registration.AccountID, registration.PersonGID, registration.TenantID, registration.Email, registration.Phone, registration.Email, registration.At, registration.At).Error; err != nil {
 		return mapWriteError(err)
 	}

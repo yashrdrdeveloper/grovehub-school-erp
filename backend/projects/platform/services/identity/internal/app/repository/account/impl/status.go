@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/entity"
 	"grovehub/services/identity/internal/app/repository/account"
 	"grovehub/services/identity/internal/app/repository/account/constants"
@@ -32,9 +32,9 @@ func (writer *StatusWriter) ChangeStatus(ctx context.Context, request account.St
 		return account.ErrConflict
 	}
 	if writer.db == nil {
-		return transaction.ErrMissingDatabase
+		return coredatabase.ErrMissingDatabase
 	}
-	result := transaction.Database(ctx, writer.db).Exec(constants.ChangeStatus, request.After, request.UpdatedAt, request.TenantID, id.String(), request.Version, request.Before)
+	result := coredatabase.TransactionDB(ctx, writer.db).Exec(constants.ChangeStatus, request.After, request.UpdatedAt, request.TenantID, id.String(), request.Version, request.Before)
 	if result.Error != nil {
 		return result.Error
 	}

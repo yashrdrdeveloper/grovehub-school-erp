@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/uuid"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
 	"grovehub/services/identity/internal/app/entity"
 	resource "grovehub/services/identity/internal/app/events/producers/resource/operations/changed"
@@ -33,7 +33,7 @@ func New(events auditclient.Client) rolemetadata.Recorder {
 }
 
 func (recorder *Recorder) Record(ctx context.Context, before *resource.Snapshot, after resource.Snapshot) error {
-	if recorder.events == nil || !transaction.Active(ctx) || after.ID == "" || after.Role == nil || after.Account != nil || after.Role.Status != entity.RoleInactive {
+	if recorder.events == nil || !coredatabase.TransactionActive(ctx) || after.ID == "" || after.Role == nil || after.Account != nil || after.Role.Status != entity.RoleInactive {
 		return ErrInvalid
 	}
 	actor, err := principal.RequireTenant(ctx)

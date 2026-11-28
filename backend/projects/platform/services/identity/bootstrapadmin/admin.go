@@ -18,7 +18,7 @@ import (
     "gorm.io/gorm"
 
     coreid "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/id"
-    "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/postgres"
+    coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
     passwords "grovehub/services/identity/internal/app/services/credential/helpers"
 )
 
@@ -78,7 +78,7 @@ func run() error {
     password = ""
     if err != nil { return fmt.Errorf("password hashing failed: %w", err) }
 
-    db, err := postgres.NewDB(os.Getenv("DATABASE_URL"))
+    db, err := coredatabase.NewDB(os.Getenv("DATABASE_URL"))
     if err != nil { return fmt.Errorf("database connection: %w", err) }
     sqlDB, err := db.DB()
     if err != nil { return err }

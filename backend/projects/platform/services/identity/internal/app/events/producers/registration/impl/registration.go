@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
 	"grovehub/services/identity/internal/app/entity"
 	producer "grovehub/services/identity/internal/app/events/producers/registration"
@@ -39,7 +39,7 @@ func New(store auditclient.Client) producer.Producer {
 }
 
 func (producer *Producer) Enqueue(ctx context.Context, registration repo.Registration) error {
-	if producer.store == nil || !transaction.Active(ctx) {
+	if producer.store == nil || !coredatabase.TransactionActive(ctx) {
 		return repo.ErrConflict
 	}
 	data := Changed{TenantID: registration.TenantID, ActorID: registration.ActorID, Operation: "CREATED", New: Snapshot{AccountID: registration.AccountID, PersonGID: registration.PersonGID, Status: entity.PendingSetup, Version: 1}}

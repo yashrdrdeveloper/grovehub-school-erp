@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/uuid"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	coreevents "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/events"
 	kind "grovehub/services/identity/internal/app/constants/approval"
 	"grovehub/services/identity/internal/app/entity"
@@ -31,7 +31,7 @@ func New(events auditclient.Client) resource.Recorder {
 }
 
 func (recorder *Recorder) Record(ctx context.Context, request entity.ApprovalRequest, before changed.Snapshot, after changed.Snapshot, at time.Time) error {
-	if recorder.events == nil || !transaction.Active(ctx) {
+	if recorder.events == nil || !coredatabase.TransactionActive(ctx) {
 		return ErrInvalid
 	}
 	actor, err := principal.RequireTenant(ctx)

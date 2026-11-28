@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/entity"
 	"grovehub/services/identity/internal/app/repository/accountrole"
 	"grovehub/services/identity/internal/app/repository/accountrole/constants"
@@ -48,10 +48,10 @@ func (repository *Repository) Find(ctx context.Context, tenantID string, account
 		return accountrole.Assignment{}, accountrole.ErrNotFound
 	}
 	if repository.db == nil {
-		return accountrole.Assignment{}, transaction.ErrMissingDatabase
+		return accountrole.Assignment{}, coredatabase.ErrMissingDatabase
 	}
 	var row assignmentRow
-	result := transaction.Database(ctx, repository.db).Raw(constants.FindAssignment, tenantID, id.String()).Scan(&row)
+	result := coredatabase.TransactionDB(ctx, repository.db).Raw(constants.FindAssignment, tenantID, id.String()).Scan(&row)
 	if result.Error != nil {
 		return accountrole.Assignment{}, result.Error
 	}
@@ -70,13 +70,13 @@ func (repository *Repository) Candidates(ctx context.Context, tenantID string, r
 		return nil, accountrole.ErrScopeRequired
 	}
 	if repository.db == nil {
-		return nil, transaction.ErrMissingDatabase
+		return nil, coredatabase.ErrMissingDatabase
 	}
 	if len(roleIDs) == 0 {
 		return []accountrole.Candidate{}, nil
 	}
 	var rows []candidateRow
-	result := transaction.Database(ctx, repository.db).Raw(constants.FindCandidates, tenantID, roleIDs).Scan(&rows)
+	result := coredatabase.TransactionDB(ctx, repository.db).Raw(constants.FindCandidates, tenantID, roleIDs).Scan(&rows)
 	if result.Error != nil {
 		return nil, result.Error
 	}

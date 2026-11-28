@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 
-	coretransaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	"grovehub/services/identity/internal/app/entity"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
@@ -26,7 +26,7 @@ func New(db *gorm.DB) accountrepo.Repository {
 }
 
 func (repository *Repository) dbFor(ctx context.Context) *gorm.DB {
-	return coretransaction.Database(ctx, repository.db)
+	return coredatabase.TransactionDB(ctx, repository.db)
 }
 
 func (repository *Repository) Create(ctx context.Context, account entity.Account) error {

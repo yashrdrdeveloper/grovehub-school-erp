@@ -6,7 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	"grovehub/services/identity/internal/app/entity"
 	"grovehub/services/identity/internal/app/repository/account"
 	"grovehub/services/identity/internal/app/repository/account/constants"
@@ -21,10 +21,10 @@ func NewMetadataWriter(db *gorm.DB) account.MetadataWriter {
 }
 
 func (writer *MetadataWriter) UpdateMetadata(ctx context.Context, request account.MetadataUpdate) error {
-	if writer.db == nil || !transaction.Active(ctx) || request.TenantID == "" || request.AccountID == "" || request.Version < 1 || request.Version == math.MaxInt64 || request.Username == "" || request.UpdatedAt.IsZero() || (request.Status != entity.Active && request.Status != entity.PendingSetup) {
+	if writer.db == nil || !coredatabase.TransactionActive(ctx) || request.TenantID == "" || request.AccountID == "" || request.Version < 1 || request.Version == math.MaxInt64 || request.Username == "" || request.UpdatedAt.IsZero() || (request.Status != entity.Active && request.Status != entity.PendingSetup) {
 		return account.ErrConflict
 	}
-	result := transaction.Database(ctx, writer.db).Exec(constants.UpdateMetadata, request.Username, request.SearchDetails, request.UpdatedAt, request.TenantID, request.AccountID, request.Version, request.Status)
+	result := coredatabase.TransactionDB(ctx, writer.db).Exec(constants.UpdateMetadata, request.Username, request.SearchDetails, request.UpdatedAt, request.TenantID, request.AccountID, request.Version, request.Status)
 	if result.Error != nil {
 		return mapWriteError(result.Error)
 	}

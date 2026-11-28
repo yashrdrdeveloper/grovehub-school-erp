@@ -8,7 +8,7 @@ import (
 	producerimpl "grovehub/services/identity/internal/app/events/producers/approval/impl"
 	"grovehub/services/identity/internal/app/repository/authority"
 	authorityimpl "grovehub/services/identity/internal/app/repository/authority/impl"
-	transaction "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/transaction"
+	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
 	accountrepo "grovehub/services/identity/internal/app/repository/account"
 	accountimpl "grovehub/services/identity/internal/app/repository/account/impl"
 	authorizationrepo "grovehub/services/identity/internal/app/repository/authorization"
@@ -40,7 +40,7 @@ type repositories struct {
 	sessions      sessionrepo.Repository
 	tokens        passwordtokenrepo.Repository
 	mail          invitationrepo.Repository
-	unit          transaction.UnitOfWork
+	unit          coredatabase.UnitOfWork
 }
 
 func (b *builder) newRepository() repositories {
@@ -57,6 +57,6 @@ func (b *builder) newRepository() repositories {
 		sessions:      sessionimpl.New(b.db),
 		tokens:        passwordtokenimpl.New(b.db),
 		mail:          invitationimpl.New(b.db,b.audit),
-		unit:          transaction.NewUnitOfWork(b.db),
+		unit:          coredatabase.NewUnitOfWork(b.db),
 	}
 }
