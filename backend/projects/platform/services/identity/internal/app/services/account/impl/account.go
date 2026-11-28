@@ -98,7 +98,7 @@ func (service *Service) SetupStatus(ctx context.Context, grant string) (accountd
   if err != nil { return accountdto.SetupStatusResult{}, err }
   if token.Attempts >= 2 { return accountdto.SetupStatusResult{}, tokenrepo.ErrAttemptsExceeded }
   account, err := service.accounts.FindByID(ctx, token.AccountID)
-  if err != nil || account.Status != entity.PendingSetup || schoolgateway.CheckAccountTenant(ctx, account.TenantID) != nil { return accountdto.SetupStatusResult{}, tokenrepo.ErrInvalidToken }
+  if err != nil || account.Status != entity.PendingSetup || schoolgateway.CheckAccountGeneration(ctx, account.TenantID, token.SessionGeneration) != nil { return accountdto.SetupStatusResult{}, tokenrepo.ErrInvalidToken }
   remaining := int(time.Until(token.ExpiresAt).Seconds())
   if remaining < 1 { return accountdto.SetupStatusResult{}, tokenrepo.ErrInvalidToken }
   return accountdto.SetupStatusResult{Verified:true, ExpiresIn:remaining}, nil

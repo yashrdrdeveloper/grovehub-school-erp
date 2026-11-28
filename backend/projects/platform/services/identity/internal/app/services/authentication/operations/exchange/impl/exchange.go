@@ -70,7 +70,7 @@ func (op *Service) Execute(ctx context.Context, secret string, purpose string) (
 			return errors.New("password reset no longer available")
 		}
 
-		if schoolgateway.CheckAccountTenant(transactionCtx, account.TenantID) != nil { return tokenrepo.ErrInvalidToken }
+		if schoolgateway.CheckAccountGeneration(transactionCtx, account.TenantID, proof.SessionGeneration) != nil { return tokenrepo.ErrInvalidToken }
 		accountID, err := op.tokens.Consume(transactionCtx, digest, tokenPurpose, time.Now().UTC())
 		if err != nil { return err }
 		if accountID != proof.AccountID { return tokenrepo.ErrInvalidToken }
@@ -80,6 +80,7 @@ func (op *Service) Execute(ctx context.Context, secret string, purpose string) (
 			AccountID: accountID,
 			Purpose: grantPurpose,
 			AccountVersion: proof.AccountVersion,
+			SessionGeneration: proof.SessionGeneration,
 			ExpiresAt: now.Add(10 * time.Minute),
 			CreatedAt: now,
 		})

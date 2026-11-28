@@ -68,7 +68,7 @@ func (service *RecoveryGuard) withProof(ctx context.Context, secret string, purp
 		if err != nil || currentProof.AccountID != account.AccountID || currentProof.AccountVersion == nil { return tokenrepo.ErrInvalidToken }
 		current, err := service.accounts.FindByID(tx, currentProof.AccountID)
 		if err != nil || !eligibleRecoveryAccount(current, tenant) || current.Version != *currentProof.AccountVersion { return tokenrepo.ErrInvalidToken }
-		if schoolgateway.CheckTenant(tx, tenant) != nil { return tokenrepo.ErrInvalidToken }
+		if schoolgateway.CheckTenantSession(tx, tenant, currentProof.SessionGeneration) != nil { return tokenrepo.ErrInvalidToken }
 		return operation(tx, current)
 	})
 }

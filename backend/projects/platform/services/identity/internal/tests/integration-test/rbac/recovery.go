@@ -144,4 +144,39 @@ func verifyRecoveryGuard(ctx context.Context, db *gorm.DB, tenant string, accoun
 	var failed int64
 	Expect(db.Raw("SELECT count(*) FROM infrastructure.messaging WHERE topic = 'audit_activity_occurred' AND convert_from(payload,'UTF8')::jsonb#>>'{data,assetId}' = ? AND convert_from(payload,'UTF8')::jsonb#>>'{data,operation}' = 'LOGIN_FAILED' AND convert_from(payload,'UTF8')::jsonb#>>'{data,actorId}' IS NULL",accountID).Scan(&failed).Error).NotTo(HaveOccurred())
 	Expect(failed).To(Equal(int64(1)))
+
+	// Both an unexchanged proof and an exchanged grant must stay invalid
+	// after a disable/reactivate cycle. A new request can recover normally.
+	generation := int64(1)
+	active := true
+	policy := schoolgateway.WithTenantCheck(ctx, func(_ context.Context, id string) (int64,error) {
+		Expect(id).To(Equal(tenant))
+		if !active { return 0,schoolgateway.ErrTenantDenied }
+		return generation,nil
+	})
+	newProof := func() string {
+		Expect(service.Forgot(policy, account.Email)).To(Succeed())
+		var mail entity.Invitation
+		Expect(db.Where("account_id = ? AND purpose = ?", accountID, entity.PasswordReset).Order("created_at DESC").Take(&mail).Error).NotTo(HaveOccurred())
+		return invitationProof(mail,cfg.EncryptionKey)
+	}
+	oldProof := newProof()
+	active = false; generation++
+	_, err = service.Exchange(policy,oldProof,"recovery")
+	Expect(err).To(MatchError(tokenrepo.ErrInvalidToken))
+	active = true
+	_, err = service.Exchange(policy,oldProof,"recovery")
+	Expect(err).To(MatchError(tokenrepo.ErrInvalidToken))
+	grant,err = service.Exchange(policy,newProof(),"recovery")
+	Expect(err).NotTo(HaveOccurred())
+	grantHash,err = secrets.Digest(grant.Secret,32)
+	Expect(err).NotTo(HaveOccurred())
+	stored,err := tokens.Inspect(ctx,grantHash,entity.ResetGrant,time.Now().UTC())
+	Expect(err).NotTo(HaveOccurred())
+	Expect(stored.SessionGeneration).To(Equal(int64(2)))
+	generation++
+	Expect(service.ResetPassword(policy,grant.Secret,"Not-allowed-password-123")).To(MatchError(tokenrepo.ErrInvalidToken))
+	stored,err = tokens.Inspect(ctx,grantHash,entity.ResetGrant,time.Now().UTC())
+	Expect(err).NotTo(HaveOccurred())
+	Expect(stored.Attempts).To(BeZero())
 }

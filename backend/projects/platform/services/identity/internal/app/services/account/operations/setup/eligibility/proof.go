@@ -47,7 +47,7 @@ func (guard *ProofGuard) Run(ctx context.Context, secret string, purpose entity.
 		if err != nil || account.TenantID == nil || *account.TenantID != guard.tenant || account.Version != *proof.AccountVersion {
 			return tokens.ErrInvalidToken
 		}
-		if schoolgateway.CheckTenant(tx, guard.tenant) != nil { return tokens.ErrInvalidToken }
+		if schoolgateway.CheckTenantSession(tx, guard.tenant, proof.SessionGeneration) != nil { return tokens.ErrInvalidToken }
 		if purpose == entity.SetupGrant && proof.Attempts >= 2 {
 			return tokens.ErrAttemptsExceeded
 		}

@@ -47,7 +47,7 @@ func (op *Service) Execute(ctx context.Context, grant string, password string) e
 		if account.Status != entity.Active {
 			return errors.New("invalid account status")
 		}
-		if schoolgateway.CheckAccountTenant(transactionCtx, account.TenantID) != nil { return tokenrepo.ErrInvalidToken }
+		if schoolgateway.CheckAccountGeneration(transactionCtx, account.TenantID, proof.SessionGeneration) != nil { return tokenrepo.ErrInvalidToken }
 		accountID, err := op.tokens.Consume(transactionCtx, digest, entity.ResetGrant, time.Now().UTC())
 		if err != nil { return err }
 		if accountID != proof.AccountID { return tokenrepo.ErrInvalidToken }

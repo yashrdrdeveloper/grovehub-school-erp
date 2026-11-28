@@ -2,6 +2,7 @@ package invitation
 
 import (
 	"context"
+	"grovehub/libs/schoolgateway"
 	"crypto/aes"
 	"crypto/cipher"
 	"encoding/json"
@@ -32,10 +33,13 @@ type Worker struct {
 	snapshots authrepo.Repository
 	client integrationclient.Client
 	config config.Config
+	tenantState schoolgateway.TenantStateLookup
 }
 
-func NewWorker(repository invitationrepo.Repository, accounts accountrepo.Reader, tokens tokenrepo.Repository, locker authority.Locker, assignments accountrole.Repository, snapshots authrepo.Repository, client integrationclient.Client, config config.Config) *Worker {
-	return &Worker{repository: repository, accounts: accounts, tokens: tokens, locker: locker, assignments: assignments, snapshots: snapshots, client: client, config: config}
+func NewWorker(repository invitationrepo.Repository, accounts accountrepo.Reader, tokens tokenrepo.Repository, locker authority.Locker, assignments accountrole.Repository, snapshots authrepo.Repository, client integrationclient.Client, config config.Config, lookups ...schoolgateway.TenantStateLookup) *Worker {
+	worker := &Worker{repository: repository, accounts: accounts, tokens: tokens, locker: locker, assignments: assignments, snapshots: snapshots, client: client, config: config}
+	if len(lookups) == 1 { worker.tenantState = lookups[0] }
+	return worker
 }
 
 func (worker *Worker) RunOnce(ctx context.Context) (bool, error) {
@@ -153,6 +157,11 @@ func (worker *Worker) suppressionReason(ctx context.Context, tenant string, invi
 	}
 	if proof.AccountID != account.AccountID {
 		return "INVALID_PROOF", nil
+	}
+	if worker.tenantState != nil {
+		state, err := worker.tenantState(ctx, tenant)
+		reason, err := tenantDeliveryDecision(state, err, proof.SessionGeneration)
+		if err != nil || reason != "" { return reason, err }
 	}
 	if purpose == entity.PasswordReset {
 		if account.Status != entity.Active || (!worker.config.LegacyRBACDevelopment && (proof.AccountVersion == nil || *proof.AccountVersion != account.Version)) {

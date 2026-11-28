@@ -62,3 +62,10 @@ func CheckAccountTenant(ctx context.Context, tenant *string) error {
  if tenant == nil { return CheckTenant(ctx, "") }
  return CheckTenant(ctx, *tenant)
 }
+
+// CheckAccountGeneration validates the original generation of a credential
+// against the tenant derived from its stored account.
+func CheckAccountGeneration(ctx context.Context, tenant *string, issued int64) error {
+ if tenant == nil { return CheckTenantSession(ctx, "", issued) }
+ return CheckTenantSession(ctx, *tenant, issued)
+}

@@ -2,6 +2,7 @@ package impl
 
 import (
 	"errors"
+	"grovehub/libs/schoolgateway"
 	"log/slog"
 	"net/url"
 
@@ -24,12 +25,15 @@ type builder struct {
 	integration integrationclient.Client
 	events      infrastructure.EventStore
 	audit       auditclient.Client
+	tenantState schoolgateway.TenantStateLookup
 }
 
 var _ bootstrap.Bootstrap = (*builder)(nil)
 
-func New(logger *slog.Logger, db *gorm.DB, foundation foundationclient.Client, integration integrationclient.Client, events infrastructure.EventStore) bootstrap.Bootstrap {
-	return &builder{logger: logger, db: db, foundation: foundation, integration: integration, events: events, audit: audit.NewProducer(events)}
+func New(logger *slog.Logger, db *gorm.DB, foundation foundationclient.Client, integration integrationclient.Client, events infrastructure.EventStore, lookups ...schoolgateway.TenantStateLookup) bootstrap.Bootstrap {
+	b := &builder{logger: logger, db: db, foundation: foundation, integration: integration, events: events, audit: audit.NewProducer(events)}
+	if len(lookups) == 1 { b.tenantState = lookups[0] }
+	return b
 }
 
 func (b *builder) Build() (bootstrap.Runtime, error) {

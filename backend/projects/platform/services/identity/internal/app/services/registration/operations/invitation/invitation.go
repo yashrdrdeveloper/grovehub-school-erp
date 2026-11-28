@@ -2,6 +2,7 @@ package invitation
 
 import (
 	"context"
+	"grovehub/libs/schoolgateway"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
@@ -48,6 +49,9 @@ func (service *Service) Queue(ctx context.Context, account entity.Account, purpo
 	if account.TenantID == nil || *account.TenantID == "" {
 		return errors.New("invitation requires a tenant-scoped account")
 	}
+
+	generation, err := schoolgateway.TenantGeneration(ctx, *account.TenantID)
+	if err != nil { return err }
 
 	target := service.Config.SetupURL
 	minutes := 30
@@ -97,6 +101,7 @@ func (service *Service) Queue(ctx context.Context, account entity.Account, purpo
 		AccountID: account.AccountID,
 		Purpose: purpose,
 		AccountVersion: version,
+		SessionGeneration: generation,
 		ExpiresAt: now.Add(time.Duration(minutes) * time.Minute),
 		CreatedAt: now,
 	}); err != nil {

@@ -3,6 +3,7 @@ package identity
 
 import (
 	"context"
+	"grovehub/libs/schoolgateway"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -19,8 +20,8 @@ import (
 
 type Module = bootstrap.Runtime
 
-func New(logger *slog.Logger, db *gorm.DB, foundation foundationclient.Client, integration integrationclient.Client, events infrastructure.EventStore) (Module, error) {
-	return bootstrapimpl.New(logger, db, foundation, integration, events).Build()
+func New(logger *slog.Logger, db *gorm.DB, foundation foundationclient.Client, integration integrationclient.Client, events infrastructure.EventStore, lookups ...schoolgateway.TenantStateLookup) (Module, error) {
+	return bootstrapimpl.New(logger, db, foundation, integration, events, lookups...).Build()
 }
 
 func Migrate(ctx context.Context, db *gorm.DB) error {

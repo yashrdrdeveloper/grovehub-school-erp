@@ -85,12 +85,17 @@ func Run(logger *slog.Logger) error {
 	defer integrationModule.Close()
 	integrationModule.RegisterHTTP(mux)
 
+	tenantState,err:=gateway.NewTenantState(gateway.TenantAccessConfig{Origin:os.Getenv("PLATFORM_TENANT_ACCESS_ORIGIN"),KeyID:os.Getenv("PLATFORM_TENANT_ACCESS_KEY_ID"),PrivateKey:os.Getenv("PLATFORM_TENANT_ACCESS_PRIVATE_KEY")})
+	if err!=nil{return err}
+	tenantCheck:=schoolgateway.ActiveTenantCheck(tenantState)
+ if os.Getenv("PLATFORM_TENANT_ACCESS_REQUIRED")=="true"&&tenantCheck==nil{return errors.New("tenant access verifier required")}
 	identityModule, err := identity.New(
 		logger,
 		db,
 		foundationModule.Client(),
 		integrationModule.Client(),
 		infrastructureModule.EventStore(),
+		tenantState,
 	)
 	if err != nil {
 		return fmt.Errorf("initialize Identity: %w", err)
@@ -121,10 +126,6 @@ func Run(logger *slog.Logger) error {
 
 	// Both external HTTP access tiers and restricted provider webhooks
 	// are verified before dispatch into a service-specific controller.
-	tenantState,err:=gateway.NewTenantState(gateway.TenantAccessConfig{Origin:os.Getenv("PLATFORM_TENANT_ACCESS_ORIGIN"),KeyID:os.Getenv("PLATFORM_TENANT_ACCESS_KEY_ID"),PrivateKey:os.Getenv("PLATFORM_TENANT_ACCESS_PRIVATE_KEY")})
-	if err!=nil{return err}
-	tenantCheck:=schoolgateway.ActiveTenantCheck(tenantState)
- if os.Getenv("PLATFORM_TENANT_ACCESS_REQUIRED")=="true"&&tenantCheck==nil{return errors.New("tenant access verifier required")}
  if tenantState!=nil{
   stopReconciliation:=identity.StartTenantSessionReconciler(ctx,logger,db,tenantState)
   defer stopReconciliation()

@@ -57,7 +57,7 @@ func (operation *Normalized) Execute(ctx context.Context, grant string, input dt
 		return dto.SetupResult{}, tokens.ErrInvalidToken
 	}
 	tenantID := *initial.TenantID
-	if schoolgateway.CheckTenant(ctx, tenantID) != nil { return dto.SetupResult{}, tokens.ErrInvalidToken }
+	if schoolgateway.CheckTenantSession(ctx, tenantID, proof.SessionGeneration) != nil { return dto.SetupResult{}, tokens.ErrInvalidToken }
 	if err := operation.tokens.ReserveSetupAttempt(ctx, digest, time.Now().UTC()); err != nil {
 		return dto.SetupResult{}, err
 	}
@@ -73,7 +73,7 @@ func (operation *Normalized) Execute(ctx context.Context, grant string, input dt
 		if current.TenantID == nil || *current.TenantID != tenantID || current.Version != *proof.AccountVersion {
 			return tokens.ErrInvalidToken
 		}
-		if schoolgateway.CheckTenant(tx, tenantID) != nil { return tokens.ErrInvalidToken }
+		if schoolgateway.CheckTenantSession(tx, tenantID, proof.SessionGeneration) != nil { return tokens.ErrInvalidToken }
 		if err := eligibility.Require(tx, current, operation.assignments, operation.snapshots); err != nil {
 			return err
 		}

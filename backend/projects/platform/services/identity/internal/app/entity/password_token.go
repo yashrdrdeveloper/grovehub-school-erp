@@ -17,6 +17,7 @@ type PasswordToken struct {
 	AccountID string       `gorm:"column:account_id;type:uuid"`
 	Purpose   TokenPurpose `gorm:"column:purpose"`
 	ExpiresAt time.Time    `gorm:"column:expires_at"`
+	SessionGeneration int64 `gorm:"column:session_generation;not null"`
 	AccountVersion *int64 `gorm:"column:account_version"`
 	Attempts int          `gorm:"column:attempts;not null;default:0"`
 	UsedAt    *time.Time   `gorm:"column:used_at"`

@@ -2,6 +2,7 @@ package rbac_test
 
 import (
 	"context"
+	"grovehub/libs/schoolgateway"
 	"grovehub/services/audit"
 	"crypto/aes"
 	"crypto/cipher"
@@ -161,6 +162,18 @@ func verifyApprovedSetup(ctx context.Context, db *gorm.DB, tenant string, reques
 	status, err := onboarding.SetupStatus(ctx, grant.Secret)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(status.Verified).To(BeTrue())
+	// A legacy generation-zero setup grant cannot cross registry cutover.
+	registryCtx := schoolgateway.WithTenantCheck(ctx, func(_ context.Context, id string) (int64,error) {
+		Expect(id).To(Equal(tenant))
+		return 2,nil
+	})
+	_, err = onboarding.SetupStatus(registryCtx, grant.Secret)
+	Expect(err).To(MatchError(tokenrepo.ErrInvalidToken))
+	_, err = onboarding.Setup(registryCtx, grant.Secret, accountdto.Setup{Password: "Test-setup-password-123"})
+	Expect(err).To(MatchError(tokenrepo.ErrInvalidToken))
+	storedGrant, err := tokens.Inspect(ctx, hash, entity.SetupGrant, time.Now().UTC())
+	Expect(err).NotTo(HaveOccurred())
+	Expect(storedGrant.Attempts).To(BeZero())
 	disabled := accountservice.NewOnboarding(nil, cutover.New(""), nil, nil, setup, disabledProofs)
 	_, err = disabled.SetupStatus(ctx, grant.Secret)
 	Expect(err).To(MatchError(tokenrepo.ErrInvalidToken))
