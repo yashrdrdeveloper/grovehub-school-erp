@@ -1,0 +1,56 @@
+name: Core pipeline capability audit
+on:
+  push:
+    branches: [phase1-refactor, develop]
+    paths:
+      - 'backend/libs/core/pipeline/**'
+      - 'backend/libs/core/tests/unit-test/pipeline/**'
+      - 'backend/projects/**'
+      - '.github/workflows/pipeline-capability-audit.yml'
+  pull_request:
+    paths:
+      - 'backend/libs/core/pipeline/**'
+      - 'backend/libs/core/tests/unit-test/pipeline/**'
+      - 'backend/projects/**'
+      - '.github/workflows/pipeline-capability-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  core-pipeline:
+    runs-on: ubuntu-latest
+    env:
+      GOWORK: 'off'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inventory old imports
+        run: git grep -nE 'libs/backend/core/pipeline/(rest|service)(/|")|CoreImportPath.*"/pipeline/(rest|service)"' -- '*.go' '*.tmpl' '*.sh' || true
+      - name: Verify source mirrors
+        shell: bash
+        run: |
+          root=backend/libs/core/pipeline
+          test -f "$root/pipeline.go"
+          for folder in "$root"/internal/src/*; do
+            case "$(basename "$folder")" in
+              operations|helpers|constants|contracts|config) test -d "$folder" ;;
+              *) exit 1 ;;
+            esac
+          done
+          while IFS= read -r source; do
+            [[ "$source" == *.go && "$source" != *_test.go ]] || continue
+            relative="${source#"$root/internal/src/"}"
+            test -f "$root/internal/resources/tests/unit-test/${relative%.go}_test.go" || { echo "Missing mirror: $source"; exit 1; }
+          done < <(git ls-files "$root/internal/src/")
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.3'
+          cache-dependency-path: backend/libs/core/go.sum
+      - name: Run pipeline tests and report coverage
+        working-directory: backend/libs/core
+        run: |
+          go test -count=1 -covermode=atomic -coverpkg=./pipeline/internal/src/...,./pipeline -coverprofile="$RUNNER_TEMP/pipeline-coverage.out" ./pipeline/... ./tests/unit-test/pipeline/...
+          go tool cover -func="$RUNNER_TEMP/pipeline-coverage.out" | tee "$RUNNER_TEMP/pipeline-coverage.txt"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-coverage
+          path: ${{ runner.temp }}/pipeline-coverage.out

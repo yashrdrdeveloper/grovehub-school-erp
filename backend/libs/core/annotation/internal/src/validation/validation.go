@@ -11,7 +11,7 @@ import (
 	"unicode/utf8"
 
 	annotationdto "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/src/dto"
-	corenormalize "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/normalize"
+	coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
 )
 
 // Error describes the invalid field path/rule without disclosing its value.
@@ -142,7 +142,7 @@ func normalizeField(value reflect.Value, path, normalizer, rules string) error {
 			case "trim":
 				text = strings.TrimSpace(text)
 			case "uuidv7":
-				normalized, err := corenormalize.UUIDv7(text)
+				normalized, err := coreutils.NormalizeUUIDv7(text)
 				if err != nil { return Error{Field: path, Rule: "uuidv7"} }
 				text = normalized
 			default:
@@ -226,7 +226,7 @@ func validateField(value reflect.Value, path, rules string) error {
 					return Error{Field: path, Rule: rule}
 				}
 			case rule == "uuidv7":
-				if _, err := corenormalize.UUIDv7(value.String()); err != nil {
+				if _, err := coreutils.NormalizeUUIDv7(value.String()); err != nil {
 					return Error{Field: path, Rule: rule}
 				}
 			case strings.HasPrefix(rule, "maxrunes="):
