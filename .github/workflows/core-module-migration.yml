@@ -1,0 +1,58 @@
+name: One-time Core module migration
+on:
+  push:
+    branches:
+      - phase1-refactor
+    paths:
+      - scripts/refactor/core-module-path.py
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    if: github.ref == 'refs/heads/phase1-refactor'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.3'
+          cache: false
+      - name: Apply repository-wide module rename and format Audit
+        shell: bash
+        run: |
+          python3 scripts/refactor/core-module-path.py --apply
+          # Workflow definitions are updated through the repository API, not by this job.
+          test -z "$(git diff --name-only -- .github/workflows/)"
+          git ls-files -z 'backend/projects/platform/services/audit/**/*.go' 'backend/libs/core/utils/**/*.go' | xargs -0 -r gofmt -w
+          test "$(cd backend/libs/core && GOWORK=off go list -m)" = "grovehub/libs/core"
+          if python3 scripts/refactor/core-module-path.py | grep -q '^0 tracked text files require migration$'; then
+            echo "No legacy module references remain."
+          else
+            exit 1
+          fi
+          git diff --check
+          git diff --stat | tail -1
+      - name: Commit migration to the requested branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          if ! git diff --cached --quiet; then
+            git commit -m "refactor(core): migrate repository imports to local module path"
+            git push origin HEAD:refs/heads/phase1-refactor
+          fi
+      - name: Verify Core utilities
+        working-directory: backend/libs/core
+        env:
+          GOWORK: 'off'
+        run: go test ./utils/... ./tests/unit-test/utils/...
+      - name: Generate backend annotations and build
+        run: make backend-build
+      - name: Verify Audit unit tests
+        working-directory: backend/projects/platform
+        run: go test -vet=off -overlay=.generated/overlay.json -count=1 ./services/audit/internal/resources/tests/unit-test/...

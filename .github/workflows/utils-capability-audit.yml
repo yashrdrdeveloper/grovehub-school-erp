@@ -47,7 +47,7 @@ jobs:
           done
           test ! -d backend/libs/core/helpers
           test ! -d backend/libs/core/normalize
-          if git grep -nE 'libs/backend/core/(helpers|normalize)(/|")' -- '*.go' '*.tmpl' '*.tpl' '*.sh'; then
+          if git grep -nE 'libs/core/(helpers|normalize)(/|")' -- '*.go' '*.tmpl' '*.tpl' '*.sh'; then
             echo "Use core/utils instead of removed core/helpers and core/normalize packages."
             exit 1
           fi

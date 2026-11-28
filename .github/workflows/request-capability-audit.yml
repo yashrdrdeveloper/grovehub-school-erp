@@ -43,7 +43,7 @@ jobs:
             count=$((count + 1))
           done < <(git ls-files "$root/internal/src/")
           test "$count" -gt 0
-          if git grep -nE 'libs/backend/core/request/(contracts|helpers|validators|operations|config|constants)(/|")' -- '*.go' '*.sh' '*.tmpl' '*.tpl'; then
+          if git grep -nE 'libs/core/request/(contracts|helpers|validators|operations|config|constants)(/|")' -- '*.go' '*.sh' '*.tmpl' '*.tpl'; then
             echo "Use the root core/request facade."
             exit 1
           fi

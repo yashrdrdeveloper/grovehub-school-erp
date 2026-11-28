@@ -43,7 +43,7 @@ jobs:
             count=$((count + 1))
           done < <(git ls-files "$root/internal/src/")
           test "$count" -gt 0
-          if git grep -nE 'libs/backend/core/id/helpers(/|")' -- '*.go' '*.sh' '*.tmpl' '*.tpl'; then
+          if git grep -nE 'libs/core/id/helpers(/|")' -- '*.go' '*.sh' '*.tmpl' '*.tpl'; then
             echo "Use core/id instead of core/id/helpers."
             exit 1
           fi

@@ -58,11 +58,11 @@ jobs:
       - name: Reject deprecated HTTP imports
         shell: bash
         run: |
-          if git grep -nE 'libs/backend/core/http/(contracts|correlation|endpoint|headers|logging|readiness|request|response|tracing)(/|")|CoreImportPath[[:space:]]*\\+[[:space:]]*"/http/(contracts|correlation|endpoint|headers|logging|readiness|request|response|tracing)"' -- '*.go' '*.sh' '*.tmpl' '*.tpl'; then
+          if git grep -nE 'libs/core/http/(contracts|correlation|endpoint|headers|logging|readiness|request|response|tracing)(/|")|CoreImportPath[[:space:]]*\\+[[:space:]]*"/http/(contracts|correlation|endpoint|headers|logging|readiness|request|response|tracing)"' -- '*.go' '*.sh' '*.tmpl' '*.tpl'; then
             echo "Use the root core/http facade."
             exit 1
           fi
-          if git grep -nE 'libs/backend/core/helpers(/|")' -- '*.go' '*.sh' '*.tmpl' '*.tpl'; then
+          if git grep -nE 'libs/core/helpers(/|")' -- '*.go' '*.sh' '*.tmpl' '*.tpl'; then
             echo "Use core/utils."
             exit 1
           fi

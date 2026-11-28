@@ -31,7 +31,7 @@ jobs:
         run: |
           root=backend/libs/core/events
           test ! -d "$root/pipeline"
-          if git grep -nE 'libs/backend/core/events/pipeline(/|")' -- '*.go' '*.tmpl' '*.tpl' '*.sh'; then
+          if git grep -nE 'libs/core/events/pipeline(/|")' -- '*.go' '*.tmpl' '*.tpl' '*.sh'; then
             echo "Import core/events instead of core/events/pipeline."
             exit 1
           fi

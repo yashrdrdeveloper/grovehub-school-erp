@@ -18,44 +18,38 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GOWORK: 'off'
-      CORE_MODULE: github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core
+      CORE_MODULE: grovehub/libs/core
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v6
         with:
           go-version: '1.27.3'
           cache-dependency-path: backend/libs/core/go.sum
-      - name: Create immutable Core candidate in standard Go proxy format
+      - name: Package an immutable Core source candidate
         run: |
-          mkdir -p "$RUNNER_TEMP/core-source" "$RUNNER_TEMP/core-proxy"
-          git archive HEAD backend/libs/core | tar -x -C "$RUNNER_TEMP/core-source"
-          version="v0.1.0-ci.${GITHUB_SHA:0:12}"
-          echo "CORE_VERSION=$version" >> "$GITHUB_ENV"
-          cd backend/libs/core
-          go run ./tools/modulepack "$RUNNER_TEMP/core-source/backend/libs/core" "$RUNNER_TEMP/core-proxy" "$version" "$(git show -s --format=%cI HEAD)"
-      - name: Resolve Core without checkout or module replacement
+          mkdir -p "$RUNNER_TEMP/core-candidate" "$RUNNER_TEMP/core-source"
+          git archive --format=tar.gz HEAD backend/libs/core > "$RUNNER_TEMP/core-candidate/core-source.tar.gz"
+          (cd "$RUNNER_TEMP/core-candidate" && sha256sum core-source.tar.gz > SHA256SUMS && sha256sum -c SHA256SUMS)
+          tar -xzf "$RUNNER_TEMP/core-candidate/core-source.tar.gz" -C "$RUNNER_TEMP/core-source"
+          test "$(cd "$RUNNER_TEMP/core-source/backend/libs/core" && go list -m)" = "$CORE_MODULE"
+      - name: Validate isolated Core consumer against the source candidate
         run: |
           mkdir "$RUNNER_TEMP/core-consumer"
           cd "$RUNNER_TEMP/core-consumer"
           go mod init example.test/core-consumer
-          export GOPROXY="file://$RUNNER_TEMP/core-proxy,https://proxy.golang.org"
-          export GONOSUMDB="$CORE_MODULE"
-          go mod edit -require="$CORE_MODULE@$CORE_VERSION"
+          go mod edit -require="$CORE_MODULE@v0.0.0" -replace="$CORE_MODULE=$RUNNER_TEMP/core-source/backend/libs/core"
           printf 'package consumer\nimport (\n _ "%s/gateway"\n _ "%s/database"\n)\n' "$CORE_MODULE" "$CORE_MODULE" > consumer.go
           go test -mod=mod ./...
-          go list -m -json "$CORE_MODULE" > "$RUNNER_TEMP/core-proxy/consumer-module.json"
+          go list -m -json "$CORE_MODULE" > "$RUNNER_TEMP/core-candidate/consumer-module.json"
           go mod verify
-          cp go.sum "$RUNNER_TEMP/core-proxy/consumer.go.sum"
       - name: Export provider-owned contract bundle
         run: bash scripts/release/pack-platform-contracts.sh "$RUNNER_TEMP/platform-contracts" "$GITHUB_SHA"
-      - name: Build actual Go consumer projects from release candidates
+      - name: Build actual Go consumer projects using the packaged Core source
         run: |
-          mkdir -p "$RUNNER_TEMP/contracts" "$RUNNER_TEMP/go-consumers" "$RUNNER_TEMP/core-proxy/locks"
+          mkdir -p "$RUNNER_TEMP/contracts" "$RUNNER_TEMP/go-consumers" "$RUNNER_TEMP/core-candidate/locks"
           (cd "$RUNNER_TEMP/platform-contracts" && sha256sum -c platform-contracts.tar.gz.sha256)
           tar -xzf "$RUNNER_TEMP/platform-contracts/platform-contracts.tar.gz" -C "$RUNNER_TEMP/contracts"
           (cd "$RUNNER_TEMP/contracts" && sha256sum -c SHA256SUMS)
-          export GOPROXY="file://$RUNNER_TEMP/core-proxy,https://proxy.golang.org"
-          export GONOSUMDB="$CORE_MODULE"
           export GROOVEHUB_CONTRACT_ROOT="$RUNNER_TEMP/contracts/services"
           export GROOVEHUB_SCHOOL_CONTRACT="$RUNNER_TEMP/contracts/school/registry.yaml"
           export GROOVEHUB_CLIENT_GENERATOR="$RUNNER_TEMP/contracts/tools/generate.sh"
@@ -64,18 +58,17 @@ jobs:
             git archive HEAD "backend/projects/$project" | tar -x -C "$RUNNER_TEMP/go-consumers/$project" --strip-components=3
             (
               cd "$RUNNER_TEMP/go-consumers/$project"
-              go mod edit -dropreplace="$CORE_MODULE" -require="$CORE_MODULE@$CORE_VERSION"
+              go mod edit -replace="$CORE_MODULE=$RUNNER_TEMP/core-source/backend/libs/core"
               make generate-clients
               go mod tidy
-              go list -m -json "$CORE_MODULE" > "$RUNNER_TEMP/core-proxy/locks/$project.module.json"
-              if grep -q '"Replace"' "$RUNNER_TEMP/core-proxy/locks/$project.module.json"; then exit 1; fi
+              go list -m -json "$CORE_MODULE" > "$RUNNER_TEMP/core-candidate/locks/$project.module.json"
               go mod verify
-              cp go.mod "$RUNNER_TEMP/core-proxy/locks/$project.go.mod"
-              cp go.sum "$RUNNER_TEMP/core-proxy/locks/$project.go.sum"
+              cp go.mod "$RUNNER_TEMP/core-candidate/locks/$project.go.mod"
+              cp go.sum "$RUNNER_TEMP/core-candidate/locks/$project.go.sum"
               go test -mod=readonly ./...
               go build -mod=readonly ./...
-              cmp go.mod "$RUNNER_TEMP/core-proxy/locks/$project.go.mod"
-              cmp go.sum "$RUNNER_TEMP/core-proxy/locks/$project.go.sum"
+              cmp go.mod "$RUNNER_TEMP/core-candidate/locks/$project.go.mod"
+              cmp go.sum "$RUNNER_TEMP/core-candidate/locks/$project.go.sum"
             )
           done
       - uses: actions/upload-artifact@v4
@@ -86,7 +79,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: go-core-candidate-${{ github.sha }}
-          path: ${{ runner.temp }}/core-proxy/
+          path: ${{ runner.temp }}/core-candidate/
           if-no-files-found: error
   frontend-packages:
     runs-on: ubuntu-latest

@@ -8,7 +8,7 @@ case "$module" in
   "$root/backend/projects/school"|"$root/backend/projects/internal-tool") ;;
   *) echo "Unexpected consumer module: $module" >&2; exit 1 ;;
 esac
-core="$root/libs/backend/core"
+core="grovehub/libs/core"
 
 # Include test imports and transitives; generated SDKs belong to the consumer.
 deps="$(go list -mod=mod -deps -test -f '{{if .Module}}{{.Module.Path}}{{end}}' ./... | sort -u)"

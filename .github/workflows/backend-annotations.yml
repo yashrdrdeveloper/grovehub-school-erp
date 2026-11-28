@@ -83,7 +83,7 @@ jobs:
       - name: Reject legacy annotation imports and adjacent unit tests
         shell: bash
         run: |
-          if git grep -nE 'libs/backend/core/annotation/(chain|composition|configuration|contract|dto|entity|event|external|http|mapping|messaging|middleware|observability|patterns|persistence|security|server|strategy|testing|utilities|validation|generation(/[^" ]+)?)"' -- '*.go'; then
+          if git grep -nE 'libs/core/annotation/(chain|composition|configuration|contract|dto|entity|event|external|http|mapping|messaging|middleware|observability|patterns|persistence|security|server|strategy|testing|utilities|validation|generation(/[^" ]+)?)"' -- '*.go'; then
             echo "Import the annotation facade instead of removed annotation packages."
             exit 1
           else
@@ -159,12 +159,12 @@ jobs:
         run: make backend-build
       - name: Verify annotation packages resolve after folder refactor
         working-directory: backend/projects/platform
-        run: go list -overlay=.generated/overlay.json github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/...
+        run: go list -overlay=.generated/overlay.json grovehub/libs/core/annotation/...
       - name: Enforce Core package independence (including test imports)
         working-directory: backend/projects/platform
         run: |
-          go list -overlay=.generated/overlay.json -f '{{.ImportPath}} {{join .Imports " "}} {{join .TestImports " "}} {{join .XTestImports " "}}' github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/... > "$RUNNER_TEMP/core-imports.txt"
-          awk '{ for (i=2;i<=NF;i++) if ($i ~ /^grovehub\// || $i ~ /^github\.com\/yashrdrdeveloper\/grovehub-school-erp\/backend\/projects\//) { print $1 ": forbidden dependency " $i; bad=1 } } END { exit bad }' "$RUNNER_TEMP/core-imports.txt"
+          go list -overlay=.generated/overlay.json -f '{{.ImportPath}} {{join .Imports " "}} {{join .TestImports " "}} {{join .XTestImports " "}}' grovehub/libs/core/... > "$RUNNER_TEMP/core-imports.txt"
+          awk '{ for (i=2;i<=NF;i++) if (($i ~ /^grovehub\// && $i !~ /^grovehub\/libs\/core(\/|$)/) || $i ~ /^github\.com\/yashrdrdeveloper\/grovehub-school-erp\/backend\/projects\//) { print $1 ": forbidden dependency " $i; bad=1 } } END { exit bad }' "$RUNNER_TEMP/core-imports.txt"
           wc -l "$RUNNER_TEMP/core-imports.txt"
       - name: Test gateway security contracts and context operations
         working-directory: backend/libs/platform
@@ -198,7 +198,7 @@ jobs:
         run: GOWORK=off go test -vet=off -overlay=.generated/overlay.json ./launcher/internal/resources/tests/unit-test/services/gateway/...
       - name: Test annotation source generators
         working-directory: backend/projects/platform
-        run: go test github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/resources/tests/unit-test/...
+        run: go test grovehub/libs/core/annotation/internal/resources/tests/unit-test/...
       - name: Verify Core standalone build and tests
         working-directory: backend/libs/core
         run: |
@@ -248,7 +248,7 @@ jobs:
       - name: Run available core, launcher and service unit suites
         working-directory: backend/projects/platform
         run: |
-          suites=(github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tests/unit-test/... ./launcher/internal/resources/tests/unit-test/... ./services/audit/internal/resources/tests/unit-test/... ./services/infrastructure/internal/resources/tests/unit-test/... ./services/identity/internal/resources/tests/unit-test/... ./services/integration/internal/resources/tests/unit-test/...)
+          suites=(grovehub/libs/core/tests/unit-test/... ./launcher/internal/resources/tests/unit-test/... ./services/audit/internal/resources/tests/unit-test/... ./services/infrastructure/internal/resources/tests/unit-test/... ./services/identity/internal/resources/tests/unit-test/... ./services/integration/internal/resources/tests/unit-test/...)
           # Some services intentionally have no unit-test directory.
           if [[ -d services/foundation/internal/resources/tests/unit-test ]]; then
             suites+=(./services/foundation/internal/resources/tests/unit-test/...)

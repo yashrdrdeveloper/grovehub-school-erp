@@ -43,7 +43,7 @@ jobs:
             count=$((count + 1))
           done < <(git ls-files "$root/internal/src/")
           test "$count" -gt 0
-          if git grep -nE 'libs/backend/core/idempotency/(contracts|helpers|validators)(/|")' -- '*.go' '*.sh' '*.tmpl' '*.tpl'; then
+          if git grep -nE 'libs/core/idempotency/(contracts|helpers|validators)(/|")' -- '*.go' '*.sh' '*.tmpl' '*.tpl'; then
             echo "Use the root core/idempotency facade."
             exit 1
           fi

@@ -16,7 +16,7 @@ jobs:
       - name: Enforce public facade and exact unit-test mirrors
         shell: bash
         run: |
-          if git grep -nE 'libs/backend/core/errors/(contracts|helpers)(/|")' -- '*.go' '*.sh'; then
+          if git grep -nE 'libs/core/errors/(contracts|helpers)(/|")' -- '*.go' '*.sh'; then
             echo "Use the core errors facade."
             exit 1
           fi
