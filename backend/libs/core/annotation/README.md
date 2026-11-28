@@ -36,3 +36,15 @@ Generated code remains ignored beneath the owning service or library and is inje
 A checked `@Provider id=... category=...` validates static metadata; registration remains explicit. A checked `@Transactional` requires a real UnitOfWork. `@Entity` generates TableName, not business constructors or setters.
 
 See [Core annotation engine](../docs/engineering/annotation_engine.md) and [Core capabilities index](../docs/engineering/README.md).
+
+## Unit-test source mirroring
+
+Every maintained Go file under `internal/src/` must have a corresponding `*_test.go` file at exactly the same relative path under `internal/resources/tests/unit-test/`. Each test package has one Ginkgo suite, and test-only fixtures belong in `internal/resources/tests/helpers/` or a test-local fixture file. Tests of private functions exercise their observable behavior through the package API; do not export implementation details solely for tests. Metadata-only files are checked for their declared values and registry integration. Mirrored file presence is a structural requirement, not proof of statement coverage.
+
+CI enforces the mapping and reports statement coverage across all internal source packages. From the Core module:
+
+```bash
+go test -count=1 ./annotation/internal/resources/tests/unit-test/...
+go test -covermode=atomic -coverpkg=./annotation/internal/src/... -coverprofile=/tmp/annotation-coverage.out ./annotation/internal/resources/tests/unit-test/... ./tests/unit-test/annotation/...
+go tool cover -func=/tmp/annotation-coverage.out
+```
