@@ -3,14 +3,8 @@ package operator
 import (
 	"time"
 
-	"grovehub/libs/core/request"
 	"grovehub/services/audit/internal/app/dto/producer"
 )
-
-type SearchInput struct {
-	PageNumber int `json:"pageNumber"`
-	RowSize    int `json:"rowSize"`
-}
 
 type SearchPage struct {
 	Records    []producer.OperatorActivity `json:"records"`
@@ -35,18 +29,3 @@ type ReceiptPage struct {
 	HasMore    bool          `json:"hasMore"`
 }
 
-type ReceiptSearchInput struct {
-	SearchInput
-	SchoolID  string `json:"schoolId,omitempty"`
-	Operation string `json:"operation,omitempty"`
-}
-
-type SearchRequest struct {
-	request.Request
-	RequestBody SearchInput
-}
-
-type ReceiptSearchRequest struct {
-	request.Request
-	RequestBody ReceiptSearchInput
-}

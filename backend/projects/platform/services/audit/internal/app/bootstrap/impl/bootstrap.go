@@ -17,8 +17,7 @@ import (
 	"grovehub/services/audit/internal/app/constants/events"
 	protected "grovehub/services/audit/internal/app/controller/activity/protected"
 	controllerimpl "grovehub/services/audit/internal/app/controller/activity/protected/impl"
-	operator "grovehub/services/audit/internal/app/controller/operator"
-	operatorroutes "grovehub/services/audit/internal/app/controller/operator/restricted"
+	restricted "grovehub/services/audit/internal/app/controller/operator/restricted"
 	operatorcontroller "grovehub/services/audit/internal/app/controller/operator/restricted/impl"
 	consumer "grovehub/services/audit/internal/app/events/consumers/activity"
 	repository "grovehub/services/audit/internal/app/repository/activity/impl"
@@ -45,7 +44,7 @@ func New(logger *slog.Logger, db *gorm.DB, client messaging.MessagingClient, acc
 
 type runtime struct {
 	controller protected.ActivityController
-	operator   operator.Controller
+	operator   restricted.OperatorController
 	stop       context.CancelFunc
 	wait       sync.WaitGroup
 	once       sync.Once
@@ -131,8 +130,7 @@ func (module *runtime) consume(ctx context.Context, logger *slog.Logger, client 
 }
 
 func (module *runtime) RegisterHTTP(mux *http.ServeMux) {
-	routes.RegisterHTTP(mux, module.controller)
-	operatorroutes.Register(mux, module.operator)
+	routes.RegisterHTTP(mux, module.controller, module.operator)
 }
 
 func (module *runtime) Close() {

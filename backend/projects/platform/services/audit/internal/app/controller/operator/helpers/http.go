@@ -1,19 +1,26 @@
 package helpers
 
 import (
-	"encoding/json"
-	"errors"
-	"io"
+	"context"
 	"net/http"
+	"time"
 
 	coreerrors "grovehub/libs/core/errors"
 	"grovehub/libs/core/gateway"
+	corehttp "grovehub/libs/core/http"
 	"grovehub/libs/core/pipeline"
+	corerequest "grovehub/libs/core/request"
 	definitions "grovehub/services/audit/internal/app/constants/error"
 	"grovehub/services/audit/internal/app/controller/operator/constants"
-	repository "grovehub/services/audit/internal/app/repository/operator"
 )
 
+type Policy struct {
+	Subject string
+	Scope   string
+	Timeout time.Duration
+}
+
+// Authorized enforces the Audit-specific nondelegated workload policy.
 func Authorized(r *http.Request, subject, scope string) bool {
 	claims, ok := gateway.WorkloadFrom(r.Context())
 	return ok && (subject == "" || claims.Subject == subject) &&
@@ -21,50 +28,45 @@ func Authorized(r *http.Request, subject, scope string) bool {
 		claims.ActorGID == "" && claims.TenantID == "" && claims.SessionID == ""
 }
 
-func Decode(w http.ResponseWriter) func(*http.Request, any) error {
-	return func(r *http.Request, value any) error {
-		decoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, constants.MaxBodyBytes))
-		decoder.DisallowUnknownFields()
-		if err := decoder.Decode(value); err != nil {
+// ValidateReceipt checks the decoded school identifier against the authenticated issuer.
+func ValidateReceipt[T any](r *http.Request, validate func(T) error, schoolID func(T) string, issuer, scope string) func(T) error {
+	return func(input T) error {
+		if err := validate(input); err != nil {
 			return err
 		}
-
-		var extra any
-		if decoder.Decode(&extra) != io.EOF {
-			return coreerrors.NewError(definitions.OperatorInvalid)
+		if !Authorized(r, issuer+":"+schoolID(input), scope) {
+			return coreerrors.NewError(definitions.OperatorForbidden)
 		}
 		return nil
 	}
 }
 
-func Failure(err error) error {
-	if err == nil {
-		return nil
+// Run configures the common restricted Audit transport without duplicating the REST pipeline.
+func Run[Q corerequest.Contract, R any](w http.ResponseWriter, r *http.Request, policy Policy, config pipeline.StructConfig[Q, R]) {
+	w.Header().Set("Cache-Control", "no-store")
+	if !Authorized(r, policy.Subject, policy.Scope) {
+		w.WriteHeader(http.StatusForbidden)
+		return
 	}
-	var application *coreerrors.Error
-	if errors.As(err, &application) {
-		return err
-	}
-	if errors.Is(err, repository.ErrConflict) {
-		return coreerrors.NewError(definitions.OperatorConflict)
-	}
-	return coreerrors.NewError(definitions.OperatorUnavailable)
-}
 
-// Writer preserves the existing restricted API: bare statuses and unwrapped JSON.
-func Writer[T any]() pipeline.Writer[T] {
-	return pipeline.Writer[T]{
-		Success: func(w http.ResponseWriter, _ *http.Request, result pipeline.Result[T]) error {
-			if result.StatusCode == http.StatusNoContent {
-				w.WriteHeader(http.StatusNoContent)
-				return nil
-			}
-			w.Header().Set("Content-Type", "application/json")
-			return json.NewEncoder(w).Encode(result.Data)
-		},
-		Error: func(w http.ResponseWriter, _ *http.Request, failure pipeline.Failure) error {
-			w.WriteHeader(failure.StatusCode)
-			return nil
-		},
+	config.Decode = func(request *http.Request, destination any) error {
+		request.Body = http.MaxBytesReader(w, request.Body, constants.MaxBodyBytes)
+		return corehttp.DecodeStrictJSON(request, destination)
 	}
+	config.InvalidRequestBody = definitions.OperatorInvalid
+	config.Fallback = definitions.OperatorUnavailable
+	config.Writer = pipeline.RawWriter[R]()
+
+	timeout := policy.Timeout
+	if timeout == 0 {
+		timeout = constants.RequestTimeout
+	}
+	service := config.Service
+	config.Service = func(ctx context.Context, input Q) (pipeline.Result[R], error) {
+		ctx, cancel := context.WithTimeout(ctx, timeout)
+		defer cancel()
+
+		return service(ctx, input)
+	}
+	pipeline.RunStruct(w, r, config)
 }

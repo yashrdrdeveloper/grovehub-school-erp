@@ -79,3 +79,7 @@ func OtherwiseError[S, R any](handler func(context.Context, *S, error) Outcome[R
 func Recover[S, R any](ctx context.Context, state *S, result Outcome[R], recoveries ...Recovery[S, R]) Outcome[R] {
 	return service.Recover(ctx, state, result, recoveries...)
 }
+
+func NoContent() Result[Empty] { return rest.NoContent() }
+
+func RawWriter[T any]() Writer[T] { return rest.RawWriter[T]() }

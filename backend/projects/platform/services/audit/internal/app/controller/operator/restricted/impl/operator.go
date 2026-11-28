@@ -4,201 +4,82 @@ import (
 	"context"
 	"net/http"
 
-	coreerrors "grovehub/libs/core/errors"
 	"grovehub/libs/core/pipeline"
 	definitions "grovehub/services/audit/internal/app/constants/error"
-	"grovehub/services/audit/internal/app/controller/operator"
 	"grovehub/services/audit/internal/app/controller/operator/constants"
 	"grovehub/services/audit/internal/app/controller/operator/helpers"
+	restricted "grovehub/services/audit/internal/app/controller/operator/restricted"
 	dto "grovehub/services/audit/internal/app/dto/operator"
 	service "grovehub/services/audit/internal/app/services/operator"
 	validator "grovehub/services/audit/internal/app/validators/operator"
 )
 
-type controller struct {
+type Controller struct {
 	service service.Service
 }
 
-func New(s service.Service) operator.Controller {
-	return &controller{service: s}
+func New(service service.Service) restricted.OperatorController {
+	return &Controller{service: service}
 }
 
-func authorize(w http.ResponseWriter, r *http.Request, subject, scope string) bool {
-	w.Header().Set("Cache-Control", "no-store")
-	if !helpers.Authorized(r, subject, scope) {
-		w.WriteHeader(http.StatusForbidden)
-		return false
-	}
-	return true
-}
-
-func noContent(err error) (pipeline.Result[pipeline.Empty], error) {
-	return pipeline.Result[pipeline.Empty]{StatusCode: http.StatusNoContent}, helpers.Failure(err)
-}
-
-func (c *controller) Write(w http.ResponseWriter, r *http.Request) {
-	if !authorize(w, r, constants.WriterSubject, constants.Scope) {
-		return
-	}
-
-	pipeline.RunStruct(w, r, pipeline.StructConfig[dto.WriteRequest, pipeline.Empty]{
-		Decode:             helpers.Decode(w),
-		InvalidRequestBody: definitions.OperatorInvalid,
-		Fallback:           definitions.OperatorUnavailable,
-		Writer:             helpers.Writer[pipeline.Empty](),
-		Validate: func(input dto.WriteRequest) error {
-			if !validator.ValidActivity(input.RequestBody) {
-				return coreerrors.NewError(definitions.OperatorInvalid)
-			}
-			return nil
-		},
+func (controller *Controller) Write(w http.ResponseWriter, r *http.Request) {
+	helpers.Run(w, r, helpers.Policy{Subject: constants.WriterSubject, Scope: constants.Scope}, pipeline.StructConfig[dto.WriteRequest, pipeline.Empty]{
+		Validate: validator.ValidateWrite,
 		Service: func(ctx context.Context, input dto.WriteRequest) (pipeline.Result[pipeline.Empty], error) {
-			ctx, cancel := context.WithTimeout(ctx, constants.RequestTimeout)
-			defer cancel()
-
-			return noContent(c.service.Store(ctx, input.RequestBody))
+			return pipeline.NoContent(), controller.service.Store(ctx, input.RequestBody)
 		},
 	})
 }
 
-func (c *controller) Receipt(w http.ResponseWriter, r *http.Request) {
-	if !authorize(w, r, "", constants.ReceiptScope) {
-		return
-	}
-
-	pipeline.RunStruct(w, r, pipeline.StructConfig[dto.RenameReceiptRequest, pipeline.Empty]{
-		Decode:             helpers.Decode(w),
-		InvalidRequestBody: definitions.OperatorInvalid,
-		Fallback:           definitions.OperatorUnavailable,
-		Writer:             helpers.Writer[pipeline.Empty](),
-		Validate: func(input dto.RenameReceiptRequest) error {
-			if !validator.ValidRename(input.RequestBody) {
-				return coreerrors.NewError(definitions.OperatorInvalid)
-			}
-			return nil
-		},
+func (controller *Controller) Receipt(w http.ResponseWriter, r *http.Request) {
+	helpers.Run(w, r, helpers.Policy{Scope: constants.ReceiptScope}, pipeline.StructConfig[dto.RenameReceiptRequest, pipeline.Empty]{
+		Validate: helpers.ValidateReceipt(r, validator.ValidateRename, dto.RenameReceiptRequest.SchoolID, constants.ReceiptIssuer, constants.ReceiptScope),
 		Service: func(ctx context.Context, input dto.RenameReceiptRequest) (pipeline.Result[pipeline.Empty], error) {
-			if !helpers.Authorized(r, constants.ReceiptIssuer+":"+input.RequestBody.SchoolID, constants.ReceiptScope) {
-				return noContent(coreerrors.NewError(definitions.OperatorForbidden))
-			}
-			ctx, cancel := context.WithTimeout(ctx, constants.RequestTimeout)
-			defer cancel()
-
-			return noContent(c.service.StoreSchoolReceipt(ctx, input.RequestBody))
+			return pipeline.NoContent(), controller.service.StoreSchoolReceipt(ctx, input.RequestBody)
 		},
 	})
 }
 
-func (c *controller) StatusReceipt(w http.ResponseWriter, r *http.Request) {
-	if !authorize(w, r, "", constants.StatusReceiptScope) {
-		return
-	}
-
-	pipeline.RunStruct(w, r, pipeline.StructConfig[dto.StatusReceiptRequest, pipeline.Empty]{
-		Decode:             helpers.Decode(w),
-		InvalidRequestBody: definitions.OperatorInvalid,
-		Fallback:           definitions.OperatorUnavailable,
-		Writer:             helpers.Writer[pipeline.Empty](),
-		Validate: func(input dto.StatusReceiptRequest) error {
-			if !validator.ValidStatus(input.RequestBody) {
-				return coreerrors.NewError(definitions.OperatorInvalid)
-			}
-			return nil
-		},
+func (controller *Controller) StatusReceipt(w http.ResponseWriter, r *http.Request) {
+	helpers.Run(w, r, helpers.Policy{Scope: constants.StatusReceiptScope}, pipeline.StructConfig[dto.StatusReceiptRequest, pipeline.Empty]{
+		Validate: helpers.ValidateReceipt(r, validator.ValidateStatus, dto.StatusReceiptRequest.SchoolID, constants.StatusReceiptIssuer, constants.StatusReceiptScope),
 		Service: func(ctx context.Context, input dto.StatusReceiptRequest) (pipeline.Result[pipeline.Empty], error) {
-			if !helpers.Authorized(r, constants.StatusReceiptIssuer+":"+input.RequestBody.SchoolID, constants.StatusReceiptScope) {
-				return noContent(coreerrors.NewError(definitions.OperatorForbidden))
-			}
-			ctx, cancel := context.WithTimeout(ctx, constants.RequestTimeout)
-			defer cancel()
-
-			return noContent(c.service.StoreStatusReceipt(ctx, input.RequestBody))
+			return pipeline.NoContent(), controller.service.StoreStatusReceipt(ctx, input.RequestBody)
 		},
 	})
 }
 
-func (c *controller) Search(w http.ResponseWriter, r *http.Request) {
-	if !authorize(w, r, constants.ReaderSubject, constants.ReadScope) {
-		return
-	}
-
-	pipeline.RunStruct(w, r, pipeline.StructConfig[dto.SearchRequest, dto.SearchPage]{
-		Decode:             helpers.Decode(w),
-		InvalidRequestBody: definitions.OperatorInvalid,
-		Fallback:           definitions.OperatorUnavailable,
-		Writer:             helpers.Writer[dto.SearchPage](),
-		Validate: func(input dto.SearchRequest) error {
-			if !validator.ValidSearch(input.RequestBody) {
-				return coreerrors.NewError(definitions.OperatorInvalid)
-			}
-			return nil
-		},
+func (controller *Controller) Search(w http.ResponseWriter, r *http.Request) {
+	helpers.Run(w, r, helpers.Policy{Subject: constants.ReaderSubject, Scope: constants.ReadScope}, pipeline.StructConfig[dto.SearchRequest, dto.SearchPage]{
+		Validate: validator.ValidateSearch,
 		Service: func(ctx context.Context, input dto.SearchRequest) (pipeline.Result[dto.SearchPage], error) {
-			ctx, cancel := context.WithTimeout(ctx, constants.RequestTimeout)
-			defer cancel()
-
-			page, err := c.service.Search(ctx, input.RequestBody)
-			return pipeline.OK(page), helpers.Failure(err)
+			page, err := controller.service.Search(ctx, input.RequestBody)
+			return pipeline.OK(page), err
 		},
 	})
 }
 
-func (c *controller) ReceiptSearch(w http.ResponseWriter, r *http.Request) {
-	if !authorize(w, r, constants.ReceiptReader, constants.ReceiptReadScope) {
-		return
-	}
-
-	pipeline.RunStruct(w, r, pipeline.StructConfig[dto.ReceiptSearchRequest, dto.ReceiptPage]{
-		Decode:             helpers.Decode(w),
-		InvalidRequestBody: definitions.OperatorInvalid,
-		Fallback:           definitions.OperatorUnavailable,
-		Writer:             helpers.Writer[dto.ReceiptPage](),
-		Validate: func(input dto.ReceiptSearchRequest) error {
-			if !validator.ValidReceiptSearch(input.RequestBody) {
-				return coreerrors.NewError(definitions.OperatorInvalid)
-			}
-			return nil
-		},
+func (controller *Controller) ReceiptSearch(w http.ResponseWriter, r *http.Request) {
+	helpers.Run(w, r, helpers.Policy{Subject: constants.ReceiptReader, Scope: constants.ReceiptReadScope}, pipeline.StructConfig[dto.ReceiptSearchRequest, dto.ReceiptPage]{
+		Validate: validator.ValidateReceiptSearch,
 		Service: func(ctx context.Context, input dto.ReceiptSearchRequest) (pipeline.Result[dto.ReceiptPage], error) {
-			ctx, cancel := context.WithTimeout(ctx, constants.RequestTimeout)
-			defer cancel()
-
-			page, err := c.service.SearchFilteredReceipts(ctx, input.RequestBody)
-			return pipeline.OK(page), helpers.Failure(err)
+			page, err := controller.service.SearchFilteredReceipts(ctx, input.RequestBody)
+			return pipeline.OK(page), err
 		},
 	})
 }
 
-func (c *controller) SchoolCheck(w http.ResponseWriter, r *http.Request) {
-	school := r.PathValue(constants.SchoolIDParam)
-	if !authorize(w, r, constants.SchoolSubject+school, constants.SchoolCheckScope) {
-		return
+func (controller *Controller) SchoolCheck(w http.ResponseWriter, r *http.Request) {
+	policy := helpers.Policy{
+		Subject: constants.SchoolSubject + r.PathValue(constants.SchoolIDParam),
+		Scope:   constants.SchoolCheckScope,
+		Timeout: constants.SchoolCheckTimeout,
 	}
-
-	pipeline.RunStruct(w, r, pipeline.StructConfig[dto.SchoolCheckRequest, pipeline.Empty]{
+	helpers.Run(w, r, policy, pipeline.StructConfig[dto.SchoolCheckRequest, pipeline.Empty]{
 		InvalidParams: definitions.OperatorForbidden,
-		Fallback:      definitions.OperatorUnavailable,
-		Writer:        helpers.Writer[pipeline.Empty](),
-		Validate: func(input dto.SchoolCheckRequest) error {
-			if !validator.ValidID(input.Params.SchoolID) {
-				return coreerrors.NewError(definitions.OperatorForbidden)
-			}
-
-			return nil
-		},
+		Validate:      validator.ValidateSchoolCheck,
 		Service: func(ctx context.Context, input dto.SchoolCheckRequest) (pipeline.Result[pipeline.Empty], error) {
-			ctx, cancel := context.WithTimeout(ctx, constants.SchoolCheckTimeout)
-			defer cancel()
-
-			exists, err := c.service.SchoolCheck(ctx, input.Params.SchoolID)
-			if err != nil {
-				return noContent(err)
-			}
-			if !exists {
-				return noContent(coreerrors.NewError(definitions.SchoolActivityNotFound))
-			}
-
-			return noContent(nil)
+			return pipeline.NoContent(), controller.service.SchoolCheck(ctx, input.Params.SchoolID)
 		},
 	})
 }

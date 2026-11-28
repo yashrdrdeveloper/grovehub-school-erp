@@ -13,6 +13,7 @@ import (
 	"grovehub/services/audit/internal/app/entity"
 	repository "grovehub/services/audit/internal/app/repository/operator"
 	"grovehub/services/audit/internal/app/services/operator"
+	"grovehub/services/audit/internal/app/services/operator/helpers"
 	validator "grovehub/services/audit/internal/app/validators/operator"
 )
 
@@ -28,10 +29,10 @@ func (s *service) Store(ctx context.Context, a producer.OperatorActivity) error 
 	if !validator.ValidActivity(a) {
 		return coreerrors.NewError(definitions.OperatorInvalid)
 	}
-	return s.repository.InsertActivity(ctx, entity.OperatorActivity{
+	return helpers.StorageError(s.repository.InsertActivity(ctx, entity.OperatorActivity{
 		EventID: a.EventID, ActorID: a.ActorID, ResourceID: a.ResourceID,
 		Operation: a.Operation, OccurredAt: a.OccurredAt.UTC().Truncate(time.Microsecond), CorrelationID: a.CorrelationID,
-	})
+	}))
 }
 
 func (s *service) StoreSchoolReceipt(ctx context.Context, a producer.SchoolRenameReceipt) error {
@@ -52,14 +53,21 @@ func (s *service) StoreStatusReceipt(ctx context.Context, a producer.SchoolStatu
 }
 
 func (s *service) storeReceipt(ctx context.Context, a producer.SchoolRenameReceipt, operation string) error {
-	return s.repository.InsertReceipt(ctx, entity.SchoolMutationReceipt{
+	return helpers.StorageError(s.repository.InsertReceipt(ctx, entity.SchoolMutationReceipt{
 		ExecutionID: a.ExecutionID, SchoolID: a.SchoolID, PreviousVersion: a.PreviousVersion,
 		CorrelationID: a.CorrelationID, OccurredAt: a.OccurredAt.UTC().Truncate(time.Microsecond), Operation: operation,
-	})
+	}))
 }
 
-func (s *service) SchoolCheck(ctx context.Context, school string) (bool, error) {
-	return s.repository.SchoolExists(ctx, school)
+func (s *service) SchoolCheck(ctx context.Context, school string) error {
+	exists, err := s.repository.SchoolExists(ctx, school)
+	if err != nil {
+		return helpers.StorageError(err)
+	}
+	if !exists {
+		return coreerrors.NewError(definitions.SchoolActivityNotFound)
+	}
+	return nil
 }
 
 func (s *service) Search(ctx context.Context, in dto.SearchInput) (dto.SearchPage, error) {
@@ -69,7 +77,7 @@ func (s *service) Search(ctx context.Context, in dto.SearchInput) (dto.SearchPag
 
 	records, err := s.repository.SearchActivities(ctx, in.RowSize+1, (in.PageNumber-1)*in.RowSize)
 	if err != nil {
-		return dto.SearchPage{}, err
+		return dto.SearchPage{}, helpers.StorageError(err)
 	}
 
 	page := dto.SearchPage{Records: make([]producer.OperatorActivity, 0), PageNumber: in.PageNumber, RowSize: in.RowSize}
@@ -94,7 +102,7 @@ func (s *service) SearchFilteredReceipts(ctx context.Context, in dto.ReceiptSear
 
 	records, err := s.repository.SearchReceipts(ctx, in.SchoolID, in.Operation, in.RowSize+1, (in.PageNumber-1)*in.RowSize)
 	if err != nil {
-		return dto.ReceiptPage{}, err
+		return dto.ReceiptPage{}, helpers.StorageError(err)
 	}
 
 	page := dto.ReceiptPage{Records: make([]dto.ReceiptView, 0), PageNumber: in.PageNumber, RowSize: in.RowSize}

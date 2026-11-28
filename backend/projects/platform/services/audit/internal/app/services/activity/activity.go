@@ -2,12 +2,13 @@ package activity
 
 import (
 	"context"
-	"errors"
+	coreerrors "grovehub/libs/core/errors"
+	definitions "grovehub/services/audit/internal/app/constants/error"
 	dto "grovehub/services/audit/internal/app/dto/activity"
 )
 
-var ErrForbidden = errors.New("audit access denied")
-var ErrInvalidSearch = errors.New("invalid audit search")
+var ErrForbidden = coreerrors.NewError(definitions.Forbidden)
+var ErrInvalidSearch = coreerrors.NewError(definitions.InvalidRequest)
 
 type Service interface {
 	Search(ctx context.Context, query dto.Search) (dto.Page, error)

@@ -10,7 +10,10 @@ import (
 
 	"grovehub/libs/core/gateway"
 	"grovehub/services/audit/internal/app/controller/operator/constants"
-	"grovehub/services/audit/internal/app/controller/operator/restricted"
+	coreerrors "grovehub/libs/core/errors"
+	definitions "grovehub/services/audit/internal/app/constants/error"
+	activitycontroller "grovehub/services/audit/internal/app/controller/activity/protected/impl"
+	"grovehub/services/audit/internal/app/routes"
 	controller "grovehub/services/audit/internal/app/controller/operator/restricted/impl"
 	"grovehub/services/audit/internal/app/services/operator"
 )
@@ -31,10 +34,16 @@ type schoolService struct {
 	school string
 }
 
-func (s *schoolService) SchoolCheck(_ context.Context, school string) (bool, error) {
+func (s *schoolService) SchoolCheck(_ context.Context, school string) error {
 	s.calls++
 	s.school = school
-	return s.exists, s.err
+	if s.err != nil {
+		return coreerrors.Wrap(definitions.OperatorUnavailable, s.err)
+	}
+	if !s.exists {
+		return coreerrors.NewError(definitions.SchoolActivityNotFound)
+	}
+	return nil
 }
 
 func TestSchoolCheck(t *testing.T) {
@@ -59,7 +68,7 @@ func TestSchoolCheck(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			s := &schoolService{exists: tc.exists, err: tc.err}
 			mux := http.NewServeMux()
-			restricted.Register(mux, controller.New(s))
+			routes.RegisterHTTP(mux, activitycontroller.New(nil), controller.New(s))
 
 			r := httptest.NewRequest(http.MethodGet, "/audit/restricted/schools/"+tc.id+"/activity-check", nil)
 			r.Pattern = constants.SchoolCheckPattern
@@ -95,7 +104,7 @@ func TestSchoolCheck(t *testing.T) {
 
 	s := &schoolService{}
 	mux := http.NewServeMux()
-	restricted.Register(mux, controller.New(s))
+	routes.RegisterHTTP(mux, activitycontroller.New(nil), controller.New(s))
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/audit/restricted/schools/"+school+"/activity-check", nil))
 	if w.Code != http.StatusForbidden || s.calls != 0 {

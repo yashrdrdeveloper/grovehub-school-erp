@@ -1,17 +1,19 @@
 package restricted
 
-import (
-	"net/http"
+import "net/http"
 
-	"grovehub/services/audit/internal/app/controller/operator"
-	"grovehub/services/audit/internal/app/controller/operator/constants"
-)
-
-func Register(mux *http.ServeMux, controller operator.Controller) {
-	mux.HandleFunc(constants.Pattern, controller.Write)
-	mux.HandleFunc(constants.SearchPattern, controller.Search)
-	mux.HandleFunc(constants.SchoolCheckPattern, controller.SchoolCheck)
-	mux.HandleFunc(constants.ReceiptPattern, controller.Receipt)
-	mux.HandleFunc(constants.StatusReceiptPattern, controller.StatusReceipt)
-	mux.HandleFunc(constants.ReceiptSearchPattern, controller.ReceiptSearch)
+// @Routes /
+type OperatorController interface {
+	// @POST /operator-activities
+	Write(writer http.ResponseWriter, request *http.Request)
+	// @POST /operator-activities/search
+	Search(writer http.ResponseWriter, request *http.Request)
+	// @GET /schools/{schoolId}/activity-check
+	SchoolCheck(writer http.ResponseWriter, request *http.Request)
+	// @POST /school-rename-receipts
+	Receipt(writer http.ResponseWriter, request *http.Request)
+	// @POST /school-status-receipts
+	StatusReceipt(writer http.ResponseWriter, request *http.Request)
+	// @POST /school-mutation-receipts/search
+	ReceiptSearch(writer http.ResponseWriter, request *http.Request)
 }
