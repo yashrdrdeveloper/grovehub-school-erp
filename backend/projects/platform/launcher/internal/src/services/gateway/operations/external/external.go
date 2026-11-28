@@ -12,7 +12,7 @@ import (
 
 	coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
 	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
-	schoolgateway "grovehub/launcher/services/gateway/session"
+	schoolgateway "grovehub/launcher/session"
 	integrationprincipal "grovehub/services/integration/client/principal"
 )
 

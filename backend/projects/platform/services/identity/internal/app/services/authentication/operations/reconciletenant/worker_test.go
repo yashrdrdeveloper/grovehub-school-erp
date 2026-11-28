@@ -4,7 +4,7 @@ import (
  "context"
  "errors"
  "testing"
- schoolgateway "grovehub/launcher/services/gateway/session"
+ schoolgateway "grovehub/launcher/session"
 )
 
 type testStore struct {

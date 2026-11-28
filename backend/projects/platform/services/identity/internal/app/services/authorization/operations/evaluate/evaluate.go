@@ -5,7 +5,7 @@ package evaluate
 import (
 	"context"
 
-	schoolgateway "grovehub/launcher/services/gateway/session"
+	schoolgateway "grovehub/launcher/session"
 	"grovehub/services/identity/internal/app/constants/feature"
 	"grovehub/services/identity/internal/app/constants/permission"
 	"grovehub/services/identity/internal/app/entity"

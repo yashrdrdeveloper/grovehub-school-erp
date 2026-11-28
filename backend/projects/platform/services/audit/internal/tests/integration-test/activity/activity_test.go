@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	schoolgateway "grovehub/launcher/services/gateway/session"
+	schoolgateway "grovehub/launcher/session"
 	"grovehub/services/audit"
 	"grovehub/services/infrastructure"
 	dto "grovehub/services/audit/internal/app/dto/activity"

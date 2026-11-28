@@ -5,7 +5,7 @@ import (
  "log/slog"
 
  "gorm.io/gorm"
- schoolgateway "grovehub/launcher/services/gateway/session"
+ schoolgateway "grovehub/launcher/session"
  sessionrepo "grovehub/services/identity/internal/app/repository/session/impl"
  "grovehub/services/identity/internal/app/services/authentication/operations/reconciletenant"
 )

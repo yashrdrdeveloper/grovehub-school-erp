@@ -4,7 +4,7 @@ import (
  "context"
  "encoding/json"
 
- schoolgateway "grovehub/launcher/services/gateway/session"
+ schoolgateway "grovehub/launcher/session"
  dto "grovehub/services/integration/internal/app/dto/connection"
  "grovehub/services/integration/internal/app/externalService/mail/gmail"
  providerdto "grovehub/services/integration/internal/app/providers/dto"

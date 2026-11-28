@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
-	"grovehub/launcher/bootstrap"
+	bootstrap "grovehub/launcher"
 	"grovehub/services/audit"
 	client "grovehub/services/audit/client/producer"
 	"grovehub/services/infrastructure"

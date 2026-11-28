@@ -3,7 +3,7 @@ package identity
 
 import (
 	"context"
-	schoolgateway "grovehub/launcher/services/gateway/session"
+	schoolgateway "grovehub/launcher/session"
 	"errors"
 	"fmt"
 	"log/slog"

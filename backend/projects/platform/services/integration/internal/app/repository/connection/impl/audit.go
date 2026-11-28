@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	schoolgateway "grovehub/launcher/services/gateway/session"
+	schoolgateway "grovehub/launcher/session"
 	auditclient "grovehub/services/audit/client/producer"
 	"grovehub/services/integration/internal/app/entity"
 )

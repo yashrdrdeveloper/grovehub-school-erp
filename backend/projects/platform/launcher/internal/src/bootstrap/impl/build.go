@@ -16,11 +16,11 @@ import (
  "grovehub/launcher/internal/src/config"
  "grovehub/launcher/internal/src/routes"
  health "grovehub/launcher/internal/src/controller/impl"
- "grovehub/launcher/internal/src/services/gateway"
+ gateway "grovehub/launcher/internal/src/services/gateway/impl"
  "grovehub/launcher/internal/src/services/gateway/operations/workload"
  schoolgateway "grovehub/launcher/session"
  "grovehub/launcher/internal/src/server"
- "grovehub/launcher/internal/src/server/impl"
+ serverimpl "grovehub/launcher/internal/src/server/impl"
  "grovehub/services/foundation"
  "grovehub/services/audit"
  "grovehub/services/identity"
@@ -149,6 +149,6 @@ func (b *builder) Build() (result bootstrap.Runtime, err error) {
 
 
  edgeHandler:=newEdgeHandler(logger,mux,gatewayRuntime.External())
- var httpServer server.Server = impl.New(b.config.Address,edgeHandler,logger,draining)
+ var httpServer server.Server = serverimpl.New(b.config.Address,edgeHandler,logger,draining)
  return &runtime{ctx:ctx,server:httpServer,cleanup:cleanup},nil
 }

@@ -1,7 +1,7 @@
 package impl
 
 import (
-	schoolgateway "grovehub/launcher/services/gateway/session"
+	schoolgateway "grovehub/launcher/session"
 	accountmetadataevent "grovehub/services/identity/internal/app/events/producers/accountmetadata/impl"
 	updateimpl "grovehub/services/identity/internal/app/services/account/operations/update/impl"
 	registrationproducer "grovehub/services/identity/internal/app/events/producers/registration/impl"

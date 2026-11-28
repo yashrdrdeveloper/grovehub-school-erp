@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The gateway is owned by `backend/launcher/services/gateway`, not Identity or Integration.
+The gateway is owned by `backend/projects/platform/launcher/internal/src/services/gateway`, not Identity or Integration.
 
 - `operations/external` classifies the **matched ServeMux route pattern** with an anchored regex; it never trusts the raw URL or client headers to determine the tier. After policy checks, it dispatches through `mux.ServeHTTP` so Go path variables are correctly populated.
 - `public` permits unauthenticated requests, subject to rate limits, Origin checks, and CSRF on grant/refresh-cookie operations.

@@ -2,7 +2,7 @@ package login
 
 import (
 	"context"
- schoolgateway "grovehub/launcher/services/gateway/session"
+ schoolgateway "grovehub/launcher/session"
 	"errors"
 	"strings"
 	"time"

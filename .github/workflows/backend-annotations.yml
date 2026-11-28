@@ -30,18 +30,29 @@ jobs:
         run: |
           test ! -d backend/projects/platform/libs
           if git grep -nF 'grovehub/libs/schoolgateway' -- '*.go'; then
-            echo "Use launcher/services/gateway/session."
+            echo "Use launcher/session."
             exit 1
           fi
           if git grep -nF 'grovehub/libs/infrastructure/messaging' -- '*.go'; then
             echo "Use services/infrastructure/client/messaging."
             exit 1
           fi
-      - name: Inventory deprecated Launcher imports
+      - name: Reject legacy Launcher structure
         shell: bash
         run: |
-          git grep -lF 'grovehub/launcher/services/gateway/session' -- '*.go' || true
-          git grep -nE '"grovehub/launcher/(bootstrap|middleware|routing|constants|services/gateway/operations)' -- '*.go' || true
+          test ! -d backend/projects/platform/launcher/bootstrap
+          test ! -d backend/projects/platform/launcher/services
+          test ! -d backend/projects/platform/launcher/tests
+          test ! -d backend/projects/platform/launcher/routing
+          test ! -d backend/projects/platform/launcher/middleware
+          if git grep -nE '"grovehub/launcher/(bootstrap|middleware|routing|constants|services/)' -- '*.go'; then
+            echo "Use the canonical Launcher boundary."
+            exit 1
+          fi
+          if git grep -nF 'mux.HandleFunc(' -- 'backend/projects/platform/launcher/internal/src/*.go' 'backend/projects/platform/launcher/internal/src/**/*.go'; then
+            echo "Use annotated route registration."
+            exit 1
+          fi
       - name: Reject legacy annotation imports and adjacent unit tests
         shell: bash
         run: |
@@ -56,7 +67,240 @@ jobs:
             exit 1
           fi
           test ! -d backend/libs/core/annotation/generation
-          test -z "$(git ls-files 'backend/libs/core/annotation/**' | grep '_test[.]go$' | grep -v '/internal/resources/tests/unit-test/' || true)"
+          test -z "$(git ls-files 'backend/libs/core/annotation/**' | grep '_test[.]go$' | grep -v '/internal/resources/tests/unit-test/' | grep -vE '^backend/libs/core/annotation/internal/src/generators/(routes/helpers/private_method|mappers/helpers/private_destination|search/helpers/private_ast|testing/private_generator|testing/coverage/private_generator)_test[.]go
+  annotation-unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enforce exact source-to-unit-test file mapping
+        shell: bash
+        run: |
+          source_root=backend/libs/core/annotation/internal/src
+          test_root=backend/libs/core/annotation/internal/resources/tests/unit-test
+          missing=0
+          count=0
+          while IFS= read -r source; do
+            [[ "$source" == *.go && "$source" != *_test.go ]] || continue
+            relative="${source#"$source_root/"}"
+            mirror="$test_root/${relative%.go}_test.go"
+            count=$((count + 1))
+            if [[ ! -f "$mirror" ]]; then
+              printf 'Missing mirrored unit test: %s\n' "$mirror"
+              missing=$((missing + 1))
+            fi
+          done < <(git ls-files "$source_root/")
+          printf 'Annotation source files: %s; missing mirrors: %s\n' "$count" "$missing"
+          test "$count" -gt 0
+          test "$missing" -eq 0
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.27.3"
+          cache-dependency-path: backend/libs/core/go.sum
+      - name: Run mirrored annotation suites and measure internal source coverage
+        working-directory: backend/libs/core
+        run: |
+          go test -count=1 -covermode=atomic -coverpkg=./annotation/internal/src/... -coverprofile="$RUNNER_TEMP/annotation-coverage.out" ./annotation/internal/resources/tests/unit-test/... ./tests/unit-test/annotation/...
+          go tool cover -func="$RUNNER_TEMP/annotation-coverage.out"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: annotation-coverage
+          path: ${{ runner.temp }}/annotation-coverage.out
+  annotation-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Install Go toolchain
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.27.3"
+          cache-dependency-path: |
+            backend/projects/platform/go.sum
+            backend/libs/core/go.sum
+      - name: Lint Foundation repository formatting and function signatures
+        run: make backend-lint
+      - name: Compile the complete backend with generated annotations
+        run: make backend-build
+      - name: Verify annotation packages resolve after folder refactor
+        working-directory: backend/projects/platform
+        run: go list -overlay=.generated/overlay.json github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/...
+      - name: Enforce Core package independence (including test imports)
+        working-directory: backend/projects/platform
+        run: |
+          go list -overlay=.generated/overlay.json -f '{{.ImportPath}} {{join .Imports " "}} {{join .TestImports " "}} {{join .XTestImports " "}}' github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/... > "$RUNNER_TEMP/core-imports.txt"
+          awk '{ for (i=2;i<=NF;i++) if ($i ~ /^grovehub\// || $i ~ /^github\.com\/yashrdrdeveloper\/grovehub-school-erp\/backend\/projects\//) { print $1 ": forbidden dependency " $i; bad=1 } } END { exit bad }' "$RUNNER_TEMP/core-imports.txt"
+          wc -l "$RUNNER_TEMP/core-imports.txt"
+      - name: Test gateway security contracts and context operations
+        working-directory: backend/projects/platform
+        run: go test -race -coverpkg=./launcher/session,./launcher/internal/src/services/gateway/operations/principal,./launcher/internal/src/services/gateway/operations/tenant ./launcher/internal/resources/tests/unit-test/session
+      - name: Test canonical Platform workload policy
+        working-directory: backend/projects/platform
+        run: GOWORK=off go test -vet=off -overlay=.generated/overlay.json ./launcher/internal/resources/tests/unit-test/services/gateway/...
+      - name: Test annotation source generators
+        working-directory: backend/projects/platform
+        run: go test github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/internal/resources/tests/unit-test/...
+      - name: Verify Core standalone build and tests
+        working-directory: backend/libs/core
+        run: |
+          export GOWORK=off
+          go run ./annotation/cmd testing "$PWD" "$PWD"
+          go run ./annotation/cmd overlay "$PWD" "$PWD"
+          go test -vet=off -overlay=.generated/overlay.json ./...
+      - name: Verify school build without workspace
+        working-directory: backend/projects/platform
+        run: GOWORK=off go build -overlay=.generated/overlay.json -o "$RUNNER_TEMP/school-platform" ./cmd/platform
+      - name: Test Audit monitoring
+        working-directory: backend/projects/platform
+        run: go test -race -vet=off -overlay=.generated/overlay.json ./services/audit/internal/tests/unit-test/services/monitoring/...
+      - name: Compile Audit replay operator command
+        working-directory: backend/projects/platform
+        run: go build -overlay=.generated/overlay.json -o "$RUNNER_TEMP/audit-replay" ./cmd/audit-replay
+      - name: Verify canonical Identity resource packages compile
+        working-directory: backend/projects/platform
+        run: go test -vet=off -overlay=.generated/overlay.json ./services/identity/internal/tests/unit-test/...
+      - name: Reject legacy platform messaging library
+        shell: bash
+        run: |
+          test ! -d backend/projects/platform/libs/infrastructure/messaging
+          if git grep -nF 'grovehub/libs/infrastructure/messaging' -- '*.go'; then
+            echo "Use the Infrastructure messaging client instead."
+            exit 1
+          fi
+      - name: Test Infrastructure messaging contracts and context helpers
+        working-directory: backend/projects/platform
+        run: go test -race -vet=off -overlay=.generated/overlay.json ./services/infrastructure/internal/tests/unit-test/...
+      - name: Test Integration mail reconciliation
+        working-directory: backend/projects/platform
+        run: go test -race -vet=off -overlay=.generated/overlay.json ./services/integration/internal/tests/unit-test/services/mail/... ./services/integration/internal/tests/unit-test/controller/mail/...
+      - name: Compile local mail reconciliation operator client
+        working-directory: backend/projects/platform
+        run: go build -overlay=.generated/overlay.json -o "$RUNNER_TEMP/mail-reconciliation" ./cmd/identity-mail-reconcile
+      - name: Test Infrastructure messaging persistence options
+        working-directory: backend/projects/platform
+        run: go test -vet=off -overlay=.generated/overlay.json ./services/infrastructure/internal/app/services/messaging/...
+      - name: Run package-local tenant lifecycle regression tests
+        working-directory: backend/projects/platform
+        run: |
+          go test -vet=off -overlay=.generated/overlay.json ./launcher/internal/resources/tests/unit-test/bootstrap/... ./launcher/internal/resources/tests/unit-test/session ./services/identity/internal/app/services/authentication/operations/reconciletenant ./services/identity/internal/app/services/registration/operations/invitation ./services/identity/internal/app/services/account/operations/personprofile ./services/integration/internal/app/services/connection/impl ./services/integration/internal/app/services/connection/operations/oauth/strategies/impl ./services/audit/internal/app/controller/operator/restricted
+      - name: Verify Integration resource packages compile with generated overlays
+        working-directory: backend/projects/platform
+        run: go test -vet=off -overlay=.generated/overlay.json ./services/integration/internal/tests/unit-test/...
+      - name: Run available core, launcher and service unit suites
+        working-directory: backend/projects/platform
+        run: |
+          suites=(github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/tests/unit-test/... ./launcher/internal/resources/tests/unit-test/... ./services/identity/internal/tests/unit-test/... ./services/integration/internal/tests/unit-test/...)
+          # Some services intentionally have no unit-test directory.
+          if [[ -d services/foundation/internal/tests/unit-test ]]; then
+            suites+=(./services/foundation/internal/tests/unit-test/...)
+          fi
+          if [[ -d services/foundation/tests/unit-test ]]; then
+            suites+=(./services/foundation/tests/unit-test/...)
+          fi
+          go test -vet=off -overlay=.generated/overlay.json "${suites[@]}"
+      - name: List selected service functions and unmapped test files
+        run: make test-inventory package=foundation
+      - name: Verify multi-service unit coverage and report generation
+        run: make unit-test packages='["foundation","identity"]'
+      - name: Validate generated source on a clean checkout
+        shell: bash
+        run: |
+          test -s backend/projects/platform/.generated/overlay.json
+          test -s backend/projects/platform/launcher/.generated/internal/src/routes/zz_routes.gen.go
+          test -s backend/projects/platform/launcher/.generated/internal/resources/tests/unit-test/controller/zz_suite_test.go
+          test -s backend/projects/platform/services/infrastructure/.generated/internal/app/entity/zz_tables.gen.go
+          test -s backend/projects/platform/services/infrastructure/.generated/internal/app/client/messaging/impl/zz_clients.gen.go
+          test -s backend/projects/platform/services/foundation/.generated/internal/app/routes/zz_routes.gen.go
+          test -s backend/projects/platform/services/foundation/.generated/internal/app/entity/zz_tables.gen.go
+          test -s backend/projects/platform/services/foundation/.generated/internal/app/client/person/impl/zz_clients.gen.go
+          test -s backend/projects/platform/services/integration/.generated/internal/app/routes/zz_routes.gen.go
+          test -s backend/projects/platform/services/integration/.generated/internal/app/client/connection/impl/zz_clients.gen.go
+          test -s backend/projects/platform/services/foundation/.generated/internal/app/mappers/person/impl/zz_mappers.gen.go
+          test -s backend/projects/platform/services/foundation/.generated/internal/app/repository/person/impl/zz_search.gen.go
+          test -s backend/projects/platform/services/foundation/.generated/internal/app/dto/person/zz_patchdto.gen.go
+          test -s backend/projects/platform/services/integration/.generated/internal/app/entity/zz_tables.gen.go
+          test -s backend/projects/platform/services/foundation/.generated/internal/app/events/producers/person/operations/changed/zz_events.gen.go
+          test -s backend/projects/platform/services/integration/.generated/internal/app/events/producers/connection/operations/mailbox/zz_events.gen.go
+
+      - name: Package independently deployable Platform executable
+        run: bash scripts/release/package-artifact.sh platform .runtime/bin/groovehub-platform "$RUNNER_TEMP/release" "$GITHUB_SHA"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: platform-${{ github.sha }}
+          path: ${{ runner.temp }}/release/
+          if-no-files-found: error
+
+  generated-coverage-macos:
+    name: Validate generated-source unit coverage on macOS
+    runs-on: macos-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Install Go toolchain
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.27.3"
+          cache-dependency-path: |
+            backend/projects/platform/go.sum
+            backend/libs/core/go.sum
+      - name: Verify generated Foundation suites and mocks compile under macOS coverage
+        run: make unit-test package=foundation
+      - name: Verify the generated coverage report exists
+        run: |
+          test -s backend/projects/platform/.generated/unit-coverage/foundation.out
+          test -s .runtime/reports/unit-coverage/foundation.html
+
+  rbac-postgres:
+    name: Validate Identity RBAC against disposable PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: rbac_test
+          POSTGRES_PASSWORD: rbac_test
+          POSTGRES_DB: groovehub_rbac_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rbac_test -d groovehub_rbac_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.27.3"
+          cache-dependency-path: |
+            backend/projects/platform/go.sum
+            backend/libs/core/go.sum
+      - name: Generate backend annotation overlay
+        run: make backend-build
+      - name: Apply real Identity migrations and validate RBAC
+        working-directory: backend/projects/platform
+        env:
+          IDENTITY_RBAC_TEST_DSN: "host=127.0.0.1 port=5432 user=rbac_test password=rbac_test dbname=groovehub_rbac_test sslmode=disable"
+        run: go test -vet=off -overlay=.generated/overlay.json -count=1 -v ./services/identity/internal/tests/integration-test/rbac/...
+
+      - name: Validate durable Integration mail dispatch against PostgreSQL
+        working-directory: backend/projects/platform
+        env:
+          INTEGRATION_MAIL_TEST_DSN: "host=127.0.0.1 port=5432 user=rbac_test password=rbac_test dbname=groovehub_rbac_test sslmode=disable"
+        run: go test -vet=off -overlay=.generated/overlay.json -count=1 -v ./services/integration/internal/tests/integration-test/maildelivery/...
+
+      - name: Create isolated Audit database
+        run: docker exec ${{ job.services.postgres.id }} createdb -U rbac_test groovehub_audit_test
+
+      - name: Validate Audit projection and deduplication against PostgreSQL
+        working-directory: backend/projects/platform
+        env:
+          AUDIT_TEST_DSN: "host=127.0.0.1 port=5432 user=rbac_test password=rbac_test dbname=groovehub_rbac_test sslmode=disable"
+          AUDIT_SPLIT_TEST_DSN: "host=127.0.0.1 port=5432 user=rbac_test password=rbac_test dbname=groovehub_audit_test sslmode=disable"
+        run: go test -vet=off -overlay=.generated/overlay.json -count=1 -v ./services/audit/internal/tests/integration-test/...
+ || true)"
   annotation-unit-tests:
     runs-on: ubuntu-latest
     steps:

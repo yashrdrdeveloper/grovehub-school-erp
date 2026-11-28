@@ -6,7 +6,7 @@ import (
  "errors"
  "testing"
 
- schoolgateway "grovehub/launcher/services/gateway/session"
+ schoolgateway "grovehub/launcher/session"
  dto "grovehub/services/integration/internal/app/dto/connection"
  service "grovehub/services/integration/internal/app/services/connection"
  helpers "grovehub/services/integration/internal/app/services/connection/helpers"

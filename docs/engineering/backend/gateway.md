@@ -25,4 +25,4 @@ A gateway is a *transport policy boundary*, not a replacement for application re
 
 ## Contract ownership
 
-School session identity, AccessVerifier, legacy Admin/PersonGID claims and browser cookie names belong to `backend/projects/platform/launcher/services/gateway/session`. Generic route tier and workload verifier contracts remain in `libs/backend/core/gateway`. Verified contexts are established only by the trusted school adapter. This separation does not alter school session or origin/CSRF behavior and does not implement school RBAC enforcement by itself. The internal platform must own a separate session contract and cookie namespace.
+School session identity, AccessVerifier, legacy Admin/PersonGID claims and browser cookie names belong to `backend/projects/platform/launcher/session`. Generic route tier and workload verifier contracts remain in `libs/backend/core/gateway`. Verified contexts are established only by the trusted school adapter. This separation does not alter school session or origin/CSRF behavior and does not implement school RBAC enforcement by itself. The internal platform must own a separate session contract and cookie namespace.

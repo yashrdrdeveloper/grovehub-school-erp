@@ -3,7 +3,7 @@ package bootstrap
 import (
 	"context"
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/module"
-	schoolgateway "grovehub/launcher/services/gateway/session"
+	schoolgateway "grovehub/launcher/session"
 	accountclient "grovehub/services/identity/client/account"
 )
 
