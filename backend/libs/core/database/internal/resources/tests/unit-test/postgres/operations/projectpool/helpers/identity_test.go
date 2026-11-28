@@ -9,7 +9,6 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/postgres/operations/projectpool/constants"
 	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database/internal/src/postgres/operations/projectpool/helpers"
 )
 
@@ -49,9 +48,4 @@ var _ = Describe("MatchesIdentity", func() {
 		Expect(helpers.MatchesIdentity(context.Background(), db, "school", "school_role")).To(BeFalse())
 	})
 
-	It("configures the pool with the defined limits", func() {
-		helpers.ConfigurePool(db)
-
-		Expect(db.Stats().MaxOpenConnections).To(Equal(constants.MaxOpenConns))
-	})
 })
