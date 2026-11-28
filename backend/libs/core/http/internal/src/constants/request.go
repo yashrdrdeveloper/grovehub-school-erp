@@ -1,4 +1,4 @@
-package headers
+package constants
 
 const (
 	CorrelationID = "X-Correlation-ID"

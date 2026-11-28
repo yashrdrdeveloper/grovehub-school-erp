@@ -1,6 +1,8 @@
-package readiness
+package readiness_test
 
 import (
+	. "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/readiness"
+
 	"context"
 	"errors"
 	"net/http"

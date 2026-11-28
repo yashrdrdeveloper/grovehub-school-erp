@@ -10,7 +10,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 
 	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-	httpcontracts "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/contracts"
+	httpcontracts "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/contracts"
 )
 
 func WriteSuccess[T any](writer http.ResponseWriter, statusCode int, data T) error {

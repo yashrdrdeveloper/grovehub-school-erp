@@ -1,6 +1,8 @@
-package correlation
+package correlation_test
 
 import (
+	. "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/correlation"
+
 	"context"
 	"net/http"
 	"net/http/httptest"

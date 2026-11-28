@@ -20,7 +20,7 @@ import (
 
 	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
 	headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
-	httpheaders "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/headers"
+	httpheaders "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/constants"
 )
 
 const maxResponseBytes int64 = 8 << 20

@@ -6,7 +6,7 @@ import (
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
-	httpheaders "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/headers"
+	httpheaders "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/constants"
 	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
 )
 

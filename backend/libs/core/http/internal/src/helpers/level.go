@@ -1,4 +1,4 @@
-package logging
+package helpers
 
 import (
 	"log/slog"

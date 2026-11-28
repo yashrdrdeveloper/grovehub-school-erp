@@ -7,11 +7,12 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http/internal/src/constants"
 )
 
 type key struct{}
 
-const Header = "X-Request-ID"
+const Header = constants.RequestID
 
 func WithNew(ctx context.Context) context.Context {
 	return context.WithValue(ctx, key{}, uuid.NewString())
