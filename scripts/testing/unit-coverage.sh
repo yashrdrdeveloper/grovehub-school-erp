@@ -15,7 +15,7 @@ esac
 # Single service, multi-service, or all services: the Go runner is shared.
 (
   cd -- "${BACKEND_DIR}"
-  go run "${CORE_MODULE}/annotation/generation/testing/coverage" \
+  go run "${CORE_MODULE}/annotation/cmd" coverage \
     -core "${CORE_DIR}" \
     -generator-script "${REPO_ROOT}/scripts/backend/generate-annotations.sh" \
     -reports "${RUNTIME_DIR}/reports/unit-coverage" \

@@ -1,5 +1,7 @@
 # Backend Core extraction audit
 
+> Historical inventory: the paths in this audit predate the Phase 1 refactor. Current annotation tooling uses the single `annotation/cmd` executable and private processors under `annotation/internal/src/generators/`.
+
 Inventory from [isolated generated-overlay build and tests](https://github.com/yashrdrdeveloper/grovehub-school-erp/actions/runs/45828175362), candidate `688a1ca2d0b74db6ce074255a253ddf1c1937eb4`, transferred to `049df4e8e6e68dc36350c0220ecb7b42a5814a8c`. **104 Go packages**, including generated test package imports, zero package listing errors and zero school/launcher imports after removing the product DTO test dependency and school session contracts. This proves import-boundary separation, not complete semantic neutrality or a standalone build. Core is still physically under `backend/libs/core`.
 
 ## Disposition

@@ -4,7 +4,7 @@ The generic semantics are defined in [annotation.md](../../../../../docs/enginee
 
 ## Source packages
 
-`annotation/annotation.go` exposes metadata from `internal/src/impl/registry/`, `internal/src/contracts/` and `internal/src/catalog/`. `internal/src/parser/` scans source comments and targets; `generation/check` rejects unknown or unsupported use cases; specialized generators handle entities, routes, typed clients, mappers, events, search and PATCH DTOs; `generation/overlay` exposes emitted files to the Go toolchain.
+`annotation/annotation.go` exposes metadata from `internal/src/registry/`, `internal/src/contracts/` and `internal/src/catalog/`. `internal/src/parser/` scans source comments and targets; `cmd check` rejects unknown or unsupported use cases; specialized generators handle entities, routes, typed clients, mappers, events, search and PATCH DTOs; `cmd overlay` exposes emitted files to the Go toolchain.
 
 ## Build contract
 
@@ -39,4 +39,4 @@ Application generator entrypoints take the application root. Testing and overlay
 
 ## Phase 1 capability encapsulation
 
-The physical annotation owner is `backend/libs/core/annotation/`. Runtime clients import the root facade; command-line entry points under `generation/` forward to `internal/src/generators/`. Catalog metadata lives under `internal/src/catalog/`, typed metadata contracts under `internal/src/contracts/`, and runtime implementations under `internal/src/impl/`. Private unit suites belong in `internal/resources/tests/unit-test/`; public API suites remain under Core's `tests/unit-test/`. The testing generator, method inventory and coverage runner discover the capability-local tree. Legacy annotation compatibility packages have been removed; the root facade is the sole runtime import.
+The physical annotation owner is `backend/libs/core/annotation/`. Runtime clients import the root facade; the single command under `cmd/main.go` dispatches through `internal/src/cli/` to `internal/src/generators/`. Catalog metadata lives under `internal/src/catalog/`, typed metadata contracts under `internal/src/contracts/`, and runtime operations under their responsibility-specific packages in `internal/src/`. Private unit suites belong in `internal/resources/tests/unit-test/`; public API suites remain under Core's `tests/unit-test/`. The testing generator, method inventory and coverage runner discover the capability-local tree. Legacy annotation compatibility packages have been removed; the root facade is the sole runtime import.

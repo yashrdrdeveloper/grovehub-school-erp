@@ -30,15 +30,21 @@ type OverlayConfig struct {
 
 
 
-func Run() error {
-	backend := flag.String("backend", ".", "backend module directory")
-	coreDirectory := flag.String("core", "", "standalone Core module directory")
-	generator := flag.String("generator-script", "", "application annotation generation script")
-	reportDirectory := flag.String("reports", "", "coverage report directory")
-	mode := flag.String("mode", "--strict", "strict, report-only, or inventory")
-	single := flag.String("package", "", "one service/core/launcher name")
-	multiple := flag.String("packages", "", "comma separated or bracketed names")
-	flag.Parse()
+func Run(args []string) error {
+	flags := flag.NewFlagSet("annotation coverage", flag.ContinueOnError)
+	backend := flags.String("backend", ".", "backend module directory")
+	coreDirectory := flags.String("core", "", "standalone Core module directory")
+	generator := flags.String("generator-script", "", "application annotation generation script")
+	reportDirectory := flags.String("reports", "", "coverage report directory")
+	mode := flags.String("mode", "--strict", "strict, report-only, or inventory")
+	single := flags.String("package", "", "one service/core/launcher name")
+	multiple := flags.String("packages", "", "comma separated or bracketed names")
+	if err := flags.Parse(args); err != nil {
+		return err
+	}
+	if flags.NArg() != 0 {
+		return fmt.Errorf("unexpected coverage arguments: %v", flags.Args())
+	}
 	root, err := filepath.Abs(*backend)
 	if err != nil {
 		return err
@@ -61,7 +67,7 @@ func Run() error {
 	if *mode == "--inventory" {
 		for _, item := range targets {
 			fmt.Printf("[INFO] Method inventory: %s\n", item.name)
-			if err := command(context.Background(), root, "go", "run", "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/generation/testing/inventory", item.owner); err != nil {
+			if err := command(context.Background(), root, "go", "run", "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation/cmd", "inventory", item.owner); err != nil {
 				return err
 			}
 		}

@@ -9,25 +9,27 @@ Consumers use `annotation.go`, importing `github.com/yashrdrdeveloper/grovehub-s
 ```text
 annotation/
 ├── annotation.go
-├── generation/                      # stable command-line entry points only
+├── cmd/main.go                      # single executable command
 └── internal/
     ├── src/
     │   ├── contracts/
     │   ├── catalog/
-    │   ├── impl/
+    │   ├── registry/
+    │   ├── cli/
+    │   ├── configuration/, dto/, entity/, validation/
     │   ├── helpers/
     │   ├── parser/
     │   └── generators/
     └── resources/tests/unit-test/   # private implementation tests
 ```
 
-Core-level public API tests live in `backend/libs/core/tests/unit-test/`. Capability-local tests mirror private source responsibilities and may import their own internal packages. Production code must never import test resources. Both test trees are discovered by the annotation testing and coverage tools. The generators retain their original CLI paths for scripts and CI.
+Core-level public API tests live in `backend/libs/core/tests/unit-test/`. Capability-local tests mirror private source responsibilities and may import their own internal packages. Production code must never import test resources. Both test trees are discovered by the annotation testing and coverage tools. All fourteen processors are dispatched by one command registry. Run `go run ./annotation/cmd --help` from the Core module, or `go run ./annotation/cmd routes <backend-directory>` for a specific processor. Coverage and inventory are subcommands too.
 
 The root facade is the only runtime import. Legacy category and runtime subpackages have been removed. The PATCH generator requires the facade import.
 
 ## Maintained source of truth
 
-The metadata catalog is declared under `internal/src/catalog/` and composed by the registry under `internal/src/impl/registry/`. Actual generation logic lives under `internal/src/generators/`. Go comments do not enforce runtime transactions, authorization, retries or network registration.
+The metadata catalog is declared under `internal/src/catalog/` and composed by the registry under `internal/src/registry/`. Actual generation logic lives under `internal/src/generators/`. Go comments do not enforce runtime transactions, authorization, retries or network registration.
 
 Generated code remains ignored beneath the owning service or library and is injected via the approved Go overlay. Modify source declarations and generators, not generated artifacts.
 

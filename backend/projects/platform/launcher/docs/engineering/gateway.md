@@ -25,7 +25,7 @@ The controller method declares both its route and its own requests-per-minute po
 Login(http.ResponseWriter, *http.Request)
 ```
 
-`libs/core/annotation/generation/routes` validates that a rate limit is an integer between 1 and 100000 and generates `routes.RouteLimits()` keyed by the exact method and registered URL pattern. Identity bootstrap exposes this policy through `Module.RouteLimits()` to Launcher. The generic limiter has no Identity path switch. Missing `@RouteLimit` means the route has no route-specific rate limit.
+`libs/core/annotation/internal/src/generators/routes` validates that a rate limit is an integer between 1 and 100000 and generates `routes.RouteLimits()` keyed by the exact method and registered URL pattern. Identity bootstrap exposes this policy through `Module.RouteLimits()` to Launcher. The generic limiter has no Identity path switch. Missing `@RouteLimit` means the route has no route-specific rate limit.
 
 The current limiter is per process and per originating socket IP. In multi-replica deployments, replace this storage with a distributed limiter at the gateway boundary; only trust forwarding headers when a reverse proxy is explicitly trusted. This does not replace account-aware login throttling, lockout strategy, or operational abuse monitoring.
 

@@ -28,12 +28,17 @@ jobs:
       - name: Reject legacy annotation imports and adjacent unit tests
         shell: bash
         run: |
-          if git grep -nE 'libs/backend/core/annotation/(chain|composition|configuration|contract|dto|entity|event|external|http|mapping|messaging|middleware|observability|patterns|persistence|security|server|strategy|testing|utilities|validation|generation/(layout|parser))"' -- '*.go'; then
+          if git grep -nE 'libs/backend/core/annotation/(chain|composition|configuration|contract|dto|entity|event|external|http|mapping|messaging|middleware|observability|patterns|persistence|security|server|strategy|testing|utilities|validation|generation(/[^" ]+)?)"' -- '*.go'; then
             echo "Import the annotation facade instead of removed annotation packages."
             exit 1
           else
             test "$?" -eq 1
           fi
+          if git grep -n 'annotation/generation/' -- '*.go' '*.sh' 'Makefile' '**/Makefile'; then
+            echo "Use annotation/cmd with a subcommand."
+            exit 1
+          fi
+          test ! -d backend/libs/core/annotation/generation
           test -z "$(git ls-files 'backend/libs/core/annotation/**' | grep '_test[.]go$' | grep -v '/internal/resources/tests/unit-test/' || true)"
   annotation-build:
     runs-on: ubuntu-latest
@@ -71,8 +76,8 @@ jobs:
         working-directory: backend/libs/core
         run: |
           export GOWORK=off
-          go run ./annotation/generation/testing "$PWD" "$PWD"
-          go run ./annotation/generation/overlay "$PWD" "$PWD"
+          go run ./annotation/cmd testing "$PWD" "$PWD"
+          go run ./annotation/cmd overlay "$PWD" "$PWD"
           go test -vet=off -overlay=.generated/overlay.json ./...
       - name: Verify school build without workspace
         working-directory: backend/projects/platform

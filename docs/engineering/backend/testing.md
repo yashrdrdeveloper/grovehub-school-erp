@@ -75,8 +75,8 @@ Confirm API/event compatibility, secret handling, database migration history, bu
 ```bash
 cd libs/backend/core
 export GOWORK=off
-go run ./annotation/generation/testing "$PWD" "$PWD"
-go run ./annotation/generation/overlay "$PWD" "$PWD"
+go run ./annotation/cmd testing "$PWD" "$PWD"
+go run ./annotation/cmd overlay "$PWD" "$PWD"
 go test -vet=off -overlay=.generated/overlay.json ./...
 ```
 

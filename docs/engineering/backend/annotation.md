@@ -18,36 +18,22 @@ A directive documented as Proposed must **not** be added to code expecting enfor
 ## 2. Source layout
 
 ```text
-libs/backend/core/annotation/
-├── annotation.go                    # public lookup / parsing facade
-├── inventory.go                     # category definitions aggregation
-├── contract/                        # annotation metadata and targets
-├── entity/                           # entity / data metadata
-├── dto/                              # presence-aware Patch[T]
-├── mapping/                          # typed mapper directives
-├── validation/                       # validation/tag rules
-├── persistence/                      # repo/search declarations
-├── http/                             # routes / methods / client request lines
-├── external/                         # typed clients and external providers
-├── configuration/                    # env/config contracts
-├── event/                            # domain event metadata
-├── messaging/                        # future producer/consumer registration
-├── composition/                      # service assembly metadata
-├── strategy/ and chain/              # checked operation annotations
-├── testing/                          # test registration / mocks
-├── security/, middleware/, server/   # enforcement catalog
-├── observability/, utilities/        # observability / helpers catalog
-├── patterns/                         # GoF pattern documentation/registry
-└── generation/
-    ├── parser/ and check/
-    ├── entities/ and gormtable/
-    ├── routes/ and clients/
-    ├── mappers/ and events/
-    ├── search/ and patchdto/
-    └── overlay/ and expand/
+backend/libs/core/annotation/
+├── annotation.go                  # public runtime facade
+├── cmd/main.go                    # single executable
+└── internal/
+    ├── src/
+    │   ├── cli/                   # command registry and dispatch
+    │   ├── contracts/
+    │   ├── catalog/
+    │   ├── registry/
+    │   ├── parser/
+    │   ├── configuration/, dto/, entity/, validation/
+    │   └── generators/            # private processors and helpers
+    └── resources/tests/unit-test/
 ```
 
-Category-specific `annotations.go` describes a directive. The processor under `generation/` determines executable semantics; these are **not interchangeable**.
+Category-specific metadata describes directives; private processors determine executable semantics. Run `go run ./annotation/cmd --help` from the Core module. All existing processors are subcommands, including `testing`, `coverage` and `inventory`.
 
 ## 3. Safe/common usage matrix
 
