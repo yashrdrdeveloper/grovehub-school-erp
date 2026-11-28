@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
+	corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
 	definitions "grovehub/services/identity/internal/app/constants/error"
 	protected "grovehub/services/identity/internal/app/controller/capability/protected"
 	"grovehub/services/identity/internal/app/controller/helpers"
@@ -25,22 +25,22 @@ func New(service capability.Service) protected.CapabilityController {
 
 func (controller *Controller) Discover(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Cache-Control", "no-store")
-	rest.RunStruct(writer, request, rest.StructConfig[authdto.EmptyRequest, dto.Discovery]{
+	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[authdto.EmptyRequest, dto.Discovery]{
 		Fallback: definitions.Internal,
-		Service: func(ctx context.Context, _ authdto.EmptyRequest) (rest.Result[dto.Discovery], error) {
+		Service: func(ctx context.Context, _ authdto.EmptyRequest) (corepipeline.Result[dto.Discovery], error) {
 			result, err := controller.service.Discover(ctx)
-			return rest.OK(result), helpers.Map(err)
+			return corepipeline.OK(result), helpers.Map(err)
 		},
 	})
 }
 
 func (controller *Controller) Catalog(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Cache-Control", "no-store")
-	rest.RunStruct(writer, request, rest.StructConfig[authdto.EmptyRequest, dto.Catalog]{
+	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[authdto.EmptyRequest, dto.Catalog]{
 		Fallback: definitions.Internal,
-		Service: func(ctx context.Context, _ authdto.EmptyRequest) (rest.Result[dto.Catalog], error) {
+		Service: func(ctx context.Context, _ authdto.EmptyRequest) (corepipeline.Result[dto.Catalog], error) {
 			result, err := controller.service.Catalog(ctx)
-			return rest.OK(result), helpers.Map(err)
+			return corepipeline.OK(result), helpers.Map(err)
 		},
 	})
 }

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
-	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
+	corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
 	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	definitions "grovehub/services/identity/internal/app/constants/error"
 	protected "grovehub/services/identity/internal/app/controller/approval/protected"
@@ -32,46 +32,46 @@ func NewWithMutations(service approval.Reader, mutations approval.Service, execu
 }
 
 func (controller *Controller) History(writer http.ResponseWriter, request *http.Request) {
-	rest.RunStruct(writer, request, rest.StructConfig[dto.SearchRequest, coresearch.Result[dto.Summary]]{
+	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.SearchRequest, coresearch.Result[dto.Summary]]{
 		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
-		Service: func(ctx context.Context, input dto.SearchRequest) (rest.Result[coresearch.Result[dto.Summary]], error) {
+		Service: func(ctx context.Context, input dto.SearchRequest) (corepipeline.Result[coresearch.Result[dto.Summary]], error) {
 			result, err := controller.service.History(ctx, input.RequestBody)
-			return rest.OK(result), helpers.Map(err)
+			return corepipeline.OK(result), helpers.Map(err)
 		},
 	})
 }
 
 func (controller *Controller) Inbox(writer http.ResponseWriter, request *http.Request) {
-	rest.RunStruct(writer, request, rest.StructConfig[dto.SearchRequest, coresearch.Result[dto.Summary]]{
+	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.SearchRequest, coresearch.Result[dto.Summary]]{
 		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
-		Service: func(ctx context.Context, input dto.SearchRequest) (rest.Result[coresearch.Result[dto.Summary]], error) {
+		Service: func(ctx context.Context, input dto.SearchRequest) (corepipeline.Result[coresearch.Result[dto.Summary]], error) {
 			result, err := controller.service.Inbox(ctx, input.RequestBody)
-			return rest.OK(result), helpers.Map(err)
+			return corepipeline.OK(result), helpers.Map(err)
 		},
 	})
 }
 
 func (controller *Controller) PendingCount(writer http.ResponseWriter, request *http.Request) {
-	rest.RunStruct(writer, request, rest.StructConfig[dto.CountRequest, dto.Count]{
+	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.CountRequest, dto.Count]{
 		Fallback: definitions.Internal,
-		Service: func(ctx context.Context, input dto.CountRequest) (rest.Result[dto.Count], error) {
+		Service: func(ctx context.Context, input dto.CountRequest) (corepipeline.Result[dto.Count], error) {
 			result, err := controller.service.PendingCount(ctx)
-			return rest.OK(dto.Count{Pending: result}), helpers.Map(err)
+			return corepipeline.OK(dto.Count{Pending: result}), helpers.Map(err)
 		},
 	})
 }
 
 func (controller *Controller) Detail(writer http.ResponseWriter, request *http.Request) {
-	rest.RunStruct(writer, request, rest.StructConfig[dto.GetRequest, dto.Detail]{
+	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.GetRequest, dto.Detail]{
 		InvalidParams: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
-		Service: func(ctx context.Context, input dto.GetRequest) (rest.Result[dto.Detail], error) {
+		Service: func(ctx context.Context, input dto.GetRequest) (corepipeline.Result[dto.Detail], error) {
 			result, err := controller.service.Detail(ctx, input.Params.RequestID)
-			return rest.OK(result), helpers.Map(err)
+			return corepipeline.OK(result), helpers.Map(err)
 		},
 	})
 }

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
-	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
+	corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
 	definitions "grovehub/services/identity/internal/app/constants/error"
 	protected "grovehub/services/identity/internal/app/controller/accountrole/protected"
 	"grovehub/services/identity/internal/app/controller/helpers"
@@ -24,25 +24,25 @@ func New(service accountrole.Service) protected.AccountRoleController {
 }
 
 func (controller *Controller) Get(writer http.ResponseWriter, request *http.Request) {
-	rest.RunStruct(writer, request, rest.StructConfig[dto.GetRequest, dto.Assignment]{
+	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.GetRequest, dto.Assignment]{
 		InvalidParams: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
-		Service: func(ctx context.Context, input dto.GetRequest) (rest.Result[dto.Assignment], error) {
+		Service: func(ctx context.Context, input dto.GetRequest) (corepipeline.Result[dto.Assignment], error) {
 			result, err := controller.service.Get(ctx, input.Params.AccountID)
-			return rest.OK(dto.Assignment{AccountID: result.AccountID, Status: result.Status, Version: result.Version, PrimaryRoleID: result.PrimaryRoleID, SecondaryRoleIDs: result.SecondaryRoleIDs}), helpers.Map(err)
+			return corepipeline.OK(dto.Assignment{AccountID: result.AccountID, Status: result.Status, Version: result.Version, PrimaryRoleID: result.PrimaryRoleID, SecondaryRoleIDs: result.SecondaryRoleIDs}), helpers.Map(err)
 		},
 	})
 }
 
 func (controller *Controller) Preview(writer http.ResponseWriter, request *http.Request) {
-	rest.RunStruct(writer, request, rest.StructConfig[dto.PreviewRequest, dto.Preview]{
+	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.PreviewRequest, dto.Preview]{
 		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		InvalidParams: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
-		Service: func(ctx context.Context, input dto.PreviewRequest) (rest.Result[dto.Preview], error) {
+		Service: func(ctx context.Context, input dto.PreviewRequest) (corepipeline.Result[dto.Preview], error) {
 			result, err := controller.service.Preview(ctx, input.Params.AccountID, input.RequestBody)
-			return rest.OK(result), helpers.Map(err)
+			return corepipeline.OK(result), helpers.Map(err)
 		},
 	})
 }

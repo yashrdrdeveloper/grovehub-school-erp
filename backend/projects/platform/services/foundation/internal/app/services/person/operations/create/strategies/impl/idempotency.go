@@ -5,7 +5,7 @@ import (
     "context"
 
     coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-    servicepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
+    corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
     personerror "grovehub/services/foundation/internal/app/constants/error"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     "grovehub/services/foundation/internal/app/entity"
@@ -14,33 +14,33 @@ import (
     coreutils "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/utils"
 )
 
-func (strategy *Creator) Idempotency(ctx context.Context, state *personflow.Create) servicepipeline.Outcome[persondto.Person] {
-    return servicepipeline.Decide(ctx, state,
-        servicepipeline.When(
+func (strategy *Creator) Idempotency(ctx context.Context, state *personflow.Create) corepipeline.Outcome[persondto.Person] {
+    return corepipeline.Decide(ctx, state,
+        corepipeline.When(
             func(state *personflow.Create) bool { return state.IdempotencyKey == "" },
-            servicepipeline.Continue[personflow.Create, persondto.Person],
+            corepipeline.Continue[personflow.Create, persondto.Person],
         ),
-        servicepipeline.Otherwise(strategy.readIdempotency),
+        corepipeline.Otherwise(strategy.readIdempotency),
     )
 }
 
-func (strategy *Creator) readIdempotency(ctx context.Context, state *personflow.Create) servicepipeline.Outcome[persondto.Person] {
+func (strategy *Creator) readIdempotency(ctx context.Context, state *personflow.Create) corepipeline.Outcome[persondto.Person] {
     person, err := strategy.persons.FindByIdempotencyKey(ctx, state.IdempotencyKey)
-    return servicepipeline.Lookup(person, err, repositoryerrors.ErrPersonNotFound,
-        func(person entity.Person) servicepipeline.Outcome[persondto.Person] {
-            return servicepipeline.Decide(ctx, state,
-                servicepipeline.When(
+    return corepipeline.Lookup(person, err, repositoryerrors.ErrPersonNotFound,
+        func(person entity.Person) corepipeline.Outcome[persondto.Person] {
+            return corepipeline.Decide(ctx, state,
+                corepipeline.When(
                     func(*personflow.Create) bool { return coreutils.NullableString(person.RequestHash) != state.RequestHash },
-                    func(context.Context, *personflow.Create) servicepipeline.Outcome[persondto.Person] {
-                        return servicepipeline.Fail[persondto.Person](coreerrors.NewError(personerror.PersonIdempotencyConflict))
+                    func(context.Context, *personflow.Create) corepipeline.Outcome[persondto.Person] {
+                        return corepipeline.Fail[persondto.Person](coreerrors.NewError(personerror.PersonIdempotencyConflict))
                     },
                 ),
-                servicepipeline.Otherwise(func(ctx context.Context, _ *personflow.Create) servicepipeline.Outcome[persondto.Person] {
+                corepipeline.Otherwise(func(ctx context.Context, _ *personflow.Create) corepipeline.Outcome[persondto.Person] {
                     return strategy.returnExisting(ctx, person)
                 }),
             )
         },
-        func() servicepipeline.Outcome[persondto.Person] { return servicepipeline.Next[persondto.Person]() },
+        func() corepipeline.Outcome[persondto.Person] { return corepipeline.Next[persondto.Person]() },
         createhelpers.FailRead,
     )
 }

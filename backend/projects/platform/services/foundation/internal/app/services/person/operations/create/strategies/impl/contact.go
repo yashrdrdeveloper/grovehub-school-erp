@@ -5,39 +5,39 @@ import (
     "context"
 
     coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
-    servicepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
+    corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
     personerror "grovehub/services/foundation/internal/app/constants/error"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     "grovehub/services/foundation/internal/app/entity"
     personflow "grovehub/services/foundation/internal/app/services/person/operations/create/flows"
 )
 
-func (strategy *Creator) Contacts(ctx context.Context, state *personflow.Create) servicepipeline.Outcome[persondto.Person] {
-    return servicepipeline.Decide(ctx, state,
-        servicepipeline.When(
+func (strategy *Creator) Contacts(ctx context.Context, state *personflow.Create) corepipeline.Outcome[persondto.Person] {
+    return corepipeline.Decide(ctx, state,
+        corepipeline.When(
             func(state *personflow.Create) bool { return len(state.Contacts) == 0 },
-            servicepipeline.Continue[personflow.Create, persondto.Person],
+            corepipeline.Continue[personflow.Create, persondto.Person],
         ),
-        servicepipeline.Otherwise(strategy.readContacts),
+        corepipeline.Otherwise(strategy.readContacts),
     )
 }
 
-func (strategy *Creator) readContacts(ctx context.Context, state *personflow.Create) servicepipeline.Outcome[persondto.Person] {
+func (strategy *Creator) readContacts(ctx context.Context, state *personflow.Create) corepipeline.Outcome[persondto.Person] {
     gids, err := strategy.contacts.FindPersonGIDsByContacts(ctx, state.Contacts)
-    return servicepipeline.Result(gids, err,
-        func(gids []string) servicepipeline.Outcome[persondto.Person] {
-            return servicepipeline.Decide(ctx, state,
-                servicepipeline.When(
+    return corepipeline.ResolveResult(gids, err,
+        func(gids []string) corepipeline.Outcome[persondto.Person] {
+            return corepipeline.Decide(ctx, state,
+                corepipeline.When(
                     func(*personflow.Create) bool { return len(gids) == 0 },
-                    servicepipeline.Continue[personflow.Create, persondto.Person],
+                    corepipeline.Continue[personflow.Create, persondto.Person],
                 ),
-                servicepipeline.When(
+                corepipeline.When(
                     func(*personflow.Create) bool { return len(gids) > 1 },
-                    func(context.Context, *personflow.Create) servicepipeline.Outcome[persondto.Person] {
-                        return servicepipeline.Fail[persondto.Person](coreerrors.NewError(personerror.PersonContactConflict))
+                    func(context.Context, *personflow.Create) corepipeline.Outcome[persondto.Person] {
+                        return corepipeline.Fail[persondto.Person](coreerrors.NewError(personerror.PersonContactConflict))
                     },
                 ),
-                servicepipeline.Otherwise(func(ctx context.Context, _ *personflow.Create) servicepipeline.Outcome[persondto.Person] {
+                corepipeline.Otherwise(func(ctx context.Context, _ *personflow.Create) corepipeline.Outcome[persondto.Person] {
                     return strategy.returnPersonByGID(ctx, gids[0])
                 }),
             )
@@ -46,10 +46,10 @@ func (strategy *Creator) readContacts(ctx context.Context, state *personflow.Cre
     )
 }
 
-func (strategy *Creator) returnPersonByGID(ctx context.Context, gid string) servicepipeline.Outcome[persondto.Person] {
+func (strategy *Creator) returnPersonByGID(ctx context.Context, gid string) corepipeline.Outcome[persondto.Person] {
     person, err := strategy.persons.FindByGID(ctx, gid)
-    return servicepipeline.Result(person, err,
-        func(person entity.Person) servicepipeline.Outcome[persondto.Person] {
+    return corepipeline.ResolveResult(person, err,
+        func(person entity.Person) corepipeline.Outcome[persondto.Person] {
             return strategy.returnExisting(ctx, person)
         },
         createhelpers.FailRead,

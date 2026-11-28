@@ -10,12 +10,13 @@ service orchestration. Internal operations preserve the existing behavior.
 
 The former rest.Run maps to RunREST, service.Run maps to RunService, and
 service.Result maps to ResolveResult to avoid root name collisions. The former
-public rest and service packages are temporary forwarding wrappers until
-all consumers are migrated. Business-specific policies remain in services.
+public rest and service packages are removed. All consumers import the root
+facade; capability operations are private. Business-specific policies remain in services.
 
 ```text
 pipeline/
 ├── pipeline.go
+├── README.md
 └── internal/
     ├── src/operations/{rest,service}/
     └── resources/tests/unit-test/operations/{rest,service}/

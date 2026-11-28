@@ -11,7 +11,7 @@ import (
 
 	coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
 	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
-	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
+	corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
 )
 
 type bodyConfig[T any] struct {
@@ -20,7 +20,7 @@ type bodyConfig[T any] struct {
 }
 
 func read[T any](request *http.Request, config bodyConfig[T]) (T, error) {
-	return rest.ReadBody[T](request, config.Decode, config.Rules)
+	return corepipeline.ReadBody[T](request, config.Decode, config.Rules)
 }
 
 type input struct {
@@ -95,14 +95,14 @@ var _ = Describe("REST request pipeline", func() {
 				Normalize: func(v input) (input, error) { called = true; return v, nil },
 			},
 		})
-		var decodeError *rest.DecodeError
+		var decodeError *corepipeline.DecodeError
 		Expect(errors.As(err, &decodeError)).To(BeTrue())
 		Expect(called).To(BeFalse())
 	})
 
 	It("keeps strict JSON decoding configurable", func() {
 		_, err := read(request(`{"name":"Sam","unknown":true}`), bodyConfig[input]{Decode: corehttp.DecodeStrictJSON})
-		var decodeError *rest.DecodeError
+		var decodeError *corepipeline.DecodeError
 		Expect(errors.As(err, &decodeError)).To(BeTrue())
 	})
 

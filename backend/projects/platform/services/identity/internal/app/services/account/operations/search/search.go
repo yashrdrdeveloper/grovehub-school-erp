@@ -1,10 +1,10 @@
-// Package search runs tenant-scoped Account Search as an explicit typed chain.
+// Package search runs tenant-scoped Account Search as an explicit typed corepipeline.
 package search
 
 import (
 	"context"
 
-	chain "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
+	corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
 	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
 	"grovehub/services/identity/internal/app/services/account/operations/search/flows"
@@ -28,7 +28,7 @@ func New(strategy strategies.SearchStrategy) Operation {
 
 // @ChainOfResponsibility
 func (operation *SearchOperation) Execute(ctx context.Context, request coresearch.Request) (coresearch.Result[accountdto.Account], error) {
-	result, _, err := chain.Run(ctx, &flows.Search{Request: request},
+	result, _, err := corepipeline.RunService(ctx, &flows.Search{Request: request},
 		operation.strategy.Prepare,
 		operation.strategy.Query,
 		operation.strategy.Hydrate,

@@ -6,7 +6,7 @@ import (
     . "github.com/onsi/ginkgo/v2"
     . "github.com/onsi/gomega"
     "go.uber.org/mock/gomock"
-    pipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
+    corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
     dto "grovehub/services/foundation/internal/app/dto/person"
     deactivate "grovehub/services/foundation/internal/app/services/person/operations/deactivate"
     fixtures "grovehub/services/foundation/internal/tests/helpers/person"
@@ -23,9 +23,9 @@ func Specs(){
     Describe("DeactivateOperation",func(){
         It("loads, prepares and persists deactivation",func(){
             gomock.InOrder(
-                strategy.EXPECT().Load(gomock.Any(),gomock.Any()).Return(pipeline.Next[dto.Person]()),
-                strategy.EXPECT().Prepare(gomock.Any(),gomock.Any()).Return(pipeline.Next[dto.Person]()),
-                strategy.EXPECT().Persist(gomock.Any(),gomock.Any()).Return(pipeline.Return(fixtures.Response(),false)),
+                strategy.EXPECT().Load(gomock.Any(),gomock.Any()).Return(corepipeline.Next[dto.Person]()),
+                strategy.EXPECT().Prepare(gomock.Any(),gomock.Any()).Return(corepipeline.Next[dto.Person]()),
+                strategy.EXPECT().Persist(gomock.Any(),gomock.Any()).Return(corepipeline.Return(fixtures.Response(),false)),
             )
             p,err:=deactivate.New(strategy).Deactivate(context.Background(),fixtures.DeactivateRequest())
             Expect(err).NotTo(HaveOccurred())
@@ -33,8 +33,8 @@ func Specs(){
         })
         It("short circuits after an unsuccessful prepare",func(){
             failure:=errors.New("not allowed")
-            strategy.EXPECT().Load(gomock.Any(),gomock.Any()).Return(pipeline.Next[dto.Person]())
-            strategy.EXPECT().Prepare(gomock.Any(),gomock.Any()).Return(pipeline.Fail[dto.Person](failure))
+            strategy.EXPECT().Load(gomock.Any(),gomock.Any()).Return(corepipeline.Next[dto.Person]())
+            strategy.EXPECT().Prepare(gomock.Any(),gomock.Any()).Return(corepipeline.Fail[dto.Person](failure))
             _,err:=deactivate.New(strategy).Deactivate(context.Background(),fixtures.DeactivateRequest())
             Expect(err).To(MatchError(failure))
         })

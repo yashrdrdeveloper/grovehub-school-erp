@@ -4,7 +4,7 @@ package deactivate
 import (
     "context"
 
-    servicepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
+    corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     deactivateflow "grovehub/services/foundation/internal/app/services/person/operations/deactivate/flows"
     deactivatestrategies "grovehub/services/foundation/internal/app/services/person/operations/deactivate/strategies"
@@ -16,7 +16,7 @@ func New(strategy deactivatestrategies.DeactivateStrategy) *DeactivateOperation 
 
 // @ChainOfResponsibility
 func (service *DeactivateOperation) Deactivate(ctx context.Context, request persondto.DeactivatePersonRequest) (persondto.Person, error) {
-    result, _, err := servicepipeline.Run(ctx, &deactivateflow.Deactivate{Request: request},
+    result, _, err := corepipeline.RunService(ctx, &deactivateflow.Deactivate{Request: request},
         service.strategy.Load,
         service.strategy.Prepare,
         service.strategy.Persist,

@@ -23,13 +23,20 @@ jobs:
       GOWORK: 'off'
     steps:
       - uses: actions/checkout@v4
-      - name: Inventory old imports
-        run: git grep -nE 'libs/backend/core/pipeline/(rest|service)(/|")|CoreImportPath.*"/pipeline/(rest|service)"' -- '*.go' '*.tmpl' '*.sh' || true
+      - name: Reject legacy public pipeline imports
+        shell: bash
+        run: |
+          if git grep -nE 'libs/backend/core/pipeline/(rest|service)(/|")|CoreImportPath.*"/pipeline/(rest|service)"' -- '*.go' '*.tmpl' '*.tpl' '*.sh'; then
+            echo "Use core/pipeline instead of the removed public subpackages."
+            exit 1
+          fi
       - name: Verify source mirrors
         shell: bash
         run: |
           root=backend/libs/core/pipeline
-          test -f "$root/pipeline.go"
+          test "$(git ls-files "$root/" | grep -v '/internal/' | grep '[.]go$')" = "$root/pipeline.go"
+          test ! -d "$root/rest"
+          test ! -d "$root/service"
           for folder in "$root"/internal/src/*; do
             case "$(basename "$folder")" in
               operations|helpers|constants|contracts|config) test -d "$folder" ;;

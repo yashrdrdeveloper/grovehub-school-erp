@@ -14,7 +14,7 @@ import (
 	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
 	headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
 	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
-	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
+	corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
 
 )
 
@@ -64,7 +64,7 @@ var _ = Describe("in-process @RequestLine transport", func() {
 		Expect(result.Name).To(Equal("Ada"))
 	})
 
-	It("omits rest.Empty sources and sends no JSON body for a typed GET request", func() {
+	It("omits corepipeline.Empty sources and sends no JSON body for a typed GET request", func() {
 		mux := http.NewServeMux()
 		mux.HandleFunc("GET /people/{gid}", func(writer http.ResponseWriter, request *http.Request) {
 			Expect(request.ContentLength).To(Equal(int64(0)))
@@ -72,7 +72,7 @@ var _ = Describe("in-process @RequestLine transport", func() {
 			Expect(request.URL.RawQuery).To(BeEmpty())
 			Expect(corehttp.WriteSuccess(writer, http.StatusOK, personRecord{GID:request.PathValue("gid")})).To(Succeed())
 		})
-		input := corehttp.Request[personPath, rest.Empty, rest.Empty]{Path:personPath{GID:"valid-gid"}}
+		input := corehttp.Request[personPath, corepipeline.Empty, corepipeline.Empty]{Path:personPath{GID:"valid-gid"}}
 		result, status, err := corehttp.CallRequest[personRecord](context.Background(),mux,http.MethodGet,"/people/{gid}",input)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(status).To(Equal(http.StatusOK))
@@ -82,7 +82,7 @@ var _ = Describe("in-process @RequestLine transport", func() {
 	It("rejects unsupported Query fields without dispatching a controller", func() {
 		mux := http.NewServeMux()
 		mux.HandleFunc("GET /people", func(http.ResponseWriter,*http.Request) { Fail("should not dispatch") })
-		input := corehttp.Request[rest.Empty,invalidQueryInputs,rest.Empty]{
+		input := corehttp.Request[corepipeline.Empty,invalidQueryInputs,corepipeline.Empty]{
 			Query:invalidQueryInputs{Unsupported:map[string]string{"key":"value"}},
 		}
 		_,_,err := corehttp.CallRequest[personRecord](context.Background(),mux,http.MethodGet,"/people",input)

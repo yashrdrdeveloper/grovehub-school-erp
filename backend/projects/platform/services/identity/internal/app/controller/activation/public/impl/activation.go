@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
-	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
+	corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
 	definitions "grovehub/services/identity/internal/app/constants/error"
 	"grovehub/services/identity/internal/app/controller/helpers"
 	public "grovehub/services/identity/internal/app/controller/activation/public"
@@ -29,28 +29,28 @@ func New(service account.Service, manager cookies.Manager) public.ActivationCont
 
 func (controller *Controller) SetupStatus(writer http.ResponseWriter, request *http.Request) {
   writer.Header().Set(cookies.HeaderCacheControl, cookies.DirectiveNoStore)
-  rest.RunStruct(writer, request, rest.StructConfig[authdto.EmptyRequest, dto.SetupStatusResult]{
+  corepipeline.RunStruct(writer, request, corepipeline.StructConfig[authdto.EmptyRequest, dto.SetupStatusResult]{
     Fallback: definitions.Internal,
-    Service: func(ctx context.Context, _ authdto.EmptyRequest) (rest.Result[dto.SetupStatusResult], error) {
+    Service: func(ctx context.Context, _ authdto.EmptyRequest) (corepipeline.Result[dto.SetupStatusResult], error) {
       result, err := controller.service.SetupStatus(ctx, controller.cookies.Read(request, cookies.SetupCookie))
-      if err != nil { return rest.Result[dto.SetupStatusResult]{}, helpers.Map(err) }
-      return rest.OK(result), nil
+      if err != nil { return corepipeline.Result[dto.SetupStatusResult]{}, helpers.Map(err) }
+      return corepipeline.OK(result), nil
     },
   })
 }
 
 func (controller *Controller) Setup(writer http.ResponseWriter, request *http.Request) {
-	rest.RunStruct(writer, request, rest.StructConfig[dto.SetupRequest, dto.SetupResult]{
+	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.SetupRequest, dto.SetupResult]{
 		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
-		Service: func(ctx context.Context, input dto.SetupRequest) (rest.Result[dto.SetupResult], error) {
+		Service: func(ctx context.Context, input dto.SetupRequest) (corepipeline.Result[dto.SetupResult], error) {
 			result, err := controller.service.Setup(ctx, controller.cookies.Read(request, cookies.SetupCookie), input.RequestBody)
 			if err != nil {
-				return rest.Result[dto.SetupResult]{}, helpers.Map(err)
+				return corepipeline.Result[dto.SetupResult]{}, helpers.Map(err)
 			}
 			controller.cookies.ClearGrant(writer, cookies.SetupCookie, cookies.SetupGrantPath)
-			return rest.OK(result), nil
+			return corepipeline.OK(result), nil
 		},
 	})
 }

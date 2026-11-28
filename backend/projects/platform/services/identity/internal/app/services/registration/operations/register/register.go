@@ -10,7 +10,7 @@ import (
 	headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
 	coreid "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/id"
 	idempotency "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/idempotency"
-	chain "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
+	corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
 	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	foundation "grovehub/services/foundation/client/person"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
@@ -52,38 +52,38 @@ func New(accounts accountrepo.Repository, foundationClient foundation.Client, va
 func (operation *RegisterOperation) Execute(ctx context.Context, request accountdto.Create, key string) (accountdto.CreateResult, error) {
 	flow := &flows.Register{Request: request, IdempotencyKey: key}
 
-	wrap := func(step func(context.Context, *flows.Register) error) chain.Handler[flows.Register, accountdto.CreateResult] {
-		return func(ctx context.Context, flow *flows.Register) chain.Outcome[accountdto.CreateResult] {
+	wrap := func(step func(context.Context, *flows.Register) error) corepipeline.Handler[flows.Register, accountdto.CreateResult] {
+		return func(ctx context.Context, flow *flows.Register) corepipeline.Outcome[accountdto.CreateResult] {
 			if err := step(ctx, flow); err != nil {
-				return chain.Fail[accountdto.CreateResult](err)
+				return corepipeline.Fail[accountdto.CreateResult](err)
 			}
-			return chain.Next[accountdto.CreateResult]()
+			return corepipeline.Next[accountdto.CreateResult]()
 		}
 	}
 
 	var response accountdto.CreateResult
 	err := operation.unit.Run(ctx, func(transactionCtx context.Context) error {
 		var runErr error
-		response, _, runErr = chain.Run(
+		response, _, runErr = corepipeline.RunService(
 			transactionCtx,
 			flow,
 			wrap(operation.authorize),
 			wrap(operation.validate),
-			func(ctx context.Context, flow *flows.Register) chain.Outcome[accountdto.CreateResult] {
+			func(ctx context.Context, flow *flows.Register) corepipeline.Outcome[accountdto.CreateResult] {
 				if err := operation.replay(ctx, flow); err != nil {
-					return chain.Fail[accountdto.CreateResult](err)
+					return corepipeline.Fail[accountdto.CreateResult](err)
 				}
 				if flow.Done {
-					return chain.Return(flow.Response, false)
+					return corepipeline.Return(flow.Response, false)
 				}
-				return chain.Next[accountdto.CreateResult]()
+				return corepipeline.Next[accountdto.CreateResult]()
 			},
 			wrap(operation.resolve),
-			func(ctx context.Context, flow *flows.Register) chain.Outcome[accountdto.CreateResult] {
+			func(ctx context.Context, flow *flows.Register) corepipeline.Outcome[accountdto.CreateResult] {
 				if err := operation.persist(ctx, flow); err != nil {
-					return chain.Fail[accountdto.CreateResult](err)
+					return corepipeline.Fail[accountdto.CreateResult](err)
 				}
-				return chain.Return(flow.Response, true)
+				return corepipeline.Return(flow.Response, true)
 			},
 		)
 		return runErr

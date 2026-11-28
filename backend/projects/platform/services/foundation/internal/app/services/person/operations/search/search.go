@@ -5,7 +5,7 @@ import (
     "context"
 
     coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
-    servicepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
+    corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     searchflow "grovehub/services/foundation/internal/app/services/person/operations/search/flows"
     searchstrategies "grovehub/services/foundation/internal/app/services/person/operations/search/strategies"
@@ -17,7 +17,7 @@ func New(strategy searchstrategies.SearchStrategy) *SearchOperation { return &Se
 
 // @ChainOfResponsibility
 func (service *SearchOperation) Search(ctx context.Context, request persondto.SearchPersonsRequest) (coresearch.Result[persondto.Person], error) {
-    result, _, err := servicepipeline.Run(ctx, &searchflow.Search{Request: request},
+    result, _, err := corepipeline.RunService(ctx, &searchflow.Search{Request: request},
         service.strategy.Prepare,
         service.strategy.Query,
         service.strategy.Hydrate,

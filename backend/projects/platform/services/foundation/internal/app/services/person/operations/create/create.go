@@ -4,7 +4,7 @@ package create
 import (
     "context"
 
-    servicepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
+    corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     personflow "grovehub/services/foundation/internal/app/services/person/operations/create/flows"
     createstrategies "grovehub/services/foundation/internal/app/services/person/operations/create/strategies"
@@ -21,7 +21,7 @@ func New(creator createstrategies.CreateStrategy) *CreateOperation { return &Cre
 // @ChainOfResponsibility
 func (service *CreateOperation) Create(ctx context.Context, request persondto.CreatePersonRequest) (persondto.Person, bool, error) {
     flow := personflow.Create{Request: request}
-    return servicepipeline.Run(ctx, &flow,
+    return corepipeline.RunService(ctx, &flow,
         service.creator.Prepare,
         service.creator.Idempotency,
         service.creator.Contacts,

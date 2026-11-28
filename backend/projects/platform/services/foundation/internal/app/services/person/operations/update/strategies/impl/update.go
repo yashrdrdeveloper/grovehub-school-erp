@@ -6,7 +6,7 @@ import (
     "time"
 
     coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
-    servicepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
+    corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
     coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     foundationevents "grovehub/services/foundation/internal/app/constants/events"
@@ -38,32 +38,32 @@ func New(persons personrepository.PersonRepository, contacts contactrepository.C
     return &Updater{persons: persons, contacts: contacts, unitOfWork: unit, mapper: mapper, validator: validator, events: events}
 }
 
-func (strategy *Updater) Load(ctx context.Context, state *updateflow.Update) servicepipeline.Outcome[persondto.Person] {
+func (strategy *Updater) Load(ctx context.Context, state *updateflow.Update) corepipeline.Outcome[persondto.Person] {
     state.GID = strategy.mapper.ToPersonGID(state.Request.Params)
     person, contacts, err := personhelpers.ReadPerson(ctx, state.GID, strategy.persons, strategy.contacts, strategy.mapper)
-    if err != nil { return servicepipeline.Fail[persondto.Person](err) }
+    if err != nil { return corepipeline.Fail[persondto.Person](err) }
     state.Person, state.Contacts = person, contacts
-    return servicepipeline.Next[persondto.Person]()
+    return corepipeline.Next[persondto.Person]()
 }
 
-func (strategy *Updater) Apply(ctx context.Context, state *updateflow.Update) servicepipeline.Outcome[persondto.Person] {
+func (strategy *Updater) Apply(ctx context.Context, state *updateflow.Update) corepipeline.Outcome[persondto.Person] {
     validated, err := coreannotation.Process(state.Request, strategy.validator.UpdateRules())
-    if err != nil { return servicepipeline.Fail[persondto.Person](err) }
+    if err != nil { return corepipeline.Fail[persondto.Person](err) }
     state.Validated = validated
     updated, contacts, changed, err := updatehelpers.ApplyPersonUpdate(ctx, state.Person, state.Contacts, validated.RequestBody, strategy.contacts, strategy.mapper)
-    if err != nil { return servicepipeline.Fail[persondto.Person](err) }
-    if !changed { return servicepipeline.Return(strategy.mapper.ToPersonResponse(state.Person, state.Contacts), false) }
+    if err != nil { return corepipeline.Fail[persondto.Person](err) }
+    if !changed { return corepipeline.Return(strategy.mapper.ToPersonResponse(state.Person, state.Contacts), false) }
     updated.Version = state.Person.Version + 1
     updated.UpdatedAt = time.Now().UTC()
     state.ContactsChanged = !updatehelpers.ContactsEqual(state.Contacts, contacts)
     if state.ContactsChanged { contacts = personhelpers.AssociateContacts(updated, contacts) }
     updated.SearchDetails = personhelpers.BuildPersonSearchDetails(updated, contacts)
     state.UpdatedPerson, state.UpdatedContacts = updated, contacts
-    return servicepipeline.Next[persondto.Person]()
+    return corepipeline.Next[persondto.Person]()
 }
 
 // @Transactional
-func (strategy *Updater) Persist(ctx context.Context, state *updateflow.Update) servicepipeline.Outcome[persondto.Person] {
+func (strategy *Updater) Persist(ctx context.Context, state *updateflow.Update) corepipeline.Outcome[persondto.Person] {
     err := strategy.unitOfWork.Run(ctx, func(txCtx context.Context) error {
         if err := strategy.persons.Update(txCtx, state.UpdatedPerson); err != nil { return err }
         if state.ContactsChanged {
@@ -76,12 +76,12 @@ func (strategy *Updater) Persist(ctx context.Context, state *updateflow.Update) 
     if err != nil {
         if errors.Is(err, repositoryerrors.ErrPersonVersionConflict) {
             latest, latestContacts, readErr := personhelpers.ReadPerson(ctx, state.GID, strategy.persons, strategy.contacts, strategy.mapper)
-            if readErr != nil { return servicepipeline.Fail[persondto.Person](readErr) }
+            if readErr != nil { return corepipeline.Fail[persondto.Person](readErr) }
             _, _, stillChanged, reconcileErr := updatehelpers.ApplyPersonUpdate(ctx, latest, latestContacts, state.Validated.RequestBody, strategy.contacts, strategy.mapper)
-            if reconcileErr != nil { return servicepipeline.Fail[persondto.Person](reconcileErr) }
-            if !stillChanged { return servicepipeline.Return(strategy.mapper.ToPersonResponse(latest, latestContacts), false) }
+            if reconcileErr != nil { return corepipeline.Fail[persondto.Person](reconcileErr) }
+            if !stillChanged { return corepipeline.Return(strategy.mapper.ToPersonResponse(latest, latestContacts), false) }
         }
-        return servicepipeline.Fail[persondto.Person](personhelpers.MapUpdateError(state.GID, err, strategy.mapper))
+        return corepipeline.Fail[persondto.Person](personhelpers.MapUpdateError(state.GID, err, strategy.mapper))
     }
-    return servicepipeline.Return(strategy.mapper.ToPersonResponse(state.UpdatedPerson, state.UpdatedContacts), false)
+    return corepipeline.Return(strategy.mapper.ToPersonResponse(state.UpdatedPerson, state.UpdatedContacts), false)
 }

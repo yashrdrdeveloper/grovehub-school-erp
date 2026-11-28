@@ -8,7 +8,7 @@ import (
     coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
     coredatabase "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/database"
     createstrategies "grovehub/services/foundation/internal/app/services/person/operations/create/strategies"
-    servicepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
+    corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
     personerror "grovehub/services/foundation/internal/app/constants/error"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     "grovehub/services/foundation/internal/app/entity"
@@ -34,20 +34,20 @@ func NewCreateStrategy(persons personrepository.PersonRepository, contacts conta
     return &Creator{persons: persons, contacts: contacts, unitOfWork: unit, mapper: mapper, events: events}
 }
 
-func (strategy *Creator) returnExisting(ctx context.Context, person entity.Person) servicepipeline.Outcome[persondto.Person] {
+func (strategy *Creator) returnExisting(ctx context.Context, person entity.Person) corepipeline.Outcome[persondto.Person] {
     contacts, err := strategy.contacts.FindByPersonGID(ctx, person.GID)
-    return servicepipeline.Result(contacts, err,
-        func(stored []entity.Contact) servicepipeline.Outcome[persondto.Person] {
-            return servicepipeline.Return(strategy.mapper.ToPersonResponse(person, stored), false)
+    return corepipeline.ResolveResult(contacts, err,
+        func(stored []entity.Contact) corepipeline.Outcome[persondto.Person] {
+            return corepipeline.Return(strategy.mapper.ToPersonResponse(person, stored), false)
         },
-        func(err error) servicepipeline.Outcome[persondto.Person] {
-            return servicepipeline.Fail[persondto.Person](coreerrors.Wrap(personerror.PersonReadFailed, err))
+        func(err error) corepipeline.Outcome[persondto.Person] {
+            return corepipeline.Fail[persondto.Person](coreerrors.Wrap(personerror.PersonReadFailed, err))
         },
     )
 }
 
-func (strategy *Creator) failCreateWithGID(_ context.Context, state *personflow.Create, err error) servicepipeline.Outcome[persondto.Person] {
-    return servicepipeline.Fail[persondto.Person](
+func (strategy *Creator) failCreateWithGID(_ context.Context, state *personflow.Create, err error) corepipeline.Outcome[persondto.Person] {
+    return corepipeline.Fail[persondto.Person](
         coreerrors.WrapWithMetadata(personerror.PersonCreateFailed, err, strategy.mapper.ToPersonErrorMetadata(state.Person.GID)),
     )
 }

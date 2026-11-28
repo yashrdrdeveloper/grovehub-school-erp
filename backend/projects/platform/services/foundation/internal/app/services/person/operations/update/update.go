@@ -4,7 +4,7 @@ package update
 import (
     "context"
 
-    servicepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
+    corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
     persondto "grovehub/services/foundation/internal/app/dto/person"
     updateflow "grovehub/services/foundation/internal/app/services/person/operations/update/flows"
     updatestrategies "grovehub/services/foundation/internal/app/services/person/operations/update/strategies"
@@ -18,7 +18,7 @@ func New(strategy updatestrategies.UpdateStrategy) *UpdateOperation { return &Up
 
 // @ChainOfResponsibility
 func (service *UpdateOperation) Update(ctx context.Context, request persondto.UpdatePersonRequest) (persondto.Person, error) {
-    result, _, err := servicepipeline.Run(ctx, &updateflow.Update{Request: request},
+    result, _, err := corepipeline.RunService(ctx, &updateflow.Update{Request: request},
         service.strategy.Load,
         service.strategy.Apply,
         service.strategy.Persist,

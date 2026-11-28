@@ -6,7 +6,7 @@ import (
 	"strings"
 	"grovehub/services/identity/internal/app/entity"
 
-	chain "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
+	corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
 	coresearch "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/search"
 	accountdto "grovehub/services/identity/internal/app/dto/account"
 	mapper "grovehub/services/identity/internal/app/mappers/account"
@@ -29,30 +29,30 @@ func New(accounts accountrepo.Reader, accountMapper mapper.Mapper, accountValida
 	return &Search{accounts: accounts, mapper: accountMapper, validator: accountValidator}
 }
 
-func (strategy *Search) Prepare(ctx context.Context, state *flows.Search) chain.Outcome[coresearch.Result[accountdto.Account]] {
+func (strategy *Search) Prepare(ctx context.Context, state *flows.Search) corepipeline.Outcome[coresearch.Result[accountdto.Account]] {
 	actor, err := principal.RequireTenant(ctx)
 	if err != nil {
-		return chain.Fail[coresearch.Result[accountdto.Account]](err)
+		return corepipeline.Fail[coresearch.Result[accountdto.Account]](err)
 	}
 	query, err := strategy.validator.Search(state.Request)
 	if err != nil {
-		return chain.Fail[coresearch.Result[accountdto.Account]](err)
+		return corepipeline.Fail[coresearch.Result[accountdto.Account]](err)
 	}
 	state.TenantID = actor.TenantID
 	state.Query = query
-	return chain.Next[coresearch.Result[accountdto.Account]]()
+	return corepipeline.Next[coresearch.Result[accountdto.Account]]()
 }
 
-func (strategy *Search) Query(ctx context.Context, state *flows.Search) chain.Outcome[coresearch.Result[accountdto.Account]] {
+func (strategy *Search) Query(ctx context.Context, state *flows.Search) corepipeline.Outcome[coresearch.Result[accountdto.Account]] {
 	result, err := strategy.accounts.Search(ctx, state.TenantID, state.Query)
 	if err != nil {
-		return chain.Fail[coresearch.Result[accountdto.Account]](err)
+		return corepipeline.Fail[coresearch.Result[accountdto.Account]](err)
 	}
 	state.Accounts = result
-	return chain.Next[coresearch.Result[accountdto.Account]]()
+	return corepipeline.Next[coresearch.Result[accountdto.Account]]()
 }
 
-func (strategy *Search) Hydrate(ctx context.Context, state *flows.Search) chain.Outcome[coresearch.Result[accountdto.Account]] {
+func (strategy *Search) Hydrate(ctx context.Context, state *flows.Search) corepipeline.Outcome[coresearch.Result[accountdto.Account]] {
 	result := coresearch.Result[accountdto.Account]{Items: make([]accountdto.Account, 0, len(state.Accounts.Items))}
 	for _, account := range state.Accounts.Items {
 		result.Items = append(result.Items, strategy.mapper.ToResponse(account))
@@ -76,11 +76,11 @@ func (strategy *Search) Hydrate(ctx context.Context, state *flows.Search) chain.
 		}
 		cursor, err := coresearch.EncodeCursor(payload)
 		if err != nil {
-			return chain.Fail[coresearch.Result[accountdto.Account]](err)
+			return corepipeline.Fail[coresearch.Result[accountdto.Account]](err)
 		}
 		result.PageInfo.NextCursor = cursor
 	}
-	return chain.Return(result, false)
+	return corepipeline.Return(result, false)
 }
 
 func accountSortValue(account entity.Account, field string) string {

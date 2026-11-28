@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
-	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
+	corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
 	definitions "grovehub/services/identity/internal/app/constants/error"
 	"grovehub/services/identity/internal/app/controller/helpers"
 	public "grovehub/services/identity/internal/app/controller/authentication/public"
@@ -27,48 +27,48 @@ func New(service auth.Service, manager cookies.Manager) public.AuthenticationCon
 }
 
 func (controller *Controller) Login(writer http.ResponseWriter, request *http.Request) {
-	rest.RunStruct(writer, request, rest.StructConfig[dto.LoginRequest, dto.LoginResult]{
+	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.LoginRequest, dto.LoginResult]{
 		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
-		Service: func(ctx context.Context, input dto.LoginRequest) (rest.Result[dto.LoginResult], error) {
+		Service: func(ctx context.Context, input dto.LoginRequest) (corepipeline.Result[dto.LoginResult], error) {
 			result, err := controller.service.Login(ctx, input.RequestBody, request.UserAgent())
 			if err != nil {
-				return rest.Result[dto.LoginResult]{}, helpers.Map(err)
+				return corepipeline.Result[dto.LoginResult]{}, helpers.Map(err)
 			}
 			csrf, err := secrets.NewSecret(32)
 			if err != nil {
-				return rest.Result[dto.LoginResult]{}, helpers.Map(err)
+				return corepipeline.Result[dto.LoginResult]{}, helpers.Map(err)
 			}
 			controller.cookies.Issue(writer, result.Cookies.Access, result.Cookies.Refresh, csrf)
-			return rest.OK(result.Data), nil
+			return corepipeline.OK(result.Data), nil
 		},
 	})
 }
 
 func (controller *Controller) Refresh(writer http.ResponseWriter, request *http.Request) {
-	rest.RunStruct(writer, request, rest.StructConfig[dto.EmptyRequest, dto.RefreshResult]{
+	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.EmptyRequest, dto.RefreshResult]{
 		Fallback: definitions.Internal,
-		Service: func(ctx context.Context, _ dto.EmptyRequest) (rest.Result[dto.RefreshResult], error) {
+		Service: func(ctx context.Context, _ dto.EmptyRequest) (corepipeline.Result[dto.RefreshResult], error) {
 			result, err := controller.service.Refresh(ctx, controller.cookies.Read(request, cookies.RefreshCookie))
 			if err != nil {
-				return rest.Result[dto.RefreshResult]{}, helpers.Map(err)
+				return corepipeline.Result[dto.RefreshResult]{}, helpers.Map(err)
 			}
 			controller.cookies.Issue(writer, result.Cookies.Access, result.Cookies.Refresh, "")
-			return rest.OK(result.Data), nil
+			return corepipeline.OK(result.Data), nil
 		},
 	})
 }
 
 func (controller *Controller) ForgotPassword(writer http.ResponseWriter, request *http.Request) {
-	rest.RunStruct(writer, request, rest.StructConfig[dto.ForgotPasswordRequest, dto.AcceptedResult]{
+	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.ForgotPasswordRequest, dto.AcceptedResult]{
 		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
-		Service: func(ctx context.Context, input dto.ForgotPasswordRequest) (rest.Result[dto.AcceptedResult], error) {
+		Service: func(ctx context.Context, input dto.ForgotPasswordRequest) (corepipeline.Result[dto.AcceptedResult], error) {
 			// A public recovery request must not reveal account eligibility.
 			_ = controller.service.Forgot(ctx, input.RequestBody.Email)
-			return rest.Result[dto.AcceptedResult]{
+			return corepipeline.Result[dto.AcceptedResult]{
 				StatusCode: http.StatusAccepted,
 				Data: dto.AcceptedResult{Accepted: true, Delivery: "EMAIL"},
 			}, nil
@@ -77,16 +77,16 @@ func (controller *Controller) ForgotPassword(writer http.ResponseWriter, request
 }
 
 func (controller *Controller) exchange(writer http.ResponseWriter, request *http.Request, prefix string, purpose string, cookie string, path string) {
-	rest.RunStruct(writer, request, rest.StructConfig[dto.EmptyRequest, dto.GrantResult]{
+	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.EmptyRequest, dto.GrantResult]{
 		Fallback: definitions.Internal,
-		Service: func(ctx context.Context, _ dto.EmptyRequest) (rest.Result[dto.GrantResult], error) {
+		Service: func(ctx context.Context, _ dto.EmptyRequest) (corepipeline.Result[dto.GrantResult], error) {
 			grant, err := controller.service.Exchange(ctx, controller.cookies.Proof(request, prefix), purpose)
 			if err != nil {
-				return rest.Result[dto.GrantResult]{}, helpers.Map(err)
+				return corepipeline.Result[dto.GrantResult]{}, helpers.Map(err)
 			}
 			csrf, err := secrets.NewSecret(32)
 			if err != nil {
-				return rest.Result[dto.GrantResult]{}, helpers.Map(err)
+				return corepipeline.Result[dto.GrantResult]{}, helpers.Map(err)
 			}
 			controller.cookies.SetGrant(writer, cookie, path, grant.Secret)
 			http.SetCookie(writer, &http.Cookie{
@@ -97,7 +97,7 @@ func (controller *Controller) exchange(writer http.ResponseWriter, request *http
 				Secure: true,
 				SameSite: http.SameSiteStrictMode,
 			})
-			return rest.OK(grant.Data), nil
+			return corepipeline.OK(grant.Data), nil
 		},
 	})
 }
@@ -105,12 +105,12 @@ func (controller *Controller) exchange(writer http.ResponseWriter, request *http
 
 func (controller *Controller) inspectProof(writer http.ResponseWriter, request *http.Request, prefix string, purpose string) {
   writer.Header().Set(cookies.HeaderCacheControl, cookies.DirectiveNoStore)
-  rest.RunStruct(writer, request, rest.StructConfig[dto.EmptyRequest, dto.GrantResult]{
+  corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.EmptyRequest, dto.GrantResult]{
     Fallback: definitions.Internal,
-    Service: func(ctx context.Context, _ dto.EmptyRequest) (rest.Result[dto.GrantResult], error) {
+    Service: func(ctx context.Context, _ dto.EmptyRequest) (corepipeline.Result[dto.GrantResult], error) {
       result, err := controller.service.InspectProof(ctx, controller.cookies.Proof(request, prefix), purpose)
-      if err != nil { return rest.Result[dto.GrantResult]{}, helpers.Map(err) }
-      return rest.OK(result), nil
+      if err != nil { return corepipeline.Result[dto.GrantResult]{}, helpers.Map(err) }
+      return corepipeline.OK(result), nil
     },
   })
 }
@@ -133,27 +133,27 @@ func (controller *Controller) InvitationExchange(writer http.ResponseWriter, req
 
 func (controller *Controller) ResetGrantStatus(writer http.ResponseWriter, request *http.Request) {
   writer.Header().Set(cookies.HeaderCacheControl, cookies.DirectiveNoStore)
-  rest.RunStruct(writer, request, rest.StructConfig[dto.EmptyRequest, dto.GrantResult]{
+  corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.EmptyRequest, dto.GrantResult]{
     Fallback: definitions.Internal,
-    Service: func(ctx context.Context, _ dto.EmptyRequest) (rest.Result[dto.GrantResult], error) {
+    Service: func(ctx context.Context, _ dto.EmptyRequest) (corepipeline.Result[dto.GrantResult], error) {
       result, err := controller.service.InspectProof(ctx, controller.cookies.Read(request, cookies.ResetCookie), "reset-grant")
-      if err != nil { return rest.Result[dto.GrantResult]{}, helpers.Map(err) }
-      return rest.OK(result), nil
+      if err != nil { return corepipeline.Result[dto.GrantResult]{}, helpers.Map(err) }
+      return corepipeline.OK(result), nil
     },
   })
 }
 
 func (controller *Controller) ResetPassword(writer http.ResponseWriter, request *http.Request) {
-	rest.RunStruct(writer, request, rest.StructConfig[dto.ResetPasswordRequest, dto.StatusResult]{
+	corepipeline.RunStruct(writer, request, corepipeline.StructConfig[dto.ResetPasswordRequest, dto.StatusResult]{
 		Decode: corehttp.DecodeStrictJSON,
 		InvalidRequestBody: definitions.InvalidRequest,
 		Fallback: definitions.Internal,
-		Service: func(ctx context.Context, input dto.ResetPasswordRequest) (rest.Result[dto.StatusResult], error) {
+		Service: func(ctx context.Context, input dto.ResetPasswordRequest) (corepipeline.Result[dto.StatusResult], error) {
 			if err := controller.service.ResetPassword(ctx, controller.cookies.Read(request, cookies.ResetCookie), input.RequestBody.NewPassword); err != nil {
-				return rest.Result[dto.StatusResult]{}, helpers.Map(err)
+				return corepipeline.Result[dto.StatusResult]{}, helpers.Map(err)
 			}
 			controller.cookies.ClearGrant(writer, cookies.ResetCookie, cookies.ResetGrantPath)
-			return rest.OK(dto.StatusResult{Status: "PASSWORD_RESET", SessionsRevoked: true}), nil
+			return corepipeline.OK(dto.StatusResult{Status: "PASSWORD_RESET", SessionsRevoked: true}), nil
 		},
 	})
 }

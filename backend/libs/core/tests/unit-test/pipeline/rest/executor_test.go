@@ -13,7 +13,7 @@ import (
 	coreannotation "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/annotation"
 	coreerrors "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/errors"
 	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
-	rest "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/rest"
+	corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
 )
 
 type personPath struct {
@@ -56,12 +56,12 @@ var _ = Describe("HTTP REST executor", func() {
 		request = request.WithContext(context.WithValue(request.Context(), struct{ Key string }{"trace"}, "kept"))
 		writer := httptest.NewRecorder()
 		called := 0
-		rest.Run(writer, request, rest.Config[personPath, personQuery, personBody, personResponse]{
+		corepipeline.RunREST(writer, request, corepipeline.Config[personPath, personQuery, personBody, personResponse]{
 			InvalidPath: invalidPath,
 			InvalidQuery: invalidQuery,
 			InvalidBody: invalidBody,
 			Fallback: fallback,
-			Service: func(ctx context.Context, input rest.Input[personPath, personQuery, personBody]) (rest.Result[personResponse], error) {
+			Service: func(ctx context.Context, input corepipeline.Input[personPath, personQuery, personBody]) (corepipeline.Result[personResponse], error) {
 				called++
 				Expect(ctx.Value(struct{ Key string }{"trace"})).To(Equal("kept"))
 				Expect(input.Path.GID).To(Equal(gid))
@@ -69,7 +69,7 @@ var _ = Describe("HTTP REST executor", func() {
 				Expect(*input.Query.Page).To(Equal(2))
 				Expect(input.Query.Tags).To(Equal([]string{"a","b"}))
 				Expect(input.Body.FirstName).To(Equal("Sima"))
-				return rest.Result[personResponse]{Data: personResponse{Name: input.Body.FirstName}, StatusCode: http.StatusCreated, Headers: http.Header{"X-Result": []string{"created"}}}, nil
+				return corepipeline.Result[personResponse]{Data: personResponse{Name: input.Body.FirstName}, StatusCode: http.StatusCreated, Headers: http.Header{"X-Result": []string{"created"}}}, nil
 			},
 		})
 		Expect(called).To(Equal(1))
@@ -81,11 +81,11 @@ var _ = Describe("HTTP REST executor", func() {
 	It("rejects invalid path UUIDs before executing the service", func() {
 		writer := httptest.NewRecorder()
 		called := false
-		rest.Run(writer, routeRequest(http.MethodGet, "/persons/nope", "", "nope"), rest.Config[personPath, rest.Empty, rest.Empty, personResponse]{
+		corepipeline.RunREST(writer, routeRequest(http.MethodGet, "/persons/nope", "", "nope"), corepipeline.Config[personPath, corepipeline.Empty, corepipeline.Empty, personResponse]{
 			InvalidPath: invalidPath, Fallback: fallback,
-			Service: func(_ context.Context, _ rest.Input[personPath, rest.Empty, rest.Empty]) (rest.Result[personResponse], error) {
+			Service: func(_ context.Context, _ corepipeline.Input[personPath, corepipeline.Empty, corepipeline.Empty]) (corepipeline.Result[personResponse], error) {
 				called = true
-				return rest.OK(personResponse{}), nil
+				return corepipeline.OK(personResponse{}), nil
 			},
 		})
 		Expect(called).To(BeFalse())
@@ -97,11 +97,11 @@ var _ = Describe("HTTP REST executor", func() {
 	It("rejects invalid or repeated scalar query values and missing required query parameters", func() {
 		for _, query := range []string{"?page=0", "?page=101", "?page=NaN", "?page=1&page=2", "?notify=wrong&page=1", ""} {
 			writer := httptest.NewRecorder()
-			rest.Run(writer, routeRequest(http.MethodGet, "/people"+query, "", ""), rest.Config[rest.Empty, personQuery, rest.Empty, personResponse]{
+			corepipeline.RunREST(writer, routeRequest(http.MethodGet, "/people"+query, "", ""), corepipeline.Config[corepipeline.Empty, personQuery, corepipeline.Empty, personResponse]{
 				InvalidQuery: invalidQuery, Fallback: fallback,
-				Service: func(_ context.Context, _ rest.Input[rest.Empty, personQuery, rest.Empty]) (rest.Result[personResponse], error) {
+				Service: func(_ context.Context, _ corepipeline.Input[corepipeline.Empty, personQuery, corepipeline.Empty]) (corepipeline.Result[personResponse], error) {
 					Fail("service must not be called for invalid query")
-					return rest.OK(personResponse{}), nil
+					return corepipeline.OK(personResponse{}), nil
 				},
 			})
 			Expect(writer.Code).To(Equal(http.StatusBadRequest), query)
@@ -112,14 +112,14 @@ var _ = Describe("HTTP REST executor", func() {
 	It("validates trimmed body fields before custom validation", func() {
 		writer := httptest.NewRecorder()
 		customCalled := false
-		rest.Run(writer, routeRequest(http.MethodPost, "/people", `{"firstName":"  "}`, ""), rest.Config[rest.Empty, rest.Empty, personBody, personResponse]{
+		corepipeline.RunREST(writer, routeRequest(http.MethodPost, "/people", `{"firstName":"  "}`, ""), corepipeline.Config[corepipeline.Empty, corepipeline.Empty, personBody, personResponse]{
 			Body: coreannotation.ValidationRules[personBody]{
 				Validate: func(_ personBody) error { customCalled = true; return nil },
 			},
 			InvalidBody: invalidBody, Fallback: fallback,
-			Service: func(_ context.Context, _ rest.Input[rest.Empty, rest.Empty, personBody]) (rest.Result[personResponse], error) {
+			Service: func(_ context.Context, _ corepipeline.Input[corepipeline.Empty, corepipeline.Empty, personBody]) (corepipeline.Result[personResponse], error) {
 				Fail("service must not be called")
-				return rest.OK(personResponse{}), nil
+				return corepipeline.OK(personResponse{}), nil
 			},
 		})
 		Expect(customCalled).To(BeFalse())
@@ -129,13 +129,13 @@ var _ = Describe("HTTP REST executor", func() {
 
 	It("reports strict JSON decode failures with the configured safe error", func() {
 		writer := httptest.NewRecorder()
-		rest.Run(writer, routeRequest(http.MethodPost, "/people", `{"firstName":"Ana","unknown":"secret"}`, ""), rest.Config[rest.Empty, rest.Empty, personBody, personResponse]{
+		corepipeline.RunREST(writer, routeRequest(http.MethodPost, "/people", `{"firstName":"Ana","unknown":"secret"}`, ""), corepipeline.Config[corepipeline.Empty, corepipeline.Empty, personBody, personResponse]{
 			Decode: corehttp.DecodeStrictJSON,
 			InvalidBody: invalidBody,
 			Fallback: fallback,
-			Service: func(_ context.Context, _ rest.Input[rest.Empty, rest.Empty, personBody]) (rest.Result[personResponse], error) {
+			Service: func(_ context.Context, _ corepipeline.Input[corepipeline.Empty, corepipeline.Empty, personBody]) (corepipeline.Result[personResponse], error) {
 				Fail("service must not be called")
-				return rest.OK(personResponse{}), nil
+				return corepipeline.OK(personResponse{}), nil
 			},
 		})
 		Expect(writer.Code).To(Equal(http.StatusBadRequest))
@@ -145,10 +145,10 @@ var _ = Describe("HTTP REST executor", func() {
 	It("writes the definition status and metadata from service application errors", func() {
 		writer := httptest.NewRecorder()
 		conflict := coreerrors.NewDefinition("TEST_CONFLICT", "Conflicting data", http.StatusConflict)
-		rest.Run(writer, routeRequest(http.MethodGet, "/people", "", ""), rest.Config[rest.Empty, rest.Empty, rest.Empty, personResponse]{
+		corepipeline.RunREST(writer, routeRequest(http.MethodGet, "/people", "", ""), corepipeline.Config[corepipeline.Empty, corepipeline.Empty, corepipeline.Empty, personResponse]{
 			Fallback: fallback,
-			Service: func(_ context.Context, _ rest.Input[rest.Empty, rest.Empty, rest.Empty]) (rest.Result[personResponse], error) {
-				return rest.Result[personResponse]{}, coreerrors.NewErrorWithMetadata(conflict, map[string]string{"field":"email"})
+			Service: func(_ context.Context, _ corepipeline.Input[corepipeline.Empty, corepipeline.Empty, corepipeline.Empty]) (corepipeline.Result[personResponse], error) {
+				return corepipeline.Result[personResponse]{}, coreerrors.NewErrorWithMetadata(conflict, map[string]string{"field":"email"})
 			},
 		})
 		Expect(writer.Code).To(Equal(http.StatusConflict))
@@ -158,11 +158,11 @@ var _ = Describe("HTTP REST executor", func() {
 
 	It("uses a safe HTTP 500 fallback for unexpected service errors", func() {
 		writer := httptest.NewRecorder()
-		rest.Run(writer, routeRequest(http.MethodGet, "/people", "", ""), rest.Config[rest.Empty, rest.Empty, rest.Empty, personResponse]{
+		corepipeline.RunREST(writer, routeRequest(http.MethodGet, "/people", "", ""), corepipeline.Config[corepipeline.Empty, corepipeline.Empty, corepipeline.Empty, personResponse]{
 			InvalidBody: invalidBody,
 			Fallback: fallback,
-			Service: func(_ context.Context, _ rest.Input[rest.Empty, rest.Empty, rest.Empty]) (rest.Result[personResponse], error) {
-				return rest.Result[personResponse]{}, errors.New("secret database failure")
+			Service: func(_ context.Context, _ corepipeline.Input[corepipeline.Empty, corepipeline.Empty, corepipeline.Empty]) (corepipeline.Result[personResponse], error) {
+				return corepipeline.Result[personResponse]{}, errors.New("secret database failure")
 			},
 		})
 		Expect(writer.Code).To(Equal(http.StatusInternalServerError))
@@ -172,10 +172,10 @@ var _ = Describe("HTTP REST executor", func() {
 
 	It("supports HTTP 204 without writing an envelope", func() {
 		writer := httptest.NewRecorder()
-		rest.Run(writer, routeRequest(http.MethodDelete, "/people", "", ""), rest.Config[rest.Empty, rest.Empty, rest.Empty, personResponse]{
+		corepipeline.RunREST(writer, routeRequest(http.MethodDelete, "/people", "", ""), corepipeline.Config[corepipeline.Empty, corepipeline.Empty, corepipeline.Empty, personResponse]{
 			Fallback: fallback,
-			Service: func(_ context.Context, _ rest.Input[rest.Empty, rest.Empty, rest.Empty]) (rest.Result[personResponse], error) {
-				return rest.Result[personResponse]{StatusCode: http.StatusNoContent}, nil
+			Service: func(_ context.Context, _ corepipeline.Input[corepipeline.Empty, corepipeline.Empty, corepipeline.Empty]) (corepipeline.Result[personResponse], error) {
+				return corepipeline.Result[personResponse]{StatusCode: http.StatusNoContent}, nil
 			},
 		})
 		Expect(writer.Code).To(Equal(http.StatusNoContent))
@@ -185,35 +185,35 @@ var _ = Describe("HTTP REST executor", func() {
 	It("supports custom success and error writers without invoking the default writer", func() {
 		writer := httptest.NewRecorder()
 		called := 0
-		rest.Run(writer, routeRequest(http.MethodGet, "/people", "", ""), rest.Config[rest.Empty, rest.Empty, rest.Empty, personResponse]{
+		corepipeline.RunREST(writer, routeRequest(http.MethodGet, "/people", "", ""), corepipeline.Config[corepipeline.Empty, corepipeline.Empty, corepipeline.Empty, personResponse]{
 			Fallback: fallback,
-			Writer: rest.Writer[personResponse]{
-				Success: func(w http.ResponseWriter, _ *http.Request, result rest.Result[personResponse]) error {
+			Writer: corepipeline.Writer[personResponse]{
+				Success: func(w http.ResponseWriter, _ *http.Request, result corepipeline.Result[personResponse]) error {
 					called++
 					w.WriteHeader(http.StatusAccepted)
 					return nil
 				},
 			},
-			Service: func(_ context.Context, _ rest.Input[rest.Empty, rest.Empty, rest.Empty]) (rest.Result[personResponse], error) {
-				return rest.OK(personResponse{}), nil
+			Service: func(_ context.Context, _ corepipeline.Input[corepipeline.Empty, corepipeline.Empty, corepipeline.Empty]) (corepipeline.Result[personResponse], error) {
+				return corepipeline.OK(personResponse{}), nil
 			},
 		})
 		Expect(called).To(Equal(1))
 		Expect(writer.Code).To(Equal(http.StatusAccepted))
 
 		writer = httptest.NewRecorder()
-		rest.Run(writer, routeRequest(http.MethodGet, "/people", "", ""), rest.Config[rest.Empty, rest.Empty, rest.Empty, personResponse]{
+		corepipeline.RunREST(writer, routeRequest(http.MethodGet, "/people", "", ""), corepipeline.Config[corepipeline.Empty, corepipeline.Empty, corepipeline.Empty, personResponse]{
 			Fallback: fallback,
-			Writer: rest.Writer[personResponse]{
-				Error: func(w http.ResponseWriter, _ *http.Request, failure rest.Failure) error {
+			Writer: corepipeline.Writer[personResponse]{
+				Error: func(w http.ResponseWriter, _ *http.Request, failure corepipeline.Failure) error {
 					called++
 					Expect(failure.StatusCode).To(Equal(http.StatusInternalServerError))
 					w.WriteHeader(http.StatusTeapot)
 					return nil
 				},
 			},
-			Service: func(_ context.Context, _ rest.Input[rest.Empty, rest.Empty, rest.Empty]) (rest.Result[personResponse], error) {
-				return rest.Result[personResponse]{}, errors.New("unexpected")
+			Service: func(_ context.Context, _ corepipeline.Input[corepipeline.Empty, corepipeline.Empty, corepipeline.Empty]) (corepipeline.Result[personResponse], error) {
+				return corepipeline.Result[personResponse]{}, errors.New("unexpected")
 			},
 		})
 		Expect(called).To(Equal(2))
@@ -222,16 +222,16 @@ var _ = Describe("HTTP REST executor", func() {
 
 	It("does not invoke service when a final cross-source validator rejects input", func() {
 		writer := httptest.NewRecorder()
-		rest.Run(writer, routeRequest(http.MethodPost, "/people", `{"firstName":"Alex"}`, ""), rest.Config[rest.Empty, rest.Empty, personBody, personResponse]{
+		corepipeline.RunREST(writer, routeRequest(http.MethodPost, "/people", `{"firstName":"Alex"}`, ""), corepipeline.Config[corepipeline.Empty, corepipeline.Empty, personBody, personResponse]{
 			InvalidBody: invalidBody,
 			Fallback: fallback,
-			Validate: func(input rest.Input[rest.Empty, rest.Empty, personBody]) error {
+			Validate: func(input corepipeline.Input[corepipeline.Empty, corepipeline.Empty, personBody]) error {
 				Expect(input.Body.FirstName).To(Equal("Alex"))
 				return coreerrors.NewError(invalidBody)
 			},
-			Service: func(_ context.Context, _ rest.Input[rest.Empty, rest.Empty, personBody]) (rest.Result[personResponse], error) {
+			Service: func(_ context.Context, _ corepipeline.Input[corepipeline.Empty, corepipeline.Empty, personBody]) (corepipeline.Result[personResponse], error) {
 				Fail("service should not run")
-				return rest.OK(personResponse{}), nil
+				return corepipeline.OK(personResponse{}), nil
 			},
 		})
 		Expect(writer.Code).To(Equal(http.StatusBadRequest))
@@ -243,13 +243,13 @@ var _ = Describe("HTTP REST executor", func() {
 			{"/people?page=1&unexpected=1", true},
 		} {
 			writer := httptest.NewRecorder()
-			rest.Run(writer, routeRequest(http.MethodGet, options.raw, "", ""), rest.Config[rest.Empty, personQuery, rest.Empty, personResponse]{
+			corepipeline.RunREST(writer, routeRequest(http.MethodGet, options.raw, "", ""), corepipeline.Config[corepipeline.Empty, personQuery, corepipeline.Empty, personResponse]{
 				StrictQuery: options.strict,
 				InvalidQuery: invalidQuery,
 				Fallback: fallback,
-				Service: func(_ context.Context, _ rest.Input[rest.Empty, personQuery, rest.Empty]) (rest.Result[personResponse], error) {
+				Service: func(_ context.Context, _ corepipeline.Input[corepipeline.Empty, personQuery, corepipeline.Empty]) (corepipeline.Result[personResponse], error) {
 					Fail("service must not run with invalid query")
-					return rest.OK(personResponse{}), nil
+					return corepipeline.OK(personResponse{}), nil
 				},
 			})
 			Expect(writer.Code).To(Equal(http.StatusBadRequest), options.raw)
@@ -258,10 +258,10 @@ var _ = Describe("HTTP REST executor", func() {
 
 	It("writes a safe error envelope for an invalid service result status", func() {
 		writer := httptest.NewRecorder()
-		rest.Run(writer, routeRequest(http.MethodGet, "/people", "", ""), rest.Config[rest.Empty, rest.Empty, rest.Empty, personResponse]{
+		corepipeline.RunREST(writer, routeRequest(http.MethodGet, "/people", "", ""), corepipeline.Config[corepipeline.Empty, corepipeline.Empty, corepipeline.Empty, personResponse]{
 			Fallback: fallback,
-			Service: func(_ context.Context, _ rest.Input[rest.Empty, rest.Empty, rest.Empty]) (rest.Result[personResponse], error) {
-				return rest.Result[personResponse]{StatusCode: http.StatusConflict}, nil
+			Service: func(_ context.Context, _ corepipeline.Input[corepipeline.Empty, corepipeline.Empty, corepipeline.Empty]) (corepipeline.Result[personResponse], error) {
+				return corepipeline.Result[personResponse]{StatusCode: http.StatusConflict}, nil
 			},
 		})
 		Expect(writer.Code).To(Equal(http.StatusInternalServerError))
@@ -270,10 +270,10 @@ var _ = Describe("HTTP REST executor", func() {
 
 	It("defaults an omitted successful Result status to 200", func() {
 		writer := httptest.NewRecorder()
-		rest.Run(writer, routeRequest(http.MethodGet, "/people", "", ""), rest.Config[rest.Empty, rest.Empty, rest.Empty, personResponse]{
+		corepipeline.RunREST(writer, routeRequest(http.MethodGet, "/people", "", ""), corepipeline.Config[corepipeline.Empty, corepipeline.Empty, corepipeline.Empty, personResponse]{
 			Fallback: fallback,
-			Service: func(_ context.Context, _ rest.Input[rest.Empty, rest.Empty, rest.Empty]) (rest.Result[personResponse], error) {
-				return rest.Result[personResponse]{Data: personResponse{Name:"OK"}}, nil
+			Service: func(_ context.Context, _ corepipeline.Input[corepipeline.Empty, corepipeline.Empty, corepipeline.Empty]) (corepipeline.Result[personResponse], error) {
+				return corepipeline.Result[personResponse]{Data: personResponse{Name:"OK"}}, nil
 			},
 		})
 		Expect(writer.Code).To(Equal(http.StatusOK))

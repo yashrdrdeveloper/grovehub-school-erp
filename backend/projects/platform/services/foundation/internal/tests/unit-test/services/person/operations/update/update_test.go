@@ -6,7 +6,7 @@ import (
     . "github.com/onsi/ginkgo/v2"
     . "github.com/onsi/gomega"
     "go.uber.org/mock/gomock"
-    pipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline/service"
+    corepipeline "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/pipeline"
     dto "grovehub/services/foundation/internal/app/dto/person"
     update "grovehub/services/foundation/internal/app/services/person/operations/update"
     fixtures "grovehub/services/foundation/internal/tests/helpers/person"
@@ -23,9 +23,9 @@ func Specs(){
     Describe("UpdateOperation",func(){
         It("loads, applies and persists updates in order",func(){
             gomock.InOrder(
-                strategy.EXPECT().Load(gomock.Any(),gomock.Any()).Return(pipeline.Next[dto.Person]()),
-                strategy.EXPECT().Apply(gomock.Any(),gomock.Any()).Return(pipeline.Next[dto.Person]()),
-                strategy.EXPECT().Persist(gomock.Any(),gomock.Any()).Return(pipeline.Return(fixtures.Response(),false)),
+                strategy.EXPECT().Load(gomock.Any(),gomock.Any()).Return(corepipeline.Next[dto.Person]()),
+                strategy.EXPECT().Apply(gomock.Any(),gomock.Any()).Return(corepipeline.Next[dto.Person]()),
+                strategy.EXPECT().Persist(gomock.Any(),gomock.Any()).Return(corepipeline.Return(fixtures.Response(),false)),
             )
             p,err:=update.New(strategy).Update(context.Background(),fixtures.UpdateRequest())
             Expect(err).NotTo(HaveOccurred())
@@ -33,7 +33,7 @@ func Specs(){
         })
         It("short circuits a failed load",func(){
             failure:=errors.New("load failed")
-            strategy.EXPECT().Load(gomock.Any(),gomock.Any()).Return(pipeline.Fail[dto.Person](failure))
+            strategy.EXPECT().Load(gomock.Any(),gomock.Any()).Return(corepipeline.Fail[dto.Person](failure))
             _,err:=update.New(strategy).Update(context.Background(),fixtures.UpdateRequest())
             Expect(err).To(MatchError(failure))
         })
