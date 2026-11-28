@@ -7,9 +7,49 @@ on:
 permissions:
   contents: read
 jobs:
-  inventory:
+  core-errors:
     runs-on: ubuntu-latest
+    env:
+      GOWORK: 'off'
     steps:
       - uses: actions/checkout@v4
-      - name: Inventory error package consumers
-        run: git grep -nE 'errors/(contracts|helpers)' -- '*.go' '*.sh' '*.yml' '*.md' || true
+      - name: Enforce public facade and exact unit-test mirrors
+        shell: bash
+        run: |
+          if git grep -nE 'libs/backend/core/errors/(contracts|helpers)(/|")' -- '*.go' '*.sh'; then
+            echo "Use the core errors facade."
+            exit 1
+          fi
+          root=backend/libs/core/errors
+          test ! -d "$root/contracts"
+          test ! -d "$root/helpers"
+          count=0
+          missing=0
+          while IFS= read -r source; do
+            [[ "$source" == *.go && "$source" != *_test.go ]] || continue
+            relative="${source#"$root/internal/src/"}"
+            mirror="$root/internal/resources/tests/unit-test/${relative%.go}_test.go"
+            count=$((count + 1))
+            if [[ ! -f "$mirror" ]]; then
+              echo "Missing mirrored test: $mirror"
+              missing=$((missing + 1))
+            fi
+          done < <(git ls-files "$root/internal/src/")
+          echo "Errors source files: $count; missing mirrors: $missing"
+          test "$count" -gt 0
+          test "$missing" -eq 0
+          test -z "$(git ls-files "$root/" | grep '_test[.]go$' | grep -v '/internal/resources/tests/unit-test/' || true)"
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.3'
+          cache-dependency-path: backend/libs/core/go.sum
+      - name: Run error unit tests and verify full statement coverage
+        working-directory: backend/libs/core
+        run: |
+          go test -count=1 -covermode=atomic -coverpkg=./errors/... -coverprofile="$RUNNER_TEMP/errors-coverage.out" ./errors/internal/resources/tests/unit-test/... ./tests/unit-test/errors/...
+          go tool cover -func="$RUNNER_TEMP/errors-coverage.out" | tee "$RUNNER_TEMP/errors-coverage.txt"
+          awk '/^total:/ { found=1; if ($NF != "100.0%") exit 1 } END { if (!found) exit 1 }' "$RUNNER_TEMP/errors-coverage.txt"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: errors-coverage
+          path: ${{ runner.temp }}/errors-coverage.out
