@@ -1,7 +1,7 @@
 package impl
 
 import (
- "grovehub/launcher/internal/src/services/gateway/operations/ratelimit"
+	"grovehub/launcher/internal/src/services/gateway/operations/ratelimit"
 	"net"
 	"net/http"
 	"sync"
@@ -12,10 +12,10 @@ import (
 // deployments must add a shared/distributed limiter at the edge.
 // @Service
 type limiter struct {
-	mu sync.Mutex
+	mu      sync.Mutex
 	entries map[string]attempt
-	limits map[string]int
-	clock func() time.Time
+	limits  map[string]int
+	clock   func() time.Time
 }
 
 type attempt struct {
@@ -36,6 +36,7 @@ func NewWithClock(limits map[string]int, clock func() time.Time) ratelimit.Limit
 			configured[pattern] = count
 		}
 	}
+
 	return &limiter{entries: make(map[string]attempt), limits: configured, clock: clock}
 }
 
@@ -49,6 +50,7 @@ func (limiter *limiter) Allow(pattern string, request *http.Request) bool {
 	if err != nil {
 		address = request.RemoteAddr
 	}
+
 	key := pattern + "|" + address
 	now := limiter.clock()
 
@@ -62,6 +64,7 @@ func (limiter *limiter) Allow(pattern string, request *http.Request) bool {
 			}
 		}
 	}
+
 	if len(limiter.entries) > 100000 {
 		return false
 	}
@@ -70,6 +73,7 @@ func (limiter *limiter) Allow(pattern string, request *http.Request) bool {
 	if now.After(entry.until) {
 		entry = attempt{until: now.Add(time.Minute)}
 	}
+
 	if entry.count >= limit {
 		return false
 	}
@@ -79,4 +83,4 @@ func (limiter *limiter) Allow(pattern string, request *http.Request) bool {
 	return true
 }
 
-var _ ratelimit.Limiter=(*limiter)(nil)
+var _ ratelimit.Limiter = (*limiter)(nil)

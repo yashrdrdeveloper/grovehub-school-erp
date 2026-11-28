@@ -10,7 +10,6 @@ import (
 
 const logLevelsEnvironmentVariable = "GROVEHUB_LOG_LEVELS"
 
-
 func setLogLevels(value string) {
 	previousValue, existed := os.LookupEnv(logLevelsEnvironmentVariable)
 	Expect(os.Setenv(logLevelsEnvironmentVariable, value)).To(Succeed())

@@ -8,7 +8,6 @@ import (
 )
 
 type Gateway interface {
- External() http.Handler
- Internal() inprocess.Operation
+	External() http.Handler
+	Internal() inprocess.Operation
 }
-

@@ -22,7 +22,9 @@ func ObservabilitySpecs() {
 		It("records success and failure spans with the appropriate status and event", func() {
 			spanRecorder := tracetest.NewSpanRecorder()
 			provider := sdktrace.NewTracerProvider(sdktrace.WithSpanProcessor(spanRecorder))
-			DeferCleanup(func() { Expect(provider.Shutdown(context.Background())).To(Succeed()) })
+			DeferCleanup(func() {
+				Expect(provider.Shutdown(context.Background())).To(Succeed())
+			})
 			request := httptest.NewRequest(http.MethodGet, "/health", nil)
 			for _, status := range []int{http.StatusOK, http.StatusBadRequest} {
 				ctx, span := provider.Tracer("launcher-test").Start(context.Background(), "request")
@@ -30,6 +32,7 @@ func ObservabilitySpecs() {
 				helpers.RecordTrace(ctx, request, "/health", recorder, time.Millisecond)
 				span.End()
 			}
+
 			spans := spanRecorder.Ended()
 			Expect(spans).To(HaveLen(2))
 			Expect(spans[0].Status().Code).To(Equal(codes.Unset))

@@ -1,6 +1,9 @@
 package helpers
 
-import ("net/http";"net/url")
+import (
+	"net/http"
+	"net/url"
+)
 
 func ValidateOrigin(origin string, request *http.Request) bool {
 	if request.Method == http.MethodGet || request.Method == http.MethodHead {
@@ -18,7 +21,9 @@ func ValidateOrigin(origin string, request *http.Request) bool {
 	if allowedErr != nil || incomingErr != nil || allowed.Scheme != "http" || incoming.Scheme != "http" || allowed.Port() == "" || allowed.Port() != incoming.Port() {
 		return false
 	}
-	isLoopback := func(host string) bool { return host == "localhost" || host == "127.0.0.1" }
+
+	isLoopback := func(host string) bool {
+		return host == "localhost" || host == "127.0.0.1"
+	}
 	return isLoopback(allowed.Hostname()) && isLoopback(incoming.Hostname())
 }
-

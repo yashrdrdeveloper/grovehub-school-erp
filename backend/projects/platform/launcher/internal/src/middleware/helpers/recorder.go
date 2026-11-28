@@ -32,4 +32,3 @@ func (recorder *Recorder) Write(payload []byte) (int, error) {
 func (recorder *Recorder) Unwrap() http.ResponseWriter {
 	return recorder.ResponseWriter
 }
-

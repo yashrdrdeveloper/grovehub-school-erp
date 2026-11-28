@@ -19,6 +19,7 @@ func Key(id, issuer, subject string, scopes []string) (core.WorkloadKeyConfig, e
 	if err != nil {
 		return core.WorkloadKeyConfig{}, nil, err
 	}
+
 	return core.WorkloadKeyConfig{
 		KeyID: id, Issuer: issuer, Subject: subject,
 		PublicKey: base64.RawURLEncoding.EncodeToString(public), Scopes: scopes,
@@ -34,6 +35,7 @@ func Request(pattern, path string, key core.WorkloadKeyConfig, private ed25519.P
 	if err != nil {
 		return nil, err
 	}
+
 	request := httptest.NewRequest(method, path, nil)
 	request.Pattern = pattern
 	request.Header.Set("Authorization", "Bearer "+token)
@@ -47,14 +49,17 @@ func VerifiedContext(subject string) (context.Context, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	credentials, err := core.NewEd25519Credentials([]core.WorkloadKeyConfig{key})
 	if err != nil {
 		return nil, err
 	}
+
 	request, err := Request(pattern, "/fixture", key, private, core.WorkloadClaims{Scopes: []string{scope}})
 	if err != nil {
 		return nil, err
 	}
+
 	verifier := core.ScopedWorkloadVerifier{
 		Credentials: credentials, Audience: "platform",
 		Routes: map[string]core.RoutePolicy{pattern: {Scope: scope}},

@@ -1,6 +1,10 @@
 package helpers
 
-import ("log/slog";"net/http";corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http")
+import (
+	corehttp "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/http"
+	"log/slog"
+	"net/http"
+)
 
 func Reject(writer http.ResponseWriter, request *http.Request, status int) {
 	writer.Header().Set("Cache-Control", "no-store")

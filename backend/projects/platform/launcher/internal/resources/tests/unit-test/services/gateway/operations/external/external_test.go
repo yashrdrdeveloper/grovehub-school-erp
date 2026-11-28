@@ -2,12 +2,12 @@ package gateway_test
 
 import (
 	"context"
+	ginkgo "github.com/onsi/ginkgo/v2"
 	"net/http"
 	"net/http/httptest"
-	ginkgo "github.com/onsi/ginkgo/v2"
 
-	external "grovehub/launcher/internal/src/services/gateway/operations/external/impl"
 	schoolgateway "grovehub/internal/session"
+	external "grovehub/launcher/internal/src/services/gateway/operations/external/impl"
 )
 
 type accessVerifier struct{}
@@ -32,6 +32,7 @@ func verifyProtectedWildcardRoutingPreservesPathValues() {
 		if !ok || principal.AccountID != "account" || r.PathValue("gid") != "p-123" {
 			t.Error("verified principal or wildcard binding was lost")
 		}
+
 		w.WriteHeader(http.StatusOK)
 	})
 
@@ -106,6 +107,7 @@ func verifyRateLimitUsesProvidedExactMethodAndRoute() {
 		if attempt == 2 {
 			want = http.StatusTooManyRequests
 		}
+
 		if recorder.Code != want {
 			t.Fatalf("attempt %d: expected %d, got %d", attempt+1, want, recorder.Code)
 		}
@@ -135,6 +137,7 @@ func verifyLocalViteLoopbackOriginsShareSamePort() {
 		if tc.origin != "" {
 			request.Header.Set("Origin", tc.origin)
 		}
+
 		recorder := httptest.NewRecorder()
 		gateway.ServeHTTP(recorder, request)
 		if recorder.Code != tc.status {
@@ -154,6 +157,7 @@ func (access *routeAccess) AuthorizeProtectedRoute(ctx context.Context, pattern 
 	if _, ok := schoolgateway.PrincipalFrom(ctx); !ok || !access.allowed {
 		return context.Canceled
 	}
+
 	return nil
 }
 
@@ -166,7 +170,7 @@ func verifyIdentityProtectedRoutePolicy() {
 	access := &routeAccess{}
 	for _, tc := range []struct {
 		verifier schoolgateway.AccessVerifier
-		want int
+		want     int
 	}{
 		{accessVerifier{}, http.StatusForbidden},
 		{access, http.StatusForbidden},
@@ -180,6 +184,7 @@ func verifyIdentityProtectedRoutePolicy() {
 			t.Fatalf("expected %d, got %d", tc.want, recorder.Code)
 		}
 	}
+
 	if access.pattern != "GET /identity/protected/accounts/{accountId}" {
 		t.Fatalf("expected registered pattern, got %q", access.pattern)
 	}

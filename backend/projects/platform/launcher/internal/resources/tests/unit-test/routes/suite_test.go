@@ -18,7 +18,6 @@ const (
 	expectedRouteErrorReason = "API route not found"
 )
 
-
 func newFallbackMux() *http.ServeMux {
 	mux := http.NewServeMux()
 	routing.RegisterFallback(mux)

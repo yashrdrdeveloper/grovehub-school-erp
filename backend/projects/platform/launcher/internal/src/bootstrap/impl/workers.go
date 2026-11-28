@@ -1,12 +1,14 @@
 package impl
 
 import (
- "context"
- "gorm.io/gorm"
- "grovehub/launcher/internal/src/bootstrap/helpers"
- "grovehub/internal/session"
+	"context"
+	"gorm.io/gorm"
+	"grovehub/internal/session"
+	"grovehub/launcher/internal/src/bootstrap/helpers"
 )
 
-func(b *builder) startWorkers(ctx context.Context,db *gorm.DB,lookup session.TenantStateLookup,cleanup *helpers.Cleanup){
- if lookup!=nil{cleanup.Add(b.dependencies.StartTenantReconciler(ctx,b.logger,db,lookup))}
+func (b *builder) startWorkers(ctx context.Context, db *gorm.DB, lookup session.TenantStateLookup, cleanup *helpers.Cleanup) {
+	if lookup != nil {
+		cleanup.Add(b.dependencies.StartTenantReconciler(ctx, b.logger, db, lookup))
+	}
 }

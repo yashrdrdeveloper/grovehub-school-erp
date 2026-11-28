@@ -1,11 +1,11 @@
 package inprocess
 
 import (
- "context"
- "grovehub/internal/session"
+	"context"
+	"grovehub/internal/session"
 )
 
 // @Mock
 type Authorizer interface {
- Authorize(context.Context,session.Principal,string) error
+	Authorize(context.Context, session.Principal, string) error
 }

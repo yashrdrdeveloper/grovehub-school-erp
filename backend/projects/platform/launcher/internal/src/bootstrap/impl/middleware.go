@@ -1,28 +1,30 @@
 package impl
 
 import (
- "log/slog"
- "net/http"
- "strings"
- "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
- "go.opentelemetry.io/otel/attribute"
- "go.opentelemetry.io/otel/trace"
- observability "grovehub/launcher/internal/src/middleware/observability/impl"
- coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
- headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
- coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
+	coregateway "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/gateway"
+	headercontext "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/headercontext"
+	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
+	observability "grovehub/launcher/internal/src/middleware/observability/impl"
+	"log/slog"
+	"net/http"
+	"strings"
 )
-func newEdgeHandler(logger *slog.Logger,mux *http.ServeMux,external http.Handler) http.Handler {
+
+func newEdgeHandler(logger *slog.Logger, mux *http.ServeMux, external http.Handler) http.Handler {
 	restrictedHandler := coregateway.RestrictedOnly(mux, external)
 	edgeService := coretelemetry.ServiceLauncherEdge
 	edgeHandler := otelhttp.NewHandler(
 		observability.New(logger).Wrap(
-headercontext.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			headercontext.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				_, pattern := mux.Handler(r)
 				if pattern == "GET /health" || pattern == "GET /ready" {
 					external.ServeHTTP(w, r)
 					return
 				}
+
 				restrictedHandler.ServeHTTP(w, r)
 			})),
 		),
@@ -34,6 +36,7 @@ headercontext.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Re
 			if route == "" {
 				route = "unmatched"
 			}
+
 			return edgeService.Name + " " + request.Method + " " + route
 		}),
 		otelhttp.WithSpanOptions(
@@ -44,6 +47,5 @@ headercontext.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Re
 		),
 	)
 
-
- return edgeHandler
+	return edgeHandler
 }

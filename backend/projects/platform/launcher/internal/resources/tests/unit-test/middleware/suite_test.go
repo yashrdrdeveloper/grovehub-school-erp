@@ -15,8 +15,8 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	oteltrace "go.opentelemetry.io/otel/trace"
 
-	launcherMiddleware "grovehub/launcher/internal/src/middleware/observability/impl"
 	coretelemetry "github.com/yashrdrdeveloper/grovehub-school-erp/libs/backend/core/telemetry"
+	launcherMiddleware "grovehub/launcher/internal/src/middleware/observability/impl"
 )
 
 const failedPath = "/abc"
@@ -32,7 +32,6 @@ var (
 	testTracerProvider *sdktrace.TracerProvider
 	spanRecorder       *tracetest.SpanRecorder
 )
-
 
 // @BeforeEach
 func setupObservability() {
@@ -57,7 +56,7 @@ func serveObservedRequest(status int) observedRequest {
 	buffer := &bytes.Buffer{}
 	logger := slog.New(slog.NewJSONHandler(buffer, nil))
 	handler := launcherMiddleware.New(logger).Wrap(
-http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+		http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
 			writer.WriteHeader(status)
 			_, _ = writer.Write([]byte("response"))
 		}),

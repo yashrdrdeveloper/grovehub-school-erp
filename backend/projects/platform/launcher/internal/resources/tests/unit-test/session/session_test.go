@@ -32,6 +32,7 @@ func SessionSpecs() {
 			for _, old := range []int64{0, issued, generation + 1} {
 				Expect(CheckTenantSession(ctx, "school", old)).To(MatchError(ErrTenantDenied))
 			}
+
 			Expect(CheckTenantSession(ctx, "school", generation)).To(Succeed())
 			Expect(CheckTenantSession(ctx, "other", generation)).To(MatchError(ErrTenantDenied))
 		})
@@ -68,6 +69,7 @@ func SessionSpecs() {
 			for _, id := range []string{"", "disabled", "zero", "missing"} {
 				Expect(CheckTenant(scoped, id)).To(MatchError(ErrTenantDenied))
 			}
+
 			id := "active"
 			Expect(CheckAccountTenant(scoped, &id)).To(Succeed())
 			Expect(CheckAccountGeneration(scoped, &id, 3)).To(Succeed())

@@ -1,6 +1,11 @@
 package impl
 
-import ("context";"errors";schoolgateway "grovehub/internal/session";"grovehub/launcher/internal/src/services/gateway/operations/inprocess")
+import (
+	"context"
+	"errors"
+	schoolgateway "grovehub/internal/session"
+	"grovehub/launcher/internal/src/services/gateway/operations/inprocess"
+)
 
 // @Service
 type operation struct {
@@ -16,14 +21,16 @@ func (gateway *operation) Call(ctx context.Context, name string, invoke func(con
 	if !ok {
 		return errors.New("trusted gateway principal is required")
 	}
+
 	if gateway.authorizer == nil {
 		return errors.New("internal operation authorization is not configured")
 	}
+
 	if err := gateway.authorizer.Authorize(ctx, principal, name); err != nil {
 		return err
 	}
+
 	return invoke(ctx)
 }
 
-
-var _ inprocess.Operation=(*operation)(nil)
+var _ inprocess.Operation = (*operation)(nil)
